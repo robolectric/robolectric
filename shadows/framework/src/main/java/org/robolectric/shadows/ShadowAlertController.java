@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.view.LayoutInflater;
@@ -64,7 +63,7 @@ public class ShadowAlertController {
     reflector(AlertControllerReflector.class, realAlertController).setView(view);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   public void setView(int resourceId) {
     setView(LayoutInflater.from(RuntimeEnvironment.getApplication()).inflate(resourceId, null));
   }

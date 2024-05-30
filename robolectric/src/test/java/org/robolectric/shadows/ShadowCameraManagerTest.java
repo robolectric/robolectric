@@ -24,7 +24,6 @@ import org.mockito.ArgumentCaptor;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowCameraManager}. */
-@Config(minSdk = VERSION_CODES.LOLLIPOP)
 @RunWith(AndroidJUnit4.class)
 public class ShadowCameraManagerTest {
 
@@ -174,7 +173,6 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void openCamera() throws CameraAccessException {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
 
@@ -185,7 +183,6 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void triggerDisconnect() throws CameraAccessException {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
 
@@ -202,7 +199,6 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void triggerDisconnect_noCameraOpen() throws CameraAccessException {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
     shadowOf(cameraManager).triggerDisconnect();
@@ -264,7 +260,6 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void registerCallbackAvailable() throws CameraAccessException {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);
@@ -276,7 +271,6 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void unregisterCallbackAvailable() throws CameraAccessException {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);
@@ -292,7 +286,6 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void registerCallbackUnavailable() throws CameraAccessException {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);
@@ -306,7 +299,6 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void unregisterCallbackUnavailable() throws CameraAccessException {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);
@@ -321,7 +313,6 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void registerCallbackUnavailableInvalidCameraId() throws CameraAccessException {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);

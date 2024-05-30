@@ -1,8 +1,5 @@
 package android.content.res;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
@@ -504,8 +501,6 @@ public class ResourcesTest {
   }
 
   @Test
-  @SdkSuppress(minSdkVersion = LOLLIPOP)
-  @Config(minSdk = LOLLIPOP)
   public void getIdentifier_material() {
     int id = Resources.getSystem().getIdentifier("btn_check_material_anim", "drawable", "android");
     assertThat(id).isGreaterThan(0);
@@ -523,10 +518,6 @@ public class ResourcesTest {
    * ourselves.
    */
   @Test
-  // @Config(sdk = Build.VERSION_CODES.LOLLIPOP) // android:color/secondary_text_material_dark was
-  // added in API 21
-  @SdkSuppress(minSdkVersion = LOLLIPOP)
-  @Config(minSdk = LOLLIPOP)
   public void shouldGenerateIdsForResourcesThatAreMissingRValues() {
     int identifierMissingFromRFile =
         resources.getIdentifier("secondary_text_material_dark", "color", "android");
@@ -793,24 +784,9 @@ public class ResourcesTest {
   }
 
   @Test
-  @SdkSuppress(minSdkVersion = LOLLIPOP)
-  @Config(minSdk = LOLLIPOP)
   public void whenAttrIsDefinedInRuntimeSdk_getResourceName_findsResource() {
     assertThat(context.getResources().getResourceName(android.R.attr.viewportHeight))
         .isEqualTo("android:attr/viewportHeight");
-  }
-
-  @Test
-  @SdkSuppress(maxSdkVersion = KITKAT)
-  @Config(maxSdk = KITKAT_WATCH)
-  public void whenAttrIsNotDefinedInRuntimeSdk_getResourceName_doesntFindRequestedResourceButInsteadFindsInternalResourceWithSameId() {
-    // asking for an attr defined after the current SDK doesn't have a defined result; in this case it returns
-    //   numberPickerStyle from com.internal.android.R
-    assertThat(context.getResources().getResourceName(android.R.attr.viewportHeight))
-        .isNotEqualTo("android:attr/viewportHeight");
-
-    assertThat(context.getResources().getIdentifier("viewportHeight", "attr", "android"))
-        .isEqualTo(0);
   }
 
   @Test

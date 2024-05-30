@@ -519,6 +519,7 @@ public class ShadowBluetoothLeAdvertiserTest {
 
     assertThat(advertisingSetStartStatusOptional.get())
         .isEqualTo(AdvertisingSetCallback.ADVERTISE_SUCCESS);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(1);
   }
 
   @Test
@@ -553,6 +554,7 @@ public class ShadowBluetoothLeAdvertiserTest {
 
     assertThat(advertisingSetStartStatusOptional.get())
         .isEqualTo(AdvertisingSetCallback.ADVERTISE_FAILED_ALREADY_STARTED);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(1);
   }
 
   @Test
@@ -573,6 +575,7 @@ public class ShadowBluetoothLeAdvertiserTest {
                 gattServer,
                 null,
                 mainLooperHandler));
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
   }
 
   @Test
@@ -600,6 +603,7 @@ public class ShadowBluetoothLeAdvertiserTest {
                 gattServer,
                 advertisingSetCallback,
                 mainLooperHandler));
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
   }
 
   @Test
@@ -627,6 +631,7 @@ public class ShadowBluetoothLeAdvertiserTest {
                 gattServer,
                 advertisingSetCallback,
                 mainLooperHandler));
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
   }
 
   @Test
@@ -650,6 +655,7 @@ public class ShadowBluetoothLeAdvertiserTest {
                 gattServer,
                 advertisingSetCallback,
                 mainLooperHandler));
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
   }
 
   @Test
@@ -673,6 +679,7 @@ public class ShadowBluetoothLeAdvertiserTest {
                 gattServer,
                 advertisingSetCallback,
                 mainLooperHandler));
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
   }
 
   @Test
@@ -701,6 +708,7 @@ public class ShadowBluetoothLeAdvertiserTest {
                 gattServer,
                 advertisingSetCallback,
                 mainLooperHandler));
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
   }
 
   @Test
@@ -729,6 +737,7 @@ public class ShadowBluetoothLeAdvertiserTest {
                 gattServer,
                 advertisingSetCallback,
                 mainLooperHandler));
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
   }
 
   @Test
@@ -757,6 +766,7 @@ public class ShadowBluetoothLeAdvertiserTest {
                 gattServer,
                 advertisingSetCallback,
                 mainLooperHandler));
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
   }
 
   @Test
@@ -778,6 +788,7 @@ public class ShadowBluetoothLeAdvertiserTest {
                 gattServer,
                 advertisingSetCallback,
                 mainLooperHandler));
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
   }
 
   @Test
@@ -798,6 +809,7 @@ public class ShadowBluetoothLeAdvertiserTest {
                 gattServer,
                 advertisingSetCallback,
                 mainLooperHandler));
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
   }
 
   @Test
@@ -815,10 +827,12 @@ public class ShadowBluetoothLeAdvertiserTest {
         gattServer,
         advertisingSetCallback,
         mainLooperHandler);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(1);
 
     bluetoothLeAdvertiser.stopAdvertisingSet(advertisingSetCallback);
 
     assertThat(advertisingSetStopped).isTrue();
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
   }
 
   @Test

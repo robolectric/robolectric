@@ -15,6 +15,7 @@ class MavenRoboSettingsTest {
   private var originalMavenRepositoryPassword: String? = null
   private var originalMavenRepositoryProxyHost: String? = null
   private var originalMavenProxyPort = 0
+
   @Before
   fun setUp() {
     originalMavenRepositoryId = MavenRoboSettings.getMavenRepositoryId()

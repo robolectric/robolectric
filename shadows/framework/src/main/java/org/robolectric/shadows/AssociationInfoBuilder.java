@@ -25,6 +25,7 @@ public class AssociationInfoBuilder {
   // We have two different constructors for AssociationInfo across
   // T branches. aosp has the constructor that takes a new "revoked" parameter.
   private boolean revoked;
+  private boolean pending;
   private long lastTimeConnectedMs;
   private int systemDataSyncFlags;
 
@@ -93,7 +94,7 @@ public class AssociationInfoBuilder {
     this.revoked = revoked;
     return this;
   }
-
+  
   public AssociationInfoBuilder setLastTimeConnectedMs(long lastTimeConnectedMs) {
     this.lastTimeConnectedMs = lastTimeConnectedMs;
     return this;
@@ -192,6 +193,7 @@ public class AssociationInfoBuilder {
             ClassParameter.from(boolean.class, selfManaged),
             ClassParameter.from(boolean.class, notifyOnDeviceNearby),
             ClassParameter.from(boolean.class, revoked),
+            ClassParameter.from(boolean.class, pending),
             ClassParameter.from(long.class, approvedMs),
             ClassParameter.from(long.class, lastTimeConnectedMs),
             ClassParameter.from(int.class, systemDataSyncFlags));

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.bluetooth.BluetoothAdapter.STATE_ON;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -117,7 +116,7 @@ public class ShadowBluetoothAdapter {
     setIsBluetoothSupported(true);
     BluetoothAdapterReflector bluetoothReflector = reflector(BluetoothAdapterReflector.class);
     int apiLevel = RuntimeEnvironment.getApiLevel();
-    if (apiLevel >= VERSION_CODES.LOLLIPOP && apiLevel <= VERSION_CODES.R) {
+    if (apiLevel <= VERSION_CODES.R) {
       bluetoothReflector.setSBluetoothLeAdvertiser(null);
       bluetoothReflector.setSBluetoothLeScanner(null);
     }
@@ -447,7 +446,7 @@ public class ShadowBluetoothAdapter {
     return BluetoothStatusCodes.SUCCESS;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean isMultipleAdvertisementSupported() {
     return isMultipleAdvertisementSupported;
   }

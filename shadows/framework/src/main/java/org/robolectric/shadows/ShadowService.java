@@ -55,7 +55,7 @@ public class ShadowService extends ShadowContextWrapper {
   }
 
   @Implementation
-  protected final void startForeground(int id, Notification notification) {
+  protected void startForeground(int id, Notification notification) {
     foregroundStopped = false;
     lastForegroundNotificationId = id;
     lastForegroundNotification = notification;
@@ -69,7 +69,7 @@ public class ShadowService extends ShadowContextWrapper {
   }
 
   @Implementation(minSdk = Q)
-  protected final void startForeground(
+  protected void startForeground(
       int id, Notification notification, @ForegroundServiceType int foregroundServiceType) {
     startForeground(id, notification);
     this.foregroundServiceType = foregroundServiceType;
@@ -86,7 +86,7 @@ public class ShadowService extends ShadowContextWrapper {
 
   @Implementation(minSdk = Q)
   @ForegroundServiceType
-  protected final int getForegroundServiceType() {
+  protected int getForegroundServiceType() {
     return foregroundServiceType;
   }
 

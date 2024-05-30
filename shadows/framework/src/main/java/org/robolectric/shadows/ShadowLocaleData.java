@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
@@ -114,7 +113,7 @@ public class ShadowLocaleData {
       // Lollipop MR1 uses a String
       localDataReflector.setPercent("%");
     } else {
-      // Upto Lollipop was a char
+      // Lollipop was a char
       localDataReflector.setPercent('%');
     }
 
@@ -127,14 +126,7 @@ public class ShadowLocaleData {
     }
 
     localDataReflector.setMonetarySeparator('.');
-
-    if (getApiLevel() >= LOLLIPOP) {
-      // Lollipop uses a String
-      localDataReflector.setMinusSign("-");
-    } else {
-      // Upto KitKat was a char
-      localDataReflector.setMinusSign('-');
-    }
+    localDataReflector.setMinusSign("-");
 
     localDataReflector.setExponentSeparator("E");
     localDataReflector.setInfinity("\u221E");

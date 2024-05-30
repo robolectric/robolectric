@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
@@ -183,10 +181,7 @@ public class ShadowKeyCharacterMap {
   }
 
   @Implementation
-  protected KeyEvent[] getEvents(char[] chars) {
-    if (chars == null) {
-      throw new IllegalArgumentException("chars must not be null.");
-    }
+  protected static KeyEvent[] nativeGetEvents(long ptr, char[] chars) {
     int eventsPerChar = 2;
     KeyEvent[] events = new KeyEvent[chars.length * eventsPerChar];
 
@@ -199,12 +194,12 @@ public class ShadowKeyCharacterMap {
   }
 
   @Implementation
-  protected int getKeyboardType() {
+  protected static int nativeGetKeyboardType(long ptr) {
     return KeyCharacterMap.FULL;
   }
 
   @Implementation
-  protected int get(int keyCode, int metaState) {
+  protected static char nativeGetCharacter(long ptr, int keyCode, int metaState) {
     boolean metaShiftOn = (metaState & KeyEvent.META_SHIFT_ON) != 0;
     Character character = KEY_CODE_TO_CHAR.get(keyCode);
     if (character == null) {
@@ -216,7 +211,7 @@ public class ShadowKeyCharacterMap {
     }
   }
 
-  public KeyEvent getDownEvent(char a) {
+  private static KeyEvent getDownEvent(char a) {
     return new KeyEvent(
         0,
         0,
@@ -228,7 +223,7 @@ public class ShadowKeyCharacterMap {
         0);
   }
 
-  public KeyEvent getUpEvent(char a) {
+  private static KeyEvent getUpEvent(char a) {
     return new KeyEvent(
         0,
         0,
@@ -241,26 +236,11 @@ public class ShadowKeyCharacterMap {
   }
 
   @Implementation
-  protected char getDisplayLabel(int keyCode) {
+  protected static char nativeGetDisplayLabel(long ptr, int keyCode) {
     return KEY_CODE_TO_CHAR.getOrDefault(keyCode, (char) 0);
   }
 
   @Implementation
-  protected boolean isPrintingKey(int keyCode) {
-    int type = Character.getType(getDisplayLabel(keyCode));
-    switch (type) {
-      case Character.SPACE_SEPARATOR:
-      case Character.LINE_SEPARATOR:
-      case Character.PARAGRAPH_SEPARATOR:
-      case Character.CONTROL:
-      case Character.FORMAT:
-        return false;
-      default:
-        return true;
-    }
-  }
-
-  @Implementation(minSdk = KITKAT_WATCH)
   protected static char nativeGetNumber(long ptr, int keyCode) {
     Character character = KEY_CODE_TO_CHAR.get(keyCode);
     if (character == null) {
@@ -269,16 +249,7 @@ public class ShadowKeyCharacterMap {
     return character;
   }
 
-  @Implementation(maxSdk = KITKAT)
-  protected static char nativeGetNumber(int ptr, int keyCode) {
-    Character character = KEY_CODE_TO_CHAR.get(keyCode);
-    if (character == null) {
-      return 0;
-    }
-    return character;
-  }
-
-  private int toCharKeyCode(char a) {
+  private static int toCharKeyCode(char a) {
     if (CHAR_TO_KEY_CODE.containsKey(Character.toUpperCase(a))) {
       return CHAR_TO_KEY_CODE.get(Character.toUpperCase(a));
     } else if (CHAR_TO_KEY_CODE_SHIFT_ON.containsKey(a)) {
@@ -288,7 +259,7 @@ public class ShadowKeyCharacterMap {
     }
   }
 
-  private int getMetaState(char a) {
+  private static int getMetaState(char a) {
     if (Character.isUpperCase(a) || CHAR_TO_KEY_CODE_SHIFT_ON.containsKey(a)) {
       return KeyEvent.META_SHIFT_ON;
     } else {

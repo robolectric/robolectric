@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -72,17 +70,10 @@ public class ShadowDisplayEventReceiver {
     return nativeObjRegistry.register(new NativeDisplayEventReceiver(receiver));
   }
 
-  @Implementation(minSdk = KITKAT_WATCH, maxSdk = LOLLIPOP_MR1)
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   protected static long nativeInit(DisplayEventReceiver receiver, MessageQueue msgQueue) {
     return nativeObjRegistry.register(
         new NativeDisplayEventReceiver(new WeakReference<>(receiver)));
-  }
-
-  @Implementation(maxSdk = KITKAT)
-  protected static int nativeInit(Object receiver, Object msgQueue) {
-    return (int)
-        nativeObjRegistry.register(
-            new NativeDisplayEventReceiver(new WeakReference<>((DisplayEventReceiver) receiver)));
   }
 
   @Implementation(minSdk = R, maxSdk = TIRAMISU)
@@ -105,7 +96,7 @@ public class ShadowDisplayEventReceiver {
     return nativeInit(receiver, msgQueue);
   }
 
-  @Implementation(minSdk = KITKAT_WATCH, maxSdk = TIRAMISU)
+  @Implementation(maxSdk = TIRAMISU)
   protected static void nativeDispose(long receiverPtr) {
     NativeDisplayEventReceiver receiver = nativeObjRegistry.unregister(receiverPtr);
     if (receiver != null) {
@@ -113,23 +104,11 @@ public class ShadowDisplayEventReceiver {
     }
   }
 
-  @Implementation(maxSdk = KITKAT)
-  protected static void nativeDispose(int receiverPtr) {
-    NativeDisplayEventReceiver receiver = nativeObjRegistry.unregister(receiverPtr);
-    if (receiver != null) {
-      receiver.dispose();
-    }
-  }
-
-  @Implementation(minSdk = KITKAT_WATCH)
+  @Implementation
   protected static void nativeScheduleVsync(long receiverPtr) {
     nativeObjRegistry.getNativeObject(receiverPtr).scheduleVsync();
   }
 
-  @Implementation(maxSdk = KITKAT)
-  protected static void nativeScheduleVsync(int receiverPtr) {
-    nativeObjRegistry.getNativeObject(receiverPtr).scheduleVsync();
-  }
 
   @Implementation(maxSdk = R)
   protected void dispose(boolean finalized) {

@@ -1,9 +1,7 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
 
-import android.annotation.TargetApi;
 import dalvik.system.VMRuntime;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
@@ -25,7 +23,7 @@ public class ShadowVMRuntime {
 
   @Nullable private static String currentInstructionSet = null;
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   public Object newUnpaddedArray(Class<?> klass, int size) {
     return Array.newInstance(klass, size);
   }
@@ -57,25 +55,23 @@ public class ShadowVMRuntime {
   /**
    * Returns whether the VM is running in 64-bit mode. Available in Android L+. Defaults to true.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean is64Bit() {
     return ShadowVMRuntime.is64Bit;
   }
 
   /** Sets whether the VM is running in 64-bit mode. */
-  @TargetApi(LOLLIPOP)
   public static void setIs64Bit(boolean is64Bit) {
     ShadowVMRuntime.is64Bit = is64Bit;
   }
 
   /** Returns the instruction set of the current runtime. */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected static String getCurrentInstructionSet() {
     return currentInstructionSet;
   }
 
   /** Sets the instruction set of the current runtime. */
-  @TargetApi(LOLLIPOP)
   public static void setCurrentInstructionSet(@Nullable String currentInstructionSet) {
     ShadowVMRuntime.currentInstructionSet = currentInstructionSet;
   }

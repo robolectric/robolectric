@@ -1,10 +1,11 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -105,7 +106,6 @@ public class ShadowAccessibilityNodeInfoTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldRecordFlagsProperly() {
     node = AccessibilityNodeInfo.obtain();
     node.setClickable(false);
@@ -252,6 +252,30 @@ public class ShadowAccessibilityNodeInfoTest {
     AccessibilityNodeInfo clone = AccessibilityNodeInfo.obtain(node);
 
     assertThat(clone.getPaneTitle().toString()).isEqualTo(title);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void clone_preservesStateDescription() {
+    String description = "description";
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    node.setStateDescription(description);
+
+    AccessibilityNodeInfo clone = AccessibilityNodeInfo.obtain(node);
+
+    assertThat(clone.getStateDescription().toString()).isEqualTo(description);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void clone_preservesContainerTitle() {
+    String title = "container title";
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    node.setContainerTitle(title);
+
+    AccessibilityNodeInfo clone = AccessibilityNodeInfo.obtain(node);
+
+    assertThat(clone.getContainerTitle().toString()).isEqualTo(title);
   }
 
   @Test

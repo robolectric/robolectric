@@ -13,6 +13,8 @@ import com.google.testing.compile.CompileTester.LineClause;
 import com.google.testing.compile.CompileTester.SuccessfulCompilationClause;
 import com.google.testing.compile.CompileTester.UnsuccessfulCompilationClause;
 import com.google.testing.compile.JavaFileObjects;
+import java.util.HashMap;
+import java.util.Map;
 import javax.tools.JavaFileObject;
 import org.robolectric.annotation.processing.RobolectricProcessor;
 import org.robolectric.annotation.processing.Utils;
@@ -20,21 +22,47 @@ import org.robolectric.annotation.processing.Utils;
 public final class SingleClassSubject extends Subject {
 
   public static Subject.Factory<SingleClassSubject, String> singleClass() {
-
     return SingleClassSubject::new;
   }
 
+  public static Subject.Factory<SingleClassSubject, String> singleClass(
+      Map<String, String> processorOpts, String sdkLocation, int sdkInt) {
+    return (FailureMetadata failureMetadata, String subject) ->
+        new SingleClassSubject(failureMetadata, subject, processorOpts, sdkLocation, sdkInt);
+  }
+
+  public static Subject.Factory<SingleClassSubject, String> singleClass(
+      Map<String, String> processorOpts) {
+    return (FailureMetadata failureMetadata, String subject) ->
+        new SingleClassSubject(failureMetadata, subject, processorOpts);
+  }
 
   JavaFileObject source;
   CompileTester tester;
-  
+
   public SingleClassSubject(FailureMetadata failureMetadata, String subject) {
+    this(failureMetadata, subject, DEFAULT_OPTS);
+  }
+
+  public SingleClassSubject(
+      FailureMetadata failureMetadata, String subject, Map<String, String> processorOpts) {
+    this(failureMetadata, subject, processorOpts, null, -1);
+  }
+
+  public SingleClassSubject(
+      FailureMetadata failureMetadata,
+      String subject,
+      Map<String, String> processorOpts,
+      String sdkLocation,
+      int sdkInt) {
     super(failureMetadata, subject);
     source = JavaFileObjects.forResource(Utils.toResourcePath(subject));
+    Map<String, String> opts = new HashMap<>(DEFAULT_OPTS);
+    opts.putAll(processorOpts);
     tester =
         assertAbout(javaSources())
             .that(ImmutableList.of(source, Utils.SHADOW_EXTRACTOR_SOURCE))
-            .processedWith(new RobolectricProcessor(DEFAULT_OPTS));
+            .processedWith(new RobolectricProcessor(opts, sdkLocation, sdkInt));
   }
 
   public SuccessfulCompilationClause compilesWithoutError() {
@@ -45,7 +73,7 @@ public final class SingleClassSubject extends Subject {
     }
     return null;
   }
-  
+
   public SingleFileClause failsToCompile() {
     try {
       return new SingleFileClause(tester.failsToCompile(), source);
@@ -54,17 +82,17 @@ public final class SingleClassSubject extends Subject {
     }
     return null;
   }
-  
+
   final class SingleFileClause implements CompileTester.ChainingClause<SingleFileClause> {
 
     UnsuccessfulCompilationClause unsuccessful;
     JavaFileObject source;
-    
+
     public SingleFileClause(UnsuccessfulCompilationClause unsuccessful, JavaFileObject source) {
       this.unsuccessful = unsuccessful;
       this.source = source;
     }
-    
+
     public SingleLineClause withErrorContaining(final String messageFragment) {
       try {
         return new SingleLineClause(unsuccessful.withErrorContaining(messageFragment).in(source));
@@ -86,7 +114,7 @@ public final class SingleClassSubject extends Subject {
 
       return this;
     }
-    
+
     @Override
     public SingleFileClause and() {
       return this;
@@ -95,11 +123,11 @@ public final class SingleClassSubject extends Subject {
     final class SingleLineClause implements CompileTester.ChainingClause<SingleFileClause> {
 
       LineClause lineClause;
-      
+
       public SingleLineClause(LineClause lineClause) {
         this.lineClause = lineClause;
       }
-      
+
       public CompileTester.ChainingClause<SingleFileClause> onLine(long lineNumber) {
         try {
           lineClause.onLine(lineNumber);
@@ -114,12 +142,11 @@ public final class SingleClassSubject extends Subject {
         }
         return null;
       }
-      
+
       @Override
       public SingleFileClause and() {
         return SingleFileClause.this;
       }
-    
     }
   }
 }

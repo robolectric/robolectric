@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.media.AudioPort.ROLE_SOURCE;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static java.lang.Math.min;
@@ -9,21 +9,23 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder.AudioSource;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAudioRecord.AudioRecordSource;
 
 /** Tests for {@link ShadowAudioRecord}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = LOLLIPOP)
 public class ShadowAudioRecordTest {
 
   @Test
@@ -337,6 +339,15 @@ public class ShadowAudioRecordTest {
     verifyNoMoreInteractions(source);
   }
 
+  @Test
+  @Config(minSdk = M)
+  public void nativeSetInputDevice_setPreferredDevice_succeeds() {
+    // native_setInputDevice is a private method used by the public setPreferredDevice()
+    AudioRecord audioRecord = createAudioRecord();
+    AudioDeviceInfo info = createAudioDeviceInfo(ROLE_SOURCE);
+    assertThat(audioRecord.setPreferredDevice(info)).isTrue();
+  }
+
   private static AudioRecord createAudioRecord() {
     return new AudioRecord(
         AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, 1024);
@@ -358,5 +369,31 @@ public class ShadowAudioRecordTest {
         return availableBytesToBeRead;
       }
     };
+  }
+
+  private static AudioDeviceInfo createAudioDeviceInfo(int role) {
+    AudioDeviceInfo info = Shadow.newInstanceOf(AudioDeviceInfo.class);
+    try {
+      Field portField = AudioDeviceInfo.class.getDeclaredField("mPort");
+      portField.setAccessible(true);
+      Object port = Shadow.newInstanceOf("android.media.AudioDevicePort");
+      portField.set(info, port);
+
+      Field roleField = port.getClass().getSuperclass().getDeclaredField("mRole");
+      roleField.setAccessible(true);
+      roleField.set(port, role);
+
+      Field handleField = port.getClass().getSuperclass().getDeclaredField("mHandle");
+      handleField.setAccessible(true);
+      Object handle = Shadow.newInstanceOf("android.media.AudioHandle");
+      handleField.set(port, handle);
+
+      Field idField = handle.getClass().getDeclaredField("mId");
+      idField.setAccessible(true);
+      idField.setInt(handle, /* id= */ 1);
+    } catch (ReflectiveOperationException e) {
+      throw new AssertionError(e);
+    }
+    return info;
   }
 }

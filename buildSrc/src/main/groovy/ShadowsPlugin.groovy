@@ -19,8 +19,6 @@ class ShadowsPlugin implements Plugin<Project> {
         // write generated Java into its own dir... see https://github.com/gradle/gradle/issues/4956
         def generatedSrcDir = project.file("build/generated/src/apt/main")
 
-        project.sourceSets.main.java { srcDir generatedSrcDir }
-
         project.tasks.named("compileJava").configure { task ->
             task.options.annotationProcessorGeneratedSourcesDirectory = generatedSrcDir
 
@@ -47,6 +45,7 @@ class ShadowsPlugin implements Plugin<Project> {
         }
 
         project.tasks.named("sourcesJar").configure { task ->
+            task.from(generatedSrcDir)
             task.doLast {
                 def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
                 checkForFile(task.archivePath, "${shadowPackageNameDir}/Shadows.java")

@@ -5,7 +5,7 @@
 
 Robolectric is the industry-standard unit testing framework for Android. With Robolectric, your tests run in a simulated Android environment inside a JVM, without the overhead and flakiness of an emulator. Robolectric tests routinely run 10x faster than those on cold-started emulators.
 
-Robolectric supports running unit tests for *15* different versions of Android, ranging from KitKat (API level 19) to U (API level 34).
+Robolectric supports running unit tests for *14* different versions of Android, ranging from Lollipop (API level 21) to U (API level 34).
 
 ## Usage
 
@@ -40,12 +40,15 @@ If you'd like to start a new project with Robolectric tests you can refer to `de
 
 ```groovy
 testImplementation "junit:junit:4.13.2"
-testImplementation "org.robolectric:robolectric:4.11.1"
+testImplementation "org.robolectric:robolectric:4.12.2"
 ```
 
 ## Building And Contributing
 
 Robolectric is built using Gradle. Both IntelliJ and Android Studio can import the top-level `build.gradle` file and will automatically generate their project files from it.
+
+To get a high-level overview of Robolectric's architecture, check out
+[ARCHITECTURE.md](ARCHITECTURE.md).
 
 ### Prerequisites
 
@@ -67,7 +70,7 @@ Run tests for all API levels:
 
 Run tests for part of supported API levels, e.g. run tests for API level 26, 27, 28:
 
-    ./gradlew test --parallel -Drobolectric.enabledSdks=26,27,28
+    ./gradlew test --parallel "-Drobolectric.enabledSdks=26,27,28"
 
 Run compatibility test suites on opening Emulator:
 
@@ -84,6 +87,6 @@ repositories {
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 dependencies {
-    testImplementation "org.robolectric:robolectric:4.12-SNAPSHOT"
+    testImplementation "org.robolectric:robolectric:4.13-SNAPSHOT"
 }
 ```

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.unmodifiableList;
@@ -26,7 +25,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Adds Robolectric support for BLE scanning. */
-@Implements(value = BluetoothLeScanner.class, minSdk = LOLLIPOP)
+@Implements(value = BluetoothLeScanner.class)
 public class ShadowBluetoothLeScanner {
   private List<ScanParams> activeScanParams = new ArrayList<>();
 

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.O;
 
@@ -58,6 +57,7 @@ public class ShadowAccountManager {
   private Handler mainHandler;
   private RoboAccountManagerFuture pendingAddFuture;
   private boolean authenticationErrorOnNextResponse = false;
+  private boolean securityErrorOnNextGetAccountsByTypeCall = false;
   private Intent removeAccountIntent;
 
   @Implementation
@@ -77,6 +77,11 @@ public class ShadowAccountManager {
 
   @Implementation
   protected Account[] getAccountsByType(String type) {
+    if (securityErrorOnNextGetAccountsByTypeCall) {
+      securityErrorOnNextGetAccountsByTypeCall = false;
+      throw new SecurityException();
+    }
+
     if (type == null) {
       return getAccounts();
     }
@@ -602,8 +607,10 @@ public class ShadowAccountManager {
     previousNames.put(account, previousName);
   }
 
-  /** @see #setPreviousAccountName(Account, String) */
-  @Implementation(minSdk = LOLLIPOP)
+  /**
+   * @see #setPreviousAccountName(Account, String)
+   */
+  @Implementation
   protected String getPreviousName(Account account) {
     return previousNames.get(account);
   }
@@ -746,6 +753,16 @@ public class ShadowAccountManager {
    */
   public void setAuthenticationErrorOnNextResponse(boolean authenticationErrorOnNextResponse) {
     this.authenticationErrorOnNextResponse = authenticationErrorOnNextResponse;
+  }
+
+  /**
+   * Sets flag which if {@code true} will cause an exception to be thrown by {@link
+   * #getAccountsByType}.
+   *
+   * @param shouldThrowException should an exception be thrown or not on the next method call.
+   */
+  public void setSecurityErrorOnNextGetAccountsByTypeCall(boolean shouldThrowException) {
+    this.securityErrorOnNextGetAccountsByTypeCall = shouldThrowException;
   }
 
   /**

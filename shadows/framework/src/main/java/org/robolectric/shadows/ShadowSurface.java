@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
+
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -13,7 +13,6 @@ import dalvik.system.CloseGuard;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -113,13 +112,8 @@ public class ShadowSurface {
       throw new IllegalStateException("Canvas is not locked!");
     }
     if (surfaceTexture != null) {
-      if (RuntimeEnvironment.getApiLevel() > KITKAT) {
-        reflector(SurfaceTextureReflector.class, surfaceTexture)
-            .postEventFromNative(new WeakReference<>(surfaceTexture));
-      } else {
-        reflector(SurfaceTextureReflector.class, surfaceTexture)
-            .postEventFromNative((Object) new WeakReference<>(surfaceTexture));
-      }
+      reflector(SurfaceTextureReflector.class, surfaceTexture)
+          .postEventFromNative(new WeakReference<>(surfaceTexture));
     }
     if (canvas != null && canvas.isHardwareAccelerated()) {
       surfaceReflector.unlockCanvasAndPost(canvas);

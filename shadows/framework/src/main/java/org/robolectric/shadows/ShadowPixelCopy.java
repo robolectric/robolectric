@@ -25,6 +25,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowWindowManagerGlobal.WindowManagerGlobalReflector;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
@@ -84,16 +85,7 @@ public class ShadowPixelCopy {
     if (srcRect != null && srcRect.isEmpty()) {
       throw new IllegalArgumentException("sourceRect is empty");
     }
-    View view = source.getDecorView();
-    Rect adjustedSrcRect = null;
-    if (srcRect != null) {
-      adjustedSrcRect = new Rect(srcRect);
-      int[] locationInWindow = new int[2];
-      view.getLocationInWindow(locationInWindow);
-      // offset the srcRect by the decor view's location in the window
-      adjustedSrcRect.offset(-locationInWindow[0], -locationInWindow[1]);
-    }
-    takeScreenshot(view, dest, adjustedSrcRect);
+    takeScreenshot(source.getDecorView(), dest, srcRect);
     alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
   }
 
@@ -167,11 +159,19 @@ public class ShadowPixelCopy {
 
     Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
 
-    if (HardwareRenderingScreenshot.canTakeScreenshot()) {
-      HardwareRenderingScreenshot.takeScreenshot(view, bitmap);
+    if (HardwareRenderingScreenshot.canTakeScreenshot(view)) {
+      PerfStatsCollector.getInstance()
+          .measure(
+              "ShadowPixelCopy-Hardware",
+              () -> HardwareRenderingScreenshot.takeScreenshot(view, bitmap));
     } else {
-      Canvas screenshotCanvas = new Canvas(bitmap);
-      view.draw(screenshotCanvas);
+      PerfStatsCollector.getInstance()
+          .measure(
+              "ShadowPixelCopy-Software",
+              () -> {
+                Canvas screenshotCanvas = new Canvas(bitmap);
+                view.draw(screenshotCanvas);
+              });
     }
 
     Rect dst = new Rect(0, 0, screenshot.getWidth(), screenshot.getHeight());

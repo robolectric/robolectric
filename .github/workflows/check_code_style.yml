@@ -55,6 +55,6 @@ jobs:
         run: |
           ./gradlew spotlessCheck
 
-      - name: Check Kotlin Code Style
+      - name: Check Kotlin Quality
         run: |
           ./gradlew detekt

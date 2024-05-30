@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -55,6 +56,14 @@ public final class ShadowLinuxTest {
   public void getStat_returnCorrectModifiedTime() throws Exception {
     StructStat stat = shadowLinux.stat(path);
     assertThat(stat.st_mtime).isEqualTo(Duration.ofMillis(file.lastModified()).getSeconds());
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void memfdCreate_returnNoneNullFileDescriptor() throws Exception {
+    FileDescriptor arscFile =
+        shadowLinux.memfd_create("remote_views_theme_colors.arsc", /* flags= */ 0);
+    assertThat(arscFile).isNotNull();
   }
 
   @Test

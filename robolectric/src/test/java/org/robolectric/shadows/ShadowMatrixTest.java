@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.Matrix;
@@ -9,7 +8,6 @@ import android.graphics.RectF;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
@@ -111,7 +109,6 @@ public class ShadowMatrixTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void testIsAffine() {
     final Matrix matrix = new Matrix();
     assertThat(matrix.isAffine()).isTrue();

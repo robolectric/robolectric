@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -46,7 +45,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = TelecomManager.class, minSdk = LOLLIPOP)
+@Implements(value = TelecomManager.class)
 public class ShadowTelecomManager {
 
   /**
@@ -97,6 +96,7 @@ public class ShadowTelecomManager {
   private boolean callPhonePermission = true;
   private boolean handleMmiValue = false;
   private ConnectionService connectionService;
+  private boolean isOutgoingCallPermitted = false;
 
   public CallRequestMode getCallRequestMode() {
     return callRequestMode;
@@ -117,6 +117,11 @@ public class ShadowTelecomManager {
   /** Remove default outgoing phone account for corresponding {@code uriScheme}. */
   public void removeDefaultOutgoingPhoneAccount(String uriScheme) {
     defaultOutgoingPhoneAccounts.remove(uriScheme);
+  }
+
+  /** Sets the result of {@link TelecomManager#isOutgoingCallPermitted(PhoneAccountHandle)}. */
+  public void setIsOutgoingCallPermitted(boolean isOutgoingCallPermitted) {
+    this.isOutgoingCallPermitted = isOutgoingCallPermitted;
   }
 
   /**
@@ -728,6 +733,11 @@ public class ShadowTelecomManager {
       intent.setData(Uri.parse("tel:" + number));
     }
     return intent;
+  }
+
+  @Implementation(minSdk = O)
+  protected boolean isOutgoingCallPermitted(PhoneAccountHandle phoneAccountHandle) {
+    return this.isOutgoingCallPermitted;
   }
 
   /**

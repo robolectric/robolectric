@@ -30,7 +30,6 @@ import org.robolectric.shadows.ShadowNativeFont.Picker;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link Font} that is backed by native code */
 @Implements(
@@ -40,14 +39,6 @@ import org.robolectric.versioning.AndroidVersions.V;
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
 public class ShadowNativeFont {
-
-  /**
-   * {@link android.graphics.fonts.Font} invokes its own native methods in its static initializer.
-   * This must be deferred starting in Android V.
-   */
-  @Implementation(minSdk = V.SDK_INT)
-  protected static void __staticInitializer__() {}
-
   @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static long nGetMinikinFontPtr(long font) {
     return FontNatives.nGetMinikinFontPtr(font);

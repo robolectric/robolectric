@@ -16,18 +16,18 @@ dependencies {
     api project(":annotations")
     api libs.guava
 
-    compileOnly libs.bundles.play.services.base.for.shadows
+    compileOnly libs.bundles.play.services.for.shadows
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
-    testCompileOnly libs.bundles.play.services.base.for.shadows
+    testCompileOnly libs.bundles.play.services.for.shadows
 
     testImplementation project(":robolectric")
     testImplementation libs.junit4
     testImplementation libs.truth
     testImplementation libs.mockito
-    testRuntimeOnly libs.bundles.play.services.base.for.shadows
+    testRuntimeOnly libs.bundles.play.services.for.shadows
 
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
 }

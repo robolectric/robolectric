@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -16,13 +14,7 @@ public class ShadowPicture {
   private int height;
   private static long nativePtr = 0;
 
-  @Implementation(maxSdk = KITKAT)
-  protected static int nativeConstructor(int nativeSrc) {
-    // just return a non zero value, so it appears that native allocation was successful
-    return (int) nativeConstructor((long) nativeSrc);
-  }
-
-  @Implementation(minSdk = KITKAT_WATCH)
+  @Implementation
   protected static long nativeConstructor(long nativeSrc) {
     // just return a non zero value, so it appears that native allocation was successful
     return ++nativePtr;

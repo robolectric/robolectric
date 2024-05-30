@@ -1,10 +1,9 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.PendingIntent;
@@ -65,20 +64,18 @@ public class ShadowConnectivityManager {
 
     this.activeNetworkInfo = mobile;
 
-    if (getApiLevel() >= LOLLIPOP) {
-      netIdToNetwork.put(NET_ID_WIFI, ShadowNetwork.newInstance(NET_ID_WIFI));
-      netIdToNetwork.put(NET_ID_MOBILE, ShadowNetwork.newInstance(NET_ID_MOBILE));
-      netIdToNetworkInfo.put(NET_ID_WIFI, wifi);
-      netIdToNetworkInfo.put(NET_ID_MOBILE, mobile);
+    netIdToNetwork.put(NET_ID_WIFI, ShadowNetwork.newInstance(NET_ID_WIFI));
+    netIdToNetwork.put(NET_ID_MOBILE, ShadowNetwork.newInstance(NET_ID_MOBILE));
+    netIdToNetworkInfo.put(NET_ID_WIFI, wifi);
+    netIdToNetworkInfo.put(NET_ID_MOBILE, mobile);
 
-      NetworkCapabilities wifiNetworkCapabilities = ShadowNetworkCapabilities.newInstance();
-      shadowOf(wifiNetworkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
-      NetworkCapabilities mobileNetworkCapabilities = ShadowNetworkCapabilities.newInstance();
-      shadowOf(mobileNetworkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+    NetworkCapabilities wifiNetworkCapabilities = ShadowNetworkCapabilities.newInstance();
+    shadowOf(wifiNetworkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+    NetworkCapabilities mobileNetworkCapabilities = ShadowNetworkCapabilities.newInstance();
+    shadowOf(mobileNetworkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
 
-      networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_WIFI), wifiNetworkCapabilities);
-      networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_MOBILE), mobileNetworkCapabilities);
-    }
+    networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_WIFI), wifiNetworkCapabilities);
+    networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_MOBILE), mobileNetworkCapabilities);
     defaultNetworkActive = true;
   }
 
@@ -98,7 +95,7 @@ public class ShadowConnectivityManager {
     return new HashMap<>(reportedNetworkConnectivity);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void registerNetworkCallback(
       NetworkRequest request, ConnectivityManager.NetworkCallback networkCallback) {
     registerNetworkCallback(request, networkCallback, null);
@@ -117,7 +114,7 @@ public class ShadowConnectivityManager {
     networkCallbackPendingIntents.add(pendingIntent);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void requestNetwork(
       NetworkRequest request, ConnectivityManager.NetworkCallback networkCallback) {
     registerNetworkCallback(request, networkCallback);
@@ -152,7 +149,21 @@ public class ShadowConnectivityManager {
     networkCallbacks.add(networkCallback);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = O)
+  protected void registerDefaultNetworkCallback(
+      ConnectivityManager.NetworkCallback networkCallback, Handler handler) {
+    networkCallbacks.add(networkCallback);
+  }
+
+  @Implementation(minSdk = S)
+  protected void registerBestMatchingNetworkCallback(
+      NetworkRequest request,
+      ConnectivityManager.NetworkCallback networkCallback,
+      Handler handler) {
+    networkCallbacks.add(networkCallback);
+  }
+
+  @Implementation
   protected void unregisterNetworkCallback(ConnectivityManager.NetworkCallback networkCallback) {
     if (networkCallback == null) {
       throw new IllegalArgumentException("Invalid NetworkCallback");
@@ -209,7 +220,7 @@ public class ShadowConnectivityManager {
     return networkTypeToNetworkInfo.get(networkType);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected NetworkInfo getNetworkInfo(Network network) {
     if (network == null) {
       return null;
@@ -218,7 +229,7 @@ public class ShadowConnectivityManager {
     return netIdToNetworkInfo.get(shadowNetwork.getNetId());
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected Network[] getAllNetworks() {
     return netIdToNetwork.values().toArray(new Network[netIdToNetwork.size()]);
   }
@@ -293,23 +304,14 @@ public class ShadowConnectivityManager {
   }
 
   public void setActiveNetworkInfo(NetworkInfo info) {
-    if (getApiLevel() >= LOLLIPOP) {
-      activeNetworkInfo = info;
-      if (info != null) {
-        networkTypeToNetworkInfo.put(info.getType(), info);
-        netIdToNetwork.put(info.getType(), ShadowNetwork.newInstance(info.getType()));
-        netIdToNetworkInfo.put(info.getType(), info);
-      } else {
-        networkTypeToNetworkInfo.clear();
-        netIdToNetwork.clear();
-      }
+    activeNetworkInfo = info;
+    if (info != null) {
+      networkTypeToNetworkInfo.put(info.getType(), info);
+      netIdToNetwork.put(info.getType(), ShadowNetwork.newInstance(info.getType()));
+      netIdToNetworkInfo.put(info.getType(), info);
     } else {
-      activeNetworkInfo = info;
-      if (info != null) {
-        networkTypeToNetworkInfo.put(info.getType(), info);
-      } else {
-        networkTypeToNetworkInfo.clear();
-      }
+      networkTypeToNetworkInfo.clear();
+      netIdToNetwork.clear();
     }
   }
 
@@ -374,17 +376,18 @@ public class ShadowConnectivityManager {
    * @return true by default, or the value specifed via {@link #setDefaultNetworkActive(boolean)}
    * @see #setDefaultNetworkActive(boolean)
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean isDefaultNetworkActive() {
     return defaultNetworkActive;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
-  protected void addDefaultNetworkActiveListener(final ConnectivityManager.OnNetworkActiveListener l) {
+  @Implementation
+  protected void addDefaultNetworkActiveListener(
+      final ConnectivityManager.OnNetworkActiveListener l) {
     onNetworkActiveListeners.add(l);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void removeDefaultNetworkActiveListener(ConnectivityManager.OnNetworkActiveListener l) {
     if (l == null) {
       throw new IllegalArgumentException("Invalid OnNetworkActiveListener");
@@ -406,7 +409,7 @@ public class ShadowConnectivityManager {
    * @return The {@link android.net.NetworkCapabilities} for the network.
    * @see #setNetworkCapabilities(Network, NetworkCapabilities)
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected NetworkCapabilities getNetworkCapabilities(Network network) {
     return networkCapabilitiesMap.get(network);
   }
@@ -432,8 +435,10 @@ public class ShadowConnectivityManager {
     ShadowSettings.setAirplaneMode(enable);
   }
 
-  /** @see #setLinkProperties(Network, LinkProperties) */
-  @Implementation(minSdk = LOLLIPOP)
+  /**
+   * @see #setLinkProperties(Network, LinkProperties)
+   */
+  @Implementation
   protected LinkProperties getLinkProperties(Network network) {
     return linkPropertiesMap.get(network);
   }

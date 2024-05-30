@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -162,7 +161,7 @@ public class ShadowWifiManager {
     return wifiInfo;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean is5GHzBandSupported() {
     return is5GHzBandSupported;
   }
@@ -264,7 +263,7 @@ public class ShadowWifiManager {
     return wifiConfigurations;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected List<WifiConfiguration> getPrivilegedConfiguredNetworks() {
     return getConfiguredNetworks();
   }

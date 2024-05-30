@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -520,7 +519,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldCallFinishOnFinishAndRemoveTask() {
     Activity activity = new Activity();
     activity.finishAndRemoveTask();
@@ -1312,7 +1310,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void lockTask() {
     Activity activity = Robolectric.setupActivity(Activity.class);
 
@@ -1502,6 +1499,21 @@ public class ShadowActivityTest {
       assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
           .isEqualTo(Display.DEFAULT_DISPLAY);
     }
+  }
+
+  @Test
+  public void buildActivity_abstractActivityClass_throwsRuntimeException() {
+    Throwable throwable =
+        assertThrows(
+            RuntimeException.class,
+            () -> {
+              ActivityController<AbstractTestActivity> controller =
+                  Robolectric.buildActivity(AbstractTestActivity.class, null);
+              // This line will not be executed.
+              assertThat(controller).isNull();
+            });
+    assertThat(throwable.getMessage())
+        .isEqualTo("buildActivity must be called with non-abstract class");
   }
 
   @Test
@@ -1779,6 +1791,9 @@ public class ShadowActivityTest {
       transcript.add("onActivityDestroyed");
     }
   }
+
+  /** Test Activity for abstract checking scenario. */
+  abstract static class AbstractTestActivity extends Activity {}
 
   /** Activity for testing */
   public static class TestActivityWithAnotherTheme

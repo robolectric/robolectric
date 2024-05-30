@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.robolectric.testapp"
-    android:versionCode="123"
-    android:versionName="aVersionName">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
         android:theme="@style/Theme.Robolectric" android:enabled="true">

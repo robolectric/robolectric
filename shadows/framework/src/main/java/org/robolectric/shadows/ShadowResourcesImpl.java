@@ -6,15 +6,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-import org.robolectric.shadows.ShadowLegacyResourcesImpl.ShadowLegacyThemeImpl;
 
 abstract public class ShadowResourcesImpl {
 
   public static class Picker extends ResourceModeShadowPicker<ShadowResourcesImpl> {
 
     public Picker() {
-      super(ShadowLegacyResourcesImpl.class, ShadowArscResourcesImpl.class,
-          ShadowArscResourcesImpl.class);
+      super(ShadowArscResourcesImpl.class, ShadowArscResourcesImpl.class);
     }
   }
 
@@ -46,14 +44,5 @@ abstract public class ShadowResourcesImpl {
       }
     }
     return resettableArrays;
-  }
-
-  abstract public static class ShadowThemeImpl {
-    public static class Picker extends ResourceModeShadowPicker<ShadowThemeImpl> {
-
-      public Picker() {
-        super(ShadowLegacyThemeImpl.class, null, null);
-      }
-    }
   }
 }

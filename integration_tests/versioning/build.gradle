@@ -1,0 +1,20 @@
+import org.robolectric.gradle.DeployedRoboJavaModulePlugin
+import org.robolectric.gradle.RoboJavaModulePlugin
+
+apply plugin: RoboJavaModulePlugin
+apply plugin: DeployedRoboJavaModulePlugin
+
+configurations {
+    earlyRuntime
+}
+
+dependencies {
+    compileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK (AndroidSdk.s.coordinates) { force = true }
+    testImplementation project(":robolectric")
+    testImplementation libs.truth
+    testImplementation "androidx.test.ext:junit:$axtJunitVersion@aar"
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
+    testRuntimeOnly AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
+}
+
+

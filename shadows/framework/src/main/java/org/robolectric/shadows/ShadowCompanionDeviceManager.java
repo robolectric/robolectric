@@ -282,7 +282,8 @@ public class ShadowCompanionDeviceManager {
         info.isNotifyOnDeviceNearby(),
         revoked,
         info.getTimeApprovedMs(),
-        info.getLastTimeConnectedMs(),
+        // return value of getLastTimeConnectedMs changed from a long to a Long
+        (long) ReflectionHelpers.callInstanceMethod(info, "getLastTimeConnectedMs"),
         systemDataSyncFlags);
   }
 
@@ -344,7 +345,7 @@ public class ShadowCompanionDeviceManager {
           .setRevoked(false)
           .setAssociatedDevice(null)
           .setTimeApprovedMs(0)
-          .setLastTimeConnectedMs(0)
+          .setLastTimeConnectedMs(0L)
           .setSystemDataSyncFlags(DEFAULT_SYSTEMDATASYNCFLAGS);
     }
 

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -9,7 +8,6 @@ import android.text.format.Time;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowTimeTest {
@@ -63,21 +61,6 @@ public class ShadowTimeTest {
 
     // Escape.
     assertEquals("%", t.format("%%"));
-  }
-
-  @Test
-  @Config(maxSdk = KITKAT_WATCH)
-  // these fail on LOLLIPOP+; is the shadow impl of format correct for pre-LOLLIPOP?
-  public void shouldFormatAllFormats_withQuestionableResults() {
-    Time t = new Time("Asia/Tokyo");
-    t.set(1407496560000L);
-
-    assertEquals("08/08/2014", t.format("%x"));
-    assertEquals("08:16:00 PM", t.format("%X"));
-
-    // Case.
-    assertEquals("PM", t.format("%^P"));
-    assertEquals("PM", t.format("%#P"));
   }
 
   @Test

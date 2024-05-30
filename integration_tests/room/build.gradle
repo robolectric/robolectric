@@ -8,7 +8,7 @@ android {
     namespace 'org.robolectric.integrationtests.room'
 
     defaultConfig {
-        minSdk 19
+        minSdk 21
         targetSdk 34
     }
 
@@ -29,7 +29,6 @@ dependencies {
     testImplementation project(":testapp")
     testImplementation project(":robolectric")
     testImplementation libs.junit4
-    testImplementation libs.guava.testlib
     testImplementation libs.guava.testlib
     testImplementation libs.truth
     implementation libs.androidx.room.runtime

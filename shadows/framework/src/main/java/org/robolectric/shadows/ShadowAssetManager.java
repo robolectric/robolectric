@@ -5,6 +5,7 @@ import android.content.res.ApkAssets;
 import android.content.res.AssetManager;
 import android.util.ArraySet;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Ordering;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
@@ -13,7 +14,6 @@ import org.robolectric.res.android.AssetPath;
 import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.ResTable;
 import org.robolectric.res.android.String8;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -21,32 +21,29 @@ import org.robolectric.util.reflector.Static;
 
 abstract public class ShadowAssetManager {
 
+  public static final Ordering<String> ATTRIBUTE_TYPE_PRECIDENCE =
+      Ordering.explicit(
+          "reference",
+          "color",
+          "boolean",
+          "integer",
+          "fraction",
+          "dimension",
+          "float",
+          "enum",
+          "flag",
+          "flags",
+          "string");
+
   public static class Picker extends ResourceModeShadowPicker<ShadowAssetManager> {
 
     public Picker() {
       super(
-          ShadowLegacyAssetManager.class,
           ShadowArscAssetManager.class,
           ShadowArscAssetManager9.class,
           ShadowArscAssetManager10.class,
           ShadowArscAssetManager14.class);
     }
-  }
-
-  /**
-   * @deprecated Avoid use.
-   */
-  @Deprecated
-  public static boolean useLegacy() {
-    return RuntimeEnvironment.useLegacyResources();
-  }
-
-  /**
-   * @deprecated Avoid use.
-   */
-  @Deprecated
-  static ShadowLegacyAssetManager legacyShadowOf(AssetManager assetManager) {
-    return Shadow.extract(assetManager);
   }
 
   abstract Collection<Path> getAllAssetDirs();

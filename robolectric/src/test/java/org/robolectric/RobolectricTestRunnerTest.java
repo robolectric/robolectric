@@ -31,6 +31,7 @@ import javax.inject.Named;
 import org.junit.After;
 import org.junit.AssumptionViolatedException;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -42,11 +43,9 @@ import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
-import org.junit.runners.model.FrameworkMethod;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Config.Implementation;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
@@ -140,20 +139,6 @@ public class RobolectricTestRunnerTest {
             "ignored: second: Failed to create a Robolectric sandbox: unsupported",
             "finished: second")
         .inOrder();
-  }
-
-  @Test
-  public void supportsOldGetConfigUntil4dot3() throws Exception {
-    Implementation overriddenConfig = Config.Builder.defaults().build();
-    List<FrameworkMethod> children = new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class) {
-      @Override
-      public Config getConfig(Method method) {
-        return overriddenConfig;
-      }
-    }.getChildren();
-    Config config = ((RobolectricFrameworkMethod) children.get(0))
-        .getConfiguration().get(Config.class);
-    assertThat(config).isSameInstanceAs(overriddenConfig);
   }
 
   @Test
@@ -528,5 +513,24 @@ public class RobolectricTestRunnerTest {
       }
       events.add("failure: " + message);
     }
+  }
+
+  @Test
+  public void shouldReportExceptionsInBeforeClass() throws Exception {
+    RobolectricTestRunner runner =
+        new SingleSdkRobolectricTestRunner(TestWithBeforeClassThatThrowsRuntimeException.class);
+    runner.run(notifier);
+    assertThat(events.get(1)).startsWith("failure: fail");
+  }
+
+  @Ignore
+  public static class TestWithBeforeClassThatThrowsRuntimeException {
+    @BeforeClass
+    public static void beforeClass() {
+      throw new RuntimeException("fail");
+    }
+
+    @Test
+    public void test() {}
   }
 }

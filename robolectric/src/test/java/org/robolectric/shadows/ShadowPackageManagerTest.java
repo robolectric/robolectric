@@ -32,7 +32,6 @@ import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
 import static android.content.pm.PackageManager.VERIFICATION_REJECT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -44,7 +43,6 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
-import static com.google.common.truth.TruthJUnit.assume;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -181,7 +179,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void packageInstallerCreateSession() throws Exception {
     PackageInstaller packageInstaller = context.getPackageManager().getPackageInstaller();
     int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
@@ -197,7 +194,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void packageInstallerOpenSession() throws Exception {
     PackageInstaller packageInstaller = context.getPackageManager().getPackageInstaller();
     int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
@@ -1421,7 +1417,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void queryIntentActivities_appHidden_includeUninstalled() {
     String packageName = context.getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
@@ -1439,7 +1434,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void queryIntentActivities_appHidden_dontIncludeUninstalled() {
     String packageName = context.getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
@@ -1671,7 +1665,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void queryIntentServices_appHidden_includeUninstalled() {
     String packageName = context.getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
@@ -1687,7 +1680,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void queryIntentServices_appHidden_dontIncludeUninstalled() {
     String packageName = context.getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
@@ -1746,7 +1738,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void queryBroadcastReceivers_appHidden_includeUninstalled() {
     String packageName = context.getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
@@ -1764,7 +1755,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void queryBroadcastReceivers_appHidden_dontIncludeUninstalled() {
     String packageName = context.getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
@@ -1777,7 +1767,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void queryIntentContentProviders_EmptyResult() {
     Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
 
@@ -1786,7 +1775,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void queryIntentContentProviders_Match() {
     Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
 
@@ -1803,7 +1791,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void queryIntentContentProviders_MatchSystemOnly() {
     Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
 
@@ -1828,7 +1815,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void queryIntentContentProviders_MatchDisabledComponents() {
     Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
 
@@ -1852,7 +1838,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void queryIntentContentProviders_appHidden_includeUninstalled() {
     String packageName = context.getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
@@ -2403,7 +2388,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void testLeanbackLaunchIntentForPackage() {
     Intent intent = packageManager.getLeanbackLaunchIntentForPackage(TEST_PACKAGE_LABEL);
     assertThat(intent).isNull();
@@ -2773,8 +2757,6 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getResourcesForApplication_ApkNotInstalled() throws NameNotFoundException {
-    assume().that(RuntimeEnvironment.useLegacyResources()).isFalse();
-
     File testApk = TestUtil.resourcesBaseDir().resolve(REAL_TEST_APP_ASSET_PATH).toFile();
 
     PackageInfo packageInfo = packageManager.getPackageArchiveInfo(testApk.getAbsolutePath(), 0);
@@ -3355,6 +3337,14 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void getInstallerSourceInfo_notExists_throwsException() throws Exception {
+    assertThrows(
+        NameNotFoundException.class,
+        () -> packageManager.getInstallSourceInfo("nonExistTarget.package"));
+  }
+
+  @Test
   public void getXml() {
     XmlResourceParser in =
         packageManager.getXml(
@@ -3363,7 +3353,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void addPackageShouldNotCreateSessions() {
 
     PackageInfo packageInfo = new PackageInfo();
@@ -3718,7 +3707,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getApplicationHiddenSettingAsUser_hidden() {
     String packageName = context.getPackageName();
 
@@ -3730,7 +3718,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getApplicationHiddenSettingAsUser_notHidden() {
     String packageName = context.getPackageName();
 
@@ -3739,14 +3726,12 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getApplicationHiddenSettingAsUser_unknownPackage() {
     assertThat(packageManager.getApplicationHiddenSettingAsUser("not.a.package", /* user= */ null))
         .isTrue();
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setApplicationHiddenSettingAsUser_includeUninstalled() throws Exception {
     String packageName = context.getPackageName();
 
@@ -3763,7 +3748,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setApplicationHiddenSettingAsUser_dontIncludeUninstalled() {
     String packageName = context.getPackageName();
 

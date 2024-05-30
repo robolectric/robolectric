@@ -20,6 +20,9 @@ public class AssetDir {
  * Vector-style access.
  */
   public int getFileCount() {
+    if (mFileInfo == null) {
+      return 0;
+    }
     return mFileInfo.size();
   }
 

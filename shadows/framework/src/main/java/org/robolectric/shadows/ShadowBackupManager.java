@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 
 import android.app.backup.BackupManager;
+import android.app.backup.BackupTransport;
 import android.app.backup.IBackupManagerMonitor;
 import android.app.backup.IRestoreObserver;
 import android.app.backup.IRestoreSession;
@@ -14,6 +14,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,8 +35,9 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * A stub implementation of {@link BackupManager} that instead of connecting to a real backup
- * transport and performing restores, stores which packages are restored from which backup set, and
- * can be verified using methods on the shadow like {@link #getPackageRestoreToken(String)}.
+ * transport and performing restores, stores which packages are restored from which backup set, what
+ * the final result should be and can be verified using methods on the shadow like {@link
+ * #getPackageRestoreToken(String)} and {@link #getPackageRestoreCount(String)}.
  */
 @Implements(BackupManager.class)
 public class ShadowBackupManager {
@@ -71,14 +74,14 @@ public class ShadowBackupManager {
     return serviceState.dataChangedCount.getOrDefault(context.getPackageName(), 0);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi // SystemApi
   protected void setBackupEnabled(boolean isEnabled) {
     enforceBackupPermission("setBackupEnabled");
     serviceState.backupEnabled = isEnabled;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi // SystemApi
   protected boolean isBackupEnabled() {
     enforceBackupPermission("isBackupEnabled");
@@ -103,16 +106,36 @@ public class ShadowBackupManager {
   }
 
   /**
-   * Returns the restore token for the given package, or {@code 0} if the package was not restored.
+   * Returns the last recorded restore token for the given package, or {@code 0} if the package was
+   * not restored.
    */
   public long getPackageRestoreToken(String packageName) {
-    Long token = serviceState.restoredPackages.get(packageName);
-    return token != null ? token : 0L;
+    List<Long> result = serviceState.restoredPackages.get(packageName);
+    return result.isEmpty() ? 0L : result.get(result.size() - 1);
   }
 
-  /** Adds a restore set available to be restored. */
+  /** Returns the number of recorded restores for the given package. */
+  public int getPackageRestoreCount(String packageName) {
+    return serviceState.restoredPackages.get(packageName).size();
+  }
+
+  /** Adds a restore set available to be restored successfully. */
   public void addAvailableRestoreSets(long restoreToken, List<String> packages) {
-    serviceState.restoreData.put(restoreToken, packages);
+    addAvailableRestoreSets(restoreToken, packages, BackupTransport.TRANSPORT_OK);
+  }
+
+  /** Adds a restore set available to be restored and the final result of the restore session. */
+  public void addAvailableRestoreSets(long restoreToken, List<String> packages, int result) {
+    serviceState.restoreData.put(restoreToken, new RestoreData(packages, result));
+  }
+
+  /**
+   * Causes the {@link IRestoreObserver#restoreSetsAvailable} callback to receive {@code null},
+   * regardless of whether any restore sets were added to this shadow. Can be used to simulate a
+   * failure by the transport to fetch available restore sets.
+   */
+  public void setNullAvailableRestoreSets(boolean value) {
+    serviceState.nullRestoreData = value;
   }
 
   private void enforceBackupPermission(String message) {
@@ -132,12 +155,17 @@ public class ShadowBackupManager {
         throws RemoteException {
       post(
           () -> {
+            if (serviceState.nullRestoreData) {
+              observer.restoreSetsAvailable(null);
+              return;
+            }
+
             Set<Long> restoreTokens = serviceState.restoreData.keySet();
             Set<RestoreSet> restoreSets = new HashSet<>();
             for (long token : restoreTokens) {
               restoreSets.add(new RestoreSet("RestoreSet-" + token, "device", token));
             }
-            observer.restoreSetsAvailable(restoreSets.toArray(new RestoreSet[restoreSets.size()]));
+            observer.restoreSetsAvailable(restoreSets.toArray(new RestoreSet[0]));
           });
       return BackupManager.SUCCESS;
     }
@@ -166,10 +194,12 @@ public class ShadowBackupManager {
       return restorePackages(token, observer, packages, monitor);
     }
 
+    @Override
     public int restorePackages(
         long token, IRestoreObserver observer, String[] packages, IBackupManagerMonitor monitor)
         throws RemoteException {
-      List<String> restorePackages = new ArrayList<>(serviceState.restoreData.get(token));
+      RestoreData restoreData = serviceState.takeRestoreData(token);
+      List<String> restorePackages = new ArrayList<>(restoreData.packages);
       if (packages != null) {
         restorePackages.retainAll(Arrays.asList(packages));
       }
@@ -179,7 +209,7 @@ public class ShadowBackupManager {
         post(() -> observer.onUpdate(index, restorePackages.get(index)));
         serviceState.restoredPackages.put(restorePackages.get(index), token);
       }
-      post(() -> observer.restoreFinished(BackupManager.SUCCESS));
+      post(() -> observer.restoreFinished(restoreData.result));
       serviceState.lastRestoreToken = token;
       return BackupManager.SUCCESS;
     }
@@ -197,14 +227,15 @@ public class ShadowBackupManager {
       if (serviceState.lastRestoreToken == 0L) {
         return -1;
       }
-      List<String> restorePackages = serviceState.restoreData.get(serviceState.lastRestoreToken);
+      RestoreData restoreData = serviceState.takeRestoreData(serviceState.lastRestoreToken);
+      List<String> restorePackages = new ArrayList<>(restoreData.packages);
       if (!restorePackages.contains(packageName)) {
         return BackupManager.ERROR_PACKAGE_NOT_FOUND;
       }
       post(() -> observer.restoreStarting(1));
       post(() -> observer.onUpdate(0, packageName));
       serviceState.restoredPackages.put(packageName, serviceState.lastRestoreToken);
-      post(() -> observer.restoreFinished(BackupManager.SUCCESS));
+      post(() -> observer.restoreFinished(restoreData.result));
       return BackupManager.SUCCESS;
     }
 
@@ -233,10 +264,37 @@ public class ShadowBackupManager {
 
   private static class BackupManagerServiceState {
     boolean backupEnabled = true;
+    boolean nullRestoreData;
     long lastRestoreToken = 0L;
     final Map<String, Integer> dataChangedCount = new HashMap<>();
-    final Map<Long, List<String>> restoreData = new HashMap<>();
-    final Map<String, Long> restoredPackages = new HashMap<>();
+    final ListMultimap<Long, RestoreData> restoreData = ArrayListMultimap.create();
+    final ListMultimap<String, Long> restoredPackages = ArrayListMultimap.create();
+
+    /**
+     * Returns the first {@link RestoreData} matching the given token and removes it from the
+     * existing restore data if it's not the last one.
+     */
+    RestoreData takeRestoreData(long token) {
+      List<RestoreData> results = restoreData.get(token);
+      if (results.isEmpty()) {
+        return new RestoreData(new ArrayList<>(), -1);
+      }
+      RestoreData data = results.get(0);
+      if (results.size() > 1) {
+        restoreData.remove(token, data);
+      }
+      return data;
+    }
+  }
+
+  private static class RestoreData {
+    final List<String> packages;
+    final int result;
+
+    public RestoreData(List<String> packages, int result) {
+      this.packages = packages;
+      this.result = result;
+    }
   }
 
   private interface RemoteRunnable {

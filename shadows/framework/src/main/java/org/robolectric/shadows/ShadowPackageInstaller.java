@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
@@ -41,11 +39,11 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
 /** Shadow for PackageInstaller. */
-@Implements(value = PackageInstaller.class, minSdk = LOLLIPOP)
+@Implements(value = PackageInstaller.class)
 @SuppressLint("NewApi")
 public class ShadowPackageInstaller {
   /** Shadow for PackageInstaller.SessionInfo. */
-  @Implements(value = PackageInstaller.SessionInfo.class, minSdk = LOLLIPOP)
+  @Implements(value = PackageInstaller.SessionInfo.class)
   public static class ShadowSessionInfo {
     @RealObject private SessionInfo sessionInfo;
 
@@ -210,7 +208,7 @@ public class ShadowPackageInstaller {
     }
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void uninstall(String packageName, IntentSender statusReceiver) {
     uninstalledPackages.put(
         packageName,
@@ -329,7 +327,7 @@ public class ShadowPackageInstaller {
   }
 
   /** Shadow for PackageInstaller.Session. */
-  @Implements(value = PackageInstaller.Session.class, minSdk = LOLLIPOP)
+  @Implements(value = PackageInstaller.Session.class)
   public static class ShadowSession {
 
     private OutputStream outputStream;
@@ -340,8 +338,6 @@ public class ShadowPackageInstaller {
     private ShadowPackageInstaller shadowPackageInstaller;
     private PersistableBundle appMetadata = new PersistableBundle();
 
-    @Implementation(maxSdk = KITKAT_WATCH)
-    protected void __constructor__() {}
 
     @Implementation(minSdk = UPSIDE_DOWN_CAKE)
     protected void requestUserPreapproval(

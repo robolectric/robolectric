@@ -531,7 +531,7 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
   }
 
   @Implementation
-  protected final boolean isRecycled() {
+  protected boolean isRecycled() {
     return recycled;
   }
 
@@ -554,12 +554,12 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
   }
 
   @Implementation
-  protected final int getAllocationByteCount() {
+  protected int getAllocationByteCount() {
     return getRowBytes() * getHeight();
   }
 
   @Implementation
-  protected final Bitmap.Config getConfig() {
+  protected Bitmap.Config getConfig() {
     return config;
   }
 
@@ -569,7 +569,7 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
   }
 
   @Implementation
-  protected final boolean isMutable() {
+  protected boolean isMutable() {
     return mutable;
   }
 
@@ -594,7 +594,7 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
   }
 
   @Implementation
-  protected final boolean hasAlpha() {
+  protected boolean hasAlpha() {
     return hasAlpha && config != Bitmap.Config.RGB_565;
   }
 
@@ -621,12 +621,12 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
   }
 
   @Implementation
-  protected final boolean hasMipMap() {
+  protected boolean hasMipMap() {
     return hasMipMap;
   }
 
   @Implementation
-  protected final void setHasMipMap(boolean hasMipMap) {
+  protected void setHasMipMap(boolean hasMipMap) {
     this.hasMipMap = hasMipMap;
   }
 

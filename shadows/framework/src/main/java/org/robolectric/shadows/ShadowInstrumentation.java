@@ -361,8 +361,8 @@ public class ShadowInstrumentation {
     // The receiver must hold the permission specified by sendBroadcast, and the broadcaster must
     // hold the permission specified by registerReceiver.
     boolean hasPermissionFromManifest =
-        hasRequiredPermissionForBroadcast(wrapper.context, receiverPermission)
-            && hasRequiredPermissionForBroadcast(broadcastContext, wrapper.broadcastPermission);
+        hasRequiredPermission(wrapper.context, receiverPermission)
+            && hasRequiredPermission(broadcastContext, wrapper.broadcastPermission);
     // Many existing tests don't declare manifest permissions, relying on the old equality check.
     boolean hasPermissionForBackwardsCompatibility =
         TextUtils.equals(receiverPermission, wrapper.broadcastPermission);
@@ -379,8 +379,7 @@ public class ShadowInstrumentation {
   }
 
   /** A null {@code requiredPermission} indicates that no permission is required. */
-  private static boolean hasRequiredPermissionForBroadcast(
-      Context context, @Nullable String requiredPermission) {
+  static boolean hasRequiredPermission(Context context, @Nullable String requiredPermission) {
     if (requiredPermission == null) {
       return true;
     }
@@ -1062,7 +1061,6 @@ public class ShadowInstrumentation {
   /** Reflector interface for {@link Instrumentation}'s internals. */
   @ForType(Instrumentation.class)
   public interface _Instrumentation_ {
-    // > JELLY_BEAN_MR1:
     void init(
         ActivityThread thread,
         Context instrContext,

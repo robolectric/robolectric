@@ -51,7 +51,6 @@ dependencies {
     api project(":pluginapi")
     api project(":sandbox")
     api project(":shadowapi")
-    api project(":shadows:versioning")
     api project(":utils")
     api project(":utils:reflector")
 

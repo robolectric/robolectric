@@ -19,11 +19,6 @@ import org.robolectric.annotation.Config;
 /** Tests for {@link ShadowServiceManager}. */
 @RunWith(AndroidJUnit4.class)
 public final class ShadowServiceManagerTest {
-  
-  @Test
-  public void getService_available_shouldReturnNonNull() {
-    assertThat(ServiceManager.getService(Context.INPUT_METHOD_SERVICE)).isNotNull();
-  }
 
   @Test
   @Config(sdk = VERSION_CODES.S)
@@ -32,9 +27,27 @@ public final class ShadowServiceManagerTest {
   }
 
   @Test
-  public void getService_unavailableService_shouldReturnNull() {
+  public void getService_available_shouldReturnNonNull() {
+    assertThat(ServiceManager.getService(Context.INPUT_METHOD_SERVICE)).isNotNull();
+  }
+
+  @Test
+  public void getService_unavailable_shouldReturnNull() {
     ShadowServiceManager.setServiceAvailability(Context.INPUT_METHOD_SERVICE, false);
+
     assertThat(ServiceManager.getService(Context.INPUT_METHOD_SERVICE)).isNull();
+  }
+
+  @Test
+  public void checkService_available_shouldReturnNonNull() {
+    assertThat(ServiceManager.checkService(Context.INPUT_METHOD_SERVICE)).isNotNull();
+  }
+
+  @Test
+  public void checkService_unavailable_shouldReturnNull() {
+    ShadowServiceManager.setServiceAvailability(Context.INPUT_METHOD_SERVICE, false);
+
+    assertThat(ServiceManager.checkService(Context.INPUT_METHOD_SERVICE)).isNull();
   }
 
   @Test

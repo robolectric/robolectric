@@ -8,7 +8,6 @@ import static org.junit.Assert.fail;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.os.Build.VERSION_CODES;
 import android.view.View;
 import android.widget.TextView;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -33,7 +32,7 @@ public class QualifiersTest {
   public void testDefaultQualifiers() throws Exception {
     assertThat(RuntimeEnvironment.getQualifiers())
         .isEqualTo(
-            "en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v26");
+            "en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
   @Test
@@ -41,7 +40,7 @@ public class QualifiersTest {
   public void testDefaultQualifiers_withoutRegion() throws Exception {
     assertThat(RuntimeEnvironment.getQualifiers())
         .isEqualTo(
-            "en-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v26");
+            "en-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
   @Test
@@ -97,7 +96,8 @@ public class QualifiersTest {
     assertThat(resources.getConfiguration().smallestScreenWidthDp).isEqualTo(720);
   }
 
-  @Test @Config(qualifiers = "b+sr+Latn", minSdk = VERSION_CODES.LOLLIPOP)
+  @Test
+  @Config(qualifiers = "b+sr+Latn")
   public void supportsBcp47() throws Exception {
     assertThat(resources.getString(R.string.hello)).isEqualTo("Zdravo");
   }

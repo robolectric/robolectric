@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -51,7 +50,7 @@ public class ShadowAccessibilityService extends ShadowService {
   private boolean isScreenshotError = false;
 
   @Implementation
-  protected final boolean performGlobalAction(int action) {
+  protected boolean performGlobalAction(int action) {
     globalActionsPerformed.add(action);
     return true;
   }
@@ -61,7 +60,7 @@ public class ShadowAccessibilityService extends ShadowService {
   }
 
   @Implementation(minSdk = S)
-  protected final List<AccessibilityNodeInfo.AccessibilityAction> getSystemActions() {
+  protected List<AccessibilityNodeInfo.AccessibilityAction> getSystemActions() {
     return systemActions;
   }
 
@@ -75,7 +74,7 @@ public class ShadowAccessibilityService extends ShadowService {
    * the values provided to {@link #setWindows(List<AccessibilityWindowInfo>)}. Returns an empty
    * list if not set.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected List<AccessibilityWindowInfo> getWindows() {
     List<AccessibilityWindowInfo> windowInfos = windows.get(Display.DEFAULT_DISPLAY);
     if (windowInfos != null) {

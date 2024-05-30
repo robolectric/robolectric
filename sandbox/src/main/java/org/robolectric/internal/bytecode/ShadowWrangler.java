@@ -18,6 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
@@ -305,13 +306,8 @@ public class ShadowWrangler implements ClassHandler {
       Class<?>[] types,
       ShadowInfo shadowInfo,
       Class<?> shadowClass) {
-    Method method = findShadowMethodDeclaredOnClass(shadowClass, name, types);
-
-    if (method == null && shadowInfo.looseSignatures) {
-      Class<?>[] genericTypes = MethodType.genericMethodType(types.length).parameterArray();
-      method = findShadowMethodDeclaredOnClass(shadowClass, name, genericTypes);
-    }
-
+    Method method =
+        findShadowMethodDeclaredOnClass(shadowClass, name, types, shadowInfo.looseSignatures);
     if (method != null) {
       return method;
     } else {
@@ -334,40 +330,48 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   private Method findShadowMethodDeclaredOnClass(
-      Class<?> shadowClass, String methodName, Class<?>[] paramClasses) {
-    try {
-      Method method = shadowClass.getDeclaredMethod(methodName, paramClasses);
-
-      // todo: allow per-version overloading
-      // if (method == null) {
-      //   String methodPrefix = name + "$$";
-      //   for (Method candidateMethod : shadowClass.getDeclaredMethods()) {
-      //     if (candidateMethod.getName().startsWith(methodPrefix)) {
-      //
-      //     }
-      //   }
-      // }
-
-      if (isValidShadowMethod(method)) {
-        method.setAccessible(true);
-        return method;
-      } else {
-        return null;
+      Class<?> shadowClass, String methodName, Class<?>[] paramClasses, boolean looseSignatures) {
+    Method foundMethod = null;
+    for (Method method : shadowClass.getDeclaredMethods()) {
+      if (!method.getName().equals(methodName)
+          || method.getParameterCount() != paramClasses.length) {
+        continue;
       }
 
-    } catch (NoSuchMethodException e) {
+      if (!Modifier.isPublic(method.getModifiers())
+          && !Modifier.isProtected(method.getModifiers())) {
+        continue;
+      }
+
+      if (Arrays.equals(method.getParameterTypes(), paramClasses)
+          && shadowMatcher.matches(method)) {
+        // Found an exact match, we can exit early.
+        foundMethod = method;
+        break;
+      }
+      if (looseSignatures) {
+        boolean allParameterTypesAreObject = true;
+        for (Class<?> paramClass : method.getParameterTypes()) {
+          if (!paramClass.equals(Object.class)) {
+            allParameterTypesAreObject = false;
+            break;
+          }
+        }
+        if (allParameterTypesAreObject && shadowMatcher.matches(method)) {
+          // Found a looseSignatures match, but continue looking for an exact match.
+          foundMethod = method;
+        }
+      }
+    }
+
+    if (foundMethod != null) {
+      foundMethod.setAccessible(true);
+      return foundMethod;
+    } else {
       return null;
     }
   }
 
-  private boolean isValidShadowMethod(Method method) {
-    int modifiers = method.getModifiers();
-    if (!Modifier.isPublic(modifiers) && !Modifier.isProtected(modifiers)) {
-      return false;
-    }
-
-    return shadowMatcher.matches(method);
-  }
 
   @Override
   public Object intercept(String signature, Object instance, Object[] params, Class theClass)

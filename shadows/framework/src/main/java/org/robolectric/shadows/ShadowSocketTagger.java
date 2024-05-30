@@ -10,10 +10,8 @@ import org.robolectric.annotation.Implements;
 public class ShadowSocketTagger {
 
   @Implementation
-  public final void tag(Socket socket) throws SocketException {
-  }
+  public void tag(Socket socket) throws SocketException {}
 
   @Implementation
-  public final void untag(Socket socket) throws SocketException {
-  }
+  public void untag(Socket socket) throws SocketException {}
 }

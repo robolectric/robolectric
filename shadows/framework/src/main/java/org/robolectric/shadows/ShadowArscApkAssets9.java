@@ -197,6 +197,26 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     // return ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObjectId(apk_assets);
   }
 
+  // static jlong NativeLoadFromFd(JNIEnv* env, jclass /*clazz*/, const format_type_t format,
+  //                             jobject file_descriptor, jstring friendly_name,
+  //                             const jint property_flags, jobject assets_provider)
+  @Implementation(minSdk = R)
+  protected static Object nativeLoadFd(
+      Object format,
+      Object fileDescriptor,
+      Object friendlyName,
+      Object propertyFlags,
+      Object assetsProvider)
+      throws IOException {
+    CppApkAssets apkAssets = CppApkAssets.loadArscFromFd((FileDescriptor) fileDescriptor);
+    if (apkAssets == null) {
+      String errorMessage =
+          String.format("Failed to load from the file descriptor %s", fileDescriptor);
+      throw new IOException(errorMessage);
+    }
+    return Registries.NATIVE_APK_ASSETS_REGISTRY.register(apkAssets);
+  }
+
   // static jstring NativeGetAssetPath(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
   @Implementation
   protected static String nativeGetAssetPath(long ptr) {

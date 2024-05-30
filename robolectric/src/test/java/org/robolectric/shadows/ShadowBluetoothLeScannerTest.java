@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
@@ -31,7 +30,6 @@ import org.robolectric.annotation.Config;
 
 /** Unit tests for {@link ShadowBluetoothLeScanner}. */
 @RunWith(RobolectricTestRunner.class)
-@Config(minSdk = LOLLIPOP)
 public class ShadowBluetoothLeScannerTest {
   private BluetoothAdapter adapter;
   private BluetoothLeScanner bluetoothLeScanner;

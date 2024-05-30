@@ -1,32 +1,30 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Application;
 import android.app.backup.BackupManager;
+import android.app.backup.BackupTransport;
 import android.app.backup.RestoreObserver;
 import android.app.backup.RestoreSession;
 import android.app.backup.RestoreSet;
+import androidx.annotation.Nullable;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.truth.Correspondence;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -34,20 +32,19 @@ import org.robolectric.util.ReflectionHelpers;
 @RunWith(AndroidJUnit4.class)
 public class ShadowBackupManagerTest {
   private BackupManager backupManager;
-  @Mock private TestRestoreObserver restoreObserver;
+  private TestRestoreObserver restoreObserver;
 
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
-
     shadowMainLooper().pause();
 
     shadowOf((Application) ApplicationProvider.getApplicationContext())
         .grantPermissions(android.Manifest.permission.BACKUP);
     backupManager = new BackupManager(ApplicationProvider.getApplicationContext());
+    restoreObserver = new TestRestoreObserver();
 
-    shadowOf(backupManager).addAvailableRestoreSets(123L, Arrays.asList("foo.bar", "bar.baz"));
-    shadowOf(backupManager).addAvailableRestoreSets(456L, Collections.singletonList("hello.world"));
+    shadowOf(backupManager).addAvailableRestoreSets(123L, ImmutableList.of("foo.bar", "bar.baz"));
+    shadowOf(backupManager).addAvailableRestoreSets(456L, ImmutableList.of("hello.world"));
   }
 
   @Test
@@ -68,14 +65,12 @@ public class ShadowBackupManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setBackupEnabled_setToTrue_shouldEnableBackup() {
     backupManager.setBackupEnabled(true);
     assertThat(backupManager.isBackupEnabled()).isTrue();
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setBackupEnabled_multipleInstances_shouldBeEnabled() {
     // BackupManager is used by creating new instances, but all of them talk to the same
     // BackupManagerService in Android, so methods that route through the service will share states.
@@ -85,23 +80,17 @@ public class ShadowBackupManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setBackupEnabled_setToFalse_shouldDisableBackup() {
     backupManager.setBackupEnabled(false);
     assertThat(backupManager.isBackupEnabled()).isFalse();
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isBackupEnabled_noPermission_shouldThrowSecurityException() {
     shadowOf((Application) ApplicationProvider.getApplicationContext())
         .denyPermissions(android.Manifest.permission.BACKUP);
-    try {
-      backupManager.isBackupEnabled();
-      fail("SecurityException should be thrown");
-    } catch (SecurityException e) {
-      // pass
-    }
+
+    assertThrows(SecurityException.class, () -> backupManager.isBackupEnabled());
   }
 
   @Test
@@ -111,15 +100,26 @@ public class ShadowBackupManagerTest {
 
     assertThat(result).isEqualTo(BackupManager.SUCCESS);
     shadowMainLooper().idle();
-    ArgumentCaptor<RestoreSet[]> restoreSetArg = ArgumentCaptor.forClass(RestoreSet[].class);
-    verify(restoreObserver).restoreSetsAvailable(restoreSetArg.capture());
 
-    RestoreSet[] restoreSets = restoreSetArg.getValue();
+    RestoreSet[] restoreSets = restoreObserver.getRestoreSets();
     assertThat(restoreSets).hasLength(2);
     assertThat(restoreSets)
         .asList()
         .comparingElementsUsing(fieldCorrespondence("token"))
         .containsExactly(123L, 456L);
+  }
+
+  @Test
+  public void getAvailableRestoreToken_setNullAvailableRestoreSets_returnsNull() {
+    shadowOf(backupManager).setNullAvailableRestoreSets(true);
+    RestoreSession restoreSession = backupManager.beginRestoreSession();
+
+    int result = restoreSession.getAvailableRestoreSets(restoreObserver);
+    shadowMainLooper().idle();
+
+    assertThat(result).isEqualTo(BackupManager.SUCCESS);
+    assertThat(restoreObserver.restoreSetsAvailableCalled).isTrue();
+    assertThat(restoreObserver.getRestoreSets()).isNull();
   }
 
   @Test
@@ -130,12 +130,14 @@ public class ShadowBackupManagerTest {
     assertThat(result).isEqualTo(BackupManager.SUCCESS);
     shadowMainLooper().idle();
 
-    verify(restoreObserver).restoreStarting(eq(2));
-    verify(restoreObserver).restoreFinished(eq(BackupManager.SUCCESS));
-
+    assertThat(restoreObserver.getRestoreStartingNumPackages()).isEqualTo(2);
+    assertThat(restoreObserver.getRestoreFinishedResult()).isEqualTo(BackupManager.SUCCESS);
     assertThat(shadowOf(backupManager).getPackageRestoreToken("foo.bar")).isEqualTo(123L);
+    assertThat(shadowOf(backupManager).getPackageRestoreCount("foo.bar")).isEqualTo(1);
     assertThat(shadowOf(backupManager).getPackageRestoreToken("bar.baz")).isEqualTo(123L);
+    assertThat(shadowOf(backupManager).getPackageRestoreCount("bar.baz")).isEqualTo(1);
     assertThat(shadowOf(backupManager).getPackageRestoreToken("hello.world")).isEqualTo(0L);
+    assertThat(shadowOf(backupManager).getPackageRestoreCount("hello.world")).isEqualTo(0);
   }
 
   @Test
@@ -146,11 +148,90 @@ public class ShadowBackupManagerTest {
     assertThat(result).isEqualTo(BackupManager.SUCCESS);
 
     shadowMainLooper().idle();
-    verify(restoreObserver).restoreStarting(eq(1));
-    verify(restoreObserver).restoreFinished(eq(BackupManager.SUCCESS));
 
+    assertThat(restoreObserver.getRestoreStartingNumPackages()).isEqualTo(1);
+    assertThat(restoreObserver.getRestoreFinishedResult()).isEqualTo(BackupManager.SUCCESS);
     assertThat(shadowOf(backupManager).getPackageRestoreToken("foo.bar")).isEqualTo(0L);
+    assertThat(shadowOf(backupManager).getPackageRestoreCount("foo.bar")).isEqualTo(0);
     assertThat(shadowOf(backupManager).getPackageRestoreToken("bar.baz")).isEqualTo(123L);
+    assertThat(shadowOf(backupManager).getPackageRestoreCount("bar.baz")).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void restorePackages_multipleRestores_countsRestores() {
+    RestoreSession restoreSession = backupManager.beginRestoreSession();
+
+    int result = restoreSession.restorePackages(123L, restoreObserver, ImmutableSet.of("foo.bar"));
+    assertThat(result).isEqualTo(BackupManager.SUCCESS);
+    restoreSession.endRestoreSession();
+
+    restoreSession = backupManager.beginRestoreSession();
+    result = restoreSession.restorePackages(123L, restoreObserver, ImmutableSet.of("foo.bar"));
+    assertThat(result).isEqualTo(BackupManager.SUCCESS);
+
+    assertThat(shadowOf(backupManager).getPackageRestoreToken("foo.bar")).isEqualTo(123L);
+    assertThat(shadowOf(backupManager).getPackageRestoreCount("foo.bar")).isEqualTo(2);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void restorePackages_transportError_returnsErrorInRestoreFinishedCallback() {
+    shadowOf(backupManager)
+        .addAvailableRestoreSets(
+            789L, ImmutableList.of("foo.bar"), BackupTransport.TRANSPORT_ERROR);
+    RestoreSession restoreSession = backupManager.beginRestoreSession();
+
+    int result = restoreSession.restorePackages(789L, restoreObserver, ImmutableSet.of("foo.bar"));
+    assertThat(result).isEqualTo(BackupManager.SUCCESS);
+    shadowMainLooper().idle();
+
+    assertThat(restoreObserver.getRestoreFinishedResult())
+        .isEqualTo(BackupTransport.TRANSPORT_ERROR);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void restorePackages_multipleRestoreSets_returnsEachResult() {
+    // Add two restore set for token 789
+    shadowOf(backupManager)
+        .addAvailableRestoreSets(
+            789L, ImmutableList.of("foo.bar"), BackupTransport.TRANSPORT_ERROR);
+    shadowOf(backupManager)
+        .addAvailableRestoreSets(789L, ImmutableList.of("foo.bar"), BackupManager.SUCCESS);
+    RestoreSession restoreSession = backupManager.beginRestoreSession();
+
+    List<Integer> restoreResults = new ArrayList<>();
+    for (int attempt = 1; attempt <= 3; attempt++) {
+      if (restoreSession != null) {
+        restoreSession.endRestoreSession();
+      }
+      restoreObserver = new TestRestoreObserver();
+      restoreSession = backupManager.beginRestoreSession();
+      int result =
+          restoreSession.restorePackages(789L, restoreObserver, ImmutableSet.of("foo.bar"));
+      assertThat(result).isEqualTo(BackupManager.SUCCESS);
+      shadowMainLooper().idle();
+      restoreResults.add(restoreObserver.getRestoreFinishedResult());
+    }
+
+    // The first attempt is expected to fail, any subsequent attempt is expected to succeed
+    assertThat(restoreResults)
+        .containsExactly(
+            BackupTransport.TRANSPORT_ERROR, BackupManager.SUCCESS, BackupManager.SUCCESS);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void restorePackages_unknownToken_returnsError() {
+    RestoreSession restoreSession = backupManager.beginRestoreSession();
+
+    int result = restoreSession.restorePackages(1L, restoreObserver, ImmutableSet.of("foo.bar"));
+    assertThat(result).isEqualTo(BackupManager.SUCCESS);
+    shadowMainLooper().idle();
+
+    assertThat(restoreObserver.getRestoreStartingNumPackages()).isEqualTo(0);
+    assertThat(restoreObserver.getRestoreFinishedResult()).isEqualTo(-1);
   }
 
   @Test
@@ -159,9 +240,10 @@ public class ShadowBackupManagerTest {
 
     restoreSession.restoreSome(123L, restoreObserver, new String[0]);
     assertThat(shadowOf(backupManager).getPackageRestoreToken("bar.baz")).isEqualTo(0L);
+    assertThat(shadowOf(backupManager).getPackageRestoreCount("bar.baz")).isEqualTo(0);
     restoreSession.endRestoreSession();
     shadowMainLooper().idle();
-    Mockito.reset(restoreObserver);
+    restoreObserver = new TestRestoreObserver();
 
     restoreSession = backupManager.beginRestoreSession();
     int result = restoreSession.restorePackage("bar.baz", restoreObserver);
@@ -169,9 +251,10 @@ public class ShadowBackupManagerTest {
     assertThat(result).isEqualTo(BackupManager.SUCCESS);
     shadowMainLooper().idle();
 
-    verify(restoreObserver).restoreStarting(eq(1));
-    verify(restoreObserver).restoreFinished(eq(BackupManager.SUCCESS));
+    assertThat(restoreObserver.getRestoreStartingNumPackages()).isEqualTo(1);
+    assertThat(restoreObserver.getRestoreFinishedResult()).isEqualTo(BackupManager.SUCCESS);
     assertThat(shadowOf(backupManager).getPackageRestoreToken("bar.baz")).isEqualTo(123L);
+    assertThat(shadowOf(backupManager).getPackageRestoreCount("bar.baz")).isEqualTo(1);
   }
 
   @Test
@@ -195,15 +278,14 @@ public class ShadowBackupManagerTest {
     long defaultVal = 0L;
     long restoreToken = 123L;
     RestoreSession restoreSession = backupManager.beginRestoreSession();
+
     int result =
         restoreSession.restoreSome(restoreToken, restoreObserver, new String[] {"bar.baz"});
-
     assertThat(result).isEqualTo(BackupManager.SUCCESS);
-
     shadowMainLooper().idle();
-    verify(restoreObserver).restoreStarting(eq(1));
-    verify(restoreObserver).restoreFinished(eq(BackupManager.SUCCESS));
 
+    assertThat(restoreObserver.getRestoreStartingNumPackages()).isEqualTo(1);
+    assertThat(restoreObserver.getRestoreFinishedResult()).isEqualTo(BackupManager.SUCCESS);
     assertThat(backupManager.getAvailableRestoreToken("foo.bar")).isEqualTo(defaultVal);
     assertThat(backupManager.getAvailableRestoreToken("bar.baz")).isEqualTo(restoreToken);
   }
@@ -215,5 +297,41 @@ public class ShadowBackupManagerTest {
         "field \"" + fieldName + "\" matches");
   }
 
-  private static class TestRestoreObserver extends RestoreObserver {}
+  private static class TestRestoreObserver extends RestoreObserver {
+    @Nullable private RestoreSet[] restoreSets;
+    private boolean restoreSetsAvailableCalled;
+    @Nullable private Integer restoreStartingNumPackages;
+    @Nullable private Integer restoreFinishedResult;
+
+    @Override
+    public void restoreSetsAvailable(RestoreSet[] restoreSets) {
+      this.restoreSets = restoreSets;
+      this.restoreSetsAvailableCalled = true;
+    }
+
+    @Override
+    public void restoreStarting(int numPackages) {
+      this.restoreStartingNumPackages = numPackages;
+    }
+
+    @Override
+    public void restoreFinished(int result) {
+      this.restoreFinishedResult = result;
+    }
+
+    @Nullable
+    public RestoreSet[] getRestoreSets() {
+      return restoreSets;
+    }
+
+    @Nullable
+    public Integer getRestoreStartingNumPackages() {
+      return restoreStartingNumPackages;
+    }
+
+    @Nullable
+    public Integer getRestoreFinishedResult() {
+      return restoreFinishedResult;
+    }
+  }
 }

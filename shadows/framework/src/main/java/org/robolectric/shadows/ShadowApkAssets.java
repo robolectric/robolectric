@@ -8,7 +8,7 @@ abstract public class ShadowApkAssets {
   public static class Picker extends ResourceModeShadowPicker<ShadowApkAssets> {
 
     public Picker() {
-      super(ShadowLegacyApkAssets.class, null, ShadowArscApkAssets9.class);
+      super(null, ShadowArscApkAssets9.class);
     }
   }
 

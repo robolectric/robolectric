@@ -242,7 +242,7 @@ public class ShadowNotificationManager {
    *     via {@link #setInterruptionFilter(int)}
    */
   @Implementation(minSdk = M)
-  protected final int getCurrentInterruptionFilter() {
+  protected int getCurrentInterruptionFilter() {
     return currentInteruptionFilter;
   }
 
@@ -252,19 +252,23 @@ public class ShadowNotificationManager {
    * @see NotificationManager#getCurrentInterruptionFilter()
    */
   @Implementation(minSdk = M)
-  protected final void setInterruptionFilter(int interruptionFilter) {
+  protected void setInterruptionFilter(int interruptionFilter) {
     currentInteruptionFilter = interruptionFilter;
   }
 
-  /** @return the value specified via {@link #setNotificationPolicy(Policy)} */
+  /**
+   * @return the value specified via {@link #setNotificationPolicy(Policy)}
+   */
   @Implementation(minSdk = M)
-  protected final Policy getNotificationPolicy() {
+  protected Policy getNotificationPolicy() {
     return notificationPolicy;
   }
 
-  /** @return the value specified via {@link #setNotificationPolicyAccessGranted(boolean)} */
+  /**
+   * @return the value specified via {@link #setNotificationPolicyAccessGranted(boolean)}
+   */
   @Implementation(minSdk = M)
-  protected final boolean isNotificationPolicyAccessGranted() {
+  protected boolean isNotificationPolicyAccessGranted() {
     return isNotificationPolicyAccessGranted;
   }
 
@@ -273,7 +277,7 @@ public class ShadowNotificationManager {
    *     #setNotificationListenerAccessGranted(ComponentName, boolean)} or false if unset.
    */
   @Implementation(minSdk = O_MR1)
-  protected final boolean isNotificationListenerAccessGranted(ComponentName componentName) {
+  protected boolean isNotificationListenerAccessGranted(ComponentName componentName) {
     return listenerAccessGrantedComponents.getOrDefault(componentName.flattenToString(), false);
   }
 
@@ -283,7 +287,7 @@ public class ShadowNotificationManager {
    * @see NotificationManager#getNotificationPolicy()
    */
   @Implementation(minSdk = M)
-  protected final void setNotificationPolicy(Policy policy) {
+  protected void setNotificationPolicy(Policy policy) {
     notificationPolicy = policy;
   }
 

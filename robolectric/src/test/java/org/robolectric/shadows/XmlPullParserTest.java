@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -67,10 +66,8 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
         ":id"
     );
 
-    if (!RuntimeEnvironment.useLegacyResources()) {
-      // doesn't work in legacy mode, sorry
-      assertAttribute(parser,
-          ANDROID_NS, "id", android.R.attr.id, "@" + android.R.id.text1, android.R.id.text1);
+    assertAttribute(
+        parser, ANDROID_NS, "id", android.R.attr.id, "@" + android.R.id.text1, android.R.id.text1);
       assertAttribute(parser,
           ANDROID_NS, "height", android.R.attr.height, "@" + android.R.dimen.app_icon_size,
           android.R.dimen.app_icon_size);
@@ -78,7 +75,7 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
           ANDROID_NS, "width", android.R.attr.width, "1234.0px", -1);
       assertThat(parser.getAttributeResourceValue(null, "style", /*defaultValue=*/ -1))
           .isEqualTo(android.R.style.TextAppearance_Small);
-    }
+
     assertAttribute(parser,
         ANDROID_NS, "title", android.R.attr.title, "Android Title", -1);
     assertAttribute(parser,
@@ -86,10 +83,8 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
     assertAttribute(parser,
         AUTO_NS, "title", R.attr.title, "App Title", -1);
 
-    if (!RuntimeEnvironment.useLegacyResources()) {
-      // doesn't work in legacy mode, sorry
-      assertThat(parser.getStyleAttribute()).isEqualTo(android.R.style.TextAppearance_Small);
-    }
+    assertThat(parser.getStyleAttribute()).isEqualTo(android.R.style.TextAppearance_Small);
+
     assertThat(parser.getIdAttributeResourceValue(/*defaultValue=*/ -1))
         .isEqualTo(android.R.id.text2);
     assertThat(parser.getClassAttribute()).isEqualTo("none");

@@ -144,4 +144,10 @@ public class RuntimeEnvironmentTest {
     RuntimeEnvironment.setQualifiers("en-rUS");
     assertThat(DateUtils.formatElapsedTime(120)).isEqualTo("02:00");
   }
+
+  @Test
+  public void setQualifiers_withResultFromGetQualifiers() {
+    // Calling this should not cause an exception, e.g. API level mismatch.
+    RuntimeEnvironment.setQualifiers(RuntimeEnvironment.getQualifiers());
+  }
 }

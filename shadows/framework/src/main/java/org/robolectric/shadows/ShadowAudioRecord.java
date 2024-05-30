@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.media.AudioRecord.ERROR_BAD_VALUE;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 
@@ -23,7 +22,7 @@ import org.robolectric.annotation.Resetter;
  * <p>It is also possible to provide the underlying data by implementing {@link AudioRecordSource}
  * and setting this via {@link #setSourceProvider(AudioRecordSourceProvider)}.
  */
-@Implements(value = AudioRecord.class, minSdk = LOLLIPOP)
+@Implements(value = AudioRecord.class)
 public final class ShadowAudioRecord {
 
   @RealObject AudioRecord audioRecord;
@@ -123,6 +122,11 @@ public final class ShadowAudioRecord {
     // read, so use duplicate to ensure the real implementation is matched.
     return getAudioRecordSource()
         .readInDirectBuffer(((ByteBuffer) jBuffer).duplicate(), sizeInBytes, isBlocking);
+  }
+
+  @Implementation(minSdk = M)
+  protected boolean native_setInputDevice(int preferredDeviceId) {
+    return true;
   }
 
   private AudioRecordSource getAudioRecordSource() {

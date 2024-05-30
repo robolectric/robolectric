@@ -13,7 +13,6 @@ import static android.media.session.PlaybackState.ACTION_SKIP_TO_PREVIOUS;
 import static android.media.session.PlaybackState.ACTION_SKIP_TO_QUEUE_ITEM;
 import static android.media.session.PlaybackState.ACTION_STOP;
 import static android.media.session.PlaybackState.STATE_NONE;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -35,7 +34,7 @@ import org.robolectric.util.reflector.ForType;
  * <p>TransportControls should always be created by first creating a corresponding MediaController;
  * *NOT*, for instance, via Shadows.newInstanceOf(TransportControls.class).
  */
-@Implements(value = TransportControls.class, minSdk = LOLLIPOP)
+@Implements(value = TransportControls.class)
 public class ShadowTransportControls {
   @RealObject protected TransportControls realTransportControls;
 

@@ -19,7 +19,8 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
-@Implements(value = RenderNodeAnimator.class, isInAndroidSdk = false, minSdk = LOLLIPOP, maxSdk = Q)
+/** Shadow for {@link RenderNodeAnimator}. */
+@Implements(value = RenderNodeAnimator.class, isInAndroidSdk = false, maxSdk = Q)
 public class ShadowRenderNodeAnimator {
   private static final int STATE_FINISHED = 3;
 
@@ -54,7 +55,7 @@ public class ShadowRenderNodeAnimator {
   @Implementation
   public void doStart() {
     reflector(RenderNodeAnimatorReflector.class, realObject).doStart();
-    if (getApiLevel() <= LOLLIPOP) {
+    if (getApiLevel() == LOLLIPOP) {
       schedule();
     }
   }
@@ -64,7 +65,7 @@ public class ShadowRenderNodeAnimator {
     RenderNodeAnimatorReflector renderNodeReflector =
         reflector(RenderNodeAnimatorReflector.class, realObject);
     renderNodeReflector.cancel();
-    if (getApiLevel() <= LOLLIPOP) {
+    if (getApiLevel() == LOLLIPOP) {
       int state = renderNodeReflector.getState();
       if (state != STATE_FINISHED) {
         // In 21, RenderNodeAnimator only calls nEnd, it doesn't call the Java end method. Thus, it

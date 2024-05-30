@@ -4,15 +4,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.media.AudioAttributes;
 import android.media.session.MediaController.PlaybackInfo;
-import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 /** Test for {@link PlaybackInfoBuilder} */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = VERSION_CODES.LOLLIPOP)
 public class PlaybackInfoBuilderTest {
   @Test
   public void build_playbackInfo() {

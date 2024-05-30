@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.os.Build.VERSION_CODES;
 import android.telecom.CallAudioState;
 import android.telecom.InCallAdapter;
 import org.robolectric.annotation.Implementation;
@@ -20,7 +19,7 @@ public class ShadowInCallAdapter {
 
   private int audioRoute = CallAudioState.ROUTE_EARPIECE;
 
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  @Implementation
   protected void setAudioRoute(int route) {
     audioRoute = route;
     if (isInternalInCallAdapterSet()) {

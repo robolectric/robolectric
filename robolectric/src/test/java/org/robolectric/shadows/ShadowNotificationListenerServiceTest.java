@@ -7,7 +7,6 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.Notification;
 import android.content.ComponentName;
 import android.content.Context;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
@@ -21,7 +20,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 /** Test for ShadowNotificationListenerService. */
-@Config(minSdk = Build.VERSION_CODES.LOLLIPOP)
 @RunWith(AndroidJUnit4.class)
 public final class ShadowNotificationListenerServiceTest {
 
