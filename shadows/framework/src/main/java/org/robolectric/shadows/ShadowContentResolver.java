@@ -794,7 +794,9 @@ public class ShadowContentResolver {
 
   /**
    * @deprecated This method affects all calls, and does not work with {@link
-   *     android.content.ContentResolver#acquireContentProviderClient}
+   *     android.content.ContentResolver#acquireContentProviderClient}. Instead, use
+   *    {@link org.robolectric.Robolectric#setupContentProvider(Class, String)} to
+   *    install a test-specific ContentProvider that can return any Cursor.
    */
   @Deprecated
   public void setCursor(BaseCursor cursor) {
@@ -802,8 +804,10 @@ public class ShadowContentResolver {
   }
 
   /**
-   * @deprecated This method does not work with {@link
-   *     android.content.ContentResolver#acquireContentProviderClient}
+   * @deprecated This method affects all calls, and does not work with {@link
+   *     android.content.ContentResolver#acquireContentProviderClient}. Instead, use
+   *    {@link org.robolectric.Robolectric#setupContentProvider(Class, String)} to
+   *    install a test-specific ContentProvider that can return any Cursor.
    */
   @Deprecated
   public void setCursor(Uri uri, BaseCursor cursorForUri) {
@@ -812,7 +816,9 @@ public class ShadowContentResolver {
 
   /**
    * @deprecated This method affects all calls, and does not work with {@link
-   *     android.content.ContentResolver#acquireContentProviderClient}
+   *     android.content.ContentResolver#acquireContentProviderClient}. Instead, use
+   *    {@link org.robolectric.Robolectric#setupContentProvider(Class, String)} to
+   *    install a test-specific ContentProvider that can return any Cursor.
    */
   @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
@@ -825,8 +831,10 @@ public class ShadowContentResolver {
    * DeleteStatement}s invoked on this {@link ContentResolver}.
    *
    * @return a list of statements
-   * @deprecated This method does not work with {@link
-   *     android.content.ContentResolver#acquireContentProviderClient}
+   * @deprecated This method affects all calls, and does not work with {@link
+   *     android.content.ContentResolver#acquireContentProviderClient}. Instead, use
+   *    {@link org.robolectric.Robolectric#setupContentProvider(Class, String)} to
+   *    install a test-specific ContentProvider that has logic to keep a record of statements.
    */
   @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
@@ -840,8 +848,10 @@ public class ShadowContentResolver {
    * ContentValues[])}.
    *
    * @return a list of insert statements
-   * @deprecated This method does not work with {@link
-   *     android.content.ContentResolver#acquireContentProviderClient}
+   * @deprecated This method affects all calls, and does not work with {@link
+   *     android.content.ContentResolver#acquireContentProviderClient}. Instead, use
+   *    {@link org.robolectric.Robolectric#setupContentProvider(Class, String)} to
+   *    install a test-specific ContentProvider that can record insert statements.
    */
   @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
@@ -854,8 +864,10 @@ public class ShadowContentResolver {
    * ContentResolver#update(Uri, ContentValues, String, String[])}.
    *
    * @return a list of update statements
-   * @deprecated This method does not work with {@link
-   *     android.content.ContentResolver#acquireContentProviderClient}
+   * @deprecated This method affects all calls, and does not work with {@link
+   *     android.content.ContentResolver#acquireContentProviderClient}. Instead, use
+   *    {@link org.robolectric.Robolectric#setupContentProvider(Class, String)} to
+   *    install a test-specific ContentProvider that can record update statements.
    */
   @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
@@ -885,12 +897,30 @@ public class ShadowContentResolver {
     return deleteStatements;
   }
 
+
+  /**
+   * Returns the list of {@link NotifiedUri}s for corresponding calls to {@link
+   * ContentResolver#notifyChange(Uri, ContentObserver)}.
+   *
+   * @return a list of notified URIs
+   * @deprecated This method affects all calls, and does not work with {@link
+   *    android.content.ContentResolver#acquireContentProviderClient}.
+   */
   @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
   public List<NotifiedUri> getNotifiedUris() {
     return notifiedUris;
   }
 
+
+  /**
+   * Returns the list of {@link ContentProviderOperation}s for corresponding calls to {@link
+   * ContentResolver#applyBatch(String, ArrayList)}.
+   *
+   * @return a list of content provider operations
+   * @deprecated This method affects all calls, and does not work with {@link
+   *   android.content.ContentResolver#acquireContentProviderClient}.
+   */
   @Deprecated
   public List<ContentProviderOperation> getContentProviderOperations(String authority) {
     List<ContentProviderOperation> operations = contentProviderOperations.get(authority);
