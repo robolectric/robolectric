@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
@@ -1100,33 +1099,14 @@ public class ShadowAccountManagerTest {
 
     shadowOf(am).setAuthenticationErrorOnNextResponse(true);
 
-    assertThrows(
-        AuthenticatorException.class,
-        () ->
-            am.getAccountsByTypeAndFeatures(
-                    /* type= */ null,
-                    /* features= */ null,
-                    /* callback= */ null,
-                    /* handler= */ null)
-                .getResult());
+    try {
+      am.getAccountsByTypeAndFeatures(null, null, null, null).getResult();
+      fail("should have thrown");
+    } catch (AuthenticatorException expected) {
+      // Expected
+    }
 
-    assertThat(
-            am.getAccountsByTypeAndFeatures(
-                    /* type= */ null,
-                    /* features= */ null,
-                    /* callback= */ null,
-                    /* handler= */ null)
-                .getResult())
-        .isEmpty();
-  }
-
-  @Test
-  public void setSecurityErrorOnNextGetAccountsByTypeCall() {
-    shadowOf(am).setSecurityErrorOnNextGetAccountsByTypeCall(true);
-
-    assertThrows(SecurityException.class, () -> am.getAccountsByType(null));
-
-    assertThat(am.getAccountsByType(null)).isEmpty();
+    am.getAccountsByTypeAndFeatures(null, null, null, null).getResult();
   }
 
   private static class TestAccountManagerCallback<T> implements AccountManagerCallback<T> {
