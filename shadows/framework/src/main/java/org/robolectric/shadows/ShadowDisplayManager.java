@@ -34,9 +34,11 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.util.Consumer;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /**
  * For tests, display properties may be changed and devices may be added or removed
@@ -258,7 +260,11 @@ public class ShadowDisplayManager {
       throw new UnsupportedOperationException("multiple display modes not supported before M");
     }
     DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
-    displayInfo.supportedModes = supportedModes;
+    if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
+      ReflectionHelpers.setField(displayInfo, "appsSupportedModes", supportedModes);
+    } else {
+      displayInfo.supportedModes = supportedModes;
+    }
     getShadowDisplayManagerGlobal().changeDisplay(displayId, displayInfo);
     shadowMainLooper().idle();
   }
