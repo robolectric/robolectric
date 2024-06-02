@@ -1,0 +1,83 @@
+name: Publish javadoc
+
+on:
+  release:
+    types: [ released ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish-javadoc:
+    name: Publish javadoc
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Extract Robolectric version
+        id: robolectric_version
+        run: |
+          if [[ ${{ github.event.release.tag_name }} =~ ^robolectric-([0-9]+\.[0-9]+)$ ]]; then
+            echo "version=${BASH_REMATCH[1]}" > $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout Robolectric
+        uses: actions/checkout@v4
+        if: ${{ steps.robolectric_version.outputs.version }}
+        with:
+          path: robolectric
+
+      - name: Checkout robolectric.github.io
+        uses: actions/checkout@v4
+        if: ${{ steps.robolectric_version.outputs.version }}
+        with:
+          repository: robolectric/robolectric.github.io
+          path: robolectric.github.io
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        if: ${{ steps.robolectric_version.outputs.version }}
+        with:
+          distribution: 'adopt'
+          java-version: 17
+
+      - name: Assemble and aggregate javadoc
+        if: ${{ steps.robolectric_version.outputs.version }}
+        run: |
+          cd robolectric
+          ./gradlew clean aggregateDocs
+
+      - name: Move the new javadoc
+        if: ${{ steps.robolectric_version.outputs.version }}
+        run: |
+          cd robolectric.github.io
+          mv ../robolectric/build/docs/javadoc docs/javadoc/${{ steps.robolectric_version.outputs.version }}
+
+      - name: Update Robolectric version in mkdocs.yml
+        if: ${{ steps.robolectric_version.outputs.version }}
+        run: |
+          cd robolectric.github.io
+          sed -i 's/^      current: ".*"$/      current: "${{ steps.robolectric_version.outputs.version }}"/' mkdocs.yml
+          sed -i 's/^      current_patched: ".*"$/      current_patched: "${{ steps.robolectric_version.outputs.version }}"/' mkdocs.yml
+          sed -i 's/^\(    - "Javadoc":\)$/\1\n      - "${{ steps.robolectric_version.outputs.version }}": \/javadoc\/${{ steps.robolectric_version.outputs.version }}\//' mkdocs.yml
+
+      - name: Update latest javadoc symbolic link
+        if: ${{ steps.robolectric_version.outputs.version }}
+        run: |
+          cd robolectric.github.io
+          ln -sfn ${{ steps.robolectric_version.outputs.version }} docs/javadoc/latest
+
+      - name: Create Pull Request
+        if: ${{ steps.robolectric_version.outputs.version }}
+        run: |
+          cd robolectric.github.io
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b javadoc-robolectric-${{ steps.robolectric_version.outputs.version }}
+          git add -A
+          git commit -m "Publish javadoc for Robolectric ${{ steps.robolectric_version.outputs.version }}" \
+            -m "- Add javadoc for Robolectric ${{ steps.robolectric_version.outputs.version }}." \
+            -m "- Update mkdocs.yml to add a navigation entry to the new javadoc." \
+            -m "- Update mkdocs.yml to use version ${{ steps.robolectric_version.outputs.version }}."
+          git push --set-upstream origin javadoc-robolectric-${{ steps.robolectric_version.outputs.version }}
+          gh pr create --fill
