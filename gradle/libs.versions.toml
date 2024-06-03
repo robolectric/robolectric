@@ -1,4 +1,5 @@
 [versions]
+cronet-fallback = "119.6045.31"
 robolectric-nativeruntime-dist-compat = "1.0.10"
 
 # https://developer.android.com/studio/releases
@@ -128,6 +129,7 @@ play-services-basement = "18.0.1"
 
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
+cronet-fallback = { module = "org.chromium.net:cronet-fallback", version.ref = "cronet-fallback" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 spotless-gradle = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-gradle" }
 detekt-gradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt-gradle" }
