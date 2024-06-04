@@ -17,6 +17,7 @@ package org.robolectric.integrationtests.nativegraphics;
 
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -38,6 +39,7 @@ import android.graphics.Color;
 import android.graphics.ColorSpace;
 import android.graphics.ColorSpace.Named;
 import android.graphics.Paint;
+import android.graphics.Picture;
 import android.hardware.HardwareBuffer;
 import android.os.Parcel;
 import android.os.StrictMode;
@@ -1770,6 +1772,51 @@ public class ShadowNativeBitmapTest {
     Bitmap copy = parcel.readParcelable(Bitmap.class.getClassLoader());
 
     assertThat(copy.sameAs(orig)).isTrue();
+  }
+
+  // TODO(hoisie): Fix this test in Q and R.
+  @org.robolectric.annotation.Config(minSdk = S)
+  @Test
+  public void testCreateBitmap_picture_immutable() {
+    Picture picture = new Picture();
+    Canvas canvas = picture.beginRecording(200, 100);
+
+    Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    p.setColor(0x88FF0000);
+    canvas.drawCircle(50, 50, 40, p);
+
+    p.setColor(Color.GREEN);
+    p.setTextSize(30);
+    canvas.drawText("Pictures", 60, 60, p);
+    picture.endRecording();
+
+    Bitmap bitmap;
+    bitmap = Bitmap.createBitmap(picture);
+    assertFalse(bitmap.isMutable());
+
+    bitmap = Bitmap.createBitmap(picture, 100, 100, Config.HARDWARE);
+    assertFalse(bitmap.isMutable());
+    assertNotNull(bitmap.getColorSpace());
+
+    bitmap = Bitmap.createBitmap(picture, 100, 100, Config.ARGB_8888);
+    assertFalse(bitmap.isMutable());
+  }
+
+  // TODO(hoisie): Fix this test in Q and R.
+  @org.robolectric.annotation.Config(minSdk = S)
+  @Test
+  public void testCreateBitmap_picture_requiresHWAcceleration_checkPixels() {
+    Picture picture = new Picture();
+    Canvas pictureCanvas = picture.beginRecording(100, 100);
+    Paint p = new Paint();
+    p.setColor(Color.RED);
+    pictureCanvas.drawRect(0, 0, 100, 100, p);
+    picture.endRecording();
+    Bitmap bitmap = Bitmap.createBitmap(picture);
+    assertThat(bitmap.getWidth()).isEqualTo(100);
+    assertThat(bitmap.getHeight()).isEqualTo(100);
+    assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.RED);
   }
 
   private void strictModeTest(Runnable runnable) {
