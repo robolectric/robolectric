@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 
 import android.graphics.BlendModeColorFilter;
@@ -14,7 +13,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 /** Shadow for {@link BlendModeColorFilter} that is backed by native code */
 @Implements(
     value = BlendModeColorFilter.class,
-    minSdk = O,
+    minSdk = Q,
     shadowPicker = Picker.class,
     callNativeMethodsByDefault = true)
 public class ShadowNativeBlendModeColorFilter {

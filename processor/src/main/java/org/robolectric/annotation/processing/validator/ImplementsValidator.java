@@ -2,7 +2,6 @@ package org.robolectric.annotation.processing.validator;
 
 import static org.robolectric.annotation.processing.validator.ImplementationValidator.METHODS_ALLOWED_TO_BE_PUBLIC;
 
-import com.google.auto.common.AnnotationValues;
 import com.google.auto.common.MoreElements;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.util.Trees;
@@ -22,7 +21,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -46,6 +44,7 @@ public class ImplementsValidator extends Validator {
 
   private final ProcessingEnvironment env;
   private final SdkCheckMode sdkCheckMode;
+  private final Kind checkKind;
   private final SdkStore sdkStore;
 
   /**
@@ -63,12 +62,25 @@ public class ImplementsValidator extends Validator {
 
     this.env = env;
     this.sdkCheckMode = sdkCheckMode;
+    this.checkKind = sdkCheckMode == SdkCheckMode.WARN ? Kind.WARNING : Kind.ERROR;
     this.sdkStore = sdkStore;
   }
 
   private TypeElement getClassNameTypeElement(AnnotationValue cv) {
     String className = Helpers.getAnnotationStringValue(cv);
     return elements.getTypeElement(className.replace('$', '.'));
+  }
+
+  public String sdkClassNameFq(AnnotationValue valueAttr, AnnotationValue classNameAttr) {
+    String sdkClassNameFq;
+    if (valueAttr == null) {
+      sdkClassNameFq = Helpers.getAnnotationStringValue(classNameAttr);
+    } else {
+      TypeMirror typeMirror = Helpers.getAnnotationTypeMirrorValue(valueAttr);
+      TypeElement typeElement = MoreElements.asType(types.asElement(typeMirror));
+      sdkClassNameFq = elements.getBinaryName(typeElement).toString();
+    }
+    return sdkClassNameFq;
   }
 
   @Override
@@ -101,12 +113,6 @@ public class ImplementsValidator extends Validator {
             : (TypeElement)
                 types.asElement(Helpers.getAnnotationTypeMirrorValue(shadowPickerValue));
 
-    // This shadow doesn't apply to the current SDK. todo: check each SDK.
-    if (maxSdk != -1 && maxSdk < MAX_SUPPORTED_ANDROID_SDK) {
-      addShadowNotInSdk(shadowType, av, cv, shadowPickerTypeElement);
-      return null;
-    }
-
     TypeElement actualType = null;
     if (av == null) {
       if (cv == null) {
@@ -114,12 +120,6 @@ public class ImplementsValidator extends Validator {
         return null;
       }
       actualType = getClassNameTypeElement(cv);
-
-      if (actualType == null
-          && !suppressWarnings(shadowType, "robolectric.internal.IgnoreMissingClass")) {
-        error("@Implements: could not resolve class <" + AnnotationValues.toString(cv) + '>', cv);
-        return null;
-      }
     } else {
       TypeMirror value = Helpers.getAnnotationTypeMirrorValue(av);
       if (value == null) {
@@ -131,39 +131,25 @@ public class ImplementsValidator extends Validator {
         actualType = Helpers.getAnnotationTypeMirrorValue(types.asElement(value));
       }
     }
-    if (actualType == null) {
+    // Checking for a public modifier here is a bit of a hack to prevent extraneous imports
+    // from appearing in the generated files.
+    // The version check is even more of a hack, and should be revisited as the
+    // output in Robolectric_ShadowPickers.java makes little to no sense.
+    if (actualType == null 
+        || !actualType.getModifiers().contains(Modifier.PUBLIC)
+        || (maxSdk != -1 && maxSdk < MAX_SUPPORTED_ANDROID_SDK)) {
       addShadowNotInSdk(shadowType, av, cv, shadowPickerTypeElement);
-      return null;
-    }
-    final List<? extends TypeParameterElement> typeTP = actualType.getTypeParameters();
-    final List<? extends TypeParameterElement> elemTP = shadowType.getTypeParameters();
-    if (!helpers.isSameParameterList(typeTP, elemTP)) {
-      StringBuilder message = new StringBuilder();
-      if (elemTP.isEmpty()) {
-        message.append("Shadow type is missing type parameters, expected <");
-        helpers.appendParameterList(message, actualType.getTypeParameters());
-        message.append('>');
-      } else if (typeTP.isEmpty()) {
-        message.append("Shadow type has type parameters but real type does not");
-      } else {
-        message.append(
-            "Shadow type must have same type parameters as its real counterpart: expected <");
-        helpers.appendParameterList(message, actualType.getTypeParameters());
-        message.append(">, was <");
-        helpers.appendParameterList(message, shadowType.getTypeParameters());
-        message.append('>');
-      }
-      messager.printMessage(Kind.ERROR, message, shadowType);
-      return null;
+    } else {
+      modelBuilder.addShadowType(shadowType, actualType, shadowPickerTypeElement);
     }
 
     AnnotationValue looseSignaturesAttr =
         Helpers.getAnnotationTypeMirrorValue(am, "looseSignatures");
     boolean looseSignatures =
         looseSignaturesAttr != null && (Boolean) looseSignaturesAttr.getValue();
-    validateShadowMethods(actualType, shadowType, minSdk, maxSdk, looseSignatures);
+    String sdkClassNameFq = sdkClassNameFq(av, cv);
+    validateShadow(sdkClassNameFq, shadowType, minSdk, maxSdk, looseSignatures);
 
-    modelBuilder.addShadowType(shadowType, actualType, shadowPickerTypeElement);
     return null;
   }
 
@@ -193,18 +179,6 @@ public class ImplementsValidator extends Validator {
     }
   }
 
-  private static boolean suppressWarnings(Element element, String warningName) {
-    SuppressWarnings[] suppressWarnings = element.getAnnotationsByType(SuppressWarnings.class);
-    for (SuppressWarnings suppression : suppressWarnings) {
-      for (String name : suppression.value()) {
-        if (warningName.equals(name)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   static String getClassFQName(TypeElement elem) {
     StringBuilder name = new StringBuilder();
     while (isClassy(elem.getEnclosingElement().getKind())) {
@@ -219,8 +193,38 @@ public class ImplementsValidator extends Validator {
     return kind == ElementKind.CLASS || kind == ElementKind.INTERFACE;
   }
 
-  private void validateShadowMethods(TypeElement sdkClassElem, TypeElement shadowClassElem,
-      int classMinSdk, int classMaxSdk, boolean looseSignatures) {
+  private void validateShadow(
+      String shadowedClassName,
+      TypeElement shadowClassElem,
+      int classMinSdk,
+      int classMaxSdk,
+      boolean looseSignatures) {
+    Problems problems = new Problems(this.checkKind);
+    if (sdkCheckMode != SdkCheckMode.OFF) {
+      for (SdkStore.Sdk sdk : sdkStore.sdksMatching(classMinSdk, classMaxSdk)) {
+        SdkStore.ClassInfo classInfo = sdk.getClassInfo(shadowedClassName);
+        if (classInfo == null) {
+          if (!sdk.suppressWarnings(shadowClassElem, "robolectric.typeNotFound")) {
+            problems.add("Shadowed type is not found: " + shadowedClassName, sdk.sdkInt);
+          }
+        } else {
+          StringBuilder builder = new StringBuilder();
+          helpers.appendParameterList(builder, shadowClassElem.getTypeParameters());
+          String shadowParams = builder.toString();
+          if (!classInfo.getSignature().equals(shadowParams)
+              && !sdk.suppressWarnings(shadowClassElem, "robolectric.mismatchedTypes")
+              && !looseSignatures) {
+            problems.add(
+                "Shadow type is mismatched, expected "
+                    + shadowParams
+                    + " but found "
+                    + classInfo.getSignature(),
+                sdk.sdkInt);
+          }
+        }
+      }
+    }
+    problems.recount(messager, shadowClassElem);
     for (Element memberElement : ElementFilter.methodsIn(shadowClassElem.getEnclosedElements())) {
       ExecutableElement methodElement = MoreElements.asExecutable(memberElement);
 
@@ -229,11 +233,11 @@ public class ImplementsValidator extends Validator {
         continue;
       }
 
-      verifySdkMethod(sdkClassElem, methodElement, classMinSdk, classMaxSdk, looseSignatures);
+      verifySdkMethod(shadowedClassName, methodElement, classMinSdk, classMaxSdk, looseSignatures);
       if (shadowClassElem.getQualifiedName().toString().startsWith("org.robolectric")
           && !methodElement.getModifiers().contains(Modifier.ABSTRACT)) {
         checkForMissingImplementationAnnotation(
-            sdkClassElem, methodElement, classMinSdk, classMaxSdk, looseSignatures);
+            shadowedClassName, methodElement, classMinSdk, classMaxSdk, looseSignatures);
       }
 
       String methodName = methodElement.getSimpleName().toString();
@@ -248,7 +252,7 @@ public class ImplementsValidator extends Validator {
     }
   }
 
-  private void verifySdkMethod(TypeElement sdkClassElem, ExecutableElement methodElement,
+  private void verifySdkMethod(String sdkClassName, ExecutableElement methodElement,
       int classMinSdk, int classMaxSdk, boolean looseSignatures) {
     if (sdkCheckMode == SdkCheckMode.OFF) {
       return;
@@ -256,13 +260,10 @@ public class ImplementsValidator extends Validator {
 
     Implementation implementation = methodElement.getAnnotation(Implementation.class);
     if (implementation != null) {
-      Kind kind = sdkCheckMode == SdkCheckMode.WARN
-          ? Kind.WARNING
-          : Kind.ERROR;
-      Problems problems = new Problems(kind);
+      Problems problems = new Problems(this.checkKind);
 
       for (SdkStore.Sdk sdk : sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk)) {
-        String problem = sdk.verifyMethod(sdkClassElem, methodElement, looseSignatures);
+        String problem = sdk.verifyMethod(sdkClassName, methodElement, looseSignatures);
         if (problem != null) {
           problems.add(problem, sdk.sdkInt);
         }
@@ -279,7 +280,7 @@ public class ImplementsValidator extends Validator {
    * Implementation} tag but is missing one
    */
   private void checkForMissingImplementationAnnotation(
-      TypeElement sdkClassElem,
+      String sdkClassName,
       ExecutableElement methodElement,
       int classMinSdk,
       int classMaxSdk,
@@ -295,8 +296,8 @@ public class ImplementsValidator extends Validator {
       Problems problems = new Problems(kind);
 
       for (SdkStore.Sdk sdk : sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk)) {
-        String problem = sdk.verifyMethod(sdkClassElem, methodElement, looseSignatures);
-        if (problem == null) {
+        String problem = sdk.verifyMethod(sdkClassName, methodElement, looseSignatures);
+        if (problem == null && sdk.getClassInfo(sdkClassName) != null) {
           problems.add(
               "Missing @Implementation on method " + methodElement.getSimpleName(), sdk.sdkInt);
         }

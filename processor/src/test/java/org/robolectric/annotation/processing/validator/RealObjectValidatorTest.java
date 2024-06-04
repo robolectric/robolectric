@@ -7,11 +7,15 @@ import static org.robolectric.annotation.processing.Utils.DEFAULT_OPTS;
 import static org.robolectric.annotation.processing.Utils.SHADOW_EXTRACTOR_SOURCE;
 import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
 
+import com.example.objects.ParameterizedDummy;
 import com.google.common.collect.ImmutableList;
+import java.util.HashMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.processing.RobolectricProcessor;
+import org.robolectric.annotation.processing.Utils;
+import org.robolectric.versioning.AndroidVersions;
 
 /** Tests for {@link RealObjectValidator} */
 @RunWith(JUnit4.class)
@@ -57,12 +61,19 @@ public class RealObjectValidatorTest {
 
   @Test
   public void realObjectWithEmptyClassName_shouldNotRaiseOwnError() {
+    AndroidVersions.AndroidRelease unreleased = AndroidVersions.getUnreleased().get(0);
     final String testClass =
         "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithEmptyClassName";
-    assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withNoErrorContaining("@RealObject");
+    HashMap<String, String> props = new HashMap<>();
+    props.put("org.robolectric.annotation.processing.sdkCheckMode", "ERROR");
+    props.put("org.robolectric.annotation.processing.validateCompileSdk", "true");
+
+    assertAbout(
+            singleClass(
+                props, Utils.getClassRootDir(ParameterizedDummy.class), unreleased.getSdkInt()))
+        .that(testClass)
+        .failsToCompile()
+        .withNoErrorContaining("@RealObject");
   }
 
   @Test

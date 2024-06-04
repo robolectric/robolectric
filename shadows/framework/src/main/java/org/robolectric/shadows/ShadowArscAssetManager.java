@@ -667,7 +667,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   @HiddenApi
   @Implementation(maxSdk = N_MR1)
-  protected static void applyStyle(
+  protected static boolean applyStyle(
       long themeToken,
       int defStyleAttr,
       int defStyleRes,
@@ -681,6 +681,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
         : Registries.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
     AttributeResolution.ApplyStyle(theme, xmlParser, defStyleAttr, defStyleRes,
         attrs, attrs.length, outValues, outIndices);
+    return true;
   }
 
   @Implementation @HiddenApi

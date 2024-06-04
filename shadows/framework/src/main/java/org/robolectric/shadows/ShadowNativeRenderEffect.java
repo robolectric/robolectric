@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 
 import android.graphics.RenderEffect;
@@ -14,7 +13,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 /** Shadow for {@link RenderEffect} that is backed by native code */
 @Implements(
     value = RenderEffect.class,
-    minSdk = O,
+    minSdk = S,
     shadowPicker = Picker.class,
     callNativeMethodsByDefault = true)
 public class ShadowNativeRenderEffect {

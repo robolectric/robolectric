@@ -29,7 +29,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Provides testing APIs for {@link FingerprintManager} */
 @SuppressWarnings("NewApi")
-@Implements(FingerprintManager.class)
+@Implements(value = FingerprintManager.class, minSdk = M)
 public class ShadowFingerprintManager {
 
   private static final String TAG = "ShadowFingerprintManager";
@@ -84,7 +84,7 @@ public class ShadowFingerprintManager {
    * Success or failure can be simulated with a subsequent call to {@link #authenticationSucceeds()}
    * or {@link #authenticationFails()}.
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected void authenticate(
       CryptoObject crypto,
       CancellationSignal cancel,
@@ -125,7 +125,7 @@ public class ShadowFingerprintManager {
    * Returns {@code false} by default, or the value specified via
    * {@link #setHasEnrolledFingerprints(boolean)}.
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean hasEnrolledFingerprints() {
     return !fingerprints.isEmpty();
   }
@@ -134,7 +134,7 @@ public class ShadowFingerprintManager {
    * @return lists of current fingerprint items, the list be set via {@link #setDefaultFingerprints}
    */
   @HiddenApi
-  @Implementation(minSdk = M)
+  @Implementation
   protected List<Fingerprint> getEnrolledFingerprints() {
     return new ArrayList<>(fingerprints);
   }

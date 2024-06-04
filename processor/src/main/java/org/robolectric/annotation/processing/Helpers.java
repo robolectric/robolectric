@@ -211,11 +211,15 @@ public class Helpers {
   public void appendParameterList(StringBuilder message,
       List<? extends TypeParameterElement> tpeList) {
     boolean first = true;
+    if (tpeList == null || tpeList.isEmpty()) {
+      return;
+    }
+    message.append("<");
     for (TypeParameterElement tpe : tpeList) {
       if (first) {
         first = false;
       } else {
-        message.append(',');
+        message.append(", ");
       }
       message.append(tpe);
       boolean iFirst = true;
@@ -229,6 +233,7 @@ public class Helpers {
         message.append(bound);
       }
     }
+    message.append(">");
   }
 
   TypeMirror findInterface(TypeElement shadowPickerType, Class<?> interfaceClass) {

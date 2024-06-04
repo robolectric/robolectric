@@ -15,7 +15,8 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(
     className = "libcore.io.Posix",
     maxSdk = Build.VERSION_CODES.N_MR1,
-    isInAndroidSdk = false)
+    isInAndroidSdk = false,
+    looseSignatures = true)
 public class ShadowPosix {
   @Implementation
   public void mkdir(String path, int mode) throws ErrnoException {
@@ -23,6 +24,8 @@ public class ShadowPosix {
   }
 
   @Implementation
+  // actually preventing a 'static' mismatch
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
   public static Object stat(String path) throws ErrnoException {
     int mode = OsConstantsValues.getMode(path);
     long size = 0;
@@ -62,11 +65,15 @@ public class ShadowPosix {
   }
 
   @Implementation
+  // actually preventing a 'static' mismatch
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
   protected static Object lstat(String path) throws ErrnoException {
     return stat(path);
   }
 
   @Implementation
+  // actually preventing a 'static' mismatch
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
   protected static Object fstat(FileDescriptor fd) throws ErrnoException {
     return stat(null);
   }

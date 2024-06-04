@@ -2,10 +2,10 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.graphics.Camera;
 import android.graphics.Matrix;
-import android.graphics.Rect;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -186,7 +186,7 @@ public class ShadowRenderNode {
     return pivotExplicitlySet;
   }
 
-  @Implementation
+  @Implementation(minSdk = P)
   protected boolean resetPivot() {
     this.pivotExplicitlySet = false;
     this.pivotX = 0;
@@ -224,7 +224,7 @@ public class ShadowRenderNode {
     return true;
   }
 
-  @Implementation
+  @Implementation(minSdk = Q)
   protected int getLeft() {
     return left;
   }
@@ -235,7 +235,7 @@ public class ShadowRenderNode {
     return true;
   }
 
-  @Implementation
+  @Implementation(minSdk = Q)
   protected int getTop() {
     return top;
   }
@@ -247,28 +247,16 @@ public class ShadowRenderNode {
   }
 
   @Implementation
-  protected int getRight() {
-    return right;
-  }
-
-  @Implementation
   protected boolean setBottom(int bottom) {
     this.bottom = bottom;
     return true;
   }
 
-  @Implementation
-  protected int getBottom() {
-    return bottom;
-  }
-
-  @Implementation
-  protected int getWidth() {
+  public int getWidth() {
     return right - left;
   }
 
-  @Implementation
-  protected int getHeight() {
+  public int getHeight() {
     return bottom - top;
   }
 
@@ -277,21 +265,11 @@ public class ShadowRenderNode {
     return setPosition(left, top, right, bottom);
   }
 
-  @Implementation
-  protected boolean setPosition(int left, int top, int right, int bottom) {
+  public boolean setPosition(int left, int top, int right, int bottom) {
     this.left = left;
     this.top = top;
     this.right = right;
     this.bottom = bottom;
-    return true;
-  }
-
-  @Implementation
-  protected boolean setPosition(Rect position) {
-    this.left = position.left;
-    this.top = position.top;
-    this.right = position.right;
-    this.bottom = position.bottom;
     return true;
   }
 

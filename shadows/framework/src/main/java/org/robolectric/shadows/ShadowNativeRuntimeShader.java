@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
@@ -20,7 +19,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 /** Shadow for {@link RuntimeShader} that is backed by native code */
 @Implements(
     value = RuntimeShader.class,
-    minSdk = O,
+    minSdk = R,
     shadowPicker = Picker.class,
     callNativeMethodsByDefault = true)
 public class ShadowNativeRuntimeShader {
