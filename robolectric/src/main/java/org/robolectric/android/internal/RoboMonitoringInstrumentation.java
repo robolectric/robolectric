@@ -1,5 +1,6 @@
 package org.robolectric.android.internal;
 
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.extract;
 
@@ -112,8 +113,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       throw new RuntimeException("Could not load activity " + ai.name, e);
     }
 
-    if (attachedConfigListener.compareAndSet(false, true)
-        && !Boolean.getBoolean("robolectric.createActivityContexts")) {
+    if (attachedConfigListener.compareAndSet(false, true) && !willCreateActivityContexts()) {
       // To avoid infinite recursion listen to the system resources, this will be updated before
       // the application resources but because activities use the application resources they will
       // get updated by the first activity (via updateConfiguration).
@@ -146,7 +146,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
 
   @Override
   public void callApplicationOnCreate(Application app) {
-    if (Boolean.getBoolean("robolectric.createActivityContexts")) {
+    if (willCreateActivityContexts()) {
       shadowOf(app.getResources()).addConfigurationChangeListener(this::updateConfiguration);
     }
     applicationMonitor.signalLifecycleChange(app, ApplicationStage.PRE_ON_CREATE);
@@ -436,5 +436,10 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
         }
       }
     }
+  }
+
+  private static boolean willCreateActivityContexts() {
+    return RuntimeEnvironment.getApiLevel() >= O
+        && Boolean.getBoolean("robolectric.createActivityContexts");
   }
 }
