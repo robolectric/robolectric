@@ -31,9 +31,7 @@ import org.robolectric.annotation.processing.DocumentedMethod;
 import org.robolectric.annotation.processing.Helpers;
 import org.robolectric.annotation.processing.RobolectricModel;
 
-/**
- * Validator that checks usages of {@link org.robolectric.annotation.Implements}.
- */
+/** Validator that checks usages of {@link org.robolectric.annotation.Implements}. */
 public class ImplementsValidator extends Validator {
 
   public static final String IMPLEMENTS_CLASS = "org.robolectric.annotation.Implements";
@@ -47,17 +45,18 @@ public class ImplementsValidator extends Validator {
   private final Kind checkKind;
   private final SdkStore sdkStore;
 
-  /**
-   * Supported modes for validation of {@link Implementation} methods against SDKs.
-   */
+  /** Supported modes for validation of {@link Implementation} methods against SDKs. */
   public enum SdkCheckMode {
     OFF,
     WARN,
     ERROR
   }
 
-  public ImplementsValidator(RobolectricModel.Builder modelBuilder, ProcessingEnvironment env,
-      SdkCheckMode sdkCheckMode, SdkStore sdkStore) {
+  public ImplementsValidator(
+      RobolectricModel.Builder modelBuilder,
+      ProcessingEnvironment env,
+      SdkCheckMode sdkCheckMode,
+      SdkStore sdkStore) {
     super(modelBuilder, env, IMPLEMENTS_CLASS);
 
     this.env = env;
@@ -104,8 +103,7 @@ public class ImplementsValidator extends Validator {
     AnnotationValue maxSdkVal = Helpers.getAnnotationTypeMirrorValue(am, "maxSdk");
     int maxSdk = maxSdkVal == null ? -1 : Helpers.getAnnotationIntValue(maxSdkVal);
 
-    AnnotationValue shadowPickerValue =
-        Helpers.getAnnotationTypeMirrorValue(am, "shadowPicker");
+    AnnotationValue shadowPickerValue = Helpers.getAnnotationTypeMirrorValue(am, "shadowPicker");
 
     TypeElement shadowPickerTypeElement =
         shadowPickerValue == null
@@ -135,7 +133,7 @@ public class ImplementsValidator extends Validator {
     // from appearing in the generated files.
     // The version check is even more of a hack, and should be revisited as the
     // output in Robolectric_ShadowPickers.java makes little to no sense.
-    if (actualType == null 
+    if (actualType == null
         || !actualType.getModifiers().contains(Modifier.PUBLIC)
         || (maxSdk != -1 && maxSdk < MAX_SUPPORTED_ANDROID_SDK)) {
       addShadowNotInSdk(shadowType, av, cv, shadowPickerTypeElement);
@@ -252,8 +250,12 @@ public class ImplementsValidator extends Validator {
     }
   }
 
-  private void verifySdkMethod(String sdkClassName, ExecutableElement methodElement,
-      int classMinSdk, int classMaxSdk, boolean looseSignatures) {
+  private void verifySdkMethod(
+      String sdkClassName,
+      ExecutableElement methodElement,
+      int classMinSdk,
+      int classMaxSdk,
+      boolean looseSignatures) {
     if (sdkCheckMode == SdkCheckMode.OFF) {
       return;
     }
@@ -394,9 +396,7 @@ public class ImplementsValidator extends Validator {
         Set<Integer> sdks = e.getValue();
 
         StringBuilder buf = new StringBuilder();
-        buf.append(problem)
-            .append(" for ")
-            .append(sdks.size() == 1 ? "SDK " : "SDKs ");
+        buf.append(problem).append(" for ").append(sdks.size() == 1 ? "SDK " : "SDKs ");
 
         Integer previousSdk = null;
         Integer lastSdk = null;

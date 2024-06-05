@@ -15,10 +15,10 @@ public class ResetterValidatorTest {
     final String testClass =
         "org.robolectric.annotation.processing.shadows.ShadowResetterWithoutImplements";
     assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withErrorContaining("@Resetter without @Implements")
-      .onLine(7);
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining("@Resetter without @Implements")
+        .onLine(7);
   }
 
   @Test
@@ -26,10 +26,10 @@ public class ResetterValidatorTest {
     final String testClass =
         "org.robolectric.annotation.processing.shadows.ShadowResetterNonStatic";
     assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withErrorContaining("@Resetter methods must be static")
-      .onLine(10);
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining("@Resetter methods must be static")
+        .onLine(10);
   }
 
   @Test
@@ -37,10 +37,10 @@ public class ResetterValidatorTest {
     final String testClass =
         "org.robolectric.annotation.processing.shadows.ShadowResetterNonPublic";
     assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withErrorContaining("@Resetter methods must be public")
-      .onLine(10);
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining("@Resetter methods must be public")
+        .onLine(10);
   }
 
   @Test
@@ -48,10 +48,10 @@ public class ResetterValidatorTest {
     final String testClass =
         "org.robolectric.annotation.processing.shadows.ShadowResetterWithParameters";
     assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withErrorContaining("@Resetter methods must not have parameters")
-      .onLine(11);
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining("@Resetter methods must not have parameters")
+        .onLine(11);
   }
 
   @Test
@@ -71,8 +71,6 @@ public class ResetterValidatorTest {
   @Test
   public void goodResetter_shouldCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowDummy";
-    assertAbout(singleClass())
-      .that(testClass)
-      .compilesWithoutError();
+    assertAbout(singleClass()).that(testClass).compilesWithoutError();
   }
 }

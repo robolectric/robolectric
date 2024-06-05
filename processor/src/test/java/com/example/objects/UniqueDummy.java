@@ -3,10 +3,8 @@ package com.example.objects;
 public class UniqueDummy {
 
   @SuppressWarnings("ClassCanBeStatic")
-  public class InnerDummy {
-  }
+  public class InnerDummy {}
 
   @SuppressWarnings("ClassCanBeStatic")
-  public class UniqueInnerDummy {
-  }
+  public class UniqueInnerDummy {}
 }

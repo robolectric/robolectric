@@ -12,9 +12,7 @@ import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.tools.Diagnostic.Kind;
 import org.robolectric.annotation.processing.RobolectricModel;
 
-/**
- * Validator that checks usages of {@link org.robolectric.annotation.RealObject}.
- */
+/** Validator that checks usages of {@link org.robolectric.annotation.RealObject}. */
 public class RealObjectValidator extends FoundOnImplementsValidator {
 
   public RealObjectValidator(RobolectricModel.Builder modelBuilder, ProcessingEnvironment env) {
@@ -62,7 +60,7 @@ public class RealObjectValidator extends FoundOnImplementsValidator {
       };
 
   TypeElement parent;
-  
+
   @Override
   public Void visitVariable(VariableElement elem, TypeElement parent) {
     this.parent = parent;

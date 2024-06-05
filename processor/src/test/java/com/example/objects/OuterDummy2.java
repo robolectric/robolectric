@@ -2,15 +2,11 @@ package com.example.objects;
 
 public class OuterDummy2 {
   @SuppressWarnings("ClassCanBeStatic")
-  protected class InnerProtected {
-  }
+  protected class InnerProtected {}
 
   @SuppressWarnings("ClassCanBeStatic")
-  class InnerPackage {
-  }
+  class InnerPackage {}
 
   @SuppressWarnings(value = {"unused", "ClassCanBeStatic"})
-  private class InnerPrivate {
-    
-  }
+  private class InnerPrivate {}
 }

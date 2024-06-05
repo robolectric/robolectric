@@ -73,7 +73,7 @@ public class SdkStore {
   }
 
   /**
-   * Used to look up matching sdks for a declared shadow class.   Needed to then find the class from
+   * Used to look up matching sdks for a declared shadow class. Needed to then find the class from
    * the underlying sdks for comparison in the ImplementsValidator.
    */
   List<Sdk> sdksMatching(int classMinSdk, int classMaxSdk) {
@@ -519,14 +519,13 @@ public class SdkStore {
     }
 
     /**
-     * In order to compare typeMirror derived strings of Type parameters, ie
-     * `{@code Clazz<X extends Y>}`
-     * from a class definition, with a asm bytecode read string of the same, any extends info is not
-     * supplied by type parameters, but is by asm class readers
-     * `{@code Clazz<X extends Y> extends Clazz1}`.
+     * In order to compare typeMirror derived strings of Type parameters, ie `{@code Clazz<X extends
+     * Y>}` from a class definition, with a asm bytecode read string of the same, any extends info
+     * is not supplied by type parameters, but is by asm class readers `{@code Clazz<X extends Y>
+     * extends Clazz1}`.
      *
-     * This method can strip any extra information `{@code  extends Clazz1}`, from a Generics
-     * type parameter string provided by asm byte code readers.
+     * <p>This method can strip any extra information `{@code extends Clazz1}`, from a Generics type
+     * parameter string provided by asm byte code readers.
      */
     private static String stripExtends(String asmTypeSuffix) {
       int count = 0;

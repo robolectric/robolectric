@@ -12,9 +12,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.robolectric.annotation.processing.RobolectricModel;
 
-/**
- * Validator that checks usages of {@link org.robolectric.annotation.Resetter}.
- */
+/** Validator that checks usages of {@link org.robolectric.annotation.Resetter}. */
 public class ResetterValidator extends FoundOnImplementsValidator {
 
   private final Map<TypeElement, ExecutableElement> resetterMethodsByClass = new HashMap<>();
@@ -25,7 +23,7 @@ public class ResetterValidator extends FoundOnImplementsValidator {
 
   @Override
   public Void visitExecutable(ExecutableElement elem, TypeElement parent) {
-   if (imp != null) {
+    if (imp != null) {
       final Set<Modifier> modifiers = elem.getModifiers();
       boolean error = false;
       if (!modifiers.contains(Modifier.STATIC)) {

@@ -1,5 +1,3 @@
 package com.example.objects2;
 
-public class Dummy {
-
-}
+public class Dummy {}
