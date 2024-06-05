@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.HardwareRenderer;
@@ -439,8 +440,12 @@ public class ShadowNativeHardwareRenderer {
   }
 
   @Implementation(maxSdk = R)
-  protected static void nSetWideGamut(long nativeProxy, boolean wideGamut) {
-    // No-op
+  protected static void nSetWideGamut(long nativeProxy, boolean isWideColorGamut) {
+    nSetColorMode(
+        nativeProxy,
+        isWideColorGamut
+            ? ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT
+            : ActivityInfo.COLOR_MODE_DEFAULT);
   }
 
   /** Shadow picker for {@link HardwareRenderer}. */

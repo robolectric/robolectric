@@ -1,8 +1,10 @@
 package org.robolectric.integrationtests.nativegraphics;
 
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -20,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.reflector.ForType;
 
 @Config(minSdk = Q)
 @RunWith(RobolectricTestRunner.class)
@@ -28,6 +31,14 @@ public class ShadowNativeHardwareRendererTest {
   @Test
   public void test_hardwareRenderer() {
     HardwareRenderer unused = new HardwareRenderer();
+  }
+
+  @Config(maxSdk = R)
+  @Test
+  public void setWideGamut_doesNotCrash() {
+    HardwareRenderer renderer = new HardwareRenderer();
+    reflector(HardwareRendererReflector.class, renderer).setWideGamut(true);
+    reflector(HardwareRendererReflector.class, renderer).setWideGamut(false);
   }
 
   @Test
@@ -69,5 +80,10 @@ public class ShadowNativeHardwareRendererTest {
     canvas.drawRect(0, 0, width, height, paint);
     renderNode.endRecording();
     return renderNode;
+  }
+
+  @ForType(HardwareRenderer.class)
+  interface HardwareRendererReflector {
+    void setWideGamut(boolean wideGamut);
   }
 }
