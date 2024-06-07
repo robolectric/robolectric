@@ -44,15 +44,19 @@ public class ClassDetails {
     return className;
   }
 
-  public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
+  public boolean hasAnnotation(String annotationClassName) {
     if (annotations == null) {
       this.annotations = new HashSet<>();
       classReader.accept(
           new AnnotationCollector(annotations),
           ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
     }
-    String internalName = "L" + annotationClass.getName().replace('.', '/') + ";";
+    String internalName = "L" + annotationClassName.replace('.', '/') + ";";
     return this.annotations.contains(internalName);
+  }
+
+  public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
+    return hasAnnotation(annotationClass.getName());
   }
 
   public boolean isInstrumented() {
