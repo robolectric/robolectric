@@ -1,7 +1,7 @@
 package org.robolectric.junit.rules;
 
-import androidx.annotation.NonNull;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -29,7 +29,7 @@ import org.robolectric.internal.TimeLimitedStatement;
 public class TimeoutRule implements TestRule {
 
   private final long timeout;
-  @NonNull private final TimeUnit timeUnit;
+  @Nonnull private final TimeUnit timeUnit;
 
   /**
    * Create a {@code TimeoutRule} instance with the timeout specified at the timeUnit of granularity
@@ -38,7 +38,7 @@ public class TimeoutRule implements TestRule {
    * @param timeout the maximum time to allow the test to run before it should timeout
    * @param timeUnit the time unit for the {@code timeout}
    */
-  public TimeoutRule(long timeout, @NonNull TimeUnit timeUnit) {
+  public TimeoutRule(long timeout, @Nonnull TimeUnit timeUnit) {
     this.timeout = timeout;
     this.timeUnit = timeUnit;
   }
