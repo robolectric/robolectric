@@ -60,12 +60,10 @@ public class ShadowNativeSurface {
         surfaceObject, blastBufferQueueNativeObject);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nativeLockCanvas(long nativeObject, Canvas canvas, Rect dirty)
       throws OutOfResourcesException {
-    // Do not call the nativeLockCanvas method. It is not implemented, and calling it can
-    // only result in a native crash (unlocking the canvas wipes out this Surface native object).
-    throw new UnsupportedOperationException("Not implemented yet");
+    return SurfaceNatives.nativeLockCanvas(nativeObject, canvas, dirty);
   }
 
   @Implementation(maxSdk = U.SDK_INT)
