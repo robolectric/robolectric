@@ -76,13 +76,15 @@ public class ShadowMap {
     String instrumentedClassName = clazz.getName();
 
     ShadowInfo shadowInfo = overriddenShadows.get(instrumentedClassName);
-    if (shadowInfo == null) {
-      shadowInfo = checkShadowPickers(instrumentedClassName, clazz);
-    } else if (shadowInfo.hasShadowPicker()) {
-      shadowInfo = pickShadow(instrumentedClassName, clazz, shadowInfo);
+    String shadowPickerClassName = null;
+    if (shadowInfo != null && shadowInfo.hasShadowPicker()) {
+      shadowPickerClassName = shadowInfo.getShadowPickerClass().getName();
+    } else if (shadowInfo == null) {
+      shadowPickerClassName = shadowPickers.get(instrumentedClassName);
     }
-
-    if (shadowInfo == null && clazz.getClassLoader() != null) {
+    if (shadowPickerClassName != null) {
+      shadowInfo = pickShadow(instrumentedClassName, clazz, shadowPickerClassName);
+    } else if (shadowInfo == null) {
       try {
         final ImmutableList<String> shadowNames = defaultShadows.get(clazz.getCanonicalName());
         for (String shadowName : shadowNames) {
@@ -102,22 +104,10 @@ public class ShadowMap {
         return null;
       }
     }
-
     if (shadowInfo != null && !shadowMatcher.matches(shadowInfo)) {
       return null;
     }
-
     return shadowInfo;
-  }
-
-  // todo: some caching would probably be nice here...
-  private ShadowInfo checkShadowPickers(String instrumentedClassName, Class<?> clazz) {
-    String shadowPickerClassName = shadowPickers.get(instrumentedClassName);
-    if (shadowPickerClassName == null) {
-      return null;
-    }
-
-    return pickShadow(instrumentedClassName, clazz, shadowPickerClassName);
   }
 
   private ShadowInfo pickShadow(
@@ -151,11 +141,6 @@ public class ShadowMap {
         | InstantiationException e) {
       throw new RuntimeException("Failed to resolve shadow picker for " + instrumentedClassName, e);
     }
-  }
-
-  private ShadowInfo pickShadow(
-      String instrumentedClassName, Class<?> clazz, ShadowInfo shadowInfo) {
-    return pickShadow(instrumentedClassName, clazz, shadowInfo.getShadowPickerClass().getName());
   }
 
   public static ShadowInfo obtainShadowInfo(Class<?> clazz) {

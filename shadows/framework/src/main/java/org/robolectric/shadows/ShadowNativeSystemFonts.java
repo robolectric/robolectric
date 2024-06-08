@@ -125,7 +125,7 @@ public class ShadowNativeSystemFonts {
   /** Shadow picker for {@link SystemFonts}. */
   public static final class Picker extends GraphicsShadowPicker<Object> {
     public Picker() {
-      super(null, ShadowNativeSystemFonts.class);
+      super(ShadowSystemFonts.class, ShadowNativeSystemFonts.class);
     }
   }
 }
