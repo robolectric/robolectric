@@ -27,6 +27,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
 import org.robolectric.shadows.ShadowNativeHardwareRenderer.Picker;
+import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link HardwareRenderer} that is backed by native code */
@@ -107,6 +108,11 @@ public class ShadowNativeHardwareRenderer {
   @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetName(long nativeProxy, String name) {
     HardwareRendererNatives.nSetName(nativeProxy, name);
+  }
+
+  @Implementation(minSdk = Q, maxSdk = Q)
+  protected static void nSetSurface(long nativeProxy, Surface window) {
+    HardwareRendererNatives.nSetSurface(nativeProxy, window, false);
   }
 
   @Implementation(minSdk = R, maxSdk = U.SDK_INT)
@@ -446,6 +452,13 @@ public class ShadowNativeHardwareRenderer {
         isWideColorGamut
             ? ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT
             : ActivityInfo.COLOR_MODE_DEFAULT);
+  }
+
+  @ForType(HardwareRenderer.class)
+  interface HardwareRendererReflector {
+    void setWideGamut(boolean isWideColorGamut);
+
+    void setSurface(Surface surface);
   }
 
   /** Shadow picker for {@link HardwareRenderer}. */

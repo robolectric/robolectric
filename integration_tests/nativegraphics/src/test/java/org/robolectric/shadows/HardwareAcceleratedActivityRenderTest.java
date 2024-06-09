@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Activity;
@@ -23,7 +23,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(minSdk = S)
+@Config(minSdk = Q)
 public class HardwareAcceleratedActivityRenderTest {
   @Test
   public void hardwareAcceleratedActivity_setup() throws Exception {

@@ -67,7 +67,7 @@ public class ShadowNativeImageReaderSurfaceImage {
 
     @Override
     protected int getMinApiLevel() {
-      return S;
+      return Q;
     }
   }
 }

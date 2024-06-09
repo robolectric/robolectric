@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -49,7 +48,7 @@ public class ShadowNativeHardwareRendererTest {
   }
 
   @Test
-  @Config(minSdk = S)
+  @Config(minSdk = Q)
   public void imageReader_readsRenderedDisplayList() {
     int width = 100;
     int height = 100;
