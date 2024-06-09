@@ -9,6 +9,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
@@ -141,7 +142,6 @@ public class ShadowWranglerIntegrationTest {
       throw new IOException("fake exception");
     }
   }
-
 
   @Test
   @SandboxConfig(shadows = ShadowThrowInRealMethod.class)
@@ -348,6 +348,35 @@ public class ShadowWranglerIntegrationTest {
   public static class AClassWithDifficultArgs {
     public CharSequence aMethod(CharSequence s) {
       return s;
+    }
+  }
+
+  @SandboxConfig(shadows = ShadowAClassWithDifficultArgsUseClassName.class)
+  @Test
+  public void methodMatch_shouldAllowClassNameAnnotatedMatches() throws Exception {
+    assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("ClassNameAnnotated-bc");
+  }
+
+  @SandboxConfig(shadows = ShadowAClassWithDifficultArgsUseClassNameWithMethodRename.class)
+  @Test
+  public void methodMatch_classNameAnnotatedMatchesSupportMethodRename() throws Exception {
+    assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("ClassNameAnnotated-bc");
+  }
+
+  @Implements(value = AClassWithDifficultArgs.class)
+  public static class ShadowAClassWithDifficultArgsUseClassName {
+
+    protected Object aMethod(@ClassName("java.lang.CharSequence") Object s) {
+      return "ClassNameAnnotated-" + s;
+    }
+  }
+
+  @Implements(value = AClassWithDifficultArgs.class)
+  public static class ShadowAClassWithDifficultArgsUseClassNameWithMethodRename {
+
+    @Implementation(methodName = "aMethod")
+    protected Object renamedMethod(@ClassName("java.lang.CharSequence") Object s) {
+      return "ClassNameAnnotated-" + s;
     }
   }
 
