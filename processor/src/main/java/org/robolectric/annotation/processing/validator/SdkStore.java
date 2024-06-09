@@ -31,6 +31,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -45,6 +47,7 @@ import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.TraceSignatureVisitor;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.InDevelopment;
 import org.robolectric.versioning.AndroidVersionInitTools;
@@ -575,6 +578,25 @@ public class SdkStore {
       for (VariableElement variableElement : methodElement.getParameters()) {
         TypeMirror varTypeMirror = variableElement.asType();
         String paramType = canonicalize(varTypeMirror);
+
+        // If parameter is annotated with @ClassName, then use the indicated type instead.
+        List<? extends AnnotationMirror> annotationMirrors = variableElement.getAnnotationMirrors();
+        for (AnnotationMirror am : annotationMirrors) {
+          if (am.getAnnotationType().toString().equals(ClassName.class.getName())) {
+            Map<? extends ExecutableElement, ? extends AnnotationValue> annotationEntries =
+                am.getElementValues();
+            Set<? extends ExecutableElement> keys = annotationEntries.keySet();
+            for (ExecutableElement key : keys) {
+              if ("value()".equals(key.toString())) {
+                AnnotationValue annotationValue = annotationEntries.get(key);
+                paramType = annotationValue.getValue().toString().replace('$', '.');
+                break;
+              }
+            }
+            break;
+          }
+        }
+
         String paramTypeWithoutGenerics = typeWithoutGenerics(paramType);
         paramTypes.add(paramTypeWithoutGenerics);
       }
