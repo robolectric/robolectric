@@ -304,6 +304,20 @@ public class ReflectionHelpersTest {
         .isFalse();
   }
 
+  @Test
+  public void createDelegatingProxy_defersToNullProxyIfNoMethodMatches() {
+    DelegatingProxyFixture fixture =
+        ReflectionHelpers.createDelegatingProxy(DelegatingProxyFixture.class, new Object());
+    assertThat(fixture.delegateMethod()).isNull();
+  }
+
+  @Test
+  public void createDelegatingProxy_defersToDelegate() {
+    DelegatingProxyFixture fixture =
+        ReflectionHelpers.createDelegatingProxy(DelegatingProxyFixture.class, new Delegate());
+    assertThat(fixture.delegateMethod()).isEqualTo("called");
+  }
+
   @SuppressWarnings("serial")
   private static class TestError extends Error {}
 
@@ -425,5 +439,16 @@ public class ReflectionHelpersTest {
     public static String unusedStaticName = "unusedStaticNameValue";
 
     private FieldTestClass() {}
+  }
+
+  private interface DelegatingProxyFixture {
+    String delegateMethod();
+  }
+
+  /** A delegate for DelegatingProxyFixture */
+  private static class Delegate {
+    public String delegateMethod() {
+      return "called";
+    }
   }
 }
