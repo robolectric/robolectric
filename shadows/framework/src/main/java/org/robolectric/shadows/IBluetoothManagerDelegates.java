@@ -36,7 +36,7 @@ class IBluetoothManagerDelegates {
 
     public IBluetoothGatt getBluetoothGatt() {
       if (iBluetoothGatt == null) {
-        iBluetoothGatt = IBluetoothGattDelegates.createIBluetoothGatt();
+        iBluetoothGatt = BluetoothGattProxyDelegate.createBluetoothGattProxy();
       }
       return iBluetoothGatt;
     }

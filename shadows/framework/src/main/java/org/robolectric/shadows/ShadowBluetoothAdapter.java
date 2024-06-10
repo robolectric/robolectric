@@ -762,7 +762,7 @@ public class ShadowBluetoothAdapter {
   @Implementation(minSdk = V.SDK_INT)
   protected IBluetoothGatt getBluetoothGatt() {
     if (ibluetoothGatt == null) {
-      ibluetoothGatt = IBluetoothGattDelegates.createIBluetoothGatt();
+      ibluetoothGatt = BluetoothGattProxyDelegate.createBluetoothGattProxy();
     }
     return ibluetoothGatt;
   }
