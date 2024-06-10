@@ -31,6 +31,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -193,12 +194,16 @@ public class ShadowDisplayManagerGlobal {
       registerCallback(iDisplayManagerCallback);
     }
 
-    // @Override
+    // for android U
+    // Use Object here instead of VirtualDisplayConfig to avoid breaking projects that still
+    // compile against SDKs < U
     public int createVirtualDisplay(
-        VirtualDisplayConfig config,
+        @ClassName("android.hardware.display.VirtualDisplayConfig")
+            Object virtualDisplayConfigObject,
         IVirtualDisplayCallback callbackWrapper,
         IMediaProjection projectionToken,
         String packageName) {
+      VirtualDisplayConfig config = (VirtualDisplayConfig) virtualDisplayConfigObject;
       DisplayInfo displayInfo = new DisplayInfo();
       displayInfo.flags = config.getFlags();
       displayInfo.type = Display.TYPE_VIRTUAL;
@@ -217,7 +222,7 @@ public class ShadowDisplayManagerGlobal {
       return id;
     }
 
-    // @Override
+    // for android U
     public void resizeVirtualDisplay(
         IVirtualDisplayCallback token, int width, int height, int densityDpi) {
       Integer id = virtualDisplayIds.get(token);
@@ -231,7 +236,7 @@ public class ShadowDisplayManagerGlobal {
       changeDisplay(id, displayInfo);
     }
 
-    // @Override
+    // for android U
     public void releaseVirtualDisplay(IVirtualDisplayCallback token) {
       if (virtualDisplayIds.containsKey(token)) {
         removeDisplay(virtualDisplayIds.remove(token));
