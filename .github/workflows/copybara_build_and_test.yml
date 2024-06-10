@@ -41,4 +41,13 @@ jobs:
             -Drobolectric.enabledSdks=34 \
             -Dorg.gradle.workers.max=2 \
             -x :integration_tests:nativegraphics:test \
+            -x :integration_tests:dependency-on-stubs:test \
           )
+
+      - name: SdkCompat tests
+        run: |
+          # `SdkCompat tests` is run as a separate step because it has to run on all SDK levels, and
+          # the `Integration tests` step only runs on a single SDK level.
+          SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
+          ./gradlew :integration_tests:dependency-on-stubs:test --info --stacktrace --continue --no-watch-fs \
+          -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
