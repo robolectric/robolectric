@@ -202,7 +202,7 @@ public class ImplementsValidator extends Validator {
       for (SdkStore.Sdk sdk : sdkStore.sdksMatching(classMinSdk, classMaxSdk)) {
         SdkStore.ClassInfo classInfo = sdk.getClassInfo(shadowedClassName);
         if (classInfo == null) {
-          if (!sdk.suppressWarnings(shadowClassElem, "robolectric.typeNotFound")) {
+          if (!sdk.suppressWarnings(shadowClassElem, "robolectric.internal.IgnoreMissingClass")) {
             problems.add("Shadowed type is not found: " + shadowedClassName, sdk.sdkInt);
           }
         } else {
