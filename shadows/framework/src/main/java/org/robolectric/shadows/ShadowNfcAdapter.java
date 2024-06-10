@@ -30,7 +30,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /** Shadow implementation of {@link NfcAdapter}. */
-@Implements(NfcAdapter.class)
+@Implements(value = NfcAdapter.class, looseSignatures = true)
 public class ShadowNfcAdapter {
   @RealObject NfcAdapter nfcAdapter;
 
@@ -281,8 +281,9 @@ public class ShadowNfcAdapter {
     return true;
   }
 
+  // TODO: use NfcAntennaInfo when minimum supported compile SDK is >= android U
   @Implementation(minSdk = UPSIDE_DOWN_CAKE)
-  protected NfcAntennaInfo getNfcAntennaInfo() {
+  protected Object /* NfcAntennaInfo */ getNfcAntennaInfo() {
     synchronized (this) {
       return nfcAntennaInfo;
     }
@@ -341,8 +342,9 @@ public class ShadowNfcAdapter {
     return ndefPushMessage;
   }
 
-  public synchronized void setNfcAntennaInfo(NfcAntennaInfo nfcAntennaInfo) {
-    this.nfcAntennaInfo = nfcAntennaInfo;
+  // TODO: use NfcAntennaInfo when minimum supported compile SDK is >= android U
+  public synchronized void setNfcAntennaInfo(Object /* NfcAntennaInfo */ nfcAntennaInfo) {
+    this.nfcAntennaInfo = (NfcAntennaInfo) nfcAntennaInfo;
   }
 
   @Resetter
