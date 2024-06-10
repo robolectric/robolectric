@@ -7,7 +7,7 @@ apply plugin: GradleManagedDevicePlugin
 
 android {
     compileSdk 34
-    namespace 'org.robolectric.integrationtests.nativegraphics'
+    namespace 'org.robolectric.shadows'
 
     defaultConfig {
         minSdk 26
