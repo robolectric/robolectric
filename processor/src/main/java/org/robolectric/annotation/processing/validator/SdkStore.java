@@ -302,9 +302,7 @@ public class SdkStore {
           }
           if (!implMethod.returnType.equals(sdkMethod.returnType)) {
             if ((looseSignatures && typeIsOkForLooseSignatures(implMethod, sdkMethod))
-                || (looseSignatures && implMethod.returnType.equals("java.lang.Object[]"))
-                // Number is allowed for int or long return types
-                || typeIsNumeric(sdkMethod, implMethod)) {
+                || (looseSignatures && implMethod.returnType.equals("java.lang.Object[]"))) {
               return null;
             } else {
               return "@Implementation for "
@@ -348,11 +346,6 @@ public class SdkStore {
       return false;
     }
 
-    private static boolean typeIsNumeric(MethodExtraInfo sdkMethod, MethodExtraInfo implMethod) {
-      return implMethod.returnType.equals("java.lang.Number")
-          && isNumericType(sdkMethod.returnType);
-    }
-
     private static boolean typeIsOkForLooseSignatures(
         MethodExtraInfo implMethod, MethodExtraInfo sdkMethod) {
       return
@@ -361,10 +354,6 @@ public class SdkStore {
           // or Object[] for arrays...
           || (implMethod.returnType.equals("java.lang.Object[]")
               && sdkMethod.returnType.endsWith("[]"));
-    }
-
-    private static boolean isNumericType(String type) {
-      return type.equals("int") || type.equals("long");
     }
 
     /**

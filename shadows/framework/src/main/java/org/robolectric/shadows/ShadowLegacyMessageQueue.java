@@ -46,8 +46,7 @@ public class ShadowLegacyMessageQueue extends ShadowMessageQueue {
   // rather than automatic.
   @HiddenApi
   @Implementation
-  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
-  public static Number nativeInit() {
+  public static long nativeInit() {
     return 1;
   }
 

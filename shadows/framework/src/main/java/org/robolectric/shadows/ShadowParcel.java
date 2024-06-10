@@ -269,8 +269,8 @@ public class ShadowParcel {
       realObject.writeInt(-1);
       return;
     }
-    Number nativePtr = ReflectionHelpers.getField(realObject, "mNativePtr");
-    nativeWriteByteArray(nativePtr.longValue(), b, offset, len);
+    long nativePtr = ReflectionHelpers.getField(realObject, "mNativePtr");
+    nativeWriteByteArray(nativePtr, b, offset, len);
   }
 
   @Implementation
