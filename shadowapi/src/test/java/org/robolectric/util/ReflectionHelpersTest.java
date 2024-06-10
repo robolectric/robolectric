@@ -6,9 +6,11 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
+import javax.annotation.Nullable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(JUnit4.class)
@@ -318,6 +320,43 @@ public class ReflectionHelpersTest {
     assertThat(fixture.delegateMethod()).isEqualTo("called");
   }
 
+  @Test
+  public void createDelegatingProxy_defersToDelegateWithParams() {
+    DelegatingProxyFixture fixture =
+        ReflectionHelpers.createDelegatingProxy(DelegatingProxyFixture.class, new Delegate());
+    assertThat(fixture.delegateMethod("value")).isEqualTo("called value");
+  }
+
+  @Test
+  public void createDelegatingProxy_wrongParamType() {
+    DelegatingProxyFixture fixture =
+        ReflectionHelpers.createDelegatingProxy(DelegatingProxyFixture.class, new Delegate());
+    // verify the mismatched delegate method doesn't get matched
+    assertThat(fixture.delegateMethodWrongParamType("value")).isNull();
+  }
+
+  @Test
+  public void createDelegatingProxy_wrongVisibility() {
+    DelegatingProxyFixture fixture =
+        ReflectionHelpers.createDelegatingProxy(DelegatingProxyFixture.class, new Delegate());
+    // verify the mismatched delegate method doesn't get matched
+    assertThat(fixture.delegateMethodWrongVisibility("value")).isNull();
+  }
+
+  @Test
+  public void createDelegatingProxy_className() {
+    DelegatingProxyFixture fixture =
+        ReflectionHelpers.createDelegatingProxy(DelegatingProxyFixture.class, new Delegate());
+    assertThat(fixture.delegateMethodWithClassName("value")).isEqualTo("called ClassName value");
+  }
+
+  @Test
+  public void createDelegatingProxy_multipleParams() {
+    DelegatingProxyFixture fixture =
+        ReflectionHelpers.createDelegatingProxy(DelegatingProxyFixture.class, new Delegate());
+    assertThat(fixture.delegateMethod("value", "value2")).isEqualTo("called valuevalue2");
+  }
+
   @SuppressWarnings("serial")
   private static class TestError extends Error {}
 
@@ -443,12 +482,46 @@ public class ReflectionHelpersTest {
 
   private interface DelegatingProxyFixture {
     String delegateMethod();
+
+    String delegateMethod(String value);
+
+    String delegateMethod(String value, String value2);
+
+    String delegateMethodWrongParamType(String value);
+
+    String delegateMethodWithClassName(String value);
+
+    String delegateMethodWrongVisibility(String value);
   }
 
   /** A delegate for DelegatingProxyFixture */
   private static class Delegate {
     public String delegateMethod() {
       return "called";
+    }
+
+    public String delegateMethod(String value) {
+      return "called " + value;
+    }
+
+    public String delegateMethod(String value, String value2) {
+      return "called " + value + value2;
+    }
+
+    public String delegateMethodWrongParamType(int value) {
+      throw new IllegalStateException("delegateMethodWrongParamType unexpectedly called");
+    }
+
+    /**
+     * Add a Nullable annotation as well as ClassName to ensure logic handles multiple annotations
+     */
+    public String delegateMethodWithClassName(
+        @Nullable @ClassName("java.lang.String") Object value) {
+      return "called ClassName " + (String) value;
+    }
+
+    String delegateMethodWrongVisibility(String value) {
+      throw new IllegalStateException("delegateMethodWrongVisibility unexpectedly called");
     }
   }
 }
