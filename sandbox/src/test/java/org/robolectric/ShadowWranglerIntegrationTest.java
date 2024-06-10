@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import org.junit.Before;
@@ -15,7 +14,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.bytecode.SandboxConfig;
-import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.testing.Foo;
 import org.robolectric.testing.ShadowFoo;
@@ -102,17 +100,6 @@ public class ShadowWranglerIntegrationTest {
   }
 
   @Test
-  public void testPrimitiveArrays() throws Exception {
-    Class<?> objArrayClass = ShadowWrangler.loadClass("java.lang.Object[]", getClass().getClassLoader());
-    assertTrue(objArrayClass.isArray());
-    assertEquals(Object.class, objArrayClass.getComponentType());
-
-    Class<?> intArrayClass = ShadowWrangler.loadClass("int[]", getClass().getClassLoader());
-    assertTrue(intArrayClass.isArray());
-    assertEquals(Integer.TYPE, intArrayClass.getComponentType());
-  }
-
-  @Test
   @SandboxConfig(shadows = ShadowThrowInShadowMethod.class)
   public void shouldRemoveNoiseFromShadowedStackTraces() throws Exception {
     ThrowInShadowMethod instance = new ThrowInShadowMethod();
@@ -178,7 +165,8 @@ public class ShadowWranglerIntegrationTest {
     assertThat(stackTrace[0].getLineNumber()).isGreaterThan(0);
 
     assertThat(stackTrace[1].getClassName()).isEqualTo(ShadowWranglerIntegrationTest.class.getName());
-    assertThat(stackTrace[1].getMethodName()).isEqualTo("shouldRemoveNoiseFromUnshadowedStackTraces");
+    assertThat(stackTrace[1].getMethodName())
+        .isEqualTo("shouldRemoveNoiseFromUnshadowedStackTraces");
     assertThat(stackTrace[1].getLineNumber()).isGreaterThan(0);
   }
 

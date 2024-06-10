@@ -8,10 +8,10 @@ import static java.lang.invoke.MethodType.methodType;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import com.google.auto.service.AutoService;
+import com.google.errorprone.annotations.Keep;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -133,32 +133,6 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
-  public static Class<?> loadClass(String paramType, ClassLoader classLoader) {
-    Class<?> primitiveClass = RoboType.findPrimitiveClass(paramType);
-    if (primitiveClass != null) return primitiveClass;
-
-    int arrayLevel = 0;
-    while (paramType.endsWith("[]")) {
-      arrayLevel++;
-      paramType = paramType.substring(0, paramType.length() - 2);
-    }
-
-    Class<?> clazz = RoboType.findPrimitiveClass(paramType);
-    if (clazz == null) {
-      try {
-        clazz = classLoader.loadClass(paramType);
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    while (arrayLevel-- > 0) {
-      clazz = Array.newInstance(clazz, 0).getClass();
-    }
-
-    return clazz;
-  }
-
   @SuppressWarnings("ReferenceEquality")
   @Override
   public void classInitializing(Class clazz) {
@@ -186,11 +160,6 @@ public class ShadowWrangler implements ClassHandler {
     } catch (InvocationTargetException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public Object initializing(Object instance) {
-    return createShadowFor(instance);
   }
 
   @SuppressWarnings({"ReferenceEquality"})
@@ -430,30 +399,6 @@ public class ShadowWrangler implements ClassHandler {
     return throwable;
   }
 
-  Object createShadowFor(Object instance) {
-    Class<?> theClass = instance.getClass();
-    Object shadow = createShadowFor(theClass);
-    injectRealObjectOn(shadow, instance);
-    injectReflectorObjectOn(shadow, instance);
-    return shadow;
-  }
-
-  private Object createShadowFor(Class<?> theClass) {
-    ShadowInfo shadowInfo = getShadowInfo(theClass);
-    if (shadowInfo == null) {
-      return NO_SHADOW;
-    } else {
-      try {
-        Class<?> shadowClass = loadClass(shadowInfo.shadowClassName, theClass.getClassLoader());
-        ShadowMetadata shadowMetadata = getShadowMetadata(shadowClass);
-        return shadowMetadata.constructor.newInstance();
-      } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-        throw new RuntimeException(
-            "Could not instantiate shadow " + shadowInfo.shadowClassName + " for " + theClass, e);
-      }
-    }
-  }
-
   private ShadowMetadata getShadowMetadata(Class<?> shadowClass) {
     return cachedShadowMetadata.get(shadowClass);
   }
@@ -495,13 +440,7 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
-  private void injectRealObjectOn(Object shadow, Object instance) {
-    ShadowMetadata shadowMetadata = getShadowMetadata(shadow.getClass());
-    for (Field realObjectField : shadowMetadata.realObjectFields) {
-      setField(shadow, instance, realObjectField);
-    }
-  }
-
+  @Keep // This method is looked up using reflection.
   private void injectReflectorObjectOn(Object shadow, Object instance) {
     ShadowMetadata shadowMetadata = getShadowMetadata(shadow.getClass());
     for (Field reflectorObjectField : shadowMetadata.reflectorObjectFields) {
