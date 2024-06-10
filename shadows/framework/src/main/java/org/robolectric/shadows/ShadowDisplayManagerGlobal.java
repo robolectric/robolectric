@@ -50,7 +50,7 @@ public class ShadowDisplayManagerGlobal {
   private final List<BrightnessChangeEvent> brightnessChangeEvents = new ArrayList<>();
   private Object defaultBrightnessConfiguration;
 
-  private MyDisplayManager mDm;
+  private DisplayManagerProxyDelegate mDm;
 
   @Resetter
   public static void reset() {
@@ -68,12 +68,13 @@ public class ShadowDisplayManagerGlobal {
   @Implementation
   public static synchronized DisplayManagerGlobal getInstance() {
     if (instance == null) {
-      MyDisplayManager myIDisplayManager = new MyDisplayManager();
+      DisplayManagerProxyDelegate displayManagerProxyDelegate = new DisplayManagerProxyDelegate();
       IDisplayManager proxy =
-          ReflectionHelpers.createDelegatingProxy(IDisplayManager.class, myIDisplayManager);
+          ReflectionHelpers.createDelegatingProxy(
+              IDisplayManager.class, displayManagerProxyDelegate);
       instance = newDisplayManagerGlobal(proxy);
       ShadowDisplayManagerGlobal shadow = Shadow.extract(instance);
-      shadow.mDm = myIDisplayManager;
+      shadow.mDm = displayManagerProxyDelegate;
       Bootstrap.setUpDisplay();
     }
     return instance;
@@ -145,7 +146,14 @@ public class ShadowDisplayManagerGlobal {
     mDm.removeDisplay(displayId);
   }
 
-  private static class MyDisplayManager {
+  /**
+   * A delegating proxy for the IDisplayManager system service.
+   *
+   * <p>The method signatures here must exactly match the IDisplayManager interface.
+   *
+   * @see ReflectionHelpers#createDelegatingProxy(Class, Object)
+   */
+  private static class DisplayManagerProxyDelegate {
     private final TreeMap<Integer, DisplayInfo> displayInfos = new TreeMap<>();
     private int nextDisplayId = 0;
     private final List<IDisplayManagerCallback> callbacks = new ArrayList<>();
