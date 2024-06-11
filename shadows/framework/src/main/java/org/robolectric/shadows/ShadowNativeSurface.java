@@ -5,9 +5,12 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Canvas;
+import android.graphics.HardwareRenderer;
 import android.graphics.Rect;
+import android.graphics.RenderNode;
 import android.graphics.SurfaceTexture;
 import android.hardware.HardwareBuffer;
 import android.os.Parcel;
@@ -15,9 +18,14 @@ import android.view.Surface;
 import android.view.Surface.OutOfResourcesException;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.SurfaceNatives;
+import org.robolectric.shadows.ShadowNativeHardwareRenderer.HardwareRendererReflector;
 import org.robolectric.shadows.ShadowNativeSurface.Picker;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Surface} that is backed by native code */
@@ -60,12 +68,10 @@ public class ShadowNativeSurface {
         surfaceObject, blastBufferQueueNativeObject);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nativeLockCanvas(long nativeObject, Canvas canvas, Rect dirty)
       throws OutOfResourcesException {
-    // Do not call the nativeLockCanvas method. It is not implemented, and calling it can
-    // only result in a native crash (unlocking the canvas wipes out this Surface native object).
-    throw new UnsupportedOperationException("Not implemented yet");
+    return SurfaceNatives.nativeLockCanvas(nativeObject, canvas, dirty);
   }
 
   @Implementation(maxSdk = U.SDK_INT)
@@ -150,6 +156,90 @@ public class ShadowNativeSurface {
       long nativeObject, float frameRate, int compatibility, int changeFrameRateStrategy) {
     return SurfaceNatives.nativeSetFrameRate(
         nativeObject, frameRate, compatibility, changeFrameRateStrategy);
+  }
+
+  /**
+   * Shadow for {@link Surface$HwuiContext} for Q and below that invokes HardwareRenderer methods.
+   * In Q and below, HwuiContext had its own native methods.
+   */
+  @Implements(
+      className = "android.view.Surface$HwuiContext",
+      minSdk = Q,
+      maxSdk = Q,
+      isInAndroidSdk = false,
+      shadowPicker = ShadowNativeHwuiContext.Picker.class)
+  public static class ShadowNativeHwuiContext {
+    @RealObject Object realHwuiContext;
+
+    // This object is a HardwareRenderer in Q, but is a ThreadedRenderer in O and P.
+    private Object hardwareRenderer;
+
+    @Implementation
+    protected void __constructor__(Surface surface, boolean isWideColorGamut) {
+      // Modeled after the HwuiContext constructor in R:
+      // https://cs.android.com/android/platform/superproject/+/android11-dev:frameworks/base/core/java/android/view/Surface.java
+      reflector(HwuiContextReflector.class, realHwuiContext)
+          .__constructor__(surface, isWideColorGamut);
+      HardwareRenderer hardwareRenderer = new HardwareRenderer();
+      RenderNode renderNode =
+          reflector(HwuiContextReflector.class, realHwuiContext).getRenderNode();
+      hardwareRenderer.setContentRoot(renderNode);
+      hardwareRenderer.setSurface(surface);
+      reflector(HardwareRendererReflector.class, hardwareRenderer).setWideGamut(isWideColorGamut);
+      hardwareRenderer.setLightSourceAlpha(0.0f, 0.0f);
+      hardwareRenderer.setLightSourceGeometry(0.0f, 0.0f, 0.0f, 0.0f);
+      this.hardwareRenderer = hardwareRenderer;
+    }
+
+    @Implementation
+    protected void unlockAndPost(Canvas canvas) {
+      RenderNode renderNode =
+          reflector(HwuiContextReflector.class, realHwuiContext).getRenderNode();
+      renderNode.endRecording();
+      reflector(HwuiContextReflector.class, realHwuiContext).setCanvas(null);
+      ((HardwareRenderer) hardwareRenderer)
+          .createRenderRequest()
+          .setVsyncTime(System.nanoTime())
+          .syncAndDraw();
+    }
+
+    @Implementation
+    protected void updateSurface() {
+      Surface surface = reflector(HwuiContextReflector.class, realHwuiContext).getOuterSurface();
+      reflector(HardwareRendererReflector.class, hardwareRenderer).setSurface(surface);
+    }
+
+    @Implementation
+    protected void destroy() {
+      ((HardwareRenderer) hardwareRenderer).destroy();
+    }
+
+    @ForType(className = "android.view.Surface$HwuiContext")
+    interface HwuiContextReflector {
+      @Direct
+      void __constructor__(Surface surface, boolean isWideColorGamut);
+
+      @Accessor("mRenderNode")
+      RenderNode getRenderNode();
+
+      @Accessor("mCanvas")
+      void setCanvas(Canvas canvas);
+
+      @Accessor("this$0")
+      Surface getOuterSurface();
+    }
+
+    /** Shadow picker for HwuiContext. */
+    public static final class Picker extends GraphicsShadowPicker<Object> {
+      public Picker() {
+        super(null, ShadowNativeHwuiContext.class);
+      }
+    }
+  }
+
+  @Implementation(minSdk = Q, maxSdk = Q)
+  protected static long nHwuiCreate(long rootNode, long surface, boolean isWideColorGamut) {
+    return 0; // no-op
   }
 
   /** Shadow picker for {@link Surface}. */

@@ -96,7 +96,9 @@ public class InstrumentationConfiguration {
         && !classDetails.hasAnnotation(DoNotInstrument.class)
         && (isInInstrumentedPackage(classDetails.getName())
             || instrumentedClasses.contains(classDetails.getName())
-            || classDetails.hasAnnotation(Instrument.class));
+            || classDetails.hasAnnotation(Instrument.class))
+        && !classDetails.hasAnnotation(
+            "org.junit.runner.RunWith"); // Don't instrument test classes.
   }
 
   private boolean classMatchesExclusionRegex(String className) {

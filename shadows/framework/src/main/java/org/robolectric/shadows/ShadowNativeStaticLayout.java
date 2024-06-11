@@ -18,7 +18,6 @@ import org.robolectric.nativeruntime.MeasuredTextBuilderNatives;
 import org.robolectric.nativeruntime.MeasuredTextNatives;
 import org.robolectric.nativeruntime.NativeAllocationRegistryNatives;
 import org.robolectric.res.android.NativeObjRegistry;
-import org.robolectric.shadows.ShadowNativeStaticLayout.Picker;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
@@ -32,7 +31,7 @@ import org.robolectric.util.reflector.ForType;
     minSdk = O,
     maxSdk = P,
     looseSignatures = true,
-    shadowPicker = Picker.class)
+    shadowPicker = ShadowNativeStaticLayout.Picker.class)
 public class ShadowNativeStaticLayout {
 
   // Only used for the O/O_MR1 adapter logic.
@@ -128,7 +127,7 @@ public class ShadowNativeStaticLayout {
     return 0;
   }
 
-  @Implementation(minSdk = O, maxSdk = O_MR1)
+  @Implementation(minSdk = O, maxSdk = O)
   protected static void nSetLocale(long nativePtr, String locale, long nativeHyphenator) {
     NativeStaticLayoutSetup setup = nativeObjectRegistry.getNativeObject(nativePtr);
     setup.localePaint.setTextLocale(Locale.forLanguageTag(locale));
@@ -177,21 +176,21 @@ public class ShadowNativeStaticLayout {
     return 0f;
   }
 
-  @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected static void nAddMeasuredRun(long nativePtr, int start, int end, float[] widths) {
     NativeStaticLayoutSetup setup = nativeObjectRegistry.getNativeObject(nativePtr);
     MeasuredTextBuilderNatives.nAddStyleRun(
         setup.measuredTextBuilderPtr, setup.localePaint.getNativeInstance(), start, end, false);
   }
 
-  @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected static void nAddReplacementRun(long nativePtr, int start, int end, float width) {
     NativeStaticLayoutSetup setup = nativeObjectRegistry.getNativeObject(nativePtr);
     MeasuredTextBuilderNatives.nAddReplacementRun(
         setup.measuredTextBuilderPtr, setup.localePaint.getNativeInstance(), start, end, width);
   }
 
-  @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected static void nGetWidths(long nativePtr, float[] widths) {
     // Returns the width of each char in the text.
     NativeStaticLayoutSetup setup = nativeObjectRegistry.getNativeObject(nativePtr);
@@ -208,7 +207,7 @@ public class ShadowNativeStaticLayout {
    * This has to use looseSignatures due to {@code recycle} param with non-public type {@code
    * android.text.StaticLayout$LineBreaks}.
    */
-  @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected static int nComputeLineBreaks(
       Object /*long*/ nativePtr,
       Object /*LineBreaks*/ recycle,

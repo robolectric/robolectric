@@ -16,7 +16,7 @@ import org.robolectric.shadows.ShadowNativeThreadedRenderer.Picker;
 public class ShadowNativeThreadedRenderer {
 
   // ThreadedRenderer specific functions. These do not exist in HardwareRenderer
-  @Implementation
+  @Implementation(maxSdk = O)
   protected static boolean nSupportsOpenGL() {
     return false;
   }

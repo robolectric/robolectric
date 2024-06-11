@@ -1,4 +1,3 @@
 package com.example.objects;
 
-public class AnyObject {
-}
+public class AnyObject {}

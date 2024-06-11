@@ -43,7 +43,7 @@ public class ShadowSurfaceControl {
   }
 
   @Implementation(maxSdk = N_MR1)
-  protected static Number nativeCreate(
+  protected static long nativeCreate(
       SurfaceSession session, String name, int w, int h, int format, int flags) {
     // Return a non-zero value otherwise constructing a SurfaceControl fails with
     // OutOfResourcesException.

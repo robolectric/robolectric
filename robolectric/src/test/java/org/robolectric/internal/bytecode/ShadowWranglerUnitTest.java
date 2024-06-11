@@ -20,11 +20,6 @@ import org.robolectric.util.Function;
 public class ShadowWranglerUnitTest {
   private ShadowWrangler shadowWrangler;
   private Interceptors interceptors;
-  private ShadowMatcher sdk18 = new AndroidSdkShadowMatcher(18);
-  private ShadowMatcher sdk19 = new AndroidSdkShadowMatcher(19);
-  private ShadowMatcher sdk20 = new AndroidSdkShadowMatcher(20);
-  private ShadowMatcher sdk21 = new AndroidSdkShadowMatcher(21);
-  private ShadowMatcher sdk22 = new AndroidSdkShadowMatcher(22);
   private ShadowMatcher sdk23 = new AndroidSdkShadowMatcher(23);
 
   @Before
@@ -81,35 +76,6 @@ public class ShadowWranglerUnitTest {
                 "java/util/LinkedHashMap/eldest()Ljava/lang/Object;", map, null, getClass());
 
     assertThat(result).isNull();
-  }
-
-  @Test
-  public void whenChildShadowHasNarrowerSdk_createShadowFor_shouldReturnSuperShadowSometimes()
-      throws Exception {
-    ShadowMap shadowMap =
-        new ShadowMap.Builder()
-            .addShadowClasses(ShadowDummyClass.class, ShadowChildOfDummyClass.class)
-            .build();
-    assertThat(
-            new ShadowWrangler(shadowMap, sdk18, interceptors)
-                .createShadowFor(new ChildOfDummyClass()))
-        .isSameInstanceAs(ShadowWrangler.NO_SHADOW);
-    assertThat(
-            new ShadowWrangler(shadowMap, sdk19, interceptors)
-                .createShadowFor(new ChildOfDummyClass()))
-        .isInstanceOf(ShadowDummyClass.class);
-    assertThat(
-            new ShadowWrangler(shadowMap, sdk20, interceptors)
-                .createShadowFor(new ChildOfDummyClass()))
-        .isInstanceOf(ShadowChildOfDummyClass.class);
-    assertThat(
-            new ShadowWrangler(shadowMap, sdk21, interceptors)
-                .createShadowFor(new ChildOfDummyClass()))
-        .isInstanceOf(ShadowChildOfDummyClass.class);
-    assertThat(
-            new ShadowWrangler(shadowMap, sdk22, interceptors)
-                .createShadowFor(new ChildOfDummyClass()))
-        .isSameInstanceAs(ShadowWrangler.NO_SHADOW);
   }
 
   public static class DummyClass {}

@@ -10,8 +10,6 @@ import java.util.Map;
 import javax.annotation.Generated;
 import org.robolectric.annotation.processing.shadows.ShadowDummy;
 import org.robolectric.annotation.processing.shadows.ShadowOuterDummy2;
-import org.robolectric.annotation.processing.shadows.ShadowOuterDummy2.ShadowInnerPackage;
-import org.robolectric.annotation.processing.shadows.ShadowOuterDummy2.ShadowInnerProtected;
 import org.robolectric.annotation.processing.shadows.ShadowPrivate;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.shadow.api.Shadow;
@@ -28,9 +26,9 @@ public class Shadows implements ShadowProvider {
     SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>("com.example.objects.Dummy", "org.robolectric.annotation.processing.shadows.ShadowDummy"));
     SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>("com.example.objects.OuterDummy2", "org.robolectric.annotation.processing.shadows.ShadowOuterDummy2"));
     SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>("com.example.objects.OuterDummy2.InnerPackage", "org.robolectric.annotation.processing.shadows.ShadowOuterDummy2$ShadowInnerPackage"));
+    SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>("com.example.objects.OuterDummy2.InnerPrivate", "org.robolectric.annotation.processing.shadows.ShadowOuterDummy2$ShadowInnerPrivate"));
     SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>("com.example.objects.OuterDummy2.InnerProtected", "org.robolectric.annotation.processing.shadows.ShadowOuterDummy2$ShadowInnerProtected"));
     SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>("com.example.objects.Private", "org.robolectric.annotation.processing.shadows.ShadowPrivate"));
-    SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>("com.example.objects.OuterDummy2.InnerPrivate", "org.robolectric.annotation.processing.shadows.ShadowOuterDummy2$ShadowInnerPrivate"));
   }
 
   public static ShadowDummy shadowOf(Dummy actual) {

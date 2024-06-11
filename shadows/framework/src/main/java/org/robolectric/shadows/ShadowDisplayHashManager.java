@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.S;
+
 import android.view.displayhash.DisplayHash;
 import android.view.displayhash.DisplayHashManager;
 import android.view.displayhash.VerifiedDisplayHash;
@@ -11,7 +13,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow of {@link android.view.displayhash.DisplayHashManager}. */
-@Implements(value = DisplayHashManager.class, isInAndroidSdk = false)
+@Implements(value = DisplayHashManager.class, isInAndroidSdk = false, minSdk = S)
 public class ShadowDisplayHashManager {
 
   private static VerifiedDisplayHash verifyDisplayHashResult;
@@ -39,12 +41,12 @@ public class ShadowDisplayHashManager {
     }
   }
 
-  @Implementation(minSdk = 31)
+  @Implementation(minSdk = S)
   protected Set<String> getSupportedHashAlgorithms() {
     return Preconditions.checkNotNull(supportedHashAlgorithms);
   }
 
-  @Implementation(minSdk = 31)
+  @Implementation(minSdk = S)
   protected VerifiedDisplayHash verifyDisplayHash(DisplayHash displayHash) {
     return verifyDisplayHashResult;
   }

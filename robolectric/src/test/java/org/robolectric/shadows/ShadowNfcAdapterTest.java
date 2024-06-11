@@ -13,9 +13,11 @@ import android.content.pm.PackageManager;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
+import android.nfc.NfcAntennaInfo;
 import android.nfc.Tag;
 import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -236,5 +238,23 @@ public class ShadowNfcAdapterTest {
     shadowOf(adapter).dispatchTagDiscovered(tag);
 
     verify(callback).onTagDiscovered(same(tag));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void getNfcAntennaInfo_noneSet_returnsNull() {
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(context);
+
+    assertThat(adapter.getNfcAntennaInfo()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void getNfcAntennaInfo_returnsSetInfo() {
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(context);
+    NfcAntennaInfo info = new NfcAntennaInfo(0, 0, false, Collections.emptyList());
+    shadowOf(adapter).setNfcAntennaInfo(info);
+
+    assertThat(adapter.getNfcAntennaInfo()).isEqualTo(info);
   }
 }

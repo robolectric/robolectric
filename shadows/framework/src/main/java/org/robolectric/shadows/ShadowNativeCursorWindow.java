@@ -16,7 +16,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 public class ShadowNativeCursorWindow extends ShadowCursorWindow {
 
   @Implementation(maxSdk = U.SDK_INT)
-  protected static Number nativeCreate(String name, int cursorWindowSize) {
+  protected static long nativeCreate(String name, int cursorWindowSize) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return CursorWindowNatives.nativeCreate(name, cursorWindowSize);
   }

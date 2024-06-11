@@ -18,7 +18,7 @@ public class ShadowStringBlock {
   Object realObject;
 
   @Implementation
-  protected static Number nativeCreate(byte[] data, int offset, int size) {
+  protected static long nativeCreate(byte[] data, int offset, int size) {
     throw new UnsupportedOperationException();
   }
 

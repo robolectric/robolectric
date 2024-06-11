@@ -66,8 +66,8 @@ public class Helpers {
     return TYPE_ELEMENT_VISITOR.visit(el);
   }
 
-  public static AnnotationValue getAnnotationTypeMirrorValue(AnnotationMirror annotationMirror,
-      String key) {
+  public static AnnotationValue getAnnotationTypeMirrorValue(
+      AnnotationMirror annotationMirror, String key) {
     for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
         annotationMirror.getElementValues().entrySet()) {
       if (entry.getKey().getSimpleName().contentEquals(key)) {
@@ -85,8 +85,8 @@ public class Helpers {
     return INT_VISITOR.visit(av);
   }
 
-  public static AnnotationMirror getAnnotationMirror(Types types, Element element,
-      TypeElement annotation) {
+  public static AnnotationMirror getAnnotationMirror(
+      Types types, Element element, TypeElement annotation) {
     TypeMirror expectedType = annotation.asType();
     for (AnnotationMirror m : element.getAnnotationMirrors()) {
       if (types.isSameType(expectedType, m.getAnnotationType())) {
@@ -96,17 +96,15 @@ public class Helpers {
     return null;
   }
 
-  public static AnnotationMirror getImplementsMirror(Element elem, Types types,
-      TypeElement typeElement) {
+  public static AnnotationMirror getImplementsMirror(
+      Element elem, Types types, TypeElement typeElement) {
     return getAnnotationMirror(types, elem, typeElement);
   }
 
   private final Types types;
   private final Elements elements;
 
-  /**
-   * TypeMirror representing the Object class.
-   */
+  /** TypeMirror representing the Object class. */
   private final Predicate<TypeMirror> notObject;
 
   public Helpers(ProcessingEnvironment environment) {
@@ -121,45 +119,48 @@ public class Helpers {
     return newArrayList(Iterables.filter(typeParam.getBounds(), notObject));
   }
 
-  private final Equivalence<TypeMirror> typeMirrorEq = new Equivalence<TypeMirror>() {
-    @Override
-    protected boolean doEquivalent(TypeMirror a, TypeMirror b) {
-      return types.isSameType(a, b);
-    }
+  private final Equivalence<TypeMirror> typeMirrorEq =
+      new Equivalence<TypeMirror>() {
+        @Override
+        protected boolean doEquivalent(TypeMirror a, TypeMirror b) {
+          return types.isSameType(a, b);
+        }
 
-    @Override
-    protected int doHash(TypeMirror t) {
-      // We're not using the hash.
-      return 0;
-    }
-  };
+        @Override
+        protected int doHash(TypeMirror t) {
+          // We're not using the hash.
+          return 0;
+        }
+      };
 
-  private final Equivalence<TypeParameterElement> typeEq = new Equivalence<TypeParameterElement>() {
-    @Override
-    @SuppressWarnings({"unchecked"})
-    protected boolean doEquivalent(TypeParameterElement arg0,
-        TypeParameterElement arg1) {
-      // Casts are necessary due to flaw in pairwise equivalence implementation.
-      return typeMirrorEq.pairwise().equivalent((List<TypeMirror>) arg0.getBounds(),
-          (List<TypeMirror>) arg1.getBounds());
-    }
+  private final Equivalence<TypeParameterElement> typeEq =
+      new Equivalence<TypeParameterElement>() {
+        @Override
+        @SuppressWarnings({"unchecked"})
+        protected boolean doEquivalent(TypeParameterElement arg0, TypeParameterElement arg1) {
+          // Casts are necessary due to flaw in pairwise equivalence implementation.
+          return typeMirrorEq
+              .pairwise()
+              .equivalent((List<TypeMirror>) arg0.getBounds(), (List<TypeMirror>) arg1.getBounds());
+        }
 
-    @Override
-    protected int doHash(TypeParameterElement arg0) {
-      // We don't use the hash code.
-      return 0;
-    }
-  };
+        @Override
+        protected int doHash(TypeParameterElement arg0) {
+          // We don't use the hash code.
+          return 0;
+        }
+      };
 
   @SuppressWarnings({"unchecked"})
-  public boolean isSameParameterList(List<? extends TypeParameterElement> l1,
-      List<? extends TypeParameterElement> l2) {
+  public boolean isSameParameterList(
+      List<? extends TypeParameterElement> l1, List<? extends TypeParameterElement> l2) {
     // Cast is necessary because of a flaw in the API design of "PairwiseEquivalent",
     // a flaw that is even acknowledged in the source.
     // Our casts are safe because we're not trying to add elements to the list
     // and therefore can't violate the constraint.
-    return typeEq.pairwise().equivalent((List<TypeParameterElement>) l1,
-        (List<TypeParameterElement>) l2);
+    return typeEq
+        .pairwise()
+        .equivalent((List<TypeParameterElement>) l1, (List<TypeParameterElement>) l2);
   }
 
   private TypeMirror getImplementedClassName(AnnotationMirror am) {
@@ -208,14 +209,18 @@ public class Helpers {
     return name == null ? null : name.toString();
   }
 
-  public void appendParameterList(StringBuilder message,
-      List<? extends TypeParameterElement> tpeList) {
+  public void appendParameterList(
+      StringBuilder message, List<? extends TypeParameterElement> tpeList) {
     boolean first = true;
+    if (tpeList == null || tpeList.isEmpty()) {
+      return;
+    }
+    message.append("<");
     for (TypeParameterElement tpe : tpeList) {
       if (first) {
         first = false;
       } else {
-        message.append(',');
+        message.append(", ");
       }
       message.append(tpe);
       boolean iFirst = true;
@@ -229,12 +234,11 @@ public class Helpers {
         message.append(bound);
       }
     }
+    message.append(">");
   }
 
   TypeMirror findInterface(TypeElement shadowPickerType, Class<?> interfaceClass) {
-    TypeMirror shadowPickerMirror = elements
-        .getTypeElement(interfaceClass.getName())
-        .asType();
+    TypeMirror shadowPickerMirror = elements.getTypeElement(interfaceClass.getName()).asType();
     for (TypeMirror typeMirror : shadowPickerType.getInterfaces()) {
       if (types.isSameType(types.erasure(typeMirror), types.erasure(shadowPickerMirror))) {
         return typeMirror;

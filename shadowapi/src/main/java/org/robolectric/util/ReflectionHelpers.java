@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import javax.annotation.Nullable;
+import org.robolectric.annotation.ClassName;
 
 /** Collection of helper methods for calling methods and accessing fields reflectively. */
 @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals", "NewApi"})
@@ -31,6 +33,14 @@ public class ReflectionHelpers {
     PRIMITIVE_RETURN_VALUES = Collections.unmodifiableMap(map);
   }
 
+  /**
+   * Create a proxy for the given class which returns default values for every method call.
+   *
+   * <p>0 will be returned for any primitive return types, otherwise null will be returned.
+   *
+   * @param clazz the class to provide a proxy instance of.
+   * @return a new "Null Proxy" instance of the given class.
+   */
   public static <T> T createNullProxy(Class<T> clazz) {
     return (T)
         Proxy.newProxyInstance(
@@ -68,6 +78,18 @@ public class ReflectionHelpers {
             });
   }
 
+  /**
+   * Create a proxy for the given class which can delegate method calls to another object.
+   *
+   * <p>If the delegate has no methods whose signature matches, a null (or 0 for primitive types)
+   * return value will be returned.
+   *
+   * @param clazz the class to provide a proxy instance of.
+   * @param delegate the object to delegate matching method calls to. A 'matching method' must have
+   *     exactlu the same method name and parameter class names as the desired method.
+   *     The @ClassName annotation can be applied to provide a custom class name.
+   * @return a new "Delegating Proxy" instance of the given class.
+   */
   public static <T> T createDelegatingProxy(Class<T> clazz, final Object delegate) {
     final Class delegateClass = delegate.getClass();
     return (T)
@@ -77,7 +99,7 @@ public class ReflectionHelpers {
             (proxy, method, args) -> {
               try {
                 Method delegateMethod =
-                    delegateClass.getMethod(method.getName(), method.getParameterTypes());
+                    findDelegateMethod(delegateClass, method.getName(), method.getParameterTypes());
                 delegateMethod.setAccessible(true);
                 return delegateMethod.invoke(delegate, args);
               } catch (NoSuchMethodException e) {
@@ -87,6 +109,50 @@ public class ReflectionHelpers {
                 throw e.getTargetException();
               }
             });
+  }
+
+  private static Method findDelegateMethod(
+      Class<?> delegateClass, String methodName, Class<?>[] parameterTypes)
+      throws NoSuchMethodException {
+    for (Method delegateMethod : delegateClass.getMethods()) {
+      if (delegateMethod.getName().equals(methodName)
+          && Modifier.isPublic(delegateMethod.getModifiers())
+          && parametersMatch(
+              parameterTypes,
+              delegateMethod.getParameterTypes(),
+              delegateMethod.getParameterAnnotations())) {
+        return delegateMethod;
+      }
+    }
+    throw new NoSuchMethodException();
+  }
+
+  private static boolean parametersMatch(
+      Class<?>[] parameterTypes,
+      Class<?>[] delegateParameterTypes,
+      Annotation[][] parameterAnnotations) {
+    if (parameterTypes.length != delegateParameterTypes.length) {
+      return false;
+    }
+    for (int i = 0; i < parameterTypes.length; i++) {
+      if (!parameterTypes[i].getName().equals(delegateParameterTypes[i].getName())
+          && !parameterTypes[i]
+              .getName()
+              .equals(getClassNameFromAnnotation(parameterAnnotations[i]))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Nullable
+  private static String getClassNameFromAnnotation(Annotation[] parameterAnnotations) {
+    for (Annotation annotation : parameterAnnotations) {
+      if (annotation.annotationType().equals(ClassName.class)) {
+        return ((ClassName) annotation).value();
+      }
+    }
+    return null;
   }
 
   public static <A extends Annotation> A defaultsFor(Class<A> annotation) {

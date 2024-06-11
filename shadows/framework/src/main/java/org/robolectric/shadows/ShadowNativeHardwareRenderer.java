@@ -6,13 +6,20 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.HardwareRenderer;
 import android.graphics.HardwareRenderer.ASurfaceTransactionCallback;
 import android.graphics.HardwareRenderer.FrameCompleteCallback;
 import android.graphics.HardwareRenderer.FrameDrawingCallback;
 import android.graphics.HardwareRenderer.PictureCapturedCallback;
 import android.graphics.HardwareRenderer.PrepareSurfaceControlForWebviewCallback;
+import android.graphics.PixelFormat;
+import android.graphics.RenderNode;
+import android.media.Image;
+import android.media.Image.Plane;
+import android.media.ImageReader;
 import android.view.Surface;
 import java.io.FileDescriptor;
 import org.robolectric.annotation.Implementation;
@@ -20,6 +27,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
 import org.robolectric.shadows.ShadowNativeHardwareRenderer.Picker;
+import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link HardwareRenderer} that is backed by native code */
@@ -100,6 +108,11 @@ public class ShadowNativeHardwareRenderer {
   @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetName(long nativeProxy, String name) {
     HardwareRendererNatives.nSetName(nativeProxy, name);
+  }
+
+  @Implementation(minSdk = Q, maxSdk = Q)
+  protected static void nSetSurface(long nativeProxy, Surface window) {
+    HardwareRendererNatives.nSetSurface(nativeProxy, window, false);
   }
 
   @Implementation(minSdk = R, maxSdk = U.SDK_INT)
@@ -310,7 +323,11 @@ public class ShadowNativeHardwareRenderer {
         surface, srcLeft, srcTop, srcRight, srcBottom, bitmapHandle);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  /**
+   * This currently always return null in host graphics. This has `maxSdk=R` because, in S and
+   * above, {@link #createHardwareBitmap(RenderNode, int, int)} is shadowed.
+   */
+  @Implementation(maxSdk = R)
   protected static Bitmap nCreateHardwareBitmap(long renderNode, int width, int height) {
     return HardwareRendererNatives.nCreateHardwareBitmap(renderNode, width, height);
   }
@@ -399,9 +416,49 @@ public class ShadowNativeHardwareRenderer {
         presentationDeadlineNanos);
   }
 
+  /* We use `minSdk = S` because ImageReader is currently supported on S and above. */
+  @Implementation(minSdk = S)
+  protected static Bitmap createHardwareBitmap(RenderNode node, int width, int height) {
+    // The native counterpart of this method,
+    // android_view_ThreadedRenderer_createHardwareBitmapFromRenderNode,
+    // returns null in host graphics due to not supporting AImageReader and ANativeWindow.
+    // We can do a Java shim here.
+
+    // This logic is based on
+    // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android12-hostruntime-dev/libs/hwui/jni/android_graphics_HardwareRenderer.cpp#709
+    try (ImageReader imageReader =
+        ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 1)) {
+      HardwareRenderer renderer = new HardwareRenderer();
+      Surface surface = imageReader.getSurface();
+      renderer.setSurface(surface);
+      renderer.setContentRoot(node);
+      renderer.setLightSourceGeometry(0, 0, 0, 0);
+      renderer.setLightSourceAlpha(0, 0);
+      renderer.createRenderRequest().syncAndDraw();
+      Image nativeImage = imageReader.acquireNextImage();
+      Plane[] planes = nativeImage.getPlanes();
+      Bitmap destBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);
+      destBitmap.copyPixelsFromBuffer(planes[0].getBuffer());
+      surface.release();
+      // Return an immutable copy of the Bitmap, which is what this API expects.
+      return destBitmap.copy(Config.HARDWARE, false);
+    }
+  }
+
   @Implementation(maxSdk = R)
-  protected static void nSetWideGamut(long nativeProxy, boolean wideGamut) {
-    // No-op
+  protected static void nSetWideGamut(long nativeProxy, boolean isWideColorGamut) {
+    nSetColorMode(
+        nativeProxy,
+        isWideColorGamut
+            ? ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT
+            : ActivityInfo.COLOR_MODE_DEFAULT);
+  }
+
+  @ForType(HardwareRenderer.class)
+  interface HardwareRendererReflector {
+    void setWideGamut(boolean isWideColorGamut);
+
+    void setSurface(Surface surface);
   }
 
   /** Shadow picker for {@link HardwareRenderer}. */

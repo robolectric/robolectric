@@ -583,16 +583,15 @@ public class SandboxClassLoaderTest {
     @Override
     public void classInitializing(Class clazz) {}
 
-    @Override
-    public Object initializing(Object instance) {
-      return "a shadow!";
-    }
-
     public Object methodInvoked(
-        Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) {
+        String simpleClassName,
+        String methodName,
+        Object instance,
+        String[] paramTypes,
+        Object[] params) {
       StringBuilder buf = new StringBuilder();
       buf.append("methodInvoked:" + " ")
-          .append(clazz.getSimpleName())
+          .append(simpleClassName)
           .append(".")
           .append(methodName)
           .append("(");
@@ -615,12 +614,17 @@ public class SandboxClassLoaderTest {
     }
 
     @SuppressWarnings(value = {"UnusedDeclaration", "unused"})
-    private Object invoke(InvocationProfile invocationProfile, Object instance, Object[] params) {
+    private Object invoke(
+        String simpleClassName,
+        String methodName,
+        String signature,
+        Object instance,
+        Object[] params) {
       return methodInvoked(
-          invocationProfile.clazz,
-          invocationProfile.methodName,
+          simpleClassName,
+          methodName,
           instance,
-          invocationProfile.paramTypes,
+          MethodSignature.parse(signature).paramTypes,
           params);
     }
 
@@ -629,9 +633,6 @@ public class SandboxClassLoaderTest {
         Class<?> theClass, String name, MethodType type, boolean isStatic, boolean isNative)
         throws IllegalAccessException {
       String signature = getSignature(theClass, name, type, isStatic);
-      InvocationProfile invocationProfile =
-          new InvocationProfile(signature, isStatic, getClass().getClassLoader());
-
       try {
         MethodHandle mh =
             MethodHandles.lookup()
@@ -639,8 +640,13 @@ public class SandboxClassLoaderTest {
                     getClass(),
                     "invoke",
                     methodType(
-                        Object.class, InvocationProfile.class, Object.class, Object[].class));
-        mh = insertArguments(mh, 0, this, invocationProfile);
+                        Object.class,
+                        String.class,
+                        String.class,
+                        String.class,
+                        Object.class,
+                        Object[].class));
+        mh = insertArguments(mh, 0, this, theClass.getSimpleName(), name, signature);
 
         if (isStatic) {
           return mh.bindTo(null).asCollector(Object[].class, type.parameterCount());

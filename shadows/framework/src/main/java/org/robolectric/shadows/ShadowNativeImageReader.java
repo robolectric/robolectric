@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
-import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 
 import android.media.Image;
@@ -132,7 +131,7 @@ public class ShadowNativeImageReader {
 
     @Override
     protected int getMinApiLevel() {
-      return S;
+      return Q;
     }
   }
 }

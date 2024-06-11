@@ -3,7 +3,6 @@ package org.robolectric.annotation.processing.validator;
 import static org.robolectric.annotation.Implementation.DEFAULT_SDK;
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.CONSTRUCTOR_METHOD_NAME;
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.STATIC_INITIALIZER_METHOD_NAME;
-import static org.robolectric.annotation.processing.validator.ImplementsValidator.getClassFQName;
 
 import com.google.common.collect.ImmutableList;
 import java.io.BufferedReader;
@@ -35,7 +34,6 @@ import java.util.zip.ZipEntry;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
@@ -43,8 +41,10 @@ import javax.lang.model.type.TypeVariable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.util.TraceSignatureVisitor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.InDevelopment;
 import org.robolectric.versioning.AndroidVersionInitTools;
@@ -70,6 +70,22 @@ public class SdkStore {
     this.loadFromClasspath = loadFromClasspath;
     this.overrideSdkLocation = overrideSdkLocation;
     this.overrideSdkInt = overrideSdkInt;
+  }
+
+  /**
+   * Used to look up matching sdks for a declared shadow class. Needed to then find the class from
+   * the underlying sdks for comparison in the ImplementsValidator.
+   */
+  List<Sdk> sdksMatching(int classMinSdk, int classMaxSdk) {
+    loadSdksOnce();
+    List<Sdk> matchingSdks = new ArrayList<>();
+    for (Sdk sdk : sdks) {
+      int sdkInt = sdk.sdkRelease.getSdkInt();
+      if (sdkInt >= classMinSdk && (sdkInt <= classMaxSdk || classMaxSdk == -1)) {
+        matchingSdks.add(sdk);
+      }
+    }
+    return matchingSdks;
   }
 
   List<Sdk> sdksMatching(Implementation implementation, int classMinSdk, int classMaxSdk) {
@@ -254,24 +270,24 @@ public class SdkStore {
     /**
      * Matches an {@code @Implementation} method against the framework method for this SDK.
      *
-     * @param sdkClassElem the framework class being shadowed
+     * @param sdkClassName the framework class being shadowed
      * @param methodElement the {@code @Implementation} method declaration to check
      * @param looseSignatures if true, also match any framework method with the same class, name,
      *     return type, and arity of parameters.
      * @return a string describing any problems with this method, or null if it checks out.
      */
     public String verifyMethod(
-        TypeElement sdkClassElem, ExecutableElement methodElement, boolean looseSignatures) {
-      String className = getClassFQName(sdkClassElem);
-      ClassInfo classInfo = getClassInfo(className);
+        String sdkClassName, ExecutableElement methodElement, boolean looseSignatures) {
+      ClassInfo classInfo = getClassInfo(sdkClassName);
 
-      if (classInfo == null && !suppressWarnings(sdkClassElem, null)) {
-        return "No such class " + className;
+      // Probably should not be reachable
+      if (classInfo == null && !suppressWarnings(methodElement.getEnclosingElement(), null)) {
+        return null;
       }
 
       MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement, looseSignatures);
       if (sdkMethod == null && !suppressWarnings(methodElement, null)) {
-        return "No method " + methodElement + " in " + className;
+        return "No method " + methodElement + " in " + sdkClassName;
       }
       if (sdkMethod != null) {
         MethodExtraInfo implMethod = new MethodExtraInfo(methodElement);
@@ -286,9 +302,7 @@ public class SdkStore {
           }
           if (!implMethod.returnType.equals(sdkMethod.returnType)) {
             if ((looseSignatures && typeIsOkForLooseSignatures(implMethod, sdkMethod))
-                || (looseSignatures && implMethod.returnType.equals("java.lang.Object[]"))
-                // Number is allowed for int or long return types
-                || typeIsNumeric(sdkMethod, implMethod)) {
+                || (looseSignatures && implMethod.returnType.equals("java.lang.Object[]"))) {
               return null;
             } else {
               return "@Implementation for "
@@ -315,7 +329,7 @@ public class SdkStore {
      * @param warningName the name of the warning, if null, @InDevelopment will still be honored.
      * @return true if the warning should be suppressed, else false
      */
-    private boolean suppressWarnings(Element annotatedElement, String warningName) {
+    boolean suppressWarnings(Element annotatedElement, String warningName) {
       SuppressWarnings[] suppressWarnings =
           annotatedElement.getAnnotationsByType(SuppressWarnings.class);
       for (SuppressWarnings suppression : suppressWarnings) {
@@ -332,11 +346,6 @@ public class SdkStore {
       return false;
     }
 
-    private static boolean typeIsNumeric(MethodExtraInfo sdkMethod, MethodExtraInfo implMethod) {
-      return implMethod.returnType.equals("java.lang.Number")
-          && isNumericType(sdkMethod.returnType);
-    }
-
     private static boolean typeIsOkForLooseSignatures(
         MethodExtraInfo implMethod, MethodExtraInfo sdkMethod) {
       return
@@ -347,17 +356,13 @@ public class SdkStore {
               && sdkMethod.returnType.endsWith("[]"));
     }
 
-    private static boolean isNumericType(String type) {
-      return type.equals("int") || type.equals("long");
-    }
-
     /**
      * Load and analyze bytecode for the specified class, with caching.
      *
      * @param name the name of the class to analyze
      * @return information about the methods in the specified class
      */
-    private synchronized ClassInfo getClassInfo(String name) {
+    synchronized ClassInfo getClassInfo(String name) {
       ClassInfo classInfo = classInfos.get(name);
       if (classInfo == null) {
         ClassNode classNode = loadClassNode(name);
@@ -480,10 +485,20 @@ public class SdkStore {
   static class ClassInfo {
     private final Map<MethodInfo, MethodExtraInfo> methods = new HashMap<>();
     private final Map<MethodInfo, MethodExtraInfo> erasedParamTypesMethods = new HashMap<>();
+    private final String signature;
 
-    private ClassInfo() {}
+    private ClassInfo() {
+      signature = "";
+    }
 
     public ClassInfo(ClassNode classNode) {
+      if (classNode.signature != null) {
+        TraceSignatureVisitor signatureVisitor = new TraceSignatureVisitor(0);
+        new SignatureReader(classNode.signature).accept(signatureVisitor);
+        signature = stripExtends(signatureVisitor.getDeclaration());
+      } else {
+        signature = "";
+      }
       for (Object aMethod : classNode.methods) {
         MethodNode method = ((MethodNode) aMethod);
         MethodInfo methodInfo = new MethodInfo(method);
@@ -491,6 +506,31 @@ public class SdkStore {
         methods.put(methodInfo, methodExtraInfo);
         erasedParamTypesMethods.put(methodInfo.erase(), methodExtraInfo);
       }
+    }
+
+    /**
+     * In order to compare typeMirror derived strings of Type parameters, ie `{@code Clazz<X extends
+     * Y>}` from a class definition, with a asm bytecode read string of the same, any extends info
+     * is not supplied by type parameters, but is by asm class readers `{@code Clazz<X extends Y>
+     * extends Clazz1}`.
+     *
+     * <p>This method can strip any extra information `{@code extends Clazz1}`, from a Generics type
+     * parameter string provided by asm byte code readers.
+     */
+    private static String stripExtends(String asmTypeSuffix) {
+      int count = 0;
+      for (int loc = 0; loc < asmTypeSuffix.length(); loc++) {
+        char c = asmTypeSuffix.charAt(loc);
+        if (c == '<') {
+          count += 1;
+        } else if (c == '>') {
+          count -= 1;
+        }
+        if (count == 0) {
+          return asmTypeSuffix.substring(0, loc + 1).trim();
+        }
+      }
+      return "";
     }
 
     MethodExtraInfo findMethod(ExecutableElement methodElement, boolean looseSignatures) {
@@ -501,6 +541,10 @@ public class SdkStore {
         methodExtraInfo = erasedParamTypesMethods.get(methodInfo);
       }
       return methodExtraInfo;
+    }
+
+    String getSignature() {
+      return signature;
     }
   }
 

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
@@ -10,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
+import android.nfc.NfcAntennaInfo;
 import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,7 +30,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /** Shadow implementation of {@link NfcAdapter}. */
-@Implements(NfcAdapter.class)
+@Implements(value = NfcAdapter.class, looseSignatures = true)
 public class ShadowNfcAdapter {
   @RealObject NfcAdapter nfcAdapter;
 
@@ -73,6 +75,9 @@ public class ShadowNfcAdapter {
 
   @GuardedBy("this")
   private NfcAdapter.ReaderCallback readerCallback;
+
+  @GuardedBy("this")
+  private NfcAntennaInfo nfcAntennaInfo;
 
   @Implementation
   protected static NfcAdapter getDefaultAdapter(Context context) {
@@ -276,6 +281,14 @@ public class ShadowNfcAdapter {
     return true;
   }
 
+  // TODO: use NfcAntennaInfo when minimum supported compile SDK is >= android U
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected Object /* NfcAntennaInfo */ getNfcAntennaInfo() {
+    synchronized (this) {
+      return nfcAntennaInfo;
+    }
+  }
+
   /**
    * Modifies the behavior of {@link #getNfcAdapter(Context)} to return {@code null}, to simulate
    * absence of NFC hardware.
@@ -327,6 +340,11 @@ public class ShadowNfcAdapter {
       throw new IllegalStateException();
     }
     return ndefPushMessage;
+  }
+
+  // TODO: use NfcAntennaInfo when minimum supported compile SDK is >= android U
+  public synchronized void setNfcAntennaInfo(Object /* NfcAntennaInfo */ nfcAntennaInfo) {
+    this.nfcAntennaInfo = (NfcAntennaInfo) nfcAntennaInfo;
   }
 
   @Resetter

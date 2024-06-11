@@ -11,7 +11,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.res.android.NativeObjRegistry;
 
 /** Shadow of android.hardware.HardwareBuffer. */
-@Implements(HardwareBuffer.class)
+@Implements(value = HardwareBuffer.class, minSdk = O)
 public class ShadowHardwareBuffer {
   private static final long INVALID_BUFFER_ID = 0;
 

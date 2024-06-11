@@ -21,11 +21,6 @@ public class RobolectricInternals {
     classHandler.classInitializing(clazz);
   }
 
-  @SuppressWarnings("UnusedDeclaration")
-  public static Object initializing(Object instance) throws Exception {
-    return classHandler.initializing(instance);
-  }
-
   public static MethodHandle getShadowCreator(Class<?> caller) {
     return classHandler.getShadowCreator(caller);
   }

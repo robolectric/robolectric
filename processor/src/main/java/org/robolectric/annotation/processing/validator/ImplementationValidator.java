@@ -9,16 +9,10 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import org.robolectric.annotation.processing.RobolectricModel;
 
-/**
- * Validator that checks usages of {@link org.robolectric.annotation.Implementation}.
- */
+/** Validator that checks usages of {@link org.robolectric.annotation.Implementation}. */
 public class ImplementationValidator extends FoundOnImplementsValidator {
   public static final ImmutableSet<String> METHODS_ALLOWED_TO_BE_PUBLIC =
-      ImmutableSet.of(
-          "toString",
-          "hashCode",
-          "equals"
-      );
+      ImmutableSet.of("toString", "hashCode", "equals");
 
   public ImplementationValidator(RobolectricModel.Builder modelBuilder, ProcessingEnvironment env) {
     super(modelBuilder, env, "org.robolectric.annotation.Implementation");

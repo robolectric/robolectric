@@ -107,26 +107,6 @@ public class ShadowNativeRenderNodeOP {
   }
 
   @Implementation
-  protected static int nGetLeft(long renderNode) {
-    return RenderNodeNatives.nGetLeft(renderNode);
-  }
-
-  @Implementation
-  protected static int nGetTop(long renderNode) {
-    return RenderNodeNatives.nGetTop(renderNode);
-  }
-
-  @Implementation
-  protected static int nGetRight(long renderNode) {
-    return RenderNodeNatives.nGetRight(renderNode);
-  }
-
-  @Implementation
-  protected static int nGetBottom(long renderNode) {
-    return RenderNodeNatives.nGetBottom(renderNode);
-  }
-
-  @Implementation
   protected static boolean nSetCameraDistance(long renderNode, float distance) {
     return RenderNodeNatives.nSetCameraDistance(renderNode, distance);
   }
@@ -141,7 +121,7 @@ public class ShadowNativeRenderNodeOP {
     return RenderNodeNatives.nSetPivotX(renderNode, pivotX);
   }
 
-  @Implementation
+  @Implementation(minSdk = P)
   protected static boolean nResetPivot(long renderNode) {
     return RenderNodeNatives.nResetPivot(renderNode);
   }
@@ -152,11 +132,6 @@ public class ShadowNativeRenderNodeOP {
   }
 
   @Implementation
-  protected static int nGetLayerType(long renderNode) {
-    return RenderNodeNatives.nGetLayerType(renderNode);
-  }
-
-  @Implementation
   protected static boolean nSetLayerPaint(long renderNode, long paint) {
     return RenderNodeNatives.nSetLayerPaint(renderNode, paint);
   }
@@ -164,11 +139,6 @@ public class ShadowNativeRenderNodeOP {
   @Implementation
   protected static boolean nSetClipToBounds(long renderNode, boolean clipToBounds) {
     return RenderNodeNatives.nSetClipToBounds(renderNode, clipToBounds);
-  }
-
-  @Implementation
-  protected static boolean nGetClipToBounds(long renderNode) {
-    return RenderNodeNatives.nGetClipToBounds(renderNode);
   }
 
   @Implementation
@@ -214,22 +184,22 @@ public class ShadowNativeRenderNodeOP {
     return RenderNodeNatives.nHasShadow(renderNode);
   }
 
-  @Implementation
+  @Implementation(minSdk = P)
   protected static boolean nSetSpotShadowColor(long renderNode, int color) {
     return RenderNodeNatives.nSetSpotShadowColor(renderNode, color);
   }
 
-  @Implementation
+  @Implementation(minSdk = P)
   protected static boolean nSetAmbientShadowColor(long renderNode, int color) {
     return RenderNodeNatives.nSetAmbientShadowColor(renderNode, color);
   }
 
-  @Implementation
+  @Implementation(minSdk = P)
   protected static int nGetSpotShadowColor(long renderNode) {
     return RenderNodeNatives.nGetSpotShadowColor(renderNode);
   }
 
-  @Implementation
+  @Implementation(minSdk = P)
   protected static int nGetAmbientShadowColor(long renderNode) {
     return RenderNodeNatives.nGetAmbientShadowColor(renderNode);
   }
@@ -256,7 +226,6 @@ public class ShadowNativeRenderNodeOP {
     return RenderNodeNatives.nSetHasOverlappingRendering(renderNode, hasOverlappingRendering);
   }
 
-  @Implementation
   protected static void nSetUsageHint(long renderNode, int usageHint) {
     RenderNodeNatives.nSetUsageHint(renderNode, usageHint);
   }
@@ -319,11 +288,6 @@ public class ShadowNativeRenderNodeOP {
   @Implementation
   protected static boolean nHasOverlappingRendering(long renderNode) {
     return RenderNodeNatives.nHasOverlappingRendering(renderNode);
-  }
-
-  @Implementation
-  protected static boolean nGetAnimationMatrix(long renderNode, long animationMatrix) {
-    return RenderNodeNatives.nGetAnimationMatrix(renderNode, animationMatrix);
   }
 
   @Implementation
@@ -399,31 +363,6 @@ public class ShadowNativeRenderNodeOP {
   @Implementation
   protected static float nGetPivotY(long renderNode) {
     return RenderNodeNatives.nGetPivotY(renderNode);
-  }
-
-  @Implementation
-  protected static int nGetWidth(long renderNode) {
-    return RenderNodeNatives.nGetWidth(renderNode);
-  }
-
-  @Implementation
-  protected static int nGetHeight(long renderNode) {
-    return RenderNodeNatives.nGetHeight(renderNode);
-  }
-
-  @Implementation
-  protected static boolean nSetAllowForceDark(long renderNode, boolean allowForceDark) {
-    return RenderNodeNatives.nSetAllowForceDark(renderNode, allowForceDark);
-  }
-
-  @Implementation
-  protected static boolean nGetAllowForceDark(long renderNode) {
-    return RenderNodeNatives.nGetAllowForceDark(renderNode);
-  }
-
-  @Implementation
-  protected static long nGetUniqueId(long renderNode) {
-    return RenderNodeNatives.nGetUniqueId(renderNode);
   }
 
   // In APIs Q+, RenderNodes are used to maintain DisplayLists instead of through DisplayListCanvas.

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Point;
@@ -10,7 +11,10 @@ import android.hardware.display.BrightnessConfiguration;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.IDisplayManagerCallback;
+import android.hardware.display.IVirtualDisplayCallback;
+import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.display.WifiDisplayStatus;
+import android.media.projection.IMediaProjection;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.util.SparseArray;
@@ -19,11 +23,15 @@ import android.view.DisplayInfo;
 import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.Nullable;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -34,10 +42,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link DisplayManagerGlobal}. */
-@Implements(
-    value = DisplayManagerGlobal.class,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+@Implements(value = DisplayManagerGlobal.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowDisplayManagerGlobal {
   private static DisplayManagerGlobal instance;
 
@@ -46,7 +51,7 @@ public class ShadowDisplayManagerGlobal {
   private final List<BrightnessChangeEvent> brightnessChangeEvents = new ArrayList<>();
   private Object defaultBrightnessConfiguration;
 
-  private MyDisplayManager mDm;
+  private DisplayManagerProxyDelegate mDm;
 
   @Resetter
   public static void reset() {
@@ -64,12 +69,13 @@ public class ShadowDisplayManagerGlobal {
   @Implementation
   public static synchronized DisplayManagerGlobal getInstance() {
     if (instance == null) {
-      MyDisplayManager myIDisplayManager = new MyDisplayManager();
+      DisplayManagerProxyDelegate displayManagerProxyDelegate = new DisplayManagerProxyDelegate();
       IDisplayManager proxy =
-          ReflectionHelpers.createDelegatingProxy(IDisplayManager.class, myIDisplayManager);
+          ReflectionHelpers.createDelegatingProxy(
+              IDisplayManager.class, displayManagerProxyDelegate);
       instance = newDisplayManagerGlobal(proxy);
       ShadowDisplayManagerGlobal shadow = Shadow.extract(instance);
-      shadow.mDm = myIDisplayManager;
+      shadow.mDm = displayManagerProxyDelegate;
       Bootstrap.setUpDisplay();
     }
     return instance;
@@ -141,10 +147,18 @@ public class ShadowDisplayManagerGlobal {
     mDm.removeDisplay(displayId);
   }
 
-  private static class MyDisplayManager {
+  /**
+   * A delegating proxy for the IDisplayManager system service.
+   *
+   * <p>The method signatures here must exactly match the IDisplayManager interface.
+   *
+   * @see ReflectionHelpers#createDelegatingProxy(Class, Object)
+   */
+  private static class DisplayManagerProxyDelegate {
     private final TreeMap<Integer, DisplayInfo> displayInfos = new TreeMap<>();
     private int nextDisplayId = 0;
     private final List<IDisplayManagerCallback> callbacks = new ArrayList<>();
+    private final Map<IVirtualDisplayCallback, Integer> virtualDisplayIds = new HashMap<>();
 
     // @Override
     public DisplayInfo getDisplayInfo(int i) throws RemoteException {
@@ -180,9 +194,69 @@ public class ShadowDisplayManagerGlobal {
       registerCallback(iDisplayManagerCallback);
     }
 
+    // for android U
+    // Use Object here instead of VirtualDisplayConfig to avoid breaking projects that still
+    // compile against SDKs < U
+    public int createVirtualDisplay(
+        @ClassName("android.hardware.display.VirtualDisplayConfig")
+            Object virtualDisplayConfigObject,
+        IVirtualDisplayCallback callbackWrapper,
+        IMediaProjection projectionToken,
+        String packageName) {
+      VirtualDisplayConfig config = (VirtualDisplayConfig) virtualDisplayConfigObject;
+      DisplayInfo displayInfo = new DisplayInfo();
+      displayInfo.flags = config.getFlags();
+      displayInfo.type = Display.TYPE_VIRTUAL;
+      displayInfo.name = config.getName();
+      displayInfo.logicalDensityDpi = config.getDensityDpi();
+      displayInfo.physicalXDpi = config.getDensityDpi();
+      displayInfo.physicalYDpi = config.getDensityDpi();
+      displayInfo.ownerPackageName = packageName;
+      displayInfo.appWidth = config.getWidth();
+      displayInfo.logicalWidth = config.getWidth();
+      displayInfo.appHeight = config.getHeight();
+      displayInfo.logicalHeight = config.getHeight();
+      displayInfo.state = Display.STATE_ON;
+      int id = addDisplay(displayInfo);
+      virtualDisplayIds.put(callbackWrapper, id);
+      return id;
+    }
+
+    // for android U
+    public void resizeVirtualDisplay(
+        IVirtualDisplayCallback token, int width, int height, int densityDpi) {
+      Integer id = virtualDisplayIds.get(token);
+      DisplayInfo displayInfo = displayInfos.get(id);
+
+      displayInfo.logicalDensityDpi = densityDpi;
+      displayInfo.appWidth = width;
+      displayInfo.logicalWidth = width;
+      displayInfo.appHeight = height;
+      displayInfo.logicalHeight = height;
+      changeDisplay(id, displayInfo);
+    }
+
+    // for android U
+    public void releaseVirtualDisplay(IVirtualDisplayCallback token) {
+      if (virtualDisplayIds.containsKey(token)) {
+        removeDisplay(virtualDisplayIds.remove(token));
+      }
+    }
+
+    // @Override
+    public void setVirtualDisplayState(IVirtualDisplayCallback token, boolean isOn) {
+      Integer id = virtualDisplayIds.get(token);
+      DisplayInfo displayInfo = displayInfos.get(id);
+      displayInfo.state = isOn ? Display.STATE_ON : Display.STATE_OFF;
+      changeDisplay(id, displayInfo);
+    }
+
     private synchronized int addDisplay(DisplayInfo displayInfo) {
       int nextId = nextDisplayId++;
       displayInfos.put(nextId, displayInfo);
+      if (RuntimeEnvironment.getApiLevel() >= Q) {
+        displayInfo.displayId = nextId;
+      }
       notifyListeners(nextId, DisplayManagerGlobal.EVENT_DISPLAY_ADDED);
       return nextId;
     }

@@ -7,107 +7,128 @@ import static org.robolectric.annotation.processing.Utils.DEFAULT_OPTS;
 import static org.robolectric.annotation.processing.Utils.SHADOW_EXTRACTOR_SOURCE;
 import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
 
+import com.example.objects.ParameterizedDummy;
 import com.google.common.collect.ImmutableList;
+import java.util.HashMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.processing.RobolectricProcessor;
+import org.robolectric.annotation.processing.Utils;
+import org.robolectric.versioning.AndroidVersions;
 
 /** Tests for {@link RealObjectValidator} */
 @RunWith(JUnit4.class)
 public class RealObjectValidatorTest {
   @Test
   public void realObjectWithoutImplements_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithoutImplements";
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithoutImplements";
     assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withErrorContaining("@RealObject without @Implements")
-      .onLine(7);
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining("@RealObject without @Implements")
+        .onLine(7);
   }
 
   @Test
   public void realObjectParameterizedMissingParameters_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectParameterizedMissingParameters";
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowRealObjectParameterizedMissingParameters";
     assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withErrorContaining("@RealObject is missing type parameters")
-      .onLine(11);
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining("@RealObject is missing type parameters")
+        .onLine(11);
   }
 
   @Test
   public void realObjectParameterizedMismatch_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectParameterizedMismatch";
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowRealObjectParameterizedMismatch";
     assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withErrorContaining("Parameter type mismatch: expecting <T,S>, was <S,T>")
-      .onLine(11);
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining("Parameter type mismatch: expecting <T,S>, was <S,T>")
+        .onLine(11);
   }
 
   @Test
   public void realObjectWithEmptyImplements_shouldNotRaiseOwnError() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithEmptyImplements";
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithEmptyImplements";
     assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withNoErrorContaining("@RealObject");
+        .that(testClass)
+        .failsToCompile()
+        .withNoErrorContaining("@RealObject");
   }
 
   @Test
   public void realObjectWithEmptyClassName_shouldNotRaiseOwnError() {
+    AndroidVersions.AndroidRelease unreleased = AndroidVersions.getUnreleased().get(0);
     final String testClass =
         "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithEmptyClassName";
-    assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withNoErrorContaining("@RealObject");
+    HashMap<String, String> props = new HashMap<>();
+    props.put("org.robolectric.annotation.processing.sdkCheckMode", "ERROR");
+    props.put("org.robolectric.annotation.processing.validateCompileSdk", "true");
+
+    assertAbout(
+            singleClass(
+                props, Utils.getClassRootDir(ParameterizedDummy.class), unreleased.getSdkInt()))
+        .that(testClass)
+        .failsToCompile()
+        .withNoErrorContaining("@RealObject");
   }
 
   @Test
   public void realObjectWithTypeMismatch_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithWrongType";
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithWrongType";
     assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withErrorContaining("@RealObject with type <com.example.objects.UniqueDummy>; expected <com.example.objects.Dummy>")
-      .onLine(11);
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining(
+            "@RealObject with type <com.example.objects.UniqueDummy>; expected"
+                + " <com.example.objects.Dummy>")
+        .onLine(11);
   }
 
   @Test
   public void realObjectWithClassName_typeMismatch_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithIncorrectClassName";
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithIncorrectClassName";
     assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withErrorContaining("@RealObject with type <com.example.objects.UniqueDummy>; expected <com.example.objects.Dummy>")
-      .onLine(10);
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining(
+            "@RealObject with type <com.example.objects.UniqueDummy>; expected"
+                + " <com.example.objects.Dummy>")
+        .onLine(10);
   }
 
   @Test
   public void realObjectWithCorrectType_shouldCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithCorrectType";
-    assertAbout(singleClass())
-      .that(testClass)
-      .compilesWithoutError();
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithCorrectType";
+    assertAbout(singleClass()).that(testClass).compilesWithoutError();
   }
 
   @Test
   public void realObjectWithCorrectClassName_shouldCompile() {
     assertAbout(javaSources())
-      .that(ImmutableList.of(
-          SHADOW_EXTRACTOR_SOURCE,
-          forResource("org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectClassName.java")))
-      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
-      .compilesWithoutError();
+        .that(
+            ImmutableList.of(
+                SHADOW_EXTRACTOR_SOURCE,
+                forResource(
+                    "org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectClassName.java")))
+        .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
+        .compilesWithoutError();
   }
-  
+
   @Test
   public void realObjectWithNestedClassName_shouldCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithNestedClassName";
-    assertAbout(singleClass())
-      .that(testClass)
-      .compilesWithoutError();
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithNestedClassName";
+    assertAbout(singleClass()).that(testClass).compilesWithoutError();
   }
 }

@@ -21,19 +21,6 @@ public interface ClassHandler {
   void classInitializing(Class clazz);
 
   /**
-   * Called by Robolectric when a new instance of an instrumented class has been created and is
-   * ready to be initialized (but only on JVMs which don't support the {@code invokedynamic}
-   * instruction).
-   *
-   * <p>This happens before constructor code executes on the new instance.
-   *
-   * @param instance the newly-created instance
-   * @return a data value to be associated with the new instance
-   * @see #getShadowCreator(Class) for newer JVMs
-   */
-  Object initializing(Object instance);
-
-  /**
    * Called by Robolectric to determine how to create and initialize a shadow object when a new
    * instance of an instrumented class has been instantiated. (but only on JVMs which support the
    * {@code invokedynamic} instruction).

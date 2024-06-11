@@ -53,6 +53,8 @@ import javax.annotation.Nullable;
  */
 public final class AndroidVersions {
 
+  private static boolean warnOnly;
+
   private AndroidVersions() {}
 
   /** Representation of an android release, one that has occurred, or is expected. */
@@ -825,7 +827,7 @@ public final class AndroidVersions {
       }
     }
 
-    private void throwStaticErrors() {
+    private void handleStaticErrors() {
       StringBuilder errors = new StringBuilder();
       if (!this.classesWithIllegalNames.isEmpty()) {
         errors
@@ -858,14 +860,15 @@ public final class AndroidVersions {
         }
       }
       if (errors.length() > 0) {
-        throw new IllegalStateException(
+        errorMessage(
             errors
                 .append("Please check the AndroidReleases defined ")
                 .append("in ")
                 .append(AndroidVersions.class.getName())
                 .append("and ensure they are aligned with the versions of")
                 .append(" Android.")
-                .toString());
+                .toString(),
+            null);
       }
     }
 
@@ -877,14 +880,15 @@ public final class AndroidVersions {
         // the first letter of the code name equal to the release number.
         current = sdkIntToAllReleases.get(reportedVersion);
         if (current != null && !current.isReleased()) {
-          throw new IllegalStateException(
+          errorMessage(
               "The current sdk "
                   + current.getShortCode()
                   + " has been released. Please update the contents of "
                   + AndroidVersions.class.getName()
                   + " to mark sdk "
                   + current.getShortCode()
-                  + " as released.");
+                  + " as released.",
+              null);
         }
       } else {
         // Get known active code name letters
@@ -936,10 +940,31 @@ public final class AndroidVersions {
                 .append("contents of current sdk jar to the released version.\n");
           }
           if (detectedProblems.length() > 0) {
-            throw new IllegalStateException(detectedProblems.toString());
+            errorMessage(detectedProblems.toString(), null);
+          }
+
+          if (current == null) { // only possible in warning mode
+            current =
+                new AndroidUnreleased() {
+                  @Override
+                  public int getSdkInt() {
+                    return 10000; // the super large unknown sdk value.
+                  }
+
+                  @Override
+                  public String getShortCode() {
+                    return codename.toUpperCase(Locale.getDefault()).substring(0, 1);
+                  }
+
+                  @Override
+                  public String getVersion() {
+                    return "";
+                  }
+                };
           }
         }
       }
+
       return current;
     }
   }
@@ -971,7 +996,7 @@ public final class AndroidVersions {
             | IllegalArgumentException
             | IllegalAccessException
             | InvocationTargetException ex) {
-          throw new IllegalStateException(
+          errorMessage(
               "Classes "
                   + clazz.getName()
                   + "should be accessible via "
@@ -984,7 +1009,7 @@ public final class AndroidVersions {
     Collections.sort(allReleases, AndroidRelease::compareTo);
 
     SdkInformation sdkInformation = new SdkInformation(allReleases, classesWithIllegalNames);
-    sdkInformation.throwStaticErrors();
+    sdkInformation.handleStaticErrors();
     return sdkInformation;
   }
 
@@ -1013,7 +1038,26 @@ public final class AndroidVersions {
 
   private static final SdkInformation information;
 
+  private static final void errorMessage(String errorMessage, @Nullable Exception ex) {
+    if (warnOnly) {
+      System.err.println(errorMessage);
+    } else {
+      throw new IllegalStateException(errorMessage, ex);
+    }
+  }
+
   static {
+    // We shouldn't break in annotation processors, only test runs.
+    String cmd = System.getProperty("sun.java.command");
+    // We appear to be in an annotation processor, so only warn users.
+    if (cmd.contains("-Aorg.robolectric.annotation.processing.")) {
+      System.err.println(
+          "Robolectric's AndroidVersions is running in warning mode,"
+              + " no errors will be thrown.");
+      warnOnly = true;
+    } else {
+      warnOnly = false;
+    }
     AndroidRelease currentRelease = null;
     information = gatherStaticSdkInformationFromThisClass();
     try {

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.compat.Compatibility;
@@ -16,7 +17,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link Compatability}. */
-@Implements(value = Compatibility.class, isInAndroidSdk = false)
+@Implements(value = Compatibility.class, isInAndroidSdk = false, minSdk = R)
 public class ShadowCompatibility {
 
   private static final long CALL_ACTIVITY_RESULT_BEFORE_RESUME = 78294732L;

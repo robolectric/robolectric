@@ -23,7 +23,7 @@ import org.robolectric.versioning.AndroidVersions.U;
     callNativeMethodsByDefault = true)
 public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
   @Implementation(maxSdk = O)
-  protected static Number nativeOpen(
+  protected static long nativeOpen(
       String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
     return nativeOpen(path, openFlags, label, enableTrace, enableProfile, 0, 0);
   }

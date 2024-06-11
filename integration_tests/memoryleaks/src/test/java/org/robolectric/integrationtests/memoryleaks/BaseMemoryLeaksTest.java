@@ -5,6 +5,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources.Theme;
@@ -17,6 +18,8 @@ import com.google.common.testing.GcFinalization;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +45,25 @@ import org.robolectric.util.ReflectionHelpers;
 public abstract class BaseMemoryLeaksTest {
 
   private static WeakReference<Activity> awr = null;
+
+  // A weak reference to the application. This is used to ensure that the application can be
+  // collected after a test.
+  private static WeakReference<Application> ar = null;
+
+  @Before
+  public void setUp() {
+    if (ar != null) {
+      assertNotLeaking(ar::get);
+    }
+  }
+
+  @After
+  public void tearDown() {
+    // Do a null check in case we are running with lazy application.
+    if (RuntimeEnvironment.application != null) {
+      ar = new WeakReference<>(RuntimeEnvironment.application);
+    }
+  }
 
   @Test
   // Do not shard these two tests, they must run on the same machine sequentially.

@@ -166,6 +166,7 @@ public class ShadowAlwaysOnHotwordDetector {
       className = "android.service.voice.AlwaysOnHotwordDetector$RefreshAvailabiltyTask",
       maxSdk = TIRAMISU,
       isInAndroidSdk = false)
+  @SuppressWarnings("robolectric.mismatchedTypes")
   public static class ShadowRefreshAvailabilityTask<Params, Progress, Result>
       extends ShadowPausedAsyncTask<Params, Progress, Result> {
 
@@ -174,7 +175,7 @@ public class ShadowAlwaysOnHotwordDetector {
       return STATE_KEYPHRASE_ENROLLED;
     }
 
-    @Implementation
+    @Implementation(maxSdk = Q)
     protected boolean internalGetIsEnrolled(int keyphraseId, Locale locale) {
       return true;
     }

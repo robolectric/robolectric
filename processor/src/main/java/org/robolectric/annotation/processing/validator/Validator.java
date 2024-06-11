@@ -18,48 +18,48 @@ import javax.tools.Diagnostic.Kind;
 import org.robolectric.annotation.processing.Helpers;
 import org.robolectric.annotation.processing.RobolectricModel;
 
-/**
- * Base class for validators.
- */
+/** Base class for validators. */
 public abstract class Validator implements ElementVisitor<Void, Element> {
-  final protected RobolectricModel.Builder modelBuilder;
-  final protected Elements elements;
-  final protected Types types;
-  final protected Messager messager;
-  final protected TypeElement annotationType;
-  final protected Helpers helpers;
+  protected final RobolectricModel.Builder modelBuilder;
+  protected final Elements elements;
+  protected final Types types;
+  protected final Messager messager;
+  protected final TypeElement annotationType;
+  protected final Helpers helpers;
   // This is the easiest way to do it because visit() is final in AbstractEV6
-  final ElementVisitor<Void, Element> visitorAdapter = new AbstractElementVisitor6<Void, Element>() {
+  final ElementVisitor<Void, Element> visitorAdapter =
+      new AbstractElementVisitor6<Void, Element>() {
 
-    @Override
-    public Void visitPackage(PackageElement e, Element p) {
-      return Validator.this.visitPackage(e, p);
-    }
+        @Override
+        public Void visitPackage(PackageElement e, Element p) {
+          return Validator.this.visitPackage(e, p);
+        }
 
-    @Override
-    public Void visitType(TypeElement e, Element p) {
-      return Validator.this.visitType(e, p);
-    }
+        @Override
+        public Void visitType(TypeElement e, Element p) {
+          return Validator.this.visitType(e, p);
+        }
 
-    @Override
-    public Void visitVariable(VariableElement e, Element p) {
-      return Validator.this.visitVariable(e, p);
-    }
+        @Override
+        public Void visitVariable(VariableElement e, Element p) {
+          return Validator.this.visitVariable(e, p);
+        }
 
-    @Override
-    public Void visitExecutable(ExecutableElement e, Element p) {
-      return Validator.this.visitExecutable(e, p);
-    }
+        @Override
+        public Void visitExecutable(ExecutableElement e, Element p) {
+          return Validator.this.visitExecutable(e, p);
+        }
 
-    @Override
-    public Void visitTypeParameter(TypeParameterElement e, Element p) {
-      return Validator.this.visitTypeParameter(e, p);
-    }
-  };
+        @Override
+        public Void visitTypeParameter(TypeParameterElement e, Element p) {
+          return Validator.this.visitTypeParameter(e, p);
+        }
+      };
   protected Element currentElement;
   protected AnnotationMirror currentAnnotation;
 
-  public Validator(RobolectricModel.Builder modelBuilder, ProcessingEnvironment env, String annotationType) {
+  public Validator(
+      RobolectricModel.Builder modelBuilder, ProcessingEnvironment env, String annotationType) {
     this.modelBuilder = modelBuilder;
     elements = env.getElementUtils();
     types = env.getTypeUtils();

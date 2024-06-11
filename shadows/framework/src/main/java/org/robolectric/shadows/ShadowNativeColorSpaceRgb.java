@@ -11,6 +11,7 @@ import org.robolectric.nativeruntime.ColorSpaceRgbNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.shadows.ShadowNativeColorSpaceRgb.Picker;
 import org.robolectric.versioning.AndroidVersions.U;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link ColorSpace.Rgb} that is backed by native code */
 @Implements(
@@ -19,7 +20,7 @@ import org.robolectric.versioning.AndroidVersions.U;
     shadowPicker = Picker.class,
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
-public class ShadowNativeColorSpaceRgb extends ShadowNativeColorSpace {
+public class ShadowNativeColorSpaceRgb {
 
   @RealObject ColorSpace.Rgb colorSpaceRgb;
 
@@ -39,6 +40,23 @@ public class ShadowNativeColorSpaceRgb extends ShadowNativeColorSpace {
   public static final class Picker extends GraphicsShadowPicker<Object> {
     public Picker() {
       super(ShadowColorSpaceRgb.class, ShadowNativeColorSpaceRgb.class);
+    }
+  }
+
+  /** Shadow for {@link ColorSpace$Rgb$Native} that contains native functions. */
+  @Implements(
+      className = "android.graphics.ColorSpace$Rgb$Native",
+      isInAndroidSdk = false,
+      callNativeMethodsByDefault = true,
+      shadowPicker = ShadowNativeColorSpaceRgb.ShadowNative.Picker.class,
+      minSdk = V.SDK_INT)
+  @SuppressWarnings("robolectric.internal.IgnoreMissingClass")
+  public static class ShadowNative {
+    /** Shadow picker for {@link ColorSpace.Native}. */
+    public static final class Picker extends GraphicsShadowPicker<Object> {
+      public Picker() {
+        super(null, ShadowNativeColorSpaceRgb.ShadowNative.class);
+      }
     }
   }
 }

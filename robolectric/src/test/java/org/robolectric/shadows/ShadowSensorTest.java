@@ -34,4 +34,12 @@ public class ShadowSensorTest {
     Shadows.shadowOf(sensor).setMaximumRange(5f);
     assertThat(sensor.getMaximumRange()).isEqualTo(5f);
   }
+
+  @Test
+  public void getMinDelay() {
+    Sensor sensor = ShadowSensor.newInstance(Sensor.TYPE_ACCELEROMETER);
+    assertThat(sensor.getMinDelay()).isEqualTo(0);
+    Shadows.shadowOf(sensor).setMinDelay(5);
+    assertThat(sensor.getMinDelay()).isEqualTo(5);
+  }
 }
