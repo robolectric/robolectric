@@ -41,6 +41,11 @@ class BluetoothGattProxyDelegate {
     return ReflectionHelpers.createDelegatingProxy(IBluetoothGatt.class, delegate);
   }
 
+  private void invokeOnAdvertisingSetStarted(IAdvertisingSetCallback callback) {
+    reflector(IAdvertisingSetCallbackReflectorU.class, callback)
+        .onAdvertisingSetStarted(0, 0, AdvertisingSetCallback.ADVERTISE_SUCCESS);
+  }
+
   // for android V
   public void startAdvertisingSet(
       AdvertisingSetParameters parameters,
@@ -54,7 +59,7 @@ class BluetoothGattProxyDelegate {
       IAdvertisingSetCallback callback,
       AttributionSource attributionSource) {
 
-    reflector(IAdvertisingSetCallbackReflector.class, callback)
+    reflector(IAdvertisingSetCallbackReflectorV.class, callback)
         .onAdvertisingSetStarted(
             ReflectionHelpers.createNullProxy(IBinder.class),
             0,
@@ -78,18 +83,6 @@ class BluetoothGattProxyDelegate {
           Object recv) {
     invokeOnAdvertisingSetStarted(callback);
     reflector(SynchronousResultReceiverReflector.class, recv).send(null);
-  }
-
-  private void invokeOnAdvertisingSetStarted(IAdvertisingSetCallback callback) {
-    try {
-      callback.onAdvertisingSetStarted(
-          0 /* advertiserId */,
-          0 /* tx_power */,
-          AdvertisingSetCallback.ADVERTISE_SUCCESS /* status */);
-    } catch (RemoteException e) {
-      // should never happen
-      throw new RuntimeException(e);
-    }
   }
 
   // for android T
@@ -162,8 +155,13 @@ class BluetoothGattProxyDelegate {
   }
 
   @ForType(IAdvertisingSetCallback.class)
-  private interface IAdvertisingSetCallbackReflector {
+  private interface IAdvertisingSetCallbackReflectorU {
+    // for android U
+    void onAdvertisingSetStarted(int advertiserId, int txPower, int status);
+  }
 
+  @ForType(IAdvertisingSetCallback.class)
+  private interface IAdvertisingSetCallbackReflectorV {
     // for android V
     void onAdvertisingSetStarted(IBinder binder, int advertiserId, int txPower, int status);
   }
