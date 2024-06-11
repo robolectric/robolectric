@@ -65,7 +65,7 @@ public final class InDevelopmentValidatorTest {
     assertAbout(singleClass(props, getClassRootDir(Dummy.class), unreleased.getSdkInt()))
         .that(testClass)
         .failsToCompile()
-        .withErrorContaining("No such method in com.example.objects.Dummy for SDK 35")
+        .withErrorContaining("No method doSomething() in com.example.objects.Dummy for SDK 35")
         .onLine(11);
   }
 }

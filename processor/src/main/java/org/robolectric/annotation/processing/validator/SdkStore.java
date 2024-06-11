@@ -271,7 +271,7 @@ public class SdkStore {
 
       MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement, looseSignatures);
       if (sdkMethod == null && !suppressWarnings(methodElement, null)) {
-        return "No such method in " + className;
+        return "No method " + methodElement + " in " + className;
       }
       if (sdkMethod != null) {
         MethodExtraInfo implMethod = new MethodExtraInfo(methodElement);
