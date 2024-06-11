@@ -21,6 +21,9 @@ release.properties
 .gradle/
 build
 
+# Kotlin
+.kotlin
+
 # Android Profiling
 *.hprof
 
