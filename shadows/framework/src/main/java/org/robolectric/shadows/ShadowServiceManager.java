@@ -229,10 +229,7 @@ public class ShadowServiceManager {
     addBinderService(binderServices, Context.USAGE_STATS_SERVICE, IUsageStatsManager.class);
     addBinderService(binderServices, Context.MEDIA_ROUTER_SERVICE, IMediaRouterService.class);
     addBinderService(
-        binderServices,
-        Context.MEDIA_SESSION_SERVICE,
-        ISessionManager.class,
-        BinderProxyType.DEEP);
+        binderServices, Context.MEDIA_SESSION_SERVICE, ISessionManager.class, BinderProxyType.DEEP);
     addBinderService(
         binderServices,
         Context.VOICE_INTERACTION_MANAGER_SERVICE,
