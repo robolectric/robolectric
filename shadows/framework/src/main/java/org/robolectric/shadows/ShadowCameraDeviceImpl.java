@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -42,6 +43,7 @@ public class ShadowCameraDeviceImpl {
   private boolean closed = false;
 
   @Implementation(minSdk = V.SDK_INT)
+  @InDevelopment
   protected void __constructor__(
       Object cameraId,
       Object callback,
