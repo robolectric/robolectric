@@ -71,6 +71,7 @@ dependencies {
     androidTestImplementation libs.androidx.test.ext.truth
     androidTestImplementation libs.androidx.test.core
     androidTestImplementation libs.androidx.test.ext.junit
+    androidTestImplementation platform(libs.kotlin.bom)
     androidTestImplementation libs.truth
     androidTestUtil libs.androidx.test.services
 }

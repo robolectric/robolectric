@@ -133,6 +133,7 @@ spotless-gradle = { module = "com.diffplug.spotless:spotless-plugin-gradle", ver
 detekt-gradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt-gradle" }
 
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 
 auto-common = { module = "com.google.auto:auto-common", version.ref = "auto-common" }
