@@ -595,7 +595,7 @@ public class ShadowUsageStatsManager {
   @SuppressWarnings("unchecked")
   @Implementation(minSdk = TIRAMISU)
   protected Object /* List<BroadcastResponseStats> */ queryBroadcastResponseStats(
-      @Nullable Object packageName, Object id) {
+      @Nullable String packageName, long id) {
     List<BroadcastResponseStats> result = new ArrayList<>();
     for (Map.Entry<String, Map<Long, Object /*BroadcastResponseStats*/>> entry :
         appBroadcastStats.entrySet()) {

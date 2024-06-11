@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -54,7 +55,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow for {@link android.net.wifi.WifiManager}. */
-@Implements(value = WifiManager.class, looseSignatures = true)
+@Implements(value = WifiManager.class)
 @SuppressWarnings("AndroidConcurrentHashMap")
 public class ShadowWifiManager {
   private static final int LOCAL_HOST = 2130706433;
@@ -577,8 +578,10 @@ public class ShadowWifiManager {
 
   @Implementation(minSdk = Q)
   @HiddenApi
-  protected void addOnWifiUsabilityStatsListener(Object executorObject, Object listenerObject) {
-    Executor executor = (Executor) executorObject;
+  protected void addOnWifiUsabilityStatsListener(
+      Executor executor,
+      @ClassName("android.net.wifi.WifiManager.OnWifiUsabilityStatsListener")
+          Object listenerObject) {
     WifiManager.OnWifiUsabilityStatsListener listener =
         (WifiManager.OnWifiUsabilityStatsListener) listenerObject;
     wifiUsabilityStatsListeners.put(listener, executor);
@@ -586,7 +589,9 @@ public class ShadowWifiManager {
 
   @Implementation(minSdk = Q)
   @HiddenApi
-  protected void removeOnWifiUsabilityStatsListener(Object listenerObject) {
+  protected void removeOnWifiUsabilityStatsListener(
+      @ClassName("android.net.wifi.WifiManager.OnWifiUsabilityStatsListener")
+          Object listenerObject) {
     WifiManager.OnWifiUsabilityStatsListener listener =
         (WifiManager.OnWifiUsabilityStatsListener) listenerObject;
     wifiUsabilityStatsListeners.remove(listener);
@@ -606,7 +611,9 @@ public class ShadowWifiManager {
    */
   @Implementation(minSdk = R)
   @HiddenApi
-  protected boolean setWifiConnectedNetworkScorer(Object executorObject, Object scorerObject) {
+  protected boolean setWifiConnectedNetworkScorer(
+      Executor executorObject,
+      @ClassName("android.net.wifi.WifiManager.WifiConnectedNetworkScorer") Object scorerObject) {
     if (networkScorer == null) {
       networkScorer = scorerObject;
       return true;
@@ -849,15 +856,18 @@ public class ShadowWifiManager {
   @Implementation(minSdk = TIRAMISU)
   @HiddenApi
   protected void setExternalPnoScanRequest(
-      Object ssids, Object frequencies, Object executor, Object callback) {
+      @ClassName("java.util.List<android.net.wifi.WifiSsid>") Object ssids,
+      int[] frequencies,
+      Executor executor,
+      @ClassName("android.net.wifi.WifiManager.PnoScanResultsCallback") Object callback) {
     synchronized (pnoRequestLock) {
       if (callback == null) {
         throw new IllegalArgumentException("callback cannot be null");
       }
 
       List<WifiSsid> pnoSsids = (List<WifiSsid>) ssids;
-      int[] pnoFrequencies = (int[]) frequencies;
-      Executor pnoExecutor = (Executor) executor;
+      int[] pnoFrequencies = frequencies;
+      Executor pnoExecutor = executor;
       InternalPnoScanResultsCallback pnoCallback = new InternalPnoScanResultsCallback(callback);
 
       if (pnoExecutor == null) {

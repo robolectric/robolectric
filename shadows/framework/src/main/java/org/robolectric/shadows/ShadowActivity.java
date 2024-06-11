@@ -61,6 +61,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -75,10 +76,9 @@ import org.robolectric.shadows.ShadowInstrumentation.TargetAndRequestCode;
 import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.WithType;
 
 @SuppressWarnings("NewApi")
-@Implements(value = Activity.class, looseSignatures = true)
+@Implements(value = Activity.class)
 public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @RealObject protected Activity realActivity;
@@ -129,7 +129,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   public void callAttach(
       Intent intent,
       @Nullable Bundle activityOptions,
-      @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
+      @Nullable @ClassName("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances) {
     callAttach(
         intent,
@@ -141,7 +141,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   public void callAttach(
       Intent intent,
       @Nullable Bundle activityOptions,
-      @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
+      @Nullable @ClassName("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances,
       @Nullable Configuration overrideConfig) {
     Application application = RuntimeEnvironment.getApplication();
@@ -417,7 +417,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * @return fake SplashScreen
    */
   @Implementation(minSdk = S)
-  protected synchronized Object getSplashScreen() {
+  protected synchronized @ClassName("android.window.SplashScreen") Object getSplashScreen() {
     if (splashScreen == null) {
       splashScreen = new RoboSplashScreen();
     }

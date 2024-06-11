@@ -8,6 +8,7 @@ import static java.lang.invoke.MethodType.methodType;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import com.google.auto.service.AutoService;
+import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
@@ -307,8 +309,22 @@ public class ShadowWrangler implements ClassHandler {
       Class<?>[] types,
       ShadowInfo shadowInfo,
       Class<?> shadowClass) {
-    Method method =
-        findShadowMethodDeclaredOnClass(shadowClass, name, types, shadowInfo.looseSignatures);
+    // Try to find the shadow method with the exact method signature first.
+    Method method = findShadowMethodDeclaredOnClass(shadowClass, name, types);
+
+    // Try to find shadow method with fallback looseSignature mechanism.
+    if (method == null && shadowInfo.looseSignatures) {
+      // If user sets looseSignatures for shadow class, we will try to find method with generic
+      // types by following origin full looseSignatures definition.
+      Class<?>[] genericTypes = MethodType.genericMethodType(types.length).parameterArray();
+      method = findShadowMethodDeclaredOnClass(shadowClass, name, genericTypes);
+    }
+
+    // Try to find shadow method with another fallback WithType mechanism with a lower priority.
+    if (method == null && !shadowInfo.looseSignatures) {
+      // Otherwise, we will try to find method with WithType annotation that can match signature.
+      method = findShadowMethodHasWithTypeDeclaredOnClass(shadowClass, name, types);
+    }
 
     if (method != null) {
       return method;
@@ -329,6 +345,76 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     return method;
+  }
+
+  private ClassName findClassNameAnnotation(Annotation[] annotations) {
+    for (Annotation annotation : annotations) {
+      if (ClassName.class.isAssignableFrom(annotation.annotationType())) {
+        return (ClassName) annotation;
+      }
+    }
+    return null;
+  }
+
+  private boolean hasClassNameAnnotation(Annotation[][] annotations) {
+    for (Annotation[] parameterAnnotations : annotations) {
+      for (Annotation annotation : parameterAnnotations) {
+        if (ClassName.class.isAssignableFrom(annotation.annotationType())) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private Method findShadowMethodHasWithTypeDeclaredOnClass(
+      Class<?> shadowClass, String methodName, Class<?>[] paramClasses) {
+    // We don't process the method without input parameters now.
+    if (paramClasses == null || paramClasses.length == 0) {
+      return null;
+    }
+    Method[] methods = shadowClass.getDeclaredMethods();
+    // TODO try to find methods with the same name first
+    for (Method method : methods) {
+      if (method == null
+          || !method.getName().equals(methodName)
+          || method.getParameterCount() != paramClasses.length
+          || !isValidShadowMethod(method)) {
+        continue;
+      }
+      Class<?>[] parameterTypes = method.getParameterTypes();
+      Annotation[][] allAnnotations = method.getParameterAnnotations();
+      if (!hasClassNameAnnotation(allAnnotations)) {
+        continue;
+      }
+      boolean matched = true;
+      for (int i = 0; i < parameterTypes.length; i++) {
+        // If method's parameter type is superclass of input parameter, we can pass checking for
+        // this parameter.
+        if (parameterTypes[i].isAssignableFrom(paramClasses[i])) {
+          continue;
+        }
+        if (allAnnotations.length <= i) {
+          matched = false;
+          break;
+        }
+        ClassName className = findClassNameAnnotation(allAnnotations[i]);
+        // If developer uses WithType for an input parameter, we need ensure it is the same
+        // type of the real method to avoid unexpected method override/overwrite result.
+        if (className != null
+            && paramClasses[i] != null
+            && className.value().equals(paramClasses[i].getCanonicalName())) {
+          continue;
+        }
+        matched = false;
+        break;
+      }
+      // TODO identify why above logic will affect __constructor__ without WithType
+      if (matched) {
+        return method;
+      }
+    }
+    return null;
   }
 
   private Method findShadowMethodDeclaredOnClass(
