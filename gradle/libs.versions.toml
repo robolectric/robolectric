@@ -123,8 +123,14 @@ androidx-test-services = "1.4.2"
 androidx-fragment-for-shadows = "1.2.0"
 play-services-for-shadows = "17.0.0"
 
+# https://developer.android.com/reference/com/google/android/play/core/release-notes
+# https://developer.android.com/guide/playcore#playcore-migration
+play-core = "2.0.1"
+
 # https://developers.google.com/android/guides/releases
 play-services-basement = "18.0.1"
+core-ktx = "1.10.1"
+material = "1.10.0"
 
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
@@ -242,9 +248,22 @@ play-services-basement-for-shadows = { module = "com.google.android.gms:play-ser
 
 play-services-basement = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-basement" }
 
+play-asset-delivery = { module = "com.google.android.play:asset-delivery", version.ref = "play-core" }
+play-asset-delivery-ktx = { module = "com.google.android.play:asset-delivery-ktx", version.ref = "play-core" }
+play-feature-delivery = { module = "com.google.android.play:feature-delivery", version.ref = "play-core" }
+play-feature-delivery-ktx = { module = "com.google.android.play:feature-delivery-ktx", version.ref = "play-core" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+
 [bundles]
 play-services-for-shadows = [ "androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows" ]
 powermock = [ "powermock-module-junit4", "powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-xstream" ]
 sqlite4java-native = [ "sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86" ]
+play-core = [
+    "play-asset-delivery",
+    "play-asset-delivery-ktx",
+    "play-feature-delivery",
+    "play-feature-delivery-ktx"
+]
 
 [plugins]

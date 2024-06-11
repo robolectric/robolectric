@@ -44,3 +44,7 @@ include ":integration_tests:nativegraphics"
 include ":integration_tests:room"
 include ":integration_tests:versioning"
 include ':testapp'
+include ':integration_tests:dynamic-features'
+include ':integration_tests:dynamic-features:features:asset'
+include ':integration_tests:dynamic-features:features:java'
+include ':integration_tests:dynamic-features:features:kotlin'
