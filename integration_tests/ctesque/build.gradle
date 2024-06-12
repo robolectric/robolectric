@@ -59,6 +59,7 @@ dependencies {
     testImplementation libs.androidx.test.espresso.core
     testImplementation libs.truth
     testImplementation libs.guava
+    testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
 
     // Testing dependencies
     androidTestImplementation project(':shadowapi')
@@ -71,4 +72,5 @@ dependencies {
     androidTestImplementation libs.truth
     androidTestImplementation libs.guava
     androidTestUtil libs.androidx.test.services
+    androidTestImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
 }
