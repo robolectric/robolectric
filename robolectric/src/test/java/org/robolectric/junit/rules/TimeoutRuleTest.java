@@ -25,12 +25,12 @@ public final class TimeoutRuleTest {
 
   @Test
   public void testTimingOutIsInterrupted() {
-    Assert.assertThrows(
-        InterruptedException.class,
-        () -> {
-          Thread.sleep(1000);
-          throw new IllegalArgumentException();
-        });
+    try {
+      Thread.sleep(1000);
+      Assert.fail("Should never reach this statement");
+    } catch (InterruptedException e) {
+      // ignore expected
+    }
   }
 
   @Test
