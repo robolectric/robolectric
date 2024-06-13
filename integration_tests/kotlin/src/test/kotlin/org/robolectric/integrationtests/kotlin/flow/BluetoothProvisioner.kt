@@ -30,7 +30,7 @@ class BluetoothProvisioner(applicationContext: Context) {
       object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
           if (result?.device != null) {
-            trySend(result.device)
+            @Suppress("UnusedPrivateProperty") val unused = trySend(result.device)
           }
         }
 
@@ -57,7 +57,7 @@ class BluetoothProvisioner(applicationContext: Context) {
 
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
           if (status == BluetoothGatt.GATT_SUCCESS) {
-            trySend(gatt!!)
+            @Suppress("UnusedPrivateProperty") val unused = trySend(gatt!!)
           } else {
             cancel("Service discovery failed", null)
           }
