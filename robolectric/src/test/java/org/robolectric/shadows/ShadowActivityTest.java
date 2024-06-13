@@ -1507,10 +1507,7 @@ public class ShadowActivityTest {
         assertThrows(
             RuntimeException.class,
             () -> {
-              ActivityController<AbstractTestActivity> controller =
-                  Robolectric.buildActivity(AbstractTestActivity.class, null);
-              // This line will not be executed.
-              assertThat(controller).isNull();
+              Robolectric.buildActivity(AbstractTestActivity.class, null);
             });
     assertThat(throwable.getMessage())
         .isEqualTo("buildActivity must be called with non-abstract class");
