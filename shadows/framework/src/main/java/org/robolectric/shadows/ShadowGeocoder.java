@@ -74,6 +74,23 @@ public final class ShadowGeocoder {
   }
 
   /**
+   * Sets an empty list by default, or the last value set by {@link #setFromLocation(List)} in the
+   * provided {@code listener}
+   *
+   * <p>{@code locationName} is ignored by this implementation. {@code maxResults} determines the
+   * maximum number of addresses to return.
+   */
+  @Implementation(minSdk = TIRAMISU)
+  protected void getFromLocationName(
+      String locationName, int maxResults, GeocodeListener listener) {
+    if (errorMessage != null) {
+      listener.onError(errorMessage);
+    } else {
+      listener.onGeocode(fromLocation.subList(0, Math.min(maxResults, fromLocation.size())));
+    }
+  }
+
+  /**
    * Sets the value to be returned by {@link Geocoder#isPresent()}.
    *
    * <p>This value is reset to true for each test.

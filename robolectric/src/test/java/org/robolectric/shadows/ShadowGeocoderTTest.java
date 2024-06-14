@@ -79,4 +79,64 @@ public class ShadowGeocoderTTest {
     assertThat(decodedAddresses).isNull();
     assertThat(errorMessage).isEqualTo(GEOCODER_ERROR_MESSAGE);
   }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getFromLocationNameSetsListenerWithTheOverwrittenListLimitingByMaxResults() {
+    ShadowGeocoder shadowGeocoder = shadowOf(geocoder);
+
+    List<Address> list =
+        Arrays.asList(new Address(Locale.getDefault()), new Address(Locale.CANADA));
+    shadowGeocoder.setFromLocation(list);
+
+    Geocoder.GeocodeListener geocodeListener = addresses -> decodedAddresses = addresses;
+
+    geocoder.getFromLocationName("test", 1, geocodeListener);
+    assertThat(decodedAddresses).containsExactly(list.get(0));
+
+    geocoder.getFromLocationName("test", 2, geocodeListener);
+    assertThat(decodedAddresses).containsExactly(list.get(0), list.get(1)).inOrder();
+
+    geocoder.getFromLocationName("test", 3, geocodeListener);
+    assertThat(decodedAddresses).containsExactly(list.get(0), list.get(1)).inOrder();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getFromLocationNameSetsListenerWithoutOverwrittenList() {
+    ShadowGeocoder shadowGeocoder = shadowOf(geocoder);
+
+    Geocoder.GeocodeListener geocodeListener = addresses -> decodedAddresses = addresses;
+    shadowGeocoder.getFromLocationName("test", 1, geocodeListener);
+
+    assertThat(decodedAddresses).hasSize(0);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getFromLocationName_onError() {
+    ShadowGeocoder shadowGeocoder = shadowOf(geocoder);
+
+    List<Address> list =
+        Arrays.asList(new Address(Locale.getDefault()), new Address(Locale.CANADA));
+    shadowGeocoder.setFromLocation(list);
+    shadowGeocoder.setErrorMessage(GEOCODER_ERROR_MESSAGE);
+
+    Geocoder.GeocodeListener geocodeListener =
+        new Geocoder.GeocodeListener() {
+          @Override
+          public void onGeocode(List<Address> list) {
+            decodedAddresses = list;
+          }
+
+          @Override
+          public void onError(@Nullable String message) {
+            errorMessage = message;
+          }
+        };
+
+    geocoder.getFromLocationName("test", 1, geocodeListener);
+    assertThat(decodedAddresses).isNull();
+    assertThat(errorMessage).isEqualTo(GEOCODER_ERROR_MESSAGE);
+  }
 }
