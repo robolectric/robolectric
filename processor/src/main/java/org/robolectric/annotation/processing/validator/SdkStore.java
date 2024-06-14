@@ -586,7 +586,14 @@ public class SdkStore {
       } else if (STATIC_INITIALIZER_METHOD_NAME.equals(name)) {
         return "<clinit>";
       } else {
-        return name;
+        Implementation implementation = methodElement.getAnnotation(Implementation.class);
+        String methodName = implementation == null ? "" : implementation.methodName();
+        methodName = methodName == null ? "" : methodName.trim();
+        if (methodName.isEmpty()) {
+          return name;
+        } else {
+          return methodName;
+        }
       }
     }
 

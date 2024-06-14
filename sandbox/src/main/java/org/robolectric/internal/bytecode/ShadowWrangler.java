@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.sandbox.ShadowMatcher;
@@ -301,7 +302,9 @@ public class ShadowWrangler implements ClassHandler {
   private Method findShadowMethodDeclaredOnClass(
       Class<?> shadowClass, String methodName, Class<?>[] paramClasses, boolean looseSignatures) {
     Method foundMethod = null;
-    for (Method method : shadowClass.getDeclaredMethods()) {
+    // Try to find shadow method with exact method name and looseSignature.
+    Method[] methods = shadowClass.getDeclaredMethods();
+    for (Method method : methods) {
       if (!method.getName().equals(methodName)
           || method.getParameterCount() != paramClasses.length) {
         continue;
@@ -329,6 +332,24 @@ public class ShadowWrangler implements ClassHandler {
         if (allParameterTypesAreObject && shadowMatcher.matches(method)) {
           // Found a looseSignatures match, but continue looking for an exact match.
           foundMethod = method;
+        }
+      }
+    }
+
+    if (foundMethod == null) {
+      // Try to find shadow method with Implementation#methodName's mapping name
+      for (Method method : methods) {
+        Implementation implementation = method.getAnnotation(Implementation.class);
+        if (implementation == null) {
+          continue;
+        }
+        String mappedMethodName = implementation.methodName().trim();
+        if (mappedMethodName.isEmpty() || !mappedMethodName.equals(methodName)) {
+          continue;
+        }
+        if (Arrays.equals(method.getParameterTypes(), paramClasses)) {
+          foundMethod = method;
+          break;
         }
       }
     }
