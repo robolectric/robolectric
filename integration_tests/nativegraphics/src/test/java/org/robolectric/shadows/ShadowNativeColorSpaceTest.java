@@ -30,6 +30,7 @@ import static org.junit.Assert.fail;
 
 import android.graphics.ColorSpace;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,6 +75,11 @@ public class ShadowNativeColorSpaceTest {
   @Test
   public void testNamedColorSpaces() {
     for (ColorSpace.Named named : ColorSpace.Named.values()) {
+      // OK_LAB is behind a feature flag that is not yet enabled by default.
+      if (Objects.equals(named.toString(), "OK_LAB")) {
+        continue;
+      }
+
       ColorSpace colorSpace = ColorSpace.get(named);
       assertNotNull(colorSpace.getName());
       assertNotNull(colorSpace);
@@ -336,6 +342,11 @@ public class ShadowNativeColorSpaceTest {
   @Config(minSdk = Q)
   public void testIsSRGB() {
     for (ColorSpace.Named e : ColorSpace.Named.values()) {
+      // OK_LAB is behind a feature flag that is not yet enabled by default.
+      if (Objects.equals(e.toString(), "OK_LAB")) {
+        continue;
+      }
+
       ColorSpace colorSpace = ColorSpace.get(e);
       if (e == ColorSpace.Named.SRGB) {
         assertTrue(colorSpace.isSrgb());
