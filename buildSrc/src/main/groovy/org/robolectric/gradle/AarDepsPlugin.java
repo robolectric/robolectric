@@ -3,11 +3,12 @@ package org.robolectric.gradle;
 import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE;
 
 import com.android.build.gradle.internal.dependency.ExtractAarTransform;
-import com.google.common.base.Joiner;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
@@ -63,7 +64,11 @@ public class AarDepsPlugin implements Plugin<Project> {
                         List<File> aarFiles = AarDepsPlugin.this.findAarFiles(t.getClasspath());
                         if (!aarFiles.isEmpty()) {
                           throw new IllegalStateException(
-                              "AARs on classpath: " + Joiner.on("\n  ").join(aarFiles));
+                              "AARs on classpath: "
+                                  + aarFiles.stream()
+                                      .filter(Objects::nonNull)
+                                      .map(File::toString)
+                                      .collect(Collectors.joining("\n  ")));
                         }
                       }
                     }));
