@@ -47,7 +47,6 @@ dependencies {
     implementation gradleApi()
     implementation localGroovy()
 
-    api libs.guava
     implementation libs.asm.tree
     implementation libs.android.gradle
 }
