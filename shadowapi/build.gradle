@@ -1,8 +1,7 @@
-import org.robolectric.gradle.DeployedRoboJavaModulePlugin
-import org.robolectric.gradle.RoboJavaModulePlugin
-
-apply plugin: RoboJavaModulePlugin
-apply plugin: DeployedRoboJavaModulePlugin
+plugins {
+    id("org.robolectric.gradle.RoboJavaModulePlugin")
+    id("org.robolectric.gradle.DeployedRoboJavaModulePlugin")
+}
 
 dependencies {
     compileOnly libs.findbugs.jsr305

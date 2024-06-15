@@ -1,6 +1,6 @@
-import org.robolectric.gradle.RoboJavaModulePlugin
-
-apply plugin: RoboJavaModulePlugin
+plugins {
+    id("org.robolectric.gradle.RoboJavaModulePlugin")
+}
 
 dependencies {
     api project(":robolectric")
