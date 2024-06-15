@@ -73,9 +73,6 @@ javax-annotation-api = "1.3.2"
 javax-annotation-jsr250-api = "1.0"
 javax-inject = "1"
 
-# https://github.com/JetBrains/java-annotations/releases
-jetbrains-annotations = "24.1.0"
-
 # https://junit.org/junit4/
 junit4 = "4.13.2"
 
@@ -179,8 +176,6 @@ junit4 = { module = "junit:junit", version.ref = "junit4" }
 javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javax-annotation-api" }
 javax-annotation-jsr250-api = { module = "javax.annotation:jsr250-api", version.ref = "javax-annotation-jsr250-api" }
 javax-inject = { module = "javax.inject:javax.inject", version.ref = "javax-inject" }
-
-jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 
 libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version.ref = "libphonenumber" }
 
