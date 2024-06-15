@@ -48,7 +48,6 @@ dependencies {
     implementation localGroovy()
 
     api libs.guava
-    api libs.jetbrains.annotations
     implementation libs.asm.tree
     implementation libs.android.gradle
 }
