@@ -13,6 +13,8 @@ final class SystemFeatureListInitializer {
     int apiLevel = RuntimeEnvironment.getApiLevel();
     Map<String, Boolean> features = new HashMap<>();
 
+    features.put(PackageManager.FEATURE_TOUCHSCREEN, true);
+
     if (apiLevel >= VERSION_CODES.N_MR1) {
       features.put(PackageManager.FEATURE_WIFI, true);
     }
