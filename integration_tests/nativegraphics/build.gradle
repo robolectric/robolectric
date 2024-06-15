@@ -1,7 +1,7 @@
-import org.robolectric.gradle.AndroidProjectConfigPlugin
-
-apply plugin: 'com.android.library'
-apply plugin: AndroidProjectConfigPlugin
+plugins {
+    id("com.android.library")
+    id("org.robolectric.gradle.AndroidProjectConfigPlugin")
+}
 
 android {
     compileSdk 34

@@ -1,7 +1,7 @@
-import org.robolectric.gradle.RoboJavaModulePlugin
-
-apply plugin: RoboJavaModulePlugin
-apply plugin: "jacoco"
+plugins {
+    id("org.robolectric.gradle.RoboJavaModulePlugin")
+    id("jacoco")
+}
 
 def jacocoVersion = libs.versions.jacoco.get()
 
