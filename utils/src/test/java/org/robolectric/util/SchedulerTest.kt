@@ -426,7 +426,7 @@ class SchedulerTest {
     scheduler.advanceToLastPostedRunnable()
     assertThat(actualOrder).isEqualTo(ImmutableList.copyOf(Iterables.concat(orderCheck.values)))
     watch.stop()
-    assertThat(watch.elapsed().toMillis()).isLessThan(2000L);
+    assertThat(watch.elapsed().toMillis()).isLessThan(2000L)
   }
 
   @Test(timeout = 1000)
