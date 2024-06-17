@@ -38,7 +38,9 @@ import java.nio.file.Path;
 import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nonnull;
 import javax.inject.Named;
@@ -659,8 +661,22 @@ public class AndroidTestEnvironment implements TestEnvironment {
   @Override
   public void resetState() {
     Locale.setDefault(initialLocale);
+    List<Throwable> exceptions = new ArrayList<>();
     for (ShadowProvider provider : shadowProviders) {
-      provider.reset();
+      try {
+        provider.reset();
+      } catch (Throwable e) {
+        exceptions.add(e);
+      }
+    }
+
+    if (!exceptions.isEmpty()) {
+      RuntimeException runtimeException =
+          new RuntimeException("Some resetters failed. See suppressed exceptions.");
+      for (Throwable e : exceptions) {
+        runtimeException.addSuppressed(e);
+      }
+      throw runtimeException;
     }
   }
 
