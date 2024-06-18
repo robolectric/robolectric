@@ -23,6 +23,7 @@ import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -35,6 +36,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 import org.robolectric.versioning.AndroidVersions.U;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link Bitmap} that is backed by native code */
 @Implements(
@@ -362,6 +364,9 @@ public class ShadowNativeBitmap extends ShadowBitmap {
 
     @Accessor("sNamedColorSpaces")
     ColorSpace[] getNamedColorSpaces();
+
+    @Accessor("sNamedColorSpaceMap")
+    Map<Integer, ColorSpace> getNamedColorSpaceMap();
   }
 
   @Implementation
@@ -409,7 +414,19 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     boolean hasColorSpace = p.readBoolean();
     if (hasColorSpace) {
       String colorSpaceName = p.readString();
-      ColorSpace[] namedColorSpaces = reflector(ColorSpaceReflector.class).getNamedColorSpaces();
+      ColorSpace[] namedColorSpaces;
+      if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
+        // Starting Android V, we need to access the color space map to get all supported color
+        // spaces.
+        Map<Integer, ColorSpace> namedColorSpaceMap =
+            reflector(ColorSpaceReflector.class).getNamedColorSpaceMap();
+        namedColorSpaces =
+            namedColorSpaceMap.values().toArray(new ColorSpace[namedColorSpaceMap.size()]);
+      } else {
+        // Before V, we directly access the color space array.
+        namedColorSpaces = reflector(ColorSpaceReflector.class).getNamedColorSpaces();
+      }
+
       for (ColorSpace named : namedColorSpaces) {
         if (named.getName().equals(colorSpaceName)) {
           colorSpace = named;
