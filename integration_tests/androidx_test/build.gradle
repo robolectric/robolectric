@@ -1,9 +1,8 @@
-import org.robolectric.gradle.AndroidProjectConfigPlugin
-import org.robolectric.gradle.GradleManagedDevicePlugin
-
-apply plugin: 'com.android.library'
-apply plugin: AndroidProjectConfigPlugin
-apply plugin: GradleManagedDevicePlugin
+plugins {
+    id("com.android.library")
+    id("org.robolectric.gradle.AndroidProjectConfigPlugin")
+    id("org.robolectric.gradle.GradleManagedDevicePlugin")
+}
 
 android {
     compileSdk 34
@@ -11,7 +10,7 @@ android {
 
     defaultConfig {
         testApplicationId 'org.robolectric.integrationtests.axt'
-        minSdk 19
+        minSdk 21
         targetSdk 34
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -71,6 +70,7 @@ dependencies {
     androidTestImplementation libs.androidx.test.ext.truth
     androidTestImplementation libs.androidx.test.core
     androidTestImplementation libs.androidx.test.ext.junit
+    androidTestImplementation platform(libs.kotlin.bom)
     androidTestImplementation libs.truth
     androidTestUtil libs.androidx.test.services
 }

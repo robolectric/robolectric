@@ -30,7 +30,7 @@ class BluetoothProvisioner(applicationContext: Context) {
       object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
           if (result?.device != null) {
-            val unused = trySend(result.device)
+            @Suppress("UnusedPrivateProperty") val unused = trySend(result.device)
           }
         }
 
@@ -49,7 +49,7 @@ class BluetoothProvisioner(applicationContext: Context) {
       object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
           if (newState == BluetoothProfile.STATE_CONNECTED) {
-            val unused = gatt!!.discoverServices()
+            gatt!!.discoverServices()
           } else {
             cancel("Connect Failed", null)
           }
@@ -57,7 +57,7 @@ class BluetoothProvisioner(applicationContext: Context) {
 
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
           if (status == BluetoothGatt.GATT_SUCCESS) {
-            val unused = trySend(gatt!!)
+            @Suppress("UnusedPrivateProperty") val unused = trySend(gatt!!)
           } else {
             cancel("Service discovery failed", null)
           }

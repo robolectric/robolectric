@@ -12,7 +12,6 @@ import android.app.UiModeManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.res.Configuration;
-import android.os.Build.VERSION_CODES;
 import android.provider.Settings;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -25,7 +24,6 @@ import org.robolectric.shadow.api.Shadow;
 
 /** */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = VERSION_CODES.LOLLIPOP)
 public class ShadowUIModeManagerTest {
   private Context context;
   private UiModeManager uiModeManager;

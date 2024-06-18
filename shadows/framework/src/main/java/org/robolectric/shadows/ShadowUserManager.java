@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -322,12 +321,10 @@ public class ShadowUserManager {
       // use UserHandle id as serial number unless setSerialNumberForUser() is used
       userManagerState.userSerialNumbers.put(profileUserHandle, (long) profileUserHandle);
     }
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-      profileUserInfo.profileGroupId = userHandle;
-      UserInfo parentUserInfo = getUserInfo(userHandle);
-      if (parentUserInfo != null) {
-        parentUserInfo.profileGroupId = userHandle;
-      }
+    profileUserInfo.profileGroupId = userHandle;
+    UserInfo parentUserInfo = getUserInfo(userHandle);
+    if (parentUserInfo != null) {
+      parentUserInfo.profileGroupId = userHandle;
     }
     userManagerState.userInfoMap.put(profileUserHandle, profileUserInfo);
     // Insert profile to the belonging user's userProfilesList

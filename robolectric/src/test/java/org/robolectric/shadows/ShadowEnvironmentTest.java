@@ -253,7 +253,7 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(maxSdk = LOLLIPOP)
+  @Config(sdk = LOLLIPOP)
   public void getExternalStorageStatePreLollipopMR1() {
     File storageDir1 = ShadowEnvironment.addExternalDir("dir1");
     File storageDir2 = ShadowEnvironment.addExternalDir("dir2");

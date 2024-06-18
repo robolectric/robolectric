@@ -114,6 +114,7 @@ private fun registerActivityToPackageManager(activity: String) {
     .addActivityIfNotPresent(ComponentName(appContext.packageName, activity))
 }
 
+@Suppress("ForbiddenComment")
 private fun hardwareRendererEnvironment(block: () -> Unit) {
   val originalHwrdrOption =
     System.getProperty(RoborazziCaptureTest.USE_HARDWARE_RENDERER_NATIVE_ENV, null)

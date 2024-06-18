@@ -21,6 +21,7 @@ import org.robolectric.versioning.AndroidVersions.U;
     value = RuntimeShader.class,
     minSdk = R,
     shadowPicker = Picker.class,
+    isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
 public class ShadowNativeRuntimeShader {
 

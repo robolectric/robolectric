@@ -65,7 +65,7 @@ if (System.getenv('PUBLISH_PREINSTRUMENTED_JARS') == "true") {
         publications {
             sdksToInstrument().each { androidSdk ->
                 "sdk${androidSdk.apiLevel}"(MavenPublication) {
-                    artifact = layout.buildDirectory.file(androidSdk.preinstrumentedJarFileName).get().asFile.path
+                    artifact layout.buildDirectory.file(androidSdk.preinstrumentedJarFileName).get().asFile.path
                     artifactId 'android-all-instrumented'
                     artifact emptySourcesJar
                     artifact emptyJavadocJar
@@ -113,6 +113,8 @@ if (System.getenv('PUBLISH_PREINSTRUMENTED_JARS') == "true") {
     }
 
     signing {
+        // Skip signing if a signing key is not configured.
+        required { project.hasProperty("signing.keyId") }
         sdksToInstrument().each { androidSdk ->
             sign publishing.publications."sdk${androidSdk.apiLevel}"
         }

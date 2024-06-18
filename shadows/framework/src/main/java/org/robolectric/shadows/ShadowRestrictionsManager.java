@@ -1,14 +1,12 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-
 import android.content.RestrictionsManager;
 import android.os.Bundle;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow of {@link android.content.RestrictionsManager}. */
-@Implements(value = RestrictionsManager.class, minSdk=LOLLIPOP)
+@Implements(value = RestrictionsManager.class)
 public class ShadowRestrictionsManager {
   private Bundle applicationRestrictions;
 

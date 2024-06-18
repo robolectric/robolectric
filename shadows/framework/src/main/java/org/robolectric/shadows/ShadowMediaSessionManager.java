@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.ReflectionHelpers.createDeepProxy;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -24,7 +23,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link MediaSessionManager}. */
-@Implements(value = MediaSessionManager.class, minSdk = LOLLIPOP)
+@Implements(value = MediaSessionManager.class)
 public class ShadowMediaSessionManager {
   private final List<MediaController> controllers = new CopyOnWriteArrayList<>();
   private final Set<OnActiveSessionsChangedListener> listeners = new CopyOnWriteArraySet<>();

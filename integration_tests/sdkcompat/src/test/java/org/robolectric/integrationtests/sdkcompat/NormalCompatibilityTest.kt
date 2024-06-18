@@ -1,4 +1,4 @@
-package org.robolectric.integration.compat.target28
+package org.robolectric.integrationtests.sdkcompat
 
 import android.content.Context
 import android.content.Context.VIBRATOR_SERVICE
@@ -19,8 +19,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
-import org.robolectric.integrationtests.compattarget28.MainActivity
-import org.robolectric.integrationtests.compattarget28.MainActivity.CreationSource
+import org.robolectric.integrationtests.sdkcompat.MainActivity.CreationSource
 import org.robolectric.testapp.TestActivity
 
 @RunWith(RobolectricTestRunner::class)
@@ -28,8 +27,8 @@ class NormalCompatibilityTest {
   private val application = RuntimeEnvironment.getApplication()
 
   @Test
-  fun `Environment SDK is 28`() {
-    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.P)
+  fun `Environment SDK is 29`() {
+    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.Q)
   }
 
   @Test

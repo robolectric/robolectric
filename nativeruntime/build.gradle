@@ -1,8 +1,7 @@
-import org.robolectric.gradle.DeployedRoboJavaModulePlugin
-import org.robolectric.gradle.RoboJavaModulePlugin
-
-apply plugin: RoboJavaModulePlugin
-apply plugin: DeployedRoboJavaModulePlugin
+plugins {
+  id("org.robolectric.gradle.RoboJavaModulePlugin")
+  id("org.robolectric.gradle.DeployedRoboJavaModulePlugin")
+}
 
 if (System.getenv('PUBLISH_NATIVERUNTIME_DIST_COMPAT') == "true") {
   apply plugin: 'maven-publish'

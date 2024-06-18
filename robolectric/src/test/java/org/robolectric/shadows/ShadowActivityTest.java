@@ -1502,6 +1502,18 @@ public class ShadowActivityTest {
   }
 
   @Test
+  public void buildActivity_abstractActivityClass_throwsRuntimeException() {
+    Throwable throwable =
+        assertThrows(
+            RuntimeException.class,
+            () -> {
+              Robolectric.buildActivity(AbstractTestActivity.class, null);
+            });
+    assertThat(throwable.getMessage())
+        .isEqualTo("buildActivity must be called with non-abstract class");
+  }
+
+  @Test
   @Config(minSdk = Q)
   public void callOnGetDirectActions_succeeds() {
     try (ActivityController<TestActivity> controller =
@@ -1776,6 +1788,9 @@ public class ShadowActivityTest {
       transcript.add("onActivityDestroyed");
     }
   }
+
+  /** Test Activity for abstract checking scenario. */
+  abstract static class AbstractTestActivity extends Activity {}
 
   /** Activity for testing */
   public static class TestActivityWithAnotherTheme

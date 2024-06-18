@@ -109,6 +109,7 @@ class PerfStatsCollectorTest {
 
   private class FakeClock : Clock {
     private var timeNs = 0
+
     override fun nanoTime(): Long {
       return timeNs.toLong()
     }

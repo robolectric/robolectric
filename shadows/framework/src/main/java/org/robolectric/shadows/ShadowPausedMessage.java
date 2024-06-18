@@ -1,11 +1,9 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Handler;
 import android.os.Message;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -34,11 +32,7 @@ public class ShadowPausedMessage extends ShadowMessage {
   @Override
   @Implementation
   public void recycleUnchecked() {
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-      reflector(MessageReflector.class, realMessage).recycleUnchecked();
-    } else {
-      reflector(MessageReflector.class, realMessage).recycle();
-    }
+    reflector(MessageReflector.class, realMessage).recycleUnchecked();
   }
 
   @Override

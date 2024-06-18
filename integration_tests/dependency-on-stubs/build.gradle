@@ -1,17 +1,17 @@
-import org.robolectric.gradle.AndroidProjectConfigPlugin
-
-apply plugin: 'com.android.library'
-apply plugin: AndroidProjectConfigPlugin
+plugins {
+    id("com.android.library")
+    id("org.robolectric.gradle.AndroidProjectConfigPlugin")
+}
 
 // test with a project that depends on the stubs jar, not org.robolectric:android-all
 
 android {
-    compileSdk 33
+    compileSdk 34
     namespace 'org.robolectric'
 
     defaultConfig {
-        minSdk 19
-        targetSdk 33
+        minSdk 21
+        targetSdk 34
     }
 
     compileOptions {

@@ -40,7 +40,7 @@ If you'd like to start a new project with Robolectric tests you can refer to `de
 
 ```groovy
 testImplementation "junit:junit:4.13.2"
-testImplementation "org.robolectric:robolectric:4.11.1"
+testImplementation "org.robolectric:robolectric:4.12.2"
 ```
 
 ## Building And Contributing
@@ -70,7 +70,7 @@ Run tests for all API levels:
 
 Run tests for part of supported API levels, e.g. run tests for API level 26, 27, 28:
 
-    ./gradlew test --parallel -Drobolectric.enabledSdks=26,27,28
+    ./gradlew test --parallel "-Drobolectric.enabledSdks=26,27,28"
 
 Run compatibility test suites on opening Emulator:
 
@@ -87,6 +87,6 @@ repositories {
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 dependencies {
-    testImplementation "org.robolectric:robolectric:4.12-SNAPSHOT"
+    testImplementation "org.robolectric:robolectric:4.13-SNAPSHOT"
 }
 ```

@@ -278,6 +278,7 @@ public class ShadowWrangler implements ClassHandler {
       Class<?> shadowClass) {
     Method method =
         findShadowMethodDeclaredOnClass(shadowClass, name, types, shadowInfo.looseSignatures);
+
     if (method != null) {
       return method;
     } else {
@@ -321,6 +322,7 @@ public class ShadowWrangler implements ClassHandler {
         foundMethod = method;
         break;
       }
+
       if (looseSignatures) {
         boolean allParameterTypesAreObject = true;
         for (Class<?> paramClass : method.getParameterTypes()) {

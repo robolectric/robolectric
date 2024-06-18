@@ -1,17 +1,11 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.robolectric.gradle.DeployedRoboJavaModulePlugin
-import org.robolectric.gradle.RoboJavaModulePlugin
 
-apply plugin: RoboJavaModulePlugin
-apply plugin: DeployedRoboJavaModulePlugin
-apply plugin: 'kotlin'
-apply plugin: "com.diffplug.spotless"
-
-spotless {
-    kotlin {
-        target '**/*.kt'
-        ktfmt('0.42').googleStyle()
-    }
+plugins {
+    id("kotlin")
+    id("org.robolectric.gradle.RoboJavaModulePlugin")
+    id("org.robolectric.gradle.DeployedRoboJavaModulePlugin")
+    id("org.robolectric.gradle.SpotlessPlugin")
+    id("io.gitlab.arturbosch.detekt")
 }
 
 tasks.withType(GenerateModuleMetadata).configureEach {

@@ -6,15 +6,12 @@ import android.opengl.EGL14;
 import android.opengl.EGLConfig;
 import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
-import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 /** Unit tests for {@link ShadowEGL14Test} */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = VERSION_CODES.LOLLIPOP)
 public final class ShadowEGL14Test {
   @Test
   public void eglGetCurrentContext() {

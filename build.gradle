@@ -1,5 +1,6 @@
 import org.gradle.plugins.ide.idea.model.IdeaModel
-import org.robolectric.gradle.SpotlessPlugin
+import org.robolectric.gradle.ShadowsPlugin
+
 buildscript {
     apply from: 'dependencies.gradle'
 
@@ -21,6 +22,13 @@ buildscript {
     }
 }
 
+plugins {
+    id("idea")
+    id("org.robolectric.gradle.SpotlessPlugin")
+}
+// nebula-aggregate-javadocs doesn't support plugins
+apply plugin: "nebula-aggregate-javadocs"
+
 allprojects {
     repositories {
         google()
@@ -31,10 +39,6 @@ allprojects {
     group = "org.robolectric"
     version = thisVersion
 }
-
-apply plugin: 'idea'
-// apply SpotlessPlugin
-apply plugin: SpotlessPlugin
 
 project.ext.configAnnotationProcessing = []
 project.afterEvaluate {
@@ -78,8 +82,6 @@ project.afterEvaluate {
         }
     }
 }
-
-apply plugin: 'nebula-aggregate-javadocs'
 
 rootProject.gradle.projectsEvaluated {
     rootProject.tasks.named("aggregateJavadocs").configure {

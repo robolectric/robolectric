@@ -1,7 +1,12 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.robolectric.gradle.RoboJavaModulePlugin
-apply plugin: RoboJavaModulePlugin
-apply plugin: 'kotlin'
+
+plugins {
+    id("kotlin")
+    id("org.robolectric.gradle.RoboJavaModulePlugin")
+    id("org.robolectric.gradle.SpotlessPlugin")
+    id("io.gitlab.arturbosch.detekt")
+}
+
 compileKotlin {
     compilerOptions.jvmTarget = JvmTarget.JVM_1_8
 }

@@ -164,7 +164,7 @@ public interface _Activity_ {
       @WithType("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances) {
     int apiLevel = RuntimeEnvironment.getApiLevel();
-    if (apiLevel <= Build.VERSION_CODES.LOLLIPOP) {
+    if (apiLevel == Build.VERSION_CODES.LOLLIPOP) {
       attach(
           baseContext,
           activityThread,

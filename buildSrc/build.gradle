@@ -1,5 +1,8 @@
-apply plugin: "java-library"
-apply plugin: "groovy"
+plugins {
+    id("groovy")
+    id("java-library")
+    id("java-gradle-plugin")
+}
 
 repositories {
     google()
@@ -7,12 +10,43 @@ repositories {
     gradlePluginPortal()
 }
 
+gradlePlugin {
+    plugins {
+        AarDepsPlugin {
+            id = "org.robolectric.gradle.AarDepsPlugin"
+            implementationClass = "org.robolectric.gradle.AarDepsPlugin"
+        }
+        AndrodiProjectConfigPlugin {
+            id = "org.robolectric.gradle.AndroidProjectConfigPlugin"
+            implementationClass = "org.robolectric.gradle.AndroidProjectConfigPlugin"
+        }
+        DeployedRoboJavaModulePlugin {
+            id = "org.robolectric.gradle.DeployedRoboJavaModulePlugin"
+            implementationClass = "org.robolectric.gradle.DeployedRoboJavaModulePlugin"
+        }
+        GradleManagedDevicePlugin {
+            id = "org.robolectric.gradle.GradleManagedDevicePlugin"
+            implementationClass = "org.robolectric.gradle.GradleManagedDevicePlugin"
+        }
+        RoboJavaModulePlugin {
+            id = "org.robolectric.gradle.RoboJavaModulePlugin"
+            implementationClass = "org.robolectric.gradle.RoboJavaModulePlugin"
+        }
+        SpotlessPlugin {
+            id = "org.robolectric.gradle.SpotlessPlugin"
+            implementationClass = "org.robolectric.gradle.SpotlessPlugin"
+        }
+        ShadowsPlugin {
+            id = "org.robolectric.gradle.ShadowsPlugin"
+            implementationClass = "org.robolectric.gradle.ShadowsPlugin"
+        }
+    }
+}
+
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
 
-    api libs.guava
-    api libs.jetbrains.annotations
     implementation libs.asm.tree
     implementation libs.android.gradle
 }

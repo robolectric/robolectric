@@ -1,14 +1,18 @@
-import org.robolectric.gradle.AndroidProjectConfigPlugin
-apply plugin: 'com.android.library'
-apply plugin: AndroidProjectConfigPlugin
-apply plugin: 'kotlin-android'
-apply plugin: "io.gitlab.arturbosch.detekt"
+plugins {
+    id("com.android.library")
+    id("kotlin-android")
+    id("io.gitlab.arturbosch.detekt")
+    id("org.robolectric.gradle.AndroidProjectConfigPlugin")
+    id("org.robolectric.gradle.SpotlessPlugin")
+}
+
+
 android {
     compileSdk 34
     namespace 'org.robolectric.sparsearray'
 
     defaultConfig {
-        minSdk 19
+        minSdk 21
         targetSdk 34
     }
 
@@ -27,6 +31,7 @@ android {
         }
     }
 }
+
 dependencies {
     compileOnly AndroidSdk.MAX_SDK.coordinates
     implementation project(path: ':shadowapi', configuration: 'default')

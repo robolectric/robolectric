@@ -39,7 +39,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow class for {@link CameraManager} */
-@Implements(value = CameraManager.class, minSdk = VERSION_CODES.LOLLIPOP)
+@Implements(value = CameraManager.class)
 public class ShadowCameraManager {
   @RealObject private CameraManager realObject;
 
@@ -193,7 +193,7 @@ public class ShadowCameraManager {
    * CameraDevice.StateCallback#onDisconnected(CameraDevice)} will not be triggered by {@link
    * CameraManager#openCamera(String, StateCallback, Handler)}.
    */
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP, maxSdk = VERSION_CODES.N)
+  @Implementation(maxSdk = VERSION_CODES.N)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId, CameraDevice.StateCallback callback, Handler handler)
       throws CameraAccessException {

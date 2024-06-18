@@ -287,7 +287,7 @@ public class SdkStore {
 
       MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement, looseSignatures);
       if (sdkMethod == null && !suppressWarnings(methodElement, null)) {
-        return "No such method in " + sdkClassName;
+        return "No method " + methodElement + " in " + sdkClassName;
       }
       if (sdkMethod != null) {
         MethodExtraInfo implMethod = new MethodExtraInfo(methodElement);
@@ -411,21 +411,22 @@ public class SdkStore {
         tempFile.deleteOnExit();
         tempDir = tempFile.getParentFile();
       }
-      InputStream jarIn = SdkStore.class.getClassLoader().getResourceAsStream(resourcePath);
-      if (jarIn == null) {
-        throw new RuntimeException("SDK " + resourcePath + " not found");
-      }
-      File outFile = new File(tempDir, new File(resourcePath).getName());
-      outFile.deleteOnExit();
-      try (FileOutputStream jarOut = new FileOutputStream(outFile)) {
-        byte[] buffer = new byte[4096];
-        int len;
-        while ((len = jarIn.read(buffer)) != -1) {
-          jarOut.write(buffer, 0, len);
+      try (InputStream jarIn = SdkStore.class.getClassLoader().getResourceAsStream(resourcePath)) {
+        if (jarIn == null) {
+          throw new RuntimeException("SDK " + resourcePath + " not found");
         }
-      }
+        File outFile = new File(tempDir, new File(resourcePath).getName());
+        outFile.deleteOnExit();
+        try (FileOutputStream jarOut = new FileOutputStream(outFile)) {
+          byte[] buffer = new byte[4096];
+          int len;
+          while ((len = jarIn.read(buffer)) != -1) {
+            jarOut.write(buffer, 0, len);
+          }
+        }
 
-      return outFile;
+        return outFile;
+      }
     }
 
     private ClassNode loadClassNode(String name) {

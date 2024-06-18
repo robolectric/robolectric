@@ -39,7 +39,7 @@ class MavenDependencyResolverTest {
         PROXY_HOST,
         PROXY_PORT,
         localRepositoryDir,
-        executorService
+        executorService,
       )
     mavenDependencyResolver = TestMavenDependencyResolver()
   }
@@ -151,7 +151,7 @@ class MavenDependencyResolverTest {
       proxyHost: String?,
       proxyPort: Int,
       localRepositoryDir: File,
-      executorService: ExecutorService
+      executorService: ExecutorService,
     ): MavenArtifactFetcher {
       return mavenArtifactFetcher
     }
@@ -169,6 +169,7 @@ class MavenDependencyResolverTest {
     }
   }
 
+  @Suppress("LongParameterList")
   internal class TestMavenArtifactFetcher(
     repositoryUrl: String?,
     repositoryUserName: String?,
@@ -176,7 +177,7 @@ class MavenDependencyResolverTest {
     proxyHost: String?,
     proxyPort: Int,
     localRepositoryDir: File,
-    private val executorService: ExecutorService
+    private val executorService: ExecutorService,
   ) :
     MavenArtifactFetcher(
       repositoryUrl,
@@ -185,7 +186,7 @@ class MavenDependencyResolverTest {
       proxyHost,
       proxyPort,
       localRepositoryDir,
-      executorService
+      executorService,
     ) {
     var numRequests = 0
       private set
@@ -199,7 +200,7 @@ class MavenDependencyResolverTest {
             return super.call()
           }
         },
-        executorService
+        executorService,
       )
     }
   }
@@ -216,7 +217,7 @@ class MavenDependencyResolverTest {
       arrayOf(
         DependencyJar("group", "artifact", "1"),
         DependencyJar("org.group2", "artifact2-name", "2.4.5"),
-        DependencyJar("org.robolectric", "android-all", "10-robolectric-5803371")
+        DependencyJar("org.robolectric", "android-all", "10-robolectric-5803371"),
       )
 
     init {
@@ -240,20 +241,20 @@ class MavenDependencyResolverTest {
         val jarContents = "$mavenJarArtifact jar contents"
         Files.write(
           jarContents.toByteArray(StandardCharsets.UTF_8),
-          File(REPOSITORY_DIR, mavenJarArtifact.jarPath())
+          File(REPOSITORY_DIR, mavenJarArtifact.jarPath()),
         )
         Files.write(
           sha512(jarContents).toByteArray(),
-          File(REPOSITORY_DIR, mavenJarArtifact.jarSha512Path())
+          File(REPOSITORY_DIR, mavenJarArtifact.jarSha512Path()),
         )
         val pomContents = "$mavenJarArtifact pom contents"
         Files.write(
           pomContents.toByteArray(StandardCharsets.UTF_8),
-          File(REPOSITORY_DIR, mavenJarArtifact.pomPath())
+          File(REPOSITORY_DIR, mavenJarArtifact.pomPath()),
         )
         Files.write(
           sha512(pomContents).toByteArray(),
-          File(REPOSITORY_DIR, mavenJarArtifact.pomSha512Path())
+          File(REPOSITORY_DIR, mavenJarArtifact.pomSha512Path()),
         )
       } catch (e: MalformedURLException) {
         throw AssertionError(e)
@@ -269,13 +270,13 @@ class MavenDependencyResolverTest {
         Files.write(jarContents.toByteArray(), File(REPOSITORY_DIR, mavenJarArtifact.jarPath()))
         Files.write(
           sha512("No the same content").toByteArray(),
-          File(REPOSITORY_DIR, mavenJarArtifact.jarSha512Path())
+          File(REPOSITORY_DIR, mavenJarArtifact.jarSha512Path()),
         )
         val pomContents = "$mavenJarArtifact pom contents"
         Files.write(pomContents.toByteArray(), File(REPOSITORY_DIR, mavenJarArtifact.pomPath()))
         Files.write(
           sha512("Really not the same content").toByteArray(),
-          File(REPOSITORY_DIR, mavenJarArtifact.pomSha512Path())
+          File(REPOSITORY_DIR, mavenJarArtifact.pomSha512Path()),
         )
       } catch (e: MalformedURLException) {
         throw AssertionError(e)

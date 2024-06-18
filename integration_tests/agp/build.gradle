@@ -1,14 +1,14 @@
-import org.robolectric.gradle.AndroidProjectConfigPlugin
-
-apply plugin: 'com.android.library'
-apply plugin: AndroidProjectConfigPlugin
+plugins {
+    id("com.android.library")
+    id("org.robolectric.gradle.AndroidProjectConfigPlugin")
+}
 
 android {
     compileSdk 34
     namespace 'org.robolectric.integrationtests.agp'
 
     defaultConfig {
-        minSdk 19
+        minSdk 21
         targetSdk 34
     }
 

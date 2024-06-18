@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -223,24 +222,20 @@ public class ShadowServiceManager {
     addBinderService(binderServices, Context.APP_OPS_SERVICE, IAppOpsService.class);
     addBinderService(binderServices, "batteryproperties", IBatteryPropertiesRegistrar.class);
 
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-      addBinderService(binderServices, Context.RESTRICTIONS_SERVICE, IRestrictionsManager.class);
-      addBinderService(binderServices, Context.TRUST_SERVICE, ITrustManager.class);
-      addBinderService(binderServices, Context.JOB_SCHEDULER_SERVICE, IJobScheduler.class);
-      addBinderService(binderServices, Context.NETWORK_SCORE_SERVICE, INetworkScoreService.class);
-      addBinderService(binderServices, Context.USAGE_STATS_SERVICE, IUsageStatsManager.class);
-      addBinderService(binderServices, Context.MEDIA_ROUTER_SERVICE, IMediaRouterService.class);
-      addBinderService(
-          binderServices,
-          Context.MEDIA_SESSION_SERVICE,
-          ISessionManager.class,
-          BinderProxyType.DEEP);
-      addBinderService(
-          binderServices,
-          Context.VOICE_INTERACTION_MANAGER_SERVICE,
-          IVoiceInteractionManagerService.class,
-          BinderProxyType.DEEP);
-    }
+    addBinderService(binderServices, Context.RESTRICTIONS_SERVICE, IRestrictionsManager.class);
+    addBinderService(binderServices, Context.TRUST_SERVICE, ITrustManager.class);
+    addBinderService(binderServices, Context.JOB_SCHEDULER_SERVICE, IJobScheduler.class);
+    addBinderService(binderServices, Context.NETWORK_SCORE_SERVICE, INetworkScoreService.class);
+    addBinderService(binderServices, Context.USAGE_STATS_SERVICE, IUsageStatsManager.class);
+    addBinderService(binderServices, Context.MEDIA_ROUTER_SERVICE, IMediaRouterService.class);
+    addBinderService(
+        binderServices, Context.MEDIA_SESSION_SERVICE, ISessionManager.class, BinderProxyType.DEEP);
+    addBinderService(
+        binderServices,
+        Context.VOICE_INTERACTION_MANAGER_SERVICE,
+        IVoiceInteractionManagerService.class,
+        BinderProxyType.DEEP);
+
     if (RuntimeEnvironment.getApiLevel() >= M) {
       addBinderService(binderServices, Context.FINGERPRINT_SERVICE, IFingerprintService.class);
     }

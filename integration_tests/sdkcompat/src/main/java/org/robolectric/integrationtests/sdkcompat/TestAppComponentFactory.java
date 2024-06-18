@@ -1,4 +1,4 @@
-package org.robolectric.integrationtests.compattarget28;
+package org.robolectric.integrationtests.sdkcompat;
 
 import android.app.Activity;
 import android.app.AppComponentFactory;

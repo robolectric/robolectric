@@ -149,9 +149,7 @@ public class ShadowDisplayManager {
     displayInfo.logicalDensityDpi = displayMetrics.densityDpi;
     displayInfo.physicalXDpi = displayMetrics.densityDpi;
     displayInfo.physicalYDpi = displayMetrics.densityDpi;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      displayInfo.state = Display.STATE_ON;
-    }
+    displayInfo.state = Display.STATE_ON;
 
     return displayInfo;
   }

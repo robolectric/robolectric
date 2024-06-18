@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.setField;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -139,11 +137,7 @@ public class ShadowLegacyMessageQueue extends ShadowMessageQueue {
       msgProxy.markInUse();
       target.dispatchMessage(msg);
 
-      if (getApiLevel() >= LOLLIPOP) {
-        msgProxy.recycleUnchecked();
-      } else {
-        msgProxy.recycle();
-      }
+      msgProxy.recycleUnchecked();
     }
   }
 

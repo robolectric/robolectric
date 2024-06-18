@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;

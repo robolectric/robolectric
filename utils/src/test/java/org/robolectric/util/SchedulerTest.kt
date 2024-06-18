@@ -213,10 +213,10 @@ class SchedulerTest {
             transcript.add("two")
             scheduler.postDelayed(AddToTranscript("three"), 1000)
           },
-          1000
+          1000,
         )
       },
-      1000
+      1000,
     )
     scheduler.advanceBy(1000)
     assertThat(transcript).containsExactly("one")
@@ -279,7 +279,7 @@ class SchedulerTest {
         scheduler.post { order.add(4) }
         order.add(2)
       },
-      0
+      0,
     )
     scheduler.postDelayed({ order.add(3) }, 0)
     scheduler.runOneTask()
@@ -303,7 +303,7 @@ class SchedulerTest {
         scheduler.post { order.add(3) }
         order.add(2)
       },
-      0
+      0,
     )
     assertWithMessage("order").that(order).containsExactly(1, 2, 3)
     assertWithMessage("size").that(scheduler.size()).isEqualTo(0)
@@ -318,7 +318,7 @@ class SchedulerTest {
         scheduler.postAtFrontOfQueue { order.add(3) }
         order.add(2)
       },
-      0
+      0,
     )
     scheduler.postDelayed({ order.add(4) }, 0)
     scheduler.advanceToLastPostedRunnable()
@@ -336,7 +336,7 @@ class SchedulerTest {
         scheduler.postAtFrontOfQueue { order.add(3) }
         order.add(2)
       },
-      0
+      0,
     )
     assertWithMessage("order").that(order).containsExactly(1, 2, 3)
     assertWithMessage("size").that(scheduler.size()).isEqualTo(0)
@@ -352,7 +352,7 @@ class SchedulerTest {
         scheduler.postDelayed({ order.add(3) }, 1)
         order.add(2)
       },
-      0
+      0,
     )
     assertWithMessage("order:before").that(order).containsExactly(1, 2)
     assertWithMessage("size:before").that(scheduler.size()).isEqualTo(1)
@@ -372,7 +372,7 @@ class SchedulerTest {
         scheduler.postDelayed({ order.add(3) }, 1)
         order.add(2)
       },
-      0
+      0,
     )
     assertWithMessage("order").that(order).containsExactly(1, 2, 3)
     assertWithMessage("size").that(scheduler.size()).isEqualTo(0)
@@ -426,7 +426,7 @@ class SchedulerTest {
     scheduler.advanceToLastPostedRunnable()
     assertThat(actualOrder).isEqualTo(ImmutableList.copyOf(Iterables.concat(orderCheck.values)))
     watch.stop()
-    assertThat(watch.elapsed().toMillis()).isLessThan(2000L)
+    assertThat(watch.elapsed().toMillis()).isLessThan(2000L);
   }
 
   @Test(timeout = 1000)

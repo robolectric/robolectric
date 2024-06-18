@@ -1,0 +1,39 @@
+plugins {
+    id("com.android.library")
+    id("kotlin-android")
+    id("io.gitlab.arturbosch.detekt")
+    id("org.robolectric.gradle.AndroidProjectConfigPlugin")
+    id("org.robolectric.gradle.SpotlessPlugin")
+}
+
+
+android {
+    compileSdk 29
+    namespace 'org.robolectric.integrationtests.sdkcompat'
+
+    defaultConfig {
+        minSdk 21
+        // We must keep targetSdk to 29 for compatibility testing purpose
+        targetSdk 29
+    }
+
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    testOptions.unitTests.includeAndroidResources true
+}
+
+dependencies {
+    implementation libs.kotlin.stdlib
+
+    testImplementation project(":testapp")
+    testImplementation project(":robolectric")
+    testImplementation libs.junit4
+    testImplementation libs.truth
+}

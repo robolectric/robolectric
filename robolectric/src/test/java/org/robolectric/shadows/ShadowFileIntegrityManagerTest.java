@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.security.FileIntegrityManager;
 import androidx.test.core.app.ApplicationProvider;
@@ -11,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = R)
@@ -31,7 +31,8 @@ public final class ShadowFileIntegrityManagerTest {
 
   @Test
   public void isApkVeritySupported_setFalse_returnsFalse() {
-    shadowOf(fileIntegrityManager).setIsApkVeritySupported(false);
+    ((ShadowFileIntegrityManager) Shadow.extract(fileIntegrityManager))
+        .setIsApkVeritySupported(false);
 
     assertThat(fileIntegrityManager.isApkVeritySupported()).isFalse();
   }

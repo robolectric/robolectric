@@ -6,10 +6,8 @@ import android.system.StructStat;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.time.Duration;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow for {@link libcore.io.Posix} */
 @Implements(
@@ -36,8 +34,7 @@ public class ShadowPosix {
       modifiedTime = Duration.ofMillis(file.lastModified()).getSeconds();
     }
 
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
-      return new StructStat(
+    return new StructStat(
         1, // st_dev
         0, // st_ino
         mode, // st_mode
@@ -52,16 +49,6 @@ public class ShadowPosix {
         0, // st_blksize
         0 // st_blocks
         );
-    } else {
-      Object structStat =
-          ReflectionHelpers.newInstance(
-              ReflectionHelpers.loadClass(
-                  ShadowPosix.class.getClassLoader(), "libcore.io.StructStat"));
-      setMode(mode, structStat);
-      setSize(size, structStat);
-      setModifiedTime(modifiedTime, structStat);
-      return structStat;
-    }
   }
 
   @Implementation
@@ -76,17 +63,5 @@ public class ShadowPosix {
   @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
   protected static Object fstat(FileDescriptor fd) throws ErrnoException {
     return stat(null);
-  }
-
-  private static void setMode(int mode, Object structStat) {
-    ReflectionHelpers.setField(structStat, "st_mode", mode);
-  }
-
-  private static void setSize(long size, Object structStat) {
-    ReflectionHelpers.setField(structStat, "st_size", size);
-  }
-
-  private static void setModifiedTime(long modifiedTime, Object structStat) {
-    ReflectionHelpers.setField(structStat, "st_mtime", modifiedTime);
   }
 }

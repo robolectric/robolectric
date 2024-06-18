@@ -88,9 +88,15 @@ jobs:
       # Allow tests to continue on other devices if they fail on one device.
       fail-fast: false
       matrix:
-        api-level: [ 29 ]
+        api-level: [ 29, 34 ]
 
     steps:
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: true
+          android: false
+
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -138,7 +144,8 @@ jobs:
           script: echo "Generated AVD snapshot for caching."
 
       - name: Run device tests
-        # See https://github.com/orgs/community/discussions/27121
+        # We need to use adb shell wm density to reset device's density to use fixed density
+        # for all devices. Hope it can improve the stability of Emulator testing.
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
@@ -147,9 +154,9 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-
           profile: Nexus One
           script: |
+            adb shell wm density 240
             SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --info --stacktrace --no-watch-fs -Dorg.gradle.workers.max=2
 
       - name: Upload test results

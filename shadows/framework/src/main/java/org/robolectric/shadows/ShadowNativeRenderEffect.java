@@ -15,6 +15,7 @@ import org.robolectric.versioning.AndroidVersions.U;
     value = RenderEffect.class,
     minSdk = S,
     shadowPicker = Picker.class,
+    isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
 public class ShadowNativeRenderEffect {
   static {

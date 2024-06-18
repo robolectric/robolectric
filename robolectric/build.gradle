@@ -1,8 +1,7 @@
-import org.robolectric.gradle.DeployedRoboJavaModulePlugin
-import org.robolectric.gradle.RoboJavaModulePlugin
-
-apply plugin: RoboJavaModulePlugin
-apply plugin: DeployedRoboJavaModulePlugin
+plugins {
+    id("org.robolectric.gradle.RoboJavaModulePlugin")
+    id("org.robolectric.gradle.DeployedRoboJavaModulePlugin")
+}
 
 dependencies {
     annotationProcessor libs.auto.service
@@ -38,7 +37,6 @@ dependencies {
     testImplementation libs.androidx.annotation
     testImplementation libs.junit4
     testImplementation libs.truth
-    testImplementation libs.truth.java8.extension
     testImplementation libs.mockito
     testImplementation libs.hamcrest.junit
     testImplementation "androidx.test:core:$axtCoreVersion@aar"

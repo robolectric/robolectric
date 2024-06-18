@@ -38,7 +38,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowCameraDeviceImpl}. */
-@Config(minSdk = VERSION_CODES.LOLLIPOP)
 @RunWith(AndroidJUnit4.class)
 public final class ShadowCameraDeviceImplTest {
   private static final String CAMERA_ID_0 = "cameraId0";
@@ -70,7 +69,7 @@ public final class ShadowCameraDeviceImplTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP, maxSdk = VERSION_CODES.Q)
+  @Config(maxSdk = VERSION_CODES.Q)
   public void createCaptureRequest() throws CameraAccessException {
     builder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
     CaptureRequest request = builder.build();

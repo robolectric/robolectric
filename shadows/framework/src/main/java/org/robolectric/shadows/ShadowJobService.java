@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-
 import android.app.Notification;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
@@ -9,7 +7,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.versioning.AndroidVersions.U;
 
-@Implements(value = JobService.class, minSdk = LOLLIPOP)
+@Implements(value = JobService.class)
 public class ShadowJobService extends ShadowService {
 
   private boolean isJobFinished = false;
