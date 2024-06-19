@@ -540,13 +540,38 @@ public class ShadowDevicePolicyManager {
     enforceDeviceOwnerOrProfileOwner(admin);
     for (String scope : scopes) {
       if (delegatedScopePackagesMap.containsKey(scope)) {
-        Set<String> allowPackages = delegatedScopePackagesMap.get(scope);
-        allowPackages.add(delegatePackage);
+        ImmutableSet<String> allowPackages =
+            new ImmutableSet.Builder<String>()
+                .addAll(delegatedScopePackagesMap.get(scope))
+                .add(delegatePackage)
+                .build();
+        delegatedScopePackagesMap.put(scope, allowPackages);
       } else {
         ImmutableSet<String> allowPackages = ImmutableSet.of(delegatePackage);
         delegatedScopePackagesMap.put(scope, allowPackages);
       }
     }
+  }
+
+  @Implementation(minSdk = O)
+  protected List<String> getDelegatedScopes(ComponentName admin, String delegatePackage) {
+    Objects.requireNonNull(delegatePackage, "Delegate package is null");
+    if (admin == null) {
+      String caller = context.getPackageName();
+      if (!Objects.equals(caller, delegatePackage)) {
+        throw new SecurityException(String.format("Caller is not %s.", delegatePackage));
+      }
+      // this app is retrieving its own delegated scopes
+    } else {
+      enforceDeviceOwnerOrProfileOwner(admin);
+    }
+    List<String> scopes = new ArrayList<>();
+    for (String scope : delegatedScopePackagesMap.keySet()) {
+      if (delegatedScopePackagesMap.get(scope).contains(delegatePackage)) {
+        scopes.add(scope);
+      }
+    }
+    return scopes;
   }
 
   @Implementation
