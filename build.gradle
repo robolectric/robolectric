@@ -11,31 +11,24 @@ buildscript {
     }
 
     dependencies {
-        gradle
-        classpath libs.android.gradle
-        classpath libs.error.prone.gradle
         classpath libs.aggregate.javadocs.gradle
-        classpath libs.kotlin.gradle
-        classpath libs.spotless.gradle
-        classpath libs.detekt.gradle
-        classpath libs.roborazzi.gradle
     }
 }
 
 plugins {
+    id("com.diffplug.gradle.spotless") version libs.versions.spotless.gradle apply false
     id("idea")
+    id("io.github.takahirom.roborazzi") version libs.versions.roborazzi apply false
+    id("io.gitlab.arturbosch.detekt") version libs.versions.detekt.gradle apply false
+    id("net.ltgt.errorprone") version libs.versions.error.prone.gradle
+    id("org.jetbrains.kotlin.android") version libs.versions.kotlin apply false
     id("org.robolectric.gradle.SpotlessPlugin")
 }
+
 // nebula-aggregate-javadocs doesn't support plugins
 apply plugin: "nebula-aggregate-javadocs"
 
 allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-
     group = "org.robolectric"
     version = thisVersion
 }
