@@ -840,6 +840,96 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void getDelegatedScopes_notDeviceOwner_throwsSecurityException() {
+    // GIVEN the caller is not the device owner
+
+    // WHEN getDelegatedScopes is called
+    // THEN it should throw SecurityException
+    assertThrows(
+        SecurityException.class,
+        () -> devicePolicyManager.getDelegatedScopes(testComponent, "com.example.app"));
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getDelegatedScopes_noDelegatedScopes_returnsEmptyList() {
+    // GIVEN the caller is the device owner
+    ComponentName caller = new ComponentName(context.getPackageName(), "DeviceAdminComponent");
+    shadowOf(devicePolicyManager).setDeviceOwner(caller);
+
+    // WHEN getDelegatedScopes is called
+    // THEN it should return empty list
+    assertThat(devicePolicyManager.getDelegatedScopes(caller, "com.example.app")).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getDelegatedScopes_callerIsDeviceOwner_returnsDelegatedScopes() {
+    // GIVEN the caller is the device owner
+    ComponentName caller = new ComponentName(context.getPackageName(), "DeviceAdminComponent");
+    shadowOf(devicePolicyManager).setDeviceOwner(caller);
+
+    // GIVEN the caller has delegated scopes
+    String delegatedApp = "com.example.app";
+    List<String> scopes =
+        Arrays.asList(
+            DevicePolicyManager.DELEGATION_APP_RESTRICTIONS,
+            DevicePolicyManager.DELEGATION_PERMISSION_GRANT);
+    devicePolicyManager.setDelegatedScopes(caller, delegatedApp, scopes);
+    String otherApp = "com.example.other.app";
+    devicePolicyManager.setDelegatedScopes(
+        caller,
+        otherApp,
+        Arrays.asList(
+            DevicePolicyManager.DELEGATION_ENABLE_SYSTEM_APP,
+            DevicePolicyManager.DELEGATION_PERMISSION_GRANT));
+
+    // WHEN getDelegatedScopes is called
+    // THEN it should return the correct scopes
+    assertThat(devicePolicyManager.getDelegatedScopes(caller, delegatedApp))
+        .containsExactlyElementsIn(scopes);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getDelegatedScopes_notOwner_failsToReturnScopesForOtherApp() {
+    // GIVEN the caller is not the device owner
+    // WHEN getDelegatedScopes is called
+    // THEN it should throw SecurityException
+    assertThrows(
+        SecurityException.class,
+        () -> devicePolicyManager.getDelegatedScopes(/* admin= */ null, "com.example.app"));
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getDelegatedScopes_notOwner_returnScopesForSelf() {
+    // GIVEN the caller is not the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN the caller has delegated scopes
+    String delegatedApp = context.getPackageName();
+    List<String> scopes =
+        Arrays.asList(
+            DevicePolicyManager.DELEGATION_APP_RESTRICTIONS,
+            DevicePolicyManager.DELEGATION_PERMISSION_GRANT);
+    devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
+    String otherApp = "com.example.other.app";
+    devicePolicyManager.setDelegatedScopes(
+        testComponent,
+        otherApp,
+        Arrays.asList(
+            DevicePolicyManager.DELEGATION_ENABLE_SYSTEM_APP,
+            DevicePolicyManager.DELEGATION_PERMISSION_GRANT));
+
+    // WHEN getDelegatedScopes is called
+    // THEN it should return the correct scopes
+    assertThat(devicePolicyManager.getDelegatedScopes(/* admin= */ null, delegatedApp))
+        .containsExactlyElementsIn(scopes);
+  }
+
+  @Test
   public void getAccountTypesWithManagementDisabledShouldReturnNothingWhenNoAccountIsDislabed() {
     // GIVEN no account type has ever been disabled
 
