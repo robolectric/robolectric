@@ -125,9 +125,6 @@ play-services-basement = "18.0.1"
 
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
-kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-spotless-gradle = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-gradle" }
-detekt-gradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt-gradle" }
 
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
@@ -157,8 +154,6 @@ error-prone-refaster = { module = "com.google.errorprone:error_prone_refaster", 
 error-prone-check-api = { module = "com.google.errorprone:error_prone_check_api", version.ref = "error-prone" }
 error-prone-test-helpers = { module = "com.google.errorprone:error_prone_test_helpers", version.ref = "error-prone" }
 error-prone-javac = { module = "com.google.errorprone:javac", version.ref = "error-prone-javac" }
-
-error-prone-gradle = { module = "net.ltgt.gradle:gradle-errorprone-plugin", version.ref = "error-prone-gradle" }
 
 conscrypt-openjdk-uber = { module = "org.conscrypt:conscrypt-openjdk-uber", version.ref = "conscrypt" }
 bcprov-jdk18on = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
@@ -204,7 +199,6 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
 roborazzi-rule = { module = "io.github.takahirom.roborazzi:roborazzi-junit-rule", version.ref = "roborazzi" }
-roborazzi-gradle = { module = "io.github.takahirom.roborazzi:roborazzi-gradle-plugin", version.ref = "roborazzi" }
 
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
@@ -238,8 +232,8 @@ play-services-basement-for-shadows = { module = "com.google.android.gms:play-ser
 play-services-basement = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-basement" }
 
 [bundles]
-play-services-for-shadows = [ "androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows" ]
-powermock = [ "powermock-module-junit4", "powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-xstream" ]
-sqlite4java-native = [ "sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86" ]
+play-services-for-shadows = ["androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows"]
+powermock = ["powermock-module-junit4", "powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-xstream"]
+sqlite4java-native = ["sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86"]
 
 [plugins]

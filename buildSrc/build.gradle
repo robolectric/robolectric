@@ -4,12 +4,6 @@ plugins {
     id("java-gradle-plugin")
 }
 
-repositories {
-    google()
-    mavenCentral()
-    gradlePluginPortal()
-}
-
 gradlePlugin {
     plugins {
         AarDepsPlugin {
