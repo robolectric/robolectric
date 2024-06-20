@@ -44,19 +44,17 @@ public class AttrData {
     return false;
   }
 
-  @Override public String toString() {
-    StringBuilder builder = new StringBuilder("AttrData{name='")
-        .append(name)
-        .append("', format='")
-        .append(format)
-        .append('\'');
+  @Override
+  public String toString() {
+    StringBuilder builder =
+        new StringBuilder("AttrData{name='")
+            .append(name)
+            .append("', format='")
+            .append(format)
+            .append('\'');
     if (pairs != null) {
       for (Pair p : pairs) {
-        builder.append(' ')
-            .append(p.name)
-            .append("='")
-            .append(p.value)
-            .append('\'');
+        builder.append(' ').append(p.name).append("='").append(p.value).append('\'');
       }
     }
     builder.append('}');

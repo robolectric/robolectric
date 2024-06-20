@@ -14,5 +14,4 @@ public @interface Supercedes {
 
   /** The type that is superceded by the annotated type. */
   Class<?> value();
-
 }

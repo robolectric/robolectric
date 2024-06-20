@@ -19,17 +19,14 @@ import org.robolectric.R;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowLayerDrawableTest {
-  /**
-   * drawables
-   */
+  /** drawables */
   protected Drawable drawable1000;
+
   protected Drawable drawable2000;
   protected Drawable drawable3000;
   protected Drawable drawable4000;
 
-  /**
-   * drawables
-   */
+  /** drawables */
   protected Drawable[] drawables;
 
   @Before
@@ -43,7 +40,7 @@ public class ShadowLayerDrawableTest {
     drawable4000 =
         new BitmapDrawable(BitmapFactory.decodeResource(resources, R.drawable.fourth_image));
 
-    drawables = new Drawable[]{drawable1000, drawable2000, drawable3000};
+    drawables = new Drawable[] {drawable1000, drawable2000, drawable3000};
   }
 
   @Test
@@ -61,7 +58,8 @@ public class ShadowLayerDrawableTest {
 
     layerDrawable.setDrawableByLayerId(layerId, drawable4000);
 
-    assertEquals(shadowOf(drawable4000).getCreatedFromResId(),
+    assertEquals(
+        shadowOf(drawable4000).getCreatedFromResId(),
         shadowOf(layerDrawable.getDrawable(index)).getCreatedFromResId());
   }
 
@@ -74,7 +72,8 @@ public class ShadowLayerDrawableTest {
 
     layerDrawable.setDrawableByLayerId(layerId, drawable4000);
 
-    assertEquals(shadowOf(drawable4000).getCreatedFromResId(),
+    assertEquals(
+        shadowOf(drawable4000).getCreatedFromResId(),
         shadowOf(layerDrawable.getDrawable(index)).getCreatedFromResId());
   }
 

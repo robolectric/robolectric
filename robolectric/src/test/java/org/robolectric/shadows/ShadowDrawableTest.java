@@ -91,7 +91,8 @@ public class ShadowDrawableTest {
     assertThat(context.getResources().getDrawable(R.drawable.drawable_with_nine_patch)).isNotNull();
   }
 
-  @Test public void settingBoundsShouldInvokeCallback() {
+  @Test
+  public void settingBoundsShouldInvokeCallback() {
     TestDrawable drawable = new TestDrawable();
     assertThat(drawable.boundsChanged).isFalse();
     drawable.setBounds(0, 0, 10, 10);
@@ -134,23 +135,21 @@ public class ShadowDrawableTest {
     public boolean boundsChanged;
 
     @Override
-    public void draw(Canvas canvas) {
-    }
+    public void draw(Canvas canvas) {}
 
     @Override
-    public void setAlpha(int alpha) {
-    }
+    public void setAlpha(int alpha) {}
 
     @Override
-    public void setColorFilter(ColorFilter cf) {
-    }
+    public void setColorFilter(ColorFilter cf) {}
 
     @Override
     public int getOpacity() {
       return 0;
     }
 
-    @Override protected void onBoundsChange(Rect bounds) {
+    @Override
+    protected void onBoundsChange(Rect bounds) {
       boundsChanged = true;
       super.onBoundsChange(bounds);
     }

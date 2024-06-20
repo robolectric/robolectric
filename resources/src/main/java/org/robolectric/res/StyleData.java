@@ -13,7 +13,8 @@ public class StyleData implements Style {
   private final String parent;
   private final Map<ResName, AttributeResource> items = new LinkedHashMap<>();
 
-  public StyleData(String packageName, String name, String parent, List<AttributeResource> attributeResources) {
+  public StyleData(
+      String packageName, String name, String parent, List<AttributeResource> attributeResources) {
     this.packageName = packageName;
     this.name = name;
     this.parent = parent;
@@ -36,17 +37,21 @@ public class StyleData implements Style {
     items.put(attrName, attribute);
   }
 
-  @Override public AttributeResource getAttrValue(ResName resName) {
+  @Override
+  public AttributeResource getAttrValue(ResName resName) {
     AttributeResource attributeResource = items.get(resName);
 
     // This hack allows us to look up attributes from downstream dependencies, see comment in
     // org.robolectric.shadows.ShadowThemeTest.obtainTypedArrayFromDependencyLibrary()
     // for an explanation. TODO(jongerrish): Make Robolectric use a more realistic resource merging
     // scheme.
-    if (attributeResource == null && !"android".equals(resName.packageName) && !"android".equals(packageName)) {
+    if (attributeResource == null
+        && !"android".equals(resName.packageName)
+        && !"android".equals(packageName)) {
       attributeResource = items.get(resName.withPackageName(packageName));
       if (attributeResource != null && !"android".equals(attributeResource.contextPackageName)) {
-        attributeResource = new AttributeResource(resName, attributeResource.value, resName.packageName);
+        attributeResource =
+            new AttributeResource(resName, attributeResource.value, resName.packageName);
       }
     }
 
@@ -95,7 +100,8 @@ public class StyleData implements Style {
     return hashCode;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "Style " + packageName + ":" + name;
   }
 

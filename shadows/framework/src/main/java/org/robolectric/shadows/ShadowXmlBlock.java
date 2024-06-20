@@ -22,7 +22,7 @@ public class ShadowXmlBlock {
     }
 
     int bLen = bArray.length;
-    if (off < 0 || off >= bLen || len < 0 || len > bLen || (off+len) > bLen) {
+    if (off < 0 || off >= bLen || len < 0 || len > bLen || (off + len) > bLen) {
       throw new IndexOutOfBoundsException();
     }
 
@@ -32,7 +32,7 @@ public class ShadowXmlBlock {
 
     ResXMLTree osb = new ResXMLTree(null);
     osb.setTo(b, len, true);
-//    env->ReleaseByteArrayElements(bArray, b, 0);
+    //    env->ReleaseByteArrayElements(bArray, b, 0);
 
     if (osb.getError() != NO_ERROR) {
       throw new IllegalArgumentException();
@@ -55,16 +55,16 @@ public class ShadowXmlBlock {
   @Implementation(maxSdk = VERSION_CODES.P)
   protected static long nativeCreateParseState(long obj) {
     ResXMLTree osb = Registries.NATIVE_RES_XML_TREES.getNativeObject(obj);
-//    if (osb == NULL) {
-//      jniThrowNullPointerException(env, NULL);
-//      return 0;
-//    }
+    //    if (osb == NULL) {
+    //      jniThrowNullPointerException(env, NULL);
+    //      return 0;
+    //    }
 
     ResXMLParser st = new ResXMLParser(osb);
-//    if (st == NULL) {
-//      jniThrowException(env, "java/lang/OutOfMemoryError", NULL);
-//      return 0;
-//    }
+    //    if (st == NULL) {
+    //      jniThrowException(env, "java/lang/OutOfMemoryError", NULL);
+    //      return 0;
+    //    }
 
     st.restart();
 
@@ -74,10 +74,10 @@ public class ShadowXmlBlock {
   @Implementation(minSdk = VERSION_CODES.Q)
   protected static long nativeCreateParseState(long obj, int resid) {
     ResXMLTree osb = Registries.NATIVE_RES_XML_TREES.getNativeObject(obj);
-//    if (osb == NULL) {
-//      jniThrowNullPointerException(env, NULL);
-//      return 0;
-//    }
+    //    if (osb == NULL) {
+    //      jniThrowNullPointerException(env, NULL);
+    //      return 0;
+    //    }
 
     ResXMLParser st = new ResXMLParser(osb);
     //    if (st == NULL) {
@@ -112,7 +112,7 @@ public class ShadowXmlBlock {
         case ResXMLParser.event_code_t.END_DOCUMENT:
           return 1;
         case ResXMLParser.event_code_t.BAD_DOCUMENT:
-//                goto bad;
+          //                goto bad;
           throw new XmlPullParserException("Corrupt XML binary file");
         default:
           break;
@@ -225,8 +225,9 @@ public class ShadowXmlBlock {
     Res_value value = valueRef.get();
 
     return value.dataType == org.robolectric.res.android.ResourceTypes.Res_value.TYPE_REFERENCE
-        || value.dataType == org.robolectric.res.android.ResourceTypes.Res_value.TYPE_ATTRIBUTE
-        ? value.data : 0;
+            || value.dataType == org.robolectric.res.android.ResourceTypes.Res_value.TYPE_ATTRIBUTE
+        ? value.data
+        : 0;
   }
 
   @Implementation

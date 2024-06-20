@@ -24,14 +24,14 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.gms.ShadowGooglePlayServicesUtil.GooglePlayServicesUtilImpl;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowGooglePlayServicesUtil.class})
+@Config(
+    manifest = Config.NONE,
+    shadows = {ShadowGooglePlayServicesUtil.class})
 public class ShadowGooglePlayServicesUtilTest {
 
-  @Mock
-  private GooglePlayServicesUtilImpl mockGooglePlayServicesUtil;
+  @Mock private GooglePlayServicesUtilImpl mockGooglePlayServicesUtil;
 
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
+  @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void setup() {
@@ -60,8 +60,8 @@ public class ShadowGooglePlayServicesUtilTest {
   @Test
   public void canRedirectStaticMethodToImplementation() {
     ShadowGooglePlayServicesUtil.provideImpl(mockGooglePlayServicesUtil);
-    when(mockGooglePlayServicesUtil.isGooglePlayServicesAvailable(
-        any(Context.class))).thenReturn(ConnectionResult.INTERNAL_ERROR);
+    when(mockGooglePlayServicesUtil.isGooglePlayServicesAvailable(any(Context.class)))
+        .thenReturn(ConnectionResult.INTERNAL_ERROR);
     assertEquals(
         ConnectionResult.INTERNAL_ERROR,
         GooglePlayServicesUtil.isGooglePlayServicesAvailable(RuntimeEnvironment.getApplication()));
@@ -70,8 +70,8 @@ public class ShadowGooglePlayServicesUtilTest {
   @Test
   public void getErrorString_goesToRealImpl() {
     assertEquals("SUCCESS", GooglePlayServicesUtil.getErrorString(ConnectionResult.SUCCESS));
-    assertEquals("SERVICE_MISSING", GooglePlayServicesUtil
-        .getErrorString(ConnectionResult.SERVICE_MISSING));
+    assertEquals(
+        "SERVICE_MISSING", GooglePlayServicesUtil.getErrorString(ConnectionResult.SERVICE_MISSING));
   }
 
   @Test
@@ -86,14 +86,14 @@ public class ShadowGooglePlayServicesUtilTest {
 
   @Test
   public void getErrorDialog() {
-    assertNotNull(GooglePlayServicesUtil.getErrorDialog(
-        ConnectionResult.SERVICE_MISSING, new Activity(), 0));
-    assertNull(GooglePlayServicesUtil.getErrorDialog(
-        ConnectionResult.SUCCESS, new Activity(), 0));
-    assertNotNull(GooglePlayServicesUtil.getErrorDialog(
-        ConnectionResult.SERVICE_MISSING, new Activity(), 0, null));
-    assertNull(GooglePlayServicesUtil.getErrorDialog(
-        ConnectionResult.SUCCESS, new Activity(), 0, null));
+    assertNotNull(
+        GooglePlayServicesUtil.getErrorDialog(ConnectionResult.SERVICE_MISSING, new Activity(), 0));
+    assertNull(GooglePlayServicesUtil.getErrorDialog(ConnectionResult.SUCCESS, new Activity(), 0));
+    assertNotNull(
+        GooglePlayServicesUtil.getErrorDialog(
+            ConnectionResult.SERVICE_MISSING, new Activity(), 0, null));
+    assertNull(
+        GooglePlayServicesUtil.getErrorDialog(ConnectionResult.SUCCESS, new Activity(), 0, null));
   }
 
   @Test

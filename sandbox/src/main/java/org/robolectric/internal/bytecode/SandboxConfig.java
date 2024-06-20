@@ -7,9 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Configuration settings that can be used on a per-class or per-test basis.
- */
+/** Configuration settings that can be used on a per-class or per-test basis. */
 @Documented
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
@@ -20,12 +18,12 @@ public @interface SandboxConfig {
    *
    * @return A list of additional shadow classes to enable.
    */
-  Class<?>[] shadows() default {};  // DEFAULT_SHADOWS
+  Class<?>[] shadows() default {}; // DEFAULT_SHADOWS
 
   /**
    * A list of instrumented packages, in addition to those that are already instrumented.
    *
    * @return A list of additional instrumented packages.
    */
-  String[] instrumentedPackages() default {};  // DEFAULT_INSTRUMENTED_PACKAGES
+  String[] instrumentedPackages() default {}; // DEFAULT_INSTRUMENTED_PACKAGES
 }

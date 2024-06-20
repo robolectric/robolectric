@@ -37,7 +37,8 @@ public class ShadowWranglerIntegrationTest {
   public void
       testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnShadowClass() {
     AClassWithDefaultConstructor instance = new AClassWithDefaultConstructor();
-    assertThat(Shadow.<Object>extract(instance)).isInstanceOf(ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class);
+    assertThat(Shadow.<Object>extract(instance))
+        .isInstanceOf(ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class);
     assertThat(instance.initialized).isTrue();
   }
 
@@ -127,15 +128,15 @@ public class ShadowWranglerIntegrationTest {
     assertThat(stackTrace[1].getMethodName()).isEqualTo("method");
     assertThat(stackTrace[1].getLineNumber()).isLessThan(0);
 
-    assertThat(stackTrace[2].getClassName()).isEqualTo(ShadowWranglerIntegrationTest.class.getName());
+    assertThat(stackTrace[2].getClassName())
+        .isEqualTo(ShadowWranglerIntegrationTest.class.getName());
     assertThat(stackTrace[2].getMethodName()).isEqualTo("shouldRemoveNoiseFromShadowedStackTraces");
     assertThat(stackTrace[2].getLineNumber()).isGreaterThan(0);
   }
 
   @Instrument
   public static class ThrowInShadowMethod {
-    public void method() throws IOException {
-    }
+    public void method() throws IOException {}
   }
 
   @Implements(ThrowInShadowMethod.class)
@@ -166,7 +167,8 @@ public class ShadowWranglerIntegrationTest {
     assertThat(stackTrace[0].getMethodName()).isEqualTo("method");
     assertThat(stackTrace[0].getLineNumber()).isGreaterThan(0);
 
-    assertThat(stackTrace[1].getClassName()).isEqualTo(ShadowWranglerIntegrationTest.class.getName());
+    assertThat(stackTrace[1].getClassName())
+        .isEqualTo(ShadowWranglerIntegrationTest.class.getName());
     assertThat(stackTrace[1].getMethodName())
         .isEqualTo("shouldRemoveNoiseFromUnshadowedStackTraces");
     assertThat(stackTrace[1].getLineNumber()).isGreaterThan(0);
@@ -180,8 +182,7 @@ public class ShadowWranglerIntegrationTest {
   }
 
   @Implements(ThrowInRealMethod.class)
-  public static class ShadowThrowInRealMethod {
-  }
+  public static class ShadowThrowInRealMethod {}
 
   @Test
   @SandboxConfig(shadows = {Shadow2OfChild.class, ShadowOfParent.class})
@@ -260,11 +261,9 @@ public class ShadowWranglerIntegrationTest {
   }
 
   @Implements(value = Child.class)
-  public static class Shadow22OfChild extends Shadow2OfChild {
-  }
+  public static class Shadow22OfChild extends Shadow2OfChild {}
 
-  public static class SomethingOtherThanChild extends Child {
-  }
+  public static class SomethingOtherThanChild extends Child {}
 
   @Implements(value = SomethingOtherThanChild.class)
   public static class Shadow3OfChild extends ShadowOfChild {
@@ -286,8 +285,7 @@ public class ShadowWranglerIntegrationTest {
   @Implements(Foo.class)
   public static class WithEquals {
     @Implementation
-    protected void __constructor__(String s) {
-    }
+    protected void __constructor__(String s) {}
 
     @Override
     @Implementation
@@ -300,14 +298,12 @@ public class ShadowWranglerIntegrationTest {
     public int hashCode() {
       return 42;
     }
-
   }
 
   @Implements(Foo.class)
   public static class WithToString {
     @Implementation
-    protected void __constructor__(String s) {
-    }
+    protected void __constructor__(String s) {}
 
     @Override
     @Implementation
@@ -317,8 +313,7 @@ public class ShadowWranglerIntegrationTest {
   }
 
   @Implements(TextFoo.class)
-  public static class ShadowTextFoo extends ShadowFoo {
-  }
+  public static class ShadowTextFoo extends ShadowFoo {}
 
   @Instrument
   public static class TextFoo extends Foo {
@@ -337,8 +332,7 @@ public class ShadowWranglerIntegrationTest {
   }
 
   @Implements(AClassWithDefaultConstructor.class)
-  public static class ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate {
-  }
+  public static class ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate {}
 
   @SandboxConfig(shadows = ShadowAClassWithDifficultArgs.class)
   @Test
@@ -417,6 +411,7 @@ public class ShadowWranglerIntegrationTest {
   @Instrument
   public static class AClassWithStaticInitializer {
     static int initCount;
+
     static {
       initCount++;
     }
@@ -426,6 +421,7 @@ public class ShadowWranglerIntegrationTest {
   @Implements(AClassWithStaticInitializer.class)
   public static class ShadowOfAClassWithStaticInitializer {
     static int initCount;
+
     static {
       initCount++;
     }
@@ -454,6 +450,5 @@ public class ShadowWranglerIntegrationTest {
 
   @Implements(AClassWithBrokenStaticInitializer.class)
   public static class Shadow22OfAClassWithBrokenStaticInitializer
-      extends Shadow2OfAClassWithBrokenStaticInitializer {
-  }
+      extends Shadow2OfAClassWithBrokenStaticInitializer {}
 }

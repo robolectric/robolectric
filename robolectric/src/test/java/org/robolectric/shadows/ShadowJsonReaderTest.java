@@ -10,7 +10,8 @@ import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowJsonReaderTest {
-  @Test public void shouldWork() throws Exception {
+  @Test
+  public void shouldWork() throws Exception {
     JsonReader jsonReader = new JsonReader(new StringReader("{\"abc\": \"def\"}"));
     jsonReader.beginObject();
     assertThat(jsonReader.nextName()).isEqualTo("abc");

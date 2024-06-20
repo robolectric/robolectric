@@ -73,8 +73,7 @@ public class ShadowTelecomManager {
     MANUAL,
   }
 
-  @RealObject
-  private TelecomManager realObject;
+  @RealObject private TelecomManager realObject;
 
   private final LinkedHashMap<PhoneAccountHandle, PhoneAccount> accounts = new LinkedHashMap<>();
   private final LinkedHashMap<PhoneAccountHandle, String> voicemailNumbers = new LinkedHashMap<>();
@@ -273,7 +272,9 @@ public class ShadowTelecomManager {
     accounts.remove(accountHandle);
   }
 
-  /** @deprecated */
+  /**
+   * @deprecated
+   */
   @Deprecated
   @Implementation
   @HiddenApi
@@ -297,7 +298,9 @@ public class ShadowTelecomManager {
     }
   }
 
-  /** @deprecated */
+  /**
+   * @deprecated
+   */
   @Deprecated
   @Implementation
   @HiddenApi
@@ -310,7 +313,9 @@ public class ShadowTelecomManager {
     return defaultDialerPackageName;
   }
 
-  /** @deprecated API deprecated since Q, for testing, use setDefaultDialerPackage instead */
+  /**
+   * @deprecated API deprecated since Q, for testing, use setDefaultDialerPackage instead
+   */
   @Deprecated
   @Implementation(minSdk = M)
   @HiddenApi
@@ -752,7 +757,9 @@ public class ShadowTelecomManager {
     public final Bundle extras;
     protected boolean isRinging = true;
 
-    /** @deprecated Use {@link extras} instead. */
+    /**
+     * @deprecated Use {@link extras} instead.
+     */
     @Deprecated public final Bundle bundle;
 
     public CallRecord(PhoneAccountHandle phoneAccount, Bundle extras) {

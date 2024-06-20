@@ -10,7 +10,7 @@ import org.robolectric.annotation.Implements;
 @Implements(TabWidget.class)
 public class ShadowTabWidget extends ShadowLinearLayout {
 
-  @HiddenApi @Implementation(maxSdk = M)
-  public void initTabWidget() {
-  }
+  @HiddenApi
+  @Implementation(maxSdk = M)
+  public void initTabWidget() {}
 }

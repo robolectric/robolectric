@@ -44,8 +44,7 @@ public class ShadowPackageParser {
       if (thePackage == null) {
         List<LogItem> logItems = ShadowLog.getLogsForTag("PackageParser");
         if (logItems.isEmpty()) {
-          throw new RuntimeException(
-              "Failed to parse package " + apkFile);
+          throw new RuntimeException("Failed to parse package " + apkFile);
         } else {
           LogItem logItem = logItems.get(0);
           throw new RuntimeException(
@@ -59,9 +58,7 @@ public class ShadowPackageParser {
     }
   }
 
-  /**
-   * Prevents ClassNotFoundError for Callback on pre-26.
-   */
+  /** Prevents ClassNotFoundError for Callback on pre-26. */
   private static class QHelper {
     private static void setCallback(PackageParser packageParser) {
       // TODO(christianw): this should be a CallbackImpl with the ApplicationPackageManager...
@@ -99,8 +96,7 @@ public class ShadowPackageParser {
         long firstInstallTime,
         long lastUpdateTime,
         HashSet<String> grantedPermissions,
-        @WithType("android.content.pm.PackageUserState")
-            Object state);
+        @WithType("android.content.pm.PackageUserState") Object state);
 
     // LOLLIPOP_MR1
     @Static
@@ -111,8 +107,7 @@ public class ShadowPackageParser {
         long firstInstallTime,
         long lastUpdateTime,
         ArraySet<String> grantedPermissions,
-        @WithType("android.content.pm.PackageUserState")
-            Object state);
+        @WithType("android.content.pm.PackageUserState") Object state);
 
     @Static
     PackageInfo generatePackageInfo(

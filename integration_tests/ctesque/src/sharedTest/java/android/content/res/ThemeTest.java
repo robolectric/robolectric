@@ -15,9 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.testapp.R;
 
-/**
- * Compatibility test for {@link Resources.Theme}
- */
+/** Compatibility test for {@link Resources.Theme} */
 @RunWith(AndroidJUnit4.class)
 public class ThemeTest {
 

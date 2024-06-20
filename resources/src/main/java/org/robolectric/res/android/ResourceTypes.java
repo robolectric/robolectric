@@ -18,8 +18,10 @@ import java.util.List;
 import java.util.Map;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ResourceTypes.cpp
-//   and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/include/androidfw/ResourceTypes.h
+// transliterated from
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ResourceTypes.cpp
+//   and
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/include/androidfw/ResourceTypes.h
 public class ResourceTypes {
   public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
   public static final String AUTO_NS = "http://schemas.android.com/apk/res-auto";
@@ -27,34 +29,30 @@ public class ResourceTypes {
   static final int kIdmapMagic = 0x504D4449;
   static final int kIdmapCurrentVersion = 0x00000001;
 
-  static int validate_chunk(ResChunk_header chunk,
-      int minSize,
-      int dataLen,
-      String name)
-  {
+  static int validate_chunk(ResChunk_header chunk, int minSize, int dataLen, String name) {
     final short headerSize = dtohs(chunk.headerSize);
     final int size = dtohl(chunk.size);
 
     if (headerSize >= minSize) {
       if (headerSize <= size) {
-        if (((headerSize|size)&0x3) == 0) {
+        if (((headerSize | size) & 0x3) == 0) {
           if (size <= dataLen) {
             return NO_ERROR;
           }
-          ALOGW("%s data size 0x%x extends beyond resource end.",
+          ALOGW(
+              "%s data size 0x%x extends beyond resource end.",
               name, size /*, (dataEnd-((const uint8_t*)chunk))*/);
           return BAD_TYPE;
         }
-        ALOGW("%s size 0x%x or headerSize 0x%x is not on an integer boundary.",
-            name, (int)size, (int)headerSize);
+        ALOGW(
+            "%s size 0x%x or headerSize 0x%x is not on an integer boundary.",
+            name, (int) size, (int) headerSize);
         return BAD_TYPE;
       }
-      ALOGW("%s size 0x%x is smaller than header size 0x%x.",
-          name, size, headerSize);
+      ALOGW("%s size 0x%x is smaller than header size 0x%x.", name, size, headerSize);
       return BAD_TYPE;
     }
-    ALOGW("%s header size 0x%04x is too small.",
-        name, headerSize);
+    ALOGW("%s header size 0x%04x is too small.", name, headerSize);
     return BAD_TYPE;
   }
 
@@ -81,19 +79,16 @@ public class ResourceTypes {
     }
   }
 
-  /** ********************************************************************
-   *  Base Types
-   *
-   *  These are standard types that are shared between multiple specific
-   *  resource types.
-   *
-   *********************************************************************** */
-
   /**
-   * Header that appears at the front of every data chunk in a resource.
+   * ******************************************************************** Base Types
+   *
+   * <p>These are standard types that are shared between multiple specific resource types.
+   *
+   * <p>**********************************************************************
    */
-  public static class ResChunk_header extends WithOffset
-  {
+
+  /** Header that appears at the front of every data chunk in a resource. */
+  public static class ResChunk_header extends WithOffset {
     static int SIZEOF = 8;
 
     // Type identifier for this chunk.  The meaning of this value depends
@@ -140,66 +135,61 @@ public class ResourceTypes {
     }
   }
 
-  public static final int RES_NULL_TYPE               = 0x0000;
-  public static final int RES_STRING_POOL_TYPE        = 0x0001;
-  public static final int RES_TABLE_TYPE              = 0x0002;
-  public static final int RES_XML_TYPE                = 0x0003;
+  public static final int RES_NULL_TYPE = 0x0000;
+  public static final int RES_STRING_POOL_TYPE = 0x0001;
+  public static final int RES_TABLE_TYPE = 0x0002;
+  public static final int RES_XML_TYPE = 0x0003;
 
   // Chunk types in RES_XML_TYPE
-  public static final int RES_XML_FIRST_CHUNK_TYPE    = 0x0100;
-  public static final int RES_XML_START_NAMESPACE_TYPE= 0x0100;
-  public static final int RES_XML_END_NAMESPACE_TYPE  = 0x0101;
-  public static final int RES_XML_START_ELEMENT_TYPE  = 0x0102;
-  public static final int RES_XML_END_ELEMENT_TYPE    = 0x0103;
-  public static final int RES_XML_CDATA_TYPE          = 0x0104;
-  public static final int RES_XML_LAST_CHUNK_TYPE     = 0x017f;
+  public static final int RES_XML_FIRST_CHUNK_TYPE = 0x0100;
+  public static final int RES_XML_START_NAMESPACE_TYPE = 0x0100;
+  public static final int RES_XML_END_NAMESPACE_TYPE = 0x0101;
+  public static final int RES_XML_START_ELEMENT_TYPE = 0x0102;
+  public static final int RES_XML_END_ELEMENT_TYPE = 0x0103;
+  public static final int RES_XML_CDATA_TYPE = 0x0104;
+  public static final int RES_XML_LAST_CHUNK_TYPE = 0x017f;
   // This contains a uint32_t array mapping strings in the string
   // pool back to resource identifiers.  It is optional.
-  public static final int RES_XML_RESOURCE_MAP_TYPE   = 0x0180;
+  public static final int RES_XML_RESOURCE_MAP_TYPE = 0x0180;
 
   // Chunk types in RES_TABLE_TYPE
-  public static final int RES_TABLE_PACKAGE_TYPE      = 0x0200;
-  public static final int RES_TABLE_TYPE_TYPE         = 0x0201;
-  public static final int RES_TABLE_TYPE_SPEC_TYPE    = 0x0202;
-  public static final int RES_TABLE_LIBRARY_TYPE      = 0x0203;
+  public static final int RES_TABLE_PACKAGE_TYPE = 0x0200;
+  public static final int RES_TABLE_TYPE_TYPE = 0x0201;
+  public static final int RES_TABLE_TYPE_SPEC_TYPE = 0x0202;
+  public static final int RES_TABLE_LIBRARY_TYPE = 0x0203;
   public static final int RES_TABLE_STAGED_ALIAS_TYPE = 0x0206;
 
-  /**
-   * Macros for building/splitting resource identifiers.
-   */
-//#define Res_VALIDID(resid) (resid != 0)
-//#define Res_CHECKID(resid) ((resid&0xFFFF0000) != 0)
-//#define Res_MAKEID(package, type, entry) \
-//(((package+1)<<24) | (((type+1)&0xFF)<<16) | (entry&0xFFFF))
-//#define Res_GETPACKAGE(id) ((id>>24)-1)
-//#define Res_GETTYPE(id) (((id>>16)&0xFF)-1)
-//#define Res_GETENTRY(id) (id&0xFFFF)
+  /** Macros for building/splitting resource identifiers. */
+  // #define Res_VALIDID(resid) (resid != 0)
+  // #define Res_CHECKID(resid) ((resid&0xFFFF0000) != 0)
+  // #define Res_MAKEID(package, type, entry) \
+  // (((package+1)<<24) | (((type+1)&0xFF)<<16) | (entry&0xFFFF))
+  // #define Res_GETPACKAGE(id) ((id>>24)-1)
+  // #define Res_GETTYPE(id) (((id>>16)&0xFF)-1)
+  // #define Res_GETENTRY(id) (id&0xFFFF)
 
-//#define Res_INTERNALID(resid) ((resid&0xFFFF0000) != 0 && (resid&0xFF0000) == 0)
+  // #define Res_INTERNALID(resid) ((resid&0xFFFF0000) != 0 && (resid&0xFF0000) == 0)
   private static int Res_MAKEINTERNAL(int entry) {
     return (0x01000000 | (entry & 0xFFFF));
   }
-//#define Res_MAKEARRAY(entry) (0x02000000 | (entry&0xFFFF))
 
-//  static const size_t Res_MAXPACKAGE = 255;
-//  static const size_t Res_MAXTYPE = 255;
+  // #define Res_MAKEARRAY(entry) (0x02000000 | (entry&0xFFFF))
 
-  /**
-   * Representation of a value in a resource, supplying type
-   * information.
-   */
-  public static class Res_value
-  {
+  //  static const size_t Res_MAXPACKAGE = 255;
+  //  static const size_t Res_MAXTYPE = 255;
+
+  /** Representation of a value in a resource, supplying type information. */
+  public static class Res_value {
     static final int SIZEOF = 8;
 
     // Number of bytes in this structure.
     final short size;
 
     // Always set to 0.
-//    byte res0;
+    //    byte res0;
 
     // Type of the data value.
-//    enum {
+    //    enum {
     // The 'data' is either 0 or 1, specifying this resource is either
     // undefined or empty, respectively.
     public static final int TYPE_NULL = 0x00;
@@ -253,12 +243,12 @@ public class ResourceTypes {
 
     // ...end of integer flavors.
     public static final int TYPE_LAST_INT = 0x1f;
-//  };
+    //  };
 
     public final byte dataType;
 
     // Structure of complex data values (TYPE_UNIT and TYPE_FRACTION)
-//    enum {
+    //    enum {
     // Where the unit type information is.  This gives us 16 possible
     // types, as defined below.
     public static final int COMPLEX_UNIT_SHIFT = 0;
@@ -301,25 +291,25 @@ public class ResourceTypes {
     // precision.  The top bit is the sign.
     public static final int COMPLEX_MANTISSA_SHIFT = 8;
     public static final int COMPLEX_MANTISSA_MASK = 0xffffff;
-//  };
+    //  };
 
     // Possible data values for TYPE_NULL.
-//    enum {
+    //    enum {
     // The value is not defined.
     public static final int DATA_NULL_UNDEFINED = 0;
     // The value is explicitly defined as empty.
     public static final int DATA_NULL_EMPTY = 1;
-//  };
+    //  };
 
     public static final Res_value NULL_VALUE = new Res_value((byte) TYPE_NULL, DATA_NULL_UNDEFINED);
 
     // The data for this item, as interpreted according to dataType.
-//    typedef uint32_t data_type;
+    //    typedef uint32_t data_type;
     public final int data;
 
     public Res_value() {
       this.size = 0;
-//      this.res0 = 0;
+      //      this.res0 = 0;
       this.dataType = 0;
       this.data = 0;
     }
@@ -337,14 +327,14 @@ public class ResourceTypes {
 
     public Res_value(Res_value other) {
       this.size = other.size;
-//      this.res0 = other.res0;
+      //      this.res0 = other.res0;
       this.dataType = other.dataType;
       this.data = other.data;
     }
 
     public Res_value(byte dataType, int data) {
       this.size = SIZEOF;
-//      this.res0 = 0;
+      //      this.res0 = 0;
       this.dataType = dataType;
       this.data = data;
     }
@@ -364,12 +354,12 @@ public class ResourceTypes {
       return new Res_value(dataType, data);
     }
 
-//    public void copyFrom_dtoh(Res_value other) {
-//      this.size = other.size;
-// //      this.res0 = other.res0;
-//      this.dataType = other.dataType;
-//      this.data = other.data;
-//    }
+    //    public void copyFrom_dtoh(Res_value other) {
+    //      this.size = other.size;
+    // //      this.res0 = other.res0;
+    //      this.dataType = other.dataType;
+    //      this.data = other.data;
+    //    }
 
     public Res_value copy() {
       return new Res_value(this);
@@ -381,39 +371,34 @@ public class ResourceTypes {
     }
   }
 
-/**
- *  This is a reference to a unique entry (a ResTable_entry structure)
- *  in a resource table.  The value is structured as: 0xpptteeee,
- *  where pp is the package index, tt is the type index in that
- *  package, and eeee is the entry index in that type.  The package
- *  and type values start at 1 for the first item, to help catch cases
- *  where they have not been supplied.
- */
-public static class ResTable_ref
-    {
-      public static final int SIZEOF = 4;
-
-      public int ident;
-
-      public ResTable_ref(ByteBuffer buf, int offset) {
-        ident = buf.getInt(offset);
-      }
-
-      public ResTable_ref() {
-        ident = 0;
-      }
-
-      @Override
-      public String toString() {
-        return "ResTable_ref{ident=" + ident + '}';
-      }
-    };
-
   /**
-   * Reference to a string in a string pool.
+   * This is a reference to a unique entry (a ResTable_entry structure) in a resource table. The
+   * value is structured as: 0xpptteeee, where pp is the package index, tt is the type index in that
+   * package, and eeee is the entry index in that type. The package and type values start at 1 for
+   * the first item, to help catch cases where they have not been supplied.
    */
-  public static class ResStringPool_ref
-  {
+  public static class ResTable_ref {
+    public static final int SIZEOF = 4;
+
+    public int ident;
+
+    public ResTable_ref(ByteBuffer buf, int offset) {
+      ident = buf.getInt(offset);
+    }
+
+    public ResTable_ref() {
+      ident = 0;
+    }
+
+    @Override
+    public String toString() {
+      return "ResTable_ref{ident=" + ident + '}';
+    }
+  }
+  ;
+
+  /** Reference to a string in a string pool. */
+  public static class ResStringPool_ref {
     public static final int SIZEOF = 4;
 
     // Index into the string pool table (uint32_t-offset from the indices
@@ -435,32 +420,27 @@ public static class ResTable_ref
     }
   }
 
-/** ********************************************************************
- *  String Pool
- *
- *  A set of strings that can be references by others through a
- *  ResStringPool_ref.
- *
- *********************************************************************** */
-
-
-/**
-   * Definition for a pool of strings.  The data of this chunk is an
-   * array of uint32_t providing indices into the pool, relative to
-   * stringsStart.  At stringsStart are all of the UTF-16 strings
-   * concatenated together; each starts with a uint16_t of the string's
-   * length and each ends with a 0x0000 terminator.  If a string is >
-   * 32767 characters, the high bit of the length is set meaning to take
-   * those 15 bits as a high word and it will be followed by another
-   * uint16_t containing the low word.
+  /**
+   * ******************************************************************** String Pool
    *
-   * If styleCount is not zero, then immediately following the array of
-   * uint32_t indices into the string table is another array of indices
-   * into a style table starting at stylesStart.  Each entry in the
-   * style table is an array of ResStringPool_span structures.
+   * <p>A set of strings that can be references by others through a ResStringPool_ref.
+   *
+   * <p>**********************************************************************
    */
-  public static class ResStringPool_header extends WithOffset
-  {
+
+  /**
+   * Definition for a pool of strings. The data of this chunk is an array of uint32_t providing
+   * indices into the pool, relative to stringsStart. At stringsStart are all of the UTF-16 strings
+   * concatenated together; each starts with a uint16_t of the string's length and each ends with a
+   * 0x0000 terminator. If a string is > 32767 characters, the high bit of the length is set meaning
+   * to take those 15 bits as a high word and it will be followed by another uint16_t containing the
+   * low word.
+   *
+   * <p>If styleCount is not zero, then immediately following the array of uint32_t indices into the
+   * string table is another array of indices into a style table starting at stylesStart. Each entry
+   * in the style table is an array of ResStringPool_span structures.
+   */
+  public static class ResStringPool_header extends WithOffset {
     public static final int SIZEOF = ResChunk_header.SIZEOF + 20;
 
     final ResChunk_header header;
@@ -474,14 +454,14 @@ public static class ResTable_ref
     final int styleCount;
 
     // Flags.
-//    enum {
+    //    enum {
     // If set, the string index is sorted by the string values (based
     // on strcmp16()).
-    public static final int SORTED_FLAG = 1<<0;
+    public static final int SORTED_FLAG = 1 << 0;
 
-        // String pool is encoded in UTF-8
-        public static final int UTF8_FLAG = 1<<8;
-//  };
+    // String pool is encoded in UTF-8
+    public static final int UTF8_FLAG = 1 << 8;
+    //  };
     final int flags;
 
     // Index from header of the string data.
@@ -554,42 +534,46 @@ public static class ResTable_ref
       public void write(ByteBuffer buf) {
         freeze();
 
-        ResChunk_header.write(buf, (short) RES_STRING_POOL_TYPE, () -> {
-          // header
-          int startPos = buf.position();
-          int stringCount = strings.size();
+        ResChunk_header.write(
+            buf,
+            (short) RES_STRING_POOL_TYPE,
+            () -> {
+              // header
+              int startPos = buf.position();
+              int stringCount = strings.size();
 
-          // begin string pool...
-          buf.putInt(stringCount); // stringCount
-          buf.putInt(0); // styleCount
-          buf.putInt(UTF8_FLAG); // flags
-          IntWriter stringStart = new IntWriter(buf);
-          buf.putInt(0); // stylesStart
+              // begin string pool...
+              buf.putInt(stringCount); // stringCount
+              buf.putInt(0); // styleCount
+              buf.putInt(UTF8_FLAG); // flags
+              IntWriter stringStart = new IntWriter(buf);
+              buf.putInt(0); // stylesStart
 
-          stringStart.write(buf.position() - startPos);
-        }, () -> {
-          // contents
-          int stringOffset = /*buf.position() + */8 + 4 * stringsAsBytes.size();
-          for (int i = 0; i < stringsAsBytes.size(); i++) {
-            String string = strings.get(i);
-            byte[] bytes = stringsAsBytes.get(i);
-            buf.putInt(stringOffset);
-            stringOffset += lenLen(string.length()) + lenLen(bytes.length) + bytes.length + 1;
-          }
+              stringStart.write(buf.position() - startPos);
+            },
+            () -> {
+              // contents
+              int stringOffset = /*buf.position() + */ 8 + 4 * stringsAsBytes.size();
+              for (int i = 0; i < stringsAsBytes.size(); i++) {
+                String string = strings.get(i);
+                byte[] bytes = stringsAsBytes.get(i);
+                buf.putInt(stringOffset);
+                stringOffset += lenLen(string.length()) + lenLen(bytes.length) + bytes.length + 1;
+              }
 
-          for (int i = 0; i < stringsAsBytes.size(); i++) {
-            // number of chars
-            writeLen(buf, strings.get(i).length());
+              for (int i = 0; i < stringsAsBytes.size(); i++) {
+                // number of chars
+                writeLen(buf, strings.get(i).length());
 
-            // number of bytes
-            writeLen(buf, stringsAsBytes.get(i).length);
+                // number of bytes
+                writeLen(buf, stringsAsBytes.get(i).length);
 
-            // bytes
-            buf.put(stringsAsBytes.get(i));
-            // null terminator
-            buf.put((byte) '\0');
-          }
-        });
+                // bytes
+                buf.put(stringsAsBytes.get(i));
+                // null terminator
+                buf.put((byte) '\0');
+              }
+            });
       }
 
       private int lenLen(int length) {
@@ -611,17 +595,13 @@ public static class ResTable_ref
     }
   }
 
-  /**
-   * This structure defines a span of style information associated with
-   * a string in the pool.
-   */
-  public static class ResStringPool_span extends WithOffset
-  {
+  /** This structure defines a span of style information associated with a string in the pool. */
+  public static class ResStringPool_span extends WithOffset {
     public static final int SIZEOF = ResStringPool_ref.SIZEOF + 8;
 
     //    enum {
     public static final int END = 0xFFFFFFFF;
-//  };
+    //  };
 
     // This is the name of the span -- that is, the name of the XML
     // tag that defined it.  The special value END (0xFFFFFFFF) indicates
@@ -643,27 +623,25 @@ public static class ResTable_ref
     public boolean isEnd() {
       return name.index == END && firstChar == END && lastChar == END;
     }
-  };
-
-
-  /** ********************************************************************
-   *  XML Tree
-   *
-   *  Binary representation of an XML document.  This is designed to
-   *  express everything in an XML document, in a form that is much
-   *  easier to parse on the device.
-   *
-   *********************************************************************** */
+  }
+  ;
 
   /**
-   * XML tree header.  This appears at the front of an XML tree,
-   * describing its content.  It is followed by a flat array of
-   * ResXMLTree_node structures; the hierarchy of the XML document
-   * is described by the occurrance of RES_XML_START_ELEMENT_TYPE
-   * and corresponding RES_XML_END_ELEMENT_TYPE nodes in the array.
+   * ******************************************************************** XML Tree
+   *
+   * <p>Binary representation of an XML document. This is designed to express everything in an XML
+   * document, in a form that is much easier to parse on the device.
+   *
+   * <p>**********************************************************************
    */
-  public static class ResXMLTree_header extends WithOffset
-  {
+
+  /**
+   * XML tree header. This appears at the front of an XML tree, describing its content. It is
+   * followed by a flat array of ResXMLTree_node structures; the hierarchy of the XML document is
+   * described by the occurrance of RES_XML_START_ELEMENT_TYPE and corresponding
+   * RES_XML_END_ELEMENT_TYPE nodes in the array.
+   */
+  public static class ResXMLTree_header extends WithOffset {
     public final ResChunk_header header;
 
     ResXMLTree_header(ByteBuffer buf, int offset) {
@@ -672,19 +650,22 @@ public static class ResTable_ref
     }
 
     public static void write(ByteBuffer buf, Writer resStringPoolWriter, Runnable contents) {
-      ResChunk_header.write(buf, (short) RES_XML_TYPE, ()-> {}, () -> {
-        resStringPoolWriter.write(buf);
-        contents.run();
-      });
+      ResChunk_header.write(
+          buf,
+          (short) RES_XML_TYPE,
+          () -> {},
+          () -> {
+            resStringPoolWriter.write(buf);
+            contents.run();
+          });
     }
   }
 
   /**
-   * Basic XML tree node.  A single item in the XML document.  Extended info
-   * about the node can be found after header.headerSize.
+   * Basic XML tree node. A single item in the XML document. Extended info about the node can be
+   * found after header.headerSize.
    */
-  public static class ResXMLTree_node extends WithOffset
-  {
+  public static class ResXMLTree_node extends WithOffset {
     final ResChunk_header header;
 
     // Line number in original source file at which this element appeared.
@@ -710,19 +691,23 @@ public static class ResTable_ref
     }
 
     public static void write(ByteBuffer buf, int type, Runnable contents) {
-      ResChunk_header.write(buf, (short) type, () -> {
-        buf.putInt(-1); // lineNumber
-        ResStringPool_ref.write(buf, -1); // comment
-      }, contents);
+      ResChunk_header.write(
+          buf,
+          (short) type,
+          () -> {
+            buf.putInt(-1); // lineNumber
+            ResStringPool_ref.write(buf, -1); // comment
+          },
+          contents);
     }
-  };
+  }
+  ;
 
   /**
-   * Extended XML tree node for CDATA tags -- includes the CDATA string.
-   * Appears header.headerSize bytes after a ResXMLTree_node.
+   * Extended XML tree node for CDATA tags -- includes the CDATA string. Appears header.headerSize
+   * bytes after a ResXMLTree_node.
    */
-  static class ResXMLTree_cdataExt
-  {
+  static class ResXMLTree_cdataExt {
     // The raw CDATA character data.
     final ResStringPool_ref data;
 
@@ -736,14 +721,14 @@ public static class ResTable_ref
       int data = buf.getInt(offset + 8);
       this.typedData = new Res_value((byte) dataType, data);
     }
-  };
+  }
+  ;
 
   /**
-   * Extended XML tree node for namespace start/end nodes.
-   * Appears header.headerSize bytes after a ResXMLTree_node.
+   * Extended XML tree node for namespace start/end nodes. Appears header.headerSize bytes after a
+   * ResXMLTree_node.
    */
-  static class ResXMLTree_namespaceExt
-  {
+  static class ResXMLTree_namespaceExt {
     // The prefix of the namespace.
     final ResStringPool_ref prefix;
 
@@ -754,14 +739,14 @@ public static class ResTable_ref
       this.prefix = new ResStringPool_ref(buf, offset);
       this.uri = new ResStringPool_ref(buf, offset + 4);
     }
-  };
+  }
+  ;
 
   /**
-   * Extended XML tree node for element start/end nodes.
-   * Appears header.headerSize bytes after a ResXMLTree_node.
+   * Extended XML tree node for element start/end nodes. Appears header.headerSize bytes after a
+   * ResXMLTree_node.
    */
-  public static class ResXMLTree_endElementExt
-  {
+  public static class ResXMLTree_endElementExt {
     static final int SIZEOF = 8;
 
     // String of the full namespace of this element.
@@ -781,8 +766,8 @@ public static class ResTable_ref
       private final int ns;
       private final int name;
 
-      public Writer(ByteBuffer buf, ResStringPool_header.Writer resStringPoolWriter,
-          String ns, String name) {
+      public Writer(
+          ByteBuffer buf, ResStringPool_header.Writer resStringPoolWriter, String ns, String name) {
         this.buf = buf;
         this.ns = resStringPoolWriter.string(ns);
         this.name = resStringPoolWriter.string(name);
@@ -793,15 +778,14 @@ public static class ResTable_ref
         ResStringPool_ref.write(buf, name);
       }
     }
-  };
+  }
+  ;
 
   /**
-   * Extended XML tree node for start tags -- includes attribute
-   * information.
-   * Appears header.headerSize bytes after a ResXMLTree_node.
+   * Extended XML tree node for start tags -- includes attribute information. Appears
+   * header.headerSize bytes after a ResXMLTree_node.
    */
-  public static class ResXMLTree_attrExt extends WithOffset
-  {
+  public static class ResXMLTree_attrExt extends WithOffset {
     private final ByteBuffer buf;
 
     // String of the full namespace of this element.
@@ -846,8 +830,8 @@ public static class ResTable_ref
     }
 
     ResXMLTree_attribute attributeAt(int idx) {
-      return new ResXMLTree_attribute(buf,
-          myOffset() + dtohs(attributeStart) + dtohs(attributeSize) * idx);
+      return new ResXMLTree_attribute(
+          buf, myOffset() + dtohs(attributeStart) + dtohs(attributeSize) * idx);
     }
 
     public static class Writer {
@@ -861,8 +845,8 @@ public static class ResTable_ref
 
       private final List<Attr> attrs = new ArrayList<>();
 
-      public Writer(ByteBuffer buf, ResStringPool_header.Writer resStringPoolWriter,
-          String ns, String name) {
+      public Writer(
+          ByteBuffer buf, ResStringPool_header.Writer resStringPoolWriter, String ns, String name) {
         this.buf = buf;
         this.ns = resStringPoolWriter.string(ns);
         this.name = resStringPoolWriter.string(name);
@@ -931,11 +915,11 @@ public static class ResTable_ref
         }
       }
     }
-  };
+  }
+  ;
 
-  static class ResXMLTree_attribute
-  {
-    public static final int SIZEOF = 12+ ResourceTypes.Res_value.SIZEOF;
+  static class ResXMLTree_attribute {
+    public static final int SIZEOF = 12 + ResourceTypes.Res_value.SIZEOF;
 
     // Namespace of this attribute.
     final ResStringPool_ref ns;
@@ -956,33 +940,32 @@ public static class ResTable_ref
       this.typedValue = new Res_value(buf, offset + 12);
     }
 
-    public static void write(ByteBuffer buf, int ns, int name, int value, int resValueDataType,
-        int resValueData) {
+    public static void write(
+        ByteBuffer buf, int ns, int name, int value, int resValueDataType, int resValueData) {
       ResStringPool_ref.write(buf, ns);
       ResStringPool_ref.write(buf, name);
       ResStringPool_ref.write(buf, value);
       ResourceTypes.Res_value.write(buf, resValueDataType, resValueData);
     }
-  };
-
-/** ********************************************************************
- *  RESOURCE TABLE
- *
- *********************************************************************** */
+  }
+  ;
 
   /**
-   * Header for a resource table.  Its data contains a series of
-   * additional chunks:
-   *   * A ResStringPool_header containing all table values.  This string pool
-   *     contains all of the string values in the entire resource table (not
-   *     the names of entries or type identifiers however).
-   *   * One or more ResTable_package chunks.
+   * ******************************************************************** RESOURCE TABLE
    *
-   * Specific entries within a resource table can be uniquely identified
-   * with a single integer as defined by the ResTable_ref structure.
+   * <p>**********************************************************************
    */
-  static class ResTable_header extends WithOffset
-  {
+
+  /**
+   * Header for a resource table. Its data contains a series of additional chunks: * A
+   * ResStringPool_header containing all table values. This string pool contains all of the string
+   * values in the entire resource table (not the names of entries or type identifiers however). *
+   * One or more ResTable_package chunks.
+   *
+   * <p>Specific entries within a resource table can be uniquely identified with a single integer as
+   * defined by the ResTable_ref structure.
+   */
+  static class ResTable_header extends WithOffset {
     public static final int SIZEOF = ResChunk_header.SIZEOF + 4;
 
     final ResChunk_header header;
@@ -998,12 +981,10 @@ public static class ResTable_ref
   }
 
   /**
-   * A collection of resource data types within a package.  Followed by
-   * one or more ResTable_type and ResTable_typeSpec structures containing the
-   * entry values for each resource type.
+   * A collection of resource data types within a package. Followed by one or more ResTable_type and
+   * ResTable_typeSpec structures containing the entry values for each resource type.
    */
-  static class ResTable_package extends WithOffset
-  {
+  static class ResTable_package extends WithOffset {
     public static final int SIZEOF = ResChunk_header.SIZEOF + 4 + 128 + 20;
 
     final ResChunk_header header;
@@ -1047,7 +1028,8 @@ public static class ResTable_ref
       lastPublicKey = buf.getInt(offset + ResChunk_header.SIZEOF + 4 + 256 + 12);
       typeIdOffset = buf.getInt(offset + ResChunk_header.SIZEOF + 4 + 256 + 16);
     }
-  };
+  }
+  ;
 
   // The most specific locale can consist of:
   //
@@ -1056,24 +1038,22 @@ public static class ResTable_ref
   // - a 4 char script code prefixed by a 's'
   // - a 8 char variant code prefixed by a 'v'
   //
-// each separated by a single char separator, which sums up to a total of 24
-// chars, (25 include the string terminator). Numbering system specificator,
-// if present, can add up to 14 bytes (-u-nu-xxxxxxxx), giving 39 bytes,
-// or 40 bytes to make it 4 bytes aligned.
+  // each separated by a single char separator, which sums up to a total of 24
+  // chars, (25 include the string terminator). Numbering system specificator,
+  // if present, can add up to 14 bytes (-u-nu-xxxxxxxx), giving 39 bytes,
+  // or 40 bytes to make it 4 bytes aligned.
   public static final int RESTABLE_MAX_LOCALE_LEN = 40;
 
   /**
    * A specification of the resources defined by a particular type.
    *
-   * There should be one of these chunks for each resource type.
+   * <p>There should be one of these chunks for each resource type.
    *
-   * This structure is followed by an array of integers providing the set of
-   * configuration change flags (ResTable_config::CONFIG_*) that have multiple
-   * resources for that configuration.  In addition, the high bit is set if that
-   * resource has been made public.
+   * <p>This structure is followed by an array of integers providing the set of configuration change
+   * flags (ResTable_config::CONFIG_*) that have multiple resources for that configuration. In
+   * addition, the high bit is set if that resource has been made public.
    */
-  static class ResTable_typeSpec extends WithOffset
-  {
+  static class ResTable_typeSpec extends WithOffset {
     public static final int SIZEOF = ResChunk_header.SIZEOF + 8;
 
     final ResChunk_header header;
@@ -1091,14 +1071,15 @@ public static class ResTable_ref
     // Number of uint32_t entry configuration masks that follow.
     final int entryCount;
 
-    //enum : uint32_t {
+    // enum : uint32_t {
     // Additional flag indicating an entry is public.
     static final int SPEC_PUBLIC = 0x40000000;
 
     // Additional flag indicating an entry is overlayable at runtime.
     // Added in Android-P.
     static final int SPEC_OVERLAYABLE = 0x80000000;
-//    };
+
+    //    };
 
     public ResTable_typeSpec(ByteBuffer buf, int offset) {
       super(buf, offset);
@@ -1114,46 +1095,40 @@ public static class ResTable_ref
       int[] ints = new int[(header.size - header.headerSize) / 4];
       for (int i = 0; i < ints.length; i++) {
         ints[i] = myBuf().getInt(myOffset() + header.headerSize + i * 4);
-
       }
       return ints;
     }
-  };
+  }
+  ;
 
   /**
-   * A collection of resource entries for a particular resource data
-   * type.
+   * A collection of resource entries for a particular resource data type.
    *
-   * If the flag FLAG_SPARSE is not set in `flags`, then this struct is
-   * followed by an array of uint32_t defining the resource
-   * values, corresponding to the array of type strings in the
-   * ResTable_package::typeStrings string block. Each of these hold an
-   * index from entriesStart; a value of NO_ENTRY means that entry is
-   * not defined.
+   * <p>If the flag FLAG_SPARSE is not set in `flags`, then this struct is followed by an array of
+   * uint32_t defining the resource values, corresponding to the array of type strings in the
+   * ResTable_package::typeStrings string block. Each of these hold an index from entriesStart; a
+   * value of NO_ENTRY means that entry is not defined.
    *
-   * If the flag FLAG_SPARSE is set in `flags`, then this struct is followed
-   * by an array of ResTable_sparseTypeEntry defining only the entries that
-   * have values for this type. Each entry is sorted by their entry ID such
-   * that a binary search can be performed over the entries. The ID and offset
-   * are encoded in a uint32_t. See ResTabe_sparseTypeEntry.
+   * <p>If the flag FLAG_SPARSE is set in `flags`, then this struct is followed by an array of
+   * ResTable_sparseTypeEntry defining only the entries that have values for this type. Each entry
+   * is sorted by their entry ID such that a binary search can be performed over the entries. The ID
+   * and offset are encoded in a uint32_t. See ResTabe_sparseTypeEntry.
    *
-   * There may be multiple of these chunks for a particular resource type,
-   * supply different configuration variations for the resource values of
-   * that type.
+   * <p>There may be multiple of these chunks for a particular resource type, supply different
+   * configuration variations for the resource values of that type.
    *
-   * It would be nice to have an additional ordered index of entries, so
-   * we can do a binary search if trying to find a resource by string name.
+   * <p>It would be nice to have an additional ordered index of entries, so we can do a binary
+   * search if trying to find a resource by string name.
    */
-  static class ResTable_type extends WithOffset
-  {
+  static class ResTable_type extends WithOffset {
     //      public static final int SIZEOF = ResChunk_header.SIZEOF + 12 + ResTable_config.SIZ;
     public static final int SIZEOF_WITHOUT_CONFIG = ResChunk_header.SIZEOF + 12;
 
     final ResChunk_header header;
 
-    //enum {
+    // enum {
     public static final int NO_ENTRY = 0xFFFFFFFF;
-//    };
+    //    };
 
     // The type identifier this chunk is holding.  Type IDs start
     // at 1 (corresponding to the value of the type bits in a
@@ -1261,17 +1236,18 @@ public static class ResTable_ref
       int STRING_POOL_REF_OFFSET = 4;
       return dtohl(byteBuffer.getInt(offset + entriesStart + entryOffset + STRING_POOL_REF_OFFSET));
     }
-  };
+  }
+  ;
 
   // The minimum size required to read any version of ResTable_type.
-//   constexpr size_t kResTableTypeMinSize =
-//   sizeof(ResTable_type) - sizeof(ResTable_config) + sizeof(ResTable_config::size);
+  //   constexpr size_t kResTableTypeMinSize =
+  //   sizeof(ResTable_type) - sizeof(ResTable_config) + sizeof(ResTable_config::size);
   static final int kResTableTypeMinSize =
-      ResTable_type.SIZEOF_WITHOUT_CONFIG - ResTable_config.SIZEOF + SIZEOF_INT /*sizeof(ResTable_config::size)*/;
+      ResTable_type.SIZEOF_WITHOUT_CONFIG
+          - ResTable_config.SIZEOF
+          + SIZEOF_INT /*sizeof(ResTable_config::size)*/;
 
-  /**
-   * An entry in a ResTable_type with the flag `FLAG_SPARSE` set.
-   */
+  /** An entry in a ResTable_type with the flag `FLAG_SPARSE` set. */
   static class ResTable_sparseTypeEntry extends WithOffset {
     public static final int SIZEOF = 4;
 
@@ -1280,13 +1256,14 @@ public static class ResTable_ref
 
     short idx;
     short offset;
-//    struct {
-      // The index of the entry.
-//      uint16_t idx;
 
-      // The offset from ResTable_type::entriesStart, divided by 4.
-//      uint16_t offset;
-//    };
+    //    struct {
+    // The index of the entry.
+    //      uint16_t idx;
+
+    // The offset from ResTable_type::entriesStart, divided by 4.
+    //      uint16_t offset;
+    //    };
 
     public ResTable_sparseTypeEntry(ByteBuffer buf, int offset) {
       super(buf, offset);
@@ -1294,18 +1271,16 @@ public static class ResTable_ref
       this.idx = buf.getShort(offset);
       this.offset = buf.getShort(offset + 2);
     }
-  };
+  }
+  ;
 
   /**
-   * This is the beginning of information about an entry in the resource
-   * table.  It holds the reference to the name of this entry, and is
-   * immediately followed by one of:
-   *   * A Res_value structure, if FLAG_COMPLEX is -not- set.
-   *   * An array of ResTable_map structures, if FLAG_COMPLEX is set.
-   *     These supply a set of name/value mappings of data.
+   * This is the beginning of information about an entry in the resource table. It holds the
+   * reference to the name of this entry, and is immediately followed by one of: * A Res_value
+   * structure, if FLAG_COMPLEX is -not- set. * An array of ResTable_map structures, if FLAG_COMPLEX
+   * is set. These supply a set of name/value mappings of data.
    */
-  static class ResTable_entry extends WithOffset
-  {
+  static class ResTable_entry extends WithOffset {
     public static final int SIZEOF = 4 + ResStringPool_ref.SIZEOF;
 
     // Number of bytes in this structure.
@@ -1375,15 +1350,12 @@ public static class ResTable_ref
   }
 
   /**
-   * Extended form of a ResTable_entry for map entries, defining a parent map
-   * resource from which to inherit values.
+   * Extended form of a ResTable_entry for map entries, defining a parent map resource from which to
+   * inherit values.
    */
-  static class ResTable_map_entry extends ResTable_entry
-  {
+  static class ResTable_map_entry extends ResTable_entry {
 
-    /**
-     * Indeterminate size, calculate using {@link #size} instead.
-     */
+    /** Indeterminate size, calculate using {@link #size} instead. */
     public static final Void SIZEOF = null;
 
     public static final int BASE_SIZEOF = ResTable_entry.SIZEOF + 8;
@@ -1400,14 +1372,11 @@ public static class ResTable_ref
       parent = new ResTable_ref(buf, offset + ResTable_entry.SIZEOF);
       count = buf.getInt(offset + ResTable_entry.SIZEOF + ResTable_ref.SIZEOF);
     }
-  };
+  }
+  ;
 
-  /**
-   * A single name/value mapping that is part of a complex resource
-   * entry.
-   */
-  public static class ResTable_map extends WithOffset
-  {
+  /** A single name/value mapping that is part of a complex resource entry. */
+  public static class ResTable_map extends WithOffset {
     public static final int SIZEOF = ResTable_ref.SIZEOF + ResourceTypes.Res_value.SIZEOF;
 
     // The resource identifier defining this mapping's name.  For attribute
@@ -1417,7 +1386,7 @@ public static class ResTable_ref
     public final ResTable_ref name;
 
     // Special values for 'name' when defining attribute resources.
-//enum {
+    // enum {
     // This entry holds the attribute's type code.
     public static final int ATTR_TYPE = Res_MAKEINTERNAL(0);
 
@@ -1439,10 +1408,10 @@ public static class ResTable_ref
     public static final int ATTR_FEW = Res_MAKEINTERNAL(8);
     public static final int ATTR_MANY = Res_MAKEINTERNAL(9);
 
-//    };
+    //    };
 
     // Bit mask of allowed types, for use with ATTR_TYPE.
-//enum {
+    // enum {
     // No type has been defined for this attribute, use generic
     // type handling.  The low 16 bits are for types that can be
     // handled generically; the upper 16 require additional information
@@ -1450,44 +1419,44 @@ public static class ResTable_ref
     public static final int TYPE_ANY = 0x0000FFFF;
 
     // Attribute holds a references to another resource.
-    public static final int TYPE_REFERENCE = 1<<0;
+    public static final int TYPE_REFERENCE = 1 << 0;
 
     // Attribute holds a generic string.
-    public static final int TYPE_STRING = 1<<1;
+    public static final int TYPE_STRING = 1 << 1;
 
     // Attribute holds an integer value.  ATTR_MIN and ATTR_MIN can
     // optionally specify a constrained range of possible integer values.
-    public static final int TYPE_INTEGER = 1<<2;
+    public static final int TYPE_INTEGER = 1 << 2;
 
     // Attribute holds a boolean integer.
-    public static final int TYPE_BOOLEAN = 1<<3;
+    public static final int TYPE_BOOLEAN = 1 << 3;
 
     // Attribute holds a color value.
-    public static final int TYPE_COLOR = 1<<4;
+    public static final int TYPE_COLOR = 1 << 4;
 
     // Attribute holds a floating point value.
-    public static final int TYPE_FLOAT = 1<<5;
+    public static final int TYPE_FLOAT = 1 << 5;
 
     // Attribute holds a dimension value, such as "20px".
-    public static final int TYPE_DIMENSION = 1<<6;
+    public static final int TYPE_DIMENSION = 1 << 6;
 
     // Attribute holds a fraction value, such as "20%".
-    public static final int TYPE_FRACTION = 1<<7;
+    public static final int TYPE_FRACTION = 1 << 7;
 
     // Attribute holds an enumeration.  The enumeration values are
     // supplied as additional entries in the map.
-    public static final int TYPE_ENUM = 1<<16;
+    public static final int TYPE_ENUM = 1 << 16;
 
     // Attribute holds a bitmaks of flags.  The flag bit values are
     // supplied as additional entries in the map.
-    public static final int TYPE_FLAGS = 1<<17;
-//    };
+    public static final int TYPE_FLAGS = 1 << 17;
+    //    };
 
     // Enum of localization modes, for use with ATTR_L10N.
-//enum {
+    // enum {
     public static final int L10N_NOT_REQUIRED = 0;
-    public static final int L10N_SUGGESTED    = 1;
-//    };
+    public static final int L10N_SUGGESTED = 1;
+    //    };
 
     // This mapping's value.
     public Res_value value;
@@ -1509,16 +1478,15 @@ public static class ResTable_ref
     public String toString() {
       return "ResTable_map{" + "name=" + name + ", value=" + value + '}';
     }
-  };
+  }
+  ;
 
   /**
-   * A package-id to package name mapping for any shared libraries used
-   * in this resource table. The package-id's encoded in this resource
-   * table may be different than the id's assigned at runtime. We must
-   * be able to translate the package-id's based on the package name.
+   * A package-id to package name mapping for any shared libraries used in this resource table. The
+   * package-id's encoded in this resource table may be different than the id's assigned at runtime.
+   * We must be able to translate the package-id's based on the package name.
    */
-  static class ResTable_lib_header extends WithOffset
-  {
+  static class ResTable_lib_header extends WithOffset {
     static final int SIZEOF = ResChunk_header.SIZEOF + 4;
 
     ResChunk_header header;
@@ -1532,13 +1500,11 @@ public static class ResTable_ref
       header = new ResChunk_header(buf, offset);
       count = buf.getInt(offset + ResChunk_header.SIZEOF);
     }
-  };
+  }
+  ;
 
-  /**
-   * A shared library package-id to package name entry.
-   */
-  static class ResTable_lib_entry extends WithOffset
-  {
+  /** A shared library package-id to package name entry. */
+  static class ResTable_lib_entry extends WithOffset {
     public static final int SIZEOF = 4 + 128 * SIZEOF_SHORT;
 
     // The package-id this shared library was assigned at build time.
@@ -1557,7 +1523,8 @@ public static class ResTable_ref
         packageName[i] = buf.getChar(offset + 4 + i * SIZEOF_SHORT);
       }
     }
-  };
+  }
+  ;
 
   /**
    * A map that allows rewriting staged (non-finalized) resource ids to their finalized
@@ -1653,8 +1620,7 @@ public static class ResTable_ref
     }
   } // __attribute__((packed));
 
-
-  abstract private static class FutureWriter<T> {
+  private abstract static class FutureWriter<T> {
     protected final ByteBuffer buf;
     private final int position;
 
@@ -1666,7 +1632,7 @@ public static class ResTable_ref
       ((Buffer) buf).position(position + size);
     }
 
-    abstract protected void put(int position, T value);
+    protected abstract void put(int position, T value);
 
     public void write(T value) {
       put(position, value);

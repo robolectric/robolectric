@@ -37,6 +37,9 @@ public class ShadowViewAnimator extends ShadowViewGroup {
 
   @Implementation
   protected void showPrevious() {
-    setDisplayedChild(getDisplayedChild() == 0 ? ((ViewGroup) realView).getChildCount() - 1 : getDisplayedChild() - 1);
+    setDisplayedChild(
+        getDisplayedChild() == 0
+            ? ((ViewGroup) realView).getChildCount() - 1
+            : getDisplayedChild() - 1);
   }
 }

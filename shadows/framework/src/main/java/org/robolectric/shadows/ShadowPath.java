@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.graphics.Path;
 import android.graphics.RectF;
 import java.util.List;

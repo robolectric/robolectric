@@ -205,6 +205,7 @@ public class ActivityController<T extends Activity>
     invokeWhilePaused(() -> _component_.onPostResume());
     return this;
   }
+
   /**
    * Calls the same lifecycle methods on the Activity called by Android when an Activity is the top
    * most resumed activity on Q+.

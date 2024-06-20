@@ -13,7 +13,9 @@ public class ShadowVpnService extends ShadowService {
 
   private static Intent prepareIntent = new Intent();
 
-  /** @see #setPrepareResult(Intent). */
+  /**
+   * @see #setPrepareResult(Intent).
+   */
   @Implementation
   protected static Intent prepare(Context context) {
     return prepareIntent;

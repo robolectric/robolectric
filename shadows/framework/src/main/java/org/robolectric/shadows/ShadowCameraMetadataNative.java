@@ -7,10 +7,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow class for {@link CameraMetadataNative} */
-@Implements(
-    value = CameraMetadataNative.class,
-    maxSdk = Q,
-    isInAndroidSdk = false)
+@Implements(value = CameraMetadataNative.class, maxSdk = Q, isInAndroidSdk = false)
 public class ShadowCameraMetadataNative {
   @Implementation(maxSdk = Q)
   protected long nativeAllocate() {

@@ -44,7 +44,8 @@ public class BitmapTest {
 
   @Config(minSdk = P)
   @SdkSuppress(minSdkVersion = P)
-  @Test public void createBitmap() {
+  @Test
+  public void createBitmap() {
     assume().that(System.getProperty("robolectric.graphicsMode")).isNotEqualTo("NATIVE");
     // Bitmap.createBitmap(Picture) requires hardware-backed bitmaps
     HardwareRendererCompat.setDrawingEnabled(true);

@@ -10,7 +10,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 /**
- * Parameterized tests using an Android class originally created outside of the Robolectric classloader.
+ * Parameterized tests using an Android class originally created outside of the Robolectric
+ * classloader.
  */
 @RunWith(ParameterizedRobolectricTestRunner.class)
 public final class ParameterizedRobolectricTestRunnerClassLoaderTest {
@@ -30,9 +31,7 @@ public final class ParameterizedRobolectricTestRunnerClassLoaderTest {
 
   @ParameterizedRobolectricTestRunner.Parameters
   public static Collection getTestData() {
-    Object[][] data = {
-        { Uri.parse("http://host/") }
-    };
+    Object[][] data = {{Uri.parse("http://host/")}};
     return Arrays.asList(data);
   }
 }

@@ -20,9 +20,9 @@ import java.net.CacheResponse;
 import java.net.HttpURLConnection;
 
 /**
- * A response cache that supports statistics tracking and updating stored
- * responses. Implementations of {@link java.net.ResponseCache} should implement this
- * interface to receive additional support from the HTTP engine.
+ * A response cache that supports statistics tracking and updating stored responses. Implementations
+ * of {@link java.net.ResponseCache} should implement this interface to receive additional support
+ * from the HTTP engine.
  */
 public interface RoboExtendedResponseCache {
 
@@ -33,9 +33,7 @@ public interface RoboExtendedResponseCache {
    */
   void trackResponse(RoboResponseSource source);
 
-  /**
-   * Track an conditional GET that was satisfied by this cache.
-   */
+  /** Track an conditional GET that was satisfied by this cache. */
   void trackConditionalCacheHit();
 
   /**

@@ -1,8 +1,6 @@
 package org.robolectric.internal.bytecode;
 
-/**
- * Reference to a specific method on a class.
- */
+/** Reference to a specific method on a class. */
 public class MethodRef {
   public final String className;
   public final String methodName;
@@ -26,7 +24,8 @@ public class MethodRef {
     return className.equals(methodRef.className) && methodName.equals(methodRef.methodName);
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     int result = className.hashCode();
     result = 31 * result + methodName.hashCode();
     return result;
@@ -34,9 +33,13 @@ public class MethodRef {
 
   @Override
   public String toString() {
-    return "MethodRef{" +
-        "className='" + className + '\'' +
-        ", methodName='" + methodName + '\'' +
-        '}';
+    return "MethodRef{"
+        + "className='"
+        + className
+        + '\''
+        + ", methodName='"
+        + methodName
+        + '\''
+        + '}';
   }
 }

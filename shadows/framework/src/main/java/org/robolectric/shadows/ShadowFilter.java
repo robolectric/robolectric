@@ -17,14 +17,19 @@ public class ShadowFilter {
       Class<?> forName = Class.forName("android.widget.Filter$FilterResults");
       Object filtering;
       try {
-        filtering = ReflectionHelpers.callInstanceMethod(realObject, "performFiltering",
-            ClassParameter.from(CharSequence.class, constraint));
+        filtering =
+            ReflectionHelpers.callInstanceMethod(
+                realObject,
+                "performFiltering",
+                ClassParameter.from(CharSequence.class, constraint));
       } catch (Exception e) {
         e.printStackTrace();
         filtering = ReflectionHelpers.newInstance(forName);
       }
 
-      ReflectionHelpers.callInstanceMethod(realObject, "publishResults",
+      ReflectionHelpers.callInstanceMethod(
+          realObject,
+          "publishResults",
           ClassParameter.from(CharSequence.class, constraint),
           ClassParameter.from(forName, filtering));
 

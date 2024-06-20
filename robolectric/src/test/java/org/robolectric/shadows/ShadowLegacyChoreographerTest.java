@@ -14,9 +14,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.util.TimeUtils;
 
-/**
- * Unit tests for {@link ShadowLegacyChoreographer}.
- */
+/** Unit tests for {@link ShadowLegacyChoreographer}. */
 @RunWith(AndroidJUnit4.class)
 @LooperMode(Mode.LEGACY)
 public class ShadowLegacyChoreographerTest {

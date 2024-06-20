@@ -25,9 +25,7 @@ import org.robolectric.android.util.concurrent.PausedExecutorService;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.util.Join;
 
-/**
- * Unit tests for {@link ShadowPausedAsyncTask}.
- */
+/** Unit tests for {@link ShadowPausedAsyncTask}. */
 @RunWith(AndroidJUnit4.class)
 @LooperMode(PAUSED)
 public class ShadowPausedAsyncTaskTest {

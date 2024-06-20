@@ -38,5 +38,4 @@ public class ShadowCameraSizeTest {
     cameraSize.height = 480;
     assertThat(cameraSize.height).isEqualTo(480);
   }
-
 }

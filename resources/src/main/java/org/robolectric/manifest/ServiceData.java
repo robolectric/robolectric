@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Holds parsed service data from manifest.
- */
+/** Holds parsed service data from manifest. */
 public class ServiceData extends PackageItemData {
 
   private static final String EXPORTED = "android:exported";

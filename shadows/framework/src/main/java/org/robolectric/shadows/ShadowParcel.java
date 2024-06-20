@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-
-
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -61,8 +59,6 @@ public class ShadowParcel {
 
   private static final HashMap<ClassLoader, HashMap<String, Pair<Creator<?>, Class<?>>>>
       pairedCreators = new HashMap<>();
-
-
 
   @HiddenApi
   @Implementation
@@ -554,8 +550,10 @@ public class ShadowParcel {
   private static class ByteBuffer {
     /** Number of bytes in Parcel used by an int, length, or anything smaller. */
     private static final int INT_SIZE_BYTES = 4;
+
     /** Number of bytes in Parcel used by a long or double. */
     private static final int LONG_OR_DOUBLE_SIZE_BYTES = 8;
+
     /** Immutable empty byte array. */
     private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
@@ -563,8 +561,10 @@ public class ShadowParcel {
     private static class FakeEncodedItem implements Serializable {
       /** Number of consecutive bytes consumed by this object. */
       final int sizeBytes;
+
       /** The original typed value stored. */
       final Object value;
+
       /**
        * Whether this item's byte-encoding is all zero.
        *
@@ -600,10 +600,13 @@ public class ShadowParcel {
      * utilities are robust compared to ArrayList's bulk operations.
      */
     private FakeEncodedItem[] data;
+
     /** The read/write pointer. */
     private int dataPosition;
+
     /** The length of the buffer; the capacity is data.length. */
     private int dataSize;
+
     /**
      * Whether the next read should fail if it's past the end of the array.
      *

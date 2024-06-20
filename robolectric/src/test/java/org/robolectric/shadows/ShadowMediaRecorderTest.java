@@ -34,11 +34,14 @@ public class ShadowMediaRecorderTest {
 
   @Test
   public void testAudioEncoder() {
-    assertThat(shadowMediaRecorder.getAudioEncoder()).isNotEqualTo(MediaRecorder.AudioEncoder.AMR_NB);
-    assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getAudioEncoder())
+        .isNotEqualTo(MediaRecorder.AudioEncoder.AMR_NB);
+    assertThat(shadowMediaRecorder.getState())
+        .isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
     assertThat(shadowMediaRecorder.getAudioEncoder()).isEqualTo(MediaRecorder.AudioEncoder.AMR_NB);
-    assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getState())
+        .isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
   }
 
   @Test
@@ -57,7 +60,8 @@ public class ShadowMediaRecorderTest {
 
   @Test
   public void testAudioSource() {
-    assertThat(shadowMediaRecorder.getAudioSource()).isNotEqualTo(MediaRecorder.AudioSource.CAMCORDER);
+    assertThat(shadowMediaRecorder.getAudioSource())
+        .isNotEqualTo(MediaRecorder.AudioSource.CAMCORDER);
     assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_INITIALIZED);
     mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
     assertThat(shadowMediaRecorder.getAudioSource()).isEqualTo(MediaRecorder.AudioSource.CAMCORDER);
@@ -107,40 +111,49 @@ public class ShadowMediaRecorderTest {
 
   @Test
   public void testOutputFile() {
-    assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getState())
+        .isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     assertThat(shadowMediaRecorder.getOutputPath()).isNull();
     mediaRecorder.setOutputFile("/dev/null");
     assertThat(shadowMediaRecorder.getOutputPath()).isEqualTo("/dev/null");
-    assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getState())
+        .isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
   }
 
   @Test
   public void testOutputFormat() {
-    assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
-    assertThat(shadowMediaRecorder.getOutputFormat()).isNotEqualTo(MediaRecorder.OutputFormat.MPEG_4);
+    assertThat(shadowMediaRecorder.getState())
+        .isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getOutputFormat())
+        .isNotEqualTo(MediaRecorder.OutputFormat.MPEG_4);
     mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
     assertThat(shadowMediaRecorder.getOutputFormat()).isEqualTo(MediaRecorder.OutputFormat.MPEG_4);
-    assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getState())
+        .isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
   }
 
   @Test
   public void testPreviewDisplay() {
-    assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getState())
+        .isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     assertThat(shadowMediaRecorder.getPreviewDisplay()).isNull();
     Surface surface = Shadow.newInstanceOf(Surface.class);
     mediaRecorder.setPreviewDisplay(surface);
     assertThat(shadowMediaRecorder.getPreviewDisplay()).isNotNull();
     assertThat(shadowMediaRecorder.getPreviewDisplay()).isSameInstanceAs(surface);
-    assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getState())
+        .isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
   }
 
   @Test
   public void testVideoEncoder() {
-    assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getState())
+        .isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     assertThat(shadowMediaRecorder.getVideoEncoder()).isNotEqualTo(MediaRecorder.VideoEncoder.H264);
     mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
     assertThat(shadowMediaRecorder.getVideoEncoder()).isEqualTo(MediaRecorder.VideoEncoder.H264);
-    assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getState())
+        .isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
   }
 
   @Test
@@ -152,22 +165,26 @@ public class ShadowMediaRecorderTest {
 
   @Test
   public void testVideoFrameRate() {
-    assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getState())
+        .isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     assertThat(shadowMediaRecorder.getVideoFrameRate()).isNotEqualTo(30);
     mediaRecorder.setVideoFrameRate(30);
     assertThat(shadowMediaRecorder.getVideoFrameRate()).isEqualTo(30);
-    assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getState())
+        .isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
   }
 
   @Test
   public void testVideoSize() {
-    assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getState())
+        .isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     assertThat(shadowMediaRecorder.getVideoWidth()).isNotEqualTo(640);
     assertThat(shadowMediaRecorder.getVideoHeight()).isNotEqualTo(480);
     mediaRecorder.setVideoSize(640, 480);
     assertThat(shadowMediaRecorder.getVideoWidth()).isEqualTo(640);
     assertThat(shadowMediaRecorder.getVideoHeight()).isEqualTo(480);
-    assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getState())
+        .isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
   }
 
   @Test
@@ -250,14 +267,11 @@ public class ShadowMediaRecorderTest {
 
   private static class TestErrorListener implements MediaRecorder.OnErrorListener {
     @Override
-    public void onError(MediaRecorder arg0, int arg1, int arg2) {
-    }
+    public void onError(MediaRecorder arg0, int arg1, int arg2) {}
   }
 
   private static class TestInfoListener implements MediaRecorder.OnInfoListener {
     @Override
-    public void onInfo(MediaRecorder mr, int what, int extra) {
-    }
+    public void onInfo(MediaRecorder mr, int what, int extra) {}
   }
-
 }

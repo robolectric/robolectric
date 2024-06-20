@@ -10,9 +10,7 @@ import android.view.autofill.AutofillManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Robolectric implementation of {@link android.os.AutofillManager}.
- */
+/** Robolectric implementation of {@link android.os.AutofillManager}. */
 @Implements(value = AutofillManager.class, minSdk = O)
 public class ShadowAutofillManager {
   @Nullable private ComponentName autofillServiceComponentName = null;

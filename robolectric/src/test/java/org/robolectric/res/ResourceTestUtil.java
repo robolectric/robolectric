@@ -20,16 +20,17 @@ public class ResourceTestUtil {
   @SuppressWarnings("rawtypes")
   static String stringify(ResourceTable resourceTable) {
     final HashMap<String, List<TypedResource>> map = new HashMap<>();
-    resourceTable.receive(new ResourceTable.Visitor() {
-      @Override
-      public void visit(ResName key, Iterable<TypedResource> values) {
-        List<TypedResource> v = new ArrayList<>();
-        for (TypedResource value : values) {
-          v.add(value);
-        }
-        map.put(key.getFullyQualifiedName(), v);
-      }
-    });
+    resourceTable.receive(
+        new ResourceTable.Visitor() {
+          @Override
+          public void visit(ResName key, Iterable<TypedResource> values) {
+            List<TypedResource> v = new ArrayList<>();
+            for (TypedResource value : values) {
+              v.add(value);
+            }
+            map.put(key.getFullyQualifiedName(), v);
+          }
+        });
     StringBuilder buf = new StringBuilder();
     TreeSet<String> keys = new TreeSet<>(map.keySet());
     for (String key : keys) {
@@ -54,17 +55,26 @@ public class ResourceTestUtil {
         } else if (data instanceof StyleData) {
           StyleData styleData = (StyleData) data;
           final Map<String, String> attrs = new TreeMap<>();
-          styleData.visit(new StyleData.Visitor() {
-            @Override
-            public void visit(AttributeResource attributeResource) {
-              attrs.put(attributeResource.resName.getFullyQualifiedName(), attributeResource.value);
-            }
-          });
+          styleData.visit(
+              new StyleData.Visitor() {
+                @Override
+                public void visit(AttributeResource attributeResource) {
+                  attrs.put(
+                      attributeResource.resName.getFullyQualifiedName(), attributeResource.value);
+                }
+              });
           data = data.toString() + "^" + styleData.getParent() + " " + attrs;
         }
-        buf.append("  ").append(data).append(" {").append(typedResource.getResType())
-            .append("/").append(typedResource.getConfig()).append(": ")
-            .append(shortContext(typedResource)).append("}").append("\n");
+        buf.append("  ")
+            .append(data)
+            .append(" {")
+            .append(typedResource.getResType())
+            .append("/")
+            .append(typedResource.getConfig())
+            .append(": ")
+            .append(shortContext(typedResource))
+            .append("}")
+            .append("\n");
       }
     }
     return buf.toString();

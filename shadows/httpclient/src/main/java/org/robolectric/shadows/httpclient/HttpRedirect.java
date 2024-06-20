@@ -56,5 +56,4 @@ class HttpRedirect extends HttpRequestBase {
   public String getMethod() {
     return this.method;
   }
-
 }

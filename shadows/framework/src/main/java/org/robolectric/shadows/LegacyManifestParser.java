@@ -267,10 +267,11 @@ public class LegacyManifestParser {
       pkg.services.add(service);
     }
 
-    String codePath = RuntimeEnvironment.getTempDirectory()
-        .createIfNotExists(pkg.packageName + "-codePath")
-        .toAbsolutePath()
-        .toString();
+    String codePath =
+        RuntimeEnvironment.getTempDirectory()
+            .createIfNotExists(pkg.packageName + "-codePath")
+            .toAbsolutePath()
+            .toString();
     pkg.codePath = codePath;
     return pkg;
   }
@@ -440,8 +441,8 @@ public class LegacyManifestParser {
     return permissionInfo;
   }
 
-  private static PermissionGroupInfo createPermissionGroupInfo(Package owner,
-      PermissionGroupItemData itemData) {
+  private static PermissionGroupInfo createPermissionGroupInfo(
+      Package owner, PermissionGroupItemData itemData) {
     PermissionGroupInfo permissionGroupInfo = new PermissionGroupInfo();
     populatePackageItemInfo(permissionGroupInfo, owner, itemData);
 

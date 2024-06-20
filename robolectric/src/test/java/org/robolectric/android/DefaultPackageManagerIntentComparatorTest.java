@@ -33,5 +33,4 @@ public class DefaultPackageManagerIntentComparatorTest {
     Intent intent2 = new Intent("actionstring1");
     assertThat(intentComparator.compare(intent1, intent2)).isEqualTo(-1);
   }
-
 }

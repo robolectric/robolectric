@@ -21,17 +21,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.robolectric.util.Logger;
 
-/**
- * Helper class to provide various conversion method used in handling android resources.
- */
+/** Helper class to provide various conversion method used in handling android resources. */
 public final class ResourceHelper {
 
-  private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]*(?:\\.[0-9]+)?)(.*)");
-  private final static float[] sFloatOut = new float[1];
+  private static final Pattern sFloatPattern = Pattern.compile("(-?[0-9]*(?:\\.[0-9]+)?)(.*)");
+  private static final float[] sFloatOut = new float[1];
 
-  private final static TypedValue mValue = new TypedValue();
+  private static final TypedValue mValue = new TypedValue();
 
-  private final static Class<?> androidInternalR;
+  private static final Class<?> androidInternalR;
 
   static {
     try {
@@ -51,18 +49,18 @@ public final class ResourceHelper {
   public static int getColor(String value) {
     if (value != null) {
       if (value.startsWith("#") == false) {
-        throw new NumberFormatException(
-            String.format("Color value '%s' must start with #", value));
+        throw new NumberFormatException(String.format("Color value '%s' must start with #", value));
       }
 
       value = value.substring(1);
 
       // make sure it's not longer than 32bit
       if (value.length() > 8) {
-        throw new NumberFormatException(String.format(
-            "Color value '%s' is too long. Format is either" +
-            "#AARRGGBB, #RRGGBB, #RGB, or #ARGB",
-            value));
+        throw new NumberFormatException(
+            String.format(
+                "Color value '%s' is too long. Format is either"
+                    + "#AARRGGBB, #RRGGBB, #RGB, or #ARGB",
+                value));
       }
 
       if (value.length() == 3) { // RGB format
@@ -88,7 +86,7 @@ public final class ResourceHelper {
       // Integer.parseInt will fail to inferFromValue strings like "ff191919", so we use
       // a Long, but cast the result back into an int, since we know that we're only
       // dealing with 32 bit values.
-      return (int)Long.parseLong(value, 16);
+      return (int) Long.parseLong(value, 16);
     }
 
     throw new NumberFormatException();
@@ -99,7 +97,7 @@ public final class ResourceHelper {
    *
    * @param value the color value
    * @return the color as an int. For backwards compatibility, will return a default of ARGB8 if
-   *   value format is unrecognized.
+   *     value format is unrecognized.
    */
   public static int getColorType(String value) {
     if (value != null && value.startsWith("#")) {
@@ -157,8 +155,8 @@ public final class ResourceHelper {
       };
 
   /**
-   * Returns the raw value from the given attribute float-type value string.
-   * This object is only valid until the next call on to {@link ResourceHelper}.
+   * Returns the raw value from the given attribute float-type value string. This object is only
+   * valid until the next call on to {@link ResourceHelper}.
    *
    * @param attribute Attribute name.
    * @param value Attribute value.
@@ -175,14 +173,15 @@ public final class ResourceHelper {
 
   /**
    * Parse a float attribute and return the parsed value into a given TypedValue.
+   *
    * @param attribute the name of the attribute. Can be null if <var>requireUnit</var> is false.
    * @param value the string value of the attribute
    * @param outValue the TypedValue to receive the parsed value
    * @param requireUnit whether the value is expected to contain a unit.
    * @return true if success.
    */
-  public static boolean parseFloatAttribute(String attribute, String value,
-      TypedValue outValue, boolean requireUnit) {
+  public static boolean parseFloatAttribute(
+      String attribute, String value, TypedValue outValue, boolean requireUnit) {
     assert requireUnit == false || attribute != null;
 
     // remove the space before and after
@@ -206,7 +205,7 @@ public final class ResourceHelper {
 
     // check that there's no non ascii characters.
     char[] buf = value.toCharArray();
-    for (int i = 0 ; i < len ; i++) {
+    for (int i = 0; i < len; i++) {
       if (buf[i] > 255) {
         return false;
       }
@@ -256,9 +255,9 @@ public final class ResourceHelper {
             applyUnit(sUnitNames[1], outValue, sFloatOut);
             computeTypedValue(outValue, f, sFloatOut[0]);
 
-            System.out.println(String.format(
-                "Dimension \"%1$s\" in attribute \"%2$s\" is missing unit!",
-                    value, attribute));
+            System.out.println(
+                String.format(
+                    "Dimension \"%1$s\" in attribute \"%2$s\" is missing unit!", value, attribute));
           }
           return true;
         }
@@ -274,23 +273,23 @@ public final class ResourceHelper {
     if (neg) {
       value = -value;
     }
-    long bits = (long)(value*(1<<23)+.5f);
+    long bits = (long) (value * (1 << 23) + .5f);
     int radix;
     int shift;
-    if ((bits&0x7fffff) == 0) {
+    if ((bits & 0x7fffff) == 0) {
       // Always use 23p0 if there is no fraction, just to make
       // things easier to read.
       radix = TypedValue.COMPLEX_RADIX_23p0;
       shift = 23;
-    } else if ((bits&0xffffffffff800000L) == 0) {
+    } else if ((bits & 0xffffffffff800000L) == 0) {
       // Magnitude is zero -- can fit in 0 bits of precision.
       radix = TypedValue.COMPLEX_RADIX_0p23;
       shift = 0;
-    } else if ((bits&0xffffffff80000000L) == 0) {
+    } else if ((bits & 0xffffffff80000000L) == 0) {
       // Magnitude can fit in 8 bits of precision.
       radix = TypedValue.COMPLEX_RADIX_8p15;
       shift = 8;
-    } else if ((bits&0xffffff8000000000L) == 0) {
+    } else if ((bits & 0xffffff8000000000L) == 0) {
       // Magnitude can fit in 16 bits of precision.
       radix = TypedValue.COMPLEX_RADIX_16p7;
       shift = 16;
@@ -299,14 +298,12 @@ public final class ResourceHelper {
       radix = TypedValue.COMPLEX_RADIX_23p0;
       shift = 23;
     }
-    int mantissa = (int)(
-      (bits>>shift) & TypedValue.COMPLEX_MANTISSA_MASK);
+    int mantissa = (int) ((bits >> shift) & TypedValue.COMPLEX_MANTISSA_MASK);
     if (neg) {
       mantissa = (-mantissa) & TypedValue.COMPLEX_MANTISSA_MASK;
     }
     outValue.data |=
-      (radix<<TypedValue.COMPLEX_RADIX_SHIFT)
-      | (mantissa<<TypedValue.COMPLEX_MANTISSA_SHIFT);
+        (radix << TypedValue.COMPLEX_RADIX_SHIFT) | (mantissa << TypedValue.COMPLEX_MANTISSA_SHIFT);
   }
 
   private static boolean parseUnit(String str, TypedValue outValue, float[] outScale) {
@@ -328,4 +325,3 @@ public final class ResourceHelper {
     outScale[0] = unit.scale;
   }
 }
-

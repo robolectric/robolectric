@@ -23,14 +23,15 @@ public class SQLiteCursorTest {
   public void setUp() throws Exception {
     database = SQLiteDatabase.create(null);
 
-    database.execSQL("CREATE TABLE table_name(" +
-        "id INTEGER PRIMARY KEY, " +
-        "name VARCHAR(255), " +
-        "long_value BIGINT," +
-        "float_value REAL," +
-        "double_value DOUBLE, " +
-        "blob_value BINARY, " +
-        "clob_value CLOB );");
+    database.execSQL(
+        "CREATE TABLE table_name("
+            + "id INTEGER PRIMARY KEY, "
+            + "name VARCHAR(255), "
+            + "long_value BIGINT,"
+            + "float_value REAL,"
+            + "double_value DOUBLE, "
+            + "blob_value BINARY, "
+            + "clob_value CLOB );");
 
     addPeople();
     cursor = createCursor();
@@ -205,7 +206,7 @@ public class SQLiteCursorTest {
     String sql = "UPDATE table_name set blob_value=? where id=1234";
     byte[] byteData = sql.getBytes(UTF_8);
 
-    database.execSQL(sql, new Object[]{byteData});
+    database.execSQL(sql, new Object[] {byteData});
 
     assertThat(cursor.moveToFirst()).isTrue();
 
@@ -222,7 +223,7 @@ public class SQLiteCursorTest {
     String sql = "UPDATE table_name set clob_value=? where id=1234";
     String s = "Don't CLOBber my data, please. Thank you.";
 
-    database.execSQL(sql, new Object[]{s});
+    database.execSQL(sql, new Object[] {s});
 
     assertThat(cursor.moveToFirst()).isTrue();
 
@@ -275,7 +276,7 @@ public class SQLiteCursorTest {
     String sql = "UPDATE table_name set blob_value=? where id=1234";
     byte[] byteData = sql.getBytes(UTF_8);
 
-    database.execSQL(sql, new Object[]{byteData});
+    database.execSQL(sql, new Object[] {byteData});
 
     assertThat(cursor.moveToFirst()).isTrue();
 
@@ -287,7 +288,7 @@ public class SQLiteCursorTest {
     String sql = "UPDATE table_name set blob_value=? where id=1234";
     byte[] byteData = sql.getBytes(UTF_8);
 
-    database.execSQL(sql, new Object[]{byteData});
+    database.execSQL(sql, new Object[] {byteData});
 
     assertThat(cursor.moveToFirst()).isTrue();
 
@@ -431,7 +432,7 @@ public class SQLiteCursorTest {
     String sql = "UPDATE table_name set blob_value=? where id=1234";
     byte[] byteData = sql.getBytes(UTF_8);
 
-    database.execSQL(sql, new Object[]{byteData});
+    database.execSQL(sql, new Object[] {byteData});
 
     assertThat(cursor.moveToFirst()).isTrue();
     assertThat(cursor.getType(5)).isEqualTo(Cursor.FIELD_TYPE_BLOB);
@@ -475,7 +476,7 @@ public class SQLiteCursorTest {
   }
 
   private Cursor createCursor() {
-    String sql ="SELECT * FROM table_name;";
+    String sql = "SELECT * FROM table_name;";
     Cursor cursor = database.rawQuery(sql, null);
     assertThat(cursor).isInstanceOf(SQLiteCursor.class);
     return cursor;

@@ -164,6 +164,7 @@ public class ShadowPackageManager {
   static final SortedMap<ComponentName, List<IntentFilter>> persistentPreferredActivities =
       new TreeMap<>();
   static final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
+
   /**
    * Map of package names to an inner map where the key is the resource id which fetches its
    * corresponding text.
@@ -173,6 +174,7 @@ public class ShadowPackageManager {
   static final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
   static Map<String, PermissionInfo> extraPermissions = new HashMap<>();
   static Map<String, PermissionGroupInfo> permissionGroups = new HashMap<>();
+
   /**
    * Map of package names to an inner map where the key is the permission and the integer represents
    * the permission flags set for that particular permission
@@ -198,7 +200,7 @@ public class ShadowPackageManager {
   /**
    * Makes sure that given activity exists.
    *
-   * If the activity doesn't exist yet, it will be created with {@code applicationInfo} set to an
+   * <p>If the activity doesn't exist yet, it will be created with {@code applicationInfo} set to an
    * existing application, or if it doesn't exist, a new package will be created.
    *
    * @return existing or newly created activity info.
@@ -213,7 +215,7 @@ public class ShadowPackageManager {
   /**
    * Makes sure that given service exists.
    *
-   * If the service doesn't exist yet, it will be created with {@code applicationInfo} set to an
+   * <p>If the service doesn't exist yet, it will be created with {@code applicationInfo} set to an
    * existing application, or if it doesn't exist, a new package will be created.
    *
    * @return existing or newly created service info.
@@ -230,7 +232,7 @@ public class ShadowPackageManager {
   /**
    * Makes sure that given receiver exists.
    *
-   * If the receiver doesn't exist yet, it will be created with {@code applicationInfo} set to an
+   * <p>If the receiver doesn't exist yet, it will be created with {@code applicationInfo} set to an
    * existing application, or if it doesn't exist, a new package will be created.
    *
    * @return existing or newly created receiver info.
@@ -247,7 +249,7 @@ public class ShadowPackageManager {
   /**
    * Makes sure that given provider exists.
    *
-   * If the provider doesn't exist yet, it will be created with {@code applicationInfo} set to an
+   * <p>If the provider doesn't exist yet, it will be created with {@code applicationInfo} set to an
    * existing application, or if it doesn't exist, a new package will be created.
    *
    * @return existing or newly created provider info.
@@ -273,10 +275,10 @@ public class ShadowPackageManager {
   /**
    * Adds or updates given activity in the system.
    *
-   * If activity with the same {@link ComponentInfo#name} and {@code ComponentInfo#packageName}
+   * <p>If activity with the same {@link ComponentInfo#name} and {@code ComponentInfo#packageName}
    * exists it will be updated. Its {@link ComponentInfo#applicationInfo} is always set to {@link
-   * ApplicationInfo} already existing in the system, but if no application exists a new one will
-   * be created using {@link ComponentInfo#applicationInfo} in this component.
+   * ApplicationInfo} already existing in the system, but if no application exists a new one will be
+   * created using {@link ComponentInfo#applicationInfo} in this component.
    */
   public void addOrUpdateActivity(ActivityInfo activityInfo) {
     addComponent(
@@ -290,7 +292,7 @@ public class ShadowPackageManager {
   /**
    * Adds or updates given service in the system.
    *
-   * If service with the same {@link ComponentInfo#name} and {@code ComponentInfo#packageName}
+   * <p>If service with the same {@link ComponentInfo#name} and {@code ComponentInfo#packageName}
    * exists it will be updated. Its {@link ComponentInfo#applicationInfo} is always set to {@link
    * ApplicationInfo} already existing in the system, but if no application exists a new one will be
    * created using {@link ComponentInfo#applicationInfo} in this component.
@@ -307,11 +309,10 @@ public class ShadowPackageManager {
   /**
    * Adds or updates given broadcast receiver in the system.
    *
-   * If broadcast receiver with the same {@link ComponentInfo#name} and {@code
+   * <p>If broadcast receiver with the same {@link ComponentInfo#name} and {@code
    * ComponentInfo#packageName} exists it will be updated. Its {@link ComponentInfo#applicationInfo}
-   * is always set to {@link ApplicationInfo} already existing in the system, but if no
-   * application exists a new one will be created using {@link ComponentInfo#applicationInfo} in
-   * this component.
+   * is always set to {@link ApplicationInfo} already existing in the system, but if no application
+   * exists a new one will be created using {@link ComponentInfo#applicationInfo} in this component.
    */
   public void addOrUpdateReceiver(ActivityInfo receiverInfo) {
     addComponent(
@@ -325,11 +326,10 @@ public class ShadowPackageManager {
   /**
    * Adds or updates given content provider in the system.
    *
-   * If content provider with the same {@link ComponentInfo#name} and {@code
+   * <p>If content provider with the same {@link ComponentInfo#name} and {@code
    * ComponentInfo#packageName} exists it will be updated. Its {@link ComponentInfo#applicationInfo}
-   * is always set to {@link ApplicationInfo} already existing in the system, but if no
-   * application exists a new one will be created using {@link ComponentInfo#applicationInfo} in
-   * this component.
+   * is always set to {@link ApplicationInfo} already existing in the system, but if no application
+   * exists a new one will be created using {@link ComponentInfo#applicationInfo} in this component.
    */
   public void addOrUpdateProvider(ProviderInfo providerInfo) {
     addComponent(
@@ -473,7 +473,7 @@ public class ShadowPackageManager {
   /**
    * Settings for a particular package.
    *
-   * This class mirrors {@link com.android.server.pm.PackageSetting}, which is used by {@link
+   * <p>This class mirrors {@link com.android.server.pm.PackageSetting}, which is used by {@link
    * PackageManager}.
    */
   public static class PackageSetting {
@@ -599,9 +599,9 @@ public class ShadowPackageManager {
   /**
    * Sets extra resolve infos for an intent.
    *
-   * Those entries are added to whatever might be in the manifest already.
+   * <p>Those entries are added to whatever might be in the manifest already.
    *
-   * Note that all resolve infos will have {@link ResolveInfo#isDefault} field set to {@code
+   * <p>Note that all resolve infos will have {@link ResolveInfo#isDefault} field set to {@code
    * true} to allow their resolution for implicit intents. If this is not what you want, then you
    * still have the reference to those ResolveInfos, and you can set the field back to {@code
    * false}.
@@ -616,7 +616,9 @@ public class ShadowPackageManager {
     }
   }
 
-  /** @deprecated see note on {@link #addResolveInfoForIntent(Intent, ResolveInfo)}. */
+  /**
+   * @deprecated see note on {@link #addResolveInfoForIntent(Intent, ResolveInfo)}.
+   */
   @Deprecated
   public void addResolveInfoForIntent(Intent intent, List<ResolveInfo> info) {
     setResolveInfosForIntent(intent, info);
@@ -625,7 +627,7 @@ public class ShadowPackageManager {
   /**
    * Adds extra resolve info for an intent.
    *
-   * Note that this resolve info will have {@link ResolveInfo#isDefault} field set to {@code
+   * <p>Note that this resolve info will have {@link ResolveInfo#isDefault} field set to {@code
    * true} to allow its resolution for implicit intents. If this is not what you want, then please
    * use {@link #addResolveInfoForIntentNoDefaults} instead.
    *
@@ -656,7 +658,7 @@ public class ShadowPackageManager {
    * Adds the {@code info} as {@link ResolveInfo} for the intent but without applying any default
    * values.
    *
-   * In particular it will not make the {@link ResolveInfo#isDefault} field {@code true}, that
+   * <p>In particular it will not make the {@link ResolveInfo#isDefault} field {@code true}, that
    * means that this resolve info will not resolve for {@link Intent#resolveActivity} and {@link
    * Context#startActivity}.
    *
@@ -780,14 +782,14 @@ public class ShadowPackageManager {
   /**
    * Installs a package with the {@link PackageManager}.
    *
-   * In order to create PackageInfo objects in a valid state please use {@link
+   * <p>In order to create PackageInfo objects in a valid state please use {@link
    * androidx.test.core.content.pm.PackageInfoBuilder}.
    *
-   * This method automatically simulates instalation of a package in the system, so it adds a
+   * <p>This method automatically simulates instalation of a package in the system, so it adds a
    * flag {@link ApplicationInfo#FLAG_INSTALLED} to the application info and makes sure it exits. It
    * will update applicationInfo in package components as well.
    *
-   * If you don't want the package to be installed, use {@link #addPackageNoDefaults} instead.
+   * <p>If you don't want the package to be installed, use {@link #addPackageNoDefaults} instead.
    */
   public void installPackage(PackageInfo packageInfo) {
     ApplicationInfo appInfo = packageInfo.applicationInfo;
@@ -878,7 +880,9 @@ public class ShadowPackageManager {
     }
   }
 
-  /** @deprecated Use {@link #installPackage(PackageInfo)} instead. */
+  /**
+   * @deprecated Use {@link #installPackage(PackageInfo)} instead.
+   */
   @Deprecated
   public void addPackage(String packageName) {
     PackageInfo packageInfo = new PackageInfo();
@@ -905,13 +909,13 @@ public class ShadowPackageManager {
   /**
    * Testing API allowing to retrieve internal package representation.
    *
-   * This will allow to modify the package in a way visible to Robolectric, as this is
+   * <p>This will allow to modify the package in a way visible to Robolectric, as this is
    * Robolectric's internal full package representation.
    *
-   * Note that maybe a better way is to just modify the test manifest to make those modifications
+   * <p>Note that maybe a better way is to just modify the test manifest to make those modifications
    * in a standard way.
    *
-   * Retrieving package info using {@link PackageManager#getPackageInfo} / {@link
+   * <p>Retrieving package info using {@link PackageManager#getPackageInfo} / {@link
    * PackageManager#getApplicationInfo} will return defensive copies that will be stripped out of
    * information according to provided flags. Don't use it to modify Robolectric state.
    */
@@ -947,7 +951,7 @@ public class ShadowPackageManager {
    * itself)[https://developer.android.com/guide/topics/manifest/permission-group-element.html], as
    * part of its manifest
    *
-   * {@link android.content.pm.PackageParser.PermissionGroup}s added through this method have
+   * <p>{@link android.content.pm.PackageParser.PermissionGroup}s added through this method have
    * precedence over those specified with the same name by one of the aforementioned methods.
    *
    * @see PackageManager#getAllPermissionGroups(int)
@@ -1062,7 +1066,9 @@ public class ShadowPackageManager {
   }
 
   @Deprecated
-  /** @deprecated use {@link #addCanonicalName} instead.} */
+  /**
+   * @deprecated use {@link #addCanonicalName} instead.}
+   */
   public void addCurrentToCannonicalName(String currentName, String canonicalName) {
     currentToCanonicalNames.put(currentName, canonicalName);
   }
@@ -1439,7 +1445,7 @@ public class ShadowPackageManager {
    * @throws IllegalArgumentException if component with given name doesn't exist.
    */
   public List<IntentFilter> getIntentFiltersForReceiver(ComponentName componentName) {
-      return getIntentFiltersForComponent(componentName, receiverFilters);
+    return getIntentFiltersForComponent(componentName, receiverFilters);
   }
 
   /**
@@ -1650,7 +1656,7 @@ public class ShadowPackageManager {
   /**
    * Returns the current {@link PackageSetting} of {@code packageName}.
    *
-   * If {@code packageName} is not present in this {@link ShadowPackageManager}, this method will
+   * <p>If {@code packageName} is not present in this {@link ShadowPackageManager}, this method will
    * return null.
    */
   public PackageSetting getPackageSetting(String packageName) {
@@ -1674,7 +1680,7 @@ public class ShadowPackageManager {
   /**
    * Returns the last value provided to {@code setDistractingPackageRestrictions} for {@code pkg}.
    *
-   * Defaults to {@code PackageManager.RESTRICTION_NONE} if {@code
+   * <p>Defaults to {@code PackageManager.RESTRICTION_NONE} if {@code
    * setDistractingPackageRestrictions} has not been called for {@code pkg}.
    */
   public int getDistractingPackageRestrictions(String pkg) {

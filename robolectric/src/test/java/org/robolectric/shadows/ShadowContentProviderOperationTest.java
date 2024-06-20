@@ -21,10 +21,11 @@ public class ShadowContentProviderOperationTest {
   public void reflectionShouldWork() {
     final Uri uri = Uri.parse("content://authority/path");
 
-    ContentProviderOperation op = ContentProviderOperation.newInsert(uri)
-        .withValue("insertKey", "insertValue")
-        .withValueBackReference("backKey", 2)
-        .build();
+    ContentProviderOperation op =
+        ContentProviderOperation.newInsert(uri)
+            .withValue("insertKey", "insertValue")
+            .withValueBackReference("backKey", 2)
+            .build();
 
     // insert and values back references
     assertThat(op.getUri()).isEqualTo(uri);
@@ -34,11 +35,12 @@ public class ShadowContentProviderOperationTest {
     assertThat(shadow.getValuesBackReferences().getAsInteger("backKey")).isEqualTo(2);
 
     // update and selection back references
-    op = ContentProviderOperation.newUpdate(uri)
-        .withValue("updateKey", "updateValue")
-        .withSelection("a=? and b=?", new String[] {"abc"})
-        .withSelectionBackReference(1, 3)
-        .build();
+    op =
+        ContentProviderOperation.newUpdate(uri)
+            .withValue("updateKey", "updateValue")
+            .withSelection("a=? and b=?", new String[] {"abc"})
+            .withSelectionBackReference(1, 3)
+            .build();
     assertThat(op.getUri()).isEqualTo(uri);
     shadow = Shadows.shadowOf(op);
     assertThat(shadow.getType()).isEqualTo(ShadowContentProviderOperation.TYPE_UPDATE);
@@ -48,13 +50,10 @@ public class ShadowContentProviderOperationTest {
     assertThat(shadow.getSelectionArgsBackReferences()).isEqualTo(Collections.singletonMap(1, 3));
 
     // delete and expected count
-    op = ContentProviderOperation.newDelete(uri)
-        .withExpectedCount(1)
-        .build();
+    op = ContentProviderOperation.newDelete(uri).withExpectedCount(1).build();
     assertThat(op.getUri()).isEqualTo(uri);
     shadow = Shadows.shadowOf(op);
     assertThat(shadow.getType()).isEqualTo(ShadowContentProviderOperation.TYPE_DELETE);
     assertThat(shadow.getExpectedCount()).isEqualTo(1);
   }
-
 }

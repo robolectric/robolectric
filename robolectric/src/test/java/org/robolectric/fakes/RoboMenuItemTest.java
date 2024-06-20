@@ -21,7 +21,7 @@ public class RoboMenuItemTest {
   @Before
   public void setUp() throws Exception {
     item = new RoboMenuItem(ApplicationProvider.getApplicationContext());
-    listener =  new TestOnActionExpandListener();
+    listener = new TestOnActionExpandListener();
     item.setOnActionExpandListener(listener);
   }
 

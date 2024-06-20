@@ -223,7 +223,9 @@ public class BaseCursor implements Cursor {
   /*
    * Mimics ContentResolver.query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder)
    */
-  public void setQuery(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-    // Override this in your subclass if you care to implement any of the other methods based on the query that was performed.
+  public void setQuery(
+      Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+    // Override this in your subclass if you care to implement any of the other methods based on the
+    // query that was performed.
   }
 }

@@ -21,8 +21,9 @@ public class ShadowScaleGestureDetectorTest {
 
   @Before
   public void setUp() throws Exception {
-    detector = new ScaleGestureDetector(ApplicationProvider.getApplicationContext(),
-        new TestOnGestureListener());
+    detector =
+        new ScaleGestureDetector(
+            ApplicationProvider.getApplicationContext(), new TestOnGestureListener());
     motionEvent = MotionEvent.obtain(-1, -1, MotionEvent.ACTION_UP, 100, 30, -1);
   }
 
@@ -75,7 +76,8 @@ public class ShadowScaleGestureDetectorTest {
     assertThat(detector.getFocusY()).isEqualTo(0f);
   }
 
-  private static class TestOnGestureListener implements ScaleGestureDetector.OnScaleGestureListener {
+  private static class TestOnGestureListener
+      implements ScaleGestureDetector.OnScaleGestureListener {
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
       return false;
@@ -87,7 +89,6 @@ public class ShadowScaleGestureDetectorTest {
     }
 
     @Override
-    public void onScaleEnd(ScaleGestureDetector detector) {
-    }
+    public void onScaleEnd(ScaleGestureDetector detector) {}
   }
 }

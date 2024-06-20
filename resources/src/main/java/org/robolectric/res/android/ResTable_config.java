@@ -74,11 +74,13 @@ import javax.annotation.Nonnull;
 /**
  * Describes a particular resource configuration.
  *
- * Transliterated from:
- * * https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ResourceTypes.cpp
- * * https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/ResourceTypes.h (struct ResTable_config)
+ * <p>Transliterated from: *
+ * https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ResourceTypes.cpp
+ * *
+ * https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/ResourceTypes.h
+ * (struct ResTable_config)
  *
- * Changes from 8.0.0_r4 partially applied.
+ * <p>Changes from 8.0.0_r4 partially applied.
  */
 @SuppressWarnings("NewApi")
 public class ResTable_config {
@@ -110,13 +112,14 @@ public class ResTable_config {
   public static final int SIZEOF = SCREEN_CONFIG_EXTENSION_MIN_SIZE;
 
   // Codes for specially handled languages and regions
-  static final byte[] kEnglish = new byte[] {'e', 'n'};  // packed version of "en"
-  static final byte[] kUnitedStates = new byte[] {'U', 'S'};  // packed version of "US"
-  static final byte[] kFilipino = new byte[] {(byte)0xAD, 0x05};  // packed version of "fil" ported from C {'\xAD', '\x05'}
-  static final byte[] kTagalog = new byte[] {'t', 'l'};  // packed version of "tl"
+  static final byte[] kEnglish = new byte[] {'e', 'n'}; // packed version of "en"
+  static final byte[] kUnitedStates = new byte[] {'U', 'S'}; // packed version of "US"
+  static final byte[] kFilipino =
+      new byte[] {(byte) 0xAD, 0x05}; // packed version of "fil" ported from C {'\xAD', '\x05'}
+  static final byte[] kTagalog = new byte[] {'t', 'l'}; // packed version of "tl"
 
   static ResTable_config createConfig(ByteBuffer buffer) {
-    int startPosition = buffer.position();  // The starting buffer position to calculate bytes read.
+    int startPosition = buffer.position(); // The starting buffer position to calculate bytes read.
     int size = buffer.getInt();
     int mcc = buffer.getShort() & 0xFFFF;
     int mnc = buffer.getShort() & 0xFFFF;
@@ -130,7 +133,7 @@ public class ResTable_config {
     int keyboard = UnsignedBytes.toInt(buffer.get());
     int navigation = UnsignedBytes.toInt(buffer.get());
     int inputFlags = UnsignedBytes.toInt(buffer.get());
-    buffer.get();  // 1 byte of padding
+    buffer.get(); // 1 byte of padding
     int screenWidth = buffer.getShort() & 0xFFFF;
     int screenHeight = buffer.getShort() & 0xFFFF;
     int sdkVersion = buffer.getShort() & 0xFFFF;
@@ -167,8 +170,8 @@ public class ResTable_config {
 
     if (size >= SCREEN_CONFIG_EXTENSION_MIN_SIZE) {
       screenLayout2 = (byte) UnsignedBytes.toInt(buffer.get());
-      screenConfigPad1 = buffer.get();  // Reserved padding
-      screenConfigPad2 = buffer.getShort();  // More reserved padding
+      screenConfigPad1 = buffer.get(); // Reserved padding
+      screenConfigPad2 = buffer.getShort(); // More reserved padding
     }
 
     // After parsing everything that's known, account for anything that's unknown.
@@ -176,16 +179,39 @@ public class ResTable_config {
     byte[] unknown = new byte[size - bytesRead];
     buffer.get(unknown);
 
-    return new ResTable_config(size, mcc, mnc, language, region, orientation,
-        touchscreen, density, keyboard, navigation, inputFlags, screenWidth, screenHeight,
-        sdkVersion, minorVersion, screenLayout, uiMode, smallestScreenWidthDp, screenWidthDp,
-        screenHeightDp, localeScript, localeVariant, screenLayout2, screenConfigPad1, screenConfigPad2, unknown);
+    return new ResTable_config(
+        size,
+        mcc,
+        mnc,
+        language,
+        region,
+        orientation,
+        touchscreen,
+        density,
+        keyboard,
+        navigation,
+        inputFlags,
+        screenWidth,
+        screenHeight,
+        sdkVersion,
+        minorVersion,
+        screenLayout,
+        uiMode,
+        smallestScreenWidthDp,
+        screenWidthDp,
+        screenHeightDp,
+        localeScript,
+        localeVariant,
+        screenLayout2,
+        screenConfigPad1,
+        screenConfigPad2,
+        unknown);
   }
 
   /**
    * The different types of configs that can be present in a {@link ResTable_config}.
    *
-   * The ordering of these types is roughly the same as {@code #isBetterThan}, but is not
+   * <p>The ordering of these types is roughly the same as {@code #isBetterThan}, but is not
    * guaranteed to be the same.
    */
   public enum Type {
@@ -218,14 +244,14 @@ public class ResTable_config {
   }
 
   // screenLayout bits for layout direction.
-//  public static final int MASK_LAYOUTDIR = 0xC0;
+  //  public static final int MASK_LAYOUTDIR = 0xC0;
   public static final int SHIFT_LAYOUTDIR = 6;
   public static final int LAYOUTDIR_ANY = ACONFIGURATION_LAYOUTDIR_ANY << SHIFT_LAYOUTDIR;
   public static final int LAYOUTDIR_LTR = ACONFIGURATION_LAYOUTDIR_LTR << SHIFT_LAYOUTDIR;
   public static final int LAYOUTDIR_RTL = ACONFIGURATION_LAYOUTDIR_RTL << SHIFT_LAYOUTDIR;
 
   public static final int SCREENWIDTH_ANY = 0;
-//  public static final int MASK_SCREENSIZE = 0x0f;
+  //  public static final int MASK_SCREENSIZE = 0x0f;
   public static final int SCREENSIZE_ANY = ACONFIGURATION_SCREENSIZE_ANY;
   public static final int SCREENSIZE_SMALL = ACONFIGURATION_SCREENSIZE_SMALL;
   public static final int SCREENSIZE_NORMAL = ACONFIGURATION_SCREENSIZE_NORMAL;
@@ -240,7 +266,8 @@ public class ResTable_config {
   // uiMode bits for the night switch;
   public static final int MASK_UI_MODE_NIGHT = 0x30;
   public static final int SHIFT_UI_MODE_NIGHT = 4;
-  public static final int UI_MODE_NIGHT_ANY = ACONFIGURATION_UI_MODE_NIGHT_ANY << SHIFT_UI_MODE_NIGHT;
+  public static final int UI_MODE_NIGHT_ANY =
+      ACONFIGURATION_UI_MODE_NIGHT_ANY << SHIFT_UI_MODE_NIGHT;
 
   public static final int DENSITY_DEFAULT = ACONFIGURATION_DENSITY_DEFAULT;
   public static final int DENSITY_LOW = ACONFIGURATION_DENSITY_LOW;
@@ -253,7 +280,7 @@ public class ResTable_config {
   public static final int DENSITY_ANY = ACONFIGURATION_DENSITY_ANY;
   public static final int DENSITY_NONE = ACONFIGURATION_DENSITY_NONE;
 
-  public static final int TOUCHSCREEN_ANY  = ACONFIGURATION_TOUCHSCREEN_ANY;
+  public static final int TOUCHSCREEN_ANY = ACONFIGURATION_TOUCHSCREEN_ANY;
 
   public static final int MASK_KEYSHIDDEN = 0x0003;
   public static final byte KEYSHIDDEN_ANY = ACONFIGURATION_KEYSHIDDEN_ANY;
@@ -261,7 +288,7 @@ public class ResTable_config {
   public static final byte KEYSHIDDEN_YES = ACONFIGURATION_KEYSHIDDEN_YES;
   public static final byte KEYSHIDDEN_SOFT = ACONFIGURATION_KEYSHIDDEN_SOFT;
 
-  public static final int KEYBOARD_ANY  = ACONFIGURATION_KEYBOARD_ANY;
+  public static final int KEYBOARD_ANY = ACONFIGURATION_KEYBOARD_ANY;
 
   public static final int MASK_NAVHIDDEN = 0x000c;
   public static final int SHIFT_NAVHIDDEN = 2;
@@ -269,14 +296,15 @@ public class ResTable_config {
   public static final byte NAVHIDDEN_NO = ACONFIGURATION_NAVHIDDEN_NO << SHIFT_NAVHIDDEN;
   public static final byte NAVHIDDEN_YES = ACONFIGURATION_NAVHIDDEN_YES << SHIFT_NAVHIDDEN;
 
-  public static final int NAVIGATION_ANY  = ACONFIGURATION_NAVIGATION_ANY;
+  public static final int NAVIGATION_ANY = ACONFIGURATION_NAVIGATION_ANY;
 
   public static final int SCREENHEIGHT_ANY = 0;
 
   public static final int SDKVERSION_ANY = 0;
   public static final int MINORVERSION_ANY = 0;
 
-  // from https://github.com/google/android-arscblamer/blob/master/java/com/google/devrel/gmscore/tools/apk/arsc/ResourceConfiguration.java
+  // from
+  // https://github.com/google/android-arscblamer/blob/master/java/com/google/devrel/gmscore/tools/apk/arsc/ResourceConfiguration.java
   /** The below constants are from android.content.res.Configuration. */
   static final int COLOR_MODE_WIDE_COLOR_GAMUT_MASK = 0x03;
 
@@ -325,7 +353,7 @@ public class ResTable_config {
   static final int DENSITY_DPI_XHDPI = 320;
   static final int DENSITY_DPI_XXHDPI = 480;
   static final int DENSITY_DPI_XXXHDPI = 640;
-  public static final int DENSITY_DPI_ANY  = 0xFFFE;
+  public static final int DENSITY_DPI_ANY = 0xFFFE;
   public static final int DENSITY_DPI_NONE = 0xFFFF;
 
   private static final Map<Integer, String> DENSITY_DPI_VALUES;
@@ -347,7 +375,7 @@ public class ResTable_config {
 
   static final int KEYBOARD_NOKEYS = 1;
   static final int KEYBOARD_QWERTY = 2;
-  static final int KEYBOARD_12KEY  = 3;
+  static final int KEYBOARD_12KEY = 3;
 
   private static final Map<Integer, String> KEYBOARD_VALUES;
 
@@ -360,8 +388,8 @@ public class ResTable_config {
   }
 
   static final int KEYBOARDHIDDEN_MASK = 0x03;
-  static final int KEYBOARDHIDDEN_NO   = 1;
-  static final int KEYBOARDHIDDEN_YES  = 2;
+  static final int KEYBOARDHIDDEN_NO = 1;
+  static final int KEYBOARDHIDDEN_YES = 2;
   static final int KEYBOARDHIDDEN_SOFT = 3;
 
   private static final Map<Integer, String> KEYBOARDHIDDEN_VALUES;
@@ -374,10 +402,10 @@ public class ResTable_config {
     KEYBOARDHIDDEN_VALUES = Collections.unmodifiableMap(map);
   }
 
-  static final int NAVIGATION_NONAV     = 1;
-  static final int NAVIGATION_DPAD      = 2;
+  static final int NAVIGATION_NONAV = 1;
+  static final int NAVIGATION_DPAD = 2;
   static final int NAVIGATION_TRACKBALL = 3;
-  static final int NAVIGATION_WHEEL     = 4;
+  static final int NAVIGATION_WHEEL = 4;
 
   private static final Map<Integer, String> NAVIGATION_VALUES;
 
@@ -390,9 +418,9 @@ public class ResTable_config {
     NAVIGATION_VALUES = Collections.unmodifiableMap(map);
   }
 
-  static final int NAVIGATIONHIDDEN_MASK  = 0x0C;
-  static final int NAVIGATIONHIDDEN_NO    = 0x04;
-  static final int NAVIGATIONHIDDEN_YES   = 0x08;
+  static final int NAVIGATIONHIDDEN_MASK = 0x0C;
+  static final int NAVIGATIONHIDDEN_NO = 0x04;
+  static final int NAVIGATIONHIDDEN_YES = 0x08;
 
   private static final Map<Integer, String> NAVIGATIONHIDDEN_VALUES;
 
@@ -403,11 +431,11 @@ public class ResTable_config {
     NAVIGATIONHIDDEN_VALUES = Collections.unmodifiableMap(map);
   }
 
-  public static final int ORIENTATION_ANY  = ACONFIGURATION_ORIENTATION_ANY;
+  public static final int ORIENTATION_ANY = ACONFIGURATION_ORIENTATION_ANY;
   public static final int ORIENTATION_PORT = ACONFIGURATION_ORIENTATION_PORT;
   public static final int ORIENTATION_LAND = ACONFIGURATION_ORIENTATION_LAND;
   public static final int ORIENTATION_SQUARE = ACONFIGURATION_ORIENTATION_SQUARE;
-  static final int ORIENTATION_PORTRAIT  = 0x01;
+  static final int ORIENTATION_PORTRAIT = 0x01;
   static final int ORIENTATION_LANDSCAPE = 0x02;
 
   private static final Map<Integer, String> ORIENTATION_VALUES;
@@ -420,8 +448,8 @@ public class ResTable_config {
   }
 
   static final int SCREENLAYOUT_LAYOUTDIR_MASK = 0xC0;
-  static final int SCREENLAYOUT_LAYOUTDIR_LTR  = 0x40;
-  static final int SCREENLAYOUT_LAYOUTDIR_RTL  = 0x80;
+  static final int SCREENLAYOUT_LAYOUTDIR_LTR = 0x40;
+  static final int SCREENLAYOUT_LAYOUTDIR_RTL = 0x80;
 
   private static final Map<Integer, String> SCREENLAYOUT_LAYOUTDIR_VALUES;
 
@@ -439,8 +467,8 @@ public class ResTable_config {
   public static final int SCREENLONG_NO = ACONFIGURATION_SCREENLONG_NO << SHIFT_SCREENLONG;
   public static final int SCREENLONG_YES = ACONFIGURATION_SCREENLONG_YES << SHIFT_SCREENLONG;
   static final int SCREENLAYOUT_LONG_MASK = 0x30;
-  static final int SCREENLAYOUT_LONG_NO   = 0x10;
-  static final int SCREENLAYOUT_LONG_YES  = 0x20;
+  static final int SCREENLAYOUT_LONG_NO = 0x10;
+  static final int SCREENLAYOUT_LONG_YES = 0x20;
 
   private static final Map<Integer, String> SCREENLAYOUT_LONG_VALUES;
 
@@ -458,8 +486,8 @@ public class ResTable_config {
   public static final int SCREENROUND_YES = ACONFIGURATION_SCREENROUND_YES;
 
   static final int SCREENLAYOUT_ROUND_MASK = 0x03;
-  static final int SCREENLAYOUT_ROUND_NO   = 0x01;
-  static final int SCREENLAYOUT_ROUND_YES  = 0x02;
+  static final int SCREENLAYOUT_ROUND_NO = 0x01;
+  static final int SCREENLAYOUT_ROUND_YES = 0x02;
 
   private static final Map<Integer, String> SCREENLAYOUT_ROUND_VALUES;
 
@@ -470,10 +498,10 @@ public class ResTable_config {
     SCREENLAYOUT_ROUND_VALUES = Collections.unmodifiableMap(map);
   }
 
-  static final int SCREENLAYOUT_SIZE_MASK   = 0x0F;
-  static final int SCREENLAYOUT_SIZE_SMALL  = 0x01;
+  static final int SCREENLAYOUT_SIZE_MASK = 0x0F;
+  static final int SCREENLAYOUT_SIZE_SMALL = 0x01;
   static final int SCREENLAYOUT_SIZE_NORMAL = 0x02;
-  static final int SCREENLAYOUT_SIZE_LARGE  = 0x03;
+  static final int SCREENLAYOUT_SIZE_LARGE = 0x03;
   static final int SCREENLAYOUT_SIZE_XLARGE = 0x04;
 
   private static final Map<Integer, String> SCREENLAYOUT_SIZE_VALUES;
@@ -488,8 +516,8 @@ public class ResTable_config {
   }
 
   static final int TOUCHSCREEN_NOTOUCH = 1;
-  @Deprecated static final int TOUCHSCREEN_STYLUS  = 2;
-  public static final int TOUCHSCREEN_FINGER  = 3;
+  @Deprecated static final int TOUCHSCREEN_STYLUS = 2;
+  public static final int TOUCHSCREEN_FINGER = 3;
 
   private static final Map<Integer, String> TOUCHSCREEN_VALUES;
 
@@ -501,8 +529,8 @@ public class ResTable_config {
   }
 
   static final int UI_MODE_NIGHT_MASK = 0x30;
-  public static final int UI_MODE_NIGHT_NO   = 0x10;
-  static final int UI_MODE_NIGHT_YES  = 0x20;
+  public static final int UI_MODE_NIGHT_NO = 0x10;
+  static final int UI_MODE_NIGHT_YES = 0x20;
 
   private static final Map<Integer, String> UI_MODE_NIGHT_VALUES;
 
@@ -513,12 +541,12 @@ public class ResTable_config {
     UI_MODE_NIGHT_VALUES = Collections.unmodifiableMap(map);
   }
 
-  static final int UI_MODE_TYPE_MASK       = 0x0F;
-  static final int UI_MODE_TYPE_DESK       = 0x02;
-  static final int UI_MODE_TYPE_CAR        = 0x03;
+  static final int UI_MODE_TYPE_MASK = 0x0F;
+  static final int UI_MODE_TYPE_DESK = 0x02;
+  static final int UI_MODE_TYPE_CAR = 0x03;
   static final int UI_MODE_TYPE_TELEVISION = 0x04;
-  static final int UI_MODE_TYPE_APPLIANCE  = 0x05;
-  static final int UI_MODE_TYPE_WATCH      = 0x06;
+  static final int UI_MODE_TYPE_APPLIANCE = 0x05;
+  static final int UI_MODE_TYPE_WATCH = 0x06;
   static final int UI_MODE_TYPE_VR_HEADSET = 0x07;
 
   private static final Map<Integer, String> UI_MODE_TYPE_VALUES;
@@ -631,11 +659,33 @@ public class ResTable_config {
     if (sdkVersion == this.sdkVersion) {
       return this;
     }
-    return new ResTable_config(size, mcc, mnc, language, country,
-        orientation, touchscreen, density, keyboard, navigation, inputFlags,
-        screenWidth, screenHeight, sdkVersion, minorVersion, screenLayout, uiMode,
-        smallestScreenWidthDp, screenWidthDp, screenHeightDp, localeScript, localeVariant,
-        screenLayout2, colorMode, screenConfigPad2, unknown);
+    return new ResTable_config(
+        size,
+        mcc,
+        mnc,
+        language,
+        country,
+        orientation,
+        touchscreen,
+        density,
+        keyboard,
+        navigation,
+        inputFlags,
+        screenWidth,
+        screenHeight,
+        sdkVersion,
+        minorVersion,
+        screenLayout,
+        uiMode,
+        smallestScreenWidthDp,
+        screenWidthDp,
+        screenHeightDp,
+        localeScript,
+        localeVariant,
+        screenLayout2,
+        colorMode,
+        screenConfigPad2,
+        unknown);
   }
 
   public ResTable_config(ResTable_config other) {
@@ -667,13 +717,33 @@ public class ResTable_config {
     this.unknown = other.unknown;
   }
 
-
-  public ResTable_config(int size, int mcc, int mnc, byte[] language, byte[] country,
-      int orientation, int touchscreen, int density, int keyboard, int navigation, int inputFlags,
-      int screenWidth, int screenHeight, int sdkVersion, int minorVersion, int screenLayout,
-      int uiMode, int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
-      byte[] localeScript, byte[] localeVariant, byte screenLayout2, byte colorMode,
-      short screenConfigPad2, byte[] unknown) {
+  public ResTable_config(
+      int size,
+      int mcc,
+      int mnc,
+      byte[] language,
+      byte[] country,
+      int orientation,
+      int touchscreen,
+      int density,
+      int keyboard,
+      int navigation,
+      int inputFlags,
+      int screenWidth,
+      int screenHeight,
+      int sdkVersion,
+      int minorVersion,
+      int screenLayout,
+      int uiMode,
+      int smallestScreenWidthDp,
+      int screenWidthDp,
+      int screenHeightDp,
+      byte[] localeScript,
+      byte[] localeVariant,
+      byte screenLayout2,
+      byte colorMode,
+      short screenConfigPad2,
+      byte[] unknown) {
     this.size = size;
     this.mcc = mcc;
     this.mnc = mnc;
@@ -775,28 +845,24 @@ public class ResTable_config {
   public final byte[] localeVariant;
 
   /** An extension to {@link #screenLayout}. Contains round/notround qualifier. */
-  public byte screenLayout2;        // Contains round/notround qualifier.
-  public byte colorMode;            // Wide-gamut, HDR, etc.
-  public short screenConfigPad2;    // Reserved padding.
+  public byte screenLayout2; // Contains round/notround qualifier.
+
+  public byte colorMode; // Wide-gamut, HDR, etc.
+  public short screenConfigPad2; // Reserved padding.
 
   /** Any remaining bytes in this resource configuration that are unaccounted for. */
   @SuppressWarnings("mutable")
   public byte[] unknown;
 
-
   /**
-   *     // An extension of screenConfig.
-   union {
-   struct {
-   uint8_t screenLayout2;      // Contains round/notround qualifier.
-   uint8_t screenConfigPad1;   // Reserved padding.
-   uint16_t screenConfigPad2;  // Reserved padding.
-   };
-   uint32_t screenConfig2;
-   };
+   * // An extension of screenConfig. union { struct { uint8_t screenLayout2; // Contains
+   * round/notround qualifier. uint8_t screenConfigPad1; // Reserved padding. uint16_t
+   * screenConfigPad2; // Reserved padding. }; uint32_t screenConfig2; };
    */
   private int screenConfig2() {
-    return ((screenLayout2 & 0xff) << 24) | ((colorMode * 0xff) << 16) | (screenConfigPad2 & 0xffff);
+    return ((screenLayout2 & 0xff) << 24)
+        | ((colorMode * 0xff) << 16)
+        | (screenConfigPad2 & 0xffff);
   }
 
   // If false and localeScript is set, it means that the script of the locale
@@ -811,19 +877,19 @@ public class ResTable_config {
   // Varies in length from 3 to 8 chars. Zero-filled value.
   byte[] localeNumberingSystem = new byte[8];
 
-// --------------------------------------------------------------------
-// --------------------------------------------------------------------
-// --------------------------------------------------------------------
+  // --------------------------------------------------------------------
+  // --------------------------------------------------------------------
+  // --------------------------------------------------------------------
 
-//  void copyFromDeviceNoSwap(final ResTable_config o) {
-//    final int size = dtohl(o.size);
-//    if (size >= sizeof(ResTable_config)) {
-//        *this = o;
-//    } else {
-//      memcpy(this, &o, size);
-//      memset(((uint8_t*)this)+size, 0, sizeof(ResTable_config)-size);
-//    }
-//  }
+  //  void copyFromDeviceNoSwap(final ResTable_config o) {
+  //    final int size = dtohl(o.size);
+  //    if (size >= sizeof(ResTable_config)) {
+  //        *this = o;
+  //    } else {
+  //      memcpy(this, &o, size);
+  //      memset(((uint8_t*)this)+size, 0, sizeof(ResTable_config)-size);
+  //    }
+  //  }
 
   @Nonnull
   private String unpackLanguageOrRegion(byte[] value, int base) {
@@ -841,8 +907,7 @@ public class ResTable_config {
     return new String(value, US_ASCII);
   }
 
-  /* static */ void packLanguageOrRegion(final String in, final byte base,
-      final byte[] out) {
+  /* static */ void packLanguageOrRegion(final String in, final byte base, final byte[] out) {
     if (in == null) {
       out[0] = 0;
       out[1] = 0;
@@ -876,22 +941,22 @@ public class ResTable_config {
     return unpackLanguageOrRegion(country, 0x30);
   }
 
-//  void copyFromDtoH(final ResTable_config o) {
-//    copyFromDeviceNoSwap(o);
-//    size = sizeof(ResTable_config);
-//    mcc = dtohs(mcc);
-//    mnc = dtohs(mnc);
-//    density = dtohs(density);
-//    screenWidth = dtohs(screenWidth);
-//    screenHeight = dtohs(screenHeight);
-//    sdkVersion = dtohs(sdkVersion);
-//    minorVersion = dtohs(minorVersion);
-//    smallestScreenWidthDp = dtohs(smallestScreenWidthDp);
-//    screenWidthDp = dtohs(screenWidthDp);
-//    screenHeightDp = dtohs(screenHeightDp);
-//  }
+  //  void copyFromDtoH(final ResTable_config o) {
+  //    copyFromDeviceNoSwap(o);
+  //    size = sizeof(ResTable_config);
+  //    mcc = dtohs(mcc);
+  //    mnc = dtohs(mnc);
+  //    density = dtohs(density);
+  //    screenWidth = dtohs(screenWidth);
+  //    screenHeight = dtohs(screenHeight);
+  //    sdkVersion = dtohs(sdkVersion);
+  //    minorVersion = dtohs(minorVersion);
+  //    smallestScreenWidthDp = dtohs(smallestScreenWidthDp);
+  //    screenWidthDp = dtohs(screenWidthDp);
+  //    screenHeightDp = dtohs(screenHeightDp);
+  //  }
 
-//  void ResTable_config::copyFromDtoH(const ResTable_config& o) {
+  //  void ResTable_config::copyFromDtoH(const ResTable_config& o) {
   static ResTable_config fromDtoH(final ResTable_config o) {
     return new ResTable_config(
         0 /*sizeof(ResTable_config)*/,
@@ -919,22 +984,21 @@ public class ResTable_config {
         o.screenLayout2,
         o.colorMode,
         o.screenConfigPad2,
-        o.unknown
-    );
+        o.unknown);
   }
 
   void swapHtoD() {
-//    size = htodl(size);
-//    mcc = htods(mcc);
-//    mnc = htods(mnc);
-//    density = htods(density);
-//    screenWidth = htods(screenWidth);
-//    screenHeight = htods(screenHeight);
-//    sdkVersion = htods(sdkVersion);
-//    minorVersion = htods(minorVersion);
-//    smallestScreenWidthDp = htods(smallestScreenWidthDp);
-//    screenWidthDp = htods(screenWidthDp);
-//    screenHeightDp = htods(screenHeightDp);
+    //    size = htodl(size);
+    //    mcc = htods(mcc);
+    //    mnc = htods(mnc);
+    //    density = htods(density);
+    //    screenWidth = htods(screenWidth);
+    //    screenHeight = htods(screenHeight);
+    //    sdkVersion = htods(sdkVersion);
+    //    minorVersion = htods(minorVersion);
+    //    smallestScreenWidthDp = htods(smallestScreenWidthDp);
+    //    screenWidthDp = htods(screenWidthDp);
+    //    screenHeightDp = htods(screenHeightDp);
   }
 
   static final int compareLocales(final ResTable_config l, final ResTable_config r) {
@@ -953,10 +1017,10 @@ public class ResTable_config {
     final byte emptyScript[] = {'\0', '\0', '\0', '\0'};
     final byte[] lScript = l.localeScriptWasComputed ? emptyScript : l.localeScript;
     final byte[] rScript = r.localeScriptWasComputed ? emptyScript : r.localeScript;
-//    int script = memcmp(lScript, rScript);
-//    if (script) {
-//      return script;
-//    }
+    //    int script = memcmp(lScript, rScript);
+    //    if (script) {
+    //      return script;
+    //    }
     int d = arrayCompare(lScript, rScript);
     if (d != 0) return d;
 
@@ -991,7 +1055,8 @@ public class ResTable_config {
   private static final int CONFIG_ORIENTATION = AConfiguration.ACONFIGURATION_ORIENTATION;
   private static final int CONFIG_DENSITY = AConfiguration.ACONFIGURATION_DENSITY;
   private static final int CONFIG_SCREEN_SIZE = AConfiguration.ACONFIGURATION_SCREEN_SIZE;
-  private static final int CONFIG_SMALLEST_SCREEN_SIZE = AConfiguration.ACONFIGURATION_SMALLEST_SCREEN_SIZE;
+  private static final int CONFIG_SMALLEST_SCREEN_SIZE =
+      AConfiguration.ACONFIGURATION_SMALLEST_SCREEN_SIZE;
   private static final int CONFIG_VERSION = AConfiguration.ACONFIGURATION_VERSION;
   private static final int CONFIG_SCREEN_LAYOUT = AConfiguration.ACONFIGURATION_SCREEN_LAYOUT;
   private static final int CONFIG_UI_MODE = AConfiguration.ACONFIGURATION_UI_MODE;
@@ -1008,16 +1073,20 @@ public class ResTable_config {
     if (orientation != o.orientation) diffs |= CONFIG_ORIENTATION;
     if (density != o.density) diffs |= CONFIG_DENSITY;
     if (touchscreen != o.touchscreen) diffs |= CONFIG_TOUCHSCREEN;
-    if (((inputFlags^o.inputFlags)&(MASK_KEYSHIDDEN|MASK_NAVHIDDEN)) != 0)
+    if (((inputFlags ^ o.inputFlags) & (MASK_KEYSHIDDEN | MASK_NAVHIDDEN)) != 0)
       diffs |= CONFIG_KEYBOARD_HIDDEN;
     if (keyboard != o.keyboard) diffs |= CONFIG_KEYBOARD;
     if (navigation != o.navigation) diffs |= CONFIG_NAVIGATION;
     if (screenSize() != o.screenSize()) diffs |= CONFIG_SCREEN_SIZE;
     if (version() != o.version()) diffs |= CONFIG_VERSION;
-    if ((screenLayout & MASK_LAYOUTDIR) != (o.screenLayout & MASK_LAYOUTDIR)) diffs |= CONFIG_LAYOUTDIR;
-    if ((screenLayout & ~MASK_LAYOUTDIR) != (o.screenLayout & ~MASK_LAYOUTDIR)) diffs |= CONFIG_SCREEN_LAYOUT;
-    if ((screenLayout2 & MASK_SCREENROUND) != (o.screenLayout2 & MASK_SCREENROUND)) diffs |= CONFIG_SCREEN_ROUND;
-    if ((colorMode & MASK_WIDE_COLOR_GAMUT) != (o.colorMode & MASK_WIDE_COLOR_GAMUT)) diffs |= CONFIG_COLOR_MODE;
+    if ((screenLayout & MASK_LAYOUTDIR) != (o.screenLayout & MASK_LAYOUTDIR))
+      diffs |= CONFIG_LAYOUTDIR;
+    if ((screenLayout & ~MASK_LAYOUTDIR) != (o.screenLayout & ~MASK_LAYOUTDIR))
+      diffs |= CONFIG_SCREEN_LAYOUT;
+    if ((screenLayout2 & MASK_SCREENROUND) != (o.screenLayout2 & MASK_SCREENROUND))
+      diffs |= CONFIG_SCREEN_ROUND;
+    if ((colorMode & MASK_WIDE_COLOR_GAMUT) != (o.colorMode & MASK_WIDE_COLOR_GAMUT))
+      diffs |= CONFIG_COLOR_MODE;
     if ((colorMode & MASK_HDR) != (o.colorMode & MASK_HDR)) diffs |= CONFIG_COLOR_MODE;
     if (uiMode != o.uiMode) diffs |= CONFIG_UI_MODE;
     if (smallestScreenWidthDp != o.smallestScreenWidthDp) diffs |= CONFIG_SMALLEST_SCREEN_SIZE;
@@ -1041,56 +1110,55 @@ public class ResTable_config {
   // scripts and variants.
   int getImportanceScoreOfLocale() {
     return (isTruthy(localeVariant[0]) ? 4 : 0)
-        + (isTruthy(localeScript[0]) && !localeScriptWasComputed ? 2: 0)
-        + (isTruthy(localeNumberingSystem[0]) ? 1: 0);
+        + (isTruthy(localeScript[0]) && !localeScriptWasComputed ? 2 : 0)
+        + (isTruthy(localeNumberingSystem[0]) ? 1 : 0);
   }
 
   int compare(final ResTable_config o) {
-       if (imsi() != o.imsi()) {
-       return (imsi() > o.imsi()) ? 1 : -1;
-   }
+    if (imsi() != o.imsi()) {
+      return (imsi() > o.imsi()) ? 1 : -1;
+    }
 
-   int diff = compareLocales(this, o);
-   if (diff < 0) {
-       return -1;
-   }
-   if (diff > 0) {
-       return 1;
-   }
+    int diff = compareLocales(this, o);
+    if (diff < 0) {
+      return -1;
+    }
+    if (diff > 0) {
+      return 1;
+    }
 
-   if (screenType() != o.screenType()) {
-       return (screenType() > o.screenType()) ? 1 : -1;
-   }
-   if (input() != o.input()) {
-       return (input() > o.input()) ? 1 : -1;
-   }
-   if (screenSize() != o.screenSize()) {
-       return (screenSize() > o.screenSize()) ? 1 : -1;
-   }
-   if (version() != o.version()) {
-       return (version() > o.version()) ? 1 : -1;
-   }
-   if (screenLayout != o.screenLayout) {
-       return (screenLayout > o.screenLayout) ? 1 : -1;
-   }
-   if (screenLayout2 != o.screenLayout2) {
-       return (screenLayout2 > o.screenLayout2) ? 1 : -1;
-   }
-   if (colorMode != o.colorMode) {
-       return (colorMode > o.colorMode) ? 1 : -1;
-   }
-   if (uiMode != o.uiMode) {
-       return (uiMode > o.uiMode) ? 1 : -1;
-   }
-   if (smallestScreenWidthDp != o.smallestScreenWidthDp) {
-       return (smallestScreenWidthDp > o.smallestScreenWidthDp) ? 1 : -1;
-   }
-   if (screenSizeDp() != o.screenSizeDp()) {
-       return (screenSizeDp() > o.screenSizeDp()) ? 1 : -1;
-   }
-   return 0;
+    if (screenType() != o.screenType()) {
+      return (screenType() > o.screenType()) ? 1 : -1;
+    }
+    if (input() != o.input()) {
+      return (input() > o.input()) ? 1 : -1;
+    }
+    if (screenSize() != o.screenSize()) {
+      return (screenSize() > o.screenSize()) ? 1 : -1;
+    }
+    if (version() != o.version()) {
+      return (version() > o.version()) ? 1 : -1;
+    }
+    if (screenLayout != o.screenLayout) {
+      return (screenLayout > o.screenLayout) ? 1 : -1;
+    }
+    if (screenLayout2 != o.screenLayout2) {
+      return (screenLayout2 > o.screenLayout2) ? 1 : -1;
+    }
+    if (colorMode != o.colorMode) {
+      return (colorMode > o.colorMode) ? 1 : -1;
+    }
+    if (uiMode != o.uiMode) {
+      return (uiMode > o.uiMode) ? 1 : -1;
+    }
+    if (smallestScreenWidthDp != o.smallestScreenWidthDp) {
+      return (smallestScreenWidthDp > o.smallestScreenWidthDp) ? 1 : -1;
+    }
+    if (screenSizeDp() != o.screenSizeDp()) {
+      return (screenSizeDp() > o.screenSizeDp()) ? 1 : -1;
+    }
+    return 0;
   }
-
 
   /** Returns true if this is the default "any" configuration. */
   public final boolean isDefault() {
@@ -1116,8 +1184,7 @@ public class ResTable_config {
         && isZeroes(localeScript)
         && isZeroes(localeVariant)
         && screenLayout2 == 0
-        && colorMode == 0
-        ;
+        && colorMode == 0;
   }
 
   private boolean isZeroes(byte[] bytes1) {
@@ -1131,7 +1198,7 @@ public class ResTable_config {
 
   @Override
   public final String toString() {
-    if (isDefault()) {  // Prevent the default configuration from returning the empty string
+    if (isDefault()) { // Prevent the default configuration from returning the empty string
       return "default";
     }
     Collection<String> parts = toStringParts().values();
@@ -1142,29 +1209,31 @@ public class ResTable_config {
   /**
    * Returns a map of the configuration parts for {@link #toString}.
    *
-   * If a configuration part is not defined for this {@link ResTable_config}, its value
-   * will be the empty string.
+   * <p>If a configuration part is not defined for this {@link ResTable_config}, its value will be
+   * the empty string.
    */
   public final Map<Type, String> toStringParts() {
-    Map<Type, String> result = new LinkedHashMap<>();  // Preserve order for #toString().
+    Map<Type, String> result = new LinkedHashMap<>(); // Preserve order for #toString().
     result.put(Type.MCC, mcc != 0 ? "mcc" + mcc : "");
     result.put(Type.MNC, mnc != 0 ? "mnc" + mnc : "");
     result.put(Type.LANGUAGE_STRING, languageString());
     result.put(Type.LOCALE_SCRIPT_STRING, localeScriptString());
     result.put(Type.REGION_STRING, !regionString().isEmpty() ? "r" + regionString() : "");
     result.put(Type.LOCALE_VARIANT_STRING, localeVariantString());
-    result.put(Type.SCREEN_LAYOUT_DIRECTION,
+    result.put(
+        Type.SCREEN_LAYOUT_DIRECTION,
         getOrDefault(SCREENLAYOUT_LAYOUTDIR_VALUES, screenLayoutDirection(), ""));
-    result.put(Type.SMALLEST_SCREEN_WIDTH_DP,
+    result.put(
+        Type.SMALLEST_SCREEN_WIDTH_DP,
         smallestScreenWidthDp != 0 ? "sw" + smallestScreenWidthDp + "dp" : "");
     result.put(Type.SCREEN_WIDTH_DP, screenWidthDp != 0 ? "w" + screenWidthDp + "dp" : "");
     result.put(Type.SCREEN_HEIGHT_DP, screenHeightDp != 0 ? "h" + screenHeightDp + "dp" : "");
-    result.put(Type.SCREEN_LAYOUT_SIZE,
-        getOrDefault(SCREENLAYOUT_SIZE_VALUES, screenLayoutSize(), ""));
-    result.put(Type.SCREEN_LAYOUT_LONG,
-        getOrDefault(SCREENLAYOUT_LONG_VALUES, screenLayoutLong(), ""));
-    result.put(Type.SCREEN_LAYOUT_ROUND,
-        getOrDefault(SCREENLAYOUT_ROUND_VALUES, screenLayoutRound(), ""));
+    result.put(
+        Type.SCREEN_LAYOUT_SIZE, getOrDefault(SCREENLAYOUT_SIZE_VALUES, screenLayoutSize(), ""));
+    result.put(
+        Type.SCREEN_LAYOUT_LONG, getOrDefault(SCREENLAYOUT_LONG_VALUES, screenLayoutLong(), ""));
+    result.put(
+        Type.SCREEN_LAYOUT_ROUND, getOrDefault(SCREENLAYOUT_ROUND_VALUES, screenLayoutRound(), ""));
     result.put(Type.COLOR_MODE_HDR, getOrDefault(COLOR_MODE_HDR_VALUES, colorModeHdr(), ""));
     result.put(
         Type.COLOR_MODE_WIDE_COLOR_GAMUT,
@@ -1176,10 +1245,11 @@ public class ResTable_config {
     result.put(Type.TOUCHSCREEN, getOrDefault(TOUCHSCREEN_VALUES, touchscreen, ""));
     result.put(Type.KEYBOARD_HIDDEN, getOrDefault(KEYBOARDHIDDEN_VALUES, keyboardHidden(), ""));
     result.put(Type.KEYBOARD, getOrDefault(KEYBOARD_VALUES, keyboard, ""));
-    result.put(Type.NAVIGATION_HIDDEN,
-        getOrDefault(NAVIGATIONHIDDEN_VALUES, navigationHidden(), ""));
+    result.put(
+        Type.NAVIGATION_HIDDEN, getOrDefault(NAVIGATIONHIDDEN_VALUES, navigationHidden(), ""));
     result.put(Type.NAVIGATION, getOrDefault(NAVIGATION_VALUES, navigation, ""));
-    result.put(Type.SCREEN_SIZE,
+    result.put(
+        Type.SCREEN_SIZE,
         screenWidth != 0 || screenHeight != 0 ? screenWidth + "x" + screenHeight : "");
 
     String sdkVersion = "";
@@ -1200,13 +1270,11 @@ public class ResTable_config {
     return value != null ? value : defaultValue;
   }
 
-
   // constants for isBetterThan...
   public static final int MASK_LAYOUTDIR = SCREENLAYOUT_LAYOUTDIR_MASK;
   static final int MASK_SCREENSIZE = SCREENLAYOUT_SIZE_MASK;
 
-  public boolean isBetterThan(
-      ResTable_config o, ResTable_config requested) {
+  public boolean isBetterThan(ResTable_config o, ResTable_config requested) {
     if (isTruthy(requested)) {
       if (isTruthy(imsi()) || isTruthy(o.imsi())) {
         if ((mcc != o.mcc) && isTruthy(requested.mcc)) {
@@ -1223,7 +1291,7 @@ public class ResTable_config {
       }
 
       if (isTruthy(screenLayout) || isTruthy(o.screenLayout)) {
-        if (isTruthy((screenLayout^o.screenLayout) & MASK_LAYOUTDIR)
+        if (isTruthy((screenLayout ^ o.screenLayout) & MASK_LAYOUTDIR)
             && isTruthy(requested.screenLayout & MASK_LAYOUTDIR)) {
           int myLayoutDir = screenLayout & MASK_LAYOUTDIR;
           int oLayoutDir = o.screenLayout & MASK_LAYOUTDIR;
@@ -1265,7 +1333,7 @@ public class ResTable_config {
       }
 
       if (isTruthy(screenLayout) || isTruthy(o.screenLayout)) {
-        if (isTruthy((screenLayout^o.screenLayout) & MASK_SCREENSIZE)
+        if (isTruthy((screenLayout ^ o.screenLayout) & MASK_SCREENSIZE)
             && isTruthy(requested.screenLayout & MASK_SCREENSIZE)) {
           // A little backwards compatibility here: undefined is
           // considered equivalent to normal.  But only if the
@@ -1292,26 +1360,26 @@ public class ResTable_config {
             return fixedMySL > fixedOSL;
           }
         }
-        if (((screenLayout^o.screenLayout) & MASK_SCREENLONG) != 0
+        if (((screenLayout ^ o.screenLayout) & MASK_SCREENLONG) != 0
             && isTruthy(requested.screenLayout & MASK_SCREENLONG)) {
           return isTruthy(screenLayout & MASK_SCREENLONG);
         }
       }
 
       if (isTruthy(screenLayout2) || isTruthy(o.screenLayout2)) {
-        if (((screenLayout2^o.screenLayout2) & MASK_SCREENROUND) != 0 &&
-            isTruthy(requested.screenLayout2 & MASK_SCREENROUND)) {
+        if (((screenLayout2 ^ o.screenLayout2) & MASK_SCREENROUND) != 0
+            && isTruthy(requested.screenLayout2 & MASK_SCREENROUND)) {
           return isTruthy(screenLayout2 & MASK_SCREENROUND);
         }
       }
 
       if (isTruthy(colorMode) || isTruthy(o.colorMode)) {
-        if (((colorMode^o.colorMode) & MASK_WIDE_COLOR_GAMUT) != 0 &&
-            isTruthy((requested.colorMode & MASK_WIDE_COLOR_GAMUT))) {
+        if (((colorMode ^ o.colorMode) & MASK_WIDE_COLOR_GAMUT) != 0
+            && isTruthy((requested.colorMode & MASK_WIDE_COLOR_GAMUT))) {
           return isTruthy(colorMode & MASK_WIDE_COLOR_GAMUT);
         }
-        if (((colorMode^o.colorMode) & MASK_HDR) != 0 &&
-            isTruthy((requested.colorMode & MASK_HDR))) {
+        if (((colorMode ^ o.colorMode) & MASK_HDR) != 0
+            && isTruthy((requested.colorMode & MASK_HDR))) {
           return isTruthy(colorMode & MASK_HDR);
         }
       }
@@ -1321,11 +1389,11 @@ public class ResTable_config {
       }
 
       if (isTruthy(uiMode) || isTruthy(o.uiMode)) {
-        if (((uiMode^o.uiMode) & MASK_UI_MODE_TYPE) != 0
+        if (((uiMode ^ o.uiMode) & MASK_UI_MODE_TYPE) != 0
             && isTruthy(requested.uiMode & MASK_UI_MODE_TYPE)) {
           return isTruthy(uiMode & MASK_UI_MODE_TYPE);
         }
-        if (((uiMode^o.uiMode) & MASK_UI_MODE_NIGHT) != 0
+        if (((uiMode ^ o.uiMode) & MASK_UI_MODE_NIGHT) != 0
             && isTruthy(requested.uiMode & MASK_UI_MODE_NIGHT)) {
           return isTruthy(uiMode & MASK_UI_MODE_NIGHT);
         }
@@ -1345,8 +1413,7 @@ public class ResTable_config {
           }
 
           int requestedDensity = requested.density;
-          if (requested.density == 0 ||
-              requested.density == DENSITY_ANY) {
+          if (requested.density == 0 || requested.density == DENSITY_ANY) {
             requestedDensity = DENSITY_MEDIUM;
           }
 
@@ -1387,11 +1454,10 @@ public class ResTable_config {
       }
 
       if (isTruthy(input()) || isTruthy(o.input())) {
-            final int keysHidden = inputFlags & MASK_KEYSHIDDEN;
-            final int oKeysHidden = o.inputFlags & MASK_KEYSHIDDEN;
+        final int keysHidden = inputFlags & MASK_KEYSHIDDEN;
+        final int oKeysHidden = o.inputFlags & MASK_KEYSHIDDEN;
         if (keysHidden != oKeysHidden) {
-                final int reqKeysHidden =
-              requested.inputFlags & MASK_KEYSHIDDEN;
+          final int reqKeysHidden = requested.inputFlags & MASK_KEYSHIDDEN;
           if (isTruthy(reqKeysHidden)) {
 
             if (keysHidden == 0) return false;
@@ -1404,11 +1470,10 @@ public class ResTable_config {
           }
         }
 
-            final int navHidden = inputFlags & MASK_NAVHIDDEN;
-            final int oNavHidden = o.inputFlags & MASK_NAVHIDDEN;
+        final int navHidden = inputFlags & MASK_NAVHIDDEN;
+        final int oNavHidden = o.inputFlags & MASK_NAVHIDDEN;
         if (navHidden != oNavHidden) {
-                final int reqNavHidden =
-              requested.inputFlags & MASK_NAVHIDDEN;
+          final int reqNavHidden = requested.inputFlags & MASK_NAVHIDDEN;
           if (isTruthy(reqNavHidden)) {
 
             if (navHidden == 0) return false;
@@ -1453,8 +1518,7 @@ public class ResTable_config {
           return (sdkVersion > o.sdkVersion);
         }
 
-        if ((minorVersion != o.minorVersion) &&
-            isTruthy(requested.minorVersion)) {
+        if ((minorVersion != o.minorVersion) && isTruthy(requested.minorVersion)) {
           return isTruthy(minorVersion);
         }
       }
@@ -1464,14 +1528,14 @@ public class ResTable_config {
     return isMoreSpecificThan(o);
   }
 
-/*
-  boolean match(final ResTable_config settings) {
-    System.out.println(this + ".match(" + settings + ")");
-    boolean result = match_(settings);
-    System.out.println("    -> " + result);
-    return result;
-  }
-*/
+  /*
+    boolean match(final ResTable_config settings) {
+      System.out.println(this + ".match(" + settings + ")");
+      boolean result = match_(settings);
+      System.out.println("    -> " + result);
+      return result;
+    }
+  */
 
   public boolean match(final ResTable_config settings) {
     if (imsi() != 0) {
@@ -1530,47 +1594,46 @@ public class ResTable_config {
     }
 
     if (screenConfig() != 0) {
-        final int layoutDir = screenLayout&MASK_LAYOUTDIR;
-        final int setLayoutDir = settings.screenLayout&MASK_LAYOUTDIR;
+      final int layoutDir = screenLayout & MASK_LAYOUTDIR;
+      final int setLayoutDir = settings.screenLayout & MASK_LAYOUTDIR;
       if (layoutDir != 0 && layoutDir != setLayoutDir) {
         return false;
       }
 
-        final int screenSize = screenLayout&MASK_SCREENSIZE;
-        final int setScreenSize = settings.screenLayout&MASK_SCREENSIZE;
+      final int screenSize = screenLayout & MASK_SCREENSIZE;
+      final int setScreenSize = settings.screenLayout & MASK_SCREENSIZE;
       // Any screen sizes for larger screens than the setting do not
       // match.
       if (screenSize != 0 && screenSize > setScreenSize) {
         return false;
       }
 
-        final int screenLong = screenLayout&MASK_SCREENLONG;
-        final int setScreenLong = settings.screenLayout&MASK_SCREENLONG;
+      final int screenLong = screenLayout & MASK_SCREENLONG;
+      final int setScreenLong = settings.screenLayout & MASK_SCREENLONG;
       if (screenLong != 0 && screenLong != setScreenLong) {
         return false;
       }
 
-        final int uiModeType = uiMode&MASK_UI_MODE_TYPE;
-        final int setUiModeType = settings.uiMode&MASK_UI_MODE_TYPE;
+      final int uiModeType = uiMode & MASK_UI_MODE_TYPE;
+      final int setUiModeType = settings.uiMode & MASK_UI_MODE_TYPE;
       if (uiModeType != 0 && uiModeType != setUiModeType) {
         return false;
       }
 
-        final int uiModeNight = uiMode&MASK_UI_MODE_NIGHT;
-        final int setUiModeNight = settings.uiMode&MASK_UI_MODE_NIGHT;
+      final int uiModeNight = uiMode & MASK_UI_MODE_NIGHT;
+      final int setUiModeNight = settings.uiMode & MASK_UI_MODE_NIGHT;
       if (uiModeNight != 0 && uiModeNight != setUiModeNight) {
         return false;
       }
 
-      if (smallestScreenWidthDp != 0
-          && smallestScreenWidthDp > settings.smallestScreenWidthDp) {
+      if (smallestScreenWidthDp != 0 && smallestScreenWidthDp > settings.smallestScreenWidthDp) {
         return false;
       }
     }
 
     if (screenConfig2() != 0) {
-        final int screenRound = screenLayout2 & MASK_SCREENROUND;
-        final int setScreenRound = settings.screenLayout2 & MASK_SCREENROUND;
+      final int screenRound = screenLayout2 & MASK_SCREENROUND;
+      final int setScreenRound = settings.screenLayout2 & MASK_SCREENROUND;
       if (screenRound != 0 && screenRound != setScreenRound) {
         return false;
       }
@@ -1591,15 +1654,13 @@ public class ResTable_config {
     if (screenSizeDp() != 0) {
       if (screenWidthDp != 0 && screenWidthDp > settings.screenWidthDp) {
         if (kDebugTableSuperNoisy) {
-          ALOGI("Filtering out width %d in requested %d", screenWidthDp,
-              settings.screenWidthDp);
+          ALOGI("Filtering out width %d in requested %d", screenWidthDp, settings.screenWidthDp);
         }
         return false;
       }
       if (screenHeightDp != 0 && screenHeightDp > settings.screenHeightDp) {
         if (kDebugTableSuperNoisy) {
-          ALOGI("Filtering out height %d in requested %d", screenHeightDp,
-              settings.screenHeightDp);
+          ALOGI("Filtering out height %d in requested %d", screenHeightDp, settings.screenHeightDp);
         }
         return false;
       }
@@ -1614,8 +1675,8 @@ public class ResTable_config {
       }
     }
     if (input() != 0) {
-        final int keysHidden = inputFlags&MASK_KEYSHIDDEN;
-        final int setKeysHidden = settings.inputFlags&MASK_KEYSHIDDEN;
+      final int keysHidden = inputFlags & MASK_KEYSHIDDEN;
+      final int setKeysHidden = settings.inputFlags & MASK_KEYSHIDDEN;
       if (keysHidden != 0 && keysHidden != setKeysHidden) {
         // For compatibility, we count a request for KEYSHIDDEN_NO as also
         // matching the more recent KEYSHIDDEN_SOFT.  Basically
@@ -1630,8 +1691,8 @@ public class ResTable_config {
           return false;
         }
       }
-        final int navHidden = inputFlags&MASK_NAVHIDDEN;
-        final int setNavHidden = settings.inputFlags&MASK_NAVHIDDEN;
+      final int navHidden = inputFlags & MASK_NAVHIDDEN;
+      final int setNavHidden = settings.inputFlags & MASK_NAVHIDDEN;
       if (navHidden != 0 && navHidden != setNavHidden) {
         return false;
       }
@@ -1661,66 +1722,67 @@ public class ResTable_config {
     return true;
   }
 
-//  void appendDirLocale(String8& out) const {
-//    if (!language[0]) {
-//      return;
-//    }
-//    const bool scriptWasProvided = localeScript[0] != '\0' && !localeScriptWasComputed;
-//    if (!scriptWasProvided && !localeVariant[0] && !localeNumberingSystem[0]) {
-//      // Legacy format.
-//      if (out.size() > 0) {
-//        out.append("-");
-//      }
-//
-//      char buf[4];
-//      size_t len = unpackLanguage(buf);
-//      out.append(buf, len);
-//
-//      if (country[0]) {
-//        out.append("-r");
-//        len = unpackRegion(buf);
-//        out.append(buf, len);
-//      }
-//      return;
-//    }
-//
-//    // We are writing the modified BCP 47 tag.
-//    // It starts with 'b+' and uses '+' as a separator.
-//
-//    if (out.size() > 0) {
-//      out.append("-");
-//    }
-//    out.append("b+");
-//
-//    char buf[4];
-//    size_t len = unpackLanguage(buf);
-//    out.append(buf, len);
-//
-//    if (scriptWasProvided) {
-//      out.append("+");
-//      out.append(localeScript, sizeof(localeScript));
-//    }
-//
-//    if (country[0]) {
-//      out.append("+");
-//      len = unpackRegion(buf);
-//      out.append(buf, len);
-//    }
-//
-//    if (localeVariant[0]) {
-//      out.append("+");
-//      out.append(localeVariant, strnlen(localeVariant, sizeof(localeVariant)));
-//    }
-//
-//    if (localeNumberingSystem[0]) {
-//      out.append("+u+nu+");
-//      out.append(localeNumberingSystem,
-//                 strnlen(localeNumberingSystem, sizeof(localeNumberingSystem)));
-//    }
-//  }
+  //  void appendDirLocale(String8& out) const {
+  //    if (!language[0]) {
+  //      return;
+  //    }
+  //    const bool scriptWasProvided = localeScript[0] != '\0' && !localeScriptWasComputed;
+  //    if (!scriptWasProvided && !localeVariant[0] && !localeNumberingSystem[0]) {
+  //      // Legacy format.
+  //      if (out.size() > 0) {
+  //        out.append("-");
+  //      }
+  //
+  //      char buf[4];
+  //      size_t len = unpackLanguage(buf);
+  //      out.append(buf, len);
+  //
+  //      if (country[0]) {
+  //        out.append("-r");
+  //        len = unpackRegion(buf);
+  //        out.append(buf, len);
+  //      }
+  //      return;
+  //    }
+  //
+  //    // We are writing the modified BCP 47 tag.
+  //    // It starts with 'b+' and uses '+' as a separator.
+  //
+  //    if (out.size() > 0) {
+  //      out.append("-");
+  //    }
+  //    out.append("b+");
+  //
+  //    char buf[4];
+  //    size_t len = unpackLanguage(buf);
+  //    out.append(buf, len);
+  //
+  //    if (scriptWasProvided) {
+  //      out.append("+");
+  //      out.append(localeScript, sizeof(localeScript));
+  //    }
+  //
+  //    if (country[0]) {
+  //      out.append("+");
+  //      len = unpackRegion(buf);
+  //      out.append(buf, len);
+  //    }
+  //
+  //    if (localeVariant[0]) {
+  //      out.append("+");
+  //      out.append(localeVariant, strnlen(localeVariant, sizeof(localeVariant)));
+  //    }
+  //
+  //    if (localeNumberingSystem[0]) {
+  //      out.append("+u+nu+");
+  //      out.append(localeNumberingSystem,
+  //                 strnlen(localeNumberingSystem, sizeof(localeNumberingSystem)));
+  //    }
+  //  }
 
   // returns string as return value instead of by mutating first arg
-  // void ResTable_config::getBcp47Locale(char str[RESTABLE_MAX_LOCALE_LEN], bool canonicalize) const {
+  // void ResTable_config::getBcp47Locale(char str[RESTABLE_MAX_LOCALE_LEN], bool canonicalize)
+  // const {
   String getBcp47Locale(boolean canonicalize) {
     StringBuilder str = new StringBuilder();
 
@@ -1734,7 +1796,7 @@ public class ResTable_config {
       if (canonicalize && areIdentical(language, kTagalog)) {
         // Replace Tagalog with Filipino if we are canonicalizing
         str.setLength(0);
-        str.append("fil");// 3-letter code for Filipino
+        str.append("fil"); // 3-letter code for Filipino
       } else {
         str.append(unpackLanguage());
       }
@@ -1778,7 +1840,9 @@ public class ResTable_config {
   }
 
   enum State {
-    BASE, UNICODE_EXTENSION, IGNORE_THE_REST
+    BASE,
+    UNICODE_EXTENSION,
+    IGNORE_THE_REST
   }
 
   enum UnicodeState {
@@ -1807,8 +1871,8 @@ public class ResTable_config {
     }
   }
 
-  static LocaleParserState assignLocaleComponent(ResTable_config config,
-      final String start, int size, LocaleParserState state) {
+  static LocaleParserState assignLocaleComponent(
+      ResTable_config config, final String start, int size, LocaleParserState state) {
 
     /* It is assumed that this function is not invoked with state.parserState
      * set to IGNORE_THE_REST. The condition is checked by setBcp47Locale
@@ -1821,12 +1885,12 @@ public class ResTable_config {
           state.parserState = State.IGNORE_THE_REST;
           break;
         case 2:
-          if (state.unicodeState == UnicodeState.NO_KEY ||
-              state.unicodeState == UnicodeState.EXPECT_KEY) {
+          if (state.unicodeState == UnicodeState.NO_KEY
+              || state.unicodeState == UnicodeState.EXPECT_KEY) {
             /* Analyze Unicode extension key. Currently only 'nu'
              * (numbering system) is supported.*/
-            if ((start.charAt(0) == 'n' || start.charAt(0) == 'N') &&
-                (start.charAt(1) == 'u' || start.charAt(1) == 'U')) {
+            if ((start.charAt(0) == 'n' || start.charAt(0) == 'N')
+                && (start.charAt(1) == 'u' || start.charAt(1) == 'U')) {
               state.unicodeState = UnicodeState.NUMBERING_SYSTEM;
             } else {
               state.unicodeState = UnicodeState.IGNORE_KEY;
@@ -1879,9 +1943,10 @@ public class ResTable_config {
         state.parserState = State.IGNORE_THE_REST;
         break;
       case 1:
-        state.parserState = (start.charAt(0) == 'u' || start.charAt(0) == 'U')
-            ? State.UNICODE_EXTENSION
-            : State.IGNORE_THE_REST;
+        state.parserState =
+            (start.charAt(0) == 'u' || start.charAt(0) == 'U')
+                ? State.UNICODE_EXTENSION
+                : State.IGNORE_THE_REST;
         break;
       case 2:
       case 3:
@@ -1948,7 +2013,7 @@ public class ResTable_config {
   }
 
   void clearLocale() {
-//    locale = 0;
+    //    locale = 0;
     clear(language);
     clear(country);
 
@@ -1967,59 +2032,31 @@ public class ResTable_config {
     }
   }
 
-
   /**
-   *     union {
-   struct {
-   // Mobile country code (from SIM).  0 means "any".
-   uint16_t mcc;
-   // Mobile network code (from SIM).  0 means "any".
-   uint16_t mnc;
-   };
-   uint32_t imsi;
-   };
+   * union { struct { // Mobile country code (from SIM). 0 means "any". uint16_t mcc; // Mobile
+   * network code (from SIM). 0 means "any". uint16_t mnc; }; uint32_t imsi; };
    */
   private int imsi() {
     return ((mcc & 0xffff) << 16) | (mnc & 0xffff);
   }
 
-  /**
-   *     union {
-   struct {
-   uint16_t screenWidth;
-   uint16_t screenHeight;
-   };
-   uint32_t screenSize;
-   };
-   */
+  /** union { struct { uint16_t screenWidth; uint16_t screenHeight; }; uint32_t screenSize; }; */
   private int screenSize() {
     return ((screenWidth & 0xffff) << 16) | (screenHeight & 0xffff);
   }
 
-
   /**
-   union {
-   struct {
-   uint8_t screenLayout;
-   uint8_t uiMode;
-   uint16_t smallestScreenWidthDp;
-   };
-   uint32_t screenConfig;
-   };
+   * union { struct { uint8_t screenLayout; uint8_t uiMode; uint16_t smallestScreenWidthDp; };
+   * uint32_t screenConfig; };
    */
   private int screenConfig() {
-    return ((screenLayout & 0xff) << 24) | ((uiMode * 0xff) << 16) | (smallestScreenWidthDp & 0xffff);
+    return ((screenLayout & 0xff) << 24)
+        | ((uiMode * 0xff) << 16)
+        | (smallestScreenWidthDp & 0xffff);
   }
 
-
   /**
-   *     union {
-   struct {
-   uint16_t screenWidthDp;
-   uint16_t screenHeightDp;
-   };
-   uint32_t screenSizeDp;
-   };
+   * union { struct { uint16_t screenWidthDp; uint16_t screenHeightDp; }; uint32_t screenSizeDp; };
    */
   private int screenSizeDp() {
     // screenWidthDp and screenHeightDp are really shorts...
@@ -2027,30 +2064,16 @@ public class ResTable_config {
   }
 
   /**
-     union {
-     struct {
-     uint8_t orientation;
-     uint8_t touchscreen;
-     uint16_t density;
-     };
-     uint32_t screenType;
-     };
+   * union { struct { uint8_t orientation; uint8_t touchscreen; uint16_t density; }; uint32_t
+   * screenType; };
    */
   private int screenType() {
     return ((orientation & 0xff) << 24) | ((touchscreen & 0xff) << 16) | (density & 0xffff);
   }
 
   /**
-   *
-   union {
-   struct {
-   uint8_t keyboard;
-   uint8_t navigation;
-   uint8_t inputFlags;
-   uint8_t inputPad0;
-   };
-   uint32_t input;
-   };
+   * union { struct { uint8_t keyboard; uint8_t navigation; uint8_t inputFlags; uint8_t inputPad0;
+   * }; uint32_t input; };
    */
   private int input() {
     // TODO is Pad Zeros?
@@ -2058,66 +2081,36 @@ public class ResTable_config {
   }
 
   /**
-   *     union {
-   struct {
-   uint16_t sdkVersion;
-   // For now minorVersion must always be 0!!!  Its meaning
-   // is currently undefined.
-   uint16_t minorVersion;
-   };
-   uint32_t version;
-   };
+   * union { struct { uint16_t sdkVersion; // For now minorVersion must always be 0!!! Its meaning
+   * // is currently undefined. uint16_t minorVersion; }; uint32_t version; };
    */
   private int version() {
     return ((sdkVersion & 0xffff) << 16) | (minorVersion & 0xffff);
   }
 
   /**
-   union {
-   struct {
-   // This field can take three different forms:
-   // - \0\0 means "any".
-   //
-   // - Two 7 bit ascii values interpreted as ISO-639-1 language
-   //   codes ('fr', 'en' etc. etc.). The high bit for both bytes is
-   //   zero.
-   //
-   // - A single 16 bit little endian packed value representing an
-   //   ISO-639-2 3 letter language code. This will be of the form:
-   //
-   //   {1, t, t, t, t, t, s, s, s, s, s, f, f, f, f, f}
-   //
-   //   bit[0, 4] = first letter of the language code
-   //   bit[5, 9] = second letter of the language code
-   //   bit[10, 14] = third letter of the language code.
-   //   bit[15] = 1 always
-   //
-   // For backwards compatibility, languages that have unambiguous
-   // two letter codes are represented in that format.
-   //
-   // The layout is always bigendian irrespective of the runtime
-   // architecture.
-   char language[2];
-
-   // This field can take three different forms:
-   // - \0\0 means "any".
-   //
-   // - Two 7 bit ascii values interpreted as 2 letter country
-   //   codes ('US', 'GB' etc.). The high bit for both bytes is zero.
-   //
-   // - An UN M.49 3 digit country code. For simplicity, these are packed
-   //   in the same manner as the language codes, though we should need
-   //   only 10 bits to represent them, instead of the 15.
-   //
-   // The layout is always bigendian irrespective of the runtime
-   // architecture.
-   char country[2];
-   };
-   uint32_t locale;
-   };
+   * union { struct { // This field can take three different forms: // - \0\0 means "any". // // -
+   * Two 7 bit ascii values interpreted as ISO-639-1 language // codes ('fr', 'en' etc. etc.). The
+   * high bit for both bytes is // zero. // // - A single 16 bit little endian packed value
+   * representing an // ISO-639-2 3 letter language code. This will be of the form: // // {1, t, t,
+   * t, t, t, s, s, s, s, s, f, f, f, f, f} // // bit[0, 4] = first letter of the language code //
+   * bit[5, 9] = second letter of the language code // bit[10, 14] = third letter of the language
+   * code. // bit[15] = 1 always // // For backwards compatibility, languages that have unambiguous
+   * // two letter codes are represented in that format. // // The layout is always bigendian
+   * irrespective of the runtime // architecture. char language[2];
+   *
+   * <p>// This field can take three different forms: // - \0\0 means "any". // // - Two 7 bit ascii
+   * values interpreted as 2 letter country // codes ('US', 'GB' etc.). The high bit for both bytes
+   * is zero. // // - An UN M.49 3 digit country code. For simplicity, these are packed // in the
+   * same manner as the language codes, though we should need // only 10 bits to represent them,
+   * instead of the 15. // // The layout is always bigendian irrespective of the runtime //
+   * architecture. char country[2]; }; uint32_t locale; };
    */
   int locale() {
-    return ((language[0] & 0xff) << 24) | ((language[1] & 0xff) << 16) | ((country[0] & 0xff) << 8) | (country[1] & 0xff);
+    return ((language[0] & 0xff) << 24)
+        | ((language[1] & 0xff) << 16)
+        | ((country[0] & 0xff) << 8)
+        | (country[1] & 0xff);
   }
 
   private boolean isLocaleBetterThan(ResTable_config o, ResTable_config requested) {
@@ -2186,9 +2179,9 @@ public class ResTable_config {
     // check the country and variant.
 
     // See if any of the regions is better than the other.
-    final int region_comparison = localeDataCompareRegions(
-        country, o.country,
-        requested.language, str(requested.localeScript), requested.country);
+    final int region_comparison =
+        localeDataCompareRegions(
+            country, o.country, requested.language, str(requested.localeScript), requested.country);
     if (region_comparison != 0) {
       return (region_comparison > 0);
     }
@@ -2201,15 +2194,13 @@ public class ResTable_config {
     }
 
     // The variants are the same, try numbering system.
-    boolean localeNumsysMatches = arrayCompare(localeNumberingSystem,
-                                             requested.localeNumberingSystem
-                                             ) == 0;
-    boolean otherNumsysMatches = arrayCompare(o.localeNumberingSystem,
-                                            requested.localeNumberingSystem
-                                            ) == 0;
+    boolean localeNumsysMatches =
+        arrayCompare(localeNumberingSystem, requested.localeNumberingSystem) == 0;
+    boolean otherNumsysMatches =
+        arrayCompare(o.localeNumberingSystem, requested.localeNumberingSystem) == 0;
 
     if (localeNumsysMatches != otherNumsysMatches) {
-        return localeNumsysMatches;
+      return localeNumsysMatches;
     }
 
     // Finally, the languages, although equivalent, may still be different
@@ -2228,13 +2219,13 @@ public class ResTable_config {
   }
 
   private boolean langsAreEquivalent(final byte[] lang1, final byte[] lang2) {
-    return areIdentical(lang1, lang2) ||
-        (areIdentical(lang1, kTagalog) && areIdentical(lang2, kFilipino)) ||
-        (areIdentical(lang1, kFilipino) && areIdentical(lang2, kTagalog));
+    return areIdentical(lang1, lang2)
+        || (areIdentical(lang1, kTagalog) && areIdentical(lang2, kFilipino))
+        || (areIdentical(lang1, kFilipino) && areIdentical(lang2, kTagalog));
   }
 
   // Checks if two language or country codes are identical
-  private boolean  areIdentical(final byte[] code1, final byte[] code2) {
+  private boolean areIdentical(final byte[] code1, final byte[] code2) {
     return code1[0] == code2[0] && code1[1] == code2[1];
   }
 
@@ -2276,7 +2267,7 @@ public class ResTable_config {
       }
     }
     if (isTruthy(screenLayout) || isTruthy(o.screenLayout)) {
-      if (((screenLayout^o.screenLayout) & MASK_LAYOUTDIR) != 0) {
+      if (((screenLayout ^ o.screenLayout) & MASK_LAYOUTDIR) != 0) {
         if (!isTruthy((screenLayout & MASK_LAYOUTDIR))) return false;
         if (!isTruthy((o.screenLayout & MASK_LAYOUTDIR))) return true;
       }
@@ -2298,28 +2289,28 @@ public class ResTable_config {
       }
     }
     if (isTruthy(screenLayout) || isTruthy(o.screenLayout)) {
-      if (((screenLayout^o.screenLayout) & MASK_SCREENSIZE) != 0) {
+      if (((screenLayout ^ o.screenLayout) & MASK_SCREENSIZE) != 0) {
         if (!isTruthy((screenLayout & MASK_SCREENSIZE))) return false;
         if (!isTruthy((o.screenLayout & MASK_SCREENSIZE))) return true;
       }
-      if (((screenLayout^o.screenLayout) & MASK_SCREENLONG) != 0) {
+      if (((screenLayout ^ o.screenLayout) & MASK_SCREENLONG) != 0) {
         if (!isTruthy((screenLayout & MASK_SCREENLONG))) return false;
         if (!isTruthy((o.screenLayout & MASK_SCREENLONG))) return true;
       }
     }
     if (isTruthy(screenLayout2) || isTruthy(o.screenLayout2)) {
-      if (((screenLayout2^o.screenLayout2) & MASK_SCREENROUND) != 0) {
+      if (((screenLayout2 ^ o.screenLayout2) & MASK_SCREENROUND) != 0) {
         if (!isTruthy((screenLayout2 & MASK_SCREENROUND))) return false;
         if (!isTruthy((o.screenLayout2 & MASK_SCREENROUND))) return true;
       }
     }
 
     if (isTruthy(colorMode) || isTruthy(o.colorMode)) {
-      if (((colorMode^o.colorMode) & MASK_HDR) != 0) {
+      if (((colorMode ^ o.colorMode) & MASK_HDR) != 0) {
         if (!isTruthy((colorMode & MASK_HDR))) return false;
         if (!isTruthy((o.colorMode & MASK_HDR))) return true;
       }
-      if (((colorMode^o.colorMode) & MASK_WIDE_COLOR_GAMUT) != 0) {
+      if (((colorMode ^ o.colorMode) & MASK_WIDE_COLOR_GAMUT) != 0) {
         if (!isTruthy((colorMode & MASK_WIDE_COLOR_GAMUT))) return false;
         if (!isTruthy((o.colorMode & MASK_WIDE_COLOR_GAMUT))) return true;
       }
@@ -2330,11 +2321,11 @@ public class ResTable_config {
       if (!isTruthy(o.orientation)) return true;
     }
     if (isTruthy(uiMode) || isTruthy(o.uiMode)) {
-      if (((uiMode^o.uiMode) & MASK_UI_MODE_TYPE) != 0) {
+      if (((uiMode ^ o.uiMode) & MASK_UI_MODE_TYPE) != 0) {
         if (!isTruthy((uiMode & MASK_UI_MODE_TYPE))) return false;
         if (!isTruthy((o.uiMode & MASK_UI_MODE_TYPE))) return true;
       }
-      if (((uiMode^o.uiMode) & MASK_UI_MODE_NIGHT) != 0) {
+      if (((uiMode ^ o.uiMode) & MASK_UI_MODE_NIGHT) != 0) {
         if (!isTruthy((uiMode & MASK_UI_MODE_NIGHT))) return false;
         if (!isTruthy((o.uiMode & MASK_UI_MODE_NIGHT))) return true;
       }
@@ -2346,11 +2337,11 @@ public class ResTable_config {
       if (!isTruthy(o.touchscreen)) return true;
     }
     if (isTruthy(input()) || isTruthy(o.input())) {
-      if (((inputFlags^o.inputFlags) & MASK_KEYSHIDDEN) != 0) {
+      if (((inputFlags ^ o.inputFlags) & MASK_KEYSHIDDEN) != 0) {
         if (!isTruthy((inputFlags & MASK_KEYSHIDDEN))) return false;
         if (!isTruthy((o.inputFlags & MASK_KEYSHIDDEN))) return true;
       }
-      if (((inputFlags^o.inputFlags) & MASK_NAVHIDDEN) != 0) {
+      if (((inputFlags ^ o.inputFlags) & MASK_NAVHIDDEN) != 0) {
         if (!isTruthy((inputFlags & MASK_NAVHIDDEN))) return false;
         if (!isTruthy((o.inputFlags & MASK_NAVHIDDEN))) return true;
       }

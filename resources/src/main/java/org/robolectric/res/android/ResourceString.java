@@ -135,12 +135,10 @@ public final class ResourceString {
     return output.toByteArray();
   }
 
-  /**
-   * Builds a string from a null-terminated char data.
-   */
+  /** Builds a string from a null-terminated char data. */
   public static String buildString(char[] data) {
     int count = 0;
-    for (count=0; count < data.length; count++) {
+    for (count = 0; count < data.length; count++) {
       if (data[count] == 0) {
         break;
       }
@@ -158,7 +156,7 @@ public final class ResourceString {
         output.write(((length & 0x7F00) >> 8) | 0x80);
       }
       output.write(length & 0xFF);
-    } else {  // UTF-16
+    } else { // UTF-16
       // TODO(acornwall): Replace output with a little-endian output.
       if (length > 0x7FFF) {
         int highBytes = ((length & 0x7FFF0000) >> 16) | 0x8000;

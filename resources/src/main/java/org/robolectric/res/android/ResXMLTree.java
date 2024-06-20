@@ -35,19 +35,19 @@ public class ResXMLTree {
   final DynamicRefTable mDynamicRefTable;
   public final ResXMLParser mParser;
 
-  int                    mError;
-  byte[]                       mOwnedData;
+  int mError;
+  byte[] mOwnedData;
   XmlBuffer mBuffer;
-    ResXMLTree_header mHeader;
-  int                      mSize;
+  ResXMLTree_header mHeader;
+  int mSize;
   //    final uint8_t*              mDataEnd;
   int mDataLen;
-  ResStringPool               mStrings = new ResStringPool();
-    int[]             mResIds;
-  int                      mNumResIds;
-    ResXMLTree_node mRootNode;
-    int                 mRootExt;
-  int                mRootCode;
+  ResStringPool mStrings = new ResStringPool();
+  int[] mResIds;
+  int mNumResIds;
+  ResXMLTree_node mRootNode;
+  int mRootExt;
+  int mRootCode;
 
   static volatile AtomicInteger gCount = new AtomicInteger(0);
 
@@ -59,40 +59,39 @@ public class ResXMLTree {
     mOwnedData = null;
 
     if (kDebugResXMLTree) {
-      ALOGI("Creating ResXMLTree %s #%d\n", this, gCount.getAndIncrement()+1);
+      ALOGI("Creating ResXMLTree %s #%d\n", this, gCount.getAndIncrement() + 1);
     }
     mParser.restart();
   }
 
-//  ResXMLTree() {
-//    this(null);
-//  }
+  //  ResXMLTree() {
+  //    this(null);
+  //  }
 
-//  ~ResXMLTree()
-//  {
+  //  ~ResXMLTree()
+  //  {
   @Override
   protected void finalize() {
     if (kDebugResXMLTree) {
-      ALOGI("Destroying ResXMLTree in %s #%d\n", this, gCount.getAndDecrement()-1);
+      ALOGI("Destroying ResXMLTree in %s #%d\n", this, gCount.getAndDecrement() - 1);
     }
     uninit();
   }
 
-  public int setTo(byte[] data, int size, boolean copyData)
-  {
+  public int setTo(byte[] data, int size, boolean copyData) {
     uninit();
     mParser.mEventCode = START_DOCUMENT;
 
     if (!isTruthy(data) || !isTruthy(size)) {
-      return (mError=BAD_TYPE);
+      return (mError = BAD_TYPE);
     }
 
     if (copyData) {
       mOwnedData = new byte[size];
-//      if (mOwnedData == null) {
-//        return (mError=NO_MEMORY);
-//      }
-//      memcpy(mOwnedData, data, size);
+      //      if (mOwnedData == null) {
+      //        return (mError=NO_MEMORY);
+      //      }
+      //      memcpy(mOwnedData, data, size);
       System.arraycopy(data, 0, mOwnedData, 0, size);
       data = mOwnedData;
     }
@@ -101,14 +100,14 @@ public class ResXMLTree {
     mHeader = new ResXMLTree_header(mBuffer.buf, 0);
     mSize = dtohl(mHeader.header.size);
     if (dtohs(mHeader.header.headerSize) > mSize || mSize > size) {
-      ALOGW("Bad XML block: header size %d or total size %d is larger than data size %d\n",
-          (int)dtohs(mHeader.header.headerSize),
-          (int)dtohl(mHeader.header.size), (int)size);
+      ALOGW(
+          "Bad XML block: header size %d or total size %d is larger than data size %d\n",
+          (int) dtohs(mHeader.header.headerSize), (int) dtohl(mHeader.header.size), (int) size);
       mError = BAD_TYPE;
       mParser.restart();
       return mError;
     }
-//    mDataEnd = ((final uint8_t*)mHeader) + mSize;
+    //    mDataEnd = ((final uint8_t*)mHeader) + mSize;
     mDataLen = mSize;
 
     mStrings.uninit();
@@ -119,47 +118,50 @@ public class ResXMLTree {
     // First look for a couple interesting chunks: the string block
     // and first XML node.
     ResChunk_header chunk =
-//      (final ResChunk_header*)(((final uint8_t*)mHeader) + dtohs(mHeader.header.headerSize));
+        //      (final ResChunk_header*)(((final uint8_t*)mHeader) +
+        // dtohs(mHeader.header.headerSize));
         new ResChunk_header(mBuffer.buf, mHeader.header.headerSize);
 
     ResChunk_header lastChunk = chunk;
-    while (chunk.myOffset() /*((final uint8_t*)chunk)*/ < (mDataLen- ResChunk_header.SIZEOF /*sizeof(ResChunk_header)*/) &&
-        chunk.myOffset() /*((final uint8_t*)chunk)*/ < (mDataLen-dtohl(chunk.size))) {
-      int err = validate_chunk(chunk, ResChunk_header.SIZEOF /*sizeof(ResChunk_header)*/, mDataLen, "XML");
+    while (chunk.myOffset() /*((final uint8_t*)chunk)*/
+            < (mDataLen - ResChunk_header.SIZEOF /*sizeof(ResChunk_header)*/)
+        && chunk.myOffset() /*((final uint8_t*)chunk)*/ < (mDataLen - dtohl(chunk.size))) {
+      int err =
+          validate_chunk(
+              chunk, ResChunk_header.SIZEOF /*sizeof(ResChunk_header)*/, mDataLen, "XML");
       if (err != NO_ERROR) {
         mError = err;
-//          goto done;
+        //          goto done;
         mParser.restart();
         return mError;
       }
       final short type = dtohs(chunk.type);
       final int size1 = dtohl(chunk.size);
       if (kDebugXMLNoisy) {
-//        System.out.println(String.format("Scanning @ %s: type=0x%x, size=0x%zx\n",
-//            (void*)(((uintptr_t)chunk)-((uintptr_t)mHeader)), type, size1);
+        //        System.out.println(String.format("Scanning @ %s: type=0x%x, size=0x%zx\n",
+        //            (void*)(((uintptr_t)chunk)-((uintptr_t)mHeader)), type, size1);
       }
       if (type == RES_STRING_POOL_TYPE) {
         mStrings.setTo(mBuffer.buf, chunk.myOffset(), size, false);
       } else if (type == RES_XML_RESOURCE_MAP_TYPE) {
-//        mResIds = (final int*)
-//        (((final uint8_t*)chunk)+dtohs(chunk.headerSize()));
-        mNumResIds = (dtohl(chunk.size)-dtohs(chunk.headerSize))/SIZEOF_INT /*sizeof(int)*/;
+        //        mResIds = (final int*)
+        //        (((final uint8_t*)chunk)+dtohs(chunk.headerSize()));
+        mNumResIds = (dtohl(chunk.size) - dtohs(chunk.headerSize)) / SIZEOF_INT /*sizeof(int)*/;
         mResIds = new int[mNumResIds];
         for (int i = 0; i < mNumResIds; i++) {
           mResIds[i] = mBuffer.buf.getInt(chunk.myOffset() + chunk.headerSize + i * SIZEOF_INT);
         }
-      } else if (type >= RES_XML_FIRST_CHUNK_TYPE
-          && type <= RES_XML_LAST_CHUNK_TYPE) {
+      } else if (type >= RES_XML_FIRST_CHUNK_TYPE && type <= RES_XML_LAST_CHUNK_TYPE) {
         if (validateNode(new ResXMLTree_node(mBuffer.buf, chunk)) != NO_ERROR) {
           mError = BAD_TYPE;
-//          goto done;
+          //          goto done;
           mParser.restart();
           return mError;
         }
         mParser.mCurNode = new ResXMLTree_node(mBuffer.buf, lastChunk.myOffset());
         if (mParser.nextNode() == BAD_DOCUMENT) {
           mError = BAD_TYPE;
-//          goto done;
+          //          goto done;
           mParser.restart();
           return mError;
         }
@@ -173,49 +175,49 @@ public class ResXMLTree {
         }
       }
       lastChunk = chunk;
-//      chunk = (final ResChunk_header*)
-//      (((final uint8_t*)chunk) + size1);
+      //      chunk = (final ResChunk_header*)
+      //      (((final uint8_t*)chunk) + size1);
       chunk = new ResChunk_header(mBuffer.buf, chunk.myOffset() + size1);
-  }
+    }
 
     if (mRootNode == null) {
       ALOGW("Bad XML block: no root element node found\n");
       mError = BAD_TYPE;
-//          goto done;
+      //          goto done;
       mParser.restart();
       return mError;
     }
 
     mError = mStrings.getError();
 
-  done:
+    done:
     mParser.restart();
     return mError;
   }
 
-  public int getError()
-  {
+  public int getError() {
     return mError;
   }
 
-  void uninit()
-  {
+  void uninit() {
     mError = NO_INIT;
     mStrings.uninit();
     if (isTruthy(mOwnedData)) {
-//      free(mOwnedData);
+      //      free(mOwnedData);
       mOwnedData = null;
     }
     mParser.restart();
   }
 
-  int validateNode(final ResXMLTree_node node)
-  {
+  int validateNode(final ResXMLTree_node node) {
     final short eventCode = dtohs(node.header.type);
 
-    int err = validate_chunk(
-        node.header, SIZEOF_RESXMLTREE_NODE /*sizeof(ResXMLTree_node)*/,
-      mDataLen, "ResXMLTree_node");
+    int err =
+        validate_chunk(
+            node.header,
+            SIZEOF_RESXMLTREE_NODE /*sizeof(ResXMLTree_node)*/,
+            mDataLen,
+            "ResXMLTree_node");
 
     if (err >= NO_ERROR) {
       // Only perform additional validation on START nodes
@@ -223,67 +225,67 @@ public class ResXMLTree {
         return NO_ERROR;
       }
 
-        final short headerSize = dtohs(node.header.headerSize);
-        final int size = dtohl(node.header.size);
-//        final ResXMLTree_attrExt attrExt = (final ResXMLTree_attrExt*)
-//      (((final uint8_t*)node) + headerSize);
-      ResXMLTree_attrExt attrExt = new ResXMLTree_attrExt(mBuffer.buf, node.myOffset() + headerSize);
+      final short headerSize = dtohs(node.header.headerSize);
+      final int size = dtohl(node.header.size);
+      //        final ResXMLTree_attrExt attrExt = (final ResXMLTree_attrExt*)
+      //      (((final uint8_t*)node) + headerSize);
+      ResXMLTree_attrExt attrExt =
+          new ResXMLTree_attrExt(mBuffer.buf, node.myOffset() + headerSize);
       // check for sensical values pulled out of the stream so far...
       if ((size >= headerSize + SIZEOF_RESXMLTREE_ATTR_EXT /*sizeof(ResXMLTree_attrExt)*/)
           && (attrExt.myOffset() > node.myOffset())) {
-            final int attrSize = ((int)dtohs(attrExt.attributeSize))
-            * dtohs(attrExt.attributeCount);
-        if ((dtohs(attrExt.attributeStart)+attrSize) <= (size-headerSize)) {
+        final int attrSize = ((int) dtohs(attrExt.attributeSize)) * dtohs(attrExt.attributeCount);
+        if ((dtohs(attrExt.attributeStart) + attrSize) <= (size - headerSize)) {
           return NO_ERROR;
         }
-        ALOGW("Bad XML block: node attributes use 0x%x bytes, only have 0x%x bytes\n",
-            (int)(dtohs(attrExt.attributeStart)+attrSize),
-            (int)(size-headerSize));
-      }
-        else {
-        ALOGW("Bad XML start block: node header size 0x%x, size 0x%x\n",
-            (int)headerSize, (int)size);
+        ALOGW(
+            "Bad XML block: node attributes use 0x%x bytes, only have 0x%x bytes\n",
+            (int) (dtohs(attrExt.attributeStart) + attrSize), (int) (size - headerSize));
+      } else {
+        ALOGW(
+            "Bad XML start block: node header size 0x%x, size 0x%x\n",
+            (int) headerSize, (int) size);
       }
       return BAD_TYPE;
     }
 
     return err;
 
-//    if (false) {
-//      final boolean isStart = dtohs(node.header().type()) == RES_XML_START_ELEMENT_TYPE;
-//
-//      final short headerSize = dtohs(node.header().headerSize());
-//      final int size = dtohl(node.header().size());
-//
-//      if (headerSize >= (isStart ? sizeof(ResXMLTree_attrNode) : sizeof(ResXMLTree_node))) {
-//        if (size >= headerSize) {
-//          if ((( final uint8_t*)node) <=(mDataEnd - size)){
-//            if (!isStart) {
-//              return NO_ERROR;
-//            }
-//            if ((((int) dtohs(node.attributeSize)) * dtohs(node.attributeCount))
-//                <= (size - headerSize)) {
-//              return NO_ERROR;
-//            }
-//            ALOGW("Bad XML block: node attributes use 0x%x bytes, only have 0x%x bytes\n",
-//                ((int) dtohs(node.attributeSize)) * dtohs(node.attributeCount),
-//                (int) (size - headerSize));
-//            return BAD_TYPE;
-//          }
-//          ALOGW("Bad XML block: node at 0x%x extends beyond data end 0x%x\n",
-//              (int) ((( final uint8_t*)node)-(( final uint8_t*)mHeader)),(int) mSize);
-//          return BAD_TYPE;
-//        }
-//        ALOGW("Bad XML block: node at 0x%x header size 0x%x smaller than total size 0x%x\n",
-//            (int) ((( final uint8_t*)node)-(( final uint8_t*)mHeader)),
-//        (int) headerSize, (int) size);
-//        return BAD_TYPE;
-//      }
-//      ALOGW("Bad XML block: node at 0x%x header size 0x%x too small\n",
-//          (int) ((( final uint8_t*)node)-(( final uint8_t*)mHeader)),
-//      (int) headerSize);
-//      return BAD_TYPE;
-//    }
+    //    if (false) {
+    //      final boolean isStart = dtohs(node.header().type()) == RES_XML_START_ELEMENT_TYPE;
+    //
+    //      final short headerSize = dtohs(node.header().headerSize());
+    //      final int size = dtohl(node.header().size());
+    //
+    //      if (headerSize >= (isStart ? sizeof(ResXMLTree_attrNode) : sizeof(ResXMLTree_node))) {
+    //        if (size >= headerSize) {
+    //          if ((( final uint8_t*)node) <=(mDataEnd - size)){
+    //            if (!isStart) {
+    //              return NO_ERROR;
+    //            }
+    //            if ((((int) dtohs(node.attributeSize)) * dtohs(node.attributeCount))
+    //                <= (size - headerSize)) {
+    //              return NO_ERROR;
+    //            }
+    //            ALOGW("Bad XML block: node attributes use 0x%x bytes, only have 0x%x bytes\n",
+    //                ((int) dtohs(node.attributeSize)) * dtohs(node.attributeCount),
+    //                (int) (size - headerSize));
+    //            return BAD_TYPE;
+    //          }
+    //          ALOGW("Bad XML block: node at 0x%x extends beyond data end 0x%x\n",
+    //              (int) ((( final uint8_t*)node)-(( final uint8_t*)mHeader)),(int) mSize);
+    //          return BAD_TYPE;
+    //        }
+    //        ALOGW("Bad XML block: node at 0x%x header size 0x%x smaller than total size 0x%x\n",
+    //            (int) ((( final uint8_t*)node)-(( final uint8_t*)mHeader)),
+    //        (int) headerSize, (int) size);
+    //        return BAD_TYPE;
+    //      }
+    //      ALOGW("Bad XML block: node at 0x%x header size 0x%x too small\n",
+    //          (int) ((( final uint8_t*)node)-(( final uint8_t*)mHeader)),
+    //      (int) headerSize);
+    //      return BAD_TYPE;
+    //    }
   }
 
   public ResStringPool getStrings() {

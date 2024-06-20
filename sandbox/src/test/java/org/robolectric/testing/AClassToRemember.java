@@ -1,4 +1,3 @@
 package org.robolectric.testing;
 
-public class AClassToRemember {
-}
+public class AClassToRemember {}

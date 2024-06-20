@@ -35,15 +35,19 @@ public class ResBundle {
       for (TypedResource candidate : values) {
         ResTable_config candidateConfig = candidate.getConfig();
         if (candidateConfig.match(toMatch)) {
-          if (bestMatchSoFar == null || candidateConfig.isBetterThan(bestMatchSoFar.getConfig(), toMatch)) {
+          if (bestMatchSoFar == null
+              || candidateConfig.isBetterThan(bestMatchSoFar.getConfig(), toMatch)) {
             bestMatchSoFar = candidate;
           }
         }
       }
 
       if (Logger.loggingEnabled()) {
-        Logger.debug("Picked '%s' for %s for qualifiers '%s' (%d candidates)",
-            bestMatchSoFar == null ? "<none>" : bestMatchSoFar.getXmlContext().getQualifiers().toString(),
+        Logger.debug(
+            "Picked '%s' for %s for qualifiers '%s' (%d candidates)",
+            bestMatchSoFar == null
+                ? "<none>"
+                : bestMatchSoFar.getXmlContext().getQualifiers().toString(),
             resName.getFullyQualifiedName(),
             toMatch,
             values.size());

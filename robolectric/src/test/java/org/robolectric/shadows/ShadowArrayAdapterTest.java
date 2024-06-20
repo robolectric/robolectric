@@ -24,7 +24,8 @@ public class ShadowArrayAdapterTest {
   private ArrayAdapter<Integer> arrayAdapter;
   private Application context;
 
-  @Before public void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     List<Integer> list = new ArrayList<>();
     list.add(1);
     list.add(2);
@@ -63,16 +64,16 @@ public class ShadowArrayAdapterTest {
     ArrayAdapter<String> arrayAdapter =
         new ArrayAdapter<>(context, R.id.title, new String[] {"first value"});
 
-    //this assertion may look a little backwards since R.id.title is labeled
-    //textViewResourceId in the constructor parameter list, but the output is correct.
+    // this assertion may look a little backwards since R.id.title is labeled
+    // textViewResourceId in the constructor parameter list, but the output is correct.
     assertThat(Shadows.shadowOf(arrayAdapter).getResourceId()).isEqualTo(R.id.title);
     assertThat(Shadows.shadowOf(arrayAdapter).getTextViewResourceId()).isNotEqualTo(R.id.title);
     assertThat(Shadows.shadowOf(arrayAdapter).getTextViewResourceId()).isEqualTo(0);
 
     ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<>(context, R.id.title);
 
-    //this assertion may look a little backwards since R.id.title is labeled
-    //textViewResourceId in the constructor parameter list, but the output is correct.
+    // this assertion may look a little backwards since R.id.title is labeled
+    // textViewResourceId in the constructor parameter list, but the output is correct.
     assertThat(Shadows.shadowOf(arrayAdapter2).getResourceId()).isEqualTo(R.id.title);
     assertThat(Shadows.shadowOf(arrayAdapter2).getTextViewResourceId()).isNotEqualTo(R.id.title);
     assertThat(Shadows.shadowOf(arrayAdapter2).getTextViewResourceId()).isEqualTo(0);
@@ -80,8 +81,8 @@ public class ShadowArrayAdapterTest {
     ArrayAdapter<String> arrayAdapter3 =
         new ArrayAdapter<>(context, R.id.title, Collections.singletonList("first value"));
 
-    //this assertion may look a little backwards since R.id.title is labeled
-    //textViewResourceId in the constructor parameter list, but the output is correct.
+    // this assertion may look a little backwards since R.id.title is labeled
+    // textViewResourceId in the constructor parameter list, but the output is correct.
     assertThat(Shadows.shadowOf(arrayAdapter3).getResourceId()).isEqualTo(R.id.title);
     assertThat(Shadows.shadowOf(arrayAdapter3).getTextViewResourceId()).isNotEqualTo(R.id.title);
     assertThat(Shadows.shadowOf(arrayAdapter3).getTextViewResourceId()).isEqualTo(0);

@@ -45,8 +45,7 @@ public class ShadowingTest {
     }
   }
 
-  static class Context {
-  }
+  static class Context {}
 
   static class AccountManager {
     public static AccountManager get(Object arg) {
@@ -88,6 +87,7 @@ public class ShadowingTest {
   @Instrument
   static class Paint {
     public native void setColor(int color);
+
     public native int getColor();
   }
 
@@ -121,10 +121,10 @@ public class ShadowingTest {
     }
   }
 
-  @Instrument @SuppressWarnings({"UnusedDeclaration"})
+  @Instrument
+  @SuppressWarnings({"UnusedDeclaration"})
   public static class ClassWithNoDefaultConstructor {
-    ClassWithNoDefaultConstructor(String string) {
-    }
+    ClassWithNoDefaultConstructor(String string) {}
   }
 
   @Test
@@ -144,16 +144,13 @@ public class ShadowingTest {
     assertEquals("Off I saunter to the salon!", new Pony().saunter("the salon"));
   }
 
-  static class TextView {
-  }
+  static class TextView {}
 
   static class ColorStateList {
-    public ColorStateList(int[][] ints, int[] ints1) {
-    }
+    public ColorStateList(int[][] ints, int[] ints1) {}
   }
 
-  static class TypedArray {
-  }
+  static class TypedArray {}
 
   @Implements(TextView.class)
   public static class TextViewWithDummyGetTextColorsMethod {
@@ -168,7 +165,8 @@ public class ShadowingTest {
     ClassWithSomeConstructors o = new ClassWithSomeConstructors("my name");
     assertNull(o.name);
 
-    Method realConstructor = o.getClass().getDeclaredMethod(ShadowConstants.CONSTRUCTOR_METHOD_NAME, String.class);
+    Method realConstructor =
+        o.getClass().getDeclaredMethod(ShadowConstants.CONSTRUCTOR_METHOD_NAME, String.class);
     realConstructor.setAccessible(true);
     realConstructor.invoke(o, "my name");
     assertEquals("my name", o.name);
@@ -186,8 +184,7 @@ public class ShadowingTest {
   @Implements(ClassWithSomeConstructors.class)
   public static class ShadowOfClassWithSomeConstructors {
     @Implementation
-    protected void __constructor__(String s) {
-    }
+    protected void __constructor__(String s) {}
   }
 
   @Test
@@ -203,12 +200,10 @@ public class ShadowingTest {
   }
 
   @Instrument
-  public static class ApiImplementedClass {
-  }
+  public static class ApiImplementedClass {}
 
   @Implements(ApiImplementedClass.class)
-  public static class ShadowApiImplementedClass {
-  }
+  public static class ShadowApiImplementedClass {}
 
   @Test
   public void shouldNotInstrumentClassIfNotAddedToConfig() {

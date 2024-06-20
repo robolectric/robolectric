@@ -47,7 +47,7 @@ public class ShadowEventLogTest {
   }
 
   @Test
-  public void testAddEvent_testIntLog()  throws Exception {
+  public void testAddEvent_testIntLog() throws Exception {
     EventLog.Event event =
         new ShadowEventLog.EventBuilder(TEST_TAG, TEST_INT)
             .setProcessId(TEST_PROCESS_ID)

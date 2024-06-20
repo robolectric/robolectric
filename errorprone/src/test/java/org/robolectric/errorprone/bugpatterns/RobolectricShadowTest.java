@@ -7,7 +7,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** @author christianw@google.com (Christian Williams) */
+/**
+ * @author christianw@google.com (Christian Williams)
+ */
 @RunWith(JUnit4.class)
 public class RobolectricShadowTest {
   private BugCheckerRefactoringTestHelper testHelper;

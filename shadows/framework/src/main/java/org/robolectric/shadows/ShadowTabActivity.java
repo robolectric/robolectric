@@ -15,7 +15,7 @@ public class ShadowTabActivity extends ShadowActivityGroup {
 
   @Implementation
   protected TabHost getTabHost() {
-    if (tabhost==null) {
+    if (tabhost == null) {
       tabhost = new TabHost(realTabActivity);
     }
     return tabhost;

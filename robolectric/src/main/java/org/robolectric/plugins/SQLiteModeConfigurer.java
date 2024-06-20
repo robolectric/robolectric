@@ -39,5 +39,4 @@ public class SQLiteModeConfigurer extends SingleValueConfigurer<SQLiteMode, SQLi
     }
     return Mode.NATIVE;
   }
-
 }

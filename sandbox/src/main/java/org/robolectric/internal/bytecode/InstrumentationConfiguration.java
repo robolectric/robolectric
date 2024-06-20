@@ -19,24 +19,22 @@ import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.shadow.api.Shadow;
 
-/**
- * Configuration rules for {@link SandboxClassLoader}.
- */
+/** Configuration rules for {@link SandboxClassLoader}. */
 public class InstrumentationConfiguration {
 
   public static Builder newBuilder() {
     return new Builder();
   }
 
-  static final Set<String> CLASSES_TO_ALWAYS_ACQUIRE = Sets.newHashSet(
-      RobolectricInternals.class.getName(),
-      InvokeDynamicSupport.class.getName(),
-      Shadow.class.getName(),
+  static final Set<String> CLASSES_TO_ALWAYS_ACQUIRE =
+      Sets.newHashSet(
+          RobolectricInternals.class.getName(),
+          InvokeDynamicSupport.class.getName(),
+          Shadow.class.getName(),
 
-      // these classes are deprecated and will be removed soon:
-      "org.robolectric.util.FragmentTestUtil",
-      "org.robolectric.util.FragmentTestUtil$FragmentUtilActivity"
-  );
+          // these classes are deprecated and will be removed soon:
+          "org.robolectric.util.FragmentTestUtil",
+          "org.robolectric.util.FragmentTestUtil$FragmentUtilActivity");
 
   // Must always acquire these as they change from API level to API level
   static final ImmutableSet<String> RESOURCES_TO_ALWAYS_ACQUIRE =
@@ -108,8 +106,8 @@ public class InstrumentationConfiguration {
   /**
    * Determine if {@link SandboxClassLoader} should load a given class.
    *
-   * @param   name The fully-qualified class name.
-   * @return  True if the class should be loaded.
+   * @param name The fully-qualified class name.
+   * @return True if the class should be loaded.
    */
   public boolean shouldAcquire(String name) {
     if (CLASSES_TO_ALWAYS_ACQUIRE.contains(name)) {
@@ -194,7 +192,6 @@ public class InstrumentationConfiguration {
     if (!instrumentedClasses.equals(that.instrumentedClasses)) return false;
     if (!interceptedMethods.equals(that.interceptedMethods)) return false;
 
-
     return true;
   }
 
@@ -256,9 +253,7 @@ public class InstrumentationConfiguration {
     public final Collection<String> packagesToNotInstrument = new HashSet<>();
     public String classesToNotInstrumentRegex;
 
-
-    public Builder() {
-    }
+    public Builder() {}
 
     public Builder(InstrumentationConfiguration classLoaderConfig) {
       instrumentedPackages.addAll(classLoaderConfig.instrumentedPackages);

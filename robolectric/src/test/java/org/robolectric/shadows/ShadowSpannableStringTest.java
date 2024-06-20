@@ -96,5 +96,4 @@ public class ShadowSpannableStringTest {
       assertThat(spans[1]).isSameInstanceAs(s1);
     }
   }
-
 }

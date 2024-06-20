@@ -10,34 +10,39 @@ import android.widget.LinearLayout;
 import org.robolectric.Robolectric;
 
 /**
- * @deprecated Please use {@link Robolectric#buildFragment(Class)} instead. This will be
- * removed in a forthcoming release,
+ * @deprecated Please use {@link Robolectric#buildFragment(Class)} instead. This will be removed in
+ *     a forthcoming release,
  */
 @Deprecated
 public final class FragmentTestUtil {
-  
+
   public static void startFragment(Fragment fragment) {
     buildFragmentManager(FragmentUtilActivity.class)
-        .beginTransaction().add(fragment, null).commit();
+        .beginTransaction()
+        .add(fragment, null)
+        .commit();
     shadowMainLooper().idleIfPaused();
   }
 
   public static void startFragment(Fragment fragment, Class<? extends Activity> activityClass) {
-    buildFragmentManager(activityClass)
-        .beginTransaction().add(fragment, null).commit();
+    buildFragmentManager(activityClass).beginTransaction().add(fragment, null).commit();
     shadowMainLooper().idleIfPaused();
   }
 
   public static void startVisibleFragment(Fragment fragment) {
     buildFragmentManager(FragmentUtilActivity.class)
-        .beginTransaction().add(1, fragment, null).commit();
+        .beginTransaction()
+        .add(1, fragment, null)
+        .commit();
     shadowMainLooper().idleIfPaused();
   }
 
-  public static void startVisibleFragment(Fragment fragment,
-      Class<? extends Activity> activityClass, int containerViewId) {
+  public static void startVisibleFragment(
+      Fragment fragment, Class<? extends Activity> activityClass, int containerViewId) {
     buildFragmentManager(activityClass)
-        .beginTransaction().add(containerViewId, fragment, null).commit();
+        .beginTransaction()
+        .add(containerViewId, fragment, null)
+        .commit();
     shadowMainLooper().idleIfPaused();
   }
 

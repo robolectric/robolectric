@@ -210,7 +210,8 @@ public class ShadowDialogTest {
       onStartCalled = true;
     }
 
-    @Override public void dismiss() {
+    @Override
+    public void dismiss() {
       super.dismiss();
       wasDismissed = true;
     }

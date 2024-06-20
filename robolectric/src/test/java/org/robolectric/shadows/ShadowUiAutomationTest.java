@@ -39,6 +39,7 @@ public class ShadowUiAutomationTest {
         .isEqualTo(1);
     assertThat(Settings.Global.getFloat(cr, Settings.Global.WINDOW_ANIMATION_SCALE)).isEqualTo(1);
   }
+
   @Test
   public void setRotation_freeze90_rotatesToLandscape() {
     UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();

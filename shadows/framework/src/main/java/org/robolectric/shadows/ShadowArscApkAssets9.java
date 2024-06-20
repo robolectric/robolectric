@@ -187,7 +187,8 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     //
     // ApkAssets apk_assets = ApkAssets.LoadFromFd(std.move(dup_fd),
     //                                                                     friendly_name_utf8,
-    //                                                                     system, force_shared_lib);
+    //                                                                     system,
+    // force_shared_lib);
     // if (apk_assets == null) {
     //   String error_msg = String.format("Failed to load asset path %s from fd %d",
     //                                              friendly_name_utf8, dup_fd.get());
@@ -246,8 +247,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       return 0;
     }
 
-    CppApkAssets apk_assets =
-        Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
+    CppApkAssets apk_assets = Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
     Asset asset = apk_assets.Open(path_utf8, Asset.AccessMode.ACCESS_RANDOM);
     if (asset == null) {
       throw new FileNotFoundException(path_utf8);
@@ -255,14 +255,16 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
 
     // DynamicRefTable is only needed when looking up resource references. Opening an XML file
     // directly from an ApkAssets has no notion of proper resource references.
-    ResXMLTree xml_tree = new ResXMLTree(null); // util.make_unique<ResXMLTree>(nullptr /*dynamicRefTable*/);
+    ResXMLTree xml_tree =
+        new ResXMLTree(null); // util.make_unique<ResXMLTree>(nullptr /*dynamicRefTable*/);
     int err = xml_tree.setTo(asset.getBuffer(true), (int) asset.getLength(), true);
     // asset.reset();
 
     if (err != NO_ERROR) {
       throw new FileNotFoundException("Corrupt XML binary file");
     }
-    return Registries.NATIVE_RES_XML_TREES.register(xml_tree); // reinterpret_cast<jlong>(xml_tree.release());
+    return Registries.NATIVE_RES_XML_TREES.register(
+        xml_tree); // reinterpret_cast<jlong>(xml_tree.release());
   }
 
   // // JNI registration.

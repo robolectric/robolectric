@@ -176,10 +176,12 @@ public class ReflectorTest {
     @Static
     String someStaticMethod(String a, String b);
 
-    @Static @Accessor("eStatic")
+    @Static
+    @Accessor("eStatic")
     void setEStatic(String value);
 
-    @Static @Accessor("eStatic")
+    @Static
+    @Accessor("eStatic")
     String getEStatic();
 
     @Accessor("c")

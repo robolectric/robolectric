@@ -19,10 +19,10 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /**
- * Calls to static method of {@link GoogleAuthUtil} will be redirected to the provided
- * {@link GoogleAuthUtilImpl} implementation. Use {@link #provideImpl(GoogleAuthUtilImpl)}
- * to set the implementation instance. By default, a {@link GoogleAuthUtilImpl} is used in call
- * redirection. Use mocks or subclassing {@link GoogleAuthUtilImpl} to achieve desired behaviors.
+ * Calls to static method of {@link GoogleAuthUtil} will be redirected to the provided {@link
+ * GoogleAuthUtilImpl} implementation. Use {@link #provideImpl(GoogleAuthUtilImpl)} to set the
+ * implementation instance. By default, a {@link GoogleAuthUtilImpl} is used in call redirection.
+ * Use mocks or subclassing {@link GoogleAuthUtilImpl} to achieve desired behaviors.
  */
 @Implements(GoogleAuthUtil.class)
 public class ShadowGoogleAuthUtil {
@@ -49,9 +49,8 @@ public class ShadowGoogleAuthUtil {
   }
 
   @Implementation
-  public static synchronized List<AccountChangeEvent> getAccountChangeEvents(Context context,
-      int eventIndex, String accountName)
-          throws GoogleAuthException, IOException {
+  public static synchronized List<AccountChangeEvent> getAccountChangeEvents(
+      Context context, int eventIndex, String accountName) throws GoogleAuthException, IOException {
     return googleAuthUtilImpl.getAccountChangeEvents(context, eventIndex, accountName);
   }
 
@@ -68,8 +67,9 @@ public class ShadowGoogleAuthUtil {
   }
 
   @Implementation
-  public static synchronized String getToken(Context context, Account account, String scope,
-      Bundle extras) throws IOException, UserRecoverableAuthException, GoogleAuthException {
+  public static synchronized String getToken(
+      Context context, Account account, String scope, Bundle extras)
+      throws IOException, UserRecoverableAuthException, GoogleAuthException {
     return googleAuthUtilImpl.getToken(context, account, scope, extras);
   }
 
@@ -80,55 +80,65 @@ public class ShadowGoogleAuthUtil {
   }
 
   @Implementation
-  public static synchronized String getToken(Context context, String accountName, String scope,
-      Bundle extras) throws IOException, UserRecoverableAuthException, GoogleAuthException {
+  public static synchronized String getToken(
+      Context context, String accountName, String scope, Bundle extras)
+      throws IOException, UserRecoverableAuthException, GoogleAuthException {
     return googleAuthUtilImpl.getToken(context, accountName, scope, extras);
   }
 
   @Implementation
-  public static synchronized String getTokenWithNotification(Context context, Account account,
-      String scope, Bundle extras)
-          throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
+  public static synchronized String getTokenWithNotification(
+      Context context, Account account, String scope, Bundle extras)
+      throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
     return googleAuthUtilImpl.getTokenWithNotification(context, account, scope, extras);
   }
 
   @Implementation
-  public static synchronized String getTokenWithNotification(Context context, Account account,
-      String scope, Bundle extras, Intent callback)
-          throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
-    return googleAuthUtilImpl
-        .getTokenWithNotification(context, account, scope, extras, callback);
+  public static synchronized String getTokenWithNotification(
+      Context context, Account account, String scope, Bundle extras, Intent callback)
+      throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
+    return googleAuthUtilImpl.getTokenWithNotification(context, account, scope, extras, callback);
   }
 
   @Implementation
-  public static synchronized String getTokenWithNotification(Context context, Account account,
-      String scope, Bundle extras, String authority, Bundle syncBundle)
-          throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
-    return googleAuthUtilImpl
-        .getTokenWithNotification(context, account, scope, extras, authority, syncBundle);
+  public static synchronized String getTokenWithNotification(
+      Context context,
+      Account account,
+      String scope,
+      Bundle extras,
+      String authority,
+      Bundle syncBundle)
+      throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
+    return googleAuthUtilImpl.getTokenWithNotification(
+        context, account, scope, extras, authority, syncBundle);
   }
 
   @Implementation
-  public static synchronized String getTokenWithNotification(Context context, String accountName,
-      String scope, Bundle extras, Intent callback)
-          throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
-    return googleAuthUtilImpl
-        .getTokenWithNotification(context, accountName, scope, extras, callback);
+  public static synchronized String getTokenWithNotification(
+      Context context, String accountName, String scope, Bundle extras, Intent callback)
+      throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
+    return googleAuthUtilImpl.getTokenWithNotification(
+        context, accountName, scope, extras, callback);
   }
 
   @Implementation
-  public static synchronized String getTokenWithNotification(Context context, String accountName,
-      String scope, Bundle extras)
-          throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
+  public static synchronized String getTokenWithNotification(
+      Context context, String accountName, String scope, Bundle extras)
+      throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
     return googleAuthUtilImpl.getTokenWithNotification(context, accountName, scope, extras);
   }
 
   @Implementation
-  public static synchronized String getTokenWithNotification(Context context, String accountName,
-      String scope, Bundle extras, String authority, Bundle syncBundle)
-          throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
-    return googleAuthUtilImpl.getTokenWithNotification(context, accountName, scope, extras,
-        authority, syncBundle);
+  public static synchronized String getTokenWithNotification(
+      Context context,
+      String accountName,
+      String scope,
+      Bundle extras,
+      String authority,
+      Bundle syncBundle)
+      throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
+    return googleAuthUtilImpl.getTokenWithNotification(
+        context, accountName, scope, extras, authority, syncBundle);
   }
 
   @Implementation
@@ -143,8 +153,9 @@ public class ShadowGoogleAuthUtil {
     public void clearToken(Context context, String token)
         throws GooglePlayServicesAvailabilityException, GoogleAuthException, IOException {}
 
-    public List<AccountChangeEvent> getAccountChangeEvents(Context context, int eventIndex,
-        String accountName) throws GoogleAuthException, IOException {
+    public List<AccountChangeEvent> getAccountChangeEvents(
+        Context context, int eventIndex, String accountName)
+        throws GoogleAuthException, IOException {
       return new ArrayList<>();
     }
 
@@ -173,49 +184,58 @@ public class ShadowGoogleAuthUtil {
       return getToken(context, new Account(accountName, "robo"), scope, extras);
     }
 
-    public String getTokenWithNotification(Context context, Account account, String scope,
-        Bundle extras)
-            throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
+    public String getTokenWithNotification(
+        Context context, Account account, String scope, Bundle extras)
+        throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
       return "token";
     }
 
-    public String getTokenWithNotification(Context context, Account account, String scope,
-        Bundle extras, Intent callback)
-            throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
+    public String getTokenWithNotification(
+        Context context, Account account, String scope, Bundle extras, Intent callback)
+        throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
       if (callback == null) {
         throw new IllegalArgumentException("Callback cannot be null.");
       }
       return "token";
     }
 
-    public String getTokenWithNotification(Context context, Account account, String scope,
-        Bundle extras, String authority, Bundle syncBundle)
-            throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
+    public String getTokenWithNotification(
+        Context context,
+        Account account,
+        String scope,
+        Bundle extras,
+        String authority,
+        Bundle syncBundle)
+        throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
       if (authority == null || authority.length() == 0) {
         throw new IllegalArgumentException("Authority cannot be empty.");
       }
       return "token";
     }
 
-    public String getTokenWithNotification(Context context, String accountName, String scope,
-        Bundle extras)
-            throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
-      return getTokenWithNotification(context, new Account(accountName, "robo"), scope,
-          extras);
+    public String getTokenWithNotification(
+        Context context, String accountName, String scope, Bundle extras)
+        throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
+      return getTokenWithNotification(context, new Account(accountName, "robo"), scope, extras);
     }
 
-    public String getTokenWithNotification(Context context, String accountName, String scope,
-        Bundle extras, Intent callback)
-            throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
-      return getTokenWithNotification(context, new Account(accountName, "robo"), scope,
-          extras, callback);
+    public String getTokenWithNotification(
+        Context context, String accountName, String scope, Bundle extras, Intent callback)
+        throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
+      return getTokenWithNotification(
+          context, new Account(accountName, "robo"), scope, extras, callback);
     }
 
-    public String getTokenWithNotification(Context context, String accountName, String scope,
-        Bundle extras, String authority, Bundle syncBundle)
-            throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
-      return getTokenWithNotification(context, new Account(accountName, "robo"), scope,
-          extras, authority, syncBundle);
+    public String getTokenWithNotification(
+        Context context,
+        String accountName,
+        String scope,
+        Bundle extras,
+        String authority,
+        Bundle syncBundle)
+        throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
+      return getTokenWithNotification(
+          context, new Account(accountName, "robo"), scope, extras, authority, syncBundle);
     }
 
     public void invalidateToken(Context context, String token) {}

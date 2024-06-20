@@ -41,7 +41,9 @@ public abstract class ShadowLooper {
     return Shadow.extract(looper);
   }
 
-  /** @deprecated Use {@code shadowOf({@link Looper#getMainLooper()})} instead. */
+  /**
+   * @deprecated Use {@code shadowOf({@link Looper#getMainLooper()})} instead.
+   */
   @Deprecated
   public static ShadowLooper getShadowMainLooper() {
     return shadowLooper(getMainLooper());
@@ -147,7 +149,9 @@ public abstract class ShadowLooper {
     getShadowMainLooper().idle();
   }
 
-  /** @deprecated Use {@link #idleMainLooper(long, TimeUnit)}. */
+  /**
+   * @deprecated Use {@link #idleMainLooper(long, TimeUnit)}.
+   */
   @InlineMe(
       replacement = "ShadowLooper.idleMainLooper(interval, MILLISECONDS)",
       imports = "org.robolectric.shadows.ShadowLooper",

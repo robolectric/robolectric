@@ -14,9 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Unit tests for {@link PausedExecutorService}
- */
+/** Unit tests for {@link PausedExecutorService} */
 @RunWith(JUnit4.class)
 public class PausedExecutorServiceTest {
   private List<String> executedTasksRecord;
@@ -102,10 +100,12 @@ public class PausedExecutorServiceTest {
   @Test
   public void submitCallable() throws Exception {
     Runnable runnable = () -> executedTasksRecord.add("background event ran");
-    Future<String> future = executorService.submit(() -> {
-      runnable.run();
-      return "foo";
-    });
+    Future<String> future =
+        executorService.submit(
+            () -> {
+              runnable.run();
+              return "foo";
+            });
     executorService.runAll();
 
     assertThat(executedTasksRecord).containsExactly("background event ran");
@@ -164,9 +164,10 @@ public class PausedExecutorServiceTest {
   @Test
   @SuppressWarnings("FutureReturnValueIgnored")
   public void exceptionsPropagated() throws ExecutionException, InterruptedException {
-    Callable<Void> throwingCallable = () -> {
-      throw new IllegalStateException("I failed");
-    };
+    Callable<Void> throwingCallable =
+        () -> {
+          throw new IllegalStateException("I failed");
+        };
     try {
       executorService.submit(throwingCallable);
       executorService.runAll();
@@ -178,14 +179,15 @@ public class PausedExecutorServiceTest {
 
   @Test
   public void postingTasks() throws Exception {
-    Runnable postingRunnable = new Runnable() {
-      @Override
-      public void run() {
-        executedTasksRecord.add("first");
-        executorService.execute(() -> executedTasksRecord.add("third"));
-        executedTasksRecord.add("second");
-      }
-    };
+    Runnable postingRunnable =
+        new Runnable() {
+          @Override
+          public void run() {
+            executedTasksRecord.add("first");
+            executorService.execute(() -> executedTasksRecord.add("third"));
+            executedTasksRecord.add("second");
+          }
+        };
     executorService.execute(postingRunnable);
     executorService.runAll();
 

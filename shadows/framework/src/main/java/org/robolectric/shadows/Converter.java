@@ -14,7 +14,7 @@ import org.robolectric.util.Util;
 public class Converter<T> {
   private static int nextStringCookie = 0xbaaa5;
 
-  synchronized static int getNextStringCookie() {
+  static synchronized int getNextStringCookie() {
     return nextStringCookie++;
   }
 
@@ -97,7 +97,8 @@ public class Converter<T> {
   }
 
   private UnsupportedOperationException cantDo(String operation) {
-    return new UnsupportedOperationException(getClass().getName() + " doesn't support " + operation);
+    return new UnsupportedOperationException(
+        getClass().getName() + " doesn't support " + operation);
   }
 
   public static class FromAttrData extends Converter<AttrData> {
@@ -138,7 +139,7 @@ public class Converter<T> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
-        typedValue.type =  ResourceHelper.getColorType(data);
+        typedValue.type = ResourceHelper.getColorType(data);
         typedValue.data = ResourceHelper.getColor(data);
         typedValue.assetCookie = 0;
         typedValue.string = null;
@@ -177,7 +178,8 @@ public class Converter<T> {
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
         if (data.startsWith("0x")) {
-          typedValue.type = data.startsWith("0x") ? TypedValue.TYPE_INT_HEX : TypedValue.TYPE_INT_DEC;
+          typedValue.type =
+              data.startsWith("0x") ? TypedValue.TYPE_INT_HEX : TypedValue.TYPE_INT_DEC;
         } else {
           typedValue.type = TypedValue.TYPE_INT_DEC;
         }

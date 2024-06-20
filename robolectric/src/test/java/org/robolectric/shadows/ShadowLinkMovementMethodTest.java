@@ -14,5 +14,4 @@ public class ShadowLinkMovementMethodTest {
   public void getInstance_shouldReturnAnInstanceOf_LinkedMovementMethod() {
     assertThat(LinkMovementMethod.getInstance()).isInstanceOf(LinkMovementMethod.class);
   }
-
 }

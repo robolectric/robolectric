@@ -94,7 +94,7 @@ public class AssociationInfoBuilder {
     this.revoked = revoked;
     return this;
   }
-  
+
   public AssociationInfoBuilder setLastTimeConnectedMs(long lastTimeConnectedMs) {
     this.lastTimeConnectedMs = lastTimeConnectedMs;
     return this;

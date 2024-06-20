@@ -47,5 +47,4 @@ public class JavaVersionTest {
   private static void checkEqual(String v1, String v2) {
     assertThat(new JavaVersion(v1).compareTo(new JavaVersion(v2))).isEqualTo(0);
   }
-
 }

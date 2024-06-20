@@ -38,16 +38,14 @@ public class ShadowMimeTypeMap {
 
   @Implementation
   protected String getMimeTypeFromExtension(String extension) {
-    if (extensionToMimeTypeMap.containsKey(extension))
-      return extensionToMimeTypeMap.get(extension);
+    if (extensionToMimeTypeMap.containsKey(extension)) return extensionToMimeTypeMap.get(extension);
 
     return null;
   }
 
   @Implementation
   protected String getExtensionFromMimeType(String mimeType) {
-    if (mimeTypeToExtensionMap.containsKey(mimeType))
-      return mimeTypeToExtensionMap.get(mimeType);
+    if (mimeTypeToExtensionMap.containsKey(mimeType)) return mimeTypeToExtensionMap.get(mimeType);
 
     return null;
   }

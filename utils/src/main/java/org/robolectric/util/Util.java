@@ -9,9 +9,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-/**
- * Generic collection of utility methods.
- */
+/** Generic collection of utility methods. */
 public class Util {
 
   /**
@@ -96,7 +94,7 @@ public class Util {
       throw new RuntimeException("huh? " + localArtifactUrl, e);
     }
   }
-  
+
   public static int parseInt(String valueFor) {
     if (valueFor.startsWith("0x")) {
       return Integer.parseInt(valueFor.substring(2), 16);
@@ -108,15 +106,16 @@ public class Util {
   /**
    * Re-throw {@code t} (even if it's a checked exception) without requiring a {@code throws}
    * declaration.
-   * <p>
-   * This function declares a return type of {@link RuntimeException} but will never actually return
-   * a value. This allows you to use it with a {@code throw} statement to convince the compiler that
-   * the current branch will not complete.
+   *
+   * <p>This function declares a return type of {@link RuntimeException} but will never actually
+   * return a value. This allows you to use it with a {@code throw} statement to convince the
+   * compiler that the current branch will not complete.
+   *
    * <pre>{@code
    * throw Util.sneakyThrow(new IOException());
    * }</pre>
-   * <p>
-   * Adapted from https://www.mail-archive.com/javaposse@googlegroups.com/msg05984.html
+   *
+   * <p>Adapted from https://www.mail-archive.com/javaposse@googlegroups.com/msg05984.html
    */
   @SuppressWarnings("unchecked")
   public static <T extends Throwable> RuntimeException sneakyThrow(Throwable t) throws T {

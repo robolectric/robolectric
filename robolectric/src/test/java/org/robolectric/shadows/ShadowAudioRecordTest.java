@@ -135,7 +135,7 @@ public class ShadowAudioRecordTest {
 
     audioRecord.read(new byte[100], 0, 100);
 
-    verify(source).readInByteArray(any(byte[].class), eq(0), eq(100), /* isBlocking=*/ eq(true));
+    verify(source).readInByteArray(any(byte[].class), eq(0), eq(100), /* isBlocking= */ eq(true));
     verifyNoMoreInteractions(source);
   }
 
@@ -149,7 +149,7 @@ public class ShadowAudioRecordTest {
 
     audioRecord.read(new byte[100], 0, 100, AudioRecord.READ_BLOCKING);
 
-    verify(source).readInByteArray(any(byte[].class), eq(0), eq(100), /* isBlocking=*/ eq(true));
+    verify(source).readInByteArray(any(byte[].class), eq(0), eq(100), /* isBlocking= */ eq(true));
     verifyNoMoreInteractions(source);
   }
 
@@ -163,7 +163,7 @@ public class ShadowAudioRecordTest {
 
     audioRecord.read(new byte[100], 0, 100, AudioRecord.READ_NON_BLOCKING);
 
-    verify(source).readInByteArray(any(byte[].class), eq(0), eq(100), /* isBlocking=*/ eq(false));
+    verify(source).readInByteArray(any(byte[].class), eq(0), eq(100), /* isBlocking= */ eq(false));
     verifyNoMoreInteractions(source);
   }
 
@@ -193,7 +193,7 @@ public class ShadowAudioRecordTest {
 
     audioRecord.read(new short[100], 0, 100);
 
-    verify(source).readInShortArray(any(short[].class), eq(0), eq(100), /* isBlocking=*/ eq(true));
+    verify(source).readInShortArray(any(short[].class), eq(0), eq(100), /* isBlocking= */ eq(true));
     verifyNoMoreInteractions(source);
   }
 
@@ -207,7 +207,7 @@ public class ShadowAudioRecordTest {
 
     audioRecord.read(new short[100], 0, 100, AudioRecord.READ_BLOCKING);
 
-    verify(source).readInShortArray(any(short[].class), eq(0), eq(100), /* isBlocking=*/ eq(true));
+    verify(source).readInShortArray(any(short[].class), eq(0), eq(100), /* isBlocking= */ eq(true));
     verifyNoMoreInteractions(source);
   }
 
@@ -221,7 +221,8 @@ public class ShadowAudioRecordTest {
 
     audioRecord.read(new short[100], 0, 100, AudioRecord.READ_NON_BLOCKING);
 
-    verify(source).readInShortArray(any(short[].class), eq(0), eq(100), /* isBlocking=*/ eq(false));
+    verify(source)
+        .readInShortArray(any(short[].class), eq(0), eq(100), /* isBlocking= */ eq(false));
     verifyNoMoreInteractions(source);
   }
 
@@ -256,7 +257,7 @@ public class ShadowAudioRecordTest {
 
     audioRecord.read(new float[100], 0, 100, AudioRecord.READ_BLOCKING);
 
-    verify(source).readInFloatArray(any(float[].class), eq(0), eq(100), /* isBlocking=*/ eq(true));
+    verify(source).readInFloatArray(any(float[].class), eq(0), eq(100), /* isBlocking= */ eq(true));
     verifyNoMoreInteractions(source);
   }
 
@@ -276,7 +277,8 @@ public class ShadowAudioRecordTest {
 
     audioRecord.read(new float[100], 0, 100, AudioRecord.READ_NON_BLOCKING);
 
-    verify(source).readInFloatArray(any(float[].class), eq(0), eq(100), /* isBlocking=*/ eq(false));
+    verify(source)
+        .readInFloatArray(any(float[].class), eq(0), eq(100), /* isBlocking= */ eq(false));
     verifyNoMoreInteractions(source);
   }
 
@@ -307,7 +309,7 @@ public class ShadowAudioRecordTest {
 
     audioRecord.read(ByteBuffer.allocate(100), 100);
 
-    verify(source).readInDirectBuffer(any(ByteBuffer.class), eq(100), /* isBlocking=*/ eq(true));
+    verify(source).readInDirectBuffer(any(ByteBuffer.class), eq(100), /* isBlocking= */ eq(true));
     verifyNoMoreInteractions(source);
   }
 
@@ -321,7 +323,7 @@ public class ShadowAudioRecordTest {
 
     audioRecord.read(ByteBuffer.allocate(100), 100, AudioRecord.READ_BLOCKING);
 
-    verify(source).readInDirectBuffer(any(ByteBuffer.class), eq(100), /* isBlocking=*/ eq(true));
+    verify(source).readInDirectBuffer(any(ByteBuffer.class), eq(100), /* isBlocking= */ eq(true));
     verifyNoMoreInteractions(source);
   }
 
@@ -335,7 +337,7 @@ public class ShadowAudioRecordTest {
 
     audioRecord.read(ByteBuffer.allocate(100), 100, AudioRecord.READ_NON_BLOCKING);
 
-    verify(source).readInDirectBuffer(any(ByteBuffer.class), eq(100), /* isBlocking=*/ eq(false));
+    verify(source).readInDirectBuffer(any(ByteBuffer.class), eq(100), /* isBlocking= */ eq(false));
     verifyNoMoreInteractions(source);
   }
 

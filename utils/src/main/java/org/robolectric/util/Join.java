@@ -2,9 +2,7 @@ package org.robolectric.util;
 
 import java.util.Collection;
 
-/**
- * Utility class used to join strings together with a delimiter.
- */
+/** Utility class used to join strings together with a delimiter. */
 public class Join {
   public static String join(String delimiter, Collection collection) {
     String del = "";

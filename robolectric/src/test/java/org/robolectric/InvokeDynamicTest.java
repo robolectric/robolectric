@@ -69,8 +69,7 @@ public class InvokeDynamicTest {
   public static class RealCopy {
     public int x;
 
-    public void setX(int x) {
-    }
+    public void setX(int x) {}
   }
 
   @Implements(Real.class)
@@ -114,7 +113,5 @@ public class InvokeDynamicTest {
   }
 
   @Implements(value = DoNothing.class, callThroughByDefault = false)
-  public static class DoNothingShadow {
-
-  }
+  public static class DoNothingShadow {}
 }

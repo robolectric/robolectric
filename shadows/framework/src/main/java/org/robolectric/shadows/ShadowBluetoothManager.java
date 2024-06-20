@@ -43,12 +43,14 @@ public class ShadowBluetoothManager {
   abstract static class BleDevice {
     /** {@link BluetoothProfile#GATT} or {@link BluetoothProfile#GATT_SERVER}. */
     abstract int profile();
+
     /**
      * State of the profile connection. One of {@link BluetoothProfile#STATE_CONNECTED}, {@link
      * BluetoothProfile#STATE_CONNECTING}, {@link BluetoothProfile#STATE_DISCONNECTED} and {@link
      * BluetoothProfile#STATE_DISCONNECTING}.
      */
     abstract int state();
+
     /** The remote bluetooth device. */
     abstract BluetoothDevice device();
 

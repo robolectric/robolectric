@@ -18,7 +18,7 @@ public class SQLiteQueryBuilderTest {
   private static final String TABLE_NAME = "sqlBuilderTest";
   private static final String COL_VALUE = "valueCol";
   private static final String COL_GROUP = "groupCol";
-  
+
   private SQLiteDatabase database;
   private SQLiteQueryBuilder builder;
 
@@ -28,10 +28,8 @@ public class SQLiteQueryBuilderTest {
   public void setUp() throws Exception {
     database = SQLiteDatabase.create(null);
 
-    database.execSQL("create table " + TABLE_NAME + " ("
-        + COL_VALUE + " TEXT, "
-        + COL_GROUP + " INTEGER"
-        + ")");
+    database.execSQL(
+        "create table " + TABLE_NAME + " (" + COL_VALUE + " TEXT, " + COL_GROUP + " INTEGER" + ")");
 
     ContentValues values = new ContentValues();
     values.put(COL_VALUE, "record1");
@@ -93,5 +91,4 @@ public class SQLiteQueryBuilderTest {
     assertThat(cursor.getCount()).isEqualTo(1);
     cursor.close();
   }
-
 }

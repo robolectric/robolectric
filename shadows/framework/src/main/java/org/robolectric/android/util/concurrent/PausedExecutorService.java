@@ -21,14 +21,13 @@ import org.robolectric.util.Logger;
 /**
  * Executor service that queues any posted tasks.
  *
- * Users must explicitly call {@link runAll()} to execute all pending tasks.
+ * <p>Users must explicitly call {@link runAll()} to execute all pending tasks.
  *
- * Intended to be a replacement for {@link RoboExecutorService} when using
- * {@link LooperMode.Mode#PAUSED}.
- * Unlike {@link RoboExecutorService}, will execute tasks on a background thread. This is useful
- * to test Android code that enforces it runs off the main thread.
+ * <p>Intended to be a replacement for {@link RoboExecutorService} when using {@link
+ * LooperMode.Mode#PAUSED}. Unlike {@link RoboExecutorService}, will execute tasks on a background
+ * thread. This is useful to test Android code that enforces it runs off the main thread.
  *
- * NOTE: Beta API, subject to change.
+ * <p>NOTE: Beta API, subject to change.
  */
 @Beta
 public class PausedExecutorService extends AbstractExecutorService {
@@ -105,7 +104,7 @@ public class PausedExecutorService extends AbstractExecutorService {
   /**
    * Executes the next queued task.
    *
-   * Will be ignored if called from the executor service thread to prevent deadlocks.
+   * <p>Will be ignored if called from the executor service thread to prevent deadlocks.
    *
    * @return true if task was run, false if queue was empty
    */

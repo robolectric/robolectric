@@ -25,7 +25,8 @@ public class ShadowClipboardManagerTest {
 
   private ClipboardManager clipboardManager;
 
-  @Before public void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     clipboardManager =
         (ClipboardManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.CLIPBOARD_SERVICE);

@@ -9,9 +9,7 @@ import javax.annotation.Nonnull;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
 
-/**
- * A {@link ResourceTable} for a single package, e.g: "android" / ox01
- */
+/** A {@link ResourceTable} for a single package, e.g: "android" / ox01 */
 public class PackageResourceTable implements ResourceTable {
 
   private final ResBunch resources = new ResBunch();
@@ -20,7 +18,6 @@ public class PackageResourceTable implements ResourceTable {
   private final ResourceIdGenerator androidResourceIdGenerator = new ResourceIdGenerator(0x01);
   private final String packageName;
   private int packageIdentifier;
-
 
   public PackageResourceTable(String packageName) {
     this.packageName = packageName;
@@ -64,7 +61,8 @@ public class PackageResourceTable implements ResourceTable {
     return resources.get(getResName(resId), config);
   }
 
-  @Override public XmlBlock getXml(ResName resName, ResTable_config config) {
+  @Override
+  public XmlBlock getXml(ResName resName, ResTable_config config) {
     FileTypedResource fileTypedResource = getFileResource(resName, config);
     if (fileTypedResource == null || !fileTypedResource.isXml()) {
       return null;
@@ -73,7 +71,8 @@ public class PackageResourceTable implements ResourceTable {
     }
   }
 
-  @Override public InputStream getRawValue(ResName resName, ResTable_config config) {
+  @Override
+  public InputStream getRawValue(ResName resName, ResTable_config config) {
     FileTypedResource fileTypedResource = getFileResource(resName, config);
     if (fileTypedResource == null) {
       return null;
@@ -107,21 +106,37 @@ public class PackageResourceTable implements ResourceTable {
   }
 
   void addResource(int resId, String type, String name) {
-      if (ResourceIds.isFrameworkResource(resId)) {
-        androidResourceIdGenerator.record(resId, type, name);
-      }
-      ResName resName = new ResName(packageName, type, name);
-      int resIdPackageIdentifier = ResourceIds.getPackageIdentifier(resId);
-      if (getPackageIdentifier() == 0) {
-        this.packageIdentifier = resIdPackageIdentifier;
-      } else if (getPackageIdentifier() != resIdPackageIdentifier) {
-        throw new IllegalArgumentException("Incompatible package for " + packageName + ":" + type + "/" + name + " with resId " + resIdPackageIdentifier + " to ResourceIndex with packageIdentifier " + getPackageIdentifier());
-      }
+    if (ResourceIds.isFrameworkResource(resId)) {
+      androidResourceIdGenerator.record(resId, type, name);
+    }
+    ResName resName = new ResName(packageName, type, name);
+    int resIdPackageIdentifier = ResourceIds.getPackageIdentifier(resId);
+    if (getPackageIdentifier() == 0) {
+      this.packageIdentifier = resIdPackageIdentifier;
+    } else if (getPackageIdentifier() != resIdPackageIdentifier) {
+      throw new IllegalArgumentException(
+          "Incompatible package for "
+              + packageName
+              + ":"
+              + type
+              + "/"
+              + name
+              + " with resId "
+              + resIdPackageIdentifier
+              + " to ResourceIndex with packageIdentifier "
+              + getPackageIdentifier());
+    }
 
-      ResName existingEntry = resourceTable.put(resId, resName);
-      if (existingEntry != null && !existingEntry.equals(resName)) {
-        throw new IllegalArgumentException("ResId " + Integer.toHexString(resId) + " mapped to both " + resName + " and " + existingEntry);
-      }
+    ResName existingEntry = resourceTable.put(resId, resName);
+    if (existingEntry != null && !existingEntry.equals(resName)) {
+      throw new IllegalArgumentException(
+          "ResId "
+              + Integer.toHexString(resId)
+              + " mapped to both "
+              + resName
+              + " and "
+              + existingEntry);
+    }
   }
 
   void addResource(String type, String name, TypedResource value) {

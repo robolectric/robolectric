@@ -23,17 +23,16 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.gms.ShadowGoogleAuthUtil.GoogleAuthUtilImpl;
 
-/**
- * Unit test for {@link ShadowGoogleAuthUtil}.
- */
+/** Unit test for {@link ShadowGoogleAuthUtil}. */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowGoogleAuthUtil.class})
+@Config(
+    manifest = Config.NONE,
+    shadows = {ShadowGoogleAuthUtil.class})
 public class ShadowGoogleAuthUtilTest {
 
   @Mock private GoogleAuthUtilImpl mockGoogleAuthUtil;
 
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
+  @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void setup() {

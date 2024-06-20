@@ -23,9 +23,10 @@ public enum DataType {
   FRACTION(0x06),
   /** {@code data} holds a dynamic {@link ResourceTableChunk} entry reference. */
   DYNAMIC_REFERENCE(0x07),
-  /** {@code data} holds an attribute resource identifier, which needs to be resolved
-    * before it can be used like a TYPE_ATTRIBUTE.
-    */
+  /**
+   * {@code data} holds an attribute resource identifier, which needs to be resolved before it can
+   * be used like a TYPE_ATTRIBUTE.
+   */
   DYNAMIC_ATTRIBUTE(0x08),
   /** {@code data} is a raw integer value of the form n..n. */
   INT_DEC(0x10),

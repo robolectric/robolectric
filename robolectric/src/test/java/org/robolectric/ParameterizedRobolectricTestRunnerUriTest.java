@@ -21,9 +21,8 @@ public final class ParameterizedRobolectricTestRunnerUriTest {
   private final String resourcePath;
   private final Uri expectedUri;
 
-  public ParameterizedRobolectricTestRunnerUriTest(String basePath,
-                                                   String resourcePath,
-                                                   String expectedUri) {
+  public ParameterizedRobolectricTestRunnerUriTest(
+      String basePath, String resourcePath, String expectedUri) {
     this.basePath = basePath;
     this.resourcePath = resourcePath;
     this.expectedUri = Uri.parse(expectedUri);
@@ -38,10 +37,10 @@ public final class ParameterizedRobolectricTestRunnerUriTest {
   @ParameterizedRobolectricTestRunner.Parameters(name = "URI Test: {0} + {1}")
   public static Collection getTestData() {
     Object[][] data = {
-        { "http://host", "resource", "http://host/resource" },
-        { "http://host/", "resource", "http://host/resource" },
-        { "http://host", "/resource", "http://host/resource" },
-        { "http://host/", "/resource", "http://host/resource" }
+      {"http://host", "resource", "http://host/resource"},
+      {"http://host/", "resource", "http://host/resource"},
+      {"http://host", "/resource", "http://host/resource"},
+      {"http://host/", "/resource", "http://host/resource"}
     };
     return Arrays.asList(data);
   }

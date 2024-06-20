@@ -25,26 +25,28 @@ public class StaticInitializerTest {
     static String name = "Floyd";
   }
 
-
   @Test
   @SandboxConfig(shadows = {ShadowClassWithoutStaticInitializerOverride.class})
-  public void whenClassHasShadowWithoutOverrideMethod_shouldPerformStaticInitialization() throws Exception {
+  public void whenClassHasShadowWithoutOverrideMethod_shouldPerformStaticInitialization()
+      throws Exception {
     assertEquals("Floyd", ClassWithStaticInitializerB.name);
 
     RobolectricInternals.performStaticInitialization(ClassWithStaticInitializerB.class);
     assertEquals("Floyd", ClassWithStaticInitializerB.name);
   }
 
-  @Instrument public static class ClassWithStaticInitializerB {
+  @Instrument
+  public static class ClassWithStaticInitializerB {
     public static String name = "Floyd";
   }
 
-  @Implements(ClassWithStaticInitializerB.class) public static class ShadowClassWithoutStaticInitializerOverride {
-  }
+  @Implements(ClassWithStaticInitializerB.class)
+  public static class ShadowClassWithoutStaticInitializerOverride {}
 
   @Test
   @SandboxConfig(shadows = {ShadowClassWithStaticInitializerOverride.class})
-  public void whenClassHasShadowWithOverrideMethod_shouldDeferStaticInitialization() throws Exception {
+  public void whenClassHasShadowWithOverrideMethod_shouldDeferStaticInitialization()
+      throws Exception {
     assertFalse(ShadowClassWithStaticInitializerOverride.initialized);
     assertEquals(null, ClassWithStaticInitializerC.name);
     assertTrue(ShadowClassWithStaticInitializerOverride.initialized);
@@ -53,7 +55,8 @@ public class StaticInitializerTest {
     assertEquals("Floyd", ClassWithStaticInitializerC.name);
   }
 
-  @Instrument public static class ClassWithStaticInitializerC {
+  @Instrument
+  public static class ClassWithStaticInitializerC {
     public static String name = "Floyd";
   }
 

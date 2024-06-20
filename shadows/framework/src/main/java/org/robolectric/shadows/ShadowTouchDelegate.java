@@ -20,7 +20,9 @@ public class ShadowTouchDelegate {
   protected void __constructor__(Rect bounds, View delegateView) {
     this.bounds = bounds;
     this.delegateView = delegateView;
-    invokeConstructor(TouchDelegate.class, realObject,
+    invokeConstructor(
+        TouchDelegate.class,
+        realObject,
         ClassParameter.from(Rect.class, bounds),
         ClassParameter.from(View.class, delegateView));
   }

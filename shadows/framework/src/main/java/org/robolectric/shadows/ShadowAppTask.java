@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.app.ActivityManager.AppTask;
 import android.app.ActivityManager.RecentTaskInfo;
 import android.app.IAppTask;

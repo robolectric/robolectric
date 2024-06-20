@@ -11,7 +11,6 @@ import org.junit.runner.RunWith;
 public class ShadowBroadcastPendingResultTest {
   @Test
   public void testCreate() {
-    assertThat(ShadowBroadcastPendingResult.create(1, "result", new Bundle(), true))
-        .isNotNull();
+    assertThat(ShadowBroadcastPendingResult.create(1, "result", new Bundle(), true)).isNotNull();
   }
 }

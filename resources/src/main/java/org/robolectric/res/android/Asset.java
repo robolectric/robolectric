@@ -107,14 +107,14 @@ public abstract class Asset {
    */
   public abstract long seek(long offset, int whence);
 
-    /*
-     * Close the asset, freeing all associated resources.
-     */
-    public abstract void close();
+  /*
+   * Close the asset, freeing all associated resources.
+   */
+  public abstract void close();
 
-    /*
-     * Get a pointer to a buffer with the entire contents of the file.
-     */
+  /*
+   * Get a pointer to a buffer with the entire contents of the file.
+   */
   public abstract byte[] getBuffer(boolean wordAligned);
 
   /*
@@ -127,11 +127,11 @@ public abstract class Asset {
    */
   public abstract long getRemainingLength();
 
-    /*
-     * Open a new file descriptor that can be used to read this asset.
-     * Returns -1 if you can not use the file descriptor (for example if the
-     * asset is compressed).
-     */
+  /*
+   * Open a new file descriptor that can be used to read this asset.
+   * Returns -1 if you can not use the file descriptor (for example if the
+   * asset is compressed).
+   */
   public abstract FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength);
 
   public abstract File getFile();
@@ -151,164 +151,166 @@ public abstract class Asset {
    * This is NOT intended to be used for anything except debug output.
    * DO NOT try to parse this or use it to open a file.
    */
-  final String getAssetSource() { return mAssetSource.string(); }
+  final String getAssetSource() {
+    return mAssetSource.string();
+  }
 
   public abstract boolean isNinePatch();
 
-//   protected:
-//   /*
-//    * Adds this Asset to the global Asset list for debugging and
-//    * accounting.
-//    * Concrete subclasses must call this in their finalructor.
-//    */
-//   static void registerAsset(Asset asset);
-//
-//   /*
-//    * Removes this Asset from the global Asset list.
-//    * Concrete subclasses must call this in their destructor.
-//    */
-//   static void unregisterAsset(Asset asset);
-//
-//   Asset(void);        // finalructor; only invoked indirectly
-//
-//   /* handle common seek() housekeeping */
-//   long handleSeek(long offset, int whence, long curPosn, long maxPosn);
+  //   protected:
+  //   /*
+  //    * Adds this Asset to the global Asset list for debugging and
+  //    * accounting.
+  //    * Concrete subclasses must call this in their finalructor.
+  //    */
+  //   static void registerAsset(Asset asset);
+  //
+  //   /*
+  //    * Removes this Asset from the global Asset list.
+  //    * Concrete subclasses must call this in their destructor.
+  //    */
+  //   static void unregisterAsset(Asset asset);
+  //
+  //   Asset(void);        // finalructor; only invoked indirectly
+  //
+  //   /* handle common seek() housekeeping */
+  //   long handleSeek(long offset, int whence, long curPosn, long maxPosn);
 
   /* set the asset source string */
-  void setAssetSource(final String8 path) { mAssetSource = path; }
+  void setAssetSource(final String8 path) {
+    mAssetSource = path;
+  }
 
-  AccessMode getAccessMode() { return mAccessMode; }
+  AccessMode getAccessMode() {
+    return mAccessMode;
+  }
 
-//   private:
-//   /* these operations are not implemented */
-//   Asset(final Asset& src);
-//   Asset& operator=(final Asset& src);
-//
-//     /* AssetManager needs access to our "create" functions */
-//   friend class AssetManager;
-//
-//     /*
-//      * Create the asset from a named file on disk.
-//      */
-//   static Asset createFromFile(final String fileName, AccessMode mode);
-//
-//     /*
-//      * Create the asset from a named, compressed file on disk (e.g. ".gz").
-//      */
-//   static Asset createFromCompressedFile(final String fileName,
-//       AccessMode mode);
-//
-// #if 0
-//     /*
-//      * Create the asset from a segment of an open file.  This will fail
-//      * if "offset" and "length" don't fit within the bounds of the file.
-//      *
-//      * The asset takes ownership of the file descriptor.
-//      */
-//   static Asset createFromFileSegment(int fd, long offset, int length,
-//       AccessMode mode);
-//
-//     /*
-//      * Create from compressed data.  "fd" should be seeked to the start of
-//      * the compressed data.  This could be inside a gzip file or part of a
-//      * Zip archive.
-//      *
-//      * The asset takes ownership of the file descriptor.
-//      *
-//      * This may not verify the validity of the compressed data until first
-//      * use.
-//      */
-//   static Asset createFromCompressedData(int fd, long offset,
-//       int compressionMethod, int compressedLength,
-//       int uncompressedLength, AccessMode mode);
-// #endif
-//
-//     /*
-//      * Create the asset from a memory-mapped file segment.
-//      *
-//      * The asset takes ownership of the FileMap.
-//      */
-//   static Asset createFromUncompressedMap(FileMap dataMap, AccessMode mode);
-//
-//     /*
-//      * Create the asset from a memory-mapped file segment with compressed
-//      * data.
-//      *
-//      * The asset takes ownership of the FileMap.
-//      */
-//   static Asset createFromCompressedMap(FileMap dataMap,
-//       int uncompressedLen, AccessMode mode);
-//
-//
-//     /*
-//      * Create from a reference-counted chunk of shared memory.
-//      */
-//   // TODO
+  //   private:
+  //   /* these operations are not implemented */
+  //   Asset(final Asset& src);
+  //   Asset& operator=(final Asset& src);
+  //
+  //     /* AssetManager needs access to our "create" functions */
+  //   friend class AssetManager;
+  //
+  //     /*
+  //      * Create the asset from a named file on disk.
+  //      */
+  //   static Asset createFromFile(final String fileName, AccessMode mode);
+  //
+  //     /*
+  //      * Create the asset from a named, compressed file on disk (e.g. ".gz").
+  //      */
+  //   static Asset createFromCompressedFile(final String fileName,
+  //       AccessMode mode);
+  //
+  // #if 0
+  //     /*
+  //      * Create the asset from a segment of an open file.  This will fail
+  //      * if "offset" and "length" don't fit within the bounds of the file.
+  //      *
+  //      * The asset takes ownership of the file descriptor.
+  //      */
+  //   static Asset createFromFileSegment(int fd, long offset, int length,
+  //       AccessMode mode);
+  //
+  //     /*
+  //      * Create from compressed data.  "fd" should be seeked to the start of
+  //      * the compressed data.  This could be inside a gzip file or part of a
+  //      * Zip archive.
+  //      *
+  //      * The asset takes ownership of the file descriptor.
+  //      *
+  //      * This may not verify the validity of the compressed data until first
+  //      * use.
+  //      */
+  //   static Asset createFromCompressedData(int fd, long offset,
+  //       int compressionMethod, int compressedLength,
+  //       int uncompressedLength, AccessMode mode);
+  // #endif
+  //
+  //     /*
+  //      * Create the asset from a memory-mapped file segment.
+  //      *
+  //      * The asset takes ownership of the FileMap.
+  //      */
+  //   static Asset createFromUncompressedMap(FileMap dataMap, AccessMode mode);
+  //
+  //     /*
+  //      * Create the asset from a memory-mapped file segment with compressed
+  //      * data.
+  //      *
+  //      * The asset takes ownership of the FileMap.
+  //      */
+  //   static Asset createFromCompressedMap(FileMap dataMap,
+  //       int uncompressedLen, AccessMode mode);
+  //
+  //
+  //     /*
+  //      * Create from a reference-counted chunk of shared memory.
+  //      */
+  //   // TODO
 
-  AccessMode  mAccessMode;        // how the asset was opened
-  String8    mAssetSource;       // debug string
+  AccessMode mAccessMode; // how the asset was opened
+  String8 mAssetSource; // debug string
 
-  Asset		mNext;				// linked list.
-  Asset		mPrev;
+  Asset mNext; // linked list.
+  Asset mPrev;
 
   static final boolean kIsDebug = false;
 
-  final static Object gAssetLock = new Object();
+  static final Object gAssetLock = new Object();
   static int gCount = 0;
   static Asset gHead = null;
   static Asset gTail = null;
 
-  void registerAsset(Asset asset)
-  {
-  //   AutoMutex _l(gAssetLock);
-  //   gCount++;
-  //   asset.mNext = asset.mPrev = null;
-  //   if (gTail == null) {
-  //     gHead = gTail = asset;
-  //   } else {
-  //     asset.mPrev = gTail;
-  //     gTail.mNext = asset;
-  //     gTail = asset;
-  //   }
-  //
-  //   if (kIsDebug) {
-  //     ALOGI("Creating Asset %s #%d\n", asset, gCount);
-  //   }
+  void registerAsset(Asset asset) {
+    //   AutoMutex _l(gAssetLock);
+    //   gCount++;
+    //   asset.mNext = asset.mPrev = null;
+    //   if (gTail == null) {
+    //     gHead = gTail = asset;
+    //   } else {
+    //     asset.mPrev = gTail;
+    //     gTail.mNext = asset;
+    //     gTail = asset;
+    //   }
+    //
+    //   if (kIsDebug) {
+    //     ALOGI("Creating Asset %s #%d\n", asset, gCount);
+    //   }
   }
 
-  void unregisterAsset(Asset asset)
-  {
-  //   AutoMutex _l(gAssetLock);
-  //   gCount--;
-  //   if (gHead == asset) {
-  //     gHead = asset.mNext;
-  //   }
-  //   if (gTail == asset) {
-  //     gTail = asset.mPrev;
-  //   }
-  //   if (asset.mNext != null) {
-  //     asset.mNext.mPrev = asset.mPrev;
-  //   }
-  //   if (asset.mPrev != null) {
-  //     asset.mPrev.mNext = asset.mNext;
-  //   }
-  //   asset.mNext = asset.mPrev = null;
-  //
-  //   if (kIsDebug) {
-  //     ALOGI("Destroying Asset in %s #%d\n", asset, gCount);
-  //   }
+  void unregisterAsset(Asset asset) {
+    //   AutoMutex _l(gAssetLock);
+    //   gCount--;
+    //   if (gHead == asset) {
+    //     gHead = asset.mNext;
+    //   }
+    //   if (gTail == asset) {
+    //     gTail = asset.mPrev;
+    //   }
+    //   if (asset.mNext != null) {
+    //     asset.mNext.mPrev = asset.mPrev;
+    //   }
+    //   if (asset.mPrev != null) {
+    //     asset.mPrev.mNext = asset.mNext;
+    //   }
+    //   asset.mNext = asset.mPrev = null;
+    //
+    //   if (kIsDebug) {
+    //     ALOGI("Destroying Asset in %s #%d\n", asset, gCount);
+    //   }
   }
 
-  public static int getGlobalCount()
-  {
+  public static int getGlobalCount() {
     // AutoMutex _l(gAssetLock);
     synchronized (gAssetLock) {
       return gCount;
     }
   }
 
-  public static String getAssetAllocations()
-  {
+  public static String getAssetAllocations() {
     // AutoMutex _l(gAssetLock);
     synchronized (gAssetLock) {
       StringBuilder res = new StringBuilder();
@@ -317,8 +319,8 @@ public abstract class Asset {
         if (cur.isAllocated()) {
           res.append("    ");
           res.append(cur.getAssetSource());
-          long size = (cur.getLength()+512)/1024;
-          String buf = String.format(": %dK\n", (int)size);
+          long size = (cur.getLength() + 512) / 1024;
+          String buf = String.format(": %dK\n", (int) size);
           res.append(buf);
         }
         cur = cur.mNext;
@@ -339,8 +341,7 @@ public abstract class Asset {
    *
    * We can use "mode" to decide how we want to go about it.
    */
-  static Asset createFromFile(final String fileName, AccessMode mode)
-  {
+  static Asset createFromFile(final String fileName, AccessMode mode) {
     File file = new File(fileName);
     if (!file.exists()) {
       return null;
@@ -453,60 +454,56 @@ public abstract class Asset {
     // return pAsset;
   }
 
-
-//     #if 0
-// /*
-//  * Create a new Asset from part of an open file.
-//  */
-// /*static*/ Asset createFromFileSegment(int fd, long offset,
-//       int length, AccessMode mode)
-//   {
-//     _FileAsset pAsset;
-//     int result;
-//
-//     pAsset = new _FileAsset;
-//     result = pAsset.openChunk(null, fd, offset, length);
-//     if (result != NO_ERROR)
-//       return null;
-//
-//     pAsset.mAccessMode = mode;
-//     return pAsset;
-//   }
-//
-// /*
-//  * Create a new Asset from compressed data in an open file.
-//  */
-// /*static*/ Asset createFromCompressedData(int fd, long offset,
-//       int compressionMethod, int uncompressedLen, int compressedLen,
-//       AccessMode mode)
-//   {
-//     _CompressedAsset pAsset;
-//     int result;
-//
-//     pAsset = new _CompressedAsset;
-//     result = pAsset.openChunk(fd, offset, compressionMethod,
-//         uncompressedLen, compressedLen);
-//     if (result != NO_ERROR)
-//       return null;
-//
-//     pAsset.mAccessMode = mode;
-//     return pAsset;
-//   }
-//     #endif
+  //     #if 0
+  // /*
+  //  * Create a new Asset from part of an open file.
+  //  */
+  // /*static*/ Asset createFromFileSegment(int fd, long offset,
+  //       int length, AccessMode mode)
+  //   {
+  //     _FileAsset pAsset;
+  //     int result;
+  //
+  //     pAsset = new _FileAsset;
+  //     result = pAsset.openChunk(null, fd, offset, length);
+  //     if (result != NO_ERROR)
+  //       return null;
+  //
+  //     pAsset.mAccessMode = mode;
+  //     return pAsset;
+  //   }
+  //
+  // /*
+  //  * Create a new Asset from compressed data in an open file.
+  //  */
+  // /*static*/ Asset createFromCompressedData(int fd, long offset,
+  //       int compressionMethod, int uncompressedLen, int compressedLen,
+  //       AccessMode mode)
+  //   {
+  //     _CompressedAsset pAsset;
+  //     int result;
+  //
+  //     pAsset = new _CompressedAsset;
+  //     result = pAsset.openChunk(fd, offset, compressionMethod,
+  //         uncompressedLen, compressedLen);
+  //     if (result != NO_ERROR)
+  //       return null;
+  //
+  //     pAsset.mAccessMode = mode;
+  //     return pAsset;
+  //   }
+  //     #endif
 
   /*
    * Create a new Asset from a memory mapping.
    */
-  static Asset createFromUncompressedMap(FileMap dataMap,
-      AccessMode mode)
-  {
+  static Asset createFromUncompressedMap(FileMap dataMap, AccessMode mode) {
     _FileAsset pAsset;
     int result;
 
     pAsset = new _FileAsset();
     result = pAsset.openChunk(dataMap);
-    if (result != NO_ERROR)
-      return null;
+    if (result != NO_ERROR) return null;
 
     pAsset.mAccessMode = mode;
     return pAsset;
@@ -515,21 +512,17 @@ public abstract class Asset {
   /*
    * Create a new Asset from compressed data in a memory mapping.
    */
-static Asset createFromCompressedMap(FileMap dataMap,
-      int uncompressedLen, AccessMode mode)
-  {
+  static Asset createFromCompressedMap(FileMap dataMap, int uncompressedLen, AccessMode mode) {
     _CompressedAsset pAsset;
     int result;
 
     pAsset = new _CompressedAsset();
     result = pAsset.openChunk(dataMap, uncompressedLen);
-    if (result != NO_ERROR)
-      return null;
+    if (result != NO_ERROR) return null;
 
     pAsset.mAccessMode = mode;
     return pAsset;
   }
-
 
   /*
    * Do generic seek() housekeeping.  Pass in the offset/whence values from
@@ -538,8 +531,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
    *
    * Returns the new chunk offset, or -1 if the seek is illegal.
    */
-  long handleSeek(long offset, int whence, long curPosn, long maxPosn)
-  {
+  long handleSeek(long offset, int whence, long curPosn, long maxPosn) {
     long newOffset;
 
     switch (whence) {
@@ -574,40 +566,46 @@ static Asset createFromCompressedMap(FileMap dataMap,
   static class _FileAsset extends Asset {
 
     // public:
-//     _FileAsset(void);
-//     virtual ~_FileAsset(void);
-//
-//     /*
-//      * Use a piece of an already-open file.
-//      *
-//      * On success, the object takes ownership of "fd".
-//      */
-//     int openChunk(final String fileName, int fd, long offset, int length);
-//
-//     /*
-//      * Use a memory-mapped region.
-//      *
-//      * On success, the object takes ownership of "dataMap".
-//      */
-//     int openChunk(FileMap dataMap);
-//
-//     /*
-//      * Standard Asset interfaces.
-//      */
-//     virtual ssize_t read(void* buf, int count);
-//     virtual long seek(long offset, int whence);
-//     virtual void close(void);
-//     virtual final void* getBuffer(boolean wordAligned);
+    //     _FileAsset(void);
+    //     virtual ~_FileAsset(void);
+    //
+    //     /*
+    //      * Use a piece of an already-open file.
+    //      *
+    //      * On success, the object takes ownership of "fd".
+    //      */
+    //     int openChunk(final String fileName, int fd, long offset, int length);
+    //
+    //     /*
+    //      * Use a memory-mapped region.
+    //      *
+    //      * On success, the object takes ownership of "dataMap".
+    //      */
+    //     int openChunk(FileMap dataMap);
+    //
+    //     /*
+    //      * Standard Asset interfaces.
+    //      */
+    //     virtual ssize_t read(void* buf, int count);
+    //     virtual long seek(long offset, int whence);
+    //     virtual void close(void);
+    //     virtual final void* getBuffer(boolean wordAligned);
 
     @Override
-    public long getLength() { return mLength; }
+    public long getLength() {
+      return mLength;
+    }
 
     @Override
-    public long getRemainingLength() { return mLength-mOffset; }
+    public long getRemainingLength() {
+      return mLength - mOffset;
+    }
 
-//     virtual int openFileDescriptor(long* outStart, long* outLength) final;
+    //     virtual int openFileDescriptor(long* outStart, long* outLength) final;
     @Override
-    boolean isAllocated() { return mBuf != null; }
+    boolean isAllocated() {
+      return mBuf != null;
+    }
 
     @Override
     public boolean isNinePatch() {
@@ -619,39 +617,39 @@ static Asset createFromCompressedMap(FileMap dataMap,
     }
 
     //
-// private:
-    long mStart;         // absolute file offset of start of chunk
-    long mLength;        // length of the chunk
-    long mOffset;        // current local offset, 0 == mStart
+    // private:
+    long mStart; // absolute file offset of start of chunk
+    long mLength; // length of the chunk
+    long mOffset; // current local offset, 0 == mStart
     // FILE*       mFp;            // for read/seek
-    RandomAccessFile mFp;            // for read/seek
-    String mFileName;      // for opening
+    RandomAccessFile mFp; // for read/seek
+    String mFileName; // for opening
 
     /*
      * To support getBuffer() we either need to read the entire thing into
      * a buffer or memory-map it.  For small files it's probably best to
      * just read them in.
      */
-// enum {
-  public static int kReadVsMapThreshold = 4096;
-// };
+    // enum {
+    public static int kReadVsMapThreshold = 4096;
+    // };
 
-    FileMap mMap;           // for memory map
-    byte[] mBuf;        // for read
+    FileMap mMap; // for memory map
+    byte[] mBuf; // for read
 
     // final void* ensureAlignment(FileMap map);
-/*
- * ===========================================================================
- *      _FileAsset
- * ===========================================================================
- */
+    /*
+     * ===========================================================================
+     *      _FileAsset
+     * ===========================================================================
+     */
 
     /*
      * Constructor.
      */
     _FileAsset()
-    // : mStart(0), mLength(0), mOffset(0), mFp(null), mFileName(null), mMap(null), mBuf(null)
-    {
+          // : mStart(0), mLength(0), mOffset(0), mFp(null), mFileName(null), mMap(null), mBuf(null)
+        {
       // Register the Asset with the global list here after it is fully constructed and its
       // vtable pointer points to this concrete type.
       registerAsset(this);
@@ -721,14 +719,14 @@ static Asset createFromCompressedMap(FileMap dataMap,
      * Create the chunk from the map.
      */
     int openChunk(FileMap dataMap) {
-      assert(mFp == null);    // no reopen
-      assert(mMap == null);
-      assert(dataMap != null);
+      assert (mFp == null); // no reopen
+      assert (mMap == null);
+      assert (dataMap != null);
 
       mMap = dataMap;
-      mStart = -1;            // not used
+      mStart = -1; // not used
       mLength = dataMap.getDataLength();
-      assert(mOffset == 0);
+      assert (mOffset == 0);
 
       mBuf = dataMap.getDataPtr();
 
@@ -743,48 +741,45 @@ static Asset createFromCompressedMap(FileMap dataMap,
       int maxLen;
       int actual;
 
-      assert(mOffset >= 0 && mOffset <= mLength);
+      assert (mOffset >= 0 && mOffset <= mLength);
 
       if (getAccessMode() == ACCESS_BUFFER) {
-          /*
-           * On first access, read or map the entire file.  The caller has
-           * requested buffer access, either because they're going to be
-           * using the buffer or because what they're doing has appropriate
-           * performance needs and access patterns.
-           */
-        if (mBuf == null)
-          getBuffer(false);
+        /*
+         * On first access, read or map the entire file.  The caller has
+         * requested buffer access, either because they're going to be
+         * using the buffer or because what they're doing has appropriate
+         * performance needs and access patterns.
+         */
+        if (mBuf == null) getBuffer(false);
       }
 
       /* adjust count if we're near EOF */
       maxLen = toIntExact(mLength - mOffset);
-      if (count > maxLen)
-        count = maxLen;
+      if (count > maxLen) count = maxLen;
 
       if (!isTruthy(count)) {
         return 0;
       }
 
       if (mMap != null) {
-          /* copy from mapped area */
-        //printf("map read\n");
+        /* copy from mapped area */
+        // printf("map read\n");
         // memcpy(buf, (String)mMap.getDataPtr() + mOffset, count);
         System.arraycopy(mMap.getDataPtr(), toIntExact(mOffset), buf, bufOffset, count);
         actual = count;
       } else if (mBuf != null) {
-          /* copy from buffer */
-        //printf("buf read\n");
+        /* copy from buffer */
+        // printf("buf read\n");
         // memcpy(buf, (String)mBuf + mOffset, count);
         System.arraycopy(mBuf, toIntExact(mOffset), buf, bufOffset, count);
         actual = count;
       } else {
-          /* read from the file */
-        //printf("file read\n");
+        /* read from the file */
+        // printf("file read\n");
         // if (ftell(mFp) != mStart + mOffset) {
         try {
           if (mFp.getFilePointer() != mStart + mOffset) {
-            ALOGE("Hosed: %d != %d+%d\n",
-                mFp.getFilePointer(), (long) mStart, (long) mOffset);
+            ALOGE("Hosed: %d != %d+%d\n", mFp.getFilePointer(), (long) mStart, (long) mOffset);
             assert false;
           }
 
@@ -796,10 +791,10 @@ static Asset createFromCompressedMap(FileMap dataMap,
            * hosed.
            */
           actual = mFp.read(buf, 0, count);
-          if (actual == 0)        // something failed -- I/O error?
-            return -1;
+          if (actual == 0) // something failed -- I/O error?
+          return -1;
 
-          assert(actual == count);
+          assert (actual == count);
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
@@ -819,8 +814,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
 
       // compute new position within chunk
       newPosn = handleSeek(offset, whence, mOffset, mLength);
-      if (newPosn == (long) -1)
-        return newPosn;
+      if (newPosn == (long) -1) return newPosn;
 
       actualOffset = mStart + newPosn;
 
@@ -873,11 +867,10 @@ static Asset createFromCompressedMap(FileMap dataMap,
     @Override
     public final byte[] getBuffer(boolean wordAligned) {
       /* subsequent requests just use what we did previously */
-      if (mBuf != null)
-        return mBuf;
+      if (mBuf != null) return mBuf;
       if (mMap != null) {
         // if (!wordAligned) {
-          return  mMap.getDataPtr();
+        return mMap.getDataPtr();
         // }
         // return ensureAlignment(mMap);
       }
@@ -888,11 +881,10 @@ static Asset createFromCompressedMap(FileMap dataMap,
         byte[] buf;
         int allocLen;
 
-          /* zero-length files are allowed; not sure about zero-len allocs */
-          /* (works fine with gcc + x86linux) */
+        /* zero-length files are allowed; not sure about zero-len allocs */
+        /* (works fine with gcc + x86linux) */
         allocLen = toIntExact(mLength);
-        if (mLength == 0)
-          allocLen = 1;
+        if (mLength == 0) allocLen = 1;
 
         buf = new byte[allocLen];
         if (buf == null) {
@@ -900,7 +892,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
           return null;
         }
 
-        ALOGV("Asset %s allocating buffer size %d (smaller than threshold)", this, (int)allocLen);
+        ALOGV("Asset %s allocating buffer size %d (smaller than threshold)", this, (int) allocLen);
         if (mLength > 0) {
           try {
             // long oldPosn = ftell(mFp);
@@ -947,7 +939,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
     /**
      * Return the file on disk representing this asset.
      *
-     * Non-Android framework method. Based on {@link #openFileDescriptor(Ref, Ref)}.
+     * <p>Non-Android framework method. Based on {@link #openFileDescriptor(Ref, Ref)}.
      */
     @Override
     public File getFile() {
@@ -1035,13 +1027,9 @@ static Asset createFromCompressedMap(FileMap dataMap,
     @Override
     public String toString() {
       if (mFileName == null) {
-        return "_FileAsset{" +
-            "mMap=" + mMap +
-            '}';
+        return "_FileAsset{" + "mMap=" + mMap + '}';
       } else {
-        return "_FileAsset{" +
-            "mFileName='" + mFileName + '\'' +
-            '}';
+        return "_FileAsset{" + "mFileName='" + mFileName + '\'' + '}';
       }
     }
   }
@@ -1050,38 +1038,42 @@ static Asset createFromCompressedMap(FileMap dataMap,
    * An asset based on compressed data in a file.
    */
   static class _CompressedAsset extends Asset {
-// public:
-//     _CompressedAsset(void);
-//     virtual ~_CompressedAsset(void);
-//
-//     /*
-//      * Use a piece of an already-open file.
-//      *
-//      * On success, the object takes ownership of "fd".
-//      */
-//     int openChunk(int fd, long offset, int compressionMethod,
-//     int uncompressedLen, int compressedLen);
-//
-//     /*
-//      * Use a memory-mapped region.
-//      *
-//      * On success, the object takes ownership of "fd".
-//      */
-//     int openChunk(FileMap dataMap, int uncompressedLen);
-//
-//     /*
-//      * Standard Asset interfaces.
-//      */
-//     virtual ssize_t read(void* buf, int count);
-//     virtual long seek(long offset, int whence);
-//     virtual void close(void);
-//     virtual final void* getBuffer(boolean wordAligned);
+    // public:
+    //     _CompressedAsset(void);
+    //     virtual ~_CompressedAsset(void);
+    //
+    //     /*
+    //      * Use a piece of an already-open file.
+    //      *
+    //      * On success, the object takes ownership of "fd".
+    //      */
+    //     int openChunk(int fd, long offset, int compressionMethod,
+    //     int uncompressedLen, int compressedLen);
+    //
+    //     /*
+    //      * Use a memory-mapped region.
+    //      *
+    //      * On success, the object takes ownership of "fd".
+    //      */
+    //     int openChunk(FileMap dataMap, int uncompressedLen);
+    //
+    //     /*
+    //      * Standard Asset interfaces.
+    //      */
+    //     virtual ssize_t read(void* buf, int count);
+    //     virtual long seek(long offset, int whence);
+    //     virtual void close(void);
+    //     virtual final void* getBuffer(boolean wordAligned);
 
     @Override
-    public long getLength() { return mUncompressedLen; }
+    public long getLength() {
+      return mUncompressedLen;
+    }
 
     @Override
-    public long getRemainingLength() { return mUncompressedLen-mOffset; }
+    public long getRemainingLength() {
+      return mUncompressedLen - mOffset;
+    }
 
     @Override
     public File getFile() {
@@ -1095,10 +1087,14 @@ static Asset createFromCompressedMap(FileMap dataMap,
     }
 
     @Override
-    public FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength) { return null; }
+    public FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength) {
+      return null;
+    }
 
     @Override
-    boolean isAllocated() { return mBuf != null; }
+    boolean isAllocated() {
+      return mBuf != null;
+    }
 
     @Override
     public boolean isNinePatch() {
@@ -1107,30 +1103,31 @@ static Asset createFromCompressedMap(FileMap dataMap,
     }
 
     // private:
-    long mStart;         // offset to start of compressed data
+    long mStart; // offset to start of compressed data
     long mCompressedLen; // length of the compressed data
     long mUncompressedLen; // length of the uncompressed data
-    long mOffset;        // current offset, 0 == start of uncomp data
+    long mOffset; // current offset, 0 == start of uncomp data
 
-    FileMap mMap;           // for memory-mapped input
-    int mFd;            // for file input
+    FileMap mMap; // for memory-mapped input
+    int mFd; // for file input
 
-// class StreamingZipInflater mZipInflater;  // for streaming large compressed assets
+    // class StreamingZipInflater mZipInflater;  // for streaming large compressed assets
 
-    byte[] mBuf;       // for getBuffer()
-/*
- * ===========================================================================
- *      _CompressedAsset
- * ===========================================================================
- */
+    byte[] mBuf; // for getBuffer()
+
+    /*
+     * ===========================================================================
+     *      _CompressedAsset
+     * ===========================================================================
+     */
 
     /*
      * Constructor.
      */
     _CompressedAsset()
-    // : mStart(0), mCompressedLen(0), mUncompressedLen(0), mOffset(0),
-    // mMap(null), mFd(-1), mZipInflater(null), mBuf(null)
-    {
+          // : mStart(0), mCompressedLen(0), mUncompressedLen(0), mOffset(0),
+          // mMap(null), mFd(-1), mZipInflater(null), mBuf(null)
+        {
       mFd = -1;
 
       // Register the Asset with the global list here after it is fully constructed and its
@@ -1175,8 +1172,8 @@ static Asset createFromCompressedMap(FileMap dataMap,
      * This currently just sets up some values and returns.  On the first
      * read, we expand the entire file into a buffer and return data from it.
      */
-    int openChunk(int fd, long offset,
-        int compressionMethod, int uncompressedLen, int compressedLen) {
+    int openChunk(
+        int fd, long offset, int compressionMethod, int uncompressedLen, int compressedLen) {
       throw new UnsupportedOperationException();
       // assert(mFd < 0);        // no re-open
       // assert(mMap == null);
@@ -1209,15 +1206,15 @@ static Asset createFromCompressedMap(FileMap dataMap,
      * Nothing is expanded until the first read call.
      */
     int openChunk(FileMap dataMap, int uncompressedLen) {
-      assert(mFd < 0);        // no re-open
-      assert(mMap == null);
-      assert(dataMap != null);
+      assert (mFd < 0); // no re-open
+      assert (mMap == null);
+      assert (dataMap != null);
 
       mMap = dataMap;
-      mStart = -1;        // not used
+      mStart = -1; // not used
       mCompressedLen = dataMap.getDataLength();
       mUncompressedLen = uncompressedLen;
-      assert(mOffset == 0);
+      assert (mOffset == 0);
 
       // if (uncompressedLen > StreamingZipInflater::OUTPUT_CHUNK_SIZE) {
       // mZipInflater = new StreamingZipInflater(dataMap, uncompressedLen);
@@ -1235,32 +1232,29 @@ static Asset createFromCompressedMap(FileMap dataMap,
       int maxLen;
       int actual;
 
-      assert(mOffset >= 0 && mOffset <= mUncompressedLen);
+      assert (mOffset >= 0 && mOffset <= mUncompressedLen);
 
-       /* If we're relying on a streaming inflater, go through that */
-//       if (mZipInflater) {
-//       actual = mZipInflater.read(buf, count);
-//       } else {
+      /* If we're relying on a streaming inflater, go through that */
+      //       if (mZipInflater) {
+      //       actual = mZipInflater.read(buf, count);
+      //       } else {
       if (mBuf == null) {
-        if (getBuffer(false) == null)
-          return -1;
+        if (getBuffer(false) == null) return -1;
       }
-      assert(mBuf != null);
+      assert (mBuf != null);
 
       /* adjust count if we're near EOF */
       maxLen = toIntExact(mUncompressedLen - mOffset);
-      if (count > maxLen)
-        count = maxLen;
+      if (count > maxLen) count = maxLen;
 
-      if (!isTruthy(count))
-        return 0;
+      if (!isTruthy(count)) return 0;
 
       /* copy from buffer */
-      //printf("comp buf read\n");
-//      memcpy(buf, (String)mBuf + mOffset, count);
+      // printf("comp buf read\n");
+      //      memcpy(buf, (String)mBuf + mOffset, count);
       System.arraycopy(mBuf, toIntExact(mOffset), buf, bufOffset, count);
       actual = count;
-//       }
+      //       }
 
       mOffset += actual;
       return actual;
@@ -1293,21 +1287,21 @@ static Asset createFromCompressedMap(FileMap dataMap,
      */
     @Override
     public void close() {
-       if (mMap != null) {
-//       delete mMap;
-       mMap = null;
-       }
+      if (mMap != null) {
+        //       delete mMap;
+        mMap = null;
+      }
 
-//       delete[] mBuf;
-       mBuf = null;
+      //       delete[] mBuf;
+      mBuf = null;
 
-//       delete mZipInflater;
-//       mZipInflater = null;
+      //       delete mZipInflater;
+      //       mZipInflater = null;
 
-       if (mFd > 0) {
-//       ::close(mFd);
-       mFd = -1;
-       }
+      if (mFd > 0) {
+        //       ::close(mFd);
+        mFd = -1;
+      }
     }
 
     /*
@@ -1321,8 +1315,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
       // return mBuf = mMap.getDataPtr();
       byte[] buf = null;
 
-      if (mBuf != null)
-        return mBuf;
+      if (mBuf != null) return mBuf;
 
       /*
        * Allocate a buffer and read the file into it.
@@ -1373,17 +1366,15 @@ static Asset createFromCompressedMap(FileMap dataMap,
 
     @Override
     public String toString() {
-      return "_CompressedAsset{" +
-          "mMap=" + mMap +
-          '}';
+      return "_CompressedAsset{" + "mMap=" + mMap + '}';
     }
   }
 
   // todo: remove when Android supports this
   static int toIntExact(long value) {
-    if ((int)value != value) {
+    if ((int) value != value) {
       throw new ArithmeticException("integer overflow");
     }
-    return (int)value;
+    return (int) value;
   }
 }

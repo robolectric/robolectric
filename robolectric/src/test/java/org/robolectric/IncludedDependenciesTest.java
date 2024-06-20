@@ -20,7 +20,8 @@ public class IncludedDependenciesTest {
   @Test
   public void xppShouldWork() throws Exception {
     XmlPullParser xmlPullParser = XmlPullParserFactory.newInstance().newPullParser();
-    xmlPullParser.setInput(new StringReader("<?xml version=\"1.0\" encoding=\"UTF-8\"?><test name=\"value\"/>"));
+    xmlPullParser.setInput(
+        new StringReader("<?xml version=\"1.0\" encoding=\"UTF-8\"?><test name=\"value\"/>"));
     assertEquals(XmlPullParser.START_TAG, xmlPullParser.nextTag());
     assertEquals(1, xmlPullParser.getAttributeCount());
     assertEquals("name", xmlPullParser.getAttributeName(0));

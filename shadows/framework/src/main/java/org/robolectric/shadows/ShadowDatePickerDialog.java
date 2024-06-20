@@ -32,7 +32,9 @@ public class ShadowDatePickerDialog extends ShadowAlertDialog {
       int dayOfMonth) {
     this.calendar = calendar;
 
-    invokeConstructor(DatePickerDialog.class, realDatePickerDialog,
+    invokeConstructor(
+        DatePickerDialog.class,
+        realDatePickerDialog,
         ClassParameter.from(Context.class, context),
         ClassParameter.from(int.class, theme),
         ClassParameter.from(DatePickerDialog.OnDateSetListener.class, callBack),

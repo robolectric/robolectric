@@ -54,10 +54,13 @@ public class ResourcePath {
     ResourcePath that = (ResourcePath) o;
 
     if (rClass != null ? !rClass.equals(that.rClass) : that.rClass != null) return false;
-    if (resourceBase != null ? !resourceBase.equals(that.resourceBase) : that.resourceBase != null) return false;
-    if (assetsDir != null ? !assetsDir.equals(that.assetsDir) : that.assetsDir != null) return false;
-    return internalRClass != null ? internalRClass.equals(that.internalRClass) : that.internalRClass == null;
-
+    if (resourceBase != null ? !resourceBase.equals(that.resourceBase) : that.resourceBase != null)
+      return false;
+    if (assetsDir != null ? !assetsDir.equals(that.assetsDir) : that.assetsDir != null)
+      return false;
+    return internalRClass != null
+        ? internalRClass.equals(that.internalRClass)
+        : that.internalRClass == null;
   }
 
   @Override

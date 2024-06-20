@@ -1,8 +1,6 @@
 package org.robolectric.manifest;
 
-/**
- * Holds permission data from manifest.
- */
+/** Holds permission data from manifest. */
 public class PermissionItemData extends PackageItemData {
 
   private final String label;
@@ -10,8 +8,13 @@ public class PermissionItemData extends PackageItemData {
   private final String permissionGroup;
   private final String protectionLevel;
 
-  public PermissionItemData(String name, String label, String description,
-      String permissionGroup, String protectionLevel, MetaData metaData) {
+  public PermissionItemData(
+      String name,
+      String label,
+      String description,
+      String permissionGroup,
+      String protectionLevel,
+      MetaData metaData) {
     super(name, metaData);
 
     this.label = label;

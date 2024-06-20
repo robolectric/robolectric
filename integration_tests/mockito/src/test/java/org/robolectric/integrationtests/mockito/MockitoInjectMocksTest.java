@@ -14,14 +14,11 @@ import org.robolectric.RobolectricTestRunner;
 
 @RunWith(RobolectricTestRunner.class)
 public class MockitoInjectMocksTest {
-  @Rule
-  public MockitoRule mockitoRule = MockitoJUnit.rule();
+  @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
-  @Mock
-  TextView textView;
+  @Mock TextView textView;
 
-  @InjectMocks
-  Activity activity = Robolectric.setupActivity(Activity.class);
+  @InjectMocks Activity activity = Robolectric.setupActivity(Activity.class);
 
   @Test
   public void testInjection() {

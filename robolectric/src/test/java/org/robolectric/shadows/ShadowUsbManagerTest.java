@@ -145,7 +145,7 @@ public class ShadowUsbManagerTest {
             UsbPortStatus.MODE_DUAL,
             UsbPortStatus.POWER_ROLE_SINK,
             UsbPortStatus.DATA_ROLE_DEVICE,
-            /*statusSupportedRoleCombinations=*/ 0);
+            /* statusSupportedRoleCombinations= */ 0);
 
     UsbPortStatus portStatus = (UsbPortStatus) shadowOf(usbManager).getPortStatus("port3");
     assertThat(portStatus.getCurrentMode()).isEqualTo(UsbPortStatus.MODE_DUAL);

@@ -170,7 +170,7 @@ public class ShadowLegacyMessageTest {
     Message.obtain(h, 123).sendToTarget();
     assertThat(h.hasMessages(123)).isTrue();
   }
-  
+
   @Test
   public void testSetGetNext() {
     Message msg = Message.obtain();
@@ -184,7 +184,7 @@ public class ShadowLegacyMessageTest {
   public void recycle_shouldInvokeRealObject21() {
     recycle_shouldInvokeRealObject("recycleUnchecked");
   }
-  
+
   private void recycle_shouldInvokeRealObject(String recycleMethod) {
     Handler h = new Handler();
     Message msg = Message.obtain(h, 234);
@@ -207,7 +207,7 @@ public class ShadowLegacyMessageTest {
     shadowOf(msg).recycleUnchecked();
     assertWithMessage("after recycle").that(scheduler.size()).isEqualTo(0);
   }
-  
+
   @Test
   public void reset_shouldEmptyMessagePool() {
     Message dummy1 = Message.obtain();

@@ -42,7 +42,8 @@ public class ShadowArscResourcesImpl extends ShadowResourcesImpl {
     List<LongSparseArray<?>> resettableArrays = new ArrayList<>();
     Field[] allFields = Resources.class.getDeclaredFields();
     for (Field field : allFields) {
-      if (Modifier.isStatic(field.getModifiers()) && field.getType().equals(LongSparseArray.class)) {
+      if (Modifier.isStatic(field.getModifiers())
+          && field.getType().equals(LongSparseArray.class)) {
         field.setAccessible(true);
         try {
           LongSparseArray<?> longSparseArray = (LongSparseArray<?>) field.get(null);
@@ -58,9 +59,9 @@ public class ShadowArscResourcesImpl extends ShadowResourcesImpl {
   }
 
   /**
-   * Since {@link AssetFileDescriptor}s are not yet supported by Robolectric, {@code null} will
-   * be returned if the resource is found. If the resource cannot be found, {@link Resources.NotFoundException} will
-   * be thrown.
+   * Since {@link AssetFileDescriptor}s are not yet supported by Robolectric, {@code null} will be
+   * returned if the resource is found. If the resource cannot be found, {@link
+   * Resources.NotFoundException} will be thrown.
    */
   @Implementation(maxSdk = M)
   public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
@@ -74,7 +75,8 @@ public class ShadowArscResourcesImpl extends ShadowResourcesImpl {
 
     FileInputStream fis = (FileInputStream) inputStream;
     try {
-      return new AssetFileDescriptor(ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
+      return new AssetFileDescriptor(
+          ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
     } catch (IOException e) {
       throw newNotFoundException(id);
     }
@@ -85,7 +87,9 @@ public class ShadowArscResourcesImpl extends ShadowResourcesImpl {
   }
 
   @Implementation(maxSdk = N_MR1)
-  public Drawable loadDrawable(Resources wrapper, TypedValue value, int id, Resources.Theme theme, boolean useCache) throws Resources.NotFoundException {
+  public Drawable loadDrawable(
+      Resources wrapper, TypedValue value, int id, Resources.Theme theme, boolean useCache)
+      throws Resources.NotFoundException {
     Drawable drawable =
         reflector(ResourcesImplReflector.class, realResourcesImpl)
             .loadDrawable(wrapper, value, id, theme, useCache);
@@ -95,7 +99,8 @@ public class ShadowArscResourcesImpl extends ShadowResourcesImpl {
   }
 
   @Implementation(minSdk = O)
-  public Drawable loadDrawable(Resources wrapper,  TypedValue value, int id, int density, Resources.Theme theme) {
+  public Drawable loadDrawable(
+      Resources wrapper, TypedValue value, int id, int density, Resources.Theme theme) {
     Drawable drawable =
         reflector(ResourcesImplReflector.class, realResourcesImpl)
             .loadDrawable(wrapper, value, id, density, theme);

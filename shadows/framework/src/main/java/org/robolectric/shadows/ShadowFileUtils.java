@@ -25,7 +25,8 @@ public class ShadowFileUtils {
       long count)
       throws IOException {
     // never do the native copy optimization block
-    return ReflectionHelpers.callStaticMethod(FileUtils.class,
+    return ReflectionHelpers.callStaticMethod(
+        FileUtils.class,
         "copyInternalUserspace",
         from(FileDescriptor.class, in),
         from(FileDescriptor.class, out),

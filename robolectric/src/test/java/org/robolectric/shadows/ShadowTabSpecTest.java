@@ -84,7 +84,6 @@ public class ShadowTabSpecTest {
     ShadowTabHost.ShadowTabSpec shadowFoo = shadowOf(foo);
     TextView textView = (TextView) shadowFoo.getContentView();
 
-
     assertThat(textView.getText().toString()).isEqualTo("The Text of Foo");
   }
 
@@ -101,22 +100,17 @@ public class ShadowTabSpecTest {
   private static class TestIcon extends Drawable {
 
     @Override
-    public void draw(Canvas canvas) {
-    }
+    public void draw(Canvas canvas) {}
 
     @Override
-    public void setAlpha(int alpha) {
-    }
+    public void setAlpha(int alpha) {}
 
     @Override
-    public void setColorFilter(ColorFilter cf) {
-    }
+    public void setColorFilter(ColorFilter cf) {}
 
     @Override
     public int getOpacity() {
       return 0;
     }
-
   }
-
 }

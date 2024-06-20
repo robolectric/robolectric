@@ -44,7 +44,7 @@ public class ShadowScanResult {
       if (is80211McRTTResponder) {
         scanResult.setFlag(ScanResult.FLAG_80211mc_RESPONDER);
       } else {
-      scanResult.setFlag(0);
+        scanResult.setFlag(0);
       }
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         scanResult.informationElements = new ScanResult.InformationElement[0];

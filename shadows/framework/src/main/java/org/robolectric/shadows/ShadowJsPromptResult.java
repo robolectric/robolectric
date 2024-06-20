@@ -6,7 +6,7 @@ import android.webkit.JsPromptResult;
 import org.robolectric.annotation.Implements;
 
 @Implements(JsPromptResult.class)
-public class ShadowJsPromptResult extends ShadowJsResult{
+public class ShadowJsPromptResult extends ShadowJsResult {
 
   public static JsPromptResult newInstance() {
     return newInstanceOf(JsPromptResult.class);

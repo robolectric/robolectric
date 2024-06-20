@@ -3,9 +3,7 @@ package org.robolectric.res;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Tracks resource ids and generates new unique values.
- */
+/** Tracks resource ids and generates new unique values. */
 public class ResourceIdGenerator {
 
   private final Map<String, TypeTracker> typeInfo = new HashMap<>();
@@ -51,7 +49,8 @@ public class ResourceIdGenerator {
       typeTracker = new TypeTracker(getNextFreeTypeIdentifier());
       typeInfo.put(type, typeTracker);
     }
-    return ResourceIds.makeIdentifer(packageIdentifier, typeTracker.getTypeIdentifier(), typeTracker.getFreeIdentifier());
+    return ResourceIds.makeIdentifer(
+        packageIdentifier, typeTracker.getTypeIdentifier(), typeTracker.getFreeIdentifier());
   }
 
   private int getNextFreeTypeIdentifier() {

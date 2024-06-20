@@ -11,8 +11,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowRectTest {
   @Before
-  public void setUp() {
-  }
+  public void setUp() {}
 
   @Test
   public void constructorSetsCoordinates() {

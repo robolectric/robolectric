@@ -396,7 +396,7 @@ public class ShadowParcelTest {
 
   @Test
   public void testReadWriteIntArray() throws Exception {
-    final int[] ints = { 1, 2 };
+    final int[] ints = {1, 2};
     parcel.writeIntArray(ints);
     // Make sure a copy was stored.
     ints[0] = 99;
@@ -416,7 +416,7 @@ public class ShadowParcelTest {
 
   @Test
   public void testReadWriteLongArray() throws Exception {
-    final long[] longs = { 1, 2 };
+    final long[] longs = {1, 2};
     parcel.writeLongArray(longs);
     parcel.setDataPosition(0);
     final long[] longs2 = new long[longs.length];
@@ -441,7 +441,7 @@ public class ShadowParcelTest {
 
   @Test
   public void testReadWriteFloatArray() throws Exception {
-    final float[] floats = { 1.1f, 2.0f };
+    final float[] floats = {1.1f, 2.0f};
     parcel.writeFloatArray(floats);
     parcel.setDataPosition(0);
     final float[] floats2 = new float[floats.length];
@@ -458,7 +458,7 @@ public class ShadowParcelTest {
 
   @Test
   public void testReadWriteDoubleArray() throws Exception {
-    final double[] doubles = { 1.1f, 2.0f };
+    final double[] doubles = {1.1f, 2.0f};
     parcel.writeDoubleArray(doubles);
     parcel.setDataPosition(0);
     final double[] doubles2 = new double[doubles.length];
@@ -475,7 +475,7 @@ public class ShadowParcelTest {
 
   @Test
   public void testReadWriteStringArray() throws Exception {
-    final String[] strings = { "foo", "bar" };
+    final String[] strings = {"foo", "bar"};
     parcel.writeStringArray(strings);
     parcel.setDataPosition(0);
     final String[] strings2 = new String[strings.length];
@@ -633,7 +633,7 @@ public class ShadowParcelTest {
 
   @Test
   public void testWriteAndReadByteArray() {
-    byte[] bytes = new byte[] { -1, 2, 3, 127 };
+    byte[] bytes = new byte[] {-1, 2, 3, 127};
     parcel.writeByteArray(bytes);
     assertThat(parcel.dataSize()).isEqualTo(8);
     parcel.setDataPosition(0);
@@ -644,7 +644,7 @@ public class ShadowParcelTest {
 
   @Test(expected = RuntimeException.class)
   public void testWriteAndReadByteArray_badLength() {
-    byte[] bytes = new byte[] { -1, 2, 3, 127 };
+    byte[] bytes = new byte[] {-1, 2, 3, 127};
     parcel.writeByteArray(bytes);
     assertThat(parcel.dataSize()).isEqualTo(8);
     parcel.setDataPosition(0);
@@ -846,8 +846,8 @@ public class ShadowParcelTest {
 
     parcel.writeTypedList(normals);
     parcel.setDataPosition(0);
-    List<org.robolectric.shadows.TestParcelable> rehydrated = parcel
-        .createTypedArrayList(TestParcelable.CREATOR);
+    List<org.robolectric.shadows.TestParcelable> rehydrated =
+        parcel.createTypedArrayList(TestParcelable.CREATOR);
 
     assertEquals(1, rehydrated.size());
     assertEquals(23, rehydrated.get(0).contents);
@@ -860,7 +860,8 @@ public class ShadowParcelTest {
     parcel.writeParcelable(normal, 0);
     parcel.setDataPosition(0);
 
-    TestParcelablePackage rehydrated = parcel.readParcelable(TestParcelablePackage.class.getClassLoader());
+    TestParcelablePackage rehydrated =
+        parcel.readParcelable(TestParcelablePackage.class.getClassLoader());
 
     assertEquals(normal.contents, rehydrated.contents);
   }
@@ -872,7 +873,8 @@ public class ShadowParcelTest {
     parcel.writeParcelable(normal, 0);
     parcel.setDataPosition(0);
 
-    TestParcelableImpl rehydrated = parcel.readParcelable(TestParcelableImpl.class.getClassLoader());
+    TestParcelableImpl rehydrated =
+        parcel.readParcelable(TestParcelableImpl.class.getClassLoader());
 
     assertEquals(normal.contents, rehydrated.contents);
   }
@@ -916,7 +918,7 @@ public class ShadowParcelTest {
 
   @Test
   public void testCreateStringArray() {
-    String[] strs = { "a1", "b2" };
+    String[] strs = {"a1", "b2"};
     parcel.writeStringArray(strs);
     parcel.setDataPosition(0);
     String[] newStrs = parcel.createStringArray();
@@ -1335,7 +1337,7 @@ public class ShadowParcelTest {
     parcel.setDataCapacity(12);
     assertWithMessage("capacity never shrinks").that(parcel.dataCapacity()).isEqualTo(404);
   }
-  
+
   @Test
   public void testWriteAndEnforceCompatibleInterface() {
     parcel.writeInterfaceToken("com.example.IMyInterface");
@@ -1343,7 +1345,7 @@ public class ShadowParcelTest {
     parcel.enforceInterface("com.example.IMyInterface");
     // Nothing explodes
   }
-  
+
   @Test
   public void testWriteAndEnforceIncompatibleInterface() {
     parcel.writeInterfaceToken("com.example.Derp");

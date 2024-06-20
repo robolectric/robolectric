@@ -338,7 +338,6 @@ public class ShadowPackageInstaller {
     private ShadowPackageInstaller shadowPackageInstaller;
     private PersistableBundle appMetadata = new PersistableBundle();
 
-
     @Implementation(minSdk = UPSIDE_DOWN_CAKE)
     protected void requestUserPreapproval(
         @NonNull PreapprovalDetails details, @NonNull IntentSender statusReceiver) {

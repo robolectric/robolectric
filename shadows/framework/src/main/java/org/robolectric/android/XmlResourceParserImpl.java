@@ -26,30 +26,24 @@ import org.xmlpull.v1.XmlPullParserException;
 /**
  * Concrete implementation of the {@link XmlResourceParser}.
  *
- * Clients expects a pull parser while the resource loader
- * initialise this object with a {@link Document}.
- * This implementation navigates the dom and emulates a pull
- * parser by raising all the opportune events.
+ * <p>Clients expects a pull parser while the resource loader initialise this object with a {@link
+ * Document}. This implementation navigates the dom and emulates a pull parser by raising all the
+ * opportune events.
  *
- * Note that the original android implementation is based on
- * a set of native methods calls. Here those methods are
- * re-implemented in java when possible.
+ * <p>Note that the original android implementation is based on a set of native methods calls. Here
+ * those methods are re-implemented in java when possible.
  */
 public class XmlResourceParserImpl implements XmlResourceParser {
 
-  /**
-   * All the parser features currently supported by Android.
-   */
+  /** All the parser features currently supported by Android. */
   public static final String[] AVAILABLE_FEATURES = {
-      XmlResourceParser.FEATURE_PROCESS_NAMESPACES,
-      XmlResourceParser.FEATURE_REPORT_NAMESPACE_ATTRIBUTES
+    XmlResourceParser.FEATURE_PROCESS_NAMESPACES,
+    XmlResourceParser.FEATURE_REPORT_NAMESPACE_ATTRIBUTES
   };
-  /**
-   * All the parser features currently NOT supported by Android.
-   */
+
+  /** All the parser features currently NOT supported by Android. */
   public static final String[] UNAVAILABLE_FEATURES = {
-      XmlResourceParser.FEATURE_PROCESS_DOCDECL,
-      XmlResourceParser.FEATURE_VALIDATION
+    XmlResourceParser.FEATURE_PROCESS_DOCDECL, XmlResourceParser.FEATURE_VALIDATION
   };
 
   private final Document document;
@@ -93,8 +87,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   }
 
   @Override
-  public void setFeature(String name, boolean state)
-      throws XmlPullParserException {
+  public void setFeature(String name, boolean state) throws XmlPullParserException {
     if (isAndroidSupportedFeature(name) && state) {
       return;
     }
@@ -107,8 +100,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   }
 
   @Override
-  public void setProperty(String name, Object value)
-      throws XmlPullParserException {
+  public void setProperty(String name, Object value) throws XmlPullParserException {
     throw new XmlPullParserException("setProperty() not supported");
   }
 
@@ -131,18 +123,14 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   }
 
   @Override
-  public void defineEntityReplacementText(
-      String entityName, String replacementText)
+  public void defineEntityReplacementText(String entityName, String replacementText)
       throws XmlPullParserException {
-    throw new XmlPullParserException(
-        "defineEntityReplacementText() not supported");
+    throw new XmlPullParserException("defineEntityReplacementText() not supported");
   }
 
   @Override
-  public String getNamespacePrefix(int pos)
-      throws XmlPullParserException {
-    throw new XmlPullParserException(
-        "getNamespacePrefix() not supported");
+  public String getNamespacePrefix(int pos) throws XmlPullParserException {
+    throw new XmlPullParserException("getNamespacePrefix() not supported");
   }
 
   @Override
@@ -152,15 +140,12 @@ public class XmlResourceParserImpl implements XmlResourceParser {
 
   @Override
   public String getNamespace(String prefix) {
-    throw new RuntimeException(
-        "getNamespaceCount() not supported");
+    throw new RuntimeException("getNamespaceCount() not supported");
   }
 
   @Override
-  public int getNamespaceCount(int depth)
-      throws XmlPullParserException {
-    throw new XmlPullParserException(
-        "getNamespaceCount() not supported");
+  public int getNamespaceCount(int depth) throws XmlPullParserException {
+    throw new XmlPullParserException("getNamespaceCount() not supported");
   }
 
   @Override
@@ -169,10 +154,8 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   }
 
   @Override
-  public String getNamespaceUri(int pos)
-      throws XmlPullParserException {
-    throw new XmlPullParserException(
-        "getNamespaceUri() not supported");
+  public String getNamespaceUri(int pos) throws XmlPullParserException {
+    throw new XmlPullParserException("getNamespaceUri() not supported");
   }
 
   @Override
@@ -202,14 +185,12 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   }
 
   @Override
-  public int getEventType()
-      throws XmlPullParserException {
+  public int getEventType() throws XmlPullParserException {
     return mEventType;
   }
 
   /*package*/
-  public boolean isWhitespace(String text)
-      throws XmlPullParserException {
+  public boolean isWhitespace(String text) throws XmlPullParserException {
     if (text == null) {
       return false;
     }
@@ -217,8 +198,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   }
 
   @Override
-  public boolean isWhitespace()
-      throws XmlPullParserException {
+  public boolean isWhitespace() throws XmlPullParserException {
     // Note: in android whitespaces are automatically stripped.
     // Here we have to skip them manually
     return isWhitespace(getText());
@@ -342,7 +322,9 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   public String qualify(String value) {
     if (value == null) return null;
     if (AttributeResource.isResourceReference(value)) {
-      return "@" + ResName.qualifyResourceName(value.trim().substring(1).replace("+", ""), packageName, "attr");
+      return "@"
+          + ResName.qualifyResourceName(
+              value.trim().substring(1).replace("+", ""), packageName, "attr");
     } else if (AttributeResource.isStyleReference(value)) {
       return "?" + ResName.qualifyResourceName(value.trim().substring(1), packageName, "attr");
     } else {
@@ -413,138 +395,146 @@ public class XmlResourceParserImpl implements XmlResourceParser {
    */
   private int nativeNext() throws XmlPullParserException {
     switch (mEventType) {
-      case (CDSECT): {
-        throw new IllegalArgumentException(
-            "CDSECT is not handled by Android");
-      }
-      case (COMMENT): {
-        throw new IllegalArgumentException(
-            "COMMENT is not handled by Android");
-      }
-      case (DOCDECL): {
-        throw new IllegalArgumentException(
-            "DOCDECL is not handled by Android");
-      }
-      case (ENTITY_REF): {
-        throw new IllegalArgumentException(
-            "ENTITY_REF is not handled by Android");
-      }
-      case (END_DOCUMENT): {
-        // The end document event should have been filtered
-        // from the invoker. This should never happen.
-        throw new IllegalArgumentException(
-            "END_DOCUMENT should not be found here.");
-      }
-      case (END_TAG): {
-        return navigateToNextNode(currentNode);
-      }
-      case (IGNORABLE_WHITESPACE): {
-        throw new IllegalArgumentException(
-            "IGNORABLE_WHITESPACE");
-      }
-      case (PROCESSING_INSTRUCTION): {
-        throw new IllegalArgumentException(
-            "PROCESSING_INSTRUCTION");
-      }
-      case (START_DOCUMENT): {
-        currentNode = document.getDocumentElement();
-        return START_TAG;
-      }
-      case (START_TAG): {
-        if (currentNode.hasChildNodes()) {
-          // The node has children, navigate down
-          return processNextNodeType(
-              currentNode.getFirstChild());
-        } else {
-          // The node has no children
-          return END_TAG;
+      case (CDSECT):
+        {
+          throw new IllegalArgumentException("CDSECT is not handled by Android");
         }
-      }
-      case (TEXT): {
-        return navigateToNextNode(currentNode);
-      }
-      default: {
-        // This can only happen if mEventType is
-        // assigned with an unmapped integer.
-        throw new RuntimeException(
-            "Robolectric-> Uknown XML event type: " + mEventType);
-      }
+      case (COMMENT):
+        {
+          throw new IllegalArgumentException("COMMENT is not handled by Android");
+        }
+      case (DOCDECL):
+        {
+          throw new IllegalArgumentException("DOCDECL is not handled by Android");
+        }
+      case (ENTITY_REF):
+        {
+          throw new IllegalArgumentException("ENTITY_REF is not handled by Android");
+        }
+      case (END_DOCUMENT):
+        {
+          // The end document event should have been filtered
+          // from the invoker. This should never happen.
+          throw new IllegalArgumentException("END_DOCUMENT should not be found here.");
+        }
+      case (END_TAG):
+        {
+          return navigateToNextNode(currentNode);
+        }
+      case (IGNORABLE_WHITESPACE):
+        {
+          throw new IllegalArgumentException("IGNORABLE_WHITESPACE");
+        }
+      case (PROCESSING_INSTRUCTION):
+        {
+          throw new IllegalArgumentException("PROCESSING_INSTRUCTION");
+        }
+      case (START_DOCUMENT):
+        {
+          currentNode = document.getDocumentElement();
+          return START_TAG;
+        }
+      case (START_TAG):
+        {
+          if (currentNode.hasChildNodes()) {
+            // The node has children, navigate down
+            return processNextNodeType(currentNode.getFirstChild());
+          } else {
+            // The node has no children
+            return END_TAG;
+          }
+        }
+      case (TEXT):
+        {
+          return navigateToNextNode(currentNode);
+        }
+      default:
+        {
+          // This can only happen if mEventType is
+          // assigned with an unmapped integer.
+          throw new RuntimeException("Robolectric-> Uknown XML event type: " + mEventType);
+        }
     }
-
   }
 
-  /*protected*/ int processNextNodeType(Node node)
-      throws XmlPullParserException {
+  /*protected*/ int processNextNodeType(Node node) throws XmlPullParserException {
     switch (node.getNodeType()) {
-      case (Node.ATTRIBUTE_NODE): {
-        throw new IllegalArgumentException("ATTRIBUTE_NODE");
-      }
-      case (Node.CDATA_SECTION_NODE): {
-        return navigateToNextNode(node);
-      }
-      case (Node.COMMENT_NODE): {
-        return navigateToNextNode(node);
-      }
-      case (Node.DOCUMENT_FRAGMENT_NODE): {
-        throw new IllegalArgumentException("DOCUMENT_FRAGMENT_NODE");
-      }
-      case (Node.DOCUMENT_NODE): {
-        throw new IllegalArgumentException("DOCUMENT_NODE");
-      }
-      case (Node.DOCUMENT_TYPE_NODE): {
-        throw new IllegalArgumentException("DOCUMENT_TYPE_NODE");
-      }
-      case (Node.ELEMENT_NODE): {
-        currentNode = node;
-        return START_TAG;
-      }
-      case (Node.ENTITY_NODE): {
-        throw new IllegalArgumentException("ENTITY_NODE");
-      }
-      case (Node.ENTITY_REFERENCE_NODE): {
-        throw new IllegalArgumentException("ENTITY_REFERENCE_NODE");
-      }
-      case (Node.NOTATION_NODE): {
-        throw new IllegalArgumentException("DOCUMENT_TYPE_NODE");
-      }
-      case (Node.PROCESSING_INSTRUCTION_NODE): {
-        throw new IllegalArgumentException("DOCUMENT_TYPE_NODE");
-      }
-      case (Node.TEXT_NODE): {
-        if (isWhitespace(node.getNodeValue())) {
-          // Skip whitespaces
-          return navigateToNextNode(node);
-        } else {
-          currentNode = node;
-          return TEXT;
+      case (Node.ATTRIBUTE_NODE):
+        {
+          throw new IllegalArgumentException("ATTRIBUTE_NODE");
         }
-      }
-      default: {
-        throw new RuntimeException(
-            "Robolectric -> Unknown node type: " +
-                node.getNodeType() + ".");
-      }
+      case (Node.CDATA_SECTION_NODE):
+        {
+          return navigateToNextNode(node);
+        }
+      case (Node.COMMENT_NODE):
+        {
+          return navigateToNextNode(node);
+        }
+      case (Node.DOCUMENT_FRAGMENT_NODE):
+        {
+          throw new IllegalArgumentException("DOCUMENT_FRAGMENT_NODE");
+        }
+      case (Node.DOCUMENT_NODE):
+        {
+          throw new IllegalArgumentException("DOCUMENT_NODE");
+        }
+      case (Node.DOCUMENT_TYPE_NODE):
+        {
+          throw new IllegalArgumentException("DOCUMENT_TYPE_NODE");
+        }
+      case (Node.ELEMENT_NODE):
+        {
+          currentNode = node;
+          return START_TAG;
+        }
+      case (Node.ENTITY_NODE):
+        {
+          throw new IllegalArgumentException("ENTITY_NODE");
+        }
+      case (Node.ENTITY_REFERENCE_NODE):
+        {
+          throw new IllegalArgumentException("ENTITY_REFERENCE_NODE");
+        }
+      case (Node.NOTATION_NODE):
+        {
+          throw new IllegalArgumentException("DOCUMENT_TYPE_NODE");
+        }
+      case (Node.PROCESSING_INSTRUCTION_NODE):
+        {
+          throw new IllegalArgumentException("DOCUMENT_TYPE_NODE");
+        }
+      case (Node.TEXT_NODE):
+        {
+          if (isWhitespace(node.getNodeValue())) {
+            // Skip whitespaces
+            return navigateToNextNode(node);
+          } else {
+            currentNode = node;
+            return TEXT;
+          }
+        }
+      default:
+        {
+          throw new RuntimeException(
+              "Robolectric -> Unknown node type: " + node.getNodeType() + ".");
+        }
     }
   }
 
   /**
-   * Navigate to the next node after a node and all of his
-   * children have been explored.
+   * Navigate to the next node after a node and all of his children have been explored.
    *
-   * If the node has unexplored siblings navigate to the
-   * next sibling. Otherwise return to its parent.
+   * <p>If the node has unexplored siblings navigate to the next sibling. Otherwise return to its
+   * parent.
    *
    * @param node the node which was just explored.
-   * @return {@link XmlPullParserException#START_TAG} if the given
-   *         node has siblings, {@link XmlPullParserException#END_TAG}
-   *         if the node has no unexplored siblings or
-   *         {@link XmlPullParserException#END_DOCUMENT} if the explored
-   *         was the root document.
-   * @throws XmlPullParserException if the parser fails to
-   *                                parse the next node.
+   * @return {@link XmlPullParserException#START_TAG} if the given node has siblings, {@link
+   *     XmlPullParserException#END_TAG} if the node has no unexplored siblings or {@link
+   *     XmlPullParserException#END_DOCUMENT} if the explored was the root document.
+   * @throws XmlPullParserException if the parser fails to parse the next node.
    */
-  int navigateToNextNode(Node node)
-      throws XmlPullParserException {
+  int navigateToNextNode(Node node) throws XmlPullParserException {
     Node nextNode = node.getNextSibling();
     if (nextNode != null) {
       // Move to the next siblings
@@ -566,8 +556,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     if (type != getEventType()
         || (namespace != null && !namespace.equals(getNamespace()))
         || (name != null && !name.equals(getName()))) {
-      throw new XmlPullParserException(
-          "expected " + TYPES[type] + getPositionDescription());
+      throw new XmlPullParserException("expected " + TYPES[type] + getPositionDescription());
     }
   }
 
@@ -575,8 +564,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   public String nextText() throws XmlPullParserException, IOException {
     if (getEventType() != START_TAG) {
       throw new XmlPullParserException(
-          getPositionDescription()
-              + ": parser must be on START_TAG to read next text", this, null);
+          getPositionDescription() + ": parser must be on START_TAG to read next text", this, null);
     }
     int eventType = next();
     if (eventType == TEXT) {
@@ -584,16 +572,18 @@ public class XmlResourceParserImpl implements XmlResourceParser {
       eventType = next();
       if (eventType != END_TAG) {
         throw new XmlPullParserException(
-            getPositionDescription()
-                + ": event TEXT it must be immediately followed by END_TAG", this, null);
+            getPositionDescription() + ": event TEXT it must be immediately followed by END_TAG",
+            this,
+            null);
       }
       return result;
     } else if (eventType == END_TAG) {
       return "";
     } else {
       throw new XmlPullParserException(
-          getPositionDescription()
-              + ": parser must be on START_TAG or TEXT to read text", this, null);
+          getPositionDescription() + ": parser must be on START_TAG or TEXT to read text",
+          this,
+          null);
     }
   }
 
@@ -622,8 +612,8 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   }
 
   @Override
-  public int getAttributeListValue(String namespace, String attribute,
-      String[] options, int defaultValue) {
+  public int getAttributeListValue(
+      String namespace, String attribute, String[] options, int defaultValue) {
     String attr = getAttribute(namespace, attribute);
     if (attr == null) {
       return 0;
@@ -637,8 +627,8 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   }
 
   @Override
-  public boolean getAttributeBooleanValue(String namespace, String attribute,
-      boolean defaultValue) {
+  public boolean getAttributeBooleanValue(
+      String namespace, String attribute, boolean defaultValue) {
     String attr = getAttribute(namespace, attribute);
     if (attr == null) {
       return defaultValue;
@@ -670,8 +660,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   }
 
   @Override
-  public float getAttributeFloatValue(String namespace, String attribute,
-      float defaultValue) {
+  public float getAttributeFloatValue(String namespace, String attribute, float defaultValue) {
     String attr = getAttribute(namespace, attribute);
     if (attr == null) {
       return defaultValue;
@@ -684,8 +673,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   }
 
   @Override
-  public int getAttributeListValue(
-      int idx, String[] options, int defaultValue) {
+  public int getAttributeListValue(int idx, String[] options, int defaultValue) {
     try {
       String value = getAttributeValue(idx);
       List<String> optList = Arrays.asList(options);
@@ -700,8 +688,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   }
 
   @Override
-  public boolean getAttributeBooleanValue(
-      int idx, boolean defaultValue) {
+  public boolean getAttributeBooleanValue(int idx, boolean defaultValue) {
     try {
       return Boolean.parseBoolean(getAttributeValue(idx));
     } catch (IndexOutOfBoundsException ex) {
@@ -770,8 +757,9 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   @Override
   public int getStyleAttribute() {
     String attr = getAttribute(null, "style");
-    if (attr == null ||
-        (!AttributeResource.isResourceReference(attr) && !AttributeResource.isStyleReference(attr))) {
+    if (attr == null
+        || (!AttributeResource.isResourceReference(attr)
+            && !AttributeResource.isStyleReference(attr))) {
       return 0;
     }
 
@@ -793,12 +781,15 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     close();
   }
 
-  private int getResourceId(String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
+  private int getResourceId(
+      String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
 
     if (AttributeResource.isNull(possiblyQualifiedResourceName)) return 0;
 
     if (AttributeResource.isStyleReference(possiblyQualifiedResourceName)) {
-      ResName styleReference = AttributeResource.getStyleReference(possiblyQualifiedResourceName, defaultPackageName, "attr");
+      ResName styleReference =
+          AttributeResource.getStyleReference(
+              possiblyQualifiedResourceName, defaultPackageName, "attr");
       Integer resourceId = resourceTable.getResourceId(styleReference);
       if (resourceId == null) {
         throw new Resources.NotFoundException(styleReference.getFullyQualifiedName());
@@ -807,7 +798,9 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     }
 
     if (AttributeResource.isResourceReference(possiblyQualifiedResourceName)) {
-      ResName resourceReference = AttributeResource.getResourceReference(possiblyQualifiedResourceName, defaultPackageName, defaultType);
+      ResName resourceReference =
+          AttributeResource.getResourceReference(
+              possiblyQualifiedResourceName, defaultPackageName, defaultType);
       Integer resourceId = resourceTable.getResourceId(resourceReference);
       if (resourceId == null) {
         throw new Resources.NotFoundException(resourceReference.getFullyQualifiedName());
@@ -815,12 +808,13 @@ public class XmlResourceParserImpl implements XmlResourceParser {
       return resourceId;
     }
     possiblyQualifiedResourceName = removeLeadingSpecialCharsIfAny(possiblyQualifiedResourceName);
-    ResName resName = ResName.qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
+    ResName resName =
+        ResName.qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
     Integer resourceId = resourceTable.getResourceId(resName);
     return resourceId == null ? 0 : resourceId;
   }
 
-  private static String removeLeadingSpecialCharsIfAny(String name){
+  private static String removeLeadingSpecialCharsIfAny(String name) {
     if (name.startsWith("@+")) {
       return name.substring(2);
     }

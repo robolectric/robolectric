@@ -24,8 +24,7 @@ import org.robolectric.Robolectric;
 @RunWith(AndroidJUnit4.class)
 public class ShadowAssetManagerTest {
 
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
+  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   private AssetManager assetManager;
   private Resources resources;

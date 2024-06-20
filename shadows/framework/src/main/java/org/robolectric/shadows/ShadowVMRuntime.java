@@ -36,19 +36,14 @@ public class ShadowVMRuntime {
     return null;
   }
 
-  /**
-   * Returns a unique identifier of the object instead of a 'native' address.
-   */
+  /** Returns a unique identifier of the object instead of a 'native' address. */
   @Implementation
   public long addressOf(Object obj) {
     return nativeObjRegistry.register(new WeakReference<>(obj));
   }
 
-  /**
-   * Returns the object previously registered with {@link #addressOf(Object)}.
-   */
-  public @Nullable
-  Object getObjectForAddress(long address) {
+  /** Returns the object previously registered with {@link #addressOf(Object)}. */
+  public @Nullable Object getObjectForAddress(long address) {
     return nativeObjRegistry.getNativeObject(address).get();
   }
 

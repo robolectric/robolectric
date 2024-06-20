@@ -13,33 +13,35 @@ public class StaxAttrLoader extends StaxLoader {
   public StaxAttrLoader(PackageResourceTable resourceTable, String attrType, ResType resType) {
     super(resourceTable, attrType, resType);
 
-    addHandler("*", new NodeHandler() {
-      private String value;
-      private String name;
+    addHandler(
+        "*",
+        new NodeHandler() {
+          private String value;
+          private String name;
 
-      @Override
-      public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-        String type = xml.getLocalName();
-        if (pairs.isEmpty()) {
-          if (format == null) {
-            format = type;
-          } else {
-            format = format + "|" + type;
+          @Override
+          public void onStart(XMLStreamReader xml, XmlContext xmlContext)
+              throws XMLStreamException {
+            String type = xml.getLocalName();
+            if (pairs.isEmpty()) {
+              if (format == null) {
+                format = type;
+              } else {
+                format = format + "|" + type;
+              }
+            }
+            name = xml.getAttributeValue(null, "name");
+            value = xml.getAttributeValue(null, "value");
+            pairs.add(new AttrData.Pair(name, value));
           }
-        }
-        name = xml.getAttributeValue(null, "name");
-        value = xml.getAttributeValue(null, "value");
-        pairs.add(new AttrData.Pair(name, value));
-      }
 
-      @Override
-      public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-      }
+          @Override
+          public void onCharacters(XMLStreamReader xml, XmlContext xmlContext)
+              throws XMLStreamException {}
 
-      @Override
-      public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-      }
-    });
+          @Override
+          public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {}
+        });
   }
 
   @Override
@@ -53,7 +55,7 @@ public class StaxAttrLoader extends StaxLoader {
     AttrData attrData = new AttrData(name, format, new ArrayList<>(pairs));
     pairs.clear();
 
-//      xmlContext = xmlContext.withLineNumber(xml.getLocation().getLineNumber());
+    //      xmlContext = xmlContext.withLineNumber(xml.getLocation().getLineNumber());
     if (attrData.getFormat() != null) {
       resourceTable.addResource(attrType, name, new TypedResource<>(attrData, resType, xmlContext));
     }

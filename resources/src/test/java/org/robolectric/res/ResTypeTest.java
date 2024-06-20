@@ -6,9 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Tests for {@link ResType}
- */
+/** Tests for {@link ResType} */
 @RunWith(JUnit4.class)
 public class ResTypeTest {
 

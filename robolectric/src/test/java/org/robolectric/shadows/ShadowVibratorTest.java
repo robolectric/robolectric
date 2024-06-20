@@ -69,7 +69,7 @@ public class ShadowVibratorTest {
 
   @Test
   public void vibratePattern() {
-    long[] pattern = new long[] { 0, 200 };
+    long[] pattern = new long[] {0, 200};
     vibrator.vibrate(pattern, 1);
 
     assertThat(shadowOf(vibrator).isVibrating()).isTrue();

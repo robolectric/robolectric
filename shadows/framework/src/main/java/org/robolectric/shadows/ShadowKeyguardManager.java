@@ -205,8 +205,8 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * For tests on Android >= O MR1, sets the value to be returned by
-   * {@link #createConfirmFactoryResetCredentialIntent(CharSequence,CharSequence,CharSequence)}.
+   * For tests on Android >= O MR1, sets the value to be returned by {@link
+   * #createConfirmFactoryResetCredentialIntent(CharSequence,CharSequence,CharSequence)}.
    *
    * @see #createConfirmFactoryResetCredentialIntent(CharSequence,CharSequence,CharSequence)
    */
@@ -215,8 +215,8 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * Returns the intent set via
-   * {@link #setConfirmFactoryResetCredentialIntent(Intent)}, otherwise null.
+   * Returns the intent set via {@link #setConfirmFactoryResetCredentialIntent(Intent)}, otherwise
+   * null.
    */
   @Implementation(minSdk = O_MR1)
   protected Intent createConfirmFactoryResetCredentialIntent(

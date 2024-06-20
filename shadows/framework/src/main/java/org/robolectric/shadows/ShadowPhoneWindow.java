@@ -13,11 +13,12 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.ForType;
 
-/**
- * Shadow for PhoneWindow for APIs 23+
- */
-@Implements(className = "com.android.internal.policy.PhoneWindow", isInAndroidSdk = false,
-    minSdk = M, looseSignatures = true)
+/** Shadow for PhoneWindow for APIs 23+ */
+@Implements(
+    className = "com.android.internal.policy.PhoneWindow",
+    isInAndroidSdk = false,
+    minSdk = M,
+    looseSignatures = true)
 public class ShadowPhoneWindow extends ShadowWindow {
   protected @RealObject Window realWindow;
   protected boolean decorFitsSystemWindows = true;

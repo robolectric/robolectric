@@ -9,9 +9,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.config.ConfigurationRegistry;
 
-/**
- * Unit tests for packages annotated with @LooperMode.
- */
+/** Unit tests for packages annotated with @LooperMode. */
 @RunWith(AndroidJUnit4.class)
 public class LooperModeConfigurerPkgTest {
 

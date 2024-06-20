@@ -246,9 +246,7 @@ public class ShadowCrossProfileApps {
     }
   }
 
-  /**
-   * Ensure the current package has the permission to interact across profiles.
-   */
+  /** Ensure the current package has the permission to interact across profiles. */
   protected void verifyHasInteractAcrossProfilesPermission() {
     if (RuntimeEnvironment.getApiLevel() >= R) {
       if (!canInteractAcrossProfiles()) {

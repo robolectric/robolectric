@@ -12,7 +12,7 @@ public class ShadowActivityManagerNative {
       ReflectionHelpers.createNullProxy(IActivityManager.class);
 
   @Implementation
-  static public IActivityManager getDefault() {
+  public static IActivityManager getDefault() {
     return activityManager;
   }
 }

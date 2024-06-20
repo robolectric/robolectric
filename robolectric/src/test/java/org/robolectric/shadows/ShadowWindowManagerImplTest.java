@@ -34,8 +34,8 @@ public class ShadowWindowManagerImplTest {
     windowManager = context.getSystemService(WindowManager.class);
     layoutParams =
         new LayoutParams(
-            /*w=*/ ViewGroup.LayoutParams.MATCH_PARENT,
-            /*h=*/ ViewGroup.LayoutParams.MATCH_PARENT,
+            /* w= */ ViewGroup.LayoutParams.MATCH_PARENT,
+            /* h= */ ViewGroup.LayoutParams.MATCH_PARENT,
             LayoutParams.TYPE_APPLICATION_OVERLAY,
             LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT);

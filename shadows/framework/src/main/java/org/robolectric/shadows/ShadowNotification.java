@@ -27,8 +27,7 @@ import org.robolectric.shadow.api.Shadow;
 @SuppressLint("NewApi")
 public class ShadowNotification {
 
-  @RealObject
-  Notification realNotification;
+  @RealObject Notification realNotification;
 
   public CharSequence getContentTitle() {
     return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
@@ -51,7 +50,8 @@ public class ShadowNotification {
   }
 
   public boolean isOngoing() {
-    return ((realNotification.flags & Notification.FLAG_ONGOING_EVENT) == Notification.FLAG_ONGOING_EVENT);
+    return ((realNotification.flags & Notification.FLAG_ONGOING_EVENT)
+        == Notification.FLAG_ONGOING_EVENT);
   }
 
   public CharSequence getBigText() {
@@ -74,7 +74,7 @@ public class ShadowNotification {
     if (getApiLevel() >= N) {
       return realNotification.extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT);
     } else {
-      return findText(applyBigContentView(),  "text");
+      return findText(applyBigContentView(), "text");
     }
   }
 
@@ -94,7 +94,8 @@ public class ShadowNotification {
       ImageView imageView =
           (ImageView) applyBigContentView().findViewById(getInternalResourceId("big_picture"));
       return imageView != null && imageView.getDrawable() != null
-          ? ((BitmapDrawable) imageView.getDrawable()).getBitmap() : null;
+          ? ((BitmapDrawable) imageView.getDrawable()).getBitmap()
+          : null;
     }
   }
 
@@ -102,7 +103,7 @@ public class ShadowNotification {
     return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
         ? realNotification.extras.getBoolean(Notification.EXTRA_SHOW_WHEN)
         : findView(applyContentView(), "chronometer").getVisibility() == View.VISIBLE
-        || findView(applyContentView(), "time").getVisibility() == View.VISIBLE;
+            || findView(applyContentView(), "time").getVisibility() == View.VISIBLE;
   }
 
   private ProgressBar getProgressBar_PreN() {

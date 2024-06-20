@@ -19,15 +19,16 @@ import org.robolectric.pluginapi.config.Configurer;
 public class PackagePropertiesLoader {
 
   /**
-   * We should get very high cache hit rates even with a tiny cache if we're called sequentially
-   * by multiple {@link Configurer}s for the same package.
+   * We should get very high cache hit rates even with a tiny cache if we're called sequentially by
+   * multiple {@link Configurer}s for the same package.
    */
-  private final Map<String, Properties> cache = new LinkedHashMap<String, Properties>() {
-    @Override
-    protected boolean removeEldestEntry(Map.Entry<String, Properties> eldest) {
-      return size() > 3;
-    }
-  };
+  private final Map<String, Properties> cache =
+      new LinkedHashMap<String, Properties>() {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Properties> eldest) {
+          return size() > 3;
+        }
+      };
 
   private Properties getConfig(@Nonnull String packageName, String propFileName) {
     StringBuilder buf = new StringBuilder();

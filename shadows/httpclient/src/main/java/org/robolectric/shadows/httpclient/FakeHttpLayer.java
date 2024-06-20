@@ -44,12 +44,13 @@ public class FakeHttpLayer {
   }
 
   public void addPendingHttpResponse(final HttpResponse httpResponse) {
-    addPendingHttpResponse(new HttpResponseGenerator() {
-      @Override
-      public HttpResponse getResponse(HttpRequest request) {
-        return httpResponse;
-      }
-    });
+    addPendingHttpResponse(
+        new HttpResponseGenerator() {
+          @Override
+          public HttpResponse getResponse(HttpRequest request) {
+            return httpResponse;
+          }
+        });
   }
 
   public void addPendingHttpResponse(HttpResponseGenerator httpResponseGenerator) {
@@ -76,9 +77,11 @@ public class FakeHttpLayer {
    * Add a response rule.
    *
    * @param requestMatcher Request matcher
-   * @param responses      A list of responses that are returned to matching requests in order from first to last.
+   * @param responses A list of responses that are returned to matching requests in order from first
+   *     to last.
    */
-  public void addHttpResponseRule(RequestMatcher requestMatcher, List<? extends HttpResponse> responses) {
+  public void addHttpResponseRule(
+      RequestMatcher requestMatcher, List<? extends HttpResponse> responses) {
     addHttpResponseRule(new RequestMatcherResponseRule(requestMatcher, responses));
   }
 
@@ -110,7 +113,12 @@ public class FakeHttpLayer {
     return defaultHttpResponse;
   }
 
-  public HttpResponse emulateRequest(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext, RequestDirector requestDirector) throws HttpException, IOException {
+  public HttpResponse emulateRequest(
+      HttpHost httpHost,
+      HttpRequest httpRequest,
+      HttpContext httpContext,
+      RequestDirector requestDirector)
+      throws HttpException, IOException {
     if (logHttpRequests) {
       System.out.println("  <-- " + httpRequest.getRequestLine());
     }
@@ -141,6 +149,7 @@ public class FakeHttpLayer {
     addHttpResponse(httpResponse);
     return httpResponse;
   }
+
   public boolean hasPendingResponses() {
     return !pendingHttpResponses.isEmpty();
   }
@@ -155,10 +164,11 @@ public class FakeHttpLayer {
 
   /**
    * This method is not supposed to be consumed by tests. This exists solely for the purpose of
-   * logging real HTTP requests, so that functional/integration tests can verify if those were made, without
-   * messing with the fake http layer to actually perform the http call, instead of returning a mocked response.
+   * logging real HTTP requests, so that functional/integration tests can verify if those were made,
+   * without messing with the fake http layer to actually perform the http call, instead of
+   * returning a mocked response.
    *
-   * If you are just using mocked http calls, you should not even notice this method here.
+   * <p>If you are just using mocked http calls, you should not even notice this method here.
    *
    * @param requestInfo Request info object to add.
    */
@@ -208,11 +218,12 @@ public class FakeHttpLayer {
   }
 
   /**
-   * This method return a list containing all the HTTP responses logged by the fake http layer, be it
-   * mocked http responses, be it real http calls (if {code}interceptHttpRequests{/code} is set to false).
+   * This method return a list containing all the HTTP responses logged by the fake http layer, be
+   * it mocked http responses, be it real http calls (if {code}interceptHttpRequests{/code} is set
+   * to false).
    *
-   * It doesn't make much sense to call this method if said property is set to true, as you yourself are
-   * providing the response, but it's here nonetheless.
+   * <p>It doesn't make much sense to call this method if said property is set to true, as you
+   * yourself are providing the response, but it's here nonetheless.
    *
    * @return List of all HTTP Responses logged by the fake http layer.
    */
@@ -221,8 +232,8 @@ public class FakeHttpLayer {
   }
 
   /**
-   * As a consumer of the fake http call, you should never call this method. This should be used solely
-   * by components that exercises http calls.
+   * As a consumer of the fake http call, you should never call this method. This should be used
+   * solely by components that exercises http calls.
    *
    * @param response The final response received by the server
    */
@@ -240,26 +251,27 @@ public class FakeHttpLayer {
 
   /**
    * Helper method that returns the latest received response from the server.
+   *
    * @return The latest HTTP response or null, if no responses are available
    */
   public HttpResponse getLastHttpResponse() {
     if (httpResponses.isEmpty()) return null;
-    return httpResponses.get(httpResponses.size()-1) ;
+    return httpResponses.get(httpResponses.size() - 1);
   }
 
   /**
-   * Call this method if you want to ensure that there's no http responses logged from this point until
-   * the next response arrives. Helpful to ensure that the state is "clear" before actions are executed.
+   * Call this method if you want to ensure that there's no http responses logged from this point
+   * until the next response arrives. Helpful to ensure that the state is "clear" before actions are
+   * executed.
    */
   public void clearHttpResponses() {
     this.httpResponses.clear();
   }
 
   /**
-   * You can disable Robolectric's fake HTTP layer temporarily
-   * by calling this method.
-   * @param interceptHttpRequests whether all HTTP requests should be
-   *                              intercepted (true by default)
+   * You can disable Robolectric's fake HTTP layer temporarily by calling this method.
+   *
+   * @param interceptHttpRequests whether all HTTP requests should be intercepted (true by default)
    */
   public void interceptHttpRequests(boolean interceptHttpRequests) {
     this.interceptHttpRequests = interceptHttpRequests;
@@ -299,7 +311,8 @@ public class FakeHttpLayer {
       this.httpException = httpException;
     }
 
-    public RequestMatcherResponseRule(RequestMatcher requestMatcher, List<? extends HttpResponse> responses) {
+    public RequestMatcherResponseRule(
+        RequestMatcher requestMatcher, List<? extends HttpResponse> responses) {
       this.requestMatcher = requestMatcher;
       this.responses = responses;
     }
@@ -335,8 +348,8 @@ public class FakeHttpLayer {
 
     @Override
     public boolean matches(HttpRequest request) {
-      return request.getRequestLine().getMethod().equals(method) &&
-          request.getRequestLine().getUri().equals(uri);
+      return request.getRequestLine().getMethod().equals(method)
+          && request.getRequestLine().getUri().equals(uri);
     }
   }
 
@@ -362,7 +375,8 @@ public class FakeHttpLayer {
 
     public interface PostBodyMatcher {
       /**
-       * Hint: you can use EntityUtils.toString(actualPostBody) to help you implement your matches method.
+       * Hint: you can use EntityUtils.toString(actualPostBody) to help you implement your matches
+       * method.
        *
        * @param actualPostBody The post body of the actual request that we are matching against.
        * @return true if you consider the body to match
@@ -491,8 +505,8 @@ public class FakeHttpLayer {
 
     @Override
     public boolean matches(HttpRequest request) {
-      return request.getRequestLine().getMethod().equals(method) &&
-          uriRegex.matcher(request.getRequestLine().getUri()).matches();
+      return request.getRequestLine().getMethod().equals(method)
+          && uriRegex.matcher(request.getRequestLine().getUri()).matches();
     }
   }
 }

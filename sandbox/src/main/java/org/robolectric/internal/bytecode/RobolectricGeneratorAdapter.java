@@ -10,9 +10,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.tree.MethodNode;
 import org.robolectric.internal.bytecode.ClassInstrumentor.TryCatch;
 
-/**
- * GeneratorAdapter implementation specific to generate code for Robolectric purposes
- */
+/** GeneratorAdapter implementation specific to generate code for Robolectric purposes */
 public class RobolectricGeneratorAdapter extends GeneratorAdapter {
   final boolean isStatic;
   private final String desc;
@@ -52,7 +50,10 @@ public class RobolectricGeneratorAdapter extends GeneratorAdapter {
   public void pushDefaultReturnValueToStack(Type type) {
     if (type.equals(Type.BOOLEAN_TYPE)) {
       push(false);
-    } else if (type.equals(Type.INT_TYPE) || type.equals(Type.SHORT_TYPE) || type.equals(Type.BYTE_TYPE) || type.equals(Type.CHAR_TYPE)) {
+    } else if (type.equals(Type.INT_TYPE)
+        || type.equals(Type.SHORT_TYPE)
+        || type.equals(Type.BYTE_TYPE)
+        || type.equals(Type.CHAR_TYPE)) {
       push(0);
     } else if (type.equals(Type.LONG_TYPE)) {
       push(0L);
@@ -71,11 +72,11 @@ public class RobolectricGeneratorAdapter extends GeneratorAdapter {
 
   void invokeMethod(String internalClassName, String methodName, String methodDesc) {
     if (isStatic()) {
-      loadArgs();                                             // this, [args]
+      loadArgs(); // this, [args]
       visitMethodInsn(Opcodes.INVOKESTATIC, internalClassName, methodName, methodDesc, false);
     } else {
-      loadThisOrNull();                                       // this
-      loadArgs();                                             // this, [args]
+      loadThisOrNull(); // this
+      loadArgs(); // this, [args]
       visitMethodInsn(Opcodes.INVOKESPECIAL, internalClassName, methodName, methodDesc, false);
     }
   }

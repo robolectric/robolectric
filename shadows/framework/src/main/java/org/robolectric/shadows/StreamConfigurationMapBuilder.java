@@ -77,7 +77,7 @@ public final class StreamConfigurationMapBuilder {
       for (Size size : entry.getValue()) {
         configsList.add(
             new StreamConfiguration(
-                entry.getKey(), size.getWidth(), size.getHeight(), /*input=*/ false));
+                entry.getKey(), size.getWidth(), size.getHeight(), /* input= */ false));
       }
     }
 
@@ -85,7 +85,7 @@ public final class StreamConfigurationMapBuilder {
       for (Size size : entry.getValue()) {
         configsList.add(
             new StreamConfiguration(
-                entry.getKey(), size.getWidth(), size.getHeight(), /*input=*/ true));
+                entry.getKey(), size.getWidth(), size.getHeight(), /* input= */ true));
       }
     }
 

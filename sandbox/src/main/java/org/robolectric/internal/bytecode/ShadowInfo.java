@@ -35,9 +35,7 @@ public class ShadowInfo {
     this.minSdk = minSdk;
     this.maxSdk = maxSdk;
     this.shadowPickerClass =
-        DefaultShadowPicker.class.equals(shadowPickerClass)
-            ? null
-            : shadowPickerClass;
+        DefaultShadowPicker.class.equals(shadowPickerClass) ? null : shadowPickerClass;
   }
 
   ShadowInfo(String shadowedClassName, String shadowClassName, Implements annotation) {

@@ -17,7 +17,8 @@ public class ShadowVideoViewTest {
 
   private VideoView view;
 
-  @Before public void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     view = new VideoView(ApplicationProvider.getApplicationContext());
   }
 
@@ -149,7 +150,7 @@ public class ShadowVideoViewTest {
     public void onPrepared(MediaPlayer mp) {}
   }
 
-  private static class TestErrorListener implements MediaPlayer.OnErrorListener  {
+  private static class TestErrorListener implements MediaPlayer.OnErrorListener {
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
       return false;

@@ -2,7 +2,8 @@ package org.robolectric.res.android;
 
 import static org.robolectric.res.android.Errors.*;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ResourceTypes.cpp
+// transliterated from
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ResourceTypes.cpp
 public class IdmapEntries {
 
   public boolean hasEntries() {
@@ -13,13 +14,13 @@ public class IdmapEntries {
     return (Util.dtohs(mData[0]) > 0);
   }
 
-//  int byteSize() {
-//    if (mData == null) {
-//      return 0;
-//    }
-//    short entryCount = Util.dtohs(mData[2]);
-//    return (SIZEOF_SHORT * 4) + (SIZEOF_INT * static_cast<int>(entryCount));
-//  }
+  //  int byteSize() {
+  //    if (mData == null) {
+  //      return 0;
+  //    }
+  //    short entryCount = Util.dtohs(mData[2]);
+  //    return (SIZEOF_SHORT * 4) + (SIZEOF_INT * static_cast<int>(entryCount));
+  //  }
 
   byte targetTypeId() {
     if (mData == null) {
@@ -53,19 +54,18 @@ public class IdmapEntries {
 
     throw new UnsupportedOperationException("todo"); // todo
 
-//    // It is safe to access the type here without checking the size because
-//    // we have checked this when it was first loaded.
-////        final int[] entries = reinterpret_cast<final uint32_t*>(mData) + 2;
-//        final int[] entries = reinterpret_cast<final uint32_t*>(mData) + 2;
-//    int mappedEntry = Util.dtohl(entries[entryId]);
-//    if (mappedEntry == 0xffffffff) {
-//      // This entry is not present in this idmap
-//      return BAD_INDEX;
-//    }
-//        *outEntryId = static_cast<short>(mappedEntry);
-//    return NO_ERROR;
+    //    // It is safe to access the type here without checking the size because
+    //    // we have checked this when it was first loaded.
+    ////        final int[] entries = reinterpret_cast<final uint32_t*>(mData) + 2;
+    //        final int[] entries = reinterpret_cast<final uint32_t*>(mData) + 2;
+    //    int mappedEntry = Util.dtohl(entries[entryId]);
+    //    if (mappedEntry == 0xffffffff) {
+    //      // This entry is not present in this idmap
+    //      return BAD_INDEX;
+    //    }
+    //        *outEntryId = static_cast<short>(mappedEntry);
+    //    return NO_ERROR;
   }
 
   private short[] mData;
-
 }

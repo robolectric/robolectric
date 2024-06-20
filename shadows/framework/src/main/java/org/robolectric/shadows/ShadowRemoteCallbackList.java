@@ -24,7 +24,8 @@ public class ShadowRemoteCallbackList<E extends IInterface> {
       this.cookie = cookie;
     }
 
-    @Override public void binderDied() {
+    @Override
+    public void binderDied() {
       synchronized (callbacks) {
         callbacks.remove(callback.asBinder());
       }

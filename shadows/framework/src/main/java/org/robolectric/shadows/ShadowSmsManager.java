@@ -119,7 +119,9 @@ public class ShadowSmsManager {
         new TextMultipartParams(destinationAddress, scAddress, parts, sentIntents, deliveryIntents);
   }
 
-  /** @return Parameters for last call to {@link #sendDataMessage}. */
+  /**
+   * @return Parameters for last call to {@link #sendDataMessage}.
+   */
   public DataMessageParams getLastSentDataMessageParams() {
     return lastDataParams;
   }
@@ -129,7 +131,9 @@ public class ShadowSmsManager {
     lastDataParams = null;
   }
 
-  /** @return Parameters for last call to {@link #sendTextMessage}. */
+  /**
+   * @return Parameters for last call to {@link #sendTextMessage}.
+   */
   public TextSmsParams getLastSentTextMessageParams() {
     return lastTextSmsParams;
   }
@@ -139,7 +143,9 @@ public class ShadowSmsManager {
     lastTextSmsParams = null;
   }
 
-  /** @return Parameters for last call to {@link #sendMultipartTextMessage}. */
+  /**
+   * @return Parameters for last call to {@link #sendMultipartTextMessage}.
+   */
   public TextMultipartParams getLastSentMultipartTextMessageParams() {
     return lastTextMultipartParams;
   }
@@ -389,7 +395,9 @@ public class ShadowSmsManager {
             contentUri, locationUrl, configOverrides, sentIntent, messageId);
   }
 
-  /** @return Parameters for last call to {@link #sendMultimediaMessage}. */
+  /**
+   * @return Parameters for last call to {@link #sendMultimediaMessage}.
+   */
   public SendMultimediaMessageParams getLastSentMultimediaMessageParams() {
     return lastSentMultimediaMessageParams;
   }
@@ -399,7 +407,9 @@ public class ShadowSmsManager {
     lastSentMultimediaMessageParams = null;
   }
 
-  /** @return Parameters for last call to {@link #downloadMultimediaMessage}. */
+  /**
+   * @return Parameters for last call to {@link #downloadMultimediaMessage}.
+   */
   public DownloadMultimediaMessageParams getLastDownloadedMultimediaMessageParams() {
     return lastDownloadedMultimediaMessageParams;
   }

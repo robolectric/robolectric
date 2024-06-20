@@ -461,8 +461,7 @@ public class ReflectionHelpersTest {
     public String name;
     public int index;
 
-    private ExampleClass() {
-    }
+    private ExampleClass() {}
 
     private ExampleClass(String name) {
       this.name = name;
