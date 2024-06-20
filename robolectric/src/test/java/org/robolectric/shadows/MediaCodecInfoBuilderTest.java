@@ -7,6 +7,7 @@ import static android.media.MediaFormat.MIMETYPE_VIDEO_VP9;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecInfo.CodecCapabilities;
@@ -17,8 +18,8 @@ import android.util.Range;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Tests for {@link MediaCodecInfoBuilder}. */
 @RunWith(AndroidJUnit4.class)
@@ -30,7 +31,6 @@ public class MediaCodecInfoBuilderTest {
 
   private static final int WIDTH = 1920;
   private static final int HEIGHT = 1080;
-  private static final Range<Integer> DEFAULT_SUPPORTED_VIDEO_SIZE_RANGE = new Range<>(2, 896);
 
   private static final MediaFormat AAC_MEDIA_FORMAT =
       createMediaFormat(
@@ -130,9 +130,9 @@ public class MediaCodecInfoBuilderTest {
     assertThat(codecCapabilities.getAudioCapabilities()).isNull();
     assertThat(codecCapabilities.getVideoCapabilities()).isNotNull();
     assertThat(codecCapabilities.getVideoCapabilities().getSupportedWidths())
-        .isEqualTo(DEFAULT_SUPPORTED_VIDEO_SIZE_RANGE);
+        .isEqualTo(getDefaultSupportedVideoSizeRange());
     assertThat(codecCapabilities.getVideoCapabilities().getSupportedHeights())
-        .isEqualTo(DEFAULT_SUPPORTED_VIDEO_SIZE_RANGE);
+        .isEqualTo(getDefaultSupportedVideoSizeRange());
     assertThat(codecCapabilities.getEncoderCapabilities()).isNotNull();
     assertThat(codecCapabilities.isFeatureSupported(CodecCapabilities.FEATURE_IntraRefresh))
         .isTrue();
@@ -364,7 +364,7 @@ public class MediaCodecInfoBuilderTest {
 
   @Test
   public void mediaCodecInfo_preQ() {
-    if (RuntimeEnvironment.getApiLevel() <= M) {
+    if (getApiLevel() <= M) {
       MediaCodecList.getCodecCount();
     }
     CodecCapabilities codecCapabilities =
@@ -428,5 +428,15 @@ public class MediaCodecInfoBuilderTest {
       mediaFormat.setFeatureEnabled(feature, true);
     }
     return mediaFormat;
+  }
+
+  private static Range<Integer> getDefaultSupportedVideoSizeRange() {
+    if (getApiLevel() <= U.SDK_INT) {
+      return new Range<>(2, 896);
+    } else {
+      // Intentionally adjusted in android V see
+      // https://android-review.googlesource.com/3002925
+      return new Range<>(1, 896);
+    }
   }
 }
