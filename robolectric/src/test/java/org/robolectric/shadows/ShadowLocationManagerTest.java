@@ -1767,8 +1767,7 @@ public class ShadowLocationManagerTest {
     }
 
     @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-    }
+    public void onStatusChanged(String s, int i, Bundle bundle) {}
 
     @Override
     public void onProviderEnabled(String s) {

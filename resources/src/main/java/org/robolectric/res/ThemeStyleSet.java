@@ -3,14 +3,13 @@ package org.robolectric.res;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Represents the list of styles applied to a Theme.
- */
+/** Represents the list of styles applied to a Theme. */
 public class ThemeStyleSet implements Style {
 
   private List<OverlayedStyle> styles = new ArrayList<>();
 
-  @Override public AttributeResource getAttrValue(ResName attrName) {
+  @Override
+  public AttributeResource getAttrValue(ResName attrName) {
     AttributeResource attribute = null;
 
     for (OverlayedStyle overlayedStyle : styles) {
@@ -77,5 +76,4 @@ public class ThemeStyleSet implements Style {
       return style.toString() + (force ? " (forced)" : "");
     }
   }
-
 }

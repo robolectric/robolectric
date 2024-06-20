@@ -8,18 +8,19 @@
 package org.robolectric.resources;
 
 public final class R {
-    public static final class attr {
-    }
-    public static final class bool {
-        /**  mcc310 = US Carrier mnc=004 = Verizon
-         */
-        public static final int is_verizon=0x7f020000;
-    }
-    public static final class integer {
-        public static final int flock_size=0x7f030000;
-    }
-    public static final class string {
-        public static final int first_string=0x7f040000;
-        public static final int second_string=0x7f040001;
-    }
+  public static final class attr {}
+
+  public static final class bool {
+    /** mcc310 = US Carrier mnc=004 = Verizon */
+    public static final int is_verizon = 0x7f020000;
+  }
+
+  public static final class integer {
+    public static final int flock_size = 0x7f030000;
+  }
+
+  public static final class string {
+    public static final int first_string = 0x7f040000;
+    public static final int second_string = 0x7f040001;
+  }
 }

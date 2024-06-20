@@ -21,7 +21,9 @@ public class ShadowNetworkScoreManager {
     return true;
   }
 
-  /** @see #isScoringEnabled() */
+  /**
+   * @see #isScoringEnabled()
+   */
   @Implementation
   protected void disableScoring() {
     isScoringEnabled = false;

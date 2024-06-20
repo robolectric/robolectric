@@ -128,13 +128,13 @@ public class ShadowTelecomManagerTest {
   @Config(minSdk = LOLLIPOP_MR1)
   public void clearAccountsForPackage() {
     PhoneAccountHandle accountHandle1 = createHandle("a.package", "OtherConnectionService", "id1");
-    telecomService.registerPhoneAccount(PhoneAccount.builder(accountHandle1, "another_package")
-        .build());
+    telecomService.registerPhoneAccount(
+        PhoneAccount.builder(accountHandle1, "another_package").build());
 
     PhoneAccountHandle accountHandle2 =
         createHandle("some.other.package", "OtherConnectionService", "id2");
-    telecomService.registerPhoneAccount(PhoneAccount.builder(accountHandle2, "another_package")
-        .build());
+    telecomService.registerPhoneAccount(
+        PhoneAccount.builder(accountHandle2, "another_package").build());
 
     telecomService.clearAccountsForPackage(accountHandle1.getComponentName().getPackageName());
 
@@ -181,15 +181,14 @@ public class ShadowTelecomManagerTest {
   @Config(minSdk = M)
   public void getCallCapablePhoneAccounts() {
     PhoneAccountHandle callCapableHandle = createHandle("id1");
-    telecomService.registerPhoneAccount(PhoneAccount.builder(callCapableHandle, "enabled")
-        .setIsEnabled(true)
-        .build());
+    telecomService.registerPhoneAccount(
+        PhoneAccount.builder(callCapableHandle, "enabled").setIsEnabled(true).build());
     PhoneAccountHandle notCallCapableHandler = createHandle("id2");
-    telecomService.registerPhoneAccount(PhoneAccount.builder(notCallCapableHandler, "disabled")
-        .setIsEnabled(false)
-        .build());
+    telecomService.registerPhoneAccount(
+        PhoneAccount.builder(notCallCapableHandler, "disabled").setIsEnabled(false).build());
 
-    List<PhoneAccountHandle> callCapablePhoneAccounts = telecomService.getCallCapablePhoneAccounts();
+    List<PhoneAccountHandle> callCapablePhoneAccounts =
+        telecomService.getCallCapablePhoneAccounts();
     assertThat(callCapablePhoneAccounts).contains(callCapableHandle);
     assertThat(callCapablePhoneAccounts).doesNotContain(notCallCapableHandler);
   }

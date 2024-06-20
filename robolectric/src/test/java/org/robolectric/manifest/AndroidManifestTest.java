@@ -49,9 +49,8 @@ public class AndroidManifestTest {
     AndroidManifest config = newConfig("TestAndroidManifestWithPermissions.xml");
 
     assertThat(config.getPermissions().keySet())
-        .containsExactly("some_permission",
-            "permission_with_literal_label",
-            "permission_with_minimal_fields");
+        .containsExactly(
+            "some_permission", "permission_with_literal_label", "permission_with_minimal_fields");
     PermissionItemData permissionItemData = config.getPermissions().get("some_permission");
     assertThat(permissionItemData.getMetaData().getValueMap())
         .containsEntry("meta_data_name", "meta_data_value");
@@ -66,8 +65,7 @@ public class AndroidManifestTest {
   public void parseManifest_shouldReadPermissionGroups() {
     AndroidManifest config = newConfig("TestAndroidManifestWithPermissions.xml");
 
-    assertThat(config.getPermissionGroups().keySet())
-        .contains("permission_group");
+    assertThat(config.getPermissionGroups().keySet()).contains("permission_group");
     PermissionGroupItemData permissionGroupItemData =
         config.getPermissionGroups().get("permission_group");
     assertThat(permissionGroupItemData.getName()).isEqualTo("permission_group");
@@ -403,7 +401,8 @@ public class AndroidManifestTest {
 
     assertThat(config.getUsedPermissions()).hasSize(3);
     assertThat(config.getUsedPermissions().get(0)).isEqualTo(Manifest.permission.INTERNET);
-    assertThat(config.getUsedPermissions().get(1)).isEqualTo(Manifest.permission.SYSTEM_ALERT_WINDOW);
+    assertThat(config.getUsedPermissions().get(1))
+        .isEqualTo(Manifest.permission.SYSTEM_ALERT_WINDOW);
     assertThat(config.getUsedPermissions().get(2)).isEqualTo(Manifest.permission.GET_TASKS);
   }
 
@@ -446,7 +445,6 @@ public class AndroidManifestTest {
     assertThat(intentFilterData.getPaths().size()).isEqualTo(1);
     assertThat(intentFilterData.getPathPatterns().size()).isEqualTo(1);
     assertThat(intentFilterData.getPathPrefixes().size()).isEqualTo(1);
-
 
     assertThat(intentFilterData.getSchemes().get(0)).isEqualTo("content");
     assertThat(intentFilterData.getPaths().get(0)).isEqualTo("/testPath/test.jpeg");
@@ -492,8 +490,7 @@ public class AndroidManifestTest {
       String packageName = type.getPackage().getName();
       if (packageName.startsWith("java.")
           || packageName.equals("org.robolectric.res")
-          || packageName.equals("org.robolectric.manifest")
-          ) continue;
+          || packageName.equals("org.robolectric.manifest")) continue;
 
       wrongFields.add(field);
     }
@@ -550,22 +547,34 @@ public class AndroidManifestTest {
   public void getTransitiveManifests() {
     AndroidManifest lib1 =
         new AndroidManifest(resourceFile("lib1/AndroidManifest.xml"), null, null);
-    AndroidManifest lib2 = new AndroidManifest(resourceFile("lib2/AndroidManifest.xml"), null, null,
-        Collections.singletonList(lib1), null);
-    AndroidManifest app = new AndroidManifest(
-        resourceFile("TestAndroidManifestWithReceivers.xml"), null, null,
-        Arrays.asList(lib1, lib2), null);
+    AndroidManifest lib2 =
+        new AndroidManifest(
+            resourceFile("lib2/AndroidManifest.xml"),
+            null,
+            null,
+            Collections.singletonList(lib1),
+            null);
+    AndroidManifest app =
+        new AndroidManifest(
+            resourceFile("TestAndroidManifestWithReceivers.xml"),
+            null,
+            null,
+            Arrays.asList(lib1, lib2),
+            null);
     assertThat(app.getAllManifests()).containsExactly(app, lib1, lib2);
   }
 
   /////////////////////////////
 
   private AndroidManifest newConfigWith(String fileName, String usesSdkAttrs) throws IOException {
-    String contents = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-        "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-        "          package=\"org.robolectric\">\n" +
-        "    <uses-sdk " + usesSdkAttrs + "/>\n" +
-        "</manifest>\n";
+    String contents =
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+            + "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+            + "          package=\"org.robolectric\">\n"
+            + "    <uses-sdk "
+            + usesSdkAttrs
+            + "/>\n"
+            + "</manifest>\n";
     File f = temporaryFolder.newFile(fileName);
     Files.asCharSink(f, UTF_8).write(contents);
     return new AndroidManifest(f.toPath(), null, null);

@@ -28,7 +28,8 @@ public class ClassicSuperHandlingTest {
   @Implements(Child.class)
   public static class ChildShadow extends ParentShadow {
 
-    @Override public String method(String value) {
+    @Override
+    public String method(String value) {
       return "3s-" + super.method(value);
     }
   }
@@ -36,7 +37,8 @@ public class ClassicSuperHandlingTest {
   @Implements(Parent.class)
   public static class ParentShadow extends GrandparentShadow {
 
-    @Override public String method(String value) {
+    @Override
+    public String method(String value) {
       return "2s-" + super.method(value);
     }
   }
@@ -58,14 +60,16 @@ public class ClassicSuperHandlingTest {
 
   @Instrument
   public static class Child extends Parent {
-    @Override public String method(String value) {
+    @Override
+    public String method(String value) {
       throw new RuntimeException("Stub!");
     }
   }
 
   @Instrument
   public static class Parent extends Grandparent {
-    @Override public String method(String value) {
+    @Override
+    public String method(String value) {
       throw new RuntimeException("Stub!");
     }
   }

@@ -12,6 +12,7 @@ public class InjectionException extends RuntimeException {
   public InjectionException(Class<?> clazz, String message) {
     super(clazz.getName() + ": " + message);
   }
+
   public InjectionException(Injector.Key<?> key, String message) {
     super(key + ": " + message);
   }

@@ -245,7 +245,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
       // force eager load of the application
       RuntimeEnvironment.getApplication();
     }
-
   }
 
   // If certain Android classes are required to be loaded in a particular order, do so here.

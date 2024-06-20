@@ -11,8 +11,7 @@ import org.robolectric.util.reflector.ForType;
 
 @Implements(value = TimePickerDialog.class)
 public class ShadowTimePickerDialog extends ShadowAlertDialog {
-  @RealObject
-  protected TimePickerDialog realTimePickerDialog;
+  @RealObject protected TimePickerDialog realTimePickerDialog;
 
   public int getHourOfDay() {
     return reflector(TimePickerDialogProvider.class, realTimePickerDialog)

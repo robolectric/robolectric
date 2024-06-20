@@ -544,8 +544,7 @@ class ReflectorClassWriter extends ClassWriter {
       this(org.objectweb.asm.commons.Method.getMethod(method), method);
     }
 
-    private BaseAdapter(
-        org.objectweb.asm.commons.Method asmMethod, Method method) {
+    private BaseAdapter(org.objectweb.asm.commons.Method asmMethod, Method method) {
       this(
           method,
           asmMethod,

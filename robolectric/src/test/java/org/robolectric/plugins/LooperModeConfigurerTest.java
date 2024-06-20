@@ -8,9 +8,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.LooperMode;
 
-/**
- * Unit tests for methods annotated with @LooperMode.
- */
+/** Unit tests for methods annotated with @LooperMode. */
 @RunWith(JUnit4.class)
 public class LooperModeConfigurerTest {
 

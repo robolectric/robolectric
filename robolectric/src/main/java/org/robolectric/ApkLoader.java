@@ -9,15 +9,13 @@ import org.robolectric.res.ResourceMerger;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTableFactory;
 
-/**
- * Mediates loading of "APKs" in legacy mode.
- */
+/** Mediates loading of "APKs" in legacy mode. */
 public class ApkLoader {
 
   private final Map<AndroidManifest, PackageResourceTable> appResourceTableCache = new HashMap<>();
   private PackageResourceTable compiletimeSdkResourceTable;
 
-  synchronized public PackageResourceTable getAppResourceTable(final AndroidManifest appManifest) {
+  public synchronized PackageResourceTable getAppResourceTable(final AndroidManifest appManifest) {
     PackageResourceTable resourceTable = appResourceTableCache.get(appManifest);
     if (resourceTable == null) {
       resourceTable = new ResourceMerger().buildResourceTable(appManifest);
@@ -27,15 +25,14 @@ public class ApkLoader {
     return resourceTable;
   }
 
-  /**
-   * Returns the ResourceTable for the compile time SDK.
-   */
+  /** Returns the ResourceTable for the compile time SDK. */
   @Nonnull
-  synchronized public PackageResourceTable getCompileTimeSdkResourceTable() {
+  public synchronized PackageResourceTable getCompileTimeSdkResourceTable() {
     if (compiletimeSdkResourceTable == null) {
       ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
-      compiletimeSdkResourceTable = resourceTableFactory
-          .newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
+      compiletimeSdkResourceTable =
+          resourceTableFactory.newFrameworkResourceTable(
+              new ResourcePath(android.R.class, null, null));
     }
     return compiletimeSdkResourceTable;
   }

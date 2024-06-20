@@ -13,7 +13,8 @@ public class AClassWithFunnyConstructors {
     this.name = name;
   }
 
-  public AClassWithFunnyConstructors(AnUninstrumentedParent uninstrumentedParent, String fooString) {
+  public AClassWithFunnyConstructors(
+      AnUninstrumentedParent uninstrumentedParent, String fooString) {
     this.uninstrumentedParent = uninstrumentedParent;
   }
 }

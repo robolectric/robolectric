@@ -402,6 +402,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   private int audioStreamType;
   private boolean looping;
   private int pendingSeek = -1;
+
   /** Various source variables from setDataSource() */
   private Uri sourceUri;
 
@@ -668,9 +669,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     return mediaInfoProvider.map(provider -> provider.get(dataSource)).orElse(null);
   }
 
-  /**
-   * Adds a {@link MediaInfo} for a {@link DataSource}.
-   */
+  /** Adds a {@link MediaInfo} for a {@link DataSource}. */
   public static void addMediaInfo(DataSource dataSource, MediaInfo info) {
     mediaInfoMap.put(dataSource, info);
   }
@@ -1340,7 +1339,9 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     return audioStreamType;
   }
 
-  /** @return seekDelay */
+  /**
+   * @return seekDelay
+   */
   public int getSeekDelay() {
     return seekDelay;
   }
@@ -1417,7 +1418,9 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     return leftVolume;
   }
 
-  /** @return The right channel volume. */
+  /**
+   * @return The right channel volume.
+   */
   public float getRightVolume() {
     return rightVolume;
   }
@@ -1440,12 +1443,16 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     return preparedStates.contains(state);
   }
 
-  /** @return the OnCompletionListener */
+  /**
+   * @return the OnCompletionListener
+   */
   public MediaPlayer.OnCompletionListener getOnCompletionListener() {
     return completionListener;
   }
 
-  /** @return the OnPreparedListener */
+  /**
+   * @return the OnPreparedListener
+   */
   public MediaPlayer.OnPreparedListener getOnPreparedListener() {
     return preparedListener;
   }

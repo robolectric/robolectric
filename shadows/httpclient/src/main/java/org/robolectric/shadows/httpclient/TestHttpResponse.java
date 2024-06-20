@@ -53,19 +53,23 @@ public class TestHttpResponse extends HttpResponseStub {
     this.responseBody = responseBody.getBytes(UTF_8);
   }
 
-  @Override public StatusLine getStatusLine() {
+  @Override
+  public StatusLine getStatusLine() {
     return statusLine;
   }
 
-  @Override public HttpEntity getEntity() {
+  @Override
+  public HttpEntity getEntity() {
     return httpEntity;
   }
 
-  @Override public Header[] getAllHeaders() {
+  @Override
+  public Header[] getAllHeaders() {
     return headers;
   }
 
-  @Override public Header getFirstHeader(String s) {
+  @Override
+  public Header getFirstHeader(String s) {
     for (Header h : headers) {
       if (s.equalsIgnoreCase(h.getName())) {
         return h;
@@ -74,8 +78,9 @@ public class TestHttpResponse extends HttpResponseStub {
     return null;
   }
 
-  @Override public Header getLastHeader(String s) {
-    for (int i = headers.length -1; i >= 0; i--) {
+  @Override
+  public Header getLastHeader(String s) {
+    for (int i = headers.length - 1; i >= 0; i--) {
       if (headers[i].getName().equalsIgnoreCase(s)) {
         return headers[i];
       }
@@ -83,7 +88,8 @@ public class TestHttpResponse extends HttpResponseStub {
     return null;
   }
 
-  @Override public Header[] getHeaders(String s) {
+  @Override
+  public Header[] getHeaders(String s) {
     List<Header> found = new ArrayList<>();
     for (Header h : headers) {
       if (h.getName().equalsIgnoreCase(s)) found.add(h);
@@ -110,40 +116,46 @@ public class TestHttpResponse extends HttpResponseStub {
     }
   }
 
-  @Override public HeaderIterator headerIterator() {
+  @Override
+  public HeaderIterator headerIterator() {
     return new HeaderIterator() {
       int index = 0;
 
-      @Override public boolean hasNext() {
+      @Override
+      public boolean hasNext() {
         return index < headers.length;
       }
 
-      @Override public Header nextHeader() {
+      @Override
+      public Header nextHeader() {
         if (index >= headers.length) throw new NoSuchElementException();
         return headers[index++];
       }
 
-      @Override public Object next() {
+      @Override
+      public Object next() {
         return nextHeader();
       }
 
-      @Override public void remove() {
+      @Override
+      public void remove() {
         throw new UnsupportedOperationException();
       }
     };
   }
 
-
-  @Override public HeaderIterator headerIterator(final String s) {
+  @Override
+  public HeaderIterator headerIterator(final String s) {
     return new HeaderIterator() {
       int index = 0;
 
-      @Override public boolean hasNext() {
+      @Override
+      public boolean hasNext() {
         return nextIndex() != -1;
       }
 
       private int nextIndex() {
-        for (int i = index; i<headers.length; i++) {
+        for (int i = index; i < headers.length; i++) {
           if (headers[i].getName().equalsIgnoreCase(s)) {
             return i;
           }
@@ -151,32 +163,37 @@ public class TestHttpResponse extends HttpResponseStub {
         return -1;
       }
 
-      @Override public Header nextHeader() {
+      @Override
+      public Header nextHeader() {
         index = nextIndex();
         if (index == -1) throw new NoSuchElementException();
         return headers[index++];
       }
 
-      @Override public Object next() {
+      @Override
+      public Object next() {
         return nextHeader();
       }
 
-      @Override public void remove() {
+      @Override
+      public void remove() {
         throw new UnsupportedOperationException();
       }
     };
   }
 
-  @Override public boolean containsHeader(String s) {
+  @Override
+  public boolean containsHeader(String s) {
     return getFirstHeader(s) != null;
-
   }
 
-  @Override public HttpParams getParams() {
+  @Override
+  public HttpParams getParams() {
     return params;
   }
 
-  @Override public void setParams(HttpParams httpParams) {
+  @Override
+  public void setParams(HttpParams httpParams) {
     this.params = httpParams;
   }
 
@@ -188,60 +205,72 @@ public class TestHttpResponse extends HttpResponseStub {
 
     private ByteArrayInputStream inputStream;
 
-    @Override public long getContentLength() {
+    @Override
+    public long getContentLength() {
       return responseBody.length;
     }
 
-    @Override public Header getContentType() {
+    @Override
+    public Header getContentType() {
       return getFirstHeader("Content-Type");
     }
 
-    @Override public Header getContentEncoding() {
+    @Override
+    public Header getContentEncoding() {
       return getFirstHeader("Content-Encoding");
     }
 
-    @Override public boolean isStreaming() {
+    @Override
+    public boolean isStreaming() {
       return true;
     }
 
-    @Override public boolean isRepeatable() {
+    @Override
+    public boolean isRepeatable() {
       return true;
     }
 
-    @Override public InputStream getContent() throws IOException, IllegalStateException {
+    @Override
+    public InputStream getContent() throws IOException, IllegalStateException {
       openEntityContentStreamCount++;
-      inputStream = new ByteArrayInputStream(responseBody) {
-        @Override
-        public void close() throws IOException {
-          openEntityContentStreamCount--;
-          super.close();
-        }
-      };
+      inputStream =
+          new ByteArrayInputStream(responseBody) {
+            @Override
+            public void close() throws IOException {
+              openEntityContentStreamCount--;
+              super.close();
+            }
+          };
       return inputStream;
     }
 
-    @Override public void writeTo(OutputStream outputStream) throws IOException {
+    @Override
+    public void writeTo(OutputStream outputStream) throws IOException {
       outputStream.write(responseBody);
     }
 
-    @Override public void consumeContent() throws IOException {
-    }
+    @Override
+    public void consumeContent() throws IOException {}
   }
 
   public class TestStatusLine extends StatusLineStub {
-    @Override public ProtocolVersion getProtocolVersion() {
+    @Override
+    public ProtocolVersion getProtocolVersion() {
       return new HttpVersion(1, 0);
     }
 
-    @Override public int getStatusCode() {
+    @Override
+    public int getStatusCode() {
       return statusCode;
     }
 
-    @Override public String getReasonPhrase() {
+    @Override
+    public String getReasonPhrase() {
       return "HTTP status " + statusCode;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
       return "TestStatusLine[" + getReasonPhrase() + "]";
     }
   }

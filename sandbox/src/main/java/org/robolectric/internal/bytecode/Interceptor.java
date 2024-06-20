@@ -17,12 +17,14 @@ public abstract class Interceptor {
     return methodRefs;
   }
 
-  abstract public Function<Object, Object> handle(MethodSignature methodSignature);
+  public abstract Function<Object, Object> handle(MethodSignature methodSignature);
 
-  abstract public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException;
+  public abstract MethodHandle getMethodHandle(String methodName, MethodType type)
+      throws NoSuchMethodException, IllegalAccessException;
 
   @Nonnull
-  protected static Function<Object, Object> returnDefaultValue(final MethodSignature methodSignature) {
+  protected static Function<Object, Object> returnDefaultValue(
+      final MethodSignature methodSignature) {
     return new Function<Object, Object>() {
       @Override
       public Object call(Class<?> theClass, Object value, Object[] params) {

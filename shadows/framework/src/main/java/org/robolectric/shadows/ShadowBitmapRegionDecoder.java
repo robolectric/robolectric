@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
@@ -45,7 +44,8 @@ public class ShadowBitmapRegionDecoder {
     return fillWidthAndHeight(newInstance(), new FileInputStream(pathName));
   }
 
-  private static BitmapRegionDecoder fillWidthAndHeight(BitmapRegionDecoder bitmapRegionDecoder, InputStream is) {
+  private static BitmapRegionDecoder fillWidthAndHeight(
+      BitmapRegionDecoder bitmapRegionDecoder, InputStream is) {
     ShadowBitmapRegionDecoder shadowDecoder = Shadow.extract(bitmapRegionDecoder);
     Point imageSize = ImageUtil.getImageSizeFromStream(is);
     if (imageSize != null) {
@@ -67,7 +67,9 @@ public class ShadowBitmapRegionDecoder {
 
   @Implementation
   protected Bitmap decodeRegion(Rect rect, BitmapFactory.Options options) {
-    return Bitmap.createBitmap(rect.width(), rect.height(),
+    return Bitmap.createBitmap(
+        rect.width(),
+        rect.height(),
         options.inPreferredConfig != null ? options.inPreferredConfig : Bitmap.Config.ARGB_8888);
   }
 

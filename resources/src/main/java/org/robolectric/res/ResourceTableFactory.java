@@ -83,8 +83,9 @@ public class ResourceTableFactory {
   }
 
   /**
-   * Check the stylable elements. Not for aapt generated R files but for framework R files it is possible to
-   * have attributes in the styleable array for which there is no corresponding R.attr field.
+   * Check the stylable elements. Not for aapt generated R files but for framework R files it is
+   * possible to have attributes in the styleable array for which there is no corresponding R.attr
+   * field.
    */
   private void addMissingStyleableAttributes(PackageResourceTable resourceTable, Class<?> rClass) {
     for (Class innerClass : rClass.getClasses()) {
@@ -99,7 +100,8 @@ public class ResourceTableFactory {
             } catch (IllegalAccessException e) {
               throw new RuntimeException(e);
             }
-          } else if (field.getType().equals(Integer.TYPE) && Modifier.isStatic(field.getModifiers())) {
+          } else if (field.getType().equals(Integer.TYPE)
+              && Modifier.isStatic(field.getModifiers())) {
             String attributeName = field.getName().substring(styleableName.length() + 1);
             try {
               int styleableIndex = field.getInt(null);

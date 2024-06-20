@@ -14,30 +14,33 @@ public class ShadowPasswordTransformationMethodTest {
   private PasswordTransformationMethod transformationMethod;
 
   @Before
-  public void setUp(){
+  public void setUp() {
     transformationMethod = new PasswordTransformationMethod();
   }
 
   @Test
-  public void shouldMaskInputCharacters(){
+  public void shouldMaskInputCharacters() {
     CharSequence output = transformationMethod.getTransformation("foobar", null);
-    assertThat(output.toString()).isEqualTo("\u2022\u2022\u2022\u2022\u2022\u2022"); //using the escaped characters for cross platform compatibility.
+    assertThat(output.toString())
+        .isEqualTo(
+            "\u2022\u2022\u2022\u2022\u2022\u2022"); // using the escaped characters for cross
+    // platform compatibility.
   }
 
   @Test
-  public void shouldTransformSpacesWithText(){
+  public void shouldTransformSpacesWithText() {
     CharSequence output = transformationMethod.getTransformation(" baz ", null);
     assertThat(output.toString()).isEqualTo("\u2022\u2022\u2022\u2022\u2022");
   }
 
   @Test
-  public void shouldTransformSpacesWithoutText(){
+  public void shouldTransformSpacesWithoutText() {
     CharSequence output = transformationMethod.getTransformation("    ", null);
     assertThat(output.toString()).isEqualTo("\u2022\u2022\u2022\u2022");
   }
 
   @Test
-  public void shouldNotTransformBlank(){
+  public void shouldNotTransformBlank() {
     CharSequence output = transformationMethod.getTransformation("", null);
     assertThat(output.toString()).isEqualTo("");
   }

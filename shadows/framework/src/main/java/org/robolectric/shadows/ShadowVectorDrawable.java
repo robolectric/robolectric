@@ -27,15 +27,16 @@ import org.robolectric.annotation.Implements;
 @Implements(value = VectorDrawable.class, minSdk = N)
 public class ShadowVectorDrawable extends ShadowDrawable {
   //  private static native long nCreateTree(long rootGroupPtr);
-//  private static native long nCreateTreeFromCopy(long treeToCopy, long rootGroupPtr);
-//  private static native void nSetRendererViewportSize(long rendererPtr, float viewportWidth,
-//                                                      float viewportHeight);
-//  private static native boolean nSetRootAlpha(long rendererPtr, float alpha);
-//  private static native float nGetRootAlpha(long rendererPtr);
-//  private static native void nSetAllowCaching(long rendererPtr, boolean allowCaching);
-//
-//  private static native int nDraw(long rendererPtr, long canvasWrapperPtr,
-//                                  long colorFilterPtr, Rect bounds, boolean needsMirroring, boolean canReuseCache);
+  //  private static native long nCreateTreeFromCopy(long treeToCopy, long rootGroupPtr);
+  //  private static native void nSetRendererViewportSize(long rendererPtr, float viewportWidth,
+  //                                                      float viewportHeight);
+  //  private static native boolean nSetRootAlpha(long rendererPtr, float alpha);
+  //  private static native float nGetRootAlpha(long rendererPtr);
+  //  private static native void nSetAllowCaching(long rendererPtr, boolean allowCaching);
+  //
+  //  private static native int nDraw(long rendererPtr, long canvasWrapperPtr,
+  //                                  long colorFilterPtr, Rect bounds, boolean needsMirroring,
+  // boolean canReuseCache);
 
   private static final int STROKE_WIDTH_INDEX = 0;
   private static final int STROKE_COLOR_INDEX = 1;
@@ -142,19 +143,18 @@ public class ShadowVectorDrawable extends ShadowDrawable {
     path.fillType = fillType;
   }
 
-//  @Implementation
-//  public static void nUpdateFullPathFillGradient(long pathPtr, long fillGradientPtr) {
-//
-//  }
-//
-//  @Implementation
-//  public static void nUpdateFullPathStrokeGradient(long pathPtr, long strokeGradientPtr) {
-//
-//  }
-//
-//  private static native long nCreateClipPath();
-//  private static native long nCreateClipPath(long clipPathPtr);
-
+  //  @Implementation
+  //  public static void nUpdateFullPathFillGradient(long pathPtr, long fillGradientPtr) {
+  //
+  //  }
+  //
+  //  @Implementation
+  //  public static void nUpdateFullPathStrokeGradient(long pathPtr, long strokeGradientPtr) {
+  //
+  //  }
+  //
+  //  private static native long nCreateClipPath();
+  //  private static native long nCreateClipPath(long clipPathPtr);
 
   static class Group implements Cloneable {
     float rotation;
@@ -226,48 +226,48 @@ public class ShadowVectorDrawable extends ShadowDrawable {
     group.translateY = translateY;
   }
 
-//  private static native void nAddChild(long groupPtr, long nodePtr);
-//  private static native void nSetPathString(long pathPtr, String pathString, int length);
-//
-//  /**
-//   * The setters and getters below for paths and groups are here temporarily, and will be
-//   * removed once the animation in AVD is replaced with RenderNodeAnimator, in which case the
-//   * animation will modify these properties in native. By then no JNI hopping would be necessary
-//   * for VD during animation, and these setters and getters will be obsolete.
-//   */
-//  // Setters and getters during animation.
-//  private static native float nGetRotation(long groupPtr);
-//  private static native void nSetRotation(long groupPtr, float rotation);
-//  private static native float nGetPivotX(long groupPtr);
-//  private static native void nSetPivotX(long groupPtr, float pivotX);
-//  private static native float nGetPivotY(long groupPtr);
-//  private static native void nSetPivotY(long groupPtr, float pivotY);
-//  private static native float nGetScaleX(long groupPtr);
-//  private static native void nSetScaleX(long groupPtr, float scaleX);
-//  private static native float nGetScaleY(long groupPtr);
-//  private static native void nSetScaleY(long groupPtr, float scaleY);
-//  private static native float nGetTranslateX(long groupPtr);
-//  private static native void nSetTranslateX(long groupPtr, float translateX);
-//  private static native float nGetTranslateY(long groupPtr);
-//  private static native void nSetTranslateY(long groupPtr, float translateY);
-//
-//  // Setters and getters for VPath during animation.
-//  private static native void nSetPathData(long pathPtr, long pathDataPtr);
-//  private static native float nGetStrokeWidth(long pathPtr);
-//  private static native void nSetStrokeWidth(long pathPtr, float width);
-//  private static native int nGetStrokeColor(long pathPtr);
-//  private static native void nSetStrokeColor(long pathPtr, int strokeColor);
-//  private static native float nGetStrokeAlpha(long pathPtr);
-//  private static native void nSetStrokeAlpha(long pathPtr, float alpha);
-//  private static native int nGetFillColor(long pathPtr);
-//  private static native void nSetFillColor(long pathPtr, int fillColor);
-//  private static native float nGetFillAlpha(long pathPtr);
-//  private static native void nSetFillAlpha(long pathPtr, float fillAlpha);
-//  private static native float nGetTrimPathStart(long pathPtr);
-//  private static native void nSetTrimPathStart(long pathPtr, float trimPathStart);
-//  private static native float nGetTrimPathEnd(long pathPtr);
-//  private static native void nSetTrimPathEnd(long pathPtr, float trimPathEnd);
-//  private static native float nGetTrimPathOffset(long pathPtr);
-//  private static native void nSetTrimPathOffset(long pathPtr, float trimPathOffset);
+  //  private static native void nAddChild(long groupPtr, long nodePtr);
+  //  private static native void nSetPathString(long pathPtr, String pathString, int length);
+  //
+  //  /**
+  //   * The setters and getters below for paths and groups are here temporarily, and will be
+  //   * removed once the animation in AVD is replaced with RenderNodeAnimator, in which case the
+  //   * animation will modify these properties in native. By then no JNI hopping would be necessary
+  //   * for VD during animation, and these setters and getters will be obsolete.
+  //   */
+  //  // Setters and getters during animation.
+  //  private static native float nGetRotation(long groupPtr);
+  //  private static native void nSetRotation(long groupPtr, float rotation);
+  //  private static native float nGetPivotX(long groupPtr);
+  //  private static native void nSetPivotX(long groupPtr, float pivotX);
+  //  private static native float nGetPivotY(long groupPtr);
+  //  private static native void nSetPivotY(long groupPtr, float pivotY);
+  //  private static native float nGetScaleX(long groupPtr);
+  //  private static native void nSetScaleX(long groupPtr, float scaleX);
+  //  private static native float nGetScaleY(long groupPtr);
+  //  private static native void nSetScaleY(long groupPtr, float scaleY);
+  //  private static native float nGetTranslateX(long groupPtr);
+  //  private static native void nSetTranslateX(long groupPtr, float translateX);
+  //  private static native float nGetTranslateY(long groupPtr);
+  //  private static native void nSetTranslateY(long groupPtr, float translateY);
+  //
+  //  // Setters and getters for VPath during animation.
+  //  private static native void nSetPathData(long pathPtr, long pathDataPtr);
+  //  private static native float nGetStrokeWidth(long pathPtr);
+  //  private static native void nSetStrokeWidth(long pathPtr, float width);
+  //  private static native int nGetStrokeColor(long pathPtr);
+  //  private static native void nSetStrokeColor(long pathPtr, int strokeColor);
+  //  private static native float nGetStrokeAlpha(long pathPtr);
+  //  private static native void nSetStrokeAlpha(long pathPtr, float alpha);
+  //  private static native int nGetFillColor(long pathPtr);
+  //  private static native void nSetFillColor(long pathPtr, int fillColor);
+  //  private static native float nGetFillAlpha(long pathPtr);
+  //  private static native void nSetFillAlpha(long pathPtr, float fillAlpha);
+  //  private static native float nGetTrimPathStart(long pathPtr);
+  //  private static native void nSetTrimPathStart(long pathPtr, float trimPathStart);
+  //  private static native float nGetTrimPathEnd(long pathPtr);
+  //  private static native void nSetTrimPathEnd(long pathPtr, float trimPathEnd);
+  //  private static native float nGetTrimPathOffset(long pathPtr);
+  //  private static native void nSetTrimPathOffset(long pathPtr, float trimPathOffset);
 
 }

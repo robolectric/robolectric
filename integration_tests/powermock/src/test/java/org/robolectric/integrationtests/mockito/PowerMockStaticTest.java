@@ -16,8 +16,7 @@ import org.robolectric.RobolectricTestRunner;
 @PowerMockIgnore({"org.mockito.*", "org.robolectric.*", "android.*"})
 @PrepareForTest(PowerMockStaticTest.Static.class)
 public class PowerMockStaticTest {
-  @Rule
-  public PowerMockRule rule = new PowerMockRule();
+  @Rule public PowerMockRule rule = new PowerMockRule();
 
   @Test
   public void testStaticMocking() {

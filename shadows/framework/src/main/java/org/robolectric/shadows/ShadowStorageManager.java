@@ -19,9 +19,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
-/**
- * Fake implementation of {@link android.os.storage.StorageManager}
- */
+/** Fake implementation of {@link android.os.storage.StorageManager} */
 @Implements(StorageManager.class)
 public class ShadowStorageManager {
 

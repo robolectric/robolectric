@@ -31,7 +31,6 @@ public class ShadowGradientDrawable extends ShadowDrawable {
     reflector(GradientDrawableReflector.class, realGradientDrawable).setStroke(width, color);
   }
 
-
   /**
    * Returns the color of this drawable as set by the last call to {@link #setColor(int color)}.
    *

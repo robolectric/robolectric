@@ -70,9 +70,7 @@ public class BootstrapTest {
     configuration = new Configuration();
     displayMetrics = new DisplayMetrics();
 
-    optsForO = RuntimeEnvironment.getApiLevel() >= O
-        ? "nowidecg-lowdr-"
-        : "";
+    optsForO = RuntimeEnvironment.getApiLevel() >= O ? "nowidecg-lowdr-" : "";
   }
 
   @Test
@@ -152,13 +150,16 @@ public class BootstrapTest {
     assertThat(configuration.mcc).isEqualTo(0);
     assertThat(configuration.mnc).isEqualTo(0);
     assertThat(configuration.locale).isEqualTo(Locale.US);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_LAYOUTDIR_MASK).isEqualTo(SCREENLAYOUT_LAYOUTDIR_LTR);
+    assertThat(configuration.screenLayout & SCREENLAYOUT_LAYOUTDIR_MASK)
+        .isEqualTo(SCREENLAYOUT_LAYOUTDIR_LTR);
     assertThat(configuration.smallestScreenWidthDp).isEqualTo(320);
     assertThat(configuration.screenWidthDp).isEqualTo(320);
     assertThat(configuration.screenHeightDp).isEqualTo(470);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_SIZE_MASK).isEqualTo(SCREENLAYOUT_SIZE_NORMAL);
+    assertThat(configuration.screenLayout & SCREENLAYOUT_SIZE_MASK)
+        .isEqualTo(SCREENLAYOUT_SIZE_NORMAL);
     assertThat(configuration.screenLayout & SCREENLAYOUT_LONG_MASK).isEqualTo(SCREENLAYOUT_LONG_NO);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_ROUND_MASK).isEqualTo(SCREENLAYOUT_ROUND_NO);
+    assertThat(configuration.screenLayout & SCREENLAYOUT_ROUND_MASK)
+        .isEqualTo(SCREENLAYOUT_ROUND_NO);
     assertThat(configuration.orientation).isEqualTo(ORIENTATION_PORTRAIT);
     assertThat(configuration.uiMode & UI_MODE_TYPE_MASK).isEqualTo(UI_MODE_TYPE_NORMAL);
     assertThat(configuration.uiMode & UI_MODE_NIGHT_MASK).isEqualTo(UI_MODE_NIGHT_NO);
@@ -173,16 +174,13 @@ public class BootstrapTest {
     if (RuntimeEnvironment.getApiLevel() >= O) {
       assertThat(configuration.colorMode & COLOR_MODE_WIDE_COLOR_GAMUT_MASK)
           .isEqualTo(COLOR_MODE_WIDE_COLOR_GAMUT_NO);
-      assertThat(configuration.colorMode & COLOR_MODE_HDR_MASK)
-          .isEqualTo(COLOR_MODE_HDR_NO);
+      assertThat(configuration.colorMode & COLOR_MODE_HDR_MASK).isEqualTo(COLOR_MODE_HDR_NO);
     }
   }
 
   @Test
   public void applyQualifiers_shouldHonorSpecifiedQualifiers() {
-    String altOptsForO = RuntimeEnvironment.getApiLevel() >= O
-        ? "-widecg-highdr"
-        : "";
+    String altOptsForO = RuntimeEnvironment.getApiLevel() >= O ? "-widecg-highdr" : "";
 
     Bootstrap.applyQualifiers(
         "mcc310-mnc004-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-"
@@ -212,9 +210,12 @@ public class BootstrapTest {
     assertThat(configuration.smallestScreenWidthDp).isEqualTo(400);
     assertThat(configuration.screenWidthDp).isEqualTo(480);
     assertThat(configuration.screenHeightDp).isEqualTo(456);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_SIZE_MASK).isEqualTo(SCREENLAYOUT_SIZE_XLARGE);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_LONG_MASK).isEqualTo(SCREENLAYOUT_LONG_YES);
-    assertThat(configuration.screenLayout & SCREENLAYOUT_ROUND_MASK).isEqualTo(SCREENLAYOUT_ROUND_YES);
+    assertThat(configuration.screenLayout & SCREENLAYOUT_SIZE_MASK)
+        .isEqualTo(SCREENLAYOUT_SIZE_XLARGE);
+    assertThat(configuration.screenLayout & SCREENLAYOUT_LONG_MASK)
+        .isEqualTo(SCREENLAYOUT_LONG_YES);
+    assertThat(configuration.screenLayout & SCREENLAYOUT_ROUND_MASK)
+        .isEqualTo(SCREENLAYOUT_ROUND_YES);
     assertThat(configuration.orientation).isEqualTo(ORIENTATION_LANDSCAPE);
     assertThat(configuration.uiMode & UI_MODE_TYPE_MASK).isEqualTo(UI_MODE_TYPE_APPLIANCE);
     assertThat(configuration.uiMode & UI_MODE_NIGHT_MASK).isEqualTo(UI_MODE_NIGHT_YES);
@@ -228,8 +229,8 @@ public class BootstrapTest {
 
   @Test
   public void applyQualifiers_longShouldMakeScreenTaller() throws Exception {
-    Bootstrap.applyQualifiers("long",
-        RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    Bootstrap.applyQualifiers(
+        "long", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
     assertThat(configuration.smallestScreenWidthDp).isEqualTo(320);
     assertThat(configuration.screenWidthDp).isEqualTo(320);
     assertThat(configuration.screenHeightDp).isEqualTo(587);
@@ -238,9 +239,10 @@ public class BootstrapTest {
   }
 
   @Test
-  public void whenScreenRationGreatherThan175Percent_applyQualifiers_ShouldSetLong() throws Exception {
-    Bootstrap.applyQualifiers("w400dp-h200dp",
-        RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+  public void whenScreenRationGreatherThan175Percent_applyQualifiers_ShouldSetLong()
+      throws Exception {
+    Bootstrap.applyQualifiers(
+        "w400dp-h200dp", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
     assertThat(configuration.screenWidthDp).isEqualTo(400);
     assertThat(configuration.screenHeightDp).isEqualTo(200);
     assertThat(configuration.screenLayout & Configuration.SCREENLAYOUT_LONG_MASK)
@@ -250,8 +252,11 @@ public class BootstrapTest {
   @Test
   public void applyQualifiers_shouldRejectUnknownQualifiers() {
     try {
-      Bootstrap.applyQualifiers("notareal-qualifier-sw400dp-w480dp-more-wrong-stuff",
-          RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+      Bootstrap.applyQualifiers(
+          "notareal-qualifier-sw400dp-w480dp-more-wrong-stuff",
+          RuntimeEnvironment.getApiLevel(),
+          configuration,
+          displayMetrics);
       fail("should have thrown");
     } catch (IllegalArgumentException e) {
       // expected
@@ -262,8 +267,8 @@ public class BootstrapTest {
   @Test
   public void applyQualifiers_shouldRejectSdkVersion() {
     try {
-      Bootstrap.applyQualifiers("sw400dp-w480dp-v7",
-          RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+      Bootstrap.applyQualifiers(
+          "sw400dp-w480dp-v7", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
       fail("should have thrown");
     } catch (IllegalArgumentException e) {
       // expected
@@ -274,8 +279,8 @@ public class BootstrapTest {
   @Test
   public void applyQualifiers_shouldRejectAnydpi() {
     try {
-      Bootstrap.applyQualifiers("anydpi",
-          RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+      Bootstrap.applyQualifiers(
+          "anydpi", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
       fail("should have thrown");
     } catch (IllegalArgumentException e) {
       // expected
@@ -286,8 +291,8 @@ public class BootstrapTest {
   @Test
   public void applyQualifiers_shouldRejectNodpi() {
     try {
-      Bootstrap.applyQualifiers("nodpi",
-          RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+      Bootstrap.applyQualifiers(
+          "nodpi", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
       fail("should have thrown");
     } catch (IllegalArgumentException e) {
       // expected
@@ -297,8 +302,8 @@ public class BootstrapTest {
 
   @Test
   public void applyQualifiers_shouldSetLocaleScript() throws Exception {
-    Bootstrap.applyQualifiers("b+sr+Latn", RuntimeEnvironment.getApiLevel(),
-        configuration, displayMetrics);
+    Bootstrap.applyQualifiers(
+        "b+sr+Latn", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     assertThat(configuration.locale.getScript()).isEqualTo("Latn");
@@ -315,8 +320,11 @@ public class BootstrapTest {
 
   @Test
   public void spaceSeparated_applyQualifiers_shouldReplaceQualifiers() throws Exception {
-    Bootstrap.applyQualifiers("ru-rRU-h123dp-large fr-w321dp", RuntimeEnvironment.getApiLevel(),
-        configuration, displayMetrics);
+    Bootstrap.applyQualifiers(
+        "ru-rRU-h123dp-large fr-w321dp",
+        RuntimeEnvironment.getApiLevel(),
+        configuration,
+        displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     assertThat(outQualifiers).startsWith("fr-ldltr-sw321dp-w321dp-h470dp-normal");

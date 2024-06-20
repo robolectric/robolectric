@@ -46,12 +46,16 @@ public class MethodCallSite extends RoboCallSite {
     return isNative;
   }
 
-  @Override public String toString() {
-    return "RoboCallSite{" +
-        "theClass=" + getTheClass() +
-        ", original=" + original +
-        ", kind=" + kind +
-        '}';
+  @Override
+  public String toString() {
+    return "RoboCallSite{"
+        + "theClass="
+        + getTheClass()
+        + ", original="
+        + original
+        + ", kind="
+        + kind
+        + '}';
   }
 
   public enum Kind {

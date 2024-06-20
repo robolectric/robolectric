@@ -23,12 +23,13 @@ public final class ParameterizedRobolectricTestRunnerNormalTest {
   private final int expectedProduct;
   private final int expectedQuotient;
 
-  public ParameterizedRobolectricTestRunnerNormalTest(int first,
-                                                      int second,
-                                                      int expectedSum,
-                                                      int expectedDifference,
-                                                      int expectedProduct,
-                                                      int expectedQuotient) {
+  public ParameterizedRobolectricTestRunnerNormalTest(
+      int first,
+      int second,
+      int expectedSum,
+      int expectedDifference,
+      int expectedProduct,
+      int expectedQuotient) {
     this.first = first;
     this.second = second;
     this.expectedSum = expectedSum;
@@ -64,10 +65,10 @@ public final class ParameterizedRobolectricTestRunnerNormalTest {
   @ParameterizedRobolectricTestRunner.Parameters(name = "Java Math Test: {0}, {1}")
   public static Collection getTestData() {
     Object[][] data = {
-        { 1, 1, 2, 0, 1, 1 },
-        { 2, 1, 3, 1, 2, 2 },
-        { 2, 2, 4, 0, 4, 1 },
-        { 4, 4, 8, 0, 16, 1 }
+      {1, 1, 2, 0, 1, 1},
+      {2, 1, 3, 1, 2, 2},
+      {2, 2, 4, 0, 4, 1},
+      {4, 4, 8, 0, 16, 1}
     };
     return Arrays.asList(data);
   }

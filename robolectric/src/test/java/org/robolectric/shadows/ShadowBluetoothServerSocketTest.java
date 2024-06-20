@@ -25,8 +25,12 @@ public class ShadowBluetoothServerSocketTest {
 
   @Before
   public void setUp() {
-    serverSocket = ShadowBluetoothServerSocket.newInstance(BluetoothSocket.TYPE_RFCOMM,
-            /*auth=*/ false, /*encrypt=*/ false, new ParcelUuid(DUMMY_UUID));
+    serverSocket =
+        ShadowBluetoothServerSocket.newInstance(
+            BluetoothSocket.TYPE_RFCOMM,
+            /* auth= */ false,
+            /* encrypt= */ false,
+            new ParcelUuid(DUMMY_UUID));
   }
 
   @Test

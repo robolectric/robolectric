@@ -186,7 +186,7 @@ public class ShadowContextWrapperTest {
         /* broadcastPermission= */ null,
         /* scheduler= */ null);
 
-    contextWrapper.sendBroadcast(new Intent("foo"), /*receiverPermission=*/ "larryPermission");
+    contextWrapper.sendBroadcast(new Intent("foo"), /* receiverPermission= */ "larryPermission");
 
     asyncAssertThat(transcript).containsExactly("Larry notified of foo");
   }
@@ -206,7 +206,7 @@ public class ShadowContextWrapperTest {
         /* scheduler= */ null);
 
     Context broadcaster = contextWithPermission("broadcasterPackage", "larryPermission");
-    broadcaster.sendBroadcast(new Intent("foo"), /*receiverPermission=*/ null);
+    broadcaster.sendBroadcast(new Intent("foo"), /* receiverPermission= */ null);
 
     asyncAssertThat(transcript).containsExactly("Larry notified of foo");
   }

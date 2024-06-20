@@ -24,7 +24,7 @@ public class ShadowHandlerThreadTest {
   @After
   public void tearDown() throws Exception {
     // Try to ensure we've exited the thread at the end of each test
-    if ( handlerThread != null ) {
+    if (handlerThread != null) {
       handlerThread.quit();
       handlerThread.join();
     }
@@ -72,15 +72,16 @@ public class ShadowHandlerThreadTest {
 
   @Test
   public void shouldCallOnLooperPrepared() throws Exception {
-    final Boolean[] wasCalled = new Boolean[] { false };
+    final Boolean[] wasCalled = new Boolean[] {false};
     final CountDownLatch latch = new CountDownLatch(1);
-    handlerThread = new HandlerThread("test") {
-      @Override
-      protected void onLooperPrepared() {
-        wasCalled[0] = true;
-        latch.countDown();
-      }
-    };
+    handlerThread =
+        new HandlerThread("test") {
+          @Override
+          protected void onLooperPrepared() {
+            wasCalled[0] = true;
+            latch.countDown();
+          }
+        };
     handlerThread.start();
     try {
       assertNotNull(handlerThread.getLooper());

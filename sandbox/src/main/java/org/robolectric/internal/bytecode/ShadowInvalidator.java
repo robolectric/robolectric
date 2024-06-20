@@ -9,7 +9,7 @@ public class ShadowInvalidator {
   private static final SwitchPoint DUMMY = new SwitchPoint();
 
   static {
-    SwitchPoint.invalidateAll(new SwitchPoint[] { DUMMY });
+    SwitchPoint.invalidateAll(new SwitchPoint[] {DUMMY});
   }
 
   private Map<String, SwitchPoint> switchPoints;

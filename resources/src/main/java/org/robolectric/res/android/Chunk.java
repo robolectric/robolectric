@@ -149,15 +149,27 @@ class Chunk {
       this.len_ = itemSize;
     }
 
-    boolean HasNext() { return !HadError() && len_ != 0; };
+    boolean HasNext() {
+      return !HadError() && len_ != 0;
+    }
+    ;
+
     // Returns whether there was an error and processing should stop
-    boolean HadError() { return last_error_ != null; }
-    String GetLastError() { return last_error_; }
+    boolean HadError() {
+      return last_error_ != null;
+    }
+
+    String GetLastError() {
+      return last_error_;
+    }
+
     // Returns whether there was an error and processing should stop. For legacy purposes,
     // some errors are considered "non fatal". Fatal errors stop processing new chunks and
     // throw away any chunks already processed. Non fatal errors also stop processing new
     // chunks, but, will retain and use any valid chunks already processed.
-    boolean HadFatalError() { return HadError() && last_error_was_fatal_; }
+    boolean HadFatalError() {
+      return HadError() && last_error_was_fatal_;
+    }
 
     Chunk Next() {
       assert (len_ != 0) : "called Next() after last chunk";
@@ -171,8 +183,8 @@ class Chunk {
       if (remaining <= 0) {
         next_chunk_ = null;
       } else {
-        next_chunk_ = new ResChunk_header(
-            this_chunk.myBuf(), this_chunk.myOffset() + dtohl(this_chunk.size));
+        next_chunk_ =
+            new ResChunk_header(this_chunk.myBuf(), this_chunk.myOffset() + dtohl(this_chunk.size));
       }
       len_ -= dtohl(this_chunk.size);
 

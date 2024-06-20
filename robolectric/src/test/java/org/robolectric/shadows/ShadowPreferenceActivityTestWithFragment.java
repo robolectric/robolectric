@@ -27,7 +27,8 @@ public class ShadowPreferenceActivityTestWithFragment {
 
   @Before
   public void before() {
-    this.fragment = (TestPreferenceFragment) this.activity.getFragmentManager().findFragmentByTag(FRAGMENT_TAG);
+    this.fragment =
+        (TestPreferenceFragment) this.activity.getFragmentManager().findFragmentByTag(FRAGMENT_TAG);
   }
 
   @Test
@@ -50,7 +51,10 @@ public class ShadowPreferenceActivityTestWithFragment {
 
       FragmentManager fragmentManager = this.getFragmentManager();
       TestPreferenceFragment fragment = new TestPreferenceFragment();
-      fragmentManager.beginTransaction().replace(android.R.id.content, fragment, FRAGMENT_TAG).commit();
+      fragmentManager
+          .beginTransaction()
+          .replace(android.R.id.content, fragment, FRAGMENT_TAG)
+          .commit();
     }
   }
 

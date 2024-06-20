@@ -37,6 +37,7 @@ public class ShadowAudioSystem {
    */
   private static final Table<AudioFormat, Integer, Integer> directPlaybackSupportTable =
       Tables.synchronizedTable(HashBasedTable.create());
+
   /**
    * Table to store pair of {@link OffloadSupportFormat} and {@link
    * AudioAttributes#getVolumeControlStream()} with a value of Offload Playback support. Used with

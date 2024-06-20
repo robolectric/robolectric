@@ -19,18 +19,14 @@ package org.robolectric.shadows;
 import android.util.TypedValue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.res.ResName;
 
-/**
- * Helper class to provide various conversion method used in handling android resources.
- */
+/** Helper class to provide various conversion method used in handling android resources. */
 public final class ResourceHelper2 {
 
-  private final static Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
-  private final static float[] sFloatOut = new float[1];
+  private static final Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
+  private static final float[] sFloatOut = new float[1];
 
-  private final static TypedValue mValue = new TypedValue();
+  private static final TypedValue mValue = new TypedValue();
 
   // ------- TypedValue stuff
   // This is taken from //device/libs/utils/ResourceTypes.cpp
@@ -49,21 +45,23 @@ public final class ResourceHelper2 {
     }
   }
 
-  private final static UnitEntry[] sUnitNames = new UnitEntry[] {
-    new UnitEntry("px", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_PX, 1.0f),
-    new UnitEntry("dip", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
-    new UnitEntry("dp", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
-    new UnitEntry("sp", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_SP, 1.0f),
-    new UnitEntry("pt", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_PT, 1.0f),
-    new UnitEntry("in", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_IN, 1.0f),
-    new UnitEntry("mm", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_MM, 1.0f),
-    new UnitEntry("%", TypedValue.TYPE_FRACTION, TypedValue.COMPLEX_UNIT_FRACTION, 1.0f/100),
-    new UnitEntry("%p", TypedValue.TYPE_FRACTION, TypedValue.COMPLEX_UNIT_FRACTION_PARENT, 1.0f/100),
-  };
+  private static final UnitEntry[] sUnitNames =
+      new UnitEntry[] {
+        new UnitEntry("px", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_PX, 1.0f),
+        new UnitEntry("dip", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
+        new UnitEntry("dp", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
+        new UnitEntry("sp", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_SP, 1.0f),
+        new UnitEntry("pt", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_PT, 1.0f),
+        new UnitEntry("in", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_IN, 1.0f),
+        new UnitEntry("mm", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_MM, 1.0f),
+        new UnitEntry("%", TypedValue.TYPE_FRACTION, TypedValue.COMPLEX_UNIT_FRACTION, 1.0f / 100),
+        new UnitEntry(
+            "%p", TypedValue.TYPE_FRACTION, TypedValue.COMPLEX_UNIT_FRACTION_PARENT, 1.0f / 100),
+      };
 
   /**
-   * Returns the raw value from the given attribute float-type value string.
-   * This object is only valid until the next call on to {@link ResourceHelper2}.
+   * Returns the raw value from the given attribute float-type value string. This object is only
+   * valid until the next call on to {@link ResourceHelper2}.
    *
    * @param attribute Attribute name.
    * @param value Attribute value.
@@ -80,15 +78,16 @@ public final class ResourceHelper2 {
 
   /**
    * Parse a float attribute and return the parsed value into a given TypedValue.
+   *
    * @param attribute the name of the attribute. Can be null if <var>requireUnit</var> is false.
    * @param value the string value of the attribute
    * @param outValue the TypedValue to receive the parsed value
    * @param requireUnit whether the value is expected to contain a unit.
    * @return true if success.
    */
-  public static boolean parseFloatAttribute(String attribute, String value,
-      TypedValue outValue, boolean requireUnit) {
-//    assert requireUnit == false || attribute != null;
+  public static boolean parseFloatAttribute(
+      String attribute, String value, TypedValue outValue, boolean requireUnit) {
+    //    assert requireUnit == false || attribute != null;
 
     // remove the space before and after
     value = value.trim();
@@ -100,7 +99,7 @@ public final class ResourceHelper2 {
 
     // check that there's no non ascii characters.
     char[] buf = value.toCharArray();
-    for (int i = 0 ; i < len ; i++) {
+    for (int i = 0; i < len; i++) {
       if (buf[i] > 255) {
         return false;
       }
@@ -150,8 +149,9 @@ public final class ResourceHelper2 {
             applyUnit(sUnitNames[1], outValue, sFloatOut);
             computeTypedValue(outValue, f, sFloatOut[0], "dp");
 
-            System.out.println(String.format(
-                "Dimension \"%1$s\" in attribute \"%2$s\" is missing unit!",
+            System.out.println(
+                String.format(
+                    "Dimension \"%1$s\" in attribute \"%2$s\" is missing unit!",
                     value, attribute == null ? "(unknown)" : attribute));
           }
           return true;
@@ -162,29 +162,30 @@ public final class ResourceHelper2 {
     return false;
   }
 
-  private static void computeTypedValue(TypedValue outValue, float value, float scale, String unit) {
+  private static void computeTypedValue(
+      TypedValue outValue, float value, float scale, String unit) {
     value *= scale;
     boolean neg = value < 0;
     if (neg) {
       value = -value;
     }
-    long bits = (long)(value*(1<<23)+.5f);
+    long bits = (long) (value * (1 << 23) + .5f);
     int radix;
     int shift;
-    if ((bits&0x7fffff) == 0) {
+    if ((bits & 0x7fffff) == 0) {
       // Always use 23p0 if there is no fraction, just to make
       // things easier to read.
       radix = TypedValue.COMPLEX_RADIX_23p0;
       shift = 23;
-    } else if ((bits&0xffffffffff800000L) == 0) {
+    } else if ((bits & 0xffffffffff800000L) == 0) {
       // Magnitude is zero -- can fit in 0 bits of precision.
       radix = TypedValue.COMPLEX_RADIX_0p23;
       shift = 0;
-    } else if ((bits&0xffffffff80000000L) == 0) {
+    } else if ((bits & 0xffffffff80000000L) == 0) {
       // Magnitude can fit in 8 bits of precision.
       radix = TypedValue.COMPLEX_RADIX_8p15;
       shift = 8;
-    } else if ((bits&0xffffff8000000000L) == 0) {
+    } else if ((bits & 0xffffff8000000000L) == 0) {
       // Magnitude can fit in 16 bits of precision.
       radix = TypedValue.COMPLEX_RADIX_16p7;
       shift = 16;
@@ -193,14 +194,12 @@ public final class ResourceHelper2 {
       radix = TypedValue.COMPLEX_RADIX_23p0;
       shift = 23;
     }
-    int mantissa = (int)(
-      (bits>>shift) & TypedValue.COMPLEX_MANTISSA_MASK);
+    int mantissa = (int) ((bits >> shift) & TypedValue.COMPLEX_MANTISSA_MASK);
     if (neg) {
       mantissa = (-mantissa) & TypedValue.COMPLEX_MANTISSA_MASK;
     }
     outValue.data |=
-      (radix<<TypedValue.COMPLEX_RADIX_SHIFT)
-      | (mantissa<<TypedValue.COMPLEX_MANTISSA_SHIFT);
+        (radix << TypedValue.COMPLEX_RADIX_SHIFT) | (mantissa << TypedValue.COMPLEX_MANTISSA_SHIFT);
 
     if ("%".equals(unit)) {
       value = value * 100;
@@ -228,4 +227,3 @@ public final class ResourceHelper2 {
     outScale[0] = unit.scale;
   }
 }
-

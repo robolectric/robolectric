@@ -7,7 +7,12 @@ public class PathPermissionData {
   public final String readPermission;
   public final String writePermission;
 
-  PathPermissionData(String path, String pathPrefix, String pathPattern, String readPermission, String writePermission) {
+  PathPermissionData(
+      String path,
+      String pathPrefix,
+      String pathPattern,
+      String readPermission,
+      String writePermission) {
     this.path = path;
     this.pathPrefix = pathPrefix;
     this.pathPattern = pathPattern;

@@ -116,8 +116,8 @@ public class ShadowService extends ShadowContextWrapper {
   }
 
   /**
-   * Returns whether the last foreground notification is still "attached" to the service,
-   * meaning it will be removed when the service is destroyed.
+   * Returns whether the last foreground notification is still "attached" to the service, meaning it
+   * will be removed when the service is destroyed.
    */
   public boolean isLastForegroundNotificationAttached() {
     return lastForegroundNotificationAttached;

@@ -5,8 +5,8 @@ import android.content.Context;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 
-public class BackupAgentController<T extends BackupAgent> extends
-    ComponentController<BackupAgentController<T>, T> {
+public class BackupAgentController<T extends BackupAgent>
+    extends ComponentController<BackupAgentController<T>, T> {
   private BackupAgentController(T backupAgent) {
     super(backupAgent);
   }
@@ -20,7 +20,10 @@ public class BackupAgentController<T extends BackupAgent> extends
       return this;
     }
     Context baseContext = RuntimeEnvironment.getApplication().getBaseContext();
-    ReflectionHelpers.callInstanceMethod(BackupAgent.class, component, "attach",
+    ReflectionHelpers.callInstanceMethod(
+        BackupAgent.class,
+        component,
+        "attach",
         ReflectionHelpers.ClassParameter.from(Context.class, baseContext));
     return this;
   }

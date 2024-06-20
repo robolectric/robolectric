@@ -6,7 +6,8 @@ import android.widget.LinearLayout;
 import org.robolectric.R;
 
 public class CustomView extends LinearLayout {
-  public static final String ROBOLECTRIC_RES_URI = "http://schemas.android.com/apk/res/org.robolectric";
+  public static final String ROBOLECTRIC_RES_URI =
+      "http://schemas.android.com/apk/res/org.robolectric";
   public static final String FAKE_URI = "http://example.com/fakens";
 
   public int attributeResourceValue;

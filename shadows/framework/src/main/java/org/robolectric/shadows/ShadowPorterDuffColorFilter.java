@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.PorterDuff;
@@ -24,7 +23,7 @@ public class ShadowPorterDuffColorFilter {
   @Implementation
   public int getColor() {
 
-      return reflector(PorterDuffColorFilterReflector.class, realPorterDuffColorFilter).getColor();
+    return reflector(PorterDuffColorFilterReflector.class, realPorterDuffColorFilter).getColor();
   }
 
   /**
@@ -34,7 +33,7 @@ public class ShadowPorterDuffColorFilter {
   @Implementation
   public PorterDuff.Mode getMode() {
 
-      return reflector(PorterDuffColorFilterReflector.class, realPorterDuffColorFilter).getMode();
+    return reflector(PorterDuffColorFilterReflector.class, realPorterDuffColorFilter).getMode();
   }
 
   @ForType(PorterDuffColorFilter.class)

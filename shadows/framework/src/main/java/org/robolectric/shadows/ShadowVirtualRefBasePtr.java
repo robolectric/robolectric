@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import com.android.internal.util.VirtualRefBasePtr;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

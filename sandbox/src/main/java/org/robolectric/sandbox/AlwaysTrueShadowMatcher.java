@@ -1,8 +1,7 @@
 package org.robolectric.sandbox;
 
-import org.robolectric.internal.bytecode.ShadowInfo;
-
 import java.lang.reflect.Method;
+import org.robolectric.internal.bytecode.ShadowInfo;
 
 class AlwaysTrueShadowMatcher implements ShadowMatcher {
   @Override

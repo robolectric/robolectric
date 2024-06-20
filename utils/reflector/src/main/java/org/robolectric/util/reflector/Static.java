@@ -8,6 +8,4 @@ import java.lang.annotation.Target;
 /** Marks {@link Reflector} methods which serve as accessors for static members. */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Static {
-
-}
+public @interface Static {}

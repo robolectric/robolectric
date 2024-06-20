@@ -30,7 +30,8 @@ public class XmlContext {
     return xmlFile;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return '{' + packageName + ':' + xmlFile + '}';
   }
 }

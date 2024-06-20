@@ -6,6 +6,6 @@ import org.robolectric.annotation.internal.Instrument;
 @Instrument
 public class AClassWithMethodReturningArray {
   public String[] normalMethodReturningArray() {
-    return new String[] { "hello, working!" };
+    return new String[] {"hello, working!"};
   }
 }

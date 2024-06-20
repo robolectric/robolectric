@@ -46,9 +46,7 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   // This is needed to accomodate Loopers which are not reset between tests
   private static final List<Listener> staticListeners = new CopyOnWriteArrayList<>();
 
-  /**
-   * Callback for clock updates
-   */
+  /** Callback for clock updates */
   interface Listener {
     void onClockAdvanced();
   }

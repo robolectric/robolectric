@@ -129,17 +129,17 @@ public class ShadowTabHostTest {
 
     assertThat(textView.getText().toString()).isEqualTo("The Text of Foo");
   }
+
   @Test
   public void shouldRetrieveTheCurrentViewFromViewId() {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     activity.setContentView(org.robolectric.R.layout.main);
     TabHost tabHost = new TabHost(activity);
-    TabHost.TabSpec foo = tabHost.newTabSpec("Foo")
-    .setContent(org.robolectric.R.id.title);
+    TabHost.TabSpec foo = tabHost.newTabSpec("Foo").setContent(org.robolectric.R.id.title);
 
-     tabHost.addTab(foo);
-     tabHost.setCurrentTabByTag("Foo");
-     TextView textView = (TextView) tabHost.getCurrentView();
+    tabHost.addTab(foo);
+    tabHost.setCurrentTabByTag("Foo");
+    TextView textView = (TextView) tabHost.getCurrentView();
 
     assertThat(textView.getText().toString()).isEqualTo("Main Layout");
   }

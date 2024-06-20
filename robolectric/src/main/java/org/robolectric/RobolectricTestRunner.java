@@ -193,15 +193,15 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         List<Sdk> sdksToRun = sdkPicker.selectSdks(configuration, appManifest);
         RobolectricFrameworkMethod last = null;
         for (Sdk sdk : sdksToRun) {
-            children.add(
-                last =
-                    new RobolectricFrameworkMethod(
-                        frameworkMethod.getMethod(),
-                        appManifest,
-                        sdk,
-                        configuration,
-                        ResourcesMode.BINARY,
-                        alwaysIncludeVariantMarkersInName));
+          children.add(
+              last =
+                  new RobolectricFrameworkMethod(
+                      frameworkMethod.getMethod(),
+                      appManifest,
+                      sdk,
+                      configuration,
+                      ResourcesMode.BINARY,
+                      alwaysIncludeVariantMarkersInName));
         }
         if (last != null) {
           last.dontIncludeVariantMarkersInTestName();

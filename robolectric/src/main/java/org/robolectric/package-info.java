@@ -1,4 +1,2 @@
-/**
- * Package containing main Robolectric classes.
- */
+/** Package containing main Robolectric classes. */
 package org.robolectric;

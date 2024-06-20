@@ -71,13 +71,14 @@ public class SdkCollectionTest {
   @Test
   public void getKnownSdks_shouldReturnAll() throws Exception {
     assertThat(sdkCollection.getKnownSdks())
-        .containsExactly(fakeSdk1234, fakeSdk1235, fakeSdk1236, fakeUnsupportedSdk1237).inOrder();
+        .containsExactly(fakeSdk1234, fakeSdk1235, fakeSdk1236, fakeUnsupportedSdk1237)
+        .inOrder();
   }
 
   @Test
   public void getSupportedSdks_shouldReturnOnlySupported() throws Exception {
     assertThat(sdkCollection.getSupportedSdks())
-        .containsExactly(fakeSdk1234, fakeSdk1235, fakeSdk1236).inOrder();
+        .containsExactly(fakeSdk1234, fakeSdk1235, fakeSdk1236)
+        .inOrder();
   }
-
 }

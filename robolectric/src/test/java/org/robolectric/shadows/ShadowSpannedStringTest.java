@@ -27,7 +27,4 @@ public class ShadowSpannedStringTest {
   public void valueOfCharSequence_shouldReturnNewSpannedString() {
     assertEquals("foo", SpannedString.valueOf("foo").toString());
   }
-
-
 }
-

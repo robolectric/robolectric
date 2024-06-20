@@ -49,7 +49,6 @@ public class ShadowCursorWrapperTest {
       method.invoke(verify(mockCursor, times(1)), params);
       Mockito.verifyNoMoreInteractions(mockCursor);
     }
-
   }
 
   @Test
@@ -95,7 +94,6 @@ public class ShadowCursorWrapperTest {
     v.verifyForward("setNotificationUri", mock(ContentResolver.class), mock(Uri.class));
     v.verifyForward("unregisterContentObserver", mock(ContentObserver.class));
     v.verifyForward("unregisterDataSetObserver", mock(DataSetObserver.class));
-
   }
 
   @Test
@@ -106,5 +104,4 @@ public class ShadowCursorWrapperTest {
 
     assertThat(shadow.getWrappedCursor()).isSameInstanceAs(mockCursor);
   }
-
 }

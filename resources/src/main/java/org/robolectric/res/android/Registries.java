@@ -16,7 +16,7 @@ public class Registries {
   public static final NativeObjRegistry<ResXMLTree> NATIVE_RES_XML_TREES =
       new NativeObjRegistry<>(ResXMLTree.class);
   public static final NativeObjRegistry<ResXMLParser> NATIVE_RES_XML_PARSERS =
-          new NativeObjRegistry<>(ResXMLParser.class);
+      new NativeObjRegistry<>(ResXMLParser.class);
   static final NativeObjRegistry<WeakReference<ResStringPool>> NATIVE_STRING_POOLS =
       new NativeObjRegistry<>("ResStringPool");
   public static final NativeObjRegistry<Theme> NATIVE_THEME9_REGISTRY =

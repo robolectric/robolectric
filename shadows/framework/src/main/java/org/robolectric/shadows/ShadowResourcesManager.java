@@ -21,11 +21,9 @@ public class ShadowResourcesManager {
     reflector(_ResourcesManager_.class).setResourcesManager(null);
   }
 
-  /**
-   * Exposes {@link ResourcesManager#applyCompatConfigurationLocked(int, Configuration)}.
-   */
-  public boolean callApplyConfigurationToResourcesLocked(Configuration configuration,
-      CompatibilityInfo compatibilityInfo) {
+  /** Exposes {@link ResourcesManager#applyCompatConfigurationLocked(int, Configuration)}. */
+  public boolean callApplyConfigurationToResourcesLocked(
+      Configuration configuration, CompatibilityInfo compatibilityInfo) {
     return reflector(_ResourcesManager_.class, realResourcesManager)
         .applyConfigurationToResourcesLocked(configuration, compatibilityInfo);
   }
@@ -35,7 +33,8 @@ public class ShadowResourcesManager {
   private interface _ResourcesManager_ {
     boolean applyConfigurationToResourcesLocked(Configuration config, CompatibilityInfo compat);
 
-    @Static @Accessor("sResourcesManager")
+    @Static
+    @Accessor("sResourcesManager")
     void setResourcesManager(ResourcesManager resourcesManager);
   }
 }

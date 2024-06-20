@@ -20,8 +20,7 @@ class NodeHandler {
     }
   }
 
-  private static class AttrHandler extends HashMap<String, NodeHandler> {
-  }
+  private static class AttrHandler extends HashMap<String, NodeHandler> {}
 
   NodeHandler findMatchFor(XMLStreamReader xml) {
     String tagName = xml.getLocalName();
@@ -80,12 +79,9 @@ class NodeHandler {
     return this;
   }
 
-  public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-  }
+  public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {}
 
-  public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-  }
+  public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {}
 
-  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-  }
+  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {}
 }

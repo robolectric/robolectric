@@ -45,6 +45,7 @@ public class ThreadSafetyTest {
   @Implements(InstrumentedThread.class)
   public static class InstrumentedThreadShadow {
     @RealObject InstrumentedThread realObject;
+
     @Implementation
     protected void run() {
       Shadow.directlyOn(realObject, InstrumentedThread.class, "run");

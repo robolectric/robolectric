@@ -10,10 +10,8 @@ public class StringResources {
   private static final int CODE_POINT_LENGTH = 4;
 
   /**
-   * Processes String resource values in the same way real Android does, namely:-
-   * 1) Trim leading and trailing whitespace.
-   * 2) Converts code points.
-   * 3) Escapes
+   * Processes String resource values in the same way real Android does, namely:- 1) Trim leading
+   * and trailing whitespace. 2) Converts code points. 3) Escapes
    */
   public static String processStringResources(String inputValue) {
     return escape(whitespace().collapseFrom(inputValue.trim(), ' '));

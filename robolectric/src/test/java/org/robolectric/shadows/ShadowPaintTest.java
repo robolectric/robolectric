@@ -117,26 +117,26 @@ public class ShadowPaintTest {
     assertThat(
             paint.breakText(
                 new char[] {'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd'},
-                /*index=*/ 0,
-                /*count=*/ 11,
-                /*maxWidth=*/ 100,
-                /*measuredWidth=*/ null))
+                /* index= */ 0,
+                /* count= */ 11,
+                /* maxWidth= */ 100,
+                /* measuredWidth= */ null))
         .isGreaterThan(0);
     assertThat(
             paint.breakText(
                 "Hello World",
-                /*start=*/ 0,
-                /*end=*/ 11,
-                /*measureForwards=*/ true,
-                /*maxWidth=*/ 100,
-                /*measuredWidth=*/ null))
+                /* start= */ 0,
+                /* end= */ 11,
+                /* measureForwards= */ true,
+                /* maxWidth= */ 100,
+                /* measuredWidth= */ null))
         .isGreaterThan(0);
     assertThat(
             paint.breakText(
                 "Hello World",
-                /*measureForwards=*/ true,
-                /*maxWidth=*/ 100,
-                /*measuredWidth=*/ null))
+                /* measureForwards= */ true,
+                /* maxWidth= */ 100,
+                /* measuredWidth= */ null))
         .isGreaterThan(0);
   }
 

@@ -26,9 +26,10 @@ public class ShadowTextUtilsTest {
     assertThat(TextUtils.isEmpty("123")).isFalse();
   }
 
-  @Test public void testJoin() {
-    assertThat(TextUtils.join(",", new String[]{"1"})).isEqualTo("1");
-    assertThat(TextUtils.join(",", new String[]{"1", "2", "3"})).isEqualTo("1,2,3");
+  @Test
+  public void testJoin() {
+    assertThat(TextUtils.join(",", new String[] {"1"})).isEqualTo("1");
+    assertThat(TextUtils.join(",", new String[] {"1", "2", "3"})).isEqualTo("1,2,3");
     assertThat(TextUtils.join(",", Arrays.asList("1", "2", "3"))).isEqualTo("1,2,3");
   }
 
@@ -40,17 +41,17 @@ public class ShadowTextUtilsTest {
 
   @Test
   public void testSplit() {
-    //empty
+    // empty
     assertThat(TextUtils.split("", ",").length).isEqualTo(0);
 
-    //one value
-    assertArrayEquals(TextUtils.split("abc", ","), new String[]{"abc"});
+    // one value
+    assertArrayEquals(TextUtils.split("abc", ","), new String[] {"abc"});
 
-    //two values
-    assertArrayEquals(TextUtils.split("abc,def", ","), new String[]{"abc", "def"});
+    // two values
+    assertArrayEquals(TextUtils.split("abc,def", ","), new String[] {"abc", "def"});
 
-    //two values with space
-    assertArrayEquals(TextUtils.split("abc, def", ","), new String[]{"abc", " def"});
+    // two values with space
+    assertArrayEquals(TextUtils.split("abc, def", ","), new String[] {"abc", " def"});
   }
 
   @Test
@@ -79,7 +80,8 @@ public class ShadowTextUtilsTest {
     assertThat(TextUtils.equals("ab", "a")).isFalse();
   }
 
-  @Test public void testEllipsize() {
+  @Test
+  public void testEllipsize() {
     TextPaint p = new TextPaint();
     assertThat(TextUtils.ellipsize("apples", p, 0, TextUtils.TruncateAt.END).toString())
         .isEqualTo("");

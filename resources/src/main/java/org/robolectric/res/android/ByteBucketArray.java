@@ -16,9 +16,9 @@ public abstract class ByteBucketArray<T> {
     return NUM_BUCKETS * BUCKET_SIZE;
   }
 
-//  inline const T& get(size_t index) const {
-//    return (*this)[index];
-//  }
+  //  inline const T& get(size_t index) const {
+  //    return (*this)[index];
+  //  }
 
   final T get(int index) {
     if (index >= size()) {
@@ -45,7 +45,7 @@ public abstract class ByteBucketArray<T> {
     if (bucket == null) {
       bucket = mBuckets[bucketIndex] = new Object[BUCKET_SIZE];
     }
-//    return bucket[0x0f & static_cast<uint8_t>(index)];
+    //    return bucket[0x0f & static_cast<uint8_t>(index)];
     T t = (T) bucket[0x0f & ((byte) index)];
     if (t == null) {
       t = newInstance();
@@ -76,5 +76,4 @@ public abstract class ByteBucketArray<T> {
 
   Object[][] mBuckets = new Object[NUM_BUCKETS][];
   T mDefault;
-
 }

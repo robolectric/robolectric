@@ -22,17 +22,19 @@ public class BootstrapWrapper extends AndroidTestEnvironment implements Bootstra
   public BootstrapWrapper(
       @Named("runtimeSdk") Sdk runtimeSdk,
       @Named("compileSdk") Sdk compileSdk,
-      ResourcesMode resourcesMode, ApkLoader apkLoader,
+      ResourcesMode resourcesMode,
+      ApkLoader apkLoader,
       ShadowProvider[] shadowProviders,
       TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
     super(runtimeSdk, compileSdk, resourcesMode, apkLoader, shadowProviders, lifecyclePlugins);
-    this.wrappedTestEnvironment = new AndroidTestEnvironment(runtimeSdk, compileSdk, resourcesMode,
-        apkLoader, shadowProviders, lifecyclePlugins);
+    this.wrappedTestEnvironment =
+        new AndroidTestEnvironment(
+            runtimeSdk, compileSdk, resourcesMode, apkLoader, shadowProviders, lifecyclePlugins);
   }
 
   @Override
-  public void setUpApplicationState(Method method, Configuration config,
-      AndroidManifest appManifest) {
+  public void setUpApplicationState(
+      Method method, Configuration config, AndroidManifest appManifest) {
     this.method = method;
     this.config = config;
     this.appManifest = appManifest;

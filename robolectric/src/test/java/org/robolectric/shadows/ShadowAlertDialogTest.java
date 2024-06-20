@@ -264,7 +264,6 @@ public class ShadowAlertDialogTest {
 
     shadowAlertDialog.clickOnItem(1);
     assertThat(listener.transcript).containsExactly("clicked on 1");
-
   }
 
   @Test
@@ -280,11 +279,12 @@ public class ShadowAlertDialogTest {
   @Test
   public void shouldNotExplodeWhenNestingAlerts() {
     final Activity activity = Robolectric.buildActivity(Activity.class).create().get();
-    final AlertDialog nestedDialog = new AlertDialog.Builder(activity)
-        .setTitle("Dialog 2")
-        .setMessage("Another dialog")
-        .setPositiveButton("OK", null)
-        .create();
+    final AlertDialog nestedDialog =
+        new AlertDialog.Builder(activity)
+            .setTitle("Dialog 2")
+            .setMessage("Another dialog")
+            .setPositiveButton("OK", null)
+            .create();
 
     final AlertDialog dialog =
         new AlertDialog.Builder(activity)

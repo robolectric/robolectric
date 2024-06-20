@@ -11,7 +11,8 @@ public class MethodSignatureTest {
 
   @Test
   public void parse_shouldHandlePrimitiveReturnTypes() {
-    final MethodSignature signature = MethodSignature.parse("java/lang/Long/foo(Ljava/lang/Integer;)Z");
+    final MethodSignature signature =
+        MethodSignature.parse("java/lang/Long/foo(Ljava/lang/Integer;)Z");
     assertThat(signature.className).isEqualTo("java.lang.Long");
     assertThat(signature.methodName).isEqualTo("foo");
     assertThat(signature.paramTypes).asList().contains("java.lang.Integer");
@@ -20,7 +21,8 @@ public class MethodSignatureTest {
 
   @Test
   public void parse_shouldHandleObjectReturnTypes() {
-    final MethodSignature signature = MethodSignature.parse("java/lang/Long/foo(Ljava/lang/Integer;)Ljava/lang/Long;");
+    final MethodSignature signature =
+        MethodSignature.parse("java/lang/Long/foo(Ljava/lang/Integer;)Ljava/lang/Long;");
     assertThat(signature.className).isEqualTo("java.lang.Long");
     assertThat(signature.methodName).isEqualTo("foo");
     assertThat(signature.paramTypes).asList().contains("java.lang.Integer");

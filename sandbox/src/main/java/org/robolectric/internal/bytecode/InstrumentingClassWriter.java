@@ -6,8 +6,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
 /**
- * ClassWriter implementation that verifies classes by comparing type information obtained
- * from loading the classes as resources. This was taken from the ASM ClassWriter unit tests.
+ * ClassWriter implementation that verifies classes by comparing type information obtained from
+ * loading the classes as resources. This was taken from the ASM ClassWriter unit tests.
  */
 public class InstrumentingClassWriter extends ClassWriter {
 
@@ -27,8 +27,8 @@ public class InstrumentingClassWriter extends ClassWriter {
   }
 
   /**
-   * Returns the common super type of the two given types without actually loading
-   * the classes in the ClassLoader.
+   * Returns the common super type of the two given types without actually loading the classes in
+   * the ClassLoader.
    */
   @Override
   protected String getCommonSuperClass(final String type1, final String type2) {
@@ -61,8 +61,7 @@ public class InstrumentingClassWriter extends ClassWriter {
       while (true) {
         int start1 = b1.lastIndexOf(';', end1 - 1);
         int start2 = b2.lastIndexOf(';', end2 - 1);
-        if (start1 != -1 && start2 != -1
-            && end1 - start1 == end2 - start2) {
+        if (start1 != -1 && start2 != -1 && end1 - start1 == end2 - start2) {
           String p1 = b1.substring(start1 + 1, end1);
           String p2 = b2.substring(start2 + 1, end2);
           if (p1.equals(p2)) {

@@ -55,9 +55,7 @@ public class ShadowDropBoxManager {
     addData(tag, ShadowSystem.currentTimeMillis(), data.getBytes(UTF_8));
   }
 
-  /**
-   * Clears all entries.
-   */
+  /** Clears all entries. */
   public void reset() {
     entries.clear();
   }

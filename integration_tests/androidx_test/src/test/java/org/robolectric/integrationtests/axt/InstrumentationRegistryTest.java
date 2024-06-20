@@ -56,5 +56,4 @@ public class InstrumentationRegistryTest {
           .isNotEqualTo(InstrumentationRegistry.getInstrumentation().getTargetContext());
     }
   }
-
 }

@@ -21,7 +21,7 @@ public class ParamsParserTest {
     StringEntity entity = new StringEntity("param1=foobar");
     entity.setContentType("application/x-www-form-urlencoded");
     post.setEntity(entity);
-    Map<String,String> params = ParamsParser.parseParams(post);
+    Map<String, String> params = ParamsParser.parseParams(post);
     assertThat(params.get("param1")).isEqualTo("foobar");
   }
 
@@ -31,14 +31,14 @@ public class ParamsParserTest {
     StringEntity entity = new StringEntity("param1=foobar");
     entity.setContentType("application/x-www-form-urlencoded");
     put.setEntity(entity);
-    Map<String,String> params = ParamsParser.parseParams(put);
+    Map<String, String> params = ParamsParser.parseParams(put);
     assertThat(params.get("param1")).isEqualTo("foobar");
   }
 
   @Test
   public void parseParams_shouldDoNothingForEmptyEntity() throws Exception {
     HttpPut put = new HttpPut("example.com");
-    Map<String,String> params = ParamsParser.parseParams(put);
+    Map<String, String> params = ParamsParser.parseParams(put);
     assertThat(params).isEmpty();
   }
 

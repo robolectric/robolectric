@@ -149,6 +149,7 @@ public class ShadowSubscriptionManager {
    * {@link #addOnSubscriptionsChangedListener} and {@link removeOnSubscriptionsChangedListener}.
    */
   private List<OnSubscriptionsChangedListener> listeners = new ArrayList<>();
+
   /**
    * Cache of subscription ids used by {@link #isNetworkRoaming}. Managed by {@link
    * #setNetworkRoamingStatus} and {@link #clearNetworkRoamingStatus}.

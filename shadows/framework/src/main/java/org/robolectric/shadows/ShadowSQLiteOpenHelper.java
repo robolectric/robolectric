@@ -7,8 +7,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /**
- * Avoid calls to setIdleConnectionTimeout.
- * They shouldn't matter for tests, but sometimes induced deadlocks.
+ * Avoid calls to setIdleConnectionTimeout. They shouldn't matter for tests, but sometimes induced
+ * deadlocks.
  */
 @Implements(SQLiteOpenHelper.class)
 public class ShadowSQLiteOpenHelper {

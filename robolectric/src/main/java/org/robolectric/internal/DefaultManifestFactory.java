@@ -28,7 +28,8 @@ public class DefaultManifestFactory implements ManifestFactory {
 
     String manifestConfig = config.manifest();
     if (Config.NONE.equals(manifestConfig)) {
-      Logger.info("@Config(manifest = Config.NONE) specified while using Build System API, ignoring");
+      Logger.info(
+          "@Config(manifest = Config.NONE) specified while using Build System API, ignoring");
     } else if (!Config.DEFAULT_MANIFEST_NAME.equals(manifestConfig)) {
       manifestFile = getResource(manifestConfig);
     }
@@ -50,8 +51,8 @@ public class DefaultManifestFactory implements ManifestFactory {
       Logger.info("@Config(libraries) specified while using Build System API, ignoring");
     }
 
-    return new ManifestIdentifier(packageName, manifestFile, resourcesDir, assetsDir, libraryDirs,
-        apkFile);
+    return new ManifestIdentifier(
+        packageName, manifestFile, resourcesDir, assetsDir, libraryDirs, apkFile);
   }
 
   private Path getResource(String pathStr) {

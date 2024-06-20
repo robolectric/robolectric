@@ -67,7 +67,7 @@ public class ShadowTextView extends ShadowView {
   /**
    * Returns the text string of this {@code TextView}.
    *
-   * Robolectric extension.
+   * <p>Robolectric extension.
    */
   @Override
   public String innerText() {
@@ -98,7 +98,8 @@ public class ShadowTextView extends ShadowView {
     return watchers;
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi
+  @Implementation
   public Locale getTextServicesLocale() {
     return Locale.getDefault();
   }

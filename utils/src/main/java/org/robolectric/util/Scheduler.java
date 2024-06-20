@@ -36,9 +36,7 @@ import java.util.concurrent.TimeUnit;
 @Deprecated
 public class Scheduler {
 
-  /**
-   * Describes the current state of a {@link Scheduler}.
-   */
+  /** Describes the current state of a {@link Scheduler}. */
   public enum IdleState {
     /** The {@link Scheduler} will not automatically advance the clock nor execute any runnables. */
     PAUSED,
@@ -56,6 +54,7 @@ public class Scheduler {
 
   private static final long START_TIME = 100;
   private volatile long currentTime = START_TIME;
+
   /**
    * PriorityQueue doesn't maintain ordering based on insertion; track that ourselves to preserve
    * FIFO order for posted runnables with the same scheduled time.
@@ -104,7 +103,7 @@ public class Scheduler {
   /**
    * Get the current time (as seen by the scheduler), in milliseconds.
    *
-   * @return  Current time in milliseconds.
+   * @return Current time in milliseconds.
    */
   public long getCurrentTime() {
     return currentTime;
@@ -142,7 +141,7 @@ public class Scheduler {
   /**
    * Add a runnable to the queue.
    *
-   * @param runnable    Runnable to add.
+   * @param runnable Runnable to add.
    */
   public synchronized void post(Runnable runnable) {
     postDelayed(runnable, 0, MILLISECONDS);
@@ -151,19 +150,18 @@ public class Scheduler {
   /**
    * Add a runnable to the queue to be run after a delay.
    *
-   * @param runnable    Runnable to add.
+   * @param runnable Runnable to add.
    * @param delayMillis Delay in millis.
    */
   public synchronized void postDelayed(Runnable runnable, long delayMillis) {
     postDelayed(runnable, delayMillis, MILLISECONDS);
   }
 
-  /**
-   * Add a runnable to the queue to be run after a delay.
-   */
+  /** Add a runnable to the queue to be run after a delay. */
   public synchronized void postDelayed(Runnable runnable, long delay, TimeUnit unit) {
     long delayMillis = unit.toMillis(delay);
-    if ((idleState != CONSTANT_IDLE && (isPaused() || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
+    if ((idleState != CONSTANT_IDLE && (isPaused() || delayMillis > 0))
+        || Thread.currentThread() != associatedThread) {
       runnables.add(new ScheduledRunnable(runnable, currentTime + delayMillis));
     } else {
       runOrQueueRunnable(runnable, currentTime + delayMillis);
@@ -173,7 +171,7 @@ public class Scheduler {
   /**
    * Add a runnable to the head of the queue.
    *
-   * @param runnable  Runnable to add.
+   * @param runnable Runnable to add.
    */
   public synchronized void postAtFrontOfQueue(Runnable runnable) {
     if (isPaused() || Thread.currentThread() != associatedThread) {
@@ -192,7 +190,7 @@ public class Scheduler {
   /**
    * Remove a runnable from the queue.
    *
-   * @param runnable  Runnable to remove.
+   * @param runnable Runnable to remove.
    */
   public synchronized void remove(Runnable runnable) {
     Iterator<ScheduledRunnable> iterator = runnables.iterator();
@@ -222,7 +220,7 @@ public class Scheduler {
   /**
    * Run the next runnable in the queue.
    *
-   * @return  True if a runnable was executed.
+   * @return True if a runnable was executed.
    */
   public synchronized boolean advanceToNextPostedRunnable() {
     return !runnables.isEmpty() && advanceTo(runnables.peek().scheduledTime);
@@ -246,7 +244,7 @@ public class Scheduler {
   /**
    * Run all runnables that are scheduled to run in the next time interval.
    *
-   * @return  True if a runnable was executed.
+   * @return True if a runnable was executed.
    */
   public synchronized boolean advanceBy(long amount, TimeUnit unit) {
     long endingTime = currentTime + unit.toMillis(amount);
@@ -256,8 +254,8 @@ public class Scheduler {
   /**
    * Run all runnables that are scheduled before the endTime.
    *
-   * @param   endTime   Future time.
-   * @return  True if a runnable was executed.
+   * @param endTime Future time.
+   * @return True if a runnable was executed.
    */
   public synchronized boolean advanceTo(long endTime) {
     if (endTime < currentTime || runnables.isEmpty()) {
@@ -277,7 +275,7 @@ public class Scheduler {
   /**
    * Run the next runnable in the queue.
    *
-   * @return  True if a runnable was executed.
+   * @return True if a runnable was executed.
    */
   public synchronized boolean runOneTask() {
     ScheduledRunnable postedRunnable = runnables.poll();
@@ -294,15 +292,13 @@ public class Scheduler {
   /**
    * Determine if any enqueued runnables are enqueued before the current time.
    *
-   * @return  True if any runnables can be executed.
+   * @return True if any runnables can be executed.
    */
   public synchronized boolean areAnyRunnable() {
     return nextTaskIsScheduledBefore(currentTime);
   }
 
-  /**
-   * Reset the internal state of the Scheduler.
-   */
+  /** Reset the internal state of the Scheduler. */
   public synchronized void reset() {
     runnables.clear();
     idleState = UNPAUSED;
@@ -313,7 +309,7 @@ public class Scheduler {
   /**
    * Return the number of enqueued runnables.
    *
-   * @return  Number of enqueues runnables.
+   * @return Number of enqueues runnables.
    */
   public synchronized int size() {
     return runnables.size();
@@ -334,7 +330,6 @@ public class Scheduler {
       if (currentMaxTime < scheduled.scheduledTime) {
         currentMaxTime = scheduled.scheduledTime;
       }
-
     }
     return Duration.ofMillis(currentMaxTime);
   }

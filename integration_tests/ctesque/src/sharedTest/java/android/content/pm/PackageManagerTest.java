@@ -252,8 +252,7 @@ public final class PackageManagerTest {
 
     PackageInfo packageInfo =
         pm.getPackageInfo(
-            context.getPackageName(),
-            GET_SERVICES | GET_ACTIVITIES | MATCH_DISABLED_COMPONENTS);
+            context.getPackageName(), GET_SERVICES | GET_ACTIVITIES | MATCH_DISABLED_COMPONENTS);
     ActivityInfo[] activities = filterExtraneous(packageInfo.activities);
 
     assertThat(packageInfo.applicationInfo.enabled).isFalse();

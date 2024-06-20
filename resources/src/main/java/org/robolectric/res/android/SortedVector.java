@@ -22,17 +22,18 @@ public class SortedVector<T extends Comparable<T>> {
 
   public void add(T info) {
     mStorage.add(info);
-    Collections.sort(mStorage, new Comparator<T>() {
-      @Override
-      public int compare(T t, T t1) {
-        return t.compareTo(t1);
-      }
-    });
+    Collections.sort(
+        mStorage,
+        new Comparator<T>() {
+          @Override
+          public int compare(T t, T t1) {
+            return t.compareTo(t1);
+          }
+        });
   }
 
   public int size() {
     return mStorage.size();
-
   }
 
   public T itemAt(int contIdx) {

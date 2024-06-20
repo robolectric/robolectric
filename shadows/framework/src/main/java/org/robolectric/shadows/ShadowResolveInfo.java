@@ -27,7 +27,8 @@ public class ShadowResolveInfo {
    * @param activityName Activity name.
    * @return Resolve info instance.
    */
-  public static ResolveInfo newResolveInfo(String displayName, String packageName, String activityName) {
+  public static ResolveInfo newResolveInfo(
+      String displayName, String packageName, String activityName) {
     ResolveInfo resInfo = new ResolveInfo();
     ActivityInfo actInfo = new ActivityInfo();
     actInfo.applicationInfo = new ApplicationInfo();

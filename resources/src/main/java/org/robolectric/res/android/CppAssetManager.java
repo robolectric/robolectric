@@ -33,7 +33,8 @@ import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
 import org.robolectric.util.PerfStatsCollector;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager.cpp
+// transliterated from
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager.cpp
 @SuppressWarnings("NewApi")
 public class CppAssetManager {
 
@@ -41,7 +42,7 @@ public class CppAssetManager {
 
   enum FileType {
     kFileTypeUnknown,
-    kFileTypeNonexistent,       // i.e. ENOENT
+    kFileTypeNonexistent, // i.e. ENOENT
     kFileTypeRegular,
     kFileTypeDirectory,
     kFileTypeCharDev,
@@ -54,15 +55,17 @@ public class CppAssetManager {
   // transliterated from
   // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/libs/androidfw/include/androidfw/AssetManager.h
   private static class asset_path {
-//    asset_path() : path(""), type(kFileTypeRegular), idmap(""),
-//      isSystemOverlay(false), isSystemAsset(false) {}
-
+    //    asset_path() : path(""), type(kFileTypeRegular), idmap(""),
+    //      isSystemOverlay(false), isSystemAsset(false) {}
 
     public asset_path() {
       this(new String8(), FileType.kFileTypeRegular, new String8(""), false, false);
     }
 
-    public asset_path(String8 path, FileType fileType, String8 idmap,
+    public asset_path(
+        String8 path,
+        FileType fileType,
+        String8 idmap,
         boolean isSystemOverlay,
         boolean isSystemAsset) {
       this.path = path;
@@ -80,13 +83,19 @@ public class CppAssetManager {
 
     @Override
     public String toString() {
-      return "asset_path{" +
-          "path=" + path +
-          ", type=" + type +
-          ", idmap='" + idmap + '\'' +
-          ", isSystemOverlay=" + isSystemOverlay +
-          ", isSystemAsset=" + isSystemAsset +
-          '}';
+      return "asset_path{"
+          + "path="
+          + path
+          + ", type="
+          + type
+          + ", idmap='"
+          + idmap
+          + '\''
+          + ", isSystemOverlay="
+          + isSystemOverlay
+          + ", isSystemAsset="
+          + isSystemAsset
+          + '}';
     }
   }
 
@@ -102,120 +111,119 @@ public class CppAssetManager {
   private ResTable mResources;
   private ResTable_config mConfig = new ResTable_config();
 
-
   //  static final boolean kIsDebug = false;
-//  
+  //
   static final String kAssetsRoot = "assets";
-  static final String kAppZipName = null; //"classes.jar";
+  static final String kAppZipName = null; // "classes.jar";
   static final String kSystemAssets = "android.jar";
   //  static final char* kResourceCache = "resource-cache";
-//  
+  //
   static final String kExcludeExtension = ".EXCLUDE";
-//  
+  //
 
   // static Asset final kExcludedAsset = (Asset*) 0xd000000d;
   static final Asset kExcludedAsset = Asset.EXCLUDED_ASSET;
 
+  static volatile int gCount = 0;
 
- static volatile int gCount = 0;
-
-//  final char* RESOURCES_FILENAME = "resources.arsc";
-//  final char* IDMAP_BIN = "/system/bin/idmap";
-//  final char* OVERLAY_DIR = "/vendor/overlay";
-//  final char* OVERLAY_THEME_DIR_PROPERTY = "ro.boot.vendor.overlay.theme";
-//  final char* TARGET_PACKAGE_NAME = "android";
-//  final char* TARGET_APK_PATH = "/system/framework/framework-res.apk";
-//  final char* IDMAP_DIR = "/data/resource-cache";
-//  
-//  namespace {
-//  
+  //  final char* RESOURCES_FILENAME = "resources.arsc";
+  //  final char* IDMAP_BIN = "/system/bin/idmap";
+  //  final char* OVERLAY_DIR = "/vendor/overlay";
+  //  final char* OVERLAY_THEME_DIR_PROPERTY = "ro.boot.vendor.overlay.theme";
+  //  final char* TARGET_PACKAGE_NAME = "android";
+  //  final char* TARGET_APK_PATH = "/system/framework/framework-res.apk";
+  //  final char* IDMAP_DIR = "/data/resource-cache";
+  //
+  //  namespace {
+  //
   String8 idmapPathForPackagePath(final String8 pkgPath) {
     // TODO: implement this?
     return pkgPath;
-//    const char* root = getenv("ANDROID_DATA");
-//    LOG_ALWAYS_FATAL_IF(root == NULL, "ANDROID_DATA not set");
-//    String8 path(root);
-//    path.appendPath(kResourceCache);
-//    char buf[256]; // 256 chars should be enough for anyone...
-//    strncpy(buf, pkgPath.string(), 255);
-//    buf[255] = '\0';
-//    char* filename = buf;
-//    while (*filename && *filename == '/') {
-//      ++filename;
-//    }
-//    char* p = filename;
-//    while (*p) {
-//      if (*p == '/') {
-//           *p = '@';
-//      }
-//      ++p;
-//    }
-//    path.appendPath(filename);
-//    path.append("@idmap");
-//    return path;
+    //    const char* root = getenv("ANDROID_DATA");
+    //    LOG_ALWAYS_FATAL_IF(root == NULL, "ANDROID_DATA not set");
+    //    String8 path(root);
+    //    path.appendPath(kResourceCache);
+    //    char buf[256]; // 256 chars should be enough for anyone...
+    //    strncpy(buf, pkgPath.string(), 255);
+    //    buf[255] = '\0';
+    //    char* filename = buf;
+    //    while (*filename && *filename == '/') {
+    //      ++filename;
+    //    }
+    //    char* p = filename;
+    //    while (*p) {
+    //      if (*p == '/') {
+    //           *p = '@';
+    //      }
+    //      ++p;
+    //    }
+    //    path.appendPath(filename);
+    //    path.append("@idmap");
+    //    return path;
   }
-//  
-//  /*
-//   * Like strdup(), but uses C++ "new" operator instead of malloc.
-//   */
-//  static char* strdupNew(final char* str) {
-//      char* newStr;
-//      int len;
-//  
-//      if (str == null)
-//          return null;
-//  
-//      len = strlen(str);
-//      newStr = new char[len+1];
-//      memcpy(newStr, str, len+1);
-//  
-//      return newStr;
-//  }
-//  
-//  } // namespace
-//  
-//  /*
-//   * ===========================================================================
-//   *      AssetManager
-//   * ===========================================================================
-//   */
+
+  //
+  //  /*
+  //   * Like strdup(), but uses C++ "new" operator instead of malloc.
+  //   */
+  //  static char* strdupNew(final char* str) {
+  //      char* newStr;
+  //      int len;
+  //
+  //      if (str == null)
+  //          return null;
+  //
+  //      len = strlen(str);
+  //      newStr = new char[len+1];
+  //      memcpy(newStr, str, len+1);
+  //
+  //      return newStr;
+  //  }
+  //
+  //  } // namespace
+  //
+  //  /*
+  //   * ===========================================================================
+  //   *      AssetManager
+  //   * ===========================================================================
+  //   */
 
   public static int getGlobalCount() {
     return gCount;
   }
 
-//  AssetManager() :
-//          mLocale(null), mResources(null), mConfig(new ResTable_config) {
-//      int count = android_atomic_inc(&gCount) + 1;
-//      if (kIsDebug) {
-//          ALOGI("Creating AssetManager %s #%d\n", this, count);
-//      }
-//      memset(mConfig, 0, sizeof(ResTable_config));
-//  }
-//  
-//  ~AssetManager() {
-//      int count = android_atomic_dec(&gCount);
-//      if (kIsDebug) {
-//          ALOGI("Destroying AssetManager in %s #%d\n", this, count);
-//      } else {
-//          ALOGI("Destroying AssetManager in %s #%d\n", this, count);
-//      }
-//      // Manually close any fd paths for which we have not yet opened their zip (which
-//      // will take ownership of the fd and close it when done).
-//      for (size_t i=0; i<mAssetPaths.size(); i++) {
-//          ALOGV("Cleaning path #%d: fd=%d, zip=%p", (int)i, mAssetPaths[i].rawFd,
-//                  mAssetPaths[i].zip.get());
-//          if (mAssetPaths[i].rawFd >= 0 && mAssetPaths[i].zip == NULL) {
-//              close(mAssetPaths[i].rawFd);
-//          }
-//      }
-//
-//      delete mConfig;
-//      delete mResources;
-//  
-//      // don't have a String class yet, so make sure we clean up
-//      delete[] mLocale;
-//  }
+  //  AssetManager() :
+  //          mLocale(null), mResources(null), mConfig(new ResTable_config) {
+  //      int count = android_atomic_inc(&gCount) + 1;
+  //      if (kIsDebug) {
+  //          ALOGI("Creating AssetManager %s #%d\n", this, count);
+  //      }
+  //      memset(mConfig, 0, sizeof(ResTable_config));
+  //  }
+  //
+  //  ~AssetManager() {
+  //      int count = android_atomic_dec(&gCount);
+  //      if (kIsDebug) {
+  //          ALOGI("Destroying AssetManager in %s #%d\n", this, count);
+  //      } else {
+  //          ALOGI("Destroying AssetManager in %s #%d\n", this, count);
+  //      }
+  //      // Manually close any fd paths for which we have not yet opened their zip (which
+  //      // will take ownership of the fd and close it when done).
+  //      for (size_t i=0; i<mAssetPaths.size(); i++) {
+  //          ALOGV("Cleaning path #%d: fd=%d, zip=%p", (int)i, mAssetPaths[i].rawFd,
+  //                  mAssetPaths[i].zip.get());
+  //          if (mAssetPaths[i].rawFd >= 0 && mAssetPaths[i].zip == NULL) {
+  //              close(mAssetPaths[i].rawFd);
+  //          }
+  //      }
+  //
+  //      delete mConfig;
+  //      delete mResources;
+  //
+  //      // don't have a String class yet, so make sure we clean up
+  //      delete[] mLocale;
+  //  }
 
   public boolean addAssetPath(String8 path, Ref<Integer> cookie, boolean appAsLib) {
     return addAssetPath(path, cookie, appAsLib, false);
@@ -224,7 +232,6 @@ public class CppAssetManager {
   public boolean addAssetPath(
       final String8 path, @Nullable Ref<Integer> cookie, boolean appAsLib, boolean isSystemAsset) {
     synchronized (mLock) {
-
       asset_path ap = new asset_path();
 
       String8 realPath = path;
@@ -238,7 +245,8 @@ public class CppAssetManager {
         ap.path = path;
         ap.type = getFileType(path.string());
         if (ap.type != kFileTypeDirectory && ap.type != FileType.kFileTypeRegular) {
-          ALOGW("Asset path %s is neither a directory nor file (type=%s).",
+          ALOGW(
+              "Asset path %s is neither a directory nor file (type=%s).",
               path.toString(), ap.type.name());
           return false;
         }
@@ -254,8 +262,7 @@ public class CppAssetManager {
         }
       }
 
-      ALOGV("In %s Asset %s path: %s", this,
-          ap.type.name(), ap.path.toString());
+      ALOGV("In %s Asset %s path: %s", this, ap.type.name(), ap.path.toString());
 
       ap.isSystemAsset = isSystemAsset;
       /*int apPos =*/ mAssetPaths.add(ap);
@@ -266,15 +273,15 @@ public class CppAssetManager {
       }
 
       // TODO: implement this?
-      //#ifdef __ANDROID__
+      // #ifdef __ANDROID__
       // Load overlays, if any
-      //asset_path oap;
-      //for (int idx = 0; mZipSet.getOverlay(ap.path, idx, & oap)
+      // asset_path oap;
+      // for (int idx = 0; mZipSet.getOverlay(ap.path, idx, & oap)
       //  ; idx++){
       //  oap.isSystemAsset = isSystemAsset;
       //  mAssetPaths.add(oap);
       // }
-      //#endif
+      // #endif
 
       if (mResources != null) {
         // appendPathToResTable(mAssetPaths.editItemAt(apPos), appAsLib);
@@ -396,23 +403,24 @@ public class CppAssetManager {
     String8 path = new String8(systemAssetsPath);
     return addAssetPath(path, null, false /* appAsLib */, true /* isSystemAsset */);
   }
-//  
-//  int nextAssetPath(final int cookie) final
-//  {
-//      AutoMutex _l(mLock);
-//      final int next = static_cast<int>(cookie) + 1;
-//      return next > mAssetPaths.size() ? -1 : next;
-//  }
-//  
-//  String8 getAssetPath(final int cookie) final
-//  {
-//      AutoMutex _l(mLock);
-//      final int which = static_cast<int>(cookie) - 1;
-//      if (which < mAssetPaths.size()) {
-//          return mAssetPaths[which].path;
-//      }
-//      return String8();
-//  }
+
+  //
+  //  int nextAssetPath(final int cookie) final
+  //  {
+  //      AutoMutex _l(mLock);
+  //      final int next = static_cast<int>(cookie) + 1;
+  //      return next > mAssetPaths.size() ? -1 : next;
+  //  }
+  //
+  //  String8 getAssetPath(final int cookie) final
+  //  {
+  //      AutoMutex _l(mLock);
+  //      final int which = static_cast<int>(cookie) - 1;
+  //      if (which < mAssetPaths.size()) {
+  //          return mAssetPaths[which].path;
+  //      }
+  //      return String8();
+  //  }
 
   void setLocaleLocked(final String locale) {
     //      if (mLocale != null) {
@@ -430,7 +438,7 @@ public class CppAssetManager {
         setLocaleLocked(locale);
       } else {
         if (config.language[0] != 0) {
-//          byte[] spec = new byte[RESTABLE_MAX_LOCALE_LEN];
+          //          byte[] spec = new byte[RESTABLE_MAX_LOCALE_LEN];
           String spec = config.getBcp47Locale(false);
           setLocaleLocked(spec);
         } else {
@@ -471,10 +479,10 @@ public class CppAssetManager {
       int i = mAssetPaths.size();
       while (i > 0) {
         i--;
-        ALOGV("Looking for asset '%s' in '%s'\n",
+        ALOGV(
+            "Looking for asset '%s' in '%s'\n",
             assetName.string(), mAssetPaths.get(i).path.string());
-        Asset pAsset = openNonAssetInPathLocked(assetName.string(), mode,
-            mAssetPaths.get(i));
+        Asset pAsset = openNonAssetInPathLocked(assetName.string(), mode, mAssetPaths.get(i));
         if (pAsset != null) {
           return Objects.equals(pAsset, kExcludedAsset) ? null : pAsset;
         }
@@ -502,10 +510,8 @@ public class CppAssetManager {
       int i = mAssetPaths.size();
       while (i > 0) {
         i--;
-        ALOGV("Looking for non-asset '%s' in '%s'\n", fileName,
-            mAssetPaths.get(i).path.string());
-        Asset pAsset = openNonAssetInPathLocked(
-            fileName, mode, mAssetPaths.get(i));
+        ALOGV("Looking for non-asset '%s' in '%s'\n", fileName, mAssetPaths.get(i).path.string());
+        Asset pAsset = openNonAssetInPathLocked(fileName, mode, mAssetPaths.get(i));
         if (pAsset != null) {
           if (outCookie != null) {
             outCookie.set(i + 1);
@@ -525,10 +531,9 @@ public class CppAssetManager {
       LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
 
       if (which < mAssetPaths.size()) {
-        ALOGV("Looking for non-asset '%s' in '%s'\n", fileName,
-            mAssetPaths.get(which).path.string());
-        Asset pAsset = openNonAssetInPathLocked(
-            fileName, mode, mAssetPaths.get(which));
+        ALOGV(
+            "Looking for non-asset '%s' in '%s'\n", fileName, mAssetPaths.get(which).path.string());
+        Asset pAsset = openNonAssetInPathLocked(fileName, mode, mAssetPaths.get(which));
         if (pAsset != null) {
           return pAsset != kExcludedAsset ? pAsset : null;
         }
@@ -553,21 +558,21 @@ public class CppAssetManager {
       return kFileTypeDirectory;
     }
     return FileType.kFileTypeNonexistent;
-//      Asset pAsset = null;
-//
-//      /*
-//       * Open the asset.  This is less efficient than simply finding the
-//       * file, but it's not too bad (we don't uncompress or mmap data until
-//       * the first read() call).
-//       */
-//      pAsset = open(fileName, Asset.AccessMode.ACCESS_STREAMING);
-//      // delete pAsset;
-//
-//      if (pAsset == null) {
-//          return FileType.kFileTypeNonexistent;
-//      } else {
-//          return FileType.kFileTypeRegular;
-//      }
+    //      Asset pAsset = null;
+    //
+    //      /*
+    //       * Open the asset.  This is less efficient than simply finding the
+    //       * file, but it's not too bad (we don't uncompress or mmap data until
+    //       * the first read() call).
+    //       */
+    //      pAsset = open(fileName, Asset.AccessMode.ACCESS_STREAMING);
+    //      // delete pAsset;
+    //
+    //      if (pAsset == null) {
+    //          return FileType.kFileTypeNonexistent;
+    //      } else {
+    //          return FileType.kFileTypeRegular;
+    //      }
   }
 
   boolean appendPathToResTable(final asset_path ap, boolean appAsLib) {
@@ -579,29 +584,30 @@ public class CppAssetManager {
 
   boolean appendPathToResTable_measured(final asset_path ap, boolean appAsLib) {
     // TODO: properly handle reading system resources
-//    if (!ap.isSystemAsset) {
-//      URL resource = getClass().getResource("/resources.ap_"); // todo get this from asset_path
-//      // System.out.println("Reading ARSC file  from " + resource);
-//      LOG_FATAL_IF(resource == null, "Could not find resources.ap_");
-//      try {
-//        ZipFile zipFile = new ZipFile(resource.getFile());
-//        ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
-//        InputStream inputStream = zipFile.getInputStream(arscEntry);
-//        mResources.add(inputStream, mResources.getTableCount() + 1);
-//      } catch (IOException e) {
-//        throw new RuntimeException(e);
-//      }
-//    } else {
-//      try {
-//        ZipFile zipFile = new ZipFile(ap.path.string());
-//        ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
-//        InputStream inputStream = zipFile.getInputStream(arscEntry);
-//        mResources.add(inputStream, mResources.getTableCount() + 1);
-//      } catch (IOException e) {
-//        e.printStackTrace();
-//      }
-//    }
-//    return false;
+    //    if (!ap.isSystemAsset) {
+    //      URL resource = getClass().getResource("/resources.ap_"); // todo get this from
+    // asset_path
+    //      // System.out.println("Reading ARSC file  from " + resource);
+    //      LOG_FATAL_IF(resource == null, "Could not find resources.ap_");
+    //      try {
+    //        ZipFile zipFile = new ZipFile(resource.getFile());
+    //        ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
+    //        InputStream inputStream = zipFile.getInputStream(arscEntry);
+    //        mResources.add(inputStream, mResources.getTableCount() + 1);
+    //      } catch (IOException e) {
+    //        throw new RuntimeException(e);
+    //      }
+    //    } else {
+    //      try {
+    //        ZipFile zipFile = new ZipFile(ap.path.string());
+    //        ZipEntry arscEntry = zipFile.getEntry("resources.arsc");
+    //        InputStream inputStream = zipFile.getInputStream(arscEntry);
+    //        mResources.add(inputStream, mResources.getTableCount() + 1);
+    //      } catch (IOException e) {
+    //        e.printStackTrace();
+    //      }
+    //    }
+    //    return false;
 
     // skip those ap's that correspond to system overlays
     if (ap.isSystemOverlay) {
@@ -612,7 +618,7 @@ public class CppAssetManager {
     ResTable sharedRes = null;
     boolean shared = true;
     boolean onlyEmptyResources = true;
-//      ATRACE_NAME(ap.path.string());
+    //      ATRACE_NAME(ap.path.string());
     Asset idmap = openIdmapLocked(ap);
     int nextEntryIdx = mResources.getTableCount();
     ALOGV("Looking for resource asset in '%s'\n", ap.path.string());
@@ -630,9 +636,7 @@ public class CppAssetManager {
         ass = mZipSet.getZipResourceTableAsset(ap.path);
         if (ass == null) {
           ALOGV("loading resource table %s\n", ap.path.string());
-          ass = openNonAssetInPathLocked("resources.arsc",
-              AccessMode.ACCESS_BUFFER,
-              ap);
+          ass = openNonAssetInPathLocked("resources.arsc", AccessMode.ACCESS_BUFFER, ap);
           if (ass != null && ass != kExcludedAsset) {
             ass = mZipSet.setZipResourceTableAsset(ap.path, ass);
           }
@@ -645,22 +649,21 @@ public class CppAssetManager {
           ALOGV("Creating shared resources for %s", ap.path.string());
           sharedRes = new ResTable();
           sharedRes.add(ass, idmap, nextEntryIdx + 1, false, false, false);
-//  #ifdef __ANDROID__
-//                  final char* data = getenv("ANDROID_DATA");
-//                  LOG_ALWAYS_FATAL_IF(data == null, "ANDROID_DATA not set");
-//                  String8 overlaysListPath(data);
-//                  overlaysListPath.appendPath(kResourceCache);
-//                  overlaysListPath.appendPath("overlays.list");
-//                  addSystemOverlays(overlaysListPath.string(), ap.path, sharedRes, nextEntryIdx);
-//  #endif
+          //  #ifdef __ANDROID__
+          //                  final char* data = getenv("ANDROID_DATA");
+          //                  LOG_ALWAYS_FATAL_IF(data == null, "ANDROID_DATA not set");
+          //                  String8 overlaysListPath(data);
+          //                  overlaysListPath.appendPath(kResourceCache);
+          //                  overlaysListPath.appendPath("overlays.list");
+          //                  addSystemOverlays(overlaysListPath.string(), ap.path, sharedRes,
+          // nextEntryIdx);
+          //  #endif
           sharedRes = mZipSet.setZipResourceTable(ap.path, sharedRes);
         }
       }
     } else {
       ALOGV("loading resource table %s\n", ap.path.string());
-      ass = openNonAssetInPathLocked("resources.arsc",
-          AccessMode.ACCESS_BUFFER,
-          ap);
+      ass = openNonAssetInPathLocked("resources.arsc", AccessMode.ACCESS_BUFFER, ap);
       shared = false;
     }
 
@@ -675,17 +678,17 @@ public class CppAssetManager {
       }
       onlyEmptyResources = false;
 
-//          if (!shared) {
-//              delete ass;
-//          }
+      //          if (!shared) {
+      //              delete ass;
+      //          }
     } else {
       ALOGV("Installing empty resources in to table %s\n", mResources);
       mResources.addEmpty(nextEntryIdx + 1);
     }
 
-//      if (idmap != null) {
-//          delete idmap;
-//      }
+    //      if (idmap != null) {
+    //          delete idmap;
+    //      }
     return onlyEmptyResources;
   }
 
@@ -706,23 +709,26 @@ public class CppAssetManager {
         LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
       }
 
-      PerfStatsCollector.getInstance().measure("load binary resources", () -> {
-        mResources = new ResTable();
-        updateResourceParamsLocked();
+      PerfStatsCollector.getInstance()
+          .measure(
+              "load binary resources",
+              () -> {
+                mResources = new ResTable();
+                updateResourceParamsLocked();
 
-        boolean onlyEmptyResources = true;
-        final int N = mAssetPaths.size();
-        for (int i = 0; i < N; i++) {
-          boolean empty = appendPathToResTable(mAssetPaths.get(i), false);
-          onlyEmptyResources = onlyEmptyResources && empty;
-        }
+                boolean onlyEmptyResources = true;
+                final int N = mAssetPaths.size();
+                for (int i = 0; i < N; i++) {
+                  boolean empty = appendPathToResTable(mAssetPaths.get(i), false);
+                  onlyEmptyResources = onlyEmptyResources && empty;
+                }
 
-        if (required && onlyEmptyResources) {
-          ALOGW("Unable to find resources file resources.arsc");
-//          delete mResources;
-          mResources = null;
-        }
-      });
+                if (required && onlyEmptyResources) {
+                  ALOGW("Unable to find resources file resources.arsc");
+                  //          delete mResources;
+                  mResources = null;
+                }
+              });
 
       return mResources;
     }
@@ -757,57 +763,57 @@ public class CppAssetManager {
     return ass;
   }
 
-//  void addSystemOverlays(final char* pathOverlaysList,
-//          final String8& targetPackagePath, ResTable* sharedRes, int offset) final
-//  {
-//      FILE* fin = fopen(pathOverlaysList, "r");
-//      if (fin == null) {
-//          return;
-//      }
-//  
-//  #ifndef _WIN32
-//      if (TEMP_FAILURE_RETRY(flock(fileno(fin), LOCK_SH)) != 0) {
-//          fclose(fin);
-//          return;
-//      }
-//  #endif
-//      char buf[1024];
-//      while (fgets(buf, sizeof(buf), fin)) {
-//          // format of each line:
-//          //   <path to apk><space><path to idmap><newline>
-//          char* space = strchr(buf, ' ');
-//          char* newline = strchr(buf, '\n');
-//          asset_path oap;
-//  
-//          if (space == null || newline == null || newline < space) {
-//              continue;
-//          }
-//  
-//          oap.path = String8(buf, space - buf);
-//          oap.type = kFileTypeRegular;
-//          oap.idmap = String8(space + 1, newline - space - 1);
-//          oap.isSystemOverlay = true;
-//  
-//          Asset* oass = final_cast<AssetManager*>(this).
-//              openNonAssetInPathLocked("resources.arsc",
-//                      Asset.ACCESS_BUFFER,
-//                      oap);
-//  
-//          if (oass != null) {
-//              Asset* oidmap = openIdmapLocked(oap);
-//              offset++;
-//              sharedRes.add(oass, oidmap, offset + 1, false);
-//              final_cast<AssetManager*>(this).mAssetPaths.add(oap);
-//              final_cast<AssetManager*>(this).mZipSet.addOverlay(targetPackagePath, oap);
-//              delete oidmap;
-//          }
-//      }
-//  
-//  #ifndef _WIN32
-//      TEMP_FAILURE_RETRY(flock(fileno(fin), LOCK_UN));
-//  #endif
-//      fclose(fin);
-//  }
+  //  void addSystemOverlays(final char* pathOverlaysList,
+  //          final String8& targetPackagePath, ResTable* sharedRes, int offset) final
+  //  {
+  //      FILE* fin = fopen(pathOverlaysList, "r");
+  //      if (fin == null) {
+  //          return;
+  //      }
+  //
+  //  #ifndef _WIN32
+  //      if (TEMP_FAILURE_RETRY(flock(fileno(fin), LOCK_SH)) != 0) {
+  //          fclose(fin);
+  //          return;
+  //      }
+  //  #endif
+  //      char buf[1024];
+  //      while (fgets(buf, sizeof(buf), fin)) {
+  //          // format of each line:
+  //          //   <path to apk><space><path to idmap><newline>
+  //          char* space = strchr(buf, ' ');
+  //          char* newline = strchr(buf, '\n');
+  //          asset_path oap;
+  //
+  //          if (space == null || newline == null || newline < space) {
+  //              continue;
+  //          }
+  //
+  //          oap.path = String8(buf, space - buf);
+  //          oap.type = kFileTypeRegular;
+  //          oap.idmap = String8(space + 1, newline - space - 1);
+  //          oap.isSystemOverlay = true;
+  //
+  //          Asset* oass = final_cast<AssetManager*>(this).
+  //              openNonAssetInPathLocked("resources.arsc",
+  //                      Asset.ACCESS_BUFFER,
+  //                      oap);
+  //
+  //          if (oass != null) {
+  //              Asset* oidmap = openIdmapLocked(oap);
+  //              offset++;
+  //              sharedRes.add(oass, oidmap, offset + 1, false);
+  //              final_cast<AssetManager*>(this).mAssetPaths.add(oap);
+  //              final_cast<AssetManager*>(this).mZipSet.addOverlay(targetPackagePath, oap);
+  //              delete oidmap;
+  //          }
+  //      }
+  //
+  //  #ifndef _WIN32
+  //      TEMP_FAILURE_RETRY(flock(fileno(fin), LOCK_UN));
+  //  #endif
+  //      fclose(fin);
+  //  }
 
   public final ResTable getResources() {
     return getResources(true);
@@ -819,19 +825,19 @@ public class CppAssetManager {
   }
 
   //  boolean isUpToDate()
-//  {
-//      AutoMutex _l(mLock);
-//      return mZipSet.isUpToDate();
-//  }
-//  
-//  void getLocales(Vector<String8>* locales, boolean includeSystemLocales) final
-//  {
-//      ResTable* res = mResources;
-//      if (res != null) {
-//          res.getLocales(locales, includeSystemLocales, true /* mergeEquivalentLangs */);
-//      }
-//  }
-//  
+  //  {
+  //      AutoMutex _l(mLock);
+  //      return mZipSet.isUpToDate();
+  //  }
+  //
+  //  void getLocales(Vector<String8>* locales, boolean includeSystemLocales) final
+  //  {
+  //      ResTable* res = mResources;
+  //      if (res != null) {
+  //          res.getLocales(locales, includeSystemLocales, true /* mergeEquivalentLangs */);
+  //      }
+  //  }
+  //
   /*
    * Open a non-asset file as if it were an asset, searching for it in the
    * specified app.
@@ -839,11 +845,11 @@ public class CppAssetManager {
    * Pass in a null values for "appName" if the common app directory should
    * be used.
    */
-  static Asset openNonAssetInPathLocked(final String fileName, AccessMode mode,
-      final asset_path ap) {
+  static Asset openNonAssetInPathLocked(
+      final String fileName, AccessMode mode, final asset_path ap) {
     Asset pAsset = null;
 
-      /* look at the filesystem on disk */
+    /* look at the filesystem on disk */
     if (ap.type == kFileTypeDirectory) {
       String8 path = new String8(ap.path);
       path.appendPath(fileName);
@@ -851,13 +857,13 @@ public class CppAssetManager {
       pAsset = openAssetFromFileLocked(path, mode);
 
       if (pAsset == null) {
-              /* try again, this time with ".gz" */
+        /* try again, this time with ".gz" */
         path.append(".gz");
         pAsset = openAssetFromFileLocked(path, mode);
       }
 
       if (pAsset != null) {
-        //printf("FOUND NA '%s' on disk\n", fileName);
+        // printf("FOUND NA '%s' on disk\n", fileName);
         pAsset.setAssetSource(path);
       }
 
@@ -865,20 +871,20 @@ public class CppAssetManager {
     } else {
       String8 path = new String8(fileName);
 
-          /* check the appropriate Zip file */
+      /* check the appropriate Zip file */
       ZipFileRO pZip = getZipFileLocked(ap);
       if (pZip != null) {
-        //printf("GOT zip, checking NA '%s'\n", (final char*) path);
+        // printf("GOT zip, checking NA '%s'\n", (final char*) path);
         ZipEntryRO entry = pZip.findEntryByName(path.string());
         if (entry != null) {
-          //printf("FOUND NA in Zip file for %s\n", appName ? appName : kAppCommon);
+          // printf("FOUND NA in Zip file for %s\n", appName ? appName : kAppCommon);
           pAsset = openAssetFromZipLocked(pZip, entry, mode, path);
           pZip.releaseEntry(entry);
         }
       }
 
       if (pAsset != null) {
-              /* create a "source" name, for debug/display */
+        /* create a "source" name, for debug/display */
         pAsset.setAssetSource(
             createZipSourceNameLocked(ap.path, new String8(), new String8(fileName)));
       }
@@ -890,8 +896,8 @@ public class CppAssetManager {
   /*
    * Create a "source name" for a file from a Zip archive.
    */
-  static String8 createZipSourceNameLocked(final String8 zipFileName,
-      final String8 dirName, final String8 fileName) {
+  static String8 createZipSourceNameLocked(
+      final String8 zipFileName, final String8 dirName, final String8 fileName) {
     String8 sourceName = new String8("zip:");
     sourceName.append(zipFileName.string());
     sourceName.append(":");
@@ -935,15 +941,14 @@ public class CppAssetManager {
    * This returns null if the file doesn't exist, couldn't be opened, or
    * claims to be a ".gz" but isn't.
    */
-  static Asset openAssetFromFileLocked(final String8 pathName,
-      AccessMode mode) {
+  static Asset openAssetFromFileLocked(final String8 pathName, AccessMode mode) {
     Asset pAsset = null;
 
     if (pathName.getPathExtension().toLowerCase().equals(".gz")) {
-      //printf("TRYING '%s'\n", (final char*) pathName);
+      // printf("TRYING '%s'\n", (final char*) pathName);
       pAsset = Asset.createFromCompressedFile(pathName.string(), mode);
     } else {
-      //printf("TRYING '%s'\n", (final char*) pathName);
+      // printf("TRYING '%s'\n", (final char*) pathName);
       pAsset = Asset.createFromFile(pathName.string(), mode);
     }
 
@@ -956,40 +961,41 @@ public class CppAssetManager {
    * If the entry is uncompressed, we may want to create or share a
    * slice of shared memory.
    */
-  static Asset openAssetFromZipLocked(final ZipFileRO pZipFile,
-      final ZipEntryRO entry, AccessMode mode, final String8 entryName) {
+  static Asset openAssetFromZipLocked(
+      final ZipFileRO pZipFile, final ZipEntryRO entry, AccessMode mode, final String8 entryName) {
     Asset pAsset = null;
 
     // TODO: look for previously-created shared memory slice?
     final Ref<Short> method = new Ref<>((short) 0);
     final Ref<Long> uncompressedLen = new Ref<>(0L);
 
-    //printf("USING Zip '%s'\n", pEntry.getFileName());
+    // printf("USING Zip '%s'\n", pEntry.getFileName());
 
-    if (!pZipFile.getEntryInfo(entry, method, uncompressedLen, null, null,
-        null, null)) {
+    if (!pZipFile.getEntryInfo(entry, method, uncompressedLen, null, null, null, null)) {
       ALOGW("getEntryInfo failed\n");
       return null;
     }
 
-    //return Asset.createFromZipEntry(pZipFile, entry, entryName);
+    // return Asset.createFromZipEntry(pZipFile, entry, entryName);
     FileMap dataMap = pZipFile.createEntryFileMap(entry);
-//      if (dataMap == null) {
-//          ALOGW("create map from entry failed\n");
-//          return null;
-//      }
-//
+    //      if (dataMap == null) {
+    //          ALOGW("create map from entry failed\n");
+    //          return null;
+    //      }
+    //
     if (method.get() == ZipFileRO.kCompressStored) {
       pAsset = Asset.createFromUncompressedMap(dataMap, mode);
-      ALOGV("Opened uncompressed entry %s in zip %s mode %s: %s", entryName.string(),
-          pZipFile.mFileName, mode, pAsset);
+      ALOGV(
+          "Opened uncompressed entry %s in zip %s mode %s: %s",
+          entryName.string(), pZipFile.mFileName, mode, pAsset);
     } else {
       pAsset = Asset.createFromCompressedMap(dataMap, toIntExact(uncompressedLen.get()), mode);
-      ALOGV("Opened compressed entry %s in zip %s mode %s: %s", entryName.string(),
-          pZipFile.mFileName, mode, pAsset);
+      ALOGV(
+          "Opened compressed entry %s in zip %s mode %s: %s",
+          entryName.string(), pZipFile.mFileName, mode, pAsset);
     }
     if (pAsset == null) {
-         /* unexpected */
+      /* unexpected */
       ALOGW("create from segment failed\n");
     }
 
@@ -1011,7 +1017,7 @@ public class CppAssetManager {
       LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
       Preconditions.checkNotNull(dirName);
 
-      //printf("+++ openDir(%s) in '%s'\n", dirName, (final char*) mAssetBase);
+      // printf("+++ openDir(%s) in '%s'\n", dirName, (final char*) mAssetBase);
 
       pDir = new AssetDir();
 
@@ -1039,14 +1045,14 @@ public class CppAssetManager {
         }
       }
 
-//  #if 0
-//        printf("FILE LIST:\n");
-//        for (i = 0; i < (int) pMergedInfo.size(); i++) {
-//          printf(" %d: (%d) '%s'\n", i,
-//              pMergedInfo.itemAt(i).getFileType(),
-//              ( final char*)pMergedInfo.itemAt(i).getFileName());
-//        }
-//  #endif
+      //  #if 0
+      //        printf("FILE LIST:\n");
+      //        for (i = 0; i < (int) pMergedInfo.size(); i++) {
+      //          printf(" %d: (%d) '%s'\n", i,
+      //              pMergedInfo.itemAt(i).getFileType(),
+      //              ( final char*)pMergedInfo.itemAt(i).getFileName());
+      //        }
+      //  #endif
 
       pDir.setFileList(pMergedInfo.get());
       return pDir;
@@ -1054,55 +1060,55 @@ public class CppAssetManager {
   }
 
   //
-//  /*
-//   * Open a directory in the non-asset namespace.
-//   *
-//   * An "asset directory" is simply the combination of all asset paths' "assets/" directories.
-//   *
-//   * Pass in "" for the root dir.
-//   */
-//  AssetDir* openNonAssetDir(final int cookie, final char* dirName)
-//  {
-//      AutoMutex _l(mLock);
-//  
-//      AssetDir* pDir = null;
-//      SortedVector<AssetDir.FileInfo>* pMergedInfo = null;
-//  
-//      LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
-//      assert(dirName != null);
-//  
-//      //printf("+++ openDir(%s) in '%s'\n", dirName, (final char*) mAssetBase);
-//  
-//      pDir = new AssetDir;
-//  
-//      pMergedInfo = new SortedVector<AssetDir.FileInfo>;
-//  
-//      final int which = static_cast<int>(cookie) - 1;
-//  
-//      if (which < mAssetPaths.size()) {
-//          final asset_path& ap = mAssetPaths.itemAt(which);
-//          if (ap.type == kFileTypeRegular) {
-//              ALOGV("Adding directory %s from zip %s", dirName, ap.path.string());
-//              scanAndMergeZipLocked(pMergedInfo, ap, null, dirName);
-//          } else {
-//              ALOGV("Adding directory %s from dir %s", dirName, ap.path.string());
-//              scanAndMergeDirLocked(pMergedInfo, ap, null, dirName);
-//          }
-//      }
-//  
-//  #if 0
-//      printf("FILE LIST:\n");
-//      for (i = 0; i < (int) pMergedInfo.size(); i++) {
-//          printf(" %d: (%d) '%s'\n", i,
-//              pMergedInfo.itemAt(i).getFileType(),
-//              (final char*) pMergedInfo.itemAt(i).getFileName());
-//      }
-//  #endif
-//  
-//      pDir.setFileList(pMergedInfo);
-//      return pDir;
-//  }
-//  
+  //  /*
+  //   * Open a directory in the non-asset namespace.
+  //   *
+  //   * An "asset directory" is simply the combination of all asset paths' "assets/" directories.
+  //   *
+  //   * Pass in "" for the root dir.
+  //   */
+  //  AssetDir* openNonAssetDir(final int cookie, final char* dirName)
+  //  {
+  //      AutoMutex _l(mLock);
+  //
+  //      AssetDir* pDir = null;
+  //      SortedVector<AssetDir.FileInfo>* pMergedInfo = null;
+  //
+  //      LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
+  //      assert(dirName != null);
+  //
+  //      //printf("+++ openDir(%s) in '%s'\n", dirName, (final char*) mAssetBase);
+  //
+  //      pDir = new AssetDir;
+  //
+  //      pMergedInfo = new SortedVector<AssetDir.FileInfo>;
+  //
+  //      final int which = static_cast<int>(cookie) - 1;
+  //
+  //      if (which < mAssetPaths.size()) {
+  //          final asset_path& ap = mAssetPaths.itemAt(which);
+  //          if (ap.type == kFileTypeRegular) {
+  //              ALOGV("Adding directory %s from zip %s", dirName, ap.path.string());
+  //              scanAndMergeZipLocked(pMergedInfo, ap, null, dirName);
+  //          } else {
+  //              ALOGV("Adding directory %s from dir %s", dirName, ap.path.string());
+  //              scanAndMergeDirLocked(pMergedInfo, ap, null, dirName);
+  //          }
+  //      }
+  //
+  //  #if 0
+  //      printf("FILE LIST:\n");
+  //      for (i = 0; i < (int) pMergedInfo.size(); i++) {
+  //          printf(" %d: (%d) '%s'\n", i,
+  //              pMergedInfo.itemAt(i).getFileType(),
+  //              (final char*) pMergedInfo.itemAt(i).getFileName());
+  //      }
+  //  #endif
+  //
+  //      pDir.setFileList(pMergedInfo);
+  //      return pDir;
+  //  }
+  //
   /*
    * Scan the contents of the specified directory and merge them into the
    * "pMergedInfo" vector, removing previous entries if we find "exclude"
@@ -1110,12 +1116,15 @@ public class CppAssetManager {
    *
    * Returns "false" if we found nothing to contribute.
    */
-  boolean scanAndMergeDirLocked(Ref<SortedVector<AssetDir.FileInfo>> pMergedInfoRef,
-      final asset_path ap, final String rootDir, final String dirName) {
+  boolean scanAndMergeDirLocked(
+      Ref<SortedVector<AssetDir.FileInfo>> pMergedInfoRef,
+      final asset_path ap,
+      final String rootDir,
+      final String dirName) {
     SortedVector<AssetDir.FileInfo> pMergedInfo = pMergedInfoRef.get();
     assert (pMergedInfo != null);
 
-    //printf("scanAndMergeDir: %s %s %s\n", ap.path.string(), rootDir, dirName);
+    // printf("scanAndMergeDir: %s %s %s\n", ap.path.string(), rootDir, dirName);
 
     String8 path = createPathNameLocked(ap, rootDir);
     if (dirName.charAt(0) != '\0') {
@@ -1129,11 +1138,11 @@ public class CppAssetManager {
 
     // if we wanted to do an incremental cache fill, we would do it here
 
-      /*
-       * Process "exclude" directives.  If we find a filename that ends with
-       * ".EXCLUDE", we look for a matching entry in the "merged" set, and
-       * remove it if we find it.  We also delete the "exclude" entry.
-       */
+    /*
+     * Process "exclude" directives.  If we find a filename that ends with
+     * ".EXCLUDE", we look for a matching entry in the "merged" set, and
+     * remove it if we find it.  We also delete the "exclude" entry.
+     */
     int i, count, exclExtLen;
 
     count = pContents.size();
@@ -1150,18 +1159,19 @@ public class CppAssetManager {
 
         matchIdx = AssetDir.FileInfo.findEntry(pMergedInfo, match);
         if (matchIdx > 0) {
-          ALOGV("Excluding '%s' [%s]\n",
+          ALOGV(
+              "Excluding '%s' [%s]\n",
               pMergedInfo.itemAt(matchIdx).getFileName().string(),
               pMergedInfo.itemAt(matchIdx).getSourceName().string());
           pMergedInfo.removeAt(matchIdx);
         } else {
-          //printf("+++ no match on '%s'\n", (final char*) match);
+          // printf("+++ no match on '%s'\n", (final char*) match);
         }
 
         ALOGD("HEY: size=%d removing %d\n", (int) pContents.size(), i);
         pContents.removeAt(i);
-        i--;        // adjust "for" loop
-        count--;    //  and loop limit
+        i--; // adjust "for" loop
+        count--; //  and loop limit
       }
     }
 
@@ -1185,7 +1195,7 @@ public class CppAssetManager {
 
     String8 pathCopy = new String8(path);
     SortedVector<AssetDir.FileInfo> pContents;
-    //DIR* dir;
+    // DIR* dir;
     File dir;
     FileType fileType;
 
@@ -1203,21 +1213,21 @@ public class CppAssetManager {
         break;
       }
 
-//          if (strcmp(entry.d_name, ".") == 0 ||
-//              strcmp(entry.d_name, "..") == 0)
-//              continue;
+      //          if (strcmp(entry.d_name, ".") == 0 ||
+      //              strcmp(entry.d_name, "..") == 0)
+      //              continue;
 
-//  #ifdef _DIRENT_HAVE_D_TYPE
-//          if (entry.d_type == DT_REG)
-//              fileType = kFileTypeRegular;
-//          else if (entry.d_type == DT_DIR)
-//              fileType = kFileTypeDirectory;
-//          else
-//              fileType = kFileTypeUnknown;
-//  #else
+      //  #ifdef _DIRENT_HAVE_D_TYPE
+      //          if (entry.d_type == DT_REG)
+      //              fileType = kFileTypeRegular;
+      //          else if (entry.d_type == DT_DIR)
+      //              fileType = kFileTypeDirectory;
+      //          else
+      //              fileType = kFileTypeUnknown;
+      //  #else
       // stat the file
       fileType = getFileType(pathCopy.appendPath(entry.getName()).string());
-//  #endif
+      //  #endif
 
       if (fileType != FileType.kFileTypeRegular && fileType != kFileTypeDirectory) {
         continue;
@@ -1242,11 +1252,14 @@ public class CppAssetManager {
    *
    * Returns "false" if we found nothing to contribute.
    */
-  boolean scanAndMergeZipLocked(Ref<SortedVector<AssetDir.FileInfo>> pMergedInfo,
-      final asset_path ap, final String rootDir, final String baseDirName) {
+  boolean scanAndMergeZipLocked(
+      Ref<SortedVector<AssetDir.FileInfo>> pMergedInfo,
+      final asset_path ap,
+      final String rootDir,
+      final String baseDirName) {
     ZipFileRO pZip;
     List<String8> dirs = new ArrayList<>();
-    //AssetDir.FileInfo info = new FileInfo();
+    // AssetDir.FileInfo info = new FileInfo();
     SortedVector<AssetDir.FileInfo> contents = new SortedVector<>();
     String8 zipName;
     String8 dirName = new String8();
@@ -1259,7 +1272,7 @@ public class CppAssetManager {
 
     zipName = ZipSet.getPathName(ap.path.string());
 
-      /* convert "sounds" to "rootDir/sounds" */
+    /* convert "sounds" to "rootDir/sounds" */
     if (rootDir != null) {
       dirName = new String8(rootDir);
     }
@@ -1300,7 +1313,7 @@ public class CppAssetManager {
         continue;
       }
 
-//      System.out.printf("Comparing %s in %s?\n", nameBuf.get(), dirName.string());
+      //      System.out.printf("Comparing %s in %s?\n", nameBuf.get(), dirName.string());
       if (!nameBuf.get().startsWith(dirName.string() + '/')) {
         // not matching
         continue;
@@ -1309,14 +1322,14 @@ public class CppAssetManager {
         int cp = 0;
         int nextSlashIndex;
 
-        //cp = nameBuf + dirNameLen;
+        // cp = nameBuf + dirNameLen;
         cp += dirNameLen;
         if (dirNameLen != 0) {
-          cp++;       // advance past the '/'
+          cp++; // advance past the '/'
         }
 
         nextSlashIndex = nameBuf.get().indexOf('/', cp);
-        //xxx this may break if there are bare directory entries
+        // xxx this may break if there are bare directory entries
         if (nextSlashIndex == -1) {
           /* this is a file in the requested directory */
           String8 fileName = new String8(nameBuf.get()).getPathLeaf();
@@ -1327,11 +1340,10 @@ public class CppAssetManager {
           AssetDir.FileInfo info = new FileInfo();
           info.set(fileName, FileType.kFileTypeRegular);
 
-          info.setSourceName(
-              createZipSourceNameLocked(zipName, dirName, info.getFileName()));
+          info.setSourceName(createZipSourceNameLocked(zipName, dirName, info.getFileName()));
 
           contents.add(info);
-          //printf("FOUND: file '%s'\n", info.getFileName().string());
+          // printf("FOUND: file '%s'\n", info.getFileName().string());
         } else {
           /* this is a subdir; add it if we don't already have it*/
           String8 subdirName = new String8(nameBuf.get().substring(cp, nextSlashIndex));
@@ -1347,30 +1359,27 @@ public class CppAssetManager {
             dirs.add(subdirName);
           }
 
-          //printf("FOUND: dir '%s'\n", subdirName.string());
+          // printf("FOUND: dir '%s'\n", subdirName.string());
         }
       }
     }
 
     pZip.endIteration(iterationCookie);
 
-      /*
-       * Add the set of unique directories.
-       */
+    /*
+     * Add the set of unique directories.
+     */
     for (int i = 0; i < dirs.size(); i++) {
       AssetDir.FileInfo info = new FileInfo();
       info.set(dirs.get(i), kFileTypeDirectory);
-      info.setSourceName(
-          createZipSourceNameLocked(zipName, dirName, info.getFileName()));
+      info.setSourceName(createZipSourceNameLocked(zipName, dirName, info.getFileName()));
       contents.add(info);
     }
 
     mergeInfoLocked(pMergedInfo, contents);
 
     return true;
-
   }
-
 
   /*
    * Merge two vectors of FileInfo.
@@ -1380,28 +1389,29 @@ public class CppAssetManager {
    * If an entry for a file exists in both "pMergedInfo" and "pContents",
    * we use the newer "pContents" entry.
    */
-  void mergeInfoLocked(Ref<SortedVector<AssetDir.FileInfo>> pMergedInfoRef,
+  void mergeInfoLocked(
+      Ref<SortedVector<AssetDir.FileInfo>> pMergedInfoRef,
       final SortedVector<AssetDir.FileInfo> pContents) {
-      /*
-       * Merge what we found in this directory with what we found in
-       * other places.
-       *
-       * Two basic approaches:
-       * (1) Create a new array that holds the unique values of the two
-       *     arrays.
-       * (2) Take the elements from pContents and shove them into pMergedInfo.
-       *
-       * Because these are vectors of complex objects, moving elements around
-       * inside the vector requires finalructing new objects and allocating
-       * storage for members.  With approach #1, we're always adding to the
-       * end, whereas with #2 we could be inserting multiple elements at the
-       * front of the vector.  Approach #1 requires a full copy of the
-       * contents of pMergedInfo, but approach #2 requires the same copy for
-       * every insertion at the front of pMergedInfo.
-       *
-       * (We should probably use a SortedVector interface that allows us to
-       * just stuff items in, trusting us to maintain the sort order.)
-       */
+    /*
+     * Merge what we found in this directory with what we found in
+     * other places.
+     *
+     * Two basic approaches:
+     * (1) Create a new array that holds the unique values of the two
+     *     arrays.
+     * (2) Take the elements from pContents and shove them into pMergedInfo.
+     *
+     * Because these are vectors of complex objects, moving elements around
+     * inside the vector requires finalructing new objects and allocating
+     * storage for members.  With approach #1, we're always adding to the
+     * end, whereas with #2 we could be inserting multiple elements at the
+     * front of the vector.  Approach #1 requires a full copy of the
+     * contents of pMergedInfo, but approach #2 requires the same copy for
+     * every insertion at the front of pMergedInfo.
+     *
+     * (We should probably use a SortedVector interface that allows us to
+     * just stuff items in, trusting us to maintain the sort order.)
+     */
     SortedVector<AssetDir.FileInfo> pNewSorted;
     int mergeMax, contMax;
     int mergeIdx, contIdx;
@@ -1414,20 +1424,20 @@ public class CppAssetManager {
 
     while (mergeIdx < mergeMax || contIdx < contMax) {
       if (mergeIdx == mergeMax) {
-              /* hit end of "merge" list, copy rest of "contents" */
+        /* hit end of "merge" list, copy rest of "contents" */
         pNewSorted.add(pContents.itemAt(contIdx));
         contIdx++;
       } else if (contIdx == contMax) {
-              /* hit end of "cont" list, copy rest of "merge" */
+        /* hit end of "cont" list, copy rest of "merge" */
         pNewSorted.add(pMergedInfo.itemAt(mergeIdx));
         mergeIdx++;
       } else if (pMergedInfo.itemAt(mergeIdx) == pContents.itemAt(contIdx)) {
-              /* items are identical, add newer and advance both indices */
+        /* items are identical, add newer and advance both indices */
         pNewSorted.add(pContents.itemAt(contIdx));
         mergeIdx++;
         contIdx++;
       } else if (pMergedInfo.itemAt(mergeIdx).isLessThan(pContents.itemAt(contIdx))) {
-              /* "merge" is lower, add that one */
+        /* "merge" is lower, add that one */
         pNewSorted.add(pMergedInfo.itemAt(mergeIdx));
         mergeIdx++;
       } else {
@@ -1438,31 +1448,31 @@ public class CppAssetManager {
       }
     }
 
-      /*
-       * Overwrite the "merged" list with the new stuff.
-       */
+    /*
+     * Overwrite the "merged" list with the new stuff.
+     */
     pMergedInfoRef.set(pNewSorted);
 
-//  #if 0       // for Vector, rather than SortedVector
-//      int i, j;
-//      for (i = pContents.size() -1; i >= 0; i--) {
-//          boolean add = true;
-//
-//          for (j = pMergedInfo.size() -1; j >= 0; j--) {
-//              /* case-sensitive comparisons, to behave like UNIX fs */
-//              if (strcmp(pContents.itemAt(i).mFileName,
-//                         pMergedInfo.itemAt(j).mFileName) == 0)
-//              {
-//                  /* match, don't add this entry */
-//                  add = false;
-//                  break;
-//              }
-//          }
-//
-//          if (add)
-//              pMergedInfo.add(pContents.itemAt(i));
-//      }
-//  #endif
+    //  #if 0       // for Vector, rather than SortedVector
+    //      int i, j;
+    //      for (i = pContents.size() -1; i >= 0; i--) {
+    //          boolean add = true;
+    //
+    //          for (j = pMergedInfo.size() -1; j >= 0; j--) {
+    //              /* case-sensitive comparisons, to behave like UNIX fs */
+    //              if (strcmp(pContents.itemAt(i).mFileName,
+    //                         pMergedInfo.itemAt(j).mFileName) == 0)
+    //              {
+    //                  /* match, don't add this entry */
+    //                  add = false;
+    //                  break;
+    //              }
+    //          }
+    //
+    //          if (add)
+    //              pMergedInfo.add(pContents.itemAt(i));
+    //      }
+    //  #endif
   }
 
   /*
@@ -1482,8 +1492,8 @@ public class CppAssetManager {
 
     List<asset_path> mOverlays;
 
-    final static Object gLock = new Object();
-    final static Map<String8, WeakReference<SharedZip>> gOpen = new HashMap<>();
+    static final Object gLock = new Object();
+    static final Map<String8, WeakReference<SharedZip>> gOpen = new HashMap<>();
 
     public SharedZip(String path, long modWhen) {
       this.mPath = path;
@@ -1519,9 +1529,7 @@ public class CppAssetManager {
         zip = new SharedZip(path.string(), modWhen);
         gOpen.put(path, new WeakReference<>(zip));
         return zip;
-
       }
-
     }
 
     ZipFileRO getZip() {
@@ -1563,42 +1571,42 @@ public class CppAssetManager {
       return mResourceTable;
     }
 
-//  boolean SharedZip.isUpToDate()
-//  {
-//      time_t modWhen = getFileModDate(mPath.string());
-//      return mModWhen == modWhen;
-//  }
-//
-//  void SharedZip.addOverlay(final asset_path& ap)
-//  {
-//      mOverlays.add(ap);
-//  }
-//
-//  boolean SharedZip.getOverlay(int idx, asset_path* out) final
-//  {
-//      if (idx >= mOverlays.size()) {
-//          return false;
-//      }
-//      *out = mOverlays[idx];
-//      return true;
-//  }
-//
-//  SharedZip.~SharedZip()
-//  {
-//      if (kIsDebug) {
-//          ALOGI("Destroying SharedZip %s %s\n", this, (final char*)mPath);
-//      }
-//      if (mResourceTable != null) {
-//          delete mResourceTable;
-//      }
-//      if (mResourceTableAsset != null) {
-//          delete mResourceTableAsset;
-//      }
-//      if (mZipFile != null) {
-//          delete mZipFile;
-//          ALOGV("Closed '%s'\n", mPath.string());
-//      }
-//  }
+    //  boolean SharedZip.isUpToDate()
+    //  {
+    //      time_t modWhen = getFileModDate(mPath.string());
+    //      return mModWhen == modWhen;
+    //  }
+    //
+    //  void SharedZip.addOverlay(final asset_path& ap)
+    //  {
+    //      mOverlays.add(ap);
+    //  }
+    //
+    //  boolean SharedZip.getOverlay(int idx, asset_path* out) final
+    //  {
+    //      if (idx >= mOverlays.size()) {
+    //          return false;
+    //      }
+    //      *out = mOverlays[idx];
+    //      return true;
+    //  }
+    //
+    //  SharedZip.~SharedZip()
+    //  {
+    //      if (kIsDebug) {
+    //          ALOGI("Destroying SharedZip %s %s\n", this, (final char*)mPath);
+    //      }
+    //      if (mResourceTable != null) {
+    //          delete mResourceTable;
+    //      }
+    //      if (mResourceTableAsset != null) {
+    //          delete mResourceTableAsset;
+    //      }
+    //      if (mZipFile != null) {
+    //          delete mZipFile;
+    //          ALOGV("Closed '%s'\n", mPath.string());
+    //      }
+    //  }
 
     @Override
     public String toString() {
@@ -1607,29 +1615,28 @@ public class CppAssetManager {
     }
   }
 
-
   /*
- * Manage a set of Zip files.  For each file we need a pointer to the
- * ZipFile and a time_t with the file's modification date.
- *
- * We currently only have two zip files (current app, "common" app).
- * (This was originally written for 8, based on app/locale/vendor.)
- */
+   * Manage a set of Zip files.  For each file we need a pointer to the
+   * ZipFile and a time_t with the file's modification date.
+   *
+   * We currently only have two zip files (current app, "common" app).
+   * (This was originally written for 8, based on app/locale/vendor.)
+   */
   static class ZipSet {
 
     final List<String> mZipPath = new ArrayList<>();
     final List<SharedZip> mZipFile = new ArrayList<>();
 
-  /*
-   * ===========================================================================
-   *      ZipSet
-   * ===========================================================================
-   */
+    /*
+     * ===========================================================================
+     *      ZipSet
+     * ===========================================================================
+     */
 
     /*
      * Destructor.  Close any open archives.
      */
-//  ZipSet.~ZipSet(void)
+    //  ZipSet.~ZipSet(void)
     @Override
     protected void finalize() {
       int N = mZipFile.size();
@@ -1644,7 +1651,6 @@ public class CppAssetManager {
     void closeZip(int idx) {
       mZipFile.set(idx, null);
     }
-
 
     /*
      * Retrieve the appropriate Zip file from the set.
@@ -1704,39 +1710,39 @@ public class CppAssetManager {
     }
 
     //
-//  boolean ZipSet.isUpToDate()
-//  {
-//      final int N = mZipFile.size();
-//      for (int i=0; i<N; i++) {
-//          if (mZipFile[i] != null && !mZipFile[i].isUpToDate()) {
-//              return false;
-//          }
-//      }
-//      return true;
-//  }
-//
-//  void ZipSet.addOverlay(final String8& path, final asset_path& overlay)
-//  {
-//      int idx = getIndex(path);
-//      sp<SharedZip> zip = mZipFile[idx];
-//      zip.addOverlay(overlay);
-//  }
-//
-//  boolean ZipSet.getOverlay(final String8& path, int idx, asset_path* out) final
-//  {
-//      sp<SharedZip> zip = SharedZip.get(path, false);
-//      if (zip == null) {
-//          return false;
-//      }
-//      return zip.getOverlay(idx, out);
-//  }
-//
-  /*
-   * Compute the zip file's index.
-   *
-   * "appName", "locale", and "vendor" should be set to null to indicate the
-   * default directory.
-   */
+    //  boolean ZipSet.isUpToDate()
+    //  {
+    //      final int N = mZipFile.size();
+    //      for (int i=0; i<N; i++) {
+    //          if (mZipFile[i] != null && !mZipFile[i].isUpToDate()) {
+    //              return false;
+    //          }
+    //      }
+    //      return true;
+    //  }
+    //
+    //  void ZipSet.addOverlay(final String8& path, final asset_path& overlay)
+    //  {
+    //      int idx = getIndex(path);
+    //      sp<SharedZip> zip = mZipFile[idx];
+    //      zip.addOverlay(overlay);
+    //  }
+    //
+    //  boolean ZipSet.getOverlay(final String8& path, int idx, asset_path* out) final
+    //  {
+    //      sp<SharedZip> zip = SharedZip.get(path, false);
+    //      if (zip == null) {
+    //          return false;
+    //      }
+    //      return zip.getOverlay(idx, out);
+    //  }
+    //
+    /*
+     * Compute the zip file's index.
+     *
+     * "appName", "locale", and "vendor" should be set to null to indicate the
+     * default directory.
+     */
     int getIndex(final String zip) {
       final int N = mZipPath.size();
       for (int i = 0; i < N; i++) {
@@ -1750,7 +1756,6 @@ public class CppAssetManager {
 
       return mZipPath.size() - 1;
     }
-
   }
 
   private static long getFileModDate(String path) {

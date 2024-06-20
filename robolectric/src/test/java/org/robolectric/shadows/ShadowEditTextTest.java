@@ -22,9 +22,8 @@ public class ShadowEditTextTest {
 
   @Before
   public void setup() {
-    AttributeSet attributeSet = Robolectric.buildAttributeSet()
-        .addAttribute(android.R.attr.maxLength, "5")
-        .build();
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(android.R.attr.maxLength, "5").build();
 
     context = ApplicationProvider.getApplicationContext();
     editText = new EditText(context, attributeSet);
@@ -43,11 +42,13 @@ public class ShadowEditTextTest {
   }
 
   @Test
-  public void givenInitializingWithAttributeSet_whenMaxLengthDefined_thenRestrictTextLengthToMaxLength() {
+  public void
+      givenInitializingWithAttributeSet_whenMaxLengthDefined_thenRestrictTextLengthToMaxLength() {
     int maxLength = anyInteger();
-    AttributeSet attrs = Robolectric.buildAttributeSet()
-        .addAttribute(android.R.attr.maxLength, maxLength + "")
-        .build();
+    AttributeSet attrs =
+        Robolectric.buildAttributeSet()
+            .addAttribute(android.R.attr.maxLength, maxLength + "")
+            .build();
 
     EditText editText = new EditText(context, attrs);
     String excessiveInput = stringOfLength(maxLength * 2);
@@ -59,7 +60,8 @@ public class ShadowEditTextTest {
   }
 
   @Test
-  public void givenInitializingWithAttributeSet_whenMaxLengthNotDefined_thenTextLengthShouldHaveNoRestrictions() {
+  public void
+      givenInitializingWithAttributeSet_whenMaxLengthNotDefined_thenTextLengthShouldHaveNoRestrictions() {
     AttributeSet attrs = Robolectric.buildAttributeSet().build();
     EditText editText = new EditText(context, attrs);
     String input = anyString();
@@ -104,8 +106,7 @@ public class ShadowEditTextTest {
   private String stringOfLength(int length) {
     StringBuilder stringBuilder = new StringBuilder();
 
-    for (int i = 0; i < length; i++)
-      stringBuilder.append('x');
+    for (int i = 0; i < length; i++) stringBuilder.append('x');
 
     return stringBuilder.toString();
   }
@@ -113,5 +114,4 @@ public class ShadowEditTextTest {
   private int anyInteger() {
     return new Random().nextInt(1000) + 1;
   }
-
 }

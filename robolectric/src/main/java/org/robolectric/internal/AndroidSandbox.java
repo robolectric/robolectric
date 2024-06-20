@@ -123,8 +123,10 @@ public class AndroidSandbox extends Sandbox {
   /** Adapter from Sdk to ResourceLoader. */
   public static class SdkSandboxClassLoader extends SandboxClassLoader {
 
-    public SdkSandboxClassLoader(InstrumentationConfiguration config,
-        @Named("runtimeSdk") Sdk runtimeSdk, ClassInstrumentor classInstrumentor) {
+    public SdkSandboxClassLoader(
+        InstrumentationConfiguration config,
+        @Named("runtimeSdk") Sdk runtimeSdk,
+        ClassInstrumentor classInstrumentor) {
       super(config, new UrlResourceProvider(toUrl(runtimeSdk.getJarPath())), classInstrumentor);
     }
 

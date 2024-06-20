@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.content.res.ApkAssets;
 import android.content.res.AssetManager;
 import android.util.ArraySet;
@@ -19,7 +18,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
-abstract public class ShadowAssetManager {
+public abstract class ShadowAssetManager {
 
   public static final Ordering<String> ATTRIBUTE_TYPE_PRECIDENCE =
       Ordering.explicit(
@@ -58,7 +57,7 @@ abstract public class ShadowAssetManager {
      * @deprecated Avoid use.
      */
     @Deprecated
-    synchronized public ResTable getCompileTimeResTable() {
+    public synchronized ResTable getCompileTimeResTable() {
       if (compileTimeResTable == null) {
         CppAssetManager compileTimeCppAssetManager = new CppAssetManager();
         for (AssetPath assetPath : getAssetPaths()) {
@@ -97,16 +96,20 @@ abstract public class ShadowAssetManager {
   @ForType(AssetManager.class)
   interface _AssetManager28_ extends _AssetManager_ {
 
-    @Static @Accessor("sSystemApkAssets")
+    @Static
+    @Accessor("sSystemApkAssets")
     ApkAssets[] getSystemApkAssets();
 
-    @Static @Accessor("sSystemApkAssets")
+    @Static
+    @Accessor("sSystemApkAssets")
     void setSystemApkAssets(ApkAssets[] apkAssets);
 
-    @Static @Accessor("sSystemApkAssetsSet")
+    @Static
+    @Accessor("sSystemApkAssetsSet")
     ArraySet<ApkAssets> getSystemApkAssetsSet();
 
-    @Static @Accessor("sSystemApkAssetsSet")
+    @Static
+    @Accessor("sSystemApkAssetsSet")
     void setSystemApkAssetsSet(ArraySet<ApkAssets> assetsSet);
 
     ApkAssets[] getApkAssets();

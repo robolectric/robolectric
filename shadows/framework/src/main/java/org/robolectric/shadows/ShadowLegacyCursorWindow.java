@@ -41,8 +41,8 @@ public class ShadowLegacyCursorWindow extends ShadowCursorWindow {
         return null;
       case Cursor.FIELD_TYPE_BLOB:
         // This matches Android's behavior, which does not match the SQLite spec
-        byte[] blob = (byte[])value.value;
-        return blob == null ? new byte[]{} : blob;
+        byte[] blob = (byte[]) value.value;
+        return blob == null ? new byte[] {} : blob;
       case Cursor.FIELD_TYPE_STRING:
         // Matches the Android behavior to contain a zero-byte at the end
         byte[] stringBytes = ((String) value.value).getBytes(UTF_8);
@@ -93,29 +93,39 @@ public class ShadowLegacyCursorWindow extends ShadowCursorWindow {
   protected static boolean nativePutBlob(long windowPtr, byte[] value, int row, int column) {
     // Real Android will crash in native code if putString is called with a null value.
     Preconditions.checkNotNull(value);
-    return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_BLOB), row, column);
+    return WINDOW_DATA
+        .get(windowPtr)
+        .putValue(new Value(value, Cursor.FIELD_TYPE_BLOB), row, column);
   }
 
   @Implementation
   protected static boolean nativePutString(long windowPtr, String value, int row, int column) {
     // Real Android will crash in native code if putString is called with a null value.
     Preconditions.checkNotNull(value);
-    return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_STRING), row, column);
+    return WINDOW_DATA
+        .get(windowPtr)
+        .putValue(new Value(value, Cursor.FIELD_TYPE_STRING), row, column);
   }
 
   @Implementation
   protected static boolean nativePutLong(long windowPtr, long value, int row, int column) {
-    return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_INTEGER), row, column);
+    return WINDOW_DATA
+        .get(windowPtr)
+        .putValue(new Value(value, Cursor.FIELD_TYPE_INTEGER), row, column);
   }
 
   @Implementation
   protected static boolean nativePutDouble(long windowPtr, double value, int row, int column) {
-    return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_FLOAT), row, column);
+    return WINDOW_DATA
+        .get(windowPtr)
+        .putValue(new Value(value, Cursor.FIELD_TYPE_FLOAT), row, column);
   }
 
   @Implementation
   protected static boolean nativePutNull(long windowPtr, int row, int column) {
-    return WINDOW_DATA.get(windowPtr).putValue(new Value(null, Cursor.FIELD_TYPE_NULL), row, column);
+    return WINDOW_DATA
+        .get(windowPtr)
+        .putValue(new Value(null, Cursor.FIELD_TYPE_NULL), row, column);
   }
 
   @Implementation
@@ -146,17 +156,18 @@ public class ShadowLegacyCursorWindow extends ShadowCursorWindow {
       case Cursor.FIELD_TYPE_INTEGER:
       case Cursor.FIELD_TYPE_FLOAT:
         return (Number) value.value;
-      case Cursor.FIELD_TYPE_STRING: {
-        try {
-          return Double.parseDouble((String) value.value);
-        } catch (NumberFormatException e) {
-          return 0;
+      case Cursor.FIELD_TYPE_STRING:
+        {
+          try {
+            return Double.parseDouble((String) value.value);
+          } catch (NumberFormatException e) {
+            return 0;
+          }
         }
-      }
       case Cursor.FIELD_TYPE_BLOB:
-        throw new android.database.sqlite.SQLiteException("could not convert "+value);
+        throw new android.database.sqlite.SQLiteException("could not convert " + value);
       default:
-        throw new android.database.sqlite.SQLiteException("unknown type: "+value.type);
+        throw new android.database.sqlite.SQLiteException("unknown type: " + value.type);
     }
   }
 
@@ -187,8 +198,8 @@ public class ShadowLegacyCursorWindow extends ShadowCursorWindow {
     }
 
     public void fillWith(SQLiteStatement stmt) throws SQLiteException {
-      //Android caches results in the WindowedCursor to allow moveToPrevious() to function.
-      //Robolectric will have to cache the results too. In the rows list.
+      // Android caches results in the WindowedCursor to allow moveToPrevious() to function.
+      // Robolectric will have to cache the results too. In the rows list.
       while (stmt.step()) {
         rows.add(fillRowValues(stmt));
       }
@@ -196,11 +207,16 @@ public class ShadowLegacyCursorWindow extends ShadowCursorWindow {
 
     private static int cursorValueType(final int sqliteType) {
       switch (sqliteType) {
-        case SQLiteConstants.SQLITE_NULL:    return Cursor.FIELD_TYPE_NULL;
-        case SQLiteConstants.SQLITE_INTEGER: return Cursor.FIELD_TYPE_INTEGER;
-        case SQLiteConstants.SQLITE_FLOAT:   return Cursor.FIELD_TYPE_FLOAT;
-        case SQLiteConstants.SQLITE_TEXT:    return Cursor.FIELD_TYPE_STRING;
-        case SQLiteConstants.SQLITE_BLOB:    return Cursor.FIELD_TYPE_BLOB;
+        case SQLiteConstants.SQLITE_NULL:
+          return Cursor.FIELD_TYPE_NULL;
+        case SQLiteConstants.SQLITE_INTEGER:
+          return Cursor.FIELD_TYPE_INTEGER;
+        case SQLiteConstants.SQLITE_FLOAT:
+          return Cursor.FIELD_TYPE_FLOAT;
+        case SQLiteConstants.SQLITE_TEXT:
+          return Cursor.FIELD_TYPE_STRING;
+        case SQLiteConstants.SQLITE_BLOB:
+          return Cursor.FIELD_TYPE_BLOB;
         default:
           throw new IllegalArgumentException(
               "Bad SQLite type " + sqliteType + ". See possible values in SQLiteConstants.");
@@ -240,7 +256,7 @@ public class ShadowLegacyCursorWindow extends ShadowCursorWindow {
 
     public Row(int length) {
       values = new ArrayList<Value>(length);
-      for (int i=0; i<length; i++) {
+      for (int i = 0; i < length; i++) {
         values.add(new Value(null, Cursor.FIELD_TYPE_NULL));
       }
     }
@@ -307,5 +323,6 @@ public class ShadowLegacyCursorWindow extends ShadowCursorWindow {
   // private static native int nativeCreateFromParcel(Parcel parcel);
   // private static native void nativeWriteToParcel($ptrClass windowPtr, Parcel parcel);
   // private static native void nativeFreeLastRow($ptrClass windowPtr);
-  // private static native void nativeCopyStringToBuffer($ptrClass windowPtr, int row, int column, CharArrayBuffer buffer);
+  // private static native void nativeCopyStringToBuffer($ptrClass windowPtr, int row, int column,
+  // CharArrayBuffer buffer);
 }

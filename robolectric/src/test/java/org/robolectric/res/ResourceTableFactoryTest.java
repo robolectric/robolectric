@@ -18,31 +18,39 @@ public class ResourceTableFactoryTest {
   @Before
   public void setUp() throws Exception {
     ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
-    appResourceTable = resourceTableFactory.newResourceTable("org.robolectric",
-        testResources());
+    appResourceTable = resourceTableFactory.newResourceTable("org.robolectric", testResources());
 
     systemResourceTable = resourceTableFactory.newFrameworkResourceTable(systemResources());
   }
 
   @Test
   public void shouldHandleMipmapReferences() {
-    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:mipmap/mipmap_reference"))).isEqualTo(R.mipmap.mipmap_reference);
+    assertThat(
+            appResourceTable.getResourceId(new ResName("org.robolectric:mipmap/mipmap_reference")))
+        .isEqualTo(R.mipmap.mipmap_reference);
   }
 
   @Test
   public void shouldHandleStyleable() throws Exception {
-    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:id/burritos"))).isEqualTo(R.id.burritos);
-    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:styleable/TitleBar_textStyle"))).isEqualTo(0);
+    assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:id/burritos")))
+        .isEqualTo(R.id.burritos);
+    assertThat(
+            appResourceTable.getResourceId(
+                new ResName("org.robolectric:styleable/TitleBar_textStyle")))
+        .isEqualTo(0);
   }
 
   @Test
   public void shouldPrefixAllSystemResourcesWithAndroid() throws Exception {
-    assertThat(systemResourceTable.getResourceId(new ResName("android:id/text1"))).isEqualTo(android.R.id.text1);
+    assertThat(systemResourceTable.getResourceId(new ResName("android:id/text1")))
+        .isEqualTo(android.R.id.text1);
   }
 
   @Test
   public void shouldRetainPackageNameForFullyQualifiedQueries() throws Exception {
-    assertThat(systemResourceTable.getResName(android.R.id.text1).getFullyQualifiedName()).isEqualTo("android:id/text1");
-    assertThat(appResourceTable.getResName(R.id.burritos).getFullyQualifiedName()).isEqualTo("org.robolectric:id/burritos");
+    assertThat(systemResourceTable.getResName(android.R.id.text1).getFullyQualifiedName())
+        .isEqualTo("android:id/text1");
+    assertThat(appResourceTable.getResName(R.id.burritos).getFullyQualifiedName())
+        .isEqualTo("org.robolectric:id/burritos");
   }
 }

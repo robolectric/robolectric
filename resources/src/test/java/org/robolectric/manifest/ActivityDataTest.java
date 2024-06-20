@@ -15,7 +15,8 @@ public class ActivityDataTest {
   public void test_non_android_namespace() {
     HashMap<String, String> attrs = new HashMap<>();
     attrs.put("testns:name", ".test.TestActivity");
-    ActivityData activityData = new ActivityData("testns", attrs, new ArrayList<IntentFilterData>());
+    ActivityData activityData =
+        new ActivityData("testns", attrs, new ArrayList<IntentFilterData>());
 
     assertThat(activityData.getName()).isEqualTo(".test.TestActivity");
     assertThat(activityData.getAllAttributes().get("android:name")).isNull();

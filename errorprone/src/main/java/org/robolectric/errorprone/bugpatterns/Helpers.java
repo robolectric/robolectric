@@ -28,9 +28,10 @@ public class Helpers {
 
   public static boolean isInShadowClass(TreePath path, VisitorState state) {
     Tree leaf = path.getLeaf();
-    JCClassDecl classDecl = JCClassDecl.class.isInstance(leaf)
-        ? (JCClassDecl) leaf
-        : findEnclosingNode(state.getPath(), JCClassDecl.class);
+    JCClassDecl classDecl =
+        JCClassDecl.class.isInstance(leaf)
+            ? (JCClassDecl) leaf
+            : findEnclosingNode(state.getPath(), JCClassDecl.class);
 
     return ASTHelpers.hasAnnotation(classDecl, Implements.class.getName(), state);
   }
@@ -54,5 +55,4 @@ public class Helpers {
       return ASTHelpers.isCastable(type, bound, state);
     }
   }
-
 }

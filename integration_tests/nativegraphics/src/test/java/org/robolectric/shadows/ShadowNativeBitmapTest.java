@@ -1721,7 +1721,7 @@ public class ShadowNativeBitmapTest {
     Parcel p = Parcel.obtain();
     bitmap = Bitmap.createBitmap(100, 100, Config.ARGB_8888);
     bitmap.eraseColor(Color.GREEN);
-    Bitmap immutable = bitmap.copy(Config.ARGB_8888, /*isMutable=*/ false);
+    Bitmap immutable = bitmap.copy(Config.ARGB_8888, /* isMutable= */ false);
     assertThat(immutable.isMutable()).isFalse();
     immutable.writeToParcel(p, 0);
     p.setDataPosition(0);

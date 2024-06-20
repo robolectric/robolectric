@@ -8,6 +8,5 @@ import org.robolectric.annotation.Implements;
  */
 @Implements(ConnectivityManager.class)
 public class XShadowNetworkInfo {
-  public void setConnectionType(int connectionType) {
-  }
+  public void setConnectionType(int connectionType) {}
 }

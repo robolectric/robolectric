@@ -28,7 +28,6 @@ public class ShadowIntentServiceTest {
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
-    }
+    protected void onHandleIntent(Intent intent) {}
   }
 }

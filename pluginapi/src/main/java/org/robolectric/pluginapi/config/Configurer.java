@@ -46,7 +46,8 @@ public interface Configurer<T> {
   /**
    * Returns the default configuration for tests that do not specify a configuration of this type.
    */
-  @Nonnull T defaultConfig();
+  @Nonnull
+  T defaultConfig();
 
   /**
    * Returns the configuration for a given package.
@@ -84,12 +85,13 @@ public interface Configurer<T> {
   /**
    * Merges two configurations.
    *
-   * This method will called whenever {@link #getConfigFor} returns a non-null configuration object.
+   * <p>This method will called whenever {@link #getConfigFor} returns a non-null configuration
+   * object.
    *
    * @param parentConfig a less specific configuration object
    * @param childConfig a more specific configuration object
    * @return the new configuration with merged parent and child data.
    */
-  @Nonnull T merge(@Nonnull T parentConfig, @Nonnull T childConfig);
-
+  @Nonnull
+  T merge(@Nonnull T parentConfig, @Nonnull T childConfig);
 }

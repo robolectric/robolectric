@@ -90,9 +90,7 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
     return CONNECTIONS.prepareStatement(connectionPtr, newSql);
   }
 
-  /**
-   * Convert SQL with phrase COLLATE LOCALIZED or COLLATE UNICODE to COLLATE NOCASE.
-   */
+  /** Convert SQL with phrase COLLATE LOCALIZED or COLLATE UNICODE to COLLATE NOCASE. */
   static String convertSQLWithLocalizedUnicodeCollator(String sql) {
     Matcher matcher = COLLATE_LOCALIZED_UNICODE_PATTERN.matcher(sql);
     return matcher.replaceAll(" COLLATE NOCASE");
@@ -249,14 +247,15 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
     // not supported by sqlite4java
     return 0;
   }
-// VisibleForTesting
-static class Connections {
 
-  private final Object lock = new Object();
-  private final AtomicLong pointerCounter = new AtomicLong(0);
-  private final Map<Long, SQLiteStatement> statementsMap = new HashMap<>();
-  private final Map<Long, SQLiteConnection> connectionsMap = new HashMap<>();
-  private final Map<Long, List<Long>> statementPtrsForConnection = new HashMap<>();
+  // VisibleForTesting
+  static class Connections {
+
+    private final Object lock = new Object();
+    private final AtomicLong pointerCounter = new AtomicLong(0);
+    private final Map<Long, SQLiteStatement> statementsMap = new HashMap<>();
+    private final Map<Long, SQLiteConnection> connectionsMap = new HashMap<>();
+    private final Map<Long, List<Long>> statementPtrsForConnection = new HashMap<>();
 
     private ExecutorService dbExecutor = Executors.newSingleThreadExecutor(threadFactory());
 
@@ -269,10 +268,10 @@ static class Connections {
       };
     }
 
-  SQLiteConnection getConnection(final long connectionPtr) {
-    synchronized (lock) {
-      final SQLiteConnection connection = connectionsMap.get(connectionPtr);
-      if (connection == null) {
+    SQLiteConnection getConnection(final long connectionPtr) {
+      synchronized (lock) {
+        final SQLiteConnection connection = connectionsMap.get(connectionPtr);
+        if (connection == null) {
           throw new IllegalStateException(
               "Illegal connection pointer "
                   + connectionPtr
@@ -280,34 +279,34 @@ static class Connections {
                   + Thread.currentThread()
                   + " "
                   + connectionsMap.keySet());
+        }
+        return connection;
       }
-      return connection;
     }
-  }
 
-  SQLiteStatement getStatement(final long connectionPtr, final long statementPtr) {
-    synchronized (lock) {
-      // ensure connection is ok
-      getConnection(connectionPtr);
+    SQLiteStatement getStatement(final long connectionPtr, final long statementPtr) {
+      synchronized (lock) {
+        // ensure connection is ok
+        getConnection(connectionPtr);
 
-      final SQLiteStatement statement = statementsMap.get(statementPtr);
-      if (statement == null) {
+        final SQLiteStatement statement = statementsMap.get(statementPtr);
+        if (statement == null) {
           throw new IllegalArgumentException(
               "Invalid prepared statement pointer: "
                   + statementPtr
                   + ". Current pointers: "
                   + statementsMap.keySet());
-      }
-      if (statement.isDisposed()) {
+        }
+        if (statement.isDisposed()) {
           throw new IllegalStateException(
               "Statement " + statementPtr + " " + statement + " is disposed");
+        }
+        return statement;
       }
-      return statement;
     }
-  }
 
-  long open(final String path) {
-    synchronized (lock) {
+    long open(final String path) {
+      synchronized (lock) {
         final SQLiteConnection dbConnection =
             execute(
                 new Callable<SQLiteConnection>() {
@@ -323,21 +322,21 @@ static class Connections {
                   }
                 });
 
-      final long connectionPtr = pointerCounter.incrementAndGet();
-      connectionsMap.put(connectionPtr, dbConnection);
-      statementPtrsForConnection.put(connectionPtr, new ArrayList<>());
-      return connectionPtr;
-    }
-  }
-
-  long prepareStatement(final long connectionPtr, final String sql) {
-    // TODO: find a way to create collators
-    if ("REINDEX LOCALIZED".equals(sql)) {
-      return IGNORED_REINDEX_STMT;
+        final long connectionPtr = pointerCounter.incrementAndGet();
+        connectionsMap.put(connectionPtr, dbConnection);
+        statementPtrsForConnection.put(connectionPtr, new ArrayList<>());
+        return connectionPtr;
+      }
     }
 
-    synchronized (lock) {
-      final SQLiteConnection connection = getConnection(connectionPtr);
+    long prepareStatement(final long connectionPtr, final String sql) {
+      // TODO: find a way to create collators
+      if ("REINDEX LOCALIZED".equals(sql)) {
+        return IGNORED_REINDEX_STMT;
+      }
+
+      synchronized (lock) {
+        final SQLiteConnection connection = getConnection(connectionPtr);
         final SQLiteStatement statement =
             execute(
                 new Callable<SQLiteStatement>() {
@@ -347,85 +346,86 @@ static class Connections {
                   }
                 });
 
-      final long statementPtr = pointerCounter.incrementAndGet();
-      statementsMap.put(statementPtr, statement);
-      statementPtrsForConnection.get(connectionPtr).add(statementPtr);
-      return statementPtr;
+        final long statementPtr = pointerCounter.incrementAndGet();
+        statementsMap.put(statementPtr, statement);
+        statementPtrsForConnection.get(connectionPtr).add(statementPtr);
+        return statementPtr;
+      }
     }
-  }
 
-  void close(final long connectionPtr) {
-    synchronized (lock) {
-      final SQLiteConnection connection = getConnection(connectionPtr);
+    void close(final long connectionPtr) {
+      synchronized (lock) {
+        final SQLiteConnection connection = getConnection(connectionPtr);
         execute(
             () -> {
               connection.dispose();
               return null;
             });
-      connectionsMap.remove(connectionPtr);
-      statementPtrsForConnection.remove(connectionPtr);
+        connectionsMap.remove(connectionPtr);
+        statementPtrsForConnection.remove(connectionPtr);
+      }
     }
-  }
 
-  void reset() {
-    ExecutorService oldDbExecutor;
-    Collection<SQLiteConnection> openConnections;
+    void reset() {
+      ExecutorService oldDbExecutor;
+      Collection<SQLiteConnection> openConnections;
 
-    synchronized (lock) {
-      oldDbExecutor = dbExecutor;
-      openConnections = new ArrayList<>(connectionsMap.values());
+      synchronized (lock) {
+        oldDbExecutor = dbExecutor;
+        openConnections = new ArrayList<>(connectionsMap.values());
 
         dbExecutor = Executors.newSingleThreadExecutor(threadFactory());
-      connectionsMap.clear();
-      statementsMap.clear();
-      statementPtrsForConnection.clear();
+        connectionsMap.clear();
+        statementsMap.clear();
+        statementPtrsForConnection.clear();
+      }
+
+      shutdownDbExecutor(oldDbExecutor, openConnections);
     }
 
-    shutdownDbExecutor(oldDbExecutor, openConnections);
-  }
-
-  private static void shutdownDbExecutor(ExecutorService executorService, Collection<SQLiteConnection> connections) {
-    for (final SQLiteConnection connection : connections) {
+    private static void shutdownDbExecutor(
+        ExecutorService executorService, Collection<SQLiteConnection> connections) {
+      for (final SQLiteConnection connection : connections) {
         getFuture(
             executorService.submit(
                 () -> {
                   connection.dispose();
                   return null;
                 }));
+      }
+
+      executorService.shutdown();
+      try {
+        executorService.awaitTermination(30, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
     }
 
-    executorService.shutdown();
-    try {
-      executorService.awaitTermination(30, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
+    void finalizeStmt(final long connectionPtr, final long statementPtr) {
+      if (statementPtr == IGNORED_REINDEX_STMT) {
+        return;
+      }
 
-  void finalizeStmt(final long connectionPtr, final long statementPtr) {
-    if (statementPtr == IGNORED_REINDEX_STMT) {
-      return;
-    }
-
-    synchronized (lock) {
-      final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
-      statementsMap.remove(statementPtr);
+      synchronized (lock) {
+        final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
+        statementsMap.remove(statementPtr);
 
         execute(
             () -> {
               statement.dispose();
               return null;
             });
+      }
     }
-  }
 
-  void cancel(final long connectionPtr) {
-    synchronized (lock) {
-      getConnection(connectionPtr); // check connection
+    void cancel(final long connectionPtr) {
+      synchronized (lock) {
+        getConnection(connectionPtr); // check connection
 
-      for (Long statementPtr : statementPtrsForConnection.get(connectionPtr)) {
-        final SQLiteStatement statement = statementsMap.get(statementPtr);
-        if (statement != null) {
+        for (Long statementPtr : statementPtrsForConnection.get(connectionPtr)) {
+          final SQLiteStatement statement = statementsMap.get(statementPtr);
+          if (statement != null) {
             execute(
                 new Callable<Void>() {
                   @Override
@@ -434,15 +434,15 @@ static class Connections {
                     return null;
                   }
                 });
+          }
         }
       }
     }
-  }
 
-  int getParameterCount(final long connectionPtr, final long statementPtr) {
-    if (statementPtr == IGNORED_REINDEX_STMT) {
-      return 0;
-    }
+    int getParameterCount(final long connectionPtr, final long statementPtr) {
+      if (statementPtr == IGNORED_REINDEX_STMT) {
+        return 0;
+      }
 
       return executeStatementOperation(
           connectionPtr,
@@ -453,12 +453,12 @@ static class Connections {
               return statement.getBindParameterCount();
             }
           });
-  }
-
-  boolean isReadOnly(final long connectionPtr, final long statementPtr) {
-    if (statementPtr == IGNORED_REINDEX_STMT) {
-      return true;
     }
+
+    boolean isReadOnly(final long connectionPtr, final long statementPtr) {
+      if (statementPtr == IGNORED_REINDEX_STMT) {
+        return true;
+      }
 
       return executeStatementOperation(
           connectionPtr,
@@ -469,9 +469,9 @@ static class Connections {
               return statement.isReadOnly();
             }
           });
-  }
+    }
 
-  long executeForLong(final long connectionPtr, final long statementPtr) {
+    long executeForLong(final long connectionPtr, final long statementPtr) {
       return executeStatementOperation(
           connectionPtr,
           statementPtr,
@@ -485,12 +485,12 @@ static class Connections {
               return statement.columnLong(0);
             }
           });
-  }
-
-  void executeStatement(final long connectionPtr, final long statementPtr) {
-    if (statementPtr == IGNORED_REINDEX_STMT) {
-      return;
     }
+
+    void executeStatement(final long connectionPtr, final long statementPtr) {
+      if (statementPtr == IGNORED_REINDEX_STMT) {
+        return;
+      }
 
       executeStatementOperation(
           connectionPtr,
@@ -502,9 +502,9 @@ static class Connections {
               return null;
             }
           });
-  }
+    }
 
-  String executeForString(final long connectionPtr, final long statementPtr) {
+    String executeForString(final long connectionPtr, final long statementPtr) {
       return executeStatementOperation(
           connectionPtr,
           statementPtr,
@@ -518,9 +518,9 @@ static class Connections {
               return statement.columnString(0);
             }
           });
-  }
+    }
 
-  int getColumnCount(final long connectionPtr, final long statementPtr) {
+    int getColumnCount(final long connectionPtr, final long statementPtr) {
       return executeStatementOperation(
           connectionPtr,
           statementPtr,
@@ -530,9 +530,9 @@ static class Connections {
               return statement.columnCount();
             }
           });
-  }
+    }
 
-  String getColumnName(final long connectionPtr, final long statementPtr, final int index) {
+    String getColumnName(final long connectionPtr, final long statementPtr, final int index) {
       return executeStatementOperation(
           connectionPtr,
           statementPtr,
@@ -542,9 +542,9 @@ static class Connections {
               return statement.getColumnName(index);
             }
           });
-  }
+    }
 
-  void bindNull(final long connectionPtr, final long statementPtr, final int index) {
+    void bindNull(final long connectionPtr, final long statementPtr, final int index) {
       executeStatementOperation(
           connectionPtr,
           statementPtr,
@@ -555,9 +555,10 @@ static class Connections {
               return null;
             }
           });
-  }
+    }
 
-  void bindLong(final long connectionPtr, final long statementPtr, final int index, final long value) {
+    void bindLong(
+        final long connectionPtr, final long statementPtr, final int index, final long value) {
       executeStatementOperation(
           connectionPtr,
           statementPtr,
@@ -568,9 +569,10 @@ static class Connections {
               return null;
             }
           });
-  }
+    }
 
-  void bindDouble(final long connectionPtr, final long statementPtr, final int index, final double value) {
+    void bindDouble(
+        final long connectionPtr, final long statementPtr, final int index, final double value) {
       executeStatementOperation(
           connectionPtr,
           statementPtr,
@@ -581,9 +583,10 @@ static class Connections {
               return null;
             }
           });
-  }
+    }
 
-  void bindString(final long connectionPtr, final long statementPtr, final int index, final String value) {
+    void bindString(
+        final long connectionPtr, final long statementPtr, final int index, final String value) {
       executeStatementOperation(
           connectionPtr,
           statementPtr,
@@ -594,9 +597,10 @@ static class Connections {
               return null;
             }
           });
-  }
+    }
 
-  void bindBlob(final long connectionPtr, final long statementPtr, final int index, final byte[] value) {
+    void bindBlob(
+        final long connectionPtr, final long statementPtr, final int index, final byte[] value) {
       executeStatementOperation(
           connectionPtr,
           statementPtr,
@@ -607,12 +611,12 @@ static class Connections {
               return null;
             }
           });
-  }
+    }
 
-  int executeForChangedRowCount(final long connectionPtr, final long statementPtr) {
-    synchronized (lock) {
-      final SQLiteConnection connection = getConnection(connectionPtr);
-      final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
+    int executeForChangedRowCount(final long connectionPtr, final long statementPtr) {
+      synchronized (lock) {
+        final SQLiteConnection connection = getConnection(connectionPtr);
+        final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
 
         return execute(
             new Callable<Integer>() {
@@ -626,13 +630,13 @@ static class Connections {
                 return connection.getChanges();
               }
             });
+      }
     }
-  }
 
-  long executeForLastInsertedRowId(final long connectionPtr, final long statementPtr) {
-    synchronized (lock) {
-      final SQLiteConnection connection = getConnection(connectionPtr);
-      final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
+    long executeForLastInsertedRowId(final long connectionPtr, final long statementPtr) {
+      synchronized (lock) {
+        final SQLiteConnection connection = getConnection(connectionPtr);
+        final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
 
         return execute(
             new Callable<Long>() {
@@ -642,10 +646,11 @@ static class Connections {
                 return connection.getChanges() > 0 ? connection.getLastInsertId() : -1L;
               }
             });
+      }
     }
-  }
 
-  long executeForCursorWindow(final long connectionPtr, final long statementPtr, final long windowPtr) {
+    long executeForCursorWindow(
+        final long connectionPtr, final long statementPtr, final long windowPtr) {
       return executeStatementOperation(
           connectionPtr,
           statementPtr,
@@ -655,9 +660,9 @@ static class Connections {
               return ShadowLegacyCursorWindow.setData(windowPtr, statement);
             }
           });
-  }
+    }
 
-  void resetStatementAndClearBindings(final long connectionPtr, final long statementPtr) {
+    void resetStatementAndClearBindings(final long connectionPtr, final long statementPtr) {
       executeStatementOperation(
           connectionPtr,
           statementPtr,
@@ -668,18 +673,18 @@ static class Connections {
               return null;
             }
           });
-  }
+    }
 
-  interface StatementOperation<T> {
-    T call(final SQLiteStatement statement) throws Exception;
-  }
+    interface StatementOperation<T> {
+      T call(final SQLiteStatement statement) throws Exception;
+    }
 
     private <T> T executeStatementOperation(
         final long connectionPtr,
         final long statementPtr,
         final StatementOperation<T> statementOperation) {
-    synchronized (lock) {
-      final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
+      synchronized (lock) {
+        final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
         return execute(
             () -> {
               return statementOperation.call(statement);
@@ -692,7 +697,7 @@ static class Connections {
      * deadlock
      */
     private <T> T execute(final Callable<T> work) {
-    synchronized (lock) {
+      synchronized (lock) {
         return PerfStatsCollector.getInstance()
             .measure("sqlite", () -> getFuture(dbExecutor.submit(work)));
       }
@@ -825,27 +830,45 @@ static class Connections {
       String message = fullMessage.toString();
       // Mapping is from throw_sqlite3_exception in android_database_SQLiteCommon.cpp
       switch (baseErrorCode) {
-      case SQLiteConstants.SQLITE_ABORT: return new SQLiteAbortException(message);
-      case SQLiteConstants.SQLITE_PERM: return new SQLiteAccessPermException(message);
-      case SQLiteConstants.SQLITE_RANGE: return new SQLiteBindOrColumnIndexOutOfRangeException(message);
-      case SQLiteConstants.SQLITE_TOOBIG: return new SQLiteBlobTooBigException(message);
-      case SQLiteConstants.SQLITE_CANTOPEN: return new SQLiteCantOpenDatabaseException(message);
-      case SQLiteConstants.SQLITE_CONSTRAINT: return new SQLiteConstraintException(message);
-      case SQLiteConstants.SQLITE_NOTADB: // fall through
-      case SQLiteConstants.SQLITE_CORRUPT: return new SQLiteDatabaseCorruptException(message);
-      case SQLiteConstants.SQLITE_BUSY: return new SQLiteDatabaseLockedException(message);
-      case SQLiteConstants.SQLITE_MISMATCH: return new SQLiteDatatypeMismatchException(message);
-      case SQLiteConstants.SQLITE_IOERR: return new SQLiteDiskIOException(message);
-      case SQLiteConstants.SQLITE_DONE: return new SQLiteDoneException(message);
-      case SQLiteConstants.SQLITE_FULL: return new SQLiteFullException(message);
-      case SQLiteConstants.SQLITE_MISUSE: return new SQLiteMisuseException(message);
-      case SQLiteConstants.SQLITE_NOMEM: return new SQLiteOutOfMemoryException(message);
-      case SQLiteConstants.SQLITE_READONLY: return new SQLiteReadOnlyDatabaseException(message);
-      case SQLiteConstants.SQLITE_LOCKED: return new SQLiteTableLockedException(message);
-      case SQLiteConstants.SQLITE_INTERRUPT: return new OperationCanceledException(message);
-      default: return new android.database.sqlite.SQLiteException(message
-          + ", base error code: " + baseErrorCode);
+        case SQLiteConstants.SQLITE_ABORT:
+          return new SQLiteAbortException(message);
+        case SQLiteConstants.SQLITE_PERM:
+          return new SQLiteAccessPermException(message);
+        case SQLiteConstants.SQLITE_RANGE:
+          return new SQLiteBindOrColumnIndexOutOfRangeException(message);
+        case SQLiteConstants.SQLITE_TOOBIG:
+          return new SQLiteBlobTooBigException(message);
+        case SQLiteConstants.SQLITE_CANTOPEN:
+          return new SQLiteCantOpenDatabaseException(message);
+        case SQLiteConstants.SQLITE_CONSTRAINT:
+          return new SQLiteConstraintException(message);
+        case SQLiteConstants.SQLITE_NOTADB: // fall through
+        case SQLiteConstants.SQLITE_CORRUPT:
+          return new SQLiteDatabaseCorruptException(message);
+        case SQLiteConstants.SQLITE_BUSY:
+          return new SQLiteDatabaseLockedException(message);
+        case SQLiteConstants.SQLITE_MISMATCH:
+          return new SQLiteDatatypeMismatchException(message);
+        case SQLiteConstants.SQLITE_IOERR:
+          return new SQLiteDiskIOException(message);
+        case SQLiteConstants.SQLITE_DONE:
+          return new SQLiteDoneException(message);
+        case SQLiteConstants.SQLITE_FULL:
+          return new SQLiteFullException(message);
+        case SQLiteConstants.SQLITE_MISUSE:
+          return new SQLiteMisuseException(message);
+        case SQLiteConstants.SQLITE_NOMEM:
+          return new SQLiteOutOfMemoryException(message);
+        case SQLiteConstants.SQLITE_READONLY:
+          return new SQLiteReadOnlyDatabaseException(message);
+        case SQLiteConstants.SQLITE_LOCKED:
+          return new SQLiteTableLockedException(message);
+        case SQLiteConstants.SQLITE_INTERRUPT:
+          return new OperationCanceledException(message);
+        default:
+          return new android.database.sqlite.SQLiteException(
+              message + ", base error code: " + baseErrorCode);
+      }
     }
   }
-}
 }

@@ -8,7 +8,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(className = "android.media.PlayerBase", isInAndroidSdk = false,
+@Implements(
+    className = "android.media.PlayerBase",
+    isInAndroidSdk = false,
     minSdk = Build.VERSION_CODES.N)
 public class ShadowPlayerBase {
 

@@ -61,10 +61,16 @@ public class AttributeResolution {
     }
   }
 
-  public static boolean ResolveAttrs(ResTableTheme theme, int defStyleAttr,
-                                     int defStyleRes, int[] srcValues,
-                                     int srcValuesLength, int[] attrs,
-                                     int attrsLength, int[] outValues, int[] outIndices) {
+  public static boolean ResolveAttrs(
+      ResTableTheme theme,
+      int defStyleAttr,
+      int defStyleRes,
+      int[] srcValues,
+      int srcValuesLength,
+      int[] attrs,
+      int attrsLength,
+      int[] outValues,
+      int[] outIndices) {
     if (kDebugStyles) {
       ALOGI(
           "APPLY STYLE: theme=%s defStyleAttr=0x%x defStyleRes=0x%x",
@@ -95,17 +101,18 @@ public class AttributeResolution {
     // Retrieve the default style bag, if requested.
     final Ref<ResTable.bag_entry[]> defStyleStart = new Ref<>(null);
     Ref<Integer> defStyleTypeSetFlags = new Ref<>(0);
-    int bagOff = defStyleRes != 0
-        ? res.getBagLocked(defStyleRes, defStyleStart, defStyleTypeSetFlags) : -1;
+    int bagOff =
+        defStyleRes != 0 ? res.getBagLocked(defStyleRes, defStyleStart, defStyleTypeSetFlags) : -1;
     defStyleTypeSetFlags.set(defStyleTypeSetFlags.get() | defStyleBagTypeSetFlags.get());
-//    const ResTable::bag_entry* const defStyleEnd = defStyleStart + (bagOff >= 0 ? bagOff : 0);
+    //    const ResTable::bag_entry* const defStyleEnd = defStyleStart + (bagOff >= 0 ? bagOff : 0);
     final int defStyleEnd = (bagOff >= 0 ? bagOff : 0);
-    BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleStart.get(), defStyleEnd);
+    BagAttributeFinder defStyleAttrFinder =
+        new BagAttributeFinder(defStyleStart.get(), defStyleEnd);
 
     // Now iterate through all of the attributes that the client has requested,
     // filling in each with whatever data we can find.
     int destOffset = 0;
-    for (int ii=0; ii<attrsLength; ii++) {
+    for (int ii = 0; ii < attrsLength; ii++) {
       final int curIdent = attrs[ii];
 
       if (kDebugStyles) {
@@ -147,8 +154,8 @@ public class AttributeResolution {
       Ref<ResTable_config> configRef = new Ref<>(config);
       if (value.dataType != Res_value.TYPE_NULL) {
         // Take care of resolving the found resource to its final value.
-        int newBlock = theme.resolveAttributeReference(valueRef, block,
-            residRef, typeSetFlagsRef, configRef);
+        int newBlock =
+            theme.resolveAttributeReference(valueRef, block, residRef, typeSetFlagsRef, configRef);
         value = valueRef.get();
         resid = residRef.get();
         typeSetFlags = typeSetFlagsRef.get();
@@ -195,15 +202,13 @@ public class AttributeResolution {
       }
 
       if (kDebugStyles) {
-        ALOGI("Attribute 0x%08x: type=0x%x, data=0x%08x", curIdent, value.dataType,
-            value.data);
+        ALOGI("Attribute 0x%08x: type=0x%x, data=0x%08x", curIdent, value.dataType, value.data);
       }
 
       // Write the final value back to Java.
       outValues[destOffset + STYLE_TYPE] = value.dataType;
       outValues[destOffset + STYLE_DATA] = value.data;
-      outValues[destOffset + STYLE_ASSET_COOKIE] =
-          block != -1 ? res.getTableCookie(block) : -1;
+      outValues[destOffset + STYLE_ASSET_COOKIE] = block != -1 ? res.getTableCookie(block) : -1;
       outValues[destOffset + STYLE_RESOURCE_ID] = resid;
       outValues[destOffset + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags;
       outValues[destOffset + STYLE_DENSITY] = config.density;
@@ -224,10 +229,18 @@ public class AttributeResolution {
     return true;
   }
 
-  public static void ApplyStyle(ResTableTheme theme, ResXMLParser xmlParser, int defStyleAttr, int defStyleRes,
-                                int[] attrs, int attrsLength, int[] outValues, int[] outIndices) {
+  public static void ApplyStyle(
+      ResTableTheme theme,
+      ResXMLParser xmlParser,
+      int defStyleAttr,
+      int defStyleRes,
+      int[] attrs,
+      int attrsLength,
+      int[] outValues,
+      int[] outIndices) {
     if (kDebugStyles) {
-      ALOGI("APPLY STYLE: theme=%s defStyleAttr=0x%x defStyleRes=0x%x xml=%s",
+      ALOGI(
+          "APPLY STYLE: theme=%s defStyleAttr=0x%x defStyleRes=0x%x xml=%s",
           theme, defStyleAttr, defStyleRes, xmlParser);
     }
 
@@ -270,25 +283,25 @@ public class AttributeResolution {
     // Retrieve the default style bag, if requested.
     final Ref<ResTable.bag_entry[]> defStyleAttrStart = new Ref<>(null);
     Ref<Integer> defStyleTypeSetFlags = new Ref<>(0);
-    int bagOff = defStyleRes != 0
-        ? res.getBagLocked(defStyleRes, defStyleAttrStart, defStyleTypeSetFlags)
-        : -1;
+    int bagOff =
+        defStyleRes != 0
+            ? res.getBagLocked(defStyleRes, defStyleAttrStart, defStyleTypeSetFlags)
+            : -1;
     defStyleTypeSetFlags.set(defStyleTypeSetFlags.get() | defStyleBagTypeSetFlags.get());
     // const ResTable::bag_entry* defStyleAttrEnd = defStyleAttrStart + (bagOff >= 0 ? bagOff : 0);
     final ResTable.bag_entry defStyleAttrEnd = null;
-    // BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleAttrStart, defStyleAttrEnd);
+    // BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleAttrStart,
+    // defStyleAttrEnd);
     BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleAttrStart.get(), bagOff);
 
     // Retrieve the style class bag, if requested.
     final Ref<ResTable.bag_entry[]> styleAttrStart = new Ref<>(null);
     Ref<Integer> styleTypeSetFlags = new Ref<>(0);
-    bagOff = style != 0
-        ? res.getBagLocked(style, styleAttrStart, styleTypeSetFlags)
-        : -1;
+    bagOff = style != 0 ? res.getBagLocked(style, styleAttrStart, styleTypeSetFlags) : -1;
     styleTypeSetFlags.set(styleTypeSetFlags.get() | styleBagTypeSetFlags.get());
     // final ResTable::bag_entry* final styleAttrEnd = styleAttrStart + (bagOff >= 0 ? bagOff : 0);
     final ResTable.bag_entry styleAttrEnd = null;
-    //BagAttributeFinder styleAttrFinder = new BagAttributeFinder(styleAttrStart, styleAttrEnd);
+    // BagAttributeFinder styleAttrFinder = new BagAttributeFinder(styleAttrStart, styleAttrEnd);
     BagAttributeFinder styleAttrFinder = new BagAttributeFinder(styleAttrStart.get(), bagOff);
 
     // Retrieve the XML attributes, if requested.
@@ -325,7 +338,8 @@ public class AttributeResolution {
         }
       }
 
-      if (value.get().dataType == DataType.NULL.code() && value.get().data != Res_value.DATA_NULL_EMPTY) {
+      if (value.get().dataType == DataType.NULL.code()
+          && value.get().data != Res_value.DATA_NULL_EMPTY) {
         // Walk through the style class values looking for the requested attribute.
         final ResTable.bag_entry styleAttrEntry = styleAttrFinder.find(curIdent);
         if (styleAttrEntry != styleAttrEnd) {
@@ -339,7 +353,8 @@ public class AttributeResolution {
         }
       }
 
-      if (value.get().dataType == DataType.NULL.code() && value.get().data != Res_value.DATA_NULL_EMPTY) {
+      if (value.get().dataType == DataType.NULL.code()
+          && value.get().data != Res_value.DATA_NULL_EMPTY) {
         // Walk through the default style values looking for the requested attribute.
         final ResTable.bag_entry defStyleAttrEntry = defStyleAttrFinder.find(curIdent);
         if (defStyleAttrEntry != defStyleAttrEnd) {
@@ -358,8 +373,7 @@ public class AttributeResolution {
       Ref<Integer> resid = new Ref<>(0);
       if (value.get().dataType != DataType.NULL.code()) {
         // Take care of resolving the found resource to its final value.
-        int newBlock = theme.resolveAttributeReference(value, block,
-            resid, typeSetFlags, config);
+        int newBlock = theme.resolveAttributeReference(value, block, resid, typeSetFlags, config);
         if (newBlock >= 0) {
           block = newBlock;
         }
@@ -413,7 +427,8 @@ public class AttributeResolution {
       outValues[destIndex + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags.get();
       outValues[destIndex + STYLE_DENSITY] = config.get().density;
 
-      if (res_value.dataType != DataType.NULL.code() || res_value.data == Res_value.DATA_NULL_EMPTY) {
+      if (res_value.dataType != DataType.NULL.code()
+          || res_value.data == Res_value.DATA_NULL_EMPTY) {
         indices_idx++;
 
         // out_indices must NOT be nullptr.
@@ -427,11 +442,10 @@ public class AttributeResolution {
         boolean gotRefName = res.getResourceName(res_value.data, true, attrRefName);
         Logger.warn(
             "Failed to resolve attribute lookup: %s=\"?%s\"; theme: %s",
-            gotName ? attrName : "unknown", gotRefName ? attrRefName : "unknown",
-            theme);
+            gotName ? attrName : "unknown", gotRefName ? attrRefName : "unknown", theme);
       }
 
-//      out_values += STYLE_NUM_ENTRIES;
+      //      out_values += STYLE_NUM_ENTRIES;
     }
 
     res.unlock();
@@ -440,7 +454,13 @@ public class AttributeResolution {
     outIndices[0] = indices_idx;
   }
 
-  public static boolean RetrieveAttributes(ResTable res, ResXMLParser xmlParser, int[] attrs, int attrsLength, int[] outValues, int[] outIndices) {
+  public static boolean RetrieveAttributes(
+      ResTable res,
+      ResXMLParser xmlParser,
+      int[] attrs,
+      int attrsLength,
+      int[] outValues,
+      int[] outIndices) {
     Ref<ResTable_config> config = new Ref<>(new ResTable_config());
     Ref<Res_value> value = new Ref<>(null);
 
@@ -451,7 +471,7 @@ public class AttributeResolution {
 
     // Retrieve the XML attributes, if requested.
     final int xmlAttrCount = xmlParser.getAttributeCount();
-    int ix=0;
+    int ix = 0;
     int curXmlAttr = xmlParser.getAttributeNameResID(ix);
 
     final int kXmlBlock = 0x10000000;
@@ -459,7 +479,7 @@ public class AttributeResolution {
     // Now iterate through all of the attributes that the client has requested,
     // filling in each with whatever data we can find.
     int baseDest = 0;
-    for (int ii=0; ii<attrsLength; ii++) {
+    for (int ii = 0; ii < attrsLength; ii++) {
       final int curIdent = attrs[ii];
       int block = 0;
       Ref<Integer> typeSetFlags = new Ref<>(0);
@@ -481,13 +501,12 @@ public class AttributeResolution {
         curXmlAttr = xmlParser.getAttributeNameResID(ix);
       }
 
-      //printf("Attribute 0x%08x: type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
+      // printf("Attribute 0x%08x: type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
       Ref<Integer> resid = new Ref<>(0);
       if (value.get().dataType != Res_value.TYPE_NULL) {
         // Take care of resolving the found resource to its final value.
-        //printf("Resolving attribute reference\n");
-        int newBlock = res.resolveReference(value, block, resid,
-            typeSetFlags, config);
+        // printf("Resolving attribute reference\n");
+        int newBlock = res.resolveReference(value, block, resid, typeSetFlags, config);
         if (newBlock >= 0) block = newBlock;
       }
 
@@ -497,7 +516,8 @@ public class AttributeResolution {
         block = kXmlBlock;
       }
 
-      //printf("Attribute 0x%08x: final type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
+      // printf("Attribute 0x%08x: final type=0x%x, data=0x%08x\n", curIdent, value.dataType,
+      // value.data);
 
       // Write the final value back to Java.
       outValues[baseDest + STYLE_TYPE] = value.get().dataType;
@@ -508,13 +528,14 @@ public class AttributeResolution {
       outValues[baseDest + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags.get();
       outValues[baseDest + STYLE_DENSITY] = config.get().density;
 
-      if (outIndices != null &&
-          (value.get().dataType != Res_value.TYPE_NULL || value.get().data == Res_value.DATA_NULL_EMPTY)) {
+      if (outIndices != null
+          && (value.get().dataType != Res_value.TYPE_NULL
+              || value.get().data == Res_value.DATA_NULL_EMPTY)) {
         indices_idx++;
         outIndices[indices_idx] = ii;
       }
 
-//      dest += STYLE_NUM_ENTRIES;
+      //      dest += STYLE_NUM_ENTRIES;
       baseDest += STYLE_NUM_ENTRIES;
     }
 

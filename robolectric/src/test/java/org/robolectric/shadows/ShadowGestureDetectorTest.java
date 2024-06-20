@@ -67,22 +67,23 @@ public class ShadowGestureDetectorTest {
   @Test
   public void getOnDoubleTapListener_shouldReturnSetDoubleTapListener() {
     GestureDetector subject = new GestureDetector(context, new TestOnGestureListener());
-    GestureDetector.OnDoubleTapListener onDoubleTapListener = new GestureDetector.OnDoubleTapListener() {
-      @Override
-      public boolean onSingleTapConfirmed(MotionEvent e) {
-        return false;
-      }
+    GestureDetector.OnDoubleTapListener onDoubleTapListener =
+        new GestureDetector.OnDoubleTapListener() {
+          @Override
+          public boolean onSingleTapConfirmed(MotionEvent e) {
+            return false;
+          }
 
-      @Override
-      public boolean onDoubleTap(MotionEvent e) {
-        return false;
-      }
+          @Override
+          public boolean onDoubleTap(MotionEvent e) {
+            return false;
+          }
 
-      @Override
-      public boolean onDoubleTapEvent(MotionEvent e) {
-        return false;
-      }
-    };
+          @Override
+          public boolean onDoubleTapEvent(MotionEvent e) {
+            return false;
+          }
+        };
 
     subject.setOnDoubleTapListener(onDoubleTapListener);
     assertEquals(shadowOf(subject).getOnDoubleTapListener(), onDoubleTapListener);
@@ -93,7 +94,8 @@ public class ShadowGestureDetectorTest {
 
   @Test
   public void getOnDoubleTapListener_shouldReturnOnGestureListenerFromConstructor() {
-    GestureDetector.OnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener();
+    GestureDetector.OnGestureListener onGestureListener =
+        new GestureDetector.SimpleOnGestureListener();
     GestureDetector subject = new GestureDetector(context, onGestureListener);
     assertEquals(shadowOf(subject).getOnDoubleTapListener(), onGestureListener);
   }
@@ -105,8 +107,7 @@ public class ShadowGestureDetectorTest {
     }
 
     @Override
-    public void onShowPress(MotionEvent e) {
-    }
+    public void onShowPress(MotionEvent e) {}
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
@@ -119,8 +120,7 @@ public class ShadowGestureDetectorTest {
     }
 
     @Override
-    public void onLongPress(MotionEvent e) {
-    }
+    public void onLongPress(MotionEvent e) {}
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {

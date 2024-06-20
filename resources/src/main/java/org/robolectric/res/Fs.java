@@ -29,7 +29,7 @@ import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.util.Util;
 
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
-abstract public class Fs {
+public abstract class Fs {
 
   @GuardedBy("ZIP_FILESYSTEMS")
   private static final Map<Path, FsWrapper> ZIP_FILESYSTEMS = new HashMap<>();

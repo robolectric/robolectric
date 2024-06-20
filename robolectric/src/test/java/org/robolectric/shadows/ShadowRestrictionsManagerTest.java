@@ -23,7 +23,8 @@ public final class ShadowRestrictionsManagerTest {
   @Before
   public void setUp() {
     context = ApplicationProvider.getApplicationContext();
-    restrictionsManager = (RestrictionsManager) context.getSystemService(Context.RESTRICTIONS_SERVICE);
+    restrictionsManager =
+        (RestrictionsManager) context.getSystemService(Context.RESTRICTIONS_SERVICE);
   }
 
   @Test
@@ -41,8 +42,9 @@ public final class ShadowRestrictionsManagerTest {
 
   @Test
   public void getManifestRestrictions() {
-    RestrictionEntry restrictionEntry = Iterables.getOnlyElement(restrictionsManager
-        .getManifestRestrictions(context.getPackageName()));
+    RestrictionEntry restrictionEntry =
+        Iterables.getOnlyElement(
+            restrictionsManager.getManifestRestrictions(context.getPackageName()));
 
     assertThat(restrictionEntry.getKey()).isEqualTo("restrictionKey");
   }

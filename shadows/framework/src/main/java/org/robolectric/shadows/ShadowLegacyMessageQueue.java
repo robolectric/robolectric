@@ -89,33 +89,34 @@ public class ShadowLegacyMessageQueue extends ShadowMessageQueue {
     final boolean retval =
         reflector(MessageQueueReflector.class, realQueue).enqueueMessage(msg, when);
     if (retval) {
-      final Runnable callback = new Runnable() {
-        @Override
-        public void run() {
-          synchronized (realQueue) {
-            Message m = getHead();
-            if (m == null) {
-              return;
-            }
-
-            Message n = shadowOf(m).getNext();
-            if (m == msg) {
-              setHead(n);
-            } else {
-              while (n != null) {
-                if (n == msg) {
-                  n = shadowOf(n).getNext();
-                  shadowOf(m).setNext(n);
-                  break;
+      final Runnable callback =
+          new Runnable() {
+            @Override
+            public void run() {
+              synchronized (realQueue) {
+                Message m = getHead();
+                if (m == null) {
+                  return;
                 }
-                m = n;
-                n = shadowOf(m).getNext();
+
+                Message n = shadowOf(m).getNext();
+                if (m == msg) {
+                  setHead(n);
+                } else {
+                  while (n != null) {
+                    if (n == msg) {
+                      n = shadowOf(n).getNext();
+                      shadowOf(m).setNext(n);
+                      break;
+                    }
+                    m = n;
+                    n = shadowOf(m).getNext();
+                  }
+                }
               }
+              dispatchMessage(msg);
             }
-          }
-          dispatchMessage(msg);
-        }
-      };
+          };
       shadowOf(msg).setScheduledRunnable(callback);
       if (when == 0) {
         scheduler.postAtFrontOfQueue(callback);

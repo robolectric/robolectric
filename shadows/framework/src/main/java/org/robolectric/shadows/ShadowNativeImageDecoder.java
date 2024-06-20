@@ -155,8 +155,8 @@ public class ShadowNativeImageDecoder {
         unpremulRequired,
         conserveMemory,
         decodeAsAlphaMask,
-        /* desiredColorSpace = */ 0, // Desired color space is currently not supported in P.
-        /* extended = */ false);
+        /* desiredColorSpace= */ 0, // Desired color space is currently not supported in P.
+        /* extended= */ false);
   }
 
   @Implementation(minSdk = Q, maxSdk = U.SDK_INT)

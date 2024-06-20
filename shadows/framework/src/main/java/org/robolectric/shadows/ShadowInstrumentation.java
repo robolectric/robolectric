@@ -98,6 +98,7 @@ public class ShadowInstrumentation {
 
   @GuardedBy("itself")
   private final List<Wrapper> registeredReceivers = new ArrayList<>();
+
   // map of pid+uid to granted permissions
   private final Map<Pair<Integer, Integer>, Set<String>> grantedPermissionsMap =
       Collections.synchronizedMap(new HashMap<>());
@@ -522,7 +523,7 @@ public class ShadowInstrumentation {
   void sendBroadcastWithPermission(
       Intent intent, String receiverPermission, Context context, int resultCode) {
     sendBroadcastWithPermission(
-        intent, /*userHandle=*/ null, receiverPermission, context, null, resultCode);
+        intent, /* userHandle= */ null, receiverPermission, context, null, resultCode);
   }
 
   void sendBroadcastWithPermission(
@@ -532,7 +533,7 @@ public class ShadowInstrumentation {
       @Nullable Bundle broadcastOptions,
       int resultCode) {
     sendBroadcastWithPermission(
-        intent, /*userHandle=*/ null, receiverPermission, context, broadcastOptions, resultCode);
+        intent, /* userHandle= */ null, receiverPermission, context, broadcastOptions, resultCode);
   }
 
   void sendBroadcastWithPermission(
@@ -552,7 +553,7 @@ public class ShadowInstrumentation {
     List<Wrapper> wrappers =
         getAppropriateWrappers(
             context,
-            /*userHandle=*/ null,
+            /* userHandle= */ null,
             intent,
             receiverPermission,
             /* broadcastOptions= */ null);
@@ -884,7 +885,7 @@ public class ShadowInstrumentation {
 
   void sendBroadcast(Intent intent, Context context) {
     sendBroadcastWithPermission(
-        intent, /*userHandle=*/ null, /*receiverPermission=*/ null, context);
+        intent, /* userHandle= */ null, /* receiverPermission= */ null, context);
   }
 
   Intent registerReceiver(

@@ -48,7 +48,7 @@ public final class ShadowMagnificationControllerTest {
   public void setCenter_setsCenterX() {
     float newCenterX = 450.0f;
 
-    magnificationController.setCenter(newCenterX, /*centerY=*/ 0.0f, /*animate=*/ false);
+    magnificationController.setCenter(newCenterX, /* centerY= */ 0.0f, /* animate= */ false);
 
     assertThat(magnificationController.getCenterX()).isEqualTo(newCenterX);
   }
@@ -57,7 +57,7 @@ public final class ShadowMagnificationControllerTest {
   public void setCenter_setsCenterY() {
     float newCenterY = 250.0f;
 
-    magnificationController.setCenter(/*centerX=*/ 0.0f, newCenterY, /*animate=*/ false);
+    magnificationController.setCenter(/* centerX= */ 0.0f, newCenterY, /* animate= */ false);
 
     assertThat(magnificationController.getCenterY()).isEqualTo(newCenterY);
   }
@@ -69,7 +69,7 @@ public final class ShadowMagnificationControllerTest {
     TestListener testListener = new TestListener();
     magnificationController.addListener(testListener);
 
-    magnificationController.setCenter(centerX, centerY, /*animate=*/ false);
+    magnificationController.setCenter(centerX, centerY, /* animate= */ false);
 
     shadowOf(Looper.getMainLooper()).idle();
     assertThat(testListener.invoked).isTrue();
@@ -81,7 +81,7 @@ public final class ShadowMagnificationControllerTest {
   public void setScale_setsScale() {
     float newScale = 5.0f;
 
-    magnificationController.setScale(newScale, /*animate=*/ false);
+    magnificationController.setScale(newScale, /* animate= */ false);
 
     assertThat(magnificationController.getScale()).isEqualTo(newScale);
   }
@@ -92,7 +92,7 @@ public final class ShadowMagnificationControllerTest {
     TestListener testListener = new TestListener();
     magnificationController.addListener(testListener);
 
-    magnificationController.setScale(scale, /*animate=*/ false);
+    magnificationController.setScale(scale, /* animate= */ false);
 
     shadowOf(Looper.getMainLooper()).idle();
     assertThat(testListener.invoked).isTrue();
@@ -101,39 +101,42 @@ public final class ShadowMagnificationControllerTest {
 
   @Test
   public void reset_resetsCenterX() {
-    magnificationController.setCenter(/*centerX=*/ 100.0f, /*centerY=*/ 0.0f, /*animate=*/ false);
+    magnificationController.setCenter(
+        /* centerX= */ 100.0f, /* centerY= */ 0.0f, /* animate= */ false);
 
-    magnificationController.reset(/*animate=*/ false);
+    magnificationController.reset(/* animate= */ false);
 
     assertThat(magnificationController.getCenterX()).isEqualTo(0.0f);
   }
 
   @Test
   public void reset_resetsCenterY() {
-    magnificationController.setCenter(/*centerX=*/ 0.0f, /*centerY=*/ 100.0f, /*animate=*/ false);
+    magnificationController.setCenter(
+        /* centerX= */ 0.0f, /* centerY= */ 100.0f, /* animate= */ false);
 
-    magnificationController.reset(/*animate=*/ false);
+    magnificationController.reset(/* animate= */ false);
 
     assertThat(magnificationController.getCenterY()).isEqualTo(0.0f);
   }
 
   @Test
   public void reset_resetsScale() {
-    magnificationController.setScale(5.0f, /*animate=*/ false);
+    magnificationController.setScale(5.0f, /* animate= */ false);
 
-    magnificationController.reset(/*animate=*/ false);
+    magnificationController.reset(/* animate= */ false);
 
     assertThat(magnificationController.getScale()).isEqualTo(1.0f);
   }
 
   @Test
   public void reset_notifiesListener() {
-    magnificationController.setCenter(/*centerX=*/ 150.5f, /*centerY=*/ 11.5f, /*animate=*/ false);
-    magnificationController.setScale(/*scale=*/ 5.0f, /*animate=*/ false);
+    magnificationController.setCenter(
+        /* centerX= */ 150.5f, /* centerY= */ 11.5f, /* animate= */ false);
+    magnificationController.setScale(/* scale= */ 5.0f, /* animate= */ false);
     TestListener testListener = new TestListener();
     magnificationController.addListener(testListener);
 
-    magnificationController.reset(/*animate=*/ false);
+    magnificationController.reset(/* animate= */ false);
 
     shadowOf(Looper.getMainLooper()).idle();
     assertThat(testListener.invoked).isTrue();
@@ -150,7 +153,7 @@ public final class ShadowMagnificationControllerTest {
 
     magnificationController.removeListener(testListener);
 
-    magnificationController.setScale(scale, /*animate=*/ false);
+    magnificationController.setScale(scale, /* animate= */ false);
     shadowOf(Looper.getMainLooper()).idle();
     assertThat(testListener.invoked).isFalse();
   }

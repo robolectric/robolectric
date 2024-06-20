@@ -1,4 +1,3 @@
 package org.robolectric;
 
-public class TestFakeApp extends FakeApp {
-}
+public class TestFakeApp extends FakeApp {}

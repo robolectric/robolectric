@@ -17,8 +17,9 @@ public interface DependencyResolver {
 
   /**
    * Returns URLs representing the full transitive dependency graph of the given Maven dependency.
-   * @deprecated Robolectric will never ask for a dependency composed of more than one artifact,
-   *     so this method isn't necessary.
+   *
+   * @deprecated Robolectric will never ask for a dependency composed of more than one artifact, so
+   *     this method isn't necessary.
    */
   @Deprecated
   default URL[] getLocalArtifactUrls(DependencyJar dependency) {

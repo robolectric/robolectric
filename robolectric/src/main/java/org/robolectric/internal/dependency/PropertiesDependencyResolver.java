@@ -42,8 +42,8 @@ public class PropertiesDependencyResolver implements DependencyResolver {
     String pathStr = properties.getProperty(depShortName);
     if (pathStr != null) {
       if (pathStr.indexOf(File.pathSeparatorChar) != -1) {
-        throw new IllegalArgumentException("didn't expect multiple files for " + dependency
-            + ": " + pathStr);
+        throw new IllegalArgumentException(
+            "didn't expect multiple files for " + dependency + ": " + pathStr);
       }
 
       Path path = baseDir.resolve(Paths.get(pathStr));

@@ -23,9 +23,8 @@ public abstract class ClassNodeProvider {
     byte[] byteCode = getClassBytes(internalClassName);
     ClassReader classReader = new ClassReader(byteCode);
     ClassNode classNode = new ClassNode();
-    classReader.accept(classNode,
-        ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+    classReader.accept(
+        classNode, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
     return classNode;
   }
-
 }

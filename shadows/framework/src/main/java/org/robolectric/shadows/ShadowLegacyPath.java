@@ -47,7 +47,7 @@ public class ShadowLegacyPath extends ShadowPath {
   protected void __constructor__(Path path) {
     ShadowLegacyPath shadowPath = extract(path);
     points = new ArrayList<>(shadowPath.getPoints());
-    mPath.append(shadowPath.mPath, /*connect=*/ false);
+    mPath.append(shadowPath.mPath, /* connect= */ false);
     mFillType = shadowPath.getFillType();
   }
 

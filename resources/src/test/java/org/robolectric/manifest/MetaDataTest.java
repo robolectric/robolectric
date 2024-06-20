@@ -16,9 +16,7 @@ import org.robolectric.res.ResourceTable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-/**
- * Tests for {@link MetaData}
- */
+/** Tests for {@link MetaData} */
 @RunWith(JUnit4.class)
 public class MetaDataTest {
 

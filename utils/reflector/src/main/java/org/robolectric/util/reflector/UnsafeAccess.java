@@ -78,8 +78,7 @@ public class UnsafeAccess {
         privateLookupInMethod =
             MethodHandles.class.getMethod(
                 "privateLookupIn", Class.class, MethodHandles.Lookup.class);
-        defineClassMethod =
-            MethodHandles.Lookup.class.getMethod("defineClass", byte[].class);
+        defineClassMethod = MethodHandles.Lookup.class.getMethod("defineClass", byte[].class);
       } catch (NoSuchMethodException e) {
         throw new AssertionError(e);
       }

@@ -4,9 +4,7 @@ import android.opengl.GLES20;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Fake implementation of {@link GLES20}
- */
+/** Fake implementation of {@link GLES20} */
 @Implements(GLES20.class)
 public class ShadowGLES20 {
   private static int framebufferCount = 0;
@@ -47,7 +45,7 @@ public class ShadowGLES20 {
       case GLES20.GL_COMPILE_STATUS:
         params[0] = GLES20.GL_TRUE;
         break;
-      default:  // no-op
+      default: // no-op
     }
   }
 
@@ -57,7 +55,7 @@ public class ShadowGLES20 {
       case GLES20.GL_LINK_STATUS:
         params[0] = GLES20.GL_TRUE;
         break;
-      default:  // no-op
+      default: // no-op
     }
   }
 

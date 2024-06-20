@@ -35,7 +35,7 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowBluetoothGatt {
 
   private static final String NULL_CALLBACK_MSG = "BluetoothGattCallback can not be null.";
-  
+
   private BluetoothGattCallback bluetoothGattCallback;
   private int connectionPriority = BluetoothGatt.CONNECTION_PRIORITY_BALANCED;
   private boolean isConnected = false;

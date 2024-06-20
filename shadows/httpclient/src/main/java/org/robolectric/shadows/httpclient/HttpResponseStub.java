@@ -10,112 +10,138 @@ import org.apache.http.StatusLine;
 import org.apache.http.params.HttpParams;
 
 public class HttpResponseStub implements HttpResponse {
-  @Override public StatusLine getStatusLine() {
-    throw new UnsupportedOperationException();
-
-  }
-
-  @Override public void setStatusLine(StatusLine statusLine) {
+  @Override
+  public StatusLine getStatusLine() {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void setStatusLine(ProtocolVersion protocolVersion, int i) {
+  @Override
+  public void setStatusLine(StatusLine statusLine) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void setStatusLine(ProtocolVersion protocolVersion, int i, String s) {
+  @Override
+  public void setStatusLine(ProtocolVersion protocolVersion, int i) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void setStatusCode(int i) throws IllegalStateException {
+  @Override
+  public void setStatusLine(ProtocolVersion protocolVersion, int i, String s) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void setReasonPhrase(String s) throws IllegalStateException {
+  @Override
+  public void setStatusCode(int i) throws IllegalStateException {
     throw new UnsupportedOperationException();
   }
 
-  @Override public HttpEntity getEntity() {
+  @Override
+  public void setReasonPhrase(String s) throws IllegalStateException {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void setEntity(HttpEntity httpEntity) {
+  @Override
+  public HttpEntity getEntity() {
     throw new UnsupportedOperationException();
   }
 
-  @Override public Locale getLocale() {
+  @Override
+  public void setEntity(HttpEntity httpEntity) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void setLocale(Locale locale) {
+  @Override
+  public Locale getLocale() {
     throw new UnsupportedOperationException();
   }
 
-  @Override public ProtocolVersion getProtocolVersion() {
+  @Override
+  public void setLocale(Locale locale) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public boolean containsHeader(String s) {
+  @Override
+  public ProtocolVersion getProtocolVersion() {
     throw new UnsupportedOperationException();
   }
 
-  @Override public Header[] getHeaders(String s) {
+  @Override
+  public boolean containsHeader(String s) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public Header getFirstHeader(String s) {
+  @Override
+  public Header[] getHeaders(String s) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public Header getLastHeader(String s) {
+  @Override
+  public Header getFirstHeader(String s) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public Header[] getAllHeaders() {
+  @Override
+  public Header getLastHeader(String s) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void addHeader(Header header) {
+  @Override
+  public Header[] getAllHeaders() {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void addHeader(String s, String s1) {
+  @Override
+  public void addHeader(Header header) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void setHeader(Header header) {
+  @Override
+  public void addHeader(String s, String s1) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void setHeader(String s, String s1) {
+  @Override
+  public void setHeader(Header header) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void setHeaders(Header[] headers) {
+  @Override
+  public void setHeader(String s, String s1) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void removeHeader(Header header) {
+  @Override
+  public void setHeaders(Header[] headers) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void removeHeaders(String s) {
+  @Override
+  public void removeHeader(Header header) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public HeaderIterator headerIterator() {
+  @Override
+  public void removeHeaders(String s) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public HeaderIterator headerIterator(String s) {
+  @Override
+  public HeaderIterator headerIterator() {
     throw new UnsupportedOperationException();
   }
 
-  @Override public HttpParams getParams() {
+  @Override
+  public HeaderIterator headerIterator(String s) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void setParams(HttpParams httpParams) {
+  @Override
+  public HttpParams getParams() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void setParams(HttpParams httpParams) {
     throw new UnsupportedOperationException();
   }
 }

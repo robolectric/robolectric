@@ -41,33 +41,35 @@ import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.util.PerfStatsCollector;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/AssetManager2.h
-// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager2.cpp
+// transliterated from
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/AssetManager2.h
+// and
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager2.cpp
 @SuppressWarnings("NewApi")
 public class CppAssetManager2 {
-//  #define ATRACE_TAG ATRACE_TAG_RESOURCES
-//  
-//  #include "androidfw/AssetManager2.h"
+  //  #define ATRACE_TAG ATRACE_TAG_RESOURCES
+  //
+  //  #include "androidfw/AssetManager2.h"
 
-//#include <array>
-//#include <limits>
-//#include <set>
-//#include <unordered_map>
-//
-//#include "androidfw/ApkAssets.h"
-//#include "androidfw/Asset.h"
-//#include "androidfw/AssetManager.h"
-//#include "androidfw/ResourceTypes.h"
-//#include "androidfw/Util.h"
-//
-//namespace android {
-//
-//class Theme;
-//
-//using ApkAssetsCookie = int32_t;
-//
-//enum : ApkAssetsCookie {
-  //};
+  // #include <array>
+  // #include <limits>
+  // #include <set>
+  // #include <unordered_map>
+  //
+  // #include "androidfw/ApkAssets.h"
+  // #include "androidfw/Asset.h"
+  // #include "androidfw/AssetManager.h"
+  // #include "androidfw/ResourceTypes.h"
+  // #include "androidfw/Util.h"
+  //
+  // namespace android {
+  //
+  // class Theme;
+  //
+  // using ApkAssetsCookie = int32_t;
+  //
+  // enum : ApkAssetsCookie {
+  // };
 
   // Holds a bag that has been merged with its parent, if one exists.
   public static class ResolvedBag {
@@ -99,12 +101,10 @@ public class CppAssetManager2 {
 
       @Override
       public String toString() {
-        return "Entry{" +
-            "key=" + key +
-            ", value=" + value +
-            '}';
+        return "Entry{" + "key=" + key + ", value=" + value + '}';
       }
-    };
+    }
+    ;
 
     // Denotes the configuration axis that this bag varies with.
     // If a configuration changes with respect to one of these axis,
@@ -117,12 +117,13 @@ public class CppAssetManager2 {
     // The array of entries for this bag. An empty array is a neat trick to force alignment
     // of the Entry structs that follow this structure and avoids a bunch of casts.
     public Entry[] entries;
-  };
+  }
+  ;
 
   // AssetManager2 is the main entry point for accessing assets and resources.
   // AssetManager2 provides caching of resources retrieved via the underlying ApkAssets.
-//  class AssetManager2 : public .AAssetManager {
-//   public:
+  //  class AssetManager2 : public .AAssetManager {
+  //   public:
   public static class ResourceName {
     public String package_ = null;
     // int package_len = 0;
@@ -134,18 +135,21 @@ public class CppAssetManager2 {
     public String entry = null;
     // public String entry16 = null;
     // int entry_len = 0;
-  };
+  }
+  ;
 
-  public CppAssetManager2() {
+  public CppAssetManager2() {}
+
+  public final List<CppApkAssets> GetApkAssets() {
+    return apk_assets_;
   }
 
+  final ResTable_config GetConfiguration() {
+    return configuration_;
+  }
 
-  public final List<CppApkAssets> GetApkAssets() { return apk_assets_; }
-
-  final ResTable_config GetConfiguration() { return configuration_; }
-
-// private:
-//  DISALLOW_COPY_AND_ASSIGN(AssetManager2);
+  // private:
+  //  DISALLOW_COPY_AND_ASSIGN(AssetManager2);
 
   // The ordered list of ApkAssets to search. These are not owned by the AssetManager, and must
   // have a longer lifetime.
@@ -191,12 +195,12 @@ public class CppAssetManager2 {
   // These are ordered according to apk_assets_. The mappings may change depending on what is
   // in apk_assets_, therefore they must be stored in the AssetManager and not in the
   // immutable ApkAssets class.
-  final private List<PackageGroup> package_groups_ = new ArrayList<>();
+  private final List<PackageGroup> package_groups_ = new ArrayList<>();
 
   // An array mapping package ID to index into package_groups. This keeps the lookup fast
   // without taking too much memory.
-//  private std.array<byte, std.numeric_limits<byte>.max() + 1> package_ids_;
-  final private byte[] package_ids_ = new byte[256];
+  //  private std.array<byte, std.numeric_limits<byte>.max() + 1> package_ids_;
+  private final byte[] package_ids_ = new byte[256];
 
   // The current configuration set for this AssetManager. When this changes, cached resources
   // may need to be purged.
@@ -204,8 +208,9 @@ public class CppAssetManager2 {
 
   // Cached set of bags. These are cached because they can inherit keys from parent bags,
   // which involves some calculation.
-//  private std.unordered_map<int, util.unique_cptr<ResolvedBag>> cached_bags_;
-  final private Map<Integer, ResolvedBag> cached_bags_ = new HashMap<>();
+  //  private std.unordered_map<int, util.unique_cptr<ResolvedBag>> cached_bags_;
+  private final Map<Integer, ResolvedBag> cached_bags_ = new HashMap<>();
+
   //  };
 
   // final ResolvedBag.Entry* begin(final ResolvedBag* bag) { return bag.entries; }
@@ -260,7 +265,7 @@ public class CppAssetManager2 {
     StringPoolRef entry_string_ref;
   }
 
-//  AssetManager2() { memset(&configuration_, 0, sizeof(configuration_)); }
+  //  AssetManager2() { memset(&configuration_, 0, sizeof(configuration_)); }
 
   // Sets/resets the underlying ApkAssets for this AssetManager. The ApkAssets
   // are not owned by the AssetManager, and must have a longer lifetime.
@@ -268,13 +273,13 @@ public class CppAssetManager2 {
   // Only pass invalidate_caches=false when it is known that the structure
   // change in ApkAssets is due to a safe addition of resources with completely
   // new resource IDs.
-//  boolean SetApkAssets(final List<ApkAssets> apk_assets, boolean invalidate_caches = true);
+  //  boolean SetApkAssets(final List<ApkAssets> apk_assets, boolean invalidate_caches = true);
   public boolean SetApkAssets(final List<CppApkAssets> apk_assets, boolean invalidate_caches) {
     apk_assets_ = apk_assets;
     BuildDynamicRefTable();
     RebuildFilterList();
     if (invalidate_caches) {
-//      InvalidateCaches(static_cast<int>(-1));
+      //      InvalidateCaches(static_cast<int>(-1));
       InvalidateCaches(-1);
     }
     return true;
@@ -282,10 +287,10 @@ public class CppAssetManager2 {
 
   // Assigns package IDs to all shared library ApkAssets.
   // Should be called whenever the ApkAssets are changed.
-//  void BuildDynamicRefTable();
+  //  void BuildDynamicRefTable();
   void BuildDynamicRefTable() {
     package_groups_.clear();
-//    package_ids_.fill(0xff);
+    //    package_ids_.fill(0xff);
     for (int i = 0; i < package_ids_.length; i++) {
       package_ids_[i] = (byte) 0xff;
     }
@@ -295,9 +300,8 @@ public class CppAssetManager2 {
     final int apk_assets_count = apk_assets_.size();
     for (int i = 0; i < apk_assets_count; i++) {
       final LoadedArsc loaded_arsc = apk_assets_.get(i).GetLoadedArsc();
-//      for (final std.unique_ptr<final LoadedPackage>& package_ :
-      for (final LoadedPackage package_ :
-          loaded_arsc.GetPackages()) {
+      //      for (final std.unique_ptr<final LoadedPackage>& package_ :
+      for (final LoadedPackage package_ : loaded_arsc.GetPackages()) {
         // Get the package ID or assign one if a shared library.
         int package_id;
         if (package_.IsDynamic()) {
@@ -314,8 +318,9 @@ public class CppAssetManager2 {
           // DynamicRefTable& ref_table = package_groups_.back().dynamic_ref_table;
           // ref_table.mAssignedPackageId = package_id;
           // ref_table.mAppAsLib = package->IsDynamic() && package->GetPackageId() == 0x7f;
-          DynamicRefTable ref_table = new DynamicRefTable((byte) package_id,
-              package_.IsDynamic() && package_.GetPackageId() == 0x7f);
+          DynamicRefTable ref_table =
+              new DynamicRefTable(
+                  (byte) package_id, package_.IsDynamic() && package_.GetPackageId() == 0x7f);
           PackageGroup newPackageGroup = new PackageGroup();
           newPackageGroup.dynamic_ref_table = ref_table;
 
@@ -332,8 +337,7 @@ public class CppAssetManager2 {
         // Add the package name . build time ID mappings.
         for (final DynamicPackageEntry entry : package_.GetDynamicPackageMap()) {
           // String package_name(entry.package_name.c_str(), entry.package_name.size());
-          package_group.dynamic_ref_table.mEntries.put(
-              entry.package_name, (byte) entry.package_id);
+          package_group.dynamic_ref_table.mEntries.put(entry.package_name, (byte) entry.package_id);
         }
       }
     }
@@ -342,8 +346,7 @@ public class CppAssetManager2 {
     for (PackageGroup iter : package_groups_) {
       String package_name = iter.packages_.get(0).loaded_package_.GetPackageName();
       for (PackageGroup iter2 : package_groups_) {
-        iter2.dynamic_ref_table.addMapping(package_name,
-            iter.dynamic_ref_table.mAssignedPackageId);
+        iter2.dynamic_ref_table.addMapping(package_name, iter.dynamic_ref_table.mAssignedPackageId);
 
         // Add the alias resources to the dynamic reference table of every package group. Since
         // staging aliases can only be defined by the framework package (which is not a shared
@@ -359,42 +362,42 @@ public class CppAssetManager2 {
     }
   }
 
-// void AssetManager2::DumpToLog() const {
-//   base::ScopedLogSeverity _log(base::INFO);
-//
-//   LOG(INFO) << base::StringPrintf("AssetManager2(this=%p)", this);
-//
-//   std::string list;
-//   for (const auto& apk_assets : apk_assets_) {
-//     base::StringAppendF(&list, "%s,", apk_assets->GetPath().c_str());
-//   }
-//   LOG(INFO) << "ApkAssets: " << list;
-//
-//   list = "";
-//   for (size_t i = 0; i < package_ids_.size(); i++) {
-//     if (package_ids_[i] != 0xff) {
-//       base::StringAppendF(&list, "%02x -> %d, ", (int)i, package_ids_[i]);
-//     }
-//   }
-//   LOG(INFO) << "Package ID map: " << list;
-//
-//   for (const auto& package_group: package_groups_) {
-//     list = "";
-//     for (const auto& package : package_group.packages_) {
-//       const LoadedPackage* loaded_package = package.loaded_package_;
-//       base::StringAppendF(&list, "%s(%02x%s), ", loaded_package->GetPackageName().c_str(),
-//                           loaded_package->GetPackageId(),
-//                           (loaded_package->IsDynamic() ? " dynamic" : ""));
-//     }
-//     LOG(INFO) << base::StringPrintf("PG (%02x): ",
-//                                     package_group.dynamic_ref_table.mAssignedPackageId)
-//               << list;
-//   }
-// }
+  // void AssetManager2::DumpToLog() const {
+  //   base::ScopedLogSeverity _log(base::INFO);
+  //
+  //   LOG(INFO) << base::StringPrintf("AssetManager2(this=%p)", this);
+  //
+  //   std::string list;
+  //   for (const auto& apk_assets : apk_assets_) {
+  //     base::StringAppendF(&list, "%s,", apk_assets->GetPath().c_str());
+  //   }
+  //   LOG(INFO) << "ApkAssets: " << list;
+  //
+  //   list = "";
+  //   for (size_t i = 0; i < package_ids_.size(); i++) {
+  //     if (package_ids_[i] != 0xff) {
+  //       base::StringAppendF(&list, "%02x -> %d, ", (int)i, package_ids_[i]);
+  //     }
+  //   }
+  //   LOG(INFO) << "Package ID map: " << list;
+  //
+  //   for (const auto& package_group: package_groups_) {
+  //     list = "";
+  //     for (const auto& package : package_group.packages_) {
+  //       const LoadedPackage* loaded_package = package.loaded_package_;
+  //       base::StringAppendF(&list, "%s(%02x%s), ", loaded_package->GetPackageName().c_str(),
+  //                           loaded_package->GetPackageId(),
+  //                           (loaded_package->IsDynamic() ? " dynamic" : ""));
+  //     }
+  //     LOG(INFO) << base::StringPrintf("PG (%02x): ",
+  //                                     package_group.dynamic_ref_table.mAssignedPackageId)
+  //               << list;
+  //   }
+  // }
 
   // Returns the string pool for the given asset cookie.
   // Use the string pool returned here with a valid Res_value object of type Res_value.TYPE_STRING.
-//  final ResStringPool GetStringPoolForCookie(ApkAssetsCookie cookie) const;
+  //  final ResStringPool GetStringPoolForCookie(ApkAssetsCookie cookie) const;
   final ResStringPool GetStringPoolForCookie(ApkAssetsCookie cookie) {
     if (cookie.intValue() < 0 || cookie.intValue() >= apk_assets_.size()) {
       return null;
@@ -404,7 +407,7 @@ public class CppAssetManager2 {
 
   // Returns the DynamicRefTable for the given package ID.
   // This may be nullptr if the APK represented by `cookie` has no resource table.
-//  final DynamicRefTable GetDynamicRefTableForPackage(int package_id) const;
+  //  final DynamicRefTable GetDynamicRefTableForPackage(int package_id) const;
   final DynamicRefTable GetDynamicRefTableForPackage(int package_id) {
     if (package_id >= package_ids_.length) {
       return null;
@@ -418,7 +421,7 @@ public class CppAssetManager2 {
   }
 
   // Returns the DynamicRefTable for the ApkAssets represented by the cookie.
-//  final DynamicRefTable GetDynamicRefTableForCookie(ApkAssetsCookie cookie) const;
+  //  final DynamicRefTable GetDynamicRefTableForCookie(ApkAssetsCookie cookie) const;
   public final DynamicRefTable GetDynamicRefTableForCookie(ApkAssetsCookie cookie) {
     for (final PackageGroup package_group : package_groups_) {
       for (final ApkAssetsCookie package_cookie : package_group.cookies_) {
@@ -432,14 +435,14 @@ public class CppAssetManager2 {
 
   // Sets/resets the configuration for this AssetManager. This will cause all
   // caches that are related to the configuration change to be invalidated.
-//  void SetConfiguration(final ResTable_config& configuration);
+  //  void SetConfiguration(final ResTable_config& configuration);
   public void SetConfiguration(final ResTable_config configuration) {
     final int diff = configuration_.diff(configuration);
     configuration_ = configuration;
 
     if (isTruthy(diff)) {
       RebuildFilterList();
-//      InvalidateCaches(static_cast<int>(diff));
+      //      InvalidateCaches(static_cast<int>(diff));
       InvalidateCaches(diff);
     }
   }
@@ -450,10 +453,10 @@ public class CppAssetManager2 {
   // ('android' package, other libraries) will be excluded from the list.
   // If `exclude_mipmap` is set to true, resource configurations defined for resource type 'mipmap'
   // will be excluded from the list.
-//  Set<ResTable_config> GetResourceConfigurations(boolean exclude_system = false,
-//                                                 boolean exclude_mipmap = false);
-  public Set<ResTable_config> GetResourceConfigurations(boolean exclude_system,
-      boolean exclude_mipmap) {
+  //  Set<ResTable_config> GetResourceConfigurations(boolean exclude_system = false,
+  //                                                 boolean exclude_mipmap = false);
+  public Set<ResTable_config> GetResourceConfigurations(
+      boolean exclude_system, boolean exclude_mipmap) {
     // ATRACE_NAME("AssetManager::GetResourceConfigurations");
     Set<ResTable_config> configurations = new HashSet<>();
     for (final PackageGroup package_group : package_groups_) {
@@ -473,10 +476,10 @@ public class CppAssetManager2 {
   // ('android' package, other libraries) will be excluded from the list.
   // If `merge_equivalent_languages` is set to true, resource locales will be canonicalized
   // and de-duped in the resulting list.
-//  Set<String> GetResourceLocales(boolean exclude_system = false,
-//                                 boolean merge_equivalent_languages = false);
-  public Set<String> GetResourceLocales(boolean exclude_system,
-      boolean merge_equivalent_languages) {
+  //  Set<String> GetResourceLocales(boolean exclude_system = false,
+  //                                 boolean merge_equivalent_languages = false);
+  public Set<String> GetResourceLocales(
+      boolean exclude_system, boolean merge_equivalent_languages) {
     ATRACE_CALL();
     Set<String> locales = new HashSet<>();
     for (final PackageGroup package_group : package_groups_) {
@@ -495,7 +498,7 @@ public class CppAssetManager2 {
   // `mode` controls how the file is opened.
   //
   // NOTE: The loaded APKs are searched in reverse order.
-//  Asset Open(final String filename, Asset.AccessMode mode);
+  //  Asset Open(final String filename, Asset.AccessMode mode);
   public Asset Open(final String filename, Asset.AccessMode mode) {
     final String new_path = "assets/" + filename;
     return OpenNonAsset(new_path, mode);
@@ -503,10 +506,9 @@ public class CppAssetManager2 {
 
   // Opens a file within the assets/ directory of the APK specified by `cookie`.
   // `mode` controls how the file is opened.
-//  Asset Open(final String filename, ApkAssetsCookie cookie,
-//             Asset.AccessMode mode);
-  Asset Open(final String filename, ApkAssetsCookie cookie,
-      Asset.AccessMode mode) {
+  //  Asset Open(final String filename, ApkAssetsCookie cookie,
+  //             Asset.AccessMode mode);
+  Asset Open(final String filename, ApkAssetsCookie cookie, Asset.AccessMode mode) {
     final String new_path = "assets/" + filename;
     return OpenNonAsset(new_path, cookie, mode);
   }
@@ -514,7 +516,7 @@ public class CppAssetManager2 {
   // Opens the directory specified by `dirname`. The result is an AssetDir that is the combination
   // of all directories matching `dirname` under the assets/ directory of every ApkAssets loaded.
   // The entries are sorted by their ASCII name.
-//  AssetDir OpenDir(final String dirname);
+  //  AssetDir OpenDir(final String dirname);
   public AssetDir OpenDir(final String dirname) {
     ATRACE_CALL();
 
@@ -526,13 +528,14 @@ public class CppAssetManager2 {
     // Start from the back.
     for (CppApkAssets apk_assets : apk_assets_) {
       // auto func = [&](final String& name, FileType type) {
-      ForEachFileCallback func = (final String name, FileType type) -> {
-        AssetDir.FileInfo info = new FileInfo();
-        info.setFileName(new String8(name));
-        info.setFileType(type);
-        info.setSourceName(new String8(apk_assets.GetPath()));
-        files.add(info);
-      };
+      ForEachFileCallback func =
+          (final String name, FileType type) -> {
+            AssetDir.FileInfo info = new FileInfo();
+            info.setFileName(new String8(name));
+            info.setFileType(type);
+            info.setSourceName(new String8(apk_assets.GetPath()));
+            files.add(info);
+          };
 
       if (!apk_assets.ForEachFile(full_path, func)) {
         return new AssetDir();
@@ -550,14 +553,13 @@ public class CppAssetManager2 {
   // `out_cookie` is populated with the cookie of the APK this file was found in.
   //
   // NOTE: The loaded APKs are searched in reverse order.
-//  Asset OpenNonAsset(final String filename, Asset.AccessMode mode,
-//                     ApkAssetsCookie* out_cookie = null);
+  //  Asset OpenNonAsset(final String filename, Asset.AccessMode mode,
+  //                     ApkAssetsCookie* out_cookie = null);
   // Search in reverse because that's how we used to do it and we need to preserve behaviour.
   // This is unfortunate, because ClassLoaders delegate to the parent first, so the order
   // is inconsistent for split APKs.
-  public Asset OpenNonAsset(final String filename,
-      Asset.AccessMode mode,
-      Ref<ApkAssetsCookie> out_cookie) {
+  public Asset OpenNonAsset(
+      final String filename, Asset.AccessMode mode, Ref<ApkAssetsCookie> out_cookie) {
     ATRACE_CALL();
     for (int i = apk_assets_.size() - 1; i >= 0; i--) {
       Asset asset = apk_assets_.get(i).Open(filename, mode);
@@ -582,10 +584,9 @@ public class CppAssetManager2 {
   // Opens a file in the APK specified by `cookie`. `mode` controls how the file is opened.
   // This is typically used to open a specific AndroidManifest.xml, or a binary XML file
   // referenced by a resource lookup with GetResource().
-//  Asset OpenNonAsset(final String filename, ApkAssetsCookie cookie,
-//                     Asset.AccessMode mode);
-  public Asset OpenNonAsset(final String filename,
-      ApkAssetsCookie cookie, Asset.AccessMode mode) {
+  //  Asset OpenNonAsset(final String filename, ApkAssetsCookie cookie,
+  //                     Asset.AccessMode mode);
+  public Asset OpenNonAsset(final String filename, ApkAssetsCookie cookie, Asset.AccessMode mode) {
     ATRACE_CALL();
     if (cookie.intValue() < 0 || cookie.intValue() >= apk_assets_.size()) {
       return null;
@@ -600,7 +601,8 @@ public class CppAssetManager2 {
 
   public void ForEachPackage(PackageFunc func) {
     for (PackageGroup package_group : package_groups_) {
-      func.apply(package_group.packages_.get(0).loaded_package_.GetPackageName(),
+      func.apply(
+          package_group.packages_.get(0).loaded_package_.GetPackageName(),
           package_group.dynamic_ref_table.mAssignedPackageId);
     }
   }
@@ -619,11 +621,11 @@ public class CppAssetManager2 {
   //
   // NOTE: FindEntry takes care of ensuring that structs within FindEntryResult have been properly
   // bounds-checked. Callers of FindEntry are free to trust the data if this method succeeds.
-//  ApkAssetsCookie FindEntry(int resid, short density_override, boolean stop_at_first_match,
-//                            LoadedArscEntry* out_entry, ResTable_config out_selected_config,
-//                            int* out_flags);
-  private ApkAssetsCookie FindEntry(int resid, short density_override,
-      final Ref<FindEntryResult> out_entry) {
+  //  ApkAssetsCookie FindEntry(int resid, short density_override, boolean stop_at_first_match,
+  //                            LoadedArscEntry* out_entry, ResTable_config out_selected_config,
+  //                            int* out_flags);
+  private ApkAssetsCookie FindEntry(
+      int resid, short density_override, final Ref<FindEntryResult> out_entry) {
     ATRACE_CALL();
 
     // Might use this if density_override != 0.
@@ -675,7 +677,8 @@ public class CppAssetManager2 {
       LoadedPackage loaded_package = loaded_package_impl.loaded_package_;
       ApkAssetsCookie cookie = package_group.cookies_.get(pi);
 
-      // If the type IDs are offset in this package, we need to take that into account when searching
+      // If the type IDs are offset in this package, we need to take that into account when
+      // searching
       // for a type.
       TypeSpec type_spec = loaded_package.GetTypeSpecByTypeIndex(type_idx);
       if (Util.UNLIKELY(type_spec == null)) {
@@ -686,8 +689,8 @@ public class CppAssetManager2 {
 
       // If there is an IDMAP supplied with this package, translate the entry ID.
       if (type_spec.idmap_entries != null) {
-        if (!LoadedIdmap
-            .Lookup(type_spec.idmap_entries, local_entry_idx, new Ref<>(local_entry_idx))) {
+        if (!LoadedIdmap.Lookup(
+            type_spec.idmap_entries, local_entry_idx, new Ref<>(local_entry_idx))) {
           // There is no mapping, so the resource is not meant to be in this overlay package.
           continue;
         }
@@ -707,8 +710,8 @@ public class CppAssetManager2 {
 
           // We can skip calling ResTable_config.match() because we know that all candidate
           // configurations that do NOT match have been filtered-out.
-          if ((best_config == null || this_config.isBetterThan(best_config, desired_config)) ||
-              (package_is_overlay && this_config.compare(best_config) == 0)) {
+          if ((best_config == null || this_config.isBetterThan(best_config, desired_config))
+              || (package_is_overlay && this_config.compare(best_config) == 0)) {
             // The configuration matches and is better than the previous selection.
             // Find the entry value if it exists for this configuration.
             ResTable_type type_chunk = filtered_group.types.get(i);
@@ -736,8 +739,8 @@ public class CppAssetManager2 {
           ResTable_config this_config = ResTable_config.fromDtoH(type.config);
 
           if (this_config.match(desired_config)) {
-            if ((best_config == null || this_config.isBetterThan(best_config, desired_config)) ||
-                (package_is_overlay && this_config.compare(best_config) == 0)) {
+            if ((best_config == null || this_config.isBetterThan(best_config, desired_config))
+                || (package_is_overlay && this_config.compare(best_config) == 0)) {
               // The configuration matches and is better than the previous selection.
               // Find the entry value if it exists for this configuration.
               int offset = LoadedPackage.GetEntryOffset(type, local_entry_idx);
@@ -770,7 +773,8 @@ public class CppAssetManager2 {
     out_entry_.entry = best_entry;
     out_entry_.config = best_config;
     out_entry_.type_flags = type_flags;
-    out_entry_.type_string_ref = new StringPoolRef(best_package.GetTypeStringPool(), best_type.id - 1);
+    out_entry_.type_string_ref =
+        new StringPoolRef(best_package.GetTypeStringPool(), best_type.id - 1);
     out_entry_.entry_string_ref =
         new StringPoolRef(best_package.GetKeyStringPool(), best_entry.getKeyIndex());
     out_entry_.dynamic_ref_table = package_group.dynamic_ref_table;
@@ -782,7 +786,7 @@ public class CppAssetManager2 {
   // Utf8 strings are preferred, and only if they are unavailable are
   // the Utf16 variants populated.
   // Returns false if the resource was not found or the name was missing/corrupt.
-//  boolean GetResourceName(int resid, ResourceName* out_name);
+  //  boolean GetResourceName(int resid, ResourceName* out_name);
   public boolean GetResourceName(int resid, ResourceName out_name) {
     final Ref<FindEntryResult> entryRef = new Ref<>(null);
     ApkAssetsCookie cookie = FindEntry(resid, (short) 0 /* density_override */, entryRef);
@@ -807,7 +811,7 @@ public class CppAssetManager2 {
       // out_name.type16 = entry.type_string_ref.string();
       // out_name.type_len = out_name.type16 == null ? 0 : out_name.type16.length();
       // if (out_name.type16 == null) {
-        return false;
+      return false;
       // }
     }
 
@@ -818,7 +822,7 @@ public class CppAssetManager2 {
       // out_name.entry16 = entry.entry_string_ref.string();
       // out_name.entry_len = out_name.entry16 == null ? 0 : out_name.entry16.length();
       // if (out_name.entry16 == null) {
-        return false;
+      return false;
       // }
     }
     return true;
@@ -827,7 +831,7 @@ public class CppAssetManager2 {
   // Populates `out_flags` with the bitmask of configuration axis that this resource varies with.
   // See ResTable_config for the list of configuration axis.
   // Returns false if the resource was not found.
-//  boolean GetResourceFlags(int resid, int* out_flags);
+  //  boolean GetResourceFlags(int resid, int* out_flags);
   boolean GetResourceFlags(int resid, Ref<Integer> out_flags) {
     final Ref<FindEntryResult> entry = new Ref<>(null);
     ApkAssetsCookie cookie = FindEntry(resid, (short) 0 /* density_override */, entry);
@@ -842,7 +846,6 @@ public class CppAssetManager2 {
     return cookie.intValue() != kInvalidCookie;
   }
 
-
   // Retrieves the best matching resource with ID `resid`. The resource value is filled into
   // `out_value` and the configuration for the selected value is populated in `out_selected_config`.
   // `out_flags` holds the same flags as retrieved with GetResourceFlags().
@@ -852,11 +855,14 @@ public class CppAssetManager2 {
   // Returns a valid cookie if the resource was found. If the resource was not found, or if the
   // resource was a map/bag type, then kInvalidCookie is returned. If `may_be_bag` is false,
   // this function logs if the resource was a map/bag type before returning kInvalidCookie.
-//  ApkAssetsCookie GetResource(int resid, boolean may_be_bag, short density_override,
-//                              Res_value out_value, ResTable_config out_selected_config,
-//                              int* out_flags);
-  public ApkAssetsCookie GetResource(int resid, boolean may_be_bag,
-      short density_override, Ref<Res_value> out_value,
+  //  ApkAssetsCookie GetResource(int resid, boolean may_be_bag, short density_override,
+  //                              Res_value out_value, ResTable_config out_selected_config,
+  //                              int* out_flags);
+  public ApkAssetsCookie GetResource(
+      int resid,
+      boolean may_be_bag,
+      short density_override,
+      Ref<Res_value> out_value,
       final Ref<ResTable_config> out_selected_config,
       final Ref<Integer> out_flags) {
     final Ref<FindEntryResult> entry = new Ref<>(null);
@@ -907,22 +913,32 @@ public class CppAssetManager2 {
   // value. This is only initialized if the passed in `in_out_value` is a reference.
   // Returns the cookie of the APK the resolved resource was defined in, or kInvalidCookie if
   // it was not found.
-//  ApkAssetsCookie ResolveReference(ApkAssetsCookie cookie, Res_value in_out_value,
-//                                   ResTable_config in_out_selected_config, int* in_out_flags,
-//                                   int* out_last_reference);
-  public ApkAssetsCookie ResolveReference(ApkAssetsCookie cookie, Ref<Res_value> in_out_value,
+  //  ApkAssetsCookie ResolveReference(ApkAssetsCookie cookie, Res_value in_out_value,
+  //                                   ResTable_config in_out_selected_config, int* in_out_flags,
+  //                                   int* out_last_reference);
+  public ApkAssetsCookie ResolveReference(
+      ApkAssetsCookie cookie,
+      Ref<Res_value> in_out_value,
       final Ref<ResTable_config> in_out_selected_config,
       final Ref<Integer> in_out_flags,
       final Ref<Integer> out_last_reference) {
     final int kMaxIterations = 20;
 
-    for (int iteration = 0; in_out_value.get().dataType == Res_value.TYPE_REFERENCE &&
-        in_out_value.get().data != 0 && iteration < kMaxIterations;
+    for (int iteration = 0;
+        in_out_value.get().dataType == Res_value.TYPE_REFERENCE
+            && in_out_value.get().data != 0
+            && iteration < kMaxIterations;
         iteration++) {
       out_last_reference.set(in_out_value.get().data);
       final Ref<Integer> new_flags = new Ref<>(0);
-      cookie = GetResource(in_out_value.get().data, true /*may_be_bag*/, (short) 0 /*density_override*/,
-          in_out_value, in_out_selected_config, new_flags);
+      cookie =
+          GetResource(
+              in_out_value.get().data,
+              true /*may_be_bag*/,
+              (short) 0 /*density_override*/,
+              in_out_value,
+              in_out_selected_config,
+              new_flags);
       if (cookie.intValue() == kInvalidCookie) {
         return K_INVALID_COOKIE;
       }
@@ -974,8 +990,8 @@ public class CppAssetManager2 {
     // Check that the size of the entry header is at least as big as
     // the desired ResTable_map_entry. Also verify that the entry
     // was intended to be a map.
-    if (dtohs(entry.entry.size) < ResTable_map_entry.BASE_SIZEOF ||
-        (dtohs(entry.entry.flags) & ResourceTypes.ResTable_entry.FLAG_COMPLEX) == 0) {
+    if (dtohs(entry.entry.size) < ResTable_map_entry.BASE_SIZEOF
+        || (dtohs(entry.entry.flags) & ResourceTypes.ResTable_entry.FLAG_COMPLEX) == 0) {
       // Not a bag, nothing to do.
       return null;
     }
@@ -984,11 +1000,11 @@ public class CppAssetManager2 {
     // final ResTable_map map_entry =
     //     reinterpret_cast<final ResTable_map*>(reinterpret_cast<final byte*>(map) + map.size);
     // final ResTable_map map_entry_end = map_entry + dtohl(map.count);
-    final ResTable_map_entry map = new ResTable_map_entry(entry.entry.myBuf(), entry.entry.myOffset());
+    final ResTable_map_entry map =
+        new ResTable_map_entry(entry.entry.myBuf(), entry.entry.myOffset());
     int curOffset = map.myOffset() + map.size;
     ResTable_map map_entry = null; // = new ResTable_map(map.myBuf(), curOffset);
-    final int map_entry_end =
-        curOffset + dtohl(map.count) * ResTable_map.SIZEOF;
+    final int map_entry_end = curOffset + dtohl(map.count) * ResTable_map.SIZEOF;
     if (curOffset < map_entry_end) {
       map_entry = new ResTable_map(map.myBuf(), curOffset);
     }
@@ -1040,9 +1056,8 @@ public class CppAssetManager2 {
         ++i;
 
         final int size = dtohs(map_entry.value.size);
-//      curOffset += size + sizeof(*map)-sizeof(map->value);
-        curOffset += size + ResTable_map.SIZEOF-Res_value.SIZEOF;
-
+        //      curOffset += size + sizeof(*map)-sizeof(map->value);
+        curOffset += size + ResTable_map.SIZEOF - Res_value.SIZEOF;
       }
       new_bag.type_spec_flags = entry.type_flags;
       new_bag.entry_count = entry_count;
@@ -1073,7 +1088,7 @@ public class CppAssetManager2 {
     final ResolvedBag.Entry[] new_entry = new_bag.entries;
     int newEntryIndex = 0;
 
-  // const ResolvedBag::Entry* parent_entry = parent_bag->entries;
+    // const ResolvedBag::Entry* parent_entry = parent_bag->entries;
     int parentEntryIndex = 0;
     // final ResolvedBag.Entry parent_entry_end = parent_entry + parent_bag.entry_count;
     final int parentEntryCount = parent_bag.entry_count;
@@ -1161,10 +1176,10 @@ public class CppAssetManager2 {
       int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
       new_entry_.value = valueRef.get();
       if (err != NO_ERROR) {
-        System.err.println(String.format(
-            "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.",
-            new_entry_.value.dataType,
-            new_entry_.value.data, new_key.get()));
+        System.err.println(
+            String.format(
+                "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.",
+                new_entry_.value.dataType, new_entry_.value.data, new_key.get()));
         return null;
       }
       // ++map_entry;
@@ -1191,7 +1206,8 @@ public class CppAssetManager2 {
     final int actual_count = newEntryIndex;
     if (actual_count != max_count) {
       // new_bag.reset(reinterpret_cast<ResolvedBag*>(realloc(
-      //     new_bag.release(), sizeof(ResolvedBag) + (actual_count * sizeof(ResolvedBag::Entry)))));
+      //     new_bag.release(), sizeof(ResolvedBag) + (actual_count *
+      // sizeof(ResolvedBag::Entry)))));
       Entry[] resizedEntries = new Entry[actual_count];
       System.arraycopy(new_bag.entries, 0, resizedEntries, 0, actual_count);
       new_bag.entries = resizedEntries;
@@ -1234,12 +1250,11 @@ public class CppAssetManager2 {
   // If no package is specified in `resource_name`, then `fallback_package` is used as the package.
   // If no type is specified in `resource_name`, then `fallback_type` is used as the type.
   // Returns 0x0 if no resource by that name was found.
-//  int GetResourceId(final String resource_name, final String fallback_type = {},
-//    final String fallback_package = {});
+  //  int GetResourceId(final String resource_name, final String fallback_type = {},
+  //    final String fallback_package = {});
   @SuppressWarnings("NewApi")
-  public int GetResourceId(final String resource_name,
-      final String fallback_type,
-      final String fallback_package) {
+  public int GetResourceId(
+      final String resource_name, final String fallback_type, final String fallback_package) {
     final Ref<String> package_name = new Ref<>(null),
         type = new Ref<>(null),
         entry = new Ref<>(null);
@@ -1274,7 +1289,7 @@ public class CppAssetManager2 {
 
     for (final PackageGroup package_group : package_groups_) {
       for (final ConfiguredPackage package_impl : package_group.packages_) {
-        LoadedPackage package_= package_impl.loaded_package_;
+        LoadedPackage package_ = package_impl.loaded_package_;
         if (!Objects.equals(package_name.get(), package_.GetPackageName())) {
           // All packages in the same group are expected to have the same package name.
           break;
@@ -1340,7 +1355,7 @@ public class CppAssetManager2 {
 
   // Purge all resources that are cached and vary by the configuration axis denoted by the
   // bitmask `diff`.
-//  void InvalidateCaches(int diff);
+  //  void InvalidateCaches(int diff);
   private void InvalidateCaches(int diff) {
     if (diff == 0xffffffff) {
       // Everything must go.
@@ -1361,31 +1376,36 @@ public class CppAssetManager2 {
   }
 
   // Creates a new Theme from this AssetManager.
-//  std.unique_ptr<Theme> NewTheme();
+  //  std.unique_ptr<Theme> NewTheme();
   public Theme NewTheme() {
     return new Theme(this);
   }
 
   public static class Theme {
     //  friend class AssetManager2;
-//
-// public:
-//
-//
-//
-//  final AssetManager2* GetAssetManager() { return asset_manager_; }
-//
-    public CppAssetManager2 GetAssetManager() { return asset_manager_; }
     //
-//  // Returns a bit mask of configuration changes that will impact this
-//  // theme (and thus require completely reloading it).
-    public int GetChangingConfigurations() { return type_spec_flags_; }
+    // public:
+    //
+    //
+    //
+    //  final AssetManager2* GetAssetManager() { return asset_manager_; }
+    //
+    public CppAssetManager2 GetAssetManager() {
+      return asset_manager_;
+    }
 
-// private:
-//  private DISALLOW_COPY_AND_ASSIGN(Theme);
+    //
+    //  // Returns a bit mask of configuration changes that will impact this
+    //  // theme (and thus require completely reloading it).
+    public int GetChangingConfigurations() {
+      return type_spec_flags_;
+    }
+
+    // private:
+    //  private DISALLOW_COPY_AND_ASSIGN(Theme);
 
     // Called by AssetManager2.
-//  private explicit Theme(AssetManager2* asset_manager) : asset_manager_(asset_manager) {}
+    //  private explicit Theme(AssetManager2* asset_manager) : asset_manager_(asset_manager) {}
 
     private final CppAssetManager2 asset_manager_;
     private int type_spec_flags_ = 0;
@@ -1429,7 +1449,7 @@ public class CppAssetManager2 {
     // to true, this behavior is changed and all theme attributes from the style at
     // `resid` are applied.
     // Returns false if the style failed to apply.
-//  boolean ApplyStyle(int resid, boolean force = false);
+    //  boolean ApplyStyle(int resid, boolean force = false);
     public boolean ApplyStyle(int resid, boolean force) {
       // ATRACE_NAME("Theme::ApplyStyle");
 
@@ -1446,18 +1466,21 @@ public class CppAssetManager2 {
       ThemePackage last_package = null;
       ThemeType last_type = null;
 
-      // Iterate backwards, because each bag is sorted in ascending key ID order, meaning we will only
+      // Iterate backwards, because each bag is sorted in ascending key ID order, meaning we will
+      // only
       // need to perform one resize per type.
       //     using reverse_bag_iterator = std::reverse_iterator<const ResolvedBag::Entry*>;
       // const auto bag_iter_end = reverse_bag_iterator(begin(bag));
-      //     for (auto bag_iter = reverse_bag_iterator(end(bag)); bag_iter != bag_iter_end; ++bag_iter) {
+      //     for (auto bag_iter = reverse_bag_iterator(end(bag)); bag_iter != bag_iter_end;
+      // ++bag_iter) {
       List<Entry> bagEntries = new ArrayList<>(Arrays.asList(bag.entries));
       Collections.reverse(bagEntries);
       for (ResolvedBag.Entry bag_iter : bagEntries) {
         //   final int attr_resid = bag_iter.key;
         final int attr_resid = bag_iter == null ? 0 : bag_iter.key;
 
-        // If the resource ID passed in is not a style, the key can be some other identifier that is not
+        // If the resource ID passed in is not a style, the key can be some other identifier that is
+        // not
         // a resource ID. We should fail fast instead of operating with strange resource IDs.
         if (!is_valid_resid(attr_resid)) {
           return false;
@@ -1484,7 +1507,8 @@ public class CppAssetManager2 {
         if (last_type_idx != type_idx) {
           ThemeType type = last_package.types[type_idx];
           if (type == null) {
-            // Allocate enough memory to contain this entry_idx. Since we're iterating in reverse over
+            // Allocate enough memory to contain this entry_idx. Since we're iterating in reverse
+            // over
             // a sorted list of attributes, this shouldn't be resized again during this method call.
             // type.reset(reinterpret_cast<ThemeType*>(
             //     calloc(sizeof(ThemeType) + (entry_idx + 1) * sizeof(ThemeEntry), 1)));
@@ -1492,7 +1516,8 @@ public class CppAssetManager2 {
             type.entries = new ThemeEntry[entry_idx + 1];
             type.entry_count = entry_idx + 1;
           } else if (entry_idx >= type.entry_count) {
-            // Reallocate the memory to contain this entry_idx. Since we're iterating in reverse over
+            // Reallocate the memory to contain this entry_idx. Since we're iterating in reverse
+            // over
             // a sorted list of attributes, this shouldn't be resized again during this method call.
             int new_count = entry_idx + 1;
             // type.reset(reinterpret_cast<ThemeType*>(
@@ -1515,8 +1540,9 @@ public class CppAssetManager2 {
           entry = last_type.entries[entry_idx] = new ThemeEntry();
           entry.value = new Res_value();
         }
-        if (force || (entry.value.dataType == Res_value.TYPE_NULL &&
-            entry.value.data != Res_value.DATA_NULL_EMPTY)) {
+        if (force
+            || (entry.value.dataType == Res_value.TYPE_NULL
+                && entry.value.data != Res_value.DATA_NULL_EMPTY)) {
           entry.cookie = bag_iter.cookie;
           entry.type_spec_flags |= bag.type_spec_flags;
           entry.value = bag_iter.value;
@@ -1532,13 +1558,14 @@ public class CppAssetManager2 {
     //
     // If the attribute is not found, returns kInvalidCookie.
     //
-    // NOTE: This function does not do reference traversal. If you want to follow references to other
+    // NOTE: This function does not do reference traversal. If you want to follow references to
+    // other
     // resources to get the "real" value to use, you need to call ResolveReference() after this
     // function.
-//  ApkAssetsCookie GetAttribute(int resid, Res_value* out_value,
-//                               int* out_flags) const;
-    public ApkAssetsCookie GetAttribute(int resid, Ref<Res_value> out_value,
-        final Ref<Integer> out_flags) {
+    //  ApkAssetsCookie GetAttribute(int resid, Res_value* out_value,
+    //                               int* out_flags) const;
+    public ApkAssetsCookie GetAttribute(
+        int resid, Ref<Res_value> out_value, final Ref<Integer> out_flags) {
       int cnt = 20;
 
       int type_spec_flags = 0;
@@ -1570,8 +1597,8 @@ public class CppAssetManager2 {
               }
 
               // @null is different than @empty.
-              if (entry.value.dataType == Res_value.TYPE_NULL &&
-                  entry.value.data != Res_value.DATA_NULL_EMPTY) {
+              if (entry.value.dataType == Res_value.TYPE_NULL
+                  && entry.value.data != Res_value.DATA_NULL_EMPTY) {
                 return K_INVALID_COOKIE;
               }
 
@@ -1588,11 +1615,13 @@ public class CppAssetManager2 {
 
     // This is like ResolveReference(), but also takes
     // care of resolving attribute references to the theme.
-//  ApkAssetsCookie ResolveAttributeReference(ApkAssetsCookie cookie, Res_value* in_out_value,
-//                                            ResTable_config in_out_selected_config = null,
-//                                            int* in_out_type_spec_flags = null,
-//                                            int* out_last_ref = null);
-    ApkAssetsCookie ResolveAttributeReference(ApkAssetsCookie cookie, Ref<Res_value> in_out_value,
+    //  ApkAssetsCookie ResolveAttributeReference(ApkAssetsCookie cookie, Res_value* in_out_value,
+    //                                            ResTable_config in_out_selected_config = null,
+    //                                            int* in_out_type_spec_flags = null,
+    //                                            int* out_last_ref = null);
+    ApkAssetsCookie ResolveAttributeReference(
+        ApkAssetsCookie cookie,
+        Ref<Res_value> in_out_value,
         final Ref<ResTable_config> in_out_selected_config,
         final Ref<Integer> in_out_type_spec_flags,
         final Ref<Integer> out_last_ref) {
@@ -1604,26 +1633,26 @@ public class CppAssetManager2 {
         }
 
         if (in_out_type_spec_flags != null) {
-//          *in_out_type_spec_flags |= new_flags;
+          //          *in_out_type_spec_flags |= new_flags;
           in_out_type_spec_flags.set(in_out_type_spec_flags.get() | new_flags.get());
         }
       }
-      return asset_manager_.ResolveReference(cookie, in_out_value, in_out_selected_config,
-          in_out_type_spec_flags, out_last_ref);
+      return asset_manager_.ResolveReference(
+          cookie, in_out_value, in_out_selected_config, in_out_type_spec_flags, out_last_ref);
     }
 
     //  void Clear();
     public void Clear() {
       type_spec_flags_ = 0;
       for (int i = 0; i < packages_.length; i++) {
-//        package_.reset();
+        //        package_.reset();
         packages_[i] = null;
       }
     }
 
     // Sets this Theme to be a copy of `o` if `o` has the same AssetManager as this Theme.
     // Returns false if the AssetManagers of the Themes were not compatible.
-//  boolean SetTo(final Theme& o);
+    //  boolean SetTo(final Theme& o);
     public boolean SetTo(final Theme o) {
       if (this == o) {
         return true;
@@ -1659,7 +1688,8 @@ public class CppAssetManager2 {
           }
 
           // Create a new type and update it to theirs.
-          // const size_t type_alloc_size = sizeof(ThemeType) + (type->entry_count * sizeof(ThemeEntry));
+          // const size_t type_alloc_size = sizeof(ThemeType) + (type->entry_count *
+          // sizeof(ThemeEntry));
           // void* copied_data = malloc(type_alloc_size);
           ThemeType copied_data = new ThemeType();
           copied_data.entry_count = type.entry_count;
@@ -1685,8 +1715,8 @@ public class CppAssetManager2 {
       return true;
     }
 
-//
-  }  // namespace android
+    //
+  } // namespace android
 
   public List<AssetPath> getAssetPaths() {
     ArrayList<AssetPath> assetPaths = new ArrayList<>(apk_assets_.size());
@@ -1696,5 +1726,4 @@ public class CppAssetManager2 {
     }
     return assetPaths;
   }
-
 }

@@ -102,6 +102,7 @@ public class Injector {
 
   @GuardedBy("this")
   private final Map<Key<?>, Provider<?>> providers;
+
   private final Map<Key<?>, Class<?>> defaultImpls;
 
   /** Creates a new empty injector. */
@@ -111,13 +112,16 @@ public class Injector {
 
   @VisibleForTesting
   Injector(PluginFinder pluginFinder) {
-    this(null, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(),
-        pluginFinder);
+    this(
+        null, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), pluginFinder);
   }
 
   /** Creates a new injector based on values from a Builder. */
-  private Injector(Injector superInjector, Map<Key<?>, Provider<?>> providers,
-      Map<Key<?>, Class<?>> explicitImpls, Map<Key<?>, Class<?>> defaultImpls,
+  private Injector(
+      Injector superInjector,
+      Map<Key<?>, Provider<?>> providers,
+      Map<Key<?>, Class<?>> explicitImpls,
+      Map<Key<?>, Class<?>> defaultImpls,
       PluginFinder pluginFinder) {
     this.superInjector = superInjector;
 
@@ -198,12 +202,14 @@ public class Injector {
   }
 
   /** Finds an instance for the given class. Calls are guaranteed idempotent. */
-  @Nonnull public <T> T getInstance(@Nonnull Class<T> type) {
+  @Nonnull
+  public <T> T getInstance(@Nonnull Class<T> type) {
     return getInstance(new Key<>(type));
   }
 
   /** Finds an instance for the given key. Calls are guaranteed idempotent. */
-  @Nonnull private <T> T getInstance(@Nonnull Key<T> key) {
+  @Nonnull
+  private <T> T getInstance(@Nonnull Key<T> key) {
     try {
       return getInstanceInternal(key);
     } catch (UnsatisfiedDependencyException e) {
@@ -228,16 +234,19 @@ public class Injector {
     return new Injector.Builder(this, classLoader);
   }
 
-  @Nonnull private <T> Provider<T> memoized(@Nonnull Class<? extends T> implementingClass) {
+  @Nonnull
+  private <T> Provider<T> memoized(@Nonnull Class<? extends T> implementingClass) {
     return memoized(() -> inject(implementingClass));
   }
 
-  @Nonnull private <T> Provider<T> memoized(@Nonnull Provider<T> tProvider) {
+  @Nonnull
+  private <T> Provider<T> memoized(@Nonnull Provider<T> tProvider) {
     return new MemoizingProvider<>(tProvider);
   }
 
   @SuppressWarnings("unchecked")
-  @Nonnull private <T> T inject(@Nonnull Class<? extends T> implementingClass) {
+  @Nonnull
+  private <T> T inject(@Nonnull Class<? extends T> implementingClass) {
     Constructor<T> ctor;
     try {
       ctor = findConstructor(implementingClass);
@@ -314,21 +323,24 @@ public class Injector {
   /**
    * Finds a provider for the given key.
    *
-   * Calls are guaranteed idempotent and non-blocking.
+   * <p>Calls are guaranteed idempotent and non-blocking.
    */
   @SuppressWarnings("unchecked")
   @Nonnull
   private synchronized <T> Provider<T> getProvider(final Key<T> key) {
     // Previously-gotten providers (including those from subinjectors) will already be present.
-    return (Provider<T>) providers.computeIfAbsent(key, k -> {
-      // @AutoFactory requests are always handled by the top-level injector.
-      if (key.isAutoFactory()) {
-        return memoized(new ScopeBuilderProvider<>(key.getDependencyClass()));
-      }
+    return (Provider<T>)
+        providers.computeIfAbsent(
+            key,
+            k -> {
+              // @AutoFactory requests are always handled by the top-level injector.
+              if (key.isAutoFactory()) {
+                return memoized(new ScopeBuilderProvider<>(key.getDependencyClass()));
+              }
 
-      // Find a provider locally.
-      return findLocalProvider(key);
-    });
+              // Find a provider locally.
+              return findLocalProvider(key);
+            });
   }
 
   private <T> Provider<T> findLocalProvider(Key<T> key) throws UnsatisfiedDependencyException {
@@ -386,8 +398,7 @@ public class Injector {
   /** Identifies an injection point. */
   public static class Key<T> {
 
-    @Nonnull
-    private final Type theInterface;
+    @Nonnull private final Type theInterface;
     private final String name;
 
     private Key(@Nonnull Type theInterface) {
@@ -426,9 +437,7 @@ public class Injector {
       StringBuilder buf = new StringBuilder();
       buf.append("Key<").append(theInterface);
       if (name != null) {
-        buf.append(" named \"")
-            .append(name)
-            .append("\"");
+        buf.append(" named \"").append(name).append("\"");
       }
       buf.append(">");
       return buf.toString();
@@ -436,13 +445,12 @@ public class Injector {
 
     String toShortString() {
       StringBuilder buf = new StringBuilder();
-      buf.append(theInterface instanceof Class
-          ? ((Class) theInterface).getSimpleName()
-          : theInterface.getTypeName());
+      buf.append(
+          theInterface instanceof Class
+              ? ((Class) theInterface).getSimpleName()
+              : theInterface.getTypeName());
       if (name != null) {
-        buf.append(" \"")
-            .append(name)
-            .append("\"");
+        buf.append(" \"").append(name).append("\"");
       }
       return buf.toString();
     }
@@ -543,8 +551,11 @@ public class Injector {
 
     @Override
     public T get() {
-      return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz},
-          (proxy, method, args) -> create(method, args));
+      return (T)
+          Proxy.newProxyInstance(
+              clazz.getClassLoader(),
+              new Class[] {clazz},
+              (proxy, method, args) -> create(method, args));
     }
 
     private Object create(Method method, Object[] args) {

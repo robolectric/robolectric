@@ -82,7 +82,7 @@ public class ShadowConnectivityManagerTest {
   @Test
   public void getNetworkInfo_shouldReturnSomeForAllNetworks() {
     Network[] allNetworks = connectivityManager.getAllNetworks();
-    for (Network network: allNetworks) {
+    for (Network network : allNetworks) {
       NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
       assertThat(networkInfo).isNotNull();
     }
@@ -183,7 +183,8 @@ public class ShadowConnectivityManagerTest {
     assertThat(info.getSubtype()).isEqualTo(TelephonyManager.NETWORK_TYPE_EDGE);
     assertThat(info.isAvailable()).isTrue();
     assertThat(info.isConnected()).isFalse();
-    assertThat(shadowOf(connectivityManager.getActiveNetwork()).getNetId()).isEqualTo(info.getType());
+    assertThat(shadowOf(connectivityManager.getActiveNetwork()).getNetId())
+        .isEqualTo(info.getType());
   }
 
   @Test
@@ -273,12 +274,14 @@ public class ShadowConnectivityManagerTest {
 
     Network returnedNetwork = networks[0];
     ShadowNetwork shadowReturnedNetwork = shadowOf(returnedNetwork);
-    assertThat(shadowReturnedNetwork.getNetId()).isNotEqualTo(ShadowConnectivityManager.NET_ID_WIFI);
+    assertThat(shadowReturnedNetwork.getNetId())
+        .isNotEqualTo(ShadowConnectivityManager.NET_ID_WIFI);
   }
 
   @Test
   public void getNetworkPreference_shouldGetDefaultValue() {
-    assertThat(connectivityManager.getNetworkPreference()).isEqualTo(ConnectivityManager.DEFAULT_NETWORK_PREFERENCE);
+    assertThat(connectivityManager.getNetworkPreference())
+        .isEqualTo(ConnectivityManager.DEFAULT_NETWORK_PREFERENCE);
   }
 
   @Test
@@ -302,7 +305,8 @@ public class ShadowConnectivityManagerTest {
   @Test
   public void setNetworkPreference_shouldSetDefaultValue() {
     connectivityManager.setNetworkPreference(ConnectivityManager.TYPE_MOBILE);
-    assertThat(connectivityManager.getNetworkPreference()).isEqualTo(connectivityManager.getNetworkPreference());
+    assertThat(connectivityManager.getNetworkPreference())
+        .isEqualTo(connectivityManager.getNetworkPreference());
     connectivityManager.setNetworkPreference(ConnectivityManager.TYPE_WIFI);
     assertThat(connectivityManager.getNetworkPreference()).isEqualTo(ConnectivityManager.TYPE_WIFI);
   }
@@ -316,6 +320,7 @@ public class ShadowConnectivityManagerTest {
     return new ConnectivityManager.NetworkCallback() {
       @Override
       public void onAvailable(Network network) {}
+
       @Override
       public void onLost(Network network) {}
     };
@@ -568,8 +573,8 @@ public class ShadowConnectivityManagerTest {
     NetworkCapabilities nc = ShadowNetworkCapabilities.newInstance();
     shadowOf(nc).addCapability(NetworkCapabilities.NET_CAPABILITY_MMS);
 
-    shadowOf(connectivityManager).setNetworkCapabilities(
-        shadowOf(connectivityManager).getActiveNetwork(), nc);
+    shadowOf(connectivityManager)
+        .setNetworkCapabilities(shadowOf(connectivityManager).getActiveNetwork(), nc);
 
     assertThat(
             shadowOf(connectivityManager)

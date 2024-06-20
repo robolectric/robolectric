@@ -115,14 +115,14 @@ public class CustomConfigurerTest {
             new LooperModeConfigurer(new Properties(), new PackagePropertiesLoader()),
             new SomeConfigConfigurer());
 
-    SingleSdkRobolectricTestRunner testRunner = new SingleSdkRobolectricTestRunner(
-        testClass,
-        SingleSdkRobolectricTestRunner.defaultInjector()
-            .bind(ConfigurationStrategy.class, configurationStrategy)
-            .build());
+    SingleSdkRobolectricTestRunner testRunner =
+        new SingleSdkRobolectricTestRunner(
+            testClass,
+            SingleSdkRobolectricTestRunner.defaultInjector()
+                .bind(ConfigurationStrategy.class, configurationStrategy)
+                .build());
 
     testRunner.run(notifier);
     return failureListener.failures.stream().map(Failure::getMessage).collect(toList());
   }
-
 }

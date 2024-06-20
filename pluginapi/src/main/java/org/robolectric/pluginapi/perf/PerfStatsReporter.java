@@ -11,5 +11,4 @@ public interface PerfStatsReporter {
    * @param metrics the metrics.
    */
   void report(Metadata metadata, Collection<Metric> metrics);
-
 }

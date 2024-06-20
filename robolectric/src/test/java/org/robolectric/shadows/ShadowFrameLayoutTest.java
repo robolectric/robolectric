@@ -31,7 +31,8 @@ public class ShadowFrameLayoutTest {
     assertThat(frameLayout.getHeight()).isEqualTo(0);
     assertThat(frameLayout.getWidth()).isEqualTo(0);
 
-    frameLayout.measure(View.MeasureSpec.makeMeasureSpec(150, View.MeasureSpec.AT_MOST),
+    frameLayout.measure(
+        View.MeasureSpec.makeMeasureSpec(150, View.MeasureSpec.AT_MOST),
         View.MeasureSpec.makeMeasureSpec(300, View.MeasureSpec.AT_MOST));
 
     assertThat(frameLayout.getHeight()).isEqualTo(0);

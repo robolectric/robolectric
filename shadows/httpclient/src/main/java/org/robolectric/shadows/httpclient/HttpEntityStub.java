@@ -10,39 +10,48 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 
 public class HttpEntityStub implements HttpEntity {
-  @Override public boolean isRepeatable() {
+  @Override
+  public boolean isRepeatable() {
     return true;
   }
 
-  @Override public boolean isChunked() {
+  @Override
+  public boolean isChunked() {
     throw new UnsupportedOperationException();
   }
 
-  @Override public long getContentLength() {
+  @Override
+  public long getContentLength() {
     throw new UnsupportedOperationException();
   }
 
-  @Override public Header getContentType() {
+  @Override
+  public Header getContentType() {
     throw new UnsupportedOperationException();
   }
 
-  @Override public Header getContentEncoding() {
+  @Override
+  public Header getContentEncoding() {
     throw new UnsupportedOperationException();
   }
 
-  @Override public InputStream getContent() throws IOException, IllegalStateException {
+  @Override
+  public InputStream getContent() throws IOException, IllegalStateException {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void writeTo(OutputStream outputStream) throws IOException {
+  @Override
+  public void writeTo(OutputStream outputStream) throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Override public boolean isStreaming() {
+  @Override
+  public boolean isStreaming() {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void consumeContent() throws IOException {
+  @Override
+  public void consumeContent() throws IOException {
     throw new UnsupportedOperationException();
   }
 
