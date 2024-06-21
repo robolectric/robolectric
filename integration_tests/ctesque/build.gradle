@@ -1,7 +1,7 @@
 plugins {
-    id("com.android.library")
-    id("org.robolectric.gradle.AndroidProjectConfigPlugin")
-    id("org.robolectric.gradle.GradleManagedDevicePlugin")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.robolectric.android.project)
+    alias(libs.plugins.robolectric.gradle.managed.device)
 }
 
 android {

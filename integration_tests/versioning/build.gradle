@@ -1,6 +1,6 @@
 plugins {
-    id("org.robolectric.gradle.RoboJavaModulePlugin")
-    id("org.robolectric.gradle.DeployedRoboJavaModulePlugin")
+    alias(libs.plugins.robolectric.deployed.java.module)
+    alias(libs.plugins.robolectric.java.module)
 }
 
 configurations {
@@ -8,7 +8,8 @@ configurations {
 }
 
 dependencies {
-    compileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK (AndroidSdk.s.coordinates) { force = true }
+    // compile against latest Android SDK (AndroidSdk.s.coordinates) { force = true }
+    compileOnly AndroidSdk.MAX_SDK.coordinates
     testImplementation project(":robolectric")
     testImplementation libs.truth
     testImplementation "androidx.test.ext:junit:$axtJunitVersion@aar"

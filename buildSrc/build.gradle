@@ -1,7 +1,7 @@
 plugins {
-    id("groovy")
-    id("java-library")
-    id("java-gradle-plugin")
+    alias(libs.plugins.groovy)
+    alias(libs.plugins.java.gradle.plugin)
+    alias(libs.plugins.java.library)
 }
 
 gradlePlugin {
