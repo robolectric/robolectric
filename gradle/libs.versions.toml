@@ -241,3 +241,23 @@ powermock = ["powermock-module-junit4", "powermock-module-junit4-rule", "powermo
 sqlite4java-native = ["sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86"]
 
 [plugins]
+android-library = { id = "com.android.library", version.ref = "android-gradle" }
+application = { id = "application" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt-gradle" }
+error-prone = { id = "net.ltgt.errorprone", version.ref = "error-prone-gradle" }
+groovy = { id = "groovy" }
+idea = { id = "idea" }
+jacoco = { id = "jacoco" }
+java = { id = "java" }
+java-gradle-plugin = { id = "java-gradle-plugin" }
+java-library = { id = "java-library" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+robolectric-android-project = { id = "org.robolectric.gradle.AndroidProjectConfigPlugin" }
+robolectric-deployed-java-module = { id = "org.robolectric.gradle.DeployedRoboJavaModulePlugin" }
+robolectric-gradle-managed-device = { id = "org.robolectric.gradle.GradleManagedDevicePlugin" }
+robolectric-java-module = { id = "org.robolectric.gradle.RoboJavaModulePlugin" }
+robolectric-spotless = { id = "org.robolectric.gradle.SpotlessPlugin" }
+robolectric-shadows = { id = "org.robolectric.gradle.ShadowsPlugin" }
+roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless-gradle" }
