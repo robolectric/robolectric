@@ -66,7 +66,8 @@ public final class AssociationInfoBuilderTest {
     assertThat(info.isSelfManaged()).isEqualTo(SELF_MANAGED);
     assertThat(info.isNotifyOnDeviceNearby()).isEqualTo(NOTIFY_ON_DEVICE_NEARBY);
     assertThat(info.getTimeApprovedMs()).isEqualTo(APPROVED_MS);
-    assertThat(info.getLastTimeConnectedMs()).isEqualTo(LAST_TIME_CONNECTED_MS);
+    assertThat((long) ReflectionHelpers.callInstanceMethod(info, "getLastTimeConnectedMs"))
+        .isEqualTo(LAST_TIME_CONNECTED_MS);
 
     if (ReflectionHelpers.hasField(AssociationInfo.class, "mAssociatedDevice")) {
       Object associatedDevice = ReflectionHelpers.callInstanceMethod(info, "getAssociatedDevice");
