@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.Manifest.permission.BLUETOOTH_CONNECT;
 import static android.bluetooth.BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES;
 import static android.bluetooth.BluetoothDevice.BOND_BONDED;
+import static android.bluetooth.BluetoothDevice.BOND_BONDING;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_CLASSIC;
 import static android.os.Build.VERSION_CODES.M;
@@ -639,5 +640,29 @@ public class ShadowBluetoothDeviceTest {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
 
     assertThat(device.isConnected()).isFalse();
+  }
+
+  @Test
+  public void cancelBondProcess_bonded_verifyBondStateBonded() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+    ShadowBluetoothDevice shadowDevice = shadowOf(device);
+
+    shadowDevice.setBondState(BOND_BONDED);
+    boolean cancelBond = device.cancelBondProcess();
+    assertThat(cancelBond).isFalse();
+    assertThat(device.getBondState()).isEqualTo(BOND_BONDED);
+  }
+
+  @Test
+  public void cancelBondProcess_bonding_verifyBondStateNone() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+    ShadowBluetoothDevice shadowDevice = shadowOf(device);
+
+    shadowDevice.setBondState(BOND_BONDING);
+    boolean cancelBond = device.cancelBondProcess();
+    assertThat(cancelBond).isTrue();
+    assertThat(device.getBondState()).isEqualTo(BOND_NONE);
   }
 }
