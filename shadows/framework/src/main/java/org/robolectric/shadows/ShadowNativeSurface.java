@@ -13,6 +13,7 @@ import android.graphics.Rect;
 import android.graphics.RenderNode;
 import android.graphics.SurfaceTexture;
 import android.hardware.HardwareBuffer;
+import android.media.ImageReader;
 import android.os.Parcel;
 import android.view.Surface;
 import android.view.Surface.OutOfResourcesException;
@@ -36,6 +37,13 @@ import org.robolectric.versioning.AndroidVersions.U;
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
 public class ShadowNativeSurface {
+
+  @RealObject private Surface realSurface;
+
+  // This field is populated when a Surface is created by an ImageReader. It is used to support
+  // the ImageReader.OnImageAvailableListener callback.
+  private ImageReader containerImageReader;
+
   @Implementation
   protected static long nativeCreateFromSurfaceTexture(SurfaceTexture surfaceTexture)
       throws OutOfResourcesException {
@@ -158,6 +166,18 @@ public class ShadowNativeSurface {
         nativeObject, frameRate, compatibility, changeFrameRateStrategy);
   }
 
+  void setContainerImageReader(ImageReader realImageReader) {
+    this.containerImageReader = realImageReader;
+  }
+
+  @Implementation
+  protected void unlockCanvasAndPost(Canvas canvas) {
+    reflector(SurfaceReflector.class, realSurface).unlockCanvasAndPost(canvas);
+    if (this.containerImageReader != null) {
+      ShadowNativeImageReader.triggerOnImageAvailableCallbacks(this.containerImageReader);
+    }
+  }
+
   /**
    * Shadow for {@link Surface$HwuiContext} for Q and below that invokes HardwareRenderer methods.
    * In Q and below, HwuiContext had its own native methods.
@@ -206,7 +226,12 @@ public class ShadowNativeSurface {
     @Implementation
     protected void updateSurface() {
       Surface surface = reflector(HwuiContextReflector.class, realHwuiContext).getOuterSurface();
-      reflector(HardwareRendererReflector.class, hardwareRenderer).setSurface(surface);
+      long surfacePtr = reflector(SurfaceReflector.class, surface).getNativeObject();
+      // In Android Q and below, updateSurface was called when the Surface was freed, which is not
+      // possible in native code in S.
+      if (surfacePtr != 0) {
+        reflector(HardwareRendererReflector.class, hardwareRenderer).setSurface(surface);
+      }
     }
 
     @Implementation
@@ -235,6 +260,15 @@ public class ShadowNativeSurface {
         super(null, ShadowNativeHwuiContext.class);
       }
     }
+  }
+
+  @ForType(Surface.class)
+  interface SurfaceReflector {
+    @Direct
+    void unlockCanvasAndPost(Canvas canvas);
+
+    @Accessor("mNativeObject")
+    long getNativeObject();
   }
 
   @Implementation(minSdk = Q, maxSdk = Q)

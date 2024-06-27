@@ -2,18 +2,26 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S_V2;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.media.Image;
 import android.media.ImageReader;
+import android.media.ImageReader.OnImageAvailableListener;
+import android.os.Handler;
 import android.view.Surface;
+import java.lang.ref.WeakReference;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.ImageReaderNatives;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowNativeImageReader.Picker;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 import org.robolectric.versioning.AndroidVersions.T;
 import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
@@ -27,6 +35,8 @@ import org.robolectric.versioning.AndroidVersions.V;
     shadowPicker = Picker.class,
     callNativeMethodsByDefault = true)
 public class ShadowNativeImageReader {
+
+  @RealObject ImageReader realImageReader;
 
   /**
    * The {@link ImageReader} static initializer invokes its own native methods in static
@@ -92,6 +102,19 @@ public class ShadowNativeImageReader {
   }
 
   /**
+   * This is a Java shim to support {@link
+   * ImageReader#setOnImageAvailableListener(OnImageAvailableListener, Handler)}} until it is
+   * supported in native libhostgraphics.
+   */
+  @Implementation
+  protected Surface getSurface() {
+    Surface surface = reflector(ImageReaderReflector.class, realImageReader).getSurface();
+    ShadowNativeSurface shadowNativeSurface = Shadow.extract(surface);
+    shadowNativeSurface.setContainerImageReader(realImageReader);
+    return surface;
+  }
+
+  /**
    * @return A return code {@code ACQUIRE_*}
    */
   @Implementation(maxSdk = S_V2)
@@ -117,10 +140,20 @@ public class ShadowNativeImageReader {
     ImageReaderNatives.nativeClassInit();
   }
 
+  static void triggerOnImageAvailableCallbacks(ImageReader imageReader) {
+    reflector(ImageReaderReflector.class).postEventFromNative(new WeakReference<>(imageReader));
+  }
+
   @ForType(ImageReader.class)
   interface ImageReaderReflector {
     @Accessor("mNativeContext")
     void setMemberNativeContext(long mNativeContext);
+
+    @Direct
+    Surface getSurface();
+
+    @Static
+    void postEventFromNative(Object selfRef);
   }
 
   /** Shadow picker for {@link ImageReader}. */
