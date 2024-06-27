@@ -16,6 +16,7 @@ buildscript {
 }
 
 plugins {
+    id("com.android.library") version libs.versions.android.gradle apply false
     id("com.diffplug.gradle.spotless") version libs.versions.spotless.gradle apply false
     id("idea")
     id("io.github.takahirom.roborazzi") version libs.versions.roborazzi apply false

@@ -4,6 +4,8 @@ robolectric-nativeruntime-dist-compat = "1.0.11"
 # https://developer.android.com/studio/releases
 android-gradle = "8.5.0"
 
+android-tools-common = "31.5.0"
+
 # https://github.com/google/conscrypt/tags
 conscrypt = "2.5.2"
 
@@ -124,7 +126,9 @@ play-services-for-shadows = "17.0.0"
 play-services-basement = "18.0.1"
 
 [libraries]
-android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
+android-gradle-api = { module = "com.android.tools.build:gradle-api", version.ref = "android-gradle" }
+
+android-tools-common = { module = "com.android.tools:common", version.ref = "android-tools-common" }
 
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
