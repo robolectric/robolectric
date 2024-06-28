@@ -25,10 +25,14 @@ import android.bluetooth.IBluetoothGatt;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
+import android.os.IBinder;
+import android.os.IInterface;
 import android.os.ParcelUuid;
 import android.provider.Settings;
+import android.util.Log;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.time.Duration;
@@ -48,6 +52,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -608,6 +613,30 @@ public class ShadowBluetoothAdapter {
         }
       }
     }
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected IBinder getProfile(int profile) {
+    if (isEnabled()) {
+      IInterface localProxy = createBinderProfileProxy(profile);
+      if (localProxy != null) {
+        Binder binder = new Binder();
+        binder.attachInterface(localProxy, "profile");
+        return binder;
+      }
+    }
+    return null;
+  }
+
+  private static IInterface createBinderProfileProxy(int profile) {
+    switch (profile) {
+      case BluetoothProfile.HEADSET:
+        return ReflectionHelpers.createNullProxy(android.bluetooth.IBluetoothHeadset.class);
+      case BluetoothProfile.A2DP:
+        return ReflectionHelpers.createNullProxy(android.bluetooth.IBluetoothA2dp.class);
+    }
+    Log.w("ShadowBluetoothAdapter", "getProfile called with unsupported profile " + profile);
+    return null;
   }
 
   /** Returns the last value of {@link #setIsLeExtendedAdvertisingSupported}, defaulting to true. */

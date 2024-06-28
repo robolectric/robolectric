@@ -855,6 +855,7 @@ public class ShadowBluetoothAdapterTest {
   @Config(minSdk = U.SDK_INT)
   @Test
   public void getProfileProxy_adapterDisabled_serviceListenerNotInvoked() {
+    bluetoothAdapter.disable();
     shadowOf((Application) getApplicationContext()).grantPermissions(permission.BLUETOOTH);
     BluetoothProfile.ServiceListener listener =
         Mockito.mock(BluetoothProfile.ServiceListener.class);
