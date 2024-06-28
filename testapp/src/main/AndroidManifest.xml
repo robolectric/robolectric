@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- Adding MODIFY_AUDIO_SETTINGS permission -->
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-
     <application
         android:theme="@style/Theme.Robolectric" android:enabled="true">
       <activity android:name=".TestActivity" android:exported="true">

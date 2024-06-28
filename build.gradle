@@ -16,13 +16,15 @@ buildscript {
 }
 
 plugins {
-    id("com.diffplug.gradle.spotless") version libs.versions.spotless.gradle apply false
-    id("idea")
-    id("io.github.takahirom.roborazzi") version libs.versions.roborazzi apply false
-    id("io.gitlab.arturbosch.detekt") version libs.versions.detekt.gradle apply false
-    id("net.ltgt.errorprone") version libs.versions.error.prone.gradle
-    id("org.jetbrains.kotlin.android") version libs.versions.kotlin apply false
-    id("org.robolectric.gradle.SpotlessPlugin")
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.error.prone)
+    alias(libs.plugins.idea)
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.robolectric.spotless)
+    alias(libs.plugins.roborazzi) apply false
+    alias(libs.plugins.spotless) apply false
 }
 
 // nebula-aggregate-javadocs doesn't support plugins

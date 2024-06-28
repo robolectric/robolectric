@@ -8,14 +8,12 @@ import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
 /**
  * Test {@link KeyEventTest}.
  *
  * <p>Inspired from Android cts/tests/tests/view/src/android/view/cts/KeyEventTest.java
  */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public final class KeyEventTest {
 

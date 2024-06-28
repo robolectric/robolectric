@@ -1542,7 +1542,7 @@ public class ShadowAudioManagerTest {
 
   @Test
   @Config(minSdk = O)
-  public void audioManager_activityContextEnabled() {
+  public void audioManager_activityContextEnabled_applicationInstanceIsNotSameAsActivityInstance() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
     try {
@@ -1550,9 +1550,43 @@ public class ShadowAudioManagerTest {
       Activity activity = Robolectric.setupActivity(Activity.class);
       AudioManager activityAudioManager = activity.getSystemService(AudioManager.class);
       assertThat(applicationAudioManager).isNotSameInstanceAs(activityAudioManager);
+    } finally {
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void audioManager_activityContextEnabled_activityInstanceIsSameAsActivityInstance() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    try {
+      Activity activity = Robolectric.setupActivity(Activity.class);
+      AudioManager activityAudioManager = activity.getSystemService(AudioManager.class);
+      AudioManager anotherActivityAudioManager = activity.getSystemService(AudioManager.class);
+      assertThat(anotherActivityAudioManager).isSameInstanceAs(activityAudioManager);
+    } finally {
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void audioManager_activityContextEnabled_differentInstancesChangesAffectEachOther() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    try {
+      AudioManager applicationAudioManager = appContext.getSystemService(AudioManager.class);
+      Activity activity = Robolectric.setupActivity(Activity.class);
+      AudioManager activityAudioManager = activity.getSystemService(AudioManager.class);
+
       activityAudioManager.setMode(AudioManager.MODE_RINGTONE);
       assertThat(activityAudioManager.getMode()).isEqualTo(AudioManager.MODE_RINGTONE);
       assertThat(applicationAudioManager.getMode()).isEqualTo(AudioManager.MODE_RINGTONE);
+
+      applicationAudioManager.setMode(AudioManager.MODE_NORMAL);
+      assertThat(activityAudioManager.getMode()).isEqualTo(AudioManager.MODE_NORMAL);
+      assertThat(applicationAudioManager.getMode()).isEqualTo(AudioManager.MODE_NORMAL);
     } finally {
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }

@@ -52,7 +52,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.testapp.R;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -60,7 +59,6 @@ import org.xmlpull.v1.XmlPullParserException;
 /**
  * Compatibility test for {@link Resources}
  */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class ResourcesTest {
   private Resources resources;

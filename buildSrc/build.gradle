@@ -1,7 +1,7 @@
 plugins {
-    id("groovy")
-    id("java-library")
-    id("java-gradle-plugin")
+    alias(libs.plugins.groovy)
+    alias(libs.plugins.java.gradle.plugin)
+    alias(libs.plugins.java.library)
 }
 
 gradlePlugin {
@@ -42,7 +42,9 @@ dependencies {
     implementation localGroovy()
 
     implementation libs.asm.tree
-    implementation libs.android.gradle
+    implementation libs.android.gradle.api
+    implementation libs.android.tools.common
+    implementation libs.guava
 }
 
 java {

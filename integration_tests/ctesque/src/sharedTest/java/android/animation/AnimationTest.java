@@ -11,11 +11,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.testapp.ActivityWithoutTheme;
 
 /** Compatibility test for animation-related logic. */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public final class AnimationTest {
 
@@ -62,7 +60,6 @@ public final class AnimationTest {
   }
 
   /** Private class with a public member. */
-  @DoNotInstrument
   @SuppressWarnings("unused")
   private static class PropertyBag {
     public float x;

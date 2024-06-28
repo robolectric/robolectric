@@ -1,6 +1,6 @@
 plugins {
-    id("org.robolectric.gradle.RoboJavaModulePlugin")
-    id("jacoco")
+    alias(libs.plugins.jacoco)
+    alias(libs.plugins.robolectric.java.module)
 }
 
 def jacocoVersion = libs.versions.jacoco.get()

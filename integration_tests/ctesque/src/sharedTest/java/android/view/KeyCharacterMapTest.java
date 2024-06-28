@@ -8,14 +8,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
 /**
  * Test {@link android.view.KeyCharacterMap}.
  *
  * <p>Inspired from Android cts/tests/tests/view/src/android/view/cts/KeyCharacterMap.java
  */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public final class KeyCharacterMapTest {
 
