@@ -27,28 +27,30 @@ public class ShadowWranglerIntegrationTest {
   private String name;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     name = "context";
   }
 
   @Test
-  @SandboxConfig(shadows = {ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class})
-  public void testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnShadowClass() throws Exception {
+  @SandboxConfig(
+      shadows = {ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class})
+  public void
+      testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnShadowClass() {
     AClassWithDefaultConstructor instance = new AClassWithDefaultConstructor();
     assertThat(Shadow.<Object>extract(instance)).isInstanceOf(ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class);
     assertThat(instance.initialized).isTrue();
   }
 
   @Test
-  @SandboxConfig(shadows = { ShadowFoo.class })
-  public void testConstructorInvocation() throws Exception {
+  @SandboxConfig(shadows = {ShadowFoo.class})
+  public void testConstructorInvocation() {
     Foo foo = new Foo(name);
     assertSame(name, shadowOf(foo).name);
   }
 
   @Test
   @SandboxConfig(shadows = {ShadowFoo.class})
-  public void testRealObjectAnnotatedFieldsAreSetBeforeConstructorIsCalled() throws Exception {
+  public void testRealObjectAnnotatedFieldsAreSetBeforeConstructorIsCalled() {
     Foo foo = new Foo(name);
     assertSame(name, shadowOf(foo).name);
     assertSame(foo, shadowOf(foo).realFooField);
@@ -59,14 +61,14 @@ public class ShadowWranglerIntegrationTest {
 
   @Test
   @SandboxConfig(shadows = {ShadowFoo.class})
-  public void testMethodDelegation() throws Exception {
+  public void testMethodDelegation() {
     Foo foo = new Foo(name);
     assertSame(name, foo.getName());
   }
 
   @Test
   @SandboxConfig(shadows = {WithEquals.class})
-  public void testEqualsMethodDelegation() throws Exception {
+  public void testEqualsMethodDelegation() {
     Foo foo1 = new Foo(name);
     Foo foo2 = new Foo(name);
     assertEquals(foo1, foo2);
@@ -74,35 +76,35 @@ public class ShadowWranglerIntegrationTest {
 
   @Test
   @SandboxConfig(shadows = {WithEquals.class})
-  public void testHashCodeMethodDelegation() throws Exception {
+  public void testHashCodeMethodDelegation() {
     Foo foo = new Foo(name);
     assertEquals(42, foo.hashCode());
   }
 
   @Test
   @SandboxConfig(shadows = {WithToString.class})
-  public void testToStringMethodDelegation() throws Exception {
+  public void testToStringMethodDelegation() {
     Foo foo = new Foo(name);
     assertEquals("the expected string", foo.toString());
   }
 
   @Test
   @SandboxConfig(shadows = {ShadowFoo.class})
-  public void testShadowSelectionSearchesSuperclasses() throws Exception {
+  public void testShadowSelectionSearchesSuperclasses() {
     TextFoo textFoo = new TextFoo(name);
     assertEquals(ShadowFoo.class, Shadow.extract(textFoo).getClass());
   }
 
   @Test
   @SandboxConfig(shadows = {ShadowFoo.class, ShadowTextFoo.class})
-  public void shouldUseMostSpecificShadow() throws Exception {
+  public void shouldUseMostSpecificShadow() {
     TextFoo textFoo = new TextFoo(name);
     assertThat(shadowOf(textFoo)).isInstanceOf(ShadowTextFoo.class);
   }
 
   @Test
   @SandboxConfig(shadows = ShadowThrowInShadowMethod.class)
-  public void shouldRemoveNoiseFromShadowedStackTraces() throws Exception {
+  public void shouldRemoveNoiseFromShadowedStackTraces() {
     ThrowInShadowMethod instance = new ThrowInShadowMethod();
 
     Exception e = null;
@@ -145,7 +147,7 @@ public class ShadowWranglerIntegrationTest {
 
   @Test
   @SandboxConfig(shadows = ShadowThrowInRealMethod.class)
-  public void shouldRemoveNoiseFromUnshadowedStackTraces() throws Exception {
+  public void shouldRemoveNoiseFromUnshadowedStackTraces() {
     ThrowInRealMethod instance = new ThrowInRealMethod();
 
     Exception e = null;
@@ -181,23 +183,30 @@ public class ShadowWranglerIntegrationTest {
   public static class ShadowThrowInRealMethod {
   }
 
-  @Test @SandboxConfig(shadows = {Shadow2OfChild.class, ShadowOfParent.class})
-  public void whenShadowMethodIsOverriddenInShadowWithSameShadowedClass_shouldUseOverriddenMethod() throws Exception {
+  @Test
+  @SandboxConfig(shadows = {Shadow2OfChild.class, ShadowOfParent.class})
+  public void
+      whenShadowMethodIsOverriddenInShadowWithSameShadowedClass_shouldUseOverriddenMethod() {
     assertThat(new Child().get()).isEqualTo("get from Shadow2OfChild");
   }
 
-  @Test @SandboxConfig(shadows = {Shadow22OfChild.class, ShadowOfParent.class})
-  public void whenShadowMethodIsNotOverriddenInShadowWithSameShadowedClass_shouldUseOverriddenMethod() throws Exception {
+  @Test
+  @SandboxConfig(shadows = {Shadow22OfChild.class, ShadowOfParent.class})
+  public void
+      whenShadowMethodIsNotOverriddenInShadowWithSameShadowedClass_shouldUseOverriddenMethod() {
     assertThat(new Child().get()).isEqualTo("get from Shadow2OfChild");
   }
 
-  @Test @SandboxConfig(shadows = {Shadow3OfChild.class, ShadowOfParent.class})
-  public void whenShadowMethodIsOverriddenInShadowOfAnotherClass_shouldNotUseShadowSuperclassMethods() throws Exception {
+  @Test
+  @SandboxConfig(shadows = {Shadow3OfChild.class, ShadowOfParent.class})
+  public void
+      whenShadowMethodIsOverriddenInShadowOfAnotherClass_shouldNotUseShadowSuperclassMethods() {
     assertThat(new Child().get()).isEqualTo("from child (from shadow of parent)");
   }
 
-  @Test @SandboxConfig(shadows = {ShadowOfParentWithPackageImpl.class})
-  public void whenShadowMethodIsntCorrectlyVisible_shouldNotUseShadowMethods() throws Exception {
+  @Test
+  @SandboxConfig(shadows = {ShadowOfParentWithPackageImpl.class})
+  public void whenShadowMethodIsntCorrectlyVisible_shouldNotUseShadowMethods() {
     assertThat(new Parent().get()).isEqualTo("from parent");
   }
 
@@ -332,7 +341,8 @@ public class ShadowWranglerIntegrationTest {
   }
 
   @SandboxConfig(shadows = ShadowAClassWithDifficultArgs.class)
-  @Test public void shouldAllowLooseSignatureMatches() throws Exception {
+  @Test
+  public void shouldAllowLooseSignatureMatches() {
     assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("abc");
   }
 
@@ -353,13 +363,13 @@ public class ShadowWranglerIntegrationTest {
 
   @SandboxConfig(shadows = ShadowAClassWithDifficultArgsUseClassName.class)
   @Test
-  public void methodMatch_shouldAllowClassNameAnnotatedMatches() throws Exception {
+  public void methodMatch_shouldAllowClassNameAnnotatedMatches() {
     assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("ClassNameAnnotated-bc");
   }
 
   @SandboxConfig(shadows = ShadowAClassWithDifficultArgsUseClassNameWithMethodRename.class)
   @Test
-  public void methodMatch_classNameAnnotatedMatchesSupportMethodRename() throws Exception {
+  public void methodMatch_classNameAnnotatedMatchesSupportMethodRename() {
     assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("ClassNameAnnotated-bc");
   }
 
@@ -380,8 +390,9 @@ public class ShadowWranglerIntegrationTest {
     }
   }
 
-  @Test @SandboxConfig(shadows = ShadowOfAClassWithStaticInitializer.class)
-  public void classesWithInstrumentedShadowsDontDoubleInitialize() throws Exception {
+  @Test
+  @SandboxConfig(shadows = ShadowOfAClassWithStaticInitializer.class)
+  public void classesWithInstrumentedShadowsDontDoubleInitialize() {
     // if we didn't reject private shadow methods, __staticInitializer__ on the shadow
     // would be executed twice.
     new AClassWithStaticInitializer();
@@ -406,8 +417,9 @@ public class ShadowWranglerIntegrationTest {
     }
   }
 
-  @Test @SandboxConfig(shadows = Shadow22OfAClassWithBrokenStaticInitializer.class)
-  public void staticInitializerShadowMethodsObeySameRules() throws Exception {
+  @Test
+  @SandboxConfig(shadows = Shadow22OfAClassWithBrokenStaticInitializer.class)
+  public void staticInitializerShadowMethodsObeySameRules() {
     new AClassWithBrokenStaticInitializer();
   }
 
