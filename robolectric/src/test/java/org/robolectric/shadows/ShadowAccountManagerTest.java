@@ -27,17 +27,20 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAccountManagerTest {
   private AccountManager am;
   private Activity activity;
+  private Context appContext;
 
   @Before
   public void setUp() throws Exception {
     am = AccountManager.get(ApplicationProvider.getApplicationContext());
     activity = new Activity();
+    appContext = ApplicationProvider.getApplicationContext();
   }
 
   @Test
@@ -1128,6 +1131,33 @@ public class ShadowAccountManagerTest {
 
     T getResult() throws Exception {
       return accountManagerFuture.getResult();
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void accountManager_activityContextEnabled_differentInstancesRetrieveAccounts() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      AccountManager applicationAccountManager = appContext.getSystemService(AccountManager.class);
+      activity = Robolectric.setupActivity(Activity.class);
+      AccountManager activityAccountManager = activity.getSystemService(AccountManager.class);
+
+      assertThat(applicationAccountManager).isNotSameInstanceAs(activityAccountManager);
+
+      Account[] applicationAccounts =
+          applicationAccountManager.getAccountsByType("com.example.account_type");
+      Account[] activityAccounts =
+          activityAccountManager.getAccountsByType("com.example.account_type");
+
+      assertThat(activityAccounts).isEqualTo(applicationAccounts);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }
