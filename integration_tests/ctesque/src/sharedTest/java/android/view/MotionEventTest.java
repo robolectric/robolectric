@@ -26,14 +26,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
 /**
  * Test {@link android.view.MotionEvent}.
  *
  * <p>Baselined from Android cts/tests/tests/view/src/android/view/cts/MotionEventTest.java
  */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class MotionEventTest {
   private MotionEvent motionEvent1;

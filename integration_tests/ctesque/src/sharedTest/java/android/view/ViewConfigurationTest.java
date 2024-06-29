@@ -14,10 +14,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
 /** Tests that {@link android.view.ViewConfiguration} behavior is consistent with real Android. */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public final class ViewConfigurationTest {
 
