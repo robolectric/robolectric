@@ -3,6 +3,8 @@ package android.app;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.Manifest;
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.Context;
 import android.media.AudioManager;
 import androidx.test.core.app.ActivityScenario;
@@ -18,7 +20,8 @@ import org.robolectric.testapp.TestActivity;
 public class ContextTest {
   @Rule
   public GrantPermissionRule mRuntimePermissionRule =
-      GrantPermissionRule.grant(Manifest.permission.MODIFY_AUDIO_SETTINGS);
+      GrantPermissionRule.grant(
+          Manifest.permission.MODIFY_AUDIO_SETTINGS, Manifest.permission.GET_ACCOUNTS);
 
   @Test
   public void audioManager_applicationInstance_isNotSameAsActivityInstance() {
@@ -67,6 +70,56 @@ public class ContextTest {
             applicationAudioManager.setMode(AudioManager.MODE_NORMAL);
             assertThat(activityAudioManager.getMode()).isEqualTo(AudioManager.MODE_NORMAL);
             assertThat(applicationAudioManager.getMode()).isEqualTo(AudioManager.MODE_NORMAL);
+          });
+    }
+  }
+
+  @Test
+  public void accountManager_applicationInstance_isNotSameAsActivityInstance() {
+    AccountManager applicationAccountManager =
+        (AccountManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACCOUNT_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AccountManager activityAccountManager =
+                (AccountManager) activity.getSystemService(Context.ACCOUNT_SERVICE);
+            assertThat(applicationAccountManager).isNotSameInstanceAs(activityAccountManager);
+          });
+    }
+  }
+
+  @Test
+  public void accountManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AccountManager activityAccountManager =
+                (AccountManager) activity.getSystemService(Context.ACCOUNT_SERVICE);
+            AccountManager anotherActivityAccountManager =
+                (AccountManager) activity.getSystemService(Context.ACCOUNT_SERVICE);
+            assertThat(anotherActivityAccountManager).isSameInstanceAs(activityAccountManager);
+          });
+    }
+  }
+
+  @Test
+  public void accountManager_instance_retrievesSameAccounts() {
+    AccountManager applicationAccountManager =
+        (AccountManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACCOUNT_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AccountManager activityAccountManager =
+                (AccountManager) activity.getSystemService(Context.ACCOUNT_SERVICE);
+
+            Account[] applicationAccounts =
+                applicationAccountManager.getAccountsByType("com.example.account_type");
+            Account[] activityAccounts =
+                activityAccountManager.getAccountsByType("com.example.account_type");
+
+            assertThat(activityAccounts).isEqualTo(applicationAccounts);
           });
     }
   }

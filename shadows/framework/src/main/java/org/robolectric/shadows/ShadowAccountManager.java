@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.Scheduler.IdleState;
 
 @Implements(AccountManager.class)
@@ -55,10 +56,25 @@ public class ShadowAccountManager {
   private Map<Account, Set<String>> packageVisibleAccounts = new HashMap<>();
 
   private List<Bundle> addAccountOptionsList = new ArrayList<>();
-  private Handler mainHandler;
-  private RoboAccountManagerFuture pendingAddFuture;
-  private boolean authenticationErrorOnNextResponse = false;
-  private Intent removeAccountIntent;
+  private static Handler mainHandler;
+  private static RoboAccountManagerFuture pendingAddFuture;
+  private static boolean authenticationErrorOnNextResponse = false;
+  private static Intent removeAccountIntent;
+
+  @Resetter
+  public static void reset() {
+    if (mainHandler != null) {
+      mainHandler.removeCallbacksAndMessages(null);
+      mainHandler = null;
+    }
+
+    if (pendingAddFuture != null) {
+      pendingAddFuture.cancel(true);
+      pendingAddFuture = null;
+    }
+    authenticationErrorOnNextResponse = false;
+    removeAccountIntent = null;
+  }
 
   @Implementation
   protected void __constructor__(Context context, IAccountManager service) {
