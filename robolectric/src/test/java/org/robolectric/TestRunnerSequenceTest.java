@@ -19,7 +19,6 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
 
@@ -132,7 +131,6 @@ public class TestRunnerSequenceTest {
     }
   }
 
-  @DoNotInstrument
   public static class MyTestLifecycle extends DefaultTestLifecycle {
 
     @Override public void beforeTest(Method method) {

@@ -8,11 +8,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.annotation.internal.DoNotInstrument
 import org.robolectric.testapp.TestActivity
 
 @Suppress("DEPRECATION")
-@DoNotInstrument
 @RunWith(AndroidJUnit4::class)
 class UiAutomationTest {
   @Test
