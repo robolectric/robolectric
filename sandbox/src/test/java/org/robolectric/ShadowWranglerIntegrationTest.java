@@ -346,6 +346,13 @@ public class ShadowWranglerIntegrationTest {
     assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("abc");
   }
 
+  @Instrument
+  public static class AClassWithDifficultArgs {
+    public CharSequence aMethod(CharSequence s) {
+      return s;
+    }
+  }
+
   @Implements(value = AClassWithDifficultArgs.class, looseSignatures = true)
   public static class ShadowAClassWithDifficultArgs {
     @Implementation
@@ -354,11 +361,10 @@ public class ShadowWranglerIntegrationTest {
     }
   }
 
-  @Instrument
-  public static class AClassWithDifficultArgs {
-    public CharSequence aMethod(CharSequence s) {
-      return s;
-    }
+  @SandboxConfig(shadows = ShadowAClassWithDifficultArgsWithMethodRename.class)
+  @Test
+  public void methodMatch_shouldSupportMethodRename() {
+    assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("MethodRenamed-bc");
   }
 
   @SandboxConfig(shadows = ShadowAClassWithDifficultArgsUseClassName.class)
@@ -371,6 +377,14 @@ public class ShadowWranglerIntegrationTest {
   @Test
   public void methodMatch_classNameAnnotatedMatchesSupportMethodRename() {
     assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("ClassNameAnnotated-bc");
+  }
+
+  @Implements(value = AClassWithDifficultArgs.class)
+  public static class ShadowAClassWithDifficultArgsWithMethodRename {
+    @Implementation(methodName = "aMethod")
+    protected CharSequence renamedMethod(CharSequence s) {
+      return "MethodRenamed-" + s;
+    }
   }
 
   @Implements(value = AClassWithDifficultArgs.class)
