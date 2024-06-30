@@ -529,4 +529,54 @@ public class ContextTest {
           });
     }
   }
+
+  @Test
+  public void activityManager_applicationInstance_isNotSameAsActivityInstance() {
+    ActivityManager applicationActivityManager =
+        (ActivityManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            ActivityManager activityActivityManager =
+                (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+            assertThat(applicationActivityManager).isNotSameInstanceAs(activityActivityManager);
+          });
+    }
+  }
+
+  @Test
+  public void activityManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            ActivityManager activityActivityManager =
+                (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+            ActivityManager anotherActivityActivityManager =
+                (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+            assertThat(anotherActivityActivityManager).isSameInstanceAs(activityActivityManager);
+          });
+    }
+  }
+
+  @Test
+  public void activityManager_instance_retrievesConsistentLowRamDeviceStatus() {
+    ActivityManager applicationActivityManager =
+        (ActivityManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            ActivityManager activityActivityManager =
+                (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+
+            boolean applicationLowRamStatus = applicationActivityManager.isLowRamDevice();
+            boolean activityLowRamStatus = activityActivityManager.isLowRamDevice();
+
+            assertThat(activityLowRamStatus).isEqualTo(applicationLowRamStatus);
+          });
+    }
+  }
 }

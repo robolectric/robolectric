@@ -49,20 +49,21 @@ import org.robolectric.util.reflector.ForType;
 @Implements(value = ActivityManager.class)
 public class ShadowActivityManager {
   private int memoryClass = 16;
-  private String backgroundPackage;
-  private ActivityManager.MemoryInfo memoryInfo;
-  private final List<ActivityManager.AppTask> appTasks = new CopyOnWriteArrayList<>();
-  private final List<ActivityManager.RunningTaskInfo> tasks = new CopyOnWriteArrayList<>();
-  private final List<ActivityManager.RunningServiceInfo> services = new CopyOnWriteArrayList<>();
+  private static String backgroundPackage;
+  private static ActivityManager.MemoryInfo memoryInfo;
+  private static final List<ActivityManager.AppTask> appTasks = new CopyOnWriteArrayList<>();
+  private static final List<ActivityManager.RunningTaskInfo> tasks = new CopyOnWriteArrayList<>();
+  private static final List<ActivityManager.RunningServiceInfo> services =
+      new CopyOnWriteArrayList<>();
   private static final List<ActivityManager.RunningAppProcessInfo> processes =
       new CopyOnWriteArrayList<>();
-  private final List<ImportanceListener> importanceListeners = new CopyOnWriteArrayList<>();
-  private final SparseIntArray uidImportances = new SparseIntArray();
+  private static final List<ImportanceListener> importanceListeners = new CopyOnWriteArrayList<>();
+  private static final SparseIntArray uidImportances = new SparseIntArray();
   @RealObject private ActivityManager realObject;
-  private Boolean isLowRamDeviceOverride = null;
+  private static Boolean isLowRamDeviceOverride = null;
   private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
   private boolean isBackgroundRestricted;
-  private final Deque<Object> appExitInfoList = new ArrayDeque<>();
+  private static final Deque<Object> appExitInfoList = new ArrayDeque<>();
   private ConfigurationInfo configurationInfo;
   private Context context;
 
@@ -326,7 +327,16 @@ public class ShadowActivityManager {
 
   @Resetter
   public static void reset() {
+    backgroundPackage = null;
+    memoryInfo = null;
+    appTasks.clear();
+    tasks.clear();
+    services.clear();
     processes.clear();
+    importanceListeners.clear();
+    uidImportances.clear();
+    appExitInfoList.clear();
+    isLowRamDeviceOverride = null;
   }
 
   /** Returns the background restriction state set by {@link #setBackgroundRestricted}. */
