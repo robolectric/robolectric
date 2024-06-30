@@ -18,9 +18,6 @@ findbugs-jsr305 = "3.0.2"
 # https://github.com/hamcrest/JavaHamcrest/releases
 hamcrest = "2.0.0.0"
 
-# https://github.com/nebula-plugins/gradle-aggregate-javadocs-plugin/releases
-aggregate-javadocs-gradle = "3.0.1"
-
 # https://github.com/google/error-prone/releases
 error-prone = "2.19.1"
 error-prone-javac = "9+181-r4173-1"
@@ -150,8 +147,6 @@ asm-tree = { module = "org.ow2.asm:asm-tree", version.ref = "asm" }
 
 compile-testing = { module = "com.google.testing.compile:compile-testing", version.ref = "compile-testing" }
 
-aggregate-javadocs-gradle = { module = "com.netflix.nebula:gradle-aggregate-javadocs-plugin", version.ref = "aggregate-javadocs-gradle" }
-
 error-prone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "error-prone" }
 error-prone-annotations = { module = "com.google.errorprone:error_prone_annotation", version.ref = "error-prone" }
 error-prone-refaster = { module = "com.google.errorprone:error_prone_refaster", version.ref = "error-prone" }
@@ -259,5 +254,6 @@ robolectric-gradle-managed-device = { id = "org.robolectric.gradle.GradleManaged
 robolectric-java-module = { id = "org.robolectric.gradle.RoboJavaModulePlugin" }
 robolectric-spotless = { id = "org.robolectric.gradle.SpotlessPlugin" }
 robolectric-shadows = { id = "org.robolectric.gradle.ShadowsPlugin" }
+robolectric-javadoc = { id = "org.robolectric.gradle.AggregateJavadocPlugin" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless-gradle" }

@@ -9,10 +9,6 @@ buildscript {
         mavenCentral()
         gradlePluginPortal()
     }
-
-    dependencies {
-        classpath libs.aggregate.javadocs.gradle
-    }
 }
 
 plugins {
@@ -23,12 +19,10 @@ plugins {
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.robolectric.spotless)
+    alias(libs.plugins.robolectric.javadoc)
     alias(libs.plugins.roborazzi) apply false
     alias(libs.plugins.spotless) apply false
 }
-
-// nebula-aggregate-javadocs doesn't support plugins
-apply plugin: "nebula-aggregate-javadocs"
 
 allprojects {
     group = "org.robolectric"
