@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -764,32 +765,22 @@ public class AndroidManifest implements UsesSdk {
 
     AndroidManifest that = (AndroidManifest) o;
 
-    if (androidManifestFile != null
-        ? !androidManifestFile.equals(that.androidManifestFile)
-        : that.androidManifestFile != null) {
+    if (!Objects.equals(androidManifestFile, that.androidManifestFile)) {
       return false;
     }
-    if (resDirectory != null
-        ? !resDirectory.equals(that.resDirectory)
-        : that.resDirectory != null) {
+    if (!Objects.equals(resDirectory, that.resDirectory)) {
       return false;
     }
-    if (assetsDirectory != null
-        ? !assetsDirectory.equals(that.assetsDirectory)
-        : that.assetsDirectory != null) {
+    if (!Objects.equals(assetsDirectory, that.assetsDirectory)) {
       return false;
     }
-    if (overridePackageName != null
-        ? !overridePackageName.equals(that.overridePackageName)
-        : that.overridePackageName != null) {
+    if (!Objects.equals(overridePackageName, that.overridePackageName)) {
       return false;
     }
-    if (libraryManifests != null
-        ? !libraryManifests.equals(that.libraryManifests)
-        : that.libraryManifests != null) {
+    if (!Objects.equals(libraryManifests, that.libraryManifests)) {
       return false;
     }
-    return apkFile != null ? apkFile.equals(that.apkFile) : that.apkFile == null;
+    return Objects.equals(apkFile, that.apkFile);
   }
 
   @Override
