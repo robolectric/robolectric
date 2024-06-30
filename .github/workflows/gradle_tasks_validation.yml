@@ -34,7 +34,13 @@ jobs:
       - uses: gradle/actions/setup-gradle@v3
 
       - name: Run aggregateDocs
-        run: ./gradlew clean aggregateDocs --parallel
+        run: ./gradlew clean aggregateDocs
+
+      - name: Upload docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: robolectric-javadoc-artifacts
+          path: build/docs
 
   run_javadocJar:
     runs-on: ubuntu-22.04
@@ -51,7 +57,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v3
 
       - name: Run javadocJar
-        run: ./gradlew clean javadocJar --parallel
+        run: ./gradlew clean javadocJar
 
 
   run_instrumentAll:
