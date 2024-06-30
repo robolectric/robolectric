@@ -34,6 +34,10 @@ gradlePlugin {
             id = "org.robolectric.gradle.ShadowsPlugin"
             implementationClass = "org.robolectric.gradle.ShadowsPlugin"
         }
+        AggregateJavadocPlugin {
+            id = "org.robolectric.gradle.AggregateJavadocPlugin"
+            implementationClass = "org.robolectric.gradle.AggregateJavadocPlugin"
+        }
     }
 }
 
