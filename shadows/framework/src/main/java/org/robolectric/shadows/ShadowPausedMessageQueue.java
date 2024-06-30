@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.base.Preconditions.checkState;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -23,11 +24,13 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowMessage.MessageReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /**
  * The shadow {@link} MessageQueue} for {@link LooperMode.Mode.PAUSED}
@@ -310,24 +313,38 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
    * Returns the message at the head of the queue immediately, regardless of its scheduled time.
    * Compare to {@link #getNext()} which will only return the next message if the system clock is
    * advanced to its scheduled time.
+   *
+   * <p>This is a copy of the real MessageQueue.next implementation with the 'when' handling logic
+   * omitted.
    */
   Message getNextIgnoringWhen() {
+    MessageQueueReflector queueReflector = reflector(MessageQueueReflector.class, realQueue);
     synchronized (realQueue) {
-      Message prev = null;
+      Message prevMsg = null;
       Message msg = getMessages();
       // Head is blocked on synchronization barrier, find next asynchronous message.
       if (msg != null && msg.getTarget() == null) {
         do {
-          prev = msg;
+          prevMsg = msg;
           msg = shadowOfMsg(msg).internalGetNext();
         } while (msg != null && !msg.isAsynchronous());
       }
       if (msg != null) {
-        Message next = shadowOfMsg(msg).internalGetNext();
-        if (prev == null) {
-          reflector(MessageQueueReflector.class, realQueue).setMessages(next);
+        Message nextMsg = reflector(MessageReflector.class, msg).getNext();
+        if (prevMsg != null) {
+          reflector(MessageReflector.class, prevMsg).setNext(nextMsg);
+          if (reflector(MessageReflector.class, prevMsg).getNext() == null
+              && getApiLevel() >= V.SDK_INT) {
+            queueReflector.setLast(prevMsg);
+          }
         } else {
-          ReflectionHelpers.setField(prev, "next", next);
+          queueReflector.setMessages(nextMsg);
+          if (nextMsg == null && getApiLevel() >= V.SDK_INT) {
+            queueReflector.setLast(null);
+          }
+        }
+        if (msg.isAsynchronous() && getApiLevel() >= V.SDK_INT) {
+          queueReflector.setAsyncMessageCount(queueReflector.getAsyncMessageCount() - 1);
         }
       }
       return msg;
@@ -343,6 +360,10 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
       msgQueue.setMessages(null);
       msgQueue.setIdleHandlers(new ArrayList<>());
       msgQueue.setNextBarrierToken(0);
+      if (getApiLevel() >= V.SDK_INT) {
+        msgQueue.setLast(null);
+        msgQueue.setAsyncMessageCount(0);
+      }
     }
     setUncaughtException(null);
   }
@@ -427,6 +448,10 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
         msg = next;
       }
       reflector(MessageQueueReflector.class, realQueue).setMessages(null);
+      if (getApiLevel() >= V.SDK_INT) {
+        reflector(MessageQueueReflector.class, realQueue).setLast(null);
+        reflector(MessageQueueReflector.class, realQueue).setAsyncMessageCount(0);
+      }
     }
   }
 
@@ -467,5 +492,16 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
     @Accessor("mQuitting")
     boolean getQuitting();
+
+    // start for android V
+    @Accessor("mLast")
+    void setLast(Message msg);
+
+    @Accessor("mAsyncMessageCount")
+    int getAsyncMessageCount();
+
+    @Accessor("mAsyncMessageCount")
+    void setAsyncMessageCount(int asyncMessageCount);
+    // end android V
   }
 }

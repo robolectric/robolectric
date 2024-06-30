@@ -549,6 +549,20 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void canSetAndGetIsInEmergencyCall_setsBothInCallAndInEmergencyCall() {
+    shadowOf(telecomService).setIsInEmergencyCall(true);
+    assertThat(telecomService.isInEmergencyCall()).isTrue();
+    assertThat(telecomService.isInCall()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void isInEmergencyCall_setIsInEmergencyCallNotCalled_shouldReturnFalse() {
+    assertThat(telecomService.isInEmergencyCall()).isFalse();
+  }
+
+  @Test
   public void getDefaultOutgoingPhoneAccount() {
     // Check initial state
     assertThat(telecomService.getDefaultOutgoingPhoneAccount("abc")).isNull();

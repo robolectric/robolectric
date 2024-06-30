@@ -2,15 +2,21 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.hardware.HardwareBuffer;
 import android.media.Image;
+import android.media.Image.Plane;
 import android.media.ImageReader;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Surface;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -72,6 +78,39 @@ public class ShadowNativeImageReaderTest {
       Canvas canvas = surface.lockCanvas(new Rect(0, 0, SX, SY));
       surface.unlockCanvasAndPost(canvas);
     }
+  }
+
+  @Config(minSdk = Q)
+  @Test
+  public void imageReader_setOnImageAvailableListener() {
+    try (ImageReader imageReader = ImageReader.newInstance(SX, SY, PixelFormat.RGBA_8888, 1)) {
+      AtomicBoolean onImageAvailableInvoked = new AtomicBoolean();
+      imageReader.setOnImageAvailableListener(
+          reader -> onImageAvailableInvoked.set(true), new Handler(Looper.getMainLooper()));
+      Surface surface = imageReader.getSurface();
+      Canvas canvas = surface.lockHardwareCanvas();
+      surface.unlockCanvasAndPost(canvas);
+      shadowOf(Looper.getMainLooper()).idle();
+      assertThat(onImageAvailableInvoked.get()).isTrue();
+    }
+  }
+
+  @Config(minSdk = Q)
+  @Test
+  public void imageReader_lockHardwareCanvas_drawColor() {
+    ImageReader reader = ImageReader.newInstance(100, 100, PixelFormat.RGBA_8888, 1);
+    Surface surface = reader.getSurface();
+    Canvas canvas = surface.lockHardwareCanvas();
+    canvas.drawColor(Color.RED);
+    surface.unlockCanvasAndPost(canvas);
+    Image image = reader.acquireNextImage();
+    assertThat(image).isNotNull();
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Plane[] planes = image.getPlanes();
+    bitmap.copyPixelsFromBuffer(planes[0].getBuffer());
+    surface.release();
+    assertThat(Integer.toHexString(bitmap.getPixel(50, 50)))
+        .isEqualTo(Integer.toHexString(Color.RED));
   }
 
   @Test

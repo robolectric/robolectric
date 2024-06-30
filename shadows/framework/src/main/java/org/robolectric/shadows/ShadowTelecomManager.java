@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.base.Verify.verifyNotNull;
@@ -89,6 +90,7 @@ public class ShadowTelecomManager {
   private String defaultDialerPackageName;
   private String systemDefaultDialerPackageName;
   private boolean isInCall;
+  private boolean isInEmergencyCall;
   private boolean ttySupported;
   private PhoneAccountHandle userSelectedOutgoingPhoneAccount;
   private boolean readPhoneStatePermission = true;
@@ -372,12 +374,34 @@ public class ShadowTelecomManager {
   /**
    * Overrides behavior of {@link TelecomManager#isInCall} to return pre-set result.
    *
-   * @return Value set by calling {@link ShadowTelecomManager#setIsInCall}. If setIsInCall has not
-   *     previously been called, will return false.
+   * @return Value set by calling {@link ShadowTelecomManager#setIsInCall} or {@link
+   *     ShadowTelecomManager#setIsInEmergencyCall}. If neither has previously been called, will
+   *     return false.
    */
   @Implementation
   protected boolean isInCall() {
     return isInCall;
+  }
+
+  /**
+   * Sets the return value for {@link TelecomManager#isInEmergencyCall} and {@link
+   * TelecomManager#isInCall}.
+   */
+  public void setIsInEmergencyCall(boolean isInEmergencyCall) {
+    this.isInEmergencyCall = isInEmergencyCall;
+    this.isInCall = isInEmergencyCall;
+  }
+
+  /**
+   * Overrides behavior of {@link TelecomManager#isInEmergencyCall} to return pre-set result.
+   *
+   * @return Value set by calling {@link ShadowTelecomManager#setIsInEmergencyCall}. If
+   *     setIsInEmergencyCall has not previously been called, will return false.
+   */
+  @Implementation(minSdk = Q)
+  @SystemApi
+  protected boolean isInEmergencyCall() {
+    return isInEmergencyCall;
   }
 
   @Implementation

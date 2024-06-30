@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.bluetooth.BluetoothDevice.BOND_BONDING;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.M;
@@ -215,6 +216,15 @@ public class ShadowBluetoothDevice {
   /** Sets value of bond state for {@link BluetoothDevice#getBondState}. */
   public void setBondState(int bondState) {
     this.bondState = bondState;
+  }
+
+  @Implementation
+  protected boolean cancelBondProcess() {
+    if (bondState == BOND_BONDING) {
+      setBondState(BOND_NONE);
+      return true;
+    }
+    return false;
   }
 
   /**
