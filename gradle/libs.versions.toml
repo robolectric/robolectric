@@ -113,7 +113,7 @@ androidx-test-ext-junit = "1.1.5"
 androidx-test-ext-truth = "1.5.0"
 androidx-test-monitor = "1.6.1"
 androidx-test-runner = "1.5.2"
-androidx-test-services = "1.4.2"
+androidx-test-services = "1.5.0"
 
 # for shadows/playservices/build.gradle
 androidx-fragment-for-shadows = "1.2.0"
