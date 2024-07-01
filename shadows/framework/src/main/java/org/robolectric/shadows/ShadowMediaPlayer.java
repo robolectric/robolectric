@@ -1074,7 +1074,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    */
   @Implementation
   protected int getCurrentPosition() {
-    checkStateError("getCurrentPosition()", attachableStates);
+    checkStateError("getCurrentPosition()", nonErrorStates);
     return getCurrentPositionRaw();
   }
 
