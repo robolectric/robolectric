@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.Q;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -10,8 +12,6 @@ import android.graphics.RenderNode;
 import android.media.Image;
 import android.media.Image.Plane;
 import android.media.ImageReader;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.View;
@@ -19,6 +19,7 @@ import android.view.ViewRootImpl;
 import com.android.internal.R;
 import com.google.common.base.Preconditions;
 import java.util.WeakHashMap;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -43,7 +44,7 @@ public final class HardwareRenderingScreenshot {
    * GraphicsMode}.
    */
   static boolean canTakeScreenshot(View view) {
-    return VERSION.SDK_INT >= VERSION_CODES.S
+    return RuntimeEnvironment.getApiLevel() >= Q
         && "hardware".equalsIgnoreCase(System.getProperty(PIXEL_COPY_RENDER_MODE, ""))
         && ShadowView.useRealGraphics()
         && view.canHaveDisplayList();
