@@ -1,11 +1,15 @@
 package org.robolectric.android;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.graphics.Rect;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
 import org.junit.Before;
@@ -81,6 +85,20 @@ public class DeviceConfigTest {
             "fr-ldltr-sw400dp-w500dp-large-long-round-"
                 + optsForO
                 + "land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void windowResources_maxBounds() throws Exception {
+    Resources systemResources = Resources.getSystem();
+    Resources appResources = ApplicationProvider.getApplicationContext().getResources();
+
+    Rect maxBounds = systemResources.getConfiguration().windowConfiguration.getMaxBounds();
+    Rect appMaxBounds = appResources.getConfiguration().windowConfiguration.getMaxBounds();
+
+    assertThat(maxBounds).isEqualTo(appMaxBounds);
+    assertThat(maxBounds.width()).isGreaterThan(0);
+    assertThat(maxBounds.height()).isGreaterThan(0);
   }
 
   @Test

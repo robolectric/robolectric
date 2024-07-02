@@ -255,6 +255,9 @@ public class DeviceConfig {
           ReflectionHelpers.getField(configuration, "windowConfiguration");
       windowConfiguration.setBounds(bounds);
       windowConfiguration.setAppBounds(bounds);
+      if (apiLevel >= VERSION_CODES.S) {
+        windowConfiguration.setMaxBounds(bounds);
+      }
     }
   }
 
