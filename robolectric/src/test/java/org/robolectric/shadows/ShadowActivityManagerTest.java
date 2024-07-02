@@ -13,6 +13,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.AppTask;
 import android.app.Application;
@@ -33,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -458,5 +460,43 @@ public class ShadowActivityManagerTest {
     final ActivityManager.RunningAppProcessInfo info = new ActivityManager.RunningAppProcessInfo();
     info.importanceReasonComponent = name;
     return info;
+  }
+
+  @Test
+  public void activityManager_activityContextEnabled_activityInstanceIsSameAsActivityInstance() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    try {
+      Activity activity = Robolectric.setupActivity(Activity.class);
+      ActivityManager activityManager =
+          (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+      ActivityManager anotherActivityManager =
+          (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+      assertThat(anotherActivityManager).isSameInstanceAs(activityManager);
+    } finally {
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void activityManager_activityContextEnabled_differentInstancesChangesAffectEachOther() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    try {
+      ActivityManager applicationActivityManager = context.getSystemService(ActivityManager.class);
+      Activity activity = Robolectric.setupActivity(Activity.class);
+      ActivityManager activityActivityManager = activity.getSystemService(ActivityManager.class);
+
+      activityActivityManager.getMemoryInfo(new ActivityManager.MemoryInfo());
+      assertThat(activityActivityManager.isLowRamDevice())
+          .isEqualTo(applicationActivityManager.isLowRamDevice());
+
+      applicationActivityManager.getMemoryInfo(new ActivityManager.MemoryInfo());
+      assertThat(activityActivityManager.isLowRamDevice())
+          .isEqualTo(applicationActivityManager.isLowRamDevice());
+    } finally {
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

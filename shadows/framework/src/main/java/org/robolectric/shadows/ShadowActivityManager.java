@@ -47,23 +47,25 @@ import org.robolectric.util.reflector.ForType;
 /** Shadow for {@link android.app.ActivityManager} */
 @Implements(value = ActivityManager.class, looseSignatures = true)
 public class ShadowActivityManager {
-  private int memoryClass = 16;
-  private String backgroundPackage;
-  private ActivityManager.MemoryInfo memoryInfo;
+  private static int memoryClass = 16;
+  private static String backgroundPackage;
+  private static ActivityManager.MemoryInfo memoryInfo;
+  private static int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
+  private static boolean isBackgroundRestricted;
+  private static ConfigurationInfo configurationInfo;
+  private static final List<ActivityManager.RunningAppProcessInfo> processes =
+      new CopyOnWriteArrayList<>();
+
   private final List<ActivityManager.AppTask> appTasks = new CopyOnWriteArrayList<>();
   private final List<ActivityManager.RunningTaskInfo> tasks = new CopyOnWriteArrayList<>();
   private final List<ActivityManager.RunningServiceInfo> services = new CopyOnWriteArrayList<>();
-  private static final List<ActivityManager.RunningAppProcessInfo> processes =
-      new CopyOnWriteArrayList<>();
   private final List<ImportanceListener> importanceListeners = new CopyOnWriteArrayList<>();
   private final SparseIntArray uidImportances = new SparseIntArray();
-  @RealObject private ActivityManager realObject;
-  private Boolean isLowRamDeviceOverride = null;
-  private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
-  private boolean isBackgroundRestricted;
   private final Deque<Object> appExitInfoList = new ArrayDeque<>();
-  private ConfigurationInfo configurationInfo;
+  private Boolean isLowRamDeviceOverride = null;
   private Context context;
+
+  @RealObject private ActivityManager realObject;
 
   @Implementation
   protected void __constructor__(Context context, Handler handler) {
@@ -322,6 +324,12 @@ public class ShadowActivityManager {
 
   @Resetter
   public static void reset() {
+    memoryClass = 16;
+    backgroundPackage = null;
+    memoryInfo = null;
+    lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
+    isBackgroundRestricted = false;
+    configurationInfo = null;
     processes.clear();
   }
 

@@ -70,4 +70,70 @@ public class ContextTest {
           });
     }
   }
+
+  @Test
+  public void
+      activityManager_activityContextEnabled_applicationInstanceIsNotSameAsActivityInstance() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    try {
+      ActivityManager applicationActivityManager =
+          ApplicationProvider.getApplicationContext().getSystemService(ActivityManager.class);
+      try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+        scenario.onActivity(
+            activity -> {
+              ActivityManager activityActivityManager =
+                  activity.getSystemService(ActivityManager.class);
+              assertThat(applicationActivityManager).isNotSameInstanceAs(activityActivityManager);
+            });
+      }
+    } finally {
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
+  }
+
+  @Test
+  public void activityManager_activityContextEnabled_activityInstanceIsSameAsActivityInstance() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            ActivityManager activityActivityManager =
+                activity.getSystemService(ActivityManager.class);
+            ActivityManager anotherActivityActivityManager =
+                activity.getSystemService(ActivityManager.class);
+            assertThat(anotherActivityActivityManager).isSameInstanceAs(activityActivityManager);
+          });
+    } finally {
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
+  }
+
+  @Test
+  public void activityManager_activityContextEnabled_differentInstancesChangesAffectEachOther() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    try {
+      ActivityManager applicationActivityManager =
+          ApplicationProvider.getApplicationContext().getSystemService(ActivityManager.class);
+      try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+        scenario.onActivity(
+            activity -> {
+              ActivityManager activityActivityManager =
+                  activity.getSystemService(ActivityManager.class);
+
+              activityActivityManager.getMemoryInfo(new ActivityManager.MemoryInfo());
+              assertThat(activityActivityManager.isLowRamDevice())
+                  .isEqualTo(applicationActivityManager.isLowRamDevice());
+
+              applicationActivityManager.getMemoryInfo(new ActivityManager.MemoryInfo());
+              assertThat(activityActivityManager.isLowRamDevice())
+                  .isEqualTo(applicationActivityManager.isLowRamDevice());
+            });
+      }
+    } finally {
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
+  }
 }
