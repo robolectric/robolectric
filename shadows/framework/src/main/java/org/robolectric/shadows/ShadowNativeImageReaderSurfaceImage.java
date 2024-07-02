@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 
@@ -15,7 +15,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 /** Shadow for {@code ImageReader.SurfaceImage} that is backed by native code. */
 @Implements(
     className = "android.media.ImageReader$SurfaceImage",
-    minSdk = Q,
+    minSdk = P,
     looseSignatures = true,
     isInAndroidSdk = false,
     shadowPicker = ShadowNativeImageReaderSurfaceImage.Picker.class,
@@ -67,7 +67,7 @@ public class ShadowNativeImageReaderSurfaceImage {
 
     @Override
     protected int getMinApiLevel() {
-      return Q;
+      return P;
     }
   }
 }
