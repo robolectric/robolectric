@@ -537,8 +537,8 @@ public class ShadowMediaPlayerTest {
 
   @Test
   public void testGetVideoHeightAndWidthStates() {
-    testStates("getVideoHeight", EnumSet.of(IDLE, ERROR), logTester, null);
-    testStates("getVideoWidth", EnumSet.of(IDLE, ERROR), logTester, null);
+    testStates("getVideoHeight", EnumSet.of(ERROR), logTester, null);
+    testStates("getVideoWidth", EnumSet.of(ERROR), logTester, null);
   }
 
   @Test
