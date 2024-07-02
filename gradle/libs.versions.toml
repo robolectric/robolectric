@@ -107,13 +107,13 @@ androidx-window = "1.3.0"
 androidx-room = "2.6.1"
 
 # https://github.com/android/android-test/tags
-androidx-test-core = "1.5.0"
-androidx-test-espresso = "3.5.1"
-androidx-test-ext-junit = "1.1.5"
-androidx-test-ext-truth = "1.5.0"
-androidx-test-monitor = "1.6.1"
-androidx-test-runner = "1.5.2"
-androidx-test-services = "1.4.2"
+androidx-test-core = "1.6.1"
+androidx-test-espresso = "3.6.1"
+androidx-test-ext-junit = "1.2.1"
+androidx-test-ext-truth = "1.6.0"
+androidx-test-monitor = "1.7.1"
+androidx-test-runner = "1.6.1"
+androidx-test-services = "1.5.0"
 
 # for shadows/playservices/build.gradle
 androidx-fragment-for-shadows = "1.2.0"
