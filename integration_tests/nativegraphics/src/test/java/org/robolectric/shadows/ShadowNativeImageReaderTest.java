@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
-import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -81,7 +80,6 @@ public class ShadowNativeImageReaderTest {
     }
   }
 
-  @Config(minSdk = Q)
   @Test
   public void imageReader_setOnImageAvailableListener() {
     try (ImageReader imageReader = ImageReader.newInstance(SX, SY, PixelFormat.RGBA_8888, 1)) {
