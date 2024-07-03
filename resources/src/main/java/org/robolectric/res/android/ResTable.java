@@ -1145,6 +1145,8 @@ public class ResTable {
     sInternalNameToIdMap.put("^many", ResTable_map.ATTR_MANY);
   }
 
+  // TODO(BC): remove. This is deprecated and only used for SDKs < M, and is broken
+  // for android V
   public int identifierForName(String name, String type, String packageName) {
     return identifierForName(name, type, packageName, null);
   }
@@ -1184,10 +1186,9 @@ public class ResTable {
       return 0;
     }
 
-
     // Figure out the package and type we are looking in...
     // TODO(BC): The following code block was a best effort attempt to directly transliterate
-    // C++ code which uses pointer artihmetic. Consider replacing with simpler logic
+    // C++ code which uses pointer arithmetic. Consider replacing with simpler logic
 
     boolean fakePublic = false;
     char[] name = nameString.toCharArray();
