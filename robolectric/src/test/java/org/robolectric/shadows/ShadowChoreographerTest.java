@@ -53,7 +53,7 @@ public class ShadowChoreographerTest {
     ShadowChoreographer.setPaused(true);
     ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
     long startTime = ShadowSystem.nanoTime();
-    AtomicLong frameTimeNanos = new AtomicLong();
+    AtomicLong frameTimeNanos = new AtomicLong(-1);
 
     Choreographer.getInstance().postFrameCallback(frameTimeNanos::set);
     ShadowSystemClock.advanceBy(Duration.ofMillis(15));
