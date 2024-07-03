@@ -7,8 +7,10 @@ import static org.robolectric.res.android.ResourceTypes.RES_XML_RESOURCE_MAP_TYP
 import static org.robolectric.res.android.ResourceTypes.RES_XML_START_ELEMENT_TYPE;
 import static org.robolectric.res.android.ResourceTypes.ResTable_map.ATTR_TYPE;
 import static org.robolectric.shadows.ShadowAssetManager.ATTRIBUTE_TYPE_PRECIDENCE;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
@@ -43,6 +45,7 @@ import org.robolectric.shadows.ShadowArscAssetManager;
 import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.ForType;
 
 public class AttributeSetBuilderImpl implements AttributeSetBuilder {
   private static final int STYLE_RES_ID = Integer.MAX_VALUE - 2;
@@ -117,7 +120,9 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
 
     @Override
     public Integer getIdentifier(String name, String type, String packageName) {
-      return resTable.identifierForName(name, type, packageName);
+      AssetManager assetManager = context.getAssets();
+      return reflector(AssetManagerReflector.class, assetManager)
+          .getResourceIdentifier(name, type, packageName);
     }
 
     @Override
@@ -348,5 +353,10 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
       resourceResolver.parseValue(attrId, attrResName, attribute, outValue);
     }
     return outValue;
+  }
+
+  @ForType(AssetManager.class)
+  interface AssetManagerReflector {
+    int getResourceIdentifier(String name, String defType, String defPackage);
   }
 }
