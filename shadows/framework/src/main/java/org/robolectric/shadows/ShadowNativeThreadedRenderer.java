@@ -2,17 +2,32 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
+import android.media.Image;
+import android.media.Image.Plane;
+import android.media.ImageReader;
+import android.view.Surface;
 import android.view.ThreadedRenderer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
 import org.robolectric.shadows.ShadowNativeThreadedRenderer.Picker;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.WithType;
 
 /** Shadow for {@link ThreadedRenderer} that is backed by native code */
-@Implements(value = ThreadedRenderer.class, minSdk = O, maxSdk = P, shadowPicker = Picker.class)
+@Implements(
+    value = ThreadedRenderer.class,
+    minSdk = O,
+    maxSdk = P,
+    shadowPicker = Picker.class,
+    looseSignatures = true)
 public class ShadowNativeThreadedRenderer {
 
   // ThreadedRenderer specific functions. These do not exist in HardwareRenderer
@@ -172,6 +187,29 @@ public class ShadowNativeThreadedRenderer {
   @Implementation
   protected static Bitmap nCreateHardwareBitmap(long renderNode, int width, int height) {
     return HardwareRendererNatives.nCreateHardwareBitmap(renderNode, width, height);
+  }
+
+  @Implementation(minSdk = P, maxSdk = P)
+  protected static Object createHardwareBitmap(Object renderNode, Object width, Object height) {
+    try (ImageReader imageReader =
+        ImageReader.newInstance((int) width, (int) height, PixelFormat.RGBA_8888, 1)) {
+      Surface surface = imageReader.getSurface();
+      Canvas canvas = surface.lockHardwareCanvas();
+      reflector(DisplayListCanvasReflector.class, canvas).drawRenderNode(renderNode);
+      surface.unlockCanvasAndPost(canvas);
+      Image nativeImage = imageReader.acquireNextImage();
+      Plane[] planes = nativeImage.getPlanes();
+      Bitmap destBitmap = Bitmap.createBitmap((int) width, (int) height, Config.ARGB_8888);
+      destBitmap.copyPixelsFromBuffer(planes[0].getBuffer());
+      surface.release();
+      // Return an immutable copy of the Bitmap, which is what this API expects.
+      return destBitmap.copy(Config.HARDWARE, false);
+    }
+  }
+
+  @ForType(className = "android.view.DisplayListCanvas")
+  interface DisplayListCanvasReflector {
+    void drawRenderNode(@WithType("android.view.RenderNode") Object renderNode);
   }
 
   /** Shadow picker for {@link ThreadedRenderer}. */

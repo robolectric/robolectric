@@ -416,8 +416,7 @@ public class ShadowNativeHardwareRenderer {
         presentationDeadlineNanos);
   }
 
-  /* We use `minSdk = S` because ImageReader is currently supported on S and above. */
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = Q)
   protected static Bitmap createHardwareBitmap(RenderNode node, int width, int height) {
     // The native counterpart of this method,
     // android_view_ThreadedRenderer_createHardwareBitmapFromRenderNode,

@@ -16,8 +16,8 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
-import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -1772,8 +1772,7 @@ public class ShadowNativeBitmapTest {
     assertThat(copy.sameAs(orig)).isTrue();
   }
 
-  // TODO(hoisie): Fix this test in Q and R.
-  @org.robolectric.annotation.Config(minSdk = S)
+  @org.robolectric.annotation.Config(minSdk = P)
   @Test
   public void testCreateBitmap_picture_immutable() {
     Picture picture = new Picture();
@@ -1798,11 +1797,13 @@ public class ShadowNativeBitmapTest {
     assertNotNull(bitmap.getColorSpace());
 
     bitmap = Bitmap.createBitmap(picture, 100, 100, Config.ARGB_8888);
-    assertFalse(bitmap.isMutable());
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      // In P, the bitmap returned is mutable.
+      assertFalse(bitmap.isMutable());
+    }
   }
 
-  // TODO(hoisie): Fix this test in Q and R.
-  @org.robolectric.annotation.Config(minSdk = S)
+  @org.robolectric.annotation.Config(minSdk = P)
   @Test
   public void testCreateBitmap_picture_requiresHWAcceleration_checkPixels() {
     Picture picture = new Picture();
