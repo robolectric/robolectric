@@ -52,6 +52,7 @@ public class ShadowDisplayManager {
   private Context context;
 
   private static final String DEFAULT_DISPLAY_NAME = "Built-in screen";
+  private static final int DEFAULT_DISPLAY_TYPE = Display.TYPE_UNKNOWN;
 
   private static final HashMap<Integer, Boolean> displayIsNaturallyPortrait = new HashMap<>();
 
@@ -77,7 +78,20 @@ public class ShadowDisplayManager {
    * @return the new display's ID
    */
   public static int addDisplay(String qualifiersStr) {
-    return addDisplay(qualifiersStr, DEFAULT_DISPLAY_NAME);
+    return addDisplayInternal(qualifiersStr, DEFAULT_DISPLAY_NAME, DEFAULT_DISPLAY_TYPE);
+  }
+
+  /**
+   * Adds a physical display with given type and drain the main looper queue to ensure all the
+   * callbacks are processed.
+   *
+   * @param qualifiersStr the {@link Qualifiers} string representing characteristics of the new
+   *     display.
+   * @param displayType the integer denoting the type of the new display.
+   * @return the new display's ID
+   */
+  public static int addDisplay(String qualifiersStr, int displayType) {
+    return addDisplayInternal(qualifiersStr, DEFAULT_DISPLAY_NAME, displayType);
   }
 
   /**
@@ -90,11 +104,7 @@ public class ShadowDisplayManager {
    * @return the new display's ID
    */
   public static int addDisplay(String qualifiersStr, String displayName) {
-    int id =
-        getShadowDisplayManagerGlobal()
-            .addDisplay(createDisplayInfo(qualifiersStr, null, displayName));
-    shadowMainLooper().idle();
-    return id;
+    return addDisplayInternal(qualifiersStr, displayName, DEFAULT_DISPLAY_TYPE);
   }
 
   static IllegalStateException configureDefaultDisplayCallstack;
@@ -116,14 +126,27 @@ public class ShadowDisplayManager {
 
     shadowDisplayManagerGlobal.addDisplay(
         createDisplayInfo(
-            configuration, displayMetrics, /* isNaturallyPortrait= */ true, DEFAULT_DISPLAY_NAME));
+            configuration,
+            displayMetrics,
+            /* isNaturallyPortrait= */ true,
+            DEFAULT_DISPLAY_NAME,
+            DEFAULT_DISPLAY_TYPE));
+  }
+
+  private static int addDisplayInternal(String qualifiersStr, String displayName, int displayType) {
+    int id =
+        getShadowDisplayManagerGlobal()
+            .addDisplay(createDisplayInfo(qualifiersStr, null, displayName, displayType));
+    shadowMainLooper().idle();
+    return id;
   }
 
   private static DisplayInfo createDisplayInfo(
       Configuration configuration,
       DisplayMetrics displayMetrics,
       boolean isNaturallyPortrait,
-      String name) {
+      String name,
+      int displayType) {
     int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
     int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
 
@@ -150,16 +173,17 @@ public class ShadowDisplayManager {
     displayInfo.physicalXDpi = displayMetrics.densityDpi;
     displayInfo.physicalYDpi = displayMetrics.densityDpi;
     displayInfo.state = Display.STATE_ON;
+    displayInfo.type = displayType;
 
     return displayInfo;
   }
 
   private static DisplayInfo createDisplayInfo(String qualifiersStr, @Nullable Integer displayId) {
-    return createDisplayInfo(qualifiersStr, displayId, DEFAULT_DISPLAY_NAME);
+    return createDisplayInfo(qualifiersStr, displayId, DEFAULT_DISPLAY_NAME, DEFAULT_DISPLAY_TYPE);
   }
 
   private static DisplayInfo createDisplayInfo(
-      String qualifiersStr, @Nullable Integer displayId, String name) {
+      String qualifiersStr, @Nullable Integer displayId, String name, int displayType) {
     DisplayInfo baseDisplayInfo =
         displayId != null ? DisplayManagerGlobal.getInstance().getDisplayInfo(displayId) : null;
     Configuration configuration = new Configuration();
@@ -189,7 +213,7 @@ public class ShadowDisplayManager {
     Bootstrap.applyQualifiers(
         qualifiersStr, RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
 
-    return createDisplayInfo(configuration, displayMetrics, isNaturallyPortrait, name);
+    return createDisplayInfo(configuration, displayMetrics, isNaturallyPortrait, name, displayType);
   }
 
   private static boolean isRotated(int rotation) {
