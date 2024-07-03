@@ -1092,7 +1092,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    */
   @Implementation
   protected int getCurrentPosition() {
-    checkStateError("getCurrentPosition()", attachableStates);
+    checkStateError("getCurrentPosition()", nonErrorStates);
     return getCurrentPositionRaw();
   }
 
@@ -1111,13 +1111,13 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
 
   @Implementation
   protected int getVideoHeight() {
-    checkStateLog("getVideoHeight()", attachableStates);
+    checkStateLog("getVideoHeight()", nonErrorStates);
     return videoHeight;
   }
 
   @Implementation
   protected int getVideoWidth() {
-    checkStateLog("getVideoWidth()", attachableStates);
+    checkStateLog("getVideoWidth()", nonErrorStates);
     return videoWidth;
   }
 

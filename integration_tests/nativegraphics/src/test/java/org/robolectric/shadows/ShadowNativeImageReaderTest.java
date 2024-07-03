@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -26,7 +27,7 @@ import org.robolectric.annotation.Config;
  * Test for {@link org.robolectric.shadows.ShadowNativeImageReader} and {@link
  * org.robolectric.shadows.ShadowNativeImageReaderSurfaceImage}.
  */
-@Config(minSdk = Q)
+@Config(minSdk = P)
 @RunWith(RobolectricTestRunner.class)
 public class ShadowNativeImageReaderTest {
 
@@ -95,7 +96,6 @@ public class ShadowNativeImageReaderTest {
     }
   }
 
-  @Config(minSdk = Q)
   @Test
   public void imageReader_lockHardwareCanvas_drawColor() {
     ImageReader reader = ImageReader.newInstance(100, 100, PixelFormat.RGBA_8888, 1);

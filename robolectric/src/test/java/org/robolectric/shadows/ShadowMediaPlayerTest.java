@@ -124,6 +124,15 @@ public class ShadowMediaPlayerTest {
     assertThat(shadowMediaPlayer.getState()).isEqualTo(IDLE);
   }
 
+  /** It is allowed to call {@link MediaPlayer#getCurrentPosition()} in the idle state. */
+  @Test
+  public void newMediaPlayer_getCurrentPosition_inIdleState() {
+    ShadowMediaPlayer.setCreateListener(
+        (player, shadow) -> shadow.setInvalidStateBehavior(InvalidStateBehavior.ASSERT));
+    MediaPlayer mediaPlayer = new MediaPlayer();
+    assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(0);
+  }
+
   @Test
   public void testCreateListener() {
     ShadowMediaPlayer.CreateListener createListener =
@@ -514,7 +523,7 @@ public class ShadowMediaPlayerTest {
 
   @Test
   public void testGetCurrentPositionStates() {
-    testStates("getCurrentPosition", EnumSet.of(IDLE, ERROR), onErrorTester, null);
+    testStates("getCurrentPosition", EnumSet.of(ERROR), onErrorTester, null);
   }
 
   @Test
@@ -524,8 +533,8 @@ public class ShadowMediaPlayerTest {
 
   @Test
   public void testGetVideoHeightAndWidthStates() {
-    testStates("getVideoHeight", EnumSet.of(IDLE, ERROR), logTester, null);
-    testStates("getVideoWidth", EnumSet.of(IDLE, ERROR), logTester, null);
+    testStates("getVideoHeight", EnumSet.of(ERROR), logTester, null);
+    testStates("getVideoWidth", EnumSet.of(ERROR), logTester, null);
   }
 
   @Test

@@ -33,6 +33,8 @@ import static java.util.Arrays.asList;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest;
+import android.Manifest.permission;
+import android.Manifest.permission_group;
 import android.annotation.UserIdInt;
 import android.app.Application;
 import android.content.BroadcastReceiver;
@@ -77,6 +79,7 @@ import android.util.Pair;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.errorprone.annotations.InlineMe;
 import java.lang.reflect.Array;
@@ -196,6 +199,111 @@ public class ShadowPackageManager {
   static boolean whitelisted = false;
   boolean shouldShowActivityChooser = false;
   static final Map<String, Integer> distractingPackageRestrictions = new ConcurrentHashMap<>();
+
+  static final String AOSP_PLATFORM_PERMISSION_GROUP_PREFIX = "android.permission-group.";
+  static final String AOSP_PLATFORM_PERMISSION_PREFIX = "android.permission.";
+
+  /**
+   * Limited set of platform permission groups and their metadata as defined in API level 23.
+   *
+   * <p>The source of truth for the list of platform permission groups and their metadata is the
+   * core framework AndroidManifest.xml file in the Android SDK. For the latest version see:
+   * https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/res/AndroidManifest.xml
+   * Note that new groups may be added and changes to existing groups may be made in each existing
+   * and future versions.
+   */
+  static final ImmutableMap<String, PermissionGroupInfo> AOSP_PLATFORM_PERMISSION_GROUPS =
+      ImmutableMap.of(
+          permission_group.CALENDAR,
+          createPermissionGroupInfo(
+              permission_group.CALENDAR, "Calendar", "access your calendar", 200),
+          permission_group.CONTACTS,
+          createPermissionGroupInfo(
+              permission_group.CONTACTS, "Contacts", "access your contacts", 100));
+
+  /**
+   * Limited set of platform permissions and their metadata as defined in API level 23.
+   *
+   * <p>The source of truth for the list of platform permissions and their metadata is the core
+   * framework AndroidManifest.xml file in the Android SDK. For the latest version see:
+   * https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/res/AndroidManifest.xml
+   * Note that new permissions may be added and changes to existing permissions may be made in each
+   * existing and future versions.
+   *
+   * <p>The mapping of permissions to groups was removed from the core framework AndroidManifest.xml
+   * file. The current source of truth is in the Permission mainline module:
+   * https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Permission/PermissionController/src/com/android/permissioncontroller/permission/utils/PermissionMapping.kt
+   */
+  static final ImmutableMap<String, PermissionInfo> AOSP_PLATFORM_PERMISSIONS =
+      ImmutableMap.of(
+          permission.READ_CALENDAR,
+          createPermissionInfo(
+              permission.READ_CALENDAR,
+              "read calendar events plus confidential information",
+              "Allows the app to read all calendar events stored on your phone, including those of"
+                  + " friends or co-workers. This may allow the app to share or save your calendar"
+                  + " data, regardless of confidentiality or sensitivity.",
+              PermissionInfo.PROTECTION_DANGEROUS,
+              permission_group.CALENDAR),
+          permission.WRITE_CALENDAR,
+          createPermissionInfo(
+              permission.WRITE_CALENDAR,
+              "add or modify calendar events and send email to guests without owners\' knowledge",
+              "Allows the app to add, remove, change events that you can modify on your phone,"
+                  + " including those of friends or co-workers. This may allow the app to send"
+                  + " messages that appear to come from calendar owners, or modify events without"
+                  + " the owners\' knowledge.",
+              PermissionInfo.PROTECTION_DANGEROUS,
+              permission_group.CALENDAR),
+          permission.GET_ACCOUNTS,
+          createPermissionInfo(
+              permission.GET_ACCOUNTS,
+              "find accounts on the device",
+              "Allows the app to get the list of accounts known by the phone. This may include any"
+                  + " accounts created by applications you have installed.",
+              PermissionInfo.PROTECTION_DANGEROUS,
+              permission_group.CONTACTS),
+          permission.READ_CONTACTS,
+          createPermissionInfo(
+              permission.READ_CONTACTS,
+              "read your contacts",
+              "Allows the app to read data about your contacts stored on your phone, including the"
+                  + " frequency with which you\'ve called, emailed, or communicated in other ways"
+                  + " with specific individuals. This permission allows apps to save your contact"
+                  + " data, and malicious apps may share contact data without your knowledge.",
+              PermissionInfo.PROTECTION_DANGEROUS,
+              permission_group.CONTACTS),
+          permission.WRITE_CONTACTS,
+          createPermissionInfo(
+              permission.WRITE_CONTACTS,
+              "modify your contacts",
+              "Allows the app to modify the data about your contacts stored on your phone,"
+                  + " including the frequency with which you\'ve called, emailed, or communicated"
+                  + " in other ways with specific contacts. This permission allows apps to delete"
+                  + " contact data.",
+              PermissionInfo.PROTECTION_DANGEROUS,
+              permission_group.CONTACTS));
+
+  private static PermissionGroupInfo createPermissionGroupInfo(
+      String name, String label, String description, int priority) {
+    PermissionGroupInfo permissionGroupInfo = new PermissionGroupInfo();
+    permissionGroupInfo.name = name;
+    permissionGroupInfo.nonLocalizedDescription = description;
+    permissionGroupInfo.nonLocalizedLabel = label;
+    permissionGroupInfo.priority = priority;
+    return permissionGroupInfo;
+  }
+
+  private static PermissionInfo createPermissionInfo(
+      String name, String label, String description, int protectionLevel, String group) {
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.group = group;
+    permissionInfo.name = name;
+    permissionInfo.nonLocalizedDescription = description;
+    permissionInfo.nonLocalizedLabel = label;
+    permissionInfo.protectionLevel = protectionLevel;
+    return permissionInfo;
+  }
 
   /**
    * Makes sure that given activity exists.
@@ -866,6 +974,19 @@ public class ShadowPackageManager {
       }
       Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
+      if (packageInfo.permissions != null) {
+        for (PermissionInfo permissionInfo : packageInfo.permissions) {
+          if (AOSP_PLATFORM_PERMISSIONS.containsKey(permissionInfo.name)
+              || permissionInfo.name.startsWith(AOSP_PLATFORM_PERMISSION_PREFIX)) {
+            throw new IllegalArgumentException(
+                "Permission "
+                    + permissionInfo.name
+                    + " is a platform permission. Do not declare it as part of the package or test"
+                    + " app manifest.");
+          }
+        }
+      }
+
       packageInfos.put(packageInfo.packageName, packageInfo);
       packageStatsMap.put(packageInfo.packageName, packageStats);
 
@@ -1260,6 +1381,16 @@ public class ShadowPackageManager {
     for (PermissionGroup permissionGroup : appPackage.permissionGroups) {
       PermissionGroupInfo permissionGroupInfo =
           PackageParser.generatePermissionGroupInfo(permissionGroup, flags);
+
+      if (AOSP_PLATFORM_PERMISSION_GROUPS.containsKey(permissionGroupInfo.name)
+          || permissionGroupInfo.name.startsWith(AOSP_PLATFORM_PERMISSION_GROUP_PREFIX)) {
+        throw new IllegalArgumentException(
+            "Permission group "
+                + permissionGroupInfo.name
+                + " is a platform permission group. Do not declare it as part of the test app"
+                + " manifest.");
+      }
+
       addPermissionGroupInfo(permissionGroupInfo);
     }
     PackageInfo packageInfo = generatePackageInfo(appPackage, flags);

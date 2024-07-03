@@ -406,6 +406,7 @@ public class MotionEventTest {
     }
   }
 
+  @SuppressWarnings("ReturnValueIgnored")
   @Test
   public void testToString() {
     // make sure this method never throw exception.
@@ -983,10 +984,6 @@ public class MotionEventTest {
     private PointerCoordsEqualitySubject(FailureMetadata metadata, PointerCoords actual) {
       super(metadata, actual);
       this.actual = actual;
-    }
-
-    public static PointerCoordsEqualitySubject assertThat(PointerCoords coords) {
-      return Truth.assertAbout(pointerCoords()).that(coords);
     }
 
     public static Subject.Factory<PointerCoordsEqualitySubject, PointerCoords> pointerCoords() {

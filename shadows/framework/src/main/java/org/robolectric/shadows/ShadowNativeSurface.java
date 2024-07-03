@@ -8,21 +8,23 @@ import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Canvas;
-import android.graphics.HardwareRenderer;
 import android.graphics.Rect;
-import android.graphics.RenderNode;
 import android.graphics.SurfaceTexture;
 import android.hardware.HardwareBuffer;
 import android.media.ImageReader;
 import android.os.Parcel;
 import android.view.Surface;
 import android.view.Surface.OutOfResourcesException;
+import android.view.animation.AnimationUtils;
+import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
+import org.robolectric.nativeruntime.HardwareRendererNatives;
+import org.robolectric.nativeruntime.RecordingCanvasNatives;
+import org.robolectric.nativeruntime.RenderNodeNatives;
 import org.robolectric.nativeruntime.SurfaceNatives;
-import org.robolectric.shadows.ShadowNativeHardwareRenderer.HardwareRendererReflector;
 import org.robolectric.shadows.ShadowNativeSurface.Picker;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -178,88 +180,61 @@ public class ShadowNativeSurface {
     }
   }
 
-  /**
-   * Shadow for {@link Surface$HwuiContext} for Q and below that invokes HardwareRenderer methods.
-   * In Q and below, HwuiContext had its own native methods.
-   */
-  @Implements(
-      className = "android.view.Surface$HwuiContext",
-      minSdk = Q,
-      maxSdk = Q,
-      isInAndroidSdk = false,
-      shadowPicker = ShadowNativeHwuiContext.Picker.class)
-  public static class ShadowNativeHwuiContext {
-    @RealObject Object realHwuiContext;
+  @Implementation(minSdk = P, maxSdk = Q)
+  protected static long nHwuiCreate(long contentRootNode, long surface, boolean isWideColorGamut) {
+    // Modeled after the HwuiContext constructor in R:
+    // https://cs.android.com/android/platform/superproject/+/android11-dev:frameworks/base/core/java/android/view/Surface.java;l=1005
 
-    // This object is a HardwareRenderer in Q, but is a ThreadedRenderer in O and P.
-    private Object hardwareRenderer;
+    // Set up the root render node.
+    long rootRenderNodePtr = HardwareRendererNatives.nCreateRootRenderNode();
+    RenderNodeNatives.nSetClipToBounds(rootRenderNodePtr, false);
 
-    @Implementation
-    protected void __constructor__(Surface surface, boolean isWideColorGamut) {
-      // Modeled after the HwuiContext constructor in R:
-      // https://cs.android.com/android/platform/superproject/+/android11-dev:frameworks/base/core/java/android/view/Surface.java
-      reflector(HwuiContextReflector.class, realHwuiContext)
-          .__constructor__(surface, isWideColorGamut);
-      HardwareRenderer hardwareRenderer = new HardwareRenderer();
-      RenderNode renderNode =
-          reflector(HwuiContextReflector.class, realHwuiContext).getRenderNode();
-      hardwareRenderer.setContentRoot(renderNode);
-      hardwareRenderer.setSurface(surface);
-      reflector(HardwareRendererReflector.class, hardwareRenderer).setWideGamut(isWideColorGamut);
-      hardwareRenderer.setLightSourceAlpha(0.0f, 0.0f);
-      hardwareRenderer.setLightSourceGeometry(0.0f, 0.0f, 0.0f, 0.0f);
-      this.hardwareRenderer = hardwareRenderer;
+    // Set up the HardwareRenderer
+    long renderer = HardwareRendererNatives.nCreateProxy(false, rootRenderNodePtr);
+
+    // Set up light-related properties.
+    HardwareRendererNatives.nSetLightAlpha(renderer, 0, 0);
+    HardwareRendererNatives.nSetLightGeometry(renderer, 0, 0, 0, 0);
+
+    // Draw the content render node onto the root render node.
+    long recordingCanvas = RecordingCanvasNatives.nCreateDisplayListCanvas(rootRenderNodePtr, 0, 0);
+    RecordingCanvasNatives.nDrawRenderNode(recordingCanvas, contentRootNode);
+    RecordingCanvasNatives.nFinishRecording(recordingCanvas, rootRenderNodePtr);
+
+    // Set the surface.
+    HardwareRendererNatives.nSetSurfacePtr(renderer, surface);
+    return renderer;
+  }
+
+  @Implementation(minSdk = O, maxSdk = O_MR1)
+  protected static long nHwuiCreate(long rootNode, long surface) {
+    return nHwuiCreate(rootNode, surface, false);
+  }
+
+  @Implementation(minSdk = O, maxSdk = Q)
+  protected static void nHwuiSetSurface(long renderer, long surface) {
+    if (surface != 0) {
+      HardwareRendererNatives.nSetSurfacePtr(renderer, surface);
     }
+  }
 
-    @Implementation
-    protected void unlockAndPost(Canvas canvas) {
-      RenderNode renderNode =
-          reflector(HwuiContextReflector.class, realHwuiContext).getRenderNode();
-      renderNode.endRecording();
-      reflector(HwuiContextReflector.class, realHwuiContext).setCanvas(null);
-      ((HardwareRenderer) hardwareRenderer)
-          .createRenderRequest()
-          .setVsyncTime(System.nanoTime())
-          .syncAndDraw();
-    }
+  @Implementation(minSdk = O, maxSdk = Q)
+  protected static void nHwuiDraw(long renderer) {
+    // FrameInfo changed packages from android.view.FrameInfo in P to android.graphics.FrameInfo in
+    // Q, so it's easier to just construct a long[] array with the frame data.
+    final long vsync = TimeUnit.MILLISECONDS.toNanos(AnimationUtils.currentAnimationTimeMillis());
+    final long[] frameInfo = new long[9];
+    frameInfo[0] = 1 << 2;
+    frameInfo[1] = vsync;
+    frameInfo[2] = vsync;
+    frameInfo[3] = Long.MAX_VALUE;
+    frameInfo[4] = 0;
+    HardwareRendererNatives.nSyncAndDrawFrame(renderer, frameInfo, 9);
+  }
 
-    @Implementation
-    protected void updateSurface() {
-      Surface surface = reflector(HwuiContextReflector.class, realHwuiContext).getOuterSurface();
-      long surfacePtr = reflector(SurfaceReflector.class, surface).getNativeObject();
-      // In Android Q and below, updateSurface was called when the Surface was freed, which is not
-      // possible in native code in S.
-      if (surfacePtr != 0) {
-        reflector(HardwareRendererReflector.class, hardwareRenderer).setSurface(surface);
-      }
-    }
-
-    @Implementation
-    protected void destroy() {
-      ((HardwareRenderer) hardwareRenderer).destroy();
-    }
-
-    @ForType(className = "android.view.Surface$HwuiContext")
-    interface HwuiContextReflector {
-      @Direct
-      void __constructor__(Surface surface, boolean isWideColorGamut);
-
-      @Accessor("mRenderNode")
-      RenderNode getRenderNode();
-
-      @Accessor("mCanvas")
-      void setCanvas(Canvas canvas);
-
-      @Accessor("this$0")
-      Surface getOuterSurface();
-    }
-
-    /** Shadow picker for HwuiContext. */
-    public static final class Picker extends GraphicsShadowPicker<Object> {
-      public Picker() {
-        super(null, ShadowNativeHwuiContext.class);
-      }
-    }
+  @Implementation(minSdk = O, maxSdk = Q)
+  protected static void nHwuiDestroy(long renderer) {
+    HardwareRendererNatives.nDeleteProxy(renderer);
   }
 
   @ForType(Surface.class)
@@ -269,11 +244,6 @@ public class ShadowNativeSurface {
 
     @Accessor("mNativeObject")
     long getNativeObject();
-  }
-
-  @Implementation(minSdk = Q, maxSdk = Q)
-  protected static long nHwuiCreate(long rootNode, long surface, boolean isWideColorGamut) {
-    return 0; // no-op
   }
 
   /** Shadow picker for {@link Surface}. */

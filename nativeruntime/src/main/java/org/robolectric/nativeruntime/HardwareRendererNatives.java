@@ -58,6 +58,8 @@ public final class HardwareRendererNatives {
 
   public static native void nSetSurface(long nativeProxy, Surface window, boolean discardBuffer);
 
+  public static native void nSetSurfacePtr(long nativeProxy, long surfacePtr);
+
   public static native void nSetSurfaceControl(long nativeProxy, long nativeSurfaceControl);
 
   public static native boolean nPause(long nativeProxy);
