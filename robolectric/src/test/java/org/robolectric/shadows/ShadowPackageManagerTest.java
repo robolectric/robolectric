@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.Manifest.permission.READ_CALENDAR;
 import static android.Manifest.permission.READ_CONTACTS;
 import static android.Manifest.permission.READ_SMS;
 import static android.Manifest.permission.SUSPEND_APPS;
+import static android.Manifest.permission.WRITE_CALENDAR;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
@@ -41,9 +43,9 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
@@ -112,17 +114,12 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.core.content.pm.ApplicationInfoBuilder;
 import androidx.test.core.content.pm.PackageInfoBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import javax.annotation.Nullable;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -776,124 +773,358 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void getPermissionInfo_withMinimalFields() throws Exception {
+  public void getPermissionInfo_fromPlatform() throws Exception {
+    PermissionInfo permission = packageManager.getPermissionInfo(READ_CONTACTS, 0);
+
+    assertThat(permission.labelRes).isEqualTo(0);
+    assertThat(permission.descriptionRes).isEqualTo(0);
+    assertThat(permission.protectionLevel).isEqualTo(PermissionInfo.PROTECTION_DANGEROUS);
+    assertThat(permission.group).isEqualTo(permission_group.CONTACTS);
+  }
+
+  @Test
+  public void getPermissionInfo_fromManifest() throws Exception {
     PermissionInfo permission =
         packageManager.getPermissionInfo("org.robolectric.permission_with_minimal_fields", 0);
+
     assertThat(permission.labelRes).isEqualTo(0);
     assertThat(permission.descriptionRes).isEqualTo(0);
     assertThat(permission.protectionLevel).isEqualTo(PermissionInfo.PROTECTION_NORMAL);
   }
 
   @Test
-  public void getPermissionInfo_addedPermissions() throws Exception {
+  public void getPermissionInfo_addedPermission() throws Exception {
     PermissionInfo permissionInfo = new PermissionInfo();
     permissionInfo.name = "manually_added_permission";
     shadowOf(packageManager).addPermissionInfo(permissionInfo);
+
     PermissionInfo permission = packageManager.getPermissionInfo("manually_added_permission", 0);
+
     assertThat(permission.name).isEqualTo("manually_added_permission");
+  }
+
+  @Test
+  public void getPermissionInfo_overriddenPlatformPermission() throws Exception {
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = READ_CONTACTS;
+    permissionInfo.group = "my_other_permission_group";
+    shadowOf(packageManager).addPermissionInfo(permissionInfo);
+
+    PermissionInfo permission = packageManager.getPermissionInfo(READ_CONTACTS, 0);
+
+    assertThat(permission.labelRes).isEqualTo(0);
+    assertThat(permission.descriptionRes).isEqualTo(0);
+    assertThat(permission.protectionLevel).isEqualTo(PermissionInfo.PROTECTION_NORMAL);
+    assertThat(permission.group).isEqualTo("my_other_permission_group");
+  }
+
+  @Test
+  public void getPermissionGroupInfo_fromPlatform() throws Exception {
+    PermissionGroupInfo permissionGroupInfo =
+        packageManager.getPermissionGroupInfo(permission_group.CALENDAR, 0);
+
+    assertThat(permissionGroupInfo.name).isEqualTo(permission_group.CALENDAR);
+    assertThat(permissionGroupInfo.priority).isEqualTo(200);
   }
 
   @Test
   public void getPermissionGroupInfo_fromManifest() throws Exception {
     PermissionGroupInfo permissionGroupInfo =
-        context
-            .getPackageManager()
-            .getPermissionGroupInfo("org.robolectric.package_permission_group", 0);
+        packageManager.getPermissionGroupInfo("org.robolectric.package_permission_group", 0);
+
     assertThat(permissionGroupInfo.name).isEqualTo("org.robolectric.package_permission_group");
+    assertThat(permissionGroupInfo.priority).isEqualTo(0);
   }
 
   @Test
   public void getPermissionGroupInfo_extraPermissionGroup() throws Exception {
-    PermissionGroupInfo newCameraPermission = new PermissionGroupInfo();
-    newCameraPermission.name = permission_group.CAMERA;
-    shadowOf(packageManager).addPermissionGroupInfo(newCameraPermission);
+    PermissionGroupInfo extraPermissionGroupInfo = new PermissionGroupInfo();
+    extraPermissionGroupInfo.name = "my_other_permission_group";
+    extraPermissionGroupInfo.priority = 42;
+    shadowOf(packageManager).addPermissionGroupInfo(extraPermissionGroupInfo);
 
-    assertThat(packageManager.getPermissionGroupInfo(permission_group.CAMERA, 0).name)
-        .isEqualTo(newCameraPermission.name);
+    PermissionGroupInfo permissionGroupInfo =
+        packageManager.getPermissionGroupInfo("my_other_permission_group", 0);
+
+    assertThat(permissionGroupInfo.name).isEqualTo("my_other_permission_group");
+    assertThat(permissionGroupInfo.priority).isEqualTo(42);
+  }
+
+  @Test
+  public void getPermissionGroupInfo_overriddenPlatformPermissionGroup() throws Exception {
+    PermissionGroupInfo extraPermissionGroupInfo = new PermissionGroupInfo();
+    extraPermissionGroupInfo.name = permission_group.CALENDAR;
+    extraPermissionGroupInfo.priority = 42;
+    shadowOf(packageManager).addPermissionGroupInfo(extraPermissionGroupInfo);
+
+    PermissionGroupInfo permissionGroupInfo =
+        packageManager.getPermissionGroupInfo(permission_group.CALENDAR, 0);
+
+    assertThat(permissionGroupInfo.name).isEqualTo(permission_group.CALENDAR);
+    assertThat(permissionGroupInfo.priority).isEqualTo(42);
   }
 
   @Test
   @Config(minSdk = S)
   public void getGroupOfPlatformPermission_fromManifest() throws Exception {
-    String permissionName = "org.robolectric.some_permission";
-    CountDownLatch waitForCallback = new CountDownLatch(1);
-    ShadowApplicationPackageManager pm = (ShadowApplicationPackageManager) shadowOf(packageManager);
     String[] permissionGroupArg = new String[1];
-    pm.getGroupOfPlatformPermission(
-        permissionName,
-        Executors.newSingleThreadExecutor(),
+
+    packageManager.getGroupOfPlatformPermission(
+        "org.robolectric.some_permission",
+        context.getMainExecutor(),
         (group) -> {
           permissionGroupArg[0] = group;
-          waitForCallback.countDown();
         });
-    assertThat(waitForCallback.await(2, SECONDS)).isTrue();
-    assertThat(permissionGroupArg[0]).isEqualTo("my_permission_group");
+    shadowMainLooper().idle();
+
+    assertThat(permissionGroupArg[0]).isNull();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getGroupOfPlatformPermission_fromExtraPermissions() throws Exception {
+    String permissionName = "some_other_permission";
+    String permissionGroupName = "some_other_permission_group";
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = permissionName;
+    permissionInfo.group = permissionGroupName;
+    shadowOf(packageManager).addPermissionInfo(permissionInfo);
+    String[] permissionGroupArg = new String[1];
+
+    packageManager.getGroupOfPlatformPermission(
+        permissionName,
+        context.getMainExecutor(),
+        (group) -> {
+          permissionGroupArg[0] = group;
+        });
+    shadowMainLooper().idle();
+
+    assertThat(permissionGroupArg[0]).isNull();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getGroupOfPlatformPermission_fromExtraPermissionsPlatformPrefix() throws Exception {
+    String permissionName = "android.permission.some_other_permission";
+    String permissionGroupName = "some_other_permission_group";
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = permissionName;
+    permissionInfo.group = permissionGroupName;
+    shadowOf(packageManager).addPermissionInfo(permissionInfo);
+    String[] permissionGroupArg = new String[1];
+
+    packageManager.getGroupOfPlatformPermission(
+        permissionName,
+        context.getMainExecutor(),
+        (group) -> {
+          permissionGroupArg[0] = group;
+        });
+    shadowMainLooper().idle();
+
+    assertThat(permissionGroupArg[0]).isEqualTo(permissionGroupName);
   }
 
   @Test
   @Config(minSdk = S)
   public void getGroupOfPlatformPermission_unknown() throws Exception {
-    String permissionName = "unknown_permission";
-    CountDownLatch waitForCallback = new CountDownLatch(1);
-    ShadowApplicationPackageManager pm = (ShadowApplicationPackageManager) shadowOf(packageManager);
     String[] permissionGroupArg = new String[1];
-    pm.getGroupOfPlatformPermission(
-        permissionName,
-        Executors.newSingleThreadExecutor(),
+
+    packageManager.getGroupOfPlatformPermission(
+        "unknown_permission",
+        context.getMainExecutor(),
         (group) -> {
           permissionGroupArg[0] = group;
-          waitForCallback.countDown();
         });
-    assertThat(waitForCallback.await(2, SECONDS)).isTrue();
+    shadowMainLooper().idle();
+
     assertThat(permissionGroupArg[0]).isNull();
   }
 
   @Test
-  public void getAllPermissionGroups_fromManifest() {
+  @Config(minSdk = S)
+  public void getGroupOfPlatformPermission_fromPlatform() throws Exception {
+    String[] permissionGroupArg = new String[1];
+
+    packageManager.getGroupOfPlatformPermission(
+        READ_CONTACTS,
+        context.getMainExecutor(),
+        (group) -> {
+          permissionGroupArg[0] = group;
+        });
+    shadowMainLooper().idle();
+
+    assertThat(permissionGroupArg[0]).isEqualTo(permission_group.CONTACTS);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getGroupOfPlatformPermission_overriddenPlatformPermission() throws Exception {
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = READ_CONTACTS;
+    permissionInfo.group = permission_group.CALENDAR;
+    shadowOf(packageManager).addPermissionInfo(permissionInfo);
+    String[] permissionGroupArg = new String[1];
+
+    packageManager.getGroupOfPlatformPermission(
+        READ_CONTACTS,
+        context.getMainExecutor(),
+        (group) -> {
+          permissionGroupArg[0] = group;
+        });
+    shadowMainLooper().idle();
+
+    assertThat(permissionGroupArg[0]).isEqualTo(permission_group.CALENDAR);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getPlatformPermissionsForGroup_fromManifest() throws Exception {
+    List<List<String>> permissionsArg = new ArrayList<>();
+
+    packageManager.getPlatformPermissionsForGroup(
+        "my_permission_group",
+        context.getMainExecutor(),
+        (permissions) -> {
+          permissionsArg.add(permissions);
+        });
+    shadowMainLooper().idle();
+
+    assertThat(permissionsArg).hasSize(1);
+    assertThat(permissionsArg.get(0)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getPlatformPermissionsForGroup_fromExtraPermissions() throws Exception {
+    String permissionName1 = "some_other_permission";
+    String permissionName2 = "android.permission.my_calendar_permission";
+    String permissionGroupName = permission_group.CALENDAR;
+    PermissionInfo permissionInfo1 = new PermissionInfo();
+    permissionInfo1.name = permissionName1;
+    permissionInfo1.group = permissionGroupName;
+    shadowOf(packageManager).addPermissionInfo(permissionInfo1);
+    PermissionInfo permissionInfo2 = new PermissionInfo();
+    permissionInfo2.name = permissionName2;
+    permissionInfo2.group = permissionGroupName;
+    shadowOf(packageManager).addPermissionInfo(permissionInfo2);
+    List<List<String>> permissionsArg = new ArrayList<>();
+
+    packageManager.getPlatformPermissionsForGroup(
+        permissionGroupName,
+        context.getMainExecutor(),
+        (permissions) -> {
+          permissionsArg.add(permissions);
+        });
+    shadowMainLooper().idle();
+
+    assertThat(permissionsArg).hasSize(1);
+    assertThat(permissionsArg.get(0)).doesNotContain(permissionName1);
+    assertThat(permissionsArg.get(0)).contains(permissionName2);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getPlatformPermissionsForGroup_unknown() throws Exception {
+    List<List<String>> permissionsArg = new ArrayList<>();
+
+    packageManager.getPlatformPermissionsForGroup(
+        "unknown_permission_group",
+        context.getMainExecutor(),
+        (permissions) -> {
+          permissionsArg.add(permissions);
+        });
+    shadowMainLooper().idle();
+
+    assertThat(permissionsArg).hasSize(1);
+    assertThat(permissionsArg.get(0)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getPlatformPermissionsForGroup_fromPlatform() throws Exception {
+    List<List<String>> permissionsArg = new ArrayList<>();
+
+    packageManager.getPlatformPermissionsForGroup(
+        permission_group.CALENDAR,
+        context.getMainExecutor(),
+        (permissions) -> {
+          permissionsArg.add(permissions);
+        });
+    shadowMainLooper().idle();
+
+    assertThat(permissionsArg).hasSize(1);
+    assertThat(permissionsArg.get(0)).containsExactly(READ_CALENDAR, WRITE_CALENDAR);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getPlatformPermissionsForGroup_overriddenPlatformPermission() throws Exception {
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = READ_CONTACTS;
+    permissionInfo.group = permission_group.CALENDAR;
+    shadowOf(packageManager).addPermissionInfo(permissionInfo);
+    List<List<String>> permissionsArg = new ArrayList<>();
+
+    packageManager.getPlatformPermissionsForGroup(
+        permission_group.CALENDAR,
+        context.getMainExecutor(),
+        (permissions) -> {
+          permissionsArg.add(permissions);
+        });
+    shadowMainLooper().idle();
+
+    assertThat(permissionsArg).hasSize(1);
+    assertThat(permissionsArg.get(0)).containsExactly(READ_CALENDAR, READ_CONTACTS, WRITE_CALENDAR);
+  }
+
+  @Test
+  public void getAllPermissionGroups_fromPlatformAndManifest() {
     List<PermissionGroupInfo> allPermissionGroups = packageManager.getAllPermissionGroups(0);
-    assertThat(allPermissionGroups).hasSize(1);
-    assertThat(allPermissionGroups.get(0).name)
-        .isEqualTo("org.robolectric.package_permission_group");
+
+    assertThat(allPermissionGroups.stream().map(info -> info.name).collect(toImmutableList()))
+        .containsExactly(
+            permission_group.CALENDAR,
+            permission_group.CONTACTS,
+            "org.robolectric.package_permission_group");
   }
 
   @Test
   public void getAllPermissionGroups_duplicateInExtraPermissions() {
-    assertThat(packageManager.getAllPermissionGroups(0)).hasSize(1);
-
     PermissionGroupInfo overriddenPermission = new PermissionGroupInfo();
     overriddenPermission.name = "org.robolectric.package_permission_group";
     shadowOf(packageManager).addPermissionGroupInfo(overriddenPermission);
     PermissionGroupInfo newCameraPermission = new PermissionGroupInfo();
-    newCameraPermission.name = permission_group.CAMERA;
+    newCameraPermission.name = "org.robolectric.package_permission_other_group";
     shadowOf(packageManager).addPermissionGroupInfo(newCameraPermission);
 
     List<PermissionGroupInfo> allPermissionGroups = packageManager.getAllPermissionGroups(0);
-    assertThat(allPermissionGroups).hasSize(2);
+
+    assertThat(allPermissionGroups.stream().map(info -> info.name).collect(toImmutableList()))
+        .containsExactly(
+            permission_group.CALENDAR,
+            permission_group.CONTACTS,
+            "org.robolectric.package_permission_group",
+            "org.robolectric.package_permission_other_group");
   }
 
   @Test
   public void getAllPermissionGroups_duplicatePermission() {
-    assertThat(packageManager.getAllPermissionGroups(0)).hasSize(1);
-
     // Package 1
-    Package pkg = new Package(TEST_PACKAGE_NAME);
-    ApplicationInfo appInfo = pkg.applicationInfo;
-    appInfo.flags = ApplicationInfo.FLAG_INSTALLED;
-    appInfo.packageName = TEST_PACKAGE_NAME;
-    appInfo.sourceDir = TEST_APP_PATH;
-    appInfo.name = TEST_PACKAGE_LABEL;
-    PermissionGroupInfo contactsPermissionGroupInfoApp1 = new PermissionGroupInfo();
-    contactsPermissionGroupInfoApp1.name = Manifest.permission_group.CONTACTS;
-    PermissionGroup contactsPermissionGroupApp1 =
-        new PermissionGroup(pkg, contactsPermissionGroupInfoApp1);
-    pkg.permissionGroups.add(contactsPermissionGroupApp1);
-    PermissionGroupInfo storagePermissionGroupInfoApp1 = new PermissionGroupInfo();
-    storagePermissionGroupInfoApp1.name = permission_group.STORAGE;
-    PermissionGroup storagePermissionGroupApp1 =
-        new PermissionGroup(pkg, storagePermissionGroupInfoApp1);
-    pkg.permissionGroups.add(storagePermissionGroupApp1);
-
-    shadowOf(packageManager).addPackageInternal(pkg);
+    Package pkg1 = new Package(TEST_PACKAGE_NAME);
+    ApplicationInfo appInfo1 = pkg1.applicationInfo;
+    appInfo1.flags = ApplicationInfo.FLAG_INSTALLED;
+    appInfo1.packageName = TEST_PACKAGE_NAME;
+    appInfo1.sourceDir = TEST_APP_PATH;
+    appInfo1.name = TEST_PACKAGE_LABEL;
+    PermissionGroupInfo pgiApp1Group1 = new PermissionGroupInfo();
+    pgiApp1Group1.name = "org.robolectric.package_permission_other_group1";
+    PermissionGroup pgApp1Group1 = new PermissionGroup(pkg1, pgiApp1Group1);
+    pkg1.permissionGroups.add(pgApp1Group1);
+    PermissionGroupInfo pgiApp1Group2 = new PermissionGroupInfo();
+    pgiApp1Group2.name = "org.robolectric.package_permission_other_group2";
+    PermissionGroup pgApp1Group2 = new PermissionGroup(pkg1, pgiApp1Group2);
+    pkg1.permissionGroups.add(pgApp1Group2);
+    shadowOf(packageManager).addPackageInternal(pkg1);
 
     // Package 2, contains one permission group that is the same
     Package pkg2 = new Package(TEST_PACKAGE2_NAME);
@@ -902,23 +1133,27 @@ public class ShadowPackageManagerTest {
     appInfo2.packageName = TEST_PACKAGE2_NAME;
     appInfo2.sourceDir = TEST_APP2_PATH;
     appInfo2.name = TEST_PACKAGE2_LABEL;
-    PermissionGroupInfo contactsPermissionGroupInfoApp2 = new PermissionGroupInfo();
-    contactsPermissionGroupInfoApp2.name = Manifest.permission_group.CONTACTS;
-    PermissionGroup contactsPermissionGroupApp2 =
-        new PermissionGroup(pkg2, contactsPermissionGroupInfoApp2);
-    pkg2.permissionGroups.add(contactsPermissionGroupApp2);
-    PermissionGroupInfo calendarPermissionGroupInfoApp2 = new PermissionGroupInfo();
-    calendarPermissionGroupInfoApp2.name = permission_group.CALENDAR;
-    PermissionGroup calendarPermissionGroupApp2 =
-        new PermissionGroup(pkg2, calendarPermissionGroupInfoApp2);
-    pkg2.permissionGroups.add(calendarPermissionGroupApp2);
-
+    PermissionGroupInfo pgiApp2Group1 = new PermissionGroupInfo();
+    pgiApp2Group1.name = "org.robolectric.package_permission_other_group1";
+    PermissionGroup pgApp2Group1 = new PermissionGroup(pkg2, pgiApp2Group1);
+    pkg2.permissionGroups.add(pgApp2Group1);
+    PermissionGroupInfo pgiApp2Group2 = new PermissionGroupInfo();
+    pgiApp2Group2.name = "org.robolectric.package_permission_other_group3";
+    PermissionGroup pgApp2Group2 = new PermissionGroup(pkg2, pgiApp2Group2);
+    pkg2.permissionGroups.add(pgApp2Group2);
     shadowOf(packageManager).addPackageInternal(pkg2);
 
-    // Make sure that the duplicate permission group does not show up in the list
-    // Total list should be: contacts, storage, calendar, "org.robolectric.package_permission_group"
     List<PermissionGroupInfo> allPermissionGroups = packageManager.getAllPermissionGroups(0);
-    assertThat(allPermissionGroups).hasSize(4);
+
+    // Make sure that the duplicate permission group does not show up in the list
+    assertThat(allPermissionGroups.stream().map(info -> info.name).collect(toImmutableList()))
+        .containsExactly(
+            permission_group.CALENDAR,
+            permission_group.CONTACTS,
+            "org.robolectric.package_permission_group",
+            "org.robolectric.package_permission_other_group1",
+            "org.robolectric.package_permission_other_group2",
+            "org.robolectric.package_permission_other_group3");
   }
 
   @Test
@@ -3225,7 +3460,7 @@ public class ShadowPackageManagerTest {
       throws Exception {
     List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(null, 0);
 
-    assertThat(Iterables.transform(permissions, getPermissionNames()))
+    assertThat(permissions.stream().map(info -> info.name).collect(toImmutableList()))
         .containsExactly(
             "org.robolectric.permission_with_minimal_fields",
             "org.robolectric.permission_with_literal_label");
@@ -3242,7 +3477,11 @@ public class ShadowPackageManagerTest {
     List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(null, 0);
     assertThat(permissions).isNotEmpty();
 
-    assertThat(permissions.get(0).name).isEqualTo(permissionInfo.name);
+    assertThat(permissions.stream().map(info -> info.name).collect(toImmutableList()))
+        .containsExactly(
+            permissionInfo.name,
+            "org.robolectric.permission_with_minimal_fields",
+            "org.robolectric.permission_with_literal_label");
   }
 
   @Test
@@ -3382,6 +3621,22 @@ public class ShadowPackageManagerTest {
     assertThat(activity.applicationInfo).isEqualTo(installed.applicationInfo);
     assertThat(installed.applicationInfo.processName).isEqualTo("name");
     assertThat(activity.name).isNotEmpty();
+  }
+
+  @Test
+  public void installPackage_platformPermission_throws() {
+    PackageInfo info = new PackageInfo();
+    info.packageName = "name";
+    info.activities = new ActivityInfo[] {new ActivityInfo()};
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = READ_CONTACTS;
+    info.permissions = new PermissionInfo[] {permissionInfo};
+
+    try {
+      shadowOf(packageManager).installPackage(info);
+      fail("Exception expected");
+    } catch (IllegalArgumentException expected) {
+    }
   }
 
   @Test
@@ -3694,16 +3949,6 @@ public class ShadowPackageManagerTest {
     File dataDir = new File(packageInfo.applicationInfo.dataDir);
     assertThat(dataDir.isDirectory()).isTrue();
     assertThat(dataDir.exists()).isTrue();
-  }
-
-  private static Function<PermissionInfo, String> getPermissionNames() {
-    return new Function<PermissionInfo, String>() {
-      @Nullable
-      @Override
-      public String apply(@Nullable PermissionInfo permissionInfo) {
-        return permissionInfo.name;
-      }
-    };
   }
 
   @Test
@@ -4763,6 +5008,26 @@ public class ShadowPackageManagerTest {
     assertThat(isSuccessful).isTrue();
     assertThat(defaultBrowserPackageNameUserAvailable).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(defaultBrowserPackageNameUserNotAvailable).isNull();
+  }
+
+  @Test
+  public void addPackageInternal_platformPermissionGroup_throws() {
+    Package pkg = new Package(TEST_PACKAGE_NAME);
+    ApplicationInfo appInfo = pkg.applicationInfo;
+    appInfo.flags = ApplicationInfo.FLAG_INSTALLED;
+    appInfo.packageName = TEST_PACKAGE_NAME;
+    appInfo.sourceDir = TEST_APP_PATH;
+    appInfo.name = TEST_PACKAGE_LABEL;
+    PermissionGroupInfo pgi = new PermissionGroupInfo();
+    pgi.name = permission_group.CALENDAR;
+    PermissionGroup pg = new PermissionGroup(pkg, pgi);
+    pkg.permissionGroups.add(pg);
+
+    try {
+      shadowOf(packageManager).addPackageInternal(pkg);
+      fail("Exception expected");
+    } catch (IllegalArgumentException expected) {
+    }
   }
 
   public String[] setPackagesSuspended(
