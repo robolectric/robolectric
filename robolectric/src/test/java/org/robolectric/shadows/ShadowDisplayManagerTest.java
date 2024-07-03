@@ -89,6 +89,13 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
+  public void addDisplay_withGivenType_shouldReflectInAddedDisplay() {
+    int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp", Display.TYPE_EXTERNAL);
+
+    assertThat(instance.getDisplay(displayId).getType()).isEqualTo(Display.TYPE_EXTERNAL);
+  }
+
+  @Test
   public void addDisplay_withName_shouldReflectInAddedDisplay() {
     int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp", "VirtualDevice_1");
     assertThat(displayId).isGreaterThan(0);
