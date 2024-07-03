@@ -1098,11 +1098,19 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected PermissionInfo getPermissionInfo(String name, int flags) throws NameNotFoundException {
+    // Allow extra permissions to override sample platform permissions and package permissions.
     PermissionInfo permissionInfo = extraPermissions.get(name);
     if (permissionInfo != null) {
-      return permissionInfo;
+      return createCopyPermissionInfo(permissionInfo, flags);
     }
 
+    permissionInfo = AOSP_PLATFORM_PERMISSIONS.get(name);
+    if (permissionInfo != null) {
+      return createCopyPermissionInfo(permissionInfo, flags);
+    }
+
+    // Assume that package permissions never attempt to override sample platform permissions.
+    // This is enforced when adding a package.
     synchronized (lock) {
       for (PackageInfo packageInfo : packageInfos.values()) {
         if (packageInfo.permissions != null) {
@@ -1299,21 +1307,30 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected List<PermissionInfo> queryPermissionsByGroup(String group, int flags)
       throws NameNotFoundException {
-    List<PermissionInfo> result = new ArrayList<>();
-    for (PermissionInfo permissionInfo : extraPermissions.values()) {
-      if (Objects.equals(permissionInfo.group, group)) {
-        result.add(permissionInfo);
-      }
-    }
+    Map<String, PermissionInfo> combinedPermissions = new HashMap<>();
+
+    // Assume that package permissions never attempt to override sample platform permissions.
+    // This is enforced when adding a package.
     synchronized (lock) {
       for (PackageInfo packageInfo : packageInfos.values()) {
         if (packageInfo.permissions != null) {
-          for (PermissionInfo permission : packageInfo.permissions) {
-            if (Objects.equals(group, permission.group)) {
-              result.add(createCopyPermissionInfo(permission, flags));
-            }
+          for (PermissionInfo permissionInfo : packageInfo.permissions) {
+            combinedPermissions.put(permissionInfo.name, permissionInfo);
           }
         }
+      }
+    }
+
+    combinedPermissions.putAll(AOSP_PLATFORM_PERMISSIONS);
+
+    // Allow extra permissions to override sample platform permissions and package permissions.
+    // Note that overrides may remove or change the group of a permission.
+    combinedPermissions.putAll(extraPermissions);
+
+    List<PermissionInfo> result = new ArrayList<>();
+    for (PermissionInfo permissionInfo : combinedPermissions.values()) {
+      if (Objects.equals(permissionInfo.group, group)) {
+        result.add(createCopyPermissionInfo(permissionInfo, flags));
       }
     }
 
@@ -1419,8 +1436,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected PermissionGroupInfo getPermissionGroupInfo(String name, int flags)
       throws NameNotFoundException {
+    // Allow groups added through the shadow API to override sample platform permission groups.
+    // Assume that manifest permission groups never attempt to override sample platform permission
+    // groups. This is enforced when parsing the test app manifest.
     if (permissionGroups.containsKey(name)) {
-      return new PermissionGroupInfo(permissionGroups.get(name));
+      return createCopyPermissionGroupInfo(permissionGroups.get(name), flags);
+    }
+
+    if (AOSP_PLATFORM_PERMISSION_GROUPS.containsKey(name)) {
+      return createCopyPermissionGroupInfo(AOSP_PLATFORM_PERMISSION_GROUPS.get(name), flags);
     }
 
     throw new NameNotFoundException(name);
@@ -1431,13 +1455,31 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    */
   @Implementation
   protected List<PermissionGroupInfo> getAllPermissionGroups(int flags) {
-    ArrayList<PermissionGroupInfo> allPermissionGroups = new ArrayList<PermissionGroupInfo>();
+    Map<String, PermissionGroupInfo> result = new HashMap<>();
 
-    for (PermissionGroupInfo permissionGroupInfo : permissionGroups.values()) {
-      allPermissionGroups.add(new PermissionGroupInfo(permissionGroupInfo));
+    for (PermissionGroupInfo permissionGroupInfo : AOSP_PLATFORM_PERMISSION_GROUPS.values()) {
+      result.put(
+          permissionGroupInfo.name, createCopyPermissionGroupInfo(permissionGroupInfo, flags));
     }
 
-    return allPermissionGroups;
+    // Allow groups added through the shadow API to override sample platform permission groups.
+    // Assume that manifest permission groups never attempt to override platform permission groups.
+    // This is enforced when parsing the test app manifest.
+    for (PermissionGroupInfo permissionGroupInfo : permissionGroups.values()) {
+      result.put(
+          permissionGroupInfo.name, createCopyPermissionGroupInfo(permissionGroupInfo, flags));
+    }
+
+    return new ArrayList<>(result.values());
+  }
+
+  private static PermissionGroupInfo createCopyPermissionGroupInfo(
+      PermissionGroupInfo src, int flags) {
+    PermissionGroupInfo copy = new PermissionGroupInfo(src);
+    if ((flags & GET_META_DATA) != GET_META_DATA) {
+      copy.metaData = null;
+    }
+    return copy;
   }
 
   @Implementation
@@ -1682,19 +1724,76 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
   }
 
+  /**
+   * This implementation relies on the limited list of platform permissions defined in {@link
+   * ShadowPackageManager#AOSP_PLATFORM_PERMISSIONS} and on permissions added using the
+   * {ShadowPackageManager#addPermission} API (if they have a platform permission prefix). It will
+   * not return an accurate grouping for all platform permissions that can be found on different
+   * AOSP versions.
+   */
   @Implementation(minSdk = S)
-  public void getGroupOfPlatformPermission(
+  protected void getGroupOfPlatformPermission(
       String permissionName, Executor executor, Consumer<String> callback) {
+    if (!AOSP_PLATFORM_PERMISSIONS.containsKey(permissionName)
+        && !permissionName.startsWith(AOSP_PLATFORM_PERMISSION_PREFIX)) {
+      executor.execute(() -> callback.accept(null));
+      return;
+    }
+
     String permissionGroup = null;
     try {
-      PermissionInfo permissionInfo =
-          getPermissionInfo(permissionName, PackageManager.GET_META_DATA);
+      // Use getPermissionInfo to allow for overrides of platform permissions.
+      // Note that overrides may remove or change the group of a permission.
+      PermissionInfo permissionInfo = getPermissionInfo(permissionName, /* flags= */ 0);
       permissionGroup = permissionInfo.group;
     } catch (NameNotFoundException ignored) {
-      // fall through
+      // Ignore permissions that are not found.
     }
     final String finalPermissionGroup = permissionGroup;
     executor.execute(() -> callback.accept(finalPermissionGroup));
+  }
+
+  /**
+   * This implementation relies on the limited list of platform permissions defined in {@link
+   * ShadowPackageManager#AOSP_PLATFORM_PERMISSIONS} and on permissions added using the
+   * {ShadowPackageManager#addPermission} API (if they have a platform permission prefix). It will
+   * not return an accurate grouping for all platform permissions that can be found on different
+   * AOSP versions.
+   */
+  @Implementation(minSdk = S)
+  protected void getPlatformPermissionsForGroup(
+      String permissionGroupName, Executor executor, Consumer<List<String>> callback) {
+    List<String> permissions = new ArrayList<>();
+
+    if (!AOSP_PLATFORM_PERMISSION_GROUPS.containsKey(permissionGroupName)
+        && !permissionGroupName.startsWith(AOSP_PLATFORM_PERMISSION_GROUP_PREFIX)) {
+      executor.execute(() -> callback.accept(permissions));
+      return;
+    }
+
+    Set<String> permissionNames = new HashSet<>();
+    permissionNames.addAll(AOSP_PLATFORM_PERMISSIONS.keySet());
+    permissionNames.addAll(extraPermissions.keySet());
+
+    for (String permissionName : permissionNames) {
+      // Only check platform permissions.
+      if (!AOSP_PLATFORM_PERMISSIONS.containsKey(permissionName)
+          && !permissionName.startsWith(AOSP_PLATFORM_PERMISSION_PREFIX)) {
+        continue;
+      }
+      try {
+        // Use getPermissionInfo to allow for overrides of platform permissions.
+        // Note that overrides may remove or change the group of a permission.
+        PermissionInfo permissionInfo = getPermissionInfo(permissionName, /* flags= */ 0);
+        if (permissionGroupName.equals(permissionInfo.group)) {
+          permissions.add(permissionInfo.name);
+        }
+      } catch (NameNotFoundException ignored) {
+        // Ignore permissions that are not found.
+      }
+    }
+
+    executor.execute(() -> callback.accept(permissions));
   }
 
   /** Behaves as {@link #resolveActivity(Intent, int)} and currently ignores userId. */
