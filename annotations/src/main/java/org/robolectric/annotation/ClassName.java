@@ -17,18 +17,18 @@ import java.lang.annotation.Target;
  *
  *    // A method shadowing FooAndroidClass#setBar(com.android.RealClassName, int, String)
  *    &#64;Implementation
- *    public void setBar(&#64;ClassName("com.android.RealClassName") Object para1, int para2, String para3) {
+ *    public &#64;ClassName("com.android.RealReturnTypeClassName") Object setBar(&#64;ClassName("com.android.RealClassName") Object para1, int para2, String para3) {
  *
  *    }
  * }
  * </pre>
  */
-@Target(ElementType.PARAMETER)
+@Target({ElementType.PARAMETER, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ClassName {
 
   /**
-   * The class name intended for this parameter.
+   * The class name intended for this parameter, return type.
    *
    * <p>Use the value as returned from {@link Class#getName()}, not {@link
    * Class#getCanonicalName()}; e.g. {@code Foo$Bar} instead of {@code Foo.Bar}.
