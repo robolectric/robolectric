@@ -540,6 +540,7 @@ public class ClassInstrumentor {
     generator.endMethod();
     mutableClass.addMethod(delegatorMethodNode);
   }
+
   /**
    * Creates native stub which returns the default return value.
    *

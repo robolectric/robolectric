@@ -82,7 +82,9 @@ public class ShadowSensorManager {
     return ImmutableList.copyOf(sensorMap.get(type));
   }
 
-  /** @param handler is ignored. */
+  /**
+   * @param handler is ignored.
+   */
   @Implementation
   protected boolean registerListener(
       SensorEventListener listener, Sensor sensor, int rate, Handler handler) {
@@ -242,7 +244,8 @@ public class ShadowSensorManager {
 
   @Implementation(minSdk = O)
   protected Object createDirectChannel(MemoryFile mem) {
-    return ReflectionHelpers.callConstructor(SensorDirectChannel.class,
+    return ReflectionHelpers.callConstructor(
+        SensorDirectChannel.class,
         ClassParameter.from(SensorManager.class, realObject),
         ClassParameter.from(int.class, 0),
         ClassParameter.from(int.class, SensorDirectChannel.TYPE_MEMORY_FILE),

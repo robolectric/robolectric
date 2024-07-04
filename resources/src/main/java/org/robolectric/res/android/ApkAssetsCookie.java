@@ -7,6 +7,7 @@ public class ApkAssetsCookie {
 
   // hey memory/gc optimization!
   private static final ApkAssetsCookie[] PREBAKED = new ApkAssetsCookie[256];
+
   static {
     for (int i = 0; i < PREBAKED.length; i++) {
       PREBAKED[i] = new ApkAssetsCookie(i);

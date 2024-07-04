@@ -16,7 +16,8 @@ import org.robolectric.Robolectric;
 
 @RunWith(AndroidJUnit4.class)
 public class BackupAgentControllerTest {
-  private final BackupAgentController<MyBackupAgent> backupAgentController = Robolectric.buildBackupAgent(MyBackupAgent.class);
+  private final BackupAgentController<MyBackupAgent> backupAgentController =
+      Robolectric.buildBackupAgent(MyBackupAgent.class);
 
   @Test
   public void shouldSetBaseContext() throws Exception {
@@ -27,12 +28,18 @@ public class BackupAgentControllerTest {
 
   public static class MyBackupAgent extends BackupAgent {
     @Override
-    public void onBackup(ParcelFileDescriptor parcelFileDescriptor, BackupDataOutput backupDataOutput, ParcelFileDescriptor parcelFileDescriptor1) throws IOException {
+    public void onBackup(
+        ParcelFileDescriptor parcelFileDescriptor,
+        BackupDataOutput backupDataOutput,
+        ParcelFileDescriptor parcelFileDescriptor1)
+        throws IOException {
       // no op
     }
 
     @Override
-    public void onRestore(BackupDataInput backupDataInput, int i, ParcelFileDescriptor parcelFileDescriptor) throws IOException {
+    public void onRestore(
+        BackupDataInput backupDataInput, int i, ParcelFileDescriptor parcelFileDescriptor)
+        throws IOException {
       // no op
     }
   }

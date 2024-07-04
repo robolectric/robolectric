@@ -26,7 +26,8 @@ public class RobolectricTestRunnerClassLoaderConfigTest {
     assertThat(DummyClass.class.getName()).startsWith(DummyClass.class.getPackage().getName());
   }
 
-  @Test public void testPackagesFromParentClassLoaderAreMadeAvailableByName() {
+  @Test
+  public void testPackagesFromParentClassLoaderAreMadeAvailableByName() {
     assertThat(Test.class.getPackage()).isNotNull();
     assertThat(Package.getPackage("org.junit")).isNotNull();
     assertThat(Package.getPackage("org.junit")).isEqualTo(Test.class.getPackage());

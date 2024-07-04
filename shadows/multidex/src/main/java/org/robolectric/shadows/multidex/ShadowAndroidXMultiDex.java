@@ -12,5 +12,4 @@ public class ShadowAndroidXMultiDex {
   protected static void install(Context context) {
     // Do nothing since with Robolectric nothing is dexed.
   }
-
 }

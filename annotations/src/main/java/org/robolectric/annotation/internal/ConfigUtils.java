@@ -3,8 +3,7 @@ package org.robolectric.annotation.internal;
 import org.robolectric.annotation.Config;
 
 public class ConfigUtils {
-  private ConfigUtils() {
-  }
+  private ConfigUtils() {}
 
   public static String[] parseStringArrayProperty(String property) {
     if (property.isEmpty()) return new String[0];

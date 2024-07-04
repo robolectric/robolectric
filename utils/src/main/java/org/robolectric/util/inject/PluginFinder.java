@@ -91,8 +91,8 @@ class PluginFinder {
   }
 
   @Nullable
-  private <T> Class<? extends T> best(Class<T> pluginType,
-      List<Class<? extends T>> serviceClasses) {
+  private <T> Class<? extends T> best(
+      Class<T> pluginType, List<Class<? extends T>> serviceClasses) {
     if (serviceClasses.isEmpty()) {
       return null;
     }
@@ -103,9 +103,10 @@ class PluginFinder {
     }
 
     int topPriority = priority(first);
-    serviceClasses = serviceClasses.stream()
-        .filter(it -> priority(it) == topPriority)
-        .collect(Collectors.toList());
+    serviceClasses =
+        serviceClasses.stream()
+            .filter(it -> priority(it) == topPriority)
+            .collect(Collectors.toList());
 
     if (serviceClasses.size() == 1) {
       return serviceClasses.get(0);

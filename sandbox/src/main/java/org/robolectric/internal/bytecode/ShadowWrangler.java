@@ -9,6 +9,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import com.google.auto.service.AutoService;
 import com.google.errorprone.annotations.Keep;
+import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
@@ -335,6 +337,12 @@ public class ShadowWrangler implements ClassHandler {
           // Found a looseSignatures match, but continue looking for an exact match.
           foundMethod = method;
         }
+      } else {
+        // Or maybe support @ClassName.
+        if (parameterClassNameMatch(method, paramClasses) && shadowMatcher.matches(method)) {
+          // Found a @ClassName match, but continue looking for an exact match.
+          foundMethod = method;
+        }
       }
     }
 
@@ -349,7 +357,8 @@ public class ShadowWrangler implements ClassHandler {
         if (mappedMethodName.isEmpty() || !mappedMethodName.equals(methodName)) {
           continue;
         }
-        if (Arrays.equals(method.getParameterTypes(), paramClasses)) {
+        if (Arrays.equals(method.getParameterTypes(), paramClasses)
+            || parameterClassNameMatch(method, paramClasses)) {
           foundMethod = method;
           break;
         }
@@ -364,6 +373,37 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
+  /**
+   * Check whether the parameters (which could be @ClassName annotated) of the {@code method}
+   * matches {@code paramClasses}.
+   */
+  private boolean parameterClassNameMatch(Method method, Class<?>[] paramClasses) {
+    Class<?>[] parameterTypes = method.getParameterTypes();
+    if (parameterTypes.length != paramClasses.length) {
+      return false;
+    }
+
+    Annotation[][] annotations = method.getParameterAnnotations();
+    for (int i = 0; i < paramClasses.length; ++i) {
+      if (parameterTypes[i].equals(paramClasses[i])) {
+        continue;
+      }
+      if (!parameterTypes[i].equals(Object.class)) {
+        return false; // @ClassName only applicable to parameter of Object type
+      }
+      boolean matches = false;
+      for (Annotation annotation : annotations[i]) {
+        if (annotation instanceof ClassName) {
+          matches = ((ClassName) annotation).value().equals(paramClasses[i].getName());
+          break;
+        }
+      }
+      if (!matches) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   @Override
   public Object intercept(String signature, Object instance, Object[] params, Class theClass)

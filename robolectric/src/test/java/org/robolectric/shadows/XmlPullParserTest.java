@@ -22,15 +22,15 @@ import org.xmlpull.v1.XmlPullParserException;
 public class XmlPullParserTest {
 
   // emulator output:
-    /*
-http://schemas.android.com/apk/res/android:id(resId=16842960) type=CDATA: value=@16908308 (resId=16908308)
-http://schemas.android.com/apk/res/android:height(resId=16843093) type=CDATA: value=1234.0px (resId=-1)
-http://schemas.android.com/apk/res/android:width(resId=16843097) type=CDATA: value=1234.0px (resId=-1)
-http://schemas.android.com/apk/res/android:title(resId=16843233) type=CDATA: value=Android Title (resId=-1)
-http://schemas.android.com/apk/res/android:scrollbarFadeDuration(resId=16843432) type=CDATA: value=1111 (resId=-1)
-http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: value=App Title (resId=-1)
-:style(resId=0) type=CDATA: value=@android:style/TextAppearance.Small (resId=16973894)
-*/
+  /*
+  http://schemas.android.com/apk/res/android:id(resId=16842960) type=CDATA: value=@16908308 (resId=16908308)
+  http://schemas.android.com/apk/res/android:height(resId=16843093) type=CDATA: value=1234.0px (resId=-1)
+  http://schemas.android.com/apk/res/android:width(resId=16843097) type=CDATA: value=1234.0px (resId=-1)
+  http://schemas.android.com/apk/res/android:title(resId=16843233) type=CDATA: value=Android Title (resId=-1)
+  http://schemas.android.com/apk/res/android:scrollbarFadeDuration(resId=16843432) type=CDATA: value=1111 (resId=-1)
+  http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: value=App Title (resId=-1)
+  :style(resId=0) type=CDATA: value=@android:style/TextAppearance.Small (resId=16973894)
+  */
 
   @Test
   public void xmlParser() throws IOException, XmlPullParserException {
@@ -54,55 +54,63 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
       }
     }
 
-    assertThat(attrNames).containsExactly(
-        ANDROID_NS + ":id",
-        ANDROID_NS + ":height",
-        ANDROID_NS + ":width",
-        ANDROID_NS + ":title",
-        ANDROID_NS + ":scrollbarFadeDuration",
-        AUTO_NS + ":title",
-        ":style",
-        ":class",
-        ":id"
-    );
+    assertThat(attrNames)
+        .containsExactly(
+            ANDROID_NS + ":id",
+            ANDROID_NS + ":height",
+            ANDROID_NS + ":width",
+            ANDROID_NS + ":title",
+            ANDROID_NS + ":scrollbarFadeDuration",
+            AUTO_NS + ":title",
+            ":style",
+            ":class",
+            ":id");
 
     assertAttribute(
         parser, ANDROID_NS, "id", android.R.attr.id, "@" + android.R.id.text1, android.R.id.text1);
-      assertAttribute(parser,
-          ANDROID_NS, "height", android.R.attr.height, "@" + android.R.dimen.app_icon_size,
-          android.R.dimen.app_icon_size);
-      assertAttribute(parser,
-          ANDROID_NS, "width", android.R.attr.width, "1234.0px", -1);
-      assertThat(parser.getAttributeResourceValue(null, "style", /*defaultValue=*/ -1))
-          .isEqualTo(android.R.style.TextAppearance_Small);
+    assertAttribute(
+        parser,
+        ANDROID_NS,
+        "height",
+        android.R.attr.height,
+        "@" + android.R.dimen.app_icon_size,
+        android.R.dimen.app_icon_size);
+    assertAttribute(parser, ANDROID_NS, "width", android.R.attr.width, "1234.0px", -1);
+    assertThat(parser.getAttributeResourceValue(null, "style", /* defaultValue= */ -1))
+        .isEqualTo(android.R.style.TextAppearance_Small);
 
-    assertAttribute(parser,
-        ANDROID_NS, "title", android.R.attr.title, "Android Title", -1);
-    assertAttribute(parser,
-        ANDROID_NS, "scrollbarFadeDuration", android.R.attr.scrollbarFadeDuration, "1111", -1);
-    assertAttribute(parser,
-        AUTO_NS, "title", R.attr.title, "App Title", -1);
+    assertAttribute(parser, ANDROID_NS, "title", android.R.attr.title, "Android Title", -1);
+    assertAttribute(
+        parser,
+        ANDROID_NS,
+        "scrollbarFadeDuration",
+        android.R.attr.scrollbarFadeDuration,
+        "1111",
+        -1);
+    assertAttribute(parser, AUTO_NS, "title", R.attr.title, "App Title", -1);
 
     assertThat(parser.getStyleAttribute()).isEqualTo(android.R.style.TextAppearance_Small);
 
-    assertThat(parser.getIdAttributeResourceValue(/*defaultValue=*/ -1))
+    assertThat(parser.getIdAttributeResourceValue(/* defaultValue= */ -1))
         .isEqualTo(android.R.id.text2);
     assertThat(parser.getClassAttribute()).isEqualTo("none");
   }
 
   @Test
   public void buildAttrSet() {
-    XmlResourceParser parser = (XmlResourceParser) Robolectric.buildAttributeSet()
-        .addAttribute(android.R.attr.width, "1234px")
-        .addAttribute(android.R.attr.height, "@android:dimen/app_icon_size")
-        .addAttribute(android.R.attr.scrollbarFadeDuration, "1111")
-        .addAttribute(android.R.attr.title, "Android Title")
-        .addAttribute(R.attr.title, "App Title")
-        .addAttribute(android.R.attr.id, "@android:id/text1")
-        .setStyleAttribute("@android:style/TextAppearance.Small")
-        .setClassAttribute("none")
-        .setIdAttribute("@android:id/text2")
-        .build();
+    XmlResourceParser parser =
+        (XmlResourceParser)
+            Robolectric.buildAttributeSet()
+                .addAttribute(android.R.attr.width, "1234px")
+                .addAttribute(android.R.attr.height, "@android:dimen/app_icon_size")
+                .addAttribute(android.R.attr.scrollbarFadeDuration, "1111")
+                .addAttribute(android.R.attr.title, "Android Title")
+                .addAttribute(R.attr.title, "App Title")
+                .addAttribute(android.R.attr.id, "@android:id/text1")
+                .setStyleAttribute("@android:style/TextAppearance.Small")
+                .setClassAttribute("none")
+                .setIdAttribute("@android:id/text2")
+                .build();
 
     assertThat(parser.getName()).isEqualTo("dummy");
     int attributeCount = parser.getAttributeCount();
@@ -111,42 +119,57 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
     for (int i = 0; i < attributeCount; i++) {
       attrNames.add(parser.getAttributeNamespace(i) + ":" + parser.getAttributeName(i));
     }
-    assertThat(attrNames).containsExactly(
-        ANDROID_NS + ":id",
-        ANDROID_NS + ":height",
-        ANDROID_NS + ":width",
-        ANDROID_NS + ":title",
-        ANDROID_NS + ":scrollbarFadeDuration",
-        AUTO_NS + ":title",
-        ":style",
-        ":class",
-        ":id"
-    );
+    assertThat(attrNames)
+        .containsExactly(
+            ANDROID_NS + ":id",
+            ANDROID_NS + ":height",
+            ANDROID_NS + ":width",
+            ANDROID_NS + ":title",
+            ANDROID_NS + ":scrollbarFadeDuration",
+            AUTO_NS + ":title",
+            ":style",
+            ":class",
+            ":id");
 
-    assertAttribute(parser,
-        ANDROID_NS, "id", android.R.attr.id, "@" + android.R.id.text1, android.R.id.text1);
-    assertAttribute(parser,
-        ANDROID_NS, "height", android.R.attr.height, "@" + android.R.dimen.app_icon_size,
+    assertAttribute(
+        parser, ANDROID_NS, "id", android.R.attr.id, "@" + android.R.id.text1, android.R.id.text1);
+    assertAttribute(
+        parser,
+        ANDROID_NS,
+        "height",
+        android.R.attr.height,
+        "@" + android.R.dimen.app_icon_size,
         android.R.dimen.app_icon_size);
-    assertAttribute(parser,
-        ANDROID_NS, "width", android.R.attr.width, "1234.0px", -1);
-    assertAttribute(parser,
-        "", "style", 0, "@android:style/TextAppearance.Small",
+    assertAttribute(parser, ANDROID_NS, "width", android.R.attr.width, "1234.0px", -1);
+    assertAttribute(
+        parser,
+        "",
+        "style",
+        0,
+        "@android:style/TextAppearance.Small",
         android.R.style.TextAppearance_Small);
-    assertAttribute(parser,
-        ANDROID_NS, "title", android.R.attr.title, "Android Title", -1);
-    assertAttribute(parser,
-        ANDROID_NS, "scrollbarFadeDuration", android.R.attr.scrollbarFadeDuration, "1111", -1);
-    assertAttribute(parser,
-        AUTO_NS, "title", R.attr.title, "App Title", -1);
+    assertAttribute(parser, ANDROID_NS, "title", android.R.attr.title, "Android Title", -1);
+    assertAttribute(
+        parser,
+        ANDROID_NS,
+        "scrollbarFadeDuration",
+        android.R.attr.scrollbarFadeDuration,
+        "1111",
+        -1);
+    assertAttribute(parser, AUTO_NS, "title", R.attr.title, "App Title", -1);
 
     assertThat(parser.getStyleAttribute()).isEqualTo(android.R.style.TextAppearance_Small);
     assertThat(parser.getIdAttribute()).isEqualTo("@android:id/text2");
     assertThat(parser.getClassAttribute()).isEqualTo("none");
   }
 
-  void assertAttribute(XmlResourceParser parser,
-      String attrNs, String attrName, int resId, String value, int valueResId) {
+  void assertAttribute(
+      XmlResourceParser parser,
+      String attrNs,
+      String attrName,
+      int resId,
+      String value,
+      int valueResId) {
     assertThat(format(parser, attrNs, attrName))
         .isEqualTo(format(attrNs, attrName, resId, "CDATA", value, valueResId));
   }
@@ -156,21 +179,31 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
     for (int i = 0; i < attributeCount; i++) {
       if (namespace.equals(parser.getAttributeNamespace(i))
           && name.equals(parser.getAttributeName(i))) {
-        return format(parser.getAttributeNamespace(i), parser.getAttributeName(i),
-            parser.getAttributeNameResource(i), parser.getAttributeType(i),
-            parser.getAttributeValue(i), parser.getAttributeResourceValue(i, -1));
+        return format(
+            parser.getAttributeNamespace(i),
+            parser.getAttributeName(i),
+            parser.getAttributeNameResource(i),
+            parser.getAttributeType(i),
+            parser.getAttributeValue(i),
+            parser.getAttributeResourceValue(i, -1));
       }
     }
     throw new RuntimeException("not found: " + namespace + ":" + name);
   }
 
-  private String format(String attrNs, String attrName,
-      int attrResId, String type, String value, int valueResId) {
-    return attrNs + ":" + attrName
-        + "(resId=" + attrResId
-        + "): type=" + type
-        + ": value=" + value
-        + "(resId=" + valueResId
+  private String format(
+      String attrNs, String attrName, int attrResId, String type, String value, int valueResId) {
+    return attrNs
+        + ":"
+        + attrName
+        + "(resId="
+        + attrResId
+        + "): type="
+        + type
+        + ": value="
+        + value
+        + "(resId="
+        + valueResId
         + ")";
   }
 }

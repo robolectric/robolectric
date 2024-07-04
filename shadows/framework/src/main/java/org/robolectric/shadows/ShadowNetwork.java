@@ -74,8 +74,8 @@ public class ShadowNetwork {
   }
 
   /**
-   * Simulates a socket bind. isSocketBound can be called to verify that the fd was bound to
-   * this network interface, and boundSocketCount() will increment for any unique socket.
+   * Simulates a socket bind. isSocketBound can be called to verify that the fd was bound to this
+   * network interface, and boundSocketCount() will increment for any unique socket.
    */
   @Implementation(minSdk = M)
   protected void bindSocket(FileDescriptor fd) {

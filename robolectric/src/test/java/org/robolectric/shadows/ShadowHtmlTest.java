@@ -21,8 +21,8 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowHtmlTest {
   private static final String HTML_SHORT = "<img src='foo.png'>";
-  private static final String HTML_LONG = String.format("<img src='%s.png'>",
-      String.join("", Collections.nCopies(100, "foo")));
+  private static final String HTML_LONG =
+      String.format("<img src='%s.png'>", String.join("", Collections.nCopies(100, "foo")));
 
   private Context context;
 
@@ -58,28 +58,31 @@ public class ShadowHtmlTest {
   }
 
   @Config(maxSdk = M)
-  @Test public void testArraycopyLegacyShort() {
+  @Test
+  public void testArraycopyLegacyShort() {
     //noinspection deprecation
     Html.fromHtml(HTML_SHORT, null, null);
   }
 
   @Config(maxSdk = M)
-  @Test public void testArraycopyLegacyLong() {
+  @Test
+  public void testArraycopyLegacyLong() {
     //noinspection deprecation
     Html.fromHtml(HTML_LONG, null, null);
   }
 
-  @TargetApi(N) @Config(minSdk = N)
-  @Test public void testArraycopyShort() {
+  @TargetApi(N)
+  @Config(minSdk = N)
+  @Test
+  public void testArraycopyShort() {
     Html.fromHtml(HTML_SHORT, Html.FROM_HTML_MODE_LEGACY, null, null);
   }
 
-  /**
-   * this test requires that {@link org.ccil.cowan.tagsoup.HTMLScanner} be instrumented.
-   */
-  @TargetApi(N) @Config(minSdk = N)
-  @Test public void testArraycopyLong() {
+  /** this test requires that {@link org.ccil.cowan.tagsoup.HTMLScanner} be instrumented. */
+  @TargetApi(N)
+  @Config(minSdk = N)
+  @Test
+  public void testArraycopyLong() {
     Html.fromHtml(HTML_LONG, Html.FROM_HTML_MODE_LEGACY, null, null);
   }
-
 }

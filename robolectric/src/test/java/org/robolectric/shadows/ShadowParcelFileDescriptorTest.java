@@ -323,8 +323,7 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testGetFd_canRead() throws IOException {
-    assumeThat("Windows is an affront to decency.",
-        File.separator, Matchers.equalTo("/"));
+    assumeThat("Windows is an affront to decency.", File.separator, Matchers.equalTo("/"));
 
     pfd = ParcelFileDescriptor.open(readOnlyFile, ParcelFileDescriptor.MODE_READ_ONLY);
     int fd = pfd.getFd();

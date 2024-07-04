@@ -22,7 +22,8 @@ import org.robolectric.Robolectric;
 public class ViewStubTest {
   private Context ctxt;
 
-  @Before public void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     ctxt = ApplicationProvider.getApplicationContext();
   }
 
@@ -53,11 +54,13 @@ public class ViewStubTest {
 
   @Test
   public void shouldApplyAttributes() {
-    ViewStub viewStub = new ViewStub(ctxt,
-        Robolectric.buildAttributeSet()
-            .addAttribute(android.R.attr.inflatedId, "@+id/include_id")
-            .addAttribute(android.R.attr.layout, "@layout/media")
-            .build());
+    ViewStub viewStub =
+        new ViewStub(
+            ctxt,
+            Robolectric.buildAttributeSet()
+                .addAttribute(android.R.attr.inflatedId, "@+id/include_id")
+                .addAttribute(android.R.attr.layout, "@layout/media")
+                .build());
 
     assertThat(viewStub.getInflatedId()).isEqualTo(R.id.include_id);
     assertThat(viewStub.getLayoutResource()).isEqualTo(R.layout.media);

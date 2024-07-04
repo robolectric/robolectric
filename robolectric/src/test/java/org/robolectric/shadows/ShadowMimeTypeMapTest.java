@@ -60,11 +60,15 @@ public class ShadowMimeTypeMapTest {
     assertTrue(MimeTypeMap.getSingleton().hasMimeType(VIDEO_MIMETYPE));
     assertTrue(MimeTypeMap.getSingleton().hasMimeType(IMAGE_MIMETYPE));
 
-    assertEquals(IMAGE_EXTENSION, MimeTypeMap.getSingleton().getExtensionFromMimeType(IMAGE_MIMETYPE));
-    assertEquals(VIDEO_EXTENSION, MimeTypeMap.getSingleton().getExtensionFromMimeType(VIDEO_MIMETYPE));
+    assertEquals(
+        IMAGE_EXTENSION, MimeTypeMap.getSingleton().getExtensionFromMimeType(IMAGE_MIMETYPE));
+    assertEquals(
+        VIDEO_EXTENSION, MimeTypeMap.getSingleton().getExtensionFromMimeType(VIDEO_MIMETYPE));
 
-    assertEquals(IMAGE_MIMETYPE, MimeTypeMap.getSingleton().getMimeTypeFromExtension(IMAGE_EXTENSION));
-    assertEquals(VIDEO_MIMETYPE, MimeTypeMap.getSingleton().getMimeTypeFromExtension(VIDEO_EXTENSION));
+    assertEquals(
+        IMAGE_MIMETYPE, MimeTypeMap.getSingleton().getMimeTypeFromExtension(IMAGE_EXTENSION));
+    assertEquals(
+        VIDEO_MIMETYPE, MimeTypeMap.getSingleton().getMimeTypeFromExtension(VIDEO_EXTENSION));
   }
 
   @Test

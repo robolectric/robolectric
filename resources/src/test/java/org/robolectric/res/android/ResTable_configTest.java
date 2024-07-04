@@ -17,8 +17,7 @@ public class ResTable_configTest {
     resTable_config.country[0] = 'u';
     resTable_config.country[1] = 'k';
 
-    assertThat(resTable_config.locale())
-        .isEqualTo(('e' << 24) | ('n' << 16) | ('u' << 8) | 'k');
+    assertThat(resTable_config.locale()).isEqualTo(('e' << 24) | ('n' << 16) | ('u' << 8) | 'k');
   }
 
   @Test

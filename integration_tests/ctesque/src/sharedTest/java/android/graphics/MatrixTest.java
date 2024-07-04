@@ -7,10 +7,8 @@ import android.graphics.Matrix.ScaleToFit;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
 /** Compatibility test for {@link Matrix} */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public final class MatrixTest {
 

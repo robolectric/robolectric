@@ -21,7 +21,5 @@ public class ShadowJsResultTest {
 
     jsResult.cancel();
     assertTrue(shadowOf(jsResult).wasCancelled());
-
   }
-
 }

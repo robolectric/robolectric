@@ -291,8 +291,8 @@ public class ShadowWallpaperManagerTest {
 
     try (ParcelFileDescriptor parcelFileDescriptor =
         manager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM)) {
-    assertThat(getBytesFromFileDescriptor(parcelFileDescriptor.getFileDescriptor()))
-        .isEqualTo(getBytesFromBitmap(TEST_IMAGE_1));
+      assertThat(getBytesFromFileDescriptor(parcelFileDescriptor.getFileDescriptor()))
+          .isEqualTo(getBytesFromBitmap(TEST_IMAGE_1));
     }
   }
 
@@ -314,8 +314,8 @@ public class ShadowWallpaperManagerTest {
 
     try (ParcelFileDescriptor parcelFileDescriptor =
         manager.getWallpaperFile(WallpaperManager.FLAG_LOCK)) {
-    assertThat(getBytesFromFileDescriptor(parcelFileDescriptor.getFileDescriptor()))
-        .isEqualTo(getBytesFromBitmap(TEST_IMAGE_3));
+      assertThat(getBytesFromFileDescriptor(parcelFileDescriptor.getFileDescriptor()))
+          .isEqualTo(getBytesFromBitmap(TEST_IMAGE_3));
     }
   }
 
@@ -368,9 +368,9 @@ public class ShadowWallpaperManagerTest {
         /* allowBackup= */ true,
         WallpaperManager.FLAG_SYSTEM);
 
-      assertThat(getBytesFromBitmap(shadowOf(manager).getBitmap(WallpaperManager.FLAG_SYSTEM)))
-          .isEqualTo(testImageBytes);
-      assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_LOCK)).isNull();
+    assertThat(getBytesFromBitmap(shadowOf(manager).getBitmap(WallpaperManager.FLAG_SYSTEM)))
+        .isEqualTo(testImageBytes);
+    assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_LOCK)).isNull();
   }
 
   @Test
@@ -383,9 +383,9 @@ public class ShadowWallpaperManagerTest {
         /* allowBackup= */ true,
         WallpaperManager.FLAG_LOCK);
 
-      assertThat(getBytesFromBitmap(shadowOf(manager).getBitmap(WallpaperManager.FLAG_LOCK)))
-          .isEqualTo(testImageBytes);
-      assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_SYSTEM)).isNull();
+    assertThat(getBytesFromBitmap(shadowOf(manager).getBitmap(WallpaperManager.FLAG_LOCK)))
+        .isEqualTo(testImageBytes);
+    assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_SYSTEM)).isNull();
   }
 
   @Test
@@ -398,9 +398,9 @@ public class ShadowWallpaperManagerTest {
         /* allowBackup= */ true,
         UNSUPPORTED_FLAG);
 
-      assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_LOCK)).isNull();
-      assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_SYSTEM)).isNull();
-      assertThat(shadowOf(manager).getBitmap(UNSUPPORTED_FLAG)).isNull();
+    assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_LOCK)).isNull();
+    assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_SYSTEM)).isNull();
+    assertThat(shadowOf(manager).getBitmap(UNSUPPORTED_FLAG)).isNull();
   }
 
   @Test
@@ -568,7 +568,7 @@ public class ShadowWallpaperManagerTest {
     InputStream inputStream = new FileInputStream(fileDescriptor);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     ByteStreams.copy(inputStream, outputStream);
-      return outputStream.toByteArray();
+    return outputStream.toByteArray();
   }
 
   private static byte[] getBytesFromBitmap(Bitmap bitmap) {

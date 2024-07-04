@@ -45,7 +45,8 @@ public class ShadowMotionEventTest {
   @Test
   public void indexShowsUpInAction() {
     shadowMotionEvent.setPointerIndex(1);
-    assertEquals(1 << MotionEvent.ACTION_POINTER_ID_SHIFT | MotionEvent.ACTION_MOVE, event.getAction());
+    assertEquals(
+        1 << MotionEvent.ACTION_POINTER_ID_SHIFT | MotionEvent.ACTION_MOVE, event.getAction());
   }
 
   @Test
@@ -75,11 +76,15 @@ public class ShadowMotionEventTest {
   public void obtainEventsWithDistinctPointerIds() {
     int[] event1Ids = {88};
     MotionEvent.PointerCoords[] event1Coords = {createCoords(5.0f, 10.0f)};
-    MotionEvent event1 = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 1, event1Ids, event1Coords, 0, 1.0f, 1.0f, 0, 0, 0, 0);
+    MotionEvent event1 =
+        MotionEvent.obtain(
+            0, 0, MotionEvent.ACTION_DOWN, 1, event1Ids, event1Coords, 0, 1.0f, 1.0f, 0, 0, 0, 0);
 
     int[] event2Ids = {99};
     MotionEvent.PointerCoords[] event2Coords = {createCoords(20.0f, 30.0f)};
-    MotionEvent event2 = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 1, event2Ids, event2Coords, 0, 1.0f, 1.0f, 0, 0, 0, 0);
+    MotionEvent event2 =
+        MotionEvent.obtain(
+            0, 0, MotionEvent.ACTION_DOWN, 1, event2Ids, event2Coords, 0, 1.0f, 1.0f, 0, 0, 0, 0);
 
     assertEquals(1, event1.getPointerCount());
     assertEquals(88, event1.getPointerId(0));

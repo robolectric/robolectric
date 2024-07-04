@@ -24,7 +24,7 @@ public class CustomStateView extends TextView {
   protected int[] onCreateDrawableState(int extraSpace) {
     final int[] drawableState = super.onCreateDrawableState(extraSpace + 1);
     if (extraAttribute != null) {
-      mergeDrawableStates(drawableState, new int[]{extraAttribute});
+      mergeDrawableStates(drawableState, new int[] {extraAttribute});
     }
     return drawableState;
   }

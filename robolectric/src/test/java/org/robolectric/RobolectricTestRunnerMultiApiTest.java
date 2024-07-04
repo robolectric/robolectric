@@ -41,9 +41,10 @@ public class RobolectricTestRunnerMultiApiTest {
   private static final int[] APIS_FOR_TEST = {LOLLIPOP, LOLLIPOP_MR1, M, N, N_MR1, O};
 
   private static SdkPicker delegateSdkPicker;
-  private static final Injector INJECTOR = defaultInjector()
-      .bind(SdkPicker.class, (config, usesSdk) -> delegateSdkPicker.selectSdks(config, usesSdk))
-      .build();
+  private static final Injector INJECTOR =
+      defaultInjector()
+          .bind(SdkPicker.class, (config, usesSdk) -> delegateSdkPicker.selectSdks(config, usesSdk))
+          .build();
 
   private RobolectricTestRunner runner;
   private RunNotifier runNotifier;
@@ -238,12 +239,14 @@ public class RobolectricTestRunnerMultiApiTest {
 
   @Config(sdk = Config.ALL_SDKS)
   public static class TestWithNoConfig {
-    @Test public void test() {}
+    @Test
+    public void test() {}
   }
 
   @Config(sdk = {M, N})
   public static class TestClassConfigWithSdkGroup {
-    @Test public void testShouldRunApi18() {
+    @Test
+    public void testShouldRunApi18() {
       assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(M, N));
     }
   }
@@ -259,21 +262,24 @@ public class RobolectricTestRunnerMultiApiTest {
 
   @Config(minSdk = N)
   public static class TestClassNAndUp {
-    @Test public void testSomeApiLevel() {
+    @Test
+    public void testSomeApiLevel() {
       assertThat(Build.VERSION.SDK_INT).isAtLeast(N);
     }
   }
 
   @Config(maxSdk = N)
   public static class TestClassUpToAndIncludingN {
-    @Test public void testSomeApiLevel() {
+    @Test
+    public void testSomeApiLevel() {
       assertThat(Build.VERSION.SDK_INT).isAtMost(N);
     }
   }
 
   @Config(minSdk = LOLLIPOP_MR1, maxSdk = N)
   public static class TestClassBetweenLollipopMr1AndN {
-    @Test public void testSomeApiLevel() {
+    @Test
+    public void testSomeApiLevel() {
       assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(LOLLIPOP_MR1, N));
     }
   }
@@ -325,8 +331,7 @@ public class RobolectricTestRunnerMultiApiTest {
   private static List<Integer> apisFor(List<FrameworkMethod> children) {
     List<Integer> apis = new ArrayList<>();
     for (FrameworkMethod child : children) {
-      apis.add(
-          ((RobolectricTestRunner.RobolectricFrameworkMethod) child).getSdk().getApiLevel());
+      apis.add(((RobolectricTestRunner.RobolectricFrameworkMethod) child).getSdk().getApiLevel());
     }
     return apis;
   }

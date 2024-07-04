@@ -2,7 +2,9 @@
 robolectric-nativeruntime-dist-compat = "1.0.12"
 
 # https://developer.android.com/studio/releases
-android-gradle = "8.4.1"
+android-gradle = "8.5.0"
+
+android-tools-common = "31.5.0"
 
 # https://github.com/google/conscrypt/tags
 conscrypt = "2.5.2"
@@ -15,9 +17,6 @@ findbugs-jsr305 = "3.0.2"
 
 # https://github.com/hamcrest/JavaHamcrest/releases
 hamcrest = "2.0.0.0"
-
-# https://github.com/nebula-plugins/gradle-aggregate-javadocs-plugin/releases
-aggregate-javadocs-gradle = "3.0.1"
 
 # https://github.com/google/error-prone/releases
 error-prone = "2.19.1"
@@ -77,7 +76,7 @@ javax-inject = "1"
 junit4 = "4.13.2"
 
 # https://github.com/google/libphonenumber/releases
-libphonenumber = "8.13.38"
+libphonenumber = "8.13.40"
 
 # https://github.com/mockito/mockito/releases
 mockito = "4.11.0"
@@ -102,7 +101,7 @@ androidx-appcompat = "1.7.0"
 androidx-biometric = "1.1.0"
 androidx-constraintlayout = "2.1.4"
 androidx-core = "1.13.1"
-androidx-fragment = "1.7.1"
+androidx-fragment = "1.8.1"
 androidx-multidex = "2.0.1"
 androidx-window = "1.3.0"
 androidx-room = "2.6.1"
@@ -124,10 +123,9 @@ play-services-for-shadows = "17.0.0"
 play-services-basement = "18.0.1"
 
 [libraries]
-android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
-kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-spotless-gradle = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-gradle" }
-detekt-gradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt-gradle" }
+android-gradle-api = { module = "com.android.tools.build:gradle-api", version.ref = "android-gradle" }
+
+android-tools-common = { module = "com.android.tools:common", version.ref = "android-tools-common" }
 
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
@@ -149,16 +147,12 @@ asm-tree = { module = "org.ow2.asm:asm-tree", version.ref = "asm" }
 
 compile-testing = { module = "com.google.testing.compile:compile-testing", version.ref = "compile-testing" }
 
-aggregate-javadocs-gradle = { module = "com.netflix.nebula:gradle-aggregate-javadocs-plugin", version.ref = "aggregate-javadocs-gradle" }
-
 error-prone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "error-prone" }
 error-prone-annotations = { module = "com.google.errorprone:error_prone_annotation", version.ref = "error-prone" }
 error-prone-refaster = { module = "com.google.errorprone:error_prone_refaster", version.ref = "error-prone" }
 error-prone-check-api = { module = "com.google.errorprone:error_prone_check_api", version.ref = "error-prone" }
 error-prone-test-helpers = { module = "com.google.errorprone:error_prone_test_helpers", version.ref = "error-prone" }
 error-prone-javac = { module = "com.google.errorprone:javac", version.ref = "error-prone-javac" }
-
-error-prone-gradle = { module = "net.ltgt.gradle:gradle-errorprone-plugin", version.ref = "error-prone-gradle" }
 
 conscrypt-openjdk-uber = { module = "org.conscrypt:conscrypt-openjdk-uber", version.ref = "conscrypt" }
 bcprov-jdk18on = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
@@ -204,7 +198,6 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
 roborazzi-rule = { module = "io.github.takahirom.roborazzi:roborazzi-junit-rule", version.ref = "roborazzi" }
-roborazzi-gradle = { module = "io.github.takahirom.roborazzi:roborazzi-gradle-plugin", version.ref = "roborazzi" }
 
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
@@ -238,8 +231,29 @@ play-services-basement-for-shadows = { module = "com.google.android.gms:play-ser
 play-services-basement = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-basement" }
 
 [bundles]
-play-services-for-shadows = [ "androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows" ]
-powermock = [ "powermock-module-junit4", "powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-xstream" ]
-sqlite4java-native = [ "sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86" ]
+play-services-for-shadows = ["androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows"]
+powermock = ["powermock-module-junit4", "powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-xstream"]
+sqlite4java-native = ["sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86"]
 
 [plugins]
+android-library = { id = "com.android.library", version.ref = "android-gradle" }
+application = { id = "application" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt-gradle" }
+error-prone = { id = "net.ltgt.errorprone", version.ref = "error-prone-gradle" }
+groovy = { id = "groovy" }
+idea = { id = "idea" }
+jacoco = { id = "jacoco" }
+java = { id = "java" }
+java-gradle-plugin = { id = "java-gradle-plugin" }
+java-library = { id = "java-library" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+robolectric-android-project = { id = "org.robolectric.gradle.AndroidProjectConfigPlugin" }
+robolectric-deployed-java-module = { id = "org.robolectric.gradle.DeployedRoboJavaModulePlugin" }
+robolectric-gradle-managed-device = { id = "org.robolectric.gradle.GradleManagedDevicePlugin" }
+robolectric-java-module = { id = "org.robolectric.gradle.RoboJavaModulePlugin" }
+robolectric-spotless = { id = "org.robolectric.gradle.SpotlessPlugin" }
+robolectric-shadows = { id = "org.robolectric.gradle.ShadowsPlugin" }
+robolectric-javadoc = { id = "org.robolectric.gradle.AggregateJavadocPlugin" }
+roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless-gradle" }

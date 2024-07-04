@@ -164,7 +164,9 @@ public class ShadowInCallService extends ShadowService {
     }
   }
 
-  /** @return the last value provided to {@code requestBluetoothAudio()}. */
+  /**
+   * @return the last value provided to {@code requestBluetoothAudio()}.
+   */
   @TargetApi(P)
   public BluetoothDevice getBluetoothAudio() {
     return bluetoothDevice;

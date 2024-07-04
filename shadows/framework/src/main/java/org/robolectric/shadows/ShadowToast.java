@@ -109,9 +109,9 @@ public class ShadowToast {
   }
 
   /**
-   * Discards the recorded {@code Toast}s. Shown toasts are automatically cleared between
-   * tests. This method allows the user to discard recorded toasts during the test in order to make assertions clearer
-   * e.g:
+   * Discards the recorded {@code Toast}s. Shown toasts are automatically cleared between tests.
+   * This method allows the user to discard recorded toasts during the test in order to make
+   * assertions clearer e.g:
    *
    * <pre>
    *
@@ -134,11 +134,11 @@ public class ShadowToast {
   }
 
   /**
-   * Returns the number of {@code Toast} requests that have been made during this test run
-   * or since {@link #reset()} has been called.
+   * Returns the number of {@code Toast} requests that have been made during this test run or since
+   * {@link #reset()} has been called.
    *
-   * @return the number of {@code Toast} requests that have been made during this test run
-   *         or since {@link #reset()} has been called.
+   * @return the number of {@code Toast} requests that have been made during this test run or since
+   *     {@link #reset()} has been called.
    */
   public static int shownToastCount() {
     ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
@@ -149,14 +149,18 @@ public class ShadowToast {
    * Returns whether or not a particular custom {@code Toast} has been shown.
    *
    * @param message the message to search for
-   * @param layoutResourceIdToCheckForMessage
-   *                the id of the resource that contains the toast messages
+   * @param layoutResourceIdToCheckForMessage the id of the resource that contains the toast
+   *     messages
    * @return whether the {@code Toast} was requested
    */
-  public static boolean showedCustomToast(CharSequence message, int layoutResourceIdToCheckForMessage) {
+  public static boolean showedCustomToast(
+      CharSequence message, int layoutResourceIdToCheckForMessage) {
     ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     for (Toast toast : shadowApplication.getShownToasts()) {
-      String text = ((TextView) toast.getView().findViewById(layoutResourceIdToCheckForMessage)).getText().toString();
+      String text =
+          ((TextView) toast.getView().findViewById(layoutResourceIdToCheckForMessage))
+              .getText()
+              .toString();
       if (text.equals(message.toString())) {
         return true;
       }

@@ -6,8 +6,7 @@ import org.robolectric.annotation.internal.Instrument;
 
 @Instrument
 public class Pony {
-  public Pony() {
-  }
+  public Pony() {}
 
   public String ride(String where) {
     return "Whinny! You're on my " + where + "!";

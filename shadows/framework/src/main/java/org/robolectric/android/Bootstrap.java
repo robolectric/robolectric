@@ -14,6 +14,7 @@ public class Bootstrap {
   private static Configuration configuration = new Configuration();
   private static DisplayMetrics displayMetrics = new DisplayMetrics();
   private static Resources displayResources;
+
   /** internal only */
   public static boolean displaySet = false;
 

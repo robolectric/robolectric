@@ -39,8 +39,9 @@ public class PropertiesDependencyResolverTest {
   @Test
   public void whenAbsolutePathIsProvidedInProperties_shouldReturnFileUrl() throws Exception {
     String absolutePath = cColonBackslash ? "c:\\tmp\\file.jar" : "/tmp/file.jar";
-    DependencyResolver resolver = new PropertiesDependencyResolver(
-        propsFile("com.group:example:1.3", new File(absolutePath).getAbsoluteFile()), mock);
+    DependencyResolver resolver =
+        new PropertiesDependencyResolver(
+            propsFile("com.group:example:1.3", new File(absolutePath).getAbsoluteFile()), mock);
 
     URL url = resolver.getLocalArtifactUrl(exampleDep);
     if (cColonBackslash) {
@@ -52,29 +53,29 @@ public class PropertiesDependencyResolverTest {
 
   @Test
   public void whenRelativePathIsProvidedInProperties_shouldReturnFileUrl() throws Exception {
-    DependencyResolver resolver = new PropertiesDependencyResolver(
-        propsFile("com.group:example:1.3", new File("path", "1")), mock);
+    DependencyResolver resolver =
+        new PropertiesDependencyResolver(
+            propsFile("com.group:example:1.3", new File("path", "1")), mock);
 
     URL url = resolver.getLocalArtifactUrl(exampleDep);
-    assertThat(url).isEqualTo(
-        temporaryFolder.getRoot().toPath().resolve("path").resolve("1").toUri().toURL());
+    assertThat(url)
+        .isEqualTo(temporaryFolder.getRoot().toPath().resolve("path").resolve("1").toUri().toURL());
   }
 
   @Test
   public void whenMissingFromProperties_shouldDelegate() throws Exception {
-    DependencyResolver resolver = new PropertiesDependencyResolver(
-        propsFile("nothing", new File("interesting")), mock);
+    DependencyResolver resolver =
+        new PropertiesDependencyResolver(propsFile("nothing", new File("interesting")), mock);
 
     when(mock.getLocalArtifactUrl(exampleDep)).thenReturn(new URL("file:///path/3"));
     URL url = resolver.getLocalArtifactUrl(exampleDep);
-    assertThat(url).isEqualTo(new URL("file:///path/3")
-    );
+    assertThat(url).isEqualTo(new URL("file:///path/3"));
   }
 
   @Test
   public void whenDelegateIsNull_shouldGiveGoodMessage() throws Exception {
-    DependencyResolver resolver = new PropertiesDependencyResolver(
-        propsFile("nothing", new File("interesting")), null);
+    DependencyResolver resolver =
+        new PropertiesDependencyResolver(propsFile("nothing", new File("interesting")), null);
 
     try {
       resolver.getLocalArtifactUrl(exampleDep);

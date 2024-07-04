@@ -38,9 +38,12 @@ public class ShadowWindowTest {
     Window window = activity.getWindow();
 
     assertThat(shadowOf(window).getFlag(WindowManager.LayoutParams.FLAG_FULLSCREEN)).isFalse();
-    window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    window.setFlags(
+        WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
     assertThat(shadowOf(window).getFlag(WindowManager.LayoutParams.FLAG_FULLSCREEN)).isTrue();
-    window.setFlags(WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON, WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON);
+    window.setFlags(
+        WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON,
+        WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON);
     assertThat(shadowOf(window).getFlag(WindowManager.LayoutParams.FLAG_FULLSCREEN)).isTrue();
   }
 
@@ -123,7 +126,8 @@ public class ShadowWindowTest {
     assertThat(shadowWindow.getBackgroundDrawable()).isNull();
 
     window.setBackgroundDrawableResource(R.drawable.btn_star);
-    assertThat(shadowOf(shadowWindow.getBackgroundDrawable()).createdFromResId).isEqualTo(R.drawable.btn_star);
+    assertThat(shadowOf(shadowWindow.getBackgroundDrawable()).createdFromResId)
+        .isEqualTo(R.drawable.btn_star);
   }
 
   @Test
@@ -137,14 +141,16 @@ public class ShadowWindowTest {
     assertThat(shadowWindow.getSoftInputMode()).isEqualTo(7);
   }
 
-  @Test @Config(maxSdk = LOLLIPOP_MR1)
+  @Test
+  @Config(maxSdk = LOLLIPOP_MR1)
   public void forPreM_create_shouldCreateImplPhoneWindow() throws Exception {
     assertThat(
             ShadowWindow.create(ApplicationProvider.getApplicationContext()).getClass().getName())
         .isEqualTo("com.android.internal.policy.impl.PhoneWindow");
   }
 
-  @Test @Config(minSdk = M)
+  @Test
+  @Config(minSdk = M)
   public void forM_create_shouldCreatePhoneWindow() throws Exception {
     assertThat(
             ShadowWindow.create(ApplicationProvider.getApplicationContext()).getClass().getName())

@@ -18,13 +18,19 @@ public class AttributeResource {
   public final @Nonnull String contextPackageName;
   private final Integer referenceResId;
 
-  public AttributeResource(@Nonnull ResName resName, @Nonnull String value, @Nonnull String contextPackageName) {
+  public AttributeResource(
+      @Nonnull ResName resName, @Nonnull String value, @Nonnull String contextPackageName) {
     this(resName, value, contextPackageName, null);
   }
 
-  public AttributeResource(@Nonnull ResName resName, @Nonnull String value, @Nonnull String contextPackageName, Integer referenceResId) {
+  public AttributeResource(
+      @Nonnull ResName resName,
+      @Nonnull String value,
+      @Nonnull String contextPackageName,
+      Integer referenceResId) {
     this.referenceResId = referenceResId;
-    if (!resName.type.equals("attr")) throw new IllegalStateException("\"" + resName.getFullyQualifiedName() + "\" unexpected");
+    if (!resName.type.equals("attr"))
+      throw new IllegalStateException("\"" + resName.getFullyQualifiedName() + "\" unexpected");
 
     this.resName = resName;
     this.value = value;
@@ -38,7 +44,8 @@ public class AttributeResource {
 
   public @Nonnull ResName getResourceReference() {
     if (!isResourceReference()) throw new RuntimeException("not a resource reference: " + this);
-    return ResName.qualifyResName(deref(trimmedValue).replace("+", ""), contextPackageName, "style");
+    return ResName.qualifyResName(
+        deref(trimmedValue).replace("+", ""), contextPackageName, "style");
   }
 
   public boolean isStyleReference() {
@@ -60,19 +67,27 @@ public class AttributeResource {
 
   @Override
   public String toString() {
-    return "Attribute{" +
-        "name='" + resName + '\'' +
-        ", value='" + value + '\'' +
-        ", contextPackageName='" + contextPackageName + '\'' +
-        '}';
+    return "Attribute{"
+        + "name='"
+        + resName
+        + '\''
+        + ", value='"
+        + value
+        + '\''
+        + ", contextPackageName='"
+        + contextPackageName
+        + '\''
+        + '}';
   }
 
   public static boolean isResourceReference(String value) {
     return IS_RESOURCE_REFERENCE.matcher(value).find() && !isNull(value);
   }
 
-  public static @Nonnull ResName getResourceReference(String value, String defPackage, String defType) {
-    if (!isResourceReference(value)) throw new IllegalArgumentException("not a resource reference: " + value);
+  public static @Nonnull ResName getResourceReference(
+      String value, String defPackage, String defType) {
+    if (!isResourceReference(value))
+      throw new IllegalArgumentException("not a resource reference: " + value);
     return ResName.qualifyResName(deref(value).replace("+", ""), defPackage, defType);
   }
 
@@ -85,7 +100,8 @@ public class AttributeResource {
   }
 
   public static ResName getStyleReference(String value, String defPackage, String defType) {
-    if (!isStyleReference(value)) throw new IllegalArgumentException("not a style reference: " + value);
+    if (!isStyleReference(value))
+      throw new IllegalArgumentException("not a style reference: " + value);
     return ResName.qualifyResName(value.substring(1), defPackage, defType);
   }
 

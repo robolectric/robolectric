@@ -28,7 +28,7 @@ public class ShadowPreferenceGroupTest {
   @Before
   public void setUp() throws Exception {
     activity = buildActivity(Activity.class).create().get();
-    attrs =  Robolectric.buildAttributeSet().build();
+    attrs = Robolectric.buildAttributeSet().build();
 
     group = new TestPreferenceGroup(activity, attrs);
     shadow = shadowOf(group);

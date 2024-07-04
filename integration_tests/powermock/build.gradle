@@ -1,5 +1,5 @@
 plugins {
-    id("org.robolectric.gradle.RoboJavaModulePlugin")
+    alias(libs.plugins.robolectric.java.module)
 }
 
 dependencies {

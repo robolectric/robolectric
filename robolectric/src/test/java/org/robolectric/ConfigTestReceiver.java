@@ -15,10 +15,8 @@ public class ConfigTestReceiver extends BroadcastReceiver {
     intentsReceived.add(intent);
   }
 
-  static public class InnerReceiver extends BroadcastReceiver {
+  public static class InnerReceiver extends BroadcastReceiver {
     @Override
-    public void onReceive(Context context, Intent intent) {
-
-    }
+    public void onReceive(Context context, Intent intent) {}
   }
 }

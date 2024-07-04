@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.Scheduler.IdleState;
 
 @Implements(AccountManager.class)
@@ -41,6 +42,7 @@ public class ShadowAccountManager {
   private List<Account> accounts = new ArrayList<>();
   private Map<Account, Map<String, String>> authTokens = new HashMap<>();
   private Map<String, AuthenticatorDescription> authenticators = new LinkedHashMap<>();
+
   /**
    * Maps listeners to a set of account types. If null, the listener should be notified for changes
    * to accounts of any type. Otherwise, the listener is only notified of changes to accounts of the
@@ -54,10 +56,25 @@ public class ShadowAccountManager {
   private Map<Account, Set<String>> packageVisibleAccounts = new HashMap<>();
 
   private List<Bundle> addAccountOptionsList = new ArrayList<>();
-  private Handler mainHandler;
-  private RoboAccountManagerFuture pendingAddFuture;
-  private boolean authenticationErrorOnNextResponse = false;
-  private Intent removeAccountIntent;
+  private static Handler mainHandler;
+  private static RoboAccountManagerFuture pendingAddFuture;
+  private static boolean authenticationErrorOnNextResponse = false;
+  private static Intent removeAccountIntent;
+
+  @Resetter
+  public static void reset() {
+    if (mainHandler != null) {
+      mainHandler.removeCallbacksAndMessages(null);
+      mainHandler = null;
+    }
+
+    if (pendingAddFuture != null) {
+      pendingAddFuture.cancel(true);
+      pendingAddFuture = null;
+    }
+    authenticationErrorOnNextResponse = false;
+    removeAccountIntent = null;
+  }
 
   @Implementation
   protected void __constructor__(Context context, IAccountManager service) {
@@ -218,9 +235,7 @@ public class ShadowAccountManager {
     return false;
   }
 
-  /**
-   * Removes all accounts that have been added.
-   */
+  /** Removes all accounts that have been added. */
   public void removeAllAccounts() {
     passwords.clear();
     userData.clear();
@@ -521,7 +536,11 @@ public class ShadowAccountManager {
     private final Activity activity;
     private final Bundle resultBundle;
 
-    RoboAccountManagerFuture(AccountManagerCallback<Bundle> callback, Handler handler, String accountType, Activity activity) {
+    RoboAccountManagerFuture(
+        AccountManagerCallback<Bundle> callback,
+        Handler handler,
+        String accountType,
+        Activity activity) {
       super(callback, handler);
 
       this.accountType = accountType;
@@ -592,7 +611,8 @@ public class ShadowAccountManager {
   private Map<Account, String> previousNames = new HashMap<Account, String>();
 
   /**
-   * Sets the previous name for an account, which will be returned by {@link AccountManager#getPreviousName(Account)}.
+   * Sets the previous name for an account, which will be returned by {@link
+   * AccountManager#getPreviousName(Account)}.
    *
    * @param account User account.
    * @param previousName Previous account name.
@@ -825,10 +845,12 @@ public class ShadowAccountManager {
     }
 
     @Override
-    public T getResult(long timeout, TimeUnit unit) throws OperationCanceledException, IOException, AuthenticatorException {
+    public T getResult(long timeout, TimeUnit unit)
+        throws OperationCanceledException, IOException, AuthenticatorException {
       return getResult();
     }
 
-    public abstract T doWork() throws OperationCanceledException, IOException, AuthenticatorException;
+    public abstract T doWork()
+        throws OperationCanceledException, IOException, AuthenticatorException;
   }
 }

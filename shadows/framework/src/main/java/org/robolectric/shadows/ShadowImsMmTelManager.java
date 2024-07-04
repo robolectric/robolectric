@@ -38,10 +38,7 @@ import org.robolectric.util.reflector.Static;
  * @see #setImsAvailableOnDevice(boolean)
  * @see #setImsRegistered(int)
  */
-@Implements(
-    value = ImsMmTelManager.class,
-    minSdk = VERSION_CODES.Q,
-    isInAndroidSdk = false)
+@Implements(value = ImsMmTelManager.class, minSdk = VERSION_CODES.Q, isInAndroidSdk = false)
 @SystemApi
 public class ShadowImsMmTelManager {
 

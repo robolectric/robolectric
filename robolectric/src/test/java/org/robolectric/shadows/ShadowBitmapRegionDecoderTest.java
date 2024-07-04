@@ -30,7 +30,9 @@ public class ShadowBitmapRegionDecoderTest {
 
   @Test
   public void testNewInstance() throws Exception {
-    assertThat(BitmapRegionDecoder.newInstance(ByteStreams.toByteArray(getImageInputStream()), 0, 0, false))
+    assertThat(
+            BitmapRegionDecoder.newInstance(
+                ByteStreams.toByteArray(getImageInputStream()), 0, 0, false))
         .isNotNull();
     try (AssetFileDescriptor afd = getImageFd()) {
       assertThat(BitmapRegionDecoder.newInstance(afd.getFileDescriptor(), false)).isNotNull();
@@ -38,8 +40,7 @@ public class ShadowBitmapRegionDecoderTest {
     try (InputStream inputStream = getImageInputStream()) {
       assertThat(BitmapRegionDecoder.newInstance(inputStream, false)).isNotNull();
     }
-    assertThat(BitmapRegionDecoder.newInstance(getGeneratedImageFile(), false))
-        .isNotNull();
+    assertThat(BitmapRegionDecoder.newInstance(getGeneratedImageFile(), false)).isNotNull();
   }
 
   @Test
@@ -51,12 +52,12 @@ public class ShadowBitmapRegionDecoderTest {
 
   @Test
   public void testDecodeRegionReturnsExpectedSize() throws IOException {
-    BitmapRegionDecoder bitmapRegionDecoder = BitmapRegionDecoder.newInstance(getImageInputStream(), false);
-    Bitmap bitmap = bitmapRegionDecoder.decodeRegion(new Rect(10, 20, 110, 220), new BitmapFactory.Options());
-    assertThat(bitmap.getWidth())
-        .isEqualTo(100);
-    assertThat(bitmap.getHeight())
-        .isEqualTo(200);
+    BitmapRegionDecoder bitmapRegionDecoder =
+        BitmapRegionDecoder.newInstance(getImageInputStream(), false);
+    Bitmap bitmap =
+        bitmapRegionDecoder.decodeRegion(new Rect(10, 20, 110, 220), new BitmapFactory.Options());
+    assertThat(bitmap.getWidth()).isEqualTo(100);
+    assertThat(bitmap.getHeight()).isEqualTo(200);
   }
 
   @Test

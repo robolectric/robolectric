@@ -38,12 +38,14 @@ public class ShadowWindow {
       new HashSet<>();
 
   public static Window create(Context context) throws ClassNotFoundException {
-    String className = getApiLevel() >= M
-        ? "com.android.internal.policy.PhoneWindow"
-        : "com.android.internal.policy.impl.PhoneWindow";
+    String className =
+        getApiLevel() >= M
+            ? "com.android.internal.policy.PhoneWindow"
+            : "com.android.internal.policy.impl.PhoneWindow";
     Class<? extends Window> phoneWindowClass =
         (Class<? extends Window>) Window.class.getClassLoader().loadClass(className);
-    return ReflectionHelpers.callConstructor(phoneWindowClass, ClassParameter.from(Context.class, context));
+    return ReflectionHelpers.callConstructor(
+        phoneWindowClass, ClassParameter.from(Context.class, context));
   }
 
   @Implementation

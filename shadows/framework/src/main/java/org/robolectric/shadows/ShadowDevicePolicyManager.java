@@ -156,7 +156,6 @@ public class ShadowDevicePolicyManager {
   private Object /* DevicePolicyState */ devicePolicyState;
   private @RealObject DevicePolicyManager realObject;
 
-  
   private static class PackageAndPermission {
 
     public PackageAndPermission(String packageName, String permission) {

@@ -53,6 +53,5 @@ public class ShadowPreferenceActivityTest {
   }
 
   @SuppressWarnings("FragmentInjection")
-  private static class TestPreferenceActivity extends PreferenceActivity {
-  }
+  private static class TestPreferenceActivity extends PreferenceActivity {}
 }

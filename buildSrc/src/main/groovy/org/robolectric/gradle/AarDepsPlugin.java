@@ -2,7 +2,6 @@ package org.robolectric.gradle;
 
 import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE;
 
-import com.android.build.gradle.internal.dependency.ExtractAarTransform;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +17,7 @@ import org.gradle.api.artifacts.transform.TransformOutputs;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.jetbrains.annotations.NotNull;
+import org.robolectric.gradle.agp.ExtractAarTransform;
 
 /** Resolve aar dependencies into jars for non-Android projects. */
 public class AarDepsPlugin implements Plugin<Project> {

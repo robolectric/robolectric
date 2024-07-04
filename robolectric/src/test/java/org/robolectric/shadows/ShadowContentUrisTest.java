@@ -18,7 +18,8 @@ public class ShadowContentUrisTest {
     URI = Uri.parse("content://foo.com");
   }
 
-  @Test public void canAppendId() {
+  @Test
+  public void canAppendId() {
     assertThat(ContentUris.withAppendedId(URI, 1)).isEqualTo(Uri.parse("content://foo.com/1"));
   }
 
@@ -27,7 +28,8 @@ public class ShadowContentUrisTest {
     ContentUris.withAppendedId(null, 1);
   }
 
-  @Test public void canParseId() {
+  @Test
+  public void canParseId() {
     assertThat(ContentUris.parseId(Uri.withAppendedPath(URI, "1"))).isEqualTo(1L);
     assertThat(ContentUris.parseId(URI)).isEqualTo(-1L);
   }
@@ -41,5 +43,4 @@ public class ShadowContentUrisTest {
   public void parseIdThrowsUnsupportedException() {
     ContentUris.parseId(Uri.parse("mailto:bar@foo.com"));
   }
-
 }

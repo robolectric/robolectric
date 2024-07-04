@@ -11,7 +11,8 @@ public class ShadowRestrictionsManager {
   private Bundle applicationRestrictions;
 
   /**
-   * Sets the application restrictions as returned by {@link RestrictionsManager#getApplicationRestrictions()}.
+   * Sets the application restrictions as returned by {@link
+   * RestrictionsManager#getApplicationRestrictions()}.
    */
   public void setApplicationRestrictions(Bundle applicationRestrictions) {
     this.applicationRestrictions = applicationRestrictions;

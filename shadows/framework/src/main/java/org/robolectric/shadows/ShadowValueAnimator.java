@@ -58,8 +58,8 @@ public class ShadowValueAnimator {
   }
 
   /**
-   * Returns the value that was set as the repeat count. This is otherwise the same
-   * as getRepeatCount(), except when the count was set to infinite.
+   * Returns the value that was set as the repeat count. This is otherwise the same as
+   * getRepeatCount(), except when the count was set to infinite.
    *
    * @return Repeat count.
    */

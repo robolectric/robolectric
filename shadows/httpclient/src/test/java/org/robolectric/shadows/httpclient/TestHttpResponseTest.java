@@ -17,13 +17,12 @@ public class TestHttpResponseTest {
   @Test
   public void shouldSupportGetFirstHeader() throws Exception {
     HttpResponse resp =
-        new TestHttpResponse(304, "REDIRECTED",
-            new BasicHeader("Location", "http://bar.com"));
+        new TestHttpResponse(304, "REDIRECTED", new BasicHeader("Location", "http://bar.com"));
 
     assertThat(resp.getFirstHeader("None")).isNull();
     assertThat(new TestHttpResponse(200, "OK").getFirstHeader("Foo")).isNull();
 
-    for (String l : new String[] { "location", "Location" }) {
+    for (String l : new String[] {"location", "Location"}) {
       assertThat(resp.getFirstHeader(l).getValue()).isEqualTo("http://bar.com");
     }
   }
@@ -31,13 +30,15 @@ public class TestHttpResponseTest {
   @Test
   public void shouldSupportGetLastHeader() throws Exception {
     HttpResponse resp =
-        new TestHttpResponse(304, "REDIRECTED",
+        new TestHttpResponse(
+            304,
+            "REDIRECTED",
             new BasicHeader("Location", "http://bar.com"),
             new BasicHeader("Location", "http://zombo.com"));
 
     assertThat(resp.getLastHeader("None")).isNull();
 
-    for (String l : new String[] { "location", "Location" }) {
+    for (String l : new String[] {"location", "Location"}) {
       assertThat(resp.getLastHeader(l).getValue()).isEqualTo("http://zombo.com");
     }
   }
@@ -45,8 +46,7 @@ public class TestHttpResponseTest {
   @Test
   public void shouldSupportContainsHeader() throws Exception {
     HttpResponse resp =
-        new TestHttpResponse(304, "ZOMBO",
-            new BasicHeader("X-Zombo-Com", "Welcome"));
+        new TestHttpResponse(304, "ZOMBO", new BasicHeader("X-Zombo-Com", "Welcome"));
 
     assertThat(resp.containsHeader("X-Zombo-Com")).isTrue();
     assertThat(resp.containsHeader("Location")).isFalse();
@@ -55,7 +55,9 @@ public class TestHttpResponseTest {
   @Test
   public void shouldSupportHeaderIterator() throws Exception {
     HttpResponse resp =
-        new TestHttpResponse(304, "REDIRECTED",
+        new TestHttpResponse(
+            304,
+            "REDIRECTED",
             new BasicHeader("Location", "http://bar.com"),
             new BasicHeader("Location", "http://zombo.com"));
 
@@ -70,7 +72,9 @@ public class TestHttpResponseTest {
   @Test
   public void shouldSupportHeaderIteratorWithArg() throws Exception {
     HttpResponse resp =
-        new TestHttpResponse(304, "REDIRECTED",
+        new TestHttpResponse(
+            304,
+            "REDIRECTED",
             new BasicHeader("Location", "http://bar.com"),
             new BasicHeader("X-Zombo-Com", "http://zombo.com"),
             new BasicHeader("Location", "http://foo.com"));
@@ -84,15 +88,15 @@ public class TestHttpResponseTest {
     assertThat(it.hasNext()).isFalse();
   }
 
-
   @Test
   public void shouldSupportGetHeadersWithArg() throws Exception {
     HttpResponse resp =
-        new TestHttpResponse(304, "REDIRECTED",
+        new TestHttpResponse(
+            304,
+            "REDIRECTED",
             new BasicHeader("Location", "http://bar.com"),
             new BasicHeader("X-Zombo-Com", "http://zombo.com"),
             new BasicHeader("Location", "http://foo.com"));
-
 
     Header[] headers = resp.getHeaders("Location");
     assertThat(headers.length).isEqualTo(2);
@@ -127,5 +131,4 @@ public class TestHttpResponseTest {
     assertThat(response.getHeaders("foo")[0].getValue()).isEqualTo("bletch");
     assertThat(response.getHeaders("foo")[1].getValue()).isEqualTo("baz");
   }
-
 }

@@ -2,7 +2,7 @@ package org.robolectric.integrationtests.multidex;
 
 import android.support.multidex.MultiDex;
 import androidx.test.core.app.ApplicationProvider;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

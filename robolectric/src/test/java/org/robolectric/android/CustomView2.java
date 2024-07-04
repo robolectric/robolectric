@@ -11,7 +11,8 @@ public class CustomView2 extends LinearLayout {
     super(context, attrs);
   }
 
-  @Override protected void onFinishInflate() {
+  @Override
+  protected void onFinishInflate() {
     childCountAfterInflate = getChildCount();
   }
 }

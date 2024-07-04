@@ -46,7 +46,8 @@ public class ShadowFingerprintManagerTest {
 
     shadowOf(manager).authenticationSucceeds();
 
-    ArgumentCaptor<AuthenticationResult> result = ArgumentCaptor.forClass(AuthenticationResult.class);
+    ArgumentCaptor<AuthenticationResult> result =
+        ArgumentCaptor.forClass(AuthenticationResult.class);
     verify(mockCallback).onAuthenticationSucceeded(result.capture());
 
     assertThat(result.getValue().getCryptoObject()).isEqualTo(cryptoObject);

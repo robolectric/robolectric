@@ -365,7 +365,8 @@ public final class ShadowMediaCodecTest {
   @Test
   public void whenCustomCodec_InputBufferIsOfExpectedSize() throws Exception {
     int inputBufferSize = 1000;
-    CodecConfig config = new CodecConfig(inputBufferSize, /*outputBufferSize=*/ 0, (in, out) -> {});
+    CodecConfig config =
+        new CodecConfig(inputBufferSize, /* outputBufferSize= */ 0, (in, out) -> {});
     ShadowMediaCodec.addEncoder(AUDIO_MIME, config);
 
     MediaCodec codec = createSyncEncoder();
@@ -377,19 +378,20 @@ public final class ShadowMediaCodecTest {
   @Test
   public void whenCustomCodec_OutputBufferIsOfExpectedSize() throws Exception {
     int outputBufferSize = 1000;
-    CodecConfig config = new CodecConfig(/*inputBufferSize=*/ 0, outputBufferSize, (in, out) -> {});
+    CodecConfig config =
+        new CodecConfig(/* inputBufferSize= */ 0, outputBufferSize, (in, out) -> {});
     ShadowMediaCodec.addEncoder(AUDIO_MIME, config);
     MediaCodec codec = createSyncEncoder();
 
-    int inputBuffer = codec.dequeueInputBuffer(/*timeoutUs=*/ 0);
+    int inputBuffer = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
     codec.queueInputBuffer(
-        inputBuffer, /* offset=*/ 0, /* size=*/ 0, /* presentationTimeUs=*/ 0, /* flags=*/ 0);
+        inputBuffer, /* offset= */ 0, /* size= */ 0, /* presentationTimeUs= */ 0, /* flags= */ 0);
 
     assertThat(codec.dequeueOutputBuffer(new BufferInfo(), /* timeoutUs= */ 0))
         .isEqualTo(MediaCodec.INFO_OUTPUT_FORMAT_CHANGED);
 
     ByteBuffer outputBuffer =
-        codec.getOutputBuffer(codec.dequeueOutputBuffer(new BufferInfo(), /*timeoutUs=*/ 0));
+        codec.getOutputBuffer(codec.dequeueOutputBuffer(new BufferInfo(), /* timeoutUs= */ 0));
     assertThat(outputBuffer.capacity()).isEqualTo(outputBufferSize);
   }
 
@@ -431,7 +433,7 @@ public final class ShadowMediaCodecTest {
   @Test
   public void inSyncMode_outputBufferInfoPopulated() throws Exception {
     MediaCodec codec = createSyncEncoder();
-    int inputBuffer = codec.dequeueInputBuffer(/*timeoutUs=*/ 0);
+    int inputBuffer = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
     codec.getInputBuffer(inputBuffer).put(ByteBuffer.allocateDirect(512));
     codec.queueInputBuffer(
         inputBuffer,

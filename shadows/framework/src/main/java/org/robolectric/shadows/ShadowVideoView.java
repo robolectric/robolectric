@@ -89,9 +89,9 @@ public class ShadowVideoView extends ShadowSurfaceView {
 
   @Implementation
   protected boolean canPause() {
-    return (currentState != ShadowVideoView.PAUSE &&
-        currentState != ShadowVideoView.STOP &&
-        currentState != ShadowVideoView.SUSPEND);
+    return (currentState != ShadowVideoView.PAUSE
+        && currentState != ShadowVideoView.STOP
+        && currentState != ShadowVideoView.SUSPEND);
   }
 
   @Implementation

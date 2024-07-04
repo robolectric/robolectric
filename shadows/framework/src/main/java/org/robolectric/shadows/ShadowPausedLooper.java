@@ -390,8 +390,8 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
       if (isPaused()
           && !(realLooper == Looper.getMainLooper() && looperMode != Mode.INSTRUMENTATION_TEST)) {
-      unPause();
-    }
+        unPause();
+      }
       ShadowPausedChoreographer.reset(realLooper);
     }
   }

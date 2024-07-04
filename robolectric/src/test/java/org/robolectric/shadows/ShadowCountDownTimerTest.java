@@ -36,7 +36,6 @@ public class ShadowCountDownTimerTest {
     shadowCountDownTimer = Shadows.shadowOf(countDownTimer);
   }
 
-
   @Test
   public void testInvokeOnTick() {
     assertThat(msg).isNotEqualTo("onTick() is called");

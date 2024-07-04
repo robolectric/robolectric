@@ -1,13 +1,7 @@
 plugins {
-    id("groovy")
-    id("java-library")
-    id("java-gradle-plugin")
-}
-
-repositories {
-    google()
-    mavenCentral()
-    gradlePluginPortal()
+    alias(libs.plugins.groovy)
+    alias(libs.plugins.java.gradle.plugin)
+    alias(libs.plugins.java.library)
 }
 
 gradlePlugin {
@@ -40,6 +34,10 @@ gradlePlugin {
             id = "org.robolectric.gradle.ShadowsPlugin"
             implementationClass = "org.robolectric.gradle.ShadowsPlugin"
         }
+        AggregateJavadocPlugin {
+            id = "org.robolectric.gradle.AggregateJavadocPlugin"
+            implementationClass = "org.robolectric.gradle.AggregateJavadocPlugin"
+        }
     }
 }
 
@@ -48,7 +46,9 @@ dependencies {
     implementation localGroovy()
 
     implementation libs.asm.tree
-    implementation libs.android.gradle
+    implementation libs.android.gradle.api
+    implementation libs.android.tools.common
+    implementation libs.guava
 }
 
 java {

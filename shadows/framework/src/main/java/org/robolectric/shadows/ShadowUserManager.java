@@ -112,12 +112,16 @@ public class ShadowUserManager {
    */
   static class UserManagerState {
     private final Map<Integer, Integer> userPidMap = new HashMap<>();
+
     /** Holds the serial numbers for all users and profiles, indexed by UserHandle.id */
     private final BiMap<Integer, Long> userSerialNumbers = HashBiMap.create();
+
     /** Holds all UserStates, indexed by UserHandle.id */
     private final Map<Integer, UserState> userState = new HashMap<>();
+
     /** Holds the UserInfo for all registered users and profiles, indexed by UserHandle.id */
     private final Map<Integer, UserInfo> userInfoMap = new HashMap<>();
+
     /**
      * Each user holds a list of UserHandles of assocated profiles and user itself. User is indexed
      * by UserHandle.id. See UserManager.getProfiles(userId).
@@ -346,7 +350,9 @@ public class ShadowUserManager {
     return userUnlocked;
   }
 
-  /** @see #setUserState(UserHandle, UserState) */
+  /**
+   * @see #setUserState(UserHandle, UserState)
+   */
   @Implementation(minSdk = 24)
   protected boolean isUserUnlocked(UserHandle handle) {
     checkPermissions();
@@ -702,7 +708,9 @@ public class ShadowUserManager {
     //                + "to: check " + name);throw new SecurityException();
   }
 
-  /** @return false by default, or the value specified via {@link #setIsDemoUser(boolean)} */
+  /**
+   * @return false by default, or the value specified via {@link #setIsDemoUser(boolean)}
+   */
   @Implementation(minSdk = N_MR1)
   protected boolean isDemoUser() {
     return getUserInfo(UserHandle.myUserId()).isDemo();
@@ -725,7 +733,9 @@ public class ShadowUserManager {
     }
   }
 
-  /** @return 'true' by default, or the value specified via {@link #setIsSystemUser(boolean)} */
+  /**
+   * @return 'true' by default, or the value specified via {@link #setIsSystemUser(boolean)}
+   */
   @Implementation(minSdk = M)
   protected boolean isSystemUser() {
     if (isSystemUser == false) {
@@ -843,7 +853,9 @@ public class ShadowUserManager {
     }
   }
 
-  /** @see #setUserState(UserHandle, UserState) */
+  /**
+   * @see #setUserState(UserHandle, UserState)
+   */
   @Implementation
   protected boolean isUserRunning(UserHandle handle) {
     checkPermissions();
@@ -858,7 +870,9 @@ public class ShadowUserManager {
     }
   }
 
-  /** @see #setUserState(UserHandle, UserState) */
+  /**
+   * @see #setUserState(UserHandle, UserState)
+   */
   @Implementation
   protected boolean isUserRunningOrStopping(UserHandle handle) {
     checkPermissions();
@@ -874,7 +888,9 @@ public class ShadowUserManager {
     }
   }
 
-  /** @see #setUserState(UserHandle, UserState) */
+  /**
+   * @see #setUserState(UserHandle, UserState)
+   */
   @Implementation(minSdk = R)
   protected boolean isUserUnlockingOrUnlocked(UserHandle handle) {
     checkPermissions();

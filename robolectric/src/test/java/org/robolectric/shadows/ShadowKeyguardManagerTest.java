@@ -117,7 +117,6 @@ public class ShadowKeyguardManagerTest {
     assertThat(manager.isDeviceLocked(USER_ID)).isFalse();
   }
 
-
   @Test
   @Config(minSdk = O)
   public void requestDismissKeyguard_dismissCancelled() {

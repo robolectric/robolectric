@@ -27,7 +27,8 @@ public class Interceptors {
   }
 
   public Function<Object, Object> getInterceptionHandler(final MethodSignature methodSignature) {
-    Interceptor interceptor = findInterceptor(methodSignature.className, methodSignature.methodName);
+    Interceptor interceptor =
+        findInterceptor(methodSignature.className, methodSignature.methodName);
     if (interceptor != null) {
       return interceptor.handle(methodSignature);
     }

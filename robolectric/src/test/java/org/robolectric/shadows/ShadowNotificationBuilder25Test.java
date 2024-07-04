@@ -10,8 +10,8 @@ import org.junit.runner.RunWith;
 public class ShadowNotificationBuilder25Test extends ShadowNotificationBuilderTestBase {
 
   /**
-   * run 'em all again with android:targetSdkVersion=25 - behavior of NotificationBuilder
-   * varies based on version specified in Manifest rather than runtime framework version.
+   * run 'em all again with android:targetSdkVersion=25 - behavior of NotificationBuilder varies
+   * based on version specified in Manifest rather than runtime framework version.
    */
   @Before
   public void setup() throws Exception {
@@ -22,5 +22,4 @@ public class ShadowNotificationBuilder25Test extends ShadowNotificationBuilderTe
             .targetSdkVersion =
         Build.VERSION_CODES.N_MR1;
   }
-
 }

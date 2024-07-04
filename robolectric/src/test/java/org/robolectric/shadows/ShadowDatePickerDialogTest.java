@@ -65,7 +65,7 @@ public class ShadowDatePickerDialogTest {
             ApplicationProvider.getApplicationContext(), expectedDateSetListener, 2012, 6, 7);
 
     ShadowDatePickerDialog shadowDatePickerDialog = shadowOf(datePickerDialog);
-    assertThat(shadowDatePickerDialog.getOnDateSetListenerCallback()).isEqualTo(expectedDateSetListener);
+    assertThat(shadowDatePickerDialog.getOnDateSetListenerCallback())
+        .isEqualTo(expectedDateSetListener);
   }
-
 }

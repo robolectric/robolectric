@@ -109,7 +109,6 @@ public class ShadowDisplayEventReceiver {
     nativeObjRegistry.getNativeObject(receiverPtr).scheduleVsync();
   }
 
-
   @Implementation(maxSdk = R)
   protected void dispose(boolean finalized) {
     CloseGuard closeGuard = displayEventReceiverReflector.getCloseGuard();

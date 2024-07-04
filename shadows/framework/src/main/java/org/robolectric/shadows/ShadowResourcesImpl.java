@@ -7,7 +7,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract public class ShadowResourcesImpl {
+public abstract class ShadowResourcesImpl {
 
   public static class Picker extends ResourceModeShadowPicker<ShadowResourcesImpl> {
 
@@ -31,7 +31,8 @@ abstract public class ShadowResourcesImpl {
     List<LongSparseArray<?>> resettableArrays = new ArrayList<>();
     Field[] allFields = Resources.class.getDeclaredFields();
     for (Field field : allFields) {
-      if (Modifier.isStatic(field.getModifiers()) && field.getType().equals(LongSparseArray.class)) {
+      if (Modifier.isStatic(field.getModifiers())
+          && field.getType().equals(LongSparseArray.class)) {
         field.setAccessible(true);
         try {
           LongSparseArray<?> longSparseArray = (LongSparseArray<?>) field.get(null);

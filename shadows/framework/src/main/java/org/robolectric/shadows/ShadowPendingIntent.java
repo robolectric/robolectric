@@ -703,7 +703,6 @@ public class ShadowPendingIntent {
       createdIntents.clear();
       parceledPendingIntents.clear();
     }
-
   }
 
   @ForType(PendingIntent.class)

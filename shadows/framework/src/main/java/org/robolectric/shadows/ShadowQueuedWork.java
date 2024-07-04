@@ -45,17 +45,21 @@ public class ShadowQueuedWork {
   @ForType(QueuedWork.class)
   interface _QueuedWork_ {
 
-    @Static @Accessor("sFinishers")
+    @Static
+    @Accessor("sFinishers")
     LinkedList<Runnable> getFinishers();
 
-    @Static @Accessor("sSingleThreadExecutor")
+    @Static
+    @Accessor("sSingleThreadExecutor")
     void setSingleThreadExecutor(ExecutorService o);
 
-    @Static @Accessor("sWork")
+    @Static
+    @Accessor("sWork")
     LinkedList<Runnable> getWork();
 
     // yep, it starts with 'm' but it's static
-    @Static @Accessor("mNumWaits")
+    @Static
+    @Accessor("mNumWaits")
     void setNumWaits(int i);
 
     @Static

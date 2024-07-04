@@ -30,12 +30,13 @@ import org.robolectric.util.Join;
  */
 @Deprecated
 public class ConfigMerger {
-  private final Map<String, Config> packageConfigCache = new LinkedHashMap<String, Config>() {
-    @Override
-    protected boolean removeEldestEntry(Map.Entry eldest) {
-      return size() > 10;
-    }
-  };
+  private final Map<String, Config> packageConfigCache =
+      new LinkedHashMap<String, Config>() {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry eldest) {
+          return size() > 10;
+        }
+      };
 
   /**
    * Calculate the {@link Config} for the given test.
@@ -69,14 +70,15 @@ public class ConfigMerger {
   /**
    * Generate {@link Config} for the specified package.
    *
-   * More specific packages, test classes, and test method configurations
-   * will override values provided here.
+   * <p>More specific packages, test classes, and test method configurations will override values
+   * provided here.
    *
-   * The default implementation uses properties provided by {@link #getConfigProperties(String)}.
+   * <p>The default implementation uses properties provided by {@link #getConfigProperties(String)}.
    *
-   * The returned object is likely to be reused for many tests.
+   * <p>The returned object is likely to be reused for many tests.
    *
-   * @param packageName the name of the package, or empty string ({@code ""}) for the top level package
+   * @param packageName the name of the package, or empty string ({@code ""}) for the top level
+   *     package
    * @return {@link Config} object for the specified package
    * @since 3.2
    */
@@ -86,7 +88,8 @@ public class ConfigMerger {
   }
 
   /**
-   * Return a {@link Properties} file for the given package name, or {@code null} if none is available.
+   * Return a {@link Properties} file for the given package name, or {@code null} if none is
+   * available.
    *
    * @since 3.2
    */
@@ -104,7 +107,8 @@ public class ConfigMerger {
     }
   }
 
-  @Nonnull @VisibleForTesting
+  @Nonnull
+  @VisibleForTesting
   List<String> packageHierarchyOf(Class<?> javaClass) {
     Package aPackage = javaClass.getPackage();
     String testPackageName = aPackage == null ? "" : aPackage.getName();

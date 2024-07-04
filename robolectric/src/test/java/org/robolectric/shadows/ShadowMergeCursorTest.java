@@ -65,7 +65,8 @@ public class ShadowMergeCursorTest {
     dbCursor2.close();
   }
 
-  private SQLiteCursor setupTable(final String createSql, final String[] insertions, final String selectSql) {
+  private SQLiteCursor setupTable(
+      final String createSql, final String[] insertions, final String selectSql) {
     database.execSQL(createSql);
 
     for (String insert : insertions) {
@@ -93,7 +94,7 @@ public class ShadowMergeCursorTest {
   @Test
   public void testEmptyCursors() {
     // cursor list with null contents
-    cursor = new MergeCursor( new Cursor[1] );
+    cursor = new MergeCursor(new Cursor[1]);
     assertThat(cursor.getCount()).isEqualTo(0);
     assertThat(cursor.moveToFirst()).isFalse();
     assertThat(cursor.getColumnNames()).isNotNull();
@@ -103,7 +104,7 @@ public class ShadowMergeCursorTest {
     Cursor[] cursors = new Cursor[2];
     cursors[0] = null;
     cursors[1] = dbCursor1;
-    cursor = new MergeCursor( cursors );
+    cursor = new MergeCursor(cursors);
     assertThat(cursor.getCount()).isEqualTo(TABLE_1_INSERTS.length);
     assertThat(cursor.moveToFirst()).isTrue();
     assertThat(cursor.getColumnNames()).isNotNull();
@@ -115,7 +116,7 @@ public class ShadowMergeCursorTest {
     cursors[0] = null;
     cursors[1] = null;
 
-    cursor = new MergeCursor( cursors );
+    cursor = new MergeCursor(cursors);
     assertThat(cursor.getCount()).isEqualTo(0);
     assertThat(cursor.getColumnNames()).isNotNull();
 
@@ -129,7 +130,7 @@ public class ShadowMergeCursorTest {
     Cursor[] cursors = new Cursor[1];
     cursors[0] = dbCursor1;
 
-    assertBounds( cursors, TABLE_1_INSERTS.length );
+    assertBounds(cursors, TABLE_1_INSERTS.length);
   }
 
   @Test
@@ -138,16 +139,16 @@ public class ShadowMergeCursorTest {
     cursors[0] = dbCursor1;
     cursors[1] = dbCursor2;
 
-    assertBounds( cursors, TABLE_1_INSERTS.length + TABLE_2_INSERTS.length );
+    assertBounds(cursors, TABLE_1_INSERTS.length + TABLE_2_INSERTS.length);
   }
 
-  private void assertBounds( Cursor[] cursors, int expectedLength ) {
-    cursor = new MergeCursor( cursors );
+  private void assertBounds(Cursor[] cursors, int expectedLength) {
+    cursor = new MergeCursor(cursors);
 
     assertThat(cursor.getCount()).isEqualTo(expectedLength);
     assertThat(cursor.moveToFirst()).isTrue();
 
-    for ( int i = 0; i < expectedLength; i++ ) {
+    for (int i = 0; i < expectedLength; i++) {
       assertThat(cursor.moveToPosition(i)).isTrue();
       assertThat(cursor.isAfterLast()).isFalse();
     }
@@ -160,7 +161,7 @@ public class ShadowMergeCursorTest {
   public void testGetDataSingleCursor() throws Exception {
     Cursor[] cursors = new Cursor[1];
     cursors[0] = dbCursor1;
-    cursor = new MergeCursor( cursors );
+    cursor = new MergeCursor(cursors);
 
     cursor.moveToFirst();
     assertDataCursor1();
@@ -171,7 +172,7 @@ public class ShadowMergeCursorTest {
     Cursor[] cursors = new Cursor[2];
     cursors[0] = dbCursor1;
     cursors[1] = dbCursor2;
-    cursor = new MergeCursor( cursors );
+    cursor = new MergeCursor(cursors);
 
     cursor.moveToFirst();
     assertDataCursor1();
@@ -215,9 +216,9 @@ public class ShadowMergeCursorTest {
   public void testColumnNamesSingleCursor() {
     Cursor[] cursors = new Cursor[1];
     cursors[0] = dbCursor1;
-    cursor = new MergeCursor( cursors );
+    cursor = new MergeCursor(cursors);
 
-    for ( int i = 0; i < TABLE_1_INSERTS.length; i++ ) {
+    for (int i = 0; i < TABLE_1_INSERTS.length; i++) {
       cursor.moveToPosition(i);
       String[] columnNames = cursor.getColumnNames();
       assertColumnNamesCursor1(columnNames);
@@ -229,15 +230,15 @@ public class ShadowMergeCursorTest {
     Cursor[] cursors = new Cursor[2];
     cursors[0] = dbCursor1;
     cursors[1] = dbCursor2;
-    cursor = new MergeCursor( cursors );
+    cursor = new MergeCursor(cursors);
 
-    for ( int i = 0; i < TABLE_1_INSERTS.length; i++ ) {
+    for (int i = 0; i < TABLE_1_INSERTS.length; i++) {
       cursor.moveToPosition(i);
       String[] columnNames = cursor.getColumnNames();
       assertColumnNamesCursor1(columnNames);
     }
 
-    for ( int i = 0; i < TABLE_2_INSERTS.length; i++ ) {
+    for (int i = 0; i < TABLE_2_INSERTS.length; i++) {
       cursor.moveToPosition(i + TABLE_1_INSERTS.length);
       String[] columnNames = cursor.getColumnNames();
       assertColumnNamesCursor2(columnNames);
@@ -271,7 +272,7 @@ public class ShadowMergeCursorTest {
     Cursor[] cursors = new Cursor[2];
     cursors[0] = dbCursor1;
     cursors[1] = dbCursor2;
-    cursor = new MergeCursor( cursors );
+    cursor = new MergeCursor(cursors);
 
     assertThat(cursor.isClosed()).isFalse();
     assertThat(dbCursor1.isClosed()).isFalse();
@@ -283,5 +284,4 @@ public class ShadowMergeCursorTest {
     assertThat(dbCursor1.isClosed()).isTrue();
     assertThat(dbCursor2.isClosed()).isTrue();
   }
-
 }

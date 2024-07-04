@@ -43,7 +43,10 @@ public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
 
   public int findIndexOfItemContainingText(String targetText) {
     for (int i = 0; i < realAdapterView.getCount(); i++) {
-      View childView = realAdapterView.getAdapter().getView(i, null, new FrameLayout(realAdapterView.getContext()));
+      View childView =
+          realAdapterView
+              .getAdapter()
+              .getView(i, null, new FrameLayout(realAdapterView.getContext()));
       ShadowView shadowView = Shadow.extract(childView);
       String innerText = shadowView.innerText();
       if (innerText.contains(targetText)) {

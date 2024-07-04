@@ -5,9 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Indicates that the annotated interface is an accessor object for use by {@link Reflector}.
- */
+/** Indicates that the annotated interface is an accessor object for use by {@link Reflector}. */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ForType {

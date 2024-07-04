@@ -7,9 +7,7 @@ import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
-/**
- * Android-specific rules for matching shadow classes and methods by SDK level.
- */
+/** Android-specific rules for matching shadow classes and methods by SDK level. */
 public class AndroidSdkShadowMatcher implements ShadowMatcher {
   private static final Implementation IMPLEMENTATION_DEFAULTS =
       ReflectionHelpers.defaultsFor(Implementation.class);
@@ -28,8 +26,8 @@ public class AndroidSdkShadowMatcher implements ShadowMatcher {
   @Override
   public boolean matches(Method method) {
     Implementation implementation = getImplementationAnnotation(method);
-    return implementation.minSdk() <= sdkLevel &&
-        (implementation.maxSdk() == -1 || implementation.maxSdk() >= sdkLevel);
+    return implementation.minSdk() <= sdkLevel
+        && (implementation.maxSdk() == -1 || implementation.maxSdk() >= sdkLevel);
   }
 
   private static Implementation getImplementationAnnotation(Method method) {
@@ -40,8 +38,6 @@ public class AndroidSdkShadowMatcher implements ShadowMatcher {
     if (implementation == null) {
       Logger.warn("No @Implementation annotation on " + method);
     }
-    return implementation == null
-        ? IMPLEMENTATION_DEFAULTS
-        : implementation;
+    return implementation == null ? IMPLEMENTATION_DEFAULTS : implementation;
   }
 }

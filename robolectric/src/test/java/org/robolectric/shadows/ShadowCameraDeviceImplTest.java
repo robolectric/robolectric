@@ -94,7 +94,7 @@ public final class ShadowCameraDeviceImplTest {
   public void createCaptureSession() throws CameraAccessException {
     builder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
     cameraDevice.createCaptureSession(
-        new ArrayList<>(), new CaptureSessionCallback(/*useExecutor=*/ false), new Handler());
+        new ArrayList<>(), new CaptureSessionCallback(/* useExecutor= */ false), new Handler());
   }
 
   @Test
@@ -108,7 +108,7 @@ public final class ShadowCameraDeviceImplTest {
             SessionConfiguration.SESSION_REGULAR,
             Collections.singletonList(new OutputConfiguration(mockSurface)),
             MoreExecutors.directExecutor(),
-            new CaptureSessionCallback(/*useExecutor=*/ true));
+            new CaptureSessionCallback(/* useExecutor= */ true));
     cameraDevice.createCaptureSession(configuration);
   }
 
@@ -124,7 +124,7 @@ public final class ShadowCameraDeviceImplTest {
             () ->
                 cameraDevice.createCaptureSession(
                     new ArrayList<>(),
-                    new CaptureSessionCallback(/*useExecutor=*/ false),
+                    new CaptureSessionCallback(/* useExecutor= */ false),
                     new Handler()));
     assertThat(thrown).hasMessageThat().contains("CameraDevice was already closed");
   }
@@ -140,7 +140,7 @@ public final class ShadowCameraDeviceImplTest {
             SessionConfiguration.SESSION_REGULAR,
             Collections.singletonList(new OutputConfiguration(mock(Surface.class))),
             MoreExecutors.directExecutor(),
-            new CaptureSessionCallback(/*useExecutor=*/ true));
+            new CaptureSessionCallback(/* useExecutor= */ true));
     IllegalStateException thrown =
         assertThrows(
             IllegalStateException.class, () -> cameraDevice.createCaptureSession(configuration));

@@ -40,12 +40,7 @@ public final class ParameterizedRobolectricTestRunnerConfigTest {
 
   @ParameterizedRobolectricTestRunner.Parameters(name = "ConfigTest: {0}")
   public static Collection getTestData() {
-    Object[][] data = {
-        { 1 },
-        { 2 },
-        { 3 },
-        { 4 }
-    };
+    Object[][] data = {{1}, {2}, {3}, {4}};
     return Arrays.asList(data);
   }
 

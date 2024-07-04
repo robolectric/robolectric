@@ -33,10 +33,10 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - name: Download google-java-format 1.9
+      - name: Download google-java-format
         run: |
-          curl -L -o $HOME/google-java-format.jar https://github.com/google/google-java-format/releases/download/v1.15.0/google-java-format-1.15.0-all-deps.jar
-          curl -L -o $HOME/google-java-format-diff.py https://raw.githubusercontent.com/google/google-java-format/v1.15.0/scripts/google-java-format-diff.py
+          curl -L -o $HOME/google-java-format.jar https://github.com/google/google-java-format/releases/download/v1.22.0/google-java-format-1.22.0-all-deps.jar
+          curl -L -o $HOME/google-java-format-diff.py https://raw.githubusercontent.com/google/google-java-format/v1.22.0/scripts/google-java-format-diff.py
           chmod +x $HOME/google-java-format-diff.py
 
       - name: Check Java formatting

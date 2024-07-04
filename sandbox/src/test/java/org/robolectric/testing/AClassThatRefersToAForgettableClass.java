@@ -14,7 +14,8 @@ public class AClassThatRefersToAForgettableClass {
   }
 
   public String interactWithForgettableStaticMethod() {
-    return AClassToForget.memorableStaticMethod() + " forget this: " + AClassToForget.forgettableStaticMethod();
+    return AClassToForget.memorableStaticMethod()
+        + " forget this: "
+        + AClassToForget.forgettableStaticMethod();
   }
-
 }

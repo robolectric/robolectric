@@ -84,8 +84,10 @@ public final class BitmapNatives {
   public static native int nativeGenerationId(long nativeBitmap);
 
   public static native Bitmap nativeCreateFromParcel(Parcel p);
+
   // returns true on success
   public static native boolean nativeWriteToParcel(long nativeBitmap, int density, Parcel p);
+
   // returns a new bitmap built from the native bitmap's alpha, and the paint
   public static native Bitmap nativeExtractAlpha(
       long nativeBitmap, long nativePaint, int[] offsetXY);

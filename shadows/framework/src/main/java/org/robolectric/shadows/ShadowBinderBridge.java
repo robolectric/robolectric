@@ -7,9 +7,7 @@ import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-/**
- * Bridge between shadow and {@link android.os.Binder}.
- */
+/** Bridge between shadow and {@link android.os.Binder}. */
 @DoNotInstrument
 public class ShadowBinderBridge {
   private Binder realBinder;

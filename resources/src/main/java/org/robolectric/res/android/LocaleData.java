@@ -9,12 +9,15 @@ import static org.robolectric.res.android.LocaleDataTables.SCRIPT_PARENTS;
 import java.util.Arrays;
 import java.util.Map;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/LocaleData.cpp
+// transliterated from
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/LocaleData.cpp
 public class LocaleData {
 
   private static int packLocale(final byte[] language, final byte[] region) {
-    return ((language[0] & 0xff) << 24) | ((language[1] & 0xff) << 16) |
-        ((region[0] & 0xff) << 8) | (region[1] & 0xff);
+    return ((language[0] & 0xff) << 24)
+        | ((language[1] & 0xff) << 16)
+        | ((region[0] & 0xff) << 8)
+        | (region[1] & 0xff);
   }
 
   private static int dropRegion(int packed_locale) {
@@ -57,9 +60,13 @@ public class LocaleData {
   //
   // (If 'out' is null, we do everything the same way but we simply don't write
   // any results in 'out'.)
-  static int findAncestors(int[] out, Ref<Long> stop_list_index,
-      int packed_locale, final String script,
-      final int[] stop_list, int stop_set_length) {
+  static int findAncestors(
+      int[] out,
+      Ref<Long> stop_list_index,
+      int packed_locale,
+      final String script,
+      final int[] stop_list,
+      int stop_set_length) {
     int ancestor = packed_locale;
     int count = 0;
     do {
@@ -79,15 +86,20 @@ public class LocaleData {
     return count;
   }
 
-  static int findDistance(int supported,
+  static int findDistance(
+      int supported,
       final String script,
       final int[] request_ancestors,
       int request_ancestors_count) {
     final Ref<Long> request_ancestors_indexRef = new Ref<>(null);
-    final int supported_ancestor_count = findAncestors(
-        null, request_ancestors_indexRef,
-        supported, script,
-        request_ancestors, request_ancestors_count);
+    final int supported_ancestor_count =
+        findAncestors(
+            null,
+            request_ancestors_indexRef,
+            supported,
+            script,
+            request_ancestors,
+            request_ancestors_count);
     // Since both locales share the same root, there will always be a shared
     // ancestor, so the distance in the parent tree is the sum of the distance
     // of 'supported' to the lowest common ancestor (number of ancestors
@@ -97,12 +109,12 @@ public class LocaleData {
   }
 
   static boolean isRepresentative(int language_and_region, final String script) {
-    final long packed_locale = (
-        (((long) language_and_region) << 32) |
-            (((long) script.charAt(0) & 0xff) << 24) |
-            (((long) script.charAt(1) & 0xff) << 16) |
-            (((long) script.charAt(2) & 0xff) << 8) |
-            ((long) script.charAt(3) & 0xff));
+    final long packed_locale =
+        ((((long) language_and_region) << 32)
+            | (((long) script.charAt(0) & 0xff) << 24)
+            | (((long) script.charAt(1) & 0xff) << 16)
+            | (((long) script.charAt(2) & 0xff) << 8)
+            | ((long) script.charAt(3) & 0xff));
     return REPRESENTATIVE_LOCALES.contains(packed_locale);
   }
 
@@ -111,14 +123,16 @@ public class LocaleData {
   private static final int LATIN_AMERICAN_SPANISH = 0x6573A424; // es-419
 
   // The two locales es-US and es-MX are treated as special fallbacks for es-419.
-// If there is no es-419, they are considered its equivalent.
+  // If there is no es-419, they are considered its equivalent.
   private static boolean isSpecialSpanish(int language_and_region) {
     return (language_and_region == US_SPANISH || language_and_region == MEXICAN_SPANISH);
   }
 
   static int localeDataCompareRegions(
-      final byte[] left_region, final byte[] right_region,
-      final byte[] requested_language, final String requested_script,
+      final byte[] left_region,
+      final byte[] right_region,
+      final byte[] requested_language,
+      final String requested_script,
       final byte[] requested_region) {
     if (left_region[0] == right_region[0] && left_region[1] == right_region[1]) {
       return 0;
@@ -143,10 +157,11 @@ public class LocaleData {
     final Ref<Long> left_right_indexRef = new Ref<Long>(null);
     // Find the parents of the request, but stop as soon as we saw left or right
     final int left_and_right[] = {left, right};
-    final int ancestor_count = findAncestors(
-        request_ancestors, left_right_indexRef,
-        request, requested_script,
-        left_and_right, sizeof(left_and_right));
+    final int ancestor_count =
+        findAncestors(
+            request_ancestors, left_right_indexRef,
+            request, requested_script,
+            left_and_right, sizeof(left_and_right));
     if (left_right_indexRef.get() == 0) { // We saw left earlier
       return 1;
     }
@@ -157,10 +172,10 @@ public class LocaleData {
     // request. This means that all the ancestors have been computed and
     // the last ancestor is just the language by itself. We will use the
     // distance in the parent tree for determining the better match.
-    final int left_distance = findDistance(
-        left, requested_script, request_ancestors, ancestor_count);
-    final int right_distance = findDistance(
-        right, requested_script, request_ancestors, ancestor_count);
+    final int left_distance =
+        findDistance(left, requested_script, request_ancestors, ancestor_count);
+    final int right_distance =
+        findDistance(right, requested_script, request_ancestors, ancestor_count);
     if (left_distance != right_distance) {
       return (int) right_distance - (int) left_distance; // smaller distance is better
     }
@@ -180,7 +195,7 @@ public class LocaleData {
 
   static void localeDataComputeScript(byte[] out, final byte[] language, final byte[] region) {
     if (language[0] == '\0') {
-//      memset(out, '\0', SCRIPT_LENGTH);
+      //      memset(out, '\0', SCRIPT_LENGTH);
       Arrays.fill(out, (byte) 0);
       return;
     }
@@ -192,25 +207,25 @@ public class LocaleData {
         lookup_key = dropRegion(lookup_key);
         lookup_result = LIKELY_SCRIPTS.get(lookup_key);
         if (lookup_result != null) {
-//          memcpy(out, SCRIPT_CODES[lookup_result.second], SCRIPT_LENGTH);
+          //          memcpy(out, SCRIPT_CODES[lookup_result.second], SCRIPT_LENGTH);
           System.arraycopy(SCRIPT_CODES[lookup_result], 0, out, 0, SCRIPT_LENGTH);
           return;
         }
       }
       // We don't know anything about the locale
-//      memset(out, '\0', SCRIPT_LENGTH);
+      //      memset(out, '\0', SCRIPT_LENGTH);
       Arrays.fill(out, (byte) 0);
       return;
     } else {
       // We found the locale.
-//      memcpy(out, SCRIPT_CODES[lookup_result.second], SCRIPT_LENGTH);
+      //      memcpy(out, SCRIPT_CODES[lookup_result.second], SCRIPT_LENGTH);
       System.arraycopy(SCRIPT_CODES[lookup_result], 0, out, 0, SCRIPT_LENGTH);
     }
   }
 
   static final int[] ENGLISH_STOP_LIST = {
-      0x656E0000, // en
-      0x656E8400, // en-001
+    0x656E0000, // en
+    0x656E8400, // en-001
   };
 
   static final byte[] ENGLISH_CHARS = {'e', 'n'};
@@ -225,9 +240,7 @@ public class LocaleData {
     return stop_list_indexRef.get() == 0; // 'en' is first in ENGLISH_STOP_LIST
   }
 
-
   private static int sizeof(int[] array) {
     return array.length;
   }
-
 }

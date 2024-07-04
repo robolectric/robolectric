@@ -319,12 +319,12 @@ public class ShadowContextImplTest {
     context.sendOrderedBroadcastAsUser(
         intent,
         userHandle,
-        /*receiverPermission=*/ null,
-        /*resultReceiver=*/ null,
-        /*scheduler=*/ null,
-        /*initialCode=*/ 0,
-        /*initialData=*/ null,
-        /*initialExtras=*/ null);
+        /* receiverPermission= */ null,
+        /* resultReceiver= */ null,
+        /* scheduler= */ null,
+        /* initialCode= */ 0,
+        /* initialData= */ null,
+        /* initialExtras= */ null);
 
     assertThat(shadowOf(context).getBroadcastIntents().get(0).getAction()).isEqualTo(action);
     assertThat(shadowOf(context).getBroadcastIntentsForUser(userHandle).get(0).getAction())

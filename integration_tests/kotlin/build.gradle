@@ -1,10 +1,10 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("kotlin")
-    id("org.robolectric.gradle.RoboJavaModulePlugin")
-    id("org.robolectric.gradle.SpotlessPlugin")
-    id("io.gitlab.arturbosch.detekt")
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.robolectric.java.module)
+    alias(libs.plugins.robolectric.spotless)
 }
 
 compileKotlin {

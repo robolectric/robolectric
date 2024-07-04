@@ -2,9 +2,7 @@ package org.robolectric.fakes;
 
 import android.webkit.WebSettings;
 
-/**
- * Robolectric implementation of {@link android.webkit.WebSettings}.
- */
+/** Robolectric implementation of {@link android.webkit.WebSettings}. */
 public class RoboWebSettings extends WebSettings {
   private boolean blockNetworkImage = false;
   private boolean javaScriptEnabled = false;
@@ -143,7 +141,8 @@ public class RoboWebSettings extends WebSettings {
   }
 
   @Override
-  public void setJavaScriptCanOpenWindowsAutomatically(boolean javaScriptCanOpenWindowAutomatically) {
+  public void setJavaScriptCanOpenWindowsAutomatically(
+      boolean javaScriptCanOpenWindowAutomatically) {
     this.javaScriptCanOpenWindowAutomatically = javaScriptCanOpenWindowAutomatically;
   }
 
@@ -182,7 +181,8 @@ public class RoboWebSettings extends WebSettings {
     return loadsImagesAutomatically;
   }
 
-  @Override public void setLoadsImagesAutomatically(boolean loadsImagesAutomatically) {
+  @Override
+  public void setLoadsImagesAutomatically(boolean loadsImagesAutomatically) {
     this.loadsImagesAutomatically = loadsImagesAutomatically;
   }
 
@@ -191,7 +191,8 @@ public class RoboWebSettings extends WebSettings {
     return defaultFixedFontSize;
   }
 
-  @Override public void setDefaultFixedFontSize(int defaultFixedFontSize) {
+  @Override
+  public void setDefaultFixedFontSize(int defaultFixedFontSize) {
     this.defaultFixedFontSize = defaultFixedFontSize;
   }
 
@@ -200,7 +201,8 @@ public class RoboWebSettings extends WebSettings {
     return minimumLogicalFontSize;
   }
 
-  @Override public void setMinimumLogicalFontSize(int minimumLogicalFontSize) {
+  @Override
+  public void setMinimumLogicalFontSize(int minimumLogicalFontSize) {
     this.minimumLogicalFontSize = minimumLogicalFontSize;
   }
 
@@ -209,7 +211,8 @@ public class RoboWebSettings extends WebSettings {
     return minimumFontSize;
   }
 
-  @Override public void setMinimumFontSize(int minimumFontSize) {
+  @Override
+  public void setMinimumFontSize(int minimumFontSize) {
     this.minimumFontSize = minimumFontSize;
   }
 
@@ -218,7 +221,8 @@ public class RoboWebSettings extends WebSettings {
     return fantasyFontFamily;
   }
 
-  @Override public void setFantasyFontFamily(String fantasyFontFamily) {
+  @Override
+  public void setFantasyFontFamily(String fantasyFontFamily) {
     this.fantasyFontFamily = fantasyFontFamily;
   }
 
@@ -227,7 +231,8 @@ public class RoboWebSettings extends WebSettings {
     return cursiveFontFamily;
   }
 
-  @Override public void setCursiveFontFamily(String cursiveFontFamily) {
+  @Override
+  public void setCursiveFontFamily(String cursiveFontFamily) {
     this.cursiveFontFamily = cursiveFontFamily;
   }
 
@@ -236,7 +241,8 @@ public class RoboWebSettings extends WebSettings {
     return serifFontFamily;
   }
 
-  @Override public void setSerifFontFamily(String serifFontFamily) {
+  @Override
+  public void setSerifFontFamily(String serifFontFamily) {
     this.serifFontFamily = serifFontFamily;
   }
 
@@ -245,7 +251,8 @@ public class RoboWebSettings extends WebSettings {
     return sansSerifFontFamily;
   }
 
-  @Override public void setSansSerifFontFamily(String sansSerifFontFamily) {
+  @Override
+  public void setSansSerifFontFamily(String sansSerifFontFamily) {
     this.sansSerifFontFamily = sansSerifFontFamily;
   }
 
@@ -254,7 +261,8 @@ public class RoboWebSettings extends WebSettings {
     return fixedFontFamily;
   }
 
-  @Override public void setFixedFontFamily(String fixedFontFamily) {
+  @Override
+  public void setFixedFontFamily(String fixedFontFamily) {
     this.fixedFontFamily = fixedFontFamily;
   }
 
@@ -263,7 +271,8 @@ public class RoboWebSettings extends WebSettings {
     return standardFontFamily;
   }
 
-  @Override public void setStandardFontFamily(String standardFontFamily) {
+  @Override
+  public void setStandardFontFamily(String standardFontFamily) {
     this.standardFontFamily = standardFontFamily;
   }
 
@@ -299,7 +308,7 @@ public class RoboWebSettings extends WebSettings {
 
   @Override
   public void setUserAgent(int userAgent) {
-    this.userAgent =  userAgent;
+    this.userAgent = userAgent;
   }
 
   @Override
@@ -347,6 +356,7 @@ public class RoboWebSettings extends WebSettings {
   public synchronized String getUserAgentString() {
     return userAgentString;
   }
+
   // End API 3
 
   private boolean databaseEnabled = false;
@@ -391,6 +401,7 @@ public class RoboWebSettings extends WebSettings {
   public void setGeolocationEnabled(boolean geolocationEnabled) {
     this.geolocationEnabled = geolocationEnabled;
   }
+
   // End API 5
 
   private ZoomDensity defaultZoom;
@@ -456,6 +467,7 @@ public class RoboWebSettings extends WebSettings {
   public void setAppCachePath(String appCachePath) {
     this.appCachePath = appCachePath;
   }
+
   // End API 7
 
   private boolean blockNetworkLoads = false;
@@ -480,6 +492,7 @@ public class RoboWebSettings extends WebSettings {
   public synchronized void setPluginState(WebSettings.PluginState state) {
     pluginState = state;
   }
+
   // End API 8
 
   private boolean useWebViewBackgroundForOverscrollBackground;
@@ -490,9 +503,11 @@ public class RoboWebSettings extends WebSettings {
   }
 
   @Override
-  public void setUseWebViewBackgroundForOverscrollBackground(boolean useWebViewBackgroundForOverscrollBackground) {
+  public void setUseWebViewBackgroundForOverscrollBackground(
+      boolean useWebViewBackgroundForOverscrollBackground) {
     this.useWebViewBackgroundForOverscrollBackground = useWebViewBackgroundForOverscrollBackground;
   }
+
   // End API 9
 
   private boolean enableSmoothTransition;
@@ -528,6 +543,7 @@ public class RoboWebSettings extends WebSettings {
   public boolean getDisplayZoomControls() {
     return displayZoomControls;
   }
+
   // End API 11
 
   private int textZoom = 100;
@@ -541,6 +557,7 @@ public class RoboWebSettings extends WebSettings {
   public void setTextZoom(int textZoom) {
     this.textZoom = textZoom;
   }
+
   // End API 14
 
   private boolean allowFileAccessFromFile = true;
@@ -565,7 +582,8 @@ public class RoboWebSettings extends WebSettings {
   public void setAllowUniversalAccessFromFileURLs(boolean allow) {
     allowUniversalAccessFromFile = allow;
   }
-  //End API 16
+
+  // End API 16
 
   private boolean mediaPlaybackRequiresUserGesture = true;
 
@@ -578,7 +596,8 @@ public class RoboWebSettings extends WebSettings {
   public void setMediaPlaybackRequiresUserGesture(boolean require) {
     mediaPlaybackRequiresUserGesture = require;
   }
-  //End API 17
+
+  // End API 17
 
   private int mixedContentMode;
   private boolean acceptThirdPartyCookies;
@@ -613,14 +632,14 @@ public class RoboWebSettings extends WebSettings {
   public void setAcceptThirdPartyCookies(boolean acceptThirdPartyCookies) {
     this.acceptThirdPartyCookies = acceptThirdPartyCookies;
   }
+
   // End API 21
 
   @Override
-  public void setOffscreenPreRaster(boolean enabled) {
+  public void setOffscreenPreRaster(boolean enabled) {}
 
-  }
-
-  @Override public boolean getOffscreenPreRaster() {
+  @Override
+  public boolean getOffscreenPreRaster() {
     return false;
   }
 
@@ -632,19 +651,17 @@ public class RoboWebSettings extends WebSettings {
   }
 
   @Override
-  public void setDisabledActionModeMenuItems(int menuItems) {
-
-  }
+  public void setDisabledActionModeMenuItems(int menuItems) {}
 
   // End API 24.
 
-  @Override public boolean getSafeBrowsingEnabled() {
+  @Override
+  public boolean getSafeBrowsingEnabled() {
     return false;
   }
 
-  @Override public void setSafeBrowsingEnabled(boolean enabled) {
-
-  }
+  @Override
+  public void setSafeBrowsingEnabled(boolean enabled) {}
 
   // End API 26
 

@@ -93,5 +93,4 @@ public class ShadowBitmapDrawableTest {
                 ApplicationProvider.getApplicationContext().getResources(), (Bitmap) null))
         .isNotNull();
   }
-
 }

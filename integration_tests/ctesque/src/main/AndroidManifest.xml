@@ -3,6 +3,7 @@
   Manifest for ctesque tests
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
+  <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+  <uses-permission android:name="android.permission.GET_ACCOUNTS" />
   <application />
 </manifest>

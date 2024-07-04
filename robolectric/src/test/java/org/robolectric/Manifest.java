@@ -8,12 +8,13 @@
 package org.robolectric;
 
 public final class Manifest {
-    public static final class permission {
-        public static final String permission_with_literal_label="permission_with_literal_label";
-        public static final String permission_with_minimal_fields="permission_with_minimal_fields";
-        public static final String some_permission="some_permission";
-    }
-    public static final class permission_group {
-        public static final String package_permission_group="package_permission_group";
-    }
+  public static final class permission {
+    public static final String permission_with_literal_label = "permission_with_literal_label";
+    public static final String permission_with_minimal_fields = "permission_with_minimal_fields";
+    public static final String some_permission = "some_permission";
+  }
+
+  public static final class permission_group {
+    public static final String package_permission_group = "package_permission_group";
+  }
 }

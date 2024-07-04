@@ -15,7 +15,8 @@ import java.util.List;
 import java.util.Locale;
 import org.robolectric.RuntimeEnvironment;
 
-// adapted from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/java/android/content/res/Configuration.java
+// adapted from
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/java/android/content/res/Configuration.java
 public class ConfigurationV25 {
 
   private static String localesToResourceQualifier(List<Locale> locs) {

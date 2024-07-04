@@ -18,15 +18,14 @@ import java.util.Objects;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
 /**
- * Holds the shared library ID table. Shared libraries are assigned package IDs at
- * build time, but they may be loaded in a different order, so we need to maintain
- * a mapping of build-time package ID to run-time assigned package ID.
+ * Holds the shared library ID table. Shared libraries are assigned package IDs at build time, but
+ * they may be loaded in a different order, so we need to maintain a mapping of build-time package
+ * ID to run-time assigned package ID.
  *
- * Dynamic references are not currently supported in overlays. Only the base package
- * may have dynamic references.
+ * <p>Dynamic references are not currently supported in overlays. Only the base package may have
+ * dynamic references.
  */
-public class DynamicRefTable
-{
+public class DynamicRefTable {
   DynamicRefTable(byte packageId, boolean appAsLib) {
     this.mAssignedPackageId = packageId;
     this.mAppAsLib = appAsLib;
@@ -35,10 +34,10 @@ public class DynamicRefTable
     mLookupTable[SYS_PACKAGE_ID] = SYS_PACKAGE_ID;
   }
 
-//  // Loads an unmapped reference table from the package.
-//  Errors load(final ResTable_lib_header header) {
-//    return null;
-//  }
+  //  // Loads an unmapped reference table from the package.
+  //  Errors load(final ResTable_lib_header header) {
+  //    return null;
+  //  }
 
   // Adds mappings from the other DynamicRefTable
   int addMappings(final DynamicRefTable other) {
@@ -46,17 +45,17 @@ public class DynamicRefTable
       return UNKNOWN_ERROR;
     }
 
-//    final int entryCount = other.mEntries.size();
-//    for (size_t i = 0; i < entryCount; i++) {
-//      ssize_t index = mEntries.indexOfKey(other.mEntries.keyAt(i));
-//      if (index < 0) {
-//        mEntries.add(other.mEntries.keyAt(i), other.mEntries[i]);
-//      } else {
-//        if (other.mEntries[i] != mEntries[index]) {
-//          return UNKNOWN_ERROR;
-//        }
-//      }
-//    }
+    //    final int entryCount = other.mEntries.size();
+    //    for (size_t i = 0; i < entryCount; i++) {
+    //      ssize_t index = mEntries.indexOfKey(other.mEntries.keyAt(i));
+    //      if (index < 0) {
+    //        mEntries.add(other.mEntries.keyAt(i), other.mEntries[i]);
+    //      } else {
+    //        if (other.mEntries[i] != mEntries[index]) {
+    //          return UNKNOWN_ERROR;
+    //        }
+    //      }
+    //    }
     for (Entry<String, Byte> otherEntry : other.mEntries.entrySet()) {
       String key = otherEntry.getKey();
       Byte curValue = mEntries.get(key);
@@ -98,8 +97,8 @@ public class DynamicRefTable
     mAliasId.put(stagedId, finalizedId);
   }
 
-//  // Performs the actual conversion of build-time resource ID to run-time
-//  // resource ID.
+  //  // Performs the actual conversion of build-time resource ID to run-time
+  //  // resource ID.
   int lookupResourceId(Ref<Integer> resId) {
     int res = resId.get();
     int packageId = Res_GETPACKAGE(res) + 1;
@@ -130,7 +129,8 @@ public class DynamicRefTable
     // Do a proper lookup.
     int translatedId = mLookupTable[packageId];
     if (translatedId == 0) {
-      ALOGW("DynamicRefTable(0x%02x): No mapping for build-time package ID 0x%02x.",
+      ALOGW(
+          "DynamicRefTable(0x%02x): No mapping for build-time package ID 0x%02x.",
           mAssignedPackageId, packageId);
       for (int i = 0; i < 256; i++) {
         if (mLookupTable[i] != 0) {
@@ -143,7 +143,8 @@ public class DynamicRefTable
     resId.set((res & 0x00ffffff) | (((int) translatedId) << 24));
     return NO_ERROR;
   }
-//
+
+  //
   int lookupResourceValue(Ref<Res_value> value) {
     byte resolvedType = DataType.REFERENCE.code();
     Res_value inValue = value.get();
@@ -185,21 +186,21 @@ public class DynamicRefTable
 
     value.set(new Res_value(resolvedType, resIdRef.get()));
     return NO_ERROR;
- }
+  }
 
   public Map<String, Byte> entries() {
     return mEntries;
   }
 
   //
-//  final KeyedVector<String16, uint8_t>& entries() final {
-//  return mEntries;
-//}
-//
-//  private:
-    final byte                   mAssignedPackageId;
-  final byte[]                         mLookupTable = new byte[256];
+  //  final KeyedVector<String16, uint8_t>& entries() final {
+  //  return mEntries;
+  // }
+  //
+  //  private:
+  final byte mAssignedPackageId;
+  final byte[] mLookupTable = new byte[256];
   final Map<String, Byte> mEntries = new HashMap<>();
-  boolean                            mAppAsLib;
+  boolean mAppAsLib;
   final Map<Integer, Integer> mAliasId = new HashMap<>();
 }

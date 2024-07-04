@@ -14,9 +14,7 @@ import org.robolectric.shadows.ShadowLegacyLooper;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPausedLooper;
 
-/**
- * Unit tests for classes annotated with @LooperMode.
- */
+/** Unit tests for classes annotated with @LooperMode. */
 @RunWith(AndroidJUnit4.class)
 @LooperMode(Mode.PAUSED)
 public class LooperModeConfigurerClassTest {

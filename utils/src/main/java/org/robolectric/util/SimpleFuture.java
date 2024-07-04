@@ -66,6 +66,5 @@ public class SimpleFuture<T> {
     this.notify();
   }
 
-  protected void done() {
-  }
+  protected void done() {}
 }

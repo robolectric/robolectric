@@ -6,9 +6,7 @@ import android.webkit.WebSettings;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class RoboWebSettingsTest {
   private final RoboWebSettings webSettings = new RoboWebSettings();

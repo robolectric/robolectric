@@ -14,9 +14,9 @@ public class ShadowCaptureRequestBuilder {
   private final Map<Key<?>, Object> characteristics = Collections.synchronizedMap(new HashMap<>());
 
   /**
-   * Original implementation would store its state in a local CameraMetadataNative object. Trying
-   * to set these values causes issues while testing as that starts to involve native code. We write
-   * to a managed map stored in the shadow instead.
+   * Original implementation would store its state in a local CameraMetadataNative object. Trying to
+   * set these values causes issues while testing as that starts to involve native code. We write to
+   * a managed map stored in the shadow instead.
    */
   @Implementation
   protected <T> void set(CaptureRequest.Key<T> key, T value) {

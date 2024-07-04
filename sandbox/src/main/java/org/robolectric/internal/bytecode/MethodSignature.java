@@ -9,7 +9,8 @@ public class MethodSignature {
   public final String[] paramTypes;
   public final String returnType;
 
-  private MethodSignature(String className, String methodName, String[] paramTypes, String returnType) {
+  private MethodSignature(
+      String className, String methodName, String[] paramTypes, String returnType) {
     this.className = className;
     this.methodName = methodName;
     this.paramTypes = paramTypes;

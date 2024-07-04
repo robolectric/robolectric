@@ -14,13 +14,15 @@ public class ShadowImpl implements IShadow {
     return (T) ((ShadowedObject) instance).$$robo$getData();
   }
 
-  @Override public <T> T newInstanceOf(Class<T> clazz) {
+  @Override
+  public <T> T newInstanceOf(Class<T> clazz) {
     return ReflectionHelpers.callConstructor(clazz);
   }
 
   @Override
   public <T> T newInstance(Class<T> clazz, Class<?>[] parameterTypes, Object[] params) {
-    return ReflectionHelpers.callConstructor(clazz, ReflectionHelpers.ClassParameter.fromComponentLists(parameterTypes, params));
+    return ReflectionHelpers.callConstructor(
+        clazz, ReflectionHelpers.ClassParameter.fromComponentLists(parameterTypes, params));
   }
 
   /**
@@ -88,9 +90,10 @@ public class ShadowImpl implements IShadow {
 
   @Override
   public String directMethodName(String className, String methodName) {
-     return ShadowConstants.ROBO_PREFIX
-      + className.replace('.', '_').replace('$', '_')
-      + "$" + methodName;
+    return ShadowConstants.ROBO_PREFIX
+        + className.replace('.', '_').replace('$', '_')
+        + "$"
+        + methodName;
   }
 
   @Override
@@ -106,5 +109,4 @@ public class ShadowImpl implements IShadow {
       throw new RuntimeException("failed to initialize " + clazz, e);
     }
   }
-
 }

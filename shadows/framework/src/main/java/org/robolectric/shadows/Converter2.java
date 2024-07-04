@@ -7,7 +7,7 @@ import org.robolectric.util.Util;
 public class Converter2<T> {
   private static int nextStringCookie = 0xbaaa5;
 
-  synchronized static int getNextStringCookie() {
+  static synchronized int getNextStringCookie() {
     return nextStringCookie++;
   }
 
@@ -66,9 +66,7 @@ public class Converter2<T> {
         return false;
       }
     }
-
   }
-
 
   private static class FromInt extends Converter2<String> {
     @Override
@@ -87,7 +85,6 @@ public class Converter2<T> {
         return false;
       }
     }
-
   }
 
   private static class FromFraction extends Converter2<String> {

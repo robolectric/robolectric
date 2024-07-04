@@ -30,16 +30,13 @@ public class DeviceConfigTest {
     displayMetrics = new DisplayMetrics();
     apiLevel = RuntimeEnvironment.getApiLevel();
 
-    optsForO = RuntimeEnvironment.getApiLevel() >= O
-        ? "nowidecg-lowdr-"
-        : "";
+    optsForO = RuntimeEnvironment.getApiLevel() >= O ? "nowidecg-lowdr-" : "";
   }
 
   @Test
   public void applyToConfiguration() {
     applyQualifiers("en-rUS-w400dp-h800dp-notround");
-    assertThat(asQualifierString())
-        .isEqualTo("en-rUS-ldltr-w400dp-h800dp-notround");
+    assertThat(asQualifierString()).isEqualTo("en-rUS-ldltr-w400dp-h800dp-notround");
   }
 
   @Test
@@ -217,8 +214,8 @@ public class DeviceConfigTest {
   //////////////////////////
 
   private void applyQualifiers(String qualifiers) {
-    DeviceConfig.applyToConfiguration(Qualifiers.parse(qualifiers),
-        apiLevel, configuration, displayMetrics);
+    DeviceConfig.applyToConfiguration(
+        Qualifiers.parse(qualifiers), apiLevel, configuration, displayMetrics);
   }
 
   private String asQualifierString() {

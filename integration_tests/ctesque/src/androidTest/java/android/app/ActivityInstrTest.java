@@ -9,12 +9,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.testapp.ActivityWithAnotherTheme;
 import org.robolectric.testapp.ActivityWithoutTheme;
 import org.robolectric.testapp.R;
 
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class ActivityInstrTest {
 
@@ -77,5 +75,4 @@ public class ActivityInstrTest {
           });
     }
   }
-
 }

@@ -1,8 +1,8 @@
 import org.gradle.internal.jvm.Jvm
 
 plugins {
-    id("org.robolectric.gradle.RoboJavaModulePlugin")
-    id("org.robolectric.gradle.DeployedRoboJavaModulePlugin")
+    alias(libs.plugins.robolectric.deployed.java.module)
+    alias(libs.plugins.robolectric.java.module)
 }
 
 // Disable annotation processor for tests

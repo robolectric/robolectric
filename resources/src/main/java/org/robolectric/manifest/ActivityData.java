@@ -36,22 +36,26 @@ public class ActivityData {
   // Non-null only for activity-alias'es.
   private final ActivityData targetActivity;
 
-  /**
-   * XML Namespace used for android.
-   */
+  /** XML Namespace used for android. */
   private final String xmlns;
+
   private final MetaData metaData;
 
   public ActivityData(Map<String, String> attrMap, List<IntentFilterData> intentFilters) {
     this("android", attrMap, intentFilters);
   }
 
-  public ActivityData(String xmlns, Map<String, String> attrMap, List<IntentFilterData> intentFilters) {
+  public ActivityData(
+      String xmlns, Map<String, String> attrMap, List<IntentFilterData> intentFilters) {
     this(xmlns, attrMap, intentFilters, null, null);
   }
 
-  public ActivityData(String xmlns, Map<String, String> attrMap, List<IntentFilterData> intentFilters,
-      ActivityData targetActivity, MetaData metaData) {
+  public ActivityData(
+      String xmlns,
+      Map<String, String> attrMap,
+      List<IntentFilterData> intentFilters,
+      ActivityData targetActivity,
+      MetaData metaData) {
     this.xmlns = xmlns;
     attrs = new HashMap<>();
     attrs.putAll(attrMap);
@@ -165,7 +169,7 @@ public class ActivityData {
   }
 
   private boolean getBooleanAttr(String n, boolean defaultValue) {
-    return (attrs.containsKey(n) ? Boolean.parseBoolean(attrs.get(n)): defaultValue);
+    return (attrs.containsKey(n) ? Boolean.parseBoolean(attrs.get(n)) : defaultValue);
   }
 
   private String withXMLNS(String attr) {
@@ -174,6 +178,7 @@ public class ActivityData {
 
   /**
    * Get the map for all attributes defined for the activity XML.
+   *
    * @return map of attributes names to values from the manifest. Not null.
    */
   public Map<String, String> getAllAttributes() {
@@ -182,6 +187,7 @@ public class ActivityData {
 
   /**
    * Get the intent filters defined for activity.
+   *
    * @return A list of intent filters. Not null.
    */
   public List<IntentFilterData> getIntentFilters() {

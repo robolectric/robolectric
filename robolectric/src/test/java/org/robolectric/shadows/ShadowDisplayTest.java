@@ -141,8 +141,8 @@ public class ShadowDisplayTest {
   }
 
   /**
-   * The {@link android.view.Display#getOrientation()} method is deprecated, but for
-   * testing purposes, return the value gotten from {@link android.view.Display#getRotation()}
+   * The {@link android.view.Display#getOrientation()} method is deprecated, but for testing
+   * purposes, return the value gotten from {@link android.view.Display#getRotation()}
    */
   @Test
   public void deprecatedGetOrientation_returnsGetRotation() {

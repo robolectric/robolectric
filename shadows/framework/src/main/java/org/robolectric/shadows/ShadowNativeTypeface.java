@@ -50,7 +50,6 @@ public class ShadowNativeTypeface extends ShadowTypeface {
   private static final int STYLE_NORMAL = 0;
   private static final int STYLE_ITALIC = 1;
 
-
   @Implementation(minSdk = S)
   protected static void __staticInitializer__() {
     if (RuntimeEnvironment.getApiLevel() <= U.SDK_INT) {

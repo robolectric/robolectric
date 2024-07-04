@@ -11,7 +11,11 @@ public class HttpRequestInfo {
   HttpContext httpContext;
   RequestDirector requestDirector;
 
-  public HttpRequestInfo(HttpRequest httpRequest, HttpHost httpHost, HttpContext httpContext, RequestDirector requestDirector) {
+  public HttpRequestInfo(
+      HttpRequest httpRequest,
+      HttpHost httpHost,
+      HttpContext httpContext,
+      RequestDirector requestDirector) {
     this.httpRequest = httpRequest;
     this.httpHost = httpHost;
     this.httpContext = httpContext;

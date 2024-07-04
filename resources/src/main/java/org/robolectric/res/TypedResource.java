@@ -47,12 +47,17 @@ public class TypedResource<T> {
     return false;
   }
 
-  @Override public String toString() {
-    return getClass().getSimpleName() + "{" +
-        "values=" + data +
-        ", resType=" + resType +
-        ", xmlContext=" + xmlContext +
-        '}';
+  @Override
+  public String toString() {
+    return getClass().getSimpleName()
+        + "{"
+        + "values="
+        + data
+        + ", resType="
+        + resType
+        + ", xmlContext="
+        + xmlContext
+        + '}';
   }
 
   public boolean isXml() {

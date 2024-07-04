@@ -12,9 +12,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
-/**
- * Shadow of {@link android.view.accessibility.AccessibilityRecord}.
- */
+/** Shadow of {@link android.view.accessibility.AccessibilityRecord}. */
 @Implements(AccessibilityRecord.class)
 public class ShadowAccessibilityRecord {
 

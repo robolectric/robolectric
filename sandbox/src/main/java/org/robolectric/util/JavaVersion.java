@@ -15,7 +15,8 @@ public class JavaVersion implements Comparable<JavaVersion> {
     }
   }
 
-  @Override public int compareTo(JavaVersion o) {
+  @Override
+  public int compareTo(JavaVersion o) {
     List<Integer> versions2 = o.versions;
     int max = Math.min(versions.size(), versions2.size());
     for (int i = 0; i < max; i++) {

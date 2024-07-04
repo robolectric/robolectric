@@ -54,12 +54,18 @@ public class ShadowConnectivityManager {
   private final Map<Network, ProxyInfo> proxyInfoMap = new HashMap<>();
 
   public ShadowConnectivityManager() {
-    NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED,
-        ConnectivityManager.TYPE_WIFI, 0, true, false);
+    NetworkInfo wifi =
+        ShadowNetworkInfo.newInstance(
+            NetworkInfo.DetailedState.DISCONNECTED, ConnectivityManager.TYPE_WIFI, 0, true, false);
     networkTypeToNetworkInfo.put(ConnectivityManager.TYPE_WIFI, wifi);
 
-    NetworkInfo mobile = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.CONNECTED,
-        ConnectivityManager.TYPE_MOBILE, ConnectivityManager.TYPE_MOBILE_MMS, true, true);
+    NetworkInfo mobile =
+        ShadowNetworkInfo.newInstance(
+            NetworkInfo.DetailedState.CONNECTED,
+            ConnectivityManager.TYPE_MOBILE,
+            ConnectivityManager.TYPE_MOBILE_MMS,
+            true,
+            true);
     networkTypeToNetworkInfo.put(ConnectivityManager.TYPE_MOBILE, mobile);
 
     this.activeNetworkInfo = mobile;
@@ -281,9 +287,7 @@ public class ShadowConnectivityManager {
     networkTypeToNetworkInfo.put(networkType, networkInfo);
   }
 
-  /**
-   * Returns the captive portal URL previously set with {@link #setCaptivePortalServerUrl}.
-   */
+  /** Returns the captive portal URL previously set with {@link #setCaptivePortalServerUrl}. */
   @Implementation(minSdk = N)
   protected String getCaptivePortalServerUrl() {
     return captivePortalServerUrl;
@@ -298,7 +302,8 @@ public class ShadowConnectivityManager {
     this.captivePortalServerUrl = captivePortalServerUrl;
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi
+  @Implementation
   public void setBackgroundDataSetting(boolean b) {
     backgroundDataSetting = b;
   }
@@ -330,6 +335,7 @@ public class ShadowConnectivityManager {
 
   /**
    * Removes the {@code network} from the list of all {@link android.net.Network}s.
+   *
    * @param network The network.
    */
   public void removeNetwork(Network network) {
@@ -339,9 +345,7 @@ public class ShadowConnectivityManager {
     netIdToNetworkInfo.remove(netId);
   }
 
-  /**
-   * Clears the list of all {@link android.net.Network}s.
-   */
+  /** Clears the list of all {@link android.net.Network}s. */
   public void clearAllNetworks() {
     netIdToNetwork.clear();
     netIdToNetworkInfo.clear();
@@ -350,12 +354,12 @@ public class ShadowConnectivityManager {
   /**
    * Sets the active state of the default network.
    *
-   * By default this is true and affects the result of {@link
+   * <p>By default this is true and affects the result of {@link
    * ConnectivityManager#isActiveNetworkMetered()}, {@link
    * ConnectivityManager#isDefaultNetworkActive()}, {@link ConnectivityManager#getActiveNetwork()}
    * and {@link ConnectivityManager#getAllNetworkInfo()}.
    *
-   * Calling this method with {@code true} after any listeners have been registered with {@link
+   * <p>Calling this method with {@code true} after any listeners have been registered with {@link
    * ConnectivityManager#addDefaultNetworkActiveListener(OnNetworkActiveListener)} will result in
    * those listeners being fired.
    *

@@ -7,7 +7,5 @@ import android.content.Intent;
 public class DotConfigTestReceiver extends BroadcastReceiver {
 
   @Override
-  public void onReceive(Context context, Intent intent) {
-  }
-
+  public void onReceive(Context context, Intent intent) {}
 }

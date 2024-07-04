@@ -254,5 +254,4 @@ public class ShadowPixelCopy {
     @Constructor
     PixelCopy.Result newResult(int copyResult, Bitmap bitmap);
   }
-
 }

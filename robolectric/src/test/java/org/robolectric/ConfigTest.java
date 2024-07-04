@@ -137,8 +137,7 @@ public class ConfigTest {
     Properties properties = new Properties();
     properties.setProperty("sdk", "1, 2, ALL_SDKS, TARGET_SDK, OLDEST_SDK, NEWEST_SDK, 666");
     Config config = Config.Implementation.fromProperties(properties);
-    assertThat(sdksIn(config))
-        .isEqualTo("sdk=[1, 2, -2, -3, -4, -5, 666], minSdk=-1, maxSdk=-1");
+    assertThat(sdksIn(config)).isEqualTo("sdk=[1, 2, -2, -3, -4, -5, 666], minSdk=-1, maxSdk=-1");
   }
 
   @Test
@@ -147,30 +146,26 @@ public class ConfigTest {
     properties.setProperty("minSdk", "OLDEST_SDK");
     properties.setProperty("maxSdk", "NEWEST_SDK");
     Config config = Config.Implementation.fromProperties(properties);
-    assertThat(sdksIn(config))
-        .isEqualTo("sdk=[], minSdk=-4, maxSdk=-5");
+    assertThat(sdksIn(config)).isEqualTo("sdk=[], minSdk=-4, maxSdk=-5");
   }
 
   @Test
   public void testIllegalArguments_sdkMutualExclusion() throws Exception {
     try {
-      new Config.Builder()
-          .setSdk(16, 17, 18).setMinSdk(16).setMaxSdk(18)
-          .build();
+      new Config.Builder().setSdk(16, 17, 18).setMinSdk(16).setMaxSdk(18).build();
       fail();
     } catch (IllegalArgumentException e) {
       assertThat(e.getMessage())
-          .isEqualTo("sdk and minSdk/maxSdk may not be specified together (sdk=[16, 17, 18],"
-                         + " minSdk=16, maxSdk=18)");
+          .isEqualTo(
+              "sdk and minSdk/maxSdk may not be specified together (sdk=[16, 17, 18],"
+                  + " minSdk=16, maxSdk=18)");
     }
   }
 
   @Test
   public void testIllegalArguments_minMaxSdkRange() throws Exception {
     try {
-      new Config.Builder()
-          .setMinSdk(18).setMaxSdk(16)
-          .build();
+      new Config.Builder().setMinSdk(18).setMaxSdk(16).build();
       fail();
     } catch (IllegalArgumentException e) {
       assertThat(e.getMessage())

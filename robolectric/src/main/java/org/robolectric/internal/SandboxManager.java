@@ -19,9 +19,7 @@ import org.robolectric.util.inject.AutoFactory;
 @SuppressLint("NewApi")
 public class SandboxManager {
 
-  /**
-   * The factor for cache size. See {@link #sandboxesByKey} for details.
-   */
+  /** The factor for cache size. See {@link #sandboxesByKey} for details. */
   private static final int CACHE_SIZE_FACTOR = 3;
 
   private final SandboxBuilder sandboxBuilder;

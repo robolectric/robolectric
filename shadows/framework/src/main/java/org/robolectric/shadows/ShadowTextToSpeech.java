@@ -265,7 +265,9 @@ public class ShadowTextToSpeech {
     return shutdown;
   }
 
-  /** @return {@code true} if the TTS is stopped. */
+  /**
+   * @return {@code true} if the TTS is stopped.
+   */
   public boolean isStopped() {
     return stopped;
   }

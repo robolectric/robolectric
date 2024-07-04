@@ -264,7 +264,7 @@ public class ShadowCameraManagerTest {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);
     // Verify adding the camera triggers the callback
-    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler= */ null);
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
 
     verify(mockCallback).onCameraAvailable(CAMERA_ID_0);
@@ -277,7 +277,7 @@ public class ShadowCameraManagerTest {
 
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
     shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
-    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler= */ null);
     cameraManager.unregisterAvailabilityCallback(mockCallback);
 
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
@@ -291,7 +291,7 @@ public class ShadowCameraManagerTest {
         mock(CameraManager.AvailabilityCallback.class);
 
     // Verify that the camera unavailable callback is called when the camera is removed
-    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler= */ null);
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
     shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
 
@@ -303,7 +303,7 @@ public class ShadowCameraManagerTest {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);
 
-    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler= */ null);
     cameraManager.unregisterAvailabilityCallback(mockCallback);
 
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
@@ -318,7 +318,7 @@ public class ShadowCameraManagerTest {
         mock(CameraManager.AvailabilityCallback.class);
 
     // Verify that the callback is not triggered for a camera that was never added
-    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler= */ null);
     try {
       shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
     } catch (IllegalArgumentException e) {

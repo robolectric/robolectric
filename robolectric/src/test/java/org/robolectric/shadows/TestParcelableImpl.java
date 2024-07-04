@@ -32,6 +32,7 @@ class TestParcelableImpl extends TestParcelableBase implements Parcelable {
           return new TestParcelableImpl[0];
         }
       };
+
   @Override
   public void writeToParcel(Parcel dest, int flags) {
     dest.writeInt(contents);

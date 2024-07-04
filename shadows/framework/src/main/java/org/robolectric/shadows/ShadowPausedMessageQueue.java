@@ -157,7 +157,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     synchronized (realQueue) {
       Message msg = peekNextExecutableMessage();
       if (msg == null) {
-          return true;
+        return true;
       }
 
       long now = SystemClock.uptimeMillis();

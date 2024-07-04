@@ -27,7 +27,6 @@ import junit.framework.TestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
 /**
  * CTS for {@link AccessibilityEvent}.
@@ -38,7 +37,6 @@ import org.robolectric.annotation.internal.DoNotInstrument;
  *
  * <p>But this test class migrates assertions from junit to Google Truth.
  */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class AccessibilityEventTest {
   @Test

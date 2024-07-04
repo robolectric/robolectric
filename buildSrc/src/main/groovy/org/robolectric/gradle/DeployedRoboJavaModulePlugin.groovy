@@ -10,6 +10,10 @@ class DeployedRoboJavaModulePlugin implements Plugin<Project> {
         project.apply plugin: "signing"
         project.apply plugin: "maven-publish"
 
+        if (!project.plugins.hasPlugin("org.robolectric.gradle.RoboJavaModulePlugin")) {
+            project.apply plugin: "org.robolectric.gradle.RoboJavaModulePlugin"
+        }
+
         task('sourcesJar', type: Jar, dependsOn: classes) {
             archiveClassifier = "sources"
             from sourceSets.main.allJava

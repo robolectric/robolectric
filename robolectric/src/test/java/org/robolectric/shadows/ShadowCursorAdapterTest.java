@@ -27,11 +27,11 @@ public class ShadowCursorAdapterTest {
     database = SQLiteDatabase.create(null);
     database.execSQL("CREATE TABLE table_name(_id INT PRIMARY KEY, name VARCHAR(255));");
     String[] inserts = {
-        "INSERT INTO table_name (_id, name) VALUES(1234, 'Chuck');",
-        "INSERT INTO table_name (_id, name) VALUES(1235, 'Julie');",
-        "INSERT INTO table_name (_id, name) VALUES(1236, 'Chris');",
-        "INSERT INTO table_name (_id, name) VALUES(1237, 'Brenda');",
-        "INSERT INTO table_name (_id, name) VALUES(1238, 'Jane');"
+      "INSERT INTO table_name (_id, name) VALUES(1234, 'Chuck');",
+      "INSERT INTO table_name (_id, name) VALUES(1235, 'Julie');",
+      "INSERT INTO table_name (_id, name) VALUES(1236, 'Chris');",
+      "INSERT INTO table_name (_id, name) VALUES(1237, 'Brenda');",
+      "INSERT INTO table_name (_id, name) VALUES(1238, 'Jane');"
     };
 
     for (String insert : inserts) {
@@ -87,7 +87,8 @@ public class ShadowCursorAdapterTest {
     }
   }
 
-  @Test public void shouldNotErrorOnCursorChangeWhenNoFlagsAreSet() throws Exception {
+  @Test
+  public void shouldNotErrorOnCursorChangeWhenNoFlagsAreSet() throws Exception {
     try (Cursor newCursor = database.rawQuery("SELECT * FROM table_name;", null)) {
       adapter = new TestAdapterWithFlags(curs, 0);
       adapter.changeCursor(newCursor);
@@ -102,8 +103,7 @@ public class ShadowCursorAdapterTest {
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-    }
+    public void bindView(View view, Context context, Cursor cursor) {}
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
@@ -116,11 +116,12 @@ public class ShadowCursorAdapterTest {
       super(ApplicationProvider.getApplicationContext(), c, flags);
     }
 
-    @Override public View newView(Context context, Cursor cursor, ViewGroup parent) {
+    @Override
+    public View newView(Context context, Cursor cursor, ViewGroup parent) {
       return null;
     }
 
-    @Override public void bindView(View view, Context context, Cursor cursor) {
-    }
+    @Override
+    public void bindView(View view, Context context, Cursor cursor) {}
   }
 }

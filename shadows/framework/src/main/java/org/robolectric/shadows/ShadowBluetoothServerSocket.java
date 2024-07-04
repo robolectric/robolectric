@@ -34,12 +34,12 @@ public class ShadowBluetoothServerSocket {
   }
 
   /**
-   * May block the current thread and wait until {@link BluetoothDevice} is offered via
-   * {@link #deviceConnected(BluetoothDevice)} method or timeout occurred.
+   * May block the current thread and wait until {@link BluetoothDevice} is offered via {@link
+   * #deviceConnected(BluetoothDevice)} method or timeout occurred.
    *
    * @return socket of the connected bluetooth device
    * @throws IOException if socket has been closed, thread interrupted while waiting or timeout has
-   *         occurred.
+   *     occurred.
    */
   @Implementation
   protected BluetoothSocket accept(int timeout) throws IOException {
@@ -49,8 +49,7 @@ public class ShadowBluetoothServerSocket {
 
     BluetoothSocket socket;
     try {
-      socket = timeout == -1
-              ? sockets.take() : sockets.poll(timeout, TimeUnit.MILLISECONDS);
+      socket = timeout == -1 ? sockets.take() : sockets.poll(timeout, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
       throw new IOException(e);
     }
@@ -67,8 +66,10 @@ public class ShadowBluetoothServerSocket {
     closed = true;
   }
 
-  /** Creates {@link BluetoothSocket} for the given device and makes this socket available
-   * immediately in the {@link #accept(int)} method. */
+  /**
+   * Creates {@link BluetoothSocket} for the given device and makes this socket available
+   * immediately in the {@link #accept(int)} method.
+   */
   public BluetoothSocket deviceConnected(BluetoothDevice device) {
     BluetoothSocket socket = Shadow.newInstanceOf(BluetoothSocket.class);
     ReflectionHelpers.setField(socket, "mDevice", device);

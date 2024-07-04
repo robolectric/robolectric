@@ -49,17 +49,16 @@ public class ShadowTouchDelegateTest {
     Rect rect = new Rect(100, 5000, 200, 6000);
     TouchDelegate td =
         Shadow.newInstance(
-            TouchDelegate.class,
-            new Class[] { Rect.class, View.class },
-            new Object[] {rect, view});
+            TouchDelegate.class, new Class[] {Rect.class, View.class}, new Object[] {rect, view});
     // Make the underlying view clickable. This ensures that if a touch event does get delegated, it
     // gets reported as having been handled.
     view.setClickable(true);
 
     // Verify that a touch event in the center of the rectangle is handled.
     assertThat(
-        td.onTouchEvent(
-            MotionEvent.obtain(1, 1, MotionEvent.ACTION_DOWN, rect.centerX(), rect.centerY(), 0)))
+            td.onTouchEvent(
+                MotionEvent.obtain(
+                    1, 1, MotionEvent.ACTION_DOWN, rect.centerX(), rect.centerY(), 0)))
         .isTrue();
     // Verify that a touch event outside of the rectangle is not handled.
     assertThat(td.onTouchEvent(MotionEvent.obtain(1, 1, MotionEvent.ACTION_DOWN, 5f, 10f, 0)))

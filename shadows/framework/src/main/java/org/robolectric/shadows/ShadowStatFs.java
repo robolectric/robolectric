@@ -69,7 +69,7 @@ public class ShadowStatFs {
   @Implementation
   protected void restat(String path) {
     Map.Entry<String, Stats> mapEntry = stats.floorEntry(path);
-    for (;;) {
+    for (; ; ) {
       // We will hit all matching paths, longest one first. We may hit non-matching paths before we
       // find the right one.
       if (mapEntry == null) {
@@ -116,7 +116,7 @@ public class ShadowStatFs {
 
   /**
    * Register stats for a path, which will be used when a matching {@link StatFs} instance is
-   * created.  A {@link StatFs} instance matches if it extends path. If several registered paths
+   * created. A {@link StatFs} instance matches if it extends path. If several registered paths
    * match, we pick the longest one.
    *
    * @param path path to the file
@@ -124,8 +124,8 @@ public class ShadowStatFs {
    * @param freeBlocks number of free blocks
    * @param availableBlocks number of available blocks
    */
-  public static void registerStats(String path, int blockCount, int freeBlocks,
-      int availableBlocks) {
+  public static void registerStats(
+      String path, int blockCount, int freeBlocks, int availableBlocks) {
     stats.put(path, new Stats(blockCount, freeBlocks, availableBlocks));
   }
 
@@ -158,6 +158,7 @@ public class ShadowStatFs {
       this.freeBlocks = freeBlocks;
       this.availableBlocks = availableBlocks;
     }
+
     int blockCount, freeBlocks, availableBlocks;
   }
 }

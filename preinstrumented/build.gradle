@@ -1,7 +1,7 @@
 plugins {
-    id "application"
+    alias(libs.plugins.application)
+    alias(libs.plugins.java)
 }
-apply plugin: 'java'
 
 ext {
     javaMainClass = "org.robolectric.preinstrumented.JarInstrumentor"

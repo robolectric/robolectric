@@ -196,7 +196,9 @@ public class ShadowActivityManager {
     this.configurationInfo = configurationInfo;
   }
 
-  /** @param tasks List of running tasks. */
+  /**
+   * @param tasks List of running tasks.
+   */
   public void setTasks(List<ActivityManager.RunningTaskInfo> tasks) {
     this.tasks.clear();
     this.tasks.addAll(tasks);
@@ -213,29 +215,39 @@ public class ShadowActivityManager {
     this.appTasks.addAll(appTasks);
   }
 
-  /** @param services List of running services. */
+  /**
+   * @param services List of running services.
+   */
   public void setServices(List<ActivityManager.RunningServiceInfo> services) {
     this.services.clear();
     this.services.addAll(services);
   }
 
-  /** @param processes List of running processes. */
+  /**
+   * @param processes List of running processes.
+   */
   public void setProcesses(List<ActivityManager.RunningAppProcessInfo> processes) {
     ShadowActivityManager.processes.clear();
     ShadowActivityManager.processes.addAll(processes);
   }
 
-  /** @return Get the package name of the last background processes killed. */
+  /**
+   * @return Get the package name of the last background processes killed.
+   */
   public String getBackgroundPackage() {
     return backgroundPackage;
   }
 
-  /** @param memoryClass Set the application's memory class. */
+  /**
+   * @param memoryClass Set the application's memory class.
+   */
   public void setMemoryClass(int memoryClass) {
     this.memoryClass = memoryClass;
   }
 
-  /** @param memoryInfo Set the application's memory info. */
+  /**
+   * @param memoryInfo Set the application's memory info.
+   */
   public void setMemoryInfo(ActivityManager.MemoryInfo memoryInfo) {
     this.memoryInfo = memoryInfo;
   }

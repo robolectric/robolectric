@@ -72,7 +72,6 @@ public class GnssStatusBuilderTest {
             .setHasAlmanac(HAS_ALMANAC)
             .setUsedInFix(USED_IN_FIX);
 
-
     List<GnssSatelliteInfo> satelliteInfos = new ArrayList<>();
     satelliteInfos.add(infoBuilder.setSvid(SVID).build());
     satelliteInfos.add(infoBuilder.setSvid(SVID + 1).build());
@@ -111,20 +110,21 @@ public class GnssStatusBuilderTest {
   @Config(minSdk = O)
   public void addSatellite_carrierFrequency() {
     GnssSatelliteInfo.Builder infoBuilder =
-    GnssSatelliteInfo.builder()
-        .setConstellation(GnssStatus.CONSTELLATION_GPS)
-        .setCn0DbHz(CN0)
-        .setElevation(ELEVATION)
-        .setAzimuth(AZIMUTH)
-        .setHasEphemeris(HAS_EPHEMERIS)
-        .setHasAlmanac(HAS_ALMANAC)
-        .setUsedInFix(USED_IN_FIX);
+        GnssSatelliteInfo.builder()
+            .setConstellation(GnssStatus.CONSTELLATION_GPS)
+            .setCn0DbHz(CN0)
+            .setElevation(ELEVATION)
+            .setAzimuth(AZIMUTH)
+            .setHasEphemeris(HAS_EPHEMERIS)
+            .setHasAlmanac(HAS_ALMANAC)
+            .setUsedInFix(USED_IN_FIX);
 
-    GnssStatus status = GnssStatusBuilder.create()
-        .addSatellite(infoBuilder.setSvid(SVID).build())
-        .addSatellite(infoBuilder.setSvid(SVID + 1).setCarrierFrequencyHz(null).build())
-        .addSatellite(infoBuilder.setSvid(SVID - 1).setCarrierFrequencyHz(1575.42f).build())
-        .build();
+    GnssStatus status =
+        GnssStatusBuilder.create()
+            .addSatellite(infoBuilder.setSvid(SVID).build())
+            .addSatellite(infoBuilder.setSvid(SVID + 1).setCarrierFrequencyHz(null).build())
+            .addSatellite(infoBuilder.setSvid(SVID - 1).setCarrierFrequencyHz(1575.42f).build())
+            .build();
 
     assertThat(status.getSatelliteCount()).isEqualTo(3);
     assertThat(status.hasCarrierFrequencyHz(0)).isFalse();

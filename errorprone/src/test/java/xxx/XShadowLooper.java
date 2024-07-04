@@ -18,6 +18,5 @@ public class XShadowLooper {
     return null;
   }
 
-  public void runToEndOfTasks() {
-  }
+  public void runToEndOfTasks() {}
 }

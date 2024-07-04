@@ -80,7 +80,8 @@ public class RobolectricTestRunnerSelfTest {
     assertThat(Build.VERSION.RELEASE).isEqualTo("5.0.2");
   }
 
-  @Test public void hamcrestMatchersDontBlowUpDuringLinking() throws Exception {
+  @Test
+  public void hamcrestMatchersDontBlowUpDuringLinking() throws Exception {
     org.hamcrest.MatcherAssert.assertThat(true, CoreMatchers.is(true));
   }
 
@@ -98,7 +99,7 @@ public class RobolectricTestRunnerSelfTest {
     public void onCreate() {
       this.onCreateWasCalled = true;
     }
-    
+
     @Override
     public void onTerminate() {
       onTerminateCalledFromMain =

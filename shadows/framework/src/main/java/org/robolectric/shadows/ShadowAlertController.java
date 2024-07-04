@@ -28,7 +28,8 @@ public class ShadowAlertController {
   private int iconId;
 
   @Implementation
-  public void setTitle(CharSequence title) throws InvocationTargetException, IllegalAccessException {
+  public void setTitle(CharSequence title)
+      throws InvocationTargetException, IllegalAccessException {
     this.title = title;
     reflector(AlertControllerReflector.class, realAlertController).setTitle(title);
   }

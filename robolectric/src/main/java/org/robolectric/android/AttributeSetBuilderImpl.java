@@ -52,11 +52,11 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
   private static final int CLASS_RES_ID = Integer.MAX_VALUE - 1;
   private static final int ID_RES_ID = Integer.MAX_VALUE;
 
-  private static final ImmutableMap<Integer, String> MAGIC_ATTRS = ImmutableMap.of(
-      STYLE_RES_ID, "style",
-      CLASS_RES_ID, "class",
-      ID_RES_ID, "id"
-  );
+  private static final ImmutableMap<Integer, String> MAGIC_ATTRS =
+      ImmutableMap.of(
+          STYLE_RES_ID, "style",
+          CLASS_RES_ID, "class",
+          ID_RES_ID, "id");
 
   private final ResourceResolver resourceResolver;
   private final Map<Integer, String> attrToValue = new TreeMap<>();
@@ -69,8 +69,8 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
 
     Integer getIdentifier(String name, String type, String packageName);
 
-    void parseValue(Integer attrId, ResName attrResName, AttributeResource attribute,
-        TypedValue outValue);
+    void parseValue(
+        Integer attrId, ResName attrResName, AttributeResource attribute, TypedValue outValue);
   }
 
   public static class ArscResourceResolver implements ResourceResolver {
@@ -126,13 +126,13 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     }
 
     @Override
-    public void parseValue(Integer attrId, ResName attrResName, AttributeResource attribute,
-        TypedValue outValue) {
+    public void parseValue(
+        Integer attrId, ResName attrResName, AttributeResource attribute, TypedValue outValue) {
       arscParse(attrId, attrResName, attribute, outValue);
     }
 
-    private void arscParse(Integer attrId, ResName attrResName, AttributeResource attribute,
-        TypedValue outValue) {
+    private void arscParse(
+        Integer attrId, ResName attrResName, AttributeResource attribute, TypedValue outValue) {
       String format = ShadowArscAssetManager.getResourceBagValue(attrId, ATTR_TYPE, resTable);
       Map<String, Integer> map = ShadowArscAssetManager.getResourceBagValues(attrId, resTable);
       ArrayList<Pair> pairs = new ArrayList<>();
@@ -141,10 +141,9 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
       }
 
       int formatFlags = Integer.parseInt(format);
-      TreeSet<flag_entry> sortedFlags = new TreeSet<>(
-          (a, b) -> ATTRIBUTE_TYPE_PRECIDENCE.compare(a.name, b.name));
-      Collections.addAll(sortedFlags,
-          org.robolectric.res.android.ResourceTable.gFormatFlags);
+      TreeSet<flag_entry> sortedFlags =
+          new TreeSet<>((a, b) -> ATTRIBUTE_TYPE_PRECIDENCE.compare(a.name, b.name));
+      Collections.addAll(sortedFlags, org.robolectric.res.android.ResourceTable.gFormatFlags);
 
       for (flag_entry flag : sortedFlags) {
         if ((formatFlags & flag.value) != 0) {
@@ -196,14 +195,15 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
 
   @Override
   public AttributeSet build() {
-    Class<?> xmlBlockClass = ReflectionHelpers
-        .loadClass(this.getClass().getClassLoader(), "android.content.res.XmlBlock");
+    Class<?> xmlBlockClass =
+        ReflectionHelpers.loadClass(
+            this.getClass().getClassLoader(), "android.content.res.XmlBlock");
 
     ByteBuffer buf = ByteBuffer.allocate(16 * 1024).order(ByteOrder.LITTLE_ENDIAN);
     Writer resStringPoolWriter = new Writer();
 
     final SparseArray<Integer> resIds = new SparseArray<>();
-    final int[] maxAttrNameIndex = new int[] { 0 };
+    final int[] maxAttrNameIndex = new int[] {0};
 
     ResXMLTree_attrExt.Writer dummyStart =
         new ResXMLTree_attrExt.Writer(buf, resStringPoolWriter, null, "dummy") {
@@ -298,20 +298,27 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
         new ResXMLTree_endElementExt.Writer(buf, resStringPoolWriter, null, "dummy");
 
     int finalMaxAttrNameIndex = maxAttrNameIndex[0];
-    ResXMLTree_header.write(buf, resStringPoolWriter, () -> {
-      if (finalMaxAttrNameIndex > 0) {
-        ResChunk_header.write(buf, (short) RES_XML_RESOURCE_MAP_TYPE, () -> {}, () -> {
-          // not particularly compact, but no big deal for our purposes...
-          for (int i = 0; i <= finalMaxAttrNameIndex; i++) {
-            Integer value = resIds.get(i);
-            buf.putInt(value == null ? 0 : value);
+    ResXMLTree_header.write(
+        buf,
+        resStringPoolWriter,
+        () -> {
+          if (finalMaxAttrNameIndex > 0) {
+            ResChunk_header.write(
+                buf,
+                (short) RES_XML_RESOURCE_MAP_TYPE,
+                () -> {},
+                () -> {
+                  // not particularly compact, but no big deal for our purposes...
+                  for (int i = 0; i <= finalMaxAttrNameIndex; i++) {
+                    Integer value = resIds.get(i);
+                    buf.putInt(value == null ? 0 : value);
+                  }
+                });
           }
-        });
-      }
 
-      ResXMLTree_node.write(buf, RES_XML_START_ELEMENT_TYPE, dummyStart::write);
-      ResXMLTree_node.write(buf, RES_XML_END_ELEMENT_TYPE, dummyEnd::write);
-    });
+          ResXMLTree_node.write(buf, RES_XML_START_ELEMENT_TYPE, dummyStart::write);
+          ResXMLTree_node.write(buf, RES_XML_END_ELEMENT_TYPE, dummyEnd::write);
+        });
 
     int size = buf.position();
     byte[] bytes = new byte[size];
@@ -320,27 +327,26 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     ((Buffer) buf).position(0);
     buf.get(bytes, 0, size);
 
-    Object xmlBlockInstance = ReflectionHelpers
-        .callConstructor(xmlBlockClass, ClassParameter.from(byte[].class, bytes));
+    Object xmlBlockInstance =
+        ReflectionHelpers.callConstructor(xmlBlockClass, ClassParameter.from(byte[].class, bytes));
 
-    AttributeSet parser = ReflectionHelpers.callInstanceMethod(xmlBlockClass, xmlBlockInstance,
-        "newParser");
+    AttributeSet parser =
+        ReflectionHelpers.callInstanceMethod(xmlBlockClass, xmlBlockInstance, "newParser");
     ReflectionHelpers.callInstanceMethod(parser, "next");
     ReflectionHelpers.callInstanceMethod(parser, "next");
 
     return parser;
   }
 
-  private TypedValue parse(Integer attrId, ResName attrResName, String value,
-      String packageName) {
-    AttributeResource attribute =
-        new AttributeResource(attrResName, value, packageName);
+  private TypedValue parse(Integer attrId, ResName attrResName, String value, String packageName) {
+    AttributeResource attribute = new AttributeResource(attrResName, value, packageName);
     TypedValue outValue = new TypedValue();
 
     if (attribute.isResourceReference()) {
       ResName resourceReference = attribute.getResourceReference();
-      int id = resourceResolver.getIdentifier(resourceReference.name, resourceReference.type,
-          resourceReference.packageName);
+      int id =
+          resourceResolver.getIdentifier(
+              resourceReference.name, resourceReference.type, resourceReference.packageName);
       if (id == 0) {
         throw new IllegalArgumentException("couldn't resolve " + attribute);
       }

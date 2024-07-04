@@ -38,7 +38,8 @@ public class ShadowBroadcastReceiver {
   public void onReceive(Context context, Intent intent, AtomicBoolean abort) {
     this.abort = abort;
     onReceive(context, intent);
-    // If the underlying receiver has called goAsync(), we should not finish the pending result yet - they'll do that
+    // If the underlying receiver has called goAsync(), we should not finish the pending result yet
+    // - they'll do that
     // for us.
     if (receiver.getPendingResult() != null) {
       receiver.getPendingResult().finish();

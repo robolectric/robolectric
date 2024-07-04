@@ -37,7 +37,6 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
 /**
  * CTS tests for {@link Rational}.
@@ -45,7 +44,6 @@ import org.robolectric.annotation.internal.DoNotInstrument;
  * <p>Copied from <a
  * href="https://cs.android.com/android/platform/superproject/main/+/main:cts/tests/tests/util/src/android/util/cts/RationalTest.java">RationalTest</a>
  */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class RationalTest {
 

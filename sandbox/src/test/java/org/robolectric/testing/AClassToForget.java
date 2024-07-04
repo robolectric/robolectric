@@ -65,6 +65,5 @@ public class AClassToForget {
     return new short[0];
   }
 
-  public static void voidReturningMethod() {
-  }
+  public static void voidReturningMethod() {}
 }
