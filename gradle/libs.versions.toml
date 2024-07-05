@@ -102,7 +102,6 @@ androidx-biometric = "1.1.0"
 androidx-constraintlayout = "2.1.4"
 androidx-core = "1.13.1"
 androidx-fragment = "1.8.1"
-androidx-multidex = "2.0.1"
 androidx-window = "1.3.0"
 androidx-room = "2.6.1"
 
@@ -206,7 +205,6 @@ androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayo
 androidx-core = { module = "androidx.core:core", version.ref = "androidx-core" }
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "androidx-fragment" }
 androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", version.ref = "androidx-fragment" }
-androidx-multidex = { module = "androidx.multidex:multidex", version.ref = "androidx-multidex" }
 androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "androidx-room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidx-room" }
