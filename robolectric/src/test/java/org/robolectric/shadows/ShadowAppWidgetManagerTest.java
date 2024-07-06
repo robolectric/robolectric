@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Looper.getMainLooper;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -14,6 +15,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -40,6 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -542,6 +545,31 @@ public class ShadowAppWidgetManagerTest {
       return context.getResources().getResourceName(id);
     } catch (NotFoundException e) {
       return String.valueOf(id);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void appWidgetManager_activityContextEnabled_sharedState() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      AppWidgetManager applicationAppWidgetManager =
+          context.getSystemService(AppWidgetManager.class);
+      activity = Robolectric.setupActivity(Activity.class);
+      AppWidgetManager activityAppWidgetManager = activity.getSystemService(AppWidgetManager.class);
+
+      assertThat(applicationAppWidgetManager).isNotSameInstanceAs(activityAppWidgetManager);
+
+      applicationAppWidgetManager.updateAppWidgetOptions(1, null);
+
+      assertThat(activityAppWidgetManager.getAppWidgetOptions(1)).isNotNull();
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 
