@@ -44,7 +44,10 @@ jobs:
           base_branch="${{ github.event.pull_request.base.ref }}"
           echo "Running google-java-format-diff against 'origin/$base_branch'"
           git fetch origin "$base_branch" --depth 1
-          diff=$(git diff -U0 $(git merge-base HEAD origin/$base_branch) | $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1)
+          diff=$(git diff -U0 $(git merge-base HEAD origin/$base_branch) -- . \
+            ':(exclude)robolectric/src/test/java/org/robolectric/R.java' \
+            ':(exclude)robolectric/src/test/java/org/robolectric/Manifest.java' \
+            | $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1)
           if [[ $diff ]]; then
             echo "Please run google-java-format on the changes in this pull request"
             git diff -U0 $(git merge-base HEAD origin/$base_branch) | $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1
