@@ -7,6 +7,10 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
+import android.appwidget.AppWidgetHost;
+import android.appwidget.AppWidgetManager;
+import android.appwidget.AppWidgetProvider;
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -16,10 +20,12 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.media.AudioManager;
 import android.os.BatteryManager;
 import android.view.autofill.AutofillManager;
+import android.widget.RemoteViews;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.GrantPermissionRule;
+import com.google.common.truth.Truth;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,6 +33,8 @@ import org.robolectric.testapp.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class ContextTest {
+  private static final int APP_WIDGET_HOST_ID = 1;
+
   @Rule
   public GrantPermissionRule mRuntimePermissionRule =
       GrantPermissionRule.grant(
@@ -607,6 +615,83 @@ public class ContextTest {
                 (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
             assertThat(anotherActivityCameraManager).isSameInstanceAs(activityCameraManager);
           });
+    }
+  }
+
+  @Test
+  public void appWidgetManager_applicationInstance_isNotSameAsActivityInstance() {
+    AppWidgetManager applicationAppWidgetManager =
+        (AppWidgetManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.APPWIDGET_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AppWidgetManager activityAppWidgetManager =
+                (AppWidgetManager) activity.getSystemService(Context.APPWIDGET_SERVICE);
+            assertThat(applicationAppWidgetManager).isNotSameInstanceAs(activityAppWidgetManager);
+          });
+    }
+  }
+
+  @Test
+  public void appWidgetManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AppWidgetManager activityAppWidgetManager =
+                (AppWidgetManager) activity.getSystemService(Context.APPWIDGET_SERVICE);
+            AppWidgetManager anotherActivityAppWidgetManager =
+                (AppWidgetManager) activity.getSystemService(Context.APPWIDGET_SERVICE);
+            assertThat(anotherActivityAppWidgetManager).isSameInstanceAs(activityAppWidgetManager);
+          });
+    }
+  }
+
+  @Test
+  public void appWidgetManager_instance_retrievesSameAppWidgets() {
+    Context context = ApplicationProvider.getApplicationContext();
+    AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+
+    ComponentName providerComponent = new ComponentName(context, TestAppWidgetProvider.class);
+    AppWidgetProviderInfo appWidgetProviderInfo = new AppWidgetProviderInfo();
+    appWidgetProviderInfo.provider = providerComponent;
+    appWidgetProviderInfo.updatePeriodMillis = 0;
+    appWidgetProviderInfo.initialLayout = android.R.layout.simple_list_item_1;
+
+    AppWidgetHost appWidgetHost = new AppWidgetHost(context, APP_WIDGET_HOST_ID);
+
+    int appWidgetId = appWidgetHost.allocateAppWidgetId();
+    appWidgetManager.bindAppWidgetIdIfAllowed(appWidgetId, providerComponent);
+
+    appWidgetManager.updateAppWidget(
+        appWidgetId,
+        new RemoteViews(context.getPackageName(), android.R.layout.simple_list_item_1));
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AppWidgetManager activityAppWidgetManager =
+                (AppWidgetManager) activity.getSystemService(Context.APPWIDGET_SERVICE);
+
+            int[] applicationAppWidgets = appWidgetManager.getAppWidgetIds(providerComponent);
+            int[] activityAppWidgets = activityAppWidgetManager.getAppWidgetIds(providerComponent);
+
+            Truth.assertThat(activityAppWidgets).isEqualTo(applicationAppWidgets);
+
+            appWidgetHost.deleteAppWidgetId(appWidgetId);
+          });
+    }
+  }
+
+  private static class TestAppWidgetProvider extends AppWidgetProvider {
+    @Override
+    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+      for (int appWidgetId : appWidgetIds) {
+        RemoteViews views =
+            new RemoteViews(context.getPackageName(), android.R.layout.simple_list_item_1);
+        views.setTextViewText(android.R.id.text1, "Test Widget");
+        appWidgetManager.updateAppWidget(appWidgetId, views);
+      }
     }
   }
 }

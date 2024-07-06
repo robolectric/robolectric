@@ -32,6 +32,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.ForType;
 
@@ -41,20 +42,29 @@ public class ShadowAppWidgetManager {
 
   @RealObject private AppWidgetManager realAppWidgetManager;
 
-  private Context context;
-  private final Map<Integer, WidgetInfo> widgetInfos = new HashMap<>();
-  private int nextWidgetId = 1;
-  private boolean alwaysRecreateViewsDuringUpdate = false;
-  private boolean allowedToBindWidgets;
-  private boolean requestPinAppWidgetSupported = false;
-  private boolean validWidgetProviderComponentName = true;
+  // AppWidgetProvider is enabled if at least one widget is active. `isWidgetsEnabled` should be set
+  //  to false if the last widget is removed (when removing widgets is implemented).
+  private static boolean isWidgetsEnabled = false;
+  private static int nextWidgetId = 1;
+  private static boolean alwaysRecreateViewsDuringUpdate = false;
+  private static boolean allowedToBindWidgets;
+  private static boolean requestPinAppWidgetSupported = false;
+  private static boolean validWidgetProviderComponentName = true;
   private final ArrayList<AppWidgetProviderInfo> installedProviders = new ArrayList<>();
   private Multimap<UserHandle, AppWidgetProviderInfo> installedProvidersForProfile =
       HashMultimap.create();
+  private Context context;
+  private final Map<Integer, WidgetInfo> widgetInfos = new HashMap<>();
 
-  // AppWidgetProvider is enabled if at least one widget is active. `isWidgetsEnabled` should be set
-  //  to false if the last widget is removed (when removing widgets is implemented).
-  private boolean isWidgetsEnabled = false;
+  @Resetter
+  public static void reset() {
+    nextWidgetId = 1;
+    alwaysRecreateViewsDuringUpdate = false;
+    allowedToBindWidgets = false;
+    requestPinAppWidgetSupported = false;
+    validWidgetProviderComponentName = true;
+    isWidgetsEnabled = false;
+  }
 
   @Implementation
   protected void __constructor__(Context context, IAppWidgetService service) {
