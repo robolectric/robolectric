@@ -9,7 +9,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import com.google.auto.service.AutoService;
 import com.google.errorprone.annotations.Keep;
-import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -18,6 +17,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -242,6 +242,15 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
+  /**
+   * Return a method handle of the shadow class which matches the given function signature of the
+   * shadowed class.
+   *
+   * @param definingClass The shadowed class
+   * @param name The name of the method
+   * @param paramTypes The parameter list of the method
+   * @return A method handle of the corresponding shadow class
+   */
   protected Method pickShadowMethod(Class<?> definingClass, String name, Class<?>[] paramTypes) {
     ShadowInfo shadowInfo = getExactShadowInfo(definingClass);
     if (shadowInfo == null) {
@@ -268,6 +277,8 @@ public class ShadowWrangler implements ClassHandler {
    * Searches for an {@code @Implementation} method on a given shadow class.
    *
    * <p>If the shadow class allows loose signatures, search for them.
+   *
+   * <p>If the shadow class has function using @ClassName matches the requirement, return it
    *
    * <p>If the shadow class doesn't have such a method, but does have a superclass which implements
    * the same class as it, call ourself recursively with the shadow superclass.
@@ -378,30 +389,24 @@ public class ShadowWrangler implements ClassHandler {
    * matches {@code paramClasses}.
    */
   private boolean parameterClassNameMatch(Method method, Class<?>[] paramClasses) {
-    Class<?>[] parameterTypes = method.getParameterTypes();
-    if (parameterTypes.length != paramClasses.length) {
+    Parameter[] params = method.getParameters();
+    if (params.length != paramClasses.length) {
       return false;
     }
 
-    Annotation[][] annotations = method.getParameterAnnotations();
-    for (int i = 0; i < paramClasses.length; ++i) {
-      if (parameterTypes[i].equals(paramClasses[i])) {
+    for (int i = 0; i < params.length; ++i) {
+      if (params[i].getType().equals(paramClasses[i])) {
         continue;
       }
-      if (!parameterTypes[i].equals(Object.class)) {
+      if (!params[i].getType().equals(Object.class)) {
         return false; // @ClassName only applicable to parameter of Object type
       }
-      boolean matches = false;
-      for (Annotation annotation : annotations[i]) {
-        if (annotation instanceof ClassName) {
-          matches = ((ClassName) annotation).value().equals(paramClasses[i].getName());
-          break;
-        }
-      }
-      if (!matches) {
+      ClassName className = params[i].getAnnotation(ClassName.class);
+      if (className == null || !className.value().equals(paramClasses[i].getName())) {
         return false;
       }
     }
+
     return true;
   }
 
