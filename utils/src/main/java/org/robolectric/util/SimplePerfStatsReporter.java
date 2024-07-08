@@ -27,7 +27,7 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
   }
 
   @SuppressWarnings("AndroidJdkLibsChecker)")
-  private synchronized void finalReport() {
+  public synchronized void finalReport() {
     Map<MetricKey, MetricValue> mergedMetrics = new TreeMap<>();
     for (Data perfStatsData : perfStatsData) {
       AndroidMetadata metadata = perfStatsData.metadata.get(AndroidMetadata.class);
