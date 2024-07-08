@@ -56,7 +56,7 @@ See [Building Robolectric](http://robolectric.org/building-robolectric/) for mor
 
 ### Building
 
-Robolectric supports running tests against multiple Android API levels. The work it must do to support each API level is slightly different, so its shadows are built separately for each. To build shadows for every API version, run:
+Robolectric supports running tests against multiple Android API levels. To build Robolectric, run:
 
     ./gradlew clean assemble testClasses --parallel
 
