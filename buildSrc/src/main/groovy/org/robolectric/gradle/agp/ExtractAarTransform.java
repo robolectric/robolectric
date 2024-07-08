@@ -50,7 +50,7 @@ public abstract class ExtractAarTransform implements TransformAction<GenericTran
 
   @Override
   public void transform(@NotNull TransformOutputs outputs) {
-    // TODO(b/162813654) record transform execution span
+    // TODO: record transform execution span
     File inputFile = getAarFile().get().getAsFile();
     String inputFileNameWithoutExtension = Files.getNameWithoutExtension(inputFile.getName());
     File outputDir = outputs.dir(inputFileNameWithoutExtension);
@@ -66,7 +66,7 @@ class AarExtractor {
 
   // Note:
   //  - A jar doesn't need a manifest entry, but if we ever want to create a manifest entry, be
-  //    sure to set a fixed timestamp for it so that the jar is deterministic (see b/315336689).
+  //    sure to set a fixed timestamp for it so that the jar is deterministic
   //  - This empty jar takes up only ~22 bytes, so we don't need to GC it at the end of the build.
   private static final byte[] emptyJar;
 
@@ -103,7 +103,7 @@ class AarExtractor {
     } else if (entryName.startsWith(LIBS_PREFIX)) {
       // In case we have libs/classes.jar we are going to rename them, due an issue in
       // Gradle.
-      // TODO: stop doing this once this is fixed in gradle. b/65298222
+      // TODO: stop doing this once this is fixed in gradle.
       String pathWithinLibs = entryName.substring(LIBS_PREFIX_LENGTH);
 
       if (pathWithinLibs.equals(SdkConstants.FN_CLASSES_JAR)) {
