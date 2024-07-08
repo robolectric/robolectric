@@ -87,6 +87,6 @@ repositories {
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 dependencies {
-    testImplementation "org.robolectric:robolectric:4.13-SNAPSHOT"
+    testImplementation "org.robolectric:robolectric:4.14-SNAPSHOT"
 }
 ```
