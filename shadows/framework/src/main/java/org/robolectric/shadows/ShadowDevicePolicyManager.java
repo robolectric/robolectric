@@ -512,44 +512,19 @@ public class ShadowDevicePolicyManager {
     }
   }
 
-  private boolean hasPackage(String caller, String packageName) {
-    if (caller == null) {
-      return false;
-    }
-    return caller.contains(packageName);
-  }
-
   private void enforceCallerDelegated(String targetScope) {
-    if (!delegatedScopePackagesMap.containsKey(targetScope)
-        || delegatedScopePackagesMap.get(targetScope).isEmpty()) {
-      throw new SecurityException(targetScope + " is not delegated to any package.");
-    }
     String caller = context.getPackageName();
-    for (String packageName : delegatedScopePackagesMap.get(targetScope)) {
-      if (hasPackage(caller, packageName)) {
-        return;
-      }
+    if (!delegatedScopePackagesMap.containsKey(caller)
+        || !delegatedScopePackagesMap.get(caller).contains(targetScope)) {
+      throw new SecurityException("[" + caller + "] is not delegated with" + targetScope);
     }
-    throw new SecurityException("[" + caller + "] is not delegated with" + targetScope);
   }
 
   @Implementation(minSdk = O)
   protected void setDelegatedScopes(
       ComponentName admin, String delegatePackage, List<String> scopes) {
     enforceDeviceOwnerOrProfileOwner(admin);
-    for (String scope : scopes) {
-      if (delegatedScopePackagesMap.containsKey(scope)) {
-        ImmutableSet<String> allowPackages =
-            new ImmutableSet.Builder<String>()
-                .addAll(delegatedScopePackagesMap.get(scope))
-                .add(delegatePackage)
-                .build();
-        delegatedScopePackagesMap.put(scope, allowPackages);
-      } else {
-        ImmutableSet<String> allowPackages = ImmutableSet.of(delegatePackage);
-        delegatedScopePackagesMap.put(scope, allowPackages);
-      }
-    }
+    delegatedScopePackagesMap.put(delegatePackage, ImmutableSet.copyOf(scopes));
   }
 
   @Implementation(minSdk = O)
@@ -564,13 +539,10 @@ public class ShadowDevicePolicyManager {
     } else {
       enforceDeviceOwnerOrProfileOwner(admin);
     }
-    List<String> scopes = new ArrayList<>();
-    for (String scope : delegatedScopePackagesMap.keySet()) {
-      if (delegatedScopePackagesMap.get(scope).contains(delegatePackage)) {
-        scopes.add(scope);
-      }
+    if (delegatedScopePackagesMap.containsKey(delegatePackage)) {
+      return ImmutableList.copyOf(delegatedScopePackagesMap.get(delegatePackage));
     }
-    return scopes;
+    return ImmutableList.of();
   }
 
   @Implementation

@@ -841,6 +841,25 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   @Config(minSdk = O)
+  public void setDelegatedScopes_secondTime_overridesPreviousDelegatedScopes() {
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN the caller has delegated scopes
+    List<String> initialScopes = Arrays.asList(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS);
+    devicePolicyManager.setDelegatedScopes(testComponent, "com.example.app", initialScopes);
+
+    // WHEN setDelegatedScopes is called again
+    List<String> newScopes = Arrays.asList(DevicePolicyManager.DELEGATION_ENABLE_SYSTEM_APP);
+    devicePolicyManager.setDelegatedScopes(testComponent, "com.example.app", newScopes);
+
+    // THEN the new scopes should be set
+    assertThat(devicePolicyManager.getDelegatedScopes(testComponent, "com.example.app"))
+        .containsExactlyElementsIn(newScopes);
+  }
+
+  @Test
+  @Config(minSdk = O)
   public void getDelegatedScopes_notDeviceOwner_throwsSecurityException() {
     // GIVEN the caller is not the device owner
 
