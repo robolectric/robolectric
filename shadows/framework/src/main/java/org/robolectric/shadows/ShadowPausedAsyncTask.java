@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.AsyncTask;
-import androidx.test.annotation.Beta;
+import com.google.common.annotations.Beta;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
