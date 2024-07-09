@@ -149,14 +149,11 @@ public class ClassInstrumentor {
     return instrumentedBytes;
   }
 
-  private void recordPackageStats(PerfStatsCollector perfStats, MutableClass mutableClass) {
-    String className = mutableClass.getName();
-    for (int i = className.indexOf('.'); i != -1; i = className.indexOf('.', i + 1)) {
-      perfStats.incrementCount("instrument package " + className.substring(0, i));
-    }
-  }
-
   public void instrument(MutableClass mutableClass) {
+    if (hasAnyJUnitAnnotation(mutableClass)) {
+      // Detected a JUnit related test class, skip instrumentation
+      return;
+    }
     try {
       // Need Java version >=7 to allow invokedynamic
       mutableClass.classNode.version = Math.max(mutableClass.classNode.version, Opcodes.V1_7);
@@ -197,6 +194,33 @@ public class ClassInstrumentor {
     } catch (Exception e) {
       throw new RuntimeException("failed to instrument " + mutableClass.getName(), e);
     }
+  }
+
+  private void recordPackageStats(PerfStatsCollector perfStats, MutableClass mutableClass) {
+    String className = mutableClass.getName();
+    for (int i = className.indexOf('.'); i != -1; i = className.indexOf('.', i + 1)) {
+      perfStats.incrementCount("instrument package " + className.substring(0, i));
+    }
+  }
+
+  private static boolean hasAnyJUnitAnnotation(MutableClass mutableClass) {
+    for (MethodNode method : mutableClass.getMethods()) {
+      if (method.visibleAnnotations == null) {
+        continue;
+      }
+      if ((method.access & Opcodes.ACC_PUBLIC) == 0) {
+        // Only check public methods.
+        continue;
+      }
+      // Because robolectric will generate private versions of the method for
+      // internal use and any junit annotated method that is private will cause junit to
+      // throw exceptions
+      if (method.visibleAnnotations.stream()
+          .anyMatch(annotation -> annotation.desc.startsWith("Lorg/junit/"))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // See https://github.com/robolectric/robolectric/issues/6840
