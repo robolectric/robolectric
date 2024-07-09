@@ -9,13 +9,22 @@ import java.util.HashMap;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 @Implements(BatteryManager.class)
 public class ShadowBatteryManager {
-  private boolean isCharging = false;
-  private long chargeTimeRemaining = 0;
-  private final Map<Integer, Long> longProperties = new HashMap<>();
-  private final Map<Integer, Integer> intProperties = new HashMap<>();
+  private static final Map<Integer, Long> longProperties = new HashMap<>();
+  private static final Map<Integer, Integer> intProperties = new HashMap<>();
+  private static boolean isCharging = false;
+  private static long chargeTimeRemaining = 0;
+
+  @Resetter
+  public static void reset() {
+    isCharging = false;
+    chargeTimeRemaining = 0;
+    longProperties.clear();
+    intProperties.clear();
+  }
 
   @Implementation(minSdk = M)
   protected boolean isCharging() {
