@@ -7,6 +7,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.media.AudioManager;
+import android.os.BatteryManager;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -120,6 +121,35 @@ public class ContextTest {
                 activityAccountManager.getAccountsByType("com.example.account_type");
 
             assertThat(activityAccounts).isEqualTo(applicationAccounts);
+          });
+    }
+  }
+
+  @Test
+  public void batteryManager_applicationInstance_isNotSameAsActivityInstance() {
+    BatteryManager applicationBatteryManager =
+        (BatteryManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.BATTERY_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            BatteryManager activityBatteryManager =
+                (BatteryManager) activity.getSystemService(Context.BATTERY_SERVICE);
+            assertThat(applicationBatteryManager).isNotSameInstanceAs(activityBatteryManager);
+          });
+    }
+  }
+
+  @Test
+  public void batteryManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            BatteryManager activityBatteryManager =
+                (BatteryManager) activity.getSystemService(Context.BATTERY_SERVICE);
+            BatteryManager anotherActivityBatteryManager =
+                (BatteryManager) activity.getSystemService(Context.BATTERY_SERVICE);
+            assertThat(anotherActivityBatteryManager).isSameInstanceAs(activityBatteryManager);
           });
     }
   }
