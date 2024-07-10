@@ -147,25 +147,14 @@ public class SandboxClassLoader extends URLClassLoader {
   }
 
   protected Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {
-    final byte[] origClassBytes = getByteCode(className);
-
-    try {
-      final byte[] bytes;
-      ClassDetails classDetails = new ClassDetails(origClassBytes);
-      if (config.shouldInstrument(classDetails)) {
-        bytes = classInstrumentor.instrument(classDetails, config, classNodeProvider);
-        maybeDumpClassBytes(classDetails, bytes);
-      } else {
-        bytes = postProcessUninstrumentedClass(classDetails);
-      }
-      ensurePackage(className);
-      return defineClass(className, bytes, 0, bytes.length);
-    } catch (Exception e) {
-      throw new ClassNotFoundException("couldn't load " + className, e);
-    } catch (OutOfMemoryError e) {
-      System.err.println("[ERROR] couldn't load " + className + " in " + this);
-      throw e;
+    byte[] classBytes = getByteCode(className);
+    ClassDetails classDetails = new ClassDetails(classBytes);
+    if (config.shouldInstrument(classDetails)) {
+      classBytes = classInstrumentor.instrument(classDetails, config, classNodeProvider);
+      maybeDumpClassBytes(classDetails, classBytes);
     }
+    ensurePackage(className);
+    return defineClass(className, classBytes, 0, classBytes.length);
   }
 
   private void maybeDumpClassBytes(ClassDetails classDetails, byte[] classBytes) {
@@ -179,10 +168,6 @@ public class SandboxClassLoader extends URLClassLoader {
         throw new AssertionError(e);
       }
     }
-  }
-
-  protected byte[] postProcessUninstrumentedClass(ClassDetails classDetails) {
-    return classDetails.getClassBytes();
   }
 
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
