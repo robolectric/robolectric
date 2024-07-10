@@ -153,4 +153,54 @@ public class ContextTest {
           });
     }
   }
+
+  @Test
+  public void alarmManager_applicationInstance_isNotSameAsActivityInstance() {
+    AlarmManager applicationAlarmManager =
+        (AlarmManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AlarmManager activityAlarmManager =
+                (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+            assertThat(applicationAlarmManager).isNotSameInstanceAs(activityAlarmManager);
+          });
+    }
+  }
+
+  @Test
+  public void alarmManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AlarmManager activityAlarmManager =
+                (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+            AlarmManager anotherActivityAlarmManager =
+                (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+            assertThat(anotherActivityAlarmManager).isSameInstanceAs(activityAlarmManager);
+          });
+    }
+  }
+
+  @Test
+  public void alarmManager_instance_retrievesSameAlarmClockInfo() {
+    AlarmManager applicationAlarmManager =
+        (AlarmManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AlarmManager activityAlarmManager =
+                (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+
+            AlarmManager.AlarmClockInfo applicationAlarmClock =
+                applicationAlarmManager.getNextAlarmClock();
+            AlarmManager.AlarmClockInfo activityAlarmClock =
+                activityAlarmManager.getNextAlarmClock();
+
+            assertThat(activityAlarmClock).isEqualTo(applicationAlarmClock);
+          });
+    }
+  }
 }
