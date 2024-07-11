@@ -364,9 +364,12 @@ public class AndroidTestEnvironmentTest {
     assertThat(new File(applicationInfo.dataDir).isDirectory()).isTrue();
   }
 
-  @LazyApplication(LazyLoad.ON)
   @Test
   public void testResetterFails_reportsFailureAndContinues() {
+    // bootstrapWrapper is not used in this test, but calling `callSetUpApplicationState` is
+    // required to avoid exceptions in the test teardown.
+    bootstrapWrapper.callSetUpApplicationState();
+
     WorkingShadowProvider workingShadowProvider = new WorkingShadowProvider();
     ShadowProvider[] shadowProviders = new ShadowProvider[2];
     shadowProviders[0] = new ThrowingShadowProvider();
