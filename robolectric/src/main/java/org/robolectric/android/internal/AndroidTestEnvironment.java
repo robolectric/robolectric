@@ -100,6 +100,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
+import org.robolectric.util.Util;
 import org.robolectric.versioning.AndroidVersions;
 import org.robolectric.versioning.AndroidVersions.V;
 
@@ -670,12 +671,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
 
     if (!exceptions.isEmpty()) {
-      RuntimeException runtimeException =
-          new RuntimeException("Some resetters failed. See suppressed exceptions.");
-      for (Throwable e : exceptions) {
-        runtimeException.addSuppressed(e);
+      Throwable first = exceptions.remove(0);
+      for (Throwable t : exceptions) {
+        first.addSuppressed(t);
       }
-      throw runtimeException;
+      Util.sneakyThrow(first);
     }
   }
 

@@ -166,6 +166,28 @@ public class RobolectricTestRunnerTest {
   }
 
   @Test
+  public void noClassDefError_isReplacedByBetterLinkageError() throws Exception {
+    RobolectricTestRunner runner =
+        new SingleSdkRobolectricTestRunner(
+            TestWithTwoMethods.class,
+            SingleSdkRobolectricTestRunner.defaultInjector()
+                .bind(
+                    TestEnvironmentSpec.class,
+                    new TestEnvironmentSpec(AndroidTestEnvironmentThrowsLinkageError.class))
+                .build());
+    runner.run(notifier);
+    assertThat(events)
+        .containsExactly(
+            "started: first",
+            "failure: java.lang.ExceptionInInitializerError",
+            "finished: first",
+            "started: second",
+            "failure: java.lang.ExceptionInInitializerError",
+            "finished: second")
+        .inOrder();
+  }
+
+  @Test
   public void failureInAppOnCreateDoesntBreakAllTests() throws Exception {
     RobolectricTestRunner runner =
         new SingleSdkRobolectricTestRunner(TestWithBrokenAppCreate.class);
@@ -327,6 +349,40 @@ public class RobolectricTestRunnerTest {
       ConfigurationRegistry.instance = new ConfigurationRegistry(configuration.map());
       throw new RuntimeException("fake error in setUpApplicationState");
     }
+  }
+
+  public static class AndroidTestEnvironmentThrowsLinkageError extends AndroidTestEnvironment {
+
+    public static final class UnloadableClass {
+      static {
+        if (true) {
+          throw new RuntimeException("error in static initializer");
+        }
+      }
+
+      public static void doStuff() {}
+
+      private UnloadableClass() {}
+    }
+
+    public AndroidTestEnvironmentThrowsLinkageError(
+        @Named("runtimeSdk") Sdk runtimeSdk,
+        @Named("compileSdk") Sdk compileSdk,
+        ResourcesMode resourcesMode,
+        ApkLoader apkLoader,
+        ShadowProvider[] shadowProviders,
+        TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
+      super(runtimeSdk, compileSdk, resourcesMode, apkLoader, shadowProviders, lifecyclePlugins);
+    }
+
+    @Override
+    public void setUpApplicationState(
+        Method method, Configuration configuration, AndroidManifest appManifest) {
+      UnloadableClass.doStuff();
+    }
+
+    @Override
+    public void resetState() {}
   }
 
   @Ignore
@@ -516,6 +572,9 @@ public class RobolectricTestRunnerTest {
     public void testFailure(Failure failure) {
       Throwable exception = failure.getException();
       String message = exception.getMessage();
+      if (message == null) {
+        message = exception.toString();
+      }
       for (Throwable suppressed : exception.getSuppressed()) {
         message += "\nSuppressed: " + suppressed.getMessage();
       }

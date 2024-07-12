@@ -386,7 +386,7 @@ public class AndroidTestEnvironmentTest {
             telpArray);
     RuntimeException e =
         assertThrows(RuntimeException.class, () -> androidTestEnvironment.resetState());
-    assertThat(e.getSuppressed()[0]).hasMessageThat().contains("Reset failed");
+    assertThat(e).hasMessageThat().contains("Reset failed");
     assertThat(workingShadowProvider.wasReset).isTrue();
   }
 
