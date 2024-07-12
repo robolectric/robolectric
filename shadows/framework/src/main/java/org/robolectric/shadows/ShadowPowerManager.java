@@ -576,7 +576,7 @@ public class ShadowPowerManager {
   }
 
   @Implementation(minSdk = TIRAMISU)
-  protected void setLowPowerStandbyEnabled(boolean lowPowerStandbyEnabled) {
+  public void setLowPowerStandbyEnabled(boolean lowPowerStandbyEnabled) {
     this.lowPowerStandbyEnabled = lowPowerStandbyEnabled;
   }
 
