@@ -33,6 +33,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -45,7 +46,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link android.app.ActivityManager} */
-@Implements(value = ActivityManager.class, looseSignatures = true)
+@Implements(value = ActivityManager.class)
 public class ShadowActivityManager {
   private int memoryClass = 16;
   private String backgroundPackage;
@@ -271,12 +272,15 @@ public class ShadowActivityManager {
   }
 
   @Implementation(minSdk = O)
-  protected void addOnUidImportanceListener(Object listener, Object importanceCutpoint) {
+  protected void addOnUidImportanceListener(
+      @ClassName("android.app.ActivityManager$OnUidImportanceListener") Object listener,
+      int importanceCutpoint) {
     importanceListeners.add(new ImportanceListener(listener, (Integer) importanceCutpoint));
   }
 
   @Implementation(minSdk = O)
-  protected void removeOnUidImportanceListener(Object listener) {
+  protected void removeOnUidImportanceListener(
+      @ClassName("android.app.ActivityManager$OnUidImportanceListener") Object listener) {
     importanceListeners.remove(new ImportanceListener(listener));
   }
 
@@ -344,7 +348,8 @@ public class ShadowActivityManager {
    * {@code packageName} is ignored.
    */
   @Implementation(minSdk = R)
-  protected Object getHistoricalProcessExitReasons(Object packageName, Object pid, Object maxNum) {
+  protected @ClassName("java.util.List<android.app.ApplicationExitInfo>") Object
+      getHistoricalProcessExitReasons(String packageName, int pid, int maxNum) {
     return appExitInfoList.stream()
         .filter(
             appExitInfo ->
