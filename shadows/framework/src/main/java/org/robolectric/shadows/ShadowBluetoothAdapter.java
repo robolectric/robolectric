@@ -48,6 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -60,7 +61,7 @@ import org.robolectric.util.reflector.Static;
 import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = BluetoothAdapter.class, looseSignatures = true)
+@Implements(value = BluetoothAdapter.class)
 public class ShadowBluetoothAdapter {
   @RealObject private BluetoothAdapter realAdapter;
 
@@ -406,17 +407,15 @@ public class ShadowBluetoothAdapter {
     return scanMode;
   }
 
-  /**
-   * Needs looseSignatures because the return value changed from {@code int} to {@link Duration}
-   * starting in T.
-   */
-  @Implementation
-  protected Object getDiscoverableTimeout() {
-    if (RuntimeEnvironment.getApiLevel() <= S_V2) {
-      return (int) discoverableTimeout.toSeconds();
-    } else {
-      return discoverableTimeout;
-    }
+  @Implementation(maxSdk = S_V2)
+  protected int getDiscoverableTimeout() {
+    return (int) discoverableTimeout.toSeconds();
+  }
+
+  /** Return value changed from {@code int} to {@link Duration} starting in T. */
+  @Implementation(minSdk = TIRAMISU, methodName = "getDiscoverableTimeout")
+  protected @ClassName("java.time.Duration") Object getDiscoverableTimeoutT() {
+    return discoverableTimeout;
   }
 
   @Implementation(maxSdk = S_V2)
