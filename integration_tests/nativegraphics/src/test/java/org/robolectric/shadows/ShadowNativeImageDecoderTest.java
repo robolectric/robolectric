@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static com.google.common.base.StandardSystemProperty.OS_NAME;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertSame;
 import static org.junit.Assert.assertEquals;
@@ -12,19 +13,25 @@ import android.graphics.Bitmap;
 import android.graphics.ColorSpace;
 import android.graphics.ImageDecoder;
 import android.graphics.ImageDecoder.Source;
+import com.google.common.collect.ImmutableList;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.function.IntFunction;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.versioning.AndroidVersions.V;
 
 @Config(minSdk = P)
 @RunWith(RobolectricTestRunner.class)
@@ -70,7 +77,7 @@ public class ShadowNativeImageDecoderTest {
                 new Record(R.drawable.webp_test, 640, 480, "image/webp", false, false, SRGB)));
 
     // x-adobe-dng is not supported on Windows
-    if (!System.getProperty("os.name").toLowerCase().contains("win")) {
+    if (!OS_NAME.value().toLowerCase(Locale.ROOT).contains("win")) {
       records.add(new Record(R.raw.sample_1mp, 600, 338, "image/x-adobe-dng", false, false, SRGB));
     }
 
@@ -129,15 +136,37 @@ public class ShadowNativeImageDecoderTest {
     return getAsByteBufferWrap(resId).asReadOnlyBuffer();
   }
 
+  private File getAsFile(int resId) {
+    try {
+      File file = Files.createTempFile("ShadowNativeBitmapFactoryTest", "").toFile();
+      file.deleteOnExit();
+      try (FileOutputStream output = new FileOutputStream(file)) {
+        writeToStream(output, resId, 0, 0);
+      }
+      return file;
+    } catch (IOException e) {
+      throw new AssertionError(e);
+    }
+  }
+
   private interface SourceCreator extends IntFunction<Source> {}
 
-  private SourceCreator[] creators =
-      new SourceCreator[] {
+  private ImmutableList<SourceCreator> getSourceCreators() {
+    ImmutableList.Builder<SourceCreator> builder = ImmutableList.builder();
+
+    builder.add(
         resId -> ImageDecoder.createSource(getAsByteArray(resId)),
         resId -> ImageDecoder.createSource(getAsByteBufferWrap(resId)),
         resId -> ImageDecoder.createSource(getAsDirectByteBuffer(resId)),
-        resId -> ImageDecoder.createSource(getAsReadOnlyByteBuffer(resId)),
-      };
+        resId -> ImageDecoder.createSource(getAsReadOnlyByteBuffer(resId)));
+
+    // TODO(hoisie): Support file sources in Android V+.
+    if (RuntimeEnvironment.getApiLevel() < V.SDK_INT) {
+      builder.add(resId -> ImageDecoder.createSource(getAsFile(resId)));
+    }
+
+    return builder.build();
+  }
 
   private static Resources getResources() {
     return RuntimeEnvironment.getApplication().getResources();
@@ -146,7 +175,7 @@ public class ShadowNativeImageDecoderTest {
   @Test
   public void testInfo() throws Exception {
     for (Record record : getRecords()) {
-      for (SourceCreator f : creators) {
+      for (SourceCreator f : getSourceCreators()) {
         ImageDecoder.Source src = f.apply(record.resId);
         assertNotNull(src);
         ImageDecoder.decodeDrawable(

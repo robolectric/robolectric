@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager.AssetInputStream;
 import android.graphics.Bitmap;
 import android.graphics.ColorSpace;
@@ -119,7 +120,13 @@ public class ShadowNativeImageDecoder {
 
   @Implementation(maxSdk = Q)
   protected static ImageDecoder nCreate(FileDescriptor fd, Source src) throws IOException {
-    throw new UnsupportedEncodingException();
+    return nCreate(fd, AssetFileDescriptor.UNKNOWN_LENGTH, false, src);
+  }
+
+  @Implementation(minSdk = R, maxSdk = R)
+  protected static ImageDecoder nCreate(FileDescriptor fd, boolean preferAnimation, Source src)
+      throws IOException {
+    return nCreate(fd, AssetFileDescriptor.UNKNOWN_LENGTH, preferAnimation, src);
   }
 
   @Implementation(minSdk = S, maxSdk = U.SDK_INT)
