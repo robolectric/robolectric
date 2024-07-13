@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -42,7 +43,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link BluetoothDevice}. */
-@Implements(value = BluetoothDevice.class, looseSignatures = true)
+@Implements(value = BluetoothDevice.class)
 public class ShadowBluetoothDevice {
   /**
    * Interceptor interface for {@link BluetoothGatt} objects. Tests that require configuration of
@@ -117,14 +118,25 @@ public class ShadowBluetoothDevice {
    *
    * @param alias alias name.
    */
-  @Implementation
-  public Object setAlias(Object alias) {
-    this.alias = (String) alias;
-    if (RuntimeEnvironment.getApiLevel() >= S) {
-      return BluetoothStatusCodes.SUCCESS;
-    } else {
-      return true;
-    }
+  @Implementation(maxSdk = R)
+  public boolean setAlias(String alias) {
+    this.alias = alias;
+    return true;
+  }
+
+  /**
+   * Sets the alias name of the device for API >= 31.
+   *
+   * <p>Alias is the locally modified name of a remote device.
+   *
+   * <p>Alias Name is not part of the supported SDK, and accessed via reflection.
+   *
+   * @param alias alias name.
+   */
+  @Implementation(minSdk = S, methodName = "setAlias")
+  public int setAliasS(String alias) {
+    this.alias = alias;
+    return BluetoothStatusCodes.SUCCESS;
   }
 
   /**
