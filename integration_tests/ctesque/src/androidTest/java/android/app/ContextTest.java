@@ -13,6 +13,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.BatteryManager;
+import android.view.autofill.AutofillManager;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -346,7 +347,6 @@ public class ContextTest {
                 .getSystemService(Context.DEVICE_POLICY_SERVICE);
     ComponentName testAdminComponent =
         new ComponentName(ApplicationProvider.getApplicationContext(), DeviceAdminReceiver.class);
-
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
       scenario.onActivity(
           activity -> {
@@ -357,6 +357,56 @@ public class ContextTest {
             boolean activityAdminActive = activityDpm.isAdminActive(testAdminComponent);
 
             assertThat(activityAdminActive).isEqualTo(applicationAdminActive);
+          });
+    }
+  }
+
+  @Test
+  public void autofillManager_applicationInstance_isNotSameAsActivityInstance() {
+    AutofillManager applicationAutofillManager =
+        ApplicationProvider.getApplicationContext().getSystemService(AutofillManager.class);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AutofillManager activityAutofillManager =
+                activity.getSystemService(AutofillManager.class);
+            assertThat(applicationAutofillManager).isNotSameInstanceAs(activityAutofillManager);
+          });
+    }
+  }
+
+  @Test
+  public void autofillManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AutofillManager activityAutofillManager =
+                activity.getSystemService(AutofillManager.class);
+            AutofillManager anotherActivityAutofillManager =
+                activity.getSystemService(AutofillManager.class);
+            assertThat(anotherActivityAutofillManager).isSameInstanceAs(activityAutofillManager);
+          });
+    }
+  }
+
+  @Test
+  public void autofillManager_instance_retrievesSameAutofillService() {
+    AutofillManager applicationAutofillManager =
+        ApplicationProvider.getApplicationContext().getSystemService(AutofillManager.class);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AutofillManager activityAutofillManager =
+                activity.getSystemService(AutofillManager.class);
+
+            boolean applicationAutofillServiceAvailable =
+                applicationAutofillManager.isAutofillSupported();
+            boolean activityAutofillServiceAvailable =
+                activityAutofillManager.isAutofillSupported();
+
+            assertThat(activityAutofillServiceAvailable)
+                .isEqualTo(applicationAutofillServiceAvailable);
           });
     }
   }
