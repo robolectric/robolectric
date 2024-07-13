@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import com.google.common.base.Preconditions;
 import java.io.InputStream;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -17,7 +18,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Base class for {@link Bitmap} shadows. */
-@Implements(value = Bitmap.class, shadowPicker = Picker.class, looseSignatures = true)
+@Implements(value = Bitmap.class, shadowPicker = Picker.class)
 public abstract class ShadowBitmap {
 
   @RealObject protected Bitmap realBitmap;
@@ -136,7 +137,7 @@ public abstract class ShadowBitmap {
   public abstract void setDescription(String s);
 
   @Implementation(minSdk = U.SDK_INT)
-  protected void setGainmap(Object gainmap) {
+  protected void setGainmap(@ClassName("android.graphics.Gainmap") Object gainmap) {
     Preconditions.checkState(!realBitmap.isRecycled(), "Bitmap is recycled");
     reflector(BitmapReflector.class, realBitmap).setGainmap(gainmap);
   }
