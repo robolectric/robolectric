@@ -418,7 +418,7 @@ public class ShadowAppOpsManager {
       int op,
       @ClassName("android.content.AttributionSource") Object attributionSource,
       String message,
-      boolean ignoredSkipProxyOperation) {
+      boolean skipProxyOperation) {
     Preconditions.checkArgument(attributionSource instanceof AttributionSource);
     AttributionSource castedAttributionSource = (AttributionSource) attributionSource;
     return noteProxyOpNoThrow(
