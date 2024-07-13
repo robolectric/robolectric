@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.robolectric.ApkLoader;
 import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.internal.bytecode.ClassInstrumentor;
@@ -36,7 +35,6 @@ public class AndroidSandbox extends Sandbox {
       @Named("runtimeSdk") Sdk runtimeSdk,
       @Named("compileSdk") Sdk compileSdk,
       ResourcesMode resourcesMode,
-      ApkLoader apkLoader,
       TestEnvironmentSpec testEnvironmentSpec,
       SdkSandboxClassLoader sdkSandboxClassLoader,
       ShadowProviders shadowProviders,
@@ -47,7 +45,6 @@ public class AndroidSandbox extends Sandbox {
 
     Injector sandboxScope =
         new Injector.Builder(robolectricClassLoader)
-            .bind(ApkLoader.class, apkLoader) // shared singleton
             .bind(TestEnvironment.class, bootstrappedClass(testEnvironmentSpec.getClazz()))
             .bind(new Injector.Key<>(Sdk.class, "runtimeSdk"), runtimeSdk)
             .bind(new Injector.Key<>(Sdk.class, "compileSdk"), compileSdk)

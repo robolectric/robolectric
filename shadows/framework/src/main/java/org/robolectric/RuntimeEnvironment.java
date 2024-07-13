@@ -15,7 +15,6 @@ import com.google.common.base.Supplier;
 import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
-import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ShadowDisplayManager;
 import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowView;
@@ -42,9 +41,6 @@ public class RuntimeEnvironment {
   private static volatile Object activityThread;
   private static int apiLevel;
   private static Scheduler masterScheduler;
-  private static ResourceTable systemResourceTable;
-  private static ResourceTable appResourceTable;
-  private static ResourceTable compileTimeResourceTable;
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
   private static Path androidFrameworkJar;
   public static Path compileTimeSystemResourcesFile;
@@ -274,30 +270,6 @@ public class RuntimeEnvironment {
    */
   public static void setMasterScheduler(Scheduler masterScheduler) {
     RuntimeEnvironment.masterScheduler = masterScheduler;
-  }
-
-  public static void setSystemResourceTable(ResourceTable systemResourceTable) {
-    RuntimeEnvironment.systemResourceTable = systemResourceTable;
-  }
-
-  public static void setAppResourceTable(ResourceTable appResourceTable) {
-    RuntimeEnvironment.appResourceTable = appResourceTable;
-  }
-
-  public static ResourceTable getSystemResourceTable() {
-    return systemResourceTable;
-  }
-
-  public static ResourceTable getAppResourceTable() {
-    return appResourceTable;
-  }
-
-  public static void setCompileTimeResourceTable(ResourceTable compileTimeResourceTable) {
-    RuntimeEnvironment.compileTimeResourceTable = compileTimeResourceTable;
-  }
-
-  public static ResourceTable getCompileTimeResourceTable() {
-    return compileTimeResourceTable;
   }
 
   public static void setTempDirectory(TempDirectory tempDirectory) {

@@ -335,17 +335,15 @@ public class RobolectricTestRunnerTest {
         @Named("runtimeSdk") Sdk runtimeSdk,
         @Named("compileSdk") Sdk compileSdk,
         ResourcesMode resourcesMode,
-        ApkLoader apkLoader,
         ShadowProvider[] shadowProviders,
         TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
-      super(runtimeSdk, compileSdk, resourcesMode, apkLoader, shadowProviders, lifecyclePlugins);
+      super(runtimeSdk, compileSdk, resourcesMode, shadowProviders, lifecyclePlugins);
     }
 
     @Override
     public void setUpApplicationState(
         Method method, Configuration configuration, AndroidManifest appManifest) {
       // ConfigurationRegistry.instance is required for resetters.
-      Config config = configuration.get(Config.class);
       ConfigurationRegistry.instance = new ConfigurationRegistry(configuration.map());
       throw new RuntimeException("fake error in setUpApplicationState");
     }
@@ -369,10 +367,9 @@ public class RobolectricTestRunnerTest {
         @Named("runtimeSdk") Sdk runtimeSdk,
         @Named("compileSdk") Sdk compileSdk,
         ResourcesMode resourcesMode,
-        ApkLoader apkLoader,
         ShadowProvider[] shadowProviders,
         TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
-      super(runtimeSdk, compileSdk, resourcesMode, apkLoader, shadowProviders, lifecyclePlugins);
+      super(runtimeSdk, compileSdk, resourcesMode, shadowProviders, lifecyclePlugins);
     }
 
     @Override

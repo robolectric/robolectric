@@ -52,7 +52,6 @@ public class AndroidConfigurer {
         .doNotAcquireClass("org.robolectric.shadow.api.ShadowPicker")
         .doNotAcquireClass("org.robolectric.res.ResourcePath")
         .doNotAcquireClass("org.robolectric.res.ResourceTable")
-        .doNotAcquireClass("org.robolectric.ApkLoader")
         .doNotAcquireClass("org.robolectric.res.builder.XmlBlock");
 
     builder

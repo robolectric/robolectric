@@ -33,7 +33,6 @@ import javax.crypto.Cipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.ApkLoader;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapperI;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.RoboInject;
@@ -381,7 +380,6 @@ public class AndroidTestEnvironmentTest {
             new StubSdk(RuntimeEnvironment.getApiLevel(), true),
             new StubSdk(RuntimeEnvironment.getApiLevel(), true),
             ResourcesMode.BINARY,
-            new ApkLoader(),
             shadowProviders,
             telpArray);
     RuntimeException e =
