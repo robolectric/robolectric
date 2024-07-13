@@ -14,6 +14,7 @@ import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -37,8 +38,7 @@ import org.robolectric.util.reflector.Static;
     value = ApkAssets.class,
     minSdk = P,
     shadowPicker = Picker.class,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+    isInAndroidSdk = false)
 public class ShadowArscApkAssets9 extends ShadowApkAssets {
   // #define ATRACE_TAG ATRACE_TAG_RESOURCES
   //
@@ -149,12 +149,16 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   }
 
   @Implementation(minSdk = R)
-  protected static Object nativeLoad(
-      Object format, Object javaPath, Object flags, Object assetsProvider) throws IOException {
-    boolean system = ((int) flags & PROPERTY_SYSTEM) == PROPERTY_SYSTEM;
-    boolean overlay = ((int) flags & PROPERTY_OVERLAY) == PROPERTY_OVERLAY;
-    boolean forceSharedLib = ((int) flags & PROPERTY_DYNAMIC) == PROPERTY_DYNAMIC;
-    return nativeLoad((String) javaPath, system, forceSharedLib, overlay);
+  protected static long nativeLoad(
+      int format,
+      String javaPath,
+      int flags,
+      @ClassName("android.content.res.loader.AssetsProvider") Object assetsProvider)
+      throws IOException {
+    boolean system = (flags & PROPERTY_SYSTEM) == PROPERTY_SYSTEM;
+    boolean overlay = (flags & PROPERTY_OVERLAY) == PROPERTY_OVERLAY;
+    boolean forceSharedLib = (flags & PROPERTY_DYNAMIC) == PROPERTY_DYNAMIC;
+    return nativeLoad(javaPath, system, forceSharedLib, overlay);
   }
 
   // static jlong NativeLoadFromFd(JNIEnv* env, jclass /*clazz*/, jobject file_descriptor,
@@ -202,12 +206,12 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   //                             jobject file_descriptor, jstring friendly_name,
   //                             const jint property_flags, jobject assets_provider)
   @Implementation(minSdk = R)
-  protected static Object nativeLoadFd(
-      Object format,
-      Object fileDescriptor,
-      Object friendlyName,
-      Object propertyFlags,
-      Object assetsProvider)
+  protected static long nativeLoadFd(
+      int format,
+      FileDescriptor fileDescriptor,
+      String friendlyName,
+      int propertyFlags,
+      @ClassName("android.content.res.loader.AssetsProvider") Object assetsProvider)
       throws IOException {
     CppApkAssets apkAssets = CppApkAssets.loadArscFromFd((FileDescriptor) fileDescriptor);
     if (apkAssets == null) {
