@@ -110,6 +110,21 @@ public class ShadowBluetoothDevice {
   }
 
   /**
+   * Set the alias for bluetooth device.
+   *
+   * @param alias The alias name that set to bluetooth device.
+   * @return If API is larger than or equals to S, it returns [BluetoothStatusCodes] code, otherwise
+   *     it returns boolean.
+   */
+  public Object setAlias(String alias) {
+    if (RuntimeEnvironment.getApiLevel() >= S) {
+      return setAliasS(alias);
+    } else {
+      return setAliasBeforeS(alias);
+    }
+  }
+
+  /**
    * Sets the alias name of the device.
    *
    * <p>Alias is the locally modified name of a remote device.
@@ -118,8 +133,8 @@ public class ShadowBluetoothDevice {
    *
    * @param alias alias name.
    */
-  @Implementation(maxSdk = R)
-  public boolean setAlias(String alias) {
+  @Implementation(maxSdk = R, methodName = "setAlias")
+  protected boolean setAliasBeforeS(String alias) {
     this.alias = alias;
     return true;
   }
@@ -134,7 +149,7 @@ public class ShadowBluetoothDevice {
    * @param alias alias name.
    */
   @Implementation(minSdk = S, methodName = "setAlias")
-  public int setAliasS(String alias) {
+  protected int setAliasS(String alias) {
     this.alias = alias;
     return BluetoothStatusCodes.SUCCESS;
   }
