@@ -64,13 +64,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.versioning.AndroidVersions.U;
 
-@Implements(value = DevicePolicyManager.class, looseSignatures = true)
+@Implements(value = DevicePolicyManager.class)
 @SuppressLint("NewApi")
 public class ShadowDevicePolicyManager {
   /**
@@ -1610,7 +1611,7 @@ public class ShadowDevicePolicyManager {
 
   /** Return a stub value set by {@link #setDevicePolicyState(DevicePolicyState policyState)} */
   @Implementation(minSdk = U.SDK_INT)
-  protected Object getDevicePolicyState() {
+  protected @ClassName("android.app.admin.DevicePolicyState") Object getDevicePolicyState() {
     return devicePolicyState;
   }
 
