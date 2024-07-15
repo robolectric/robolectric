@@ -20,6 +20,7 @@ import java.lang.reflect.Array;
 import java.time.Duration;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -46,10 +47,7 @@ import org.robolectric.versioning.AndroidVersions.U;
  * the next frame will only trigger when the clock is advance manually or via the {@link
  * ShadowLooper}.
  */
-@Implements(
-    className = "android.view.DisplayEventReceiver",
-    isInAndroidSdk = false,
-    looseSignatures = true)
+@Implements(className = "android.view.DisplayEventReceiver", isInAndroidSdk = false)
 public class ShadowDisplayEventReceiver {
 
   private static NativeObjRegistry<NativeDisplayEventReceiver> nativeObjRegistry =
@@ -208,7 +206,8 @@ public class ShadowDisplayEventReceiver {
   }
 
   @Implementation(minSdk = TIRAMISU)
-  protected Object getLatestVsyncEventData() {
+  protected @ClassName("android.view.DisplayEventReceiver$VsyncEventData") Object
+      getLatestVsyncEventData() {
     return newVsyncEventData();
   }
 
