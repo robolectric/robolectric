@@ -27,6 +27,7 @@ import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.internal.DisplayConfig;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -44,7 +45,7 @@ import org.robolectric.versioning.AndroidVersions.V;
  * For tests, display properties may be changed and devices may be added or removed
  * programmatically.
  */
-@Implements(value = DisplayManager.class, looseSignatures = true)
+@Implements(value = DisplayManager.class)
 public class ShadowDisplayManager {
 
   @RealObject private DisplayManager realDisplayManager;
@@ -348,14 +349,17 @@ public class ShadowDisplayManager {
 
   @Implementation(minSdk = P)
   @HiddenApi
-  protected void setBrightnessConfiguration(Object config) {
+  protected void setBrightnessConfiguration(
+      @ClassName("android.hardware.display.BrightnessConfiguration") Object config) {
     setBrightnessConfigurationForUser(config, 0, context.getPackageName());
   }
 
   @Implementation(minSdk = P)
   @HiddenApi
   protected void setBrightnessConfigurationForUser(
-      Object config, Object userId, Object packageName) {
+      @ClassName("android.hardware.display.BrightnessConfiguration") Object config,
+      int userId,
+      String packageName) {
     getShadowDisplayManagerGlobal().setBrightnessConfigurationForUser(config, userId, packageName);
   }
 
