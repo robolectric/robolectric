@@ -23,6 +23,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -33,7 +34,7 @@ import org.robolectric.util.reflector.Static;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for InputMethodManager. */
-@Implements(value = InputMethodManager.class, looseSignatures = true)
+@Implements(value = InputMethodManager.class)
 public class ShadowInputMethodManager {
 
   /**
@@ -81,9 +82,12 @@ public class ShadowInputMethodManager {
 
   @Implementation(minSdk = U.SDK_INT)
   protected boolean showSoftInput(
-      Object view, Object statsToken, Object flags, Object resultReceiver, Object reason) {
-    return showSoftInput(
-        (View) view, (Integer) flags, (ResultReceiver) resultReceiver, (Integer) reason);
+      View view,
+      @ClassName("android.view.inputmethod.ImeTracker$Token") Object statsToken,
+      int flags,
+      ResultReceiver resultReceiver,
+      int reason) {
+    return showSoftInput(view, flags, resultReceiver, reason);
   }
 
   @Implementation(minSdk = S)
