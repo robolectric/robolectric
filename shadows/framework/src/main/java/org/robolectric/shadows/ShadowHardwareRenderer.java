@@ -7,16 +7,14 @@ import static android.os.Build.VERSION_CODES.S;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.HardwareRenderer;
+import android.graphics.RenderNode;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
-@Implements(
-    value = HardwareRenderer.class,
-    isInAndroidSdk = false,
-    looseSignatures = true,
-    minSdk = Q)
+@Implements(value = HardwareRenderer.class, isInAndroidSdk = false, minSdk = Q)
 public class ShadowHardwareRenderer {
 
   private static long nextCreateProxy = 0;
@@ -37,16 +35,17 @@ public class ShadowHardwareRenderer {
     return nCreateProxy(translucent, rootRenderNode);
   }
 
-  // need to use loose signatures here to account for signature changes
-  @Implementation(minSdk = S)
-  protected static long nCreateProxy(Object translucent, Object rootRenderNode) {
-    return nCreateProxy((boolean) translucent, (long) rootRenderNode);
+  // `nCreateProxy` function signature changed in R, have to create two functions with different
+  // function name for pre-R and post-R.
+  @Implementation(minSdk = S, methodName = "nCreateProxy")
+  protected static long nCreateProxyFromS(boolean translucent, long rootRenderNode) {
+    return nCreateProxy(translucent, rootRenderNode);
   }
 
   @Implementation
   protected static Bitmap createHardwareBitmap(
-      /*RenderNode*/ Object node, /*int*/ Object width, /*int*/ Object height) {
-    return createHardwareBitmap((int) width, (int) height);
+      @ClassName("android.graphics.RenderNode") RenderNode node, int width, int height) {
+    return createHardwareBitmap(width, height);
   }
 
   private static Bitmap createHardwareBitmap(int width, int height) {
