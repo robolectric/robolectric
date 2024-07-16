@@ -14,6 +14,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.VerifiedKeyEvent;
 import android.view.VerifiedMotionEvent;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -24,7 +25,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link InputManager} */
-@Implements(value = InputManager.class, looseSignatures = true)
+@Implements(value = InputManager.class)
 public class ShadowInputManager {
 
   @RealObject InputManager realInputManager;
@@ -94,7 +95,8 @@ public class ShadowInputManager {
    * native code.
    */
   @Implementation(minSdk = R)
-  protected Object verifyInputEvent(Object inputEvent) {
+  protected @ClassName("android.view.VerifiedInputEvent") Object verifyInputEvent(
+      InputEvent inputEvent) {
     if (inputEvent instanceof MotionEvent) {
       MotionEvent motionEvent = (MotionEvent) inputEvent;
       return new VerifiedMotionEvent(
