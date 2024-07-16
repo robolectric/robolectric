@@ -111,11 +111,14 @@ public class ShadowAppOpsManager {
   /**
    * Change the operating mode for the given op in the given app package. You must pass in both the
    * uid and name of the application whose mode is being modified; if these do not match, the
-   * modification will not be applied.
+   * modification will still be applied.
    *
    * <p>This method is public for testing {@link #checkOpNoThrow}. If {@link #checkOpNoThrow} is
-   * called afterwards with the {@code op}, {@code ui}, and {@code packageName} provided, it will
+   * called afterwards with the {@code op}, {@code uid}, and {@code packageName} provided, it will
    * return the {@code mode} set here.
+   *
+   * <p>The mode set by this method takes precedence over the mode set by {@link #setMode(String,
+   * int, String, int)}. This may not reflect the true implementation.
    *
    * @param op The operation to modify. One of the OPSTR_* constants.
    * @param uid The user id of the application whose mode will be changed.
@@ -132,8 +135,8 @@ public class ShadowAppOpsManager {
   /**
    * Int version of {@link #setMode(String, int, String, int)}.
    *
-   * <p>This method is public for testing {@link #checkOpNoThrow}. If {@link #checkOpNoThrow} is *
-   * called afterwards with the {@code op}, {@code ui}, and {@code packageName} provided, it will *
+   * <p>This method is public for testing {@link #checkOpNoThrow}. If {@link #checkOpNoThrow} is
+   * called afterwards with the {@code op}, {@code uid}, and {@code packageName} provided, it will
    * return the {@code mode} set here.
    */
   @Implementation
@@ -149,6 +152,51 @@ public class ShadowAppOpsManager {
         if (op == key.getOpCode()
             && (key.getPackageName() == null || key.getPackageName().equals(packageName))) {
           entry.getKey().onOpChanged(getOpString(op), packageName);
+        }
+      }
+    }
+  }
+
+  /**
+   * Change the operating mode for the given op in the given uid space.
+   *
+   * <p>This method is public for testing {@link #checkOpNoThrow}. If {@link #checkOpNoThrow} is
+   * called afterwards with the {@code op} and {@code uid} provided, and any {@code packageName}, it
+   * will return the {@code mode} set here.
+   *
+   * <p>The mode set by {@link #setMode(String, int, String, int)} takes precedence over the mode
+   * set by this method. This may not reflect the true implementation.
+   *
+   * @param op The operation to modify. One of the OPSTR_* constants.
+   * @param uid The user id of the application whose mode will be changed.
+   */
+  @Implementation(minSdk = P)
+  @HiddenApi
+  @SystemApi
+  @RequiresPermission(android.Manifest.permission.MANAGE_APP_OPS_MODES)
+  protected void setUidMode(String op, int uid, int mode) {
+    setUidMode(AppOpsManager.strOpToOp(op), uid, mode);
+  }
+
+  /**
+   * Int version of {@link #setUidMode(String, int, int)}.
+   *
+   * <p>This method is public for testing {@link #checkOpNoThrow}. If {@link #checkOpNoThrow} is
+   * called afterwards with the {@code op}, {@code ui}, and {@code packageName} provided, it will
+   * return the {@code mode} set here.
+   */
+  @Implementation(minSdk = M)
+  @HiddenApi
+  protected void setUidMode(int op, int uid, int mode) {
+    Integer oldMode = appModeMap.put(Key.create(uid, null, op), mode);
+    if (Objects.equals(oldMode, mode)) {
+      return;
+    }
+
+    for (Map.Entry<OnOpChangedListener, Set<Key>> entry : appOpListeners.entrySet()) {
+      for (Key key : entry.getValue()) {
+        if (op == key.getOpCode()) {
+          entry.getKey().onOpChanged(getOpString(op), null);
         }
       }
     }
@@ -247,10 +295,14 @@ public class ShadowAppOpsManager {
   @Implementation(minSdk = R)
   protected int unsafeCheckOpRawNoThrow(int op, int uid, String packageName) {
     Integer mode = appModeMap.get(Key.create(uid, packageName, op));
-    if (mode == null) {
-      return AppOpsManager.MODE_ALLOWED;
+    if (mode != null) {
+      return mode;
     }
-    return mode;
+    mode = appModeMap.get(Key.create(uid, null, op));
+    if (mode != null) {
+      return mode;
+    }
+    return AppOpsManager.MODE_ALLOWED;
   }
 
   /**

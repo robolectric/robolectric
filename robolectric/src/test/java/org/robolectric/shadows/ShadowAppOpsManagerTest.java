@@ -238,6 +238,19 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void startStopWatchingModeUid() {
+    OnOpChangedListener callback = mock(OnOpChangedListener.class);
+    appOps.startWatchingMode(OPSTR_FINE_LOCATION, PACKAGE_NAME1, callback);
+    appOps.setUidMode(OP_FINE_LOCATION, UID_1, MODE_ERRORED);
+    verify(callback).onOpChanged(OPSTR_FINE_LOCATION, null);
+
+    appOps.stopWatchingMode(callback);
+    appOps.setUidMode(OP_FINE_LOCATION, UID_1, MODE_ALLOWED);
+    verifyNoMoreInteractions(callback);
+  }
+
+  @Test
   public void noteOp() {
     assertThat(appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
     // Use same op more than once
@@ -668,6 +681,37 @@ public class ShadowAppOpsManagerTest {
         .isFalse();
     assertThat(containsPackageOpPair(packageOps, packageName2, OPSTR_COARSE_LOCATION, MODE_ALLOWED))
         .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void checkOpNoThrowString_noModeSetForUid_shouldReturnModeAllowed() {
+    assertThat(appOps.checkOpNoThrow(OPSTR_GPS, UID_1, null)).isEqualTo(MODE_ALLOWED);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void setUidMode_withModeDefault_checkOpNoThrowString_shouldReturnModeDefault() {
+    ReflectionHelpers.callInstanceMethod(
+        appOps,
+        "setUidMode",
+        ClassParameter.from(int.class, OP_GPS),
+        ClassParameter.from(int.class, UID_1),
+        ClassParameter.from(int.class, MODE_DEFAULT));
+    assertThat(appOps.checkOpNoThrow(OPSTR_GPS, UID_1, null)).isEqualTo(MODE_DEFAULT);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void checkOpNoThrow_noModeSetForUid_shouldReturnModeAllowed() {
+    assertThat(appOps.checkOpNoThrow(/* op= */ 2, UID_1, null)).isEqualTo(MODE_ALLOWED);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void setUidMode_withModeDefault_checkOpNoThrow_shouldReturnModeDefault() {
+    appOps.setUidMode(/* op= */ 2, UID_1, MODE_DEFAULT);
+    assertThat(appOps.checkOpNoThrow(/* op= */ 2, UID_1, null)).isEqualTo(MODE_DEFAULT);
   }
 
   /** Assert that the results contain the expected op codes. */
