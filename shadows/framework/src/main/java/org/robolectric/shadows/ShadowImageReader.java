@@ -26,7 +26,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link android.media.ImageReader} */
-@Implements(value = ImageReader.class, looseSignatures = true)
+@Implements(value = ImageReader.class)
 public class ShadowImageReader {
   // Using same return codes as ImageReader.
   private static final int ACQUIRE_SUCCESS = 0;
@@ -69,9 +69,9 @@ public class ShadowImageReader {
     return nativeImageSetup(image);
   }
 
-  @Implementation(minSdk = U.SDK_INT)
-  protected int nativeImageSetup(Object /* Image */ image) {
-    return nativeImageSetup((Image) image);
+  @Implementation(minSdk = U.SDK_INT, methodName = "nativeImageSetup")
+  protected int nativeImageSetupFromU(Image image) {
+    return nativeImageSetup(image);
   }
 
   @Implementation
