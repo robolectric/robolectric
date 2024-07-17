@@ -137,6 +137,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   /** {@link Uri} scheme of installed apps. */
   private static final String PACKAGE_SCHEME = "package";
 
+  public static final String PERMISSION_CONTROLLER_PACKAGE_NAME =
+      "org.robolectric.permissioncontroller";
+
   @RealObject private ApplicationPackageManager realObject;
   private final List<String> clearedApplicationUserDataPackages = new ArrayList<>();
   // A map of UserIDs to default browsers.
@@ -1190,9 +1193,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return Collections.emptyList();
   }
 
+  @HiddenApi
   @Implementation(minSdk = M)
   protected String getPermissionControllerPackageName() {
-    return null;
+    return PERMISSION_CONTROLLER_PACKAGE_NAME;
   }
 
   @Implementation(maxSdk = M)
