@@ -164,6 +164,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     Instrumentation instrumentation = activityThread.getInstrumentation();
 
+    if (RuntimeEnvironment.getApiLevel() >= O_MR1) {
+      // ActivityInfo.FLAG_SHOW_WHEN_LOCKED
+      showWhenLocked = (activityInfo.flags & 0x800000) != 0;
+    }
+
     Context activityContext;
     int displayId =
         activityOptions != null

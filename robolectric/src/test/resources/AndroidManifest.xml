@@ -130,6 +130,16 @@
 
     <activity android:name="org.robolectric.shadows.DisabledActivity" android:enabled="false"/>
 
+    <!-- showWhenLocked attribute activities  -->
+
+    <activity
+        android:name="org.robolectric.shadows.ShadowActivityTest$ShowWhenLockedActivity"
+        android:showWhenLocked="true" />
+
+    <activity
+        android:name="org.robolectric.shadows.ShadowActivityTest$DoNotShowWhenLockedActivity"
+        android:showWhenLocked="false" />
+
     <activity-alias
             android:name="org.robolectric.shadows.TestActivityAlias"
             android:targetActivity=".shadows.TestActivity">
