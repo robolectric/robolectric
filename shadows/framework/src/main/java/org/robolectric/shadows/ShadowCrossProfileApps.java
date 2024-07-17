@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest.permission;
 import android.annotation.RequiresPermission;
@@ -18,7 +19,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.CrossProfileApps;
-import android.content.pm.ICrossProfileApps;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -39,29 +39,25 @@ import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /** Robolectric implementation of {@link CrossProfileApps}. */
 @Implements(value = CrossProfileApps.class, minSdk = P)
 public class ShadowCrossProfileApps {
 
+  @RealObject private CrossProfileApps realObject;
   private final Set<UserHandle> targetUserProfiles = new LinkedHashSet<>();
   private final List<StartedMainActivity> startedMainActivities = new ArrayList<>();
   private final List<StartedActivity> startedActivities =
       Collections.synchronizedList(new ArrayList<>());
 
-  private Context context;
-  private PackageManager packageManager;
   // Whether the current application has the interact across profile AppOps.
   private volatile int canInteractAcrossProfileAppOps = AppOpsManager.MODE_ERRORED;
 
   // Whether the current application has requested the interact across profile permission.
   private volatile boolean hasRequestedInteractAcrossProfiles = false;
-
-  @Implementation
-  protected void __constructor__(Context context, ICrossProfileApps service) {
-    this.context = context;
-    this.packageManager = context.getPackageManager();
-  }
 
   /**
    * Returns a list of {@link UserHandle}s currently accessible. This list is populated from calls
@@ -254,7 +250,7 @@ public class ShadowCrossProfileApps {
       }
       return;
     }
-    if (context.checkSelfPermission(permission.INTERACT_ACROSS_PROFILES)
+    if (getContext().checkSelfPermission(permission.INTERACT_ACROSS_PROFILES)
         != PackageManager.PERMISSION_GRANTED) {
       throw new SecurityException(
           "Attempt to launch activity without required "
@@ -285,8 +281,10 @@ public class ShadowCrossProfileApps {
 
     boolean existsMatchingActivity =
         Iterables.any(
-            packageManager.queryIntentActivities(
-                launchIntent, MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE),
+            getContext()
+                .getPackageManager()
+                .queryIntentActivities(
+                    launchIntent, MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE),
             resolveInfo -> {
               ActivityInfo activityInfo = resolveInfo.activityInfo;
               return TextUtils.equals(activityInfo.packageName, component.getPackageName())
@@ -380,8 +378,14 @@ public class ShadowCrossProfileApps {
   }
 
   private boolean hasPermission(String permission) {
-    return context.getPackageManager().checkPermission(permission, context.getPackageName())
+    return getContext()
+            .getPackageManager()
+            .checkPermission(permission, getContext().getPackageName())
         == PackageManager.PERMISSION_GRANTED;
+  }
+
+  private Context getContext() {
+    return reflector(CrossProfileAppsReflector.class, realObject).getContext();
   }
 
   /**
@@ -394,8 +398,8 @@ public class ShadowCrossProfileApps {
     hasRequestedInteractAcrossProfiles = true;
     if (canInteractAcrossProfileAppOps != newMode) {
       canInteractAcrossProfileAppOps = newMode;
-      context.sendBroadcast(
-          new Intent(CrossProfileApps.ACTION_CAN_INTERACT_ACROSS_PROFILES_CHANGED));
+      getContext()
+          .sendBroadcast(new Intent(CrossProfileApps.ACTION_CAN_INTERACT_ACROSS_PROFILES_CHANGED));
     }
   }
 
@@ -422,7 +426,7 @@ public class ShadowCrossProfileApps {
    */
   @Implementation(minSdk = R)
   protected boolean canConfigureInteractAcrossProfiles(String packageName) {
-    return context.getPackageName().equals(packageName);
+    return getContext().getPackageName().equals(packageName);
   }
 
   /**
@@ -544,5 +548,11 @@ public class ShadowCrossProfileApps {
     public int hashCode() {
       return Objects.hash(componentName, userHandle);
     }
+  }
+
+  @ForType(CrossProfileApps.class)
+  interface CrossProfileAppsReflector {
+    @Accessor("mContext")
+    Context getContext();
   }
 }
