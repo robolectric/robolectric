@@ -12,6 +12,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -23,10 +24,16 @@ import org.robolectric.util.reflector.ForType;
     isInAndroidSdk = false)
 public class ShadowBiometricManager {
 
-  protected boolean biometricServiceConnected = true;
-  private int authenticatorType = BiometricManager.Authenticators.EMPTY_SET;
+  protected static boolean biometricServiceConnected = true;
+  private static int authenticatorType = BiometricManager.Authenticators.EMPTY_SET;
 
   @RealObject private BiometricManager realBiometricManager;
+
+  @Resetter
+  public static void reset() {
+    biometricServiceConnected = true;
+    authenticatorType = BiometricManager.Authenticators.EMPTY_SET;
+  }
 
   @SuppressWarnings("deprecation")
   @RequiresPermission(USE_BIOMETRIC)
