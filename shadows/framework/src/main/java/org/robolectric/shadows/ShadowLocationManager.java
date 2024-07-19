@@ -57,6 +57,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -70,7 +71,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
  * location on, gps provider enabled, network provider disabled.
  */
 @SuppressWarnings("deprecation")
-@Implements(value = LocationManager.class, looseSignatures = true)
+@Implements(value = LocationManager.class)
 public class ShadowLocationManager {
 
   private static final String TAG = "ShadowLocationManager";
@@ -451,8 +452,8 @@ public class ShadowLocationManager {
 
   @Implementation(minSdk = VERSION_CODES.S)
   @Nullable
-  protected Object getProviderProperties(Object providerStr) {
-    String provider = (String) providerStr;
+  protected @ClassName("android.location.provider.ProviderProperties") Object getProviderProperties(
+      String provider) {
     if (provider == null) {
       throw new IllegalArgumentException();
     }
@@ -957,13 +958,13 @@ public class ShadowLocationManager {
 
   @Implementation(minSdk = VERSION_CODES.O)
   protected boolean registerGnssBatchedLocationCallback(
-      Object periodNanos, Object wakeOnFifoFull, Object callback, Object handler) {
+      long periodNanos,
+      boolean wakeOnFifoFull,
+      @ClassName("android.location.BatchedLocationCallback") Object callback,
+      Handler handler) {
     getOrCreateProviderEntry(GPS_PROVIDER)
         .setLegacyBatchedListener(
-            callback,
-            new HandlerExecutor((Handler) handler),
-            gnssBatchSize,
-            (Boolean) wakeOnFifoFull);
+            callback, new HandlerExecutor(handler), gnssBatchSize, wakeOnFifoFull);
     return true;
   }
 
@@ -976,7 +977,8 @@ public class ShadowLocationManager {
   }
 
   @Implementation(minSdk = VERSION_CODES.O)
-  protected boolean unregisterGnssBatchedLocationCallback(Object callback) {
+  protected boolean unregisterGnssBatchedLocationCallback(
+      @ClassName("android.location.BatchedLocationCallback") Object callback) {
     ProviderEntry e = getProviderEntry(GPS_PROVIDER);
     if (e != null) {
       e.clearLegacyBatchedListener();
@@ -1193,9 +1195,19 @@ public class ShadowLocationManager {
   @Implementation(minSdk = VERSION_CODES.R)
   @RequiresApi(api = VERSION_CODES.R)
   protected boolean registerGnssMeasurementsCallback(
-      Object request, Object executor, Object callback) {
-    return registerGnssMeasurementsCallback(
-        (Executor) executor, (GnssMeasurementsEvent.Callback) callback);
+      @ClassName("android.location.GnssRequest") Object request,
+      Executor executor,
+      @ClassName("android.location.GnssMeasurementsEvent$Callback") Object callback) {
+    return registerGnssMeasurementsCallback(executor, (GnssMeasurementsEvent.Callback) callback);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.S, methodName = "registerGnssMeasurementsCallback")
+  @RequiresApi(api = VERSION_CODES.S)
+  protected boolean registerGnssMeasurementsCallbackFromS(
+      @ClassName("android.location.GnssMeasurementRequest") Object request,
+      Executor executor,
+      @ClassName("android.location.GnssMeasurementsEvent$Callback") Object callback) {
+    return registerGnssMeasurementsCallback(executor, (GnssMeasurementsEvent.Callback) callback);
   }
 
   @Implementation(minSdk = VERSION_CODES.R)
@@ -1254,19 +1266,20 @@ public class ShadowLocationManager {
   }
 
   @Implementation(minSdk = VERSION_CODES.R)
-  protected Object registerAntennaInfoListener(Object executor, Object listener) {
+  protected boolean registerAntennaInfoListener(
+      Executor executor, @ClassName("android.location.GnssAntennaInfo$Listener") Object listener) {
     synchronized (gnssAntennaInfoTransports) {
       Iterables.removeIf(
           gnssAntennaInfoTransports, transport -> transport.getListener() == listener);
       gnssAntennaInfoTransports.add(
-          new GnssAntennaInfoListenerTransport(
-              (Executor) executor, (GnssAntennaInfo.Listener) listener));
+          new GnssAntennaInfoListenerTransport(executor, (GnssAntennaInfo.Listener) listener));
     }
     return true;
   }
 
   @Implementation(minSdk = VERSION_CODES.R)
-  protected void unregisterAntennaInfoListener(Object listener) {
+  protected void unregisterAntennaInfoListener(
+      @ClassName("android.location.GnssAntennaInfo$Listener") Object listener) {
     synchronized (gnssAntennaInfoTransports) {
       Iterables.removeIf(
           gnssAntennaInfoTransports, transport -> transport.getListener() == listener);
