@@ -15,15 +15,18 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.hardware.biometrics.BiometricManager;
 import android.hardware.camera2.CameraManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.media.AudioManager;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.view.autofill.AutofillManager;
 import android.widget.RemoteViews;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.SdkSuppress;
 import androidx.test.rule.GrantPermissionRule;
 import com.google.common.truth.Truth;
 import org.junit.Rule;
@@ -40,6 +43,7 @@ public class ContextTest {
       GrantPermissionRule.grant(
           Manifest.permission.MODIFY_AUDIO_SETTINGS,
           Manifest.permission.GET_ACCOUNTS,
+          Manifest.permission.USE_BIOMETRIC,
           Manifest.permission.USE_BIOMETRIC,
           Manifest.permission.INTERNET,
           Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -679,6 +683,57 @@ public class ContextTest {
             Truth.assertThat(activityAppWidgets).isEqualTo(applicationAppWidgets);
 
             appWidgetHost.deleteAppWidgetId(appWidgetId);
+          });
+    }
+  }
+
+  @Test
+  public void biometricManager_applicationInstance_isNotSameAsActivityInstance() {
+    BiometricManager applicationBiometricManager =
+        (BiometricManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.BIOMETRIC_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            BiometricManager activityBiometricManager =
+                (BiometricManager) activity.getSystemService(Context.BIOMETRIC_SERVICE);
+            assertThat(applicationBiometricManager).isNotSameInstanceAs(activityBiometricManager);
+          });
+    }
+  }
+
+  @Test
+  public void biometricManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            BiometricManager activityBiometricManager =
+                (BiometricManager) activity.getSystemService(Context.BIOMETRIC_SERVICE);
+            BiometricManager anotherActivityBiometricManager =
+                (BiometricManager) activity.getSystemService(Context.BIOMETRIC_SERVICE);
+            assertThat(anotherActivityBiometricManager).isSameInstanceAs(activityBiometricManager);
+          });
+    }
+  }
+
+  @Test
+  @SdkSuppress(minSdkVersion = Build.VERSION_CODES.R)
+  public void biometricManager_instance_retrievesSameAuthenticationResult_withAuthenticators() {
+    BiometricManager applicationBiometricManager =
+        (BiometricManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.BIOMETRIC_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            BiometricManager activityBiometricManager =
+                (BiometricManager) activity.getSystemService(Context.BIOMETRIC_SERVICE);
+
+            int authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK;
+            int applicationCanAuthenticate =
+                applicationBiometricManager.canAuthenticate(authenticators);
+            int activityCanAuthenticate = activityBiometricManager.canAuthenticate(authenticators);
+
+            assertThat(activityCanAuthenticate).isEqualTo(applicationCanAuthenticate);
           });
     }
   }
