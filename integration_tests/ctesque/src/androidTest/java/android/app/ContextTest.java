@@ -11,6 +11,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.hardware.camera2.CameraManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.media.AudioManager;
 import android.os.BatteryManager;
@@ -576,6 +577,35 @@ public class ContextTest {
             boolean activityLowRamStatus = activityActivityManager.isLowRamDevice();
 
             assertThat(activityLowRamStatus).isEqualTo(applicationLowRamStatus);
+          });
+    }
+  }
+
+  @Test
+  public void cameraManager_applicationInstance_isNotSameAsActivityInstance() {
+    CameraManager applicationCameraManager =
+        (CameraManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.CAMERA_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CameraManager activityCameraManager =
+                (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+            assertThat(applicationCameraManager).isNotSameInstanceAs(activityCameraManager);
+          });
+    }
+  }
+
+  @Test
+  public void cameraManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CameraManager activityCameraManager =
+                (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+            CameraManager anotherActivityCameraManager =
+                (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+            assertThat(anotherActivityCameraManager).isSameInstanceAs(activityCameraManager);
           });
     }
   }
