@@ -5,6 +5,8 @@ import static com.google.common.truth.Truth.assertThat;
 import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.BatteryManager;
@@ -200,6 +202,57 @@ public class ContextTest {
                 activityAlarmManager.getNextAlarmClock();
 
             assertThat(activityAlarmClock).isEqualTo(applicationAlarmClock);
+          });
+    }
+  }
+
+  @Test
+  public void clipboardManager_applicationInstance_isNotSameAsActivityInstance() {
+    ClipboardManager applicationClipboardManager =
+        (ClipboardManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.CLIPBOARD_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            ClipboardManager activityClipboardManager =
+                (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+            assertThat(applicationClipboardManager).isNotSameInstanceAs(activityClipboardManager);
+          });
+    }
+  }
+
+  @Test
+  public void clipboardManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            ClipboardManager activityClipboardManager =
+                (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipboardManager anotherActivityClipboardManager =
+                (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+            assertThat(anotherActivityClipboardManager).isSameInstanceAs(activityClipboardManager);
+          });
+    }
+  }
+
+  @Test
+  public void clipboardManager_instance_retrievesSamePrimaryClip() {
+    ClipboardManager applicationClipboardManager =
+        (ClipboardManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.CLIPBOARD_SERVICE);
+    ClipData clipData = ClipData.newPlainText("label", "text");
+    applicationClipboardManager.setPrimaryClip(clipData);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            ClipboardManager activityClipboardManager =
+                (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+
+            ClipData applicationClipData = applicationClipboardManager.getPrimaryClip();
+            ClipData activityClipData = activityClipboardManager.getPrimaryClip();
+
+            assertThat(activityClipData.toString()).isEqualTo(applicationClipData.toString());
           });
     }
   }
