@@ -23,6 +23,7 @@ import java.util.Set;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
 @Implements(ConnectivityManager.class)
@@ -32,26 +33,27 @@ public class ShadowConnectivityManager {
   static final int NET_ID_WIFI = ConnectivityManager.TYPE_WIFI;
   static final int NET_ID_MOBILE = ConnectivityManager.TYPE_MOBILE;
 
-  private NetworkInfo activeNetworkInfo;
-  private boolean backgroundDataSetting;
-  private int restrictBackgroundStatus = ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED;
-  private int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
-  private final Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<>();
+  private static NetworkInfo activeNetworkInfo;
+  private static boolean backgroundDataSetting;
+  private static int restrictBackgroundStatus =
+      ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED;
+  private static int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
+  private static final Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<>();
 
-  private HashSet<ConnectivityManager.NetworkCallback> networkCallbacks = new HashSet<>();
-  private final HashSet<PendingIntent> networkCallbackPendingIntents = new HashSet<>();
+  private static HashSet<ConnectivityManager.NetworkCallback> networkCallbacks = new HashSet<>();
+  private static final HashSet<PendingIntent> networkCallbackPendingIntents = new HashSet<>();
 
-  private final Map<Integer, Network> netIdToNetwork = new HashMap<>();
-  private final Map<Integer, NetworkInfo> netIdToNetworkInfo = new HashMap<>();
-  private Network processBoundNetwork;
-  private boolean defaultNetworkActive;
-  private HashSet<ConnectivityManager.OnNetworkActiveListener> onNetworkActiveListeners =
+  private static final Map<Integer, Network> netIdToNetwork = new HashMap<>();
+  private static final Map<Integer, NetworkInfo> netIdToNetworkInfo = new HashMap<>();
+  private static Network processBoundNetwork;
+  private static boolean defaultNetworkActive;
+  private static HashSet<ConnectivityManager.OnNetworkActiveListener> onNetworkActiveListeners =
       new HashSet<>();
-  private Map<Network, Boolean> reportedNetworkConnectivity = new HashMap<>();
-  private Map<Network, NetworkCapabilities> networkCapabilitiesMap = new HashMap<>();
-  private String captivePortalServerUrl = "http://10.0.0.2";
-  private final Map<Network, LinkProperties> linkPropertiesMap = new HashMap<>();
-  private final Map<Network, ProxyInfo> proxyInfoMap = new HashMap<>();
+  private static Map<Network, Boolean> reportedNetworkConnectivity = new HashMap<>();
+  private static Map<Network, NetworkCapabilities> networkCapabilitiesMap = new HashMap<>();
+  private static String captivePortalServerUrl = "http://10.0.0.2";
+  private static final Map<Network, LinkProperties> linkPropertiesMap = new HashMap<>();
+  private static final Map<Network, ProxyInfo> proxyInfoMap = new HashMap<>();
 
   public ShadowConnectivityManager() {
     NetworkInfo wifi =
@@ -83,6 +85,29 @@ public class ShadowConnectivityManager {
     networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_WIFI), wifiNetworkCapabilities);
     networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_MOBILE), mobileNetworkCapabilities);
     defaultNetworkActive = true;
+  }
+
+  @Resetter
+  public static void reset() {
+    activeNetworkInfo = null;
+    backgroundDataSetting = false;
+    restrictBackgroundStatus = ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED;
+    networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
+
+    networkTypeToNetworkInfo.clear();
+    networkCallbacks.clear();
+    networkCallbackPendingIntents.clear();
+    netIdToNetwork.clear();
+    netIdToNetworkInfo.clear();
+    onNetworkActiveListeners.clear();
+    reportedNetworkConnectivity.clear();
+    networkCapabilitiesMap.clear();
+    linkPropertiesMap.clear();
+    proxyInfoMap.clear();
+
+    processBoundNetwork = null;
+    defaultNetworkActive = false;
+    captivePortalServerUrl = "http://10.0.0.2";
   }
 
   public Set<ConnectivityManager.NetworkCallback> getNetworkCallbacks() {
