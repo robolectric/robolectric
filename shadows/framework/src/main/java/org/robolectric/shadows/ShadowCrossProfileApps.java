@@ -384,7 +384,7 @@ public class ShadowCrossProfileApps {
         == PackageManager.PERMISSION_GRANTED;
   }
 
-  private Context getContext() {
+  protected Context getContext() {
     return reflector(CrossProfileAppsReflector.class, realObject).getContext();
   }
 
