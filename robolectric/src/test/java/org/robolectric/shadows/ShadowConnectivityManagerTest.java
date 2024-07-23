@@ -15,6 +15,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -25,16 +26,20 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.net.ProxyInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Arrays;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestActivity;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
@@ -722,5 +727,35 @@ public class ShadowConnectivityManagerTest {
 
     assertThat(connectivityManager.getProxyForNetwork(network)).isNull();
     assertThat(connectivityManager.getDefaultProxy()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void connectivityManager_activityContextEnabled_sameActiveNetwork() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "false");
+    Activity activity = null;
+    try {
+      ConnectivityManager applicationConnectivityManager =
+          (ConnectivityManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.CONNECTIVITY_SERVICE);
+
+      activity = Robolectric.setupActivity(TestActivity.class);
+      ConnectivityManager activityConnectivityManager =
+          (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+      assertThat(applicationConnectivityManager).isSameInstanceAs(activityConnectivityManager);
+
+      Network applicationActiveNetwork = applicationConnectivityManager.getActiveNetwork();
+      Network activityActiveNetwork = activityConnectivityManager.getActiveNetwork();
+
+      assertThat(activityActiveNetwork).isEqualTo(applicationActiveNetwork);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
