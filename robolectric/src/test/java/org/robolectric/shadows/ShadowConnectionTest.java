@@ -28,4 +28,22 @@ public class ShadowConnectionTest {
 
     assertThat(eventOptional.get()).isEqualTo("TEST_EVENT");
   }
+
+  @Test
+  public void isDestroyed_callDestroy_returnsTrue() {
+    Connection connection = new FakeConnection();
+
+    connection.destroy();
+    boolean isDestroyed = shadowOf(connection).isDestroyed();
+
+    assertThat(isDestroyed).isTrue();
+  }
+
+  @Test
+  public void isDestroyed_doNotCallDestroy_returnsFalse() {
+    Connection connection = new FakeConnection();
+    boolean isDestroyed = shadowOf(connection).isDestroyed();
+
+    assertThat(isDestroyed).isFalse();
+  }
 }
