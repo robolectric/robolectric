@@ -1042,7 +1042,7 @@ public class ShadowLocationManager {
   }
 
   @Implementation(minSdk = VERSION_CODES.N)
-  protected boolean registerGnssStatusCallback(GnssStatus.Callback callback, Handler handler) {
+  public boolean registerGnssStatusCallback(GnssStatus.Callback callback, Handler handler) {
     if (handler == null) {
       handler = new Handler();
     }
@@ -1051,7 +1051,7 @@ public class ShadowLocationManager {
   }
 
   @Implementation(minSdk = VERSION_CODES.R)
-  protected boolean registerGnssStatusCallback(Executor executor, GnssStatus.Callback listener) {
+  public boolean registerGnssStatusCallback(Executor executor, GnssStatus.Callback listener) {
     synchronized (gnssStatusTransports) {
       Iterables.removeIf(gnssStatusTransports, transport -> transport.getListener() == listener);
       gnssStatusTransports.add(new GnssStatusCallbackTransport(executor, listener));
@@ -1061,7 +1061,7 @@ public class ShadowLocationManager {
   }
 
   @Implementation(minSdk = VERSION_CODES.N)
-  protected void unregisterGnssStatusCallback(GnssStatus.Callback listener) {
+  public void unregisterGnssStatusCallback(GnssStatus.Callback listener) {
     synchronized (gnssStatusTransports) {
       Iterables.removeIf(gnssStatusTransports, transport -> transport.getListener() == listener);
     }
@@ -1177,7 +1177,7 @@ public class ShadowLocationManager {
   }
 
   @Implementation(minSdk = VERSION_CODES.N)
-  protected boolean registerGnssMeasurementsCallback(
+  public boolean registerGnssMeasurementsCallback(
       GnssMeasurementsEvent.Callback listener, Handler handler) {
     if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.R) {
       if (handler == null) {
@@ -1199,7 +1199,7 @@ public class ShadowLocationManager {
   }
 
   @Implementation(minSdk = VERSION_CODES.R)
-  protected boolean registerGnssMeasurementsCallback(
+  public boolean registerGnssMeasurementsCallback(
       Executor executor, GnssMeasurementsEvent.Callback listener) {
     synchronized (gnssMeasurementTransports) {
       Iterables.removeIf(
@@ -1211,7 +1211,7 @@ public class ShadowLocationManager {
   }
 
   @Implementation(minSdk = VERSION_CODES.N)
-  protected void unregisterGnssMeasurementsCallback(GnssMeasurementsEvent.Callback listener) {
+  public void unregisterGnssMeasurementsCallback(GnssMeasurementsEvent.Callback listener) {
     synchronized (gnssMeasurementTransports) {
       Iterables.removeIf(
           gnssMeasurementTransports, transport -> transport.getListener() == listener);
