@@ -584,6 +584,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         ServiceInfo::new);
   }
 
+  @Implementation(minSdk = TIRAMISU)
+  protected List<ResolveInfo> queryIntentServices(
+      Intent intent,
+      @ClassName("android.content.pm.PackageManager$ResolveInfoFlags") Object flagsObject) {
+    return queryIntentServices(intent, (int) ((ResolveInfoFlags) flagsObject).getValue());
+  }
+
   private boolean hasSomeComponentInfo(ResolveInfo resolveInfo) {
 
     return resolveInfo.activityInfo != null
