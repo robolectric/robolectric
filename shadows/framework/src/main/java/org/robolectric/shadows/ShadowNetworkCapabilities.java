@@ -1,33 +1,39 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.net.NetworkCapabilities;
 import android.net.NetworkSpecifier;
 import android.net.TransportInfo;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
-/** Robolectic provides overrides for fetching and updating transport. */
+/** Robolectric provides overrides for fetching and updating transport. */
 @Implements(value = NetworkCapabilities.class, looseSignatures = true)
 public class ShadowNetworkCapabilities {
 
   @RealObject protected NetworkCapabilities realNetworkCapabilities;
 
+  public static final int NET_CAPABILITY_NOT_BANDWIDTH_CONSTRAINED = 37;
+
   public static NetworkCapabilities newInstance() {
     return Shadow.newInstanceOf(NetworkCapabilities.class);
   }
 
-  /** Updates the transport types for this network capablities to include {@code transportType}. */
+  /** Updates the transport types for this network capabilities to include {@code transportType}. */
   @HiddenApi
   @Implementation
   public NetworkCapabilities addTransportType(int transportType) {
@@ -35,7 +41,7 @@ public class ShadowNetworkCapabilities {
         .addTransportType(transportType);
   }
 
-  /** Updates the transport types for this network capablities to remove {@code transportType}. */
+  /** Updates the transport types for this network capabilities to remove {@code transportType}. */
   @HiddenApi
   @Implementation
   public NetworkCapabilities removeTransportType(int transportType) {
@@ -97,8 +103,29 @@ public class ShadowNetworkCapabilities {
         .setLinkDownstreamBandwidthKbps((int) kbps);
   }
 
+  /** Clears capabilities. */
+  public void clearCapabilities() {
+    if (RuntimeEnvironment.getApiLevel() < M) {
+      reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
+          .setMNetworkCapabilities(0L);
+
+      if (RuntimeEnvironment.getApiLevel() >= S) {
+        reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
+            .setMForbiddenNetworkCapabilities(0L);
+      }
+    } else {
+      realNetworkCapabilities.clearAll();
+    }
+  }
+
   @ForType(NetworkCapabilities.class)
   interface NetworkCapabilitiesReflector {
+
+    @Accessor("mNetworkCapabilities")
+    void setMNetworkCapabilities(long capabilities);
+
+    @Accessor("mForbiddenNetworkCapabilities")
+    void setMForbiddenNetworkCapabilities(long capabilities);
 
     @Direct
     NetworkCapabilities addTransportType(int transportType);
