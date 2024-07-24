@@ -22,9 +22,6 @@ class SpotlessPlugin : Plugin<Project> {
         ktfmt("0.49").googleStyle()
       }
 
-      // Add configurations for Groovy files
-      groovy { target("**/*.groovy") }
-
       // Add configurations for Groovy Gradle files
       groovyGradle { target("*.gradle", "**/*.gradle") }
     }
