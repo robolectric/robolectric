@@ -9,6 +9,9 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ResourcesMode;
+import org.robolectric.annotation.ResourcesMode.Mode;
+import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.res.android.AssetPath;
 import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.ResTable;
@@ -34,6 +37,9 @@ public abstract class ShadowAssetManager {
           "flags",
           "string");
 
+  private static final Object resourcesModeLock = new Object();
+  private static Mode cachedResourcesMode;
+
   public static class Picker extends ResourceModeShadowPicker<ShadowAssetManager> {
 
     public Picker() {
@@ -41,8 +47,18 @@ public abstract class ShadowAssetManager {
           ShadowArscAssetManager.class,
           ShadowArscAssetManager9.class,
           ShadowArscAssetManager10.class,
-          ShadowArscAssetManager14.class);
+          ShadowArscAssetManager14.class,
+          ShadowNativeAssetManager.class);
     }
+  }
+
+  static ResourcesMode.Mode resourcesMode() {
+    synchronized (resourcesModeLock) {
+      if (cachedResourcesMode == null) {
+        cachedResourcesMode = ConfigurationRegistry.get(ResourcesMode.Mode.class);
+      }
+    }
+    return cachedResourcesMode;
   }
 
   abstract Collection<Path> getAllAssetDirs();
