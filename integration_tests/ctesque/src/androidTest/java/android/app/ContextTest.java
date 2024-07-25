@@ -5,8 +5,11 @@ import static com.google.common.truth.Truth.assertThat;
 import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.admin.DeviceAdminReceiver;
+import android.app.admin.DevicePolicyManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.BatteryManager;
@@ -301,6 +304,59 @@ public class ContextTest {
             boolean activityIsKeyguardLocked = activityKeyguardManager.isKeyguardLocked();
 
             assertThat(activityIsKeyguardLocked).isEqualTo(applicationIsKeyguardLocked);
+          });
+    }
+  }
+
+  @Test
+  public void devicePolicyManager_applicationInstance_isNotSameAsActivityInstance() {
+    DevicePolicyManager applicationDpm =
+        (DevicePolicyManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.DEVICE_POLICY_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            DevicePolicyManager activityDpm =
+                (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
+            assertThat(applicationDpm).isNotSameInstanceAs(activityDpm);
+          });
+    }
+  }
+
+  @Test
+  public void devicePolicyManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            DevicePolicyManager activityDpm =
+                (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
+            DevicePolicyManager anotherActivityDpm =
+                (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
+            assertThat(anotherActivityDpm).isSameInstanceAs(activityDpm);
+          });
+    }
+  }
+
+  @Test
+  public void devicePolicyManager_instance_retrievesSameAdminStatus() {
+    DevicePolicyManager applicationDpm =
+        (DevicePolicyManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.DEVICE_POLICY_SERVICE);
+    ComponentName testAdminComponent =
+        new ComponentName(ApplicationProvider.getApplicationContext(), DeviceAdminReceiver.class);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            DevicePolicyManager activityDpm =
+                (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
+
+            boolean applicationAdminActive = applicationDpm.isAdminActive(testAdminComponent);
+            boolean activityAdminActive = activityDpm.isAdminActive(testAdminComponent);
+
+            assertThat(activityAdminActive).isEqualTo(applicationAdminActive);
           });
     }
   }
