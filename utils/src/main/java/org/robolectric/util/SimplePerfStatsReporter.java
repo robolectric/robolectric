@@ -33,10 +33,9 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
       AndroidMetadata metadata = perfStatsData.metadata.get(AndroidMetadata.class);
       Map<String, String> deviceBootProperties = metadata.getDeviceBootProperties();
       int sdkInt = Integer.parseInt(deviceBootProperties.get("ro.build.version.sdk"));
-      String resourcesMode = metadata.getResourcesMode();
 
       for (Metric metric : perfStatsData.metrics) {
-        MetricKey key = new MetricKey(metric.getName(), metric.isSuccess(), sdkInt, resourcesMode);
+        MetricKey key = new MetricKey(metric.getName(), metric.isSuccess(), sdkInt);
         MetricValue mergedMetric = mergedMetrics.get(key);
         if (mergedMetric == null) {
           mergedMetric = new MetricValue();
@@ -53,10 +52,9 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
 
       System.out.println(
           MessageFormat.format(
-              "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}",
+              "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}",
               key.name,
               key.sdkLevel,
-              key.resourcesMode,
               key.success,
               value.count,
               (int) (value.minNs / 1000000),
@@ -80,13 +78,11 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
     private final String name;
     private final boolean success;
     private final int sdkLevel;
-    private final String resourcesMode;
 
-    public MetricKey(String name, boolean success, int sdkLevel, String resourcesMode) {
+    public MetricKey(String name, boolean success, int sdkLevel) {
       this.name = name;
       this.success = success;
       this.sdkLevel = sdkLevel;
-      this.resourcesMode = resourcesMode;
     }
 
     @Override
@@ -109,9 +105,7 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
       if (sdkLevel != metricKey.sdkLevel) {
         return false;
       }
-      return resourcesMode != null
-          ? resourcesMode.equals(metricKey.resourcesMode)
-          : metricKey.resourcesMode == null;
+      return true;
     }
 
     @Override
@@ -119,18 +113,12 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
       int result = name != null ? name.hashCode() : 0;
       result = 31 * result + (success ? 1 : 0);
       result = 31 * result + sdkLevel;
-      result = 31 * result + (resourcesMode != null ? resourcesMode.hashCode() : 0);
       return result;
     }
 
     @Override
     public int compareTo(MetricKey o) {
       int i = name.compareTo(o.name);
-      if (i != 0) {
-        return i;
-      }
-
-      i = resourcesMode.compareTo(o.resourcesMode);
       if (i != 0) {
         return i;
       }

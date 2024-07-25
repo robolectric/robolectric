@@ -50,7 +50,6 @@ import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
-import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
@@ -228,7 +227,6 @@ public class RobolectricTestRunnerTest {
             mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
             mock(Configuration.class),
-            ResourcesMode.BINARY,
             false);
     RobolectricFrameworkMethod rfm17 =
         new RobolectricFrameworkMethod(
@@ -236,7 +234,6 @@ public class RobolectricTestRunnerTest {
             mock(AndroidManifest.class),
             sdkCollection.getSdk(17),
             mock(Configuration.class),
-            ResourcesMode.BINARY,
             false);
     RobolectricFrameworkMethod rfm16b =
         new RobolectricFrameworkMethod(
@@ -244,7 +241,6 @@ public class RobolectricTestRunnerTest {
             mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
             mock(Configuration.class),
-            ResourcesMode.BINARY,
             false);
 
     assertThat(rfm16).isNotEqualTo(rfm17);
@@ -334,10 +330,9 @@ public class RobolectricTestRunnerTest {
     public AndroidTestEnvironmentWithFailingSetUp(
         @Named("runtimeSdk") Sdk runtimeSdk,
         @Named("compileSdk") Sdk compileSdk,
-        ResourcesMode resourcesMode,
         ShadowProvider[] shadowProviders,
         TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
-      super(runtimeSdk, compileSdk, resourcesMode, shadowProviders, lifecyclePlugins);
+      super(runtimeSdk, compileSdk, shadowProviders, lifecyclePlugins);
     }
 
     @Override
@@ -366,10 +361,9 @@ public class RobolectricTestRunnerTest {
     public AndroidTestEnvironmentThrowsLinkageError(
         @Named("runtimeSdk") Sdk runtimeSdk,
         @Named("compileSdk") Sdk compileSdk,
-        ResourcesMode resourcesMode,
         ShadowProvider[] shadowProviders,
         TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
-      super(runtimeSdk, compileSdk, resourcesMode, shadowProviders, lifecyclePlugins);
+      super(runtimeSdk, compileSdk, shadowProviders, lifecyclePlugins);
     }
 
     @Override

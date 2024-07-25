@@ -57,7 +57,6 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
-import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.TestEnvironment;
 import org.robolectric.manifest.AndroidManifest;
@@ -112,7 +111,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
   public AndroidTestEnvironment(
       @Named("runtimeSdk") Sdk runtimeSdk,
       @Named("compileSdk") Sdk compileSdk,
-      ResourcesMode resourcesMode,
       ShadowProvider[] shadowProviders,
       TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
     this.compileSdk = compileSdk;

@@ -14,7 +14,6 @@ import org.xmlpull.v1.XmlPullParserException;
 
 @Implements(className = "android.content.res.XmlBlock", isInAndroidSdk = false)
 public class ShadowXmlBlock {
-
   @Implementation
   protected static long nativeCreate(byte[] bArray, int off, int len) {
     if (bArray == null) {

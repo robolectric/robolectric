@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.pluginapi.Sdk;
@@ -53,7 +54,7 @@ public class SandboxManager {
   public synchronized AndroidSandbox getAndroidSandbox(
       InstrumentationConfiguration instrumentationConfig,
       Sdk sdk,
-      ResourcesMode resourcesMode,
+      ResourcesMode.Mode resourcesMode,
       LooperMode.Mode looperMode,
       SQLiteMode.Mode sqliteMode,
       GraphicsMode.Mode graphicsMode) {
@@ -78,21 +79,21 @@ public class SandboxManager {
         InstrumentationConfiguration instrumentationConfig,
         @Named("runtimeSdk") Sdk runtimeSdk,
         @Named("compileSdk") Sdk compileSdk,
-        ResourcesMode resourcesMode,
+        ResourcesMode.Mode resourcesMode,
         SQLiteMode.Mode sqLiteMode);
   }
 
   static class SandboxKey {
     private final Sdk sdk;
     private final InstrumentationConfiguration instrumentationConfiguration;
-    private final ResourcesMode resourcesMode;
+    private final ResourcesMode.Mode resourcesMode;
     private final LooperMode.Mode looperMode;
     private final GraphicsMode.Mode graphicsMode;
 
     public SandboxKey(
         InstrumentationConfiguration instrumentationConfiguration,
         Sdk sdk,
-        ResourcesMode resourcesMode,
+        ResourcesMode.Mode resourcesMode,
         LooperMode.Mode looperMode,
         GraphicsMode.Mode graphicsMode) {
       this.sdk = sdk;

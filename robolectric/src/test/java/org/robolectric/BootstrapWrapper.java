@@ -4,7 +4,6 @@ import java.lang.reflect.Method;
 import javax.inject.Named;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapperI;
 import org.robolectric.android.internal.AndroidTestEnvironment;
-import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
@@ -22,13 +21,11 @@ public class BootstrapWrapper extends AndroidTestEnvironment implements Bootstra
   public BootstrapWrapper(
       @Named("runtimeSdk") Sdk runtimeSdk,
       @Named("compileSdk") Sdk compileSdk,
-      ResourcesMode resourcesMode,
       ShadowProvider[] shadowProviders,
       TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
-    super(runtimeSdk, compileSdk, resourcesMode, shadowProviders, lifecyclePlugins);
+    super(runtimeSdk, compileSdk, shadowProviders, lifecyclePlugins);
     this.wrappedTestEnvironment =
-        new AndroidTestEnvironment(
-            runtimeSdk, compileSdk, resourcesMode, shadowProviders, lifecyclePlugins);
+        new AndroidTestEnvironment(runtimeSdk, compileSdk, shadowProviders, lifecyclePlugins);
   }
 
   @Override
@@ -54,11 +51,6 @@ public class BootstrapWrapper extends AndroidTestEnvironment implements Bootstra
   @Override
   public void changeConfig(Configuration config) {
     this.config = config;
-  }
-
-  @Override
-  public boolean isLegacyResources() {
-    return legacyResources;
   }
 
   @Override
