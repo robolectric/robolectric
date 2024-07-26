@@ -168,16 +168,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
    */
   @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
-    InstrumentationConfiguration.Builder builder =
-        InstrumentationConfiguration.newBuilder()
-            .doNotAcquirePackage("java.")
-            .doNotAcquirePackage("jdk.internal.")
-            .doNotAcquirePackage("sun.")
-            .doNotAcquirePackage("org.robolectric.annotation.")
-            .doNotAcquirePackage("org.robolectric.internal.")
-            .doNotAcquirePackage("org.robolectric.pluginapi.")
-            .doNotAcquirePackage("org.robolectric.util.")
-            .doNotAcquirePackage("org.junit");
+    InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
 
     String customPackages = System.getProperty("org.robolectric.packagesToNotAcquire", "");
     for (String pkg : Splitter.on(',').split(customPackages)) {

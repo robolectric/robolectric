@@ -3,7 +3,6 @@ package org.robolectric.internal.bytecode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,8 +25,8 @@ public class InstrumentationConfiguration {
     return new Builder();
   }
 
-  static final Set<String> CLASSES_TO_ALWAYS_ACQUIRE =
-      Sets.newHashSet(
+  static final ImmutableSet<String> CLASSES_TO_ALWAYS_ACQUIRE =
+      ImmutableSet.of(
           RobolectricInternals.class.getName(),
           InvokeDynamicSupport.class.getName(),
           Shadow.class.getName(),
@@ -35,6 +34,19 @@ public class InstrumentationConfiguration {
           // these classes are deprecated and will be removed soon:
           "org.robolectric.util.FragmentTestUtil",
           "org.robolectric.util.FragmentTestUtil$FragmentUtilActivity");
+
+  static final ImmutableSet<String> PACKAGES_TO_NEVER_ACQUIRE =
+      ImmutableSet.of(
+          "com.sun",
+          "java",
+          "javax",
+          "jdk.internal",
+          "org.junit",
+          "org.robolectric.annotation.",
+          "org.robolectric.internal.",
+          "org.robolectric.pluginapi.",
+          "org.robolectric.util.",
+          "sun");
 
   // Must always acquire these as they change from API level to API level
   static final ImmutableSet<String> RESOURCES_TO_ALWAYS_ACQUIRE =
@@ -129,8 +141,16 @@ public class InstrumentationConfiguration {
       return true;
     }
 
+    for (String packageName : PACKAGES_TO_NEVER_ACQUIRE) {
+      if (name.startsWith(packageName)) {
+        return false;
+      }
+    }
+
     for (String packageName : packagesToNotAcquire) {
-      if (name.startsWith(packageName)) return false;
+      if (name.startsWith(packageName)) {
+        return false;
+      }
     }
 
     // R classes must be loaded from system CP

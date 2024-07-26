@@ -517,15 +517,7 @@ public class SandboxClassLoaderTest {
 
   @Nonnull
   private InstrumentationConfiguration.Builder configureBuilder() {
-    InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
-    builder
-        .doNotAcquirePackage("java.")
-        .doNotAcquirePackage("jdk.internal.")
-        .doNotAcquirePackage("sun.")
-        .doNotAcquirePackage("com.sun.")
-        .doNotAcquirePackage("org.robolectric.internal.")
-        .doNotAcquirePackage("org.robolectric.pluginapi.");
-    return builder;
+    return InstrumentationConfiguration.newBuilder();
   }
 
   @Test
