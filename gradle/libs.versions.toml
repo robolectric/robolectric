@@ -6,6 +6,9 @@ android-gradle = "8.5.1"
 
 android-tools-common = "31.5.1"
 
+# The runtime dependency for Android classes when Robolectric tests are run
+androidstubs="34"
+
 # https://github.com/google/conscrypt/tags
 conscrypt = "2.5.2"
 
