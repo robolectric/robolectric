@@ -20,6 +20,7 @@ import android.os.RemoteException;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.DisplayInfo;
+import android.view.Surface;
 import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -194,9 +195,9 @@ public class ShadowDisplayManagerGlobal {
       registerCallback(iDisplayManagerCallback);
     }
 
-    // for android U
+    // for android R+ (SDK 30+)
     // Use Object here instead of VirtualDisplayConfig to avoid breaking projects that still
-    // compile against SDKs < U
+    // compile against SDKs < R
     public int createVirtualDisplay(
         @ClassName("android.hardware.display.VirtualDisplayConfig")
             Object virtualDisplayConfigObject,
@@ -216,6 +217,36 @@ public class ShadowDisplayManagerGlobal {
       displayInfo.logicalWidth = config.getWidth();
       displayInfo.appHeight = config.getHeight();
       displayInfo.logicalHeight = config.getHeight();
+      displayInfo.state = Display.STATE_ON;
+      int id = addDisplay(displayInfo);
+      virtualDisplayIds.put(callbackWrapper, id);
+      return id;
+    }
+
+    // for android Q (SDK 29) and below
+    public int createVirtualDisplay(
+        IVirtualDisplayCallback callbackWrapper,
+        IMediaProjection projectionToken,
+        String packageName,
+        String name,
+        int width,
+        int height,
+        int densityDpi,
+        Surface surface,
+        int flags,
+        String uniqueId) {
+      DisplayInfo displayInfo = new DisplayInfo();
+      displayInfo.flags = flags;
+      displayInfo.type = Display.TYPE_VIRTUAL;
+      displayInfo.name = name;
+      displayInfo.logicalDensityDpi = densityDpi;
+      displayInfo.physicalXDpi = densityDpi;
+      displayInfo.physicalYDpi = densityDpi;
+      displayInfo.ownerPackageName = packageName;
+      displayInfo.appWidth = width;
+      displayInfo.logicalWidth = width;
+      displayInfo.appHeight = height;
+      displayInfo.logicalHeight = height;
       displayInfo.state = Display.STATE_ON;
       int id = addDisplay(displayInfo);
       virtualDisplayIds.put(callbackWrapper, id);
