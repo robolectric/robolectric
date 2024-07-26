@@ -7,7 +7,9 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlobal;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.BrightnessConfiguration;
@@ -17,6 +19,7 @@ import android.os.Build;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
+import android.view.WindowManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -25,8 +28,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDisplayManagerTest {
@@ -511,6 +516,78 @@ public class ShadowDisplayManagerTest {
         .hasCauseThat()
         .hasMessageThat()
         .contains("configureDefaultDisplay was called a second time");
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void displayManager_activityContextEnabled_differentInstancesRetrieveDisplays() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      DisplayManager applicationDisplayManager =
+          ApplicationProvider.getApplicationContext().getSystemService(DisplayManager.class);
+      activity = Robolectric.setupActivity(TestActivity.class);
+      DisplayManager activityDisplayManager = activity.getSystemService(DisplayManager.class);
+
+      assertThat(applicationDisplayManager).isNotSameInstanceAs(activityDisplayManager);
+
+      Display[] applicationDisplays = applicationDisplayManager.getDisplays();
+      Display[] activityDisplays = activityDisplayManager.getDisplays();
+
+      assertThat(activityDisplays.length).isEqualTo(applicationDisplays.length);
+
+      for (int i = 0; i < applicationDisplays.length; i++) {
+        Display appDisplay = applicationDisplays[i];
+        Display actDisplay = activityDisplays[i];
+
+        assertThat(actDisplay.getDisplayId()).isEqualTo(appDisplay.getDisplayId());
+        assertThat(actDisplay.getWidth()).isEqualTo(appDisplay.getWidth());
+        assertThat(actDisplay.getHeight()).isEqualTo(appDisplay.getHeight());
+      }
+
+      Display originalDisplay = applicationDisplays[0];
+      int originalWidth = originalDisplay.getWidth();
+      int originalHeight = originalDisplay.getHeight();
+
+      setMultiWindowMode(activity, true);
+
+      Display[] multiWindowDisplays = activityDisplayManager.getDisplays();
+      assertThat(multiWindowDisplays).isNotEmpty();
+
+      for (Display mwDisplay : multiWindowDisplays) {
+        int mwWidth = mwDisplay.getWidth();
+        int mwHeight = mwDisplay.getHeight();
+
+        assertThat(mwWidth).isAtMost(originalWidth);
+        assertThat(mwHeight).isAtMost(originalHeight);
+      }
+
+      setMultiWindowMode(activity, false);
+
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
+  }
+
+  private void setMultiWindowMode(Activity activity, boolean enabled) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+      Configuration configuration = new Configuration(activity.getResources().getConfiguration());
+      if (enabled) {
+        configuration.smallestScreenWidthDp /= 2;
+      } else {
+        configuration.smallestScreenWidthDp *= 2;
+      }
+      activity.onConfigurationChanged(configuration);
+
+      WindowManager.LayoutParams params = activity.getWindow().getAttributes();
+      params.width = WindowManager.LayoutParams.MATCH_PARENT;
+      params.height = WindowManager.LayoutParams.MATCH_PARENT;
+      activity.getWindow().setAttributes(params);
+    }
   }
 
   // because we don't want DisplayManagerGlobal resolved as part of the test class.
