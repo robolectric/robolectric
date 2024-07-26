@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
@@ -7,6 +8,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlobal;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.hardware.display.BrightnessChangeEvent;
@@ -21,13 +23,17 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
+/** Tests for {@link ShadowDisplayManager}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowDisplayManagerTest {
 
@@ -511,6 +517,39 @@ public class ShadowDisplayManagerTest {
         .hasCauseThat()
         .hasMessageThat()
         .contains("configureDefaultDisplay was called a second time");
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void displayManager_activityContextEnabled_differentInstancesRetrieveDisplays() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
+      DisplayManager applicationDisplayManager =
+          ApplicationProvider.getApplicationContext().getSystemService(DisplayManager.class);
+      Activity activity = controller.get();
+      DisplayManager activityDisplayManager = activity.getSystemService(DisplayManager.class);
+
+      assertThat(applicationDisplayManager).isNotSameInstanceAs(activityDisplayManager);
+
+      Display[] applicationDisplays =
+          Objects.requireNonNull(applicationDisplayManager).getDisplays();
+      Display[] activityDisplays = Objects.requireNonNull(activityDisplayManager).getDisplays();
+
+      assertThat(activityDisplays.length).isEqualTo(applicationDisplays.length);
+
+      for (int i = 0; i < applicationDisplays.length; i++) {
+        Display appDisplay = applicationDisplays[i];
+        Display actDisplay = activityDisplays[i];
+
+        assertThat(actDisplay.getDisplayId()).isEqualTo(appDisplay.getDisplayId());
+        assertThat(actDisplay.getWidth()).isEqualTo(appDisplay.getWidth());
+        assertThat(actDisplay.getHeight()).isEqualTo(appDisplay.getHeight());
+      }
+    } finally {
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 
   // because we don't want DisplayManagerGlobal resolved as part of the test class.
