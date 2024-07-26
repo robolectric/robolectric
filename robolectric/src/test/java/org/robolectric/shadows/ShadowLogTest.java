@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog.LogItem;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.versioning.AndroidVersions.L;
 
 @RunWith(AndroidJUnit4.class)
@@ -146,12 +147,13 @@ public class ShadowLogTest {
 
     TerribleFailureHandler prevWtfHandler =
         Log.setWtfHandler(
-            new TerribleFailureHandler() {
-              @Override
-              public void onTerribleFailure(String tag, TerribleFailure what, boolean system) {
-                captured[0] = what.getMessage();
-              }
-            });
+            ReflectionHelpers.createDelegatingProxy(
+                TerribleFailureHandler.class,
+                new Object() {
+                  public void onTerribleFailure(String tag, TerribleFailure what, boolean system) {
+                    captured[0] = what.getMessage();
+                  }
+                }));
 
     Log.wtf("tag", "msg", throwable);
     // assert that the new handler captures the message
