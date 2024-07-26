@@ -51,6 +51,7 @@ public class ShadowActivityManager {
   private String backgroundPackage;
   private ActivityManager.MemoryInfo memoryInfo;
   private final List<ActivityManager.AppTask> appTasks = new CopyOnWriteArrayList<>();
+  private final List<ActivityManager.RecentTaskInfo> recentTasks = new CopyOnWriteArrayList<>();
   private final List<ActivityManager.RunningTaskInfo> tasks = new CopyOnWriteArrayList<>();
   private final List<ActivityManager.RunningServiceInfo> services = new CopyOnWriteArrayList<>();
   private static final List<ActivityManager.RunningAppProcessInfo> processes =
@@ -116,6 +117,19 @@ public class ShadowActivityManager {
   @Implementation
   protected List<ActivityManager.AppTask> getAppTasks() {
     return appTasks;
+  }
+
+  /**
+   * For tests, returns the list of {@link android.app.ActivityManager.RecentTaskInfo} set using
+   * {@link #setAppTasks(List)} with at most {@code maxNum} tasks. Returns empty list if nothing is
+   * set {@code flags} is ignored.
+   *
+   * @see #setAppTasks(List)
+   * @return List of current AppTask.
+   */
+  @Implementation
+  protected List<ActivityManager.RecentTaskInfo> getRecentTasks(int maxNum, int flags) {
+    return recentTasks.size() > maxNum ? recentTasks.subList(0, maxNum) : recentTasks;
   }
 
   @Implementation
@@ -213,6 +227,17 @@ public class ShadowActivityManager {
   public void setAppTasks(List<ActivityManager.AppTask> appTasks) {
     this.appTasks.clear();
     this.appTasks.addAll(appTasks);
+  }
+
+  /**
+   * Sets the values to be returned by {@link #getRecentTasks()}.
+   *
+   * @see #getRecentTasks()
+   * @param recentTasks List of recent tasks.
+   */
+  public void setRecentTasks(List<ActivityManager.RecentTaskInfo> recentTasks) {
+    this.recentTasks.clear();
+    this.recentTasks.addAll(recentTasks);
   }
 
   /**

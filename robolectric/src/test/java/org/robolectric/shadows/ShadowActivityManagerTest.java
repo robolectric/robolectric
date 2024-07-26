@@ -15,6 +15,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.AppTask;
+import android.app.ActivityManager.RecentTaskInfo;
 import android.app.Application;
 import android.app.ApplicationExitInfo;
 import android.content.ComponentName;
@@ -99,6 +100,25 @@ public class ShadowActivityManagerTest {
     assertThat(activityManager.getAppTasks()).isEmpty();
     shadowActivityManager.setAppTasks(Lists.newArrayList(task1, task2));
     assertThat(activityManager.getAppTasks()).containsExactly(task1, task2);
+  }
+
+  @Test
+  public void testRecentTasks_shouldReturnTaskList() {
+    RecentTaskInfo taskInfo1 = new RecentTaskInfo();
+    taskInfo1.id = 123;
+    RecentTaskInfo taskInfo2 = new RecentTaskInfo();
+    taskInfo1.id = 234;
+    RecentTaskInfo taskInfo3 = new RecentTaskInfo();
+    taskInfo1.id = 345;
+
+    assertThat(activityManager.getRecentTasks(Integer.MAX_VALUE, 0)).isEmpty();
+    shadowActivityManager.setRecentTasks(Lists.newArrayList(taskInfo1, taskInfo2, taskInfo3));
+    assertThat(activityManager.getRecentTasks(2, 0))
+        .containsExactly(taskInfo1, taskInfo2)
+        .inOrder();
+    assertThat(activityManager.getRecentTasks(Integer.MAX_VALUE, 0))
+        .containsExactly(taskInfo1, taskInfo2, taskInfo3)
+        .inOrder();
   }
 
   @Test
