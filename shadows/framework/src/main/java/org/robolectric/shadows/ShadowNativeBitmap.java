@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -41,7 +42,6 @@ import org.robolectric.versioning.AndroidVersions.V;
 /** Shadow for {@link Bitmap} that is backed by native code */
 @Implements(
     value = Bitmap.class,
-    looseSignatures = true,
     minSdk = O,
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
@@ -121,10 +121,15 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     return BitmapNatives.nativeGetNativeFinalizer();
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
-  protected static Object nativeRecycle(Object nativeBitmap) {
-    BitmapNatives.nativeRecycle((long) nativeBitmap);
+  @Implementation(maxSdk = P)
+  protected static boolean nativeRecycle(long nativeBitmap) {
+    BitmapNatives.nativeRecycle(nativeBitmap);
     return true;
+  }
+
+  @Implementation(minSdk = Q, methodName = "nativeRecycle")
+  protected static void nativeRecyclePostPie(long nativeBitmap) {
+    BitmapNatives.nativeRecycle(nativeBitmap);
   }
 
   @Implementation(minSdk = O, maxSdk = U.SDK_INT)
@@ -351,7 +356,8 @@ public class ShadowNativeBitmap extends ShadowBitmap {
    * method must be present in Android U and below to avoid an UnsatisfiedLinkError.
    */
   @Implementation(minSdk = U.SDK_INT)
-  protected static Object nativeExtractGainmap(Object nativePtr) {
+  protected static @ClassName("android.graphics.Gainmap") Object nativeExtractGainmap(
+      long nativePtr) {
     // No-op implementation
     return null;
   }
