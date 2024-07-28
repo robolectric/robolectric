@@ -28,7 +28,11 @@ public class ContextTest {
   @Rule
   public GrantPermissionRule mRuntimePermissionRule =
       GrantPermissionRule.grant(
-          Manifest.permission.MODIFY_AUDIO_SETTINGS, Manifest.permission.GET_ACCOUNTS);
+          Manifest.permission.MODIFY_AUDIO_SETTINGS,
+          Manifest.permission.GET_ACCOUNTS,
+          Manifest.permission.INTERNET,
+          Manifest.permission.WRITE_EXTERNAL_STORAGE,
+          Manifest.permission.READ_EXTERNAL_STORAGE);
 
   @Test
   public void audioManager_applicationInstance_isNotSameAsActivityInstance() {
@@ -407,6 +411,56 @@ public class ContextTest {
 
             assertThat(activityAutofillServiceAvailable)
                 .isEqualTo(applicationAutofillServiceAvailable);
+          });
+    }
+  }
+
+  @Test
+  public void downloadManager_applicationInstance_isNotSameAsActivityInstance() {
+    DownloadManager applicationDownloadManager =
+        (DownloadManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.DOWNLOAD_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            DownloadManager activityDownloadManager =
+                (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+            assertThat(applicationDownloadManager).isNotSameInstanceAs(activityDownloadManager);
+          });
+    }
+  }
+
+  @Test
+  public void downloadManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            DownloadManager activityDownloadManager =
+                (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+            DownloadManager anotherActivityDownloadManager =
+                (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+            assertThat(anotherActivityDownloadManager).isSameInstanceAs(activityDownloadManager);
+          });
+    }
+  }
+
+  @Test
+  public void downloadManager_instance_retrievesSameMimeTypeForDownloadedFile() {
+    final long testId = 1L;
+    DownloadManager applicationDownloadManager =
+        (DownloadManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.DOWNLOAD_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            DownloadManager activityDownloadManager =
+                (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+
+            String applicationMimeType =
+                applicationDownloadManager.getMimeTypeForDownloadedFile(testId);
+            String activityMimeType = activityDownloadManager.getMimeTypeForDownloadedFile(testId);
+
+            assertThat(activityMimeType).isEqualTo(applicationMimeType);
           });
     }
   }

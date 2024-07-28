@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.fakes.BaseCursor;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -27,49 +28,66 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(DownloadManager.class)
 public class ShadowDownloadManager {
 
-  private long queueCounter = -1; // First request starts at 0 just like in the real DownloadManager
-  private Map<Long, DownloadManager.Request> requestMap = new TreeMap<>();
+  private static long queueCounter =
+      -1; // First request starts at 0 just like in the real DownloadManager
+  private static Map<Long, DownloadManager.Request> requestMap = new TreeMap<>();
 
-  private long completedCounter = -1;
-  private Map<Long, CompletedDownload> completedDownloadsMap = new HashMap<>();
+  private static long completedCounter = -1;
+  private static Map<Long, CompletedDownload> completedDownloadsMap = new HashMap<>();
+
+  @Resetter
+  public static void reset() {
+    synchronized (ShadowDownloadManager.class) {
+      queueCounter = -1;
+      requestMap.clear();
+      completedCounter = -1;
+      completedDownloadsMap.clear();
+    }
+  }
 
   @Implementation
   protected long enqueue(DownloadManager.Request request) {
-    queueCounter++;
-    requestMap.put(queueCounter, request);
-    ShadowRequest shadowRequest = Shadow.extract(request);
-    shadowRequest.setId(queueCounter);
-    return queueCounter;
+    synchronized (ShadowDownloadManager.class) {
+      queueCounter++;
+      requestMap.put(queueCounter, request);
+      ShadowRequest shadowRequest = Shadow.extract(request);
+      shadowRequest.setId(queueCounter);
+      return queueCounter;
+    }
   }
 
   @Implementation
   protected int remove(long... ids) {
-    int removeCount = 0;
-    for (long id : ids) {
-      if (requestMap.remove(id) != null) {
-        removeCount++;
+    synchronized (ShadowDownloadManager.class) {
+      int removeCount = 0;
+      for (long id : ids) {
+        if (requestMap.remove(id) != null) {
+          removeCount++;
+        }
       }
+      return removeCount;
     }
-    return removeCount;
   }
 
   @Implementation
   protected Cursor query(DownloadManager.Query query) {
-    ResultCursor result = new ResultCursor();
-    ShadowQuery shadow = Shadow.extract(query);
-    long[] ids = shadow.getIds();
+    synchronized (ShadowDownloadManager.class) {
+      ResultCursor result = new ResultCursor();
+      ShadowQuery shadow = Shadow.extract(query);
+      long[] ids = shadow.getIds();
 
-    if (ids != null) {
-      for (long id : ids) {
-        DownloadManager.Request request = requestMap.get(id);
-        if (request != null) {
-          result.requests.add(request);
+      if (ids != null) {
+        for (long id : ids) {
+          DownloadManager.Request request = requestMap.get(id);
+          if (request != null) {
+            result.requests.add(request);
+          }
         }
+      } else {
+        result.requests.addAll(requestMap.values());
       }
-    } else {
-      result.requests.addAll(requestMap.values());
+      return result;
     }
-    return result;
   }
 
   @Implementation
@@ -104,36 +122,46 @@ public class ShadowDownloadManager {
       boolean showNotification,
       Uri uri,
       Uri referrer) {
-    completedCounter++;
-    completedDownloadsMap.put(
-        completedCounter,
-        new CompletedDownload(
-            title,
-            description,
-            isMediaScannerScannable,
-            mimeType,
-            path,
-            length,
-            showNotification,
-            uri,
-            referrer));
-    return completedCounter;
+    synchronized (ShadowDownloadManager.class) {
+      completedCounter++;
+      completedDownloadsMap.put(
+          completedCounter,
+          new CompletedDownload(
+              title,
+              description,
+              isMediaScannerScannable,
+              mimeType,
+              path,
+              length,
+              showNotification,
+              uri,
+              referrer));
+      return completedCounter;
+    }
   }
 
   public DownloadManager.Request getRequest(long id) {
-    return requestMap.get(id);
+    synchronized (ShadowDownloadManager.class) {
+      return requestMap.get(id);
+    }
   }
 
   public int getRequestCount() {
-    return requestMap.size();
+    synchronized (ShadowDownloadManager.class) {
+      return requestMap.size();
+    }
   }
 
   public CompletedDownload getCompletedDownload(long id) {
-    return completedDownloadsMap.get(id);
+    synchronized (ShadowDownloadManager.class) {
+      return completedDownloadsMap.get(id);
+    }
   }
 
   public int getCompletedDownloadsCount() {
-    return completedDownloadsMap.size();
+    synchronized (ShadowDownloadManager.class) {
+      return completedDownloadsMap.size();
+    }
   }
 
   @Implements(DownloadManager.Request.class)
