@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
@@ -22,6 +23,7 @@ import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.view.Surface;
 import java.io.FileDescriptor;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
@@ -34,7 +36,6 @@ import org.robolectric.versioning.AndroidVersions.U;
 @Implements(
     value = HardwareRenderer.class,
     minSdk = Q,
-    looseSignatures = true,
     shadowPicker = Picker.class,
     callNativeMethodsByDefault = true)
 public class ShadowNativeHardwareRenderer {
@@ -79,9 +80,9 @@ public class ShadowNativeHardwareRenderer {
     return HardwareRendererNatives.nCreateRootRenderNode();
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
-  protected static long nCreateProxy(boolean translucent, long rootRenderNode) {
-    return HardwareRendererNatives.nCreateProxy(translucent, rootRenderNode);
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT, methodName = "nCreateProxy")
+  protected static long nCreateProxyPostR(boolean translucent, long rootRenderNode) {
+    return nCreateProxy(translucent, rootRenderNode);
   }
 
   @Implementation(minSdk = R, maxSdk = R)
@@ -91,8 +92,8 @@ public class ShadowNativeHardwareRenderer {
   }
 
   @Implementation(minSdk = Q, maxSdk = Q)
-  protected static Object nCreateProxy(Object translucent, Object rootRenderNode) {
-    return nCreateProxy((boolean) translucent, (long) rootRenderNode);
+  protected static long nCreateProxy(boolean translucent, long rootRenderNode) {
+    return HardwareRendererNatives.nCreateProxy(translucent, rootRenderNode);
   }
 
   @Implementation(maxSdk = U.SDK_INT)
@@ -152,10 +153,15 @@ public class ShadowNativeHardwareRenderer {
     HardwareRendererNatives.nSetOpaque(nativeProxy, opaque);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
-  protected static Object nSetColorMode(long nativeProxy, int colorMode) {
+  @Implementation(minSdk = S, maxSdk = TIRAMISU)
+  protected static void nSetColorMode(long nativeProxy, int colorMode) {
     HardwareRendererNatives.nSetColorMode(nativeProxy, colorMode);
-    return null;
+  }
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE, methodName = "nSetColorMode")
+  protected static float nSetColorModePostT(long nativeProxy, int colorMode) {
+    HardwareRendererNatives.nSetColorMode(nativeProxy, colorMode);
+    return 0.0f;
   }
 
   @Implementation(minSdk = S, maxSdk = U.SDK_INT)
@@ -281,18 +287,20 @@ public class ShadowNativeHardwareRenderer {
   }
 
   @Implementation(minSdk = S, maxSdk = U.SDK_INT)
-  protected static void nSetASurfaceTransactionCallback(Object nativeProxy, Object callback) {
-    // Requires looseSignatures because ASurfaceTransactionCallback is S+.
+  protected static void nSetASurfaceTransactionCallback(
+      long nativeProxy,
+      @ClassName("android.graphics.HardwareRenderer$ASurfaceTransactionCallback") Object callback) {
     HardwareRendererNatives.nSetASurfaceTransactionCallback(
-        (long) nativeProxy, (ASurfaceTransactionCallback) callback);
+        nativeProxy, (ASurfaceTransactionCallback) callback);
   }
 
   @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nSetPrepareSurfaceControlForWebviewCallback(
-      Object nativeProxy, Object callback) {
-    // Need to use loose signatures here as PrepareSurfaceControlForWebviewCallback is S+.
+      long nativeProxy,
+      @ClassName("android.graphics.HardwareRenderer$PrepareSurfaceControlForWebviewCallback")
+          Object callback) {
     HardwareRendererNatives.nSetPrepareSurfaceControlForWebviewCallback(
-        (long) nativeProxy, (PrepareSurfaceControlForWebviewCallback) callback);
+        nativeProxy, (PrepareSurfaceControlForWebviewCallback) callback);
   }
 
   @Implementation(maxSdk = U.SDK_INT)
