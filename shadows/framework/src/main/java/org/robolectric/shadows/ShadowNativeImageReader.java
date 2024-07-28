@@ -30,7 +30,6 @@ import org.robolectric.versioning.AndroidVersions.V;
 @Implements(
     value = ImageReader.class,
     minSdk = P,
-    looseSignatures = true,
     isInAndroidSdk = false,
     shadowPicker = Picker.class,
     callNativeMethodsByDefault = true)
@@ -127,10 +126,10 @@ public class ShadowNativeImageReader {
     return natives.nativeImageSetup(i);
   }
 
-  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
-  protected Object nativeImageSetup(Object i) {
+  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT, methodName = "nativeImageSetup")
+  protected int nativeImageSetupPostT(Image i) {
     // Note: reverted to Q-S API
-    return natives.nativeImageSetup((Image) i);
+    return natives.nativeImageSetup(i);
   }
 
   /** We use a class initializer to allow the native code to cache some field offsets. */
