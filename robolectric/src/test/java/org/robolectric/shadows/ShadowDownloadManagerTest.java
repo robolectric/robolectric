@@ -6,18 +6,24 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.app.DownloadManager;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.util.Pair;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowDownloadManager.CompletedDownload;
 import org.robolectric.shadows.ShadowDownloadManager.ShadowRequest;
+import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDownloadManagerTest {
@@ -411,5 +417,35 @@ public class ShadowDownloadManagerTest {
     manager.enqueue(request);
 
     assertThat(manager.getCompletedDownloadsCount()).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void downloadManager_activityContextEnabled_retrievesSameMimeTypeForDownloadedFile() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      DownloadManager applicationDownloadManager =
+          (DownloadManager)
+              RuntimeEnvironment.getApplication().getSystemService(Context.DOWNLOAD_SERVICE);
+
+      activity = Robolectric.setupActivity(TestActivity.class);
+      DownloadManager activityDownloadManager =
+          (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+
+      assertThat(applicationDownloadManager).isNotSameInstanceAs(activityDownloadManager);
+
+      final long testId = 1L;
+      String applicationMimeType = applicationDownloadManager.getMimeTypeForDownloadedFile(testId);
+      String activityMimeType = activityDownloadManager.getMimeTypeForDownloadedFile(testId);
+
+      assertThat(activityMimeType).isEqualTo(applicationMimeType);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
