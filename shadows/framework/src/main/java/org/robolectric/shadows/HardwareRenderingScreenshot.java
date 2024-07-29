@@ -36,8 +36,6 @@ public final class HardwareRenderingScreenshot {
   private static final WeakHashMap<ViewRootImpl, HardwareRenderer> hardwareRenderers =
       new WeakHashMap<>();
 
-  static final String PIXEL_COPY_RENDER_MODE = "robolectric.pixelCopyRenderMode";
-
   private HardwareRenderingScreenshot() {}
 
   /**
@@ -47,7 +45,6 @@ public final class HardwareRenderingScreenshot {
    */
   static boolean canTakeScreenshot(View view) {
     return RuntimeEnvironment.getApiLevel() >= P
-        && "hardware".equalsIgnoreCase(System.getProperty(PIXEL_COPY_RENDER_MODE, ""))
         && ShadowView.useRealGraphics()
         && view.canHaveDisplayList();
   }
