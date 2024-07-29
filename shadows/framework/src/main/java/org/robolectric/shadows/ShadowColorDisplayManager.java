@@ -17,15 +17,22 @@ import org.robolectric.annotation.Implements;
     minSdk = Q)
 public class ShadowColorDisplayManager {
 
-  private boolean isNightDisplayActivated;
-  private int nightDisplayTemperature;
-  private int nightDisplayAutoMode;
-  private final Map<String, Integer> packagesToSaturation = new HashMap<>();
+  private static boolean isNightDisplayActivated;
+  private static int nightDisplayTemperature;
+  private static int nightDisplayAutoMode;
+  private static final Map<String, Integer> packagesToSaturation = new HashMap<>();
 
   // Full saturation by default
   private int saturationLevel = 100;
   // No capabilities by default
   private int transformCapabilities = 0x0;
+
+  public static void reset() {
+    isNightDisplayActivated = false;
+    nightDisplayTemperature = 0;
+    nightDisplayAutoMode = 0;
+    packagesToSaturation.clear();
+  }
 
   @Implementation
   protected void __constructor__() {
