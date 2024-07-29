@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.location.ContextHubClient;
 import android.hardware.location.ContextHubInfo;
@@ -17,6 +18,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -154,5 +156,37 @@ public class ShadowContextHubManagerTest {
     NanoAppInstanceInfo info = contextHubManager.getNanoAppInstanceInfo(0 /* nanoAppUid */);
 
     assertThat(info).isNull();
+  }
+
+  @Test
+  @Config(minSdk = 30)
+  public void contextHubManager_instance_retrievesSameContextHubInfo() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+
+    try {
+      ContextHubManager applicationContextHubManager =
+          context.getSystemService(ContextHubManager.class);
+
+      activity = Robolectric.setupActivity(Activity.class);
+      ContextHubManager activityContextHubManager =
+          activity.getSystemService(ContextHubManager.class);
+
+      assertThat(applicationContextHubManager).isNotSameInstanceAs(activityContextHubManager);
+
+      List<ContextHubInfo> applicationContextHubs = applicationContextHubManager.getContextHubs();
+      List<ContextHubInfo> activityContextHubs = activityContextHubManager.getContextHubs();
+
+      assertThat(applicationContextHubs).isNotEmpty();
+      assertThat(activityContextHubs).isNotEmpty();
+
+      assertThat(activityContextHubs).isEqualTo(applicationContextHubs);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

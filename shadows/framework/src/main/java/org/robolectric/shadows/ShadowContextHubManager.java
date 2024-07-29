@@ -42,10 +42,11 @@ public class ShadowContextHubManager {
   private static final List<ContextHubInfo> contextHubInfoList = new ArrayList<>();
   private static final List<ContextHubClient> contextHubClientWithPendingIntentList =
       new ArrayList<>();
-  private final Map<Integer, NanoAppInstanceInfo> nanoAppUidToInfo = new ConcurrentHashMap<>();
-  private final Multimap<ContextHubInfo, Integer> contextHubToNanoappUid =
+  private static final Map<Integer, NanoAppInstanceInfo> nanoAppUidToInfo =
+      new ConcurrentHashMap<>();
+  private static final Multimap<ContextHubInfo, Integer> contextHubToNanoappUid =
       Multimaps.synchronizedMultimap(HashMultimap.<ContextHubInfo, Integer>create());
-  private final HashMultimap<String, ContextHubClient> attributionTagToClientMap =
+  private static final HashMultimap<String, ContextHubClient> attributionTagToClientMap =
       HashMultimap.create();
 
   static {
@@ -157,6 +158,9 @@ public class ShadowContextHubManager {
   @Resetter
   public static void clearContextHubClientWithPendingIntentList() {
     contextHubClientWithPendingIntentList.clear();
+    nanoAppUidToInfo.clear();
+    contextHubToNanoappUid.clear();
+    attributionTagToClientMap.clear();
   }
 
   @Implementation(minSdk = VERSION_CODES.P)
