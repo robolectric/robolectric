@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.shadow.api.Shadow.extract;
 
+import android.app.Activity;
 import android.hardware.display.ColorDisplayManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -11,6 +12,7 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 /** Tests for ShadowColorDisplayManager. */
@@ -136,5 +138,35 @@ public class ShadowColorDisplayManagerTest {
 
   private ShadowColorDisplayManager getShadowColorDisplayManager() {
     return (ShadowColorDisplayManager) extract(instance.get());
+  }
+
+  @Test
+  public void colorDisplayManager_activityContextEnabled_differentInstancesRetrieveSettings() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      ColorDisplayManager appColorDisplayManager =
+          ApplicationProvider.getApplicationContext().getSystemService(ColorDisplayManager.class);
+      activity = Robolectric.setupActivity(Activity.class);
+      ColorDisplayManager activityColorDisplayManager =
+          activity.getSystemService(ColorDisplayManager.class);
+
+      assertThat(appColorDisplayManager).isNotSameInstanceAs(activityColorDisplayManager);
+
+      boolean appNightDisplayActivated =
+          ((ShadowColorDisplayManager) extract(appColorDisplayManager)).isNightDisplayActivated();
+      boolean activityNightDisplayActivated =
+          ((ShadowColorDisplayManager) extract(activityColorDisplayManager))
+              .isNightDisplayActivated();
+
+      assertThat(activityNightDisplayActivated).isEqualTo(appNightDisplayActivated);
+
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
