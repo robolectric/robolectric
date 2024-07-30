@@ -256,4 +256,52 @@ public class ContextTest {
           });
     }
   }
+
+  @Test
+  public void keyguardManager_applicationInstance_isNotSameAsActivityInstance() {
+    KeyguardManager applicationKeyguardManager =
+        (KeyguardManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.KEYGUARD_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            KeyguardManager activityKeyguardManager =
+                (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
+            assertThat(applicationKeyguardManager).isNotSameInstanceAs(activityKeyguardManager);
+          });
+    }
+  }
+
+  @Test
+  public void keyguardManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            KeyguardManager activityKeyguardManager =
+                (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
+            KeyguardManager anotherActivityKeyguardManager =
+                (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
+            assertThat(anotherActivityKeyguardManager).isSameInstanceAs(activityKeyguardManager);
+          });
+    }
+  }
+
+  @Test
+  public void keyguardManager_isKeyguardLocked_retrievesSameState() {
+    KeyguardManager applicationKeyguardManager =
+        (KeyguardManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.KEYGUARD_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            KeyguardManager activityKeyguardManager =
+                (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
+
+            boolean applicationIsKeyguardLocked = applicationKeyguardManager.isKeyguardLocked();
+            boolean activityIsKeyguardLocked = activityKeyguardManager.isKeyguardLocked();
+
+            assertThat(activityIsKeyguardLocked).isEqualTo(applicationIsKeyguardLocked);
+          });
+    }
+  }
 }
