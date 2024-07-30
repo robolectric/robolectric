@@ -56,12 +56,13 @@ public class ShadowInputMethodManager {
     void onPrivateCommand(View view, String action, Bundle data);
   }
 
-  private boolean softInputVisible;
-  private Optional<SoftInputVisibilityChangeHandler> visibilityChangeHandler = Optional.absent();
-  private Optional<PrivateCommandListener> privateCommandListener = Optional.absent();
-  private List<InputMethodInfo> inputMethodInfoList = ImmutableList.of();
-  private List<InputMethodInfo> enabledInputMethodInfoList = ImmutableList.of();
-  private Optional<InputMethodSubtype> inputMethodSubtype = Optional.absent();
+  private static boolean softInputVisible;
+  private static Optional<SoftInputVisibilityChangeHandler> visibilityChangeHandler =
+      Optional.absent();
+  private static Optional<PrivateCommandListener> privateCommandListener = Optional.absent();
+  private static List<InputMethodInfo> inputMethodInfoList = ImmutableList.of();
+  private static List<InputMethodInfo> enabledInputMethodInfoList = ImmutableList.of();
+  private static Optional<InputMethodSubtype> inputMethodSubtype = Optional.absent();
 
   @Implementation
   protected boolean showSoftInput(View view, int flags) {
@@ -274,6 +275,12 @@ public class ShadowInputMethodManager {
     if (apiLevel > P) {
       _reflector.getInstanceMap().clear();
     }
+    softInputVisible = false;
+    visibilityChangeHandler = Optional.absent();
+    privateCommandListener = Optional.absent();
+    inputMethodInfoList = ImmutableList.of();
+    enabledInputMethodInfoList = ImmutableList.of();
+    inputMethodSubtype = Optional.absent();
   }
 
   @ForType(InputMethodManager.class)
