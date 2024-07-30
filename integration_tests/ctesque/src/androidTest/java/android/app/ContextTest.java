@@ -24,6 +24,8 @@ import android.media.AudioManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.view.autofill.AutofillManager;
+import android.view.inputmethod.InputMethodInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.RemoteViews;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
@@ -31,6 +33,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.rule.GrantPermissionRule;
 import com.google.common.truth.Truth;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -843,6 +846,63 @@ public class ContextTest {
                     opCode, android.os.Process.myUid(), "com.example.app");
 
             assertThat(activityOpMode).isEqualTo(applicationOpMode);
+          });
+    }
+  }
+
+  @Test
+  public void inputMethodManager_applicationInstance_isSameAsActivityInstance() {
+    InputMethodManager applicationInputMethodManager =
+        (InputMethodManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            InputMethodManager activityInputMethodManager =
+                (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            assertThat(applicationInputMethodManager).isSameInstanceAs(activityInputMethodManager);
+          });
+    }
+  }
+
+  @Test
+  public void inputMethodManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            InputMethodManager activityInputMethodManager =
+                (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager anotherActivityInputMethodManager =
+                (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            assertThat(anotherActivityInputMethodManager)
+                .isSameInstanceAs(activityInputMethodManager);
+          });
+    }
+  }
+
+  @Test
+  public void inputMethodManager_retrievesSameEnabledInputMethodList() {
+    InputMethodManager applicationInputMethodManager =
+        (InputMethodManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            InputMethodManager activityInputMethodManager =
+                (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+
+            List<InputMethodInfo> applicationEnabledInputMethods =
+                applicationInputMethodManager.getEnabledInputMethodList();
+            List<InputMethodInfo> activityEnabledInputMethods =
+                activityInputMethodManager.getEnabledInputMethodList();
+
+            assertThat(applicationEnabledInputMethods).isNotEmpty();
+            assertThat(activityEnabledInputMethods).isNotEmpty();
+
+            assertThat(activityEnabledInputMethods).isEqualTo(applicationEnabledInputMethods);
           });
     }
   }
