@@ -24,6 +24,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -34,10 +35,18 @@ public class ShadowFingerprintManager {
 
   private static final String TAG = "ShadowFingerprintManager";
 
-  private boolean isHardwareDetected;
-  protected CryptoObject pendingCryptoObject;
-  private AuthenticationCallback pendingCallback;
-  private List<Fingerprint> fingerprints = Collections.emptyList();
+  private static boolean isHardwareDetected;
+  protected static CryptoObject pendingCryptoObject;
+  private static AuthenticationCallback pendingCallback;
+  private static List<Fingerprint> fingerprints = Collections.emptyList();
+
+  @Resetter
+  public static void reset() {
+    isHardwareDetected = false;
+    pendingCryptoObject = null;
+    pendingCallback = null;
+    fingerprints = Collections.emptyList();
+  }
 
   /**
    * Simulates a successful fingerprint authentication. An authentication request must have been
