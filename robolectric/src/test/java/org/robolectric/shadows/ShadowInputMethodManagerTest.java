@@ -1,10 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -20,7 +22,9 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowInputMethodManagerTest {
@@ -149,6 +153,37 @@ public class ShadowInputMethodManagerTest {
     shadow.setAppPrivateCommandListener(listener);
 
     shadow.sendAppPrivateCommand(expectedView, expectedAction, expectedBundle);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void
+      inputMethodManager_activityContextEnabled_differentInstancesRetrieveInputMethodList() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      InputMethodManager applicationInputMethodManager =
+          (InputMethodManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.INPUT_METHOD_SERVICE);
+      activity = Robolectric.setupActivity(Activity.class);
+      InputMethodManager activityInputMethodManager =
+          (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+
+      assertThat(applicationInputMethodManager).isSameInstanceAs(activityInputMethodManager);
+
+      boolean applicationIsAcceptingText = applicationInputMethodManager.isAcceptingText();
+      boolean activityIsAcceptingText = activityInputMethodManager.isAcceptingText();
+
+      assertThat(activityIsAcceptingText).isEqualTo(applicationIsAcceptingText);
+
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 
   private static class CapturingResultReceiver extends ResultReceiver {
