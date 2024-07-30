@@ -13,6 +13,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardDismissCallback;
+import android.content.Context;
 import android.content.Intent;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -21,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowKeyguardManagerTest {
@@ -189,5 +191,32 @@ public class ShadowKeyguardManagerTest {
     KeyguardManager.KeyguardLock keyguardLock = manager2.newKeyguardLock("tag");
     keyguardLock.disableKeyguard();
     assertThat(shadowOf(manager.newKeyguardLock("tag")).isEnabled()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void keyguardManager_activityContextEnabled_retrievesSameState() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      KeyguardManager applicationKeyguardManager =
+          (KeyguardManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.KEYGUARD_SERVICE);
+      activity = Robolectric.setupActivity(TestActivity.class);
+      KeyguardManager activityKeyguardManager =
+          (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
+
+      boolean applicationIsKeyguardLocked = applicationKeyguardManager.isKeyguardLocked();
+      boolean activityIsKeyguardLocked = activityKeyguardManager.isKeyguardLocked();
+
+      assertThat(activityIsKeyguardLocked).isEqualTo(applicationIsKeyguardLocked);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
