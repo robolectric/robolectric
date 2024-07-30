@@ -11,6 +11,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.hardware.fingerprint.FingerprintManager;
 import android.media.AudioManager;
 import android.os.BatteryManager;
 import android.view.autofill.AutofillManager;
@@ -30,6 +31,7 @@ public class ContextTest {
       GrantPermissionRule.grant(
           Manifest.permission.MODIFY_AUDIO_SETTINGS,
           Manifest.permission.GET_ACCOUNTS,
+          Manifest.permission.USE_BIOMETRIC,
           Manifest.permission.INTERNET,
           Manifest.permission.WRITE_EXTERNAL_STORAGE,
           Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -461,6 +463,69 @@ public class ContextTest {
             String activityMimeType = activityDownloadManager.getMimeTypeForDownloadedFile(testId);
 
             assertThat(activityMimeType).isEqualTo(applicationMimeType);
+          });
+    }
+  }
+
+  @Test
+  public void fingerprintManager_applicationInstance_isNotSameAsActivityInstance() {
+    FingerprintManager applicationFingerprintManager =
+        (FingerprintManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.FINGERPRINT_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            FingerprintManager activityFingerprintManager =
+                (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);
+            assertThat(applicationFingerprintManager)
+                .isNotSameInstanceAs(activityFingerprintManager);
+          });
+    }
+  }
+
+  @Test
+  public void fingerprintManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            FingerprintManager activityFingerprintManager =
+                (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);
+            FingerprintManager anotherActivityFingerprintManager =
+                (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);
+            assertThat(anotherActivityFingerprintManager)
+                .isSameInstanceAs(activityFingerprintManager);
+          });
+    }
+  }
+
+  @Test
+  public void fingerprintManager_instance_hasConsistentFingerprintState() {
+    FingerprintManager applicationFingerprintManager =
+        (FingerprintManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.FINGERPRINT_SERVICE);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            FingerprintManager activityFingerprintManager =
+                (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);
+
+            boolean isApplicationFingerprintAvailable =
+                applicationFingerprintManager.isHardwareDetected();
+            boolean isActivityFingerprintAvailable =
+                activityFingerprintManager.isHardwareDetected();
+
+            assertThat(isActivityFingerprintAvailable).isEqualTo(isApplicationFingerprintAvailable);
+
+            boolean hasApplicationEnrolledFingerprints =
+                applicationFingerprintManager.hasEnrolledFingerprints();
+            boolean hasActivityEnrolledFingerprints =
+                activityFingerprintManager.hasEnrolledFingerprints();
+
+            assertThat(hasActivityEnrolledFingerprints)
+                .isEqualTo(hasApplicationEnrolledFingerprints);
           });
     }
   }
