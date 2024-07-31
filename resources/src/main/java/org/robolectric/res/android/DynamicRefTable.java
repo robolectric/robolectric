@@ -159,7 +159,7 @@ public class DynamicRefTable {
     switch (dataType) {
       case ATTRIBUTE:
         resolvedType = DataType.ATTRIBUTE.code();
-        // fallthrough
+      // fallthrough
       case REFERENCE:
         if (!mAppAsLib) {
           return NO_ERROR;
@@ -170,7 +170,7 @@ public class DynamicRefTable {
         break;
       case DYNAMIC_ATTRIBUTE:
         resolvedType = DataType.ATTRIBUTE.code();
-        // fallthrough
+      // fallthrough
       case DYNAMIC_REFERENCE:
         break;
       default:

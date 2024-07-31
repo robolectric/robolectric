@@ -117,7 +117,7 @@ public class ConfigDescription {
                 set_script(subtags[1]);
                 break;
               }
-              // fall through
+            // fall through
             case 5:
             case 6:
             case 7:

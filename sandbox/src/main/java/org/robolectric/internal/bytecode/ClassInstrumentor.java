@@ -610,22 +610,22 @@ public class ClassInstrumentor {
           break;
 
         case Opcodes.GETFIELD:
-          /* falls through */
+        /* falls through */
         case Opcodes.PUTFIELD:
-          /* falls through */
+        /* falls through */
         case Opcodes.GETSTATIC:
-          /* falls through */
+        /* falls through */
         case Opcodes.PUTSTATIC:
           FieldInsnNode fieldInsnNode = (FieldInsnNode) node;
           fieldInsnNode.desc = mutableClass.config.mappedTypeName(fieldInsnNode.desc); // todo test
           break;
 
         case Opcodes.INVOKESTATIC:
-          /* falls through */
+        /* falls through */
         case Opcodes.INVOKEINTERFACE:
-          /* falls through */
+        /* falls through */
         case Opcodes.INVOKESPECIAL:
-          /* falls through */
+        /* falls through */
         case Opcodes.INVOKEVIRTUAL:
           MethodInsnNode targetMethod = (MethodInsnNode) node;
           targetMethod.desc = mutableClass.config.remapParams(targetMethod.desc);
