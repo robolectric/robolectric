@@ -8,18 +8,26 @@ class SpotlessPlugin implements Plugin<Project> {
         project.getPlugins().apply('com.diffplug.spotless')
 
         project.spotless {
+            // Add configurations for Kotlin files
             kotlin {
-                // Add configurations for Kotlin files
-                target '**/*.kt'
-                ktfmt('0.49').googleStyle()
+                target("**/*.kt")
+                ktfmt("0.49").googleStyle()
             }
+
+            // Add configurations for Kotlin Gradle files
+            kotlinGradle {
+                target("**/*.kts")
+                ktfmt("0.49").googleStyle()
+            }
+
+            // Add configurations for Groovy files
             groovy {
-                // Add configurations for Groovy files
                 target("**/*.groovy")
             }
+
+            // Add configurations for Groovy Gradle files
             groovyGradle {
-                // Add configurations for Groovy Gradle files
-                target('*.gradle', "**/*.gradle")
+                target("*.gradle", "**/*.gradle")
             }
         }
     }
