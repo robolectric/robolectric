@@ -7,7 +7,7 @@ android-gradle = "8.5.1"
 android-tools-common = "31.5.1"
 
 # The runtime dependency for Android classes when Robolectric tests are run
-androidstubs="34"
+androidstubs = "34"
 
 # https://github.com/google/conscrypt/tags
 conscrypt = "2.5.2"
@@ -149,7 +149,6 @@ apache-http-client = { module = "org.apache.httpcomponents:httpclient", version.
 asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
 asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
 asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
-asm-tree = { module = "org.ow2.asm:asm-tree", version.ref = "asm" }
 
 compile-testing = { module = "com.google.testing.compile:compile-testing", version.ref = "compile-testing" }
 
@@ -236,7 +235,9 @@ play-services-basement-for-shadows = { module = "com.google.android.gms:play-ser
 
 play-services-basement = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-basement" }
 
-android-multidex = { module = "com.android.support:multidex", version.ref = "android-multidex"}
+android-multidex = { module = "com.android.support:multidex", version.ref = "android-multidex" }
+
+spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-gradle" }
 
 [bundles]
 play-services-for-shadows = ["androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows"]
@@ -248,12 +249,9 @@ android-library = { id = "com.android.library", version.ref = "android-gradle" }
 application = { id = "application" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt-gradle" }
 error-prone = { id = "net.ltgt.errorprone", version.ref = "error-prone-gradle" }
-groovy = { id = "groovy" }
 idea = { id = "idea" }
 jacoco = { id = "jacoco" }
 java = { id = "java" }
-java-gradle-plugin = { id = "java-gradle-plugin" }
-java-library = { id = "java-library" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 robolectric-android-project = { id = "org.robolectric.gradle.AndroidProjectConfigPlugin" }
@@ -264,4 +262,3 @@ robolectric-spotless = { id = "org.robolectric.gradle.SpotlessPlugin" }
 robolectric-shadows = { id = "org.robolectric.gradle.ShadowsPlugin" }
 robolectric-javadoc = { id = "org.robolectric.gradle.AggregateJavadocPlugin" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
-spotless = { id = "com.diffplug.spotless", version.ref = "spotless-gradle" }
