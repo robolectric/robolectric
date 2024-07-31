@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import java.util.Properties;
 import javax.annotation.Nonnull;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -53,6 +54,32 @@ public final class SingleValueConfigurerTest {
     assertThat(reader.propertyName()).isEqualTo(valueName);
     assertThat(reader.defaultConfig()).isEqualTo(Value.ON);
     assertThat(reader.getConfigFor("foo")).isEqualTo(Value.OFF);
+  }
+
+  @Test
+  public void testNonStandardCasing() {
+    String valueName = "valueConfig";
+    Properties props = new Properties();
+    props.setProperty(valueName, "oFF");
+    PackagePropertiesLoader ppl = new OverridePackagePropertiesLoader(props);
+    Properties systemProps = new Properties();
+    systemProps.setProperty(valueName, "On");
+    ValueConfigReader reader = new ValueConfigReader(systemProps, ppl, Value.ON);
+    assertThat(reader.propertyName()).isEqualTo(valueName);
+    assertThat(reader.defaultConfig()).isEqualTo(Value.ON);
+    assertThat(reader.getConfigFor("foo")).isEqualTo(Value.OFF);
+  }
+
+  @Test
+  public void testIllegalValueThrows() {
+    String valueName = "valueConfig";
+    Properties props = new Properties();
+    props.setProperty(valueName, "none");
+    PackagePropertiesLoader ppl = new OverridePackagePropertiesLoader(props);
+    Properties systemProps = new Properties();
+    systemProps.setProperty(valueName, "none");
+    ValueConfigReader reader = new ValueConfigReader(systemProps, ppl, Value.ON);
+    Assert.assertThrows(IllegalArgumentException.class, () -> reader.getConfigFor("foo"));
   }
 
   @Test
