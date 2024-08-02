@@ -10,6 +10,7 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import java.nio.ByteBuffer;
 import java.util.Locale;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
@@ -30,7 +31,6 @@ import org.robolectric.util.reflector.ForType;
     value = StaticLayout.class,
     minSdk = O,
     maxSdk = P,
-    looseSignatures = true,
     shadowPicker = ShadowNativeStaticLayout.Picker.class)
 public class ShadowNativeStaticLayout {
 
@@ -55,50 +55,46 @@ public class ShadowNativeStaticLayout {
     LineBreakerNatives.nFinishP(nativePtr);
   }
 
-  /**
-   * This has to use looseSignatures due to {@code recycle} param with non-public type {@code
-   * android.text.StaticLayout$LineBreaks}.
-   */
   @Implementation(minSdk = P, maxSdk = P)
   protected static int nComputeLineBreaks(
-      Object nativePtr,
-      Object text,
-      Object measuredTextPtr,
-      Object length,
-      Object firstWidth,
-      Object firstWidthLineCount,
-      Object restWidth,
-      Object variableTabStopsObject,
-      Object defaultTabStop,
-      Object indentsOffset,
-      Object recycle,
-      Object recycleLength,
-      Object recycleBreaks,
-      Object recycleWidths,
-      Object recycleAscents,
-      Object recycleDescents,
-      Object recycleFlags,
-      Object charWidths) {
+      long nativePtr,
+      char[] text,
+      long measuredTextPtr,
+      int length,
+      float firstWidth,
+      int firstWidthLineCount,
+      float restWidth,
+      int[] variableTabStopsObject,
+      int defaultTabStop,
+      int indentsOffset,
+      @ClassName("android.text.StaticLayout$LineBreaks") Object recycle,
+      int recycleLength,
+      int[] recycleBreaks,
+      float[] recycleWidths,
+      float[] recycleAscents,
+      float[] recycleDescents,
+      int[] recycleFlags,
+      float[] charWidths) {
 
     return LineBreakerNatives.nComputeLineBreaksP(
-        (long) nativePtr,
-        (char[]) text,
-        (long) measuredTextPtr,
-        (int) length,
-        (float) firstWidth,
-        (int) firstWidthLineCount,
-        (float) restWidth,
-        intsToFloat((int[]) variableTabStopsObject),
+        nativePtr,
+        text,
+        measuredTextPtr,
+        length,
+        firstWidth,
+        firstWidthLineCount,
+        restWidth,
+        intsToFloat(variableTabStopsObject),
         ((Number) defaultTabStop).floatValue(),
-        (int) indentsOffset,
+        indentsOffset,
         recycle,
-        (int) recycleLength,
-        (int[]) recycleBreaks,
-        (float[]) recycleWidths,
-        (float[]) recycleAscents,
-        (float[]) recycleDescents,
-        (int[]) recycleFlags,
-        (float[]) charWidths);
+        recycleLength,
+        recycleBreaks,
+        recycleWidths,
+        recycleAscents,
+        recycleDescents,
+        recycleFlags,
+        charWidths);
   }
 
   @Implementation(minSdk = O, maxSdk = O_MR1)
@@ -203,24 +199,20 @@ public class ShadowNativeStaticLayout {
     MeasuredTextBuilderNatives.nFreeBuilder(setup.measuredTextBuilderPtr);
   }
 
-  /**
-   * This has to use looseSignatures due to {@code recycle} param with non-public type {@code
-   * android.text.StaticLayout$LineBreaks}.
-   */
   @Implementation(maxSdk = O_MR1)
   protected static int nComputeLineBreaks(
-      Object /*long*/ nativePtr,
-      Object /*LineBreaks*/ recycle,
-      Object /*int[]*/ recycleBreaksObject,
-      Object /*float[]*/ recycleWidthsObject,
-      Object /*int[]*/ recycleFlagsObject,
-      Object /*int*/ recycleLength) {
+      long nativePtr,
+      @ClassName("android.text.StaticLayout$LineBreaks") Object recycle,
+      int[] recycleBreaksObject,
+      float[] recycleWidthsObject,
+      int[] recycleFlagsObject,
+      int recycleLength) {
 
-    int[] recycleBreaks = (int[]) recycleBreaksObject;
-    float[] recycleWidths = (float[]) recycleWidthsObject;
-    int[] recycleFlags = (int[]) recycleFlagsObject;
+    int[] recycleBreaks = recycleBreaksObject;
+    float[] recycleWidths = recycleWidthsObject;
+    int[] recycleFlags = recycleFlagsObject;
 
-    NativeStaticLayoutSetup setup = nativeObjectRegistry.getNativeObject((long) nativePtr);
+    NativeStaticLayoutSetup setup = nativeObjectRegistry.getNativeObject(nativePtr);
 
     long lineBreakerBuilderPtr =
         LineBreakerNatives.nInit(
