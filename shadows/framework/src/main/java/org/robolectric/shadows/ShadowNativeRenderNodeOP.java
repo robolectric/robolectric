@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Canvas;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -19,7 +20,6 @@ import org.robolectric.util.reflector.ForType;
     className = "android.view.RenderNode",
     minSdk = O,
     maxSdk = P,
-    looseSignatures = true,
     shadowPicker = Picker.class)
 public class ShadowNativeRenderNodeOP {
   @RealObject Object realRenderNode;
@@ -371,7 +371,7 @@ public class ShadowNativeRenderNodeOP {
   // To bridge the two implementations, the end(..) function here uses the API Q+ version so that
   // the RenderNode is marked as valid when isValid() is called.
   @Implementation
-  protected void end(Object canvas) {
+  protected void end(@ClassName("android.view.DisplayListCanvas") Object canvas) {
     long nativeRenderNode =
         reflector(RenderNodeOpReflector.class, realRenderNode).getNativeRenderNode();
     long nativeCanvasWrapper = reflector(CanvasReflector.class, canvas).getNativeCanvasWrapper();
