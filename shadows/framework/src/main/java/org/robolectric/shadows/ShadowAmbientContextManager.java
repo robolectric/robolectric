@@ -11,6 +11,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /** Shadow of {@link AmbientContextManager} */
 @Implements(
@@ -19,7 +20,7 @@ import org.robolectric.annotation.Implements;
     isInAndroidSdk = false)
 public class ShadowAmbientContextManager {
 
-  private final Object lock = new Object();
+  private static final Object lock = new Object();
 
   /**
    * Caches the last {@link AmbientContextEventRequest} passed into {@link
@@ -31,7 +32,7 @@ public class ShadowAmbientContextManager {
    */
   @GuardedBy("lock")
   @Nullable
-  private AmbientContextEventRequest lastRegisterObserverRequest;
+  private static AmbientContextEventRequest lastRegisterObserverRequest;
 
   /**
    * The ambient context service status code that will be consumed by the {@code consumer} which is
@@ -39,12 +40,12 @@ public class ShadowAmbientContextManager {
    * #registerObserver(AmbientContextEventRequest, PendingIntent, Executor, Consumer)}.
    */
   @GuardedBy("lock")
-  private Integer ambientContextServiceStatus = AmbientContextManager.STATUS_NOT_SUPPORTED;
+  private static Integer ambientContextServiceStatus = AmbientContextManager.STATUS_NOT_SUPPORTED;
 
   /** Caches the last requested event codes passed into {@link #startConsentActivity(Set)}. */
   @GuardedBy("lock")
   @Nullable
-  private Set<Integer> lastRequestedEventCodesForConsentActivity;
+  private static Set<Integer> lastRequestedEventCodesForConsentActivity;
 
   @Implementation
   protected void registerObserver(
@@ -117,6 +118,15 @@ public class ShadowAmbientContextManager {
   public Set<Integer> getLastRequestedEventCodesForConsentActivity() {
     synchronized (lock) {
       return lastRequestedEventCodesForConsentActivity;
+    }
+  }
+
+  @Resetter
+  public static void reset() {
+    synchronized (lock) {
+      lastRegisterObserverRequest = null;
+      ambientContextServiceStatus = AmbientContextManager.STATUS_NOT_SUPPORTED;
+      lastRequestedEventCodesForConsentActivity = null;
     }
   }
 }
