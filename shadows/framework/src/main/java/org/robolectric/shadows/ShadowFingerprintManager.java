@@ -45,7 +45,9 @@ public class ShadowFingerprintManager {
     isHardwareDetected = false;
     pendingCryptoObject = null;
     pendingCallback = null;
-    fingerprints = Collections.emptyList();
+    if (!fingerprints.isEmpty()) {
+      fingerprints.clear();
+    }
   }
 
   /**
