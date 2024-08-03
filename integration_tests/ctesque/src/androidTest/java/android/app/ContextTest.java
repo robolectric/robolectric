@@ -738,6 +738,59 @@ public class ContextTest {
     }
   }
 
+  @Test
+  public void appOpsManager_applicationInstance_isNotSameAsActivityInstance() {
+    AppOpsManager applicationAppOpsManager =
+        (AppOpsManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.APP_OPS_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AppOpsManager activityAppOpsManager =
+                (AppOpsManager) activity.getSystemService(Context.APP_OPS_SERVICE);
+            assertThat(applicationAppOpsManager).isNotSameInstanceAs(activityAppOpsManager);
+          });
+    }
+  }
+
+  @Test
+  public void appOpsManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AppOpsManager activityAppOpsManager =
+                (AppOpsManager) activity.getSystemService(Context.APP_OPS_SERVICE);
+            AppOpsManager anotherActivityAppOpsManager =
+                (AppOpsManager) activity.getSystemService(Context.APP_OPS_SERVICE);
+            assertThat(anotherActivityAppOpsManager).isSameInstanceAs(activityAppOpsManager);
+          });
+    }
+  }
+
+  @Test
+  public void appOpsManager_instance_retrievesSameOps() {
+    AppOpsManager applicationAppOpsManager =
+        (AppOpsManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.APP_OPS_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            AppOpsManager activityAppOpsManager =
+                (AppOpsManager) activity.getSystemService(Context.APP_OPS_SERVICE);
+
+            String opCode = AppOpsManager.OPSTR_CAMERA;
+            int applicationOpMode =
+                applicationAppOpsManager.checkOpNoThrow(
+                    opCode, android.os.Process.myUid(), "com.example.app");
+            int activityOpMode =
+                activityAppOpsManager.checkOpNoThrow(
+                    opCode, android.os.Process.myUid(), "com.example.app");
+
+            assertThat(activityOpMode).isEqualTo(applicationOpMode);
+          });
+    }
+  }
+
   private static class TestAppWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
