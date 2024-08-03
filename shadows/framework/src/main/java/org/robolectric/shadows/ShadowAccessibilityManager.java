@@ -39,19 +39,20 @@ import org.robolectric.util.reflector.ForType;
 
 @Implements(AccessibilityManager.class)
 public class ShadowAccessibilityManager {
-  private static boolean touchExplorationEnabled;
-  private static boolean enabled;
-  private static boolean isAccessibilityButtonSupported = true;
   private static AccessibilityManager sInstance;
   private static final Object sInstanceSync = new Object();
 
   @RealObject AccessibilityManager realAccessibilityManager;
   private final List<AccessibilityEvent> sentAccessibilityEvents = new ArrayList<>();
+  private boolean enabled;
   private List<AccessibilityServiceInfo> installedAccessibilityServiceList = new ArrayList<>();
   private List<AccessibilityServiceInfo> enabledAccessibilityServiceList = new ArrayList<>();
   private List<ServiceInfo> accessibilityServiceList = new ArrayList<>();
   private final HashMap<AccessibilityStateChangeListener, Handler>
       onAccessibilityStateChangeListeners = new HashMap<>();
+  private boolean touchExplorationEnabled;
+
+  private static boolean isAccessibilityButtonSupported = true;
 
   @Resetter
   public static void reset() {
@@ -59,8 +60,6 @@ public class ShadowAccessibilityManager {
       sInstance = null;
     }
     isAccessibilityButtonSupported = true;
-    enabled = false;
-    touchExplorationEnabled = false;
   }
 
   @HiddenApi
