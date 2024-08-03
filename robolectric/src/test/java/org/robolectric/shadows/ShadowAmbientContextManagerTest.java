@@ -1,7 +1,9 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.ambientcontext.AmbientContextEvent;
 import android.app.ambientcontext.AmbientContextEventRequest;
@@ -14,10 +16,16 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -180,5 +188,58 @@ public class ShadowAmbientContextManagerTest {
             .getLastRequestedEventCodesForConsentActivity();
 
     assertThat(lastRequestedEventCodes).containsExactlyElementsIn(requestedEventCodes);
+  }
+
+  @Test
+  public void ambientContextManager_activityContextEnabled_differentInstancesQueryStatus() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      AmbientContextManager applicationAmbientContextManager =
+          RuntimeEnvironment.getApplication().getSystemService(AmbientContextManager.class);
+      activity = Robolectric.setupActivity(Activity.class);
+      AmbientContextManager activityAmbientContextManager =
+          activity.getSystemService(AmbientContextManager.class);
+
+      assertThat(applicationAmbientContextManager)
+          .isNotSameInstanceAs(activityAmbientContextManager);
+
+      CountDownLatch latch = new CountDownLatch(2);
+      AtomicInteger applicationStatus = new AtomicInteger();
+      AtomicInteger activityStatus = new AtomicInteger();
+
+      Executor executor = Executors.newSingleThreadExecutor();
+
+      Set<Integer> eventTypes =
+          Set.of(AmbientContextEvent.EVENT_COUGH, AmbientContextEvent.EVENT_SNORE);
+
+      applicationAmbientContextManager.queryAmbientContextServiceStatus(
+          eventTypes,
+          executor,
+          status -> {
+            applicationStatus.set(status);
+            latch.countDown();
+          });
+
+      activityAmbientContextManager.queryAmbientContextServiceStatus(
+          eventTypes,
+          executor,
+          status -> {
+            activityStatus.set(status);
+            latch.countDown();
+          });
+
+      latch.await();
+
+      assertThat(applicationStatus.get()).isEqualTo(activityStatus.get());
+    } catch (Exception e) {
+      fail("Test failed due to exception: " + e.getMessage());
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
