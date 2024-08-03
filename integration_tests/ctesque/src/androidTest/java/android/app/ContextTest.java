@@ -18,7 +18,10 @@ import android.content.Context;
 import android.hardware.camera2.CameraManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.media.AudioManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.view.autofill.AutofillManager;
 import android.widget.RemoteViews;
 import androidx.test.core.app.ActivityScenario;
@@ -40,6 +43,7 @@ public class ContextTest {
       GrantPermissionRule.grant(
           Manifest.permission.MODIFY_AUDIO_SETTINGS,
           Manifest.permission.GET_ACCOUNTS,
+          Manifest.permission.ACCESS_NETWORK_STATE,
           Manifest.permission.USE_BIOMETRIC,
           Manifest.permission.INTERNET,
           Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -692,6 +696,63 @@ public class ContextTest {
         views.setTextViewText(android.R.id.text1, "Test Widget");
         appWidgetManager.updateAppWidget(appWidgetId, views);
       }
+    }
+  }
+
+  @Test
+  public void connectivityManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            ConnectivityManager activityConnectivityManager =
+                (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+            ConnectivityManager anotherActivityConnectivityManager =
+                (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+            assertThat(anotherActivityConnectivityManager)
+                .isSameInstanceAs(activityConnectivityManager);
+          });
+    }
+  }
+
+  @Test
+  public void connectivityManager_applicationInstance_behaviorBasedOnSdkVersion() {
+    ConnectivityManager applicationConnectivityManager =
+        ApplicationProvider.getApplicationContext().getSystemService(ConnectivityManager.class);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            ConnectivityManager activityConnectivityManager =
+                activity.getSystemService(ConnectivityManager.class);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+              assertThat(applicationConnectivityManager)
+                  .isNotSameInstanceAs(activityConnectivityManager);
+            } else {
+              assertThat(applicationConnectivityManager)
+                  .isSameInstanceAs(activityConnectivityManager);
+            }
+          });
+    }
+  }
+
+  @Test
+  public void connectivityManager_instance_retrievesSameActiveNetwork() {
+    ConnectivityManager applicationConnectivityManager =
+        (ConnectivityManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            ConnectivityManager activityConnectivityManager =
+                (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            Network applicationActiveNetwork = applicationConnectivityManager.getActiveNetwork();
+            Network activityActiveNetwork = activityConnectivityManager.getActiveNetwork();
+
+            assertThat(activityActiveNetwork).isEqualTo(applicationActiveNetwork);
+          });
     }
   }
 }
