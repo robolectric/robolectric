@@ -97,6 +97,7 @@ public class ShadowMediaCodec {
 
   @Nullable private MediaFormat pendingOutputFormat;
   @Nullable private MediaFormat outputFormat;
+  @Nullable private MediaFormat inputFormat;
   @Nullable private String[] initialPendingOutputFormatKeys;
   @Nullable private Object[] initialPendingOutputFormatValues;
 
@@ -183,6 +184,7 @@ public class ShadowMediaCodec {
       int flags) {
     isAsync = callback != null;
     pendingOutputFormat = recreateMediaFormatFromKeysValues(keys, values);
+    inputFormat = recreateMediaFormatFromKeysValues(keys, values);
     initialPendingOutputFormatKeys = keys;
     initialPendingOutputFormatValues = values;
     fakeCodec.onConfigured(pendingOutputFormat, surface, mediaCrypto, flags);
@@ -491,13 +493,26 @@ public class ShadowMediaCodec {
     protected void free() {}
   }
 
-  /** Returns a default {@link MediaFormat} if not set via {@link #getOutputFormat()}. */
+  /**
+   * Returns {@link MediaFormat} set as output format via {@link MediaCodec#configure}.
+   *
+   * @throws IllegalStateException if not in configured state.
+   */
   @Implementation
   protected MediaFormat getOutputFormat() {
-    if (outputFormat == null) {
-      return new MediaFormat();
-    }
-    return outputFormat;
+    checkState(pendingOutputFormat != null || outputFormat != null, "Codec is not configured.");
+    return pendingOutputFormat != null ? pendingOutputFormat : outputFormat;
+  }
+
+  /**
+   * Returns {@link MediaFormat} set as input format via {@link MediaCodec#configure}.
+   *
+   * @throws IllegalStateException if not in configured state.
+   */
+  @Implementation
+  protected MediaFormat getInputFormat() {
+    checkState(inputFormat != null, "Codec is not configured.");
+    return inputFormat;
   }
 
   private static void copyBufferInfo(BufferInfo from, BufferInfo to) {
