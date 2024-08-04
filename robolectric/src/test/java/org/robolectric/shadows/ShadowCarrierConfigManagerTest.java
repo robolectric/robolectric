@@ -1,17 +1,22 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.Context;
+import android.os.Parcel;
 import android.os.PersistableBundle;
 import android.telephony.CarrierConfigManager;
+import android.telephony.SubscriptionManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 /** Junit test for {@link ShadowCarrierConfigManager}. */
@@ -116,5 +121,50 @@ public class ShadowCarrierConfigManagerTest {
     assertThat(verifyBundle.get(STRING_KEY)).isEqualTo(STRING_OVERRIDE_VALUE);
     assertThat(verifyBundle.getInt(INT_KEY)).isEqualTo(INT_VALUE);
     assertThat(verifyBundle.getBoolean(BOOLEAN_KEY)).isEqualTo(BOOLEAN_VALUE);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void carrierConfigManager_activityContextEnabled_retrievesSameConfigs() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      CarrierConfigManager applicationCarrierConfigManager =
+          (CarrierConfigManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.CARRIER_CONFIG_SERVICE);
+
+      activity = Robolectric.setupActivity(Activity.class);
+      CarrierConfigManager activityCarrierConfigManager =
+          (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+
+      assertThat(applicationCarrierConfigManager).isNotSameInstanceAs(activityCarrierConfigManager);
+
+      int subId = SubscriptionManager.getDefaultSubscriptionId();
+
+      PersistableBundle applicationConfigs =
+          applicationCarrierConfigManager.getConfigForSubId(subId);
+      PersistableBundle activityConfigs = activityCarrierConfigManager.getConfigForSubId(subId);
+
+      Parcel applicationParcel = Parcel.obtain();
+      Parcel activityParcel = Parcel.obtain();
+
+      applicationConfigs.writeToParcel(applicationParcel, 0);
+      activityConfigs.writeToParcel(activityParcel, 0);
+
+      byte[] applicationBytes = applicationParcel.marshall();
+      byte[] activityBytes = activityParcel.marshall();
+
+      assertThat(activityBytes).isEqualTo(applicationBytes);
+
+      applicationParcel.recycle();
+      activityParcel.recycle();
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
