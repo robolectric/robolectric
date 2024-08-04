@@ -25,6 +25,7 @@ import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
@@ -38,7 +39,6 @@ import org.robolectric.versioning.AndroidVersions.U;
 /** Shadow for {@link Typeface} that is backed by native code */
 @Implements(
     value = Typeface.class,
-    looseSignatures = true,
     minSdk = O,
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
@@ -92,9 +92,10 @@ public class ShadowNativeTypeface extends ShadowTypeface {
 
   @SuppressWarnings("unchecked")
   @Implementation(minSdk = O, maxSdk = O_MR1)
-  protected static Object makeFamilyFromParsed(Object family, Object bufferForPathMap) {
+  protected static @ClassName("android.graphics.FontFamily") Object makeFamilyFromParsed(
+      @ClassName("android.text.FontConfig$Family") Object family,
+      Map<String, ByteBuffer> bufferForPath) {
     FontConfigFamilyReflector reflector = reflector(FontConfigFamilyReflector.class, family);
-    Map<String, ByteBuffer> bufferForPath = (Map<String, ByteBuffer>) bufferForPathMap;
 
     FontFamily fontFamily =
         Shadow.newInstance(
