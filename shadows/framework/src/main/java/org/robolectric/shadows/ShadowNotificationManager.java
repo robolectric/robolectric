@@ -30,13 +30,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Shadows for NotificationManager. */
 @SuppressWarnings({"UnusedDeclaration", "AndroidConcurrentHashMap"})
-@Implements(value = NotificationManager.class, looseSignatures = true)
+@Implements(value = NotificationManager.class)
 public class ShadowNotificationManager {
   private static final int MAX_NOTIFICATION_LIMIT = 25;
   private boolean mAreNotificationsEnabled = true;
@@ -129,13 +130,15 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected Object /*NotificationChannel*/ getNotificationChannel(String channelId) {
+  protected @ClassName("android.app.NotificationChannel") Object getNotificationChannel(
+      String channelId) {
     return notificationChannels.get(channelId);
   }
 
   /** Returns a NotificationChannel that has the given parent and conversation ID. */
   @Implementation(minSdk = R)
-  protected NotificationChannel getNotificationChannel(String channelId, String conversationId) {
+  protected @ClassName("android.app.NotificationChannel") Object getNotificationChannel(
+      String channelId, String conversationId) {
     for (Object object : getNotificationChannels()) {
       NotificationChannel notificationChannel = (NotificationChannel) object;
       if (conversationId.equals(notificationChannel.getConversationId())
@@ -147,26 +150,29 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected void createNotificationChannelGroup(Object /*NotificationChannelGroup*/ group) {
+  protected void createNotificationChannelGroup(
+      @ClassName("android.app.NotificationChannelGroup") Object group) {
     String id = ReflectionHelpers.callInstanceMethod(group, "getId");
     notificationChannelGroups.put(id, group);
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
   protected void createNotificationChannelGroups(
-      List<Object /*NotificationChannelGroup*/> groupList) {
+      List<@ClassName("android.app.NotificationChannelGroup") Object> groupList) {
     for (Object group : groupList) {
       createNotificationChannelGroup(group);
     }
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected List<Object /*NotificationChannelGroup*/> getNotificationChannelGroups() {
+  protected List<@ClassName("android.app.NotificationChannelGroup") Object>
+      getNotificationChannelGroups() {
     return ImmutableList.copyOf(notificationChannelGroups.values());
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected void createNotificationChannel(Object /*NotificationChannel*/ channel) {
+  protected void createNotificationChannel(
+      @ClassName("android.app.NotificationChannel") Object channel) {
     String id = ReflectionHelpers.callInstanceMethod(channel, "getId");
     // Per documentation, recreating a deleted channel should have the same settings as the old
     // deleted channel. See
@@ -196,14 +202,15 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected void createNotificationChannels(List<Object /*NotificationChannel*/> channelList) {
+  protected void createNotificationChannels(
+      List<@ClassName("android.app.NotificationChannel") Object> channelList) {
     for (Object channel : channelList) {
       createNotificationChannel(channel);
     }
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  public List<Object /*NotificationChannel*/> getNotificationChannels() {
+  public List<@ClassName("android.app.NotificationChannel") Object> getNotificationChannels() {
     return ImmutableList.copyOf(notificationChannels.values());
   }
 
@@ -462,7 +469,8 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = P)
-  public Object /*NotificationChannelGroup*/ getNotificationChannelGroup(String id) {
+  public @ClassName("android.app.NotificationChannelGroup") Object getNotificationChannelGroup(
+      String id) {
     return notificationChannelGroups.get(id);
   }
 
