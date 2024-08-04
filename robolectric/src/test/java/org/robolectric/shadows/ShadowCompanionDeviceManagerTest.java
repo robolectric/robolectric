@@ -7,6 +7,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.app.Application;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
@@ -17,11 +18,14 @@ import android.content.IntentSender;
 import android.net.MacAddress;
 import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.List;
 import java.util.concurrent.Executors;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -429,5 +433,35 @@ public class ShadowCompanionDeviceManagerTest {
       @Override
       public void onFailure(CharSequence error) {}
     };
+  }
+
+  @Test
+  public void companionDeviceManager_activityContextEnabled_differentInstances() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      CompanionDeviceManager applicationCompanionDeviceManager =
+          RuntimeEnvironment.getApplication().getSystemService(CompanionDeviceManager.class);
+      activity = Robolectric.setupActivity(Activity.class);
+      CompanionDeviceManager activityCompanionDeviceManager =
+          activity.getSystemService(CompanionDeviceManager.class);
+
+      assertThat(applicationCompanionDeviceManager)
+          .isNotSameInstanceAs(activityCompanionDeviceManager);
+
+      List<String> applicationAssociations = applicationCompanionDeviceManager.getAssociations();
+      List<String> activityAssociations = activityCompanionDeviceManager.getAssociations();
+
+      assertThat(applicationAssociations).isNotNull();
+      assertThat(activityAssociations).isNotNull();
+
+      assertThat(activityAssociations).isEqualTo(applicationAssociations);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
