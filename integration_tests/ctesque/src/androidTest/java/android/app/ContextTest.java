@@ -23,6 +23,9 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.media.AudioManager;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.os.PersistableBundle;
+import android.telephony.CarrierConfigManager;
+import android.telephony.SubscriptionManager;
 import android.view.autofill.AutofillManager;
 import android.widget.RemoteViews;
 import androidx.test.core.app.ActivityScenario;
@@ -47,6 +50,7 @@ public class ContextTest {
           Manifest.permission.BLUETOOTH_ADMIN,
           Manifest.permission.MODIFY_AUDIO_SETTINGS,
           Manifest.permission.GET_ACCOUNTS,
+          Manifest.permission.READ_PHONE_STATE,
           Manifest.permission.USE_BIOMETRIC,
           Manifest.permission.USE_BIOMETRIC,
           Manifest.permission.INTERNET,
@@ -843,6 +847,66 @@ public class ContextTest {
                     opCode, android.os.Process.myUid(), "com.example.app");
 
             assertThat(activityOpMode).isEqualTo(applicationOpMode);
+          });
+    }
+  }
+
+  @Test
+  public void carrierConfigManager_applicationInstance_isNotSameAsActivityInstance() {
+    CarrierConfigManager applicationCarrierConfigManager =
+        (CarrierConfigManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.CARRIER_CONFIG_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CarrierConfigManager activityCarrierConfigManager =
+                (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+            assertThat(applicationCarrierConfigManager)
+                .isNotSameInstanceAs(activityCarrierConfigManager);
+          });
+    }
+  }
+
+  @Test
+  public void carrierConfigManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CarrierConfigManager activityCarrierConfigManager =
+                (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+            CarrierConfigManager anotherActivityCarrierConfigManager =
+                (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+            assertThat(anotherActivityCarrierConfigManager)
+                .isSameInstanceAs(activityCarrierConfigManager);
+          });
+    }
+  }
+
+  @Test
+  public void carrierConfigManager_instance_changesAffectEachOther() {
+    CarrierConfigManager applicationCarrierConfigManager =
+        (CarrierConfigManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.CARRIER_CONFIG_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CarrierConfigManager activityCarrierConfigManager =
+                (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+
+            int subId = SubscriptionManager.getDefaultSubscriptionId();
+
+            PersistableBundle applicationConfig =
+                applicationCarrierConfigManager.getConfigForSubId(subId);
+            PersistableBundle activityConfig =
+                activityCarrierConfigManager.getConfigForSubId(subId);
+
+            applicationConfig.putString("test_key", "application_value");
+            activityConfig.putString("test_key", "activity_value");
+
+            assertThat(applicationConfig.getString("test_key")).isEqualTo("application_value");
+            assertThat(activityConfig.getString("test_key")).isEqualTo("activity_value");
           });
     }
   }
