@@ -11,6 +11,8 @@ import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -41,6 +43,8 @@ public class ContextTest {
   @Rule
   public GrantPermissionRule mRuntimePermissionRule =
       GrantPermissionRule.grant(
+          Manifest.permission.BLUETOOTH,
+          Manifest.permission.BLUETOOTH_ADMIN,
           Manifest.permission.MODIFY_AUDIO_SETTINGS,
           Manifest.permission.GET_ACCOUNTS,
           Manifest.permission.USE_BIOMETRIC,
@@ -734,6 +738,58 @@ public class ContextTest {
             int activityCanAuthenticate = activityBiometricManager.canAuthenticate(authenticators);
 
             assertThat(activityCanAuthenticate).isEqualTo(applicationCanAuthenticate);
+          });
+    }
+  }
+
+  @Test
+  public void bluetoothManager_applicationInstance_isNotSameAsActivityInstance() {
+    BluetoothManager applicationBluetoothManager =
+        (BluetoothManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.BLUETOOTH_SERVICE);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            BluetoothManager activityBluetoothManager =
+                (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+            assertThat(applicationBluetoothManager).isNotSameInstanceAs(activityBluetoothManager);
+          });
+    }
+  }
+
+  @Test
+  public void bluetoothManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            BluetoothManager activityBluetoothManager =
+                (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+            BluetoothManager anotherActivityBluetoothManager =
+                (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+            assertThat(anotherActivityBluetoothManager).isSameInstanceAs(activityBluetoothManager);
+          });
+    }
+  }
+
+  @Test
+  @SdkSuppress(maxSdkVersion = Build.VERSION_CODES.Q)
+  public void bluetoothManager_instance_retrievesSameAdapter() {
+    BluetoothManager applicationBluetoothManager =
+        (BluetoothManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.BLUETOOTH_SERVICE);
+
+    BluetoothAdapter applicationAdapter = applicationBluetoothManager.getAdapter();
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            BluetoothManager activityBluetoothManager =
+                (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+
+            BluetoothAdapter activityAdapter = activityBluetoothManager.getAdapter();
+
+            assertThat(applicationAdapter).isEqualTo(activityAdapter);
           });
     }
   }
