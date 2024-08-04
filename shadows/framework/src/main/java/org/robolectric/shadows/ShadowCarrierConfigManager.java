@@ -11,14 +11,22 @@ import java.util.HashMap;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.versioning.AndroidVersions.U;
 
 @Implements(value = CarrierConfigManager.class, minSdk = M)
 public class ShadowCarrierConfigManager {
 
-  private final HashMap<Integer, PersistableBundle> bundles = new HashMap<>();
-  private final HashMap<Integer, PersistableBundle> overrideBundles = new HashMap<>();
-  private boolean readPhoneStatePermission = true;
+  private static final HashMap<Integer, PersistableBundle> bundles = new HashMap<>();
+  private static final HashMap<Integer, PersistableBundle> overrideBundles = new HashMap<>();
+  private static boolean readPhoneStatePermission = true;
+
+  @Resetter
+  public static void reset() {
+    bundles.clear();
+    overrideBundles.clear();
+    readPhoneStatePermission = true;
+  }
 
   /**
    * Returns {@link android.os.PersistableBundle} previously set by {@link #overrideConfig} or
