@@ -7,6 +7,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.app.Application;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
@@ -21,7 +22,10 @@ import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestActivity;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -372,5 +376,48 @@ public class ShadowCompanionDeviceManagerTest {
       @Override
       public void onFailure(CharSequence error) {}
     };
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void
+      companionDeviceManager_activityContextEnabled_differentInstancesRetrieveAssociations() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      CompanionDeviceManager applicationCompanionDeviceManager =
+          RuntimeEnvironment.getApplication().getSystemService(CompanionDeviceManager.class);
+      activity = Robolectric.setupActivity(TestActivity.class);
+      CompanionDeviceManager activityCompanionDeviceManager =
+          activity.getSystemService(CompanionDeviceManager.class);
+
+      assertThat(applicationCompanionDeviceManager)
+          .isNotSameInstanceAs(activityCompanionDeviceManager);
+
+      boolean applicationCompanionDeviceServiceAvailable =
+          checkFeaturePresent(applicationCompanionDeviceManager);
+      boolean activityCompanionDeviceServiceAvailable =
+          checkFeaturePresent(activityCompanionDeviceManager);
+
+      assertThat(activityCompanionDeviceServiceAvailable)
+          .isEqualTo(applicationCompanionDeviceServiceAvailable);
+
+      if (applicationCompanionDeviceServiceAvailable && activityCompanionDeviceServiceAvailable) {
+        assertThat(activityCompanionDeviceManager.getAssociations())
+            .isEqualTo(applicationCompanionDeviceManager.getAssociations());
+      }
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
+  }
+
+  private boolean checkFeaturePresent(CompanionDeviceManager service) {
+    boolean featurePresent = service != null;
+    if (!featurePresent) {}
+    return featurePresent;
   }
 }
