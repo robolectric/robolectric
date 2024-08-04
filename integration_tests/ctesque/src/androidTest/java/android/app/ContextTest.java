@@ -23,6 +23,7 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.media.AudioManager;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.view.accessibility.CaptioningManager;
 import android.view.autofill.AutofillManager;
 import android.widget.RemoteViews;
 import androidx.test.core.app.ActivityScenario;
@@ -843,6 +844,62 @@ public class ContextTest {
                     opCode, android.os.Process.myUid(), "com.example.app");
 
             assertThat(activityOpMode).isEqualTo(applicationOpMode);
+          });
+    }
+  }
+
+  @Test
+  public void captioningManager_applicationInstance_isNotSameAsActivityInstance() {
+    CaptioningManager applicationCaptioningManager =
+        (CaptioningManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.CAPTIONING_SERVICE);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CaptioningManager activityCaptioningManager =
+                (CaptioningManager) activity.getSystemService(Context.CAPTIONING_SERVICE);
+
+            assertThat(applicationCaptioningManager).isNotSameInstanceAs(activityCaptioningManager);
+          });
+    }
+  }
+
+  @Test
+  public void captioningManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CaptioningManager activityCaptioningManager =
+                (CaptioningManager) activity.getSystemService(Context.CAPTIONING_SERVICE);
+
+            CaptioningManager anotherActivityCaptioningManager =
+                (CaptioningManager) activity.getSystemService(Context.CAPTIONING_SERVICE);
+
+            assertThat(anotherActivityCaptioningManager)
+                .isSameInstanceAs(activityCaptioningManager);
+          });
+    }
+  }
+
+  @Test
+  public void captioningManager_instance_retrievesSameValues() {
+    CaptioningManager applicationCaptioningManager =
+        (CaptioningManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.CAPTIONING_SERVICE);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CaptioningManager activityCaptioningManager =
+                (CaptioningManager) activity.getSystemService(Context.CAPTIONING_SERVICE);
+
+            boolean applicationisEnabled = applicationCaptioningManager.isEnabled();
+            boolean activityisEnabled = activityCaptioningManager.isEnabled();
+
+            assertThat(applicationisEnabled).isEqualTo(activityisEnabled);
           });
     }
   }
