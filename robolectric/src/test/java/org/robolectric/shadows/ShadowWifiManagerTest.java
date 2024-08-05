@@ -37,11 +37,13 @@ import android.net.wifi.WifiManager.LocalOnlyConnectionFailureListener;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.net.wifi.WifiManager.PnoScanResultsCallback;
 import android.net.wifi.WifiNetworkSpecifier;
+import android.net.wifi.WifiNetworkSuggestion;
 import android.net.wifi.WifiSsid;
 import android.net.wifi.WifiUsabilityStatsEntry;
 import android.util.Pair;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -1310,6 +1312,41 @@ public class ShadowWifiManagerTest {
     executor.shutdown();
 
     assertThat(listener.incomingFailures).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void addNetworkSuggestions_returnsSuccess() {
+    assertThat(wifiManager.getNetworkSuggestions()).isEmpty();
+    WifiNetworkSuggestion suggestion =
+        new WifiNetworkSuggestion.Builder()
+            .setSsid("TestWifi")
+            .setBssid(MacAddress.fromString("11:22:33:44:55:66"))
+            .build();
+
+    assertThat(wifiManager.addNetworkSuggestions(Collections.singletonList(suggestion)))
+        .isEqualTo(WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS);
+
+    assertThat(wifiManager.getNetworkSuggestions()).containsExactly(suggestion);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void addNetworkSuggestions_returnsError() {
+    assertThat(wifiManager.getNetworkSuggestions()).isEmpty();
+    WifiNetworkSuggestion suggestion =
+        new WifiNetworkSuggestion.Builder()
+            .setSsid("TestWifi")
+            .setBssid(MacAddress.fromString("11:22:33:44:55:66"))
+            .build();
+    ((ShadowWifiManager) Shadow.extract(wifiManager))
+        .setAddNetworkSuggestionsResult(
+            WifiManager.STATUS_NETWORK_SUGGESTIONS_ERROR_APP_DISALLOWED);
+
+    assertThat(wifiManager.addNetworkSuggestions(Collections.singletonList(suggestion)))
+        .isEqualTo(WifiManager.STATUS_NETWORK_SUGGESTIONS_ERROR_APP_DISALLOWED);
+
+    assertThat(wifiManager.getNetworkSuggestions()).isEmpty();
   }
 
   private static final class IncomingFailure {

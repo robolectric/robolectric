@@ -22,6 +22,7 @@ import android.net.wifi.WifiManager.AddNetworkResult;
 import android.net.wifi.WifiManager.LocalOnlyConnectionFailureListener;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.net.wifi.WifiNetworkSpecifier;
+import android.net.wifi.WifiNetworkSuggestion;
 import android.net.wifi.WifiSsid;
 import android.net.wifi.WifiUsabilityStatsEntry;
 import android.os.Binder;
@@ -30,6 +31,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.ArraySet;
 import android.util.Pair;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -89,6 +91,8 @@ public class ShadowWifiManager {
   private SoftApConfiguration softApConfig;
   private final Object pnoRequestLock = new Object();
   private PnoScanRequest outstandingPnoScanRequest = null;
+  private ImmutableList<WifiNetworkSuggestion> lastAddedSuggestions = ImmutableList.of();
+  private int addNetworkSuggestionsResult;
 
   private final ConcurrentMap<LocalOnlyConnectionFailureListener, Executor>
       localOnlyConnectionFailureListenerExecutorMap = new ConcurrentHashMap<>();
@@ -105,6 +109,25 @@ public class ShadowWifiManager {
     localOnlyConnectionFailureListenerExecutorMap.forEach(
         (failureListener, executor) ->
             executor.execute(() -> failureListener.onConnectionFailed(specifier, failureReason)));
+  }
+
+  /** Uses the given result as the return value for {@link WifiManager#addNetworkSuggestions}. */
+  public void setAddNetworkSuggestionsResult(int result) {
+    addNetworkSuggestionsResult = result;
+  }
+
+  @Implementation(minSdk = Q)
+  protected int addNetworkSuggestions(List<WifiNetworkSuggestion> networkSuggestions) {
+    Preconditions.checkNotNull(networkSuggestions);
+    if (addNetworkSuggestionsResult == WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
+      lastAddedSuggestions = ImmutableList.copyOf(networkSuggestions);
+    }
+    return addNetworkSuggestionsResult;
+  }
+
+  @Implementation(minSdk = R)
+  protected List<WifiNetworkSuggestion> getNetworkSuggestions() {
+    return lastAddedSuggestions;
   }
 
   @Implementation(minSdk = UPSIDE_DOWN_CAKE)
