@@ -31,7 +31,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v4
 
       - name: Run aggregateDocs
         run: ./gradlew clean aggregateDocs
@@ -54,7 +54,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v4
 
       - name: Run javadocJar
         run: ./gradlew clean javadocJar
@@ -72,7 +72,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v4
 
       - name: Run :preinstrumented:instrumentAll
         run: ./gradlew :preinstrumented:instrumentAll
@@ -95,7 +95,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v4
 
       - name: Publish to Maven local
         run: ./gradlew publishToMavenLocal --no-watch-fs
