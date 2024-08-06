@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
@@ -379,6 +380,42 @@ public class ShadowTextToSpeechTest {
             textToSpeech.isLanguageAvailable(
                 new Locale.Builder().setLanguage("ja").setRegion("jp").build()))
         .isEqualTo(TextToSpeech.LANG_NOT_SUPPORTED);
+  }
+
+  @Test
+  public void setLanguage_languageAvailable_shouldSetVoiceToLocaleDefault() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+    ShadowTextToSpeech.addLanguageAvailability(Locale.US);
+
+    textToSpeech.setLanguage(Locale.US);
+
+    assertThat(textToSpeech.getVoice().getName()).isEqualTo("en-US");
+  }
+
+  @Test
+  public void setLanguage_languageUnavailable_voiceIsNull() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+
+    textToSpeech.setLanguage(Locale.US);
+
+    assertThat(textToSpeech.getVoice()).isNull();
+  }
+
+  @Test
+  public void getVoice_setVoice_returnsVoiceThatWasSet() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+    Voice testVoice =
+        new Voice(
+            "test",
+            Locale.US,
+            Voice.QUALITY_NORMAL,
+            Voice.LATENCY_NORMAL,
+            /* requiresNetworkConnection= */ false,
+            new HashSet<>());
+
+    textToSpeech.setVoice(testVoice);
+
+    assertThat(textToSpeech.getVoice()).isEqualTo(testVoice);
   }
 
   @Test
