@@ -150,7 +150,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = TIRAMISU)
   protected List<PackageInfo> getInstalledPackages(
-      @ClassName("android.content.pm.PackageManager$PackageInfoFlags") Object flags) {
+      @ClassName("android.content.pm.PackageManager$ResolveInfoFlags") Object flags) {
     return getInstalledPackages(((PackageInfoFlags) flags).getValue());
   }
 
