@@ -73,6 +73,16 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void getConsolidatedNotificationPolicy() {
+    assertThat(notificationManager.getConsolidatedNotificationPolicy()).isNull();
+
+    final Policy policy = new Policy(0, 0, 0);
+    shadowOf(notificationManager).setConsolidatedNotificationPolicy(policy);
+    assertThat(notificationManager.getConsolidatedNotificationPolicy()).isEqualTo(policy);
+  }
+
+  @Test
   @Config(minSdk = Build.VERSION_CODES.O)
   public void createNotificationChannel() {
     notificationManager.createNotificationChannel(new NotificationChannel("id", "name", 1));

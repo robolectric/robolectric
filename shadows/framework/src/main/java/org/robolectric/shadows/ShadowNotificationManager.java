@@ -52,6 +52,7 @@ public class ShadowNotificationManager {
 
   private int currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
   private Policy notificationPolicy;
+  private Policy consolidatedNotificationPolicy;
   private String notificationDelegate;
   private int importance;
 
@@ -262,6 +263,23 @@ public class ShadowNotificationManager {
   @Implementation(minSdk = M)
   protected Policy getNotificationPolicy() {
     return notificationPolicy;
+  }
+
+  /**
+   * Specifies the consolidated notification policy to return
+   *
+   * @see #getConsolidatedNotificationPolicy()
+   */
+  public void setConsolidatedNotificationPolicy(Policy policy) {
+    consolidatedNotificationPolicy = policy;
+  }
+
+  /**
+   * @return the value specified via {@link #setConsolidatedNotificationPolicy(Policy)}
+   */
+  @Implementation(minSdk = R)
+  protected Policy getConsolidatedNotificationPolicy() {
+    return consolidatedNotificationPolicy;
   }
 
   /**
