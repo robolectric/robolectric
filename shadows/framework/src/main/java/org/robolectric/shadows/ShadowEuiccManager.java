@@ -8,13 +8,21 @@ import java.util.HashMap;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 @Implements(value = EuiccManager.class, minSdk = P)
 public class ShadowEuiccManager {
 
-  private final Map<Integer, EuiccManager> cardIdsToEuiccManagers = new HashMap<>();
-  private boolean enabled;
-  private String eid;
+  private static final Map<Integer, EuiccManager> cardIdsToEuiccManagers = new HashMap<>();
+  private static boolean enabled;
+  private static String eid;
+
+  @Resetter
+  public static void reset() {
+    cardIdsToEuiccManagers.clear();
+    enabled = false;
+    eid = null;
+  }
 
   @Implementation(minSdk = Q)
   protected EuiccManager createForCardId(int cardId) {
