@@ -26,11 +26,13 @@ import android.os.Process;
 import android.os.UserHandle;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
@@ -684,5 +686,36 @@ public class ShadowCrossProfileAppsTest {
       }
     }
     fail("did not throw " + clazz.getName());
+  }
+
+  @Test
+  public void
+      crossProfileApps_activityContextEnabled_differentInstancesRetrieveTargetUserProfiles() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      CrossProfileApps applicationCrossProfileApps =
+          (CrossProfileApps)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
+      activity = Robolectric.setupActivity(Activity.class);
+      CrossProfileApps activityCrossProfileApps =
+          (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
+
+      assertThat(applicationCrossProfileApps).isNotSameInstanceAs(activityCrossProfileApps);
+
+      List<UserHandle> applicationTargetUserProfiles =
+          applicationCrossProfileApps.getTargetUserProfiles();
+      List<UserHandle> activityTargetUserProfiles =
+          activityCrossProfileApps.getTargetUserProfiles();
+
+      assertThat(activityTargetUserProfiles).isEqualTo(applicationTargetUserProfiles);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
