@@ -25,6 +25,7 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.media.AudioManager;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.os.DropBoxManager;
 import android.os.UserHandle;
 import android.telephony.euicc.EuiccManager;
 import android.view.autofill.AutofillManager;
@@ -1001,6 +1002,60 @@ public class ContextTest {
             assertThat(activityProfiles).isNotEmpty();
 
             assertThat(activityProfiles).isEqualTo(applicationProfiles);
+          });
+    }
+  }
+
+  @Test
+  public void dropBoxManager_applicationInstance_isNotSameAsActivityInstance() {
+    DropBoxManager applicationDropBoxManager =
+        (DropBoxManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.DROPBOX_SERVICE);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            DropBoxManager activityDropBoxManager =
+                (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
+            assertThat(applicationDropBoxManager).isNotSameInstanceAs(activityDropBoxManager);
+          });
+    }
+  }
+
+  @Test
+  public void dropBoxManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            DropBoxManager activityDropBoxManager =
+                (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
+            DropBoxManager anotherActivityDropBoxManager =
+                (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
+            assertThat(anotherActivityDropBoxManager).isSameInstanceAs(activityDropBoxManager);
+          });
+    }
+  }
+
+  @Test
+  public void dropBoxManager_instance_retrievesSameEntry_noPermissionRequired() {
+    DropBoxManager applicationDropBoxManager =
+        (DropBoxManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.DROPBOX_SERVICE);
+
+    String tag = "testTag";
+    String data = "testData";
+    applicationDropBoxManager.addText(tag, data);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            DropBoxManager activityDropBoxManager =
+                (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
+
+            boolean applicationTagEnabled = applicationDropBoxManager.isTagEnabled(tag);
+            boolean activityTagEnabled = activityDropBoxManager.isTagEnabled(tag);
+
+            assertThat(activityTagEnabled).isEqualTo(applicationTagEnabled);
           });
     }
   }

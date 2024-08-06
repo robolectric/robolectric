@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.DropBoxManager;
 import android.os.DropBoxManager.Entry;
@@ -15,6 +16,7 @@ import java.io.InputStreamReader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 
 /** Unit tests for {@see ShadowDropboxManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -90,7 +92,7 @@ public class ShadowDropBoxManagerTest {
   public void resetClearsData() {
     shadowDropBoxManager.addData(TAG, 1, DATA);
 
-    shadowDropBoxManager.reset();
+    ShadowDropBoxManager.reset();
 
     assertThat(manager.getNextEntry(null, 0)).isNull();
   }
@@ -114,5 +116,35 @@ public class ShadowDropBoxManagerTest {
 
     assertThat(manager.getNextEntry(null, baseTimestamp + 99)).isNotNull();
     assertThat(manager.getNextEntry(null, baseTimestamp + 100)).isNull();
+  }
+
+  @Test
+  public void dropBoxManager_activityContextEnabled_differentInstancesVerifyTagEnabled() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      DropBoxManager applicationDropBoxManager =
+          (DropBoxManager)
+              ApplicationProvider.getApplicationContext().getSystemService(Context.DROPBOX_SERVICE);
+
+      String tag = "testTag";
+      String data = "testData";
+      applicationDropBoxManager.addText(tag, data);
+
+      activity = Robolectric.setupActivity(Activity.class);
+      DropBoxManager activityDropBoxManager =
+          (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
+
+      boolean applicationTagEnabled = applicationDropBoxManager.isTagEnabled(tag);
+      boolean activityTagEnabled = activityDropBoxManager.isTagEnabled(tag);
+
+      assertThat(activityTagEnabled).isEqualTo(applicationTagEnabled);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
