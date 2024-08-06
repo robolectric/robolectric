@@ -1,25 +1,28 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.PersistableBundle;
 import android.telephony.CarrierConfigManager;
+import android.telephony.SubscriptionManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestActivity;
 
 /** Junit test for {@link ShadowCarrierConfigManager}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = M)
 public class ShadowCarrierConfigManagerTest {
-
-  private CarrierConfigManager carrierConfigManager;
 
   private static final int TEST_ID = 123;
   private static final String STRING_KEY = "key1";
@@ -29,6 +32,8 @@ public class ShadowCarrierConfigManagerTest {
   private static final int INT_VALUE = 100;
   private static final String BOOLEAN_KEY = "key3";
   private static final boolean BOOLEAN_VALUE = true;
+  private CarrierConfigManager carrierConfigManager;
+  private Context context;
 
   @Before
   public void setUp() {
@@ -116,5 +121,39 @@ public class ShadowCarrierConfigManagerTest {
     assertThat(verifyBundle.get(STRING_KEY)).isEqualTo(STRING_OVERRIDE_VALUE);
     assertThat(verifyBundle.getInt(INT_KEY)).isEqualTo(INT_VALUE);
     assertThat(verifyBundle.getBoolean(BOOLEAN_KEY)).isEqualTo(BOOLEAN_VALUE);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void carrierConfigManager_activityContextEnabled_differentInstancesRetrieveConfigs() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      CarrierConfigManager applicationCarrierConfigManager =
+          (CarrierConfigManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.CARRIER_CONFIG_SERVICE);
+      activity = Robolectric.setupActivity(TestActivity.class);
+      CarrierConfigManager activityCarrierConfigManager =
+          (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+
+      int subId = SubscriptionManager.getDefaultSubscriptionId();
+
+      PersistableBundle applicationConfig =
+          applicationCarrierConfigManager.getConfigForSubId(subId);
+      PersistableBundle activityConfig = activityCarrierConfigManager.getConfigForSubId(subId);
+
+      applicationConfig.putString("test_key", "application_value");
+      activityConfig.putString("test_key", "activity_value");
+
+      assertThat(applicationConfig.getString("test_key")).isEqualTo("application_value");
+      assertThat(activityConfig.getString("test_key")).isEqualTo("activity_value");
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
