@@ -111,6 +111,9 @@ public class ShadowPackageInstaller {
     sessionInfo.appPackageName = params.appPackageName;
     sessionInfo.appLabel = params.appLabel;
     sessionInfo.appIcon = params.appIcon;
+    if (VERSION.SDK_INT >= P) {
+      sessionInfo.installerPackageName = params.installerPackageName;
+    }
 
     sessionInfos.put(sessionInfo.getSessionId(), sessionInfo);
 
