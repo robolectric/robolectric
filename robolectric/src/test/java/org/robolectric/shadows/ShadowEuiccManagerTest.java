@@ -6,12 +6,15 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
+import android.content.Context;
 import android.telephony.euicc.EuiccManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 /** Junit test for {@link ShadowEuiccManager}. */
@@ -56,5 +59,32 @@ public class ShadowEuiccManagerTest {
     shadowOf(euiccManager).setEuiccManagerForCardId(cardId, mockEuiccManager);
 
     assertThat(euiccManager.createForCardId(cardId)).isEqualTo(mockEuiccManager);
+  }
+
+  @Test
+  public void euiccManager_activityContextEnabled_differentInstancesRetrieveEids() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      EuiccManager applicationEuiccManager =
+          (EuiccManager)
+              ApplicationProvider.getApplicationContext().getSystemService(Context.EUICC_SERVICE);
+      activity = Robolectric.setupActivity(Activity.class);
+      EuiccManager activityEuiccManager =
+          (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
+
+      assertThat(applicationEuiccManager).isNotSameInstanceAs(activityEuiccManager);
+
+      String applicationEid = applicationEuiccManager.getEid();
+      String activityEid = activityEuiccManager.getEid();
+
+      assertThat(activityEid).isEqualTo(applicationEid);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

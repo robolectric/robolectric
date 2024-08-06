@@ -23,6 +23,7 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.media.AudioManager;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.telephony.euicc.EuiccManager;
 import android.view.autofill.AutofillManager;
 import android.widget.RemoteViews;
 import androidx.test.core.app.ActivityScenario;
@@ -843,6 +844,54 @@ public class ContextTest {
                     opCode, android.os.Process.myUid(), "com.example.app");
 
             assertThat(activityOpMode).isEqualTo(applicationOpMode);
+          });
+    }
+  }
+
+  @Test
+  public void euiccManager_applicationInstance_isNotSameAsActivityInstance() {
+    EuiccManager applicationEuiccManager =
+        (EuiccManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.EUICC_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            EuiccManager activityEuiccManager =
+                (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
+            assertThat(applicationEuiccManager).isNotSameInstanceAs(activityEuiccManager);
+          });
+    }
+  }
+
+  @Test
+  public void euiccManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            EuiccManager activityEuiccManager =
+                (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
+            EuiccManager anotherActivityEuiccManager =
+                (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
+            assertThat(anotherActivityEuiccManager).isSameInstanceAs(activityEuiccManager);
+          });
+    }
+  }
+
+  @Test
+  public void euiccManager_instance_getsEid() {
+    EuiccManager applicationEuiccManager =
+        (EuiccManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.EUICC_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            EuiccManager activityEuiccManager =
+                (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
+
+            String applicationEid = applicationEuiccManager.getEid();
+            String activityEid = activityEuiccManager.getEid();
+
+            assertThat(activityEid).isEqualTo(applicationEid);
           });
     }
   }
