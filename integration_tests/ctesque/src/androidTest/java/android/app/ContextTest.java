@@ -17,12 +17,14 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.CrossProfileApps;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.camera2.CameraManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.media.AudioManager;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.os.UserHandle;
 import android.telephony.euicc.EuiccManager;
 import android.view.autofill.AutofillManager;
 import android.widget.RemoteViews;
@@ -32,6 +34,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.rule.GrantPermissionRule;
 import com.google.common.truth.Truth;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -892,6 +895,58 @@ public class ContextTest {
             String activityEid = activityEuiccManager.getEid();
 
             assertThat(activityEid).isEqualTo(applicationEid);
+          });
+    }
+  }
+
+  @Test
+  public void crossProfileApps_applicationInstance_isNotSameAsActivityInstance() {
+    CrossProfileApps applicationCrossProfileApps =
+        (CrossProfileApps)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CrossProfileApps activityCrossProfileApps =
+                (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
+            assertThat(applicationCrossProfileApps).isNotSameInstanceAs(activityCrossProfileApps);
+          });
+    }
+  }
+
+  @Test
+  public void crossProfileApps_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CrossProfileApps activityCrossProfileApps =
+                (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
+            CrossProfileApps anotherActivityCrossProfileApps =
+                (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
+            assertThat(anotherActivityCrossProfileApps).isSameInstanceAs(activityCrossProfileApps);
+          });
+    }
+  }
+
+  @Test
+  public void crossProfileApps_instance_retrievesSameTargetUserProfiles() {
+    CrossProfileApps applicationCrossProfileApps =
+        (CrossProfileApps)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CrossProfileApps activityCrossProfileApps =
+                (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
+
+            List<UserHandle> applicationTargetUserProfiles =
+                applicationCrossProfileApps.getTargetUserProfiles();
+            List<UserHandle> activityTargetUserProfiles =
+                activityCrossProfileApps.getTargetUserProfiles();
+
+            assertThat(activityTargetUserProfiles).isEqualTo(applicationTargetUserProfiles);
           });
     }
   }
