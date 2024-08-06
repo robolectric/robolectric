@@ -23,6 +23,7 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.media.AudioManager;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.security.FileIntegrityManager;
 import android.view.autofill.AutofillManager;
 import android.widget.RemoteViews;
 import androidx.test.core.app.ActivityScenario;
@@ -843,6 +844,68 @@ public class ContextTest {
                     opCode, android.os.Process.myUid(), "com.example.app");
 
             assertThat(activityOpMode).isEqualTo(applicationOpMode);
+          });
+    }
+  }
+
+  @Test
+  public void fileIntegrityManager_applicationInstance_isNotSameAsActivityInstance() {
+    FileIntegrityManager applicationFileIntegrityManager =
+        (FileIntegrityManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.FILE_INTEGRITY_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            FileIntegrityManager activityFileIntegrityManager =
+                (FileIntegrityManager) activity.getSystemService(Context.FILE_INTEGRITY_SERVICE);
+
+            if (android.os.Build.VERSION.SDK_INT
+                >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+              assertThat(applicationFileIntegrityManager)
+                  .isNotSameInstanceAs(activityFileIntegrityManager);
+            } else {
+              assertThat(applicationFileIntegrityManager)
+                  .isSameInstanceAs(activityFileIntegrityManager);
+            }
+          });
+    }
+  }
+
+  @Test
+  public void fileIntegrityManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            FileIntegrityManager activityFileIntegrityManager =
+                (FileIntegrityManager) activity.getSystemService(Context.FILE_INTEGRITY_SERVICE);
+            FileIntegrityManager anotherActivityFileIntegrityManager =
+                (FileIntegrityManager) activity.getSystemService(Context.FILE_INTEGRITY_SERVICE);
+            assertThat(anotherActivityFileIntegrityManager)
+                .isSameInstanceAs(activityFileIntegrityManager);
+          });
+    }
+  }
+
+  @Test
+  @SdkSuppress(minSdkVersion = Build.VERSION_CODES.R)
+  public void fileIntegrityManager_instance_retrievesSameValues() {
+    FileIntegrityManager applicationFileIntegrityManager =
+        (FileIntegrityManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.FILE_INTEGRITY_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            FileIntegrityManager activityFileIntegrityManager =
+                (FileIntegrityManager) activity.getSystemService(Context.FILE_INTEGRITY_SERVICE);
+
+            boolean applicationApkVeritySupported =
+                applicationFileIntegrityManager.isApkVeritySupported();
+            boolean activityApkVeritySupported =
+                activityFileIntegrityManager.isApkVeritySupported();
+
+            assertThat(activityApkVeritySupported).isEqualTo(applicationApkVeritySupported);
           });
     }
   }
