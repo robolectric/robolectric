@@ -18,6 +18,7 @@ import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.CrossProfileApps;
+import android.content.pm.LauncherApps;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.camera2.CameraManager;
 import android.hardware.fingerprint.FingerprintManager;
@@ -947,6 +948,59 @@ public class ContextTest {
                 activityCrossProfileApps.getTargetUserProfiles();
 
             assertThat(activityTargetUserProfiles).isEqualTo(applicationTargetUserProfiles);
+          });
+    }
+  }
+
+  @Test
+  public void launcherApps_applicationInstance_isNotSameAsActivityInstance() {
+    LauncherApps applicationLauncherApps =
+        (LauncherApps)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.LAUNCHER_APPS_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            LauncherApps activityLauncherApps =
+                (LauncherApps) activity.getSystemService(Context.LAUNCHER_APPS_SERVICE);
+            assertThat(applicationLauncherApps).isNotSameInstanceAs(activityLauncherApps);
+          });
+    }
+  }
+
+  @Test
+  public void launcherApps_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            LauncherApps activityLauncherApps =
+                (LauncherApps) activity.getSystemService(Context.LAUNCHER_APPS_SERVICE);
+            LauncherApps anotherActivityLauncherApps =
+                (LauncherApps) activity.getSystemService(Context.LAUNCHER_APPS_SERVICE);
+            assertThat(anotherActivityLauncherApps).isSameInstanceAs(activityLauncherApps);
+          });
+    }
+  }
+
+  @Test
+  public void launcherApps_instance_retrievesSameProfiles() {
+    LauncherApps applicationLauncherApps =
+        (LauncherApps)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.LAUNCHER_APPS_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            LauncherApps activityLauncherApps =
+                (LauncherApps) activity.getSystemService(Context.LAUNCHER_APPS_SERVICE);
+
+            List<UserHandle> applicationProfiles = applicationLauncherApps.getProfiles();
+            List<UserHandle> activityProfiles = activityLauncherApps.getProfiles();
+
+            assertThat(applicationProfiles).isNotEmpty();
+            assertThat(activityProfiles).isNotEmpty();
+
+            assertThat(activityProfiles).isEqualTo(applicationProfiles);
           });
     }
   }

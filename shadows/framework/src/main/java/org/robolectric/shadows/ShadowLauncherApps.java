@@ -40,24 +40,41 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow of {@link android.content.pm.LauncherApps}. */
 @Implements(value = LauncherApps.class)
 public class ShadowLauncherApps {
-  private List<ShortcutInfo> shortcuts = new ArrayList<>();
-  private final Multimap<UserHandle, String> enabledPackages = HashMultimap.create();
-  private final Multimap<UserHandle, ComponentName> enabledActivities = HashMultimap.create();
-  private final Multimap<UserHandle, LauncherActivityInfo> shortcutActivityList =
+  private static List<ShortcutInfo> shortcuts = new ArrayList<>();
+  private static final Multimap<UserHandle, String> enabledPackages = HashMultimap.create();
+  private static final Multimap<UserHandle, ComponentName> enabledActivities =
       HashMultimap.create();
-  private final Multimap<UserHandle, LauncherActivityInfo> activityList = HashMultimap.create();
-  private final Map<UserHandle, Map<String, ApplicationInfo>> applicationInfoList = new HashMap<>();
-  private final Map<UserHandle, Map<String, Bundle>> suspendedPackageLauncherExtras =
+  private static final Multimap<UserHandle, LauncherActivityInfo> shortcutActivityList =
+      HashMultimap.create();
+  private static final Multimap<UserHandle, LauncherActivityInfo> activityList =
+      HashMultimap.create();
+  private static final Map<UserHandle, Map<String, ApplicationInfo>> applicationInfoList =
+      new HashMap<>();
+  private static final Map<UserHandle, Map<String, Bundle>> suspendedPackageLauncherExtras =
       new HashMap<>();
 
-  private final List<Pair<LauncherApps.Callback, Handler>> callbacks = new ArrayList<>();
-  private boolean hasShortcutHostPermission = false;
+  private static final List<Pair<LauncherApps.Callback, Handler>> callbacks = new ArrayList<>();
+  private static boolean hasShortcutHostPermission = false;
+
+  @Resetter
+  public static void reset() {
+    shortcuts.clear();
+    enabledPackages.clear();
+    enabledActivities.clear();
+    shortcutActivityList.clear();
+    activityList.clear();
+    applicationInfoList.clear();
+    suspendedPackageLauncherExtras.clear();
+    callbacks.clear();
+    hasShortcutHostPermission = false;
+  }
 
   /**
    * Adds a dynamic shortcut to be returned by {@link #getShortcuts(ShortcutQuery, UserHandle)}.
