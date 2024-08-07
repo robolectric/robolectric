@@ -23,6 +23,7 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.media.AudioManager;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.os.LocaleList;
 import android.telephony.euicc.EuiccManager;
 import android.view.autofill.AutofillManager;
 import android.widget.RemoteViews;
@@ -892,6 +893,56 @@ public class ContextTest {
             String activityEid = activityEuiccManager.getEid();
 
             assertThat(activityEid).isEqualTo(applicationEid);
+          });
+    }
+  }
+
+  @Test
+  public void localeManager_applicationInstance_isNotSameAsActivityInstance() {
+    LocaleManager applicationLocaleManager =
+        (LocaleManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.LOCALE_SERVICE);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            LocaleManager activityLocaleManager =
+                (LocaleManager) activity.getSystemService(Context.LOCALE_SERVICE);
+            assertThat(applicationLocaleManager).isNotSameInstanceAs(activityLocaleManager);
+          });
+    }
+  }
+
+  @Test
+  public void localeManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            LocaleManager activityLocaleManager =
+                (LocaleManager) activity.getSystemService(Context.LOCALE_SERVICE);
+            LocaleManager anotherActivityLocaleManager =
+                (LocaleManager) activity.getSystemService(Context.LOCALE_SERVICE);
+            assertThat(anotherActivityLocaleManager).isSameInstanceAs(activityLocaleManager);
+          });
+    }
+  }
+
+  @Test
+  public void localeManager_instance_retrievesSameApplicationLocales() {
+    LocaleManager applicationLocaleManager =
+        (LocaleManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.LOCALE_SERVICE);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            LocaleManager activityLocaleManager =
+                (LocaleManager) activity.getSystemService(Context.LOCALE_SERVICE);
+
+            LocaleList applicationLocales = applicationLocaleManager.getApplicationLocales();
+            LocaleList activityLocales = activityLocaleManager.getApplicationLocales();
+
+            assertThat(activityLocales).isEqualTo(applicationLocales);
           });
     }
   }

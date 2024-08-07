@@ -12,15 +12,23 @@ import java.util.Map;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow of {@link LocaleManager} */
 @Implements(value = LocaleManager.class, minSdk = VERSION_CODES.TIRAMISU, isInAndroidSdk = false)
 public class ShadowLocaleManager {
 
-  private final Map<String, LocaleList> appLocales = new HashMap<>();
-  private final Set<String> packagesInstalledByCaller = new HashSet<>();
-  private boolean enforceInstallerCheck;
+  private static final Map<String, LocaleList> appLocales = new HashMap<>();
+  private static final Set<String> packagesInstalledByCaller = new HashSet<>();
+  private static boolean enforceInstallerCheck;
+
+  @Resetter
+  public static void reset() {
+    appLocales.clear();
+    packagesInstalledByCaller.clear();
+    enforceInstallerCheck = false;
+  }
 
   /**
    * Returns the stored locales from in-memory map for the given package when {@link
