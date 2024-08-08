@@ -13,6 +13,7 @@ import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
+import android.companion.CompanionDeviceManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -894,6 +895,75 @@ public class ContextTest {
             assertThat(activityEid).isEqualTo(applicationEid);
           });
     }
+  }
+
+  @Test
+  public void companionDeviceManager_applicationInstance_isNotSameAsActivityInstance() {
+    CompanionDeviceManager applicationCompanionDeviceManager =
+        (CompanionDeviceManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.COMPANION_DEVICE_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CompanionDeviceManager activityCompanionDeviceManager =
+                (CompanionDeviceManager)
+                    activity.getSystemService(Context.COMPANION_DEVICE_SERVICE);
+            assertThat(applicationCompanionDeviceManager)
+                .isNotSameInstanceAs(activityCompanionDeviceManager);
+          });
+    }
+  }
+
+  @Test
+  public void companionDeviceManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CompanionDeviceManager activityCompanionDeviceManager =
+                (CompanionDeviceManager)
+                    activity.getSystemService(Context.COMPANION_DEVICE_SERVICE);
+            CompanionDeviceManager anotherActivityCompanionDeviceManager =
+                (CompanionDeviceManager)
+                    activity.getSystemService(Context.COMPANION_DEVICE_SERVICE);
+            assertThat(anotherActivityCompanionDeviceManager)
+                .isSameInstanceAs(activityCompanionDeviceManager);
+          });
+    }
+  }
+
+  @Test
+  public void companionDeviceManager_instance_retrievesSameService() {
+    CompanionDeviceManager applicationCompanionDeviceManager =
+        ApplicationProvider.getApplicationContext().getSystemService(CompanionDeviceManager.class);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            CompanionDeviceManager activityCompanionDeviceManager =
+                activity.getSystemService(CompanionDeviceManager.class);
+
+            boolean applicationCompanionDeviceServiceAvailable =
+                checkFeaturePresent(applicationCompanionDeviceManager);
+            boolean activityCompanionDeviceServiceAvailable =
+                checkFeaturePresent(activityCompanionDeviceManager);
+
+            assertThat(activityCompanionDeviceServiceAvailable)
+                .isEqualTo(applicationCompanionDeviceServiceAvailable);
+
+            if (applicationCompanionDeviceServiceAvailable
+                && activityCompanionDeviceServiceAvailable) {
+              assertThat(activityCompanionDeviceManager.getAssociations())
+                  .isEqualTo(applicationCompanionDeviceManager.getAssociations());
+            }
+          });
+    }
+  }
+
+  private boolean checkFeaturePresent(CompanionDeviceManager service) {
+    boolean featurePresent = service != null;
+    if (!featurePresent) {}
+    return featurePresent;
   }
 
   private static class TestAppWidgetProvider extends AppWidgetProvider {
