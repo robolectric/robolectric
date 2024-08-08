@@ -5,10 +5,12 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import android.content.Context;
 import android.hardware.location.ContextHubClient;
+import android.hardware.location.ContextHubClientCallback;
 import android.hardware.location.ContextHubInfo;
 import android.hardware.location.ContextHubManager;
 import android.hardware.location.ContextHubTransaction;
 import android.hardware.location.NanoAppInstanceInfo;
+import android.hardware.location.NanoAppMessage;
 import android.hardware.location.NanoAppState;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
@@ -63,7 +65,7 @@ public class ShadowContextHubManagerTest {
     long nanoAppId = 5;
     int nanoAppVersion = 1;
     shadowManager.addNanoApp(
-        contextHubInfoList.get(0), 0 /* nanoAppUid */, nanoAppId, nanoAppVersion);
+        contextHubInfoList.get(0), /* nanoAppUid= */ 0, nanoAppId, nanoAppVersion);
 
     ContextHubTransaction<List<NanoAppState>> transaction =
         contextHubManager.queryNanoApps(contextHubInfoList.get(0));
@@ -154,5 +156,126 @@ public class ShadowContextHubManagerTest {
     NanoAppInstanceInfo info = contextHubManager.getNanoAppInstanceInfo(0 /* nanoAppUid */);
 
     assertThat(info).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.P)
+  public void broadcastsFromContextHub_notifiesClient() {
+    ContextHubManager contextHubManager = context.getSystemService(ContextHubManager.class);
+    TestContextHubClientCallback callback = new TestContextHubClientCallback();
+    contextHubManager.createClient(null, callback);
+
+    assertThat(callback.onNanoAppLoadedCount).isEqualTo(0);
+
+    ShadowContextHubManager shadowManager = Shadow.extract(contextHubManager);
+    shadowManager.broadcastNanoAppLoaded(1);
+
+    assertThat(callback.onNanoAppLoadedCount).isEqualTo(1);
+    assertThat(callback.onMessageFromNanoAppCount).isEqualTo(0);
+
+    shadowManager.broadcastMessageFromNanoApp(
+        NanoAppMessage.createMessageToNanoApp(1, 1, new byte[0]));
+
+    assertThat(callback.onMessageFromNanoAppCount).isEqualTo(1);
+    assertThat(callback.onHubResetCount).isEqualTo(0);
+
+    shadowManager.resetContextHub();
+
+    assertThat(callback.onHubResetCount).isEqualTo(1);
+    assertThat(callback.onNanoAppAbortedCount).isEqualTo(0);
+
+    shadowManager.broadcastNanoAppAborted(1, 0);
+
+    assertThat(callback.onNanoAppAbortedCount).isEqualTo(1);
+    assertThat(callback.onNanoAppUnloadedCount).isEqualTo(0);
+
+    shadowManager.broadcastNanoAppUnloaded(1);
+
+    assertThat(callback.onNanoAppUnloadedCount).isEqualTo(1);
+    assertThat(callback.onNanoAppEnabledCount).isEqualTo(0);
+
+    shadowManager.broadcastNanoAppEnabled(1);
+
+    assertThat(callback.onNanoAppEnabledCount).isEqualTo(1);
+    assertThat(callback.onNanoAppDisabledCount).isEqualTo(0);
+
+    shadowManager.broadcastNanoAppDisabled(1);
+
+    assertThat(callback.onNanoAppDisabledCount).isEqualTo(1);
+    assertThat(callback.onClientAuthorizationChangedCount).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void broadcastsClientAuthorizationChanged_notifiesClient() {
+    ContextHubManager contextHubManager = context.getSystemService(ContextHubManager.class);
+    TestContextHubClientCallback callback = new TestContextHubClientCallback();
+    contextHubManager.createClient(null, callback);
+
+    assertThat(callback.onClientAuthorizationChangedCount).isEqualTo(0);
+
+    ShadowContextHubManager shadowManager = Shadow.extract(contextHubManager);
+    shadowManager.broadcastClientAuthorizationChanged(1, 2);
+
+    assertThat(callback.onClientAuthorizationChangedCount).isEqualTo(1);
+    assertThat(callback.onNanoAppLoadedCount).isEqualTo(0);
+    assertThat(callback.onMessageFromNanoAppCount).isEqualTo(0);
+    assertThat(callback.onHubResetCount).isEqualTo(0);
+    assertThat(callback.onNanoAppAbortedCount).isEqualTo(0);
+    assertThat(callback.onNanoAppUnloadedCount).isEqualTo(0);
+    assertThat(callback.onNanoAppEnabledCount).isEqualTo(0);
+    assertThat(callback.onNanoAppDisabledCount).isEqualTo(0);
+  }
+
+  private static class TestContextHubClientCallback extends ContextHubClientCallback {
+    public int onMessageFromNanoAppCount = 0;
+    public int onHubResetCount = 0;
+    public int onNanoAppAbortedCount = 0;
+    public int onNanoAppLoadedCount = 0;
+    public int onNanoAppUnloadedCount = 0;
+    public int onNanoAppEnabledCount = 0;
+    public int onNanoAppDisabledCount = 0;
+    public int onClientAuthorizationChangedCount = 0;
+
+    @Override
+    public void onMessageFromNanoApp(ContextHubClient client, NanoAppMessage message) {
+      onMessageFromNanoAppCount++;
+    }
+
+    @Override
+    public void onHubReset(ContextHubClient client) {
+      onHubResetCount++;
+    }
+
+    @Override
+    public void onNanoAppAborted(ContextHubClient client, long nanoAppId, int abortCode) {
+      onNanoAppAbortedCount++;
+    }
+
+    @Override
+    public void onNanoAppLoaded(ContextHubClient client, long nanoAppId) {
+      onNanoAppLoadedCount++;
+    }
+
+    @Override
+    public void onNanoAppUnloaded(ContextHubClient client, long nanoAppId) {
+      onNanoAppUnloadedCount++;
+    }
+
+    @Override
+    public void onNanoAppEnabled(ContextHubClient client, long nanoAppId) {
+      onNanoAppEnabledCount++;
+    }
+
+    @Override
+    public void onNanoAppDisabled(ContextHubClient client, long nanoAppId) {
+      onNanoAppDisabledCount++;
+    }
+
+    @Override
+    public void onClientAuthorizationChanged(
+        ContextHubClient client, long nanoAppId, int authorization) {
+      onClientAuthorizationChangedCount++;
+    }
   }
 }
