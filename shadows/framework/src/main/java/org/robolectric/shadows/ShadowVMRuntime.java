@@ -2,9 +2,11 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
 
+import com.google.common.base.Preconditions;
 import dalvik.system.VMRuntime;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
+import java.util.WeakHashMap;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -13,9 +15,13 @@ import org.robolectric.res.android.NativeObjRegistry;
 
 @Implements(value = VMRuntime.class, isInAndroidSdk = false)
 public class ShadowVMRuntime {
-
+  // Stores address -> object mapping.
   private final NativeObjRegistry<WeakReference<Object>> nativeObjRegistry =
       new NativeObjRegistry<>("VRRuntime.nativeObjectRegistry");
+
+  // Stores object -> address mapping.
+  private final WeakHashMap<Object, Long> nonMovableArrays = new WeakHashMap<>();
+
   // There actually isn't any android JNI code to call through to in Robolectric due to
   // cross-platform compatibility issues. We default to a reasonable value that reflects the devices
   // that would commonly run this code.
@@ -30,20 +36,32 @@ public class ShadowVMRuntime {
 
   @Implementation
   public Object newNonMovableArray(Class<?> type, int size) {
-    if (type.equals(int.class)) {
-      return new int[size];
+    Object arrayInstance = Array.newInstance(type, size);
+    synchronized (nativeObjRegistry) {
+      long pointer = nativeObjRegistry.register(new WeakReference<>(arrayInstance));
+      nonMovableArrays.put(arrayInstance, pointer);
     }
-    return null;
+    return arrayInstance;
   }
 
   /** Returns a unique identifier of the object instead of a 'native' address. */
   @Implementation
   public long addressOf(Object obj) {
-    return nativeObjRegistry.register(new WeakReference<>(obj));
+    if (obj == null) {
+      return 0;
+    }
+    Preconditions.checkArgument(
+        obj.getClass().isArray(), "addressOf(Object) is only supported for array objects");
+    Class<?> arrayClass = obj.getClass().getComponentType();
+    Preconditions.checkArgument(
+        arrayClass.isPrimitive(),
+        "addressOf(Object) is only supported for primitive array objects");
+    return nonMovableArrays.getOrDefault(obj, 0L);
   }
 
   /** Returns the object previously registered with {@link #addressOf(Object)}. */
-  public @Nullable Object getObjectForAddress(long address) {
+  @Nullable
+  public Object getObjectForAddress(long address) {
     return nativeObjRegistry.getNativeObject(address).get();
   }
 
