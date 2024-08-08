@@ -9,13 +9,21 @@ import android.service.autofill.FillEventHistory;
 import android.view.autofill.AutofillManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /** Robolectric implementation of {@link android.os.AutofillManager}. */
 @Implements(value = AutofillManager.class, minSdk = O)
 public class ShadowAutofillManager {
-  @Nullable private ComponentName autofillServiceComponentName = null;
-  private boolean autofillSupported = false;
-  private boolean enabled = false;
+  @Nullable private static ComponentName autofillServiceComponentName = null;
+  private static boolean autofillSupported = false;
+  private static boolean enabled = false;
+
+  @Resetter
+  public static void reset() {
+    autofillServiceComponentName = null;
+    autofillSupported = false;
+    enabled = false;
+  }
 
   @Implementation
   protected FillEventHistory getFillEventHistory() {

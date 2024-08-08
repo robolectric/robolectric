@@ -34,8 +34,10 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accounts.Account;
+import android.app.Activity;
 import android.app.Application;
 import android.app.KeyguardManager;
+import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
@@ -65,6 +67,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -2709,5 +2712,36 @@ public final class ShadowDevicePolicyManagerTest {
       @Override
       public void onServiceDisconnected(ComponentName name) {}
     };
+  }
+
+  @Test
+  public void devicePolicyManager_instance_retrievesSameAdminStatus() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      DevicePolicyManager applicationDpm =
+          (DevicePolicyManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.DEVICE_POLICY_SERVICE);
+
+      activity = Robolectric.setupActivity(Activity.class);
+
+      DevicePolicyManager activityDpm =
+          (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
+
+      ComponentName testAdminComponent =
+          new ComponentName(ApplicationProvider.getApplicationContext(), DeviceAdminReceiver.class);
+
+      boolean applicationAdminActive = applicationDpm.isAdminActive(testAdminComponent);
+      boolean activityAdminActive = activityDpm.isAdminActive(testAdminComponent);
+
+      assertThat(activityAdminActive).isEqualTo(applicationAdminActive);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

@@ -116,6 +116,7 @@ import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.GetInstallerPackageNameMode;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -126,7 +127,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
-@Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
+@Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
   /** Package name of the Android platform. */
   private static final String PLATFORM_PACKAGE_NAME = "android";
@@ -148,7 +149,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = TIRAMISU)
-  protected List<PackageInfo> getInstalledPackages(Object flags) {
+  protected List<PackageInfo> getInstalledPackages(
+      @ClassName("android.content.pm.PackageManager$PackageInfoFlags") Object flags) {
     return getInstalledPackages(((PackageInfoFlags) flags).getValue());
   }
 
@@ -190,7 +192,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = Q)
-  protected Object getModuleInfo(String packageName, int flags) throws NameNotFoundException {
+  protected @ClassName("android.content.pm.ModuleInfo") Object getModuleInfo(
+      String packageName, int flags) throws NameNotFoundException {
     synchronized (lock) {
       // Double checks that the respective package matches and is not disabled
       getPackageInfo(packageName, flags);
@@ -473,9 +476,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = TIRAMISU)
-  protected PackageInfo getPackageInfo(Object packageName, Object flags)
+  protected PackageInfo getPackageInfo(
+      String packageName,
+      @ClassName("android.content.pm.PackageManager$PackageInfoFlags") Object flags)
       throws NameNotFoundException {
-    return getPackageInfo((String) packageName, ((PackageInfoFlags) flags).getValue());
+    return getPackageInfo(packageName, ((PackageInfoFlags) flags).getValue());
   }
 
   private PackageInfo getPackageInfo(String packageName, long flags) throws NameNotFoundException {
@@ -577,6 +582,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         (resolveInfo, serviceInfo) -> resolveInfo.serviceInfo = serviceInfo,
         (resolveInfo) -> resolveInfo.serviceInfo,
         ServiceInfo::new);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected List<ResolveInfo> queryIntentServices(
+      Intent intent,
+      @ClassName("android.content.pm.PackageManager$ResolveInfoFlags") Object flagsObject) {
+    return queryIntentServices(intent, (int) ((ResolveInfoFlags) flagsObject).getValue());
   }
 
   private boolean hasSomeComponentInfo(ResolveInfo resolveInfo) {
@@ -790,8 +802,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   /** Behaves as {@link #queryIntentActivities(Intent, int)} and currently ignores userId. */
   @Implementation(minSdk = TIRAMISU)
   protected List<ResolveInfo> queryIntentActivitiesAsUser(
-      /*Intent*/ Object intent, /*ResolveInfoFlags*/ Object flags, /*int*/ Object userId) {
-    return queryIntentActivities((Intent) intent, (int) ((ResolveInfoFlags) flags).getValue());
+      Intent intent,
+      @ClassName("android.content.pm.PackageManager$ResolveInfoFlags") Object flags,
+      int userId) {
+    return queryIntentActivities(intent, (int) ((ResolveInfoFlags) flags).getValue());
   }
 
   /** Returns true if intent has specified a specific component. */
@@ -906,10 +920,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = TIRAMISU)
   protected ActivityInfo getReceiverInfo(
-      /*ComponentName*/ Object component, /*ComponentInfoFlags*/ Object flags)
+      ComponentName component,
+      @ClassName("android.content.pm.PackageManager$ComponentInfoFlags") Object flags)
       throws NameNotFoundException {
-    return getReceiverInfo(
-        (ComponentName) component, (int) ((ComponentInfoFlags) flags).getValue());
+    return getReceiverInfo(component, (int) ((ComponentInfoFlags) flags).getValue());
   }
 
   @Implementation
@@ -926,8 +940,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = TIRAMISU)
   protected List<ResolveInfo> queryBroadcastReceivers(
-      /*Intent*/ Object intent, /*ResolveInfoFlags*/ Object flags) {
-    return queryBroadcastReceivers((Intent) intent, (int) ((ResolveInfoFlags) flags).getValue());
+      Intent intent,
+      @ClassName("android.content.pm.PackageManager$ResolveInfoFlags") Object flags) {
+    return queryBroadcastReceivers(intent, (int) ((ResolveInfoFlags) flags).getValue());
   }
 
   private static int matchIntentFilter(Intent intent, IntentFilter intentFilter) {
@@ -959,9 +974,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = TIRAMISU)
   protected ServiceInfo getServiceInfo(
-      /*ComponentName*/ Object component, /*ComponentInfoFlags*/ Object flags)
+      ComponentName component,
+      @ClassName("android.content.pm.PackageManager$ComponentInfoFlags") Object flags)
       throws NameNotFoundException {
-    return getServiceInfo((ComponentName) component, (int) ((ComponentInfoFlags) flags).getValue());
+    return getServiceInfo(component, (int) ((ComponentInfoFlags) flags).getValue());
   }
 
   /**
@@ -1049,7 +1065,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = TIRAMISU)
-  protected List<ApplicationInfo> getInstalledApplications(Object flags) {
+  protected List<ApplicationInfo> getInstalledApplications(
+      @ClassName("android.content.pm.PackageManager$ApplicationInfoFlags") Object flags) {
     return getInstalledApplications(((PackageManager.ApplicationInfoFlags) flags).getValue());
   }
 
@@ -1088,7 +1105,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = R)
-  protected Object getInstallSourceInfo(String packageName) throws NameNotFoundException {
+  protected @ClassName("android.content.pm.InstallSourceInfo") Object getInstallSourceInfo(
+      String packageName) throws NameNotFoundException {
     if (!packageInstallSourceInfoMap.containsKey(packageName)) {
       throw new NameNotFoundException("Package is not installed: " + packageName);
     } else {
@@ -1196,7 +1214,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(maxSdk = M)
-  protected void getPackageSizeInfo(Object pkgName, Object uid, final Object observer) {
+  protected void getPackageSizeInfo(
+      String pkgName,
+      int uid,
+      final @ClassName("android.content.pm.IPackageStatsObserver") Object observer) {
     final PackageStats packageStats = packageStatsMap.get((String) pkgName);
     new Handler(Looper.getMainLooper())
         .post(
@@ -1211,8 +1232,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = N)
-  protected void getPackageSizeInfoAsUser(Object pkgName, Object uid, final Object observer) {
-    final PackageStats packageStats = packageStatsMap.get((String) pkgName);
+  protected void getPackageSizeInfoAsUser(
+      String pkgName,
+      int uid,
+      final @ClassName("android.content.pm.IPackageStatsObserver") Object observer) {
+    final PackageStats packageStats = packageStatsMap.get(pkgName);
     new Handler(Looper.getMainLooper())
         .post(
             () -> {
@@ -1380,19 +1404,20 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getLaunchIntentForPackage(packageName, Intent.CATEGORY_LEANBACK_LAUNCHER);
   }
 
-  /**
-   * In Android T, the type of {@code flags} changed from {@code int} to {@link PackageInfoFlags}
-   */
   @Implementation(minSdk = N)
-  protected Object getPackageInfoAsUser(Object packageName, Object flagsObject, Object userId)
+  protected @ClassName("android.content.pm.PackageInfo") Object getPackageInfoAsUser(
+      String packageName, int flags, int userId) throws NameNotFoundException {
+    return getPackageInfo(packageName, flags);
+  }
+
+  /** In Android T, an overloaded one which has parameter type of {@link PackageInfoFlags}. */
+  @Implementation(minSdk = TIRAMISU)
+  protected @ClassName("android.content.pm.PackageInfo") Object getPackageInfoAsUser(
+      String packageName,
+      @ClassName("android.content.pm.PackageManager$PackageInfoFlags") Object flagsObject,
+      int userId)
       throws NameNotFoundException {
-    int flags;
-    if (RuntimeEnvironment.getApiLevel() >= TIRAMISU) {
-      flags = (int) ((PackageInfoFlags) flagsObject).getValue();
-    } else {
-      flags = (int) flagsObject;
-    }
-    return getPackageInfo((String) packageName, flags);
+    return getPackageInfo(packageName, ((PackageInfoFlags) flagsObject).getValue());
   }
 
   @Implementation
@@ -1415,8 +1440,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = TIRAMISU)
-  protected Object getPackageUid(Object packageName, Object flags) throws NameNotFoundException {
-    return getPackageUid((String) packageName, (int) ((PackageInfoFlags) flags).getValue());
+  protected int getPackageUid(
+      String packageName,
+      @ClassName("android.content.pm.PackageManager$PackageInfoFlags") Object flags)
+      throws NameNotFoundException {
+    return getPackageUid(packageName, (int) ((PackageInfoFlags) flags).getValue());
   }
 
   @Implementation(minSdk = N)
@@ -1494,11 +1522,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = TIRAMISU)
-  protected ApplicationInfo getApplicationInfo(Object packageName, Object flagsObject)
+  protected ApplicationInfo getApplicationInfo(
+      String packageName,
+      @ClassName("android.content.pm.PackageManager$ApplicationInfoFlags") Object flagsObject)
       throws NameNotFoundException {
     Preconditions.checkArgument(flagsObject instanceof PackageManager.ApplicationInfoFlags);
     PackageManager.ApplicationInfoFlags flags = (PackageManager.ApplicationInfoFlags) flagsObject;
-    return getApplicationInfo((String) packageName, (int) (flags).getValue());
+    return getApplicationInfo(packageName, (int) flags.getValue());
   }
 
   private void applyFlagsToApplicationInfo(@Nullable ApplicationInfo appInfo, long flags)
@@ -1803,13 +1833,19 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = TIRAMISU)
-  protected ResolveInfo resolveActivityAsUser(Object intent, Object flags, Object userId) {
-    return resolveActivity((Intent) intent, (int) ((ResolveInfoFlags) flags).getValue());
+  protected ResolveInfo resolveActivityAsUser(
+      Intent intent,
+      @ClassName("android.content.pm.PackageManager$ResolveInfoFlags") Object flags,
+      int userId) {
+    return resolveActivity(intent, (int) ((ResolveInfoFlags) flags).getValue());
   }
 
   @Implementation(minSdk = TIRAMISU)
-  protected ResolveInfo resolveServiceAsUser(Object intent, Object flags, Object userId) {
-    return resolveService((Intent) intent, (int) ((ResolveInfoFlags) flags).getValue());
+  protected ResolveInfo resolveServiceAsUser(
+      Intent intent,
+      @ClassName("android.content.pm.PackageManager$ResolveInfoFlags") Object flags,
+      int userId) {
+    return resolveService(intent, (int) ((ResolveInfoFlags) flags).getValue());
   }
 
   @Implementation
@@ -1915,18 +1951,25 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = M)
-  protected void addOnPermissionsChangeListener(Object listener) {
+  protected void addOnPermissionsChangeListener(
+      @ClassName("android.content.pm.PackageManager$OnPermissionsChangedListener")
+          Object listener) {
     permissionListeners.add(listener);
   }
 
   @Implementation(minSdk = M)
-  protected void removeOnPermissionsChangeListener(Object listener) {
+  protected void removeOnPermissionsChangeListener(
+      @ClassName("android.content.pm.PackageManager$OnPermissionsChangedListener")
+          Object listener) {
     permissionListeners.remove(listener);
   }
 
   @Implementation(maxSdk = O_MR1)
   protected void installPackage(
-      Object packageURI, Object observer, Object flags, Object installerPackageName) {}
+      Uri packageURI,
+      @ClassName("android.content.pm.IPackageInstallObserver") Object observer,
+      int flags,
+      String installerPackageName) {}
 
   @Implementation
   protected int installExistingPackage(String packageName) throws NameNotFoundException {
@@ -1980,18 +2023,23 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = M)
-  protected void registerMoveCallback(Object callback, Object handler) {}
+  protected void registerMoveCallback(
+      @ClassName("android.content.pm.PackageManager$MoveCallback") Object callback,
+      Handler handler) {}
 
   @Implementation(minSdk = M)
-  protected void unregisterMoveCallback(Object callback) {}
+  protected void unregisterMoveCallback(
+      @ClassName("android.content.pm.PackageManager$MoveCallback") Object callback) {}
 
   @Implementation(minSdk = M)
-  protected Object movePackage(Object packageName, Object vol) {
+  protected int movePackage(
+      String packageName, @ClassName("android.os.storage.VolumeInfo") Object vol) {
     return 0;
   }
 
   @Implementation(minSdk = M)
-  protected Object getPackageCurrentVolume(Object app) {
+  protected @ClassName("android.os.storage.VolumeInfo") Object getPackageCurrentVolume(
+      @ClassName("android.content.pm.ApplicationInfo") Object app) {
     return null;
   }
 
@@ -2001,12 +2049,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = M)
-  protected Object movePrimaryStorage(Object vol) {
+  protected int movePrimaryStorage(@ClassName("android.os.storage.VolumeInfo") Object vol) {
     return 0;
   }
 
   @Implementation(minSdk = M)
-  protected @Nullable Object getPrimaryStorageCurrentVolume() {
+  protected @Nullable @ClassName("android.os.storage.VolumeInfo") Object
+      getPrimaryStorageCurrentVolume() {
     return null;
   }
 
@@ -2172,7 +2221,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = O)
-  protected Object getChangedPackages(int sequenceNumber) {
+  protected @ClassName("android.content.pm.ChangedPackages") Object getChangedPackages(
+      int sequenceNumber) {
     if (sequenceNumber < 0 || sequenceNumberChangedPackagesMap.get(sequenceNumber).isEmpty()) {
       return null;
     }
@@ -2199,19 +2249,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = Q)
   @HiddenApi
-  protected /* String[] */ Object setPackagesSuspended(
-      /* String[] */ Object packageNames,
-      /* boolean */ Object suspended,
-      /* PersistableBundle */ Object appExtras,
-      /* PersistableBundle */ Object launcherExtras,
-      /* SuspendDialogInfo */ Object dialogInfo) {
+  protected String[] setPackagesSuspended(
+      String[] packageNames,
+      boolean suspended,
+      PersistableBundle appExtras,
+      PersistableBundle launcherExtras,
+      @ClassName("android.content.pm.SuspendDialogInfo") Object dialogInfo) {
     return setPackagesSuspended(
-        (String[]) packageNames,
-        (boolean) suspended,
-        (PersistableBundle) appExtras,
-        (PersistableBundle) launcherExtras,
-        /* dialogMessage= */ null,
-        dialogInfo);
+        packageNames, suspended, appExtras, launcherExtras, /* dialogMessage= */ null, dialogInfo);
   }
 
   @Implementation(minSdk = R)
@@ -2404,7 +2449,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   /** Stub that will always throw. */
   @Implementation(minSdk = S)
-  protected Object /* PackageManager.Property */ getProperty(
+  protected @ClassName("android.content.pm.PackageManager$Property") Object getProperty(
       String propertyName, String packageName) throws NameNotFoundException {
     // TODO: in future read this value from parsed manifest
     throw new NameNotFoundException("unsupported");
@@ -2412,7 +2457,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   /** Stub that will always throw. */
   @Implementation(minSdk = S)
-  protected Object /* PackageManager.Property */ getProperty(
+  protected @ClassName("android.content.pm.PackageManager$Property") Object getProperty(
       String propertyName, ComponentName name) throws NameNotFoundException {
     // TODO: in future read this value from parsed manifest
     throw new NameNotFoundException("unsupported");

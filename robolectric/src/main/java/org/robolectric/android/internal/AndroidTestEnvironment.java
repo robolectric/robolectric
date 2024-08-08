@@ -18,7 +18,6 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Package;
-import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -33,7 +32,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import java.lang.reflect.Method;
-import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.security.Security;
 import java.security.cert.Certificate;
@@ -42,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import javax.annotation.Nonnull;
 import javax.inject.Named;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -66,17 +63,10 @@ import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.TestEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
-import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
-import org.robolectric.res.Fs;
-import org.robolectric.res.PackageResourceTable;
-import org.robolectric.res.ResourcePath;
-import org.robolectric.res.ResourceTable;
-import org.robolectric.res.ResourceTableFactory;
-import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ClassNameResolver;
 import org.robolectric.shadows.ShadowActivityThread;
@@ -109,15 +99,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
   private static final String CONSCRYPT_PROVIDER = "Conscrypt";
   private static final int MAX_DATA_DIR_NAME_LENGTH = 120;
 
-  private final Sdk runtimeSdk;
   private final Sdk compileSdk;
 
   private final int apiLevel;
 
   private boolean loggingInitialized = false;
   private final Path sdkJarPath;
-  private final ApkLoader apkLoader;
-  private PackageResourceTable systemResourceTable;
   private final ShadowProvider[] shadowProviders;
   private final TestEnvironmentLifecyclePlugin[] testEnvironmentLifecyclePlugins;
   private final Locale initialLocale = Locale.getDefault();
@@ -129,11 +116,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
       ApkLoader apkLoader,
       ShadowProvider[] shadowProviders,
       TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
-    this.runtimeSdk = runtimeSdk;
     this.compileSdk = compileSdk;
 
     apiLevel = runtimeSdk.getApiLevel();
-    this.apkLoader = apkLoader;
     sdkJarPath = runtimeSdk.getJarPath();
     this.shadowProviders = shadowProviders;
     this.testEnvironmentLifecyclePlugins = lifecyclePlugins;
@@ -431,62 +416,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
       parsedPackage.applicationInfo.appComponentFactory = appManifest.getAppComponentFactory();
     }
     return parsedPackage;
-  }
-
-  private synchronized PackageResourceTable getSystemResourceTable() {
-    if (systemResourceTable == null) {
-      ResourcePath resourcePath = createRuntimeSdkResourcePath();
-      systemResourceTable = new ResourceTableFactory().newFrameworkResourceTable(resourcePath);
-    }
-    return systemResourceTable;
-  }
-
-  @Nonnull
-  private ResourcePath createRuntimeSdkResourcePath() {
-    try {
-      FileSystem zipFs = Fs.forJar(runtimeSdk.getJarPath());
-
-      @SuppressLint("PrivateApi")
-      Class<?> androidInternalRClass = Class.forName("com.android.internal.R");
-
-      // TODO: verify these can be loaded via raw-res path
-      return new ResourcePath(
-          android.R.class,
-          zipFs.getPath("raw-res/res"),
-          zipFs.getPath("raw-res/assets"),
-          androidInternalRClass);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private void injectResourceStuffForLegacy(AndroidManifest appManifest) {
-    PackageResourceTable systemResourceTable = getSystemResourceTable();
-    PackageResourceTable appResourceTable = apkLoader.getAppResourceTable(appManifest);
-    RoutingResourceTable combinedAppResourceTable =
-        new RoutingResourceTable(appResourceTable, systemResourceTable);
-
-    PackageResourceTable compileTimeSdkResourceTable = apkLoader.getCompileTimeSdkResourceTable();
-    ResourceTable combinedCompileTimeResourceTable =
-        new RoutingResourceTable(appResourceTable, compileTimeSdkResourceTable);
-
-    RuntimeEnvironment.setCompileTimeResourceTable(combinedCompileTimeResourceTable);
-    RuntimeEnvironment.setAppResourceTable(combinedAppResourceTable);
-    RuntimeEnvironment.setSystemResourceTable(new RoutingResourceTable(systemResourceTable));
-
-    try {
-      appManifest.initMetaData(combinedAppResourceTable);
-    } catch (RoboNotFoundException e1) {
-      throw new Resources.NotFoundException(e1.getMessage());
-    }
-  }
-
-  private void populateAssetPaths(AssetManager assetManager, AndroidManifest appManifest) {
-    for (AndroidManifest manifest : appManifest.getAllManifests()) {
-      if (manifest.getAssetsDirectory() != null) {
-        assetManager.addAssetPath(Fs.externalize(manifest.getAssetsDirectory()));
-      }
-    }
   }
 
   @VisibleForTesting

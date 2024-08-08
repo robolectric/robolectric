@@ -38,7 +38,7 @@ import org.robolectric.versioning.AndroidVersions.V;
  * <p>This class should not be referenced directly. Use {@link ShadowMessageQueue} instead.
  */
 @SuppressWarnings("SynchronizeOnNonFinalField")
-@Implements(value = MessageQueue.class, isInAndroidSdk = false, looseSignatures = true)
+@Implements(value = MessageQueue.class, isInAndroidSdk = false)
 public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   @RealObject private MessageQueue realQueue;
@@ -76,16 +76,13 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     ShadowPausedSystemClock.removeListener(q.clockListener);
   }
 
-  // use the generic Object parameter types here, to avoid conflicts with the non-static
-  // nativePollOnce
   @Implementation(maxSdk = LOLLIPOP_MR1)
-  protected static void nativePollOnce(Object ptr, Object timeoutMillis) {
-    long ptrLong = getLong(ptr);
-    nativeQueueRegistry.getNativeObject(ptrLong).nativePollOnce(ptrLong, (int) timeoutMillis);
+  protected static void nativePollOnce(long ptr, int timeoutMillis) {
+    nativeQueueRegistry.getNativeObject(ptr).nativePollOnceFromM(ptr, timeoutMillis);
   }
 
-  @Implementation(minSdk = M)
-  protected void nativePollOnce(long ptr, int timeoutMillis) {
+  @Implementation(minSdk = M, methodName = "nativePollOnce")
+  protected void nativePollOnceFromM(long ptr, int timeoutMillis) {
     if (timeoutMillis == 0) {
       return;
     }

@@ -1967,7 +1967,7 @@ public class ResTable_config {
           }
           break;
         }
-        // fall through
+      // fall through
       case 5:
       case 6:
       case 7:

@@ -17,8 +17,7 @@ import org.robolectric.util.reflector.ForType;
 @Implements(
     className = "com.android.internal.policy.PhoneWindow",
     isInAndroidSdk = false,
-    minSdk = M,
-    looseSignatures = true)
+    minSdk = M)
 public class ShadowPhoneWindow extends ShadowWindow {
   protected @RealObject Window realWindow;
   protected boolean decorFitsSystemWindows = true;

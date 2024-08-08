@@ -11,15 +11,15 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link ContentProvider}. */
-@Implements(value = ContentProvider.class, looseSignatures = true)
+@Implements(value = ContentProvider.class)
 public class ShadowContentProvider {
   @RealObject private ContentProvider realContentProvider;
 
   private String callingPackage;
 
   @Implementation(minSdk = Q, maxSdk = Q)
-  public Object setCallingPackage(Object callingPackage) {
-    this.callingPackage = (String) callingPackage;
+  public String setCallingPackage(String callingPackage) {
+    this.callingPackage = callingPackage;
     return callingPackage;
   }
 

@@ -51,6 +51,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -63,7 +64,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link AppOpsManager}. */
-@Implements(value = AppOpsManager.class, looseSignatures = true)
+@Implements(value = AppOpsManager.class)
 public class ShadowAppOpsManager {
 
   // OpEntry fields that the shadow doesn't currently allow the test to configure.
@@ -78,17 +79,17 @@ public class ShadowAppOpsManager {
   private static boolean staticallyInitialized = false;
 
   // Recorded operations, keyed by (uid, packageName)
-  private final Multimap<Key, Integer> storedOps = HashMultimap.create();
+  private static final Multimap<Key, Integer> storedOps = HashMultimap.create();
   // (uid, packageName, opCode) => opMode
-  private final Map<Key, Integer> appModeMap = new HashMap<>();
+  private static final Map<Key, Integer> appModeMap = new HashMap<>();
 
   // (uid, packageName, opCode)
-  private final Set<Key> longRunningOp = new HashSet<>();
+  private static final Set<Key> longRunningOp = new HashSet<>();
 
-  private final Map<OnOpChangedListener, Set<Key>> appOpListeners = new ArrayMap<>();
+  private static final Map<OnOpChangedListener, Set<Key>> appOpListeners = new ArrayMap<>();
 
   // op | (usage << 8) => ModeAndExcpetion
-  private final Map<Integer, ModeAndException> audioRestrictions = new HashMap<>();
+  private static final Map<Integer, ModeAndException> audioRestrictions = new HashMap<>();
 
   private Context context;
 
@@ -414,18 +415,18 @@ public class ShadowAppOpsManager {
   @RequiresApi(api = S)
   @Implementation(minSdk = S)
   protected int noteProxyOpNoThrow(
-      Object op, Object attributionSource, Object message, Object ignoredSkipProxyOperation) {
-    Preconditions.checkArgument(op instanceof Integer);
+      int op,
+      @ClassName("android.content.AttributionSource") Object attributionSource,
+      String message,
+      boolean skipProxyOperation) {
     Preconditions.checkArgument(attributionSource instanceof AttributionSource);
-    Preconditions.checkArgument(message == null || message instanceof String);
-    Preconditions.checkArgument(ignoredSkipProxyOperation instanceof Boolean);
     AttributionSource castedAttributionSource = (AttributionSource) attributionSource;
     return noteProxyOpNoThrow(
-        (int) op,
+        op,
         castedAttributionSource.getNextPackageName(),
         castedAttributionSource.getNextUid(),
         castedAttributionSource.getNextAttributionTag(),
-        (String) message);
+        message);
   }
 
   @Implementation
@@ -642,6 +643,12 @@ public class ShadowAppOpsManager {
     if (RuntimeEnvironment.getApiLevel() >= R && staticallyInitialized) {
       ReflectionHelpers.setStaticField(AppOpsManager.class, "sOnOpNotedCallback", null);
     }
+    staticallyInitialized = false;
+    storedOps.clear();
+    appModeMap.clear();
+    longRunningOp.clear();
+    appOpListeners.clear();
+    audioRestrictions.clear();
   }
 
   @ForType(className = "android.app.AppOpInfo")

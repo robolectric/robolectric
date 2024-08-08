@@ -11,7 +11,6 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.SuppressLint;
 import android.content.res.AssetManager;
-import android.graphics.FontFamily;
 import android.graphics.Typeface;
 import android.util.ArrayMap;
 import java.io.File;
@@ -25,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -38,7 +38,7 @@ import org.robolectric.versioning.AndroidVersions.T;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Typeface}. */
-@Implements(value = Typeface.class, looseSignatures = true, isInAndroidSdk = false)
+@Implements(value = Typeface.class, isInAndroidSdk = false)
 @SuppressLint("NewApi")
 public class ShadowLegacyTypeface extends ShadowTypeface {
   private static final Map<Long, FontDesc> FONTS = Collections.synchronizedMap(new HashMap<>());
@@ -121,9 +121,9 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
 
   @Implementation(minSdk = O)
   protected static Typeface createFromResources(
-      Object /* FamilyResourceEntry */ entry,
-      Object /* AssetManager */ mgr,
-      Object /* String */ path) {
+      @ClassName("android.content.res.FontResourcesParser$FamilyResourceEntry") Object entry,
+      AssetManager mgr,
+      String path) {
     return createUnderlyingTypeface((String) path, Typeface.NORMAL);
   }
 
@@ -161,28 +161,30 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
 
   @HiddenApi
   @Implementation
-  protected static Typeface createFromFamilies(Object /*FontFamily[]*/ families) {
+  protected static Typeface createFromFamilies(
+      @ClassName("android.graphics.FontFamily[]") Object families) {
     return null;
   }
 
   @HiddenApi
   @Implementation(maxSdk = N_MR1)
-  protected static Typeface createFromFamiliesWithDefault(Object /*FontFamily[]*/ families) {
+  protected static Typeface createFromFamiliesWithDefault(
+      @ClassName("android.graphics.FontFamily[]") Object families) {
     return null;
   }
 
   @Implementation(minSdk = O, maxSdk = O_MR1)
   protected static Typeface createFromFamiliesWithDefault(
-      Object /*FontFamily[]*/ families, Object /* int */ weight, Object /* int */ italic) {
+      @ClassName("android.graphics.FontFamily[]") Object families, int weight, int italic) {
     return createUnderlyingTypeface("fake-font", Typeface.NORMAL);
   }
 
   @Implementation(minSdk = P)
   protected static Typeface createFromFamiliesWithDefault(
-      Object /*FontFamily[]*/ families,
-      Object /* String */ fallbackName,
-      Object /* int */ weight,
-      Object /* int */ italic) {
+      @ClassName("android.graphics.FontFamily[]") Object families,
+      String fallbackName,
+      int weight,
+      int italic) {
     return createUnderlyingTypeface((String) fallbackName, Typeface.NORMAL);
   }
 
@@ -191,7 +193,7 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
       String xmlPath,
       String fontDir,
       ArrayMap<String, Typeface> fontMap,
-      ArrayMap<String, FontFamily[]> fallbackMap) {
+      ArrayMap<String, @ClassName("android.graphics.FontFamily[]") Object> fallbackMap) {
     fontMap.put("sans-serif", createUnderlyingTypeface("sans-serif", 0));
   }
 
@@ -202,7 +204,9 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
   @HiddenApi
   @Implementation(minSdk = Q, maxSdk = R)
   protected static void initSystemDefaultTypefaces(
-      Object systemFontMap, Object fallbacks, Object aliases) {}
+      Map<String, Typeface> systemFontMap,
+      @ClassName("java.util.Map<String, android.graphics.FontFamily[]>") Object fallbacks,
+      @ClassName("android.text.FontConfig$Alias[]") Object aliases) {}
 
   @Resetter
   public static synchronized void reset() {

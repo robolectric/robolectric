@@ -33,6 +33,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -45,23 +46,24 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link android.app.ActivityManager} */
-@Implements(value = ActivityManager.class, looseSignatures = true)
+@Implements(value = ActivityManager.class)
 public class ShadowActivityManager {
   private int memoryClass = 16;
-  private String backgroundPackage;
-  private ActivityManager.MemoryInfo memoryInfo;
-  private final List<ActivityManager.AppTask> appTasks = new CopyOnWriteArrayList<>();
-  private final List<ActivityManager.RunningTaskInfo> tasks = new CopyOnWriteArrayList<>();
-  private final List<ActivityManager.RunningServiceInfo> services = new CopyOnWriteArrayList<>();
+  private static String backgroundPackage;
+  private static ActivityManager.MemoryInfo memoryInfo;
+  private static final List<ActivityManager.AppTask> appTasks = new CopyOnWriteArrayList<>();
+  private static final List<ActivityManager.RunningTaskInfo> tasks = new CopyOnWriteArrayList<>();
+  private static final List<ActivityManager.RunningServiceInfo> services =
+      new CopyOnWriteArrayList<>();
   private static final List<ActivityManager.RunningAppProcessInfo> processes =
       new CopyOnWriteArrayList<>();
-  private final List<ImportanceListener> importanceListeners = new CopyOnWriteArrayList<>();
-  private final SparseIntArray uidImportances = new SparseIntArray();
+  private static final List<ImportanceListener> importanceListeners = new CopyOnWriteArrayList<>();
+  private static final SparseIntArray uidImportances = new SparseIntArray();
   @RealObject private ActivityManager realObject;
-  private Boolean isLowRamDeviceOverride = null;
+  private static Boolean isLowRamDeviceOverride = null;
   private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
   private boolean isBackgroundRestricted;
-  private final Deque<Object> appExitInfoList = new ArrayDeque<>();
+  private static final Deque<Object> appExitInfoList = new ArrayDeque<>();
   private ConfigurationInfo configurationInfo;
   private Context context;
 
@@ -271,12 +273,15 @@ public class ShadowActivityManager {
   }
 
   @Implementation(minSdk = O)
-  protected void addOnUidImportanceListener(Object listener, Object importanceCutpoint) {
+  protected void addOnUidImportanceListener(
+      @ClassName("android.app.ActivityManager$OnUidImportanceListener") Object listener,
+      int importanceCutpoint) {
     importanceListeners.add(new ImportanceListener(listener, (Integer) importanceCutpoint));
   }
 
   @Implementation(minSdk = O)
-  protected void removeOnUidImportanceListener(Object listener) {
+  protected void removeOnUidImportanceListener(
+      @ClassName("android.app.ActivityManager$OnUidImportanceListener") Object listener) {
     importanceListeners.remove(new ImportanceListener(listener));
   }
 
@@ -322,7 +327,16 @@ public class ShadowActivityManager {
 
   @Resetter
   public static void reset() {
+    backgroundPackage = null;
+    memoryInfo = null;
+    appTasks.clear();
+    tasks.clear();
+    services.clear();
     processes.clear();
+    importanceListeners.clear();
+    uidImportances.clear();
+    appExitInfoList.clear();
+    isLowRamDeviceOverride = null;
   }
 
   /** Returns the background restriction state set by {@link #setBackgroundRestricted}. */
@@ -344,7 +358,8 @@ public class ShadowActivityManager {
    * {@code packageName} is ignored.
    */
   @Implementation(minSdk = R)
-  protected Object getHistoricalProcessExitReasons(Object packageName, Object pid, Object maxNum) {
+  protected @ClassName("java.util.List<android.app.ApplicationExitInfo>") Object
+      getHistoricalProcessExitReasons(String packageName, int pid, int maxNum) {
     return appExitInfoList.stream()
         .filter(
             appExitInfo ->

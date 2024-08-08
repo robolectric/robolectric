@@ -8,6 +8,7 @@ import android.content.Context;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiScanner;
 import android.net.wifi.WifiScanner.ScanData;
+import android.net.wifi.WifiScanner.ScanListener;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import com.google.common.collect.ImmutableList;
@@ -18,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = VERSION_CODES.N)
@@ -45,13 +47,14 @@ public class ShadowWifiScannerTest {
   @Test
   @Config(minSdk = VERSION_CODES.N_MR1, maxSdk = VERSION_CODES.Q)
   public void setScanResults_invokesListeners() {
-    ScanDataListener listener = new ScanDataListener();
+    ScanDataListenerDelegate listener = new ScanDataListenerDelegate();
 
     WifiScanner scanner =
         (WifiScanner)
             RuntimeEnvironment.getApplication().getSystemService(Context.WIFI_SCANNING_SERVICE);
 
-    scanner.registerScanListener(listener);
+    scanner.registerScanListener(
+        ReflectionHelpers.createDelegatingProxy(ScanListener.class, listener));
     ((ShadowWifiScanner) extract(scanner)).setScanResults(SCAN_RESULTS);
 
     ScanData[] scanData = listener.scanData;
@@ -68,13 +71,15 @@ public class ShadowWifiScannerTest {
   @Test
   @Config(minSdk = VERSION_CODES.R)
   public void setScanResultsR_invokesListeners() {
-    ScanDataListener listener = new ScanDataListener();
+    ScanDataListenerDelegate listener = new ScanDataListenerDelegate();
 
     WifiScanner scanner =
         (WifiScanner)
             RuntimeEnvironment.getApplication().getSystemService(Context.WIFI_SCANNING_SERVICE);
 
-    scanner.registerScanListener(MoreExecutors.directExecutor(), listener);
+    scanner.registerScanListener(
+        MoreExecutors.directExecutor(),
+        ReflectionHelpers.createDelegatingProxy(ScanListener.class, listener));
     ((ShadowWifiScanner) extract(scanner)).setScanResults(SCAN_RESULTS);
 
     ScanData[] scanData = listener.scanData;
@@ -136,24 +141,19 @@ public class ShadowWifiScannerTest {
     return ImmutableList.of(scanResult);
   }
 
-  private static class ScanDataListener implements WifiScanner.ScanListener {
+  private static class ScanDataListenerDelegate {
     public ScanData[] scanData = null;
 
-    @Override
     public void onSuccess() {}
 
-    @Override
     public void onFailure(int reason, String description) {}
 
-    @Override
     public void onPeriodChanged(int periodInMs) {}
 
-    @Override
     public void onResults(ScanData[] results) {
       scanData = results;
     }
 
-    @Override
     public void onFullResult(ScanResult fullScanResult) {}
   }
 }

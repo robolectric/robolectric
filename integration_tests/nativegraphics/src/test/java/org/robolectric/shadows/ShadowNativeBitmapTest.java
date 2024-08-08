@@ -986,7 +986,7 @@ public class ShadowNativeBitmapTest {
         assertFalse(bitmap.isPremultiplied());
         break;
       case ALPHA_8:
-        // ALPHA_8 behaves mostly the same as 8888, except for premultiplied. Fall through.
+      // ALPHA_8 behaves mostly the same as 8888, except for premultiplied. Fall through.
       case ARGB_8888:
         // Since 565 is necessarily opaque, we revert to hasAlpha when switching to a type
         // that can have alpha.

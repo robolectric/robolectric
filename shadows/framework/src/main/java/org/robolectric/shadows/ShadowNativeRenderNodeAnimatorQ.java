@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
@@ -17,7 +18,6 @@ import org.robolectric.shadows.ShadowNativeRenderNodeAnimatorQ.Picker;
     className = "android.view.RenderNodeAnimator",
     minSdk = O,
     maxSdk = Q,
-    looseSignatures = true,
     shadowPicker = Picker.class)
 public class ShadowNativeRenderNodeAnimatorQ {
   @Implementation
@@ -77,8 +77,9 @@ public class ShadowNativeRenderNodeAnimatorQ {
   }
 
   @Implementation
-  protected static void nSetListener(Object animPtr, Object listener) {
-    RenderNodeAnimatorNatives.nSetListener((long) animPtr, listener);
+  protected static void nSetListener(
+      long animPtr, @ClassName("android.view.RenderNodeAnimator") Object listener) {
+    RenderNodeAnimatorNatives.nSetListener(animPtr, listener);
   }
 
   @Implementation

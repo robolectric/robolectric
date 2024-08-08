@@ -48,7 +48,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
  * IllegalArgumentException} or {@link IllegalStateException} for error-prone behavior normal {@link
  * Parcel} tolerates.
  */
-@Implements(value = Parcel.class, looseSignatures = true)
+@Implements(value = Parcel.class)
 public class ShadowParcel {
   protected static final String TAG = "Parcel";
 
@@ -1162,35 +1162,33 @@ public class ShadowParcel {
     return nativeReadString(nativePtr);
   }
 
-  // need to use looseSignatures for the S methods because method signatures differ only by return
-  // type
-  @Implementation(minSdk = S)
-  protected static int nativeWriteInt(Object nativePtr, Object val) {
-    nativeWriteInt((long) nativePtr, (int) val);
+  @Implementation(minSdk = S, methodName = "nativeWriteInt")
+  protected static int nativeWriteIntFromS(long nativePtr, int val) {
+    nativeWriteInt(nativePtr, val);
     return 0; /* OK */
   }
 
-  @Implementation(minSdk = S)
-  protected static int nativeWriteLong(Object nativePtr, Object val) {
-    nativeWriteLong((long) nativePtr, (long) val);
+  @Implementation(minSdk = S, methodName = "nativeWriteLong")
+  protected static int nativeWriteLongFromS(long nativePtr, long val) {
+    nativeWriteLong(nativePtr, val);
     return 0; /* OK */
   }
 
-  @Implementation(minSdk = S)
-  protected static int nativeWriteFloat(Object nativePtr, Object val) {
-    nativeWriteFloat((long) nativePtr, (float) val);
+  @Implementation(minSdk = S, methodName = "nativeWriteFloat")
+  protected static int nativeWriteFloatFromS(long nativePtr, float val) {
+    nativeWriteFloat(nativePtr, val);
     return 0; /* OK */
   }
 
-  @Implementation(minSdk = S)
-  protected static int nativeWriteDouble(Object nativePtr, Object val) {
-    nativeWriteDouble((long) nativePtr, (double) val);
+  @Implementation(minSdk = S, methodName = "nativeWriteDouble")
+  protected static int nativeWriteDoubleFromS(long nativePtr, double val) {
+    nativeWriteDouble(nativePtr, val);
     return 0; /* OK */
   }
 
-  @Implementation(minSdk = S)
-  protected static void nativeWriteFileDescriptor(Object nativePtr, Object val) {
-    nativeWriteFileDescriptor((long) nativePtr, (FileDescriptor) val);
+  @Implementation(minSdk = S, methodName = "nativeWriteFileDescriptor")
+  protected static void nativeWriteFileDescriptorFromS(long nativePtr, FileDescriptor val) {
+    nativeWriteFileDescriptor(nativePtr, val);
   }
 
   @Resetter

@@ -1891,6 +1891,22 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = TIRAMISU)
+  public void queryIntentServices_Match_withResolveInfoFlags() {
+    Intent i = new Intent(Intent.ACTION_MAIN, null);
+
+    ResolveInfo info = new ResolveInfo();
+    info.serviceInfo = new ServiceInfo();
+    info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
+
+    shadowOf(packageManager).addResolveInfoForIntent(i, info);
+
+    List<ResolveInfo> services = packageManager.queryIntentServices(i, ResolveInfoFlags.of(0));
+    assertThat(services).hasSize(1);
+    assertThat(services.get(0).nonLocalizedLabel.toString()).isEqualTo(TEST_PACKAGE_LABEL);
+  }
+
+  @Test
   public void queryIntentServices_fromManifest() {
     Intent i = new Intent("org.robolectric.ACTION_DIFFERENT_PACKAGE");
     i.addCategory(Intent.CATEGORY_LAUNCHER);

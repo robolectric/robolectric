@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -50,7 +51,7 @@ import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = AudioManager.class, looseSignatures = true)
+@Implements(value = AudioManager.class)
 public class ShadowAudioManager {
   @RealObject AudioManager realAudioManager;
 
@@ -469,7 +470,8 @@ public class ShadowAudioManager {
    */
   @Implementation(minSdk = R)
   @NonNull
-  protected List<Object> getDevicesForAttributes(@NonNull AudioAttributes attributes) {
+  protected @ClassName("java.util.List<android.media.AudioDeviceAttributes>") List<Object>
+      getDevicesForAttributes(@NonNull AudioAttributes attributes) {
     ImmutableList<Object> devices = devicesForAttributes.get(attributes);
     return devices == null ? defaultDevicesForAttributes : devices;
   }
@@ -920,7 +922,8 @@ public class ShadowAudioManager {
   @HiddenApi
   @Implementation(minSdk = P)
   @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING)
-  protected int registerAudioPolicy(@NonNull Object audioPolicy) {
+  protected int registerAudioPolicy(
+      @NonNull @ClassName("android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
     Preconditions.checkNotNull(audioPolicy, "Illegal null AudioPolicy argument");
     AudioPolicy policy = (AudioPolicy) audioPolicy;
     String id = getIdForAudioPolicy(audioPolicy);
@@ -934,7 +937,8 @@ public class ShadowAudioManager {
 
   @HiddenApi
   @Implementation(minSdk = Q)
-  protected void unregisterAudioPolicy(@NonNull Object audioPolicy) {
+  protected void unregisterAudioPolicy(
+      @NonNull @ClassName("android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
     Preconditions.checkNotNull(audioPolicy, "Illegal null AudioPolicy argument");
     AudioPolicy policy = (AudioPolicy) audioPolicy;
     registeredAudioPolicies.remove(getIdForAudioPolicy(policy));

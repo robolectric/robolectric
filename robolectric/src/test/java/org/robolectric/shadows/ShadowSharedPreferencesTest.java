@@ -146,6 +146,7 @@ public class ShadowSharedPreferencesTest {
     editor.commit();
 
     assertThat(sharedPreferences.getString("deleteMe", null)).isNull();
+    assertThat(sharedPreferences.contains("deleteMe")).isFalse();
   }
 
   @Test
@@ -156,6 +157,7 @@ public class ShadowSharedPreferencesTest {
     editor.commit();
 
     assertThat(sharedPreferences.getStringSet("deleteMe", null)).isNull();
+    assertThat(sharedPreferences.contains("deleteMe")).isFalse();
   }
 
   @Test

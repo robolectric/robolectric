@@ -12,7 +12,6 @@ android {
         testApplicationId 'org.robolectric.integrationtests.axt'
         minSdk 21
         targetSdk 34
-        multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArguments useTestStorageService: 'true'
     }
@@ -44,7 +43,6 @@ android {
 dependencies {
     implementation libs.androidx.appcompat
     implementation libs.androidx.constraintlayout
-    implementation libs.androidx.multidex
 
     // Testing dependencies
     testImplementation project(":robolectric")
