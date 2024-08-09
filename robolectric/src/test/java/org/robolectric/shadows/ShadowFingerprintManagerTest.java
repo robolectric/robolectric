@@ -125,6 +125,7 @@ public class ShadowFingerprintManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.O)
   public void fingerprintManager_activityContextEnabled_differentInstancesHaveConsistentState() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");

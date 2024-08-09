@@ -666,6 +666,7 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.O)
   public void alarmManager_instance_retrievesSameAlarmClockInfo() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
