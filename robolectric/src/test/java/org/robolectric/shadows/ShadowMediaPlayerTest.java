@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
@@ -117,6 +118,18 @@ public class ShadowMediaPlayerTest {
     assertThat(shadow.getDataSource())
         .isEqualTo(
             DataSource.toDataSource("android.resource://" + context.getPackageName() + "/123"));
+  }
+
+  @Test
+  public void create_withUri_notNull() {
+    final String dummyPath = "dummy";
+    Application context = ApplicationProvider.getApplicationContext();
+    Uri dummyUri = new Uri.Builder().appendPath(dummyPath).build();
+
+    MediaPlayer mp = MediaPlayer.create(context, dummyUri);
+    assertNotNull(mp);
+    ShadowMediaPlayer shadow = shadowOf(mp);
+    assertThat(shadow.getDataSource()).isEqualTo(DataSource.toDataSource(context, dummyUri));
   }
 
   @Test
