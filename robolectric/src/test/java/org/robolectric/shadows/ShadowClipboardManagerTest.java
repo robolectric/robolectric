@@ -157,7 +157,7 @@ public class ShadowClipboardManagerTest {
   }
 
   @Test
-  @Config(minSdk = android.os.Build.VERSION_CODES.O)
+  @Config(minSdk = O)
   public void clipboardManager_instance_retrievesSamePrimaryClip() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
