@@ -772,9 +772,9 @@ public class ShadowInstrumentation {
             Logger.warn(
                 "Configured to call onServiceDisconnected when unbindService is called. This is"
                     + " not accurate Android behavior. Please update your tests and call"
-                    + " ShadowActivity#setUnbindCallsOnServiceDisconnected(false). This will"
-                    + " become default behavior in the future, which may break your tests if you"
-                    + " are expecting this inaccurate behavior.");
+                    + " ShadowApplication#setUnbindServiceCallsOnServiceDisconnected(false). This"
+                    + " will become default behavior in the future, which may break your tests if"
+                    + " you are expecting this inaccurate behavior.");
             serviceConnection.onServiceDisconnected(
                 serviceConnectionDataWrapper.componentNameForBindService);
           }
