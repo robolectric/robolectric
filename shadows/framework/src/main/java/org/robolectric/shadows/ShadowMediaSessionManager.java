@@ -19,14 +19,15 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link MediaSessionManager}. */
 @Implements(value = MediaSessionManager.class)
 public class ShadowMediaSessionManager {
-  private final List<MediaController> controllers = new CopyOnWriteArrayList<>();
-  private final Set<OnActiveSessionsChangedListener> listeners = new CopyOnWriteArraySet<>();
+  private static final List<MediaController> controllers = new CopyOnWriteArrayList<>();
+  private static final Set<OnActiveSessionsChangedListener> listeners = new CopyOnWriteArraySet<>();
   @RealObject MediaSessionManager realMediaSessionManager;
 
   @Implementation(minSdk = S)
@@ -81,6 +82,12 @@ public class ShadowMediaSessionManager {
    */
   public void clearControllers() {
     controllers.clear();
+  }
+
+  @Resetter
+  public static void reset() {
+    controllers.clear();
+    listeners.clear();
   }
 
   @ForType(MediaSessionManager.class)
