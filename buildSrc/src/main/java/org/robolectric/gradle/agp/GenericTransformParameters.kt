@@ -19,15 +19,13 @@
  * https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:build-system/gradle-core/src/main/java/com/android/build/gradle/internal/dependency/GenericTransformParameters.kt;bpv=0
  */
 
-package org.robolectric.gradle.agp;
+package org.robolectric.gradle.agp
 
-import org.gradle.api.artifacts.transform.TransformParameters;
-import org.gradle.api.provider.Property;
-import org.gradle.api.tasks.Internal;
+import org.gradle.api.artifacts.transform.TransformParameters
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Internal
 
-/** Generic {@link TransformParameters} for all of our Artifact Transforms. */
-// TODO Keep the original Kotlin implementation when `buildSrc` is migrated to Kotlin.
-public interface GenericTransformParameters extends TransformParameters {
-  @Internal
-  Property<String> getProjectName();
+/** Generic [TransformParameters] for all of our Artifact Transforms. */
+interface GenericTransformParameters : TransformParameters {
+  @get:Internal val projectName: Property<String>
 }
