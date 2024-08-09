@@ -6,6 +6,7 @@ import static androidx.test.ext.truth.view.PointerCoordsSubject.assertThat;
 import static androidx.test.ext.truth.view.PointerPropertiesSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeThat;
 
 import android.graphics.Matrix;
 import android.os.Build;
@@ -22,6 +23,7 @@ import androidx.test.filters.SdkSuppress;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
 import com.google.common.truth.Truth;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -425,6 +427,26 @@ public class MotionEventTest {
 
     assertThat(motionEvent2).x().isWithin(TOLERANCE).of(X_3F + offsetX);
     assertThat(motionEvent2).y().isWithin(TOLERANCE).of(Y_4F + offsetY);
+  }
+
+  @Test
+  public void testNoLocationOffsetForNonPointerSource() {
+    assumeThat(
+        "NoLocationOffset for non PointerSource only work from API 32",
+        Build.VERSION.SDK_INT,
+        Matchers.greaterThanOrEqualTo(Build.VERSION_CODES.S_V2));
+    assertThat(motionEvent2).x().isWithin(TOLERANCE).of(X_3F);
+    assertThat(motionEvent2).y().isWithin(TOLERANCE).of(Y_4F);
+    motionEvent2.setSource(InputDevice.SOURCE_TOUCHPAD);
+
+    float offsetX = 1.0f;
+    float offsetY = 1.0f;
+    motionEvent2.offsetLocation(offsetX, offsetY);
+
+    assertThat(motionEvent2).x().isWithin(TOLERANCE).of(X_3F);
+    assertThat(motionEvent2).y().isWithin(TOLERANCE).of(Y_4F);
+    assertThat(motionEvent2).pressure().isWithin(TOLERANCE).of(PRESSURE_1F);
+    assertThat(motionEvent2).size().isWithin(TOLERANCE).of(SIZE_1F);
   }
 
   @Test
