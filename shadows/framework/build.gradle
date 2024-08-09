@@ -5,8 +5,8 @@ plugins {
 }
 
 shadows {
-    packageName "org.robolectric"
-    sdkCheckMode "ERROR"
+    packageName = "org.robolectric"
+    sdkCheckMode = "ERROR"
 }
 
 configurations {
