@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.ambientcontext.AmbientContextEvent;
 import android.app.ambientcontext.AmbientContextEventRequest;
@@ -13,10 +14,13 @@ import androidx.test.core.app.ApplicationProvider;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
@@ -180,5 +184,46 @@ public class ShadowAmbientContextManagerTest {
             .getLastRequestedEventCodesForConsentActivity();
 
     assertThat(lastRequestedEventCodes).containsExactlyElementsIn(requestedEventCodes);
+  }
+
+  @Test
+  @Config(minSdk = 33)
+  public void ambientContextManager_activityContextEnabled_differentInstancesRetrieveStatus() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      AmbientContextManager applicationAmbientContextManager = context.getSystemService(AmbientContextManager.class);
+      activity = Robolectric.setupActivity(Activity.class);
+      AmbientContextManager activityAmbientContextManager = activity.getSystemService(AmbientContextManager.class);
+
+      assertThat(applicationAmbientContextManager).isNotSameInstanceAs(activityAmbientContextManager);
+
+      ShadowAmbientContextManager.setAmbientContextServiceStatus(AmbientContextManager.STATUS_SUCCESS);
+
+      Executor testExecutor = new TestExecutor();
+
+      Set<Integer> eventTypes = new HashSet<>();
+      eventTypes.add(1); // Add some event codes
+
+      Integer[] applicationStatus = new Integer[1];
+      Integer[] activityStatus = new Integer[1];
+
+      applicationAmbientContextManager.queryAmbientContextServiceStatus(eventTypes, testExecutor, status -> applicationStatus[0] = status);
+      activityAmbientContextManager.queryAmbientContextServiceStatus(eventTypes, testExecutor, status -> activityStatus[0] = status);
+
+      assertThat(activityStatus[0]).isEqualTo(applicationStatus[0]);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+    }
+  }
+
+  class TestExecutor implements Executor {
+    @Override
+    public void execute(Runnable command) {
+      command.run();
+    }
   }
 }
