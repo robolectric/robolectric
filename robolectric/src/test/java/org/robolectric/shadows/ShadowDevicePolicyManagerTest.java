@@ -2715,6 +2715,7 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
   public void devicePolicyManager_instance_retrievesSameAdminStatus() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");

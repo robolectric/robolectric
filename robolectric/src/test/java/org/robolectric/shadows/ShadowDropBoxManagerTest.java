@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.Shadows.shadowOf;
@@ -17,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.Config;
 
 /** Unit tests for {@see ShadowDropboxManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -88,7 +90,7 @@ public class ShadowDropBoxManagerTest {
     assertThat(entry.getTimeMillis()).isEqualTo(3);
   }
 
-  @Test()
+  @Test
   public void resetClearsData() {
     shadowDropBoxManager.addData(TAG, 1, DATA);
 
@@ -119,6 +121,7 @@ public class ShadowDropBoxManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
   public void dropBoxManager_activityContextEnabled_differentInstancesVerifyTagEnabled() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");

@@ -430,6 +430,7 @@ public class ShadowLauncherAppsTest {
   }
 
   @Test
+  @Config(minSdk = O)
   public void launcherApps_activityContextEnabled_differentInstancesRetrieveProfiles() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
