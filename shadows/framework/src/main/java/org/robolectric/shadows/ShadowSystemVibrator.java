@@ -17,12 +17,13 @@ import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.Optional;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow for {@link SystemVibrator}. */
-@Implements(value = SystemVibrator.class, isInAndroidSdk = false, looseSignatures = true)
+@Implements(value = SystemVibrator.class, isInAndroidSdk = false)
 public class ShadowSystemVibrator extends ShadowVibrator {
 
   private final Handler handler = new Handler(Looper.getMainLooper());
@@ -110,12 +111,13 @@ public class ShadowSystemVibrator extends ShadowVibrator {
 
   @Implementation(minSdk = S)
   protected void vibrate(
-      Object uid, Object opPkg, Object effect, Object reason, Object attributes) {
-    Preconditions.checkArgument(uid instanceof Integer);
-    Preconditions.checkArgument(opPkg == null || opPkg instanceof String);
+      int uid,
+      String opPkg,
+      @ClassName("android.os.VibrationEffect") Object effect,
+      String reason,
+      @ClassName("android.os.VibrationAttributes") Object attributes) {
     // The SystemVibrator#vibrate needs effect NonNull.
     Preconditions.checkArgument(effect instanceof VibrationEffect);
-    Preconditions.checkArgument(reason == null || reason instanceof String);
     // The SystemVibrator#vibrate needs attributes NonNull.
     Preconditions.checkArgument(attributes instanceof android.os.VibrationAttributes);
     if (effect instanceof VibrationEffect.Composed) {
