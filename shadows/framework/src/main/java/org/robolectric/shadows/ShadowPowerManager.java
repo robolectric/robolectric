@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -52,7 +53,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow of PowerManager */
-@Implements(value = PowerManager.class, looseSignatures = true)
+@Implements(value = PowerManager.class)
 public class ShadowPowerManager {
 
   @RealObject private PowerManager realPowerManager;
@@ -218,7 +219,8 @@ public class ShadowPowerManager {
 
   /** This function adds a listener for thermal status change. */
   @Implementation(minSdk = Q)
-  protected void addThermalStatusListener(Object listener) {
+  protected void addThermalStatusListener(
+      @ClassName("android.os.PowerManager$OnThermalStatusChangedListener") Object listener) {
     checkState(
         listener instanceof PowerManager.OnThermalStatusChangedListener,
         "Listener must implement PowerManager.OnThermalStatusChangedListener");
@@ -232,7 +234,8 @@ public class ShadowPowerManager {
 
   /** This function removes a listener for thermal status change. */
   @Implementation(minSdk = Q)
-  protected void removeThermalStatusListener(Object listener) {
+  protected void removeThermalStatusListener(
+      @ClassName("android.os.PowerManager$OnThermalStatusChangedListener") Object listener) {
     checkState(
         listener instanceof PowerManager.OnThermalStatusChangedListener,
         "Listener must implement PowerManager.OnThermalStatusChangedListener");
@@ -607,12 +610,12 @@ public class ShadowPowerManager {
   }
 
   @Implementation(minSdk = UPSIDE_DOWN_CAKE)
-  protected Object /* LowPowerStandbyPortsLock */ newLowPowerStandbyPortsLock(
-      List<LowPowerStandbyPortDescription> ports) {
+  protected @ClassName("android.os.PowerManager$LowPowerStandbyPortsLock") Object
+      newLowPowerStandbyPortsLock(List<LowPowerStandbyPortDescription> ports) {
     PowerManager.LowPowerStandbyPortsLock lock =
         Shadow.newInstanceOf(PowerManager.LowPowerStandbyPortsLock.class);
     ((ShadowLowPowerStandbyPortsLock) Shadow.extract(lock)).setPorts(ports);
-    return (Object) lock;
+    return lock;
   }
 
   /** Shadow of {@link LowPowerStandbyPortsLock} to allow testing state. */
