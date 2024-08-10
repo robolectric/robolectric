@@ -25,7 +25,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link android.view.Surface} */
-@Implements(value = Surface.class, looseSignatures = true)
+@Implements(value = Surface.class)
 public class ShadowSurface {
   private static final AtomicInteger nativeObject = new AtomicInteger();
 
@@ -121,12 +121,12 @@ public class ShadowSurface {
   }
 
   @Implementation
-  protected static Object nativeCreateFromSurfaceTexture(Object surfaceTexture) {
+  protected static long nativeCreateFromSurfaceTexture(SurfaceTexture surfaceTexture) {
     return nativeObject.incrementAndGet();
   }
 
   @Implementation
-  protected static Object nativeCreateFromSurfaceControl(Object surfaceControlNativeObject) {
+  protected static long nativeCreateFromSurfaceControl(long surfaceControlNativeObject) {
     return nativeObject.incrementAndGet();
   }
 
