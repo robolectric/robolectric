@@ -58,36 +58,36 @@ public class ShadowPowerManager {
 
   @RealObject private PowerManager realPowerManager;
 
-  private boolean isInteractive = true;
-  private boolean isPowerSaveMode = false;
-  private boolean isDeviceIdleMode = false;
-  private boolean isLightDeviceIdleMode = false;
-  @Nullable private Duration batteryDischargePrediction = null;
-  private boolean isBatteryDischargePredictionPersonalized = false;
+  private static boolean isInteractive = true;
+  private static boolean isPowerSaveMode = false;
+  private static boolean isDeviceIdleMode = false;
+  private static boolean isLightDeviceIdleMode = false;
+  @Nullable private static Duration batteryDischargePrediction = null;
+  private static boolean isBatteryDischargePredictionPersonalized = false;
 
   @PowerManager.LocationPowerSaveMode
-  private int locationMode = PowerManager.LOCATION_MODE_ALL_DISABLED_WHEN_SCREEN_OFF;
+  private static int locationMode = PowerManager.LOCATION_MODE_ALL_DISABLED_WHEN_SCREEN_OFF;
 
-  private final List<String> rebootReasons = new ArrayList<>();
-  private final Map<String, Boolean> ignoringBatteryOptimizations = new HashMap<>();
+  private static final List<String> rebootReasons = new ArrayList<>();
+  private static final Map<String, Boolean> ignoringBatteryOptimizations = new HashMap<>();
 
-  private int thermalStatus = 0;
+  private static int thermalStatus = 0;
   // Intentionally use Object instead of PowerManager.OnThermalStatusChangedListener to avoid
   // ClassLoader exceptions on earlier SDKs that don't have this class.
-  private final Set<Object> thermalListeners = new HashSet<>();
+  private static final Set<Object> thermalListeners = new HashSet<>();
 
-  private final Set<String> ambientDisplaySuppressionTokens =
+  private static final Set<String> ambientDisplaySuppressionTokens =
       Collections.synchronizedSet(new HashSet<>());
-  private volatile boolean isAmbientDisplayAvailable = true;
-  private volatile boolean isRebootingUserspaceSupported = false;
-  private volatile boolean adaptivePowerSaveEnabled = false;
+  private static volatile boolean isAmbientDisplayAvailable = true;
+  private static volatile boolean isRebootingUserspaceSupported = false;
+  private static volatile boolean adaptivePowerSaveEnabled = false;
 
   private static PowerManager.WakeLock latestWakeLock;
 
-  private boolean lowPowerStandbyEnabled = false;
-  private boolean lowPowerStandbySupported = false;
-  private boolean exemptFromLowPowerStandby = false;
-  private final Set<String> allowedFeatures = new HashSet<String>();
+  private static boolean lowPowerStandbyEnabled = false;
+  private static boolean lowPowerStandbySupported = false;
+  private static boolean exemptFromLowPowerStandby = false;
+  private static final Set<String> allowedFeatures = new HashSet<String>();
 
   @Implementation
   protected PowerManager.WakeLock newWakeLock(int flags, String tag) {
@@ -260,6 +260,26 @@ public class ShadowPowerManager {
   /** Discards the most recent {@code PowerManager.WakeLock}s */
   @Resetter
   public static void reset() {
+    isInteractive = true;
+    isPowerSaveMode = false;
+    isDeviceIdleMode = false;
+    isLightDeviceIdleMode = false;
+    batteryDischargePrediction = null;
+    isBatteryDischargePredictionPersonalized = false;
+    locationMode = PowerManager.LOCATION_MODE_ALL_DISABLED_WHEN_SCREEN_OFF;
+    rebootReasons.clear();
+    ignoringBatteryOptimizations.clear();
+    thermalStatus = 0;
+    thermalListeners.clear();
+    ambientDisplaySuppressionTokens.clear();
+    isAmbientDisplayAvailable = true;
+    isRebootingUserspaceSupported = false;
+    adaptivePowerSaveEnabled = false;
+    latestWakeLock = null;
+    lowPowerStandbyEnabled = false;
+    lowPowerStandbySupported = false;
+    exemptFromLowPowerStandby = false;
+    allowedFeatures.clear();
     clearWakeLocks();
   }
 
