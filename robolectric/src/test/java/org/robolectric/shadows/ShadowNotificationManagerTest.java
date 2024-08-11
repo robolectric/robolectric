@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
 import static android.app.NotificationManager.INTERRUPTION_FILTER_PRIORITY;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -10,6 +11,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
+import android.app.Activity;
 import android.app.AutomaticZenRule;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -32,6 +34,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 
@@ -803,5 +806,40 @@ public class ShadowNotificationManagerTest {
       }
     }
     return null;
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void notificationManager_activityContext_enabled_differentInstancesRetrieveChannels() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      NotificationManager applicationNotificationManager =
+          (NotificationManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.NOTIFICATION_SERVICE);
+
+      NotificationChannel testChannel =
+          new NotificationChannel(
+              "test_channel_id", "Test Channel", NotificationManager.IMPORTANCE_DEFAULT);
+      applicationNotificationManager.createNotificationChannel(testChannel);
+
+      activity = Robolectric.setupActivity(Activity.class);
+      NotificationManager activityNotificationManager =
+          (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+
+      NotificationChannel applicationChannel =
+          applicationNotificationManager.getNotificationChannel("test_channel_id");
+      NotificationChannel activityChannel =
+          activityNotificationManager.getNotificationChannel("test_channel_id");
+
+      assertThat(activityChannel).isEqualTo(applicationChannel);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

@@ -33,6 +33,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Shadows for NotificationManager. */
@@ -40,21 +41,40 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(value = NotificationManager.class)
 public class ShadowNotificationManager {
   private static final int MAX_NOTIFICATION_LIMIT = 25;
-  private boolean mAreNotificationsEnabled = true;
-  private boolean isNotificationPolicyAccessGranted = false;
-  private boolean enforceMaxNotificationLimit = false;
-  private final Map<Key, PostedNotification> notifications = new ConcurrentHashMap<>();
-  private final Map<String, Object> notificationChannels = new ConcurrentHashMap<>();
-  private final Map<String, Object> notificationChannelGroups = new ConcurrentHashMap<>();
-  private final Map<String, Object> deletedNotificationChannels = new ConcurrentHashMap<>();
-  private final Map<String, AutomaticZenRule> automaticZenRules = new ConcurrentHashMap<>();
-  private final Map<String, Boolean> listenerAccessGrantedComponents = new ConcurrentHashMap<>();
-  private final Set<String> canNotifyOnBehalfPackages = Sets.newConcurrentHashSet();
+  private static boolean mAreNotificationsEnabled = true;
+  private static boolean isNotificationPolicyAccessGranted = false;
+  private static boolean enforceMaxNotificationLimit = false;
+  private static final Map<Key, PostedNotification> notifications = new ConcurrentHashMap<>();
+  private static final Map<String, Object> notificationChannels = new ConcurrentHashMap<>();
+  private static final Map<String, Object> notificationChannelGroups = new ConcurrentHashMap<>();
+  private static final Map<String, Object> deletedNotificationChannels = new ConcurrentHashMap<>();
+  private static final Map<String, AutomaticZenRule> automaticZenRules = new ConcurrentHashMap<>();
+  private static final Map<String, Boolean> listenerAccessGrantedComponents =
+      new ConcurrentHashMap<>();
+  private static final Set<String> canNotifyOnBehalfPackages = Sets.newConcurrentHashSet();
 
-  private int currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
-  private Policy notificationPolicy;
-  private String notificationDelegate;
-  private int importance;
+  private static int currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
+  private static Policy notificationPolicy;
+  private static String notificationDelegate;
+  private static int importance;
+
+  @Resetter
+  public static void reset() {
+    mAreNotificationsEnabled = true;
+    isNotificationPolicyAccessGranted = false;
+    enforceMaxNotificationLimit = false;
+    notifications.clear();
+    notificationChannels.clear();
+    notificationChannelGroups.clear();
+    deletedNotificationChannels.clear();
+    automaticZenRules.clear();
+    listenerAccessGrantedComponents.clear();
+    canNotifyOnBehalfPackages.clear();
+    currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
+    notificationPolicy = null;
+    notificationDelegate = null;
+    importance = NotificationManager.IMPORTANCE_DEFAULT;
+  }
 
   @Implementation
   protected void notify(int id, Notification notification) {
