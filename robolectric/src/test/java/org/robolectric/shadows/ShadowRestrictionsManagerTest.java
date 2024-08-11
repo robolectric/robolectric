@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.RestrictionEntry;
 import android.content.RestrictionsManager;
@@ -13,6 +15,8 @@ import com.google.common.collect.Iterables;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public final class ShadowRestrictionsManagerTest {
@@ -47,5 +51,32 @@ public final class ShadowRestrictionsManagerTest {
             restrictionsManager.getManifestRestrictions(context.getPackageName()));
 
     assertThat(restrictionEntry.getKey()).isEqualTo("restrictionKey");
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void restrictionsManager_activityContextEnabled_hasConsistentRestrictionsProvider() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      RestrictionsManager applicationRestrictionsManager =
+          ApplicationProvider.getApplicationContext().getSystemService(RestrictionsManager.class);
+      activity = Robolectric.setupActivity(Activity.class);
+      RestrictionsManager activityRestrictionsManager =
+          activity.getSystemService(RestrictionsManager.class);
+
+      assertThat(applicationRestrictionsManager).isNotSameInstanceAs(activityRestrictionsManager);
+
+      boolean applicationHasProvider = applicationRestrictionsManager.hasRestrictionsProvider();
+      boolean activityHasProvider = activityRestrictionsManager.hasRestrictionsProvider();
+
+      assertThat(activityHasProvider).isEqualTo(applicationHasProvider);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
