@@ -1,13 +1,18 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.NetworkScoreManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 /** ShadowNetworkScoreManagerTest tests {@link ShadowNetworkScoreManager}. */
@@ -33,5 +38,33 @@ public final class ShadowNetworkScoreManagerTest {
     networkScoreManager.disableScoring();
     ShadowNetworkScoreManager m = Shadow.extract(networkScoreManager);
     assertThat(m.isScoringEnabled()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void
+      networkScoreManager_activityContextEnabled_differentInstancesRetrieveActiveScorerPackage() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      NetworkScoreManager applicationNetworkScoreManager =
+          RuntimeEnvironment.getApplication().getSystemService(NetworkScoreManager.class);
+      activity = Robolectric.setupActivity(Activity.class);
+      NetworkScoreManager activityNetworkScoreManager =
+          activity.getSystemService(NetworkScoreManager.class);
+
+      assertThat(applicationNetworkScoreManager).isNotSameInstanceAs(activityNetworkScoreManager);
+
+      String applicationScorerPackage = applicationNetworkScoreManager.getActiveScorerPackage();
+      String activityScorerPackage = activityNetworkScoreManager.getActiveScorerPackage();
+
+      assertThat(activityScorerPackage).isEqualTo(applicationScorerPackage);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
