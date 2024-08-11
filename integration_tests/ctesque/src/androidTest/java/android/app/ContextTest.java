@@ -19,6 +19,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.CrossProfileApps;
 import android.content.pm.LauncherApps;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.camera2.CameraManager;
 import android.hardware.fingerprint.FingerprintManager;
@@ -1165,6 +1167,70 @@ public class ContextTest {
             boolean activityisEnabled = activityCaptioningManager.isEnabled();
 
             assertThat(applicationisEnabled).isEqualTo(activityisEnabled);
+          });
+    }
+  }
+
+  @Test
+  public void sensorManager_applicationInstance_isNotSameAsActivityInstance() {
+    SensorManager applicationSensorManager =
+        (SensorManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            SensorManager activitySensorManager =
+                (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+
+            assertThat(applicationSensorManager).isNotSameInstanceAs(activitySensorManager);
+          });
+    }
+  }
+
+  @Test
+  public void sensorManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            SensorManager activitySensorManager =
+                (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+
+            SensorManager anotherActivitySensorManager =
+                (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+
+            assertThat(anotherActivitySensorManager).isSameInstanceAs(activitySensorManager);
+          });
+    }
+  }
+
+  @Test
+  public void sensorManager_instance_retrievesSameValues() {
+    SensorManager applicationSensorManager =
+        (SensorManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            SensorManager activitySensorManager =
+                (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+
+            List<Sensor> applicationSensors =
+                applicationSensorManager.getSensorList(Sensor.TYPE_ALL);
+            List<Sensor> activitySensors = activitySensorManager.getSensorList(Sensor.TYPE_ALL);
+
+            for (int i = 0; i < applicationSensors.size(); i++) {
+              Sensor appSensor = applicationSensors.get(i);
+              Sensor actSensor = activitySensors.get(i);
+
+              assertThat(appSensor.getName()).isEqualTo(actSensor.getName());
+              assertThat(appSensor.getType()).isEqualTo(actSensor.getType());
+              assertThat(appSensor.getMaximumRange()).isEqualTo(actSensor.getMaximumRange());
+              assertThat(appSensor.getResolution()).isEqualTo(actSensor.getResolution());
+              assertThat(appSensor.getPower()).isEqualTo(actSensor.getPower());
+              assertThat(appSensor.getMinDelay()).isEqualTo(actSensor.getMinDelay());
+            }
           });
     }
   }

@@ -25,18 +25,26 @@ import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(value = SensorManager.class)
 public class ShadowSensorManager {
-  public boolean forceListenersToFail = false;
-  private final Multimap<Integer, Sensor> sensorMap =
+  public static boolean forceListenersToFail = false;
+  private static final Multimap<Integer, Sensor> sensorMap =
       Multimaps.synchronizedMultimap(HashMultimap.create());
-  private final Multimap<SensorEventListener, Sensor> listeners =
+  private static final Multimap<SensorEventListener, Sensor> listeners =
       Multimaps.synchronizedMultimap(HashMultimap.create());
 
   @RealObject private SensorManager realObject;
+
+  @Resetter
+  public static void reset() {
+    sensorMap.clear();
+    listeners.clear();
+    forceListenersToFail = false;
+  }
 
   /**
    * Provide a Sensor for the indicated sensor type.
