@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.shadows.ShadowTimeZoneFinder.readTzlookup;
 
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
@@ -14,12 +15,11 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
     className = "libcore.timezone.TimeZoneFinder",
     minSdk = Q,
     maxSdk = R,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+    isInAndroidSdk = false)
 public class ShadowTimeZoneFinderQ {
 
   @Implementation
-  protected static Object getInstance() {
+  protected static @ClassName("libcore.timezone.TimeZoneFinder") Object getInstance() {
     try {
       return ReflectionHelpers.callStaticMethod(
           Class.forName("libcore.timezone.TimeZoneFinder"),
