@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -54,7 +55,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow for {@link android.net.wifi.WifiManager}. */
-@Implements(value = WifiManager.class, looseSignatures = true)
+@Implements(value = WifiManager.class)
 @SuppressWarnings("AndroidConcurrentHashMap")
 public class ShadowWifiManager {
   private static final int LOCAL_HOST = 2130706433;
@@ -577,19 +578,17 @@ public class ShadowWifiManager {
 
   @Implementation(minSdk = Q)
   @HiddenApi
-  protected void addOnWifiUsabilityStatsListener(Object executorObject, Object listenerObject) {
-    Executor executor = (Executor) executorObject;
-    WifiManager.OnWifiUsabilityStatsListener listener =
-        (WifiManager.OnWifiUsabilityStatsListener) listenerObject;
-    wifiUsabilityStatsListeners.put(listener, executor);
+  protected void addOnWifiUsabilityStatsListener(
+      Executor executor,
+      @ClassName("android.net.wifi.WifiManager$OnWifiUsabilityStatsListener") Object listener) {
+    wifiUsabilityStatsListeners.put((WifiManager.OnWifiUsabilityStatsListener) listener, executor);
   }
 
   @Implementation(minSdk = Q)
   @HiddenApi
-  protected void removeOnWifiUsabilityStatsListener(Object listenerObject) {
-    WifiManager.OnWifiUsabilityStatsListener listener =
-        (WifiManager.OnWifiUsabilityStatsListener) listenerObject;
-    wifiUsabilityStatsListeners.remove(listener);
+  protected void removeOnWifiUsabilityStatsListener(
+      @ClassName("android.net.wifi.WifiManager$OnWifiUsabilityStatsListener") Object listener) {
+    wifiUsabilityStatsListeners.remove((WifiManager.OnWifiUsabilityStatsListener) listener);
   }
 
   @Implementation(minSdk = Q)
@@ -606,9 +605,11 @@ public class ShadowWifiManager {
    */
   @Implementation(minSdk = R)
   @HiddenApi
-  protected boolean setWifiConnectedNetworkScorer(Object executorObject, Object scorerObject) {
+  protected boolean setWifiConnectedNetworkScorer(
+      Executor executor,
+      @ClassName("android.net.wifi.WifiManager$WifiConnectedNetworkScorer") Object scorer) {
     if (networkScorer == null) {
-      networkScorer = scorerObject;
+      networkScorer = scorer;
       return true;
     } else {
       return false;
@@ -844,23 +845,21 @@ public class ShadowWifiManager {
     }
   }
 
-  // Object needs to be used here since PnoScanResultsCallback is hidden. The looseSignatures spec
-  // requires that all args are of type Object.
   @Implementation(minSdk = TIRAMISU)
-  @HiddenApi
-  protected void setExternalPnoScanRequest(
-      Object ssids, Object frequencies, Object executor, Object callback) {
+  public void setExternalPnoScanRequest(
+      @ClassName("java.util.List") Object ssids,
+      int[] frequencies,
+      Executor executor,
+      @ClassName("android.net.wifi.WifiManager$PnoScanResultsCallback") Object callback) {
     synchronized (pnoRequestLock) {
       if (callback == null) {
         throw new IllegalArgumentException("callback cannot be null");
       }
 
       List<WifiSsid> pnoSsids = (List<WifiSsid>) ssids;
-      int[] pnoFrequencies = (int[]) frequencies;
-      Executor pnoExecutor = (Executor) executor;
       InternalPnoScanResultsCallback pnoCallback = new InternalPnoScanResultsCallback(callback);
 
-      if (pnoExecutor == null) {
+      if (executor == null) {
         throw new IllegalArgumentException("executor cannot be null");
       }
       if (pnoSsids == null || pnoSsids.isEmpty()) {
@@ -871,14 +870,14 @@ public class ShadowWifiManager {
       if (pnoSsids.size() > 2) {
         throw new IllegalArgumentException("Ssid list can't be greater than 2");
       }
-      if (pnoFrequencies != null && pnoFrequencies.length > 10) {
+      if (frequencies != null && frequencies.length > 10) {
         throw new IllegalArgumentException("Length of frequencies must be smaller than 10");
       }
       int uid = Binder.getCallingUid();
       String packageName = getContext().getPackageName();
 
       if (outstandingPnoScanRequest != null) {
-        pnoExecutor.execute(
+        executor.execute(
             () ->
                 pnoCallback.onRegisterFailed(
                     uid == outstandingPnoScanRequest.uid
@@ -888,8 +887,8 @@ public class ShadowWifiManager {
       }
 
       outstandingPnoScanRequest =
-          new PnoScanRequest(pnoSsids, pnoFrequencies, pnoExecutor, pnoCallback, packageName, uid);
-      pnoExecutor.execute(pnoCallback::onRegisterSuccess);
+          new PnoScanRequest(pnoSsids, frequencies, executor, pnoCallback, packageName, uid);
+      executor.execute(pnoCallback::onRegisterSuccess);
     }
   }
 
