@@ -4,6 +4,8 @@ import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.Build.VERSION_CODES;
 import android.safetycenter.SafetyCenterManager;
 import android.safetycenter.SafetyEvent;
@@ -13,7 +15,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -489,5 +493,32 @@ public final class ShadowSafetyCenterManagerTest {
       String safetySourceId, ThrowingRunnable runnable) {
     IllegalArgumentException e = assertThrows(IllegalArgumentException.class, runnable);
     assertThat(e).hasMessageThat().contains(safetySourceId);
+  }
+
+  @Test
+  public void safetyCenterManager_activityContextEnabled_differentInstancesCheckEnabled() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      SafetyCenterManager applicationSafetyCenterManager =
+          (SafetyCenterManager)
+              RuntimeEnvironment.getApplication().getSystemService(Context.SAFETY_CENTER_SERVICE);
+      activity = Robolectric.setupActivity(Activity.class);
+      SafetyCenterManager activitySafetyCenterManager =
+          (SafetyCenterManager) activity.getSystemService(Context.SAFETY_CENTER_SERVICE);
+
+      assertThat(applicationSafetyCenterManager).isNotSameInstanceAs(activitySafetyCenterManager);
+
+      boolean applicationEnabled = applicationSafetyCenterManager.isSafetyCenterEnabled();
+      boolean activityEnabled = activitySafetyCenterManager.isSafetyCenterEnabled();
+
+      assertThat(activityEnabled).isEqualTo(applicationEnabled);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
