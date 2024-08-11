@@ -4,6 +4,7 @@ import static android.content.Intent.ACTION_SCREEN_OFF;
 import static android.content.Intent.ACTION_SCREEN_ON;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -17,6 +18,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
@@ -32,6 +34,7 @@ import java.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
@@ -729,5 +732,33 @@ public class ShadowPowerManagerTest {
     lock.acquire();
     lock.release();
     assertThat(shadowLock.isAcquired()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void powerManager_activityContextEnabled_checkIsInteractive() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      PowerManager applicationPowerManager =
+          (PowerManager)
+              ApplicationProvider.getApplicationContext().getSystemService(Context.POWER_SERVICE);
+      activity = Robolectric.setupActivity(Activity.class);
+      PowerManager activityPowerManager =
+          (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
+
+      assertThat(applicationPowerManager).isNotSameInstanceAs(activityPowerManager);
+
+      boolean applicationIsInteractive = applicationPowerManager.isInteractive();
+      boolean activityIsInteractive = activityPowerManager.isInteractive();
+
+      assertThat(activityIsInteractive).isEqualTo(applicationIsInteractive);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
