@@ -4,11 +4,17 @@ import android.content.RestrictionsManager;
 import android.os.Bundle;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /** Shadow of {@link android.content.RestrictionsManager}. */
 @Implements(value = RestrictionsManager.class)
 public class ShadowRestrictionsManager {
-  private Bundle applicationRestrictions;
+  private static Bundle applicationRestrictions;
+
+  @Resetter
+  public static void reset() {
+    applicationRestrictions = null;
+  }
 
   /**
    * Sets the application restrictions as returned by {@link
