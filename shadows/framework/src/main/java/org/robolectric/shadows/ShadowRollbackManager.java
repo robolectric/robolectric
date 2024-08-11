@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /** A Shadow for android.content.rollback.RollbackManager added in Android Q. */
 @Implements(
@@ -15,8 +16,8 @@ import org.robolectric.annotation.Implements;
     isInAndroidSdk = false)
 public final class ShadowRollbackManager {
 
-  private final List<RollbackInfo> availableRollbacks = new ArrayList<>();
-  private final List<RollbackInfo> recentlyCommittedRollbacks = new ArrayList<>();
+  private static final List<RollbackInfo> availableRollbacks = new ArrayList<>();
+  private static final List<RollbackInfo> recentlyCommittedRollbacks = new ArrayList<>();
 
   public void addAvailableRollbacks(RollbackInfo rollbackInfo) {
     availableRollbacks.add(rollbackInfo);
@@ -34,5 +35,11 @@ public final class ShadowRollbackManager {
   @Implementation
   protected List<RollbackInfo> getRecentlyCommittedRollbacks() {
     return recentlyCommittedRollbacks;
+  }
+
+  @Resetter
+  public static void reset() {
+    availableRollbacks.clear();
+    recentlyCommittedRollbacks.clear();
   }
 }
