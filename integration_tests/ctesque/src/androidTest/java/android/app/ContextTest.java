@@ -7,6 +7,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
+import android.app.role.RoleManager;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -1231,6 +1232,54 @@ public class ContextTest {
               assertThat(appSensor.getPower()).isEqualTo(actSensor.getPower());
               assertThat(appSensor.getMinDelay()).isEqualTo(actSensor.getMinDelay());
             }
+          });
+    }
+  }
+
+  @Test
+  public void roleManager_applicationInstance_isNotSameAsActivityInstance() {
+    RoleManager applicationRoleManager =
+        (RoleManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ROLE_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            RoleManager activityRoleManager =
+                (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
+            assertThat(applicationRoleManager).isNotSameInstanceAs(activityRoleManager);
+          });
+    }
+  }
+
+  @Test
+  public void roleManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            RoleManager activityRoleManager =
+                (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
+            RoleManager anotherActivityRoleManager =
+                (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
+            assertThat(anotherActivityRoleManager).isSameInstanceAs(activityRoleManager);
+          });
+    }
+  }
+
+  @Test
+  public void roleManager_instance_retrievesSameRoles() {
+    RoleManager applicationRoleManager =
+        (RoleManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ROLE_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            RoleManager activityRoleManager =
+                (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
+
+            boolean applicationRoleHeld = applicationRoleManager.isRoleHeld(RoleManager.ROLE_SMS);
+            boolean activityRoleHeld = activityRoleManager.isRoleHeld(RoleManager.ROLE_SMS);
+
+            assertThat(activityRoleHeld).isEqualTo(applicationRoleHeld);
           });
     }
   }
