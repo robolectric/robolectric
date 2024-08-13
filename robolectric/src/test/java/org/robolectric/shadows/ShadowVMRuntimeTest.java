@@ -14,11 +14,13 @@ public final class ShadowVMRuntimeTest {
   @Test
   public void newNonMovableArray_floatArray() {
     VMRuntime runtime = VMRuntime.getRuntime();
-    float[] result = (float[]) runtime.newNonMovableArray(float.class, 10);
-    assertThat(result).hasLength(10);
-    assertThat(runtime.addressOf(result)).isEqualTo(runtime.addressOf(result));
+    float[] result = (float[]) runtime.newNonMovableArray(float.class, 8);
+    assertThat(result).hasLength(8);
+    long address = runtime.addressOf(result);
+    assertThat(address).isNotEqualTo(0);
+    assertThat(address).isEqualTo(runtime.addressOf(result));
     ShadowVMRuntime shadow = Shadow.extract(runtime);
-    assertThat(shadow.getObjectForAddress(runtime.addressOf(result))).isSameInstanceAs(result);
+    assertThat(shadow.getObjectForAddress(address)).isSameInstanceAs(result);
   }
 
   @Test
@@ -35,6 +37,7 @@ public final class ShadowVMRuntimeTest {
 
   @Test
   public void addressOf_notNonMoveableArray() {
-    assertThat(VMRuntime.getRuntime().addressOf(new float[0])).isEqualTo(0);
+    assertThrows(
+        IllegalArgumentException.class, () -> VMRuntime.getRuntime().addressOf(new float[0]));
   }
 }

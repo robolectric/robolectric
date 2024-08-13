@@ -6,21 +6,49 @@ import com.google.common.base.Preconditions;
 import dalvik.system.VMRuntime;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.res.android.NativeObjRegistry;
 
 @Implements(value = VMRuntime.class, isInAndroidSdk = false)
 public class ShadowVMRuntime {
-  // Stores address -> object mapping.
-  private final NativeObjRegistry<WeakReference<Object>> nativeObjRegistry =
-      new NativeObjRegistry<>("VRRuntime.nativeObjectRegistry");
 
-  // Stores object -> address mapping.
-  private final WeakHashMap<Object, Long> nonMovableArrays = new WeakHashMap<>();
+  /**
+   * A map of allocated non movable arrays to the (Direct)ByteBuffer backing it
+   *
+   * <p>The JVM does not directly support newNonMovableArray. So as a workaround, this class will
+   * allocate a direct ByteBuffer for use in native code. It is the responsibility the shadow code
+   * to update any associated buffers with the data from native code.
+   */
+  private final Map<Object, ByteBuffer> realNonMovableArrays =
+      Collections.synchronizedMap(new WeakHashMap<>());
+
+  private final Map<Long, WeakReference<Object>> nonMovableArraysReverse =
+      Collections.synchronizedMap(new HashMap<>());
+
+  /**
+   * Currently, {@link android.content.res.TypedArray} uses newNonMovableArray, but does not need to
+   * access the data from native code. So in this case we will allocate a fake pointer.
+   */
+  private final Map<Object, Long> fakeNonMovableArrays =
+      Collections.synchronizedMap(new WeakHashMap<>());
+
+  private final AtomicLong nextFakeArrayPointer = new AtomicLong();
+
+  // This is a hack to get the address of a DirectByteBuffer. The Method object is cached to reduce
+  // the overhead of reflection. This method is invoked extensively during layout inflation. This
+  // reflection requires the `--add-opens=java.base/java.nio=ALL-UNNAMED` JVM flag. This value is
+  // lazy so tests can avoid having to add the flag where it is not needed.
+  private static Method addressMethod;
 
   // There actually isn't any android JNI code to call through to in Robolectric due to
   // cross-platform compatibility issues. We default to a reasonable value that reflects the devices
@@ -36,10 +64,23 @@ public class ShadowVMRuntime {
 
   @Implementation
   public Object newNonMovableArray(Class<?> type, int size) {
+    Preconditions.checkArgument(
+        type == int.class || type == float.class, "unsupported type %s", type.getName());
     Object arrayInstance = Array.newInstance(type, size);
-    synchronized (nativeObjRegistry) {
-      long pointer = nativeObjRegistry.register(new WeakReference<>(arrayInstance));
-      nonMovableArrays.put(arrayInstance, pointer);
+    if (type == float.class && size == 8) {
+      // This is being called from android.graphics.PathIterator, so we need to allocate a real
+      // ByteBuffer that can be accessed from native code.
+      ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * size);
+      byteBuffer.order(ByteOrder.nativeOrder());
+      realNonMovableArrays.put(arrayInstance, byteBuffer);
+      nonMovableArraysReverse.put(
+          getAddressOfDirectByteBuffer(byteBuffer), new WeakReference<>(arrayInstance));
+    } else {
+      // This is being called from android.content.res.TypedArray, so we need to allocate a fake
+      // pointer.
+      long fakePointer = nextFakeArrayPointer.incrementAndGet();
+      fakeNonMovableArrays.put(arrayInstance, fakePointer);
+      nonMovableArraysReverse.put(fakePointer, new WeakReference<>(arrayInstance));
     }
     return arrayInstance;
   }
@@ -56,13 +97,50 @@ public class ShadowVMRuntime {
     Preconditions.checkArgument(
         arrayClass.isPrimitive(),
         "addressOf(Object) is only supported for primitive array objects");
-    return nonMovableArrays.getOrDefault(obj, 0L);
+    if (arrayClass == float.class && Array.getLength(obj) == 8) {
+      // This is being called from android.graphics.PathIterator.
+      ByteBuffer byteBuffer = realNonMovableArrays.get(obj);
+      if (byteBuffer == null) {
+        throw new IllegalArgumentException("Trying to get address of unknown object");
+      }
+      return getAddressOfDirectByteBuffer(byteBuffer);
+    } else {
+      // This is being called from android.content.res.TypedArray.
+      Long address = fakeNonMovableArrays.get(obj);
+      if (address == null) {
+        throw new IllegalArgumentException("Trying to get address of unknown object");
+      }
+      return address;
+    }
+  }
+
+  private long getAddressOfDirectByteBuffer(ByteBuffer byteBuffer) {
+    synchronized (ShadowVMRuntime.class) {
+      if (addressMethod == null) {
+        try {
+          addressMethod = Class.forName("java.nio.DirectByteBuffer").getMethod("address");
+          addressMethod.setAccessible(true);
+        } catch (ReflectiveOperationException e) {
+          throw new LinkageError("Error accessing address method", e);
+        }
+      }
+    }
+
+    try {
+      return (long) addressMethod.invoke(byteBuffer);
+    } catch (ReflectiveOperationException e) {
+      throw new LinkageError("Error invoking address method", e);
+    }
   }
 
   /** Returns the object previously registered with {@link #addressOf(Object)}. */
   @Nullable
-  public Object getObjectForAddress(long address) {
-    return nativeObjRegistry.getNativeObject(address).get();
+  Object getObjectForAddress(long address) {
+    WeakReference<Object> weakReference = nonMovableArraysReverse.get(address);
+    if (weakReference == null) {
+      return null;
+    }
+    return weakReference.get();
   }
 
   /**
