@@ -211,7 +211,7 @@ public class ShadowTrace {
 
     public abstract String getSectionName();
 
-    public abstract Integer getCookie();
+    public abstract int getCookie();
 
     public static Builder newBuilder() {
       return new AutoValue_ShadowTrace_AsyncTraceSection.Builder();
@@ -222,7 +222,7 @@ public class ShadowTrace {
     public abstract static class Builder {
       public abstract Builder setSectionName(String sectionName);
 
-      public abstract Builder setCookie(Integer cookie);
+      public abstract Builder setCookie(int cookie);
 
       public abstract AsyncTraceSection build();
     }
