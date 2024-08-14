@@ -3,19 +3,23 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.app.slice.SliceManager;
 import android.app.slice.SliceSpec;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build.VERSION_CODES;
+import android.util.ArraySet;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
@@ -92,5 +96,42 @@ public final class ShadowSliceManagerTest {
 
     assertThat(sliceManager.getPinnedSlices()).isEmpty();
     assertThat(sliceManager.getPinnedSpecs(sliceUri1)).isEmpty();
+  }
+
+  @Test
+  public void sliceManager_activityContextEnabled_differentInstancesRetrieveSlices() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      SliceManager applicationSliceManager =
+          ApplicationProvider.getApplicationContext().getSystemService(SliceManager.class);
+      activity = Robolectric.setupActivity(Activity.class);
+      SliceManager activitySliceManager = activity.getSystemService(SliceManager.class);
+
+      assertThat(applicationSliceManager).isNotSameInstanceAs(activitySliceManager);
+
+      Uri testUri = Uri.parse("content://com.example.slice/uri");
+
+      Set<SliceSpec> specs = new ArraySet<>();
+      specs.add(new SliceSpec("v1", 1));
+
+      applicationSliceManager.pinSlice(testUri, specs);
+      activitySliceManager.unpinSlice(testUri);
+
+      Set<SliceSpec> applicationSpecs = applicationSliceManager.getPinnedSpecs(testUri);
+      Set<SliceSpec> activitySpecs = activitySliceManager.getPinnedSpecs(testUri);
+      assertThat(applicationSpecs).isEqualTo(activitySpecs);
+
+      List<Uri> applicationPinnedSlices = applicationSliceManager.getPinnedSlices();
+      List<Uri> activityPinnedSlices = activitySliceManager.getPinnedSlices();
+      assertThat(applicationPinnedSlices).isEqualTo(activityPinnedSlices);
+
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
