@@ -8,6 +8,9 @@ import android.accounts.AccountManager;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.app.role.RoleManager;
+import android.app.slice.Slice;
+import android.app.slice.SliceManager;
+import android.app.slice.SliceSpec;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -27,11 +30,13 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.media.AudioManager;
 import android.media.MediaRouter;
+import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.DropBoxManager;
 import android.os.UserHandle;
 import android.telephony.euicc.EuiccManager;
+import android.util.ArraySet;
 import android.view.accessibility.CaptioningManager;
 import android.view.autofill.AutofillManager;
 import android.widget.RemoteViews;
@@ -42,6 +47,7 @@ import androidx.test.filters.SdkSuppress;
 import androidx.test.rule.GrantPermissionRule;
 import com.google.common.truth.Truth;
 import java.util.List;
+import java.util.Set;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1280,6 +1286,53 @@ public class ContextTest {
             boolean activityRoleHeld = activityRoleManager.isRoleHeld(RoleManager.ROLE_SMS);
 
             assertThat(activityRoleHeld).isEqualTo(applicationRoleHeld);
+          });
+    }
+  }
+
+  @Test
+  public void sliceManager_applicationInstance_isNotSameAsActivityInstance() {
+    SliceManager applicationSliceManager =
+        ApplicationProvider.getApplicationContext().getSystemService(SliceManager.class);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            SliceManager activitySliceManager = activity.getSystemService(SliceManager.class);
+            assertThat(applicationSliceManager).isNotSameInstanceAs(activitySliceManager);
+          });
+    }
+  }
+
+  @Test
+  public void sliceManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            SliceManager activitySliceManager = activity.getSystemService(SliceManager.class);
+            SliceManager anotherActivitySliceManager =
+                activity.getSystemService(SliceManager.class);
+            assertThat(anotherActivitySliceManager).isSameInstanceAs(activitySliceManager);
+          });
+    }
+  }
+
+  @Test
+  public void sliceManager_instance_retrievesSameSlice() {
+    SliceManager applicationSliceManager =
+        ApplicationProvider.getApplicationContext().getSystemService(SliceManager.class);
+    Uri testUri = Uri.parse("content://com.example.slice/test"); // Replace with a valid test URI
+    Set<SliceSpec> testSpecs = new ArraySet<>();
+
+    Slice applicationSlice = applicationSliceManager.bindSlice(testUri, testSpecs);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            SliceManager activitySliceManager = activity.getSystemService(SliceManager.class);
+
+            Slice activitySlice = activitySliceManager.bindSlice(testUri, testSpecs);
+
+            assertThat(activitySlice).isEqualTo(applicationSlice);
           });
     }
   }
