@@ -664,4 +664,25 @@ public class ShadowBluetoothDeviceTest {
     assertThat(cancelBond).isTrue();
     assertThat(device.getBondState()).isEqualTo(BOND_NONE);
   }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void verifyTheDefaultConnectionHandle_isZero() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(device.getConnectionHandle(BluetoothDevice.TRANSPORT_LE)).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void verifyTheSetConnectionHandle_isTheSameAsTheGetConnectionHandle() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+    ShadowBluetoothDevice shadowDevice = shadowOf(device);
+
+    shadowDevice.setConnectionHandle(BluetoothDevice.TRANSPORT_LE, 123);
+    assertThat(device.getConnectionHandle(BluetoothDevice.TRANSPORT_LE)).isEqualTo(123);
+    assertThat(device.getConnectionHandle(BluetoothDevice.TRANSPORT_BREDR)).isEqualTo(0);
+  }
 }
