@@ -4,12 +4,14 @@ import static android.content.pm.ShortcutManager.FLAG_MATCH_CACHED;
 import static android.content.pm.ShortcutManager.FLAG_MATCH_DYNAMIC;
 import static android.content.pm.ShortcutManager.FLAG_MATCH_MANIFEST;
 import static android.content.pm.ShortcutManager.FLAG_MATCH_PINNED;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
@@ -22,6 +24,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -385,5 +388,35 @@ public final class ShadowShortcutManagerTest {
     return new ShortcutInfo.Builder(ApplicationProvider.getApplicationContext(), id)
         .setLongLabel(longLabel)
         .build();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void shortcutManager_activityContextEnabled_differentInstancesCheckRateLimiting() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      ShortcutManager applicationShortcutManager =
+          (ShortcutManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.SHORTCUT_SERVICE);
+
+      activity = Robolectric.setupActivity(Activity.class);
+      ShortcutManager activityShortcutManager =
+          (ShortcutManager) activity.getSystemService(Context.SHORTCUT_SERVICE);
+
+      assertThat(applicationShortcutManager).isNotSameInstanceAs(activityShortcutManager);
+
+      boolean applicationRateLimiting = applicationShortcutManager.isRateLimitingActive();
+      boolean activityRateLimiting = activityShortcutManager.isRateLimitingActive();
+
+      assertThat(activityRateLimiting).isEqualTo(applicationRateLimiting);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

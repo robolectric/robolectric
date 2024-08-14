@@ -26,6 +26,7 @@ import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /** */
 @Implements(value = ShortcutManager.class, minSdk = Build.VERSION_CODES.N_MR1)
@@ -33,16 +34,28 @@ public class ShadowShortcutManager {
 
   private static final int MAX_ICON_DIMENSION = 128;
 
-  private final Map<String, ShortcutInfo> dynamicShortcuts = new HashMap<>();
-  private final Map<String, ShortcutInfo> activePinnedShortcuts = new HashMap<>();
-  private final Map<String, ShortcutInfo> disabledPinnedShortcuts = new HashMap<>();
+  private static final Map<String, ShortcutInfo> dynamicShortcuts = new HashMap<>();
+  private static final Map<String, ShortcutInfo> activePinnedShortcuts = new HashMap<>();
+  private static final Map<String, ShortcutInfo> disabledPinnedShortcuts = new HashMap<>();
 
-  private List<ShortcutInfo> manifestShortcuts = ImmutableList.of();
+  private static List<ShortcutInfo> manifestShortcuts = ImmutableList.of();
 
-  private boolean isRequestPinShortcutSupported = true;
-  private int maxShortcutCountPerActivity = 16;
-  private int maxIconHeight = MAX_ICON_DIMENSION;
-  private int maxIconWidth = MAX_ICON_DIMENSION;
+  private static boolean isRequestPinShortcutSupported = true;
+  private static int maxShortcutCountPerActivity = 16;
+  private static int maxIconHeight = MAX_ICON_DIMENSION;
+  private static int maxIconWidth = MAX_ICON_DIMENSION;
+
+  @Resetter
+  public static void reset() {
+    dynamicShortcuts.clear();
+    activePinnedShortcuts.clear();
+    disabledPinnedShortcuts.clear();
+    manifestShortcuts = ImmutableList.of();
+    isRequestPinShortcutSupported = true;
+    maxShortcutCountPerActivity = 16;
+    maxIconHeight = MAX_ICON_DIMENSION;
+    maxIconWidth = MAX_ICON_DIMENSION;
+  }
 
   @Implementation
   protected boolean addDynamicShortcuts(List<ShortcutInfo> shortcutInfoList) {
