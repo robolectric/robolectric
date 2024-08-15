@@ -15,6 +15,7 @@ import java.util.concurrent.Executor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.versioning.AndroidVersions.U;
@@ -26,9 +27,9 @@ public class ShadowTimeManager {
   public static final String CONFIGURE_GEO_DETECTION_CAPABILITY =
       "configure_geo_detection_capability";
 
-  private TimeZoneCapabilities timeZoneCapabilities = getTimeZoneCapabilities();
+  private static TimeZoneCapabilities timeZoneCapabilities = getTimeZoneCapabilities();
 
-  private TimeZoneConfiguration timeZoneConfiguration;
+  private static TimeZoneConfiguration timeZoneConfiguration;
 
   /**
    * Capabilites are predefined and not controlled by user, so they can't be changed via TimeManager
@@ -115,7 +116,7 @@ public class ShadowTimeManager {
   @Implementation
   protected void suggestExternalTime(ExternalTimeSuggestion timeSuggestion) {}
 
-  private TimeZoneCapabilities getTimeZoneCapabilities() {
+  private static TimeZoneCapabilities getTimeZoneCapabilities() {
     TimeZoneCapabilities.Builder timeZoneCapabilitiesBuilder =
         new TimeZoneCapabilities.Builder(UserHandle.CURRENT)
             .setConfigureAutoDetectionEnabledCapability(Capabilities.CAPABILITY_POSSESSED)
@@ -138,5 +139,11 @@ public class ShadowTimeManager {
           ClassParameter.from(int.class, Capabilities.CAPABILITY_POSSESSED));
       return timeZoneCapabilitiesBuilder.build();
     }
+  }
+
+  @Resetter
+  public static void reset() {
+    timeZoneCapabilities = getTimeZoneCapabilities();
+    timeZoneConfiguration = null;
   }
 }
