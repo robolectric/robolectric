@@ -1,12 +1,14 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.UserHandle;
@@ -19,6 +21,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -132,5 +136,32 @@ public class ShadowStorageManagerTest {
         new StorageVolumeBuilder(
             "volume" + " " + description, file, description, userHandle, "mounted");
     return storageVolumeBuilder.build();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void storageManager_activityContextEnabled_differentInstancesRetrieveVolumes() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      StorageManager applicationStorageManager =
+          RuntimeEnvironment.getApplication().getSystemService(StorageManager.class);
+
+      activity = Robolectric.setupActivity(Activity.class);
+      StorageManager activityStorageManager = activity.getSystemService(StorageManager.class);
+
+      assertThat(applicationStorageManager).isNotSameInstanceAs(activityStorageManager);
+
+      List<StorageVolume> applicationVolumes = applicationStorageManager.getStorageVolumes();
+      List<StorageVolume> activityVolumes = activityStorageManager.getStorageVolumes();
+
+      assertThat(activityVolumes).isEqualTo(applicationVolumes);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

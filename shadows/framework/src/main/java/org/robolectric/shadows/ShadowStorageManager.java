@@ -113,5 +113,6 @@ public class ShadowStorageManager {
   @Resetter
   public static void reset() {
     storageVolumeList.clear();
+    isFileEncryptionSupported = true;
   }
 }

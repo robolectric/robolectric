@@ -35,6 +35,8 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.DropBoxManager;
 import android.os.UserHandle;
+import android.os.storage.StorageManager;
+import android.os.storage.StorageVolume;
 import android.telephony.euicc.EuiccManager;
 import android.util.ArraySet;
 import android.view.accessibility.CaptioningManager;
@@ -1333,6 +1335,54 @@ public class ContextTest {
             Slice activitySlice = activitySliceManager.bindSlice(testUri, testSpecs);
 
             assertThat(activitySlice).isEqualTo(applicationSlice);
+          });
+    }
+  }
+
+  @Test
+  public void storageManager_applicationInstance_isNotSameAsActivityInstance() {
+    StorageManager applicationStorageManager =
+        (StorageManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.STORAGE_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            StorageManager activityStorageManager =
+                (StorageManager) activity.getSystemService(Context.STORAGE_SERVICE);
+            assertThat(applicationStorageManager).isNotSameInstanceAs(activityStorageManager);
+          });
+    }
+  }
+
+  @Test
+  public void storageManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            StorageManager activityStorageManager =
+                (StorageManager) activity.getSystemService(Context.STORAGE_SERVICE);
+            StorageManager anotherActivityStorageManager =
+                (StorageManager) activity.getSystemService(Context.STORAGE_SERVICE);
+            assertThat(anotherActivityStorageManager).isSameInstanceAs(activityStorageManager);
+          });
+    }
+  }
+
+  @Test
+  public void storageManager_instance_retrievesSameVolumes() {
+    StorageManager applicationStorageManager =
+        (StorageManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.STORAGE_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            StorageManager activityStorageManager =
+                (StorageManager) activity.getSystemService(Context.STORAGE_SERVICE);
+
+            List<StorageVolume> applicationVolumes = applicationStorageManager.getStorageVolumes();
+            List<StorageVolume> activityVolumes = activityStorageManager.getStorageVolumes();
+
+            assertThat(activityVolumes).isEqualTo(applicationVolumes);
           });
     }
   }
