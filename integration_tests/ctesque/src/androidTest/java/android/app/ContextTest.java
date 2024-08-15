@@ -39,6 +39,8 @@ import android.os.Build;
 import android.os.DropBoxManager;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.os.health.HealthStats;
+import android.os.health.SystemHealthManager;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
 import android.telephony.SubscriptionInfo;
@@ -62,6 +64,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.testapp.TestActivity;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
 public class ContextTest {
@@ -1598,6 +1601,67 @@ public class ContextTest {
             int activityPhoneCount = activityTelephonyManager.getPhoneCount();
 
             assertThat(activityPhoneCount).isEqualTo(applicationPhoneCount);
+          });
+    }
+  }
+
+  @Test
+  public void systemHealthManager_applicationInstance_isNotSameAsActivityInstance() {
+    SystemHealthManager applicationSystemHealthManager =
+        (SystemHealthManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.SYSTEM_HEALTH_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            SystemHealthManager activitySystemHealthManager =
+                (SystemHealthManager) activity.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
+            assertThat(applicationSystemHealthManager)
+                .isNotSameInstanceAs(activitySystemHealthManager);
+          });
+    }
+  }
+
+  @Test
+  public void systemHealthManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            SystemHealthManager activitySystemHealthManager =
+                (SystemHealthManager) activity.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
+            SystemHealthManager anotherActivitySystemHealthManager =
+                (SystemHealthManager) activity.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
+            assertThat(anotherActivitySystemHealthManager)
+                .isSameInstanceAs(activitySystemHealthManager);
+          });
+    }
+  }
+
+  @Test
+  public void systemHealthManager_instance_retrievesSameUidSnapshot() {
+    SystemHealthManager applicationSystemHealthManager =
+        (SystemHealthManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.SYSTEM_HEALTH_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            SystemHealthManager activitySystemHealthManager =
+                (SystemHealthManager) activity.getSystemService(Context.SYSTEM_HEALTH_SERVICE);
+
+            HealthStats applicationHealthStats = applicationSystemHealthManager.takeMyUidSnapshot();
+            HealthStats activityHealthStats = activitySystemHealthManager.takeMyUidSnapshot();
+
+            try {
+              Object applicationField =
+                  ReflectionHelpers.getField(applicationHealthStats, "desiredField");
+              Object activityField =
+                  ReflectionHelpers.getField(activityHealthStats, "desiredField");
+
+              assertThat(applicationField).isEqualTo(activityField);
+            } catch (RuntimeException e) {
+              e.printStackTrace();
+            }
           });
     }
   }
