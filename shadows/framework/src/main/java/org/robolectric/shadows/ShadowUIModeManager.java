@@ -48,21 +48,28 @@ public class ShadowUIModeManager {
    * @deprecated Use {@link #setCurrentModeType(int)} or {@link UiModeManager#getCurrentModeType()}
    *     instead.
    */
-  @Deprecated public int currentModeType = Configuration.UI_MODE_TYPE_UNDEFINED;
+  @Deprecated public volatile int currentModeType = sharedCurrentModeType;
 
-  private int currentNightMode = UiModeManager.MODE_NIGHT_AUTO;
-  private int lastFlags;
-  private int lastCarModePriority;
-  private int currentApplicationNightMode = 0;
-  private final Map<Integer, Set<String>> activeProjectionTypes = new HashMap<>();
-  private boolean failOnProjectionToggle;
-  private final Object lock = new Object();
+  private static int currentNightMode = UiModeManager.MODE_NIGHT_AUTO;
+  private static int lastFlags;
+  private static int lastCarModePriority;
+
+  // The public field `currentModeType` is deprecated. To maintain binary compatibility,
+  // it remains an instance field. It is initialized with the shared static value upon
+  // creation of a shadow instance, but it is not kept in sync afterwards. For up-to-date
+  // values, use `getCurrentModeType()`. Direct access to `currentModeType` is discouraged
+  // as it may yield stale data.
+  private static int sharedCurrentModeType = Configuration.UI_MODE_TYPE_UNDEFINED;
+  private static int currentApplicationNightMode = 0;
+  private static final Map<Integer, Set<String>> activeProjectionTypes = new HashMap<>();
+  private static boolean failOnProjectionToggle;
+  private static final Object lock = new Object();
 
   @GuardedBy("lock")
-  private int nightModeCustomType = UiModeManager.MODE_NIGHT_CUSTOM_TYPE_UNKNOWN;
+  private static int nightModeCustomType = UiModeManager.MODE_NIGHT_CUSTOM_TYPE_UNKNOWN;
 
   @GuardedBy("lock")
-  private boolean isNightModeOn = false;
+  private static boolean isNightModeOn = false;
 
   @RealObject UiModeManager realUiModeManager;
 
@@ -73,11 +80,16 @@ public class ShadowUIModeManager {
 
   @Implementation
   protected int getCurrentModeType() {
-    return currentModeType;
+    synchronized (lock) {
+      return sharedCurrentModeType;
+    }
   }
 
   public void setCurrentModeType(int modeType) {
-    this.currentModeType = modeType;
+    synchronized (lock) {
+      sharedCurrentModeType = modeType;
+      currentModeType = sharedCurrentModeType;
+    }
   }
 
   @Implementation(maxSdk = VERSION_CODES.Q)
@@ -87,15 +99,21 @@ public class ShadowUIModeManager {
 
   @Implementation(minSdk = VERSION_CODES.R)
   protected void enableCarMode(int priority, int flags) {
-    currentModeType = Configuration.UI_MODE_TYPE_CAR;
-    lastCarModePriority = priority;
-    lastFlags = flags;
+    synchronized (lock) {
+      sharedCurrentModeType = Configuration.UI_MODE_TYPE_CAR;
+      currentModeType = sharedCurrentModeType;
+      lastCarModePriority = priority;
+      lastFlags = flags;
+    }
   }
 
   @Implementation
   protected void disableCarMode(int flags) {
-    currentModeType = Configuration.UI_MODE_TYPE_NORMAL;
-    lastFlags = flags;
+    synchronized (lock) {
+      sharedCurrentModeType = Configuration.UI_MODE_TYPE_NORMAL;
+      currentModeType = sharedCurrentModeType;
+      lastFlags = flags;
+    }
   }
 
   /**
@@ -107,7 +125,9 @@ public class ShadowUIModeManager {
    * @return The tracked last set car mode priority.
    */
   public int getLastCarModePriority() {
-    return lastCarModePriority;
+    synchronized (lock) {
+      return lastCarModePriority;
+    }
   }
 
   /**
@@ -120,12 +140,16 @@ public class ShadowUIModeManager {
    * @return The tracked last set flags.
    */
   public int getLastFlags() {
-    return lastFlags;
+    synchronized (lock) {
+      return lastFlags;
+    }
   }
 
   @Implementation
   protected int getNightMode() {
-    return currentNightMode;
+    synchronized (lock) {
+      return currentNightMode;
+    }
   }
 
   @Implementation
@@ -155,70 +179,84 @@ public class ShadowUIModeManager {
 
   @Implementation(minSdk = VERSION_CODES.S)
   protected Set<String> getProjectingPackages(int projectionType) {
-    if (projectionType == UiModeManager.PROJECTION_TYPE_ALL) {
-      Set<String> projections = new HashSet<>();
-      activeProjectionTypes.values().forEach(projections::addAll);
-      return projections;
+    synchronized (lock) {
+      if (projectionType == UiModeManager.PROJECTION_TYPE_ALL) {
+        Set<String> projections = new HashSet<>();
+        activeProjectionTypes.values().forEach(projections::addAll);
+        return projections;
+      }
+      return activeProjectionTypes.getOrDefault(projectionType, new HashSet<>());
     }
-    return activeProjectionTypes.getOrDefault(projectionType, new HashSet<>());
   }
 
   public int getApplicationNightMode() {
-    return currentApplicationNightMode;
+    synchronized (lock) {
+      return currentApplicationNightMode;
+    }
   }
 
   public Set<Integer> getActiveProjectionTypes() {
-    return new HashSet<>(activeProjectionTypes.keySet());
+    synchronized (lock) {
+      return new HashSet<>(activeProjectionTypes.keySet());
+    }
   }
 
   public void setFailOnProjectionToggle(boolean failOnProjectionToggle) {
-    this.failOnProjectionToggle = failOnProjectionToggle;
+    synchronized (lock) {
+      ShadowUIModeManager.failOnProjectionToggle = failOnProjectionToggle;
+    }
   }
 
   @Implementation(minSdk = VERSION_CODES.S)
   @HiddenApi
   protected void setApplicationNightMode(int mode) {
-    currentApplicationNightMode = mode;
+    synchronized (lock) {
+      currentApplicationNightMode = mode;
+    }
   }
 
   @Implementation(minSdk = VERSION_CODES.S)
   @SystemApi
   protected boolean requestProjection(int projectionType) {
-    if (projectionType == UiModeManager.PROJECTION_TYPE_AUTOMOTIVE) {
-      assertHasPermission(android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION);
-    }
-    if (failOnProjectionToggle) {
-      return false;
-    }
-    Set<String> projections = activeProjectionTypes.getOrDefault(projectionType, new HashSet<>());
-    projections.add(RuntimeEnvironment.getApplication().getPackageName());
-    activeProjectionTypes.put(projectionType, projections);
+    synchronized (lock) {
+      if (projectionType == UiModeManager.PROJECTION_TYPE_AUTOMOTIVE) {
+        assertHasPermission(android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION);
+      }
+      if (failOnProjectionToggle) {
+        return false;
+      }
+      Set<String> projections = activeProjectionTypes.getOrDefault(projectionType, new HashSet<>());
+      projections.add(RuntimeEnvironment.getApplication().getPackageName());
+      activeProjectionTypes.put(projectionType, projections);
 
-    return true;
+      return true;
+    }
   }
 
   @Implementation(minSdk = VERSION_CODES.S)
   @SystemApi
   protected boolean releaseProjection(int projectionType) {
-    if (projectionType == UiModeManager.PROJECTION_TYPE_AUTOMOTIVE) {
-      assertHasPermission(android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION);
-    }
-    if (failOnProjectionToggle) {
+    synchronized (lock) {
+      if (projectionType == UiModeManager.PROJECTION_TYPE_AUTOMOTIVE) {
+        assertHasPermission(android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION);
+      }
+      if (failOnProjectionToggle) {
+        return false;
+      }
+      String packageName = RuntimeEnvironment.getApplication().getPackageName();
+      Set<String> projections = activeProjectionTypes.getOrDefault(projectionType, new HashSet<>());
+      if (projections.contains(packageName)) {
+        projections.remove(packageName);
+        if (projections.isEmpty()) {
+          activeProjectionTypes.remove(projectionType);
+        } else {
+          activeProjectionTypes.put(projectionType, projections);
+        }
+        return true;
+      }
+
       return false;
     }
-    String packageName = RuntimeEnvironment.getApplication().getPackageName();
-    Set<String> projections = activeProjectionTypes.getOrDefault(projectionType, new HashSet<>());
-    if (projections.contains(packageName)) {
-      projections.remove(packageName);
-      if (projections.isEmpty()) {
-        activeProjectionTypes.remove(projectionType);
-      } else {
-        activeProjectionTypes.put(projectionType, projections);
-      }
-      return true;
-    }
-
-    return false;
   }
 
   @Implementation(minSdk = TIRAMISU)
@@ -333,6 +371,19 @@ public class ShadowUIModeManager {
               reflector(ServiceManagerReflector.class).getServiceOrThrow(Context.UI_MODE_SERVICE));
       reflector(UiModeManagerReflector.class)
           .setGlobals(reflector(UiModeManagerGlobalsReflector.class).newGlobals(service));
+    }
+    synchronized (lock) {
+      // When the new instance is initialized, the currentModeType will use this
+      // shared type to initialize it to keep the initial value same.
+      sharedCurrentModeType = Configuration.UI_MODE_TYPE_UNDEFINED;
+      currentNightMode = UiModeManager.MODE_NIGHT_AUTO;
+      lastFlags = 0;
+      lastCarModePriority = 0;
+      currentApplicationNightMode = 0;
+      activeProjectionTypes.clear();
+      failOnProjectionToggle = false;
+      nightModeCustomType = UiModeManager.MODE_NIGHT_CUSTOM_TYPE_UNKNOWN;
+      isNightModeOn = false;
     }
   }
 
