@@ -42,6 +42,7 @@ import android.os.UserManager;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
 import android.telephony.SubscriptionManager;
+import android.telephony.TelephonyManager;
 import android.telephony.euicc.EuiccManager;
 import android.util.ArraySet;
 import android.view.accessibility.CaptioningManager;
@@ -1539,11 +1540,59 @@ public class ContextTest {
             SubscriptionManager activitySubscriptionManager =
                 (SubscriptionManager)
                     activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
-
+            
             int applicationDefaultSubscriptionId = SubscriptionManager.getDefaultSubscriptionId();
             int activityDefaultSubscriptionId = SubscriptionManager.getDefaultSubscriptionId();
 
             assertThat(activityDefaultSubscriptionId).isEqualTo(applicationDefaultSubscriptionId);
+          });
+    }
+  }
+
+  @Test
+  public void telephonyManager_applicationInstance_isNotSameAsActivityInstance() {
+    TelephonyManager applicationTelephonyManager =
+        (TelephonyManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            TelephonyManager activityTelephonyManager =
+                (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
+            assertThat(applicationTelephonyManager).isNotSameInstanceAs(activityTelephonyManager);
+          });
+    }
+  }
+
+  @Test
+  public void telephonyManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            TelephonyManager activityTelephonyManager =
+                (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
+            TelephonyManager anotherActivityTelephonyManager =
+                (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
+            assertThat(anotherActivityTelephonyManager).isSameInstanceAs(activityTelephonyManager);
+          });
+    }
+  }
+
+  @Test
+  public void telephonyManager_instance_retrievesSamePhoneCount() {
+    TelephonyManager applicationTelephonyManager =
+        (TelephonyManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            TelephonyManager activityTelephonyManager =
+                (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
+
+            int applicationPhoneCount = applicationTelephonyManager.getPhoneCount();
+            int activityPhoneCount = activityTelephonyManager.getPhoneCount();
+
+            assertThat(activityPhoneCount).isEqualTo(applicationPhoneCount);
           });
     }
   }
