@@ -44,6 +44,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = TelecomManager.class)
@@ -76,28 +77,57 @@ public class ShadowTelecomManager {
 
   @RealObject private TelecomManager realObject;
 
-  private final LinkedHashMap<PhoneAccountHandle, PhoneAccount> accounts = new LinkedHashMap<>();
-  private final LinkedHashMap<PhoneAccountHandle, String> voicemailNumbers = new LinkedHashMap<>();
-  private final LinkedHashMap<PhoneAccountHandle, String> line1Numbers = new LinkedHashMap<>();
+  private static final LinkedHashMap<PhoneAccountHandle, PhoneAccount> accounts =
+      new LinkedHashMap<>();
+  private static final LinkedHashMap<PhoneAccountHandle, String> voicemailNumbers =
+      new LinkedHashMap<>();
+  private static final LinkedHashMap<PhoneAccountHandle, String> line1Numbers =
+      new LinkedHashMap<>();
 
-  private final List<IncomingCallRecord> incomingCalls = new ArrayList<>();
-  private final List<OutgoingCallRecord> outgoingCalls = new ArrayList<>();
-  private final List<UnknownCallRecord> unknownCalls = new ArrayList<>();
-  private final Map<String, PhoneAccountHandle> defaultOutgoingPhoneAccounts = new ArrayMap<>();
-  private Intent manageBlockNumbersIntent;
-  private CallRequestMode callRequestMode = CallRequestMode.MANUAL;
-  private PhoneAccountHandle simCallManager;
-  private String defaultDialerPackageName;
-  private String systemDefaultDialerPackageName;
-  private boolean isInCall;
-  private boolean isInEmergencyCall;
-  private boolean ttySupported;
-  private PhoneAccountHandle userSelectedOutgoingPhoneAccount;
-  private boolean readPhoneStatePermission = true;
-  private boolean callPhonePermission = true;
-  private boolean handleMmiValue = false;
-  private ConnectionService connectionService;
-  private boolean isOutgoingCallPermitted = false;
+  private static final List<IncomingCallRecord> incomingCalls = new ArrayList<>();
+  private static final List<OutgoingCallRecord> outgoingCalls = new ArrayList<>();
+  private static final List<UnknownCallRecord> unknownCalls = new ArrayList<>();
+  private static final Map<String, PhoneAccountHandle> defaultOutgoingPhoneAccounts =
+      new ArrayMap<>();
+  private static Intent manageBlockNumbersIntent;
+  private static CallRequestMode callRequestMode = CallRequestMode.MANUAL;
+  private static PhoneAccountHandle simCallManager;
+  private static String defaultDialerPackageName;
+  private static String systemDefaultDialerPackageName;
+  private static boolean isInCall;
+  private static boolean isInEmergencyCall;
+  private static boolean ttySupported;
+  private static PhoneAccountHandle userSelectedOutgoingPhoneAccount;
+  private static boolean readPhoneStatePermission = true;
+  private static boolean callPhonePermission = true;
+  private static boolean handleMmiValue = false;
+  private static ConnectionService connectionService;
+  private static boolean isOutgoingCallPermitted = false;
+
+  @Resetter
+  public static void reset() {
+    accounts.clear();
+    voicemailNumbers.clear();
+    line1Numbers.clear();
+    incomingCalls.clear();
+    outgoingCalls.clear();
+    unknownCalls.clear();
+    defaultOutgoingPhoneAccounts.clear();
+    manageBlockNumbersIntent = null;
+    callRequestMode = CallRequestMode.MANUAL;
+    simCallManager = null;
+    defaultDialerPackageName = null;
+    systemDefaultDialerPackageName = null;
+    isInCall = false;
+    isInEmergencyCall = false;
+    ttySupported = false;
+    userSelectedOutgoingPhoneAccount = null;
+    readPhoneStatePermission = true;
+    callPhonePermission = true;
+    handleMmiValue = false;
+    connectionService = null;
+    isOutgoingCallPermitted = false;
+  }
 
   public CallRequestMode getCallRequestMode() {
     return callRequestMode;

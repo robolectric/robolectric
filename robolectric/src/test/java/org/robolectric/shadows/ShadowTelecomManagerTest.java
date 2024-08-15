@@ -15,12 +15,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.telecom.ConnectionRequest;
 import android.telecom.PhoneAccount;
@@ -38,9 +40,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ServiceController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowTelecomManager.CallRequestMode;
+import org.robolectric.shadows.testing.TestActivity;
 import org.robolectric.shadows.testing.TestConnectionService;
 
 @RunWith(AndroidJUnit4.class)
@@ -747,5 +751,32 @@ public class ShadowTelecomManagerTest {
 
   private static PhoneAccountHandle createHandle(String packageName, String className, String id) {
     return new PhoneAccountHandle(new ComponentName(packageName, className), id);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void telecomManager_activityContextEnabled_differentInstancesRetrieveDefaultDialer() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      TelecomManager applicationTelecomManager =
+          (TelecomManager)
+              ApplicationProvider.getApplicationContext().getSystemService(Context.TELECOM_SERVICE);
+
+      activity = Robolectric.setupActivity(TestActivity.class);
+      TelecomManager activityTelecomManager =
+          (TelecomManager) activity.getSystemService(Context.TELECOM_SERVICE);
+
+      String applicationDefaultDialer = applicationTelecomManager.getDefaultDialerPackage();
+      String activityDefaultDialer = activityTelecomManager.getDefaultDialerPackage();
+
+      assertThat(activityDefaultDialer).isEqualTo(applicationDefaultDialer);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
