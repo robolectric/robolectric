@@ -41,6 +41,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
+import android.telephony.SubscriptionManager;
 import android.telephony.euicc.EuiccManager;
 import android.util.ArraySet;
 import android.view.accessibility.CaptioningManager;
@@ -1487,6 +1488,62 @@ public class ContextTest {
             boolean isGoatActivity = activityUserManager.isUserAGoat();
 
             assertThat(isGoatApplication).isEqualTo(isGoatActivity);
+          });
+    }
+  }
+
+  @Test
+  public void subscriptionManager_applicationInstance_isNotSameAsActivityInstance() {
+    SubscriptionManager applicationSubscriptionManager =
+        (SubscriptionManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            SubscriptionManager activitySubscriptionManager =
+                (SubscriptionManager)
+                    activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+            assertThat(applicationSubscriptionManager)
+                .isNotSameInstanceAs(activitySubscriptionManager);
+          });
+    }
+  }
+
+  @Test
+  public void subscriptionManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            SubscriptionManager activitySubscriptionManager =
+                (SubscriptionManager)
+                    activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+            SubscriptionManager anotherActivitySubscriptionManager =
+                (SubscriptionManager)
+                    activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+            assertThat(anotherActivitySubscriptionManager)
+                .isSameInstanceAs(activitySubscriptionManager);
+          });
+    }
+  }
+
+  @Test
+  public void subscriptionManager_instance_retrievesSameDefaultSubscriptionId() {
+    SubscriptionManager applicationSubscriptionManager =
+        (SubscriptionManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            SubscriptionManager activitySubscriptionManager =
+                (SubscriptionManager)
+                    activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+
+            int applicationDefaultSubscriptionId = SubscriptionManager.getDefaultSubscriptionId();
+            int activityDefaultSubscriptionId = SubscriptionManager.getDefaultSubscriptionId();
+
+            assertThat(activityDefaultSubscriptionId).isEqualTo(applicationDefaultSubscriptionId);
           });
     }
   }
