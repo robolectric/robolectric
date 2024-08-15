@@ -9,6 +9,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.app.Application;
 import android.app.PendingIntent;
 import android.app.usage.BroadcastResponseStats;
@@ -16,6 +17,7 @@ import android.app.usage.UsageEvents;
 import android.app.usage.UsageEvents.Event;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
@@ -29,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageLimitObserver;
 import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageObserver;
@@ -1029,5 +1032,35 @@ public class ShadowUsageStatsManagerTest {
 
     assertThat(usageStatsManager.queryBroadcastResponseStats(null, BUCKET_ID_1))
         .containsExactly(app1Stats, app2Stats);
+  }
+
+  @Test
+  @Config(minSdk = 28)
+  public void usageStatsManager_activityContextEnabled_differentInstancesRetrieveBuckets() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      UsageStatsManager applicationUsageStatsManager =
+          (UsageStatsManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.USAGE_STATS_SERVICE);
+
+      activity = Robolectric.setupActivity(Activity.class);
+      UsageStatsManager activityUsageStatsManager =
+          (UsageStatsManager) activity.getSystemService(Context.USAGE_STATS_SERVICE);
+
+      assertThat(applicationUsageStatsManager).isNotSameInstanceAs(activityUsageStatsManager);
+
+      int applicationBucket = applicationUsageStatsManager.getAppStandbyBucket();
+      int activityBucket = activityUsageStatsManager.getAppStandbyBucket();
+
+      assertThat(applicationBucket).isEqualTo(activityBucket);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
