@@ -13,6 +13,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.Manifest.permission;
+import android.app.Activity;
 import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -37,6 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowUserManager.UserState;
@@ -1161,5 +1163,33 @@ public class ShadowUserManagerTest {
         shadowOf(context.getPackageManager())
             .getInternalMutablePackageInfo(context.getPackageName());
     packageInfo.requestedPermissions = permissions;
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void userManager_activityContextEnabled_consistentAcrossContexts() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      UserManager applicationUserManager =
+          (UserManager)
+              ApplicationProvider.getApplicationContext().getSystemService(Context.USER_SERVICE);
+      activity = Robolectric.setupActivity(Activity.class);
+      UserManager activityUserManager =
+          (UserManager) activity.getSystemService(Context.USER_SERVICE);
+
+      assertThat(applicationUserManager).isNotSameInstanceAs(activityUserManager);
+
+      boolean isAdminApplication = applicationUserManager.isAdminUser();
+      boolean isAdminActivity = activityUserManager.isAdminUser();
+
+      assertThat(isAdminActivity).isEqualTo(isAdminApplication);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
