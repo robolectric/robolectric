@@ -31,8 +31,8 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(value = SubscriptionManager.class, minSdk = LOLLIPOP_MR1)
 public class ShadowSubscriptionManager {
 
-  private boolean readPhoneStatePermission = true;
-  private boolean readPhoneNumbersPermission = true;
+  private static boolean readPhoneStatePermission = true;
+  private static boolean readPhoneNumbersPermission = true;
   public static final int INVALID_PHONE_INDEX =
       ReflectionHelpers.getStaticField(SubscriptionManager.class, "INVALID_PHONE_INDEX");
 
@@ -42,7 +42,7 @@ public class ShadowSubscriptionManager {
   private static int defaultSmsSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
   private static int defaultVoiceSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
 
-  private final Map<Integer, String> phoneNumberMap = new HashMap<>();
+  private static final Map<Integer, String> phoneNumberMap = new HashMap<>();
 
   /** Returns value set with {@link #setActiveDataSubscriptionId(int)}. */
   @Implementation(minSdk = R)
@@ -534,6 +534,9 @@ public class ShadowSubscriptionManager {
     defaultVoiceSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     defaultSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     phoneIds.clear();
+    phoneNumberMap.clear();
+    readPhoneStatePermission = true;
+    readPhoneNumbersPermission = true;
   }
 
   /** Builder class to create instance of {@link SubscriptionInfo}. */

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SUBSCRIPTION_SERVICE;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -12,6 +13,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.telephony.SubscriptionInfo;
@@ -20,8 +23,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowSubscriptionManager.SubscriptionInfoBuilder;
+import org.robolectric.shadows.testing.TestActivity;
 
 /** Test for {@link ShadowSubscriptionManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -516,6 +522,36 @@ public class ShadowSubscriptionManagerTest {
     @Override
     public void onSubscriptionsChanged() {
       subscriptionChangedCount++;
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void
+      subscriptionManager_activityContextEnabled_differentInstancesRetrieveDefaultSubscriptionId() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      SubscriptionManager applicationSubscriptionManager =
+          (SubscriptionManager)
+              RuntimeEnvironment.getApplication()
+                  .getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+      activity = Robolectric.setupActivity(TestActivity.class);
+      SubscriptionManager activitySubscriptionManager =
+          (SubscriptionManager) activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+
+      assertThat(applicationSubscriptionManager).isNotSameInstanceAs(activitySubscriptionManager);
+
+      int applicationDefaultSubscriptionId =
+          applicationSubscriptionManager.getDefaultSubscriptionId();
+      int activityDefaultSubscriptionId = activitySubscriptionManager.getDefaultSubscriptionId();
+
+      assertThat(activityDefaultSubscriptionId).isEqualTo(applicationDefaultSubscriptionId);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
     }
   }
 }
