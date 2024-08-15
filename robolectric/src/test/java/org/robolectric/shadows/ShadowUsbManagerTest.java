@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
@@ -11,6 +12,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.getStaticField;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
@@ -23,6 +25,7 @@ import android.os.ParcelFileDescriptor;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.Before;
@@ -30,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowUsbManager._UsbManagerQ_;
@@ -241,5 +245,31 @@ public class ShadowUsbManagerTest {
 
   private _UsbManager_ _usbManager_() {
     return reflector(_UsbManager_.class, usbManager);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void usbManager_activityContextEnabled_differentInstancesRetrieveSameUsbDevices() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      UsbManager applicationUsbManager =
+          ApplicationProvider.getApplicationContext().getSystemService(UsbManager.class);
+      activity = Robolectric.setupActivity(Activity.class);
+      UsbManager activityUsbManager = activity.getSystemService(UsbManager.class);
+
+      assertThat(applicationUsbManager).isNotSameInstanceAs(activityUsbManager);
+
+      HashMap<String, UsbDevice> applicationDevices = applicationUsbManager.getDeviceList();
+      HashMap<String, UsbDevice> activityDevices = activityUsbManager.getDeviceList();
+
+      assertThat(activityDevices).isEqualTo(applicationDevices);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

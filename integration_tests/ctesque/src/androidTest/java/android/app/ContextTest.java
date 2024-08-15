@@ -28,6 +28,8 @@ import android.hardware.SensorManager;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.camera2.CameraManager;
 import android.hardware.fingerprint.FingerprintManager;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
 import android.media.MediaRouter;
 import android.net.Uri;
@@ -48,6 +50,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.rule.GrantPermissionRule;
 import com.google.common.truth.Truth;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import org.junit.Rule;
@@ -1314,6 +1317,54 @@ public class ContextTest {
             SliceManager anotherActivitySliceManager =
                 activity.getSystemService(SliceManager.class);
             assertThat(anotherActivitySliceManager).isSameInstanceAs(activitySliceManager);
+          });
+    }
+  }
+
+  @Test
+  public void usbManager_applicationInstance_isNotSameAsActivityInstance() {
+    UsbManager applicationUsbManager =
+        (UsbManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.USB_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            UsbManager activityUsbManager =
+                (UsbManager) activity.getSystemService(Context.USB_SERVICE);
+            assertThat(applicationUsbManager).isNotSameInstanceAs(activityUsbManager);
+          });
+    }
+  }
+
+  @Test
+  public void usbManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            UsbManager activityUsbManager =
+                (UsbManager) activity.getSystemService(Context.USB_SERVICE);
+            UsbManager anotherActivityUsbManager =
+                (UsbManager) activity.getSystemService(Context.USB_SERVICE);
+            assertThat(anotherActivityUsbManager).isSameInstanceAs(activityUsbManager);
+          });
+    }
+  }
+
+  @Test
+  public void usbManager_instance_retrievesSameUsbDevices() {
+    UsbManager applicationUsbManager =
+        (UsbManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.USB_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            UsbManager activityUsbManager =
+                (UsbManager) activity.getSystemService(Context.USB_SERVICE);
+
+            HashMap<String, UsbDevice> applicationDevices = applicationUsbManager.getDeviceList();
+            HashMap<String, UsbDevice> activityDevices = activityUsbManager.getDeviceList();
+
+            assertThat(activityDevices).isEqualTo(applicationDevices);
           });
     }
   }

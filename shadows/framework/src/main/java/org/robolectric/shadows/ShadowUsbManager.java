@@ -31,6 +31,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.ForType;
 
 /** Robolectric implementation of {@link android.hardware.usb.UsbManager}. */
@@ -42,28 +43,39 @@ public class ShadowUsbManager {
   /**
    * A mapping from the package names to a list of USB devices for which permissions are granted.
    */
-  private final HashMap<String, List<UsbDevice>> grantedDevicePermissions = new HashMap<>();
+  private static final HashMap<String, List<UsbDevice>> grantedDevicePermissions = new HashMap<>();
 
   /**
    * A mapping from the package names to a list of USB accessories for which permissions are
    * granted.
    */
-  private final HashMap<String, List<UsbAccessory>> grantedAccessoryPermissions = new HashMap<>();
+  private static final HashMap<String, List<UsbAccessory>> grantedAccessoryPermissions =
+      new HashMap<>();
 
   /**
    * A mapping from the USB device names to the USB device instances.
    *
    * @see UsbManager#getDeviceList()
    */
-  private final HashMap<String, UsbDevice> usbDevices = new HashMap<>();
+  private static final HashMap<String, UsbDevice> usbDevices = new HashMap<>();
 
   /** A mapping from USB port ID to the port object. */
-  private final HashMap<String, UsbPort> usbPorts = new HashMap<>();
+  private static final HashMap<String, UsbPort> usbPorts = new HashMap<>();
 
   /** A mapping from USB port to the status of that port. */
-  private final HashMap<UsbPort, UsbPortStatus> usbPortStatuses = new HashMap<>();
+  private static final HashMap<UsbPort, UsbPortStatus> usbPortStatuses = new HashMap<>();
 
-  private UsbAccessory attachedUsbAccessory = null;
+  private static UsbAccessory attachedUsbAccessory = null;
+
+  @Resetter
+  public static void reset() {
+    grantedDevicePermissions.clear();
+    grantedAccessoryPermissions.clear();
+    usbDevices.clear();
+    usbPorts.clear();
+    usbPortStatuses.clear();
+    attachedUsbAccessory = null;
+  }
 
   /** Returns true if the caller has permission to access the device. */
   @Implementation
