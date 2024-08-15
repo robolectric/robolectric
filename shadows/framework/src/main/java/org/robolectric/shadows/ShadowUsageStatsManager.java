@@ -62,14 +62,14 @@ public class ShadowUsageStatsManager {
    * Keys {@link UsageStats} objects by intervalType (e.g. {@link
    * UsageStatsManager#INTERVAL_WEEKLY}).
    */
-  private SetMultimap<Integer, UsageStats> usageStatsByIntervalType =
+  private static SetMultimap<Integer, UsageStats> usageStatsByIntervalType =
       Multimaps.synchronizedSetMultimap(HashMultimap.create());
 
   private static final Map<String, Integer> appStandbyBuckets = Maps.newConcurrentMap();
 
   /** Used with T APIs for {@link BroadcastResponseStats}. */
-  private final Map<String, Map<Long, Object /*BroadcastResponseStats */>> appBroadcastStats =
-      Maps.newConcurrentMap();
+  private static final Map<String, Map<Long, Object /*BroadcastResponseStats */>>
+      appBroadcastStats = Maps.newConcurrentMap();
 
   /**
    * App usage observer registered via {@link UsageStatsManager#registerAppUsageObserver(int,
@@ -648,6 +648,9 @@ public class ShadowUsageStatsManager {
     appUsageObserversById.clear();
     usageSessionObserversById.clear();
     appUsageLimitObserversById.clear();
+
+    usageStatsByIntervalType.clear();
+    appBroadcastStats.clear();
   }
 
   /**

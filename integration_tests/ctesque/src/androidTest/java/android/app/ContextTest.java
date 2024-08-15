@@ -11,6 +11,7 @@ import android.app.role.RoleManager;
 import android.app.slice.Slice;
 import android.app.slice.SliceManager;
 import android.app.slice.SliceSpec;
+import android.app.usage.UsageStatsManager;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -35,6 +36,7 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.DropBoxManager;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
 import android.telephony.euicc.EuiccManager;
@@ -1383,6 +1385,57 @@ public class ContextTest {
             List<StorageVolume> activityVolumes = activityStorageManager.getStorageVolumes();
 
             assertThat(activityVolumes).isEqualTo(applicationVolumes);
+          });
+    }
+  }
+
+  @Test
+  public void usageStatsManager_applicationInstance_isNotSameAsActivityInstance() {
+    UsageStatsManager applicationUsageStatsManager =
+        (UsageStatsManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.USAGE_STATS_SERVICE);
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            UsageStatsManager activityUsageStatsManager =
+                (UsageStatsManager) activity.getSystemService(Context.USAGE_STATS_SERVICE);
+            assertThat(applicationUsageStatsManager).isNotSameInstanceAs(activityUsageStatsManager);
+          });
+    }
+  }
+
+  @Test
+  public void usageStatsManager_activityInstance_isSameAsActivityInstance() {
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            UsageStatsManager activityUsageStatsManager =
+                (UsageStatsManager) activity.getSystemService(Context.USAGE_STATS_SERVICE);
+            UsageStatsManager anotherActivityUsageStatsManager =
+                (UsageStatsManager) activity.getSystemService(Context.USAGE_STATS_SERVICE);
+            assertThat(anotherActivityUsageStatsManager)
+                .isSameInstanceAs(activityUsageStatsManager);
+          });
+    }
+  }
+
+  @Test
+  public void userManager_isUserAGoat_consistentAcrossContexts() {
+    UserManager applicationUserManager =
+        (UserManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.USER_SERVICE);
+
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            UserManager activityUserManager =
+                (UserManager) activity.getSystemService(Context.USER_SERVICE);
+
+            boolean isGoatApplication = applicationUserManager.isUserAGoat();
+            boolean isGoatActivity = activityUserManager.isUserAGoat();
+
+            assertThat(isGoatApplication).isEqualTo(isGoatActivity);
           });
     }
   }
