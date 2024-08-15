@@ -45,6 +45,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowTelephonyManager.createTelephonyDisplayInfo;
 
 import android.Manifest.permission;
+import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
@@ -89,6 +90,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -1538,5 +1540,34 @@ public class ShadowTelephonyManagerTest {
   @Config(minSdk = Q)
   public void rebootModem_noModifyPhoneStatePermission_throwsSecurityException() {
     assertThrows(SecurityException.class, () -> shadowTelephonyManager.rebootModem());
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void telephonyManager_activityContextEnabled_differentInstancesRetrievePhoneCount() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      TelephonyManager applicationTelephonyManager =
+          (TelephonyManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.TELEPHONY_SERVICE);
+      activity = Robolectric.setupActivity(Activity.class);
+      TelephonyManager activityTelephonyManager =
+          (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
+
+      assertThat(applicationTelephonyManager).isNotSameInstanceAs(activityTelephonyManager);
+
+      int applicationPhoneCount = applicationTelephonyManager.getPhoneCount();
+      int activityPhoneCount = activityTelephonyManager.getPhoneCount();
+
+      assertThat(activityPhoneCount).isEqualTo(applicationPhoneCount);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
