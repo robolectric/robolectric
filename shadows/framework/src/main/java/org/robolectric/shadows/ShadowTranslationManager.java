@@ -9,6 +9,7 @@ import com.google.common.collect.Table;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /** Shadow for {@link TranslationManager}. */
 @Implements(
@@ -17,7 +18,7 @@ import org.robolectric.annotation.Implements;
     isInAndroidSdk = false // turn off shadowOf generation
     )
 public class ShadowTranslationManager {
-  private final Table<Integer, Integer, ImmutableSet<TranslationCapability>>
+  private static final Table<Integer, Integer, ImmutableSet<TranslationCapability>>
       onDeviceTranslationCapabilities = HashBasedTable.create();
 
   @Implementation
@@ -33,5 +34,10 @@ public class ShadowTranslationManager {
       int sourceFormat, int targetFormat, Set<TranslationCapability> capabilities) {
     onDeviceTranslationCapabilities.put(
         sourceFormat, targetFormat, ImmutableSet.copyOf(capabilities));
+  }
+
+  @Resetter
+  public static void reset() {
+    onDeviceTranslationCapabilities.clear();
   }
 }
