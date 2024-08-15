@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -9,6 +10,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.app.UiModeManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -17,15 +19,21 @@ import android.provider.Settings;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
 /** Tests for {@link ShadowUIModeManager}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowUIModeManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private Context context;
   private UiModeManager uiModeManager;
   private ShadowUIModeManager shadowUiModeManager;
@@ -35,6 +43,12 @@ public class ShadowUIModeManagerTest {
     context = ApplicationProvider.getApplicationContext();
     uiModeManager = (UiModeManager) context.getSystemService(Context.UI_MODE_SERVICE);
     shadowUiModeManager = Shadow.extract(uiModeManager);
+  }
+
+  @Test
+  public void testReset() {
+    assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_UNDEFINED);
+    assertThat(uiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_AUTO);
   }
 
   @Test
@@ -336,5 +350,42 @@ public class ShadowUIModeManagerTest {
     pi.versionCode = 1;
     pi.requestedPermissions = permissions;
     ((ShadowPackageManager) Shadow.extract(context.getPackageManager())).installPackage(pi);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void uiModeManager_activityContextEnabled_differentInstancesRetrieveSameValues() {
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
+      UiModeManager applicationUiModeManager =
+          (UiModeManager)
+              ApplicationProvider.getApplicationContext().getSystemService(Context.UI_MODE_SERVICE);
+      Activity activity = controller.get();
+      UiModeManager activityUiModeManager =
+          (UiModeManager) activity.getSystemService(Context.UI_MODE_SERVICE);
+
+      assertThat(applicationUiModeManager).isNotNull();
+      assertThat(activityUiModeManager).isNotNull();
+      assertThat(applicationUiModeManager).isNotSameInstanceAs(activityUiModeManager);
+
+      int applicationNightMode = applicationUiModeManager.getNightMode();
+      int activityNightMode = activityUiModeManager.getNightMode();
+
+      assertThat(applicationNightMode).isEqualTo(activityNightMode);
+
+      assertThat(applicationNightMode).isEqualTo(UiModeManager.MODE_NIGHT_AUTO);
+      // First time, we set night mode through UiModeManager got from Activity context.
+      activityUiModeManager.setNightMode(UiModeManager.MODE_NIGHT_YES);
+
+      assertThat(applicationUiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_AUTO);
+      assertThat(activityUiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_YES);
+
+      // Second time, we set night mode through UiModeManager got from Application context.
+      applicationUiModeManager.setNightMode(UiModeManager.MODE_NIGHT_NO);
+
+      assertThat(applicationUiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_NO);
+      assertThat(activityUiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_YES);
+    }
   }
 }
