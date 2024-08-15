@@ -8,6 +8,7 @@ import android.os.health.SystemHealthManager;
 import java.util.HashMap;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /** Shadow for {@link android.os.health.SystemHealthManager} */
 @Implements(value = SystemHealthManager.class, minSdk = N)
@@ -16,7 +17,12 @@ public class ShadowSystemHealthManager {
   private static final HealthStats DEFAULT_HEALTH_STATS =
       HealthStatsBuilder.newBuilder().setDataType("default_health_stats").build();
 
-  private final HashMap<Integer, HealthStats> uidToHealthStats = new HashMap<>();
+  private static final HashMap<Integer, HealthStats> uidToHealthStats = new HashMap<>();
+
+  @Resetter
+  public static void reset() {
+    uidToHealthStats.clear();
+  }
 
   @Implementation
   protected HealthStats takeMyUidSnapshot() {
