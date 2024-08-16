@@ -131,6 +131,7 @@ play-core = "2.0.1"
 play-services-basement = "18.0.1"
 core-ktx = "1.10.1"
 material = "1.10.0"
+junit-ktx = "1.2.1"
 
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
@@ -254,6 +255,7 @@ play-feature-delivery = { module = "com.google.android.play:feature-delivery", v
 play-feature-delivery-ktx = { module = "com.google.android.play:feature-delivery-ktx", version.ref = "play-core" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junit-ktx" }
 
 [bundles]
 play-services-for-shadows = [ "androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows" ]
