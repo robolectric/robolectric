@@ -28,6 +28,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.Fs;
@@ -36,6 +37,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.versioning.AndroidVersions.T;
 import org.robolectric.versioning.AndroidVersions.U;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link Typeface}. */
 @Implements(value = Typeface.class, looseSignatures = true, isInAndroidSdk = false)
@@ -52,7 +54,14 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
   }
 
   @Implementation(minSdk = U.SDK_INT)
+  @InDevelopment
   protected void __constructor__(long fontId, String familyName) {
+    description = findById(fontId);
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  @InDevelopment
+  protected void __constructor__(long fontId, String familyName, Typeface derivedFrom) {
     description = findById(fontId);
   }
 
