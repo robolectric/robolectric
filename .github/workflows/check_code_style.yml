@@ -56,9 +56,7 @@ jobs:
           fi
 
       - name: Check Kotlin formatting
-        run: |
-          ./gradlew spotlessCheck
+        run: ./gradlew spotlessCheck
 
       - name: Check Kotlin Quality
-        run: |
-          ./gradlew detekt
+        run: ./gradlew detekt

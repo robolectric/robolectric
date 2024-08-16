@@ -42,8 +42,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Show runner info
-        run: |
-          uname -a
+        run: uname -a
 
       - name: Run unit tests
         env:
