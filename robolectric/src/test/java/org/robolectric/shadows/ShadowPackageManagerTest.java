@@ -156,6 +156,10 @@ public class ShadowPackageManagerTest {
   private static final String TEST_PACKAGE3_NAME = "com.a.third.package";
   private static final int TEST_PACKAGE_VERSION_CODE = 10000;
   public static final int INSTALL_VERIFICATION_ID = 1234;
+  public static final String INITIATING_PACKAGE_NAME = "initiating.package";
+  public static final String INSTALLING_PACKAGE_NAME = "installing.package";
+  public static final String ORIGINATING_PACKAGE_NAME = "originating.package";
+  public static final String UPDATE_OWNER_PACKAGE_NAME = "update.owner.package";
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private Context context;
@@ -3566,13 +3570,35 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = VERSION_CODES.R)
-  public void installerSourceInfo() throws Exception {
+  public void installerSourceInfo_setPackageNames() throws Exception {
     shadowOf(packageManager)
-        .setInstallSourceInfo("target.package", "initiating.package", "installing.package");
+        .setInstallSourceInfo("target.package", INITIATING_PACKAGE_NAME, INSTALLING_PACKAGE_NAME);
 
     InstallSourceInfo info = packageManager.getInstallSourceInfo("target.package");
-    assertThat(info.getInitiatingPackageName()).isEqualTo("initiating.package");
-    assertThat(info.getInstallingPackageName()).isEqualTo("installing.package");
+    assertThat(info.getInitiatingPackageName()).isEqualTo(INITIATING_PACKAGE_NAME);
+    assertThat(info.getInstallingPackageName()).isEqualTo(INSTALLING_PACKAGE_NAME);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void installerSourceInfo() throws Exception {
+    shadowOf(packageManager)
+        .setInstallSourceInfo(
+            "target.package",
+            INITIATING_PACKAGE_NAME,
+            new SigningInfo(),
+            ORIGINATING_PACKAGE_NAME,
+            INSTALLING_PACKAGE_NAME,
+            UPDATE_OWNER_PACKAGE_NAME,
+            PackageInstaller.PACKAGE_SOURCE_STORE);
+
+    InstallSourceInfo info = packageManager.getInstallSourceInfo("target.package");
+    assertThat(info.getInitiatingPackageName()).isEqualTo(INITIATING_PACKAGE_NAME);
+    assertThat(info.getInstallingPackageName()).isEqualTo(INSTALLING_PACKAGE_NAME);
+    assertThat(info.getOriginatingPackageName()).isEqualTo(ORIGINATING_PACKAGE_NAME);
+    assertThat(info.getUpdateOwnerPackageName()).isEqualTo(UPDATE_OWNER_PACKAGE_NAME);
+    assertThat(info.getInitiatingPackageSigningInfo()).isNotNull();
+    assertThat(info.getPackageSource()).isEqualTo(PackageInstaller.PACKAGE_SOURCE_STORE);
   }
 
   @Test
