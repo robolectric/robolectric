@@ -14,6 +14,8 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Reflector;
 
 /** Holds fakes for the IBluetoothManager system service */
 class IBluetoothManagerDelegates {
@@ -47,14 +49,15 @@ class IBluetoothManagerDelegates {
     public IBluetooth registerAdapter(IBluetoothManagerCallback callback) {
       IBinder btBinder = checkNotNull(ServiceManager.getService(Context.BLUETOOTH_SERVICE));
       IBluetooth btService = checkNotNull(IBluetooth.Stub.asInterface(btBinder));
-      try {
-        callback.onBluetoothServiceUp(btService);
-        return btService;
-      } catch (RemoteException e) {
-        // should never happen - this is a local call in Robolectric
-        throw new RuntimeException(e);
-      }
+      Reflector.reflector(IBluetoothManagerCallbackReflectorS.class, callback)
+          .onBluetoothServiceUp(btService);
+      return btService;
     }
+  }
+
+  @ForType(IBluetoothManagerCallback.class)
+  private interface IBluetoothManagerCallbackReflectorS {
+    void onBluetoothServiceUp(IBluetooth bluetoothService);
   }
 
   // Any BluetoothAdapter calls which need to invoke BluetoothManager methods can delegate those

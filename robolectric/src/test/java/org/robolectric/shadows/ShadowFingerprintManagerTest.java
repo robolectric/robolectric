@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.fingerprint.FingerprintManager;
 import android.hardware.fingerprint.FingerprintManager.AuthenticationCallback;
@@ -19,7 +20,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = M)
@@ -46,7 +49,8 @@ public class ShadowFingerprintManagerTest {
 
     shadowOf(manager).authenticationSucceeds();
 
-    ArgumentCaptor<AuthenticationResult> result = ArgumentCaptor.forClass(AuthenticationResult.class);
+    ArgumentCaptor<AuthenticationResult> result =
+        ArgumentCaptor.forClass(AuthenticationResult.class);
     verify(mockCallback).onAuthenticationSucceeded(result.capture());
 
     assertThat(result.getValue().getCryptoObject()).isEqualTo(cryptoObject);
@@ -118,5 +122,41 @@ public class ShadowFingerprintManagerTest {
   @Config(sdk = VERSION_CODES.S)
   public void getSensorPropertiesInternal_notNull() {
     assertThat(manager.getSensorPropertiesInternal()).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  public void fingerprintManager_activityContextEnabled_differentInstancesHaveConsistentState() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+
+    Activity activity = null;
+    try {
+      FingerprintManager applicationFingerprintManager =
+          (FingerprintManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.FINGERPRINT_SERVICE);
+
+      activity = Robolectric.setupActivity(TestActivity.class);
+      FingerprintManager activityFingerprintManager =
+          (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);
+
+      boolean isApplicationFingerprintAvailable =
+          applicationFingerprintManager.isHardwareDetected();
+      boolean isActivityFingerprintAvailable = activityFingerprintManager.isHardwareDetected();
+      assertThat(isActivityFingerprintAvailable).isEqualTo(isApplicationFingerprintAvailable);
+
+      boolean hasApplicationEnrolledFingerprints =
+          applicationFingerprintManager.hasEnrolledFingerprints();
+      boolean hasActivityEnrolledFingerprints =
+          activityFingerprintManager.hasEnrolledFingerprints();
+      assertThat(hasActivityEnrolledFingerprints).isEqualTo(hasApplicationEnrolledFingerprints);
+
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

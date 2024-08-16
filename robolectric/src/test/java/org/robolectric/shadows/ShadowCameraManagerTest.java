@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
@@ -21,6 +22,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowCameraManager}. */
@@ -250,7 +252,7 @@ public class ShadowCameraManagerTest {
   public void resetter_closesCameras() throws Exception {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
     CameraDevice.StateCallback mockCallback = mock(CameraDevice.StateCallback.class);
-    cameraManager.openCamera(CAMERA_ID_0, mockCallback, new Handler());
+    cameraManager.openCamera(CAMERA_ID_0, mockCallback, new Handler(Looper.myLooper()));
     shadowOf(Looper.myLooper()).idle();
     ArgumentCaptor<CameraDevice> cameraDeviceCaptor = ArgumentCaptor.forClass(CameraDevice.class);
     verify(mockCallback).onOpened(cameraDeviceCaptor.capture());
@@ -264,7 +266,7 @@ public class ShadowCameraManagerTest {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);
     // Verify adding the camera triggers the callback
-    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler= */ null);
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
 
     verify(mockCallback).onCameraAvailable(CAMERA_ID_0);
@@ -277,7 +279,7 @@ public class ShadowCameraManagerTest {
 
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
     shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
-    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler= */ null);
     cameraManager.unregisterAvailabilityCallback(mockCallback);
 
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
@@ -291,7 +293,7 @@ public class ShadowCameraManagerTest {
         mock(CameraManager.AvailabilityCallback.class);
 
     // Verify that the camera unavailable callback is called when the camera is removed
-    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler= */ null);
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
     shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
 
@@ -303,7 +305,7 @@ public class ShadowCameraManagerTest {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);
 
-    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler= */ null);
     cameraManager.unregisterAvailabilityCallback(mockCallback);
 
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
@@ -318,7 +320,7 @@ public class ShadowCameraManagerTest {
         mock(CameraManager.AvailabilityCallback.class);
 
     // Verify that the callback is not triggered for a camera that was never added
-    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler= */ null);
     try {
       shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
     } catch (IllegalArgumentException e) {
@@ -405,5 +407,43 @@ public class ShadowCameraManagerTest {
     }
 
     verify(mockCallback, never()).onTorchModeChanged(CAMERA_ID_0, torchEnabled);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  public void cameraManager_activityContextEnabled_differentInstancesRetrieveCameraIdList()
+      throws Exception {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      CameraManager applicationCameraManager =
+          (CameraManager)
+              ApplicationProvider.getApplicationContext().getSystemService(Context.CAMERA_SERVICE);
+      activity = Robolectric.setupActivity(Activity.class);
+      CameraManager activityCameraManager =
+          (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+
+      assertThat(applicationCameraManager).isNotSameInstanceAs(activityCameraManager);
+
+      CameraCharacteristics characteristics =
+          ShadowCameraCharacteristics.newCameraCharacteristics();
+      shadowOf(applicationCameraManager).addCamera(CAMERA_ID_0, characteristics);
+      shadowOf(activityCameraManager).addCamera(CAMERA_ID_1, characteristics);
+
+      String[] applicationCameraIdList = applicationCameraManager.getCameraIdList();
+      String[] activityCameraIdList = activityCameraManager.getCameraIdList();
+
+      assertThat(activityCameraIdList.length).isEqualTo(2);
+      assertThat(activityCameraIdList[0]).isEqualTo(CAMERA_ID_0);
+      assertThat(activityCameraIdList[1]).isEqualTo(CAMERA_ID_1);
+
+      assertThat(activityCameraIdList).isEqualTo(applicationCameraIdList);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

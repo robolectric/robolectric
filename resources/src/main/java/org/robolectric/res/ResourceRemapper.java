@@ -8,19 +8,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class rewrites application R class resource values from multiple input R classes to all have unique values
- * existing within the same ID space, i.e: no resource collisions. This replicates the behaviour of AAPT when building
- * the final APK.
+ * This class rewrites application R class resource values from multiple input R classes to all have
+ * unique values existing within the same ID space, i.e: no resource collisions. This replicates the
+ * behaviour of AAPT when building the final APK.
  *
- * IDs are in the format:-
+ * <p>IDs are in the format:-
  *
- * 0x PPTTEEEE
+ * <p>0x PPTTEEEE
  *
- * where:
+ * <p>where:
  *
- * P is unique for the package
- * T is unique for the type
- * E is the entry within that type.
+ * <p>P is unique for the package T is unique for the type E is the entry within that type.
  */
 class ResourceRemapper {
 
@@ -28,10 +26,10 @@ class ResourceRemapper {
   private ResourceIdGenerator resourceIdGenerator = new ResourceIdGenerator(0x7F);
 
   /**
-   * @param primaryRClass - An R class (usually the applications) that can be assumed to have a complete set of IDs. If
-   *                      this is provided then use the values from this class for re-writting all values in follow up
-   *                      calls to {@link #remapRClass(Class)}. If it is not provided the ResourceRemapper will generate
-   *                      its own unique non-conflicting IDs.
+   * @param primaryRClass - An R class (usually the applications) that can be assumed to have a
+   *     complete set of IDs. If this is provided then use the values from this class for
+   *     re-writting all values in follow up calls to {@link #remapRClass(Class)}. If it is not
+   *     provided the ResourceRemapper will generate its own unique non-conflicting IDs.
    */
   ResourceRemapper(Class<?> primaryRClass) {
     if (primaryRClass != null) {
@@ -44,15 +42,17 @@ class ResourceRemapper {
   }
 
   /**
-   * @param isPrimary - Only one R class can allow final values and that is the final R class for the application
-   *                  that has had its resource id values generated to include all libraries in its dependency graph
-   *                  and therefore will be the only R file with the complete set of IDs in a unique ID space so we
-   *                  can assume to use the values from this class only. All other R files are partial R files for each
-   *                  library and on non-Android aware build systems like Maven where library R files are not re-written
-   *                  with the final R values we need to rewrite them ourselves.
+   * @param isPrimary - Only one R class can allow final values and that is the final R class for
+   *     the application that has had its resource id values generated to include all libraries in
+   *     its dependency graph and therefore will be the only R file with the complete set of IDs in
+   *     a unique ID space so we can assume to use the values from this class only. All other R
+   *     files are partial R files for each library and on non-Android aware build systems like
+   *     Maven where library R files are not re-written with the final R values we need to rewrite
+   *     them ourselves.
    */
   private void remapRClass(boolean isPrimary, Class<?> rClass) {
-    // Collect all the local attribute id -> name mappings. These are used when processing the stylables to look up
+    // Collect all the local attribute id -> name mappings. These are used when processing the
+    // stylables to look up
     // the reassigned values.
     Map<Integer, String> localAttributeIds = new HashMap<>();
     for (Class<?> aClass : rClass.getClasses()) {

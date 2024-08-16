@@ -1,11 +1,17 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import android.annotation.RequiresApi;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
@@ -23,6 +29,7 @@ import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.Executor;
+import javax.annotation.Nullable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -49,7 +56,7 @@ public class ShadowDisplayManagerGlobalTest {
   }
 
   @Test
-  @Config(minSdk = TIRAMISU)
+  @Config(minSdk = P)
   public void testVirtualDisplay_create() {
     Surface surface = new Surface(new SurfaceTexture(0));
     VirtualDisplay virtualDisplay = createVirtualDisplay(surface);
@@ -71,7 +78,7 @@ public class ShadowDisplayManagerGlobalTest {
   }
 
   @Test
-  @Config(minSdk = TIRAMISU)
+  @Config(minSdk = P)
   public void testVirtualDisplay_resize() {
     VirtualDisplay virtualDisplay = createVirtualDisplay(null);
 
@@ -88,7 +95,7 @@ public class ShadowDisplayManagerGlobalTest {
   }
 
   @Test
-  @Config(minSdk = TIRAMISU)
+  @Config(minSdk = P)
   public void testVirtualDisplay_release() {
     VirtualDisplay virtualDisplay = createVirtualDisplay(null);
     int displayId = virtualDisplay.getDisplay().getDisplayId();
@@ -98,7 +105,7 @@ public class ShadowDisplayManagerGlobalTest {
   }
 
   @Test
-  @Config(minSdk = TIRAMISU)
+  @Config(minSdk = Q)
   public void testVirtualDisplay_setSurfaceTogglesState() {
     Surface surface = new Surface(new SurfaceTexture(0));
     VirtualDisplay virtualDisplay = createVirtualDisplay(surface);
@@ -117,19 +124,48 @@ public class ShadowDisplayManagerGlobalTest {
     verify(listener).onDisplayChanged(virtualDisplay.getDisplay().getDisplayId());
   }
 
-  private VirtualDisplay createVirtualDisplay(Surface surface) {
-    VirtualDisplayConfig config =
-        new VirtualDisplayConfig.Builder("name", DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_DPI)
-            .setSurface(surface)
-            .setFlags(123)
-            .build();
-    if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
+  private VirtualDisplay createVirtualDisplay(@Nullable Surface surface) {
+    if (RuntimeEnvironment.getApiLevel() <= Q) {
       return ReflectionHelpers.callInstanceMethod(
           DisplayManagerGlobal.getInstance(),
           "createVirtualDisplay",
           ClassParameter.from(Context.class, getApplicationContext()),
           ClassParameter.from(MediaProjection.class, null),
-          ClassParameter.from(VirtualDisplayConfig.class, config),
+          ClassParameter.from(String.class, "name"),
+          ClassParameter.from(int.class, DISPLAY_WIDTH),
+          ClassParameter.from(int.class, DISPLAY_HEIGHT),
+          ClassParameter.from(int.class, DISPLAY_DPI),
+          ClassParameter.from(Surface.class, surface),
+          ClassParameter.from(int.class, 123),
+          ClassParameter.from(VirtualDisplay.Callback.class, mock(VirtualDisplay.Callback.class)),
+          ClassParameter.from(Handler.class, Handler.getMain()),
+          ClassParameter.from(String.class, "123"));
+    } else if (RuntimeEnvironment.getApiLevel() <= S) {
+      return ReflectionHelpers.callInstanceMethod(
+          DisplayManagerGlobal.getInstance(),
+          "createVirtualDisplay",
+          ClassParameter.from(Context.class, getApplicationContext()),
+          ClassParameter.from(MediaProjection.class, null),
+          ClassParameter.from(VirtualDisplayConfig.class, createConfig(surface)),
+          ClassParameter.from(VirtualDisplay.Callback.class, mock(VirtualDisplay.Callback.class)),
+          ClassParameter.from(Handler.class, Handler.getMain()));
+    } else if (RuntimeEnvironment.getApiLevel() <= S_V2) {
+      return ReflectionHelpers.callInstanceMethod(
+          DisplayManagerGlobal.getInstance(),
+          "createVirtualDisplay",
+          ClassParameter.from(Context.class, getApplicationContext()),
+          ClassParameter.from(MediaProjection.class, null),
+          ClassParameter.from(VirtualDisplayConfig.class, createConfig(surface)),
+          ClassParameter.from(VirtualDisplay.Callback.class, mock(VirtualDisplay.Callback.class)),
+          ClassParameter.from(Handler.class, Handler.getMain()),
+          ClassParameter.from(Context.class, getApplicationContext()));
+    } else if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
+      return ReflectionHelpers.callInstanceMethod(
+          DisplayManagerGlobal.getInstance(),
+          "createVirtualDisplay",
+          ClassParameter.from(Context.class, getApplicationContext()),
+          ClassParameter.from(MediaProjection.class, null),
+          ClassParameter.from(VirtualDisplayConfig.class, createConfig(surface)),
           ClassParameter.from(VirtualDisplay.Callback.class, mock(VirtualDisplay.Callback.class)),
           ClassParameter.from(Executor.class, MoreExecutors.directExecutor()),
           ClassParameter.from(Context.class, getApplicationContext()));
@@ -138,9 +174,17 @@ public class ShadowDisplayManagerGlobalTest {
           .createVirtualDisplay(
               getApplicationContext(),
               null,
-              config,
+              createConfig(surface),
               mock(VirtualDisplay.Callback.class),
               MoreExecutors.directExecutor());
     }
+  }
+
+  @RequiresApi(R)
+  private static VirtualDisplayConfig createConfig(@Nullable Surface surface) {
+    return new VirtualDisplayConfig.Builder("name", DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_DPI)
+        .setSurface(surface)
+        .setFlags(123)
+        .build();
   }
 }

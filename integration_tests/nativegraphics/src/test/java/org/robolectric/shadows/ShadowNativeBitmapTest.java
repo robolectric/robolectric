@@ -16,8 +16,8 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
-import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -986,7 +986,7 @@ public class ShadowNativeBitmapTest {
         assertFalse(bitmap.isPremultiplied());
         break;
       case ALPHA_8:
-        // ALPHA_8 behaves mostly the same as 8888, except for premultiplied. Fall through.
+      // ALPHA_8 behaves mostly the same as 8888, except for premultiplied. Fall through.
       case ARGB_8888:
         // Since 565 is necessarily opaque, we revert to hasAlpha when switching to a type
         // that can have alpha.
@@ -1721,7 +1721,7 @@ public class ShadowNativeBitmapTest {
     Parcel p = Parcel.obtain();
     bitmap = Bitmap.createBitmap(100, 100, Config.ARGB_8888);
     bitmap.eraseColor(Color.GREEN);
-    Bitmap immutable = bitmap.copy(Config.ARGB_8888, /*isMutable=*/ false);
+    Bitmap immutable = bitmap.copy(Config.ARGB_8888, /* isMutable= */ false);
     assertThat(immutable.isMutable()).isFalse();
     immutable.writeToParcel(p, 0);
     p.setDataPosition(0);
@@ -1772,8 +1772,7 @@ public class ShadowNativeBitmapTest {
     assertThat(copy.sameAs(orig)).isTrue();
   }
 
-  // TODO(hoisie): Fix this test in Q and R.
-  @org.robolectric.annotation.Config(minSdk = S)
+  @org.robolectric.annotation.Config(minSdk = P)
   @Test
   public void testCreateBitmap_picture_immutable() {
     Picture picture = new Picture();
@@ -1798,11 +1797,13 @@ public class ShadowNativeBitmapTest {
     assertNotNull(bitmap.getColorSpace());
 
     bitmap = Bitmap.createBitmap(picture, 100, 100, Config.ARGB_8888);
-    assertFalse(bitmap.isMutable());
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      // In P, the bitmap returned is mutable.
+      assertFalse(bitmap.isMutable());
+    }
   }
 
-  // TODO(hoisie): Fix this test in Q and R.
-  @org.robolectric.annotation.Config(minSdk = S)
+  @org.robolectric.annotation.Config(minSdk = P)
   @Test
   public void testCreateBitmap_picture_requiresHWAcceleration_checkPixels() {
     Picture picture = new Picture();

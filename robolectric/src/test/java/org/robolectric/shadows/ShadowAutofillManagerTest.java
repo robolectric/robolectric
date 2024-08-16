@@ -3,8 +3,11 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.view.autofill.AutofillManager;
@@ -12,6 +15,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 /** Unit test for {@link ShadowAutofillManager}. */
@@ -54,5 +58,32 @@ public class ShadowAutofillManagerTest {
 
     shadowOf(autofillManager).setEnabled(false);
     assertThat(autofillManager.isEnabled()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void autofillManager_activityContextEnabled_differentInstancesRetrieveSameInfo() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      AutofillManager applicationAutofillManager = context.getSystemService(AutofillManager.class);
+
+      activity = Robolectric.setupActivity(Activity.class);
+      AutofillManager activityAutofillManager = activity.getSystemService(AutofillManager.class);
+
+      assertNotSame(applicationAutofillManager, activityAutofillManager);
+
+      assertEquals(
+          applicationAutofillManager.isAutofillSupported(),
+          activityAutofillManager.isAutofillSupported());
+      assertEquals(applicationAutofillManager.isEnabled(), activityAutofillManager.isEnabled());
+
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

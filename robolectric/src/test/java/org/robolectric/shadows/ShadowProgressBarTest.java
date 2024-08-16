@@ -22,11 +22,12 @@ public class ShadowProgressBarTest {
 
   @Before
   public void setUp() {
-    AttributeSet attrs = Robolectric.buildAttributeSet()
-        .addAttribute(android.R.attr.max, "100")
-        .addAttribute(android.R.attr.indeterminate, "false")
-        .addAttribute(android.R.attr.indeterminateOnly, "false")
-        .build();
+    AttributeSet attrs =
+        Robolectric.buildAttributeSet()
+            .addAttribute(android.R.attr.max, "100")
+            .addAttribute(android.R.attr.indeterminate, "false")
+            .addAttribute(android.R.attr.indeterminateOnly, "false")
+            .build();
 
     progressBar = new ProgressBar(getApplication(), attrs);
   }

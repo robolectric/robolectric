@@ -205,6 +205,7 @@ public class ActivityController<T extends Activity>
     invokeWhilePaused(() -> _component_.onPostResume());
     return this;
   }
+
   /**
    * Calls the same lifecycle methods on the Activity called by Android when an Activity is the top
    * most resumed activity on Q+.
@@ -584,15 +585,15 @@ public class ActivityController<T extends Activity>
     switch (originalState) {
       case INITIAL:
         create();
-        // fall through
+      // fall through
       case CREATED:
       case RESTARTED:
         start();
         postCreate(null);
-        // fall through
+      // fall through
       case STARTED:
         resume();
-        // fall through
+      // fall through
       default:
         // fall through
     }
@@ -612,10 +613,10 @@ public class ActivityController<T extends Activity>
       case STARTED:
       case RESUMED:
         pause();
-        // fall through
+      // fall through
       case PAUSED:
         stop();
-        // fall through
+      // fall through
       case STOPPED:
         break;
       default:
@@ -677,16 +678,16 @@ public class ActivityController<T extends Activity>
         return;
       case RESUMED:
         pause();
-        // fall through
+      // fall through
       case PAUSED:
-        // fall through
+      // fall through
       case RESTARTED:
-        // fall through
+      // fall through
       case STARTED:
         stop();
-        // fall through
+      // fall through
       case STOPPED:
-        // fall through
+      // fall through
       case CREATED:
         break;
     }

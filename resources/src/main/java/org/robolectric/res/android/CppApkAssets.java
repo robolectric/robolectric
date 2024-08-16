@@ -1,7 +1,9 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/ApkAssets.h
-// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ApkAssets.cpp
+// transliterated from
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/ApkAssets.h
+// and
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ApkAssets.cpp
 
 import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeDirectory;
 import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeRegular;
@@ -66,7 +68,9 @@ public class CppApkAssets {
     this.zipFileRO = new ZipFileRO(zip_handle_, zip_handle_.zipFile.getName());
   }
 
-  public String GetPath() { return path_; }
+  public String GetPath() {
+    return path_;
+  }
 
   // This is never nullptr.
   public LoadedArsc GetLoadedArsc() {
@@ -74,19 +78,20 @@ public class CppApkAssets {
   }
 
   //  private:
-//   DISALLOW_COPY_AND_ASSIGN(ApkAssets);
-//
-//   static std::unique_ptr<const ApkAssets> LoadImpl(const String& path, bool system,
-//                                                    bool load_as_shared_library);
-//
-//   ApkAssets() = default;
-//
-//   struct ZipArchivePtrCloser {
-//     void operator()(::ZipArchiveHandle handle) { ::CloseArchive(handle); }
-//   };
-//
-//   using ZipArchivePtr =
-//       std::unique_ptr<typename std::remove_pointer<::ZipArchiveHandle>::type, ZipArchivePtrCloser>;
+  //   DISALLOW_COPY_AND_ASSIGN(ApkAssets);
+  //
+  //   static std::unique_ptr<const ApkAssets> LoadImpl(const String& path, bool system,
+  //                                                    bool load_as_shared_library);
+  //
+  //   ApkAssets() = default;
+  //
+  //   struct ZipArchivePtrCloser {
+  //     void operator()(::ZipArchiveHandle handle) { ::CloseArchive(handle); }
+  //   };
+  //
+  //   using ZipArchivePtr =
+  //       std::unique_ptr<typename std::remove_pointer<::ZipArchiveHandle>::type,
+  // ZipArchivePtrCloser>;
 
   ZipArchiveHandle zip_handle_;
   private final ZipFileRO zipFileRO;
@@ -94,6 +99,7 @@ public class CppApkAssets {
   Asset resources_asset_;
   Asset idmap_asset_;
   private LoadedArsc loaded_arsc_;
+
   // };
   //
   // }  // namespace android
@@ -121,16 +127,15 @@ public class CppApkAssets {
   // filter out this package when computing what configurations/resources are available.
   // std::unique_ptr<const ApkAssets> ApkAssets::Load(const String& path, bool system) {
   public static CppApkAssets Load(String path, boolean system) {
-    return LoadImpl(/*{}*/-1 /*fd*/, path, null, null, system, false /*load_as_shared_library*/);
+    return LoadImpl(/*{}*/ -1 /*fd*/, path, null, null, system, false /*load_as_shared_library*/);
   }
 
   // Creates an ApkAssets, but forces any package with ID 0x7f to be loaded as a shared library.
   // If `system` is true, the package is marked as a system package, and allows some functions to
   // filter out this package when computing what configurations/resources are available.
-// std::unique_ptr<const ApkAssets> ApkAssets::LoadAsSharedLibrary(const String& path,
-//                                                                 bool system) {
-  public static CppApkAssets LoadAsSharedLibrary(String path,
-      boolean system) {
+  // std::unique_ptr<const ApkAssets> ApkAssets::LoadAsSharedLibrary(const String& path,
+  //                                                                 bool system) {
+  public static CppApkAssets LoadAsSharedLibrary(String path, boolean system) {
     return LoadImpl(/*{}*/ -1 /*fd*/, path, null, null, system, true /*load_as_shared_library*/);
   }
 
@@ -199,30 +204,36 @@ public class CppApkAssets {
     throw new UnsupportedOperationException();
     // unique_fd fd(base.utf8.open(path.c_str(), O_RDONLY | O_BINARY | O_CLOEXEC));
     // if (fd == -1) {
-    //   System.err.println( + "Failed to open file '" + path + "': " + SystemErrorCodeToString(errno);
+    //   System.err.println( + "Failed to open file '" + path + "': " +
+    // SystemErrorCodeToString(errno);
     //   return {};
     // }
     //
     // long file_len = lseek64(fd, 0, SEEK_END);
     // if (file_len < 0) {
-    //   System.err.println( + "Failed to get size of file '" + path + "': " + SystemErrorCodeToString(errno);
+    //   System.err.println( + "Failed to get size of file '" + path + "': " +
+    // SystemErrorCodeToString(errno);
     //   return {};
     // }
     //
     // std.unique_ptr<FileMap> file_map = util.make_unique<FileMap>();
-    // if (!file_map.create(path.c_str(), fd, 0, static_cast<size_t>(file_len), true /*readOnly*/)) {
-    //   System.err.println( + "Failed to mmap file '" + path + "': " + SystemErrorCodeToString(errno);
+    // if (!file_map.create(path.c_str(), fd, 0, static_cast<size_t>(file_len), true /*readOnly*/))
+    // {
+    //   System.err.println( + "Failed to mmap file '" + path + "': " +
+    // SystemErrorCodeToString(errno);
     //   return {};
     // }
     // return Asset.createFromUncompressedMap(std.move(file_map), Asset.AccessMode.ACCESS_RANDOM);
   }
 
-  /**
-   * Measure performance implications of loading {@link CppApkAssets}.
-   */
+  /** Measure performance implications of loading {@link CppApkAssets}. */
   static CppApkAssets LoadImpl(
-      int fd, String path, Asset idmap_asset,
-      LoadedIdmap loaded_idmap, boolean system, boolean load_as_shared_library) {
+      int fd,
+      String path,
+      Asset idmap_asset,
+      LoadedIdmap loaded_idmap,
+      boolean system,
+      boolean load_as_shared_library) {
     return PerfStatsCollector.getInstance()
         .measure(
             "load binary " + (system ? "framework" : "app") + " resources",
@@ -233,10 +244,15 @@ public class CppApkAssets {
 
   // std::unique_ptr<const ApkAssets> ApkAssets::LoadImpl(
   //     unique_fd fd, const std::string& path, std::unique_ptr<Asset> idmap_asset,
-  //     std::unique_ptr<const LoadedIdmap> loaded_idmap, bool system, bool load_as_shared_library) {
+  //     std::unique_ptr<const LoadedIdmap> loaded_idmap, bool system, bool load_as_shared_library)
+  // {
   static CppApkAssets LoadImpl_measured(
-      int fd, String path, Asset idmap_asset,
-      LoadedIdmap loaded_idmap, boolean system, boolean load_as_shared_library) {
+      int fd,
+      String path,
+      Asset idmap_asset,
+      LoadedIdmap loaded_idmap,
+      boolean system,
+      boolean load_as_shared_library) {
     Ref<ZipArchiveHandle> unmanaged_handle = new Ref<>(null);
     int result;
     if (fd >= 0) {
@@ -266,25 +282,28 @@ public class CppApkAssets {
       return loaded_apk;
     }
 
-    // Open the resource table via mmap unless it is compressed. This logic is taken care of by Open.
+    // Open the resource table via mmap unless it is compressed. This logic is taken care of by
+    // Open.
     loaded_apk.resources_asset_ = loaded_apk.Open(kResourcesArsc, Asset.AccessMode.ACCESS_BUFFER);
     if (loaded_apk.resources_asset_ == null) {
       System.err.println("Failed to open '" + kResourcesArsc + "' in APK '" + path + "'.");
       return null;
     }
 
-    // Must retain ownership of the IDMAP Asset so that all pointers to its mmapped data remain valid.
+    // Must retain ownership of the IDMAP Asset so that all pointers to its mmapped data remain
+    // valid.
     loaded_apk.idmap_asset_ = idmap_asset;
 
-  // const StringPiece data(
-  //       reinterpret_cast<const char*>(loaded_apk.resources_asset_.getBuffer(true /*wordAligned*/)),
-  //       loaded_apk.resources_asset_.getLength());
-    StringPiece data = new StringPiece(
-        ByteBuffer.wrap(loaded_apk.resources_asset_.getBuffer(true /*wordAligned*/))
-            .order(ByteOrder.LITTLE_ENDIAN),
-        0 /*(int) loaded_apk.resources_asset_.getLength()*/);
-    loaded_apk.loaded_arsc_ =
-        LoadedArsc.Load(data, loaded_idmap, system, load_as_shared_library);
+    // const StringPiece data(
+    //       reinterpret_cast<const char*>(loaded_apk.resources_asset_.getBuffer(true
+    // /*wordAligned*/)),
+    //       loaded_apk.resources_asset_.getLength());
+    StringPiece data =
+        new StringPiece(
+            ByteBuffer.wrap(loaded_apk.resources_asset_.getBuffer(true /*wordAligned*/))
+                .order(ByteOrder.LITTLE_ENDIAN),
+            0 /*(int) loaded_apk.resources_asset_.getLength()*/);
+    loaded_apk.loaded_arsc_ = LoadedArsc.Load(data, loaded_idmap, system, load_as_shared_library);
     if (loaded_apk.loaded_arsc_ == null) {
       System.err.println("Failed to load '" + kResourcesArsc + "' in APK '" + path + "'.");
       return null;
@@ -325,8 +344,7 @@ public class CppApkAssets {
       // }
       FileMap map = zipFileRO.createEntryFileMap(entry);
 
-      Asset asset =
-          Asset.createFromCompressedMap(map, (int) entry.entry.getSize(), mode);
+      Asset asset = Asset.createFromCompressedMap(map, (int) entry.entry.getSize(), mode);
       if (asset == null) {
         System.err.println("Failed to decompress '" + path + "'.");
         return null;
@@ -354,8 +372,7 @@ public class CppApkAssets {
     void callback(String string, FileType fileType);
   }
 
-  boolean ForEachFile(String root_path,
-      ForEachFileCallback f) {
+  boolean ForEachFile(String root_path, ForEachFileCallback f) {
     if (zip_handle_ == null || zipFileRO == null) {
       // In this case, the ApkAssets was loaded from a pure ARSC, and does not have assets.
       return false;
@@ -386,7 +403,7 @@ public class CppApkAssets {
     // int32_t result;
     // while ((result = Next(cookie, &entry, &name)) == 0) {
     while (entries.hasMoreElements()) {
-      ZipEntry zipEntry =  entries.nextElement();
+      ZipEntry zipEntry = entries.nextElement();
       if (!zipEntry.getName().startsWith(prefix)) {
         continue;
       }
@@ -422,6 +439,5 @@ public class CppApkAssets {
     // return result == -1;
     return true;
   }
-//
-}  // namespace android
-
+  //
+} // namespace android

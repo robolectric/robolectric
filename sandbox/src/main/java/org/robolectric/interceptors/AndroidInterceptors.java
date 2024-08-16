@@ -108,18 +108,18 @@ public class AndroidInterceptors {
         try {
           FileDescriptor ret = new FileDescriptor();
 
-          moveField(ret, input, "fd", /*movedOutValue=*/ -1);
+          moveField(ret, input, "fd", /* movedOutValue= */ -1);
           // "closed" is irrelevant if the fd is already -1.
-          moveField(ret, input, "closed", /*movedOutValue=*/ false);
+          moveField(ret, input, "closed", /* movedOutValue= */ false);
           // N.B.: FileDescriptor.attach() is not implemented in libcore (yet), so these won't be
           // used.
-          moveField(ret, input, "parent", /*movedOutValue=*/ null);
-          moveField(ret, input, "otherParents", /*movedOutValue=*/ null);
+          moveField(ret, input, "parent", /* movedOutValue= */ null);
+          moveField(ret, input, "otherParents", /* movedOutValue= */ null);
 
           // These only exist on Windows.
           try {
-            moveField(ret, input, "handle", /*movedOutValue=*/ -1);
-            moveField(ret, input, "append", /*movedOutValue=*/ false);
+            moveField(ret, input, "handle", /* movedOutValue= */ -1);
+            moveField(ret, input, "append", /* movedOutValue= */ false);
           } catch (ReflectiveOperationException ex) {
             // Ignore.
           }

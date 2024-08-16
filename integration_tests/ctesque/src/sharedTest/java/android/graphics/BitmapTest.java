@@ -29,11 +29,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.testapp.R;
 
 /** Compatibility test for {@link Bitmap} */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class BitmapTest {
 
@@ -46,7 +44,8 @@ public class BitmapTest {
 
   @Config(minSdk = P)
   @SdkSuppress(minSdkVersion = P)
-  @Test public void createBitmap() {
+  @Test
+  public void createBitmap() {
     assume().that(System.getProperty("robolectric.graphicsMode")).isNotEqualTo("NATIVE");
     // Bitmap.createBitmap(Picture) requires hardware-backed bitmaps
     HardwareRendererCompat.setDrawingEnabled(true);

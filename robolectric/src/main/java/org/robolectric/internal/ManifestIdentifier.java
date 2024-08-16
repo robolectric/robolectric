@@ -40,7 +40,9 @@ public class ManifestIdentifier {
     this.apkFile = apkFile;
   }
 
-  /** @deprecated Use {@link #ManifestIdentifier(String, Path, Path, Path, List)} instead. */
+  /**
+   * @deprecated Use {@link #ManifestIdentifier(String, Path, Path, Path, List)} instead.
+   */
   @Deprecated
   public ManifestIdentifier(
       Path manifestFile, Path resDir, Path assetDir, String packageName, List<Path> libraryDirs) {
@@ -101,7 +103,8 @@ public class ManifestIdentifier {
 
     ManifestIdentifier that = (ManifestIdentifier) o;
 
-    if (manifestFile != null ? !manifestFile.equals(that.manifestFile)
+    if (manifestFile != null
+        ? !manifestFile.equals(that.manifestFile)
         : that.manifestFile != null) {
       return false;
     }
@@ -133,13 +136,20 @@ public class ManifestIdentifier {
 
   @Override
   public String toString() {
-    return "ManifestIdentifier{" +
-        "manifestFile=" + manifestFile +
-        ", resDir=" + resDir +
-        ", assetDir=" + assetDir +
-        ", packageName='" + packageName + '\'' +
-        ", libraries=" + libraries +
-        ", apkFile=" + apkFile +
-        '}';
+    return "ManifestIdentifier{"
+        + "manifestFile="
+        + manifestFile
+        + ", resDir="
+        + resDir
+        + ", assetDir="
+        + assetDir
+        + ", packageName='"
+        + packageName
+        + '\''
+        + ", libraries="
+        + libraries
+        + ", apkFile="
+        + apkFile
+        + '}';
   }
 }

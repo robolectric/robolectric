@@ -84,21 +84,21 @@ public class ShadowDefaultRequestDirector {
     this.httpParams = params;
 
     try {
-      redirector = new org.robolectric.shadows.httpclient.DefaultRequestDirector(
-          log,
-          requestExec,
-          conman,
-          reustrat,
-          kastrat,
-          rouplan,
-          httpProcessor,
-          retryHandler,
-          redirectHandler,
-          targetAuthHandler,
-          proxyAuthHandler,
-          userTokenHandler,
-          params
-      );
+      redirector =
+          new org.robolectric.shadows.httpclient.DefaultRequestDirector(
+              log,
+              requestExec,
+              conman,
+              reustrat,
+              kastrat,
+              rouplan,
+              httpProcessor,
+              retryHandler,
+              redirectHandler,
+              targetAuthHandler,
+              proxyAuthHandler,
+              userTokenHandler,
+              params);
     } catch (IllegalArgumentException ignored) {
       FakeHttp.getFakeHttpLayer().interceptHttpRequests(true);
     }
@@ -180,9 +180,11 @@ public class ShadowDefaultRequestDirector {
       HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext)
       throws HttpException, IOException {
     if (FakeHttp.getFakeHttpLayer().isInterceptingHttpRequests()) {
-      return FakeHttp.getFakeHttpLayer().emulateRequest(httpHost, httpRequest, httpContext, realObject);
+      return FakeHttp.getFakeHttpLayer()
+          .emulateRequest(httpHost, httpRequest, httpContext, realObject);
     } else {
-      FakeHttp.getFakeHttpLayer().addRequestInfo(new HttpRequestInfo(httpRequest, httpHost, httpContext, redirector));
+      FakeHttp.getFakeHttpLayer()
+          .addRequestInfo(new HttpRequestInfo(httpRequest, httpHost, httpContext, redirector));
       HttpResponse response = redirector.execute(httpHost, httpRequest, httpContext);
 
       if (FakeHttp.getFakeHttpLayer().isInterceptingResponseContent()) {

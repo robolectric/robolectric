@@ -1,8 +1,7 @@
-import org.robolectric.gradle.DeployedRoboJavaModulePlugin
-import org.robolectric.gradle.RoboJavaModulePlugin
-
-apply plugin: RoboJavaModulePlugin
-apply plugin: DeployedRoboJavaModulePlugin
+plugins {
+    alias(libs.plugins.robolectric.deployed.java.module)
+    alias(libs.plugins.robolectric.java.module)
+}
 
 dependencies {
     api project(":annotations")

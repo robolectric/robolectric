@@ -58,7 +58,8 @@ public class FragmentControllerTest {
   @Test
   public void attachedAfterCreate_customizedViewId() {
     final LoginFragment fragment = new LoginFragment();
-    FragmentController.of(fragment, CustomizedViewIdLoginActivity.class).create(VIEW_ID_CUSTOMIZED_LOGIN_ACTIVITY, null);
+    FragmentController.of(fragment, CustomizedViewIdLoginActivity.class)
+        .create(VIEW_ID_CUSTOMIZED_LOGIN_ACTIVITY, null);
     shadowMainLooper().idle();
 
     assertThat(fragment.getView()).isNotNull();
@@ -129,7 +130,8 @@ public class FragmentControllerTest {
 
     Intent intent = new Intent("test_action");
     intent.putExtra("test_key", "test_value");
-    FragmentController<LoginFragment> controller = FragmentController.of(fragment, LoginActivity.class, intent).create();
+    FragmentController<LoginFragment> controller =
+        FragmentController.of(fragment, LoginActivity.class, intent).create();
     shadowMainLooper().idle();
 
     Intent intentInFragment = controller.get().getActivity().getIntent();
@@ -143,7 +145,8 @@ public class FragmentControllerTest {
 
     Bundle arguments = new Bundle();
     arguments.putString("test_argument", "test_value");
-    FragmentController<LoginFragment> controller = FragmentController.of(fragment, LoginActivity.class, arguments).create();
+    FragmentController<LoginFragment> controller =
+        FragmentController.of(fragment, LoginActivity.class, arguments).create();
 
     Bundle argumentsInFragment = controller.get().getArguments();
     assertThat(argumentsInFragment.getString("test_argument")).isEqualTo("test_value");
@@ -152,7 +155,8 @@ public class FragmentControllerTest {
   @Test
   public void visible() {
     final LoginFragment fragment = new LoginFragment();
-    final FragmentController<LoginFragment> controller = FragmentController.of(fragment, LoginActivity.class);
+    final FragmentController<LoginFragment> controller =
+        FragmentController.of(fragment, LoginActivity.class);
 
     controller.create();
     shadowMainLooper().idle();
@@ -172,7 +176,8 @@ public class FragmentControllerTest {
     boolean stopCalled = false;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(
+        LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       return inflater.inflate(R.layout.fragment_contents, container, false);
     }
 

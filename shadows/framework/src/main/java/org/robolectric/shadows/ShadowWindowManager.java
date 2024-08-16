@@ -4,5 +4,4 @@ import android.view.WindowManager;
 import org.robolectric.annotation.Implements;
 
 @Implements(WindowManager.class)
-public class ShadowWindowManager {
-}
+public class ShadowWindowManager {}

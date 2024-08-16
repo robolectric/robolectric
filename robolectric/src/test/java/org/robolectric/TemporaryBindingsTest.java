@@ -23,7 +23,8 @@ public class TemporaryBindingsTest {
   public void overridingShadowBindingsShouldNotAffectBindingsInLaterTests() throws Exception {
     TemporaryShadowView shadowView =
         Shadow.extract(new View(ApplicationProvider.getApplicationContext()));
-    assertThat(shadowView.getClass().getSimpleName()).isEqualTo(TemporaryShadowView.class.getSimpleName());
+    assertThat(shadowView.getClass().getSimpleName())
+        .isEqualTo(TemporaryShadowView.class.getSimpleName());
   }
 
   @Test
@@ -36,6 +37,5 @@ public class TemporaryBindingsTest {
   }
 
   @Implements(View.class)
-  public static class TemporaryShadowView {
-  }
+  public static class TemporaryShadowView {}
 }

@@ -16,25 +16,19 @@
 
 package org.robolectric.fakes;
 
-/**
- * Where the HTTP client should look for a response.
- */
+/** Where the HTTP client should look for a response. */
 public enum RoboResponseSource {
 
-  /**
-   * Return the response from the cache immediately.
-   */
+  /** Return the response from the cache immediately. */
   CACHE,
 
   /**
-   * Make a conditional request to the host, returning the cache response if
-   * the cache is valid and the network response otherwise.
+   * Make a conditional request to the host, returning the cache response if the cache is valid and
+   * the network response otherwise.
    */
   CONDITIONAL_CACHE,
 
-  /**
-   * Return the response from the network.
-   */
+  /** Return the response from the network. */
   NETWORK;
 
   public boolean requiresConnection() {

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.graphics.Matrix;
 import java.util.List;
 import java.util.Map;

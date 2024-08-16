@@ -28,9 +28,7 @@ public class ShadowSurfaceView extends ShadowView {
     return fakeSurfaceHolder;
   }
 
-  /**
-   * Robolectric implementation of {@link android.view.SurfaceHolder}.
-   */
+  /** Robolectric implementation of {@link android.view.SurfaceHolder}. */
   public static class FakeSurfaceHolder implements SurfaceHolder {
     private final Set<Callback> callbacks = new HashSet<>();
     // The default format is RGB_565.
@@ -56,16 +54,13 @@ public class ShadowSurfaceView extends ShadowView {
     }
 
     @Override
-    public void setType(int i) {
-    }
+    public void setType(int i) {}
 
     @Override
-    public void setFixedSize(int i, int i1) {
-    }
+    public void setFixedSize(int i, int i1) {}
 
     @Override
-    public void setSizeFromLayout() {
-    }
+    public void setSizeFromLayout() {}
 
     @Override
     public void setFormat(int format) {
@@ -77,8 +72,7 @@ public class ShadowSurfaceView extends ShadowView {
     }
 
     @Override
-    public void setKeepScreenOn(boolean b) {
-    }
+    public void setKeepScreenOn(boolean b) {}
 
     @Override
     public Canvas lockCanvas() {
@@ -91,8 +85,7 @@ public class ShadowSurfaceView extends ShadowView {
     }
 
     @Override
-    public void unlockCanvasAndPost(Canvas canvas) {
-    }
+    public void unlockCanvasAndPost(Canvas canvas) {}
 
     @Override
     public Rect getSurfaceFrame() {

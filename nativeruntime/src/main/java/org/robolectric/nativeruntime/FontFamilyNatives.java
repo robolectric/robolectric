@@ -36,6 +36,7 @@ public final class FontFamilyNatives {
   public static native long nGetBuilderReleaseFunc();
 
   public static native long nGetFamilyReleaseFunc();
+
   // By passing -1 to weight argument, the weight value is resolved by OS/2 table in the font.
   // By passing -1 to italic argument, the italic value is resolved by OS/2 table in the font.
   public static native boolean nAddFont(

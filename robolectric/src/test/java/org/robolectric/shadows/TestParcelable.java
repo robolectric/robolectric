@@ -33,6 +33,7 @@ class TestParcelable implements Parcelable {
           return new TestParcelable[0];
         }
       };
+
   @Override
   public void writeToParcel(Parcel dest, int flags) {
     dest.writeInt(contents);

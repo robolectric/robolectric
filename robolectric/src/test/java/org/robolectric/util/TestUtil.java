@@ -19,8 +19,8 @@ public abstract class TestUtil {
   private static ResourcePath TEST_RESOURCE_PATH;
   private static File testDirLocation;
   private static SdkCollection sdkCollection;
-  private static final Injector injector = new Injector.Builder()
-      .bind(Properties.class, System.getProperties()).build();
+  private static final Injector injector =
+      new Injector.Builder().bind(Properties.class, System.getProperties()).build();
 
   public static Path resourcesBaseDir() {
     return resourcesBaseDirFile().toPath();
@@ -84,5 +84,4 @@ public abstract class TestUtil {
   private static <T> T getInjectedInstance(Class<T> clazz) {
     return injector.getInstance(clazz);
   }
-
 }

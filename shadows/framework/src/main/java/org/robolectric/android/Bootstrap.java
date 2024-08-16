@@ -7,12 +7,14 @@ import android.util.DisplayMetrics;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.shadows.ShadowDateUtils;
 import org.robolectric.shadows.ShadowDisplayManager;
+import org.robolectric.shadows.ShadowDisplayManagerGlobal;
 
 public class Bootstrap {
 
   private static Configuration configuration = new Configuration();
   private static DisplayMetrics displayMetrics = new DisplayMetrics();
   private static Resources displayResources;
+
   /** internal only */
   public static boolean displaySet = false;
 
@@ -39,6 +41,10 @@ public class Bootstrap {
 
   /** internal only */
   public static void resetDisplayConfiguration() {
+    // This is called to avoid the configureDefaultDisplay should only be called once exception that
+    // occurs if ShadowDisplayManagerGlobal is not properly reset during resetter.
+    ShadowDisplayManagerGlobal.reset();
+
     configuration = new Configuration();
     displayMetrics = new DisplayMetrics();
     displayResources = null;

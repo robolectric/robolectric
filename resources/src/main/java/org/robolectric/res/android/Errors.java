@@ -1,6 +1,7 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/include/utils/Errors.h
+// transliterated from
+// https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/include/utils/Errors.h
 
 public class Errors {
 

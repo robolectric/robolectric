@@ -22,7 +22,7 @@ public class QualifiersTest {
     try {
       configFrom("values-unknown-v23");
       fail("Expected exception");
-    } catch(IllegalArgumentException expected) {
+    } catch (IllegalArgumentException expected) {
       assertThat(expected.getMessage()).contains("failed to parse qualifiers 'unknown-v23");
     }
   }
@@ -31,8 +31,7 @@ public class QualifiersTest {
     Path xmlFile = Paths.get(path, "whatever.xml");
     Qualifiers qualifiers = Qualifiers.fromParentDir(xmlFile.getParent());
 
-    ResTable_config config = new XmlContext("package", xmlFile, qualifiers)
-        .getConfig();
+    ResTable_config config = new XmlContext("package", xmlFile, qualifiers).getConfig();
     return config.toString();
   }
 
@@ -51,7 +50,8 @@ public class QualifiersTest {
         .isEqualTo("en-sw480dp-v23");
   }
 
-  @Test public void addScreenWidth() throws Exception {
+  @Test
+  public void addScreenWidth() throws Exception {
     assertThat(Qualifiers.addScreenWidth("", 320)).isEqualTo("w320dp");
     assertThat(Qualifiers.addScreenWidth("w160dp", 320)).isEqualTo("w160dp");
     assertThat(Qualifiers.addScreenWidth("w480dp", 320)).isEqualTo("w480dp");
@@ -61,7 +61,8 @@ public class QualifiersTest {
     assertThat(Qualifiers.addScreenWidth("en-w480dp-v23", 320)).isEqualTo("en-w480dp-v23");
   }
 
-  @Test public void getSmallestScreenWidth() {
+  @Test
+  public void getSmallestScreenWidth() {
     assertThat(Qualifiers.getSmallestScreenWidth("sw320dp")).isEqualTo(320);
     assertThat(Qualifiers.getSmallestScreenWidth("sw320dp-v7")).isEqualTo(320);
     assertThat(Qualifiers.getSmallestScreenWidth("en-rUS-sw320dp")).isEqualTo(320);
@@ -70,12 +71,14 @@ public class QualifiersTest {
     assertThat(Qualifiers.getSmallestScreenWidth("en-rUS-w320dp-v7")).isEqualTo(-1);
   }
 
-  @Test public void getAddSmallestScreenWidth() {
+  @Test
+  public void getAddSmallestScreenWidth() {
     assertThat(Qualifiers.addSmallestScreenWidth("v7", 320)).isEqualTo("v7-sw320dp");
     assertThat(Qualifiers.addSmallestScreenWidth("sw320dp-v7", 480)).isEqualTo("sw320dp-v7");
   }
 
-  @Test public void getScreenWidth() {
+  @Test
+  public void getScreenWidth() {
     assertThat(Qualifiers.getScreenWidth("w320dp")).isEqualTo(320);
     assertThat(Qualifiers.getScreenWidth("w320dp-v7")).isEqualTo(320);
     assertThat(Qualifiers.getScreenWidth("en-rUS-w320dp")).isEqualTo(320);
@@ -85,12 +88,14 @@ public class QualifiersTest {
     assertThat(Qualifiers.getScreenWidth("en-rUS-sw320dp-v7")).isEqualTo(-1);
   }
 
-  @Test public void getAddScreenWidth() {
+  @Test
+  public void getAddScreenWidth() {
     assertThat(Qualifiers.addScreenWidth("v7", 320)).isEqualTo("v7-w320dp");
     assertThat(Qualifiers.addScreenWidth("w320dp-v7", 480)).isEqualTo("w320dp-v7");
   }
 
-  @Test public void getOrientation() {
+  @Test
+  public void getOrientation() {
     assertThat(Qualifiers.getOrientation("land")).isEqualTo("land");
     assertThat(Qualifiers.getOrientation("en-rUs-land")).isEqualTo("land");
     assertThat(Qualifiers.getOrientation("port")).isEqualTo("port");

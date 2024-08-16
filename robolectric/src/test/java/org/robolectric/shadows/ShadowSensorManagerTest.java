@@ -3,10 +3,12 @@ package org.robolectric.shadows;
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.Sensor.TYPE_ALL;
 import static android.hardware.Sensor.TYPE_GYROSCOPE;
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorDirectChannel;
@@ -26,7 +28,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowSensorManagerTest {
@@ -328,6 +332,46 @@ public class ShadowSensorManagerTest {
 
     public Optional<SensorEvent> getLatestSensorEvent() {
       return latestSensorEvent;
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void sensorManager_activityContextEnabled_retrievesSameSensors() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      SensorManager applicationSensorManager =
+          (SensorManager)
+              ApplicationProvider.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
+      activity = Robolectric.setupActivity(TestActivity.class);
+      SensorManager activitySensorManager =
+          (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+
+      assertThat(applicationSensorManager).isNotSameInstanceAs(activitySensorManager);
+
+      List<Sensor> applicationSensors = applicationSensorManager.getSensorList(Sensor.TYPE_ALL);
+      List<Sensor> activitySensors = activitySensorManager.getSensorList(Sensor.TYPE_ALL);
+
+      assertThat(activitySensors).hasSize(applicationSensors.size());
+
+      for (int i = 0; i < applicationSensors.size(); i++) {
+        Sensor appSensor = applicationSensors.get(i);
+        Sensor actSensor = activitySensors.get(i);
+
+        assertThat(appSensor.getName()).isEqualTo(actSensor.getName());
+        assertThat(appSensor.getType()).isEqualTo(actSensor.getType());
+        assertThat(appSensor.getMaximumRange()).isEqualTo(actSensor.getMaximumRange());
+        assertThat(appSensor.getResolution()).isEqualTo(actSensor.getResolution());
+        assertThat(appSensor.getPower()).isEqualTo(actSensor.getPower());
+        assertThat(appSensor.getMinDelay()).isEqualTo(actSensor.getMinDelay());
+      }
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

@@ -8,13 +8,14 @@ import com.google.common.collect.ImmutableList;
 import java.io.FileDescriptor;
 import java.util.ArrayList;
 import java.util.List;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for BackupDataInput. */
-@Implements(value = BackupDataInput.class, looseSignatures = true)
+@Implements(value = BackupDataInput.class)
 public class ShadowBackupDataInput {
 
   private List<BackupDataEntity> entities = new ArrayList<>();
@@ -41,7 +42,9 @@ public class ShadowBackupDataInput {
 
   // Using loose signature because EntityHeader is a private nested class.
   @Implementation
-  protected int readNextHeader_native(Object backupReader, Object entity) {
+  protected int readNextHeader_native(
+      long backupReader,
+      @ClassName("android.app.backup.BackupDataInput$EntityHeader") Object entity) {
     if (currentBytesRead < currentBytesToRead) {
       // Return failure to read header due to unread data bytes.
       return -1;

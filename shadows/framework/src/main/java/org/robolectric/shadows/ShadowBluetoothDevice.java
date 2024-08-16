@@ -1,11 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.bluetooth.BluetoothDevice.BOND_BONDING;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -41,7 +43,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link BluetoothDevice}. */
-@Implements(value = BluetoothDevice.class, looseSignatures = true)
+@Implements(value = BluetoothDevice.class)
 public class ShadowBluetoothDevice {
   /**
    * Interceptor interface for {@link BluetoothGatt} objects. Tests that require configuration of
@@ -108,6 +110,21 @@ public class ShadowBluetoothDevice {
   }
 
   /**
+   * Set the alias for bluetooth device.
+   *
+   * @param alias The alias name that set to bluetooth device.
+   * @return If API is larger than or equals to S, it returns [BluetoothStatusCodes] code, otherwise
+   *     it returns boolean.
+   */
+  public Object setAlias(String alias) {
+    if (RuntimeEnvironment.getApiLevel() >= S) {
+      return setAliasS(alias);
+    } else {
+      return setAliasBeforeS(alias);
+    }
+  }
+
+  /**
    * Sets the alias name of the device.
    *
    * <p>Alias is the locally modified name of a remote device.
@@ -116,14 +133,25 @@ public class ShadowBluetoothDevice {
    *
    * @param alias alias name.
    */
-  @Implementation
-  public Object setAlias(Object alias) {
-    this.alias = (String) alias;
-    if (RuntimeEnvironment.getApiLevel() >= S) {
-      return BluetoothStatusCodes.SUCCESS;
-    } else {
-      return true;
-    }
+  @Implementation(maxSdk = R, methodName = "setAlias")
+  protected boolean setAliasBeforeS(String alias) {
+    this.alias = alias;
+    return true;
+  }
+
+  /**
+   * Sets the alias name of the device for API >= 31.
+   *
+   * <p>Alias is the locally modified name of a remote device.
+   *
+   * <p>Alias Name is not part of the supported SDK, and accessed via reflection.
+   *
+   * @param alias alias name.
+   */
+  @Implementation(minSdk = S, methodName = "setAlias")
+  protected int setAliasS(String alias) {
+    this.alias = alias;
+    return BluetoothStatusCodes.SUCCESS;
   }
 
   /**
@@ -215,6 +243,15 @@ public class ShadowBluetoothDevice {
   /** Sets value of bond state for {@link BluetoothDevice#getBondState}. */
   public void setBondState(int bondState) {
     this.bondState = bondState;
+  }
+
+  @Implementation
+  protected boolean cancelBondProcess() {
+    if (bondState == BOND_BONDING) {
+      setBondState(BOND_NONE);
+      return true;
+    }
+    return false;
   }
 
   /**

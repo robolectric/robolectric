@@ -13,9 +13,7 @@ import java.util.Comparator;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 
-/**
- * Robolectric implementation of {@link android.view.Menu}.
- */
+/** Robolectric implementation of {@link android.view.Menu}. */
 public class RoboMenu implements Menu {
   private List<MenuItem> menuItems = new ArrayList<>();
   private Context context;
@@ -100,8 +98,15 @@ public class RoboMenu implements Menu {
   }
 
   @Override
-  public int addIntentOptions(int groupId, int itemId, int order, ComponentName caller, Intent[] specifics,
-                              Intent intent, int flags, MenuItem[] outSpecificItems) {
+  public int addIntentOptions(
+      int groupId,
+      int itemId,
+      int order,
+      ComponentName caller,
+      Intent[] specifics,
+      Intent intent,
+      int flags,
+      MenuItem[] outSpecificItems) {
     return 0;
   }
 
@@ -112,8 +117,7 @@ public class RoboMenu implements Menu {
   }
 
   @Override
-  public void removeGroup(int groupId) {
-  }
+  public void removeGroup(int groupId) {}
 
   @Override
   public void clear() {
@@ -121,16 +125,13 @@ public class RoboMenu implements Menu {
   }
 
   @Override
-  public void setGroupCheckable(int group, boolean checkable, boolean exclusive) {
-  }
+  public void setGroupCheckable(int group, boolean checkable, boolean exclusive) {}
 
   @Override
-  public void setGroupVisible(int group, boolean visible) {
-  }
+  public void setGroupVisible(int group, boolean visible) {}
 
   @Override
-  public void setGroupEnabled(int group, boolean enabled) {
-  }
+  public void setGroupEnabled(int group, boolean enabled) {}
 
   @Override
   public boolean hasVisibleItems() {
@@ -158,8 +159,7 @@ public class RoboMenu implements Menu {
   }
 
   @Override
-  public void close() {
-  }
+  public void close() {}
 
   @Override
   public boolean performShortcut(int keyCode, KeyEvent event, int flags) {
@@ -177,8 +177,7 @@ public class RoboMenu implements Menu {
   }
 
   @Override
-  public void setQwertyMode(boolean isQwerty) {
-  }
+  public void setQwertyMode(boolean isQwerty) {}
 
   public RoboMenuItem findMenuItem(CharSequence title) {
     for (int i = 0; i < size(); i++) {
@@ -214,4 +213,3 @@ public class RoboMenu implements Menu {
     }
   }
 }
-

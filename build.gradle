@@ -1,5 +1,6 @@
 import org.gradle.plugins.ide.idea.model.IdeaModel
-import org.robolectric.gradle.SpotlessPlugin
+import org.robolectric.gradle.ShadowsPlugin
+
 buildscript {
     apply from: 'dependencies.gradle'
 
@@ -8,33 +9,24 @@ buildscript {
         mavenCentral()
         gradlePluginPortal()
     }
+}
 
-    dependencies {
-        gradle
-        classpath libs.android.gradle
-        classpath libs.error.prone.gradle
-        classpath libs.aggregate.javadocs.gradle
-        classpath libs.kotlin.gradle
-        classpath libs.spotless.gradle
-        classpath libs.detekt.gradle
-        classpath libs.roborazzi.gradle
-    }
+plugins {
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.error.prone)
+    alias(libs.plugins.idea)
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.robolectric.spotless)
+    alias(libs.plugins.robolectric.javadoc)
+    alias(libs.plugins.roborazzi) apply false
 }
 
 allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-
     group = "org.robolectric"
     version = thisVersion
 }
-
-apply plugin: 'idea'
-// apply SpotlessPlugin
-apply plugin: SpotlessPlugin
 
 project.ext.configAnnotationProcessing = []
 project.afterEvaluate {
@@ -78,8 +70,6 @@ project.afterEvaluate {
         }
     }
 }
-
-apply plugin: 'nebula-aggregate-javadocs'
 
 rootProject.gradle.projectsEvaluated {
     rootProject.tasks.named("aggregateJavadocs").configure {

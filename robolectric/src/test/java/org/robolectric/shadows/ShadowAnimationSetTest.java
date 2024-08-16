@@ -18,7 +18,8 @@ public class ShadowAnimationSetTest {
   final Animation.AnimationListener moveListener = mock(Animation.AnimationListener.class);
   final Animation.AnimationListener spinListener = mock(Animation.AnimationListener.class);
 
-  @Test @Ignore("Needs additional work")
+  @Test
+  @Ignore("Needs additional work")
   public void start_shouldRunAnimation() {
     final AnimationSet set = new AnimationSet(true);
 

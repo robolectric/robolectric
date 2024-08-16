@@ -39,15 +39,14 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /** Shadow of {@link UsageStatsManager}. */
-@Implements(
-    value = UsageStatsManager.class,
-    looseSignatures = true)
+@Implements(value = UsageStatsManager.class)
 public class ShadowUsageStatsManager {
   private static @StandbyBuckets int currentAppStandbyBucket =
       UsageStatsManager.STANDBY_BUCKET_ACTIVE;
@@ -588,21 +587,16 @@ public class ShadowUsageStatsManager {
     currentUsageSource = usageSource;
   }
 
-  /**
-   * Requires loose signatures because return value is a list of {@link BroadcastResponseStats},
-   * which is a hidden class introduced in Android T.
-   */
   @SuppressWarnings("unchecked")
   @Implementation(minSdk = TIRAMISU)
-  protected Object /* List<BroadcastResponseStats> */ queryBroadcastResponseStats(
-      @Nullable Object packageName, Object id) {
+  protected @ClassName("java.util.List<android.app.usage.BroadcastResponseStats>") Object
+      queryBroadcastResponseStats(@Nullable String packageName, long id) {
     List<BroadcastResponseStats> result = new ArrayList<>();
     for (Map.Entry<String, Map<Long, Object /*BroadcastResponseStats*/>> entry :
         appBroadcastStats.entrySet()) {
       if (packageName == null || entry.getKey().equals(packageName)) {
         result.addAll(
-            (List<BroadcastResponseStats>)
-                queryBroadcastResponseStatsForId(entry.getValue(), (long) id));
+            (List<BroadcastResponseStats>) queryBroadcastResponseStatsForId(entry.getValue(), id));
       }
     }
     return result;

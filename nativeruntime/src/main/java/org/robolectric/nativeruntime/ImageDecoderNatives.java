@@ -47,6 +47,7 @@ public final class ImageDecoderNatives {
 
   public static native ImageDecoder nCreate(
       InputStream is, byte[] storage, boolean preferAnimation, Source src) throws IOException;
+
   // The fd must be seekable.
   public static native ImageDecoder nCreate(
       FileDescriptor fd, long length, boolean preferAnimation, Source src) throws IOException;

@@ -17,11 +17,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
@@ -240,6 +242,15 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
+  /**
+   * Return a method handle of the shadow class which matches the given function signature of the
+   * shadowed class.
+   *
+   * @param definingClass The shadowed class
+   * @param name The name of the method
+   * @param paramTypes The parameter list of the method
+   * @return A method handle of the corresponding shadow class
+   */
   protected Method pickShadowMethod(Class<?> definingClass, String name, Class<?>[] paramTypes) {
     ShadowInfo shadowInfo = getExactShadowInfo(definingClass);
     if (shadowInfo == null) {
@@ -266,6 +277,8 @@ public class ShadowWrangler implements ClassHandler {
    * Searches for an {@code @Implementation} method on a given shadow class.
    *
    * <p>If the shadow class allows loose signatures, search for them.
+   *
+   * <p>If the shadow class has function using @ClassName matches the requirement, return it
    *
    * <p>If the shadow class doesn't have such a method, but does have a superclass which implements
    * the same class as it, call ourself recursively with the shadow superclass.
@@ -335,6 +348,12 @@ public class ShadowWrangler implements ClassHandler {
           // Found a looseSignatures match, but continue looking for an exact match.
           foundMethod = method;
         }
+      } else {
+        // Or maybe support @ClassName.
+        if (parameterClassNameMatch(method, paramClasses) && shadowMatcher.matches(method)) {
+          // Found a @ClassName match, but continue looking for an exact match.
+          foundMethod = method;
+        }
       }
     }
 
@@ -349,7 +368,8 @@ public class ShadowWrangler implements ClassHandler {
         if (mappedMethodName.isEmpty() || !mappedMethodName.equals(methodName)) {
           continue;
         }
-        if (Arrays.equals(method.getParameterTypes(), paramClasses)) {
+        if (Arrays.equals(method.getParameterTypes(), paramClasses)
+            || parameterClassNameMatch(method, paramClasses)) {
           foundMethod = method;
           break;
         }
@@ -364,6 +384,31 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
+  /**
+   * Check whether the parameters (which could be @ClassName annotated) of the {@code method}
+   * matches {@code paramClasses}.
+   */
+  private boolean parameterClassNameMatch(Method method, Class<?>[] paramClasses) {
+    Parameter[] params = method.getParameters();
+    if (params.length != paramClasses.length) {
+      return false;
+    }
+
+    for (int i = 0; i < params.length; ++i) {
+      if (params[i].getType().equals(paramClasses[i])) {
+        continue;
+      }
+      if (!params[i].getType().equals(Object.class)) {
+        return false; // @ClassName only applicable to parameter of Object type
+      }
+      ClassName className = params[i].getAnnotation(ClassName.class);
+      if (className == null || !className.value().equals(paramClasses[i].getName())) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   @Override
   public Object intercept(String signature, Object instance, Object[] params, Class theClass)

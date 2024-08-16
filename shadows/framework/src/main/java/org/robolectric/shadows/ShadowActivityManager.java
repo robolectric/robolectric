@@ -33,6 +33,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -45,23 +46,24 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link android.app.ActivityManager} */
-@Implements(value = ActivityManager.class, looseSignatures = true)
+@Implements(value = ActivityManager.class)
 public class ShadowActivityManager {
   private int memoryClass = 16;
-  private String backgroundPackage;
-  private ActivityManager.MemoryInfo memoryInfo;
-  private final List<ActivityManager.AppTask> appTasks = new CopyOnWriteArrayList<>();
-  private final List<ActivityManager.RunningTaskInfo> tasks = new CopyOnWriteArrayList<>();
-  private final List<ActivityManager.RunningServiceInfo> services = new CopyOnWriteArrayList<>();
+  private static String backgroundPackage;
+  private static ActivityManager.MemoryInfo memoryInfo;
+  private static final List<ActivityManager.AppTask> appTasks = new CopyOnWriteArrayList<>();
+  private static final List<ActivityManager.RunningTaskInfo> tasks = new CopyOnWriteArrayList<>();
+  private static final List<ActivityManager.RunningServiceInfo> services =
+      new CopyOnWriteArrayList<>();
   private static final List<ActivityManager.RunningAppProcessInfo> processes =
       new CopyOnWriteArrayList<>();
-  private final List<ImportanceListener> importanceListeners = new CopyOnWriteArrayList<>();
-  private final SparseIntArray uidImportances = new SparseIntArray();
+  private static final List<ImportanceListener> importanceListeners = new CopyOnWriteArrayList<>();
+  private static final SparseIntArray uidImportances = new SparseIntArray();
   @RealObject private ActivityManager realObject;
-  private Boolean isLowRamDeviceOverride = null;
+  private static Boolean isLowRamDeviceOverride = null;
   private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
   private boolean isBackgroundRestricted;
-  private final Deque<Object> appExitInfoList = new ArrayDeque<>();
+  private static final Deque<Object> appExitInfoList = new ArrayDeque<>();
   private ConfigurationInfo configurationInfo;
   private Context context;
 
@@ -196,7 +198,9 @@ public class ShadowActivityManager {
     this.configurationInfo = configurationInfo;
   }
 
-  /** @param tasks List of running tasks. */
+  /**
+   * @param tasks List of running tasks.
+   */
   public void setTasks(List<ActivityManager.RunningTaskInfo> tasks) {
     this.tasks.clear();
     this.tasks.addAll(tasks);
@@ -213,29 +217,39 @@ public class ShadowActivityManager {
     this.appTasks.addAll(appTasks);
   }
 
-  /** @param services List of running services. */
+  /**
+   * @param services List of running services.
+   */
   public void setServices(List<ActivityManager.RunningServiceInfo> services) {
     this.services.clear();
     this.services.addAll(services);
   }
 
-  /** @param processes List of running processes. */
+  /**
+   * @param processes List of running processes.
+   */
   public void setProcesses(List<ActivityManager.RunningAppProcessInfo> processes) {
     ShadowActivityManager.processes.clear();
     ShadowActivityManager.processes.addAll(processes);
   }
 
-  /** @return Get the package name of the last background processes killed. */
+  /**
+   * @return Get the package name of the last background processes killed.
+   */
   public String getBackgroundPackage() {
     return backgroundPackage;
   }
 
-  /** @param memoryClass Set the application's memory class. */
+  /**
+   * @param memoryClass Set the application's memory class.
+   */
   public void setMemoryClass(int memoryClass) {
     this.memoryClass = memoryClass;
   }
 
-  /** @param memoryInfo Set the application's memory info. */
+  /**
+   * @param memoryInfo Set the application's memory info.
+   */
   public void setMemoryInfo(ActivityManager.MemoryInfo memoryInfo) {
     this.memoryInfo = memoryInfo;
   }
@@ -259,12 +273,15 @@ public class ShadowActivityManager {
   }
 
   @Implementation(minSdk = O)
-  protected void addOnUidImportanceListener(Object listener, Object importanceCutpoint) {
+  protected void addOnUidImportanceListener(
+      @ClassName("android.app.ActivityManager$OnUidImportanceListener") Object listener,
+      int importanceCutpoint) {
     importanceListeners.add(new ImportanceListener(listener, (Integer) importanceCutpoint));
   }
 
   @Implementation(minSdk = O)
-  protected void removeOnUidImportanceListener(Object listener) {
+  protected void removeOnUidImportanceListener(
+      @ClassName("android.app.ActivityManager$OnUidImportanceListener") Object listener) {
     importanceListeners.remove(new ImportanceListener(listener));
   }
 
@@ -310,7 +327,16 @@ public class ShadowActivityManager {
 
   @Resetter
   public static void reset() {
+    backgroundPackage = null;
+    memoryInfo = null;
+    appTasks.clear();
+    tasks.clear();
+    services.clear();
     processes.clear();
+    importanceListeners.clear();
+    uidImportances.clear();
+    appExitInfoList.clear();
+    isLowRamDeviceOverride = null;
   }
 
   /** Returns the background restriction state set by {@link #setBackgroundRestricted}. */
@@ -332,7 +358,8 @@ public class ShadowActivityManager {
    * {@code packageName} is ignored.
    */
   @Implementation(minSdk = R)
-  protected Object getHistoricalProcessExitReasons(Object packageName, Object pid, Object maxNum) {
+  protected @ClassName("java.util.List<android.app.ApplicationExitInfo>") Object
+      getHistoricalProcessExitReasons(String packageName, int pid, int maxNum) {
     return appExitInfoList.stream()
         .filter(
             appExitInfo ->

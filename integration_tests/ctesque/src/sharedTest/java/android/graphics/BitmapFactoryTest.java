@@ -17,11 +17,9 @@ import java.nio.charset.Charset;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.testapp.R;
 
 /** Compatibility test for {@link BitmapFactory} */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class BitmapFactoryTest {
 

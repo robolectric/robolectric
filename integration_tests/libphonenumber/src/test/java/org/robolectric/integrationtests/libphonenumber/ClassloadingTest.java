@@ -10,18 +10,18 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = Config.ALL_SDKS )
+@Config(sdk = Config.ALL_SDKS)
 public class ClassloadingTest {
 
-  /**
-   * <a href="https://github.com/robolectric/robolectric/issues/2773">Issue</a>
-   */
+  /** <a href="https://github.com/robolectric/robolectric/issues/2773">Issue</a> */
   @Test
   public void getResourceAsStream() throws Exception {
     Phonenumber.PhoneNumber phoneNumber = new Phonenumber.PhoneNumber();
     phoneNumber.setCountryCode(7);
     phoneNumber.setNationalNumber(4956360636L);
-    String format = PhoneNumberUtil.getInstance().format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
+    String format =
+        PhoneNumberUtil.getInstance()
+            .format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
     assertThat(format).isNotNull();
   }
 }

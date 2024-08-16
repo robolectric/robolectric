@@ -14,11 +14,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
 /** Tests that Robolectric's android.text.format.DateFormat support is consistent with device. */
 @RunWith(AndroidJUnit4.class)
-@DoNotInstrument
 @Config(qualifiers = "+en-rUS")
 public class DateFormatTest {
 

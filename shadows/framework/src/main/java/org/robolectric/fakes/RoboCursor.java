@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * Robolectric implementation of {@link android.database.Cursor}.
-
+ *
  * @deprecated Use {@link android.database.MatrixCursor} instead.
  */
 @Deprecated
@@ -25,7 +25,8 @@ public class RoboCursor extends BaseCursor {
   private Bundle extras;
 
   @Override
-  public void setQuery(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+  public void setQuery(
+      Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
     this.uri = uri;
     this.projection = projection;
     this.selection = selection;
@@ -56,13 +57,21 @@ public class RoboCursor extends BaseCursor {
   @Override
   public short getShort(int columnIndex) {
     Object value = results[resultsIndex][columnIndex];
-    return value == null ? 0 : (value instanceof Number ? ((Number) value).shortValue() : Short.parseShort(value.toString()));
+    return value == null
+        ? 0
+        : (value instanceof Number
+            ? ((Number) value).shortValue()
+            : Short.parseShort(value.toString()));
   }
 
   @Override
   public int getInt(int columnIndex) {
     Object value = results[resultsIndex][columnIndex];
-    return value == null ? 0 : (value instanceof Number ? ((Number) value).intValue() : Integer.parseInt(value.toString()));
+    return value == null
+        ? 0
+        : (value instanceof Number
+            ? ((Number) value).intValue()
+            : Integer.parseInt(value.toString()));
   }
 
   @Override
@@ -78,13 +87,21 @@ public class RoboCursor extends BaseCursor {
   @Override
   public float getFloat(int columnIndex) {
     Object value = results[resultsIndex][columnIndex];
-    return value == null ? 0 : (value instanceof Number ? ((Number) value).floatValue() : Float.parseFloat(value.toString()));
+    return value == null
+        ? 0
+        : (value instanceof Number
+            ? ((Number) value).floatValue()
+            : Float.parseFloat(value.toString()));
   }
 
   @Override
   public double getDouble(int columnIndex) {
     Object value = results[resultsIndex][columnIndex];
-    return value == null ? 0 : (value instanceof Number ? ((Number) value).doubleValue() : Double.parseDouble(value.toString()));
+    return value == null
+        ? 0
+        : (value instanceof Number
+            ? ((Number) value).doubleValue()
+            : Double.parseDouble(value.toString()));
   }
 
   @Override
@@ -166,31 +183,38 @@ public class RoboCursor extends BaseCursor {
     return resultsIndex == results.length - 1;
   }
 
-  @Override public int getPosition() {
+  @Override
+  public int getPosition() {
     return resultsIndex;
   }
 
-  @Override public boolean move(int offset) {
+  @Override
+  public boolean move(int offset) {
     return doMoveToPosition(resultsIndex + offset);
   }
 
-  @Override public boolean moveToLast() {
+  @Override
+  public boolean moveToLast() {
     return doMoveToPosition(results.length - 1);
   }
 
-  @Override public boolean moveToPrevious() {
+  @Override
+  public boolean moveToPrevious() {
     return doMoveToPosition(resultsIndex - 1);
   }
 
-  @Override public String[] getColumnNames() {
+  @Override
+  public String[] getColumnNames() {
     return columnNames.toArray(new String[columnNames.size()]);
   }
 
-  @Override public boolean isClosed() {
+  @Override
+  public boolean isClosed() {
     return closeWasCalled;
   }
 
-  @Override public Bundle getExtras() {
+  @Override
+  public Bundle getExtras() {
     return extras;
   }
 

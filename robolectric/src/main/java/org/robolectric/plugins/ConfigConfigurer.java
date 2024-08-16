@@ -25,8 +25,7 @@ public class ConfigConfigurer implements Configurer<Config> {
   }
 
   public ConfigConfigurer(
-      PackagePropertiesLoader packagePropertiesLoader,
-      GlobalConfigProvider defaultConfigProvider) {
+      PackagePropertiesLoader packagePropertiesLoader, GlobalConfigProvider defaultConfigProvider) {
     this.packagePropertiesLoader = packagePropertiesLoader;
     this.defaultConfig = Config.Builder.defaults().overlay(defaultConfigProvider.get()).build();
   }
@@ -63,5 +62,4 @@ public class ConfigConfigurer implements Configurer<Config> {
   public Config merge(@Nonnull Config parentConfig, @Nonnull Config childConfig) {
     return new Config.Builder(parentConfig).overlay(childConfig).build();
   }
-
 }

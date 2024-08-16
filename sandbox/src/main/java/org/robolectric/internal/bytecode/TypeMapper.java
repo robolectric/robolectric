@@ -77,7 +77,8 @@ class TypeMapper {
 
         remappedName = remapParamType(internalName.substring(count));
         if (remappedName != null) {
-          return Type.getObjectType(internalName.substring(0, count) + remappedName).getDescriptor();
+          return Type.getObjectType(internalName.substring(0, count) + remappedName)
+              .getDescriptor();
         }
         break;
 

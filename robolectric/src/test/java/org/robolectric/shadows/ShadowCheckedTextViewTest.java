@@ -44,7 +44,7 @@ public class ShadowCheckedTextViewTest {
     assertFalse(view.isChecked());
     view.toggle();
     assertTrue(view.isChecked());
-    view.toggle();  // Used to support performClick(), but Android doesn't. Sigh.
+    view.toggle(); // Used to support performClick(), but Android doesn't. Sigh.
     assertFalse(view.isChecked());
   }
 }

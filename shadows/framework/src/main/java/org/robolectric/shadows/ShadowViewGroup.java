@@ -37,8 +37,8 @@ public class ShadowViewGroup extends ShadowView {
   }
 
   /**
-   * Returns a string representation of this {@code ViewGroup} by concatenating all of the
-   * strings contained in all of the descendants of this {@code ViewGroup}.
+   * Returns a string representation of this {@code ViewGroup} by concatenating all of the strings
+   * contained in all of the descendants of this {@code ViewGroup}.
    */
   @Override
   public String innerText() {
@@ -60,6 +60,7 @@ public class ShadowViewGroup extends ShadowView {
 
   /**
    * Dumps the state of this {@code ViewGroup} to {@code System.out}.
+   *
    * @deprecated - Please use {@link androidx.test.espresso.util.HumanReadables#describe(View)}
    */
   @Override

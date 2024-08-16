@@ -39,23 +39,34 @@ import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /** Robolectric implementation of {@link CrossProfileApps}. */
 @Implements(value = CrossProfileApps.class, minSdk = P)
 public class ShadowCrossProfileApps {
 
-  private final Set<UserHandle> targetUserProfiles = new LinkedHashSet<>();
-  private final List<StartedMainActivity> startedMainActivities = new ArrayList<>();
-  private final List<StartedActivity> startedActivities =
+  private static final Set<UserHandle> targetUserProfiles = new LinkedHashSet<>();
+  private static final List<StartedMainActivity> startedMainActivities = new ArrayList<>();
+  private static final List<StartedActivity> startedActivities =
       Collections.synchronizedList(new ArrayList<>());
 
   private Context context;
-  private PackageManager packageManager;
+  private static PackageManager packageManager;
   // Whether the current application has the interact across profile AppOps.
-  private volatile int canInteractAcrossProfileAppOps = AppOpsManager.MODE_ERRORED;
+  private static volatile int canInteractAcrossProfileAppOps = AppOpsManager.MODE_ERRORED;
 
   // Whether the current application has requested the interact across profile permission.
-  private volatile boolean hasRequestedInteractAcrossProfiles = false;
+  private static volatile boolean hasRequestedInteractAcrossProfiles = false;
+
+  @Resetter
+  public static void reset() {
+    targetUserProfiles.clear();
+    startedMainActivities.clear();
+    startedActivities.clear();
+    packageManager = null;
+    canInteractAcrossProfileAppOps = AppOpsManager.MODE_ERRORED;
+    hasRequestedInteractAcrossProfiles = false;
+  }
 
   @Implementation
   protected void __constructor__(Context context, ICrossProfileApps service) {
@@ -246,9 +257,7 @@ public class ShadowCrossProfileApps {
     }
   }
 
-  /**
-   * Ensure the current package has the permission to interact across profiles.
-   */
+  /** Ensure the current package has the permission to interact across profiles. */
   protected void verifyHasInteractAcrossProfilesPermission() {
     if (RuntimeEnvironment.getApiLevel() >= R) {
       if (!canInteractAcrossProfiles()) {

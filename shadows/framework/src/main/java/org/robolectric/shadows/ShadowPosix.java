@@ -6,6 +6,7 @@ import android.system.StructStat;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.time.Duration;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -13,8 +14,7 @@ import org.robolectric.annotation.Implements;
 @Implements(
     className = "libcore.io.Posix",
     maxSdk = Build.VERSION_CODES.N_MR1,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+    isInAndroidSdk = false)
 public class ShadowPosix {
   @Implementation
   public void mkdir(String path, int mode) throws ErrnoException {
@@ -24,7 +24,8 @@ public class ShadowPosix {
   @Implementation
   // actually preventing a 'static' mismatch
   @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
-  public static Object stat(String path) throws ErrnoException {
+  public static @ClassName("android.system.StructStat") Object stat(String path)
+      throws ErrnoException {
     int mode = OsConstantsValues.getMode(path);
     long size = 0;
     long modifiedTime = 0;
@@ -54,14 +55,16 @@ public class ShadowPosix {
   @Implementation
   // actually preventing a 'static' mismatch
   @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
-  protected static Object lstat(String path) throws ErrnoException {
+  protected static @ClassName("android.system.StructStat") Object lstat(String path)
+      throws ErrnoException {
     return stat(path);
   }
 
   @Implementation
   // actually preventing a 'static' mismatch
   @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
-  protected static Object fstat(FileDescriptor fd) throws ErrnoException {
+  protected static @ClassName("android.system.StructStat") Object fstat(FileDescriptor fd)
+      throws ErrnoException {
     return stat(null);
   }
 }

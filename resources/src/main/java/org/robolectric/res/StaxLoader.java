@@ -16,14 +16,11 @@ public abstract class StaxLoader extends NodeHandler {
   }
 
   @Override
-  public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-  }
+  public void onStart(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {}
 
   @Override
-  public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-  }
+  public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {}
 
   @Override
-  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
-  }
+  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {}
 }

@@ -1197,11 +1197,17 @@ public class ShadowContentResolverTest {
     SyncAdapterType[] syncAdapterTypes =
         new SyncAdapterType[] {
           new SyncAdapterType(
-              "authority1", "accountType1", /* userVisible=*/ false, /* supportsUploading=*/ false),
+              "authority1",
+              "accountType1",
+              /* userVisible= */ false,
+              /* supportsUploading= */ false),
           new SyncAdapterType(
-              "authority2", "accountType2", /* userVisible=*/ true, /* supportsUploading=*/ false),
+              "authority2",
+              "accountType2",
+              /* userVisible= */ true,
+              /* supportsUploading= */ false),
           new SyncAdapterType(
-              "authority3", "accountType3", /* userVisible=*/ true, /* supportsUploading=*/ true)
+              "authority3", "accountType3", /* userVisible= */ true, /* supportsUploading= */ true)
         };
 
     ShadowContentResolver.setSyncAdapterTypes(syncAdapterTypes);

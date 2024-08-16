@@ -20,7 +20,9 @@ import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.Window;
 import android.view.WindowManagerGlobal;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
@@ -39,7 +41,7 @@ import org.robolectric.versioning.AndroidVersions.U;
  * <p>If listenerThread is backed by a paused looper, make sure to call ShadowLooper.idle() to
  * ensure the screenshot finishes.
  */
-@Implements(value = PixelCopy.class, minSdk = O, looseSignatures = true)
+@Implements(value = PixelCopy.class, minSdk = O)
 public class ShadowPixelCopy {
 
   @Implementation
@@ -114,9 +116,9 @@ public class ShadowPixelCopy {
 
   @Implementation(minSdk = U.SDK_INT)
   protected static void request(
-      /* PixelCopy.Request */ Object requestObject, /* Executor */
-      Object callbackExecutor, /* Consumer<Result> */
-      Object listener) {
+      @ClassName("android.view.PixelCopy$Request") Object requestObject,
+      Executor callbackExecutor,
+      @ClassName("java.util.function.Consumer<android.view.PixelCopy$Result>") Object listener) {
     PixelCopy.Request request = (PixelCopy.Request) requestObject;
     RequestReflector requestReflector = reflector(RequestReflector.class, request);
     OnPixelCopyFinishedListener legacyListener =
@@ -254,5 +256,4 @@ public class ShadowPixelCopy {
     @Constructor
     PixelCopy.Result newResult(int copyResult, Bitmap bitmap);
   }
-
 }

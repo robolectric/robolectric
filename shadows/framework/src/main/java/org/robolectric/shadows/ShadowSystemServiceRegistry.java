@@ -6,6 +6,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.content.Context;
 import android.os.Build;
 import java.util.Map;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -13,11 +14,9 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(
-  className = "android.app.SystemServiceRegistry",
-  isInAndroidSdk = false,
-  looseSignatures = true,
-  minSdk = Build.VERSION_CODES.M
-)
+    className = "android.app.SystemServiceRegistry",
+    isInAndroidSdk = false,
+    minSdk = Build.VERSION_CODES.M)
 public class ShadowSystemServiceRegistry {
 
   private static final String STATIC_SERVICE_FETCHER_CLASS_NAME =
@@ -83,12 +82,10 @@ public class ShadowSystemServiceRegistry {
 
     static String getConcreteClassName(Object serviceFetcher) {
       Class<?> serviceFetcherClass = serviceFetcher.getClass();
-      while (serviceFetcherClass != null && serviceFetcherClass.getCanonicalName() == null){
+      while (serviceFetcherClass != null && serviceFetcherClass.getCanonicalName() == null) {
         serviceFetcherClass = serviceFetcherClass.getSuperclass();
       }
-      return serviceFetcherClass == null
-          ? null
-          : serviceFetcherClass.getName();
+      return serviceFetcherClass == null ? null : serviceFetcherClass.getName();
     }
 
     default void clearInstance() {
@@ -117,9 +114,8 @@ public class ShadowSystemServiceRegistry {
   }
 
   /**
-   * Accessor interface for
-   * {@link android.app.SystemServiceRegistry.StaticApplicationContextServiceFetcher}'s
-   * internals (for N+).
+   * Accessor interface for {@link
+   * android.app.SystemServiceRegistry.StaticApplicationContextServiceFetcher}'s internals (for N+).
    */
   @ForType(className = STATIC_CONTEXT_SERVICE_FETCHER_CLASS_NAME_N)
   public interface _ServiceFetcherN_ extends _ServiceFetcher_ {
@@ -128,7 +124,8 @@ public class ShadowSystemServiceRegistry {
   }
 
   @Implementation(minSdk = O)
-  protected static void onServiceNotFound(/* ServiceNotFoundException */ Object e0) {
+  protected static void onServiceNotFound(
+      @ClassName("android.os.ServiceManager$ServiceNotFoundException") Object e0) {
     // otherwise the full stacktrace might be swallowed...
     Exception e = (Exception) e0;
     e.printStackTrace();

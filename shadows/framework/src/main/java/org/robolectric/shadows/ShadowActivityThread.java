@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -42,14 +43,14 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Reflector;
 
-@Implements(value = ActivityThread.class, isInAndroidSdk = false, looseSignatures = true)
+@Implements(value = ActivityThread.class, isInAndroidSdk = false)
 public class ShadowActivityThread {
   private static ApplicationInfo applicationInfo;
   @RealObject protected ActivityThread realActivityThread;
   @ReflectorObject protected _ActivityThread_ activityThreadReflector;
 
   @Implementation
-  public static Object getPackageManager() {
+  public static @ClassName("android.content.pm.IPackageManager") Object getPackageManager() {
     ClassLoader classLoader = ShadowActivityThread.class.getClassLoader();
     Class<?> iPackageManagerClass;
     try {
@@ -111,7 +112,7 @@ public class ShadowActivityThread {
   }
 
   @Implementation
-  public static Object currentActivityThread() {
+  public static @ClassName("android.app.ActivityThread") Object currentActivityThread() {
     return RuntimeEnvironment.getActivityThread();
   }
 
@@ -133,7 +134,7 @@ public class ShadowActivityThread {
   }
 
   @Implementation(minSdk = R)
-  public static Object getPermissionManager() {
+  public static @ClassName("android.permission.IPermissionManager") Object getPermissionManager() {
     ClassLoader classLoader = ShadowActivityThread.class.getClassLoader();
     Class<?> iPermissionManagerClass;
     try {

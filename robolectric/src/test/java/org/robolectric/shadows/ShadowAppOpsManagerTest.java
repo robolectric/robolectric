@@ -15,6 +15,7 @@ import static android.app.AppOpsManager.OP_FINE_LOCATION;
 import static android.app.AppOpsManager.OP_GPS;
 import static android.app.AppOpsManager.OP_SEND_SMS;
 import static android.app.AppOpsManager.OP_VIBRATE;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
@@ -27,6 +28,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowAppOpsManager.DURATION;
 import static org.robolectric.shadows.ShadowAppOpsManager.OP_TIME;
 
+import android.app.Activity;
 import android.app.AppOpsManager;
 import android.app.AppOpsManager.OnOpChangedListener;
 import android.app.AppOpsManager.OpEntry;
@@ -45,6 +47,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAppOpsManager.ModeAndException;
 import org.robolectric.util.ReflectionHelpers;
@@ -710,5 +714,39 @@ public class ShadowAppOpsManagerTest {
       }
     }
     return false;
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void appOpsManager_activityContextEnabled_differentInstancesRetrieveOps() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      // Get the AppOpsManager instances
+      AppOpsManager applicationAppOpsManager =
+          ApplicationProvider.getApplicationContext().getSystemService(AppOpsManager.class);
+      ShadowAppOpsManager shadowApplicationAppOpsManager =
+          Shadows.shadowOf(applicationAppOpsManager);
+
+      activity = Robolectric.setupActivity(Activity.class);
+      AppOpsManager activityAppOpsManager = activity.getSystemService(AppOpsManager.class);
+      ShadowAppOpsManager shadowActivityAppOpsManager = Shadows.shadowOf(activityAppOpsManager);
+
+      int[] ops = {
+        AppOpsManager.OP_COARSE_LOCATION, AppOpsManager.OP_FINE_LOCATION, AppOpsManager.OP_CAMERA
+      };
+
+      List<PackageOps> applicationPackageOpsList =
+          shadowApplicationAppOpsManager.getPackagesForOps(ops);
+      List<PackageOps> activityPackageOpsList = shadowActivityAppOpsManager.getPackagesForOps(ops);
+
+      assertThat(activityPackageOpsList).isEqualTo(applicationPackageOpsList);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

@@ -11,10 +11,9 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(
-  className = "com.android.internal.policy.PolicyManager",
-  isInAndroidSdk = false,
-  maxSdk = LOLLIPOP_MR1
-)
+    className = "com.android.internal.policy.PolicyManager",
+    isInAndroidSdk = false,
+    maxSdk = LOLLIPOP_MR1)
 public class ShadowPolicyManager {
 
   @Implementation

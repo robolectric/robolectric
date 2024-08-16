@@ -14,9 +14,11 @@ import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 
-public class IntentServiceController<T extends IntentService> extends ComponentController<IntentServiceController<T>, T> {
+public class IntentServiceController<T extends IntentService>
+    extends ComponentController<IntentServiceController<T>, T> {
 
-  public static <T extends IntentService> IntentServiceController<T> of(final T service, final Intent intent) {
+  public static <T extends IntentService> IntentServiceController<T> of(
+      final T service, final Intent intent) {
     final IntentServiceController<T> controller = new IntentServiceController<>(service, intent);
     controller.attach();
     return controller;
@@ -58,13 +60,15 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
     return this;
   }
 
-  @Override public IntentServiceController<T> create() {
+  @Override
+  public IntentServiceController<T> create() {
     invokeWhilePaused("onCreate");
     shadowMainLooper.idleIfPaused();
     return this;
   }
 
-  @Override public IntentServiceController<T> destroy() {
+  @Override
+  public IntentServiceController<T> destroy() {
     invokeWhilePaused("onDestroy");
     shadowMainLooper.idleIfPaused();
     return this;

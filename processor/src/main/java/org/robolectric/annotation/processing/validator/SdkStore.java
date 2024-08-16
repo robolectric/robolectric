@@ -31,6 +31,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -45,6 +47,7 @@ import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.TraceSignatureVisitor;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.InDevelopment;
 import org.robolectric.versioning.AndroidVersionInitTools;
@@ -575,6 +578,13 @@ public class SdkStore {
       for (VariableElement variableElement : methodElement.getParameters()) {
         TypeMirror varTypeMirror = variableElement.asType();
         String paramType = canonicalize(varTypeMirror);
+
+        // If parameter is annotated with @ClassName, then use the indicated type instead.
+        ClassName className = variableElement.getAnnotation(ClassName.class);
+        if (className != null) {
+          paramType = className.value().replace('$', '.');
+        }
+
         String paramTypeWithoutGenerics = typeWithoutGenerics(paramType);
         paramTypes.add(paramTypeWithoutGenerics);
       }
@@ -633,14 +643,36 @@ public class SdkStore {
     private final boolean isStatic;
     private final String returnType;
 
+    /** Create a MethodExtraInfo from ASM in-memory representation (an Android framework method). */
     public MethodExtraInfo(MethodNode method) {
       this.isStatic = (method.access & Opcodes.ACC_STATIC) != 0;
       this.returnType = typeWithoutGenerics(normalize(Type.getReturnType(method.desc)));
     }
 
+    /** Create a MethodExtraInfo from AST (an @Implementation method in a shadow class). */
     public MethodExtraInfo(ExecutableElement methodElement) {
       this.isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
-      this.returnType = typeWithoutGenerics(canonicalize(methodElement.getReturnType()));
+
+      TypeMirror rtType = methodElement.getReturnType();
+      String rt = canonicalize(rtType);
+      // If return type is annotated with @ClassName, then use the indicated type instead.
+      List<? extends AnnotationMirror> annotationMirrors = rtType.getAnnotationMirrors();
+      for (AnnotationMirror am : annotationMirrors) {
+        if (am.getAnnotationType().toString().equals(ClassName.class.getName())) {
+          Map<? extends ExecutableElement, ? extends AnnotationValue> annotationEntries =
+              am.getElementValues();
+          Set<? extends ExecutableElement> keys = annotationEntries.keySet();
+          for (ExecutableElement key : keys) {
+            if ("value()".equals(key.toString())) {
+              AnnotationValue annotationValue = annotationEntries.get(key);
+              rt = annotationValue.getValue().toString().replace('$', '.');
+              break;
+            }
+          }
+          break;
+        }
+      }
+      this.returnType = typeWithoutGenerics(rt);
     }
 
     @Override

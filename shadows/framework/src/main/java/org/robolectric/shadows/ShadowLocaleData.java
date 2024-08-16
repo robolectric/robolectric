@@ -267,4 +267,3 @@ public class ShadowLocaleData {
     void setPercentPattern(String symbol);
   }
 }
-

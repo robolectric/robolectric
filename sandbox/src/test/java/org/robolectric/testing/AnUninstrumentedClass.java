@@ -1,4 +1,3 @@
 package org.robolectric.testing;
 
-public final class AnUninstrumentedClass {
-}
+public final class AnUninstrumentedClass {}

@@ -10,10 +10,10 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 
-/**
- * The shadow {@link AsyncTaskLoader} for {@link LooperMode.Mode.LEGACY}.
- */
-@Implements(value = AsyncTaskLoader.class, shadowPicker = ShadowAsyncTaskLoader.Picker.class,
+/** The shadow {@link AsyncTaskLoader} for {@link LooperMode.Mode.LEGACY}. */
+@Implements(
+    value = AsyncTaskLoader.class,
+    shadowPicker = ShadowAsyncTaskLoader.Picker.class,
     isInAndroidSdk = false)
 public class ShadowLegacyAsyncTaskLoader<D> extends ShadowAsyncTaskLoader {
   @RealObject private AsyncTaskLoader<D> realObject;
@@ -26,24 +26,28 @@ public class ShadowLegacyAsyncTaskLoader<D> extends ShadowAsyncTaskLoader {
 
   @Implementation
   protected void onForceLoad() {
-    FutureTask<D> future = new FutureTask<D>(worker) {
-      @Override
-      protected void done() {
-        try {
-          final D result = get();
-          ShadowApplication.getInstance().getForegroundThreadScheduler().post(new Runnable() {
-            @Override
-            public void run() {
-              realObject.deliverResult(result);
+    FutureTask<D> future =
+        new FutureTask<D>(worker) {
+          @Override
+          protected void done() {
+            try {
+              final D result = get();
+              ShadowApplication.getInstance()
+                  .getForegroundThreadScheduler()
+                  .post(
+                      new Runnable() {
+                        @Override
+                        public void run() {
+                          realObject.deliverResult(result);
+                        }
+                      });
+            } catch (InterruptedException e) {
+              // Ignore
+            } catch (ExecutionException e) {
+              throw new RuntimeException(e.getCause());
             }
-          });
-        } catch (InterruptedException e) {
-          // Ignore
-        } catch (ExecutionException e) {
-          throw new RuntimeException(e.getCause());
-        }
-      }
-    };
+          }
+        };
 
     ShadowApplication.getInstance().getBackgroundThreadScheduler().post(future);
   }

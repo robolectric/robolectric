@@ -15,8 +15,7 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)
 public class ShadowAlertDialog extends ShadowDialog {
-  @RealObject
-  private AlertDialog realAlertDialog;
+  @RealObject private AlertDialog realAlertDialog;
 
   private CharSequence[] items;
   private DialogInterface.OnClickListener clickListener;
@@ -28,7 +27,8 @@ public class ShadowAlertDialog extends ShadowDialog {
   private static ShadowAlertDialog latestAlertDialog;
 
   /**
-   * @return the most recently created {@code AlertDialog}, or null if none has been created during this test run
+   * @return the most recently created {@code AlertDialog}, or null if none has been created during
+   *     this test run
    */
   public static AlertDialog getLatestAlertDialog() {
     return latestAlertDialog == null ? null : latestAlertDialog.realAlertDialog;
@@ -48,8 +48,9 @@ public class ShadowAlertDialog extends ShadowDialog {
   }
 
   /**
-   * Simulates a click on the {@code Dialog} item indicated by {@code index}. Handles both multi- and single-choice dialogs, tracks which items are currently
-   * checked and calls listeners appropriately.
+   * Simulates a click on the {@code Dialog} item indicated by {@code index}. Handles both multi-
+   * and single-choice dialogs, tracks which items are currently checked and calls listeners
+   * appropriately.
    *
    * @param index the index of the item to click on
    */
@@ -58,7 +59,8 @@ public class ShadowAlertDialog extends ShadowDialog {
     shadowListView.performItemClick(index);
   }
 
-  @Override public CharSequence getTitle() {
+  @Override
+  public CharSequence getTitle() {
     return getShadowAlertController().getTitle();
   }
 
@@ -119,6 +121,5 @@ public class ShadowAlertDialog extends ShadowDialog {
   }
 
   @Implements(AlertDialog.Builder.class)
-  public static class ShadowBuilder {
-  }
+  public static class ShadowBuilder {}
 }

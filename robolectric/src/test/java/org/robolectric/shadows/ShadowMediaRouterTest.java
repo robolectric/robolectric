@@ -3,9 +3,11 @@ package org.robolectric.shadows;
 import static android.media.MediaRouter.ROUTE_TYPE_LIVE_AUDIO;
 import static android.media.MediaRouter.ROUTE_TYPE_LIVE_VIDEO;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.Context;
 import android.media.MediaRouter;
 import android.media.MediaRouter.RouteInfo;
@@ -14,6 +16,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowMediaRouter}. */
@@ -125,5 +128,35 @@ public final class ShadowMediaRouterTest {
     RouteInfo bluetoothRoute = mediaRouter.getRouteAt(1);
     mediaRouter.selectRoute(ROUTE_TYPE_LIVE_AUDIO, bluetoothRoute);
     assertThat(shadowOf(mediaRouter).isBluetoothRouteSelected(ROUTE_TYPE_LIVE_AUDIO)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void mediaRouter_activityContextEnabled_differentInstancesRetrieveDefaultRoute() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      MediaRouter applicationMediaRouter =
+          (MediaRouter)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.MEDIA_ROUTER_SERVICE);
+
+      activity = Robolectric.setupActivity(Activity.class);
+      MediaRouter activityMediaRouter =
+          (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
+
+      assertThat(applicationMediaRouter).isNotSameInstanceAs(activityMediaRouter);
+
+      MediaRouter.RouteInfo applicationDefaultRoute = applicationMediaRouter.getDefaultRoute();
+      MediaRouter.RouteInfo activityDefaultRoute = activityMediaRouter.getDefaultRoute();
+
+      assertThat(activityDefaultRoute).isEqualTo(applicationDefaultRoute);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

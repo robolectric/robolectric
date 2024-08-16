@@ -25,8 +25,7 @@ import org.robolectric.util.reflector.ForType;
  */
 @Implements(value = Message.class, isInAndroidSdk = false)
 public class ShadowLegacyMessage extends ShadowMessage {
-  @RealObject
-  private Message realMessage;
+  @RealObject private Message realMessage;
   private Runnable scheduledRunnable;
 
   private void unschedule() {

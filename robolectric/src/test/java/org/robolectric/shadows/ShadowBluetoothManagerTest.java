@@ -7,6 +7,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattServer;
@@ -14,6 +15,7 @@ import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
@@ -21,6 +23,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -155,5 +158,33 @@ public class ShadowBluetoothManagerTest {
     BluetoothGattServer gattServer = manager.openGattServer(context, callback, 0, true);
     assertThat(gattServer).isNotNull();
     assertThat(shadowOf(gattServer).getGattServerCallback()).isSameInstanceAs(callback);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void bluetoothManager_activityContextEnabled_retrievesSameAdapter() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+
+    try {
+      BluetoothManager applicationBluetoothManager =
+          (BluetoothManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.BLUETOOTH_SERVICE);
+
+      BluetoothAdapter applicationAdapter = applicationBluetoothManager.getAdapter();
+      activity = Robolectric.setupActivity(Activity.class);
+      BluetoothManager activityBluetoothManager = activity.getSystemService(BluetoothManager.class);
+
+      BluetoothAdapter activityAdapter = activityBluetoothManager.getAdapter();
+
+      assertThat(applicationAdapter).isEqualTo(activityAdapter);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

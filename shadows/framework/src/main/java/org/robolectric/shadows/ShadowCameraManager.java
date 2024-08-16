@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
@@ -26,6 +27,7 @@ import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
@@ -40,25 +42,50 @@ import org.robolectric.versioning.AndroidVersions.V;
 /** Shadow class for {@link CameraManager} */
 @Implements(value = CameraManager.class)
 public class ShadowCameraManager {
-  @RealObject private CameraManager realObject;
-
-  // LinkedHashMap used to ensure getCameraIdList returns ids in the order in which they were added
-  private final Map<String, CameraCharacteristics> cameraIdToCharacteristics =
-      new LinkedHashMap<>();
-  private final Map<String, Boolean> cameraTorches = new HashMap<>();
-  private final Set<CameraManager.AvailabilityCallback> registeredCallbacks = new HashSet<>();
-  // Cannot reference the torch callback in < Android M
-  private final Set<Object> torchCallbacks = new HashSet<>();
-  // Most recent camera device opened with openCamera
-  private CameraDevice lastDevice;
-  // Most recent callback passed to openCamera
-  private CameraDevice.StateCallback lastCallback;
-  @Nullable private Executor lastCallbackExecutor;
-  @Nullable private Handler lastCallbackHandler;
-
   // Keep references to cameras so they can be closed after each test
   protected static final Set<CameraDeviceImpl> createdCameras =
       Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+  // LinkedHashMap used to ensure getCameraIdList returns ids in the order in which they were added
+  private static final Map<String, CameraCharacteristics> cameraIdToCharacteristics =
+      new LinkedHashMap<>();
+  private static final Map<String, Boolean> cameraTorches = new HashMap<>();
+  private static final Set<CameraManager.AvailabilityCallback> registeredCallbacks =
+      new HashSet<>();
+  // Cannot reference the torch callback in < Android M
+  private static final Set<Object> torchCallbacks = new HashSet<>();
+  // Most recent camera device opened with openCamera
+  private static CameraDevice lastDevice;
+  // Most recent callback passed to openCamera
+  private static CameraDevice.StateCallback lastCallback;
+  @Nullable private static Executor lastCallbackExecutor;
+  @Nullable private static Handler lastCallbackHandler;
+  @RealObject private CameraManager realObject;
+
+  @Resetter
+  public static void reset() {
+    for (CameraDeviceImpl cameraDevice : createdCameras) {
+      if (cameraDevice != null) {
+        cameraDevice.close();
+      }
+    }
+    createdCameras.clear();
+    cameraIdToCharacteristics.clear();
+    cameraTorches.clear();
+    registeredCallbacks.clear();
+    torchCallbacks.clear();
+    if (lastDevice != null) {
+      lastDevice.close();
+    }
+    lastDevice = null;
+    lastCallback = null;
+    lastCallbackExecutor = null;
+    if (lastCallbackHandler != null) {
+      // Flush existing handler tasks to ensure camera related callbacks are called properly.
+      shadowOf(lastCallbackHandler.getLooper()).idle();
+      lastCallbackHandler.removeCallbacksAndMessages(null);
+    }
+    lastCallbackHandler = null;
+  }
 
   @Implementation
   @NonNull
@@ -98,6 +125,7 @@ public class ShadowCameraManager {
   }
 
   @Implementation(minSdk = V.SDK_INT)
+  @InDevelopment
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId,
       CameraDevice.StateCallback callback,
@@ -347,14 +375,6 @@ public class ShadowCameraManager {
     lastCallback = callback;
     lastCallbackHandler = handler;
     lastCallbackExecutor = executor;
-  }
-
-  @Resetter
-  public static void reset() {
-    for (CameraDeviceImpl cameraDevice : createdCameras) {
-      cameraDevice.close();
-    }
-    createdCameras.clear();
   }
 
   @ForType(CameraDeviceImpl.class)

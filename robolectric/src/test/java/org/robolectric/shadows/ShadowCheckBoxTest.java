@@ -21,7 +21,7 @@ public class ShadowCheckBoxTest {
     checkBox.toggle();
     assertThat(checkBox.isChecked()).isFalse();
 
-    checkBox.performClick();  // Used to support performClick(), but Android doesn't. Sigh.
-//        assertThat(checkBox.isChecked()).isFalse();
+    checkBox.performClick(); // Used to support performClick(), but Android doesn't. Sigh.
+    //        assertThat(checkBox.isChecked()).isFalse();
   }
 }

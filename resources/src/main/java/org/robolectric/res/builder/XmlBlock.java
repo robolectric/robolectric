@@ -12,8 +12,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
- * An XML block is a parsed representation of a resource XML file. Similar in nature
- * to Android's XmlBlock class.
+ * An XML block is a parsed representation of a resource XML file. Similar in nature to Android's
+ * XmlBlock class.
  */
 public class XmlBlock {
 
@@ -38,11 +38,12 @@ public class XmlBlock {
     } catch (ParserConfigurationException | IOException | SAXException e) {
       throw new RuntimeException(e);
     } finally {
-      if (inputStream != null) try {
-        inputStream.close();
-      } catch (IOException e) {
-        // ignore
-      }
+      if (inputStream != null)
+        try {
+          inputStream.close();
+        } catch (IOException e) {
+          // ignore
+        }
     }
   }
 

@@ -34,7 +34,7 @@ public final class MetaData {
 
   public void init(ResourceTable resourceTable, String packageName) throws RoboNotFoundException {
     if (!initialised) {
-      for (Map.Entry<String,VALUE_TYPE> entry : typeMap.entrySet()) {
+      for (Map.Entry<String, VALUE_TYPE> entry : typeMap.entrySet()) {
         String value = valueMap.get(entry.getKey()).toString();
         if (value.startsWith("@")) {
           ResName resName = ResName.qualifyResName(value.substring(1), packageName, null);
@@ -52,11 +52,14 @@ public final class MetaData {
                 throw new RoboNotFoundException(resName.getFullyQualifiedName());
               }
               switch (typedRes.getResType()) {
-                case BOOLEAN: case COLOR: case INTEGER: case FLOAT:
+                case BOOLEAN:
+                case COLOR:
+                case INTEGER:
+                case FLOAT:
                   valueMap.put(entry.getKey(), parseValue(typedRes.getData().toString()));
                   break;
                 default:
-                  valueMap.put(entry.getKey(),typedRes.getData());
+                  valueMap.put(entry.getKey(), typedRes.getData());
               }
               break;
           }
@@ -91,7 +94,7 @@ public final class MetaData {
       try {
         return getColor(value);
       } catch (NumberFormatException e) {
-            /* Not a color */
+        /* Not a color */
       }
     } else if (value.contains(".")) {
       // most likely a float
@@ -116,6 +119,7 @@ public final class MetaData {
   // todo: this is copied from ResourceHelper, dedupe
   /**
    * Returns the color value represented by the given string value
+   *
    * @param value the color value
    * @return the color as an int
    * @throws NumberFormatException if the conversion failed.
@@ -123,18 +127,18 @@ public final class MetaData {
   public static int getColor(String value) {
     if (value != null) {
       if (value.startsWith("#") == false) {
-        throw new NumberFormatException(
-            String.format("Color value '%s' must start with #", value));
+        throw new NumberFormatException(String.format("Color value '%s' must start with #", value));
       }
 
       value = value.substring(1);
 
       // make sure it's not longer than 32bit
       if (value.length() > 8) {
-        throw new NumberFormatException(String.format(
-            "Color value '%s' is too long. Format is either" +
-                "#AARRGGBB, #RRGGBB, #RGB, or #ARGB",
-            value));
+        throw new NumberFormatException(
+            String.format(
+                "Color value '%s' is too long. Format is either"
+                    + "#AARRGGBB, #RRGGBB, #RGB, or #ARGB",
+                value));
       }
 
       if (value.length() == 3) { // RGB format
@@ -160,10 +164,9 @@ public final class MetaData {
       // Integer.parseInt will fail to inferFromValue strings like "ff191919", so we use
       // a Long, but cast the result back into an int, since we know that we're only
       // dealing with 32 bit values.
-      return (int)Long.parseLong(value, 16);
+      return (int) Long.parseLong(value, 16);
     }
 
     throw new NumberFormatException();
   }
-
 }

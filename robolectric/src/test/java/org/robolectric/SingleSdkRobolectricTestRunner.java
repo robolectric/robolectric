@@ -21,8 +21,7 @@ public class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
   private AndroidSandbox latestSandbox;
 
   public static Injector.Builder defaultInjector() {
-    return RobolectricTestRunner.defaultInjector()
-        .bind(SdkPicker.class, SingleSdkPicker.class);
+    return RobolectricTestRunner.defaultInjector().bind(SdkPicker.class, SingleSdkPicker.class);
   }
 
   public SingleSdkRobolectricTestRunner(Class<?> testClass) throws InitializationError {

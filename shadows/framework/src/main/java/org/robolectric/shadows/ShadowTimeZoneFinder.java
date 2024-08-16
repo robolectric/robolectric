@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
@@ -18,14 +19,13 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
     className = "libcore.util.TimeZoneFinder",
     minSdk = O,
     maxSdk = P,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+    isInAndroidSdk = false)
 public class ShadowTimeZoneFinder {
 
   private static final String TZLOOKUP_PATH = "/usr/share/zoneinfo/tzlookup.xml";
 
   @Implementation
-  protected static Object getInstance() {
+  protected static @ClassName("libcore.util.TimeZoneFinder") Object getInstance() {
     try {
       return ReflectionHelpers.callStaticMethod(
           Class.forName("libcore.util.TimeZoneFinder"),

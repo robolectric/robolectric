@@ -96,11 +96,13 @@ public class DeviceConfig {
     }
   }
 
-  private DeviceConfig() {
-  }
+  private DeviceConfig() {}
 
-  static void applyToConfiguration(Qualifiers qualifiers, int apiLevel,
-      Configuration configuration, DisplayMetrics displayMetrics) {
+  static void applyToConfiguration(
+      Qualifiers qualifiers,
+      int apiLevel,
+      Configuration configuration,
+      DisplayMetrics displayMetrics) {
     ResTable_config resTab = qualifiers.getConfig();
 
     if (resTab.mcc != 0) {
@@ -157,11 +159,12 @@ public class DeviceConfig {
     if (isNullOrEmpty(lang) && isNullOrEmpty(region) && isNullOrEmpty(script)) {
       locale = null;
     } else {
-      locale = new Locale.Builder()
-          .setLanguage(lang)
-          .setRegion(region)
-          .setScript(script == null ? "" : script)
-          .build();
+      locale =
+          new Locale.Builder()
+              .setLanguage(lang)
+              .setRegion(region)
+              .setScript(script == null ? "" : script)
+              .build();
     }
     if (locale != null) {
       configuration.setLocale(locale);
@@ -233,8 +236,8 @@ public class DeviceConfig {
     }
   }
 
-  private static void setDensity(int densityDpi, int apiLevel, Configuration configuration,
-      DisplayMetrics displayMetrics) {
+  private static void setDensity(
+      int densityDpi, int apiLevel, Configuration configuration, DisplayMetrics displayMetrics) {
     configuration.densityDpi = densityDpi;
     displayMetrics.densityDpi = densityDpi;
     displayMetrics.density = displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
@@ -284,10 +287,12 @@ public class DeviceConfig {
     }
 
     if (configuration.orientation == Configuration.ORIENTATION_UNDEFINED
-        && configuration.screenWidthDp != 0 && configuration.screenHeightDp != 0) {
-      configuration.orientation = (configuration.screenWidthDp > configuration.screenHeightDp)
-          ? Configuration.ORIENTATION_LANDSCAPE
-          : Configuration.ORIENTATION_PORTRAIT;
+        && configuration.screenWidthDp != 0
+        && configuration.screenHeightDp != 0) {
+      configuration.orientation =
+          (configuration.screenWidthDp > configuration.screenHeightDp)
+              ? Configuration.ORIENTATION_LANDSCAPE
+              : Configuration.ORIENTATION_PORTRAIT;
     }
 
     if (configuration.screenWidthDp == 0) {
@@ -317,7 +322,8 @@ public class DeviceConfig {
     }
 
     if (getScreenLayoutLong(configuration) == Configuration.SCREENLAYOUT_LONG_UNDEFINED) {
-      setScreenLayoutLong(configuration,
+      setScreenLayoutLong(
+          configuration,
           ((float) greaterDimenPx) / lesserDimenPx >= 1.75
               ? Configuration.SCREENLAYOUT_LONG_YES
               : Configuration.SCREENLAYOUT_LONG_NO);
@@ -328,9 +334,10 @@ public class DeviceConfig {
     }
 
     if (configuration.orientation == Configuration.ORIENTATION_UNDEFINED) {
-      configuration.orientation = configuration.screenWidthDp > configuration.screenHeightDp
-          ? Configuration.ORIENTATION_LANDSCAPE
-          : Configuration.ORIENTATION_PORTRAIT;
+      configuration.orientation =
+          configuration.screenWidthDp > configuration.screenHeightDp
+              ? Configuration.ORIENTATION_LANDSCAPE
+              : Configuration.ORIENTATION_PORTRAIT;
     } else if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT
         && configuration.screenWidthDp > configuration.screenHeightDp) {
       swapXY(configuration);
@@ -417,8 +424,7 @@ public class DeviceConfig {
 
   private static void setScreenLayoutSize(Configuration configuration, int value) {
     configuration.screenLayout =
-        (configuration.screenLayout & ~Configuration.SCREENLAYOUT_SIZE_MASK)
-            | value;
+        (configuration.screenLayout & ~Configuration.SCREENLAYOUT_SIZE_MASK) | value;
   }
 
   private static int getScreenLayoutLong(Configuration configuration) {
@@ -427,8 +433,7 @@ public class DeviceConfig {
 
   private static void setScreenLayoutLong(Configuration configuration, int value) {
     configuration.screenLayout =
-        (configuration.screenLayout & ~Configuration.SCREENLAYOUT_LONG_MASK)
-            | value;
+        (configuration.screenLayout & ~Configuration.SCREENLAYOUT_LONG_MASK) | value;
   }
 
   private static int getScreenLayoutLayoutDir(Configuration configuration) {
@@ -437,8 +442,7 @@ public class DeviceConfig {
 
   private static void setScreenLayoutLayoutDir(Configuration configuration, int value) {
     configuration.screenLayout =
-        (configuration.screenLayout & ~Configuration.SCREENLAYOUT_LAYOUTDIR_MASK)
-            | value;
+        (configuration.screenLayout & ~Configuration.SCREENLAYOUT_LAYOUTDIR_MASK) | value;
   }
 
   private static int getScreenLayoutRound(Configuration configuration) {
@@ -447,8 +451,7 @@ public class DeviceConfig {
 
   private static void setScreenLayoutRound(Configuration configuration, int value) {
     configuration.screenLayout =
-        (configuration.screenLayout & ~Configuration.SCREENLAYOUT_ROUND_MASK)
-            | value;
+        (configuration.screenLayout & ~Configuration.SCREENLAYOUT_ROUND_MASK) | value;
   }
 
   private static int getUiModeType(Configuration configuration) {
@@ -472,7 +475,8 @@ public class DeviceConfig {
   }
 
   private static void setColorModeGamut(Configuration configuration, int value) {
-    configuration.colorMode = (configuration.colorMode & ~Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_MASK) | value;
+    configuration.colorMode =
+        (configuration.colorMode & ~Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_MASK) | value;
   }
 
   private static int getColorModeHdr(Configuration configuration) {
@@ -480,6 +484,7 @@ public class DeviceConfig {
   }
 
   private static void setColorModeHdr(Configuration configuration, int value) {
-    configuration.colorMode = (configuration.colorMode & ~Configuration.COLOR_MODE_HDR_MASK) | value;
+    configuration.colorMode =
+        (configuration.colorMode & ~Configuration.COLOR_MODE_HDR_MASK) | value;
   }
 }

@@ -16,12 +16,8 @@ import java.nio.charset.Charset;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
-/**
- * Compatibility test for {@link AssetManager}
- */
-@DoNotInstrument
+/** Compatibility test for {@link AssetManager} */
 @RunWith(AndroidJUnit4.class)
 public class AssetManagerTest {
 
@@ -41,8 +37,7 @@ public class AssetManagerTest {
         .asList()
         .containsAtLeast("assetsHome.txt", "robolectric.png", "myFont.ttf");
 
-    assertThat(assetManager.list("testing")).asList()
-        .contains("hello.txt");
+    assertThat(assetManager.list("testing")).asList().contains("hello.txt");
 
     assertThat(assetManager.list("bogus-dir")).isEmpty();
   }

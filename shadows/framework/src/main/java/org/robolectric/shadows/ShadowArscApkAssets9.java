@@ -14,6 +14,7 @@ import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -37,8 +38,7 @@ import org.robolectric.util.reflector.Static;
     value = ApkAssets.class,
     minSdk = P,
     shadowPicker = Picker.class,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+    isInAndroidSdk = false)
 public class ShadowArscApkAssets9 extends ShadowApkAssets {
   // #define ATRACE_TAG ATRACE_TAG_RESOURCES
   //
@@ -149,12 +149,16 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   }
 
   @Implementation(minSdk = R)
-  protected static Object nativeLoad(
-      Object format, Object javaPath, Object flags, Object assetsProvider) throws IOException {
-    boolean system = ((int) flags & PROPERTY_SYSTEM) == PROPERTY_SYSTEM;
-    boolean overlay = ((int) flags & PROPERTY_OVERLAY) == PROPERTY_OVERLAY;
-    boolean forceSharedLib = ((int) flags & PROPERTY_DYNAMIC) == PROPERTY_DYNAMIC;
-    return nativeLoad((String) javaPath, system, forceSharedLib, overlay);
+  protected static long nativeLoad(
+      int format,
+      String javaPath,
+      int flags,
+      @ClassName("android.content.res.loader.AssetsProvider") Object assetsProvider)
+      throws IOException {
+    boolean system = (flags & PROPERTY_SYSTEM) == PROPERTY_SYSTEM;
+    boolean overlay = (flags & PROPERTY_OVERLAY) == PROPERTY_OVERLAY;
+    boolean forceSharedLib = (flags & PROPERTY_DYNAMIC) == PROPERTY_DYNAMIC;
+    return nativeLoad(javaPath, system, forceSharedLib, overlay);
   }
 
   // static jlong NativeLoadFromFd(JNIEnv* env, jclass /*clazz*/, jobject file_descriptor,
@@ -187,7 +191,8 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     //
     // ApkAssets apk_assets = ApkAssets.LoadFromFd(std.move(dup_fd),
     //                                                                     friendly_name_utf8,
-    //                                                                     system, force_shared_lib);
+    //                                                                     system,
+    // force_shared_lib);
     // if (apk_assets == null) {
     //   String error_msg = String.format("Failed to load asset path %s from fd %d",
     //                                              friendly_name_utf8, dup_fd.get());
@@ -201,12 +206,12 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   //                             jobject file_descriptor, jstring friendly_name,
   //                             const jint property_flags, jobject assets_provider)
   @Implementation(minSdk = R)
-  protected static Object nativeLoadFd(
-      Object format,
-      Object fileDescriptor,
-      Object friendlyName,
-      Object propertyFlags,
-      Object assetsProvider)
+  protected static long nativeLoadFd(
+      int format,
+      FileDescriptor fileDescriptor,
+      String friendlyName,
+      int propertyFlags,
+      @ClassName("android.content.res.loader.AssetsProvider") Object assetsProvider)
       throws IOException {
     CppApkAssets apkAssets = CppApkAssets.loadArscFromFd((FileDescriptor) fileDescriptor);
     if (apkAssets == null) {
@@ -246,8 +251,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       return 0;
     }
 
-    CppApkAssets apk_assets =
-        Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
+    CppApkAssets apk_assets = Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
     Asset asset = apk_assets.Open(path_utf8, Asset.AccessMode.ACCESS_RANDOM);
     if (asset == null) {
       throw new FileNotFoundException(path_utf8);
@@ -255,14 +259,16 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
 
     // DynamicRefTable is only needed when looking up resource references. Opening an XML file
     // directly from an ApkAssets has no notion of proper resource references.
-    ResXMLTree xml_tree = new ResXMLTree(null); // util.make_unique<ResXMLTree>(nullptr /*dynamicRefTable*/);
+    ResXMLTree xml_tree =
+        new ResXMLTree(null); // util.make_unique<ResXMLTree>(nullptr /*dynamicRefTable*/);
     int err = xml_tree.setTo(asset.getBuffer(true), (int) asset.getLength(), true);
     // asset.reset();
 
     if (err != NO_ERROR) {
       throw new FileNotFoundException("Corrupt XML binary file");
     }
-    return Registries.NATIVE_RES_XML_TREES.register(xml_tree); // reinterpret_cast<jlong>(xml_tree.release());
+    return Registries.NATIVE_RES_XML_TREES.register(
+        xml_tree); // reinterpret_cast<jlong>(xml_tree.release());
   }
 
   // // JNI registration.

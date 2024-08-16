@@ -40,16 +40,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = AudioManager.class, looseSignatures = true)
+@Implements(value = AudioManager.class)
 public class ShadowAudioManager {
   @RealObject AudioManager realAudioManager;
 
@@ -86,16 +88,16 @@ public class ShadowAudioManager {
   private final HashSet<AudioManager.AudioPlaybackCallback> audioPlaybackCallbacks =
       new HashSet<>();
   private final HashSet<AudioDeviceCallback> audioDeviceCallbacks = new HashSet<>();
-  private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
-  private int mode = AudioManager.MODE_NORMAL;
-  private boolean lockMode = false;
-  private boolean bluetoothA2dpOn;
-  private boolean isBluetoothScoOn;
-  private boolean isSpeakerphoneOn;
-  private boolean isMicrophoneMuted = false;
-  private boolean isMusicActive;
-  private boolean wiredHeadsetOn;
-  private boolean isBluetoothScoAvailableOffCall = false;
+  private static int ringerMode = AudioManager.RINGER_MODE_NORMAL;
+  private static int mode = AudioManager.MODE_NORMAL;
+  private static boolean lockMode = false;
+  private static boolean bluetoothA2dpOn;
+  private static boolean isBluetoothScoOn;
+  private static boolean isSpeakerphoneOn;
+  private static boolean isMicrophoneMuted = false;
+  private static boolean isMusicActive;
+  private static boolean wiredHeadsetOn;
+  private static boolean isBluetoothScoAvailableOffCall = false;
   private final Map<String, String> parameters = new HashMap<>();
   private final Map<Integer, Boolean> streamsMuteState = new HashMap<>();
   private final Map<String, AudioPolicy> registeredAudioPolicies = new HashMap<>();
@@ -109,10 +111,10 @@ public class ShadowAudioManager {
   private List<AudioDeviceInfo> outputDevices = new ArrayList<>();
   private List<AudioDeviceInfo> availableCommunicationDevices = new ArrayList<>();
   private AudioDeviceInfo communicationDevice = null;
-  private boolean lockCommunicationDevice = false;
+  private static boolean lockCommunicationDevice = false;
   private final List<KeyEvent> dispatchedMediaKeyEvents = new ArrayList<>();
-  private boolean isHotwordStreamSupportedForLookbackAudio = false;
-  private boolean isHotwordStreamSupportedWithoutLookbackAudio = false;
+  private static boolean isHotwordStreamSupportedForLookbackAudio = false;
+  private static boolean isHotwordStreamSupportedWithoutLookbackAudio = false;
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -229,6 +231,23 @@ public class ShadowAudioManager {
     if (RuntimeEnvironment.getApiLevel() >= S && mode != previousMode) {
       dispatchModeChangedListeners(mode);
     }
+  }
+
+  @Resetter
+  public static void reset() {
+    ringerMode = AudioManager.RINGER_MODE_NORMAL;
+    mode = AudioManager.MODE_NORMAL;
+    lockMode = false;
+    bluetoothA2dpOn = false;
+    isBluetoothScoOn = false;
+    isSpeakerphoneOn = false;
+    isMicrophoneMuted = false;
+    isMusicActive = false;
+    wiredHeadsetOn = false;
+    isBluetoothScoAvailableOffCall = false;
+    lockCommunicationDevice = false;
+    isHotwordStreamSupportedForLookbackAudio = false;
+    isHotwordStreamSupportedWithoutLookbackAudio = false;
   }
 
   private void dispatchModeChangedListeners(int newMode) {
@@ -451,7 +470,8 @@ public class ShadowAudioManager {
    */
   @Implementation(minSdk = R)
   @NonNull
-  protected List<Object> getDevicesForAttributes(@NonNull AudioAttributes attributes) {
+  protected @ClassName("java.util.List<android.media.AudioDeviceAttributes>") List<Object>
+      getDevicesForAttributes(@NonNull AudioAttributes attributes) {
     ImmutableList<Object> devices = devicesForAttributes.get(attributes);
     return devices == null ? defaultDevicesForAttributes : devices;
   }
@@ -902,7 +922,8 @@ public class ShadowAudioManager {
   @HiddenApi
   @Implementation(minSdk = P)
   @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING)
-  protected int registerAudioPolicy(@NonNull Object audioPolicy) {
+  protected int registerAudioPolicy(
+      @NonNull @ClassName("android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
     Preconditions.checkNotNull(audioPolicy, "Illegal null AudioPolicy argument");
     AudioPolicy policy = (AudioPolicy) audioPolicy;
     String id = getIdForAudioPolicy(audioPolicy);
@@ -916,7 +937,8 @@ public class ShadowAudioManager {
 
   @HiddenApi
   @Implementation(minSdk = Q)
-  protected void unregisterAudioPolicy(@NonNull Object audioPolicy) {
+  protected void unregisterAudioPolicy(
+      @NonNull @ClassName("android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
     Preconditions.checkNotNull(audioPolicy, "Illegal null AudioPolicy argument");
     AudioPolicy policy = (AudioPolicy) audioPolicy;
     registeredAudioPolicies.remove(getIdForAudioPolicy(policy));

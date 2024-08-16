@@ -212,8 +212,8 @@ public class ShadowTextToSpeech {
         && utteranceProgressListener != null
         && !Boolean.getBoolean("robolectric.enableShadowTtsSynthesisToFileCallbackSuppression")) {
       switch (synthesizeToFileResult) {
-          // Right now this only supports success an error though there are other possible
-          // situations.
+        // Right now this only supports success an error though there are other possible
+        // situations.
         case TextToSpeech.SUCCESS:
           utteranceProgressListener.onStart(utteranceId);
           utteranceProgressListener.onDone(utteranceId);
@@ -265,7 +265,9 @@ public class ShadowTextToSpeech {
     return shutdown;
   }
 
-  /** @return {@code true} if the TTS is stopped. */
+  /**
+   * @return {@code true} if the TTS is stopped.
+   */
   public boolean isStopped() {
     return stopped;
   }

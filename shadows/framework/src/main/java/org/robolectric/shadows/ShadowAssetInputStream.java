@@ -13,13 +13,15 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings("UnusedDeclaration")
 public abstract class ShadowAssetInputStream {
 
-  static AssetInputStream createAssetInputStream(InputStream delegateInputStream, long assetPtr,
-      AssetManager assetManager) {
+  static AssetInputStream createAssetInputStream(
+      InputStream delegateInputStream, long assetPtr, AssetManager assetManager) {
     Asset asset = NATIVE_ASSET_REGISTRY.getNativeObject(assetPtr);
 
-    AssetInputStream ais = ReflectionHelpers.callConstructor(AssetInputStream.class,
-        from(AssetManager.class, assetManager),
-        from(long.class, assetPtr));
+    AssetInputStream ais =
+        ReflectionHelpers.callConstructor(
+            AssetInputStream.class,
+            from(AssetManager.class, assetManager),
+            from(long.class, assetPtr));
 
     ShadowAssetInputStream sais = Shadow.extract(ais);
     return ais;
@@ -35,5 +37,4 @@ public abstract class ShadowAssetInputStream {
   abstract InputStream getDelegate();
 
   abstract boolean isNinePatch();
-
 }

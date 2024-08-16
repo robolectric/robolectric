@@ -16,17 +16,13 @@ public class LocalDependencyResolver implements DependencyResolver {
   @Override
   public URL getLocalArtifactUrl(DependencyJar dependency) {
     StringBuilder filenameBuilder = new StringBuilder();
-    filenameBuilder.append(dependency.getArtifactId())
-        .append("-")
-        .append(dependency.getVersion());
+    filenameBuilder.append(dependency.getArtifactId()).append("-").append(dependency.getVersion());
 
     if (dependency.getClassifier() != null) {
-      filenameBuilder.append("-")
-          .append(dependency.getClassifier());
+      filenameBuilder.append("-").append(dependency.getClassifier());
     }
 
-    filenameBuilder.append(".")
-        .append(dependency.getType());
+    filenameBuilder.append(".").append(dependency.getType());
 
     return fileToUrl(validateFile(new File(offlineJarDir, filenameBuilder.toString())));
   }

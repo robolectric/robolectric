@@ -41,28 +41,28 @@ public class ShadowLegacyMessageQueueTest {
   private TestHandler handler;
   private Scheduler scheduler;
   private String quitField;
-  
+
   private static class TestHandler extends Handler {
     public List<Message> handled = new ArrayList<>();
-    
+
     public TestHandler(Looper looper) {
       super(looper);
     }
-    
+
     @Override
     public void handleMessage(Message msg) {
       handled.add(msg);
     }
   }
-  
+
   private static Looper newLooper() {
     return newLooper(true);
   }
-  
+
   private static Looper newLooper(boolean canQuit) {
     return callConstructor(Looper.class, ClassParameter.from(boolean.class, canQuit));
   }
-  
+
   @Before
   public void setUp() throws Exception {
     // Queues and loopers are closely linked; can't easily test one without the other.
@@ -98,7 +98,7 @@ public class ShadowLegacyMessageQueueTest {
         ClassParameter.from(int.class, what),
         ClassParameter.from(Object.class, token));
   }
-  
+
   @Test
   public void enqueueMessage_setsHead() {
     enqueueMessage(testMessage, 100);
@@ -115,7 +115,7 @@ public class ShadowLegacyMessageQueueTest {
     enqueueMessage(testMessage, 123);
     assertWithMessage("when").that(testMessage.getWhen()).isEqualTo(123);
   }
-  
+
   @Test
   public void enqueueMessage_returnsFalse_whenQuitting() {
     setField(queue, quitField, true);
@@ -128,7 +128,7 @@ public class ShadowLegacyMessageQueueTest {
     enqueueMessage(testMessage, 1);
     assertWithMessage("scheduler_size").that(scheduler.size()).isEqualTo(0);
   }
-  
+
   @Test
   public void enqueuedMessage_isSentToHandler() {
     enqueueMessage(testMessage, 200);
@@ -137,7 +137,7 @@ public class ShadowLegacyMessageQueueTest {
     scheduler.advanceTo(200);
     assertWithMessage("handled:after").that(handler.handled).containsExactly(testMessage);
   }
-  
+
   @Test
   public void removedMessage_isNotSentToHandler() {
     enqueueMessage(testMessage, 200);
@@ -156,7 +156,7 @@ public class ShadowLegacyMessageQueueTest {
     scheduler.advanceToLastPostedRunnable();
     assertWithMessage("handled").that(handler.handled).containsExactly(m2, testMessage);
   }
-  
+
   @Test
   public void dispatchedMessage_isMarkedInUse_andRecycled() {
     Handler handler =
@@ -182,10 +182,10 @@ public class ShadowLegacyMessageQueueTest {
 
     assertWithMessage("msg2.what").that(msg2.what).isEqualTo(0);
   }
-  
-  @Test 
+
+  @Test
   public void reset_shouldClearMessageQueue() {
-    Message msg  = handler.obtainMessage(1234);
+    Message msg = handler.obtainMessage(1234);
     Message msg2 = handler.obtainMessage(5678);
     handler.sendMessage(msg);
     handler.sendMessage(msg2);

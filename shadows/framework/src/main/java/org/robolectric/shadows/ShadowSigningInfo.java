@@ -34,17 +34,14 @@ public class ShadowSigningInfo {
   private Signature[] pastSigningCertificates;
 
   /**
-   * Set the current Signatures for this package. If signatures has a size greater than 1,
-   * {@link #hasMultipleSigners} will be true and {@link #getSigningCertificateHistory} will return
-   * null.
+   * Set the current Signatures for this package. If signatures has a size greater than 1, {@link
+   * #hasMultipleSigners} will be true and {@link #getSigningCertificateHistory} will return null.
    */
   public void setSignatures(Signature[] signatures) {
     this.signatures = signatures;
   }
 
-  /**
-   * Sets the history of Signatures for this package.
-   */
+  /** Sets the history of Signatures for this package. */
   public void setPastSigningCertificates(Signature[] pastSigningCertificates) {
     this.pastSigningCertificates = pastSigningCertificates;
   }

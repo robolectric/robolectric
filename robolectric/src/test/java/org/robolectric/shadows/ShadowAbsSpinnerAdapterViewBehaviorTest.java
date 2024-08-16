@@ -8,7 +8,8 @@ import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAbsSpinnerAdapterViewBehaviorTest extends AdapterViewBehavior {
-  @Override public AdapterView createAdapterView() {
+  @Override
+  public AdapterView createAdapterView() {
     return new Gallery(ApplicationProvider.getApplicationContext());
   }
 }

@@ -13,13 +13,9 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.testapp.R;
 
-/**
- * Compatibility test for {@link Resources.Theme}
- */
-@DoNotInstrument
+/** Compatibility test for {@link Resources.Theme} */
 @RunWith(AndroidJUnit4.class)
 public class ThemeTest {
 

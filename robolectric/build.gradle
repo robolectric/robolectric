@@ -1,8 +1,7 @@
-import org.robolectric.gradle.DeployedRoboJavaModulePlugin
-import org.robolectric.gradle.RoboJavaModulePlugin
-
-apply plugin: RoboJavaModulePlugin
-apply plugin: DeployedRoboJavaModulePlugin
+plugins {
+    alias(libs.plugins.robolectric.deployed.java.module)
+    alias(libs.plugins.robolectric.java.module)
+}
 
 dependencies {
     annotationProcessor libs.auto.service
@@ -46,5 +45,18 @@ dependencies {
     testImplementation "androidx.test:runner:$axtRunnerVersion@aar"
     testImplementation libs.guava
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
-    testRuntimeOnly AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
+    testRuntimeOnly androidStubsJar()
+}
+
+def androidStubsJar() {
+    def androidStubsVersion = libs.versions.androidstubs.get()
+    if (!System.getenv().containsKey("ANDROID_HOME")) {
+        throw new GradleException("Environment variable ANDROID_HOME is not set.")
+    }
+    def androidJarPath = "${System.getenv("ANDROID_HOME")}/platforms/android-$androidStubsVersion/android.jar"
+    def androidJar = file(androidJarPath)
+    if (!androidJar.exists()) {
+        throw new GradleException("android.jar $androidStubsVersion not found at $androidJarPath. Download it through Android SDK Manager, or install the `Android SDK Command-line tools` and run `sdkmanager \"platforms;android-$androidStubsVersion\"`.")
+    }
+    return files(androidJarPath)
 }

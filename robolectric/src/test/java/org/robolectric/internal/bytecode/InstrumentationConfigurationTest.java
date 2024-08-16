@@ -103,7 +103,8 @@ public class InstrumentationConfigurationTest {
   public void shouldInstrumentCustomClasses() throws Exception {
     String instrumentName = "com.whatever.SomeClassNameToInstrument";
     String notInstrumentName = "com.whatever.DoNotInstrumentMe";
-    InstrumentationConfiguration customConfig = InstrumentationConfiguration.newBuilder().addInstrumentedClass(instrumentName).build();
+    InstrumentationConfiguration customConfig =
+        InstrumentationConfiguration.newBuilder().addInstrumentedClass(instrumentName).build();
     assertThat(customConfig.shouldInstrument(wrap(instrumentName))).isTrue();
     assertThat(customConfig.shouldInstrument(wrap(notInstrumentName))).isFalse();
   }
@@ -112,7 +113,8 @@ public class InstrumentationConfigurationTest {
   public void equals_ShouldCheckClassNames() throws Exception {
     String instrumentName = "com.whatever.SomeClassNameToInstrument";
     InstrumentationConfiguration baseConfig = InstrumentationConfiguration.newBuilder().build();
-    InstrumentationConfiguration customConfig = InstrumentationConfiguration.newBuilder().addInstrumentedClass(instrumentName).build();
+    InstrumentationConfiguration customConfig =
+        InstrumentationConfiguration.newBuilder().addInstrumentedClass(instrumentName).build();
 
     assertThat(baseConfig).isNotEqualTo(customConfig);
   }
@@ -120,7 +122,8 @@ public class InstrumentationConfigurationTest {
   @Test
   public void shouldNotInstrumentListedClasses() throws Exception {
     String instrumentName = "android.foo.bar";
-    InstrumentationConfiguration customConfig = InstrumentationConfiguration.newBuilder().doNotInstrumentClass(instrumentName).build();
+    InstrumentationConfiguration customConfig =
+        InstrumentationConfiguration.newBuilder().doNotInstrumentClass(instrumentName).build();
 
     assertThat(customConfig.shouldInstrument(wrap(instrumentName))).isFalse();
   }
@@ -177,7 +180,6 @@ public class InstrumentationConfigurationTest {
     assertThat(customConfig.shouldInstrument(wrap("com.random.testclass_GoodThings"))).isTrue();
     assertThat(customConfig.shouldInstrument(wrap("com.random.badpackage.testclass"))).isFalse();
     assertThat(customConfig.shouldInstrument(wrap("com.random.goodpackage.testclass"))).isTrue();
-
   }
 
   @Test

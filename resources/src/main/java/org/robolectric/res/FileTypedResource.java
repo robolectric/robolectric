@@ -12,7 +12,8 @@ public class FileTypedResource extends TypedResource<String> {
     this.path = path;
   }
 
-  @Override public boolean isFile() {
+  @Override
+  public boolean isFile() {
     return true;
   }
 

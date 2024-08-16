@@ -21,9 +21,7 @@ public class ShadowCaptureResult {
     return ReflectionHelpers.callConstructor(CaptureResult.class);
   }
 
-  /**
-   * Obtain a property of the CaptureResult.
-   */
+  /** Obtain a property of the CaptureResult. */
   @Implementation
   @Nullable
   @SuppressWarnings("unchecked")

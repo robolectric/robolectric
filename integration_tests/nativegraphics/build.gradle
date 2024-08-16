@@ -1,9 +1,7 @@
-import org.robolectric.gradle.AndroidProjectConfigPlugin
-import org.robolectric.gradle.GradleManagedDevicePlugin
-
-apply plugin: 'com.android.library'
-apply plugin: AndroidProjectConfigPlugin
-apply plugin: GradleManagedDevicePlugin
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.robolectric.android.project)
+}
 
 android {
     compileSdk 34

@@ -29,10 +29,10 @@ public class ShadowConfigurationTest {
 
   @Test
   public void testSetLocale() {
-    configuration.setLocale( Locale.US );
+    configuration.setLocale(Locale.US);
     assertThat(configuration.locale).isEqualTo(Locale.US);
 
-    configuration.setLocale( Locale.FRANCE);
+    configuration.setLocale(Locale.FRANCE);
     assertThat(configuration.locale).isEqualTo(Locale.FRANCE);
   }
 

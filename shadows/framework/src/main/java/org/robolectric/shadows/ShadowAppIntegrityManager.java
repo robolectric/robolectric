@@ -10,10 +10,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow of {@link AppIntegrityManager} */
-@Implements(
-    value = AppIntegrityManager.class,
-    minSdk = R,
-    isInAndroidSdk = false)
+@Implements(value = AppIntegrityManager.class, minSdk = R, isInAndroidSdk = false)
 public class ShadowAppIntegrityManager {
 
   private Optional<RuleSet> recordedRuleSet;

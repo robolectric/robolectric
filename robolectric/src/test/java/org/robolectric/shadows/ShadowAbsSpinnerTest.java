@@ -34,7 +34,7 @@ public class ShadowAbsSpinnerTest {
     spinner = new Spinner(activity);
     ((ViewGroup) activity.findViewById(android.R.id.content)).addView(spinner);
     shadowSpinner = shadowOf(spinner);
-    String [] testItems = {"foo", "bar"};
+    String[] testItems = {"foo", "bar"};
     arrayAdapter = new MyArrayAdapter(context, testItems);
   }
 
@@ -44,7 +44,7 @@ public class ShadowAbsSpinnerTest {
   }
 
   @Test
-  public void getSelectedItemShouldReturnCorrectValue(){
+  public void getSelectedItemShouldReturnCorrectValue() {
     spinner.setAdapter(arrayAdapter);
     spinner.setSelection(0);
     assertThat((String) spinner.getSelectedItem()).isEqualTo("foo");
@@ -56,7 +56,7 @@ public class ShadowAbsSpinnerTest {
   }
 
   @Test
-  public void getSelectedItemShouldReturnNull_NoAdapterSet(){
+  public void getSelectedItemShouldReturnNull_NoAdapterSet() {
     assertThat(spinner.getSelectedItem()).isNull();
   }
 
@@ -127,7 +127,8 @@ public class ShadowAbsSpinnerTest {
       super(context, android.R.layout.simple_spinner_item, testItems);
     }
 
-    @Override public View getView(int position, View convertView, ViewGroup parent) {
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
       return new View(getContext());
     }
   }

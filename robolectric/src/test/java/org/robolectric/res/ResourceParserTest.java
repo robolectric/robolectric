@@ -24,7 +24,8 @@ public class ResourceParserTest {
 
   @Test
   public void shouldLoadDrawableXmlResources() {
-    TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "drawable", "rainbow"), config);
+    TypedResource value =
+        resourceTable.getValue(new ResName("org.robolectric", "drawable", "rainbow"), config);
     assertThat(value).isNotNull();
     assertThat(value.getResType()).isEqualTo(ResType.DRAWABLE);
     assertThat(value.isFile()).isTrue();
@@ -33,7 +34,8 @@ public class ResourceParserTest {
 
   @Test
   public void shouldLoadDrawableBitmapResources() {
-    TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "drawable", "an_image"), config);
+    TypedResource value =
+        resourceTable.getValue(new ResName("org.robolectric", "drawable", "an_image"), config);
     assertThat(value).isNotNull();
     assertThat(value.getResType()).isEqualTo(ResType.DRAWABLE);
     assertThat(value.isFile()).isTrue();
@@ -42,7 +44,9 @@ public class ResourceParserTest {
 
   @Test
   public void shouldLoadDrawableBitmapResourcesDefinedByItemTag() {
-    TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "drawable", "example_item_drawable"), config);
+    TypedResource value =
+        resourceTable.getValue(
+            new ResName("org.robolectric", "drawable", "example_item_drawable"), config);
     assertThat(value).isNotNull();
     assertThat(value.getResType()).isEqualTo(ResType.DRAWABLE);
     assertThat(value.isReference()).isTrue();
@@ -51,7 +55,9 @@ public class ResourceParserTest {
 
   @Test
   public void shouldLoadIdResourcesDefinedByItemTag() {
-    TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "id", "id_declared_in_item_tag"), config);
+    TypedResource value =
+        resourceTable.getValue(
+            new ResName("org.robolectric", "id", "id_declared_in_item_tag"), config);
     assertThat(value).isNotNull();
     assertThat(value.getResType()).isEqualTo(ResType.CHAR_SEQUENCE);
     assertThat(value.isReference()).isFalse();

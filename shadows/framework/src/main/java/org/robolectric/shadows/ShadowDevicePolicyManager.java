@@ -64,13 +64,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.versioning.AndroidVersions.U;
 
-@Implements(value = DevicePolicyManager.class, looseSignatures = true)
+@Implements(value = DevicePolicyManager.class)
 @SuppressLint("NewApi")
 public class ShadowDevicePolicyManager {
   /**
@@ -78,85 +80,146 @@ public class ShadowDevicePolicyManager {
    *     https://developer.android.com/reference/android/app/admin/DevicePolicyManager.html#setOrganizationColor(android.content.ComponentName,
    *     int)
    */
-  private static final int DEFAULT_ORGANIZATION_COLOR = 0xFF008080; // teal
+  private final Map<PackageAndPermission, Boolean> appPermissionGrantedMap = new HashMap<>();
 
-  private ComponentName deviceOwner;
-  private ComponentName profileOwner;
-  private List<ComponentName> deviceAdmins = new ArrayList<>();
-  private Map<Integer, String> profileOwnerNamesMap = new HashMap<>();
+  private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
+  private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
+  private final List<ComponentName> deviceAdmins = new ArrayList<>();
+  private final Map<Integer, String> profileOwnerNamesMap = new HashMap<>();
+  private final Map<String, Bundle> applicationRestrictionsMap = new HashMap<>();
   private List<String> permittedAccessibilityServices = new ArrayList<>();
   private List<String> permittedInputMethods = new ArrayList<>();
-  private Map<String, Bundle> applicationRestrictionsMap = new HashMap<>();
-  private CharSequence organizationName;
-  private int organizationColor;
-  private boolean isAutoTimeEnabled;
-  private boolean isAutoTimeRequired;
-  private boolean isAutoTimeZoneEnabled;
-  private String timeZone;
-  private int keyguardDisabledFeatures;
-  private String lastSetPassword;
-  private int requiredPasswordQuality = DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED;
-
-  private int passwordMinimumLength;
-  private int passwordMinimumLetters = 1;
-  private int passwordMinimumLowerCase;
-  private int passwordMinimumUpperCase;
-  private int passwordMinimumNonLetter;
-  private int passwordMinimumNumeric = 1;
-  private int passwordMinimumSymbols = 1;
-  private int passwordHistoryLength = 0;
-  private long passwordExpiration = 0;
-  private long passwordExpirationTimeout = 0;
-  private int maximumFailedPasswordsForWipe = 0;
-  private long maximumTimeToLock = 0;
-  private boolean cameraDisabled;
-  private boolean isActivePasswordSufficient;
-  private boolean isUniqueDeviceAttestationSupported;
-  @PasswordComplexity private int passwordComplexity;
-
-  private int wipeCalled;
-  private int storageEncryptionStatus;
-  private int permissionPolicy;
-  private boolean storageEncryptionRequested;
-  private final Set<String> wasHiddenPackages = new HashSet<>();
-  private final Set<String> accountTypesWithManagementDisabled = new HashSet<>();
-  private final Set<String> systemAppsEnabled = new HashSet<>();
-  private final Set<String> uninstallBlockedPackages = new HashSet<>();
-  private final Set<String> suspendedPackages = new HashSet<>();
-  private final Set<String> affiliationIds = new HashSet<>();
-  private final Map<PackageAndPermission, Boolean> appPermissionGrantedMap = new HashMap<>();
-  private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
-  private final Map<String, Set<String>> delegatedScopePackagesMap = new HashMap<>();
-  private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
-  private final Map<ComponentName, Set<Integer>> adminPolicyGrantedMap = new HashMap<>();
-  private final Map<ComponentName, CharSequence> shortSupportMessageMap = new HashMap<>();
-  private final Map<ComponentName, CharSequence> longSupportMessageMap = new HashMap<>();
-  private final Set<ComponentName> componentsWithActivatedTokens = new HashSet<>();
   private Collection<String> packagesToFailForSetApplicationHidden = Collections.emptySet();
-  private int lockTaskFeatures;
-  private final List<String> lockTaskPackages = new ArrayList<>();
   private Context context;
-  private ApplicationPackageManager applicationPackageManager;
-  private SystemUpdatePolicy policy;
   private List<UserHandle> bindDeviceAdminTargetUsers = ImmutableList.of();
-  private boolean isDeviceProvisioned;
-  private boolean isDeviceProvisioningConfigApplied;
-  private volatile boolean organizationOwnedDeviceWithManagedProfile = false;
-  private int nearbyNotificationStreamingPolicy =
-      DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
-  private int nearbyAppStreamingPolicy =
-      DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
-  private boolean isUsbDataSignalingEnabled = true;
-  @Nullable private String devicePolicyManagementRoleHolderPackage;
-  private final Map<UserHandle, Account> finalizedWorkProfileProvisioningMap = new HashMap<>();
-  private List<UserHandle> policyManagedProfiles = new ArrayList<>();
-  private final Map<Integer, Integer> userProvisioningStatesMap = new HashMap<>();
-  @Nullable private PersistableBundle lastTransferOwnershipBundle;
-
-  private Object /* DevicePolicyState */ devicePolicyState;
   private @RealObject DevicePolicyManager realObject;
 
-  
+  private static final int DEFAULT_ORGANIZATION_COLOR = 0xFF008080; // teal
+  private static final Set<String> wasHiddenPackages = new HashSet<>();
+  private static final Set<String> accountTypesWithManagementDisabled = new HashSet<>();
+  private static final Set<String> systemAppsEnabled = new HashSet<>();
+  private static final Set<String> uninstallBlockedPackages = new HashSet<>();
+  private static final Set<String> suspendedPackages = new HashSet<>();
+  private static final Set<String> affiliationIds = new HashSet<>();
+  private static final Map<String, Set<String>> delegatedScopePackagesMap = new HashMap<>();
+  private static final Map<ComponentName, Set<Integer>> adminPolicyGrantedMap = new HashMap<>();
+  private static final Map<ComponentName, CharSequence> shortSupportMessageMap = new HashMap<>();
+  private static final Map<ComponentName, CharSequence> longSupportMessageMap = new HashMap<>();
+  private static final Set<ComponentName> componentsWithActivatedTokens = new HashSet<>();
+  private static final List<String> lockTaskPackages = new ArrayList<>();
+  private static final Map<UserHandle, Account> finalizedWorkProfileProvisioningMap =
+      new HashMap<>();
+  private static final Map<Integer, Integer> userProvisioningStatesMap = new HashMap<>();
+  private static ComponentName deviceOwner;
+  private static ComponentName profileOwner;
+  private static CharSequence organizationName;
+  private static int organizationColor;
+  private static boolean isAutoTimeEnabled;
+  private static boolean isAutoTimeRequired;
+  private static boolean isAutoTimeZoneEnabled;
+  private static String timeZone;
+  private static int keyguardDisabledFeatures;
+  private static String lastSetPassword;
+  private static int requiredPasswordQuality = DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED;
+  private static int passwordMinimumLength;
+  private static int passwordMinimumLetters = 1;
+  private static int passwordMinimumLowerCase;
+  private static int passwordMinimumUpperCase;
+  private static int passwordMinimumNonLetter;
+  private static int passwordMinimumNumeric = 1;
+  private static int passwordMinimumSymbols = 1;
+  private static int passwordHistoryLength = 0;
+  private static long passwordExpiration = 0;
+  private static long passwordExpirationTimeout = 0;
+  private static int maximumFailedPasswordsForWipe = 0;
+  private static long maximumTimeToLock = 0;
+  private static boolean cameraDisabled;
+  private static boolean isActivePasswordSufficient;
+  private static boolean isUniqueDeviceAttestationSupported;
+  @PasswordComplexity private static int passwordComplexity;
+  private static int wipeCalled;
+  private static int storageEncryptionStatus;
+  private static int permissionPolicy;
+  private static boolean storageEncryptionRequested;
+  private static int lockTaskFeatures;
+  private static ApplicationPackageManager applicationPackageManager;
+  private static SystemUpdatePolicy policy;
+  private static boolean isDeviceProvisioned;
+  private static boolean isDeviceProvisioningConfigApplied;
+  private static volatile boolean organizationOwnedDeviceWithManagedProfile = false;
+  private static int nearbyNotificationStreamingPolicy =
+      DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
+  private static int nearbyAppStreamingPolicy =
+      DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
+  private static boolean isUsbDataSignalingEnabled = true;
+  @Nullable private static String devicePolicyManagementRoleHolderPackage;
+  private static List<UserHandle> policyManagedProfiles = new ArrayList<>();
+  @Nullable private static PersistableBundle lastTransferOwnershipBundle;
+  private static Object /* DevicePolicyState */ devicePolicyState;
+
+  @Resetter
+  public static void reset() {
+    deviceOwner = null;
+    profileOwner = null;
+    organizationName = null;
+    organizationColor = DEFAULT_ORGANIZATION_COLOR;
+    isAutoTimeEnabled = false;
+    isAutoTimeRequired = false;
+    isAutoTimeZoneEnabled = false;
+    timeZone = null;
+    keyguardDisabledFeatures = 0;
+    lastSetPassword = null;
+    requiredPasswordQuality = DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED;
+
+    passwordMinimumLength = 0;
+    passwordMinimumLetters = 1;
+    passwordMinimumLowerCase = 0;
+    passwordMinimumUpperCase = 0;
+    passwordMinimumNonLetter = 0;
+    passwordMinimumNumeric = 1;
+    passwordMinimumSymbols = 1;
+    passwordHistoryLength = 0;
+    passwordExpiration = 0;
+    passwordExpirationTimeout = 0;
+    maximumFailedPasswordsForWipe = 0;
+    maximumTimeToLock = 0;
+    cameraDisabled = false;
+    isActivePasswordSufficient = false;
+    isUniqueDeviceAttestationSupported = false;
+    passwordComplexity = 0;
+
+    wipeCalled = 0;
+    storageEncryptionStatus = DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED;
+    permissionPolicy = 0;
+    storageEncryptionRequested = false;
+    wasHiddenPackages.clear();
+    accountTypesWithManagementDisabled.clear();
+    systemAppsEnabled.clear();
+    uninstallBlockedPackages.clear();
+    suspendedPackages.clear();
+    affiliationIds.clear();
+    delegatedScopePackagesMap.clear();
+    adminPolicyGrantedMap.clear();
+    shortSupportMessageMap.clear();
+    longSupportMessageMap.clear();
+    componentsWithActivatedTokens.clear();
+    lockTaskFeatures = 0;
+    lockTaskPackages.clear();
+    policy = null;
+    isDeviceProvisioned = false;
+    isDeviceProvisioningConfigApplied = false;
+    organizationOwnedDeviceWithManagedProfile = false;
+    nearbyNotificationStreamingPolicy =
+        DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
+    nearbyAppStreamingPolicy = DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
+    isUsbDataSignalingEnabled = true;
+    devicePolicyManagementRoleHolderPackage = null;
+    finalizedWorkProfileProvisioningMap.clear();
+    policyManagedProfiles = new ArrayList<>();
+    userProvisioningStatesMap.clear();
+    lastTransferOwnershipBundle = null;
+  }
+
   private static class PackageAndPermission {
 
     public PackageAndPermission(String packageName, String permission) {
@@ -540,13 +603,38 @@ public class ShadowDevicePolicyManager {
     enforceDeviceOwnerOrProfileOwner(admin);
     for (String scope : scopes) {
       if (delegatedScopePackagesMap.containsKey(scope)) {
-        Set<String> allowPackages = delegatedScopePackagesMap.get(scope);
-        allowPackages.add(delegatePackage);
+        ImmutableSet<String> allowPackages =
+            new ImmutableSet.Builder<String>()
+                .addAll(delegatedScopePackagesMap.get(scope))
+                .add(delegatePackage)
+                .build();
+        delegatedScopePackagesMap.put(scope, allowPackages);
       } else {
         ImmutableSet<String> allowPackages = ImmutableSet.of(delegatePackage);
         delegatedScopePackagesMap.put(scope, allowPackages);
       }
     }
+  }
+
+  @Implementation(minSdk = O)
+  protected List<String> getDelegatedScopes(ComponentName admin, String delegatePackage) {
+    Objects.requireNonNull(delegatePackage, "Delegate package is null");
+    if (admin == null) {
+      String caller = context.getPackageName();
+      if (!Objects.equals(caller, delegatePackage)) {
+        throw new SecurityException(String.format("Caller is not %s.", delegatePackage));
+      }
+      // this app is retrieving its own delegated scopes
+    } else {
+      enforceDeviceOwnerOrProfileOwner(admin);
+    }
+    List<String> scopes = new ArrayList<>();
+    for (String scope : delegatedScopePackagesMap.keySet()) {
+      if (delegatedScopePackagesMap.get(scope).contains(delegatePackage)) {
+        scopes.add(scope);
+      }
+    }
+    return scopes;
   }
 
   @Implementation
@@ -1586,7 +1674,7 @@ public class ShadowDevicePolicyManager {
 
   /** Return a stub value set by {@link #setDevicePolicyState(DevicePolicyState policyState)} */
   @Implementation(minSdk = U.SDK_INT)
-  protected Object getDevicePolicyState() {
+  protected @ClassName("android.app.admin.DevicePolicyState") Object getDevicePolicyState() {
     return devicePolicyState;
   }
 

@@ -64,8 +64,8 @@ class Idmap {
 
     // Performs a lookup of the expected entry ID for the given IDMAP entry header.
     // Returns true if the mapping exists and fills `output_entry_id` with the result.
-    static boolean Lookup(IdmapEntry_header header, int input_entry_id,
-        final Ref<Integer> output_entry_id) {
+    static boolean Lookup(
+        IdmapEntry_header header, int input_entry_id, final Ref<Integer> output_entry_id) {
       if (input_entry_id < dtohs(header.entry_id_offset)) {
         // After applying the offset, the entry is not present.
         return false;
@@ -92,50 +92,52 @@ class Idmap {
     @SuppressWarnings("DoNotCallSuggester")
     static boolean IsValidIdmapHeader(StringPiece data) {
       throw new UnsupportedOperationException();
-//   if (!is_word_aligned(data.data())) {
-//     LOG(ERROR) << "Idmap header is not word aligned.";
-//     return false;
-//   }
-//
-//   if (data.size() < sizeof(Idmap_header)) {
-//     LOG(ERROR) << "Idmap header is too small.";
-//     return false;
-//   }
-//
-//   const Idmap_header* header = reinterpret_cast<const Idmap_header*>(data.data());
-//   if (dtohl(header->magic) != kIdmapMagic) {
-//     LOG(ERROR) << StringPrintf("Invalid Idmap file: bad magic value (was 0x%08x, expected 0x%08x)",
-//                                dtohl(header->magic), kIdmapMagic);
-//     return false;
-//   }
-//
-//   if (dtohl(header->version) != kIdmapCurrentVersion) {
-//     // We are strict about versions because files with this format are auto-generated and don't need
-//     // backwards compatibility.
-//     LOG(ERROR) << StringPrintf("Version mismatch in Idmap (was 0x%08x, expected 0x%08x)",
-//                                dtohl(header->version), kIdmapCurrentVersion);
-//     return false;
-//   }
-//
-//   if (!is_valid_package_id(dtohs(header->target_package_id))) {
-//     LOG(ERROR) << StringPrintf("Target package ID in Idmap is invalid: 0x%02x",
-//                                dtohs(header->target_package_id));
-//     return false;
-//   }
-//
-//   if (dtohs(header->type_count) > 255) {
-//     LOG(ERROR) << StringPrintf("Idmap has too many type mappings (was %d, max 255)",
-//                                (int)dtohs(header->type_count));
-//     return false;
-//   }
-//   return true;
+      //   if (!is_word_aligned(data.data())) {
+      //     LOG(ERROR) << "Idmap header is not word aligned.";
+      //     return false;
+      //   }
+      //
+      //   if (data.size() < sizeof(Idmap_header)) {
+      //     LOG(ERROR) << "Idmap header is too small.";
+      //     return false;
+      //   }
+      //
+      //   const Idmap_header* header = reinterpret_cast<const Idmap_header*>(data.data());
+      //   if (dtohl(header->magic) != kIdmapMagic) {
+      //     LOG(ERROR) << StringPrintf("Invalid Idmap file: bad magic value (was 0x%08x, expected
+      // 0x%08x)",
+      //                                dtohl(header->magic), kIdmapMagic);
+      //     return false;
+      //   }
+      //
+      //   if (dtohl(header->version) != kIdmapCurrentVersion) {
+      //     // We are strict about versions because files with this format are auto-generated and
+      // don't need
+      //     // backwards compatibility.
+      //     LOG(ERROR) << StringPrintf("Version mismatch in Idmap (was 0x%08x, expected 0x%08x)",
+      //                                dtohl(header->version), kIdmapCurrentVersion);
+      //     return false;
+      //   }
+      //
+      //   if (!is_valid_package_id(dtohs(header->target_package_id))) {
+      //     LOG(ERROR) << StringPrintf("Target package ID in Idmap is invalid: 0x%02x",
+      //                                dtohs(header->target_package_id));
+      //     return false;
+      //   }
+      //
+      //   if (dtohs(header->type_count) > 255) {
+      //     LOG(ERROR) << StringPrintf("Idmap has too many type mappings (was %d, max 255)",
+      //                                (int)dtohs(header->type_count));
+      //     return false;
+      //   }
+      //   return true;
     }
 
-// LoadedIdmap::LoadedIdmap(const Idmap_header* header) : header_(header) {
-//   size_t length = strnlen(reinterpret_cast<const char*>(header_->overlay_path),
-//                           arraysize(header_->overlay_path));
-//   overlay_apk_path_.assign(reinterpret_cast<const char*>(header_->overlay_path), length);
-// }
+    // LoadedIdmap::LoadedIdmap(const Idmap_header* header) : header_(header) {
+    //   size_t length = strnlen(reinterpret_cast<const char*>(header_->overlay_path),
+    //                           arraysize(header_->overlay_path));
+    //   overlay_apk_path_.assign(reinterpret_cast<const char*>(header_->overlay_path), length);
+    // }
     // Loads an IDMAP from a chunk of memory. Returns nullptr if the IDMAP data was malformed.
     LoadedIdmap Load(StringPiece idmap_data) {
       ATRACE_CALL();
@@ -149,9 +151,9 @@ class Idmap {
       // Can't use make_unique because LoadedImpl constructor is private.
       LoadedIdmap loaded_idmap = new LoadedIdmap(header);
 
-  // const byte* data_ptr = reinterpret_cast<const byte*>(idmap_data.data()) + sizeof(*header);
-      StringPiece data_ptr = new StringPiece(idmap_data.myBuf(),
-          idmap_data.myOffset() + SIZEOF_CPTR);
+      // const byte* data_ptr = reinterpret_cast<const byte*>(idmap_data.data()) + sizeof(*header);
+      StringPiece data_ptr =
+          new StringPiece(idmap_data.myBuf(), idmap_data.myOffset() + SIZEOF_CPTR);
       // int data_size = idmap_data.size() - sizeof(*header);
       int data_size = idmap_data.size() - SIZEOF_CPTR;
 
@@ -163,19 +165,24 @@ class Idmap {
         }
 
         // Validate the type IDs.
-    // IdmapEntry_header entry_header = reinterpret_cast<const IdmapEntry_header*>(data_ptr);
-        IdmapEntry_header entry_header = new IdmapEntry_header(data_ptr.myBuf(), data_ptr.myOffset());
-        if (!is_valid_type_id(dtohs(entry_header.target_type_id)) || !is_valid_type_id(dtohs(entry_header.overlay_type_id))) {
-          logError(String.format("Invalid type map (0x%02x -> 0x%02x)",
-              dtohs(entry_header.target_type_id),
-              dtohs(entry_header.overlay_type_id)));
+        // IdmapEntry_header entry_header = reinterpret_cast<const IdmapEntry_header*>(data_ptr);
+        IdmapEntry_header entry_header =
+            new IdmapEntry_header(data_ptr.myBuf(), data_ptr.myOffset());
+        if (!is_valid_type_id(dtohs(entry_header.target_type_id))
+            || !is_valid_type_id(dtohs(entry_header.overlay_type_id))) {
+          logError(
+              String.format(
+                  "Invalid type map (0x%02x -> 0x%02x)",
+                  dtohs(entry_header.target_type_id), dtohs(entry_header.overlay_type_id)));
           return emptyBraces();
         }
 
         // Make sure there is enough space for the entries declared in the header.
         if ((data_size - SIZEOF_CPTR) / SIZEOF_INT < dtohs(entry_header.entry_count)) {
-          logError(String.format("Idmap too small for the number of entries (%d)",
-              (int) dtohs(entry_header.entry_count)));
+          logError(
+              String.format(
+                  "Idmap too small for the number of entries (%d)",
+                  (int) dtohs(entry_header.entry_count)));
           return emptyBraces();
         }
 
@@ -183,14 +190,12 @@ class Idmap {
         if (dtohs(entry_header.entry_count) != 0) {
           // loaded_idmap.type_map_[static_cast<byte>(dtohs(entry_header.overlay_type_id))] =
           //     entry_header;
-          loaded_idmap.type_map_.put((byte) dtohs(entry_header.overlay_type_id),
-              entry_header);
+          loaded_idmap.type_map_.put((byte) dtohs(entry_header.overlay_type_id), entry_header);
         }
 
         // int entry_size_bytes =
         //     sizeof(*entry_header) + (dtohs(entry_header.entry_count) * SIZEOF_INT);
-        int entry_size_bytes =
-            SIZEOF_CPTR + (dtohs(entry_header.entry_count) * SIZEOF_INT);
+        int entry_size_bytes = SIZEOF_CPTR + (dtohs(entry_header.entry_count) * SIZEOF_INT);
         data_ptr = new StringPiece(data_ptr.myBuf(), data_ptr.myOffset() + entry_size_bytes);
         data_size -= entry_size_bytes;
         type_maps_encountered++;
@@ -198,8 +203,11 @@ class Idmap {
 
       // Verify that we parsed all the type maps.
       if (type_maps_encountered != dtohs(header.type_count)) {
-        logError("Parsed " + type_maps_encountered + " type maps but expected "
-            + (int) dtohs(header.type_count));
+        logError(
+            "Parsed "
+                + type_maps_encountered
+                + " type maps but expected "
+                + (int) dtohs(header.type_count));
         return emptyBraces();
       }
       // return std.move(loaded_idmap);
@@ -215,7 +223,8 @@ class Idmap {
       return dtohs(header_.target_package_id);
     }
 
-    // Returns the path to the RRO (Runtime Resource Overlay) APK for which this IDMAP was generated.
+    // Returns the path to the RRO (Runtime Resource Overlay) APK for which this IDMAP was
+    // generated.
     String OverlayApkPath() {
       return overlay_apk_path_;
     }
@@ -229,7 +238,7 @@ class Idmap {
       // return null;
       return type_map_.get(type_id);
     }
-//
-// }  // namespace android
+    //
+    // }  // namespace android
   }
 }

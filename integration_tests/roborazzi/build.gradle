@@ -1,12 +1,11 @@
-import org.robolectric.gradle.AndroidProjectConfigPlugin
-import org.robolectric.gradle.SpotlessPlugin
-
-apply plugin: 'com.android.library'
-apply plugin: AndroidProjectConfigPlugin
-apply plugin: 'kotlin-android'
-apply plugin: "io.github.takahirom.roborazzi"
-apply plugin: SpotlessPlugin
-apply plugin: "io.gitlab.arturbosch.detekt"
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.robolectric.android.project)
+    alias(libs.plugins.robolectric.spotless)
+    alias(libs.plugins.roborazzi)
+}
 
 android {
     compileSdk 34

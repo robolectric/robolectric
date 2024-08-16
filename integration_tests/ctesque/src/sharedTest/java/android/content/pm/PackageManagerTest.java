@@ -26,11 +26,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.testapp.TestService;
 
 /** Compatibility test for {@link PackageManager} */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public final class PackageManagerTest {
   private Context context;
@@ -254,8 +252,7 @@ public final class PackageManagerTest {
 
     PackageInfo packageInfo =
         pm.getPackageInfo(
-            context.getPackageName(),
-            GET_SERVICES | GET_ACTIVITIES | MATCH_DISABLED_COMPONENTS);
+            context.getPackageName(), GET_SERVICES | GET_ACTIVITIES | MATCH_DISABLED_COMPONENTS);
     ActivityInfo[] activities = filterExtraneous(packageInfo.activities);
 
     assertThat(packageInfo.applicationInfo.enabled).isFalse();

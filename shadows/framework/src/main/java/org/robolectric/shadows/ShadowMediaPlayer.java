@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.ERROR;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.IDLE;
@@ -17,6 +18,7 @@ import static org.robolectric.shadows.ShadowMediaPlayer.State.STARTED;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.STOPPED;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
+import android.annotation.NonNull;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.media.MediaDataSource;
@@ -45,6 +47,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.util.DataSource;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Automated testing of media playback can be a difficult thing - especially testing that your code
@@ -402,6 +406,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   private int audioStreamType;
   private boolean looping;
   private int pendingSeek = -1;
+
   /** Various source variables from setDataSource() */
   private Uri sourceUri;
 
@@ -521,8 +526,25 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     return mp;
   }
 
-  @Implementation
+  @Implementation(maxSdk = TIRAMISU)
   protected void __constructor__() {
+    init();
+    // Ensure that the real object is set up properly.
+    Shadow.invokeConstructor(MediaPlayer.class, player);
+  }
+
+  @Implementation(minSdk = U.SDK_INT)
+  protected void __constructor__(@NonNull Context context, int sessionId) {
+    init();
+    // Ensure that the real object is set up properly.
+    Shadow.invokeConstructor(
+        MediaPlayer.class,
+        player,
+        ClassParameter.from(Context.class, context),
+        ClassParameter.from(int.class, sessionId));
+  }
+
+  private void init() {
     // Contract of audioSessionId is that if it is 0 (which represents
     // the master mix) then that's an error. By default it generates
     // an ID that is unique system-wide. We could simulate guaranteed
@@ -542,8 +564,6 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     if (createListener != null) {
       createListener.onCreate(player, this);
     }
-    // Ensure that the real object is set up properly.
-    Shadow.invokeConstructor(MediaPlayer.class, player);
   }
 
   private Handler getHandler(Looper looper) {
@@ -668,9 +688,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     return mediaInfoProvider.map(provider -> provider.get(dataSource)).orElse(null);
   }
 
-  /**
-   * Adds a {@link MediaInfo} for a {@link DataSource}.
-   */
+  /** Adds a {@link MediaInfo} for a {@link DataSource}. */
   public static void addMediaInfo(DataSource dataSource, MediaInfo info) {
     mediaInfoMap.put(dataSource, info);
   }
@@ -1074,7 +1092,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    */
   @Implementation
   protected int getCurrentPosition() {
-    checkStateError("getCurrentPosition()", attachableStates);
+    checkStateError("getCurrentPosition()", nonErrorStates);
     return getCurrentPositionRaw();
   }
 
@@ -1093,13 +1111,13 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
 
   @Implementation
   protected int getVideoHeight() {
-    checkStateLog("getVideoHeight()", attachableStates);
+    checkStateLog("getVideoHeight()", nonErrorStates);
     return videoHeight;
   }
 
   @Implementation
   protected int getVideoWidth() {
-    checkStateLog("getVideoWidth()", attachableStates);
+    checkStateLog("getVideoWidth()", nonErrorStates);
     return videoWidth;
   }
 
@@ -1340,7 +1358,9 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     return audioStreamType;
   }
 
-  /** @return seekDelay */
+  /**
+   * @return seekDelay
+   */
   public int getSeekDelay() {
     return seekDelay;
   }
@@ -1417,7 +1437,9 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     return leftVolume;
   }
 
-  /** @return The right channel volume. */
+  /**
+   * @return The right channel volume.
+   */
   public float getRightVolume() {
     return rightVolume;
   }
@@ -1440,12 +1462,16 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     return preparedStates.contains(state);
   }
 
-  /** @return the OnCompletionListener */
+  /**
+   * @return the OnCompletionListener
+   */
   public MediaPlayer.OnCompletionListener getOnCompletionListener() {
     return completionListener;
   }
 
-  /** @return the OnPreparedListener */
+  /**
+   * @return the OnPreparedListener
+   */
   public MediaPlayer.OnPreparedListener getOnPreparedListener() {
     return preparedListener;
   }

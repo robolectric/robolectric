@@ -15,8 +15,10 @@ import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Paint.FontMetricsInt;
 import android.graphics.PathEffect;
+import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Typeface;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.InDevelopment;
@@ -29,7 +31,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = Paint.class, looseSignatures = true)
+@Implements(value = Paint.class)
 public class ShadowPaint {
 
   private int color;
@@ -505,8 +507,11 @@ public class ShadowPaint {
   }
 
   @Implementation(minSdk = N, maxSdk = N_MR1)
-  protected int nGetFontMetricsInt(Object nativePaint, Object nativeTypeface, Object fmi) {
-    return nGetFontMetricsInt((long) nativePaint, (FontMetricsInt) fmi);
+  protected int nGetFontMetricsInt(
+      long nativePaint,
+      long nativeTypeface,
+      @ClassName("android.graphics.Paint$FontMetricsInt") Object fmi) {
+    return nGetFontMetricsInt(nativePaint, (FontMetricsInt) fmi);
   }
 
   @Implementation(maxSdk = M)
@@ -549,29 +554,29 @@ public class ShadowPaint {
   @Implementation(minSdk = V.SDK_INT)
   @InDevelopment
   protected static float nGetRunCharacterAdvance(
-      Object /* long */ paintPtr,
-      Object /* char[] */ text,
-      Object /* int */ start,
-      Object /* int */ end,
-      Object /* int */ contextStart,
-      Object /* int */ contextEnd,
-      Object /* boolean */ isRtl,
-      Object /* int */ offset,
-      Object /* float[] */ advances,
-      Object /* int */ advancesIndex,
-      Object /* RectF */ drawingBounds,
-      Object /* RunInfo */ runInfo) {
+      long paintPtr,
+      char[] text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      boolean isRtl,
+      int offset,
+      float[] advances,
+      int advancesIndex,
+      RectF drawingBounds,
+      @ClassName("android.graphics.Paint$RunInfo") Object runInfo) {
     return nGetRunCharacterAdvance(
-        (long) paintPtr,
-        (char[]) text,
-        (int) start,
-        (int) end,
-        (int) contextStart,
-        (int) contextEnd,
-        (boolean) isRtl,
-        (int) offset,
-        (float[]) advances,
-        (int) advancesIndex);
+        paintPtr,
+        text,
+        start,
+        end,
+        contextStart,
+        contextEnd,
+        isRtl,
+        offset,
+        advances,
+        advancesIndex);
   }
 
   @Implementation(minSdk = N, maxSdk = O_MR1)

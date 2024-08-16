@@ -1,10 +1,11 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 
 import android.hardware.HardwareBuffer;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -15,8 +16,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 /** Shadow for {@code ImageReader.SurfaceImage} that is backed by native code. */
 @Implements(
     className = "android.media.ImageReader$SurfaceImage",
-    minSdk = Q,
-    looseSignatures = true,
+    minSdk = P,
     isInAndroidSdk = false,
     shadowPicker = ShadowNativeImageReaderSurfaceImage.Picker.class,
     callNativeMethodsByDefault = true)
@@ -25,17 +25,17 @@ public class ShadowNativeImageReaderSurfaceImage {
   @RealObject private Object realSurfaceImage;
 
   @Implementation(maxSdk = R)
-  protected synchronized /*SurfacePlane[]*/ Object nativeCreatePlanes(
-      /*int*/ Object numPlanes, /*int*/ Object readerFormat) {
+  protected synchronized @ClassName("android.media.ImageReader$SurfaceImage$SurfacePlane[]") Object
+      nativeCreatePlanes(int numPlanes, int readerFormat) {
     return ImageReaderSurfaceImageNatives.nativeSurfaceImageCreatePlanes(
-        realSurfaceImage, (int) numPlanes, (int) readerFormat, /* readerUsage= */ 0);
+        realSurfaceImage, numPlanes, readerFormat, /* readerUsage= */ 0);
   }
 
   @Implementation(minSdk = S, maxSdk = U.SDK_INT)
-  protected synchronized /*SurfacePlane[]*/ Object nativeCreatePlanes(
-      /*int*/ Object numPlanes, /*int*/ Object readerFormat, /*long*/ Object readerUsage) {
+  protected synchronized @ClassName("android.media.ImageReader$SurfaceImage$SurfacePlane[]") Object
+      nativeCreatePlanes(int numPlanes, int readerFormat, long readerUsage) {
     return ImageReaderSurfaceImageNatives.nativeSurfaceImageCreatePlanes(
-        realSurfaceImage, (int) numPlanes, (int) readerFormat, (long) readerUsage);
+        realSurfaceImage, numPlanes, readerFormat, readerUsage);
   }
 
   @Implementation(maxSdk = U.SDK_INT)
@@ -67,7 +67,7 @@ public class ShadowNativeImageReaderSurfaceImage {
 
     @Override
     protected int getMinApiLevel() {
-      return Q;
+      return P;
     }
   }
 }

@@ -26,14 +26,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
 /**
  * Test {@link android.view.MotionEvent}.
  *
  * <p>Baselined from Android cts/tests/tests/view/src/android/view/cts/MotionEventTest.java
  */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class MotionEventTest {
   private MotionEvent motionEvent1;
@@ -408,6 +406,7 @@ public class MotionEventTest {
     }
   }
 
+  @SuppressWarnings("ReturnValueIgnored")
   @Test
   public void testToString() {
     // make sure this method never throw exception.
@@ -985,10 +984,6 @@ public class MotionEventTest {
     private PointerCoordsEqualitySubject(FailureMetadata metadata, PointerCoords actual) {
       super(metadata, actual);
       this.actual = actual;
-    }
-
-    public static PointerCoordsEqualitySubject assertThat(PointerCoords coords) {
-      return Truth.assertAbout(pointerCoords()).that(coords);
     }
 
     public static Subject.Factory<PointerCoordsEqualitySubject, PointerCoords> pointerCoords() {

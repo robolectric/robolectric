@@ -2,7 +2,8 @@ package org.robolectric.shadows;
 
 public class ClassNameResolver<T> {
 
-  public static <T> Class<T> resolve(String packageName, String className) throws ClassNotFoundException {
+  public static <T> Class<T> resolve(String packageName, String className)
+      throws ClassNotFoundException {
     Class<T> aClass;
     if (looksFullyQualified(className)) {
       aClass = safeClassForName(className);
@@ -15,8 +16,8 @@ public class ClassNameResolver<T> {
     }
 
     if (aClass == null) {
-      throw new ClassNotFoundException("Could not find a class for package: "
-          + packageName + " and class name: " + className);
+      throw new ClassNotFoundException(
+          "Could not find a class for package: " + packageName + " and class name: " + className);
     }
     return aClass;
   }

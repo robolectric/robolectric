@@ -79,20 +79,28 @@ public class AttributeResolution9 {
 
   // These are all variations of the same method. They each perform the exact same operation,
   // but on various data sources. I *think* they are re-written to avoid an extra branch
-  // in the inner loop, but after one branch miss (some pointer != null), the branch predictor should
+  // in the inner loop, but after one branch miss (some pointer != null), the branch predictor
+  // should
   // predict the rest of the iterations' branch correctly.
   // TODO(adamlesinski): Run performance tests against these methods and a new, single method
   // that uses all the sources and branches to the right ones within the inner loop.
 
   // `out_values` must NOT be nullptr.
   // `out_indices` may be nullptr.
-  public static boolean ResolveAttrs(Theme theme, int def_style_attr,
-                                     int def_style_res, int[] src_values,
-                                     int src_values_length, int[] attrs,
-                                     int attrs_length, int[] out_values, int[] out_indices) {
+  public static boolean ResolveAttrs(
+      Theme theme,
+      int def_style_attr,
+      int def_style_res,
+      int[] src_values,
+      int src_values_length,
+      int[] attrs,
+      int attrs_length,
+      int[] out_values,
+      int[] out_indices) {
     if (kDebugStyles) {
-      ALOGI("APPLY STYLE: theme=0x%s defStyleAttr=0x%x defStyleRes=0x%x", theme,
-          def_style_attr, def_style_res);
+      ALOGI(
+          "APPLY STYLE: theme=0x%s defStyleAttr=0x%x defStyleRes=0x%x",
+          theme, def_style_attr, def_style_res);
     }
 
     CppAssetManager2 assetmanager = theme.GetAssetManager();
@@ -105,7 +113,8 @@ public class AttributeResolution9 {
     final Ref<Integer> def_style_flags = new Ref<>(0);
     if (def_style_attr != 0) {
       final Ref<Res_value> valueRef = new Ref<>(null);
-      if (theme.GetAttribute(def_style_attr, valueRef, def_style_flags).intValue() != kInvalidCookie) {
+      if (theme.GetAttribute(def_style_attr, valueRef, def_style_flags).intValue()
+          != kInvalidCookie) {
         value = valueRef.get();
         if (value.dataType == Res_value.TYPE_REFERENCE) {
           def_style_res = value.data;
@@ -126,7 +135,7 @@ public class AttributeResolution9 {
     // Now iterate through all of the attributes that the client has requested,
     // filling in each with whatever data we can find.
     int destOffset = 0;
-    for (int ii=0; ii<attrs_length; ii++) {
+    for (int ii = 0; ii < attrs_length; ii++) {
       final int cur_ident = attrs[ii];
 
       if (kDebugStyles) {
@@ -169,7 +178,8 @@ public class AttributeResolution9 {
       if (value.dataType != Res_value.TYPE_NULL) {
         // Take care of resolving the found resource to its final value.
         ApkAssetsCookie new_cookie =
-            theme.ResolveAttributeReference(cookie, valueRef, configRef, type_set_flagsRef, residRef);
+            theme.ResolveAttributeReference(
+                cookie, valueRef, configRef, type_set_flagsRef, residRef);
         if (new_cookie.intValue() != kInvalidCookie) {
           cookie = new_cookie;
         }
@@ -184,7 +194,8 @@ public class AttributeResolution9 {
             ALOGI("-> From theme: type=0x%x, data=0x%08x", value.dataType, value.data);
           }
           new_cookie =
-              assetmanager.ResolveReference(new_cookie, valueRef, configRef, type_set_flagsRef, residRef);
+              assetmanager.ResolveReference(
+                  new_cookie, valueRef, configRef, type_set_flagsRef, residRef);
           if (new_cookie.intValue() != kInvalidCookie) {
             cookie = new_cookie;
           }
@@ -208,8 +219,7 @@ public class AttributeResolution9 {
       }
 
       if (kDebugStyles) {
-        ALOGI("Attribute 0x%08x: type=0x%x, data=0x%08x", cur_ident, value.dataType,
-            value.data);
+        ALOGI("Attribute 0x%08x: type=0x%x, data=0x%08x", cur_ident, value.dataType, value.data);
       }
 
       // Write the final value back to Java.
@@ -234,11 +244,18 @@ public class AttributeResolution9 {
     return true;
   }
 
-  public static void ApplyStyle(Theme theme, ResXMLParser xml_parser, int def_style_attr,
-                                int def_style_resid, int[] attrs, int attrs_length,
-                                int[] out_values, int[] out_indices) {
+  public static void ApplyStyle(
+      Theme theme,
+      ResXMLParser xml_parser,
+      int def_style_attr,
+      int def_style_resid,
+      int[] attrs,
+      int attrs_length,
+      int[] out_values,
+      int[] out_indices) {
     if (kDebugStyles) {
-      ALOGI("APPLY STYLE: theme=%s defStyleAttr=0x%x defStyleRes=0x%x xml=%s",
+      ALOGI(
+          "APPLY STYLE: theme=%s defStyleAttr=0x%x defStyleRes=0x%x xml=%s",
           theme, def_style_attr, def_style_resid, xml_parser);
     }
 
@@ -266,7 +283,8 @@ public class AttributeResolution9 {
       if (idx >= 0 && xml_parser.getAttributeValue(idx, value) >= 0) {
         if (value.get().dataType == DataType.ATTRIBUTE.code()) {
           // Resolve the attribute with out theme.
-          if (theme.GetAttribute(value.get().data, value, style_flags).intValue() == kInvalidCookie) {
+          if (theme.GetAttribute(value.get().data, value, style_flags).intValue()
+              == kInvalidCookie) {
             value.set(value.get().withType(DataType.NULL.code()));
           }
         }
@@ -332,7 +350,8 @@ public class AttributeResolution9 {
         }
       }
 
-      if (value.get().dataType == DataType.NULL.code() && value.get().data != Res_value.DATA_NULL_EMPTY) {
+      if (value.get().dataType == DataType.NULL.code()
+          && value.get().data != Res_value.DATA_NULL_EMPTY) {
         // Walk through the style class values looking for the requested attribute.
         Entry entry = xml_style_attr_finder.Find(cur_ident);
         if (entry != null) {
@@ -346,17 +365,20 @@ public class AttributeResolution9 {
         }
       }
 
-      if (value.get().dataType == DataType.NULL.code() && value.get().data != Res_value.DATA_NULL_EMPTY) {
+      if (value.get().dataType == DataType.NULL.code()
+          && value.get().data != Res_value.DATA_NULL_EMPTY) {
         // Walk through the default style values looking for the requested attribute.
         Entry entry = def_style_attr_finder.Find(cur_ident);
         if (entry != null) {
           // We found the attribute we were looking for.
           cookie = entry.cookie;
           type_set_flags.set(def_style_flags.get());
-          
+
           value.set(entry.value);
           if (kDebugStyles) {
-            ALOGI("-> From def style: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
+            ALOGI(
+                "-> From def style: type=0x%x, data=0x%08x",
+                value.get().dataType, value.get().data);
           }
         }
       }
@@ -387,7 +409,9 @@ public class AttributeResolution9 {
           }
 
           if (kDebugStyles) {
-            ALOGI("-> Resolved theme: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
+            ALOGI(
+                "-> Resolved theme: type=0x%x, data=0x%08x",
+                value.get().dataType, value.get().data);
           }
         }
       }
@@ -402,7 +426,9 @@ public class AttributeResolution9 {
       }
 
       if (kDebugStyles) {
-        ALOGI("Attribute 0x%08x: type=0x%x, data=0x%08x", cur_ident, value.get().dataType, value.get().data);
+        ALOGI(
+            "Attribute 0x%08x: type=0x%x, data=0x%08x",
+            cur_ident, value.get().dataType, value.get().data);
       }
 
       // Write the final value back to Java.
@@ -415,7 +441,8 @@ public class AttributeResolution9 {
       out_values[destIndex + STYLE_CHANGING_CONFIGURATIONS] = type_set_flags.get();
       out_values[destIndex + STYLE_DENSITY] = config.get().density;
 
-      if (res_value.dataType != DataType.NULL.code() || res_value.data == Res_value.DATA_NULL_EMPTY) {
+      if (res_value.dataType != DataType.NULL.code()
+          || res_value.data == Res_value.DATA_NULL_EMPTY) {
         indices_idx++;
 
         // out_indices must NOT be nullptr.
@@ -434,15 +461,20 @@ public class AttributeResolution9 {
       //       theme);
       // }
 
-//      out_values += STYLE_NUM_ENTRIES;
+      //      out_values += STYLE_NUM_ENTRIES;
     }
 
     // out_indices must NOT be nullptr.
     out_indices[0] = indices_idx;
   }
 
-  public static boolean RetrieveAttributes(CppAssetManager2 assetmanager, ResXMLParser xml_parser, int[] attrs,
-      int attrs_length, int[] out_values, int[] out_indices) {
+  public static boolean RetrieveAttributes(
+      CppAssetManager2 assetmanager,
+      ResXMLParser xml_parser,
+      int[] attrs,
+      int attrs_length,
+      int[] out_values,
+      int[] out_indices) {
     final Ref<ResTable_config> config = new Ref<>(new ResTable_config());
     final Ref<Res_value> value = new Ref<>(null);
 
@@ -501,14 +533,14 @@ public class AttributeResolution9 {
       out_values[baseDest + STYLE_CHANGING_CONFIGURATIONS] = type_set_flags.get();
       out_values[baseDest + STYLE_DENSITY] = config.get().density;
 
-      if (out_indices != null &&
-          (value.get().dataType != Res_value.TYPE_NULL
+      if (out_indices != null
+          && (value.get().dataType != Res_value.TYPE_NULL
               || value.get().data == Res_value.DATA_NULL_EMPTY)) {
         indices_idx++;
         out_indices[indices_idx] = ii;
       }
 
-//      out_values += STYLE_NUM_ENTRIES;
+      //      out_values += STYLE_NUM_ENTRIES;
       baseDest += STYLE_NUM_ENTRIES;
     }
 

@@ -27,7 +27,7 @@ public class ShadowSliceManager {
 
   private static final Map<Integer, Collection<Uri>> packageUidsToPermissionGrantedSliceUris =
       new HashMap<>();
-  private final Map<Uri, Set<SliceSpec>> pinnedUriMap = new HashMap<>();
+  private static final Map<Uri, Set<SliceSpec>> pinnedUriMap = new HashMap<>();
   private Context context;
 
   @Implementation
@@ -107,5 +107,6 @@ public class ShadowSliceManager {
   @Resetter
   public static synchronized void reset() {
     packageUidsToPermissionGrantedSliceUris.clear();
+    pinnedUriMap.clear();
   }
 }

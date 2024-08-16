@@ -107,7 +107,7 @@ public class ShadowResourcesTest {
   @Test
   public void openRawResourceFd_shouldReturnsValidFdForUnCompressFile() throws Exception {
     try (AssetFileDescriptor afd = resources.openRawResourceFd(R.raw.raw_resource)) {
-        assertThat(afd).isNotNull();
+      assertThat(afd).isNotNull();
     }
   }
 

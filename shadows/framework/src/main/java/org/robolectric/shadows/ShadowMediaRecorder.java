@@ -201,7 +201,7 @@ public class ShadowMediaRecorder {
         "getSurface must be called after prepare() and before stop()");
 
     if (recordingSurface == null) {
-      recordingSurfaceTexture = new SurfaceTexture(/*texName=*/ 0);
+      recordingSurfaceTexture = new SurfaceTexture(/* texName= */ 0);
       recordingSurface = new Surface(recordingSurfaceTexture);
     }
 

@@ -122,7 +122,7 @@ public class ShadowProcessTest {
   public void getThreadPriority_currentThread_returnsCurrentThreadPriority() {
     android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 
-    assertThat(android.os.Process.getThreadPriority(/*tid=*/ 0))
+    assertThat(android.os.Process.getThreadPriority(/* tid= */ 0))
         .isEqualTo(android.os.Process.THREAD_PRIORITY_AUDIO);
   }
 
@@ -168,4 +168,3 @@ public class ShadowProcessTest {
     assertThat(android.os.Process.myProcessName()).isEmpty();
   }
 }
-

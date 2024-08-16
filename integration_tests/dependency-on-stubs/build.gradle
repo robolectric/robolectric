@@ -1,7 +1,7 @@
-import org.robolectric.gradle.AndroidProjectConfigPlugin
-
-apply plugin: 'com.android.library'
-apply plugin: AndroidProjectConfigPlugin
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.robolectric.android.project)
+}
 
 // test with a project that depends on the stubs jar, not org.robolectric:android-all
 

@@ -90,7 +90,7 @@ public class ShadowUsbRequest {
       while (totalBytesRead < length) {
         int bytesRead =
             incomingDataPipedInputStream.read(
-                bytes, /*off=*/ totalBytesRead, /*len=*/ length - totalBytesRead);
+                bytes, /* off= */ totalBytesRead, /* len= */ length - totalBytesRead);
         if (bytesRead < 0) {
           return false;
         }

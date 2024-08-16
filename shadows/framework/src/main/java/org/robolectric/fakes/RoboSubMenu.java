@@ -7,9 +7,7 @@ import android.view.SubMenu;
 import android.view.View;
 import org.robolectric.RuntimeEnvironment;
 
-/**
- * Robolectric implementation of {@link android.view.SubMenu}.
- */
+/** Robolectric implementation of {@link android.view.SubMenu}. */
 public class RoboSubMenu extends RoboMenu implements SubMenu {
 
   public RoboSubMenu() {
@@ -46,8 +44,7 @@ public class RoboSubMenu extends RoboMenu implements SubMenu {
   }
 
   @Override
-  public void clearHeader() {
-  }
+  public void clearHeader() {}
 
   @Override
   public SubMenu setIcon(int iconRes) {
@@ -64,4 +61,3 @@ public class RoboSubMenu extends RoboMenu implements SubMenu {
     return null;
   }
 }
-

@@ -88,16 +88,13 @@ public class ShadowSurfaceViewTest {
 
   private static class TestCallback implements SurfaceHolder.Callback {
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-    }
+    public void surfaceCreated(SurfaceHolder holder) {}
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-    }
+    public void surfaceDestroyed(SurfaceHolder holder) {}
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-    }
+    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {}
   }
 
   private static class TestActivity extends Activity {

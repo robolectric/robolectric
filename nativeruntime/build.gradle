@@ -1,78 +1,77 @@
-import org.robolectric.gradle.DeployedRoboJavaModulePlugin
-import org.robolectric.gradle.RoboJavaModulePlugin
-
-apply plugin: RoboJavaModulePlugin
-apply plugin: DeployedRoboJavaModulePlugin
+plugins {
+    alias(libs.plugins.robolectric.deployed.java.module)
+    alias(libs.plugins.robolectric.java.module)
+}
 
 if (System.getenv('PUBLISH_NATIVERUNTIME_DIST_COMPAT') == "true") {
-  apply plugin: 'maven-publish'
-  apply plugin: "signing"
+    apply plugin: 'maven-publish'
+    apply plugin: "signing"
 
-  publishing {
-    publications {
-      nativeRuntimeDist(MavenPublication) {
-        artifact System.env["NATIVERUNTIME_DIST_COMPAT_JAR"]
-        artifactId 'nativeruntime-dist-compat'
-        version System.env["NATIVERUNTIME_DIST_COMPAT_VERSION"]
+    publishing {
+        publications {
+            nativeRuntimeDist(MavenPublication) {
+                artifact System.env["NATIVERUNTIME_DIST_COMPAT_JAR"]
+                artifactId 'nativeruntime-dist-compat'
+                version System.env["NATIVERUNTIME_DIST_COMPAT_VERSION"]
 
-        pom {
-          name = "Robolectric Nativeruntime Distribution Compat"
-          description = "Robolectric Nativeruntime Distribution Compat"
-          url = "https://source.android.com/"
-          inceptionYear = "2008"
-          licenses {
-            license {
-              name = "Apache 2.0"
-              url = "http://www.apache.org/licenses/LICENSE-2.0"
-              comments = "While the EULA for the Android SDK restricts distribution of those binaries, the source code is licensed under Apache 2.0 which allows compiling binaries from source and then distributing those versions."
-              distribution = "repo"
+                pom {
+                    name = "Robolectric Nativeruntime Distribution Compat"
+                    description = "Robolectric Nativeruntime Distribution Compat"
+                    url = "https://source.android.com/"
+                    inceptionYear = "2008"
+                    licenses {
+                        license {
+                            name = "Apache 2.0"
+                            url = "http://www.apache.org/licenses/LICENSE-2.0"
+                            comments = "While the EULA for the Android SDK restricts distribution of those binaries, the source code is licensed under Apache 2.0 which allows compiling binaries from source and then distributing those versions."
+                            distribution = "repo"
+                        }
+                    }
+
+                    scm {
+                        url = "https://android.googlesource.com/platform/manifest.git"
+                        connection = "https://android.googlesource.com/platform/manifest.git"
+                    }
+
+                    developers {
+                        developer {
+                            name = "The Android Open Source Projects"
+                        }
+                    }
+                }
             }
-          }
+        }
+        repositories {
+            maven {
+                url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 
-          scm {
-            url = "https://android.googlesource.com/platform/manifest.git"
-            connection = "https://android.googlesource.com/platform/manifest.git"
-          }
-
-          developers {
-            developer {
-              name = "The Android Open Source Projects"
+                credentials {
+                    username = System.properties["sonatype-login"] ?: System.env['SONATYPE_LOGIN']
+                    password = System.properties["sonatype-password"] ?: System.env['SONATYPE_PASSWORD']
+                }
             }
-          }
         }
-      }
     }
-    repositories {
-      maven {
-        url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 
-        credentials {
-          username = System.properties["sonatype-login"] ?: System.env['SONATYPE_LOGIN']
-          password = System.properties["sonatype-password"] ?: System.env['SONATYPE_PASSWORD']
-        }
-      }
+    signing {
+        sign publishing.publications.nativeRuntimeDist
     }
-  }
-
-  signing {
-    sign publishing.publications.nativeRuntimeDist
-  }
 }
 
 dependencies {
-  api project(":utils")
-  api project(":utils:reflector")
-  api libs.guava
+    api project(":utils")
+    api project(":utils:reflector")
+    api libs.guava
 
-  implementation libs.robolectric.nativeruntime.dist.compat
+    implementation libs.robolectric.nativeruntime.dist.compat
 
-  annotationProcessor libs.auto.service
-  compileOnly libs.auto.service.annotations
-  compileOnly AndroidSdk.MAX_SDK.coordinates
+    annotationProcessor libs.auto.service
+    compileOnly libs.auto.service.annotations
+    compileOnly AndroidSdk.MAX_SDK.coordinates
 
-  testCompileOnly AndroidSdk.MAX_SDK.coordinates
-  testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
-  testImplementation project(":robolectric")
-  testImplementation libs.junit4
-  testImplementation libs.truth
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates
+    testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
+    testImplementation project(":robolectric")
+    testImplementation libs.junit4
+    testImplementation libs.truth
 }

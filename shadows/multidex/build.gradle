@@ -1,10 +1,8 @@
-import org.robolectric.gradle.DeployedRoboJavaModulePlugin
-import org.robolectric.gradle.RoboJavaModulePlugin
-
-apply plugin: RoboJavaModulePlugin
-apply plugin: DeployedRoboJavaModulePlugin
-
-apply plugin: ShadowsPlugin
+plugins {
+    alias(libs.plugins.robolectric.deployed.java.module)
+    alias(libs.plugins.robolectric.java.module)
+    alias(libs.plugins.robolectric.shadows)
+}
 
 shadows {
     packageName "org.robolectric.shadows.multidex"

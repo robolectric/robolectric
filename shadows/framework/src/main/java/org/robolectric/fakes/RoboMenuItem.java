@@ -11,9 +11,7 @@ import android.view.SubMenu;
 import android.view.View;
 import org.robolectric.RuntimeEnvironment;
 
-/**
- * Robolectric implementation of {@link android.view.MenuItem}.
- */
+/** Robolectric implementation of {@link android.view.MenuItem}. */
 public class RoboMenuItem implements MenuItem {
   private int itemId;
   private int groupId;
@@ -228,8 +226,7 @@ public class RoboMenuItem implements MenuItem {
   }
 
   @Override
-  public void setShowAsAction(int actionEnum) {
-  }
+  public void setShowAsAction(int actionEnum) {}
 
   @Override
   public MenuItem setShowAsActionFlags(int actionEnum) {
@@ -302,4 +299,3 @@ public class RoboMenuItem implements MenuItem {
     return this;
   }
 }
-

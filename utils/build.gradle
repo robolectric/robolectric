@@ -1,13 +1,12 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.robolectric.gradle.DeployedRoboJavaModulePlugin
-import org.robolectric.gradle.RoboJavaModulePlugin
-import org.robolectric.gradle.SpotlessPlugin
 
-apply plugin: RoboJavaModulePlugin
-apply plugin: 'kotlin'
-apply plugin: DeployedRoboJavaModulePlugin
-apply plugin: SpotlessPlugin
-apply plugin: "io.gitlab.arturbosch.detekt"
+plugins {
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.robolectric.deployed.java.module)
+    alias(libs.plugins.robolectric.java.module)
+    alias(libs.plugins.robolectric.spotless)
+}
 
 tasks.withType(GenerateModuleMetadata).configureEach {
     // We don't want to release gradle module metadata now to avoid

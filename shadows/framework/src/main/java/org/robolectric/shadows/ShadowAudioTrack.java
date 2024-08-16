@@ -50,7 +50,7 @@ import org.robolectric.versioning.AndroidVersions.U;
  * other methods are expected run through the real class. The two {@link WriteMode} are treated the
  * same.
  */
-@Implements(value = AudioTrack.class, looseSignatures = true)
+@Implements(value = AudioTrack.class)
 public class ShadowAudioTrack {
 
   /**
@@ -79,9 +79,11 @@ public class ShadowAudioTrack {
   private static final int AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED = -20;
 
   private static final String TAG = "ShadowAudioTrack";
+
   /** Direct playback support checked from {@link #native_is_direct_output_supported}. */
   private static final Multimap<AudioFormatInfo, AudioAttributesInfo> directSupportedFormats =
       Multimaps.synchronizedMultimap(HashMultimap.create());
+
   /** Non-PCM encodings allowed for creating an AudioTrack instance. */
   private static final Set<Integer> allowedNonPcmEncodings =
       Collections.synchronizedSet(new HashSet<>());

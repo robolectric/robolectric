@@ -36,7 +36,8 @@ public class DefaultSdkPicker implements SdkPicker {
 
   @Inject
   public DefaultSdkPicker(@Nonnull SdkCollection sdkCollection, Properties systemProperties) {
-    this(sdkCollection,
+    this(
+        sdkCollection,
         systemProperties == null ? null : systemProperties.getProperty("robolectric.enabledSdks"));
   }
 
@@ -169,5 +170,4 @@ public class DefaultSdkPicker implements SdkPicker {
 
     return sdks;
   }
-
 }

@@ -86,7 +86,9 @@ public class ShadowDefaultRequestDirectorTest {
   public void shouldPreferPendingResponses() throws Exception {
     FakeHttp.addPendingHttpResponse(new TestHttpResponse(200, "a happy response body"));
 
-    FakeHttp.addHttpResponseRule(HttpGet.METHOD_NAME, "http://some.uri",
+    FakeHttp.addHttpResponseRule(
+        HttpGet.METHOD_NAME,
+        "http://some.uri",
         new TestHttpResponse(200, "a cheery response body"));
 
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
@@ -98,7 +100,9 @@ public class ShadowDefaultRequestDirectorTest {
 
   @Test
   public void shouldReturnRequestsByRule() throws Exception {
-    FakeHttp.addHttpResponseRule(HttpGet.METHOD_NAME, "http://some.uri",
+    FakeHttp.addHttpResponseRule(
+        HttpGet.METHOD_NAME,
+        "http://some.uri",
         new TestHttpResponse(200, "a cheery response body"));
 
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
@@ -111,7 +115,9 @@ public class ShadowDefaultRequestDirectorTest {
   @Test
   public void shouldReturnRequestsByRule_MatchingMethod() throws Exception {
     FakeHttp.setDefaultHttpResponse(404, "no such page");
-    FakeHttp.addHttpResponseRule(HttpPost.METHOD_NAME, "http://some.uri",
+    FakeHttp.addHttpResponseRule(
+        HttpPost.METHOD_NAME,
+        "http://some.uri",
         new TestHttpResponse(200, "a cheery response body"));
 
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
@@ -337,17 +343,17 @@ public class ShadowDefaultRequestDirectorTest {
         .isEqualTo(URI.create("http://www.third.org"));
   }
 
-
   @Test
   public void shouldSupportConnectionTimeoutWithExceptions() throws Exception {
-    FakeHttp.setDefaultHttpResponse(new TestHttpResponse() {
-      @Override
-      public HttpParams getParams() {
-        HttpParams httpParams = super.getParams();
-        HttpConnectionParams.setConnectionTimeout(httpParams, -1);
-        return httpParams;
-      }
-    });
+    FakeHttp.setDefaultHttpResponse(
+        new TestHttpResponse() {
+          @Override
+          public HttpParams getParams() {
+            HttpParams httpParams = super.getParams();
+            HttpConnectionParams.setConnectionTimeout(httpParams, -1);
+            return httpParams;
+          }
+        });
 
     DefaultHttpClient client = new DefaultHttpClient();
     try {
@@ -361,14 +367,15 @@ public class ShadowDefaultRequestDirectorTest {
 
   @Test
   public void shouldSupportSocketTimeoutWithExceptions() throws Exception {
-    FakeHttp.setDefaultHttpResponse(new TestHttpResponse() {
-      @Override
-      public HttpParams getParams() {
-        HttpParams httpParams = super.getParams();
-        HttpConnectionParams.setSoTimeout(httpParams, -1);
-        return httpParams;
-      }
-    });
+    FakeHttp.setDefaultHttpResponse(
+        new TestHttpResponse() {
+          @Override
+          public HttpParams getParams() {
+            HttpParams httpParams = super.getParams();
+            HttpConnectionParams.setSoTimeout(httpParams, -1);
+            return httpParams;
+          }
+        });
 
     DefaultHttpClient client = new DefaultHttpClient();
     try {

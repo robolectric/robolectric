@@ -3,9 +3,7 @@ package org.robolectric.pluginapi.perf;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Metadata for perf stats collection.
- */
+/** Metadata for perf stats collection. */
 public class Metadata {
   private final Map<Class<?>, Object> metadata;
 

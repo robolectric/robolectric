@@ -32,5 +32,4 @@ public class ShadowWindowManagerGlobalUnitTest {
       Robolectric.setupActivity(Activity.class);
     }
   }
-
 }

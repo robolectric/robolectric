@@ -58,20 +58,22 @@ public class ShadowMapTest {
     baseShadowMap = ShadowMap.createFromShadowProviders(shadowProviders);
   }
 
-  @Test public void shouldLookUpShadowClassesByNamingConvention() throws Exception {
+  @Test
+  public void shouldLookUpShadowClassesByNamingConvention() throws Exception {
     ShadowMap map = baseShadowMap.newBuilder().build();
     assertThat(map.getShadowInfo(Activity.class, ShadowMatcher.MATCH_ALL)).isNull();
   }
 
-  @Test public void shouldNotReturnMismatchedClassesJustBecauseTheSimpleNameMatches() throws Exception {
-    ShadowMap map = baseShadowMap.newBuilder()
-        .addShadowClasses(ShadowActivity.class)
-        .build();
-    assertThat(map.getShadowInfo(android.app.Activity.class, ShadowMatcher.MATCH_ALL).shadowClassName)
+  @Test
+  public void shouldNotReturnMismatchedClassesJustBecauseTheSimpleNameMatches() throws Exception {
+    ShadowMap map = baseShadowMap.newBuilder().addShadowClasses(ShadowActivity.class).build();
+    assertThat(
+            map.getShadowInfo(android.app.Activity.class, ShadowMatcher.MATCH_ALL).shadowClassName)
         .isEqualTo(ShadowActivity.class.getName());
   }
 
-  @Test public void getInvalidatedClasses_disjoin() {
+  @Test
+  public void getInvalidatedClasses_disjoin() {
     ShadowMap current =
         baseShadowMap.newBuilder().addShadowClass(A1, A2, true, false, false).build();
     ShadowMap previous =
@@ -80,7 +82,8 @@ public class ShadowMapTest {
     assertThat(current.getInvalidatedClasses(previous)).containsExactly(A1, B1);
   }
 
-  @Test public void getInvalidatedClasses_overlap() {
+  @Test
+  public void getInvalidatedClasses_overlap() {
     ShadowMap current =
         baseShadowMap
             .newBuilder()
@@ -97,7 +100,8 @@ public class ShadowMapTest {
     assertThat(current.getInvalidatedClasses(previous)).containsExactly(C1);
   }
 
-  @Test public void equalsHashCode() throws Exception {
+  @Test
+  public void equalsHashCode() throws Exception {
     ShadowMap a = baseShadowMap.newBuilder().addShadowClass(A, B, true, false, false).build();
     ShadowMap b = baseShadowMap.newBuilder().addShadowClass(A, B, true, false, false).build();
     assertThat(a).isEqualTo(b);
@@ -193,14 +197,23 @@ public class ShadowMapTest {
   static class Activity {}
 
   static class A {}
+
   static class A1 {}
+
   static class A2 {}
+
   static class B {}
+
   static class B1 {}
+
   static class B2 {}
+
   static class C1 {}
+
   static class C2 {}
+
   static class C3 {}
+
   static class X {}
 
   @Implements(value = Activity.class, maxSdk = 29)

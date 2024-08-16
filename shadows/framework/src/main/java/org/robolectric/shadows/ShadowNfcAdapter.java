@@ -18,6 +18,7 @@ import android.os.Bundle;
 import java.util.Map;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -30,7 +31,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /** Shadow implementation of {@link NfcAdapter}. */
-@Implements(value = NfcAdapter.class, looseSignatures = true)
+@Implements(value = NfcAdapter.class)
 public class ShadowNfcAdapter {
   @RealObject NfcAdapter nfcAdapter;
 
@@ -283,7 +284,7 @@ public class ShadowNfcAdapter {
 
   // TODO: use NfcAntennaInfo when minimum supported compile SDK is >= android U
   @Implementation(minSdk = UPSIDE_DOWN_CAKE)
-  protected Object /* NfcAntennaInfo */ getNfcAntennaInfo() {
+  protected @ClassName("android.nfc.NfcAntennaInfo") Object getNfcAntennaInfo() {
     synchronized (this) {
       return nfcAntennaInfo;
     }

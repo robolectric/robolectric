@@ -29,13 +29,16 @@ public class ShadowBackgroundThread {
   @ForType(BackgroundThread.class)
   interface _BackgroundThread_ {
 
-    @Static @Accessor("sHandler")
+    @Static
+    @Accessor("sHandler")
     void setHandler(Handler o);
 
-    @Static @Accessor("sInstance")
+    @Static
+    @Accessor("sInstance")
     void setInstance(BackgroundThread o);
 
-    @Static @Accessor("sInstance")
+    @Static
+    @Accessor("sInstance")
     BackgroundThread getInstance();
   }
 }

@@ -78,7 +78,8 @@ public class ContentProviderControllerTest {
 
   @Test
   public void whenNoProviderManifestEntryFound_shouldStillInitialize() throws Exception {
-    TestContentProvider1 myContentProvider = Robolectric.buildContentProvider(NotInManifestContentProvider.class).create().get();
+    TestContentProvider1 myContentProvider =
+        Robolectric.buildContentProvider(NotInManifestContentProvider.class).create().get();
     assertThat(myContentProvider.getReadPermission()).isNull();
     assertThat(myContentProvider.getWritePermission()).isNull();
     assertThat(myContentProvider.getPathPermissions()).isNull();

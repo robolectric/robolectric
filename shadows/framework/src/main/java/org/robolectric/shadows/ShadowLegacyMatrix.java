@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.graphics.Matrix;
 import android.graphics.Matrix.ScaleToFit;
 import android.graphics.PointF;
@@ -283,7 +282,9 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
   }
 
   boolean hasPerspective() {
-    return (simpleMatrix.mValues[6] != 0 || simpleMatrix.mValues[7] != 0 || simpleMatrix.mValues[8] != 1);
+    return (simpleMatrix.mValues[6] != 0
+        || simpleMatrix.mValues[7] != 0
+        || simpleMatrix.mValues[8] != 1);
   }
 
   protected AffineTransform getAffineTransform() {
@@ -370,16 +371,16 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof Matrix) {
-        return getSimpleMatrix(((Matrix) obj)).equals(simpleMatrix);
+      return getSimpleMatrix(((Matrix) obj)).equals(simpleMatrix);
     } else {
-        return obj instanceof ShadowMatrix && obj.equals(simpleMatrix);
+      return obj instanceof ShadowMatrix && obj.equals(simpleMatrix);
     }
   }
 
   @Implementation
   @Override
   public int hashCode() {
-      return Objects.hashCode(simpleMatrix);
+    return Objects.hashCode(simpleMatrix);
   }
 
   @Override
@@ -402,9 +403,7 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
     return true;
   }
 
-  /**
-   * A simple implementation of an immutable matrix.
-   */
+  /** A simple implementation of an immutable matrix. */
   private static class SimpleMatrix {
     private static final SimpleMatrix IDENTITY = newIdentityMatrix();
 
@@ -439,7 +438,8 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
       final float m01 = mValues[1];
       final float m10 = mValues[3];
       final float m11 = mValues[4];
-      return (m00 == 0 && m11 == 0 && m01 != 0 && m10 != 0) || (m00 != 0 && m11 != 0 && m01 == 0 && m10 == 0);
+      return (m00 == 0 && m11 == 0 && m01 != 0 && m10 != 0)
+          || (m00 != 0 && m11 != 0 && m01 == 0 && m10 == 0);
     }
 
     public void getValues(float[] values) {
@@ -450,27 +450,26 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
     }
 
     public static SimpleMatrix translate(float dx, float dy) {
-      return new SimpleMatrix(new float[] {
-          1.0f, 0.0f, dx,
-          0.0f, 1.0f, dy,
-          0.0f, 0.0f, 1.0f,
-      });
+      return new SimpleMatrix(
+          new float[] {
+            1.0f, 0.0f, dx,
+            0.0f, 1.0f, dy,
+            0.0f, 0.0f, 1.0f,
+          });
     }
 
     public static SimpleMatrix scale(float sx, float sy, float px, float py) {
-      return new SimpleMatrix(new float[] {
-          sx,   0.0f, px * (1 - sx),
-          0.0f, sy,   py * (1 - sy),
-          0.0f, 0.0f, 1.0f,
-      });
+      return new SimpleMatrix(
+          new float[] {
+            sx, 0.0f, px * (1 - sx), 0.0f, sy, py * (1 - sy), 0.0f, 0.0f, 1.0f,
+          });
     }
 
     public static SimpleMatrix scale(float sx, float sy) {
-      return new SimpleMatrix(new float[] {
-          sx,   0.0f, 0.0f,
-          0.0f, sy,   0.0f,
-          0.0f, 0.0f, 1.0f,
-      });
+      return new SimpleMatrix(
+          new float[] {
+            sx, 0.0f, 0.0f, 0.0f, sy, 0.0f, 0.0f, 0.0f, 1.0f,
+          });
     }
 
     public static SimpleMatrix rotate(float degrees, float px, float py) {
@@ -488,35 +487,39 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
     }
 
     public static SimpleMatrix sinCos(float sin, float cos, float px, float py) {
-      return new SimpleMatrix(new float[] {
-          cos,  -sin, sin * py + (1 - cos) * px,
-          sin,  cos,  -sin * px + (1 - cos) * py,
-          0.0f, 0.0f, 1.0f,
-      });
+      return new SimpleMatrix(
+          new float[] {
+            cos,
+            -sin,
+            sin * py + (1 - cos) * px,
+            sin,
+            cos,
+            -sin * px + (1 - cos) * py,
+            0.0f,
+            0.0f,
+            1.0f,
+          });
     }
 
     public static SimpleMatrix sinCos(float sin, float cos) {
-      return new SimpleMatrix(new float[] {
-          cos,  -sin, 0.0f,
-          sin,  cos,  0.0f,
-          0.0f, 0.0f, 1.0f,
-      });
+      return new SimpleMatrix(
+          new float[] {
+            cos, -sin, 0.0f, sin, cos, 0.0f, 0.0f, 0.0f, 1.0f,
+          });
     }
 
     public static SimpleMatrix skew(float kx, float ky, float px, float py) {
-      return new SimpleMatrix(new float[] {
-          1.0f, kx,   -kx * py,
-          ky,   1.0f, -ky * px,
-          0.0f, 0.0f, 1.0f,
-      });
+      return new SimpleMatrix(
+          new float[] {
+            1.0f, kx, -kx * py, ky, 1.0f, -ky * px, 0.0f, 0.0f, 1.0f,
+          });
     }
 
     public static SimpleMatrix skew(float kx, float ky) {
-      return new SimpleMatrix(new float[] {
-          1.0f, kx,   0.0f,
-          ky,   1.0f, 0.0f,
-          0.0f, 0.0f, 1.0f,
-      });
+      return new SimpleMatrix(
+          new float[] {
+            1.0f, kx, 0.0f, ky, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+          });
     }
 
     public SimpleMatrix multiply(SimpleMatrix matrix) {
@@ -559,7 +562,8 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
           point.x * mValues[3] + point.y * mValues[4] + mValues[5]);
     }
 
-    // See: https://android.googlesource.com/platform/frameworks/base/+/6fca81de9b2079ec88e785f58bf49bf1f0c105e2/tools/layoutlib/bridge/src/android/graphics/Matrix_Delegate.java
+    // See:
+    // https://android.googlesource.com/platform/frameworks/base/+/6fca81de9b2079ec88e785f58bf49bf1f0c105e2/tools/layoutlib/bridge/src/android/graphics/Matrix_Delegate.java
     protected boolean setRectToRect(RectF src, RectF dst, ScaleToFit stf) {
       if (dst.isEmpty()) {
         mValues[0] =
@@ -651,9 +655,10 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
     }
 
     private float inverseDeterminant() {
-      final float determinant = mValues[0] * cross(mValues[4], mValues[8], mValues[5], mValues[7]) +
-          mValues[1] * cross(mValues[5], mValues[6], mValues[3], mValues[8]) +
-          mValues[2] * cross(mValues[3], mValues[7], mValues[4], mValues[6]);
+      final float determinant =
+          mValues[0] * cross(mValues[4], mValues[8], mValues[5], mValues[7])
+              + mValues[1] * cross(mValues[5], mValues[6], mValues[3], mValues[8])
+              + mValues[2] * cross(mValues[3], mValues[7], mValues[4], mValues[6]);
       return isNearlyZero(determinant) ? 0.0f : 1.0f / determinant;
     }
   }

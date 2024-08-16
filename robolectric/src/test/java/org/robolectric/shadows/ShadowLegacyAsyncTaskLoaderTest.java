@@ -14,9 +14,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.LooperMode;
 
-/**
- * Unit tests for {@link ShadowLegacyAsyncTaskLoader}.
- */
+/** Unit tests for {@link ShadowLegacyAsyncTaskLoader}. */
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LEGACY)
 public class ShadowLegacyAsyncTaskLoaderTest {

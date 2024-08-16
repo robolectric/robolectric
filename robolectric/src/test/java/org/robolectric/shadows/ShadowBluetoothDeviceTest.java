@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.Manifest.permission.BLUETOOTH_CONNECT;
 import static android.bluetooth.BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES;
 import static android.bluetooth.BluetoothDevice.BOND_BONDED;
+import static android.bluetooth.BluetoothDevice.BOND_BONDING;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_CLASSIC;
 import static android.os.Build.VERSION_CODES.M;
@@ -99,7 +100,7 @@ public class ShadowBluetoothDeviceTest {
 
     assertThat(shadowOf(device).getPin()).isNull();
 
-    byte[] pin = new byte[] { 1, 2, 3, 4 };
+    byte[] pin = new byte[] {1, 2, 3, 4};
     device.setPin(pin);
     assertThat(shadowOf(device).getPin()).isEqualTo(pin);
   }
@@ -195,12 +196,12 @@ public class ShadowBluetoothDeviceTest {
   public void connectGatt_withTransportPhy_doesntCrash() {
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     assertThat(
-        bluetoothDevice.connectGatt(
-            ApplicationProvider.getApplicationContext(),
-            false,
-            new BluetoothGattCallback() {},
-            BluetoothDevice.TRANSPORT_LE,
-            BluetoothDevice.PHY_LE_1M_MASK))
+            bluetoothDevice.connectGatt(
+                ApplicationProvider.getApplicationContext(),
+                false,
+                new BluetoothGattCallback() {},
+                BluetoothDevice.TRANSPORT_LE,
+                BluetoothDevice.PHY_LE_1M_MASK))
         .isNotNull();
   }
 
@@ -209,13 +210,13 @@ public class ShadowBluetoothDeviceTest {
   public void connectGatt_withTransportPhyHandler_doesntCrash() {
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     assertThat(
-        bluetoothDevice.connectGatt(
-            ApplicationProvider.getApplicationContext(),
-            false,
-            new BluetoothGattCallback() {},
-            BluetoothDevice.TRANSPORT_LE,
-            BluetoothDevice.PHY_LE_1M_MASK,
-            new Handler()))
+            bluetoothDevice.connectGatt(
+                ApplicationProvider.getApplicationContext(),
+                false,
+                new BluetoothGattCallback() {},
+                BluetoothDevice.TRANSPORT_LE,
+                BluetoothDevice.PHY_LE_1M_MASK,
+                new Handler()))
         .isNotNull();
   }
 
@@ -253,8 +254,7 @@ public class ShadowBluetoothDeviceTest {
     BluetoothGatt bluetoothGatt =
         device.connectGatt(ApplicationProvider.getApplicationContext(), false, callback);
 
-    assertThat(shadowOf(bluetoothGatt).getGattCallback())
-        .isEqualTo(callback);
+    assertThat(shadowOf(bluetoothGatt).getGattCallback()).isEqualTo(callback);
   }
 
   @Test
@@ -639,5 +639,29 @@ public class ShadowBluetoothDeviceTest {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
 
     assertThat(device.isConnected()).isFalse();
+  }
+
+  @Test
+  public void cancelBondProcess_bonded_verifyBondStateBonded() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+    ShadowBluetoothDevice shadowDevice = shadowOf(device);
+
+    shadowDevice.setBondState(BOND_BONDED);
+    boolean cancelBond = device.cancelBondProcess();
+    assertThat(cancelBond).isFalse();
+    assertThat(device.getBondState()).isEqualTo(BOND_BONDED);
+  }
+
+  @Test
+  public void cancelBondProcess_bonding_verifyBondStateNone() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+    ShadowBluetoothDevice shadowDevice = shadowOf(device);
+
+    shadowDevice.setBondState(BOND_BONDING);
+    boolean cancelBond = device.cancelBondProcess();
+    assertThat(cancelBond).isTrue();
+    assertThat(device.getBondState()).isEqualTo(BOND_NONE);
   }
 }

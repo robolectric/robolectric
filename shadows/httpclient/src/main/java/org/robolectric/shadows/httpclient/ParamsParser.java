@@ -25,7 +25,8 @@ public class ParamsParser {
     return new LinkedHashMap<>();
   }
 
-  private static Map<String, String> parseParamsForRequestWithEntity(HttpEntityEnclosingRequestBase request) {
+  private static Map<String, String> parseParamsForRequestWithEntity(
+      HttpEntityEnclosingRequestBase request) {
     try {
       LinkedHashMap<String, String> map = new LinkedHashMap<>();
       HttpEntity entity = request.getEntity();

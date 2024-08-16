@@ -70,7 +70,6 @@ import android.telephony.TelephonyCallback.ServiceStateListener;
 import android.telephony.TelephonyCallback.SignalStrengthsListener;
 import android.telephony.TelephonyDisplayInfo;
 import android.telephony.TelephonyManager;
-import android.telephony.TelephonyManager.AuthenticationFailureReason;
 import android.telephony.TelephonyManager.BootstrapAuthenticationCallback;
 import android.telephony.TelephonyManager.CellInfoCallback;
 import android.telephony.UiccSlotInfo;
@@ -1323,14 +1322,7 @@ public class ShadowTelephonyManagerTest {
   @Test
   @Config(minSdk = S)
   public void getBootstrapAuthenticationCallback() {
-    BootstrapAuthenticationCallback callback =
-        new BootstrapAuthenticationCallback() {
-          @Override
-          public void onKeysAvailable(byte[] gbaKey, String transactionId) {}
-
-          @Override
-          public void onAuthenticationFailure(@AuthenticationFailureReason int reason) {}
-        };
+    BootstrapAuthenticationCallback callback = mock(BootstrapAuthenticationCallback.class);
 
     telephonyManager.bootstrapAuthenticationRequest(
         TelephonyManager.APPTYPE_ISIM,

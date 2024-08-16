@@ -18,7 +18,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             }
         }
 
-        apply plugin: AarDepsPlugin
+        apply plugin: "org.robolectric.gradle.AarDepsPlugin"
 
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8

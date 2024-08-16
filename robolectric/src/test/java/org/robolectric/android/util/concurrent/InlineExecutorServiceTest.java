@@ -13,9 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Unit tests for {@link InlineExecutorService}
- */
+/** Unit tests for {@link InlineExecutorService} */
 @RunWith(JUnit4.class)
 public class InlineExecutorServiceTest {
   private List<String> executedTasksRecord;
@@ -54,10 +52,12 @@ public class InlineExecutorServiceTest {
   @Test
   public void submitCallable() throws Exception {
     Runnable runnable = () -> executedTasksRecord.add("background event ran");
-    Future<String> future = executorService.submit(() -> {
-      runnable.run();
-      return "foo";
-    });
+    Future<String> future =
+        executorService.submit(
+            () -> {
+              runnable.run();
+              return "foo";
+            });
 
     assertThat(executedTasksRecord).containsExactly("background event ran");
     assertThat(future.isDone()).isTrue();
@@ -83,13 +83,14 @@ public class InlineExecutorServiceTest {
 
   @Test
   public void exceptionsPropagated() {
-    Callable<Void> throwingCallable = new Callable<Void>() {
+    Callable<Void> throwingCallable =
+        new Callable<Void>() {
 
-      @Override
-      public Void call() throws Exception {
-        throw new IllegalStateException("I failed");
-      }
-    };
+          @Override
+          public Void call() throws Exception {
+            throw new IllegalStateException("I failed");
+          }
+        };
     try {
       executorService.submit(throwingCallable);
       fail("did not propagate exception");
@@ -100,14 +101,15 @@ public class InlineExecutorServiceTest {
 
   @Test
   public void postingTasks() throws Exception {
-    Runnable postingRunnable = new Runnable() {
-      @Override
-      public void run() {
-        executedTasksRecord.add("first");
-        executorService.execute(() -> executedTasksRecord.add("third"));
-        executedTasksRecord.add("second");
-      }
-    };
+    Runnable postingRunnable =
+        new Runnable() {
+          @Override
+          public void run() {
+            executedTasksRecord.add("first");
+            executorService.execute(() -> executedTasksRecord.add("third"));
+            executedTasksRecord.add("second");
+          }
+        };
     executorService.execute(postingRunnable);
 
     assertThat(executedTasksRecord).containsExactly("first", "second", "third").inOrder();

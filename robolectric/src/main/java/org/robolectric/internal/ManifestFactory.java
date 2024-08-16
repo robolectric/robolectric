@@ -11,12 +11,11 @@ import org.robolectric.annotation.Config;
 public interface ManifestFactory {
 
   /**
-   * Creates a {@link ManifestIdentifier} which represents an Android app, service, or library
-   * under test, indicating its manifest file, resources and assets directories, and optionally
-   * dependency libraries and an overridden package name.
+   * Creates a {@link ManifestIdentifier} which represents an Android app, service, or library under
+   * test, indicating its manifest file, resources and assets directories, and optionally dependency
+   * libraries and an overridden package name.
    *
    * @param config The merged configuration for the running test.
    */
   ManifestIdentifier identify(Config config);
-
 }

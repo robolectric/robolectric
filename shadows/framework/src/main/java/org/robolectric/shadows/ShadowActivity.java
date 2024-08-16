@@ -61,6 +61,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -78,7 +79,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
 @SuppressWarnings("NewApi")
-@Implements(value = Activity.class, looseSignatures = true)
+@Implements(value = Activity.class)
 public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @RealObject protected Activity realActivity;
@@ -118,12 +119,12 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   public void callAttach(Intent intent) {
-    callAttach(intent, /*activityOptions=*/ null, /*lastNonConfigurationInstances=*/ null);
+    callAttach(intent, /* activityOptions= */ null, /* lastNonConfigurationInstances= */ null);
   }
 
   public void callAttach(Intent intent, @Nullable Bundle activityOptions) {
     callAttach(
-        intent, /*activityOptions=*/ activityOptions, /*lastNonConfigurationInstances=*/ null);
+        intent, /* activityOptions= */ activityOptions, /* lastNonConfigurationInstances= */ null);
   }
 
   public void callAttach(
@@ -417,7 +418,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * @return fake SplashScreen
    */
   @Implementation(minSdk = S)
-  protected synchronized Object getSplashScreen() {
+  protected synchronized @ClassName("android.window.SplashScreen") Object getSplashScreen() {
     if (splashScreen == null) {
       splashScreen = new RoboSplashScreen();
     }

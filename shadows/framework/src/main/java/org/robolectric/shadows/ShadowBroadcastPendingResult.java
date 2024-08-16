@@ -18,11 +18,20 @@ import org.robolectric.annotation.RealObject;
 public final class ShadowBroadcastPendingResult {
   @RealObject BroadcastReceiver.PendingResult pendingResult;
 
-  static BroadcastReceiver.PendingResult create(int resultCode, String resultData, Bundle resultExtras, boolean ordered) {
+  static BroadcastReceiver.PendingResult create(
+      int resultCode, String resultData, Bundle resultExtras, boolean ordered) {
     try {
       if (getApiLevel() <= LOLLIPOP_MR1) {
         return BroadcastReceiver.PendingResult.class
-            .getConstructor(int.class, String.class, Bundle.class, int.class, boolean.class, boolean.class, IBinder.class, int.class)
+            .getConstructor(
+                int.class,
+                String.class,
+                Bundle.class,
+                int.class,
+                boolean.class,
+                boolean.class,
+                IBinder.class,
+                int.class)
             .newInstance(
                 resultCode,
                 resultData,

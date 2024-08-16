@@ -5,6 +5,9 @@ import android.app.wearable.WearableSensingManager.StatusCode;
 import android.os.ParcelFileDescriptor;
 import android.os.PersistableBundle;
 import android.os.SharedMemory;
+import com.google.common.collect.Iterables;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import org.robolectric.annotation.Implementation;
@@ -21,8 +24,8 @@ public class ShadowWearableSensingManager {
 
   private @StatusCode Integer provideDataStreamResult = WearableSensingManager.STATUS_SUCCESS;
   private @StatusCode Integer provideDataResult = WearableSensingManager.STATUS_SUCCESS;
-  private PersistableBundle lastDataBundle;
-  private SharedMemory lastSharedMemory;
+  private final ArrayList<PersistableBundle> dataBundleList = new ArrayList<>();
+  private final ArrayList<SharedMemory> sharedMemoryList = new ArrayList<>();
   private ParcelFileDescriptor lastParcelFileDescriptor;
 
   @Implementation
@@ -40,8 +43,8 @@ public class ShadowWearableSensingManager {
       SharedMemory sharedMemory,
       Executor executor,
       @StatusCode Consumer<Integer> statusConsumer) {
-    lastDataBundle = data;
-    lastSharedMemory = sharedMemory;
+    dataBundleList.add(data);
+    sharedMemoryList.add(sharedMemory);
     executor.execute(() -> statusConsumer.accept(provideDataResult));
   }
 
@@ -58,10 +61,18 @@ public class ShadowWearableSensingManager {
   }
 
   public PersistableBundle getLastDataBundle() {
-    return lastDataBundle;
+    return dataBundleList.isEmpty() ? null : Iterables.getLast(dataBundleList);
+  }
+
+  public List<PersistableBundle> getAllDataBundles() {
+    return new ArrayList<>(dataBundleList);
   }
 
   public SharedMemory getLastSharedMemory() {
-    return lastSharedMemory;
+    return sharedMemoryList.isEmpty() ? null : Iterables.getLast(sharedMemoryList);
+  }
+
+  public List<SharedMemory> getAllSharedMemories() {
+    return new ArrayList<>(sharedMemoryList);
   }
 }

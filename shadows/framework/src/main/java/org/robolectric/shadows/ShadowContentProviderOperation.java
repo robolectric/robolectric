@@ -14,15 +14,16 @@ import org.robolectric.util.ReflectionHelpers;
 
 @Implements(ContentProviderOperation.class)
 public class ShadowContentProviderOperation {
-  public final static int TYPE_INSERT = 1;
-  public final static int TYPE_UPDATE = 2;
-  public final static int TYPE_DELETE = 3;
-  public final static int TYPE_ASSERT = 4;
+  public static final int TYPE_INSERT = 1;
+  public static final int TYPE_UPDATE = 2;
+  public static final int TYPE_DELETE = 3;
+  public static final int TYPE_ASSERT = 4;
 
-  @RealObject
-  private ContentProviderOperation realOperation;
+  @RealObject private ContentProviderOperation realOperation;
 
-  /** @deprecated implementation detail - use public Android APIs instead */
+  /**
+   * @deprecated implementation detail - use public Android APIs instead
+   */
   @HiddenApi
   @Implementation
   @Deprecated
@@ -33,7 +34,9 @@ public class ShadowContentProviderOperation {
     return getFieldReflectively("mType", Integer.class);
   }
 
-  /** @deprecated implementation detail - use public Android APIs instead */
+  /**
+   * @deprecated implementation detail - use public Android APIs instead
+   */
   @Deprecated
   public String getSelection() {
     if (RuntimeEnvironment.getApiLevel() >= R) {
@@ -42,7 +45,9 @@ public class ShadowContentProviderOperation {
     return getFieldReflectively("mSelection", String.class);
   }
 
-  /** @deprecated implementation detail - use public Android APIs instead */
+  /**
+   * @deprecated implementation detail - use public Android APIs instead
+   */
   @Deprecated
   public String[] getSelectionArgs() {
     if (RuntimeEnvironment.getApiLevel() >= R) {
@@ -51,7 +56,9 @@ public class ShadowContentProviderOperation {
     return getFieldReflectively("mSelectionArgs", String[].class);
   }
 
-  /** @deprecated implementation detail - use public Android APIs instead */
+  /**
+   * @deprecated implementation detail - use public Android APIs instead
+   */
   @Deprecated
   public ContentValues getContentValues() {
     if (RuntimeEnvironment.getApiLevel() >= R) {
@@ -60,7 +67,9 @@ public class ShadowContentProviderOperation {
     return getFieldReflectively("mValues", ContentValues.class);
   }
 
-  /** @deprecated implementation detail - use public Android APIs instead */
+  /**
+   * @deprecated implementation detail - use public Android APIs instead
+   */
   @Deprecated
   public Integer getExpectedCount() {
     if (RuntimeEnvironment.getApiLevel() >= R) {
@@ -69,7 +78,9 @@ public class ShadowContentProviderOperation {
     return getFieldReflectively("mExpectedCount", Integer.class);
   }
 
-  /** @deprecated implementation detail - use public Android APIs instead */
+  /**
+   * @deprecated implementation detail - use public Android APIs instead
+   */
   @Deprecated
   public ContentValues getValuesBackReferences() {
     if (RuntimeEnvironment.getApiLevel() >= R) {
@@ -78,7 +89,9 @@ public class ShadowContentProviderOperation {
     return getFieldReflectively("mValuesBackReferences", ContentValues.class);
   }
 
-  /** @deprecated implementation detail - use public Android APIs instead */
+  /**
+   * @deprecated implementation detail - use public Android APIs instead
+   */
   @SuppressWarnings("unchecked")
   @Deprecated
   public Map<Integer, Integer> getSelectionArgsBackReferences() {

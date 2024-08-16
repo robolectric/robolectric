@@ -8,6 +8,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlarmManager.AlarmClockInfo;
 import android.app.AlarmManager.OnAlarmListener;
@@ -30,6 +31,7 @@ import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAlarmManager.ScheduledAlarm;
 
@@ -661,6 +663,35 @@ public class ShadowAlarmManagerTest {
     assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
     assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
     assertThat(alarm.getTag()).isEqualTo("tag");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  public void alarmManager_instance_retrievesSameAlarmClockInfo() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+
+    try {
+      AlarmManager applicationAlarmManager =
+          (AlarmManager)
+              ApplicationProvider.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+
+      activity = Robolectric.setupActivity(Activity.class);
+      AlarmManager activityAlarmManager =
+          (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+
+      AlarmManager.AlarmClockInfo applicationAlarmClock =
+          applicationAlarmManager.getNextAlarmClock();
+      AlarmManager.AlarmClockInfo activityAlarmClock = activityAlarmManager.getNextAlarmClock();
+
+      assertThat(activityAlarmClock).isEqualTo(applicationAlarmClock);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 
   private class TestBroadcastListener extends BroadcastReceiver implements AutoCloseable {

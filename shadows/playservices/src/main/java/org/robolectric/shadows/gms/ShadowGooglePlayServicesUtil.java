@@ -18,15 +18,14 @@ import org.robolectric.annotation.Resetter;
 
 /**
  * Calls to static method of {@link GooglePlayServicesUtil} will be redirected to the provided
- * {@link GooglePlayServicesUtilImpl} implementation. Use
- * {@link #provideImpl(GooglePlayServicesUtilImpl)} to
- * set the implementation instance. By default, a {@link GooglePlayServicesUtilImpl} is used in call
- * redirection. Use mocks or subclassing {@link GooglePlayServicesUtilImpl} to achieve desired
- * behaviors.
+ * {@link GooglePlayServicesUtilImpl} implementation. Use {@link
+ * #provideImpl(GooglePlayServicesUtilImpl)} to set the implementation instance. By default, a
+ * {@link GooglePlayServicesUtilImpl} is used in call redirection. Use mocks or subclassing {@link
+ * GooglePlayServicesUtilImpl} to achieve desired behaviors.
  */
 @Implements(GooglePlayServicesUtil.class)
 public class ShadowGooglePlayServicesUtil {
-  private static GooglePlayServicesUtilImpl googlePlayServicesUtilImpl = 
+  private static GooglePlayServicesUtilImpl googlePlayServicesUtilImpl =
       new GooglePlayServicesUtilImpl();
 
   public static synchronized GooglePlayServicesUtilImpl getImpl() {
@@ -53,17 +52,20 @@ public class ShadowGooglePlayServicesUtil {
   }
 
   @Implementation
-  public static synchronized boolean showErrorDialogFragment(int errorCode, Activity activity,
-      Fragment fragment, int requestCode, OnCancelListener cancelListener) {
+  public static synchronized boolean showErrorDialogFragment(
+      int errorCode,
+      Activity activity,
+      Fragment fragment,
+      int requestCode,
+      OnCancelListener cancelListener) {
     return googlePlayServicesUtilImpl.showErrorDialogFragment(
         errorCode, activity, fragment, requestCode, cancelListener);
   }
 
   @Implementation
-  public static synchronized boolean showErrorDialogFragment(int errorCode, Activity activity,
-      int requestCode) {
-    return googlePlayServicesUtilImpl.showErrorDialogFragment(
-        errorCode, activity, requestCode);
+  public static synchronized boolean showErrorDialogFragment(
+      int errorCode, Activity activity, int requestCode) {
+    return googlePlayServicesUtilImpl.showErrorDialogFragment(errorCode, activity, requestCode);
   }
 
   @Implementation
@@ -74,21 +76,21 @@ public class ShadowGooglePlayServicesUtil {
   }
 
   @Implementation
-  public static synchronized Dialog getErrorDialog(int errorCode, Activity activity,
-      int requestCode) {
+  public static synchronized Dialog getErrorDialog(
+      int errorCode, Activity activity, int requestCode) {
     return googlePlayServicesUtilImpl.getErrorDialog(errorCode, activity, requestCode);
   }
 
   @Implementation
-  public static synchronized Dialog getErrorDialog(int errorCode, Activity activity,
-      int requestCode, OnCancelListener cancelListener) {
+  public static synchronized Dialog getErrorDialog(
+      int errorCode, Activity activity, int requestCode, OnCancelListener cancelListener) {
     return googlePlayServicesUtilImpl.getErrorDialog(
         errorCode, activity, requestCode, cancelListener);
   }
 
   @Implementation
-  public static synchronized PendingIntent getErrorPendingIntent(int errorCode, Context context,
-      int requestCode) {
+  public static synchronized PendingIntent getErrorPendingIntent(
+      int errorCode, Context context, int requestCode) {
     return googlePlayServicesUtilImpl.getErrorPendingIntent(errorCode, context, requestCode);
   }
 
@@ -103,24 +105,23 @@ public class ShadowGooglePlayServicesUtil {
   }
 
   /**
-   * Class containing methods with same signatures of the static methods of
-   * {@link GooglePlayServicesUtil}.
+   * Class containing methods with same signatures of the static methods of {@link
+   * GooglePlayServicesUtil}.
    */
   public static class GooglePlayServicesUtilImpl {
     public Dialog getErrorDialog(int errorCode, Activity activity, int requestCode) {
       return getErrorDialog(errorCode, activity, requestCode, null);
     }
 
-    public Dialog getErrorDialog(int errorCode, Activity activity, int requestCode,
-        OnCancelListener cancelListener) {
+    public Dialog getErrorDialog(
+        int errorCode, Activity activity, int requestCode, OnCancelListener cancelListener) {
       if (errorCode == ConnectionResult.SUCCESS) {
         return null;
       }
       return new Dialog(RuntimeEnvironment.getApplication());
     }
 
-    public PendingIntent getErrorPendingIntent(int errorCode, Context context,
-        int requestCode) {
+    public PendingIntent getErrorPendingIntent(int errorCode, Context context, int requestCode) {
       if (errorCode == ConnectionResult.SUCCESS) {
         return null;
       }
@@ -140,8 +141,12 @@ public class ShadowGooglePlayServicesUtil {
       return ConnectionResult.SERVICE_MISSING;
     }
 
-    public boolean showErrorDialogFragment(int errorCode, Activity activity,
-        Fragment fragment, int requestCode, OnCancelListener cancelListener) {
+    public boolean showErrorDialogFragment(
+        int errorCode,
+        Activity activity,
+        Fragment fragment,
+        int requestCode,
+        OnCancelListener cancelListener) {
       return false;
     }
 
@@ -149,8 +154,8 @@ public class ShadowGooglePlayServicesUtil {
       return false;
     }
 
-    public boolean showErrorDialogFragment(int errorCode, Activity activity, int requestCode,
-        OnCancelListener cancelListener) {
+    public boolean showErrorDialogFragment(
+        int errorCode, Activity activity, int requestCode, OnCancelListener cancelListener) {
       return false;
     }
 

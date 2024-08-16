@@ -139,10 +139,10 @@ public class ActivityScenarioTest {
   public void launch_callbackSequence() {
     try (ActivityScenario<TranscriptActivity> activityScenario =
         ActivityScenario.launch(TranscriptActivity.class)) {
-    assertThat(activityScenario).isNotNull();
-    assertThat(callbacks)
-        .containsExactly(
-            "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true");
+      assertThat(activityScenario).isNotNull();
+      assertThat(callbacks)
+          .containsExactly(
+              "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true");
     }
   }
 
@@ -150,13 +150,18 @@ public class ActivityScenarioTest {
   public void launch_pauseAndResume_callbackSequence() {
     try (ActivityScenario<TranscriptActivity> activityScenario =
         ActivityScenario.launch(TranscriptActivity.class)) {
-    assertThat(activityScenario).isNotNull();
-    activityScenario.moveToState(State.STARTED);
-    activityScenario.moveToState(State.RESUMED);
-    assertThat(callbacks)
-        .containsExactly(
-            "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true",
-            "onPause", "onResume");
+      assertThat(activityScenario).isNotNull();
+      activityScenario.moveToState(State.STARTED);
+      activityScenario.moveToState(State.RESUMED);
+      assertThat(callbacks)
+          .containsExactly(
+              "onCreate",
+              "onStart",
+              "onPostCreate",
+              "onResume",
+              "onWindowFocusChanged true",
+              "onPause",
+              "onResume");
     }
   }
 
@@ -167,18 +172,18 @@ public class ActivityScenarioTest {
       assertThat(activityScenario).isNotNull();
       activityScenario.moveToState(State.CREATED);
       activityScenario.moveToState(State.RESUMED);
-    assertThat(callbacks)
-        .containsExactly(
-            "onCreate",
-            "onStart",
-            "onPostCreate",
-            "onResume",
-            "onWindowFocusChanged true",
-            "onPause",
-            "onStop false",
-            "onRestart",
-            "onStart",
-            "onResume");
+      assertThat(callbacks)
+          .containsExactly(
+              "onCreate",
+              "onStart",
+              "onPostCreate",
+              "onResume",
+              "onWindowFocusChanged true",
+              "onPause",
+              "onStop false",
+              "onRestart",
+              "onStart",
+              "onResume");
     }
   }
 
@@ -191,12 +196,12 @@ public class ActivityScenarioTest {
                 .setClassName(
                     context, "org.robolectric.integrationtests.axt.ActivityScenarioTestAlias"))) {
 
-    assertThat(activityScenario).isNotNull();
-    activityScenario.onActivity(
-        activity -> assertThat(activity).isInstanceOf(TranscriptActivity.class));
-    assertThat(callbacks)
-        .containsExactly(
-            "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true");
+      assertThat(activityScenario).isNotNull();
+      activityScenario.onActivity(
+          activity -> assertThat(activity).isInstanceOf(TranscriptActivity.class));
+      assertThat(callbacks)
+          .containsExactly(
+              "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true");
     }
   }
 
@@ -204,15 +209,18 @@ public class ActivityScenarioTest {
   public void launch_lifecycleOwnerActivity() {
     try (ActivityScenario<LifecycleOwnerActivity> activityScenario =
         ActivityScenario.launch(LifecycleOwnerActivity.class)) {
-    assertThat(activityScenario).isNotNull();
-    activityScenario.onActivity(
-        activity -> assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.RESUMED));
-    activityScenario.moveToState(State.STARTED);
-    activityScenario.onActivity(
-        activity -> assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.STARTED));
-    activityScenario.moveToState(State.CREATED);
-    activityScenario.onActivity(
-        activity -> assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.CREATED));
+      assertThat(activityScenario).isNotNull();
+      activityScenario.onActivity(
+          activity ->
+              assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.RESUMED));
+      activityScenario.moveToState(State.STARTED);
+      activityScenario.onActivity(
+          activity ->
+              assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.STARTED));
+      activityScenario.moveToState(State.CREATED);
+      activityScenario.onActivity(
+          activity ->
+              assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.CREATED));
     }
   }
 
@@ -222,22 +230,23 @@ public class ActivityScenarioTest {
     fragment.setRetainInstance(true);
     try (ActivityScenario<LifecycleOwnerActivity> activityScenario =
         ActivityScenario.launch(LifecycleOwnerActivity.class)) {
-    assertThat(activityScenario).isNotNull();
-    activityScenario.onActivity(
-        activity -> {
-          activity
-              .getSupportFragmentManager()
-              .beginTransaction()
-              .add(android.R.id.content, fragment)
-              .commitNow();
-          assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
-              .isSameInstanceAs(fragment);
-        });
-    activityScenario.recreate();
-    activityScenario.onActivity(
-        activity ->
+      assertThat(activityScenario).isNotNull();
+      activityScenario.onActivity(
+          activity -> {
+            activity
+                .getSupportFragmentManager()
+                .beginTransaction()
+                .add(android.R.id.content, fragment)
+                .commitNow();
             assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
-                .isSameInstanceAs(fragment));
+                .isSameInstanceAs(fragment);
+          });
+      activityScenario.recreate();
+      activityScenario.onActivity(
+          activity ->
+              assertThat(
+                      activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
+                  .isSameInstanceAs(fragment));
     }
   }
 
@@ -247,22 +256,23 @@ public class ActivityScenarioTest {
     fragment.setRetainInstance(false);
     try (ActivityScenario<LifecycleOwnerActivity> activityScenario =
         ActivityScenario.launch(LifecycleOwnerActivity.class)) {
-    assertThat(activityScenario).isNotNull();
-    activityScenario.onActivity(
-        activity -> {
-          activity
-              .getSupportFragmentManager()
-              .beginTransaction()
-              .add(android.R.id.content, fragment)
-              .commitNow();
-          assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
-              .isSameInstanceAs(fragment);
-        });
-    activityScenario.recreate();
-    activityScenario.onActivity(
-        activity ->
+      assertThat(activityScenario).isNotNull();
+      activityScenario.onActivity(
+          activity -> {
+            activity
+                .getSupportFragmentManager()
+                .beginTransaction()
+                .add(android.R.id.content, fragment)
+                .commitNow();
             assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
-                .isNotSameInstanceAs(fragment));
+                .isSameInstanceAs(fragment);
+          });
+      activityScenario.recreate();
+      activityScenario.onActivity(
+          activity ->
+              assertThat(
+                      activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
+                  .isNotSameInstanceAs(fragment));
     }
   }
 

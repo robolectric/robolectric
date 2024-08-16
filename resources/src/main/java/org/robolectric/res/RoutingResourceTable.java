@@ -9,7 +9,8 @@ import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
 
 public class RoutingResourceTable implements ResourceTable {
-  private static final PackageResourceTable EMPTY_RESOURCE_TABLE = new ResourceTableFactory().newResourceTable("");
+  private static final PackageResourceTable EMPTY_RESOURCE_TABLE =
+      new ResourceTableFactory().newResourceTable("");
   private final Map<String, PackageResourceTable> resourceTables;
 
   public RoutingResourceTable(PackageResourceTable... resourceTables) {
@@ -20,25 +21,30 @@ public class RoutingResourceTable implements ResourceTable {
     }
   }
 
-  @Override public InputStream getRawValue(int resId, ResTable_config config) {
+  @Override
+  public InputStream getRawValue(int resId, ResTable_config config) {
     ResName resName = getResName(resId);
     return resName != null ? getRawValue(resName, config) : null;
   }
 
-  @Override public TypedResource getValue(@Nonnull ResName resName, ResTable_config config) {
+  @Override
+  public TypedResource getValue(@Nonnull ResName resName, ResTable_config config) {
     return pickFor(resName).getValue(resName, config);
   }
 
-  @Override public TypedResource getValue(int resId, ResTable_config config) {
+  @Override
+  public TypedResource getValue(int resId, ResTable_config config) {
     ResName resName = pickFor(resId).getResName(resId);
     return resName != null ? getValue(resName, config) : null;
   }
 
-  @Override public XmlBlock getXml(ResName resName, ResTable_config config) {
+  @Override
+  public XmlBlock getXml(ResName resName, ResTable_config config) {
     return pickFor(resName).getXml(resName, config);
   }
 
-  @Override public InputStream getRawValue(ResName resName, ResTable_config config) {
+  @Override
+  public InputStream getRawValue(ResName resName, ResTable_config config) {
     return pickFor(resName).getRawValue(resName, config);
   }
 

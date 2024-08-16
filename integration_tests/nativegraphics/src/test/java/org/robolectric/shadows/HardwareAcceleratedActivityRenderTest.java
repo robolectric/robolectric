@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -15,8 +14,6 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.widget.FrameLayout;
-import java.util.Locale;
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
@@ -37,13 +34,6 @@ public class HardwareAcceleratedActivityRenderTest {
 
   @Test
   public void hardwareAcceleratedActivity_pixelCopy() throws Exception {
-    // This API is not supported correctly on macOS now.
-    assume()
-        .that(
-            Objects.requireNonNull(System.getProperty("os.name"))
-                .toLowerCase(Locale.US)
-                .contains("mac"))
-        .isFalse();
     System.setProperty("robolectric.pixelCopyRenderMode", "hardware");
     try {
       HardwareAcceleratedActivity activity =

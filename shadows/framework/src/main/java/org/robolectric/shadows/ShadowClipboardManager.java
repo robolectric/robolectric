@@ -16,6 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.ForType;
@@ -23,10 +24,26 @@ import org.robolectric.util.reflector.ForType;
 @SuppressWarnings("UnusedDeclaration")
 @Implements(ClipboardManager.class)
 public class ShadowClipboardManager {
-  @RealObject private ClipboardManager realClipboardManager;
-  private final Collection<OnPrimaryClipChangedListener> listeners =
+  private static final Collection<OnPrimaryClipChangedListener> listeners =
       new CopyOnWriteArrayList<OnPrimaryClipChangedListener>();
-  private ClipData clip;
+  private static ClipData clip;
+  @RealObject private ClipboardManager realClipboardManager;
+
+  @Resetter
+  public static void reset() {
+    clip = null;
+    listeners.clear();
+  }
+
+  @Implementation(minSdk = P)
+  protected void clearPrimaryClip() {
+    setPrimaryClip(null);
+  }
+
+  @Implementation
+  protected ClipData getPrimaryClip() {
+    return clip;
+  }
 
   @Implementation
   protected void setPrimaryClip(ClipData clip) {
@@ -58,16 +75,6 @@ public class ShadowClipboardManager {
     for (OnPrimaryClipChangedListener listener : listeners) {
       listener.onPrimaryClipChanged();
     }
-  }
-
-  @Implementation(minSdk = P)
-  protected void clearPrimaryClip() {
-    setPrimaryClip(null);
-  }
-
-  @Implementation
-  protected ClipData getPrimaryClip() {
-    return clip;
   }
 
   @Implementation

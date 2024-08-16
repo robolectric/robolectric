@@ -34,8 +34,10 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accounts.Account;
+import android.app.Activity;
 import android.app.Application;
 import android.app.KeyguardManager;
+import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
@@ -65,6 +67,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -837,6 +840,96 @@ public final class ShadowDevicePolicyManagerTest {
     // THEN it should return the empty bundle
     assertThat(devicePolicyManager.getApplicationRestrictions(testComponent, app).isEmpty())
         .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getDelegatedScopes_notDeviceOwner_throwsSecurityException() {
+    // GIVEN the caller is not the device owner
+
+    // WHEN getDelegatedScopes is called
+    // THEN it should throw SecurityException
+    assertThrows(
+        SecurityException.class,
+        () -> devicePolicyManager.getDelegatedScopes(testComponent, "com.example.app"));
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getDelegatedScopes_noDelegatedScopes_returnsEmptyList() {
+    // GIVEN the caller is the device owner
+    ComponentName caller = new ComponentName(context.getPackageName(), "DeviceAdminComponent");
+    shadowOf(devicePolicyManager).setDeviceOwner(caller);
+
+    // WHEN getDelegatedScopes is called
+    // THEN it should return empty list
+    assertThat(devicePolicyManager.getDelegatedScopes(caller, "com.example.app")).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getDelegatedScopes_callerIsDeviceOwner_returnsDelegatedScopes() {
+    // GIVEN the caller is the device owner
+    ComponentName caller = new ComponentName(context.getPackageName(), "DeviceAdminComponent");
+    shadowOf(devicePolicyManager).setDeviceOwner(caller);
+
+    // GIVEN the caller has delegated scopes
+    String delegatedApp = "com.example.app";
+    List<String> scopes =
+        Arrays.asList(
+            DevicePolicyManager.DELEGATION_APP_RESTRICTIONS,
+            DevicePolicyManager.DELEGATION_PERMISSION_GRANT);
+    devicePolicyManager.setDelegatedScopes(caller, delegatedApp, scopes);
+    String otherApp = "com.example.other.app";
+    devicePolicyManager.setDelegatedScopes(
+        caller,
+        otherApp,
+        Arrays.asList(
+            DevicePolicyManager.DELEGATION_ENABLE_SYSTEM_APP,
+            DevicePolicyManager.DELEGATION_PERMISSION_GRANT));
+
+    // WHEN getDelegatedScopes is called
+    // THEN it should return the correct scopes
+    assertThat(devicePolicyManager.getDelegatedScopes(caller, delegatedApp))
+        .containsExactlyElementsIn(scopes);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getDelegatedScopes_notOwner_failsToReturnScopesForOtherApp() {
+    // GIVEN the caller is not the device owner
+    // WHEN getDelegatedScopes is called
+    // THEN it should throw SecurityException
+    assertThrows(
+        SecurityException.class,
+        () -> devicePolicyManager.getDelegatedScopes(/* admin= */ null, "com.example.app"));
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getDelegatedScopes_notOwner_returnScopesForSelf() {
+    // GIVEN the caller is not the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN the caller has delegated scopes
+    String delegatedApp = context.getPackageName();
+    List<String> scopes =
+        Arrays.asList(
+            DevicePolicyManager.DELEGATION_APP_RESTRICTIONS,
+            DevicePolicyManager.DELEGATION_PERMISSION_GRANT);
+    devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
+    String otherApp = "com.example.other.app";
+    devicePolicyManager.setDelegatedScopes(
+        testComponent,
+        otherApp,
+        Arrays.asList(
+            DevicePolicyManager.DELEGATION_ENABLE_SYSTEM_APP,
+            DevicePolicyManager.DELEGATION_PERMISSION_GRANT));
+
+    // WHEN getDelegatedScopes is called
+    // THEN it should return the correct scopes
+    assertThat(devicePolicyManager.getDelegatedScopes(/* admin= */ null, delegatedApp))
+        .containsExactlyElementsIn(scopes);
   }
 
   @Test
@@ -2619,5 +2712,37 @@ public final class ShadowDevicePolicyManagerTest {
       @Override
       public void onServiceDisconnected(ComponentName name) {}
     };
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void devicePolicyManager_instance_retrievesSameAdminStatus() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      DevicePolicyManager applicationDpm =
+          (DevicePolicyManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.DEVICE_POLICY_SERVICE);
+
+      activity = Robolectric.setupActivity(Activity.class);
+
+      DevicePolicyManager activityDpm =
+          (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
+
+      ComponentName testAdminComponent =
+          new ComponentName(ApplicationProvider.getApplicationContext(), DeviceAdminReceiver.class);
+
+      boolean applicationAdminActive = applicationDpm.isAdminActive(testAdminComponent);
+      boolean activityAdminActive = activityDpm.isAdminActive(testAdminComponent);
+
+      assertThat(activityAdminActive).isEqualTo(applicationAdminActive);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

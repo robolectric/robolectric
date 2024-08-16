@@ -18,11 +18,14 @@ public class StringResourcesTest {
     assertThat(StringResources.escape("\"This'll work\"")).isEqualTo("This'll work");
     assertThat(StringResources.escape("This\\'ll also work")).isEqualTo("This'll also work");
 
-    assertThat(StringResources.escape("This is a \\\"good string\\\".")).isEqualTo("This is a \"good string\".");
+    assertThat(StringResources.escape("This is a \\\"good string\\\"."))
+        .isEqualTo("This is a \"good string\".");
     assertThat(StringResources.escape("This is a \"bad string with unescaped double quotes\"."))
         .isEqualTo("This is a bad string with unescaped double quotes.");
 
-    assertThat(StringResources.escape("Text with escaped backslash followed by an \\\\\"unescaped double quote."))
+    assertThat(
+            StringResources.escape(
+                "Text with escaped backslash followed by an \\\\\"unescaped double quote."))
         .isEqualTo("Text with escaped backslash followed by an \\unescaped double quote.");
   }
 
@@ -44,14 +47,18 @@ public class StringResourcesTest {
   @Test
   public void shouldTrimWhitespace() {
     assertThat(StringResources.processStringResources("    ")).isEmpty();
-    assertThat(StringResources.processStringResources("Trailingwhitespace    ")).isEqualTo("Trailingwhitespace");
-    assertThat(StringResources.processStringResources("Leadingwhitespace    ")).isEqualTo("Leadingwhitespace");
+    assertThat(StringResources.processStringResources("Trailingwhitespace    "))
+        .isEqualTo("Trailingwhitespace");
+    assertThat(StringResources.processStringResources("Leadingwhitespace    "))
+        .isEqualTo("Leadingwhitespace");
   }
 
   @Test
   public void shouldCollapseInternalWhiteSpaces() {
-    assertThat(StringResources.processStringResources("Whitespace     in     the          middle")).isEqualTo("Whitespace in the middle");
-    assertThat(StringResources.processStringResources("Some\n\n\n\nNewlines")).isEqualTo("Some Newlines");
+    assertThat(StringResources.processStringResources("Whitespace     in     the          middle"))
+        .isEqualTo("Whitespace in the middle");
+    assertThat(StringResources.processStringResources("Some\n\n\n\nNewlines"))
+        .isEqualTo("Some Newlines");
   }
 
   @Test

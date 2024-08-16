@@ -21,6 +21,7 @@ import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -36,19 +37,26 @@ public class ShadowBluetoothManager {
           BluetoothProfile.STATE_DISCONNECTED,
           BluetoothProfile.STATE_DISCONNECTING);
 
-  private final ArrayList<BleDevice> bleDevices = new ArrayList<>();
+  private static final ArrayList<BleDevice> bleDevices = new ArrayList<>();
+
+  @Resetter
+  public static void reset() {
+    bleDevices.clear();
+  }
 
   /** Used for storing registered {@link BluetoothDevice} with the specified profile and state. */
   @AutoValue
   abstract static class BleDevice {
     /** {@link BluetoothProfile#GATT} or {@link BluetoothProfile#GATT_SERVER}. */
     abstract int profile();
+
     /**
      * State of the profile connection. One of {@link BluetoothProfile#STATE_CONNECTED}, {@link
      * BluetoothProfile#STATE_CONNECTING}, {@link BluetoothProfile#STATE_DISCONNECTED} and {@link
      * BluetoothProfile#STATE_DISCONNECTING}.
      */
     abstract int state();
+
     /** The remote bluetooth device. */
     abstract BluetoothDevice device();
 

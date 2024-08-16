@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import java.util.HashMap;

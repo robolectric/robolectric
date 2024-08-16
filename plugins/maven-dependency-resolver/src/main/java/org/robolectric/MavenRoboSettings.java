@@ -1,7 +1,8 @@
 package org.robolectric;
 
 /**
- * Class that encapsulates reading global configuration options from the Java system properties file.
+ * Class that encapsulates reading global configuration options from the Java system properties
+ * file.
  *
  * @deprecated Don't put more stuff here.
  */

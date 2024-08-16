@@ -6,9 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Tests for {@link ResourceIds}
- */
+/** Tests for {@link ResourceIds} */
 @RunWith(JUnit4.class)
 public class ResourceIdsTest {
   @Test

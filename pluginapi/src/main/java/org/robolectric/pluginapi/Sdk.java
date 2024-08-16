@@ -3,9 +3,7 @@ package org.robolectric.pluginapi;
 import java.nio.file.Path;
 import javax.annotation.Nonnull;
 
-/**
- * Represents a unique build of the Android SDK.
- */
+/** Represents a unique build of the Android SDK. */
 @SuppressWarnings("NewApi")
 public abstract class Sdk implements Comparable<Sdk> {
 
@@ -49,34 +47,33 @@ public abstract class Sdk implements Comparable<Sdk> {
    */
   public abstract String getAndroidCodeName();
 
-  /**
-   * Returns the path to jar for this SDK.
-   */
+  /** Returns the path to jar for this SDK. */
   public abstract Path getJarPath();
 
   /**
    * Determines if this SDK is supported in the running Robolectric environment.
    *
-   * An SDK might be unsupported if e.g. it requires a newer version of the JVM than is currently
+   * <p>An SDK might be unsupported if e.g. it requires a newer version of the JVM than is currently
    * running.
    *
-   * Unsupported SDKs should throw some explanatory exception when {@link #getJarPath()} is invoked.
+   * <p>Unsupported SDKs should throw some explanatory exception when {@link #getJarPath()} is
+   * invoked.
    *
-   * If this is an expensive operation, the implementation should cache the return value.
+   * <p>If this is an expensive operation, the implementation should cache the return value.
    */
   public abstract boolean isSupported();
 
   /**
    * Returns a human-readable message explaining why this SDK isn't supported.
    *
-   * If this is an expensive operation, the implementation should cache the return value.
+   * <p>If this is an expensive operation, the implementation should cache the return value.
    */
   public abstract String getUnsupportedMessage();
 
   /**
    * Determines if this SDK is known by its provider.
    *
-   * Unknown SDKs can serve as placeholder objects; they should throw some explanatory exception
+   * <p>Unknown SDKs can serve as placeholder objects; they should throw some explanatory exception
    * when {@link #getJarPath()} is invoked.
    */
   public boolean isKnown() {
@@ -117,7 +114,6 @@ public abstract class Sdk implements Comparable<Sdk> {
    * <p>Implementations should throw an exception if SDK is unsupported. They can choose to either
    * throw org.junit.AssumptionViolatedException to just skip execution of tests on the SDK, with a
    * warning, or throw a RuntimeException to fail the test.
-   *
    */
   public abstract void verifySupportedSdk(String testClassName);
 }

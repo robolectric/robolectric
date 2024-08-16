@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-
-
 import android.database.CharArrayBuffer;
 import android.database.CursorWindow;
 import com.google.common.base.Preconditions;

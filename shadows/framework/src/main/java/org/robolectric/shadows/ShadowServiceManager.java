@@ -63,6 +63,7 @@ import android.net.IVpnManager;
 import android.net.nsd.INsdManager;
 import android.net.vcn.IVcnManagementService;
 import android.net.wifi.IWifiManager;
+import android.net.wifi.IWifiScanner;
 import android.net.wifi.aware.IWifiAwareManager;
 import android.net.wifi.p2p.IWifiP2pManager;
 import android.net.wifi.rtt.IWifiRttManager;
@@ -242,6 +243,12 @@ public class ShadowServiceManager {
     if (RuntimeEnvironment.getApiLevel() >= N) {
       addBinderService(binderServices, Context.CONTEXTHUB_SERVICE, IContextHubService.class);
       addBinderService(binderServices, Context.SOUND_TRIGGER_SERVICE, ISoundTriggerService.class);
+      addBinderService(
+          binderServices,
+          Context.WIFI_SCANNING_SERVICE,
+          IWifiScanner.class,
+          BinderProxyType.DELEGATING,
+          new WifiScannerDelegate());
     }
     if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
       addBinderService(binderServices, Context.SHORTCUT_SERVICE, IShortcutService.class);
@@ -306,6 +313,7 @@ public class ShadowServiceManager {
       addBinderService(
           binderServices, Context.WEARABLE_SENSING_SERVICE, IWearableSensingManager.class);
     }
+
     return binderServices;
   }
 

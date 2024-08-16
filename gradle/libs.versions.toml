@@ -1,8 +1,13 @@
 [versions]
-robolectric-nativeruntime-dist-compat = "1.0.11"
+robolectric-nativeruntime-dist-compat = "1.0.12"
 
 # https://developer.android.com/studio/releases
-android-gradle = "8.4.1"
+android-gradle = "8.5.2"
+
+android-tools-common = "31.5.2"
+
+# The runtime dependency for Android classes when Robolectric tests are run
+androidstubs = "34"
 
 # https://github.com/google/conscrypt/tags
 conscrypt = "2.5.2"
@@ -16,9 +21,6 @@ findbugs-jsr305 = "3.0.2"
 # https://github.com/hamcrest/JavaHamcrest/releases
 hamcrest = "2.0.0.0"
 
-# https://github.com/nebula-plugins/gradle-aggregate-javadocs-plugin/releases
-aggregate-javadocs-gradle = "3.0.1"
-
 # https://github.com/google/error-prone/releases
 error-prone = "2.19.1"
 error-prone-javac = "9+181-r4173-1"
@@ -27,7 +29,7 @@ error-prone-javac = "9+181-r4173-1"
 error-prone-gradle = "3.1.0"
 
 # https://kotlinlang.org/docs/releases.html#release-details
-kotlin = "2.0.0"
+kotlin = "2.0.10"
 
 # https://github.com/Kotlin/kotlinx.coroutines/releases/
 kotlinx-coroutines = '1.8.1'
@@ -73,14 +75,11 @@ javax-annotation-api = "1.3.2"
 javax-annotation-jsr250-api = "1.0"
 javax-inject = "1"
 
-# https://github.com/JetBrains/java-annotations/releases
-jetbrains-annotations = "24.1.0"
-
 # https://junit.org/junit4/
 junit4 = "4.13.2"
 
 # https://github.com/google/libphonenumber/releases
-libphonenumber = "8.13.38"
+libphonenumber = "8.13.42"
 
 # https://github.com/mockito/mockito/releases
 mockito = "4.11.0"
@@ -89,7 +88,7 @@ mockito = "4.11.0"
 mockk = "1.13.7"
 
 # https://github.com/takahirom/roborazzi/releases
-roborazzi = "1.20.0"
+roborazzi = "1.26.0"
 
 # https://square.github.io/okhttp/changelogs/changelog/
 okhttp = "4.12.0"
@@ -100,44 +99,39 @@ powermock = "2.0.9"
 sqlite4java = "1.0.392"
 
 # https://developer.android.com/jetpack/androidx/versions
-androidx-annotation = "1.8.0"
+androidx-annotation = "1.8.2"
 androidx-appcompat = "1.7.0"
 androidx-biometric = "1.1.0"
 androidx-constraintlayout = "2.1.4"
 androidx-core = "1.13.1"
-androidx-fragment = "1.7.1"
+androidx-fragment = "1.8.2"
 androidx-multidex = "2.0.1"
 androidx-window = "1.3.0"
 androidx-room = "2.6.1"
 
+# https://maven.google.com/web/index.html?q=multidex#com.android.support:multidex
+android-multidex = "1.0.3"
+
 # https://github.com/android/android-test/tags
-androidx-test-core = "1.5.0"
-androidx-test-espresso = "3.5.1"
-androidx-test-ext-junit = "1.1.5"
-androidx-test-ext-truth = "1.5.0"
-androidx-test-monitor = "1.6.1"
-androidx-test-runner = "1.5.2"
-androidx-test-services = "1.4.2"
+androidx-test-core = "1.6.1"
+androidx-test-espresso = "3.6.1"
+androidx-test-ext-junit = "1.2.1"
+androidx-test-ext-truth = "1.6.0"
+androidx-test-monitor = "1.7.1"
+androidx-test-runner = "1.6.1"
+androidx-test-services = "1.5.0"
 
 # for shadows/playservices/build.gradle
 androidx-fragment-for-shadows = "1.2.0"
 play-services-for-shadows = "17.0.0"
 
-# https://developer.android.com/reference/com/google/android/play/core/release-notes
-# https://developer.android.com/guide/playcore#playcore-migration
-play-core = "2.0.1"
-
 # https://developers.google.com/android/guides/releases
 play-services-basement = "18.0.1"
-core-ktx = "1.10.1"
-material = "1.10.0"
-junit-ktx = "1.2.1"
 
 [libraries]
-android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
-kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-spotless-gradle = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-gradle" }
-detekt-gradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt-gradle" }
+android-gradle-api = { module = "com.android.tools.build:gradle-api", version.ref = "android-gradle" }
+
+android-tools-common = { module = "com.android.tools:common", version.ref = "android-tools-common" }
 
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
@@ -155,11 +149,8 @@ apache-http-client = { module = "org.apache.httpcomponents:httpclient", version.
 asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
 asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
 asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
-asm-tree = { module = "org.ow2.asm:asm-tree", version.ref = "asm" }
 
 compile-testing = { module = "com.google.testing.compile:compile-testing", version.ref = "compile-testing" }
-
-aggregate-javadocs-gradle = { module = "com.netflix.nebula:gradle-aggregate-javadocs-plugin", version.ref = "aggregate-javadocs-gradle" }
 
 error-prone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "error-prone" }
 error-prone-annotations = { module = "com.google.errorprone:error_prone_annotation", version.ref = "error-prone" }
@@ -167,8 +158,6 @@ error-prone-refaster = { module = "com.google.errorprone:error_prone_refaster", 
 error-prone-check-api = { module = "com.google.errorprone:error_prone_check_api", version.ref = "error-prone" }
 error-prone-test-helpers = { module = "com.google.errorprone:error_prone_test_helpers", version.ref = "error-prone" }
 error-prone-javac = { module = "com.google.errorprone:javac", version.ref = "error-prone-javac" }
-
-error-prone-gradle = { module = "net.ltgt.gradle:gradle-errorprone-plugin", version.ref = "error-prone-gradle" }
 
 conscrypt-openjdk-uber = { module = "org.conscrypt:conscrypt-openjdk-uber", version.ref = "conscrypt" }
 bcprov-jdk18on = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
@@ -186,8 +175,6 @@ junit4 = { module = "junit:junit", version.ref = "junit4" }
 javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javax-annotation-api" }
 javax-annotation-jsr250-api = { module = "javax.annotation:jsr250-api", version.ref = "javax-annotation-jsr250-api" }
 javax-inject = { module = "javax.inject:javax.inject", version.ref = "javax-inject" }
-
-jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 
 libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version.ref = "libphonenumber" }
 
@@ -216,7 +203,6 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
 roborazzi-rule = { module = "io.github.takahirom.roborazzi:roborazzi-junit-rule", version.ref = "roborazzi" }
-roborazzi-gradle = { module = "io.github.takahirom.roborazzi:roborazzi-gradle-plugin", version.ref = "roborazzi" }
 
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
@@ -249,23 +235,30 @@ play-services-basement-for-shadows = { module = "com.google.android.gms:play-ser
 
 play-services-basement = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-basement" }
 
-play-asset-delivery = { module = "com.google.android.play:asset-delivery", version.ref = "play-core" }
-play-asset-delivery-ktx = { module = "com.google.android.play:asset-delivery-ktx", version.ref = "play-core" }
-play-feature-delivery = { module = "com.google.android.play:feature-delivery", version.ref = "play-core" }
-play-feature-delivery-ktx = { module = "com.google.android.play:feature-delivery-ktx", version.ref = "play-core" }
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junit-ktx" }
+android-multidex = { module = "com.android.support:multidex", version.ref = "android-multidex" }
+
+spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-gradle" }
 
 [bundles]
-play-services-for-shadows = [ "androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows" ]
-powermock = [ "powermock-module-junit4", "powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-xstream" ]
-sqlite4java-native = [ "sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86" ]
-play-core = [
-    "play-asset-delivery",
-    "play-asset-delivery-ktx",
-    "play-feature-delivery",
-    "play-feature-delivery-ktx"
-]
+play-services-for-shadows = ["androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows"]
+powermock = ["powermock-module-junit4", "powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-xstream"]
+sqlite4java-native = ["sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86"]
 
 [plugins]
+android-library = { id = "com.android.library", version.ref = "android-gradle" }
+application = { id = "application" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt-gradle" }
+error-prone = { id = "net.ltgt.errorprone", version.ref = "error-prone-gradle" }
+idea = { id = "idea" }
+jacoco = { id = "jacoco" }
+java = { id = "java" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+robolectric-android-project = { id = "org.robolectric.gradle.AndroidProjectConfigPlugin" }
+robolectric-deployed-java-module = { id = "org.robolectric.gradle.DeployedRoboJavaModulePlugin" }
+robolectric-gradle-managed-device = { id = "org.robolectric.gradle.GradleManagedDevicePlugin" }
+robolectric-java-module = { id = "org.robolectric.gradle.RoboJavaModulePlugin" }
+robolectric-spotless = { id = "org.robolectric.gradle.SpotlessPlugin" }
+robolectric-shadows = { id = "org.robolectric.gradle.ShadowsPlugin" }
+robolectric-javadoc = { id = "org.robolectric.gradle.AggregateJavadocPlugin" }
+roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }

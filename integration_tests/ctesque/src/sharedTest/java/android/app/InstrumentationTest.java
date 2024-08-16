@@ -13,13 +13,11 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.LooperMode;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
 /**
  * Tests to verify android.app.Instrumentation APIs behave consistently between Robolectric and
  * device.
  */
-@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 @LooperMode(PAUSED)
 public final class InstrumentationTest {

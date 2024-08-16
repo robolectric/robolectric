@@ -21,7 +21,9 @@ public final class ShadowGeocoder {
   private List<Address> fromLocation = new ArrayList<>();
   private String errorMessage = null;
 
-  /** @return true by default, or the value specified via {@link #setIsPresent(boolean)} */
+  /**
+   * @return true by default, or the value specified via {@link #setIsPresent(boolean)}
+   */
   @Implementation
   protected static boolean isPresent() {
     return isPresent;
@@ -66,6 +68,23 @@ public final class ShadowGeocoder {
         longitude);
 
     // On real Android this callback will not happen synchronously.
+    if (errorMessage != null) {
+      listener.onError(errorMessage);
+    } else {
+      listener.onGeocode(fromLocation.subList(0, Math.min(maxResults, fromLocation.size())));
+    }
+  }
+
+  /**
+   * Sets an empty list by default, or the last value set by {@link #setFromLocation(List)} in the
+   * provided {@code listener}
+   *
+   * <p>{@code locationName} is ignored by this implementation. {@code maxResults} determines the
+   * maximum number of addresses to return.
+   */
+  @Implementation(minSdk = TIRAMISU)
+  protected void getFromLocationName(
+      String locationName, int maxResults, GeocodeListener listener) {
     if (errorMessage != null) {
       listener.onError(errorMessage);
     } else {

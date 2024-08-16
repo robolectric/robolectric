@@ -53,8 +53,7 @@ public class AndroidTranslatorClassInstrumentedTest {
 
   @Instrument
   public static class ClassWithPrivateConstructor {
-    private ClassWithPrivateConstructor() {
-    }
+    private ClassWithPrivateConstructor() {}
 
     public int getInt() {
       return 99;

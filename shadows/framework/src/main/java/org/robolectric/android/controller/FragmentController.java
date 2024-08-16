@@ -27,7 +27,8 @@ public class FragmentController<F extends Fragment>
     return of(fragment, FragmentControllerActivity.class, null, null);
   }
 
-  public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass) {
+  public static <F extends Fragment> FragmentController<F> of(
+      F fragment, Class<? extends Activity> activityClass) {
     return of(fragment, activityClass, null, null);
   }
 
@@ -39,21 +40,23 @@ public class FragmentController<F extends Fragment>
     return new FragmentController<>(fragment, FragmentControllerActivity.class, arguments);
   }
 
-  public static <F extends Fragment> FragmentController<F> of(F fragment, Intent intent, Bundle arguments) {
-    return new FragmentController<>(fragment, FragmentControllerActivity.class, intent,
-            arguments);
+  public static <F extends Fragment> FragmentController<F> of(
+      F fragment, Intent intent, Bundle arguments) {
+    return new FragmentController<>(fragment, FragmentControllerActivity.class, intent, arguments);
   }
 
-  public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass, Intent intent) {
+  public static <F extends Fragment> FragmentController<F> of(
+      F fragment, Class<? extends Activity> activityClass, Intent intent) {
     return new FragmentController<>(fragment, activityClass, intent);
   }
 
-  public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass, Bundle arguments) {
+  public static <F extends Fragment> FragmentController<F> of(
+      F fragment, Class<? extends Activity> activityClass, Bundle arguments) {
     return new FragmentController<>(fragment, activityClass, arguments);
   }
 
-  public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass,
-                                                              Intent intent, Bundle arguments) {
+  public static <F extends Fragment> FragmentController<F> of(
+      F fragment, Class<? extends Activity> activityClass, Intent intent, Bundle arguments) {
     return new FragmentController<>(fragment, activityClass, intent, arguments);
   }
 
@@ -61,35 +64,46 @@ public class FragmentController<F extends Fragment>
     this(fragment, activityClass, intent, null);
   }
 
-  private FragmentController(F fragment, Class<? extends Activity> activityClass, Bundle arguments) {
+  private FragmentController(
+      F fragment, Class<? extends Activity> activityClass, Bundle arguments) {
     this(fragment, activityClass, null, arguments);
   }
 
-  private FragmentController(F fragment, Class<? extends Activity> activityClass,
-                             Intent intent, Bundle arguments) {
+  private FragmentController(
+      F fragment, Class<? extends Activity> activityClass, Intent intent, Bundle arguments) {
     super(fragment, intent);
     this.fragment = fragment;
     if (arguments != null) {
       this.fragment.setArguments(arguments);
     }
-    this.activityController = ActivityController.of(ReflectionHelpers.callConstructor(activityClass), intent);
+    this.activityController =
+        ActivityController.of(ReflectionHelpers.callConstructor(activityClass), intent);
   }
 
   /**
-   * Creates the activity with {@link Bundle} and adds the fragment to the view with ID {@code contentViewId}.
+   * Creates the activity with {@link Bundle} and adds the fragment to the view with ID {@code
+   * contentViewId}.
    */
   public FragmentController<F> create(final int contentViewId, final Bundle bundle) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.create(bundle).get().getFragmentManager().beginTransaction().add(contentViewId, fragment).commit();
-      }
-    });
+    shadowMainLooper.runPaused(
+        new Runnable() {
+          @Override
+          public void run() {
+            activityController
+                .create(bundle)
+                .get()
+                .getFragmentManager()
+                .beginTransaction()
+                .add(contentViewId, fragment)
+                .commit();
+          }
+        });
     return this;
   }
 
   /**
-   * Creates the activity with {@link Bundle} and adds the fragment to it. Note that the fragment will be added to the view with ID 1.
+   * Creates the activity with {@link Bundle} and adds the fragment to it. Note that the fragment
+   * will be added to the view with ID 1.
    */
   public FragmentController<F> create(Bundle bundle) {
     return create(1, bundle);
@@ -102,72 +116,79 @@ public class FragmentController<F extends Fragment>
 
   @Override
   public FragmentController<F> destroy() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.destroy();
-      }
-    });
+    shadowMainLooper.runPaused(
+        new Runnable() {
+          @Override
+          public void run() {
+            activityController.destroy();
+          }
+        });
     return this;
   }
 
   public FragmentController<F> start() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.start();
-      }
-    });
+    shadowMainLooper.runPaused(
+        new Runnable() {
+          @Override
+          public void run() {
+            activityController.start();
+          }
+        });
     return this;
   }
 
   public FragmentController<F> resume() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.resume();
-      }
-    });
+    shadowMainLooper.runPaused(
+        new Runnable() {
+          @Override
+          public void run() {
+            activityController.resume();
+          }
+        });
     return this;
   }
 
   public FragmentController<F> pause() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.pause();
-      }
-    });
+    shadowMainLooper.runPaused(
+        new Runnable() {
+          @Override
+          public void run() {
+            activityController.pause();
+          }
+        });
     return this;
   }
 
   public FragmentController<F> visible() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.visible();
-      }
-    });
+    shadowMainLooper.runPaused(
+        new Runnable() {
+          @Override
+          public void run() {
+            activityController.visible();
+          }
+        });
     return this;
   }
 
   public FragmentController<F> stop() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.stop();
-      }
-    });
+    shadowMainLooper.runPaused(
+        new Runnable() {
+          @Override
+          public void run() {
+            activityController.stop();
+          }
+        });
     return this;
   }
 
   public FragmentController<F> saveInstanceState(final Bundle outState) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.saveInstanceState(outState);
-      }
-    });
+    shadowMainLooper.runPaused(
+        new Runnable() {
+          @Override
+          public void run() {
+            activityController.saveInstanceState(outState);
+          }
+        });
     return this;
   }
 

@@ -256,8 +256,7 @@ public class ShadowSettings {
 
     @Implementation
     protected static int getInt(ContentResolver cr, String name) throws SettingNotFoundException {
-      if (Settings.Secure.LOCATION_MODE.equals(name)
-          && RuntimeEnvironment.getApiLevel() < P) {
+      if (Settings.Secure.LOCATION_MODE.equals(name) && RuntimeEnvironment.getApiLevel() < P) {
         // Map from to underlying location provider storage API to location mode
         return reflector(SettingsSecureReflector.class).getLocationModeForUser(cr, 0);
       }
@@ -267,8 +266,7 @@ public class ShadowSettings {
 
     @Implementation
     protected static int getInt(ContentResolver cr, String name, int def) {
-      if (Settings.Secure.LOCATION_MODE.equals(name)
-          && RuntimeEnvironment.getApiLevel() < P) {
+      if (Settings.Secure.LOCATION_MODE.equals(name) && RuntimeEnvironment.getApiLevel() < P) {
         // Map from to underlying location provider storage API to location mode
         return reflector(SettingsSecureReflector.class).getLocationModeForUser(cr, 0);
       }

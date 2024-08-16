@@ -6,6 +6,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.BatteryManager;
 import androidx.test.core.app.ApplicationProvider;
@@ -13,13 +14,15 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowBatteryManagerTest {
+  private static final int TEST_ID = 123;
   private BatteryManager batteryManager;
   private ShadowBatteryManager shadowBatteryManager;
-  private static final int TEST_ID = 123;
+  private Context context;
 
   @Before
   public void before() {
@@ -91,5 +94,33 @@ public class ShadowBatteryManagerTest {
         IllegalArgumentException.class, () -> shadowBatteryManager.setChargeTimeRemaining(-50L));
     assertThrows(
         IllegalArgumentException.class, () -> shadowBatteryManager.setChargeTimeRemaining(-100L));
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void batteryManager_activityContextEnabled_sharedState() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      Context context = ApplicationProvider.getApplicationContext();
+      BatteryManager applicationBatteryManager = context.getSystemService(BatteryManager.class);
+      activity = Robolectric.setupActivity(Activity.class);
+      BatteryManager activityBatteryManager = activity.getSystemService(BatteryManager.class);
+
+      assertThat(applicationBatteryManager).isNotSameInstanceAs(activityBatteryManager);
+
+      ShadowBatteryManager shadowApplicationBatteryManager = shadowOf(applicationBatteryManager);
+      ShadowBatteryManager shadowActivityBatteryManager = shadowOf(activityBatteryManager);
+
+      shadowApplicationBatteryManager.setIsCharging(true);
+
+      assertThat(activityBatteryManager.isCharging()).isTrue();
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

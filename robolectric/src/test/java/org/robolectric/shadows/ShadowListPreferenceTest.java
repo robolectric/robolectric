@@ -23,7 +23,7 @@ public class ShadowListPreferenceTest {
 
   @Test
   public void shouldHaveEntries() {
-    CharSequence[] entries = { "this", "is", "only", "a", "test" };
+    CharSequence[] entries = {"this", "is", "only", "a", "test"};
 
     assertThat(listPreference.getEntries()).isNull();
     listPreference.setEntries(entries);
@@ -39,7 +39,7 @@ public class ShadowListPreferenceTest {
 
   @Test
   public void shouldHaveEntryValues() {
-    CharSequence[] entryValues = { "this", "is", "only", "a", "test" };
+    CharSequence[] entryValues = {"this", "is", "only", "a", "test"};
 
     assertThat(listPreference.getEntryValues()).isNull();
     listPreference.setEntryValues(entryValues);

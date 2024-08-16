@@ -33,6 +33,10 @@ public class DrawableResourceLoaderNoRunnerTest {
     DrawableResourceLoader testLoader = new DrawableResourceLoader(resourceTable);
     testLoader.findDrawableResources(resourcePath);
 
-    assertThat(resourceTable.getValue(new ResName("org.robolectric", "drawable", "foo"), new ResTable_config()).isFile()).isTrue();
+    assertThat(
+            resourceTable
+                .getValue(new ResName("org.robolectric", "drawable", "foo"), new ResTable_config())
+                .isFile())
+        .isTrue();
   }
 }

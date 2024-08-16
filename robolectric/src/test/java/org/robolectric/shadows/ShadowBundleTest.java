@@ -124,8 +124,8 @@ public class ShadowBundleTest {
 
   @Test
   public void stringArray() {
-    bundle.putStringArray("foo", new String[] { "a" });
-    assertThat(bundle.getStringArray("foo")).isEqualTo(new String[]{"a"});
+    bundle.putStringArray("foo", new String[] {"a"});
+    assertThat(bundle.getStringArray("foo")).isEqualTo(new String[] {"a"});
     assertThat(bundle.getStringArray("bar")).isNull();
   }
 
@@ -151,7 +151,7 @@ public class ShadowBundleTest {
 
   @Test
   public void booleanArray() {
-    boolean [] arr = new boolean[] { false, true };
+    boolean[] arr = new boolean[] {false, true};
     bundle.putBooleanArray("foo", arr);
 
     assertThat(bundle.getBooleanArray("foo")).isEqualTo(arr);
@@ -160,7 +160,7 @@ public class ShadowBundleTest {
 
   @Test
   public void byteArray() {
-    byte [] arr = new byte[] { 12, 24 };
+    byte[] arr = new byte[] {12, 24};
     bundle.putByteArray("foo", arr);
 
     assertThat(bundle.getByteArray("foo")).isEqualTo(arr);
@@ -169,7 +169,7 @@ public class ShadowBundleTest {
 
   @Test
   public void charArray() {
-    char [] arr = new char[] { 'c', 'j' };
+    char[] arr = new char[] {'c', 'j'};
     bundle.putCharArray("foo", arr);
 
     assertThat(bundle.getCharArray("foo")).isEqualTo(arr);
@@ -178,7 +178,7 @@ public class ShadowBundleTest {
 
   @Test
   public void doubleArray() {
-    double [] arr = new double[] { 1.2, 3.4 };
+    double[] arr = new double[] {1.2, 3.4};
     bundle.putDoubleArray("foo", arr);
 
     assertThat(bundle.getDoubleArray("foo")).isEqualTo(arr);
@@ -187,7 +187,7 @@ public class ShadowBundleTest {
 
   @Test
   public void intArray() {
-    int [] arr = new int[] { 87, 65 };
+    int[] arr = new int[] {87, 65};
     bundle.putIntArray("foo", arr);
 
     assertThat(bundle.getIntArray("foo")).isEqualTo(arr);
@@ -196,7 +196,7 @@ public class ShadowBundleTest {
 
   @Test
   public void longArray() {
-    long [] arr = new long[] { 23, 11 };
+    long[] arr = new long[] {23, 11};
     bundle.putLongArray("foo", arr);
 
     assertThat(bundle.getLongArray("foo")).isEqualTo(arr);
@@ -205,7 +205,7 @@ public class ShadowBundleTest {
 
   @Test
   public void shortArray() {
-    short [] arr = new short[] { 89, 37 };
+    short[] arr = new short[] {89, 37};
     bundle.putShortArray("foo", arr);
 
     assertThat(bundle.getShortArray("foo")).isEqualTo(arr);
@@ -216,7 +216,7 @@ public class ShadowBundleTest {
   public void parcelableArray() {
     Bundle innerBundle = new Bundle();
     innerBundle.putInt("value", 1);
-    Parcelable[] arr = new Parcelable[] { innerBundle };
+    Parcelable[] arr = new Parcelable[] {innerBundle};
     bundle.putParcelableArray("foo", arr);
 
     assertThat(bundle.getParcelableArray("foo")).isEqualTo(arr);

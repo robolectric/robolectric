@@ -18,14 +18,17 @@ import java.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowClipboardManagerTest {
 
   private ClipboardManager clipboardManager;
 
-  @Before public void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     clipboardManager =
         (ClipboardManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.CLIPBOARD_SERVICE);
@@ -151,5 +154,35 @@ public class ShadowClipboardManagerTest {
     assertThat(clipboardManager.getPrimaryClipDescription()).isNotNull();
     assertThat(clipboardManager.getPrimaryClipDescription().getTimestamp())
         .isEqualTo(currentUptimeMs + 42 * 1000);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void clipboardManager_instance_retrievesSamePrimaryClip() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    TestActivity activity = null;
+    try {
+      ClipboardManager applicationClipboardManager =
+          (ClipboardManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.CLIPBOARD_SERVICE);
+      ClipData clipData = ClipData.newPlainText("label", "text");
+      applicationClipboardManager.setPrimaryClip(clipData);
+
+      activity = Robolectric.setupActivity(TestActivity.class);
+      ClipboardManager activityClipboardManager =
+          (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+
+      ClipData applicationClipData = applicationClipboardManager.getPrimaryClip();
+      ClipData activityClipData = activityClipboardManager.getPrimaryClip();
+
+      assertThat(activityClipData.toString()).isEqualTo(applicationClipData.toString());
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

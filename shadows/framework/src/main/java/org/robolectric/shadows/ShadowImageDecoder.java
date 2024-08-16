@@ -141,12 +141,13 @@ public class ShadowImageDecoder {
     //     SkCodec.MinBufferedBytesNeeded()));
     // return native_create(bufferedStream, source);
 
-    return jniCreateDecoder(new ImgStream() {
-      @Override
-      protected InputStream getInputStream() {
-        return is;
-      }
-    });
+    return jniCreateDecoder(
+        new ImgStream() {
+          @Override
+          protected InputStream getInputStream() {
+            return is;
+          }
+        });
   }
 
   protected static ImageDecoder ImageDecoder_nCreateAsset(long asset_ptr, Source source)
@@ -155,8 +156,8 @@ public class ShadowImageDecoder {
     // SkStream stream = new AssetStreamAdaptor(asset);
     // return jniCreateDecoder(stream, source);
     Resources resources = ReflectionHelpers.getField(source, "mResources");
-    AssetInputStream assetInputStream = ShadowAssetInputStream.createAssetInputStream(
-        null, asset_ptr, resources.getAssets());
+    AssetInputStream assetInputStream =
+        ShadowAssetInputStream.createAssetInputStream(null, asset_ptr, resources.getAssets());
     return jniCreateDecoder(
         new ImgStream() {
           @Override
@@ -176,33 +177,40 @@ public class ShadowImageDecoder {
     //       null, source);
     // }
     // return native_create(stream, source);
-    return jniCreateDecoder(new ImgStream() {
-      @Override
-      protected InputStream getInputStream() {
-        return new ByteArrayInputStream(jbyteBuffer.array());
-      }
-    });
+    return jniCreateDecoder(
+        new ImgStream() {
+          @Override
+          protected InputStream getInputStream() {
+            return new ByteArrayInputStream(jbyteBuffer.array());
+          }
+        });
   }
 
   protected static ImageDecoder ImageDecoder_nCreateByteArray(
       byte[] byteArray, int offset, int length, Source source) {
     // SkStream stream = CreateByteArrayStreamAdaptor(byteArray, offset, length);
     // return native_create(stream, source);
-    return jniCreateDecoder(new ImgStream() {
-      @Override
-      protected InputStream getInputStream() {
-        return new ByteArrayInputStream(byteArray);
-      }
-    });
+    return jniCreateDecoder(
+        new ImgStream() {
+          @Override
+          protected InputStream getInputStream() {
+            return new ByteArrayInputStream(byteArray);
+          }
+        });
   }
 
-  protected static Bitmap ImageDecoder_nDecodeBitmap(long nativePtr,
+  protected static Bitmap ImageDecoder_nDecodeBitmap(
+      long nativePtr,
       ImageDecoder decoder,
       boolean doPostProcess,
-      int width, int height,
-      Rect cropRect, boolean mutable,
-      int allocator, boolean unpremulRequired,
-      boolean conserveMemory, boolean decodeAsAlphaMask,
+      int width,
+      int height,
+      Rect cropRect,
+      boolean mutable,
+      int allocator,
+      boolean unpremulRequired,
+      boolean conserveMemory,
+      boolean decodeAsAlphaMask,
       ColorSpace desiredColorSpace)
       throws IOException {
     CppImageDecoder cppImageDecoder = NATIVE_IMAGE_DECODER_REGISTRY.getNativeObject(nativePtr);
@@ -228,8 +236,7 @@ public class ShadowImageDecoder {
     return bitmap;
   }
 
-  static Size ImageDecoder_nGetSampledSize(long nativePtr,
-      int sampleSize) {
+  static Size ImageDecoder_nGetSampledSize(long nativePtr, int sampleSize) {
     CppImageDecoder decoder = NATIVE_IMAGE_DECODER_REGISTRY.getNativeObject(nativePtr);
     // SkISize size = decoder.mCodec.getSampledDimensions(sampleSize);
     // return env.NewObject(gSize_class, gSize_constructorMethodID, size.width(), size.height());
@@ -237,8 +244,7 @@ public class ShadowImageDecoder {
     throw new UnsupportedOperationException();
   }
 
-  static void ImageDecoder_nGetPadding(long nativePtr,
-      Rect outPadding) {
+  static void ImageDecoder_nGetPadding(long nativePtr, Rect outPadding) {
     CppImageDecoder decoder = NATIVE_IMAGE_DECODER_REGISTRY.getNativeObject(nativePtr);
     // decoder.mPeeker.getPadding(outPadding);
     if (decoder.imgStream.isNinePatch()) {
@@ -343,13 +349,18 @@ public class ShadowImageDecoder {
       boolean decodeAsAlphaMask,
       android.graphics.ColorSpace desiredColorSpace)
       throws IOException {
-    return ImageDecoder_nDecodeBitmap(nativePtr,
+    return ImageDecoder_nDecodeBitmap(
+        nativePtr,
         decoder,
         doPostProcess,
-        width, height,
-        cropRect, mutable,
-        allocator, unpremulRequired,
-        conserveMemory, decodeAsAlphaMask,
+        width,
+        height,
+        cropRect,
+        mutable,
+        allocator,
+        unpremulRequired,
+        conserveMemory,
+        decodeAsAlphaMask,
         desiredColorSpace);
   }
 
@@ -369,19 +380,23 @@ public class ShadowImageDecoder {
       long desiredColorSpace,
       boolean extended)
       throws IOException {
-    return ImageDecoder_nDecodeBitmap(nativePtr,
+    return ImageDecoder_nDecodeBitmap(
+        nativePtr,
         decoder,
         doPostProcess,
-        width, height,
-        cropRect, mutable,
-        allocator, unpremulRequired,
-        conserveMemory, decodeAsAlphaMask,
+        width,
+        height,
+        cropRect,
+        mutable,
+        allocator,
+        unpremulRequired,
+        conserveMemory,
+        decodeAsAlphaMask,
         null);
   }
 
   @Implementation
-  protected static Size nGetSampledSize(long nativePtr,
-      int sampleSize) {
+  protected static Size nGetSampledSize(long nativePtr, int sampleSize) {
     return ImageDecoder_nGetSampledSize(nativePtr, sampleSize);
   }
 
