@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
@@ -33,6 +34,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
 import android.os.UserHandle;
+import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -377,6 +379,26 @@ public class ShadowLauncherAppsTest {
                 + TEST_PACKAGE_NAME
                 + " not found for user "
                 + USER_HANDLE.getIdentifier());
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getProfiles_returnsMainProfileByDefault() {
+    assertThat(launcherApps.getProfiles()).containsExactly(UserHandle.of(0));
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getProfiles_returnsAllProfiles() {
+    UserManager userManager =
+        (UserManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.USER_SERVICE);
+
+    shadowOf(userManager).addProfile(UserHandle.myUserId(), 10, "profile10", /* profileFlags= */ 0);
+    shadowOf(userManager).addProfile(UserHandle.myUserId(), 11, "profile11", /* profileFlags= */ 0);
+
+    assertThat(launcherApps.getProfiles())
+        .containsExactly(UserHandle.of(0), UserHandle.of(10), UserHandle.of(11));
   }
 
   private List<ShortcutInfo> getPinnedShortcuts(String packageName, ComponentName activity) {

@@ -40,6 +40,7 @@ import android.content.IClipboard;
 import android.content.IRestrictionsManager;
 import android.content.integrity.IAppIntegrityManager;
 import android.content.pm.ICrossProfileApps;
+import android.content.pm.ILauncherApps;
 import android.content.pm.IShortcutService;
 import android.content.rollback.IRollbackManager;
 import android.hardware.ISensorPrivacyManager;
@@ -236,6 +237,12 @@ public class ShadowServiceManager {
         Context.VOICE_INTERACTION_MANAGER_SERVICE,
         IVoiceInteractionManagerService.class,
         BinderProxyType.DEEP);
+    addBinderService(
+        binderServices,
+        Context.LAUNCHER_APPS_SERVICE,
+        ILauncherApps.class,
+        BinderProxyType.DELEGATING,
+        new LauncherAppsDelegate());
 
     if (RuntimeEnvironment.getApiLevel() >= M) {
       addBinderService(binderServices, Context.FINGERPRINT_SERVICE, IFingerprintService.class);
