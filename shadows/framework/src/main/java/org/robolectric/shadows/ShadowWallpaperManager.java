@@ -34,24 +34,25 @@ import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.Logger;
 import org.xmlpull.v1.XmlPullParserException;
 
 @Implements(WallpaperManager.class)
 public class ShadowWallpaperManager {
   private static final String TAG = "ShadowWallpaperManager";
-  private Bitmap lockScreenImage = null;
-  private Bitmap homeScreenImage = null;
-  private boolean isWallpaperAllowed = true;
-  private boolean isWallpaperSupported = true;
-  private WallpaperInfo wallpaperInfo = null;
-  private final List<WallpaperCommandRecord> wallpaperCommandRecords = new ArrayList<>();
-  private AtomicInteger wallpaperId = new AtomicInteger(0);
-  private int lockScreenId;
-  private int homeScreenId;
+  private static Bitmap lockScreenImage = null;
+  private static Bitmap homeScreenImage = null;
+  private static boolean isWallpaperAllowed = true;
+  private static boolean isWallpaperSupported = true;
+  private static WallpaperInfo wallpaperInfo = null;
+  private static final List<WallpaperCommandRecord> wallpaperCommandRecords = new ArrayList<>();
+  private static AtomicInteger wallpaperId = new AtomicInteger(0);
+  private static int lockScreenId;
+  private static int homeScreenId;
 
-  private float wallpaperDimAmount = 0.0f;
-  private final ArrayList<Float> allWallpaperDimAmounts = new ArrayList<>();
+  private static float wallpaperDimAmount = 0.0f;
+  private static final ArrayList<Float> allWallpaperDimAmounts = new ArrayList<>();
 
   @Implementation
   protected void sendWallpaperCommand(
@@ -320,5 +321,20 @@ public class ShadowWallpaperManager {
       this.z = z;
       this.extras = extras;
     }
+  }
+
+  @Resetter
+  public static void reset() {
+    lockScreenImage = null;
+    homeScreenImage = null;
+    isWallpaperAllowed = true;
+    isWallpaperSupported = true;
+    wallpaperInfo = null;
+    wallpaperCommandRecords.clear();
+    wallpaperId.set(0);
+    lockScreenId = 0;
+    homeScreenId = 0;
+    wallpaperDimAmount = 0.0f;
+    allWallpaperDimAmounts.clear();
   }
 }
