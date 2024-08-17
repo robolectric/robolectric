@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
@@ -348,6 +350,17 @@ public class ShadowWranglerIntegrationTest {
     }
   }
 
+  @Instrument
+  public static class AClassWithDifficultArgsGeneric {
+    public CharSequence aMethod(List<CharSequence> strs) {
+      String ret = "";
+      for (CharSequence s : strs) {
+        ret = ret + s;
+      }
+      return ret;
+    }
+  }
+
   @Implements(value = AClassWithDifficultArgs.class, looseSignatures = true)
   public static class ShadowAClassWithDifficultArgs {
     @Implementation
@@ -394,6 +407,25 @@ public class ShadowWranglerIntegrationTest {
   @Test
   public void methodMatch_classNameAnnotatedMatchesSupportMethodRename() {
     assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("ClassNameAnnotated-bc");
+  }
+
+  @SandboxConfig(shadows = ShadowAClassWithDifficultArgsGenericUseClassName.class)
+  @Test
+  public void methodMatch_classNameAnnotatedWithGeneric() {
+    List<CharSequence> para = new ArrayList<>();
+    para.add("ab");
+    para.add("cd");
+    assertThat(new AClassWithDifficultArgsGeneric().aMethod(para)).isEqualTo("abcd");
+  }
+
+  @SandboxConfig(shadows = ShadowAClassWithDifficultArgsGenericUseClassNameTypeErasure.class)
+  @Test
+  public void methodMatch_classNameAnnotatedWithGenericTypeErasure() {
+    List<CharSequence> para = new ArrayList<>();
+    para.add("ab");
+    para.add("cd");
+    assertThat(new AClassWithDifficultArgsGeneric().aMethod(para))
+        .isEqualTo("ClassNameGenericAnnotated");
   }
 
   @Implements(value = AClassWithDifficultArgs.class)
@@ -446,6 +478,24 @@ public class ShadowWranglerIntegrationTest {
     protected @ClassName("java.lang.CharSequence") Object renamedMethod(
         @ClassName("java.lang.CharSequence") Object s) {
       return "ClassNameAnnotated-" + s;
+    }
+  }
+
+  @Implements(value = AClassWithDifficultArgsGeneric.class)
+  public static class ShadowAClassWithDifficultArgsGenericUseClassName {
+
+    protected @ClassName("java.lang.CharSequence") Object aMethod(
+        @ClassName("java.util.List<java.lang.CharSequence>") Object s) {
+      return "ClassNameGenericAnnotated-" + s;
+    }
+  }
+
+  @Implements(value = AClassWithDifficultArgsGeneric.class)
+  public static class ShadowAClassWithDifficultArgsGenericUseClassNameTypeErasure {
+
+    protected @ClassName("java.lang.CharSequence") Object aMethod(
+        @ClassName("java.util.List") Object s) {
+      return "ClassNameGenericAnnotated";
     }
   }
 
