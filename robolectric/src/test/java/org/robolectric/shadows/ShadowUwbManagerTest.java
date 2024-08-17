@@ -13,6 +13,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import android.app.Activity;
 import android.os.PersistableBundle;
 import android.uwb.RangingSession;
 import android.uwb.UwbManager;
@@ -23,9 +24,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.testing.TestActivity;
 
 /** Unit tests for {@link ShadowUwbManager}. */
 @RunWith(RobolectricTestRunner.class)
@@ -195,5 +199,30 @@ public class ShadowUwbManagerTest {
 
   private static ArgumentMatcher<PersistableBundle> checkParams(String name) {
     return params -> getName(params).equals(name);
+  }
+
+  @Test
+  public void uwbManager_activityContextEnabled_differentInstancesRetrieveSpecificationInfo() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      UwbManager applicationUwbManager =
+          RuntimeEnvironment.getApplication().getSystemService(UwbManager.class);
+      activity = Robolectric.setupActivity(TestActivity.class);
+      UwbManager activityUwbManager = activity.getSystemService(UwbManager.class);
+
+      assertThat(applicationUwbManager).isNotSameInstanceAs(activityUwbManager);
+
+      PersistableBundle applicationSpecificationInfo = applicationUwbManager.getSpecificationInfo();
+      PersistableBundle activitySpecificationInfo = activityUwbManager.getSpecificationInfo();
+
+      assertThat(activitySpecificationInfo).isEqualTo(applicationSpecificationInfo);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }

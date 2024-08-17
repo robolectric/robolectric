@@ -16,42 +16,24 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
 /** Adds Robolectric support for UWB ranging. */
 @Implements(value = UwbManager.class, minSdk = VERSION_CODES.S, isInAndroidSdk = false)
 public class ShadowUwbManager {
 
-  private AdapterStateCallback callback;
+  private static AdapterStateCallback callback;
 
-  private int adapterState = AdapterStateCallback.STATE_ENABLED_INACTIVE;
+  private static int adapterState = AdapterStateCallback.STATE_ENABLED_INACTIVE;
 
-  private int stateChangedReason = AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_POLICY;
+  private static int stateChangedReason = AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_POLICY;
 
-  private PersistableBundle specificationInfo = new PersistableBundle();
+  private static PersistableBundle specificationInfo = new PersistableBundle();
 
-  private List<PersistableBundle> chipInfos = new ArrayList<>();
+  private static List<PersistableBundle> chipInfos = new ArrayList<>();
 
-  private ShadowRangingSession.Adapter adapter =
-      new ShadowRangingSession.Adapter() {
-        @Override
-        public void onOpen(
-            RangingSession session, RangingSession.Callback callback, PersistableBundle params) {}
-
-        @Override
-        public void onStart(
-            RangingSession session, RangingSession.Callback callback, PersistableBundle params) {}
-
-        @Override
-        public void onReconfigure(
-            RangingSession session, RangingSession.Callback callback, PersistableBundle params) {}
-
-        @Override
-        public void onStop(RangingSession session, RangingSession.Callback callback) {}
-
-        @Override
-        public void onClose(RangingSession session, RangingSession.Callback callback) {}
-      };
+  private static ShadowRangingSession.Adapter adapter = createDefaultAdapter();
 
   @Implementation
   protected void registerAdapterStateCallback(Executor executor, AdapterStateCallback callback) {
@@ -172,5 +154,40 @@ public class ShadowUwbManager {
   /** Sets the list of bundles to be returned by {@link android.uwb.UwbManager#getChipInfos}. */
   public void setChipInfos(List<PersistableBundle> chipInfos) {
     this.chipInfos = new ArrayList<>(chipInfos);
+  }
+
+  @Resetter
+  public static void reset() {
+    callback = null;
+    adapterState = AdapterStateCallback.STATE_ENABLED_INACTIVE;
+    stateChangedReason = AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_POLICY;
+    specificationInfo = new PersistableBundle();
+    if (chipInfos != null) {
+      chipInfos.clear();
+    }
+    adapter = createDefaultAdapter();
+  }
+
+  /** Creates a default {@link ShadowRangingSession.Adapter} instance. */
+  private static ShadowRangingSession.Adapter createDefaultAdapter() {
+    return new ShadowRangingSession.Adapter() {
+      @Override
+      public void onOpen(
+          RangingSession session, RangingSession.Callback callback, PersistableBundle params) {}
+
+      @Override
+      public void onStart(
+          RangingSession session, RangingSession.Callback callback, PersistableBundle params) {}
+
+      @Override
+      public void onReconfigure(
+          RangingSession session, RangingSession.Callback callback, PersistableBundle params) {}
+
+      @Override
+      public void onStop(RangingSession session, RangingSession.Callback callback) {}
+
+      @Override
+      public void onClose(RangingSession session, RangingSession.Callback callback) {}
+    };
   }
 }
