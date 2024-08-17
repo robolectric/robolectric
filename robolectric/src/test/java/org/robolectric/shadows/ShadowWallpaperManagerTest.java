@@ -2,14 +2,18 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static junit.framework.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.app.Application;
+import android.app.WallpaperInfo;
 import android.app.WallpaperManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Binder;
 import android.os.Bundle;
@@ -28,6 +32,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowWallpaperManager.WallpaperCommandRecord;
 
@@ -575,5 +580,33 @@ public class ShadowWallpaperManagerTest {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
     bitmap.compress(Bitmap.CompressFormat.PNG, /* quality= */ 0, stream);
     return stream.toByteArray();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void wallpaperManager_activityContextEnabled_retrievesSameWallpaper() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      activity = Robolectric.setupActivity(Activity.class);
+      WallpaperManager applicaionWallpaperManager =
+          (WallpaperManager) application.getSystemService(Context.WALLPAPER_SERVICE);
+      WallpaperManager activityWallpaperManager =
+          (WallpaperManager) activity.getSystemService(Context.WALLPAPER_SERVICE);
+
+      assertThat(applicaionWallpaperManager).isNotSameInstanceAs(activityWallpaperManager);
+
+      // Adjusted for WallpaperManager, as direct comparison methods are not available
+      WallpaperInfo applicationWallpaper = manager.getWallpaperInfo();
+      WallpaperInfo activityWallpaper = activityWallpaperManager.getWallpaperInfo();
+
+      assertThat(activityWallpaper).isEqualTo(applicationWallpaper);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
