@@ -5,6 +5,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.wifi.aware.AttachCallback;
 import android.net.wifi.aware.DiscoverySessionCallback;
@@ -23,6 +24,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 /** Test for {@link ShadowWifiAwareManager} */
@@ -192,6 +194,34 @@ public final class ShadowWifiAwareManagerTest {
     @Override
     public void onSubscribeStarted(SubscribeDiscoverySession subscribeDiscoverySession) {
       subscribeSuccess = true;
+    }
+  }
+
+  @Test
+  public void wifiAwareManager_activityContextEnabled_differentInstancesIsAvailable() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      WifiAwareManager applicationWifiAwareManager =
+          (WifiAwareManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.WIFI_AWARE_SERVICE);
+      activity = Robolectric.setupActivity(Activity.class);
+      WifiAwareManager activityWifiAwareManager =
+          (WifiAwareManager) activity.getSystemService(Context.WIFI_AWARE_SERVICE);
+
+      assertThat(applicationWifiAwareManager).isNotSameInstanceAs(activityWifiAwareManager);
+
+      boolean applicationIsAvailable = applicationWifiAwareManager.isAvailable();
+      boolean activityIsAvailable = activityWifiAwareManager.isAvailable();
+
+      assertThat(activityIsAvailable).isEqualTo(applicationIsAvailable);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }
