@@ -15,15 +15,16 @@ import android.os.Handler;
 import android.os.Looper;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /** Shadow Implementation of {@link android.net.wifi.aware.WifiAwareManager} */
 @Implements(value = WifiAwareManager.class, minSdk = O)
 public class ShadowWifiAwareManager {
-  private boolean available = true;
-  private WifiAwareSession session;
-  private boolean sessionDetached = true;
-  private PublishDiscoverySession discoverySessionToPublish;
-  private SubscribeDiscoverySession discoverySessionToSubscribe;
+  private static boolean available = true;
+  private static WifiAwareSession session;
+  private static boolean sessionDetached = true;
+  private static PublishDiscoverySession discoverySessionToPublish;
+  private static SubscribeDiscoverySession discoverySessionToSubscribe;
 
   @Implementation
   protected boolean isAvailable() {
@@ -108,5 +109,14 @@ public class ShadowWifiAwareManager {
    */
   public void setDiscoverySessionToSubscribe(SubscribeDiscoverySession subscribeDiscoverySession) {
     this.discoverySessionToSubscribe = subscribeDiscoverySession;
+  }
+
+  @Resetter
+  public static void reset() {
+    available = true;
+    session = null;
+    sessionDetached = true;
+    discoverySessionToPublish = null;
+    discoverySessionToSubscribe = null;
   }
 }
