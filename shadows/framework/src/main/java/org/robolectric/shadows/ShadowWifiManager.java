@@ -847,7 +847,7 @@ public class ShadowWifiManager {
 
   @Implementation(minSdk = TIRAMISU)
   public void setExternalPnoScanRequest(
-      @ClassName("java.util.List") Object ssids,
+      @ClassName("java.util.List<android.net.wifi.WifiSsid>") Object ssids,
       int[] frequencies,
       Executor executor,
       @ClassName("android.net.wifi.WifiManager$PnoScanResultsCallback") Object callback) {

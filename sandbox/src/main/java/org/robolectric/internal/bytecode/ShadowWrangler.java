@@ -290,7 +290,8 @@ public class ShadowWrangler implements ClassHandler {
       ShadowInfo shadowInfo,
       Class<?> shadowClass) {
     Method method =
-        findShadowMethodDeclaredOnClass(shadowClass, name, types, shadowInfo.looseSignatures);
+        findShadowMethodDeclaredOnClass(
+            definingClass, shadowClass, name, types, shadowInfo.looseSignatures);
 
     if (method != null) {
       return method;
@@ -314,7 +315,11 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   private Method findShadowMethodDeclaredOnClass(
-      Class<?> shadowClass, String methodName, Class<?>[] paramClasses, boolean looseSignatures) {
+      Class<?> definedClass,
+      Class<?> shadowClass,
+      String methodName,
+      Class<?>[] paramClasses,
+      boolean looseSignatures) {
     Method foundMethod = null;
     // Try to find shadow method with exact method name and looseSignature.
     Method[] methods = shadowClass.getDeclaredMethods();
@@ -350,7 +355,8 @@ public class ShadowWrangler implements ClassHandler {
         }
       } else {
         // Or maybe support @ClassName.
-        if (parameterClassNameMatch(method, paramClasses) && shadowMatcher.matches(method)) {
+        if (parameterClassNameMatch(definedClass, method, paramClasses)
+            && shadowMatcher.matches(method)) {
           // Found a @ClassName match, but continue looking for an exact match.
           foundMethod = method;
         }
@@ -369,7 +375,7 @@ public class ShadowWrangler implements ClassHandler {
           continue;
         }
         if (Arrays.equals(method.getParameterTypes(), paramClasses)
-            || parameterClassNameMatch(method, paramClasses)) {
+            || parameterClassNameMatch(definedClass, method, paramClasses)) {
           foundMethod = method;
           break;
         }
@@ -384,13 +390,49 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
+  private Method findOriginMethodInDefinedClass(
+      Class<?> definedClass, String methodName, Class<?>[] paramClasses) {
+    for (Method method : definedClass.getDeclaredMethods()) {
+      if (!method.getName().equals(methodName)) {
+        continue;
+      }
+      if (method.getParameterCount() != paramClasses.length) {
+        continue;
+      }
+      Parameter[] parameters = method.getParameters();
+      boolean isMatched = true;
+      for (int i = 0; i < method.getParameterCount(); i++) {
+        if (paramClasses[i].isAssignableFrom(parameters[i].getType())) {
+          continue;
+        }
+        isMatched = false;
+        break;
+      }
+      if (isMatched) {
+        return method;
+      }
+    }
+    return null;
+  }
+
   /**
    * Check whether the parameters (which could be @ClassName annotated) of the {@code method}
    * matches {@code paramClasses}.
    */
-  private boolean parameterClassNameMatch(Method method, Class<?>[] paramClasses) {
+  private boolean parameterClassNameMatch(
+      Class<?> definedClass, Method method, Class<?>[] paramClasses) {
     Parameter[] params = method.getParameters();
     if (params.length != paramClasses.length) {
+      return false;
+    }
+
+    Method originMethod =
+        findOriginMethodInDefinedClass(definedClass, method.getName(), paramClasses);
+    if (originMethod == null) {
+      return false;
+    }
+    Parameter[] originParameters = originMethod.getParameters();
+    if (originParameters.length != params.length) {
       return false;
     }
 
@@ -402,7 +444,8 @@ public class ShadowWrangler implements ClassHandler {
         return false; // @ClassName only applicable to parameter of Object type
       }
       ClassName className = params[i].getAnnotation(ClassName.class);
-      if (className == null || !className.value().equals(paramClasses[i].getName())) {
+      if (className == null
+          || !className.value().equals(originParameters[i].getParameterizedType().getTypeName())) {
         return false;
       }
     }
