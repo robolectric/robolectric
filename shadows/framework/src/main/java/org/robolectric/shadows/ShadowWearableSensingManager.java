@@ -12,6 +12,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for VirtualDeviceManager. */
@@ -22,11 +23,12 @@ import org.robolectric.versioning.AndroidVersions.U;
     isInAndroidSdk = false)
 public class ShadowWearableSensingManager {
 
-  private @StatusCode Integer provideDataStreamResult = WearableSensingManager.STATUS_SUCCESS;
-  private @StatusCode Integer provideDataResult = WearableSensingManager.STATUS_SUCCESS;
-  private final ArrayList<PersistableBundle> dataBundleList = new ArrayList<>();
-  private final ArrayList<SharedMemory> sharedMemoryList = new ArrayList<>();
-  private ParcelFileDescriptor lastParcelFileDescriptor;
+  private static @StatusCode Integer provideDataStreamResult =
+      WearableSensingManager.STATUS_SUCCESS;
+  private static @StatusCode Integer provideDataResult = WearableSensingManager.STATUS_SUCCESS;
+  private static final ArrayList<PersistableBundle> dataBundleList = new ArrayList<>();
+  private static final ArrayList<SharedMemory> sharedMemoryList = new ArrayList<>();
+  private static ParcelFileDescriptor lastParcelFileDescriptor;
 
   @Implementation
   protected void provideDataStream(
@@ -74,5 +76,14 @@ public class ShadowWearableSensingManager {
 
   public List<SharedMemory> getAllSharedMemories() {
     return new ArrayList<>(sharedMemoryList);
+  }
+
+  @Resetter
+  public static void reset() {
+    provideDataStreamResult = WearableSensingManager.STATUS_SUCCESS;
+    provideDataResult = WearableSensingManager.STATUS_SUCCESS;
+    dataBundleList.clear();
+    sharedMemoryList.clear();
+    lastParcelFileDescriptor = null;
   }
 }
