@@ -41,6 +41,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
+import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.telephony.euicc.EuiccManager;
@@ -76,6 +77,7 @@ public class ContextTest {
           Manifest.permission.USE_BIOMETRIC,
           Manifest.permission.USE_BIOMETRIC,
           Manifest.permission.INTERNET,
+          Manifest.permission.READ_PHONE_STATE,
           Manifest.permission.WRITE_EXTERNAL_STORAGE,
           Manifest.permission.READ_EXTERNAL_STORAGE);
 
@@ -1529,7 +1531,8 @@ public class ContextTest {
   }
 
   @Test
-  public void subscriptionManager_instance_retrievesSameDefaultSubscriptionId() {
+  public void subscriptionManager_instance_retrievesSameDefaultSubscriptionInfo() {
+    int defaultSubscriptionId = SubscriptionManager.getDefaultSubscriptionId();
     SubscriptionManager applicationSubscriptionManager =
         (SubscriptionManager)
             ApplicationProvider.getApplicationContext()
@@ -1540,11 +1543,13 @@ public class ContextTest {
             SubscriptionManager activitySubscriptionManager =
                 (SubscriptionManager)
                     activity.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
-            
-            int applicationDefaultSubscriptionId = SubscriptionManager.getDefaultSubscriptionId();
-            int activityDefaultSubscriptionId = SubscriptionManager.getDefaultSubscriptionId();
 
-            assertThat(activityDefaultSubscriptionId).isEqualTo(applicationDefaultSubscriptionId);
+            SubscriptionInfo applicationSubscriptionInfo =
+                applicationSubscriptionManager.getActiveSubscriptionInfo(defaultSubscriptionId);
+            SubscriptionInfo activitySubscriptionInfo =
+                activitySubscriptionManager.getActiveSubscriptionInfo(defaultSubscriptionId);
+
+            assertThat(applicationSubscriptionInfo).isEqualTo(activitySubscriptionInfo);
           });
     }
   }
