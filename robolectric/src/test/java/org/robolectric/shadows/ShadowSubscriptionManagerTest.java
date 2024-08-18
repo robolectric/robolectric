@@ -528,7 +528,7 @@ public class ShadowSubscriptionManagerTest {
   @Test
   @Config(minSdk = O)
   public void
-      subscriptionManager_activityContextEnabled_differentInstancesRetrieveDefaultSubscriptionId() {
+      subscriptionManager_activityContextEnabled_differentInstancesRetrieveDefaultSubscriptionInfo() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
     Activity activity = null;
@@ -543,15 +543,18 @@ public class ShadowSubscriptionManagerTest {
 
       assertThat(applicationSubscriptionManager).isNotSameInstanceAs(activitySubscriptionManager);
 
-      int applicationDefaultSubscriptionId =
-          applicationSubscriptionManager.getDefaultSubscriptionId();
-      int activityDefaultSubscriptionId = activitySubscriptionManager.getDefaultSubscriptionId();
+      int defaultSubscriptionId = SubscriptionManager.getDefaultSubscriptionId();
+      SubscriptionInfo applicationDefaultSubscriptionInfo =
+          applicationSubscriptionManager.getActiveSubscriptionInfo(defaultSubscriptionId);
+      SubscriptionInfo activityDefaultSubscriptionInfo =
+          activitySubscriptionManager.getActiveSubscriptionInfo(defaultSubscriptionId);
 
-      assertThat(activityDefaultSubscriptionId).isEqualTo(applicationDefaultSubscriptionId);
+      assertThat(applicationDefaultSubscriptionInfo).isEqualTo(activityDefaultSubscriptionInfo);
     } finally {
       if (activity != null) {
         activity.finish();
       }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }
