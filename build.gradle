@@ -84,19 +84,19 @@ gradle.projectsEvaluated {
             " style=\"max-height: 18pt; vertical-align: sub;\"/></a></li></ul>"
     project.allprojects { p ->
         p.tasks.withType(Javadoc) {
+            failOnError = false
+
             options {
                 noTimestamp = true
                 links = [
                         "https://docs.oracle.com/javase/8/docs/api/",
                         "https://developer.android.com/reference/",
                 ]
-                // Set javadoc source to JDK 8 to avoid unnamed module problem
-                // when running aggregateJavadoc with OpenJDK 13+.
+                // Set Javadoc source to JDK 8 to avoid unnamed module problem
+                // when running 'aggregateJavadocs' with OpenJDK 13+.
                 source("8")
                 header = headerHtml
                 footer = headerHtml
-                // bottom = "<link rel=\"stylesheet\" href=\"http://robolectric.org/assets/css/main.css\">"
-                version = thisVersion
             }
         }
     }

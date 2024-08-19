@@ -8,7 +8,6 @@ import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.javadoc.Javadoc
-import org.gradle.external.javadoc.StandardJavadocDocletOptions
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.register
@@ -21,8 +20,7 @@ class DeployedRoboJavaModulePlugin : Plugin<Project> {
     project.pluginManager.apply("java-library")
     project.pluginManager.apply("maven-publish")
 
-    val projectVersion = project.version.toString()
-    val isSnapshotVersion = projectVersion.endsWith("-SNAPSHOT")
+    val isSnapshotVersion = project.version.toString().endsWith("-SNAPSHOT")
     val mavenArtifactName = project.path.substring(1).split(":").joinToString("-")
 
     project.extensions.configure<BasePluginExtension> {
@@ -46,28 +44,6 @@ class DeployedRoboJavaModulePlugin : Plugin<Project> {
           archiveClassifier.set("javadoc")
           from(javadocTask.map { it.destinationDir })
         }
-
-      project.tasks.withType<Javadoc> {
-        isFailOnError = false
-        source = sourceSets.getByName("main").allJava
-
-        val extraNavItem =
-          """
-          <ul class="navList">
-              <li>Robolectric $projectVersion | <a href="/">Home</a></li>
-          </ul>
-          """
-            .trimIndent()
-        val javadocOptions = options as StandardJavadocDocletOptions
-        javadocOptions.noTimestamp(true)
-        javadocOptions.header = extraNavItem
-        javadocOptions.footer = extraNavItem
-        javadocOptions.bottom =
-          """
-          <link rel="stylesheet" href="https://robolectric.org/assets/css/main.css">
-          """
-            .trimIndent()
-      }
 
       project.extensions.configure<PublishingExtension> {
         publications {
