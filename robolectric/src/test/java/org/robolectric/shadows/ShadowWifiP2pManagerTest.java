@@ -1,20 +1,28 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.Robolectric;
+import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowWifiP2pManagerTest {
@@ -156,6 +164,60 @@ public class ShadowWifiP2pManagerTest {
     @Override
     public void onGroupInfoAvailable(WifiP2pGroup group) {
       this.group = group;
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void wifiP2pManager_activityContextEnabled_retrievesSameGroupInfo()
+      throws InterruptedException {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+
+    Context appContext = ApplicationProvider.getApplicationContext();
+    WifiP2pManager applicationWifiP2pManager =
+        (WifiP2pManager) appContext.getSystemService(Context.WIFI_P2P_SERVICE);
+    WifiP2pManager.Channel applicationChannel =
+        applicationWifiP2pManager.initialize(appContext, Looper.getMainLooper(), null);
+
+    CountDownLatch latch = new CountDownLatch(2);
+    final String[] applicationGroupNameHolder = new String[1];
+    final String[] activityGroupNameHolder = new String[1];
+
+    applicationWifiP2pManager.requestGroupInfo(
+        applicationChannel,
+        group -> {
+          if (group != null) {
+            applicationGroupNameHolder[0] = group.getNetworkName();
+          }
+          latch.countDown();
+        });
+
+    Activity activity = null;
+    try {
+      activity = Robolectric.setupActivity(TestActivity.class);
+      WifiP2pManager activityWifiP2pManager =
+          (WifiP2pManager) activity.getSystemService(Context.WIFI_P2P_SERVICE);
+      WifiP2pManager.Channel activityChannel =
+          activityWifiP2pManager.initialize(activity, activity.getMainLooper(), null);
+
+      activityWifiP2pManager.requestGroupInfo(
+          activityChannel,
+          group -> {
+            if (group != null) {
+              activityGroupNameHolder[0] = group.getNetworkName();
+            }
+            latch.countDown();
+          });
+
+      latch.await(5, TimeUnit.SECONDS); // Adjust timeout as necessary
+
+      assertThat(applicationGroupNameHolder[0]).isEqualTo(activityGroupNameHolder[0]);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

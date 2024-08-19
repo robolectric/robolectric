@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(WifiP2pManager.class)
@@ -19,12 +20,12 @@ public class ShadowWifiP2pManager {
 
   private static final int NO_FAILURE = -1;
 
-  private int listeningChannel;
-  private int operatingChannel;
-  private WifiP2pManager.GroupInfoListener groupInfoListener;
-  private Handler handler;
-  private int nextActionFailure = NO_FAILURE;
-  private Map<Channel, WifiP2pGroup> p2pGroupmap = new HashMap<>();
+  private static int listeningChannel;
+  private static int operatingChannel;
+  private static WifiP2pManager.GroupInfoListener groupInfoListener;
+  private static Handler handler;
+  private static int nextActionFailure = NO_FAILURE;
+  private static final Map<Channel, WifiP2pGroup> p2pGroupmap = new HashMap<>();
 
   public int getListeningChannel() {
     return listeningChannel;
@@ -104,5 +105,15 @@ public class ShadowWifiP2pManager {
 
   public void setGroupInfo(Channel channel, WifiP2pGroup wifiP2pGroup) {
     p2pGroupmap.put(channel, wifiP2pGroup);
+  }
+
+  @Resetter
+  public static void reset() {
+    listeningChannel = 0;
+    operatingChannel = 0;
+    groupInfoListener = null;
+    handler = null;
+    nextActionFailure = NO_FAILURE;
+    p2pGroupmap.clear();
   }
 }
