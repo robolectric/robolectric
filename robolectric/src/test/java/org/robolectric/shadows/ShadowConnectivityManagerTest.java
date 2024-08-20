@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.S;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -722,5 +723,75 @@ public class ShadowConnectivityManagerTest {
 
     assertThat(connectivityManager.getProxyForNetwork(network)).isNull();
     assertThat(connectivityManager.getDefaultProxy()).isNull();
+  }
+
+  @Test
+  public void setDefaultNetworkActive_isActiveTrue_triggersOnAvailableInCallbacks() {
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    ConnectivityManager.NetworkCallback callback1 = spy(createSimpleCallback());
+    ConnectivityManager.NetworkCallback callback2 = spy(createSimpleCallback());
+    ShadowConnectivityManager shadowConnectivityManager = shadowOf(connectivityManager);
+    shadowConnectivityManager.registerDefaultNetworkCallback(callback1);
+    shadowConnectivityManager.registerNetworkCallback(builder.build(), callback2);
+    shadowConnectivityManager.setActiveNetworkInfo(
+        ShadowNetworkInfo.newInstance(
+            null,
+            ConnectivityManager.TYPE_MOBILE,
+            TelephonyManager.NETWORK_TYPE_LTE,
+            true,
+            NetworkInfo.State.CONNECTED));
+
+    shadowConnectivityManager.setDefaultNetworkActive(true);
+
+    verify(callback1).onAvailable(shadowConnectivityManager.getActiveNetwork());
+    verify(callback2).onAvailable(shadowConnectivityManager.getActiveNetwork());
+  }
+
+  @Test
+  public void setDefaultNetworkActive_isActiveFalse_triggersOnLostInCallbacks() {
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    ConnectivityManager.NetworkCallback callback1 = spy(createSimpleCallback());
+    ConnectivityManager.NetworkCallback callback2 = spy(createSimpleCallback());
+    ShadowConnectivityManager shadowConnectivityManager = shadowOf(connectivityManager);
+    shadowConnectivityManager.registerDefaultNetworkCallback(callback1);
+    shadowConnectivityManager.registerNetworkCallback(builder.build(), callback2);
+    shadowConnectivityManager.setActiveNetworkInfo(
+        ShadowNetworkInfo.newInstance(
+            null,
+            ConnectivityManager.TYPE_MOBILE,
+            TelephonyManager.NETWORK_TYPE_LTE,
+            true,
+            NetworkInfo.State.CONNECTED));
+    Network previouslyActiveNetwork = shadowConnectivityManager.getActiveNetwork();
+
+    shadowConnectivityManager.setDefaultNetworkActive(false);
+
+    verify(callback1).onLost(previouslyActiveNetwork);
+    verify(callback2).onLost(previouslyActiveNetwork);
+  }
+
+  @Test
+  public void
+      setDefaultNetworkActive_withSetNetworkCallbacksEnabledFalse_doesNotTriggerCallbacks() {
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    ConnectivityManager.NetworkCallback callback1 = spy(createSimpleCallback());
+    ConnectivityManager.NetworkCallback callback2 = spy(createSimpleCallback());
+    ShadowConnectivityManager shadowConnectivityManager = shadowOf(connectivityManager);
+    shadowConnectivityManager.registerDefaultNetworkCallback(callback1);
+    shadowConnectivityManager.registerNetworkCallback(builder.build(), callback2);
+    shadowConnectivityManager.setActiveNetworkInfo(
+        ShadowNetworkInfo.newInstance(
+            null,
+            ConnectivityManager.TYPE_MOBILE,
+            TelephonyManager.NETWORK_TYPE_LTE,
+            true,
+            NetworkInfo.State.CONNECTED));
+    shadowConnectivityManager.setNetworkCallbacksEnabled(false);
+
+    shadowConnectivityManager.setDefaultNetworkActive(true);
+    shadowConnectivityManager.setDefaultNetworkActive(false);
+
+    verify(callback1, never()).onAvailable(shadowConnectivityManager.getActiveNetwork());
+    verify(callback2, never()).onAvailable(shadowConnectivityManager.getActiveNetwork());
   }
 }
