@@ -62,6 +62,7 @@ import org.robolectric.util.inject.Injector;
 public class RobolectricTestRunner extends SandboxTestRunner {
 
   public static final String CONFIG_PROPERTIES = "robolectric.properties";
+  private static final int MAX_DATA_DIR_NAME_LENGTH = 120;
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
 
@@ -277,11 +278,24 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     AndroidManifest appManifest = roboMethod.getAppManifest();
 
+    String tmpDirName = getTempDirName(bootstrappedMethod);
     roboMethod
         .getTestEnvironment()
-        .setUpApplicationState(bootstrappedMethod, roboMethod.getConfiguration(), appManifest);
+        .setUpApplicationState(tmpDirName, roboMethod.getConfiguration(), appManifest);
 
     roboMethod.testLifecycle.beforeTest(bootstrappedMethod);
+  }
+
+  /** Returns a filesystem-safe directory path name for the current test. */
+  private String getTempDirName(Method method) {
+    // Cap the size to 120 to avoid unnecessarily long directory names.
+    String directoryName =
+        (method.getDeclaringClass().getSimpleName() + "_" + method.getName())
+            .replaceAll("[^a-zA-Z0-9.-]", "_");
+    if (directoryName.length() > MAX_DATA_DIR_NAME_LENGTH) {
+      directoryName = directoryName.substring(0, MAX_DATA_DIR_NAME_LENGTH);
+    }
+    return directoryName;
   }
 
   @Override

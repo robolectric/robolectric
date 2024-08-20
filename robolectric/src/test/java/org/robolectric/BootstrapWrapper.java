@@ -1,6 +1,5 @@
 package org.robolectric;
 
-import java.lang.reflect.Method;
 import javax.inject.Named;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapperI;
 import org.robolectric.android.internal.AndroidTestEnvironment;
@@ -14,7 +13,7 @@ import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 public class BootstrapWrapper extends AndroidTestEnvironment implements BootstrapWrapperI {
   public AndroidTestEnvironment wrappedTestEnvironment;
   public boolean legacyResources;
-  public Method method;
+  public String tmpDirName;
   public Configuration config;
   public AndroidManifest appManifest;
 
@@ -30,8 +29,8 @@ public class BootstrapWrapper extends AndroidTestEnvironment implements Bootstra
 
   @Override
   public void setUpApplicationState(
-      Method method, Configuration config, AndroidManifest appManifest) {
-    this.method = method;
+      String tmpDirName, Configuration config, AndroidManifest appManifest) {
+    this.tmpDirName = tmpDirName;
     this.config = config;
     this.appManifest = appManifest;
 
@@ -45,7 +44,7 @@ public class BootstrapWrapper extends AndroidTestEnvironment implements Bootstra
 
   @Override
   public void callSetUpApplicationState() {
-    wrappedTestEnvironment.setUpApplicationState(method, config, appManifest);
+    wrappedTestEnvironment.setUpApplicationState(tmpDirName, config, appManifest);
   }
 
   @Override

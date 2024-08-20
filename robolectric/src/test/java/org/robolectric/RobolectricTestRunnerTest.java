@@ -337,7 +337,7 @@ public class RobolectricTestRunnerTest {
 
     @Override
     public void setUpApplicationState(
-        Method method, Configuration configuration, AndroidManifest appManifest) {
+        String tmpDirName, Configuration configuration, AndroidManifest appManifest) {
       // ConfigurationRegistry.instance is required for resetters.
       ConfigurationRegistry.instance = new ConfigurationRegistry(configuration.map());
       throw new RuntimeException("fake error in setUpApplicationState");
@@ -368,7 +368,7 @@ public class RobolectricTestRunnerTest {
 
     @Override
     public void setUpApplicationState(
-        Method method, Configuration configuration, AndroidManifest appManifest) {
+        String tmpDirName, Configuration configuration, AndroidManifest appManifest) {
       UnloadableClass.doStuff();
     }
 
