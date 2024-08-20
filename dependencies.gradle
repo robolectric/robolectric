@@ -1,9 +1,0 @@
-ext {
-    // https://github.com/gradle/gradle/issues/21267
-    axtCoreVersion = libs.versions.androidx.test.core.get()
-    axtJunitVersion = libs.versions.androidx.test.ext.junit.get()
-    axtMonitorVersion = libs.versions.androidx.test.monitor.get()
-    axtRunnerVersion = libs.versions.androidx.test.runner.get()
-    axtTruthVersion = libs.versions.androidx.test.ext.truth.get()
-    espressoVersion = libs.versions.androidx.test.espresso.get()
-}
