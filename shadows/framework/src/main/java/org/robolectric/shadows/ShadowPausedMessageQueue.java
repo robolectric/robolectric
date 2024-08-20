@@ -76,13 +76,13 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     ShadowPausedSystemClock.removeListener(q.clockListener);
   }
 
-  @Implementation(maxSdk = LOLLIPOP_MR1)
-  protected static void nativePollOnce(long ptr, int timeoutMillis) {
-    nativeQueueRegistry.getNativeObject(ptr).nativePollOnceFromM(ptr, timeoutMillis);
+  @Implementation(maxSdk = LOLLIPOP_MR1, methodName = "nativePollOnce")
+  protected static void nativePollOncePreM(long ptr, int timeoutMillis) {
+    nativeQueueRegistry.getNativeObject(ptr).nativePollOnce(ptr, timeoutMillis);
   }
 
-  @Implementation(minSdk = M, methodName = "nativePollOnce")
-  protected void nativePollOnceFromM(long ptr, int timeoutMillis) {
+  @Implementation(minSdk = M)
+  protected void nativePollOnce(long ptr, int timeoutMillis) {
     if (timeoutMillis == 0) {
       return;
     }
