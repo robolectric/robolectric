@@ -148,10 +148,7 @@ public class InstrumentationConfiguration {
         return false;
       }
     }
-
-    // R classes must be loaded from system CP
-    boolean isRClass = name.matches(".*\\.R(|\\$[a-z]+)$");
-    return !isRClass && !classesToNotAcquire.contains(name);
+    return !classesToNotAcquire.contains(name);
   }
 
   /**
