@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -13,6 +14,7 @@ import android.view.Choreographer.FrameCallback;
 import android.view.DisplayEventReceiver;
 import java.time.Duration;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -24,6 +26,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.util.reflector.WithType;
 
 /**
  * The shadow API for {@link android.view.Choreographer}.
@@ -161,6 +164,18 @@ public abstract class ShadowChoreographer {
         .measure("doFrame", () -> reflector.doFrame(frameTimeNanos, frame));
   }
 
+  @Implementation(minSdk = S)
+  protected void doFrame(
+      long frameTimeNanos,
+      int frame,
+      @ClassName("android.view.DisplayEventReceiver$VsyncEventData") Object vsyncEventData) {
+    if (reflector == null) {
+      reflector = reflector(ChoreographerReflector.class, realObject);
+    }
+    PerfStatsCollector.getInstance()
+        .measure("doFrame", () -> reflector.doFrame(frameTimeNanos, frame, vsyncEventData));
+  }
+
   @Resetter
   public static void reset() {
     isPaused = false;
@@ -187,6 +202,12 @@ public abstract class ShadowChoreographer {
 
     @Direct
     void doFrame(long frameTimeNanos, int frame);
+
+    @Direct
+    void doFrame(
+        long frameTimeNanos,
+        int frame,
+        @WithType("android.view.DisplayEventReceiver$VsyncEventData") Object vsyncEventData);
 
     @Accessor("mDisplayEventReceiver")
     DisplayEventReceiver getReceiver();
