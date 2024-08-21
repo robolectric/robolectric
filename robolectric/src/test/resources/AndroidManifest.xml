@@ -36,6 +36,7 @@
   <application android:name="org.robolectric.shadows.testing.TestApplication"
          android:theme="@style/Theme.Robolectric"
          android:label="@string/app_name"
+         android:debuggable="true"
          android:allowBackup="true"
          android:allowClearUserData="true"
          android:allowTaskReparenting="true"
