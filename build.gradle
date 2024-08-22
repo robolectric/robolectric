@@ -95,7 +95,6 @@ gradle.projectsEvaluated {
                 source("8")
                 header = headerHtml
                 footer = headerHtml
-                // bottom = "<link rel=\"stylesheet\" href=\"http://robolectric.org/assets/css/main.css\">"
                 version = thisVersion
             }
         }

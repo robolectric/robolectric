@@ -62,11 +62,6 @@ class DeployedRoboJavaModulePlugin : Plugin<Project> {
         javadocOptions.noTimestamp(true)
         javadocOptions.header = extraNavItem
         javadocOptions.footer = extraNavItem
-        javadocOptions.bottom =
-          """
-          <link rel="stylesheet" href="https://robolectric.org/assets/css/main.css">
-          """
-            .trimIndent()
       }
 
       project.extensions.configure<PublishingExtension> {
