@@ -43,6 +43,13 @@ public abstract class ShadowChoreographer {
   private static volatile boolean isPaused = false;
   private static volatile Duration frameDelay = Duration.ofMillis(1);
 
+  /**
+   * This field is only used when {@link #isPaused()} is true. It represents the next scheduled
+   * vsync time (with respect to the system clock). See the {@link #getNextVsyncTime()} javadoc for
+   * more details.
+   */
+  private static volatile long nextVsyncTime;
+
   public static class Picker extends LooperShadowPicker<ShadowChoreographer> {
 
     public Picker() {
@@ -88,6 +95,21 @@ public abstract class ShadowChoreographer {
   public static boolean isPaused() {
     checkState(!ShadowLooper.looperMode().equals(Mode.LEGACY), "Looper cannot be %s", Mode.LEGACY);
     return isPaused;
+  }
+
+  /**
+   * This field is only used when {@link ShadowChoreographer#isPaused()} is true. It represents the
+   * next scheduled vsync time (with respect to the system clock). When the system clock is advanced
+   * to or beyond this time, a Choreographer frame will be triggered. It may be useful for tests to
+   * know when the next scheduled vsync time is in order to determine how long to idle the main
+   * looper in order to trigger the next Choreographer callback.
+   */
+  public static long getNextVsyncTime() {
+    return nextVsyncTime;
+  }
+
+  static void setNextVsyncTime(long nextVsyncTime) {
+    ShadowChoreographer.nextVsyncTime = nextVsyncTime;
   }
 
   /**
@@ -178,6 +200,7 @@ public abstract class ShadowChoreographer {
 
   @Resetter
   public static void reset() {
+    nextVsyncTime = 0;
     isPaused = false;
     frameDelay = Duration.ofMillis(1);
     if (RuntimeEnvironment.getApiLevel() >= N) {

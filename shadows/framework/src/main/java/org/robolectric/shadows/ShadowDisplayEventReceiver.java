@@ -18,7 +18,6 @@ import dalvik.system.CloseGuard;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.time.Duration;
-import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -162,9 +161,6 @@ public class ShadowDisplayEventReceiver {
     private final WeakReference<DisplayEventReceiver> receiverRef;
     private final ShadowPausedSystemClock.Listener clockListener = this::onClockAdvanced;
 
-    @GuardedBy("this")
-    private long nextVsyncTime = 0;
-
     public NativeDisplayEventReceiver(WeakReference<DisplayEventReceiver> receiverRef) {
       this.receiverRef = receiverRef;
       // register a clock listener for the async mode
@@ -173,11 +169,13 @@ public class ShadowDisplayEventReceiver {
 
     private void onClockAdvanced() {
       synchronized (this) {
+        long nextVsyncTime = ShadowChoreographer.getNextVsyncTime();
         if (nextVsyncTime == 0 || ShadowPausedSystemClock.uptimeMillis() < nextVsyncTime) {
           return;
         }
-        nextVsyncTime = 0;
+        ShadowChoreographer.setNextVsyncTime(0);
       }
+
       doVsync();
     }
 
@@ -188,8 +186,8 @@ public class ShadowDisplayEventReceiver {
     public void scheduleVsync() {
       Duration frameDelay = ShadowChoreographer.getFrameDelay();
       if (ShadowChoreographer.isPaused()) {
-        synchronized (this) {
-          nextVsyncTime = SystemClock.uptimeMillis() + frameDelay.toMillis();
+        if (ShadowChoreographer.getNextVsyncTime() < SystemClock.uptimeMillis()) {
+          ShadowChoreographer.setNextVsyncTime(SystemClock.uptimeMillis() + frameDelay.toMillis());
         }
       } else {
         // simulate an immediate callback
