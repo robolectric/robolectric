@@ -51,9 +51,9 @@ import org.robolectric.versioning.AndroidVersions.V;
 @Implements(value = VirtualDeviceManager.class, minSdk = U.SDK_INT, isInAndroidSdk = false)
 public class ShadowVirtualDeviceManager {
 
-  private final List<VirtualDeviceManager.VirtualDevice> mVirtualDevices = new ArrayList<>();
+  private static final List<VirtualDeviceManager.VirtualDevice> mVirtualDevices = new ArrayList<>();
   private Context context;
-  private IVirtualDeviceManager service;
+  private static IVirtualDeviceManager service;
 
   @Implementation
   protected void __constructor__(IVirtualDeviceManager service, Context context) {
@@ -323,6 +323,8 @@ public class ShadowVirtualDeviceManager {
     @Resetter
     public static void reset() {
       nextDeviceId.set(1);
+      mVirtualDevices.clear();
+      service = null;
     }
   }
 

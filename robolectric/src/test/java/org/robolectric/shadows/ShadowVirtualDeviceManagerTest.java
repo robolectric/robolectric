@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
@@ -40,6 +41,7 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.time.Duration;
+import java.util.List;
 import java.util.function.IntConsumer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,9 +52,11 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowVirtualDeviceManager.ShadowVirtualDevice;
+import org.robolectric.shadows.testing.TestActivity;
 
 /** Unit test for ShadowVirtualDeviceManager and ShadowVirtualDevice. */
 @Config(minSdk = UPSIDE_DOWN_CAKE)
@@ -355,5 +359,34 @@ public class ShadowVirtualDeviceManagerTest {
     assertThat(virtualDisplay.getDisplay().getDisplayId()).isNotEqualTo(Display.DEFAULT_DISPLAY);
     assertThat(virtualDisplay.getDisplay().getName()).isEqualTo("name");
     assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(123);
+  }
+
+  @Test
+  public void virtualDeviceManager_activityContextEnabled_retrievesSameVirtualDevices() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      VirtualDeviceManager applicationVirtualDeviceManager =
+          (VirtualDeviceManager)
+              RuntimeEnvironment.getApplication().getSystemService(Context.VIRTUAL_DEVICE_SERVICE);
+      activity = Robolectric.setupActivity(TestActivity.class);
+      VirtualDeviceManager activityVirtualDeviceManager =
+          (VirtualDeviceManager) activity.getSystemService(Context.VIRTUAL_DEVICE_SERVICE);
+
+      List<android.companion.virtual.VirtualDevice> applicationVirtualDevices =
+          applicationVirtualDeviceManager.getVirtualDevices();
+      List<android.companion.virtual.VirtualDevice> activityVirtualDevices =
+          activityVirtualDeviceManager.getVirtualDevices();
+
+      assertThat(applicationVirtualDevices).isNotNull();
+      assertThat(activityVirtualDevices).isNotNull();
+      assertThat(activityVirtualDevices).isEqualTo(applicationVirtualDevices);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
