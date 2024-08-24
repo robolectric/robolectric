@@ -9,13 +9,14 @@ import java.util.UUID;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /** Shadow for {@link VpnManager}. */
 @Implements(value = VpnManager.class, minSdk = VERSION_CODES.R, isInAndroidSdk = false)
 public class ShadowVpnManager {
 
-  private VpnProfileState vpnProfileState;
-  private Intent provisionVpnProfileIntent;
+  private static VpnProfileState vpnProfileState;
+  private static Intent provisionVpnProfileIntent;
 
   @Implementation
   protected void deleteProvisionedVpnProfile() {
@@ -63,5 +64,11 @@ public class ShadowVpnManager {
     if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.TIRAMISU) {
       vpnProfileState = new VpnProfileState(VpnProfileState.STATE_DISCONNECTED, null, false, false);
     }
+  }
+
+  @Resetter
+  public static void reset() {
+    vpnProfileState = null;
+    provisionVpnProfileIntent = null;
   }
 }
