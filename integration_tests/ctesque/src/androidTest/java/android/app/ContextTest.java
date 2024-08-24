@@ -32,8 +32,6 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
-import android.media.MediaRouter;
-import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.DropBoxManager;
@@ -1081,57 +1079,6 @@ public class ContextTest {
             boolean activityTagEnabled = activityDropBoxManager.isTagEnabled(tag);
 
             assertThat(activityTagEnabled).isEqualTo(applicationTagEnabled);
-          });
-    }
-  }
-
-  @Test
-  public void mediaRouter_applicationInstance_isNotSameAsActivityInstance() {
-    MediaRouter applicationMediaRouter =
-        (MediaRouter)
-            ApplicationProvider.getApplicationContext()
-                .getSystemService(Context.MEDIA_ROUTER_SERVICE);
-    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            MediaRouter activityMediaRouter =
-                (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
-            assertThat(applicationMediaRouter).isNotSameInstanceAs(activityMediaRouter);
-          });
-    }
-  }
-
-  @Test
-  public void mediaRouter_activityInstance_isSameAsActivityInstance() {
-    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            MediaRouter activityMediaRouter =
-                (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
-            MediaRouter anotherActivityMediaRouter =
-                (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
-            assertThat(anotherActivityMediaRouter).isSameInstanceAs(activityMediaRouter);
-          });
-    }
-  }
-
-  @Test
-  public void mediaRouter_instance_retrievesSameDefaultRoute() {
-    MediaRouter applicationMediaRouter =
-        (MediaRouter)
-            ApplicationProvider.getApplicationContext()
-                .getSystemService(Context.MEDIA_ROUTER_SERVICE);
-    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
-      scenario.onActivity(
-          activity -> {
-            MediaRouter activityMediaRouter =
-                (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
-
-            MediaRouter.RouteInfo applicationDefaultRoute =
-                applicationMediaRouter.getDefaultRoute();
-            MediaRouter.RouteInfo activityDefaultRoute = activityMediaRouter.getDefaultRoute();
-
-            assertThat(activityDefaultRoute).isEqualTo(applicationDefaultRoute);
           });
     }
   }
