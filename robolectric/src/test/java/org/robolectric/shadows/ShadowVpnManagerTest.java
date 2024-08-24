@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Ikev2VpnProfile;
 import android.net.VpnManager;
@@ -12,6 +13,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
@@ -91,5 +93,32 @@ public class ShadowVpnManagerTest {
     assertThat(state.getSessionId()).isNull();
     assertThat(state.isAlwaysOn()).isFalse();
     assertThat(state.isLockdownEnabled()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void vpnManager_activityContextEnabled_differentInstancesInteract() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      VpnManager applicationVpnManager =
+          RuntimeEnvironment.getApplication().getSystemService(VpnManager.class);
+      activity = Robolectric.setupActivity(Activity.class);
+      VpnManager activityVpnManager = activity.getSystemService(VpnManager.class);
+
+      assertThat(applicationVpnManager).isNotSameInstanceAs(activityVpnManager);
+
+      VpnProfileState applicationProfileState =
+          applicationVpnManager.getProvisionedVpnProfileState();
+      VpnProfileState activityProfileState = activityVpnManager.getProvisionedVpnProfileState();
+
+      assertThat(activityProfileState).isEqualTo(applicationProfileState);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
