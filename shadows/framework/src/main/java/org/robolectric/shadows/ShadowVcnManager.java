@@ -14,15 +14,16 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /** A Shadow for android.net.vcn.VcnManager added in Android S. */
 @Implements(value = VcnManager.class, minSdk = VERSION_CODES.S, isInAndroidSdk = false)
 public class ShadowVcnManager {
 
-  private final Map<VcnStatusCallback, VcnStatusCallbackInfo> callbacks = new HashMap<>();
-  private final Map<ParcelUuid, VcnConfig> configs = new HashMap<>();
+  private static final Map<VcnStatusCallback, VcnStatusCallbackInfo> callbacks = new HashMap<>();
+  private static final Map<ParcelUuid, VcnConfig> configs = new HashMap<>();
 
-  private int currentVcnStatus = VcnManager.VCN_STATUS_CODE_NOT_CONFIGURED;
+  private static int currentVcnStatus = VcnManager.VCN_STATUS_CODE_NOT_CONFIGURED;
 
   @Implementation
   protected void registerVcnStatusCallback(
@@ -93,6 +94,13 @@ public class ShadowVcnManager {
   /** Gets the subscription group of given VcnStatusCallback in {@link #callbacks}. */
   public ParcelUuid getRegisteredSubscriptionGroup(VcnStatusCallback callback) {
     return callbacks.get(callback).subGroup;
+  }
+
+  @Resetter
+  public static void reset() {
+    callbacks.clear();
+    configs.clear();
+    currentVcnStatus = VcnManager.VCN_STATUS_CODE_NOT_CONFIGURED;
   }
 
   private static final class VcnStatusCallbackInfo {
