@@ -5,6 +5,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.shadow.api.Shadow.extract;
 
+import android.app.Activity;
 import android.net.vcn.VcnConfig;
 import android.net.vcn.VcnManager;
 import android.net.vcn.VcnManager.VcnStatusCallback;
@@ -12,6 +13,7 @@ import android.os.ParcelUuid;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.util.concurrent.MoreExecutors;
+import java.util.List;
 import java.util.concurrent.Executor;
 import org.junit.Before;
 import org.junit.Rule;
@@ -20,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 /** Test for {@link ShadowVcnManager}. */
@@ -88,5 +91,35 @@ public final class ShadowVcnManagerTest {
     instance.clearVcnConfig(subGroup);
 
     assertThat(instance.getConfiguredSubscriptionGroups()).isEmpty();
+  }
+
+  @Test
+  public void vcnManager_activityContextEnabled_differentInstancesRetrieveSubscriptionGroups() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      VcnManager applicationVcnManager =
+          ApplicationProvider.getApplicationContext().getSystemService(VcnManager.class);
+      activity = Robolectric.setupActivity(Activity.class);
+      VcnManager activityVcnManager = activity.getSystemService(VcnManager.class);
+
+      assertThat(applicationVcnManager).isNotSameInstanceAs(activityVcnManager);
+
+      List<ParcelUuid> applicationConfiguredSubscriptionGroups =
+          applicationVcnManager.getConfiguredSubscriptionGroups();
+      List<ParcelUuid> activityConfiguredSubscriptionGroups =
+          activityVcnManager.getConfiguredSubscriptionGroups();
+
+      assertThat(applicationConfiguredSubscriptionGroups).isNotNull();
+      assertThat(activityConfiguredSubscriptionGroups).isNotNull();
+      assertThat(activityConfiguredSubscriptionGroups)
+          .isEqualTo(applicationConfiguredSubscriptionGroups);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
