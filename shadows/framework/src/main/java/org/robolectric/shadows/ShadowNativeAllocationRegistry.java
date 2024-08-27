@@ -1,18 +1,22 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import libcore.util.NativeAllocationRegistry;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.nativeruntime.NativeAllocationRegistryNatives;
 import org.robolectric.shadows.ShadowNativeAllocationRegistry.Picker;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link NativeAllocationRegistry} that is backed by native code */
 @Implements(
@@ -24,6 +28,32 @@ import org.robolectric.versioning.AndroidVersions.U;
 public class ShadowNativeAllocationRegistry {
 
   @RealObject protected NativeAllocationRegistry realNativeAllocationRegistry;
+
+  /**
+   * The newly introduced constructor (in version V) now performs a null check on the classLoader
+   * argument. We intercept the constructor calls so as to pass a non-null classloader. The
+   * classloader would be Robolectric's SandboxClassloader, but the value itself does not affect the
+   * behavior of actual class.
+   */
+  @InDevelopment
+  @Implementation(minSdk = V.SDK_INT)
+  protected void __constructor__(
+      ClassLoader classLoader,
+      Class clazz,
+      long freeFunction,
+      long size,
+      boolean mallocAllocation) {
+    ClassLoader loader =
+        (classLoader == null) ? Thread.currentThread().getContextClassLoader() : classLoader;
+    invokeConstructor(
+        NativeAllocationRegistry.class,
+        realNativeAllocationRegistry,
+        ClassParameter.from(ClassLoader.class, loader),
+        ClassParameter.from(Class.class, clazz),
+        ClassParameter.from(long.class, freeFunction),
+        ClassParameter.from(long.class, size),
+        ClassParameter.from(boolean.class, mallocAllocation));
+  }
 
   @Implementation
   protected Runnable registerNativeAllocation(Object referent, long nativePtr) {
