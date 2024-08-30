@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   alias(libs.plugins.detekt)
@@ -8,13 +7,9 @@ plugins {
   alias(libs.plugins.robolectric.spotless)
 }
 
-tasks.named<KotlinCompile>("compileKotlin").configure {
-  compilerOptions.jvmTarget = JvmTarget.JVM_1_8
-}
+tasks.compileKotlin.configure { compilerOptions.jvmTarget = JvmTarget.JVM_1_8 }
 
-tasks.named<KotlinCompile>("compileTestKotlin").configure {
-  compilerOptions.jvmTarget = JvmTarget.JVM_1_8
-}
+tasks.compileTestKotlin.configure { compilerOptions.jvmTarget = JvmTarget.JVM_1_8 }
 
 val axtJunitVersion: String by rootProject.extra
 

@@ -26,7 +26,7 @@ val jacocoInstrumentedClassesOutputDir =
 
 // Make sure it's evaluated after the AGP evaluation.
 afterEvaluate {
-  tasks.named<Task>("classes").configure {
+  tasks.classes.configure {
     doLast {
       logger.debug("[JaCoCo] Generating JaCoCo instrumented classes for the build.")
 

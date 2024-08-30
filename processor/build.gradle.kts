@@ -35,7 +35,7 @@ val generateSdksFile by
     outFile = project.rootProject.layout.buildDirectory.file("sdks.txt").get().asFile
   }
 
-tasks.named("classes").configure { dependsOn(generateSdksFile) }
+tasks.classes.configure { dependsOn(generateSdksFile) }
 
 dependencies {
   api(project(":annotations"))

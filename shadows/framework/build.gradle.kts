@@ -1,5 +1,3 @@
-import org.gradle.jvm.tasks.Jar
-
 plugins {
   alias(libs.plugins.robolectric.deployed.java.module)
   alias(libs.plugins.robolectric.java.module)
@@ -37,9 +35,9 @@ val copySqliteNatives by
     into(project.file(layout.buildDirectory.dir("resources/main/sqlite4java")))
   }
 
-tasks.named<Jar>("jar") { dependsOn(copySqliteNatives) }
+tasks.jar.configure { dependsOn(copySqliteNatives) }
 
-tasks.named<Javadoc>("javadoc") { dependsOn(copySqliteNatives) }
+tasks.javadoc.configure { dependsOn(copySqliteNatives) }
 
 val axtMonitorVersion: String by rootProject.extra
 

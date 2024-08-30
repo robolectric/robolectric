@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   alias(libs.plugins.detekt)
@@ -15,9 +14,9 @@ tasks.withType<GenerateModuleMetadata>().configureEach {
   enabled = false
 }
 
-tasks.named<KotlinCompile>("compileKotlin") { compilerOptions.jvmTarget = JvmTarget.JVM_1_8 }
+tasks.compileKotlin.configure { compilerOptions.jvmTarget = JvmTarget.JVM_1_8 }
 
-tasks.named<KotlinCompile>("compileTestKotlin") { compilerOptions.jvmTarget = JvmTarget.JVM_1_8 }
+tasks.compileTestKotlin.configure { compilerOptions.jvmTarget = JvmTarget.JVM_1_8 }
 
 dependencies {
   api(project(":pluginapi"))
