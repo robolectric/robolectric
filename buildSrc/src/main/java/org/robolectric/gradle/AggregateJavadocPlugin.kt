@@ -30,9 +30,9 @@ class AggregateJavadocPlugin : Plugin<Project> {
           dependsOn(javadocTasks)
           source(javadocTasks.map { it.source })
 
-          val buildDirectory = rootProject.layout.buildDirectory.get().asFile.path
+          val javadocDirectory = rootProject.layout.buildDirectory.dir("docs/javadoc").get().asFile
 
-          setDestinationDir(rootProject.file("$buildDirectory/docs/javadoc"))
+          setDestinationDir(javadocDirectory)
           classpath = rootProject.files(javadocTasks.map { it.classpath })
         }
       }

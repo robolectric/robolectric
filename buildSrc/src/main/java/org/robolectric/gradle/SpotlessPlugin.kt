@@ -22,9 +22,6 @@ class SpotlessPlugin : Plugin<Project> {
         ktfmt("0.49").googleStyle()
       }
 
-      // Add configurations for Groovy Gradle files
-      groovyGradle { target("*.gradle", "**/*.gradle") }
-
       // Only apply yaml and json formatting for root project
       // to avoid some files are added into multiple project's spotless targets.
       if (project.rootProject == project) {

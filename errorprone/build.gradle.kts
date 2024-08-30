@@ -6,9 +6,9 @@ plugins {
 }
 
 // Disable annotation processor for tests
-tasks.named<JavaCompile>("compileTestJava").configure { options.compilerArgs.add("-proc:none") }
+tasks.compileTestJava.configure { options.compilerArgs.add("-proc:none") }
 
-tasks.named<Test>("test").configure { enabled = false }
+tasks.test.configure { enabled = false }
 
 dependencies {
   // Project dependencies
