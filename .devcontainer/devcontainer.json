@@ -1,0 +1,10 @@
+{
+  "build": {
+    "args": {
+      "VARIENT": "ubuntu-22.04"
+    },
+    "dockerfile": "Dockerfile"
+  },
+  "name": "robolectric-dev",
+  "remoteUser": "vscode"
+}
