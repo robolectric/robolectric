@@ -78,7 +78,6 @@ public class ContextTest {
           Manifest.permission.MODIFY_AUDIO_SETTINGS,
           Manifest.permission.GET_ACCOUNTS,
           Manifest.permission.USE_BIOMETRIC,
-          Manifest.permission.USE_BIOMETRIC,
           Manifest.permission.INTERNET,
           Manifest.permission.READ_PHONE_STATE,
           Manifest.permission.WRITE_EXTERNAL_STORAGE,
