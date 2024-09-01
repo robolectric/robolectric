@@ -26,6 +26,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -180,18 +181,36 @@ public class ShadowContextWrapperTest {
   @Test
   public void sendBroadcast_shouldOnlySendIntentWhenReceiverHasPermission() throws Exception {
     Context receiverWithPermission = contextWithPermission("larryPackage", "larryPermission");
-    receiverWithPermission.registerReceiver(
-        broadcastReceiver("Larry"),
-        intentFilter("foo"),
-        /* broadcastPermission= */ null,
-        /* scheduler= */ null);
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      receiverWithPermission.registerReceiver(
+          broadcastReceiver("Larry"),
+          intentFilter("foo"),
+          /* broadcastPermission= */ null,
+          /* scheduler= */ null,
+          Context.RECEIVER_NOT_EXPORTED);
+    } else {
+      receiverWithPermission.registerReceiver(
+          broadcastReceiver("Larry"),
+          intentFilter("foo"),
+          /* broadcastPermission= */ null,
+          /* scheduler= */ null);
+    }
 
     Context receiverWithoutPermission = contextWithPermission("bobPackage", "bobPermission");
-    receiverWithoutPermission.registerReceiver(
-        broadcastReceiver("Bob"),
-        intentFilter("foo"),
-        /* broadcastPermission= */ null,
-        /* scheduler= */ null);
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      receiverWithoutPermission.registerReceiver(
+          broadcastReceiver("Bob"),
+          intentFilter("foo"),
+          /* broadcastPermission= */ null,
+          /* scheduler= */ null,
+          Context.RECEIVER_NOT_EXPORTED);
+    } else {
+      receiverWithoutPermission.registerReceiver(
+          broadcastReceiver("Bob"),
+          intentFilter("foo"),
+          /* broadcastPermission= */ null,
+          /* scheduler= */ null);
+    }
 
     contextWrapper.sendBroadcast(new Intent("foo"), /* receiverPermission= */ "larryPermission");
 

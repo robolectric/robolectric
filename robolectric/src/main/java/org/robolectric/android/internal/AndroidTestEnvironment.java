@@ -648,8 +648,20 @@ public class AndroidTestEnvironment implements TestEnvironment {
       }
       String receiverClassName = receiver.getName();
       if (loadedApk != null && RuntimeEnvironment.getApiLevel() >= P) {
-        application.registerReceiver(
-            newBroadcastReceiverFromP(receiverClassName, loadedApk), filter);
+        if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+          // In Robolectric, we simulate server in the client part, and we need to inject
+          // receiver exported flags based on the definition in the AndroidManifest.xml
+          // to avoid receiver exported flags checking reporting error for system's
+          // registration of static receivers in AndroidManifest.xml as Robolectric reuses
+          // common APIs to simulate server's behavior and behave for client APIs.
+          application.registerReceiver(
+              newBroadcastReceiverFromP(receiverClassName, loadedApk),
+              filter,
+              receiver.isExported() ? Context.RECEIVER_EXPORTED : Context.RECEIVER_NOT_EXPORTED);
+        } else {
+          application.registerReceiver(
+              newBroadcastReceiverFromP(receiverClassName, loadedApk), filter);
+        }
       } else {
         application.registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
       }
