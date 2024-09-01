@@ -9,6 +9,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -17,6 +18,7 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Application;
+import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -768,6 +770,14 @@ public class ShadowApplicationTest {
     shadowMainLooper().idle();
     assertThat(receiverWithoutPermission.intent).isEqualTo(broadcastIntent);
     assertThat(receiverWithPermission.intent).isEqualTo(broadcastIntent);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void registerReceiverThrowsSecurityExceptionIfNotExported() {
+    IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+
+    assertThrows(SecurityException.class, () -> context.registerReceiver(new TestBroadcastReceiver(), filter));
   }
 
   @Test
