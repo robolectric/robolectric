@@ -30,6 +30,7 @@ import android.content.Intent;
 import android.content.Intent.FilterComparison;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -891,6 +892,29 @@ public class ShadowInstrumentation {
       Handler scheduler,
       int flags,
       Context context) {
+    // See ActivityManagerService#registerReceiverWithFeature.
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      final boolean explicitExportStateDefined =
+          (flags & (Context.RECEIVER_EXPORTED | Context.RECEIVER_NOT_EXPORTED)) != 0;
+      if (((flags & Context.RECEIVER_EXPORTED) != 0)
+          && ((flags & Context.RECEIVER_NOT_EXPORTED) != 0)) {
+        throw new IllegalArgumentException(
+            "Receiver can't specify both RECEIVER_EXPORTED and RECEIVER_NOT_EXPORTED flag");
+      }
+      // DYNAMIC_RECEIVER_EXPLICIT_EXPORT_REQUIRED is enabled if targetSdk from UPSIDE_DOWN_CAKE.
+      // See android.server.am.BroadcastController.
+      boolean requireExplicitFlagForDynamicReceivers =
+          context.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+      if (receiver != null
+          && requireExplicitFlagForDynamicReceivers
+          && !explicitExportStateDefined) {
+        throw new SecurityException(
+            context.getPackageName()
+                + ": One of RECEIVER_EXPORTED or "
+                + "RECEIVER_NOT_EXPORTED should be specified when a receiver "
+                + "isn't being registered exclusively for system broadcasts");
+      }
+    }
     if (receiver != null) {
       synchronized (registeredReceivers) {
         registeredReceivers.add(
