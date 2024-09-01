@@ -9,14 +9,17 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
+import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -768,6 +771,76 @@ public class ShadowApplicationTest {
     shadowMainLooper().idle();
     assertThat(receiverWithoutPermission.intent).isEqualTo(broadcastIntent);
     assertThat(receiverWithPermission.intent).isEqualTo(broadcastIntent);
+  }
+
+  @SuppressLint("UnspecifiedRegisterReceiverFlag")
+  @Test
+  @Config(
+      manifest = "TestAndroidManifestWithTargetSdk34.xml",
+      minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void
+      registerReceiver_withoutAnyExportedFlagsAndTargetSdk34OnAndroidFromU_throwsSecurityException() {
+    IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+
+    assertThrows(
+        SecurityException.class,
+        () -> context.registerReceiver(new TestBroadcastReceiver(), filter));
+  }
+
+  @Test
+  @Config(
+      manifest = "TestAndroidManifestWithTargetSdk34.xml",
+      minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void registerReceiver_withReceiverExportedFlagAndTargetSdk34OnAndroidFromU_succeed() {
+    IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+    context.registerReceiver(new TestBroadcastReceiver(), filter, Context.RECEIVER_EXPORTED);
+  }
+
+  @Test
+  @Config(
+      manifest = "TestAndroidManifestWithTargetSdk34.xml",
+      minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void registerReceiver_withReceiverNotExportedFlagAndTargetSdk34OnAndroidFromU_succeed() {
+    IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+    context.registerReceiver(new TestBroadcastReceiver(), filter, Context.RECEIVER_NOT_EXPORTED);
+  }
+
+  @Test
+  @Config(manifest = "TestAndroidManifest.xml", minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void
+      registerReceiver_withoutAnyExportedFlagsAndTargetSdk23OnAndroidFromU_notThrowsSecurityException() {
+    IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+    context.registerReceiver(new TestBroadcastReceiver(), filter);
+  }
+
+  @Test
+  @Config(
+      manifest = "TestAndroidManifestWithTargetSdk34.xml",
+      minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void
+      registerReceiver_withBothExportedFlagsAndTargetSdk34OnAndroidFromU_throwsIllegalArgumentException() {
+    IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            context.registerReceiver(
+                new TestBroadcastReceiver(),
+                filter,
+                Context.RECEIVER_EXPORTED | Context.RECEIVER_NOT_EXPORTED));
+  }
+
+  @Test
+  @Config(manifest = "TestAndroidManifest.xml", minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void
+      registerReceiver_withBothExportedFlagsAndTargetSdk23OnAndroidFromU_throwsIllegalArgumentException() {
+    IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            context.registerReceiver(
+                new TestBroadcastReceiver(),
+                filter,
+                Context.RECEIVER_EXPORTED | Context.RECEIVER_NOT_EXPORTED));
   }
 
   @Test
