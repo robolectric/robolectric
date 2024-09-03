@@ -65,13 +65,34 @@ public class ShadowUwbManagerTest {
 
     Shadow.<ShadowUwbManager>extract(manager)
         .simulateAdapterStateChange(
-            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_REGULATION,
-            AdapterStateCallback.STATE_DISABLED);
+            AdapterStateCallback.STATE_DISABLED,
+            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_REGULATION);
 
     verify(adapterStateCallback)
         .onStateChanged(
-            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_REGULATION,
-            AdapterStateCallback.STATE_DISABLED);
+            AdapterStateCallback.STATE_DISABLED,
+            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_REGULATION);
+  }
+
+  @Test
+  public void getAdapterState_returnsStateFromSimulateAdapterStateChange() {
+    UwbManager manager = (UwbManager) uwbManagerObject;
+    AdapterStateCallback adapterStateCallback = (AdapterStateCallback) adapterStateCallbackObject;
+    manager.registerAdapterStateCallback(directExecutor(), adapterStateCallback);
+
+    Shadow.<ShadowUwbManager>extract(manager)
+        .simulateAdapterStateChange(
+            AdapterStateCallback.STATE_ENABLED_ACTIVE,
+            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_REGULATION);
+
+    assertThat(manager.getAdapterState()).isEqualTo(AdapterStateCallback.STATE_ENABLED_ACTIVE);
+
+    Shadow.<ShadowUwbManager>extract(manager)
+        .simulateAdapterStateChange(
+            AdapterStateCallback.STATE_DISABLED,
+            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_REGULATION);
+
+    assertThat(manager.getAdapterState()).isEqualTo(AdapterStateCallback.STATE_DISABLED);
   }
 
   @Test

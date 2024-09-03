@@ -89,6 +89,15 @@ public class ShadowUwbManager {
   }
 
   /**
+   * Returns the adapter state provided by {@link ShadowUwbManager#simulateAdapterStateChange()}.
+   */
+  @Implementation
+  @AdapterState
+  protected int getAdapterState() {
+    return adapterState;
+  }
+
+  /**
    * Instantiates a {@link ShadowRangingSession} with the adapter provided by {@link
    * ShadowUwbManager#setUwbAdapter()}, allowing the tester dictate the results of ranging attempts.
    *
