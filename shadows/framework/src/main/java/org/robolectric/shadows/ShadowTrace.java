@@ -18,8 +18,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Shadow implementation for {@link Trace}, which stores the traces locally in arrays (unlike the
@@ -112,8 +112,7 @@ public class ShadowTrace {
     previousAsyncSections.add(section);
   }
 
-  @Implementation
-  @InDevelopment
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nativeGetEnabledTags() {
     return tags;
   }

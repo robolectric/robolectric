@@ -711,13 +711,42 @@ public final class AndroidVersions {
    * SDK API Level: 34+ <br>
    * release: false <br>
    */
-  public static final class V extends AndroidUnreleased {
+  public static final class V extends AndroidReleased {
 
     public static final int SDK_INT = 35;
 
     public static final String SHORT_CODE = "V";
 
     public static final String VERSION = "15";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
+  }
+
+  /**
+   * Placeholder for the next InDevelopment SDK after V
+   *
+   * <p>All values here subject to change.
+   */
+  public static final class W extends AndroidUnreleased {
+
+    public static final int SDK_INT = 36;
+
+    public static final String SHORT_CODE = "W";
+
+    public static final String VERSION = "16";
 
     @Override
     public int getSdkInt() {

@@ -9,7 +9,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.versioning.AndroidVersions.V;
+import org.robolectric.versioning.AndroidVersions.W;
 
 /** Shadow for {@link NativeAllocationRegistry} that is a no-op. */
 @Implements(
@@ -38,7 +38,7 @@ public class ShadowNoopNativeAllocationRegistry {
    * behavior of actual class.
    */
   @InDevelopment
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = W.SDK_INT)
   protected void __constructor__(
       ClassLoader classLoader,
       Class clazz,
