@@ -167,6 +167,14 @@ public class ShadowVMRuntime {
     ShadowVMRuntime.currentInstructionSet = currentInstructionSet;
   }
 
+  ByteBuffer getBackingBuffer(long address) {
+    Object array = getObjectForAddress(address);
+    if (array == null) {
+      return null;
+    }
+    return realNonMovableArrays.get(array);
+  }
+
   @Resetter
   public static void reset() {
     ShadowVMRuntime.is64Bit = true;
