@@ -3,6 +3,9 @@ package org.robolectric.shadows;
 import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
@@ -15,9 +18,7 @@ import android.permission.PermissionControllerManager.OnRevokeRuntimePermissions
 import androidx.test.core.app.ApplicationProvider;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,14 +64,7 @@ public final class ShadowPermissionControllerManagerTest {
     packageInfo2.applicationInfo = new ApplicationInfo();
     packageInfo2.applicationInfo.uid = sharedUid;
     shadowOf(packageManager).installPackage(packageInfo2);
-    List<Map<String, List<String>>> revokedArg = new ArrayList<>();
-    OnRevokeRuntimePermissionsCallback callback =
-        new OnRevokeRuntimePermissionsCallback() {
-          @Override
-          public void onRevokeRuntimePermissions(Map<String, List<String>> revoked) {
-            revokedArg.add(revoked);
-          }
-        };
+    OnRevokeRuntimePermissionsCallback callback = mock(OnRevokeRuntimePermissionsCallback.class);
 
     ImmutableMap<String, List<String>> request1 =
         ImmutableMap.of(
@@ -80,8 +74,7 @@ public final class ShadowPermissionControllerManagerTest {
         request1, /* doDryRun= */ false, -1, context.getMainExecutor(), callback);
     shadowMainLooper().idle();
 
-    assertThat(revokedArg).hasSize(1);
-    assertThat(revokedArg.get(0)).isEqualTo(request1);
+    verify(callback).onRevokeRuntimePermissions(eq(request1));
     assertThat(packageInfo1.requestedPermissionsFlags[0]).isEqualTo(0);
     assertThat(packageInfo1.requestedPermissionsFlags[1]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
     assertThat(packageInfo2.requestedPermissionsFlags[0]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
@@ -95,8 +88,7 @@ public final class ShadowPermissionControllerManagerTest {
         request2, /* doDryRun= */ false, -1, context.getMainExecutor(), callback);
     shadowMainLooper().idle();
 
-    assertThat(revokedArg).hasSize(2);
-    assertThat(revokedArg.get(1)).isEqualTo(request2);
+    verify(callback).onRevokeRuntimePermissions(eq(request2));
     assertThat(packageInfo1.requestedPermissionsFlags[0]).isEqualTo(0);
     assertThat(packageInfo1.requestedPermissionsFlags[1]).isEqualTo(0);
     assertThat(packageInfo2.requestedPermissionsFlags[0]).isEqualTo(0);
