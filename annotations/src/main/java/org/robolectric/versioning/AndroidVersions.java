@@ -99,7 +99,7 @@ public final class AndroidVersions {
                 + " should define Releases, illegal class "
                 + other.getClass());
       }
-      return Integer.compare(this.getSdkInt(), other.getSdkInt());
+      return Integer.compare(other.getSdkInt(), this.getSdkInt());
     }
 
     @Override
@@ -962,11 +962,23 @@ public final class AndroidVersions {
                 .append(codename)
                 .append("\"\n");
           } else if (current.isReleased()) {
-            detectedProblems
+            StringBuilder problem = new StringBuilder();
+            problem
                 .append("The current sdk ")
                 .append(current.getShortCode())
                 .append(" has been been marked as released. Please update the ")
                 .append("contents of current sdk jar to the released version.\n");
+            if (current.getSdkInt() < latestRelease.getSdkInt()) {
+              // If the current sdk is lower than the latest release it should never be reported as
+              // unreleased.
+              detectedProblems.append(problem);
+            } else {
+              // If the current sdk is the latest release and it is reporting itself as unreleased
+              //  we simply log as this will occur when android build devs have not yet updated the
+              // branch's build definitions.  (git/main and aosp/main still claim to be the
+              // unreleased version of the latest release)
+              System.err.println(problem);
+            }
           }
           if (detectedProblems.length() > 0) {
             errorMessage(detectedProblems.toString(), null);

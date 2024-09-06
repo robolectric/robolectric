@@ -63,11 +63,12 @@ public final class AndroidVersionsEdgeCaseTest {
     try {
       forceWarningMode(false);
       SdkInformation information = AndroidVersions.gatherStaticSdkInformationFromThisClass();
-      latestRelease = information.latestRelease;
+      latestRelease =
+          information.sdkIntToAllReleases.get(information.latestRelease.getSdkInt() - 1);
       information.computeCurrentSdk(
           latestRelease.getSdkInt(),
           null,
-          information.latestRelease.getShortCode(),
+          latestRelease.getShortCode(),
           Arrays.asList(latestRelease.getShortCode()));
       assertThat(this).isNull();
     } catch (RuntimeException e) {
@@ -88,7 +89,8 @@ public final class AndroidVersionsEdgeCaseTest {
     try {
       forceWarningMode(true);
       SdkInformation information = AndroidVersions.gatherStaticSdkInformationFromThisClass();
-      latestRelease = information.latestRelease;
+      latestRelease =
+          information.sdkIntToAllReleases.get(information.latestRelease.getSdkInt() - 1);
       information.computeCurrentSdk(
           latestRelease.getSdkInt(),
           null,
@@ -97,6 +99,24 @@ public final class AndroidVersionsEdgeCaseTest {
     } catch (Throwable t) {
       assertThat(t).isNull();
     }
+  }
+
+  /**
+   * sdkInt lower than known release, claims it's released. Expects an error message to update the
+   * jar if release is older than the latest release, otherwise warn only.
+   */
+  @Test
+  public void lastReleasedIntReleasedButStillReportsCodeName_noException() {
+    forceWarningMode(false);
+    SdkInformation information = AndroidVersions.gatherStaticSdkInformationFromThisClass();
+    AndroidRelease latestRelease =
+        information.sdkIntToAllReleases.get(information.latestRelease.getSdkInt());
+    information.computeCurrentSdk(
+        latestRelease.getSdkInt(),
+        null,
+        information.latestRelease.getShortCode(),
+        Arrays.asList(latestRelease.getShortCode()));
+    assertThat(this).isNotNull();
   }
 
   @Test
