@@ -37,7 +37,7 @@ public class WifiP2pManagerTest {
             WifiP2pManager activityWifiP2pManager =
                 (WifiP2pManager) activity.getSystemService(Context.WIFI_P2P_SERVICE);
 
-            if (Build.VERSION.SDK_INT >= 31) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
               assertThat(applicationWifiP2pManager).isNotSameInstanceAs(activityWifiP2pManager);
             } else {
               assertThat(applicationWifiP2pManager).isSameInstanceAs(activityWifiP2pManager);
