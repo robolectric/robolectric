@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.testapp.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
-@SdkSuppress(minSdkVersion = Build.VERSION_CODES.S)
+@SdkSuppress(minSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 public class VirtualDeviceManagerTest {
 
   @Test
