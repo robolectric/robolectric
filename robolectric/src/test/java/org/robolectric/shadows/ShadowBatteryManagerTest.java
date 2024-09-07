@@ -22,7 +22,6 @@ public class ShadowBatteryManagerTest {
   private static final int TEST_ID = 123;
   private BatteryManager batteryManager;
   private ShadowBatteryManager shadowBatteryManager;
-  private Context context;
 
   @Before
   public void before() {
@@ -111,8 +110,6 @@ public class ShadowBatteryManagerTest {
       assertThat(applicationBatteryManager).isNotSameInstanceAs(activityBatteryManager);
 
       ShadowBatteryManager shadowApplicationBatteryManager = shadowOf(applicationBatteryManager);
-      ShadowBatteryManager shadowActivityBatteryManager = shadowOf(activityBatteryManager);
-
       shadowApplicationBatteryManager.setIsCharging(true);
 
       assertThat(activityBatteryManager.isCharging()).isTrue();
