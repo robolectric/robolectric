@@ -24,49 +24,49 @@ class GradleManagedDevicePlugin : Plugin<Project> {
 
       managedDevices {
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi29DebugAndroidTest
-        localDevices.create(NAME_API_29) {
+        localDevices.register(NAME_API_29) {
           device = "Nexus One"
           apiLevel = 29
           systemImageSource = "aosp"
         }
 
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi30DebugAndroidTest
-        localDevices.create(NAME_API_30) {
+        localDevices.register(NAME_API_30) {
           device = "Nexus One"
           apiLevel = 30
           systemImageSource = "aosp-atd"
         }
 
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi31DebugAndroidTest
-        localDevices.create(NAME_API_31) {
+        localDevices.register(NAME_API_31) {
           device = "Nexus One"
           apiLevel = 31
           systemImageSource = "aosp-atd"
         }
 
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi32DebugAndroidTest
-        localDevices.create(NAME_API_32) {
+        localDevices.register(NAME_API_32) {
           device = "Nexus One"
           apiLevel = 32
           systemImageSource = "aosp-atd"
         }
 
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi33DebugAndroidTest
-        localDevices.create(NAME_API_33) {
+        localDevices.register(NAME_API_33) {
           device = "Nexus One"
           apiLevel = 33
           systemImageSource = "aosp-atd"
         }
 
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi34DebugAndroidTest
-        localDevices.create(NAME_API_34) {
+        localDevices.register(NAME_API_34) {
           device = "Nexus One"
           apiLevel = 34
           systemImageSource = "aosp-atd"
         }
 
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneIntegrationTestGroupDebugAndroidTest
-        groups.create("nexusOneIntegrationTestGroup") {
+        groups.register("nexusOneIntegrationTestGroup") {
           targetDevices.add(devices[NAME_API_29])
           targetDevices.add(devices[NAME_API_30])
           targetDevices.add(devices[NAME_API_31])
@@ -78,12 +78,12 @@ class GradleManagedDevicePlugin : Plugin<Project> {
     } // testOptions
   } // apply
 
-  companion object {
-    const val NAME_API_29 = "nexusOneApi29"
-    const val NAME_API_30 = "nexusOneApi30"
-    const val NAME_API_31 = "nexusOneApi31"
-    const val NAME_API_32 = "nexusOneApi32"
-    const val NAME_API_33 = "nexusOneApi33"
-    const val NAME_API_34 = "nexusOneApi34"
+  private companion object {
+    private const val NAME_API_29 = "nexusOneApi29"
+    private const val NAME_API_30 = "nexusOneApi30"
+    private const val NAME_API_31 = "nexusOneApi31"
+    private const val NAME_API_32 = "nexusOneApi32"
+    private const val NAME_API_33 = "nexusOneApi33"
+    private const val NAME_API_34 = "nexusOneApi34"
   }
 }
