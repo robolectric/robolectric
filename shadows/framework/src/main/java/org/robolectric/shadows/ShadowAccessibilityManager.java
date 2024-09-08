@@ -43,14 +43,15 @@ public class ShadowAccessibilityManager {
   private static final Object sInstanceSync = new Object();
 
   @RealObject AccessibilityManager realAccessibilityManager;
-  private final List<AccessibilityEvent> sentAccessibilityEvents = new ArrayList<>();
-  private boolean enabled;
-  private List<AccessibilityServiceInfo> installedAccessibilityServiceList = new ArrayList<>();
-  private List<AccessibilityServiceInfo> enabledAccessibilityServiceList = new ArrayList<>();
-  private List<ServiceInfo> accessibilityServiceList = new ArrayList<>();
-  private final HashMap<AccessibilityStateChangeListener, Handler>
+  private static final List<AccessibilityEvent> sentAccessibilityEvents = new ArrayList<>();
+  private static boolean enabled;
+  private static List<AccessibilityServiceInfo> installedAccessibilityServiceList =
+      new ArrayList<>();
+  private static List<AccessibilityServiceInfo> enabledAccessibilityServiceList = new ArrayList<>();
+  private static List<ServiceInfo> accessibilityServiceList = new ArrayList<>();
+  private static final HashMap<AccessibilityStateChangeListener, Handler>
       onAccessibilityStateChangeListeners = new HashMap<>();
-  private boolean touchExplorationEnabled;
+  private static boolean touchExplorationEnabled;
 
   private static boolean isAccessibilityButtonSupported = true;
 
@@ -59,6 +60,13 @@ public class ShadowAccessibilityManager {
     synchronized (sInstanceSync) {
       sInstance = null;
     }
+    sentAccessibilityEvents.clear();
+    enabled = false;
+    installedAccessibilityServiceList.clear();
+    enabledAccessibilityServiceList.clear();
+    accessibilityServiceList.clear();
+    onAccessibilityStateChangeListeners.clear();
+    touchExplorationEnabled = false;
     isAccessibilityButtonSupported = true;
   }
 
