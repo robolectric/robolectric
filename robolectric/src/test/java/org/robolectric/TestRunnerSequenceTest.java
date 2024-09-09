@@ -8,7 +8,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.Result;
@@ -34,18 +33,6 @@ public class TestRunnerSequenceTest {
   @Before
   public void setUp() throws Exception {
     StateHolder.transcript = new ArrayList<>();
-
-    priorResourcesMode = System.getProperty("robolectric.resourcesMode");
-    System.setProperty("robolectric.resourcesMode", "legacy");
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    if (priorResourcesMode == null) {
-      System.clearProperty("robolectric.resourcesMode");
-    } else {
-      System.setProperty("robolectric.resourcesMode", priorResourcesMode);
-    }
   }
 
   @Test

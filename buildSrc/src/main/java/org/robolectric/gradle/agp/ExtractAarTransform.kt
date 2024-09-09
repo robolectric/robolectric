@@ -48,7 +48,7 @@ abstract class ExtractAarTransform : TransformAction<GenericTransformParameters>
   @get:Classpath @get:InputArtifact abstract val aarFile: Provider<FileSystemLocation>
 
   override fun transform(outputs: TransformOutputs) {
-    // TODO(b/162813654) record transform execution span
+    // TODO: record transform execution span
     val inputFile = aarFile.get().asFile
     val outputDir = outputs.dir(inputFile.nameWithoutExtension)
     FileUtils.mkdirs(outputDir)
@@ -84,7 +84,7 @@ internal class AarExtractor {
       entryName.startsWith(LIBS_PREFIX) -> {
         // In case we have libs/classes.jar we are going to rename them, due an issue in
         // Gradle.
-        // TODO: stop doing this once this is fixed in gradle. b/65298222
+        // TODO: stop doing this once this is fixed in gradle.
         when (val pathWithinLibs = entryName.substring(LIBS_PREFIX_LENGTH)) {
           SdkConstants.FN_CLASSES_JAR ->
             stringBuilder.append(LIBS_PREFIX).append("classes-2${SdkConstants.DOT_JAR}")
@@ -131,6 +131,6 @@ internal class AarExtractor {
 private val emptyJar: ByteArray =
   // Note:
   //  - A jar doesn't need a manifest entry, but if we ever want to create a manifest entry, be
-  //    sure to set a fixed timestamp for it so that the jar is deterministic (see b/315336689).
+  //    sure to set a fixed timestamp for it so that the jar is deterministic.
   //  - This empty jar takes up only ~22 bytes, so we don't need to GC it at the end of the build.
   ByteArrayOutputStream().apply { JarOutputStream(this).use {} }.toByteArray()

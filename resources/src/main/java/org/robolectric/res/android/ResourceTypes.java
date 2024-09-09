@@ -1197,7 +1197,10 @@ public class ResourceTypes {
       if (isTruthy(flags & ResTable_type.FLAG_OFFSET16)) {
         short off16 = byteBuffer.getShort(offset + header.headerSize + entryIndex * 2);
         // Check for no entry (0xffff short)
-        return dtohs(off16) == -1 ? ResTable_type.NO_ENTRY : dtohs(off16) * 4;
+        if (dtohs(off16) == -1) {
+          return ResTable_type.NO_ENTRY;
+        }
+        return Short.toUnsignedInt(dtohs(off16)) * 4;
       } else if (isTruthy(flags & ResTable_type.FLAG_SPARSE)) {
         ResTable_sparseTypeEntry sparseEntry = getSparseEntry(entryIndex);
         // if (!sparse_entry) {

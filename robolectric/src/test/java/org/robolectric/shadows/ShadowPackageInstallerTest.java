@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.collect.Iterables.getOnlyElement;
@@ -18,6 +19,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageInstaller.PreapprovalDetails;
+import android.content.pm.PackageInstaller.SessionParams;
 import android.content.pm.PackageManager;
 import android.content.pm.VersionedPackage;
 import android.graphics.Bitmap;
@@ -55,6 +57,17 @@ public class ShadowPackageInstallerTest {
     int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
 
     assertThat(sessionId).isNotEqualTo(0);
+  }
+
+  @Config(sdk = P)
+  @Test
+  public void packageInstallerCreateSession_sessionInfoHasCorrectInstallerName() throws Exception {
+    SessionParams params = createSessionParams("packageName");
+    params.setInstallerPackageName("installerPackageName");
+    int sessionId = packageInstaller.createSession(params);
+
+    assertThat(packageInstaller.getSessionInfo(sessionId).installerPackageName)
+        .isEqualTo("installerPackageName");
   }
 
   @Test

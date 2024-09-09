@@ -151,9 +151,16 @@ public abstract class SingleValueConfigurer<A extends Annotation, T extends Enum
   }
 
   protected T valueFrom(String value) {
+    // in case someone makes an enumeration that doesn't use the standard
+    // uppercase naming convention.
     if (value == null) {
       return null;
     }
-    return Enum.valueOf(configurationType, value);
+    for (T each : configurationType.getEnumConstants()) {
+      if (each.name().equalsIgnoreCase(value)) {
+        return each;
+      }
+    }
+    throw new IllegalArgumentException("Unknown value for " + configurationType + ": " + value);
   }
 }

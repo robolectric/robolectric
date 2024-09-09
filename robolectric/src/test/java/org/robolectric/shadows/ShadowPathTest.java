@@ -9,11 +9,13 @@ import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
 
 import android.graphics.Path;
+import android.graphics.PathIterator;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.versioning.AndroidVersions.U;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowPathTest {
@@ -108,5 +110,21 @@ public class ShadowPathTest {
     Path emptyPath = new Path();
 
     assertTrue(emptyPath.isEmpty());
+  }
+
+  @Config(minSdk = U.SDK_INT)
+  @Test
+  public void iterate_doesNotOOM() {
+    Path path = new Path();
+    path.moveTo(0, 0);
+    path.lineTo(0, 1);
+    path.lineTo(1, 1);
+    path.lineTo(0, 1);
+    path.lineTo(0, 0);
+    path.close();
+
+    for (PathIterator pathIterator = path.getPathIterator();
+        pathIterator.hasNext();
+        pathIterator.next()) {}
   }
 }

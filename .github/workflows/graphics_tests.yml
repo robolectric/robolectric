@@ -7,9 +7,8 @@ on:
       - '**.md'
 
   pull_request:
+    # Do not add `paths-ignore` here, this is required to be run on every PR for the `google` branch.
     branches: [ master, google ]
-    paths-ignore:
-      - '**.md'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

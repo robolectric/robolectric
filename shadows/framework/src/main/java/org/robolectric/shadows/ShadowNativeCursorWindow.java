@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+
 import android.database.CharArrayBuffer;
 import android.database.CursorWindow;
 import com.google.common.base.Preconditions;
@@ -7,6 +9,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.CursorWindowNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link CursorWindow} that is backed by native code */
@@ -45,18 +50,40 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     CursorWindowNatives.nativeCopyStringToBuffer(windowPtr, row, column, buffer);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation
   protected static boolean nativePutBlob(long windowPtr, byte[] value, int row, int column) {
     // Real Android will crash in native code if putBlob is called with a null value.
     Preconditions.checkNotNull(value);
-    return CursorWindowNatives.nativePutBlob(windowPtr, value, row, column);
+    if (getApiLevel() <= U.SDK_INT) {
+      return CursorWindowNatives.nativePutBlob(windowPtr, value, row, column);
+    } else {
+      // directly call the real native method, renamed by during instrumentation
+      return ReflectionHelpers.callStaticMethod(
+          CursorWindow.class,
+          Shadow.directNativeMethodName(CursorWindow.class.getName(), "nativePutBlob"),
+          ClassParameter.from(long.class, windowPtr),
+          ClassParameter.from(byte[].class, value),
+          ClassParameter.from(int.class, row),
+          ClassParameter.from(int.class, column));
+    }
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation
   protected static boolean nativePutString(long windowPtr, String value, int row, int column) {
     // Real Android will crash in native code if putString is called with a null value.
     Preconditions.checkNotNull(value);
-    return CursorWindowNatives.nativePutString(windowPtr, value, row, column);
+    if (getApiLevel() <= U.SDK_INT) {
+      return CursorWindowNatives.nativePutString(windowPtr, value, row, column);
+    } else {
+      // directly call the real native method, renamed by during instrumentation
+      return ReflectionHelpers.callStaticMethod(
+          CursorWindow.class,
+          Shadow.directNativeMethodName(CursorWindow.class.getName(), "nativePutString"),
+          ClassParameter.from(long.class, windowPtr),
+          ClassParameter.from(String.class, value),
+          ClassParameter.from(int.class, row),
+          ClassParameter.from(int.class, column));
+    }
   }
 
   @Implementation(maxSdk = U.SDK_INT)

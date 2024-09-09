@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -13,6 +14,7 @@ import android.view.Choreographer.FrameCallback;
 import android.view.DisplayEventReceiver;
 import java.time.Duration;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -24,6 +26,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.util.reflector.WithType;
 
 /**
  * The shadow API for {@link android.view.Choreographer}.
@@ -39,6 +42,13 @@ public abstract class ShadowChoreographer {
 
   private static volatile boolean isPaused = false;
   private static volatile Duration frameDelay = Duration.ofMillis(1);
+
+  /**
+   * This field is only used when {@link #isPaused()} is true. It represents the next scheduled
+   * vsync time (with respect to the system clock). See the {@link #getNextVsyncTime()} javadoc for
+   * more details.
+   */
+  private static volatile long nextVsyncTime;
 
   public static class Picker extends LooperShadowPicker<ShadowChoreographer> {
 
@@ -85,6 +95,21 @@ public abstract class ShadowChoreographer {
   public static boolean isPaused() {
     checkState(!ShadowLooper.looperMode().equals(Mode.LEGACY), "Looper cannot be %s", Mode.LEGACY);
     return isPaused;
+  }
+
+  /**
+   * This field is only used when {@link ShadowChoreographer#isPaused()} is true. It represents the
+   * next scheduled vsync time (with respect to the system clock). When the system clock is advanced
+   * to or beyond this time, a Choreographer frame will be triggered. It may be useful for tests to
+   * know when the next scheduled vsync time is in order to determine how long to idle the main
+   * looper in order to trigger the next Choreographer callback.
+   */
+  public static long getNextVsyncTime() {
+    return nextVsyncTime;
+  }
+
+  static void setNextVsyncTime(long nextVsyncTime) {
+    ShadowChoreographer.nextVsyncTime = nextVsyncTime;
   }
 
   /**
@@ -161,8 +186,21 @@ public abstract class ShadowChoreographer {
         .measure("doFrame", () -> reflector.doFrame(frameTimeNanos, frame));
   }
 
+  @Implementation(minSdk = S)
+  protected void doFrame(
+      long frameTimeNanos,
+      int frame,
+      @ClassName("android.view.DisplayEventReceiver$VsyncEventData") Object vsyncEventData) {
+    if (reflector == null) {
+      reflector = reflector(ChoreographerReflector.class, realObject);
+    }
+    PerfStatsCollector.getInstance()
+        .measure("doFrame", () -> reflector.doFrame(frameTimeNanos, frame, vsyncEventData));
+  }
+
   @Resetter
   public static void reset() {
+    nextVsyncTime = 0;
     isPaused = false;
     frameDelay = Duration.ofMillis(1);
     if (RuntimeEnvironment.getApiLevel() >= N) {
@@ -187,6 +225,12 @@ public abstract class ShadowChoreographer {
 
     @Direct
     void doFrame(long frameTimeNanos, int frame);
+
+    @Direct
+    void doFrame(
+        long frameTimeNanos,
+        int frame,
+        @WithType("android.view.DisplayEventReceiver$VsyncEventData") Object vsyncEventData);
 
     @Accessor("mDisplayEventReceiver")
     DisplayEventReceiver getReceiver();

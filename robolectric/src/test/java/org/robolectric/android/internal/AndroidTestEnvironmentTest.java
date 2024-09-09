@@ -2,9 +2,7 @@ package org.robolectric.android.internal;
 
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 import static org.robolectric.annotation.ConscryptMode.Mode.OFF;
 import static org.robolectric.annotation.ConscryptMode.Mode.ON;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
@@ -33,7 +31,6 @@ import javax.crypto.Cipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.ApkLoader;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapperI;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.RoboInject;
@@ -46,7 +43,6 @@ import org.robolectric.annotation.ConscryptMode;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
-import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
@@ -235,20 +231,6 @@ public class AndroidTestEnvironmentTest {
     assertThat(events).containsExactly("terminated");
   }
 
-  @Test
-  public void testResourceNotFound() {
-    // not relevant for binary resources mode
-    assume().that(bootstrapWrapper.isLegacyResources()).isTrue();
-
-    try {
-      bootstrapWrapper.changeAppManifest(new ThrowingManifest(bootstrapWrapper.getAppManifest()));
-      bootstrapWrapper.callSetUpApplicationState();
-      fail("Expected to throw");
-    } catch (Resources.NotFoundException expected) {
-      // expected
-    }
-  }
-
   /** Can't use Mockito for classloader issues */
   static class ThrowingManifest extends AndroidManifest {
     public ThrowingManifest(AndroidManifest androidManifest) {
@@ -364,9 +346,12 @@ public class AndroidTestEnvironmentTest {
     assertThat(new File(applicationInfo.dataDir).isDirectory()).isTrue();
   }
 
-  @LazyApplication(LazyLoad.ON)
   @Test
   public void testResetterFails_reportsFailureAndContinues() {
+    // bootstrapWrapper is not used in this test, but calling `callSetUpApplicationState` is
+    // required to avoid exceptions in the test teardown.
+    bootstrapWrapper.callSetUpApplicationState();
+
     WorkingShadowProvider workingShadowProvider = new WorkingShadowProvider();
     ShadowProvider[] shadowProviders = new ShadowProvider[2];
     shadowProviders[0] = new ThrowingShadowProvider();
@@ -377,13 +362,11 @@ public class AndroidTestEnvironmentTest {
         new AndroidTestEnvironment(
             new StubSdk(RuntimeEnvironment.getApiLevel(), true),
             new StubSdk(RuntimeEnvironment.getApiLevel(), true),
-            ResourcesMode.BINARY,
-            new ApkLoader(),
             shadowProviders,
             telpArray);
     RuntimeException e =
         assertThrows(RuntimeException.class, () -> androidTestEnvironment.resetState());
-    assertThat(e.getSuppressed()[0]).hasMessageThat().contains("Reset failed");
+    assertThat(e).hasMessageThat().contains("Reset failed");
     assertThat(workingShadowProvider.wasReset).isTrue();
   }
 

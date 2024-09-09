@@ -113,4 +113,15 @@ public class ShadowNetworkCapabilitiesTest {
     shadowOf(networkCapabilities).setLinkDownstreamBandwidthKbps(100);
     assertThat(networkCapabilities.getLinkDownstreamBandwidthKbps()).isEqualTo(100);
   }
+
+  @Test
+  public void resetCapabilities_resetsCapabilities() {
+    NetworkCapabilities networkCapabilities = ShadowNetworkCapabilities.newInstance();
+    ShadowNetworkCapabilities shadowNetworkCapabilities = shadowOf(networkCapabilities);
+    shadowNetworkCapabilities.addCapability(NET_CAPABILITY_MMS);
+
+    shadowNetworkCapabilities.clearCapabilities();
+
+    assertThat(networkCapabilities.hasCapability(NET_CAPABILITY_MMS)).isFalse();
+  }
 }

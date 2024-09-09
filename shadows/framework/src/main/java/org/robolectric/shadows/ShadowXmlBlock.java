@@ -12,8 +12,11 @@ import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.xmlpull.v1.XmlPullParserException;
 
-@Implements(className = "android.content.res.XmlBlock", isInAndroidSdk = false)
-public class ShadowXmlBlock {
+@Implements(
+    className = "android.content.res.XmlBlock",
+    isInAndroidSdk = false,
+    shadowPicker = ShadowBaseXmlBlock.Picker.class)
+public class ShadowXmlBlock extends ShadowBaseXmlBlock {
 
   @Implementation
   protected static long nativeCreate(byte[] bArray, int off, int len) {

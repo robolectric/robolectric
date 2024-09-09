@@ -29,9 +29,9 @@ import android.provider.FontsContract;
 import android.util.DisplayMetrics;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.security.Security;
 import java.security.cert.Certificate;
@@ -48,7 +48,6 @@ import javax.net.ssl.SSLSession;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.conscrypt.OkHostnameVerifier;
 import org.conscrypt.OpenSSLProvider;
-import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Config;
@@ -58,7 +57,6 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
-import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.TestEnvironment;
 import org.robolectric.manifest.AndroidManifest;
@@ -90,6 +88,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
+import org.robolectric.util.Util;
 import org.robolectric.versioning.AndroidVersions;
 import org.robolectric.versioning.AndroidVersions.V;
 
@@ -97,7 +96,6 @@ import org.robolectric.versioning.AndroidVersions.V;
 public class AndroidTestEnvironment implements TestEnvironment {
 
   private static final String CONSCRYPT_PROVIDER = "Conscrypt";
-  private static final int MAX_DATA_DIR_NAME_LENGTH = 120;
 
   private final Sdk compileSdk;
 
@@ -112,8 +110,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
   public AndroidTestEnvironment(
       @Named("runtimeSdk") Sdk runtimeSdk,
       @Named("compileSdk") Sdk compileSdk,
-      ResourcesMode resourcesMode,
-      ApkLoader apkLoader,
       ShadowProvider[] shadowProviders,
       TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
     this.compileSdk = compileSdk;
@@ -128,7 +124,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
   @Override
   public void setUpApplicationState(
-      Method method, Configuration configuration, AndroidManifest appManifest) {
+      String tmpDirName, Configuration configuration, AndroidManifest appManifest) {
+    Preconditions.checkArgument(tmpDirName != null && !tmpDirName.isEmpty());
     Config config = configuration.get(Config.class);
 
     ConfigurationRegistry.instance = new ConfigurationRegistry(configuration.map());
@@ -145,7 +142,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
       DefaultNativeRuntimeLoader.injectAndLoad();
     }
 
-    RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
+    RuntimeEnvironment.setTempDirectory(new TempDirectory(tmpDirName));
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       RuntimeEnvironment.setMasterScheduler(new Scheduler());
       RuntimeEnvironment.setMainThread(Thread.currentThread());
@@ -286,7 +283,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     ShadowApplication shadowInitialApplication = Shadow.extract(dummyInitialApplication);
     shadowInitialApplication.callAttach(systemContextImpl);
 
-    Package parsedPackage = loadAppPackage(config, appManifest);
+    Package parsedPackage = loadAppPackage(appManifest);
 
     ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
     Class<? extends Application> applicationClass =
@@ -391,12 +388,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
     return application;
   }
 
-  private Package loadAppPackage(Config config, AndroidManifest appManifest) {
+  private Package loadAppPackage(AndroidManifest appManifest) {
     return PerfStatsCollector.getInstance()
-        .measure("parse package", () -> loadAppPackage_measured(config, appManifest));
+        .measure("parse package", () -> loadAppPackage_measured(appManifest));
   }
 
-  private Package loadAppPackage_measured(Config config, AndroidManifest appManifest) {
+  private Package loadAppPackage_measured(AndroidManifest appManifest) {
 
     Package parsedPackage;
 
@@ -519,19 +516,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
     return androidInstrumentation;
   }
 
-  /** Create a file system safe directory path name for the current test. */
-  @SuppressWarnings("DoNotCall")
-  private String createTestDataDirRootPath(Method method) {
-    // Cap the size to 120 to avoid unnecessarily long directory names.
-    String directoryName =
-        (method.getDeclaringClass().getSimpleName() + "_" + method.getName())
-            .replaceAll("[^a-zA-Z0-9.-]", "_");
-    if (directoryName.length() > MAX_DATA_DIR_NAME_LENGTH) {
-      directoryName = directoryName.substring(0, MAX_DATA_DIR_NAME_LENGTH);
-    }
-    return directoryName;
-  }
-
   @Override
   public void tearDownApplication() {
     if (RuntimeEnvironment.application != null) {
@@ -599,12 +583,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
 
     if (!exceptions.isEmpty()) {
-      RuntimeException runtimeException =
-          new RuntimeException("Some resetters failed. See suppressed exceptions.");
-      for (Throwable e : exceptions) {
-        runtimeException.addSuppressed(e);
+      Throwable first = exceptions.remove(0);
+      for (Throwable t : exceptions) {
+        first.addSuppressed(t);
       }
-      throw runtimeException;
+      Util.sneakyThrow(first);
     }
   }
 

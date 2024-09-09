@@ -13,7 +13,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
+import java.util.WeakHashMap;
 import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -68,6 +70,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   private final List<PerfStatsReporter> perfStatsReporters;
   private final HashMap<Class<?>, Sandbox> loadedTestClasses = new HashMap<>();
   private final HashMap<Class<?>, HelperTestRunner> helperRunners = new HashMap<>();
+  private final WeakHashMap<Sandbox, LinkageError> firstLinkageErrors = new WeakHashMap<>();
 
   public SandboxTestRunner(Class<?> klass) throws InitializationError {
     this(klass, DEFAULT_INJECTOR);
@@ -165,16 +168,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
    */
   @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
-    InstrumentationConfiguration.Builder builder =
-        InstrumentationConfiguration.newBuilder()
-            .doNotAcquirePackage("java.")
-            .doNotAcquirePackage("jdk.internal.")
-            .doNotAcquirePackage("sun.")
-            .doNotAcquirePackage("org.robolectric.annotation.")
-            .doNotAcquirePackage("org.robolectric.internal.")
-            .doNotAcquirePackage("org.robolectric.pluginapi.")
-            .doNotAcquirePackage("org.robolectric.util.")
-            .doNotAcquirePackage("org.junit");
+    InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
 
     String customPackages = System.getProperty("org.robolectric.packagesToNotAcquire", "");
     for (String pkg : Splitter.on(',').split(customPackages)) {
@@ -310,6 +304,11 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
               Throwable first = thrown.poll();
               if (first != null) {
+                if (first instanceof LinkageError) {
+                  // Potentially upgrade the LinkageError with a potentially more complete
+                  // descriptive exception.
+                  first = handleLinkageError(first, sandbox);
+                }
                 while (!thrown.isEmpty()) {
                   first.addSuppressed(thrown.remove());
                 }
@@ -318,6 +317,41 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
             });
       }
     };
+  }
+
+  /**
+   * If an exception occurs when a class is being loaded (e.g. an exception during static
+   * initialization), the initial LinkageError is complete and informative. However, in subsequent
+   * tests, if the same class is attempted to be loaded, the JVM throws an error that is a truncated
+   * and incomplete NoClassDefError. This logic attempts to cache initial LinkageErrors and replace
+   * incomplete NoClassDefError with the original and more descriptive LinkageErrors.
+   */
+  private Throwable handleLinkageError(Throwable throwable, Sandbox sandbox) {
+    if (!firstLinkageErrors.containsKey(sandbox)) {
+      firstLinkageErrors.put(sandbox, (LinkageError) throwable);
+      return throwable;
+    }
+
+    if (throwable instanceof NoClassDefFoundError
+        && firstLinkageErrors.containsKey(sandbox)
+        && linkageErrorsMatch((NoClassDefFoundError) throwable, firstLinkageErrors.get(sandbox))) {
+      return firstLinkageErrors.get(sandbox);
+    }
+
+    return throwable;
+  }
+
+  private boolean linkageErrorsMatch(NoClassDefFoundError error, LinkageError first) {
+    if (error.getStackTrace().length == 0 || first.getStackTrace().length == 0) {
+      return false;
+    }
+    StackTraceElement firstElement = error.getStackTrace()[0];
+    for (StackTraceElement element : first.getStackTrace()) {
+      if (Objects.equals(firstElement, element)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @SuppressWarnings("CatchAndPrintStackTrace")

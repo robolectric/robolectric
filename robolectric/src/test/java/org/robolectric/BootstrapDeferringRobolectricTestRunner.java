@@ -78,8 +78,6 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
 
     void changeConfig(Configuration config);
 
-    boolean isLegacyResources();
-
     AndroidManifest getAppManifest();
 
     void changeAppManifest(AndroidManifest manifest);

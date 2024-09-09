@@ -46,43 +46,26 @@ public class AndroidConfigurer {
 
     builder
         .doNotAcquireClass("org.robolectric.TestLifecycle")
-        .doNotAcquireClass("org.robolectric.manifest.AndroidManifest")
         .doNotAcquireClass("org.robolectric.RobolectricTestRunner")
-        .doNotAcquireClass("org.robolectric.RobolectricTestRunner.HelperTestRunner")
-        .doNotAcquireClass("org.robolectric.shadow.api.ShadowPicker")
-        .doNotAcquireClass("org.robolectric.res.ResourcePath")
-        .doNotAcquireClass("org.robolectric.res.ResourceTable")
-        .doNotAcquireClass("org.robolectric.ApkLoader")
-        .doNotAcquireClass("org.robolectric.res.builder.XmlBlock");
+        .doNotAcquireClass("org.robolectric.shadow.api.ShadowPicker");
 
     builder
-        .doNotAcquirePackage("javax.")
-        .doNotAcquirePackage("jdk.internal.")
-        .doNotAcquirePackage("org.junit")
-        .doNotAcquirePackage("org.hamcrest")
-        .doNotAcquirePackage("org.objectweb.asm")
-        .doNotAcquirePackage("org.robolectric.annotation.")
-        .doNotAcquirePackage("org.robolectric.internal.")
-        .doNotAcquirePackage("org.robolectric.pluginapi.")
-        .doNotAcquirePackage("org.robolectric.manifest.")
-        .doNotAcquirePackage("org.robolectric.res.")
-        .doNotAcquirePackage("org.robolectric.util.")
-        .doNotAcquirePackage("org.robolectric.RobolectricTestRunner$")
-        .doNotAcquirePackage("sun.")
-        .doNotAcquirePackage("com.sun.")
-        .doNotAcquirePackage("org.w3c.")
-        .doNotAcquirePackage("org.xml.")
         .doNotAcquirePackage(
-            "org.specs2") // allows for android projects with mixed scala\java tests to be
-        .doNotAcquirePackage(
-            "scala.") //  run with Maven Surefire (see the RoboSpecs project on github)
-        .doNotAcquirePackage("kotlin.")
+            "com.almworks.sqlite4java") // Fix #958: SQLite native library must be loaded once.
         .doNotAcquirePackage("io.mockk.proxy.")
+        .doNotAcquirePackage("kotlin.")
         .doNotAcquirePackage("org.bouncycastle.")
         .doNotAcquirePackage("org.conscrypt.")
-        // Fix #958: SQLite native library must be loaded once.
-        .doNotAcquirePackage("com.almworks.sqlite4java")
-        .doNotAcquirePackage("org.jacoco.");
+        .doNotAcquirePackage("org.hamcrest")
+        .doNotAcquirePackage("org.jacoco.")
+        .doNotAcquirePackage("org.objectweb.asm")
+        .doNotAcquirePackage("org.robolectric.manifest.")
+        .doNotAcquirePackage("org.robolectric.res.")
+        .doNotAcquirePackage("org.robolectric.RobolectricTestRunner$")
+        .doNotAcquirePackage("org.w3c.")
+        .doNotAcquirePackage("org.xml.")
+        .doNotAcquirePackage("org.specs2") // Required for Maven SureFire / RoboSpecs.
+        .doNotAcquirePackage("scala."); // Required for Maven SureFire / RoboSpecs.
 
     builder
         .addClassNameTranslation(

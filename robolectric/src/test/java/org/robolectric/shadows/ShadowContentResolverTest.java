@@ -1147,6 +1147,18 @@ public class ShadowContentResolverTest {
   }
 
   @Test
+  public void openAssetFileDescriptor_shouldOpenDescriptor() throws IOException {
+    Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);
+
+    try (AssetFileDescriptor afd =
+        contentResolver.openAssetFileDescriptor(
+            Uri.parse("content://" + AUTHORITY + "/whatever"), "r")) {
+      FileDescriptor descriptor = afd.getFileDescriptor();
+      assertThat(descriptor).isNotNull();
+    }
+  }
+
+  @Test
   public void openTypedAssetFileDescriptor_shouldOpenDescriptor()
       throws IOException, RemoteException {
     Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);

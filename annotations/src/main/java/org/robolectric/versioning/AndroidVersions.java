@@ -99,7 +99,7 @@ public final class AndroidVersions {
                 + " should define Releases, illegal class "
                 + other.getClass());
       }
-      return Integer.compare(this.getSdkInt(), other.getSdkInt());
+      return Integer.compare(other.getSdkInt(), this.getSdkInt());
     }
 
     @Override
@@ -711,13 +711,42 @@ public final class AndroidVersions {
    * SDK API Level: 34+ <br>
    * release: false <br>
    */
-  public static final class V extends AndroidUnreleased {
+  public static final class V extends AndroidReleased {
 
     public static final int SDK_INT = 35;
 
     public static final String SHORT_CODE = "V";
 
     public static final String VERSION = "15";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
+  }
+
+  /**
+   * Placeholder for the next InDevelopment SDK after V
+   *
+   * <p>All values here subject to change.
+   */
+  public static final class W extends AndroidUnreleased {
+
+    public static final int SDK_INT = 36;
+
+    public static final String SHORT_CODE = "W";
+
+    public static final String VERSION = "16";
 
     @Override
     public int getSdkInt() {
@@ -933,11 +962,23 @@ public final class AndroidVersions {
                 .append(codename)
                 .append("\"\n");
           } else if (current.isReleased()) {
-            detectedProblems
+            StringBuilder problem = new StringBuilder();
+            problem
                 .append("The current sdk ")
                 .append(current.getShortCode())
                 .append(" has been been marked as released. Please update the ")
                 .append("contents of current sdk jar to the released version.\n");
+            if (current.getSdkInt() < latestRelease.getSdkInt()) {
+              // If the current sdk is lower than the latest release it should never be reported as
+              // unreleased.
+              detectedProblems.append(problem);
+            } else {
+              // If the current sdk is the latest release and it is reporting itself as unreleased
+              //  we simply log as this will occur when android build devs have not yet updated the
+              // branch's build definitions.  (git/main and aosp/main still claim to be the
+              // unreleased version of the latest release)
+              System.err.println(problem);
+            }
           }
           if (detectedProblems.length() > 0) {
             errorMessage(detectedProblems.toString(), null);

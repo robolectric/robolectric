@@ -47,7 +47,7 @@ public final class HardwareRenderingScreenshot {
    */
   static boolean canTakeScreenshot(View view) {
     return RuntimeEnvironment.getApiLevel() >= P
-        && "hardware".equalsIgnoreCase(System.getProperty(PIXEL_COPY_RENDER_MODE, ""))
+        && "hardware".equalsIgnoreCase(System.getProperty(PIXEL_COPY_RENDER_MODE, "hardware"))
         && ShadowView.useRealGraphics()
         && view.canHaveDisplayList();
   }

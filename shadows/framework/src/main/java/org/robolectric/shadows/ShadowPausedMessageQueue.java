@@ -234,24 +234,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     return reflector(MessageQueueReflector.class, realQueue).getQuitting();
   }
 
-  private static long getLong(Object intOrLongObj) {
-    if (intOrLongObj instanceof Long) {
-      return (long) intOrLongObj;
-    } else {
-      Integer intObj = (Integer) intOrLongObj;
-      return intObj.longValue();
-    }
-  }
-
-  private static int getInt(Object intOrLongObj) {
-    if (intOrLongObj instanceof Integer) {
-      return (int) intOrLongObj;
-    } else {
-      Long longObj = (Long) intOrLongObj;
-      return longObj.intValue();
-    }
-  }
-
   Duration getNextScheduledTaskTime() {
     Message next = peekNextExecutableMessage();
 
@@ -480,9 +462,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
     @Accessor("mPtr")
     void setPtr(long ptr);
-
-    @Accessor("mPtr")
-    int getPtr();
 
     @Direct
     void quit(boolean b);

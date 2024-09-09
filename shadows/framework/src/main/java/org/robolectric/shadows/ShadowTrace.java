@@ -18,8 +18,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Shadow implementation for {@link Trace}, which stores the traces locally in arrays (unlike the
@@ -112,8 +112,7 @@ public class ShadowTrace {
     previousAsyncSections.add(section);
   }
 
-  @Implementation
-  @InDevelopment
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nativeGetEnabledTags() {
     return tags;
   }
@@ -211,7 +210,7 @@ public class ShadowTrace {
 
     public abstract String getSectionName();
 
-    public abstract Integer getCookie();
+    public abstract int getCookie();
 
     public static Builder newBuilder() {
       return new AutoValue_ShadowTrace_AsyncTraceSection.Builder();
@@ -222,7 +221,7 @@ public class ShadowTrace {
     public abstract static class Builder {
       public abstract Builder setSectionName(String sectionName);
 
-      public abstract Builder setCookie(Integer cookie);
+      public abstract Builder setCookie(int cookie);
 
       public abstract AsyncTraceSection build();
     }

@@ -77,6 +77,7 @@ import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
+import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressWarnings("NewApi")
 @Implements(value = Activity.class)
@@ -164,6 +165,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     Instrumentation instrumentation = activityThread.getInstrumentation();
+
+    if (RuntimeEnvironment.getApiLevel() >= O_MR1) {
+      // ActivityInfo.FLAG_SHOW_WHEN_LOCKED
+      showWhenLocked = (activityInfo.flags & 0x800000) != 0;
+    }
 
     Context activityContext;
     int displayId =
@@ -833,11 +839,18 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return streamType;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation(minSdk = M, maxSdk = UPSIDE_DOWN_CAKE)
   protected void requestPermissions(String[] permissions, int requestCode) {
     lastRequestedPermission = new PermissionsRequest(permissions, requestCode);
     reflector(DirectActivityReflector.class, realActivity)
         .requestPermissions(permissions, requestCode);
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected void requestPermissions(String[] permissions, int requestCode, int deviceId) {
+    lastRequestedPermission = new PermissionsRequest(permissions, requestCode, deviceId);
+    reflector(DirectActivityReflector.class, realActivity)
+        .requestPermissions(permissions, requestCode, deviceId);
   }
 
   /**
@@ -982,10 +995,16 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   public static class PermissionsRequest {
     public final int requestCode;
     public final String[] requestedPermissions;
+    public final int deviceId;
 
     public PermissionsRequest(String[] requestedPermissions, int requestCode) {
+      this(requestedPermissions, requestCode, Context.DEVICE_ID_DEFAULT);
+    }
+
+    public PermissionsRequest(String[] requestedPermissions, int requestCode, int deviceId) {
       this.requestedPermissions = requestedPermissions;
       this.requestCode = requestCode;
+      this.deviceId = deviceId;
     }
   }
 
@@ -1061,5 +1080,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     boolean onCreateOptionsMenu(Menu menu);
 
     void requestPermissions(String[] permissions, int requestCode);
+
+    void requestPermissions(String[] permissions, int requestCode, int deviceId);
   }
 }

@@ -599,6 +599,28 @@ public class ShadowActivityTest {
     }
   }
 
+  public static final class ShowWhenLockedActivity extends Activity {}
+
+  public static final class DoNotShowWhenLockedActivity extends Activity {}
+
+  @Test
+  @Config(minSdk = O_MR1)
+  public void createActivity_showWhenLockedEnabled_returnsTrueForShowWhenLocked() {
+    try (ActivityController<ShowWhenLockedActivity> controller =
+        Robolectric.buildActivity(ShowWhenLockedActivity.class)) {
+      assertThat(shadowOf(controller.get()).getShowWhenLocked()).isTrue();
+    }
+  }
+
+  @Test
+  @Config(minSdk = O_MR1)
+  public void createActivity_showWhenLockedDisabled_returnsFalseForShowWhenLocked() {
+    try (ActivityController<DoNotShowWhenLockedActivity> controller =
+        Robolectric.buildActivity(DoNotShowWhenLockedActivity.class)) {
+      assertThat(shadowOf(controller.get()).getShowWhenLocked()).isFalse();
+    }
+  }
+
   @Test // unclear what the correct behavior should be here...
   public void shouldPopulateWindowDecorViewWithMergeLayoutContents() {
     try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {

@@ -67,11 +67,11 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldNotAcquireRClasses() throws Exception {
+  public void shouldAcquireRClasses() throws Exception {
     assertThat(config.shouldAcquire("com.whatever.Rfoo")).isTrue();
     assertThat(config.shouldAcquire("com.whatever.fooR")).isTrue();
-    assertThat(config.shouldAcquire("com.whatever.R")).isFalse();
-    assertThat(config.shouldAcquire("com.whatever.R$anything")).isFalse();
+    assertThat(config.shouldAcquire("com.whatever.R")).isTrue();
+    assertThat(config.shouldAcquire("com.whatever.R$anything")).isTrue();
     assertThat(config.shouldAcquire("com.whatever.R$anything$else")).isTrue();
   }
 

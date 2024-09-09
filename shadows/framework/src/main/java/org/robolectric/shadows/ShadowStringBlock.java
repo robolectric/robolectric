@@ -10,8 +10,11 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.res.android.ResStringPool;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_span;
 
-@Implements(className = "android.content.res.StringBlock", isInAndroidSdk = false)
-public class ShadowStringBlock {
+@Implements(
+    className = "android.content.res.StringBlock",
+    isInAndroidSdk = false,
+    shadowPicker = ShadowBaseStringBlock.Picker.class)
+public class ShadowStringBlock extends ShadowBaseStringBlock {
 
   @RealObject Object realObject;
 

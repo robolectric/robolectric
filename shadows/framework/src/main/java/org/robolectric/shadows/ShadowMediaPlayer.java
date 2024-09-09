@@ -439,7 +439,11 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * Flag indicating how the shadow media player should behave when a method is invoked in an
    * invalid state.
    */
-  private InvalidStateBehavior invalidStateBehavior = InvalidStateBehavior.SILENT;
+  private InvalidStateBehavior invalidStateBehavior =
+      InvalidStateBehavior.valueOf(
+          System.getProperty(
+              "robolectric.shadowMediaPlayer.invalidStateBehavior",
+              InvalidStateBehavior.SILENT.toString()));
 
   private Handler handler;
 

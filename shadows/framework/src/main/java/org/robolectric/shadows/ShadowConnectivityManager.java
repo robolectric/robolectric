@@ -35,6 +35,7 @@ public class ShadowConnectivityManager {
 
   private static NetworkInfo activeNetworkInfo;
   private static boolean backgroundDataSetting;
+  private static boolean networkCallbacksEnabled = true;
   private static int restrictBackgroundStatus =
       ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED;
   private static int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
@@ -91,6 +92,7 @@ public class ShadowConnectivityManager {
   public static void reset() {
     activeNetworkInfo = null;
     backgroundDataSetting = false;
+    networkCallbacksEnabled = true;
     restrictBackgroundStatus = ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED;
     networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
 
@@ -108,6 +110,14 @@ public class ShadowConnectivityManager {
     processBoundNetwork = null;
     defaultNetworkActive = false;
     captivePortalServerUrl = "http://10.0.0.2";
+  }
+
+  /**
+   * Sets whether {@link #setDefaultNetworkActive(boolean)} triggers registered any {@link
+   * ConnectivityManager.NetworkCallback}.
+   */
+  public void setNetworkCallbacksEnabled(boolean enabled) {
+    networkCallbacksEnabled = enabled;
   }
 
   public Set<ConnectivityManager.NetworkCallback> getNetworkCallbacks() {
@@ -388,6 +398,10 @@ public class ShadowConnectivityManager {
    * ConnectivityManager#addDefaultNetworkActiveListener(OnNetworkActiveListener)} will result in
    * those listeners being fired.
    *
+   * <p>Calling this method after any {@link ConnectivityManager.NetworkCallback} have been
+   * registered will result in those callbacks being called unless {@link
+   * #setNetworkCallbacksEnabled(boolean)} has been called with a false value.
+   *
    * @param isActive The active state of the default network.
    */
   public void setDefaultNetworkActive(boolean isActive) {
@@ -399,10 +413,38 @@ public class ShadowConnectivityManager {
         }
       }
     }
+
+    if (!networkCallbacksEnabled) {
+      return;
+    }
+
+    NetworkInfo activeNetworkInfo = getActiveNetworkInfo();
+
+    if (activeNetworkInfo == null) {
+      return;
+    }
+
+    Network defaultNetwork = netIdToNetwork.get(activeNetworkInfo.getType());
+
+    if (defaultNetwork == null) {
+      return;
+    }
+
+    HashSet<ConnectivityManager.NetworkCallback> stableNetworkCallbacks =
+        new HashSet<>(networkCallbacks);
+    for (ConnectivityManager.NetworkCallback c : stableNetworkCallbacks) {
+      if (c != null) {
+        if (defaultNetworkActive) {
+          c.onAvailable(defaultNetwork);
+        } else {
+          c.onLost(defaultNetwork);
+        }
+      }
+    }
   }
 
   /**
-   * @return true by default, or the value specifed via {@link #setDefaultNetworkActive(boolean)}
+   * @return true by default, or the value specified via {@link #setDefaultNetworkActive(boolean)}
    * @see #setDefaultNetworkActive(boolean)
    */
   @Implementation
