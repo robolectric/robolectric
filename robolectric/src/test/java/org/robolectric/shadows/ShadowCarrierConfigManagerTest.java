@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -62,6 +63,27 @@ public class ShadowCarrierConfigManagerTest {
   }
 
   @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void testGetConfigForSubIdAndKeys() {
+    PersistableBundle persistableBundle = new PersistableBundle();
+    persistableBundle.putString(STRING_KEY, STRING_VALUE);
+    persistableBundle.putInt(INT_KEY, INT_VALUE);
+
+    shadowOf(carrierConfigManager).setConfigForSubId(TEST_ID, persistableBundle);
+
+    PersistableBundle verifyBundle =
+        carrierConfigManager.getConfigForSubId(TEST_ID, INT_KEY, BOOLEAN_KEY);
+    assertThat(verifyBundle).isNotNull();
+
+    assertThat(verifyBundle.keySet())
+        .containsExactly(
+            CarrierConfigManager.KEY_CARRIER_CONFIG_VERSION_STRING,
+            CarrierConfigManager.KEY_CARRIER_CONFIG_APPLIED_BOOL,
+            INT_KEY);
+    assertThat(verifyBundle.getInt(INT_KEY)).isEqualTo(INT_VALUE);
+  }
+
+  @Test
   public void getConfigForSubId_defaultsToEmpty() {
     PersistableBundle persistableBundle = carrierConfigManager.getConfigForSubId(99999);
     assertThat(persistableBundle).isNotNull();
@@ -72,6 +94,20 @@ public class ShadowCarrierConfigManagerTest {
     shadowOf(carrierConfigManager).setConfigForSubId(TEST_ID, null);
     PersistableBundle persistableBundle = carrierConfigManager.getConfigForSubId(TEST_ID);
     assertThat(persistableBundle).isNull();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getConfigForSubIdAndKeys_afterSetNullConfig_returnsBaseBundle() {
+    shadowOf(carrierConfigManager).setConfigForSubId(TEST_ID, null);
+
+    PersistableBundle verifyBundle =
+        carrierConfigManager.getConfigForSubId(TEST_ID, INT_KEY, BOOLEAN_KEY);
+
+    assertThat(verifyBundle).isNotNull();
+
+    PersistableBundle baseBundle = ShadowCarrierConfigManager.BASE;
+    assertThat(verifyBundle.keySet()).isEqualTo(baseBundle.keySet());
   }
 
   @Test

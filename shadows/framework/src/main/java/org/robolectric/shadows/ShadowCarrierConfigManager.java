@@ -3,10 +3,12 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.PersistableBundle;
 import android.telephony.CarrierConfigManager;
-import com.google.common.base.Preconditions;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -20,6 +22,14 @@ public class ShadowCarrierConfigManager {
   private final HashMap<Integer, PersistableBundle> overrideBundles = new HashMap<>();
   private boolean readPhoneStatePermission = true;
 
+  @VisibleForTesting static final PersistableBundle BASE;
+
+  static {
+    BASE = new PersistableBundle();
+    BASE.putString(CarrierConfigManager.KEY_CARRIER_CONFIG_VERSION_STRING, "version");
+    BASE.putBoolean(CarrierConfigManager.KEY_CARRIER_CONFIG_APPLIED_BOOL, false);
+  }
+
   /**
    * Returns {@link android.os.PersistableBundle} previously set by {@link #overrideConfig} or
    * {@link #setConfigForSubId(int, PersistableBundle)}, or default values for an invalid {@code
@@ -29,25 +39,51 @@ public class ShadowCarrierConfigManager {
   public PersistableBundle getConfigForSubId(int subId) {
     checkReadPhoneStatePermission();
     if (overrideBundles.containsKey(subId) && overrideBundles.get(subId) != null) {
-      return overrideBundles.get(subId);
+      return overrideBundles.get(subId) != null
+          ? new PersistableBundle(overrideBundles.get(subId))
+          : null;
     }
     if (bundles.containsKey(subId)) {
-      return bundles.get(subId);
+      return bundles.get(subId) != null ? new PersistableBundle(bundles.get(subId)) : null;
     }
     return new PersistableBundle();
   }
 
   /**
-   * @see #getConfigForSubId(int). Currently the 'keys' parameter is ignored.
+   * Returns {@link android.os.PersistableBundle} containing the specified keys for a particular
+   * subscription. {@link #setConfigForSubId(int, PersistableBundle)}, or default values for an
+   * invalid {@code subId}.
    */
   @Implementation(minSdk = U.SDK_INT)
-  protected PersistableBundle getConfigForSubId(int subId, String... keys) {
-    // TODO: consider implementing the logic in telephony service
-    // CarrierConfigLoader#getConfigSubsetForSubIdWithFeature
-    Preconditions.checkNotNull(keys);
-    Preconditions.checkArgument(
-        keys.length == 0, "filtering by keys is not currently supported in Robolectric");
-    return getConfigForSubId(subId);
+  @NonNull
+  public PersistableBundle getConfigForSubId(int subId, @NonNull String... keys) {
+    checkReadPhoneStatePermission();
+
+    PersistableBundle bundle = getConfigForSubId(subId);
+    PersistableBundle result = new PersistableBundle(BASE);
+
+    if (bundle == null) {
+      return result;
+    }
+
+    result.putAll(bundle);
+
+    if (keys.length == 0) {
+      return result;
+    }
+
+    ImmutableSet<String> requiredKeys =
+        ImmutableSet.<String>builder()
+            .addAll(BASE.keySet())
+            .addAll(ImmutableSet.copyOf(keys))
+            .build();
+    for (String key : bundle.keySet()) {
+      if (!requiredKeys.contains(key)) {
+        result.remove(key);
+      }
+    }
+
+    return result;
   }
 
   public void setReadPhoneStatePermission(boolean readPhoneStatePermission) {
