@@ -869,7 +869,7 @@ public class ShadowWifiManager {
   }
 
   @Implementation(minSdk = TIRAMISU)
-  public void setExternalPnoScanRequest(
+  protected void setExternalPnoScanRequest(
       @ClassName("java.util.List") Object ssids,
       int[] frequencies,
       Executor executor,
