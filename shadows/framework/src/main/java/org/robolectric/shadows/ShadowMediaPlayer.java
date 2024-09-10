@@ -21,6 +21,7 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.media.AudioAttributes;
 import android.media.MediaDataSource;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -527,6 +528,17 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
       return null;
     }
 
+    return mp;
+  }
+
+  @Implementation
+  protected static MediaPlayer create(
+      Context context, int resId, AudioAttributes audioAttributes, int audioSessionId) {
+    MediaPlayer mp = ShadowMediaPlayer.create(context, resId);
+    if (mp != null) {
+      ShadowMediaPlayer shadow = Shadow.extract(mp);
+      shadow.audioSessionId = audioSessionId;
+    }
     return mp;
   }
 
