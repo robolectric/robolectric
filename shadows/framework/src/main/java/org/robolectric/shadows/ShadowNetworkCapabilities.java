@@ -97,8 +97,8 @@ public class ShadowNetworkCapabilities {
 
   /** Sets the LinkDownstreamBandwidthKbps of the NetworkCapabilities. */
   @HiddenApi
-  @Implementation(maxSdk = O_MR1)
-  public void setLinkDownstreamBandwidthKbps(int kbps) {
+  @Implementation(maxSdk = O_MR1, methodName = "setLinkDownstreamBandwidthKbps")
+  protected void setLinkDownstreamBandwidthKbpsPrePie(int kbps) {
     reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
         .setLinkDownstreamBandwidthKbps(kbps);
   }
@@ -106,11 +106,11 @@ public class ShadowNetworkCapabilities {
   /**
    * Sets the LinkDownstreamBandwidthKbps of the NetworkCapabilities.
    *
-   * <p>Return type changed to {@code NetworkCapabilities} start from Pie.
+   * <p>Return type changed to {@code NetworkCapabilities} starting from Pie.
    */
   @HiddenApi
-  @Implementation(minSdk = P, methodName = "setLinkDownstreamBandwidthKbps")
-  public NetworkCapabilities setLinkDownstreamBandwidthKbpsFromPie(int kbps) {
+  @Implementation(minSdk = P)
+  public NetworkCapabilities setLinkDownstreamBandwidthKbps(int kbps) {
     return reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
         .setLinkDownstreamBandwidthKbps(kbps);
   }
