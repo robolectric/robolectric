@@ -43,6 +43,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Reflector;
 
+/** Shadow for {@link ActivityThread}. */
 @Implements(value = ActivityThread.class, isInAndroidSdk = false)
 public class ShadowActivityThread {
   private static ApplicationInfo applicationInfo;

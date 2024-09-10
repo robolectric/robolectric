@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.testapp.TestActivity;
 
+/** Compatibility test for {@link WifiAwareManager}. */
 @RunWith(AndroidJUnit4.class)
 public class WifiAwareManagerTest {
   private final Context application = ApplicationProvider.getApplicationContext();

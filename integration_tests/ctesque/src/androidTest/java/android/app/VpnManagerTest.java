@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.testapp.TestActivity;
 
+/** Compatibility test for {@link VpnManager}. */
 @RunWith(AndroidJUnit4.class)
 @SdkSuppress(minSdkVersion = R)
 public class VpnManagerTest {

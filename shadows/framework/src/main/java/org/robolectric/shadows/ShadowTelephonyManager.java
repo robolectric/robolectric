@@ -81,6 +81,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
+/** Shadow for {@link TelephonyManager}. */
 @Implements(value = TelephonyManager.class)
 public class ShadowTelephonyManager {
 

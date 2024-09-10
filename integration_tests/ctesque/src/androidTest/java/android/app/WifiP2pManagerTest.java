@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.testapp.TestActivity;
 
+/** Compatibility test for {@link WifiP2pManager}. */
 @RunWith(AndroidJUnit4.class)
 public class WifiP2pManagerTest {
 

@@ -127,6 +127,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
+/** Shadow for {@link ApplicationPackageManager}. */
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
   /** Package name of the Android platform. */
