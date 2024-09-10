@@ -29,6 +29,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+/** Shadow for {@link SensorManager}. */
 @Implements(value = SensorManager.class)
 public class ShadowSensorManager {
   public static boolean forceListenersToFail = false;

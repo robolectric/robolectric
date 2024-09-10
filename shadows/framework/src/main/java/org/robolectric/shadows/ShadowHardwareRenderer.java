@@ -14,6 +14,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
+/** No-op shadow for {@link HardwareRenderer}. */
 @Implements(value = HardwareRenderer.class, isInAndroidSdk = false, minSdk = Q)
 public class ShadowHardwareRenderer {
 

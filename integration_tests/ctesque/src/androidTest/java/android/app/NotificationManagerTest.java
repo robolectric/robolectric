@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.testapp.TestActivity;
 
+/** Compatibility test for {@link NotificationManager}. */
 @RunWith(AndroidJUnit4.class)
 public class NotificationManagerTest {
 

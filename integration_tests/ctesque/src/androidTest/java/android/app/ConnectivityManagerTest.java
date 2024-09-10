@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.testapp.TestActivity;
 
+/** Compatibility test for {@link ConnectivityManager}. */
 @RunWith(AndroidJUnit4.class)
 public class ConnectivityManagerTest {
 

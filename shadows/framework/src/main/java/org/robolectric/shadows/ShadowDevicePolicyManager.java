@@ -72,7 +72,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.versioning.AndroidVersions.U;
 
-@Implements(value = DevicePolicyManager.class)
+/** Shadow for {@link DevicePolicyManager}. */
+@Implements(DevicePolicyManager.class)
 @SuppressLint("NewApi")
 public class ShadowDevicePolicyManager {
   /**

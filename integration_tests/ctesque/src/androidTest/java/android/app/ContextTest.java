@@ -66,6 +66,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.testapp.TestActivity;
 import org.robolectric.util.ReflectionHelpers;
 
+/** Compatibility test for {@link Context}. */
 @RunWith(AndroidJUnit4.class)
 public class ContextTest {
   private static final int APP_WIDGET_HOST_ID = 1;
