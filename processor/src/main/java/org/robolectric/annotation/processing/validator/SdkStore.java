@@ -280,22 +280,27 @@ public class SdkStore {
      * @return a string describing any problems with this method, or null if it checks out.
      */
     public String verifyMethod(
-        String sdkClassName, ExecutableElement methodElement, boolean looseSignatures) {
+        String sdkClassName,
+        ExecutableElement methodElement,
+        boolean looseSignatures,
+        boolean allowInDev) {
       ClassInfo classInfo = getClassInfo(sdkClassName);
 
       // Probably should not be reachable
-      if (classInfo == null && !suppressWarnings(methodElement.getEnclosingElement(), null)) {
+      if (classInfo == null
+          && !suppressWarnings(methodElement.getEnclosingElement(), null, allowInDev)) {
         return null;
       }
 
       MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement, looseSignatures);
-      if (sdkMethod == null && !suppressWarnings(methodElement, null)) {
+      if (sdkMethod == null && !suppressWarnings(methodElement, null, allowInDev)) {
         return "No method " + methodElement + " in " + sdkClassName;
       }
       if (sdkMethod != null) {
         MethodExtraInfo implMethod = new MethodExtraInfo(methodElement);
         if (!sdkMethod.equals(implMethod)
-            && !suppressWarnings(methodElement, "robolectric.ShadowReturnTypeMismatch")) {
+            && !suppressWarnings(
+                methodElement, "robolectric.ShadowReturnTypeMismatch", allowInDev)) {
           if (implMethod.isStatic != sdkMethod.isStatic) {
             return "@Implementation for "
                 + methodElement.getSimpleName()
@@ -332,7 +337,7 @@ public class SdkStore {
      * @param warningName the name of the warning, if null, @InDevelopment will still be honored.
      * @return true if the warning should be suppressed, else false
      */
-    boolean suppressWarnings(Element annotatedElement, String warningName) {
+    boolean suppressWarnings(Element annotatedElement, String warningName, boolean allowInDev) {
       SuppressWarnings[] suppressWarnings =
           annotatedElement.getAnnotationsByType(SuppressWarnings.class);
       for (SuppressWarnings suppression : suppressWarnings) {
@@ -343,7 +348,15 @@ public class SdkStore {
         }
       }
       InDevelopment[] inDev = annotatedElement.getAnnotationsByType(InDevelopment.class);
-      if (inDev.length > 0 && !sdkRelease.isReleased()) {
+      // Marked in development, sdk is not released, or is the last release (which may still be
+      // marked unreleased in g/main aosp/main.
+      if (allowInDev
+          && inDev.length > 0
+          && (!sdkRelease.isReleased()
+              || sdkRelease
+                  == AndroidVersions.getReleases().stream()
+                      .max(AndroidVersions.AndroidRelease::compareTo)
+                      .get())) {
         return true;
       }
       return false;

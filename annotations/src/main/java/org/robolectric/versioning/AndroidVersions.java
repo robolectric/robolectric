@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import javax.annotation.Nullable;
 
@@ -99,7 +100,7 @@ public final class AndroidVersions {
                 + " should define Releases, illegal class "
                 + other.getClass());
       }
-      return Integer.compare(other.getSdkInt(), this.getSdkInt());
+      return Integer.compare(this.getSdkInt(), other.getSdkInt());
     }
 
     @Override
@@ -777,23 +778,11 @@ public final class AndroidVersions {
   }
 
   public static List<AndroidRelease> getReleases() {
-    List<AndroidRelease> output = new ArrayList<>();
-    for (AndroidRelease release : information.allReleases) {
-      if (release.isReleased()) {
-        output.add(release);
-      }
-    }
-    return output;
+    return information.released;
   }
 
   public static List<AndroidRelease> getUnreleased() {
-    List<AndroidRelease> output = new ArrayList<>();
-    for (AndroidRelease release : information.allReleases) {
-      if (!release.isReleased()) {
-        output.add(release);
-      }
-    }
-    return output;
+    return information.unreleased;
   }
 
   /**
@@ -805,6 +794,8 @@ public final class AndroidVersions {
     final List<Class<? extends AndroidRelease>> classesWithIllegalNames;
     final AndroidRelease latestRelease;
     final AndroidRelease earliestUnreleased;
+    final List<AndroidRelease> unreleased;
+    final List<AndroidRelease> released;
 
     // In the future we may need a multimap for sdkInts should they stay static across releases.
     final Map<Integer, AndroidRelease> sdkIntToAllReleases = new HashMap<>();
@@ -823,17 +814,27 @@ public final class AndroidVersions {
       AndroidRelease earliestUnreleased = null;
       for (AndroidRelease release : allReleases) {
         if (release.isReleased()) {
-          if (latestRelease == null || latestRelease.compareTo(release) > 0) {
+          if (latestRelease == null || release.compareTo(latestRelease) > 0) {
             latestRelease = release;
           }
         } else {
-          if (earliestUnreleased == null || earliestUnreleased.compareTo(release) < 0) {
+          if (earliestUnreleased == null || release.compareTo(earliestUnreleased) < 0) {
             earliestUnreleased = release;
           }
         }
       }
       this.latestRelease = latestRelease;
       this.earliestUnreleased = earliestUnreleased;
+      this.unreleased =
+          allReleases.stream()
+              .filter(r -> !r.isReleased())
+              .sorted()
+              .collect(Collectors.toUnmodifiableList());
+      this.released =
+          allReleases.stream()
+              .filter(AndroidRelease::isReleased)
+              .sorted()
+              .collect(Collectors.toUnmodifiableList());
       verifyStaticInformation();
     }
 

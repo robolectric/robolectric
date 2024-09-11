@@ -42,7 +42,9 @@ public final class InDevelopmentValidatorTest {
   @Test
   public void implementationWithInDevelopmentCompiles() {
     AndroidVersions.AndroidRelease unreleased =
-        AndroidVersions.getUnreleased().stream().findFirst().get();
+        AndroidVersions.getUnreleased().stream()
+            .min(AndroidVersions.AndroidRelease::compareTo)
+            .get();
     final String testClass =
         "org.robolectric.annotation.processing.shadows.ShadowImplementsInDevelopment";
     HashMap<String, String> props = new HashMap<>();
@@ -54,9 +56,48 @@ public final class InDevelopmentValidatorTest {
   }
 
   @Test
+  public void implementationWithInDevelopmentFailsToCompilesOnLastReleaseDisableInDevelopment() {
+    AndroidVersions.AndroidRelease lastRelease =
+        AndroidVersions.getReleases().stream().max(AndroidVersions.AndroidRelease::compareTo).get();
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowImplementsInDevelopment";
+    HashMap<String, String> props = new HashMap<>();
+    props.put("org.robolectric.annotation.processing.sdkCheckMode", "ERROR");
+    props.put("org.robolectric.annotation.processing.disableInDevelopment", "true");
+    props.put("org.robolectric.annotation.processing.validateCompileSdk", "true");
+    assertAbout(singleClass(props, getClassRootDir(Dummy.class), lastRelease.getSdkInt()))
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining(
+            "No method doSomething() in com.example.objects.Dummy for SDK "
+                + lastRelease.getSdkInt())
+        .onLine(13);
+  }
+
+  @Test
   public void implementationWithoutInDevelopmentFailsToCompiles() {
     AndroidVersions.AndroidRelease unreleased =
-        AndroidVersions.getUnreleased().stream().findFirst().get();
+        AndroidVersions.getUnreleased().stream()
+            .min(AndroidVersions.AndroidRelease::compareTo)
+            .get();
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowImplementsInDevelopmentMissing";
+    HashMap<String, String> props = new HashMap<>();
+    props.put("org.robolectric.annotation.processing.sdkCheckMode", "ERROR");
+    props.put("org.robolectric.annotation.processing.validateCompileSdk", "true");
+    assertAbout(singleClass(props, getClassRootDir(Dummy.class), unreleased.getSdkInt()))
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining(
+            "No method doSomething() in com.example.objects.Dummy for SDK "
+                + unreleased.getSdkInt())
+        .onLine(11);
+  }
+
+  @Test
+  public void implementationWithoutInDevelopmentFailsToCompilesLastRelease() {
+    AndroidVersions.AndroidRelease unreleased =
+        AndroidVersions.getReleases().stream().min(AndroidVersions.AndroidRelease::compareTo).get();
     final String testClass =
         "org.robolectric.annotation.processing.shadows.ShadowImplementsInDevelopmentMissing";
     HashMap<String, String> props = new HashMap<>();

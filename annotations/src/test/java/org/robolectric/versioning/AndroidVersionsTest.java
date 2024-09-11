@@ -2,9 +2,11 @@ package org.robolectric.versioning;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.versioning.AndroidVersions.AndroidRelease;
 
 /**
  * Check versions information aligns with runtime information. Primarily, selected SDK with
@@ -12,6 +14,32 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 public final class AndroidVersionsTest {
+
+  @Test
+  public void testUnreleased() {
+    assertThat(
+            AndroidVersions.getReleases().stream()
+                .map(AndroidRelease::getSdkInt)
+                .collect(Collectors.toList()))
+        .containsExactly(
+            16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35);
+    assertThat(
+            AndroidVersions.getUnreleased().stream()
+                .map(AndroidRelease::getSdkInt)
+                .collect(Collectors.toList()))
+        .containsExactly(36);
+  }
+
+  @Test
+  public void testStandardInitializationW() {
+    assertThat(AndroidVersions.W.SDK_INT).isEqualTo(36);
+    assertThat(AndroidVersions.W.SHORT_CODE).isEqualTo("W");
+    assertThat(AndroidVersions.W.VERSION).isEqualTo("16");
+    assertThat(new AndroidVersions.W().getSdkInt()).isEqualTo(36);
+    assertThat(new AndroidVersions.W().getShortCode()).isEqualTo("W");
+    assertThat(new AndroidVersions.W().getVersion()).isEqualTo("16");
+    assertThat(new AndroidVersions.W().isReleased()).isFalse();
+  }
 
   @Test
   public void testStandardInitializationV() {
