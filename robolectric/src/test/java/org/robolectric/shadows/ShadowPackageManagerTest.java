@@ -3221,19 +3221,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void addCurrentToCannonicalName() {
-    shadowOf(packageManager).addCurrentToCannonicalName("current_name_1", "canonical_name_1");
-    shadowOf(packageManager).addCurrentToCannonicalName("current_name_2", "canonical_name_2");
-
-    assertThat(
-            packageManager.currentToCanonicalPackageNames(
-                new String[] {"current_name_1", "current_name_2", "some_other_name"}))
-        .asList()
-        .containsExactly("canonical_name_1", "canonical_name_2", "some_other_name")
-        .inOrder();
-  }
-
-  @Test
   public void addCanonicalName() {
     shadowOf(packageManager).addCanonicalName("current_name_1", "canonical_name_1");
     shadowOf(packageManager).addCanonicalName("current_name_2", "canonical_name_2");
