@@ -229,7 +229,6 @@ public class ShadowWrangler implements ClassHandler {
             });
   }
 
-  @SuppressWarnings({"AndroidJdkLibsChecker"})
   private MethodHandles.Lookup privateLookupFor(Class<?> lookupClass)
       throws IllegalAccessException {
     if (HAS_PRIVATE_LOOKUP_IN) {
