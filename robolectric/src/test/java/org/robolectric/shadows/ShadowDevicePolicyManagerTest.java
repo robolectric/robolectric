@@ -101,7 +101,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   public void isDeviceOwnerAppShouldReturnFalseForNonDeviceOwnerApp() {
-    // GIVEN an test package which is not the device owner app of the device
+    // GIVEN a test package which is not the device owner app of the device
     String testPackage = testComponent.getPackageName();
 
     // WHEN DevicePolicyManager#isDeviceOwnerApp is called with it
@@ -111,7 +111,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   public void isDeviceOwnerShouldReturnFalseForProfileOwner() {
-    // GIVEN an test package which is the profile owner app of the device
+    // GIVEN a test package which is the profile owner app of the device
     String testPackage = testComponent.getPackageName();
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
 
@@ -122,7 +122,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   public void isDeviceOwnerShouldReturnTrueForDeviceOwner() {
-    // GIVEN an test package which is the device owner app of the device
+    // GIVEN a test package which is the device owner app of the device
     String testPackage = testComponent.getPackageName();
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
 
@@ -133,7 +133,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   public void getDeviceOwnerShouldReturnDeviceOwnerPackageName() {
-    // GIVEN an test package which is the device owner app of the device
+    // GIVEN a test package which is the device owner app of the device
     String testPackage = testComponent.getPackageName();
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
 
@@ -170,7 +170,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   public void isProfileOwnerAppShouldReturnFalseForNonProfileOwnerApp() {
-    // GIVEN an test package which is not the profile owner app of the device
+    // GIVEN a test package which is not the profile owner app of the device
     String testPackage = testComponent.getPackageName();
 
     // WHEN DevicePolicyManager#isProfileOwnerApp is called with it
@@ -180,7 +180,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   public void isProfileOwnerShouldReturnFalseForDeviceOwner() {
-    // GIVEN an test package which is the device owner app of the device
+    // GIVEN a test package which is the device owner app of the device
     String testPackage = testComponent.getPackageName();
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
 
@@ -191,7 +191,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   public void isProfileOwnerShouldReturnTrueForProfileOwner() {
-    // GIVEN an test package which is the profile owner app of the device
+    // GIVEN a test package which is the profile owner app of the device
     String testPackage = testComponent.getPackageName();
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
 
@@ -202,7 +202,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   public void getProfileOwnerShouldReturnDeviceOwnerComponentName() {
-    // GIVEN an test package which is the profile owner app of the device
+    // GIVEN a test package which is the profile owner app of the device
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
 
     // WHEN DevicePolicyManager#getProfileOwner is called
@@ -284,7 +284,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   public void getActiveAdminsShouldReturnDeviceOwner() {
-    // GIVEN an test package which is the device owner app of the device
+    // GIVEN a test package which is the device owner app of the device
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
 
     // WHEN DevicePolicyManager#getActiveAdmins is called
@@ -294,7 +294,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   public void getActiveAdminsShouldReturnProfileOwner() {
-    // GIVEN an test package which is the profile owner app of the device
+    // GIVEN a test package which is the profile owner app of the device
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
 
     // WHEN DevicePolicyManager#getActiveAdmins is called

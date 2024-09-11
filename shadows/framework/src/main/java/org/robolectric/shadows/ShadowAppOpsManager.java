@@ -88,7 +88,7 @@ public class ShadowAppOpsManager {
 
   private static final Map<OnOpChangedListener, Set<Key>> appOpListeners = new ArrayMap<>();
 
-  // op | (usage << 8) => ModeAndExcpetion
+  // op | (usage << 8) => ModeAndException
   private static final Map<Integer, ModeAndException> audioRestrictions = new HashMap<>();
 
   private Context context;
@@ -672,7 +672,7 @@ public class ShadowAppOpsManager {
     }
   }
 
-  /** Class holding usage mode and excpetion packages. */
+  /** Class holding usage mode and exception packages. */
   public static class ModeAndException {
     public final int mode;
     public final List<String> exceptionPackages;

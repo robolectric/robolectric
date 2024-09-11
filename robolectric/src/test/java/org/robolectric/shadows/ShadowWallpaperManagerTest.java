@@ -590,12 +590,12 @@ public class ShadowWallpaperManagerTest {
     Activity activity = null;
     try {
       activity = Robolectric.setupActivity(Activity.class);
-      WallpaperManager applicaionWallpaperManager =
+      WallpaperManager applicationWallpaperManager =
           (WallpaperManager) application.getSystemService(Context.WALLPAPER_SERVICE);
       WallpaperManager activityWallpaperManager =
           (WallpaperManager) activity.getSystemService(Context.WALLPAPER_SERVICE);
 
-      assertThat(applicaionWallpaperManager).isNotSameInstanceAs(activityWallpaperManager);
+      assertThat(applicationWallpaperManager).isNotSameInstanceAs(activityWallpaperManager);
 
       // Adjusted for WallpaperManager, as direct comparison methods are not available
       WallpaperInfo applicationWallpaper = manager.getWallpaperInfo();

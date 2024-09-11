@@ -52,7 +52,7 @@ public class ShadowPausedAsyncTask<Params, Progress, Result> extends ShadowAsync
   /**
    * Globally override the executor used for all AsyncTask#execute* calls.
    *
-   * <p>This can be useful if you want to use a more determinstic executor for tests, like {@link
+   * <p>This can be useful if you want to use a more deterministic executor for tests, like {@link
    * org.robolectric.android.util.concurrent.PausedExecutorService} or {@link
    * org.robolectric.android.util.concurrent.InlineExecutorService}.
    *

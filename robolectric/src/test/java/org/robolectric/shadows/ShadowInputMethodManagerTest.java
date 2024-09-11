@@ -53,7 +53,7 @@ public class ShadowInputMethodManagerTest {
   }
 
   @Test
-  public void hideSoftInputFromWindow_shouldNotifiyResult_hidden() {
+  public void hideSoftInputFromWindow_shouldNotifyResult_hidden() {
     manager.showSoftInput(null, 0);
 
     CapturingResultReceiver resultReceiver =

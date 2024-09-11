@@ -360,12 +360,12 @@ public class ShadowAudioManager {
         continue;
       }
 
-      String[] splittedPair = pair.split("=", 0);
-      if (splittedPair.length != 2) {
+      String[] splitPair = pair.split("=", 0);
+      if (splitPair.length != 2) {
         throw new IllegalArgumentException(
             "keyValuePairs: each pair should be in the format of key=value;");
       }
-      parameters.put(splittedPair[0], splittedPair[1]);
+      parameters.put(splitPair[0], splitPair[1]);
     }
   }
 

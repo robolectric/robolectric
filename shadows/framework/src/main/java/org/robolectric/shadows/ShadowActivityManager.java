@@ -552,7 +552,7 @@ public class ShadowActivityManager {
   }
 
   /**
-   * Helper class mimicing the package-private UidObserver class inside {@link ActivityManager}.
+   * Helper class mimicking the package-private UidObserver class inside {@link ActivityManager}.
    *
    * <p>This class is responsible for maintaining the cutpoint of the corresponding {@link
    * ActivityManager.OnUidImportanceListener} and invoking the listener only when the importance of
