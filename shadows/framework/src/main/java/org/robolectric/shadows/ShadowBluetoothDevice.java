@@ -259,7 +259,7 @@ public class ShadowBluetoothDevice {
   /**
    * Overrides behavior of {@link BluetoothDevice#getBondState} to return pre-set result.
    *
-   * @returns Value set by calling {@link ShadowBluetoothDevice#setBondState}. If setBondState has
+   * @return Value set by calling {@link ShadowBluetoothDevice#setBondState}. If setBondState has
    *     not previously been called, will return {@link BluetoothDevice#BOND_NONE} to indicate the
    *     device is not bonded.
    */
@@ -352,7 +352,7 @@ public class ShadowBluetoothDevice {
    * Overrides behavior of {@link BluetoothDevice#fetchUuidsWithSdp}. This method updates the
    * counter which counts the number of invocations of this method.
    *
-   * @returns Value set by calling {@link ShadowBluetoothDevice#setFetchUuidsWithSdpResult}. If not
+   * @return Value set by calling {@link ShadowBluetoothDevice#setFetchUuidsWithSdpResult}. If not
    *     previously set, will return false by default.
    */
   @Implementation

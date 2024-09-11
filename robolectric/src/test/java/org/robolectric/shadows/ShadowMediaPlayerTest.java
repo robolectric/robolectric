@@ -741,7 +741,7 @@ public class ShadowMediaPlayerTest {
     // to play it safe but reasonable, by looking at whether the PREPARED or
     // INITIALIZED are allowed (ie, the two states that PREPARING
     // sites between). Only if both these states are allowed is
-    // PREPARING allowed too, if either PREPARED or INITALIZED is
+    // PREPARING allowed too, if either PREPARED or INITIALIZED is
     // disallowed then so is PREPARING.
     if (invalid.contains(PREPARED) || invalid.contains(INITIALIZED)) {
       invalid.add(PREPARING);
@@ -908,7 +908,7 @@ public class ShadowMediaPlayerTest {
       mediaPlayer.seekTo(-1);
       shadowMediaPlayer.invokeSeekCompleteListener();
 
-      assertWithMessage("Current postion while " + state)
+      assertWithMessage("Current position while " + state)
           .that(mediaPlayer.getCurrentPosition())
           .isEqualTo(0);
       assertWithMessage("Final state " + state).that(shadowMediaPlayer.getState()).isEqualTo(state);
@@ -926,7 +926,7 @@ public class ShadowMediaPlayerTest {
       mediaPlayer.seekTo(1001);
       shadowMediaPlayer.invokeSeekCompleteListener();
 
-      assertWithMessage("Current postion while " + state)
+      assertWithMessage("Current position while " + state)
           .that(mediaPlayer.getCurrentPosition())
           .isEqualTo(1000);
       assertWithMessage("Final state " + state).that(shadowMediaPlayer.getState()).isEqualTo(state);

@@ -3031,7 +3031,7 @@ public class ShadowPackageManagerTest {
   public void getResourcesForApplication_ApkNotPresent() {
     ApplicationInfo applicationInfo =
         ApplicationInfoBuilder.newBuilder().setPackageName("com.not.present").build();
-    applicationInfo.sourceDir = applicationInfo.publicSourceDir = "/some/nonexistant/path";
+    applicationInfo.sourceDir = applicationInfo.publicSourceDir = "/some/nonexistent/path";
 
     try {
       packageManager.getResourcesForApplication(applicationInfo);
@@ -3151,7 +3151,7 @@ public class ShadowPackageManagerTest {
   @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPackageNotPresent_getPackageSizeInfo_callsBackWithFailure() throws Exception {
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
-    packageManager.getPackageSizeInfo("nonexistant.package", packageStatsObserver);
+    packageManager.getPackageSizeInfo("nonexistent.package", packageStatsObserver);
     shadowMainLooper().idle();
 
     verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(false));
@@ -3164,7 +3164,7 @@ public class ShadowPackageManagerTest {
       throws Exception {
     shadowMainLooper().pause();
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
-    packageManager.getPackageSizeInfo("nonexistant.package", packageStatsObserver);
+    packageManager.getPackageSizeInfo("nonexistent.package", packageStatsObserver);
 
     verifyNoMoreInteractions(packageStatsObserver);
 
@@ -3237,7 +3237,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void addCurrentToCannonicalName() {
+  public void addCurrentToCanonicalName() {
     shadowOf(packageManager).addCurrentToCannonicalName("current_name_1", "canonical_name_1");
     shadowOf(packageManager).addCurrentToCannonicalName("current_name_2", "canonical_name_2");
 

@@ -23,7 +23,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
-/** Robolectic provides overrides for fetching and updating transport. */
+/** Robolectric provides overrides for fetching and updating transport. */
 @Implements(value = NetworkCapabilities.class)
 public class ShadowNetworkCapabilities {
 

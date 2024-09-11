@@ -53,7 +53,7 @@ public class ShadowNotificationManager {
       new ConcurrentHashMap<>();
   private static final Set<String> canNotifyOnBehalfPackages = Sets.newConcurrentHashSet();
 
-  private static int currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
+  private static int currentInterruptionFilter = INTERRUPTION_FILTER_ALL;
   private static Policy notificationPolicy;
   private static Policy consolidatedNotificationPolicy;
   private static String notificationDelegate;
@@ -71,7 +71,7 @@ public class ShadowNotificationManager {
     automaticZenRules.clear();
     listenerAccessGrantedComponents.clear();
     canNotifyOnBehalfPackages.clear();
-    currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
+    currentInterruptionFilter = INTERRUPTION_FILTER_ALL;
     notificationPolicy = null;
     notificationDelegate = null;
     consolidatedNotificationPolicy = null;
@@ -272,7 +272,7 @@ public class ShadowNotificationManager {
    */
   @Implementation(minSdk = M)
   protected int getCurrentInterruptionFilter() {
-    return currentInteruptionFilter;
+    return currentInterruptionFilter;
   }
 
   /**
@@ -282,7 +282,7 @@ public class ShadowNotificationManager {
    */
   @Implementation(minSdk = M)
   protected void setInterruptionFilter(int interruptionFilter) {
-    currentInteruptionFilter = interruptionFilter;
+    currentInterruptionFilter = interruptionFilter;
   }
 
   /**
