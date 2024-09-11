@@ -77,10 +77,14 @@ public class ShadowMediaSessionManager {
 
   /**
    * Clears all controllers such that {@link #getActiveSessions(ComponentName)} will return the
-   * empty list.
+   * empty list. This will trigger a callback on each {@link OnActiveSessionsChangedListener}
+   * callback registered with this class.
    */
   public void clearControllers() {
     controllers.clear();
+    for (OnActiveSessionsChangedListener listener : listeners) {
+      listener.onActiveSessionsChanged(controllers);
+    }
   }
 
   @ForType(MediaSessionManager.class)
