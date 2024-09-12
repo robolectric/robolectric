@@ -537,6 +537,16 @@ public class ShadowPowerManager {
       return !timeoutTimestampList.isEmpty();
     }
 
+    @Override
+    @Implementation
+    public String toString() {
+      return "WakeLock{"
+          + Integer.toHexString(System.identityHashCode(this))
+          + " held="
+          + isHeld()
+          + "}";
+    }
+
     /**
      * Retrieves if the wake lock is reference counted or not
      *

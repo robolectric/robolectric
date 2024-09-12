@@ -54,6 +54,16 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
+  public void toString_shouldWork() {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    assertThat(lock.toString()).contains("held=false");
+    lock.acquire();
+    assertThat(lock.toString()).contains("held=true");
+    lock.release();
+    assertThat(lock.toString()).contains("held=false");
+  }
+
+  @Test
   public void acquire_shouldAcquireAndReleaseReferenceCountedLock() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     assertThat(lock.isHeld()).isFalse();
