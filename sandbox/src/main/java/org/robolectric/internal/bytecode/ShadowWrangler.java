@@ -329,8 +329,11 @@ public class ShadowWrangler implements ClassHandler {
         continue;
       }
 
-      if (Arrays.equals(method.getParameterTypes(), paramClasses)
-          && shadowMatcher.matches(method)) {
+      if (!shadowMatcher.matches(method)) {
+        continue;
+      }
+
+      if (Arrays.equals(method.getParameterTypes(), paramClasses)) {
         // Found an exact match, we can exit early.
         foundMethod = method;
         break;
@@ -344,13 +347,13 @@ public class ShadowWrangler implements ClassHandler {
             break;
           }
         }
-        if (allParameterTypesAreObject && shadowMatcher.matches(method)) {
+        if (allParameterTypesAreObject) {
           // Found a looseSignatures match, but continue looking for an exact match.
           foundMethod = method;
         }
       } else {
         // Or maybe support @ClassName.
-        if (parameterClassNameMatch(method, paramClasses) && shadowMatcher.matches(method)) {
+        if (parameterClassNameMatch(method, paramClasses)) {
           // Found a @ClassName match, but continue looking for an exact match.
           foundMethod = method;
         }
@@ -366,6 +369,9 @@ public class ShadowWrangler implements ClassHandler {
         }
         String mappedMethodName = implementation.methodName().trim();
         if (mappedMethodName.isEmpty() || !mappedMethodName.equals(methodName)) {
+          continue;
+        }
+        if (!shadowMatcher.matches(method)) {
           continue;
         }
         if (Arrays.equals(method.getParameterTypes(), paramClasses)
