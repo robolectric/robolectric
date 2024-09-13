@@ -121,14 +121,14 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     return BitmapNatives.nativeGetNativeFinalizer();
   }
 
-  @Implementation(maxSdk = P)
-  protected static boolean nativeRecycle(long nativeBitmap) {
+  @Implementation(maxSdk = P, methodName = "nativeRecycle")
+  protected static boolean nativeRecyclePreQ(long nativeBitmap) {
     BitmapNatives.nativeRecycle(nativeBitmap);
     return true;
   }
 
-  @Implementation(minSdk = Q, methodName = "nativeRecycle")
-  protected static void nativeRecyclePostPie(long nativeBitmap) {
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
+  protected static void nativeRecycle(long nativeBitmap) {
     BitmapNatives.nativeRecycle(nativeBitmap);
   }
 
