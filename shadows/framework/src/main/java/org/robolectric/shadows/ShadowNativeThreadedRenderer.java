@@ -13,6 +13,7 @@ import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.view.Surface;
 import android.view.ThreadedRenderer;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
@@ -22,12 +23,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
 /** Shadow for {@link ThreadedRenderer} that is backed by native code */
-@Implements(
-    value = ThreadedRenderer.class,
-    minSdk = O,
-    maxSdk = P,
-    shadowPicker = Picker.class,
-    looseSignatures = true)
+@Implements(value = ThreadedRenderer.class, minSdk = O, maxSdk = P, shadowPicker = Picker.class)
 public class ShadowNativeThreadedRenderer {
 
   // ThreadedRenderer specific functions. These do not exist in HardwareRenderer
@@ -190,9 +186,10 @@ public class ShadowNativeThreadedRenderer {
   }
 
   @Implementation(minSdk = P, maxSdk = P)
-  protected static Object createHardwareBitmap(Object renderNode, Object width, Object height) {
+  protected static Bitmap createHardwareBitmap(
+      @ClassName("android.view.RenderNode") Object renderNode, int width, int height) {
     try (ImageReader imageReader =
-        ImageReader.newInstance((int) width, (int) height, PixelFormat.RGBA_8888, 1)) {
+        ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 1)) {
       Surface surface = imageReader.getSurface();
       Canvas canvas = surface.lockHardwareCanvas();
       reflector(DisplayListCanvasReflector.class, canvas).drawRenderNode(renderNode);
