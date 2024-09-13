@@ -7,7 +7,6 @@ import android.content.Intent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.DirectReflectorTest.ShadowClass;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -16,7 +15,6 @@ import org.robolectric.util.reflector.Reflector;
 
 /** Tests for @{@link Direct} annotation incorporated inside {@link Reflector}. */
 @RunWith(AndroidJUnit4.class)
-@Config(shadows = ShadowClass.class)
 public class MethodNameTest {
   @Config(sdk = S, shadows = ShadowThrowingIntent.class)
   @Test
