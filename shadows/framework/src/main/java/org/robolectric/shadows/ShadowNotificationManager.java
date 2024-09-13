@@ -180,15 +180,14 @@ public class ShadowNotificationManager {
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
   protected void createNotificationChannelGroups(
-      List<@ClassName("android.app.NotificationChannelGroup") Object> groupList) {
+      List</*android.app.NotificationChannelGroup*/ ?> groupList) {
     for (Object group : groupList) {
       createNotificationChannelGroup(group);
     }
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected List<@ClassName("android.app.NotificationChannelGroup") Object>
-      getNotificationChannelGroups() {
+  protected List</*android.app.NotificationChannelGroup*/ ?> getNotificationChannelGroups() {
     return ImmutableList.copyOf(notificationChannelGroups.values());
   }
 
@@ -225,14 +224,14 @@ public class ShadowNotificationManager {
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
   protected void createNotificationChannels(
-      List<@ClassName("android.app.NotificationChannel") Object> channelList) {
+      List</*android.app.NotificationChannel*/ ?> channelList) {
     for (Object channel : channelList) {
       createNotificationChannel(channel);
     }
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  public List<@ClassName("android.app.NotificationChannel") Object> getNotificationChannels() {
+  public List</*android.app.NotificationChannel*/ ?> getNotificationChannels() {
     return ImmutableList.copyOf(notificationChannels.values());
   }
 

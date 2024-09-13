@@ -470,8 +470,8 @@ public class ShadowAudioManager {
    */
   @Implementation(minSdk = R)
   @NonNull
-  protected @ClassName("java.util.List<android.media.AudioDeviceAttributes>") List<Object>
-      getDevicesForAttributes(@NonNull AudioAttributes attributes) {
+  protected List</*android.media.AudioDeviceAttributes*/ ?> getDevicesForAttributes(
+      @NonNull AudioAttributes attributes) {
     ImmutableList<Object> devices = devicesForAttributes.get(attributes);
     return devices == null ? defaultDevicesForAttributes : devices;
   }

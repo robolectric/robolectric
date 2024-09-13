@@ -133,7 +133,7 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
       @ClassName("android.content.res.FontResourcesParser$FamilyResourceEntry") Object entry,
       AssetManager mgr,
       String path) {
-    return createUnderlyingTypeface((String) path, Typeface.NORMAL);
+    return createUnderlyingTypeface(path, Typeface.NORMAL);
   }
 
   @Implementation
@@ -194,7 +194,7 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
       String fallbackName,
       int weight,
       int italic) {
-    return createUnderlyingTypeface((String) fallbackName, Typeface.NORMAL);
+    return createUnderlyingTypeface(fallbackName, Typeface.NORMAL);
   }
 
   @Implementation(minSdk = P, maxSdk = P)
@@ -214,7 +214,7 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
   @Implementation(minSdk = Q, maxSdk = R)
   protected static void initSystemDefaultTypefaces(
       Map<String, Typeface> systemFontMap,
-      @ClassName("java.util.Map<String, android.graphics.FontFamily[]>") Object fallbacks,
+      Map<String, /*android.graphics.FontFamily[]*/ ?> fallbacks,
       @ClassName("android.text.FontConfig$Alias[]") Object aliases) {}
 
   @Resetter

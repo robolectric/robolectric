@@ -56,6 +56,8 @@ import org.robolectric.versioning.AndroidVersions;
 /** Encapsulates a collection of Android framework jars. */
 public class SdkStore {
 
+  private static final String VALID_CLASS_NAME_ANNOTATION_CHARS = "^[a-zA-Z0-9_$.;\\[\\]]+$";
+
   private final Set<Sdk> sdks = new TreeSet<>();
   private boolean loaded = false;
 
@@ -595,6 +597,15 @@ public class SdkStore {
         // If parameter is annotated with @ClassName, then use the indicated type instead.
         ClassName className = variableElement.getAnnotation(ClassName.class);
         if (className != null) {
+          if (!className.value().matches(VALID_CLASS_NAME_ANNOTATION_CHARS)) {
+            throw new RuntimeException(
+                "Invalid @ClassName annotation '"
+                    + paramType
+                    + "' in "
+                    + methodElement.getEnclosingElement().getSimpleName()
+                    + "."
+                    + methodElement.getSimpleName());
+          }
           paramType = className.value().replace('$', '.');
         }
 

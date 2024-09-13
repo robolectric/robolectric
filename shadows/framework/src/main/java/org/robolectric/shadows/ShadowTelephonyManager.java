@@ -648,8 +648,8 @@ public class ShadowTelephonyManager {
   /** Returns the UICC cards information set by {@link #setUiccCardsInfo}. */
   @Implementation(minSdk = Q)
   @HiddenApi
-  protected @ClassName("java.util.List<android.telephony.UiccCardInfo>") Object getUiccCardsInfo() {
-    return uiccCardsInfo;
+  protected List</*android.telephony.UiccCardInfo*/ ?> getUiccCardsInfo() {
+    return (List<?>) uiccCardsInfo;
   }
 
   /** Clears {@code slotIndex} to state mapping and resets to default state. */
