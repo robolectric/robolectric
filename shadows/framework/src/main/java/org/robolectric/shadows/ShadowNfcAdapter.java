@@ -28,6 +28,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow implementation of {@link NfcAdapter}. */
 @Implements(value = NfcAdapter.class, looseSignatures = true)
@@ -78,6 +79,46 @@ public class ShadowNfcAdapter {
 
   @GuardedBy("this")
   private NfcAntennaInfo nfcAntennaInfo;
+
+  @GuardedBy("this")
+  private boolean isObserveModeSupported = false;
+
+  @GuardedBy("this")
+  private boolean isObserverModeEnabled = false;
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected boolean setObserveModeEnabled(boolean enabled) {
+    synchronized (this) {
+      if (isObserveModeSupported) {
+        isObserverModeEnabled = enabled;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected boolean isObserveModeEnabled() {
+    synchronized (this) {
+      return isObserverModeEnabled;
+    }
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected boolean isObserveModeSupported() {
+    synchronized (this) {
+      return isObserveModeSupported;
+    }
+  }
+
+  /**
+   * Sets the value returned by {@link #isObserveModeSupported()}.
+   *
+   * @param supported the value to return from {@link #isObserveModeSupported()}
+   */
+  public synchronized void setObserveModeSupported(boolean supported) {
+    isObserveModeSupported = supported;
+  }
 
   @Implementation
   protected static NfcAdapter getDefaultAdapter(Context context) {
