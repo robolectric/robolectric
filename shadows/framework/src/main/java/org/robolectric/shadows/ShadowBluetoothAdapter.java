@@ -48,7 +48,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -414,7 +413,7 @@ public class ShadowBluetoothAdapter {
 
   /** Return value changed from {@code int} to {@link Duration} starting in T. */
   @Implementation(minSdk = TIRAMISU, methodName = "getDiscoverableTimeout")
-  protected @ClassName("java.time.Duration") Object getDiscoverableTimeoutT() {
+  protected Duration getDiscoverableTimeoutT() {
     return discoverableTimeout;
   }
 

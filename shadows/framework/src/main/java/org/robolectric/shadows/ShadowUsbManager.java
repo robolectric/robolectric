@@ -207,7 +207,7 @@ public class ShadowUsbManager {
 
   @Implementation(minSdk = Q, methodName = "getPorts")
   @HiddenApi
-  protected @ClassName("java.util.List<android.hardware.usb.UsbPort>") Object getPortsFromQ() {
+  protected List</*android.hardware.usb.UsbPort*/ ?> getPortsFromQ() {
     return new ArrayList<>(usbPortStatuses.keySet());
   }
 

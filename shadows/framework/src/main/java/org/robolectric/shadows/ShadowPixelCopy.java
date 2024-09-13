@@ -118,7 +118,7 @@ public class ShadowPixelCopy {
   protected static void request(
       @ClassName("android.view.PixelCopy$Request") Object requestObject,
       Executor callbackExecutor,
-      @ClassName("java.util.function.Consumer<android.view.PixelCopy$Result>") Object listener) {
+      Consumer</*android.view.PixelCopy$Result*/ ?> listener) {
     PixelCopy.Request request = (PixelCopy.Request) requestObject;
     RequestReflector requestReflector = reflector(RequestReflector.class, request);
     OnPixelCopyFinishedListener legacyListener =

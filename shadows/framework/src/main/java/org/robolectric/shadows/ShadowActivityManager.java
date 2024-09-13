@@ -385,8 +385,8 @@ public class ShadowActivityManager {
    * {@code packageName} is ignored.
    */
   @Implementation(minSdk = R)
-  protected @ClassName("java.util.List<android.app.ApplicationExitInfo>") Object
-      getHistoricalProcessExitReasons(String packageName, int pid, int maxNum) {
+  protected List</*android.app.ApplicationExitInfo*/ ?> getHistoricalProcessExitReasons(
+      String packageName, int pid, int maxNum) {
     return appExitInfoList.stream()
         .filter(
             appExitInfo ->

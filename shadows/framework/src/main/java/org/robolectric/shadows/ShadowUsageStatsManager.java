@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -589,8 +588,8 @@ public class ShadowUsageStatsManager {
 
   @SuppressWarnings("unchecked")
   @Implementation(minSdk = TIRAMISU)
-  protected @ClassName("java.util.List<android.app.usage.BroadcastResponseStats>") Object
-      queryBroadcastResponseStats(@Nullable String packageName, long id) {
+  protected List</*android.app.usage.BroadcastResponseStats*/ ?> queryBroadcastResponseStats(
+      @Nullable String packageName, long id) {
     List<BroadcastResponseStats> result = new ArrayList<>();
     for (Map.Entry<String, Map<Long, Object /*BroadcastResponseStats*/>> entry :
         appBroadcastStats.entrySet()) {
