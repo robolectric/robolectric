@@ -25,6 +25,7 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 import android.app.Application;
 import android.content.res.AssetFileDescriptor;
+import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.MediaDataSource;
@@ -117,6 +118,31 @@ public class ShadowMediaPlayerTest {
     assertThat(shadow.getDataSource())
         .isEqualTo(
             DataSource.toDataSource("android.resource://" + context.getPackageName() + "/123"));
+  }
+
+  @Test
+  public void create_withResourceIdAudioAttributesAndAudioSessionId_shouldSetDataSource() {
+    Application context = ApplicationProvider.getApplicationContext();
+    ShadowMediaPlayer.addMediaInfo(
+        DataSource.toDataSource("android.resource://" + context.getPackageName() + "/123"),
+        new ShadowMediaPlayer.MediaInfo(100, 10));
+
+    MediaPlayer mp = MediaPlayer.create(context, 123, new AudioAttributes.Builder().build(), 0);
+    ShadowMediaPlayer shadow = shadowOf(mp);
+    assertThat(shadow.getDataSource())
+        .isEqualTo(
+            DataSource.toDataSource("android.resource://" + context.getPackageName() + "/123"));
+  }
+
+  @Test
+  public void create_withResourceIdAudioAttributesAndAudioSessionId_shouldSetAudioSessionId() {
+    Application context = ApplicationProvider.getApplicationContext();
+    ShadowMediaPlayer.addMediaInfo(
+        DataSource.toDataSource("android.resource://" + context.getPackageName() + "/123"),
+        new ShadowMediaPlayer.MediaInfo(100, 10));
+
+    MediaPlayer mp = MediaPlayer.create(context, 123, new AudioAttributes.Builder().build(), 42);
+    assertThat(mp.getAudioSessionId()).isEqualTo(42);
   }
 
   @Test

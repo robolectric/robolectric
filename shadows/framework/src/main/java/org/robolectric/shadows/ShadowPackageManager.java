@@ -1207,14 +1207,6 @@ public class ShadowPackageManager {
     systemSharedLibraryNames.clear();
   }
 
-  @Deprecated
-  /**
-   * @deprecated use {@link #addCanonicalName} instead.}
-   */
-  public void addCurrentToCannonicalName(String currentName, String canonicalName) {
-    currentToCanonicalNames.put(currentName, canonicalName);
-  }
-
   /**
    * Adds a canonical package name for a package.
    *

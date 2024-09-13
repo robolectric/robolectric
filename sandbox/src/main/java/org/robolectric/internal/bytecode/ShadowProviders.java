@@ -12,7 +12,6 @@ import javax.annotation.Priority;
 import org.robolectric.internal.ShadowProvider;
 
 /** The set of {@link ShadowProvider} implementations found on the classpath. */
-@SuppressWarnings("AndroidJdkLibsChecker")
 public class ShadowProviders {
 
   private final ImmutableList<ShadowProvider> shadowProviders;

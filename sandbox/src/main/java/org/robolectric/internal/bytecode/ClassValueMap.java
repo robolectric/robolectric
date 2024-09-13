@@ -15,7 +15,6 @@ abstract class ClassValueMap<T> {
 
   protected abstract T computeValue(Class<?> type);
 
-  @SuppressWarnings("AndroidJdkLibsChecker")
   public T get(Class<?> type) {
     return map.computeIfAbsent(type, this::computeValue);
   }

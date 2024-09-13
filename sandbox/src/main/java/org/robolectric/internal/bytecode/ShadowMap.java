@@ -34,7 +34,6 @@ public class ShadowMap {
   private final ImmutableMap<String, ShadowInfo> overriddenShadows;
   private final ImmutableMap<String, String> shadowPickers;
 
-  @SuppressWarnings("AndroidJdkLibsChecker")
   public static ShadowMap createFromShadowProviders(List<ShadowProvider> sortedProviders) {
     final ArrayListMultimap<String, String> shadowMap = ArrayListMultimap.create();
     final Map<String, String> shadowPickerMap = new HashMap<>();

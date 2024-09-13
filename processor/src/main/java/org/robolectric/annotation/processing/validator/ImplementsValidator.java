@@ -44,6 +44,7 @@ public class ImplementsValidator extends Validator {
   private final SdkCheckMode sdkCheckMode;
   private final Kind checkKind;
   private final SdkStore sdkStore;
+  private final boolean allowInDev;
 
   /** Supported modes for validation of {@link Implementation} methods against SDKs. */
   public enum SdkCheckMode {
@@ -56,13 +57,15 @@ public class ImplementsValidator extends Validator {
       RobolectricModel.Builder modelBuilder,
       ProcessingEnvironment env,
       SdkCheckMode sdkCheckMode,
-      SdkStore sdkStore) {
+      SdkStore sdkStore,
+      boolean allowInDev) {
     super(modelBuilder, env, IMPLEMENTS_CLASS);
 
     this.env = env;
     this.sdkCheckMode = sdkCheckMode;
     this.checkKind = sdkCheckMode == SdkCheckMode.WARN ? Kind.WARNING : Kind.ERROR;
     this.sdkStore = sdkStore;
+    this.allowInDev = allowInDev;
   }
 
   private TypeElement getClassNameTypeElement(AnnotationValue cv) {
@@ -146,7 +149,7 @@ public class ImplementsValidator extends Validator {
     boolean looseSignatures =
         looseSignaturesAttr != null && (Boolean) looseSignaturesAttr.getValue();
     String sdkClassNameFq = sdkClassNameFq(av, cv);
-    validateShadow(sdkClassNameFq, shadowType, minSdk, maxSdk, looseSignatures);
+    validateShadow(sdkClassNameFq, shadowType, minSdk, maxSdk, looseSignatures, allowInDev);
 
     return null;
   }
@@ -196,13 +199,15 @@ public class ImplementsValidator extends Validator {
       TypeElement shadowClassElem,
       int classMinSdk,
       int classMaxSdk,
-      boolean looseSignatures) {
+      boolean looseSignatures,
+      boolean allowInDev) {
     Problems problems = new Problems(this.checkKind);
     if (sdkCheckMode != SdkCheckMode.OFF) {
       for (SdkStore.Sdk sdk : sdkStore.sdksMatching(classMinSdk, classMaxSdk)) {
         SdkStore.ClassInfo classInfo = sdk.getClassInfo(shadowedClassName);
         if (classInfo == null) {
-          if (!sdk.suppressWarnings(shadowClassElem, "robolectric.internal.IgnoreMissingClass")) {
+          if (!sdk.suppressWarnings(
+              shadowClassElem, "robolectric.internal.IgnoreMissingClass", allowInDev)) {
             problems.add("Shadowed type is not found: " + shadowedClassName, sdk.sdkInt);
           }
         } else {
@@ -210,7 +215,7 @@ public class ImplementsValidator extends Validator {
           helpers.appendParameterList(builder, shadowClassElem.getTypeParameters());
           String shadowParams = builder.toString();
           if (!classInfo.getSignature().equals(shadowParams)
-              && !sdk.suppressWarnings(shadowClassElem, "robolectric.mismatchedTypes")
+              && !sdk.suppressWarnings(shadowClassElem, "robolectric.mismatchedTypes", allowInDev)
               && !looseSignatures) {
             problems.add(
                 "Shadow type is mismatched, expected "
@@ -265,7 +270,7 @@ public class ImplementsValidator extends Validator {
       Problems problems = new Problems(this.checkKind);
 
       for (SdkStore.Sdk sdk : sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk)) {
-        String problem = sdk.verifyMethod(sdkClassName, methodElement, looseSignatures);
+        String problem = sdk.verifyMethod(sdkClassName, methodElement, looseSignatures, allowInDev);
         if (problem != null) {
           problems.add(problem, sdk.sdkInt);
         }
@@ -298,7 +303,7 @@ public class ImplementsValidator extends Validator {
       Problems problems = new Problems(kind);
 
       for (SdkStore.Sdk sdk : sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk)) {
-        String problem = sdk.verifyMethod(sdkClassName, methodElement, looseSignatures);
+        String problem = sdk.verifyMethod(sdkClassName, methodElement, looseSignatures, allowInDev);
         if (problem == null && sdk.getClassInfo(sdkClassName) != null) {
           problems.add(
               "Missing @Implementation on method " + methodElement.getSimpleName(), sdk.sdkInt);
