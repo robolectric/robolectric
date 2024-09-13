@@ -9,8 +9,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.android.AndroidSdkShadowMatcher;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
 import org.robolectric.interceptors.AndroidInterceptors;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.Function;
@@ -76,33 +74,5 @@ public class ShadowWranglerUnitTest {
                 "java/util/LinkedHashMap/eldest()Ljava/lang/Object;", map, null, getClass());
 
     assertThat(result).isNull();
-  }
-
-  public static class DummyClass {}
-
-  @Implements(value = DummyClass.class, minSdk = 19, maxSdk = 21)
-  public static class ShadowDummyClass {
-    @Implementation(minSdk = 20, maxSdk = 20)
-    protected void __constructor__() {}
-
-    @Implementation
-    protected void methodWithoutRange() {}
-
-    @Implementation(minSdk = 20, maxSdk = 20)
-    protected void methodFor20() {}
-
-    @Implementation(minSdk = 20)
-    protected void methodMin20() {}
-
-    @Implementation(maxSdk = 20)
-    protected void methodMax20() {}
-  }
-
-  public static class ChildOfDummyClass extends DummyClass {}
-
-  @Implements(value = ChildOfDummyClass.class, minSdk = 20, maxSdk = 21)
-  public static class ShadowChildOfDummyClass {
-    @Implementation
-    protected void methodWithoutRange() {}
   }
 }
