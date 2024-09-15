@@ -9,6 +9,7 @@ import android.app.StatusBarManager;
 import com.android.internal.annotations.VisibleForTesting;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
@@ -29,10 +30,10 @@ public class ShadowStatusBarManager {
   public static final int DISABLE2_ROTATE_SUGGESTIONS = 1 << 4;
   public static final int DISABLE2_NONE = 0x00000000;
 
-  private int disabled = StatusBarManager.DISABLE_NONE;
-  private int disabled2 = StatusBarManager.DISABLE2_NONE;
+  private static int disabled = StatusBarManager.DISABLE_NONE;
+  private static int disabled2 = StatusBarManager.DISABLE2_NONE;
 
-  private int navBarMode = StatusBarManager.NAV_BAR_MODE_DEFAULT;
+  private static int navBarMode = StatusBarManager.NAV_BAR_MODE_DEFAULT;
 
   @Implementation
   protected void disable(int what) {
@@ -78,6 +79,13 @@ public class ShadowStatusBarManager {
   @Implementation(minSdk = TIRAMISU)
   protected int getNavBarMode() {
     return navBarMode;
+  }
+
+  @Resetter
+  public static void reset() {
+    disabled = StatusBarManager.DISABLE_NONE;
+    disabled2 = StatusBarManager.DISABLE2_NONE;
+    navBarMode = StatusBarManager.NAV_BAR_MODE_DEFAULT;
   }
 
   @ForType(StatusBarManager.class)
