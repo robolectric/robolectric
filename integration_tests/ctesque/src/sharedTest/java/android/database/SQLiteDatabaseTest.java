@@ -4,11 +4,13 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeTrue;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
@@ -18,6 +20,7 @@ import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
 import java.io.File;
 import java.io.PrintStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
@@ -35,7 +38,8 @@ public class SQLiteDatabaseTest {
   private File databasePath;
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
+    assumeTrue(isNativeSqliteMode());
     databasePath = ApplicationProvider.getApplicationContext().getDatabasePath("database.db");
     databasePath.getParentFile().mkdirs();
 
@@ -50,10 +54,31 @@ public class SQLiteDatabaseTest {
             + ");");
   }
 
+  /**
+   * If running on Robolectric, this test only works in RobolectriSQLite native mode. Attempt to
+   * figure this out
+   */
+  private boolean isNativeSqliteMode() throws IllegalAccessException, NoSuchFieldException {
+    if (!Build.FINGERPRINT.contains("robolectric")) {
+      // not robolectric, using native sql of course
+      return true;
+    }
+    Field internalRoboField = CursorWindow.class.getField("__robo_data__");
+    return internalRoboField
+        .get(new CursorWindow("cw"))
+        .getClass()
+        .getName()
+        .contains("ShadowNativeCursorWindow");
+  }
+
   @After
   public void tearDown() {
-    database.close();
-    assertThat(databasePath.delete()).isTrue();
+    if (database != null) {
+      database.close();
+    }
+    if (databasePath != null) {
+      assertThat(databasePath.delete()).isTrue();
+    }
   }
 
   @Test
