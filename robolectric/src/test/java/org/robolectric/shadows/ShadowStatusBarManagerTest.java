@@ -14,10 +14,11 @@ import android.content.Context;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.Consumer;
+import org.robolectric.util.TestUtil;
 
 /** Unit tests for {@link ShadowStatusBarManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -93,38 +94,32 @@ public final class ShadowStatusBarManagerTest {
   @Test
   @Config(minSdk = O)
   public void statusBarManager_activityContextEnabled_performOperations() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
-      StatusBarManager applicationStatusBarManager =
-          RuntimeEnvironment.getApplication().getSystemService(StatusBarManager.class);
-      activity = Robolectric.setupActivity(Activity.class);
-      StatusBarManager activityStatusBarManager = activity.getSystemService(StatusBarManager.class);
+    Consumer<Activity> runnable =
+        activity -> {
+          StatusBarManager applicationStatusBarManager =
+              RuntimeEnvironment.getApplication().getSystemService(StatusBarManager.class);
+          StatusBarManager activityStatusBarManager =
+              activity.getSystemService(StatusBarManager.class);
 
-      assertThat(applicationStatusBarManager).isNotSameInstanceAs(activityStatusBarManager);
+          assertThat(applicationStatusBarManager).isNotSameInstanceAs(activityStatusBarManager);
 
-      ShadowStatusBarManager applicationShadowStatusBarManager =
-          Shadow.extract(applicationStatusBarManager);
-      ShadowStatusBarManager activityShadowStatusBarManager =
-          Shadow.extract(activityStatusBarManager);
+          ShadowStatusBarManager applicationShadowStatusBarManager =
+              Shadow.extract(applicationStatusBarManager);
+          ShadowStatusBarManager activityShadowStatusBarManager =
+              Shadow.extract(activityStatusBarManager);
 
-      applicationStatusBarManager.disable(StatusBarManager.DISABLE_EXPAND);
-      assertThat(applicationShadowStatusBarManager.getDisableFlags())
-          .isEqualTo(StatusBarManager.DISABLE_EXPAND);
-      assertThat(activityShadowStatusBarManager.getDisableFlags())
-          .isEqualTo(StatusBarManager.DISABLE_EXPAND);
+          applicationStatusBarManager.disable(StatusBarManager.DISABLE_EXPAND);
+          assertThat(applicationShadowStatusBarManager.getDisableFlags())
+              .isEqualTo(StatusBarManager.DISABLE_EXPAND);
+          assertThat(activityShadowStatusBarManager.getDisableFlags())
+              .isEqualTo(StatusBarManager.DISABLE_EXPAND);
 
-      activityShadowStatusBarManager.disable2(StatusBarManager.DISABLE2_GLOBAL_ACTIONS);
-      assertThat(applicationShadowStatusBarManager.getDisable2Flags())
-          .isEqualTo(StatusBarManager.DISABLE2_GLOBAL_ACTIONS);
-      assertThat(activityShadowStatusBarManager.getDisable2Flags())
-          .isEqualTo(StatusBarManager.DISABLE2_GLOBAL_ACTIONS);
-    } finally {
-      if (activity != null) {
-        activity.finish();
-      }
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
-    }
+          activityShadowStatusBarManager.disable2(StatusBarManager.DISABLE2_GLOBAL_ACTIONS);
+          assertThat(applicationShadowStatusBarManager.getDisable2Flags())
+              .isEqualTo(StatusBarManager.DISABLE2_GLOBAL_ACTIONS);
+          assertThat(activityShadowStatusBarManager.getDisable2Flags())
+              .isEqualTo(StatusBarManager.DISABLE2_GLOBAL_ACTIONS);
+        };
+    TestUtil.runTestWithCreateActivityContextsEnabled(runnable);
   }
 }
