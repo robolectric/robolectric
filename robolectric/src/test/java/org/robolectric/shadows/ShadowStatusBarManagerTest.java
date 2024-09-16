@@ -31,7 +31,7 @@ public final class ShadowStatusBarManagerTest {
   private final ShadowStatusBarManager shadowStatusBarManager = Shadow.extract(statusBarManager);
 
   @Test
-  public void getDisable() throws ClassNotFoundException {
+  public void getDisable() {
     statusBarManager.disable(ShadowStatusBarManager.DEFAULT_DISABLE_MASK);
     assertThat(shadowStatusBarManager.getDisableFlags())
         .isEqualTo(ShadowStatusBarManager.DEFAULT_DISABLE_MASK);
@@ -39,7 +39,7 @@ public final class ShadowStatusBarManagerTest {
 
   @Test
   @Config(minSdk = M)
-  public void getDisable2() throws ClassNotFoundException {
+  public void getDisable2() {
     statusBarManager.disable2(ShadowStatusBarManager.DEFAULT_DISABLE2_MASK);
     assertThat(shadowStatusBarManager.getDisable2Flags())
         .isEqualTo(ShadowStatusBarManager.DEFAULT_DISABLE2_MASK);
@@ -70,14 +70,14 @@ public final class ShadowStatusBarManagerTest {
 
   @Config(minSdk = TIRAMISU)
   @Test
-  public void getNavBarMode_returnsNavBarMode() throws Exception {
+  public void getNavBarMode_returnsNavBarMode() {
     statusBarManager.setNavBarMode(TEST_NAV_BAR_MODE);
     assertThat(shadowStatusBarManager.getNavBarMode()).isEqualTo(TEST_NAV_BAR_MODE);
   }
 
   @Config(minSdk = TIRAMISU)
   @Test
-  public void setNavBarMode_storesNavBarMode() throws Exception {
+  public void setNavBarMode_storesNavBarMode() {
     shadowStatusBarManager.setNavBarMode(TEST_NAV_BAR_MODE);
     assertThat(shadowStatusBarManager.getNavBarMode()).isEqualTo(TEST_NAV_BAR_MODE);
   }
