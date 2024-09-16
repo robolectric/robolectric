@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Tests for {@link ShadowServiceManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -24,6 +25,14 @@ public final class ShadowServiceManagerTest {
   @Config(sdk = VERSION_CODES.S)
   public void getSensorPrivacyService_notNull() {
     assertThat(ServiceManager.getService(Context.SENSOR_PRIVACY_SERVICE)).isNotNull();
+  }
+
+  @Test
+  @Config(sdk = V.SDK_INT)
+  public void getSensitiveContentProtectionManager_returnsSomething() {
+    // TODO: replace with Context.SENSITIVE_CONTENT_PROTECTION_SERVICE once this test compiles
+    // against V
+    assertThat(ServiceManager.getService("sensitive_content_protection_service")).isNotNull();
   }
 
   @Test

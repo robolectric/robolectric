@@ -112,6 +112,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link ServiceManager}. */
 @SuppressWarnings("NewApi")
@@ -319,6 +320,19 @@ public class ShadowServiceManager {
       addBinderService(binderServices, Context.VIRTUAL_DEVICE_SERVICE, IVirtualDeviceManager.class);
       addBinderService(
           binderServices, Context.WEARABLE_SENSING_SERVICE, IWearableSensingManager.class);
+    }
+    if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
+      // TODO: replace strings with references once compiling against V
+      addBinderService(
+          binderServices,
+          "sensitive_content_protection_service" /* Context.SENSITIVE_CONTENT_PROTECTION_SERVICE */,
+          "android.view.ISensitiveContentProtectionManager"
+          /*ISensitiveContentProtectionManager.class*/ );
+
+      addBinderService(
+          binderServices,
+          "grammatical_inflection" /* Context.GRAMMATICAL_INFLECTION_SERVICE */,
+          "android.app.IGrammaticalInflectionManager" /* IGrammaticalInflectionManager.class */);
     }
 
     return binderServices;
