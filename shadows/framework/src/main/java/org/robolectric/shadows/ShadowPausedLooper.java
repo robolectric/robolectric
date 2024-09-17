@@ -303,11 +303,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
     }
 
     createMainThreadAndLooperIfNotAlive();
+    ShadowPausedChoreographer.resetChoreographers();
     for (Looper looper : getLoopers()) {
       ShadowPausedLooper shadowPausedLooper = Shadow.extract(looper);
       shadowPausedLooper.resetLooperToInitialState();
     }
-    ShadowPausedChoreographer.clearLoopers();
   }
 
   private static final Object instrumentationTestMainThreadLock = new Object();
@@ -392,7 +392,6 @@ public final class ShadowPausedLooper extends ShadowLooper {
           && !(realLooper == Looper.getMainLooper() && looperMode != Mode.INSTRUMENTATION_TEST)) {
         unPause();
       }
-      ShadowPausedChoreographer.reset(realLooper);
     }
   }
 

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
-import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.base.Preconditions.checkState;
@@ -11,6 +10,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.os.Looper;
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
+import android.view.Choreographer.FrameData;
 import android.view.DisplayEventReceiver;
 import java.time.Duration;
 import org.robolectric.RuntimeEnvironment;
@@ -206,22 +206,26 @@ public abstract class ShadowChoreographer {
     if (RuntimeEnvironment.getApiLevel() >= N) {
       ShadowBackdropFrameRenderer.reset();
     }
-    if (RuntimeEnvironment.getApiLevel() >= P) {
-      reflector(ChoreographerReflector.class).setMainInstance(null);
-    }
   }
 
   /** Accessor interface for {@link Choreographer}'s internals */
   @ForType(Choreographer.class)
   protected interface ChoreographerReflector {
-    @Accessor("sThreadInstance")
-    @Static
-    ThreadLocal<Choreographer> getThreadInstance();
 
-    // used to reset main instance
-    @Accessor("mMainInstance")
-    @Static
-    void setMainInstance(Choreographer choreographer);
+    @Accessor("mLastFrameTimeNanos")
+    void setLastFrameTimeNanos(long time);
+
+    @Accessor("mCallbackQueues")
+    Object[] getCallbackQueues();
+
+    @Accessor("mCallbackPool")
+    void setCallbackPool(Object callbackPool);
+
+    @Accessor("mFrameScheduled")
+    void setFrameScheduled(boolean frameScheduled);
+
+    @Accessor("mCallbacksRunning")
+    void setCallbacksRunning(boolean callbacksRunning);
 
     @Direct
     void doFrame(long frameTimeNanos, int frame);
@@ -235,6 +239,13 @@ public abstract class ShadowChoreographer {
     @Accessor("mDisplayEventReceiver")
     DisplayEventReceiver getReceiver();
 
+    @Accessor("sThreadInstance")
+    @Static
+    ThreadLocal<Choreographer> getThreadInstance();
+
+    @Accessor("mLooper")
+    Looper getLooper();
+
     @Direct
     void __constructor__(Looper looper);
 
@@ -243,5 +254,21 @@ public abstract class ShadowChoreographer {
 
     @Direct
     void __constructor__(Looper looper, int vsyncSource);
+
+    @Accessor("mFrameData")
+    FrameData getFrameData();
+
+    @Accessor("mLastFrameIntervalNanos")
+    void setLastFrameIntervalNanos(long val);
+
+    @Accessor("mFrameInfo")
+    Object /* FrameInfo */ getFrameInfo();
+  }
+
+  /** Accessor interface for {@link Choreographer}'s CallbackQueue internals */
+  @ForType(className = "android.view.Choreographer$CallbackQueue")
+  protected interface CallbackQueueReflector {
+    @Accessor("mHead")
+    void setHead(Object head);
   }
 }
