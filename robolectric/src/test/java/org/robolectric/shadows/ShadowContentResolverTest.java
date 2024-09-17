@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION;
 import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS;
 import static android.content.ContentResolver.QUERY_ARG_SQL_SORT_ORDER;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.google.common.truth.Truth.assertThat;
@@ -690,6 +691,29 @@ public class ShadowContentResolverTest {
     assertThat(uri.uri.toString()).isEqualTo("bar");
     assertThat(uri.syncToNetwork).isFalse();
     assertThat(uri.observer).isNull();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void notifyChangeWithFlags_shouldTrackNotifiedUris() {
+    contentResolver.notifyChange(Uri.parse("foo"), null, ContentResolver.NOTIFY_SYNC_TO_NETWORK);
+    contentResolver.notifyChange(Uri.parse("bar"), null, ContentResolver.NOTIFY_UPDATE);
+
+    assertThat(shadowContentResolver.getNotifiedUris().size()).isEqualTo(2);
+
+    ShadowContentResolver.NotifiedUri uri = shadowContentResolver.getNotifiedUris().get(0);
+
+    assertThat(uri.uri.toString()).isEqualTo("foo");
+    assertThat(uri.syncToNetwork).isTrue();
+    assertThat(uri.observer).isNull();
+    assertThat(uri.flags).isEqualTo(ContentResolver.NOTIFY_SYNC_TO_NETWORK);
+
+    uri = shadowContentResolver.getNotifiedUris().get(1);
+
+    assertThat(uri.uri.toString()).isEqualTo("bar");
+    assertThat(uri.syncToNetwork).isFalse();
+    assertThat(uri.observer).isNull();
+    assertThat(uri.flags).isEqualTo(ContentResolver.NOTIFY_UPDATE);
   }
 
   @SuppressWarnings("serial")
