@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -13,6 +14,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.CanvasNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
+import org.robolectric.nativeruntime.HardwareRendererNatives;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Canvas} that is backed by native code */
@@ -198,6 +200,11 @@ public class ShadowNativeCanvas extends ShadowNativeBaseCanvas {
   protected static boolean nQuickReject(
       long nativeCanvas, float left, float top, float right, float bottom) {
     return CanvasNatives.nQuickReject(nativeCanvas, left, top, right, bottom);
+  }
+
+  @Implementation(minSdk = O, maxSdk = O_MR1)
+  protected static void nSetHighContrastText(long renderer, boolean highContrastText) {
+    HardwareRendererNatives.nSetHighContrastText(highContrastText);
   }
 
   /**
