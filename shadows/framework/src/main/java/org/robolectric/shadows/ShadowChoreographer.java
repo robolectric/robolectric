@@ -10,7 +10,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.os.Looper;
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
-import android.view.Choreographer.FrameData;
 import android.view.DisplayEventReceiver;
 import java.time.Duration;
 import org.robolectric.RuntimeEnvironment;
@@ -256,7 +255,7 @@ public abstract class ShadowChoreographer {
     void __constructor__(Looper looper, int vsyncSource);
 
     @Accessor("mFrameData")
-    FrameData getFrameData();
+    /*android.view.Choreographer$FrameData*/ Object getFrameData();
 
     @Accessor("mLastFrameIntervalNanos")
     void setLastFrameIntervalNanos(long val);
