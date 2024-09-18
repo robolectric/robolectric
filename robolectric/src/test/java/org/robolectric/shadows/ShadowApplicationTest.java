@@ -777,7 +777,9 @@ public class ShadowApplicationTest {
   public void registerReceiverThrowsSecurityExceptionIfNotExported() {
     IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
 
-    assertThrows(SecurityException.class, () -> context.registerReceiver(new TestBroadcastReceiver(), filter));
+    assertThrows(
+        SecurityException.class,
+        () -> context.registerReceiver(new TestBroadcastReceiver(), filter));
   }
 
   @Test

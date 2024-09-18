@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.Manifest;
 import android.annotation.RequiresPermission;
 import android.app.ActivityThread;
 import android.app.LoadedApk;
@@ -29,6 +30,7 @@ import android.os.Environment;
 import android.os.FileUtils;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Process;
 import android.os.UserHandle;
 import com.google.common.base.Strings;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
@@ -117,7 +119,7 @@ public class ShadowContextImpl {
 
   @Implementation
   protected int checkCallingPermission(String permission) {
-    return checkPermission(permission, android.os.Process.myPid(), android.os.Process.myUid());
+    return checkPermission(permission, Process.myPid(), Process.myUid());
   }
 
   @Implementation
@@ -181,14 +183,14 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
+  @RequiresPermission(Manifest.permission.INTERACT_ACROSS_USERS)
   protected void sendBroadcastAsUser(@RequiresPermission Intent intent, UserHandle user) {
     getShadowInstrumentation()
         .sendBroadcastWithPermission(intent, user, /* receiverPermission= */ null, realContextImpl);
   }
 
   @Implementation
-  @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
+  @RequiresPermission(Manifest.permission.INTERACT_ACROSS_USERS)
   protected void sendBroadcastAsUser(
       @RequiresPermission Intent intent, UserHandle user, @Nullable String receiverPermission) {
     getShadowInstrumentation()
@@ -286,12 +288,12 @@ public class ShadowContextImpl {
 
   @Implementation
   protected Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-    return getShadowInstrumentation().registerReceiver(receiver, filter, 0, realContextImpl);
+    return registerReceiver(receiver, filter, 0);
   }
 
   @Implementation(minSdk = O)
   protected Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, int flags) {
-    return getShadowInstrumentation().registerReceiver(receiver, filter, flags, realContextImpl);
+    return registerReceiver(receiver, filter, null, null, flags);
   }
 
   @Implementation
@@ -300,8 +302,7 @@ public class ShadowContextImpl {
       IntentFilter filter,
       String broadcastPermission,
       Handler scheduler) {
-    return getShadowInstrumentation()
-        .registerReceiver(receiver, filter, broadcastPermission, scheduler, 0, realContextImpl);
+    return registerReceiver(receiver, filter, broadcastPermission, scheduler, 0);
   }
 
   @Implementation(minSdk = O)
@@ -311,8 +312,8 @@ public class ShadowContextImpl {
       String broadcastPermission,
       Handler scheduler,
       int flags) {
-    return getShadowInstrumentation()
-        .registerReceiver(receiver, filter, broadcastPermission, scheduler, flags, realContextImpl);
+    return registerReceiverInternal(
+        receiver, getUserId(), filter, broadcastPermission, scheduler, realContextImpl, flags);
   }
 
   @Implementation
@@ -322,9 +323,28 @@ public class ShadowContextImpl {
       IntentFilter filter,
       String broadcastPermission,
       Handler scheduler) {
+    return registerReceiverInternal(
+        receiver, user.getIdentifier(), filter, broadcastPermission, scheduler, realContextImpl, 0);
+  }
+
+  @Implementation(minSdk = O)
+  protected Intent registerReceiverInternal(
+      BroadcastReceiver receiver,
+      int userId,
+      IntentFilter filter,
+      String broadcastPermission,
+      Handler scheduler,
+      Context context,
+      int flags) {
+    if (RuntimeEnvironment.getApiLevel() >= O) {
+      reflector(_ContextImpl_.class, realContextImpl)
+          .registerReceiverInternal(
+              receiver, userId, filter, broadcastPermission, scheduler, context, flags);
+    }
+
     return getShadowInstrumentation()
         .registerReceiverWithContext(
-            receiver, filter, broadcastPermission, scheduler, 0, realContextImpl);
+            receiver, filter, broadcastPermission, scheduler, flags, realContextImpl);
   }
 
   @Implementation
@@ -432,8 +452,7 @@ public class ShadowContextImpl {
     String prefsCacheFieldName =
         RuntimeEnvironment.getApiLevel() >= N ? "sSharedPrefsCache" : "sSharedPrefs";
     Class<?> contextImplClass =
-        ReflectionHelpers.loadClass(
-            ShadowContextImpl.class.getClassLoader(), "android.app.ContextImpl");
+        ReflectionHelpers.loadClass(ShadowContextImpl.class.getClassLoader(), CLASS_NAME);
     ReflectionHelpers.setStaticField(contextImplClass, prefsCacheFieldName, null);
 
     if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.LOLLIPOP_MR1) {
@@ -441,8 +460,7 @@ public class ShadowContextImpl {
           ReflectionHelpers.getStaticField(contextImplClass, "SYSTEM_SERVICE_MAP");
       Class staticServiceFetcherClass =
           ReflectionHelpers.loadClass(
-              ShadowContextImpl.class.getClassLoader(),
-              "android.app.ContextImpl$StaticServiceFetcher");
+              ShadowContextImpl.class.getClassLoader(), CLASS_NAME + "$StaticServiceFetcher");
 
       for (Object o : fetchers.values()) {
         if (staticServiceFetcherClass.isInstance(o)) {
@@ -521,5 +539,15 @@ public class ShadowContextImpl {
 
     @Accessor("mClassLoader")
     void setClassLoader(ClassLoader classLoader);
+
+    @Direct
+    Intent registerReceiverInternal(
+        BroadcastReceiver receiver,
+        int userId,
+        IntentFilter filter,
+        String broadcastPermission,
+        Handler scheduler,
+        Context context,
+        int flags);
   }
 }
