@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.jar.JarEntry;
@@ -104,6 +105,10 @@ public class JarInstrumentor {
         JarEntry jarEntry = entries.nextElement();
 
         String name = jarEntry.getName();
+        Path normalizedPath = new File(destJarFile.getParentFile(), name).toPath().normalize();
+        if (!normalizedPath.startsWith(destJarFile.getParentFile().toPath())) {
+          throw new IOException("Bad zip entry: " + name);
+        }
         if (name.endsWith("/")) {
           jarOut.putNextEntry(createJarEntry(jarEntry));
         } else if (name.endsWith(".class")) {
