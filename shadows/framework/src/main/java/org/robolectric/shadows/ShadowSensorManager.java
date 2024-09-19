@@ -20,6 +20,7 @@ import com.google.common.collect.Multimaps;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
@@ -32,7 +33,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 /** Shadow for {@link SensorManager}. */
 @Implements(value = SensorManager.class)
 public class ShadowSensorManager {
-  public static boolean forceListenersToFail = false;
+  private static AtomicBoolean forceListenersToFail = new AtomicBoolean();
   private static final Multimap<Integer, Sensor> sensorMap =
       Multimaps.synchronizedMultimap(HashMultimap.create());
   private static final Multimap<SensorEventListener, Sensor> listeners =
@@ -44,7 +45,7 @@ public class ShadowSensorManager {
   public static void reset() {
     sensorMap.clear();
     listeners.clear();
-    forceListenersToFail = false;
+    forceListenersToFail.set(false);
   }
 
   /**
@@ -120,9 +121,13 @@ public class ShadowSensorManager {
     return registerListener(listener, sensor, rate);
   }
 
+  public void setForceListenersToFail(boolean forceListenersToFail) {
+    this.forceListenersToFail.set(forceListenersToFail);
+  }
+
   @Implementation
   protected boolean registerListener(SensorEventListener listener, Sensor sensor, int rate) {
-    if (forceListenersToFail) {
+    if (this.forceListenersToFail.get()) {
       return false;
     }
     listeners.put(listener, sensor);

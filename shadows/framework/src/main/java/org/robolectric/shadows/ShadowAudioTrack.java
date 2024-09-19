@@ -309,6 +309,18 @@ public class ShadowAudioTrack {
   @Implementation(minSdk = M)
   protected int native_write_byte(
       byte[] audioData, int offsetInBytes, int sizeInBytes, int format, boolean isBlocking) {
+    byte[] dataToWrite = new byte[sizeInBytes];
+    System.arraycopy(audioData, offsetInBytes, dataToWrite, /* destPos= */ 0, sizeInBytes);
+    return maybeWriteBytes(dataToWrite);
+  }
+
+  private int maybeWriteBytes(ByteBuffer audioData, int sizeInBytes) {
+    byte[] dataToWrite = new byte[sizeInBytes];
+    audioData.get(dataToWrite);
+    return maybeWriteBytes(dataToWrite);
+  }
+
+  private int maybeWriteBytes(byte[] audioData) {
     int encoding = audioTrack.getAudioFormat();
     // Assume that offload support does not change during the lifetime of the instance.
     if ((VERSION.SDK_INT < 29 || !audioTrack.isOffloadedPlayback())
@@ -316,7 +328,13 @@ public class ShadowAudioTrack {
         && !allowedNonPcmEncodings.contains(encoding)) {
       return ERROR_DEAD_OBJECT;
     }
-    return sizeInBytes;
+
+    numBytesReceived += audioData.length;
+    for (OnAudioDataWrittenListener listener : audioDataWrittenListeners) {
+      listener.onAudioDataWritten(this, audioData, audioTrack.getFormat());
+    }
+
+    return audioData.length;
   }
 
   @Implementation(minSdk = N)
@@ -361,13 +379,6 @@ public class ShadowAudioTrack {
    */
   @Implementation
   protected int write(@NonNull ByteBuffer audioData, int sizeInBytes, @WriteMode int writeMode) {
-    int encoding = audioTrack.getAudioFormat();
-    // Assume that offload support does not change during the lifetime of the instance.
-    if ((VERSION.SDK_INT < 29 || !audioTrack.isOffloadedPlayback())
-        && !isPcm(encoding)
-        && !allowedNonPcmEncodings.contains(encoding)) {
-      return ERROR_DEAD_OBJECT;
-    }
     if (writeMode != WRITE_BLOCKING && writeMode != WRITE_NON_BLOCKING) {
       Log.e(TAG, "ShadowAudioTrack.write() called with invalid blocking mode");
       return ERROR_BAD_VALUE;
@@ -377,15 +388,7 @@ public class ShadowAudioTrack {
       return ERROR_BAD_VALUE;
     }
 
-    byte[] receivedBytes = new byte[sizeInBytes];
-    audioData.get(receivedBytes);
-    numBytesReceived += sizeInBytes;
-
-    for (OnAudioDataWrittenListener listener : audioDataWrittenListeners) {
-      listener.onAudioDataWritten(this, receivedBytes, audioTrack.getFormat());
-    }
-
-    return sizeInBytes;
+    return maybeWriteBytes(audioData, sizeInBytes);
   }
 
   @Implementation

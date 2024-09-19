@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.Bitmap;
@@ -13,6 +14,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = O)
@@ -23,6 +26,15 @@ public class ShadowNativeCanvasTest {
     Canvas canvas = new Canvas(bm);
     canvas.drawColor(Color.BLUE);
     assertThat(bm.getPixel(0, 0)).isEqualTo(Color.BLUE);
+  }
+
+  @Config(minSdk = O, maxSdk = O_MR1)
+  @Test
+  public void setHighContrastText_preP() {
+    Bitmap bm = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(bm);
+    ReflectionHelpers.callInstanceMethod(
+        canvas, "setHighContrastText", ClassParameter.from(boolean.class, true));
   }
 
   @Test

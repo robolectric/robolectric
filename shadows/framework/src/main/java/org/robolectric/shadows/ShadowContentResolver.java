@@ -6,6 +6,7 @@ import static android.content.ContentResolver.QUERY_ARG_SQL_SORT_ORDER;
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -146,11 +147,13 @@ public class ShadowContentResolver {
     public final Uri uri;
     public final boolean syncToNetwork;
     public final ContentObserver observer;
+    public final int flags;
 
-    public NotifiedUri(Uri uri, ContentObserver observer, boolean syncToNetwork) {
+    public NotifiedUri(Uri uri, ContentObserver observer, int flags) {
       this.uri = uri;
-      this.syncToNetwork = syncToNetwork;
+      this.syncToNetwork = flags == ContentResolver.NOTIFY_SYNC_TO_NETWORK;
       this.observer = observer;
+      this.flags = flags;
     }
   }
 
@@ -489,9 +492,9 @@ public class ShadowContentResolver {
     }
   }
 
-  @Implementation
-  protected void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
-    notifiedUris.add(new NotifiedUri(uri, observer, syncToNetwork));
+  @Implementation(minSdk = N)
+  protected void notifyChange(Uri uri, ContentObserver observer, int flags) {
+    notifiedUris.add(new NotifiedUri(uri, observer, flags));
 
     for (ContentObserverEntry entry : contentObservers) {
       if (entry.matches(uri) && entry.observer != observer) {
@@ -501,6 +504,11 @@ public class ShadowContentResolver {
     if (observer != null && observer.deliverSelfNotifications()) {
       observer.dispatchChange(true, uri);
     }
+  }
+
+  @Implementation
+  protected void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
+    notifyChange(uri, observer, syncToNetwork ? ContentResolver.NOTIFY_SYNC_TO_NETWORK : 0);
   }
 
   @Implementation

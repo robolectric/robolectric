@@ -38,6 +38,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
+import org.robolectric.versioning.AndroidVersions.W;
 
 /** Shadow class for {@link CameraManager} */
 @Implements(value = CameraManager.class)
@@ -124,8 +125,7 @@ public class ShadowCameraManager {
     return openCameraDeviceUserAsync(cameraId, callback, executor, uid, oomScoreOffset);
   }
 
-  @Implementation(minSdk = V.SDK_INT)
-  @InDevelopment
+  @Implementation(minSdk = V.SDK_INT, maxSdk = W.SDK_INT)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId,
       CameraDevice.StateCallback callback,
@@ -134,6 +134,21 @@ public class ShadowCameraManager {
       final int oomScoreOffset,
       int rotationOverride) {
     return openCameraDeviceUserAsync(cameraId, callback, executor, uid, oomScoreOffset);
+  }
+
+  // in development API has reverted back to the T signature. Just use a different method name
+  // to avoid conflicts.
+  // TODO: increment this to  minSdk next-SDK-after-V once V is fully released
+  @Implementation(methodName = "openCameraDeviceUserAsync", minSdk = V.SDK_INT)
+  @InDevelopment
+  protected CameraDevice openCameraDeviceUserAsyncPostV(
+      String cameraId,
+      CameraDevice.StateCallback callback,
+      Executor executor,
+      int unusedClientUid,
+      int unusedOomScoreOffset) {
+    return openCameraDeviceUserAsync(
+        cameraId, callback, executor, unusedClientUid, unusedOomScoreOffset);
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.S, maxSdk = Build.VERSION_CODES.TIRAMISU)

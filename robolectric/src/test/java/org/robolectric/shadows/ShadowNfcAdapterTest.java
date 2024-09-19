@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.Application;
@@ -24,6 +25,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.V;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowNfcAdapterTest {
@@ -256,5 +259,56 @@ public class ShadowNfcAdapterTest {
     shadowOf(adapter).setNfcAntennaInfo(info);
 
     assertThat(adapter.getNfcAntennaInfo()).isEqualTo(info);
+  }
+
+  @Test
+  @Config(minSdk = V.SDK_INT)
+  public void isObserveModeSupported_shouldReturnSupportedState() {
+    final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(context);
+    final NfcAdapterVReflector adapterReflector = reflector(NfcAdapterVReflector.class, adapter);
+    assertThat(adapterReflector.isObserveModeSupported()).isFalse();
+
+    shadowOf(adapter).setObserveModeSupported(true);
+    assertThat(adapterReflector.isObserveModeSupported()).isTrue();
+
+    shadowOf(adapter).setObserveModeSupported(false);
+    assertThat(adapterReflector.isObserveModeSupported()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = V.SDK_INT)
+  public void isObserveModeEnabled_shouldReturnEnabledState() {
+    final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(context);
+    final NfcAdapterVReflector adapterReflector = reflector(NfcAdapterVReflector.class, adapter);
+    shadowOf(adapter).setObserveModeSupported(true);
+    assertThat(adapterReflector.isObserveModeEnabled()).isFalse();
+
+    adapterReflector.setObserveModeEnabled(true);
+    assertThat(adapterReflector.isObserveModeEnabled()).isTrue();
+
+    adapterReflector.setObserveModeEnabled(false);
+    assertThat(adapterReflector.isObserveModeEnabled()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = V.SDK_INT)
+  public void setObserveModeEnabled_notSupported_doesNothing() {
+    final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(context);
+    final NfcAdapterVReflector adapterReflector = reflector(NfcAdapterVReflector.class, adapter);
+    shadowOf(adapter).setObserveModeSupported(false);
+    assertThat(adapterReflector.isObserveModeEnabled()).isFalse();
+
+    adapterReflector.setObserveModeEnabled(true);
+    assertThat(adapterReflector.isObserveModeEnabled()).isFalse();
+  }
+
+  // TODO: delete when this test compiles against V sdk
+  @ForType(NfcAdapter.class)
+  interface NfcAdapterVReflector {
+    boolean isObserveModeSupported();
+
+    boolean isObserveModeEnabled();
+
+    void setObserveModeEnabled(boolean enabled);
   }
 }
