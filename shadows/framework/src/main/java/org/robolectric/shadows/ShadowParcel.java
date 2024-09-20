@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import android.os.BadParcelableException;
@@ -338,24 +337,32 @@ public class ShadowParcel {
     nativeWriteByteArray(nativePtr, b, offset, len);
   }
 
-  @Implementation(maxSdk = R)
-  protected static void nativeWriteInt(long nativePtr, int val) {
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
+  @Implementation
+  protected static int nativeWriteInt(long nativePtr, int val) {
     NATIVE_BYTE_BUFFER_REGISTRY.getNativeObject(nativePtr).writeInt(val);
+    return 0; /* OK */
   }
 
-  @Implementation(maxSdk = R)
-  protected static void nativeWriteLong(long nativePtr, long val) {
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
+  @Implementation
+  protected static int nativeWriteLong(long nativePtr, long val) {
     NATIVE_BYTE_BUFFER_REGISTRY.getNativeObject(nativePtr).writeLong(val);
+    return 0; /* OK */
   }
 
-  @Implementation(maxSdk = R)
-  protected static void nativeWriteFloat(long nativePtr, float val) {
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
+  @Implementation
+  protected static int nativeWriteFloat(long nativePtr, float val) {
     NATIVE_BYTE_BUFFER_REGISTRY.getNativeObject(nativePtr).writeFloat(val);
+    return 0; /* OK */
   }
 
-  @Implementation(maxSdk = R)
-  protected static void nativeWriteDouble(long nativePtr, double val) {
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
+  @Implementation
+  protected static int nativeWriteDouble(long nativePtr, double val) {
     NATIVE_BYTE_BUFFER_REGISTRY.getNativeObject(nativePtr).writeDouble(val);
+    return 0; /* OK */
   }
 
   @Implementation(maxSdk = Q)
@@ -1125,7 +1132,8 @@ public class ShadowParcel {
     return randomAccessFile.getFD();
   }
 
-  @Implementation(minSdk = M, maxSdk = R)
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
+  @Implementation(minSdk = M)
   protected static long nativeWriteFileDescriptor(long nativePtr, FileDescriptor val) {
     // The Java version of FileDescriptor stored the fd in a field called "fd", and the Android
     // version changed the field name to "descriptor". But it looks like Robolectric uses the
@@ -1160,35 +1168,6 @@ public class ShadowParcel {
   @Implementation(minSdk = R)
   protected static String nativeReadString16(long nativePtr) {
     return nativeReadString(nativePtr);
-  }
-
-  @Implementation(minSdk = S, methodName = "nativeWriteInt")
-  protected static int nativeWriteIntFromS(long nativePtr, int val) {
-    nativeWriteInt(nativePtr, val);
-    return 0; /* OK */
-  }
-
-  @Implementation(minSdk = S, methodName = "nativeWriteLong")
-  protected static int nativeWriteLongFromS(long nativePtr, long val) {
-    nativeWriteLong(nativePtr, val);
-    return 0; /* OK */
-  }
-
-  @Implementation(minSdk = S, methodName = "nativeWriteFloat")
-  protected static int nativeWriteFloatFromS(long nativePtr, float val) {
-    nativeWriteFloat(nativePtr, val);
-    return 0; /* OK */
-  }
-
-  @Implementation(minSdk = S, methodName = "nativeWriteDouble")
-  protected static int nativeWriteDoubleFromS(long nativePtr, double val) {
-    nativeWriteDouble(nativePtr, val);
-    return 0; /* OK */
-  }
-
-  @Implementation(minSdk = S, methodName = "nativeWriteFileDescriptor")
-  protected static void nativeWriteFileDescriptorFromS(long nativePtr, FileDescriptor val) {
-    nativeWriteFileDescriptor(nativePtr, val);
   }
 
   @Resetter
