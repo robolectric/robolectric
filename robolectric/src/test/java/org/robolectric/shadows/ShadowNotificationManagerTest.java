@@ -99,6 +99,14 @@ public class ShadowNotificationManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.O)
+  public void getImportance_afterReset() {
+    assertThat(notificationManager.getImportance()).isEqualTo(NotificationManager.IMPORTANCE_NONE);
+    ShadowNotificationManager.reset();
+    assertThat(notificationManager.getImportance()).isEqualTo(NotificationManager.IMPORTANCE_NONE);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
   public void createNotificationChannel_updateChannel() {
     NotificationChannel channel = new NotificationChannel("id", "name", 1);
     channel.setDescription("description");

@@ -60,7 +60,7 @@ public class ShadowNotificationManager {
   private static Policy notificationPolicy;
   private static Policy consolidatedNotificationPolicy;
   private static String notificationDelegate;
-  private static int importance;
+  private static int importance = NotificationManager.IMPORTANCE_NONE;
 
   @Resetter
   public static void reset() {
@@ -78,7 +78,7 @@ public class ShadowNotificationManager {
     notificationPolicy = null;
     notificationDelegate = null;
     consolidatedNotificationPolicy = null;
-    importance = NotificationManager.IMPORTANCE_DEFAULT;
+    importance = NotificationManager.IMPORTANCE_NONE;
   }
 
   @Implementation
