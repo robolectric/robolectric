@@ -832,7 +832,6 @@ public class ShadowConnectivityManagerTest {
   @Test
   public void defaults_afterReset() {
     ShadowConnectivityManager.reset();
-    connectivityManager.getAllNetworkInfo();
     assertThat(connectivityManager.getAllNetworkInfo()).hasLength(2);
     assertThat(connectivityManager.getAllNetworks()).hasLength(2);
     assertThat(connectivityManager.isDefaultNetworkActive()).isTrue();
