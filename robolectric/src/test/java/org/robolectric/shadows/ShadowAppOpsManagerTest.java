@@ -761,6 +761,15 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
+  @Config(minSdk = R)
+  public void reset_clearsOnOpNotedCallback() {
+    AppOpsManager.OnOpNotedCallback callback = mock(AppOpsManager.OnOpNotedCallback.class);
+    appOps.setOnOpNotedCallback(directExecutor(), callback);
+    ShadowAppOpsManager.reset();
+    appOps.setOnOpNotedCallback(directExecutor(), callback); // should not throw an exception
+  }
+
+  @Test
   @Config(minSdk = O)
   public void appOpsManager_activityContextEnabled_differentInstancesRetrieveOps() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");

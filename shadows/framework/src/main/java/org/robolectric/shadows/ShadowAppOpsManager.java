@@ -76,7 +76,7 @@ public class ShadowAppOpsManager {
 
   @RealObject private AppOpsManager realObject;
 
-  private static boolean staticallyInitialized = false;
+  private static boolean staticallyInitialized;
 
   // Recorded operations, keyed by (uid, packageName)
   private static final Multimap<Key, Integer> storedOps = HashMultimap.create();
@@ -695,7 +695,6 @@ public class ShadowAppOpsManager {
     if (RuntimeEnvironment.getApiLevel() >= R && staticallyInitialized) {
       ReflectionHelpers.setStaticField(AppOpsManager.class, "sOnOpNotedCallback", null);
     }
-    staticallyInitialized = false;
     storedOps.clear();
     appModeMap.clear();
     longRunningOp.clear();
