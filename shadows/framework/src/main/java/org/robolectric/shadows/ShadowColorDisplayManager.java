@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 @Implements(
     className = "android.hardware.display.ColorDisplayManager",
@@ -27,6 +28,7 @@ public class ShadowColorDisplayManager {
   // No capabilities by default
   private int transformCapabilities = 0x0;
 
+  @Resetter
   public static void reset() {
     isNightDisplayActivated = false;
     nightDisplayTemperature = 0;
