@@ -16,5 +16,7 @@
   <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+  <uses-feature android:name="android.software.companion_device_setup" android:required="false" />
+
   <application />
 </manifest>

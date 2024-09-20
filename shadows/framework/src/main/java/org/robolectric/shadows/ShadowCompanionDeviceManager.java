@@ -26,6 +26,7 @@ import java.util.concurrent.Executor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -34,13 +35,13 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(value = CompanionDeviceManager.class, minSdk = VERSION_CODES.O)
 public class ShadowCompanionDeviceManager {
 
-  protected final Set<RoboAssociationInfo> associations = new HashSet<>();
-  protected final Set<ComponentName> hasNotificationAccess = new HashSet<>();
-  protected ComponentName lastRequestedNotificationAccess;
-  protected AssociationRequest lastAssociationRequest;
-  protected MacAddress lastSystemApiAssociationMacAddress;
-  protected CompanionDeviceManager.Callback lastAssociationCallback;
-  protected String lastObservingDevicePresenceDeviceAddress;
+  protected static final Set<RoboAssociationInfo> associations = new HashSet<>();
+  protected static final Set<ComponentName> hasNotificationAccess = new HashSet<>();
+  protected static ComponentName lastRequestedNotificationAccess;
+  protected static AssociationRequest lastAssociationRequest;
+  protected static MacAddress lastSystemApiAssociationMacAddress;
+  protected static CompanionDeviceManager.Callback lastAssociationCallback;
+  protected static String lastObservingDevicePresenceDeviceAddress;
 
   private static final int DEFAULT_SYSTEMDATASYNCFLAGS = -1;
 
@@ -294,6 +295,17 @@ public class ShadowCompanionDeviceManager {
     return shadowInstrumentation.checkPermission(
             permission, android.os.Process.myPid(), android.os.Process.myUid())
         == PERMISSION_GRANTED;
+  }
+
+  @Resetter
+  public static void reset() {
+    associations.clear();
+    hasNotificationAccess.clear();
+    lastRequestedNotificationAccess = null;
+    lastAssociationRequest = null;
+    lastSystemApiAssociationMacAddress = null;
+    lastAssociationCallback = null;
+    lastObservingDevicePresenceDeviceAddress = null;
   }
 
   /**
