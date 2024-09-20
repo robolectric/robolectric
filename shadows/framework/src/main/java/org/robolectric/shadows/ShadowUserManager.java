@@ -117,7 +117,7 @@ public class ShadowUserManager {
     private final Map<Integer, UserInfo> userInfoMap = new HashMap<>();
 
     /**
-     * Each user holds a list of UserHandles of assocated profiles and user itself. User is indexed
+     * Each user holds a list of UserHandles of associated profiles and user itself. User is indexed
      * by UserHandle.id. See UserManager.getProfiles(userId).
      */
     private final Map<Integer, List<UserHandle>> userProfilesListMap = new HashMap<>();
@@ -278,7 +278,7 @@ public class ShadowUserManager {
         && !hasCreateUsersPermission()) {
       throw new SecurityException(
           "You either need MANAGE_USERS or CREATE_USERS "
-              + "permission to create an user with flags: "
+              + "permission to create a user with flags: "
               + flags);
     }
 
@@ -557,8 +557,8 @@ public class ShadowUserManager {
 
   /**
    * {@link #addUser} uses UserHandle for serialNumber. setSerialNumberForUser() allows assigning an
-   * arbitary serialNumber. Some test use serialNumber!=0 as secondary user check, so it's necessary
-   * to "fake" the serialNumber to a non-zero value.
+   * arbitrary serialNumber. Some test use serialNumber!=0 as secondary user check, so it's
+   * necessary to "fake" the serialNumber to a non-zero value.
    */
   public void setSerialNumberForUser(UserHandle userHandle, long serialNumber) {
     userManagerState.userSerialNumbers.put(userHandle.getIdentifier(), serialNumber);
@@ -704,7 +704,7 @@ public class ShadowUserManager {
   }
 
   private void checkPermissions() {
-    // TODO Ensure permisions
+    // TODO Ensure permissions
     //              throw new SecurityException("You need INTERACT_ACROSS_USERS or MANAGE_USERS
     // permission "
     //                + "to: check " + name);throw new SecurityException();
