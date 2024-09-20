@@ -46,6 +46,7 @@ import android.content.rollback.IRollbackManager;
 import android.hardware.ISensorPrivacyManager;
 import android.hardware.biometrics.IAuthService;
 import android.hardware.biometrics.IBiometricService;
+import android.hardware.display.IColorDisplayManager;
 import android.hardware.fingerprint.IFingerprintService;
 import android.hardware.input.IInputManager;
 import android.hardware.location.IContextHubService;
@@ -284,6 +285,7 @@ public class ShadowServiceManager {
       addBinderService(binderServices, Context.ROLLBACK_SERVICE, IRollbackManager.class);
       addBinderService(binderServices, Context.THERMAL_SERVICE, IThermalService.class);
       addBinderService(binderServices, Context.BUGREPORT_SERVICE, IDumpstate.class);
+      addBinderService(binderServices, Context.COLOR_DISPLAY_SERVICE, IColorDisplayManager.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= R) {
       addBinderService(binderServices, Context.APP_INTEGRITY_SERVICE, IAppIntegrityManager.class);
