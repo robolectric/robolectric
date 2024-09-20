@@ -23,15 +23,17 @@ public class ShadowColorDisplayManager {
   private static final Map<String, Integer> packagesToSaturation = new HashMap<>();
 
   // Full saturation by default
-  private int saturationLevel = 100;
+  private static int saturationLevel = 100;
   // No capabilities by default
-  private int transformCapabilities = 0x0;
+  private static int transformCapabilities = 0x0;
 
   public static void reset() {
     isNightDisplayActivated = false;
     nightDisplayTemperature = 0;
     nightDisplayAutoMode = 0;
     packagesToSaturation.clear();
+    saturationLevel = 100;
+    transformCapabilities = 0x0;
   }
 
   @Implementation
