@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest;
 import android.annotation.RequiresPermission;
@@ -11,35 +12,27 @@ import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.WithType;
 
+/** Shadow for {@link ColorDisplayManager}. */
 @Implements(
     className = "android.hardware.display.ColorDisplayManager",
     isInAndroidSdk = false,
     minSdk = Q)
 public class ShadowColorDisplayManager {
 
-  private static boolean isNightDisplayActivated;
-  private static int nightDisplayTemperature;
-  private static int nightDisplayAutoMode;
-  private static final Map<String, Integer> packagesToSaturation = new HashMap<>();
+  // These member variables do not need to be static, ColorDisplayManager uses a static instance.
+  private boolean isNightDisplayActivated;
+  private int nightDisplayTemperature;
+  private int nightDisplayAutoMode;
+  private final Map<String, Integer> packagesToSaturation = new HashMap<>();
 
   // Full saturation by default
   private int saturationLevel = 100;
   // No capabilities by default
   private int transformCapabilities = 0x0;
-
-  @Resetter
-  public static void reset() {
-    isNightDisplayActivated = false;
-    nightDisplayTemperature = 0;
-    nightDisplayAutoMode = 0;
-    packagesToSaturation.clear();
-  }
-
-  @Implementation
-  protected void __constructor__() {
-    // Don't initialize ColorDisplayManagerInternal.
-  }
 
   @Implementation
   @SystemApi
@@ -124,5 +117,18 @@ public class ShadowColorDisplayManager {
   /** Returns the current display saturation level. */
   public int getSaturationLevel() {
     return saturationLevel;
+  }
+
+  @Resetter
+  public static void reset() {
+    reflector(ColorDisplayManagerInternalReflector.class).setInstance(null);
+  }
+
+  @ForType(className = "android.hardware.display.ColorDisplayManager$ColorDisplayManagerInternal")
+  interface ColorDisplayManagerInternalReflector {
+    @Accessor("sInstance")
+    void setInstance(
+        @WithType("android.hardware.display.ColorDisplayManager$ColorDisplayManagerInternal")
+            Object instance);
   }
 }
