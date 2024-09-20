@@ -10,6 +10,6 @@
 
   <instrumentation
       android:name="androidx.test.runner.AndroidJUnitRunner"
-      android:targetPackage="org.robolectric.integrationtests.multidex"/>
+      android:targetPackage="android.support.multidex" />
 
 </manifest>

@@ -5,7 +5,7 @@ plugins {
 
 android {
   compileSdk = 34
-  namespace = "org.robolectric.integrationtests.multidex"
+  namespace = "android.support.multidex"
 
   defaultConfig {
     minSdk = 21
