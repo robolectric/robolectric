@@ -47,7 +47,7 @@ public class ShadowConnectivityManager {
   private static final Map<Integer, Network> netIdToNetwork = new HashMap<>();
   private static final Map<Integer, NetworkInfo> netIdToNetworkInfo = new HashMap<>();
   private static Network processBoundNetwork;
-  private static boolean defaultNetworkActive;
+  private static boolean defaultNetworkActive = true;
   private static HashSet<ConnectivityManager.OnNetworkActiveListener> onNetworkActiveListeners =
       new HashSet<>();
   private static Map<Network, Boolean> reportedNetworkConnectivity = new HashMap<>();
@@ -56,7 +56,12 @@ public class ShadowConnectivityManager {
   private static final Map<Network, LinkProperties> linkPropertiesMap = new HashMap<>();
   private static final Map<Network, ProxyInfo> proxyInfoMap = new HashMap<>();
 
-  public ShadowConnectivityManager() {
+  static {
+    resetNetworkDefaults();
+  }
+
+  private static void resetNetworkDefaults() {
+    networkTypeToNetworkInfo.clear();
     NetworkInfo wifi =
         ShadowNetworkInfo.newInstance(
             NetworkInfo.DetailedState.DISCONNECTED, ConnectivityManager.TYPE_WIFI, 0, true, false);
@@ -71,10 +76,12 @@ public class ShadowConnectivityManager {
             true);
     networkTypeToNetworkInfo.put(ConnectivityManager.TYPE_MOBILE, mobile);
 
-    this.activeNetworkInfo = mobile;
+    activeNetworkInfo = mobile;
 
+    netIdToNetwork.clear();
     netIdToNetwork.put(NET_ID_WIFI, ShadowNetwork.newInstance(NET_ID_WIFI));
     netIdToNetwork.put(NET_ID_MOBILE, ShadowNetwork.newInstance(NET_ID_MOBILE));
+    netIdToNetworkInfo.clear();
     netIdToNetworkInfo.put(NET_ID_WIFI, wifi);
     netIdToNetworkInfo.put(NET_ID_MOBILE, mobile);
 
@@ -83,33 +90,30 @@ public class ShadowConnectivityManager {
     NetworkCapabilities mobileNetworkCapabilities = ShadowNetworkCapabilities.newInstance();
     shadowOf(mobileNetworkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
 
+    networkCapabilitiesMap.clear();
     networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_WIFI), wifiNetworkCapabilities);
     networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_MOBILE), mobileNetworkCapabilities);
-    defaultNetworkActive = true;
-  }
 
-  @Resetter
-  public static void reset() {
-    activeNetworkInfo = null;
     backgroundDataSetting = false;
     networkCallbacksEnabled = true;
     restrictBackgroundStatus = ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED;
     networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
 
-    networkTypeToNetworkInfo.clear();
+    defaultNetworkActive = true;
+
     networkCallbacks.clear();
     networkCallbackPendingIntents.clear();
-    netIdToNetwork.clear();
-    netIdToNetworkInfo.clear();
     onNetworkActiveListeners.clear();
     reportedNetworkConnectivity.clear();
-    networkCapabilitiesMap.clear();
     linkPropertiesMap.clear();
     proxyInfoMap.clear();
-
     processBoundNetwork = null;
-    defaultNetworkActive = false;
     captivePortalServerUrl = "http://10.0.0.2";
+  }
+
+  @Resetter
+  public static void reset() {
+    resetNetworkDefaults();
   }
 
   /**

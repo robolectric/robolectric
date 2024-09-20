@@ -39,6 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.testing.TestActivity;
 import org.robolectric.util.ReflectionHelpers;
@@ -826,5 +827,17 @@ public class ShadowConnectivityManagerTest {
 
     verify(callback1, never()).onAvailable(shadowConnectivityManager.getActiveNetwork());
     verify(callback2, never()).onAvailable(shadowConnectivityManager.getActiveNetwork());
+  }
+
+  @Test
+  public void defaults_afterReset() {
+    ShadowConnectivityManager.reset();
+    connectivityManager.getAllNetworkInfo();
+    assertThat(connectivityManager.getAllNetworkInfo()).hasLength(2);
+    assertThat(connectivityManager.getAllNetworks()).hasLength(2);
+    assertThat(connectivityManager.isDefaultNetworkActive()).isTrue();
+    if (RuntimeEnvironment.getApiLevel() >= M) {
+      assertThat(connectivityManager.getActiveNetwork()).isNotNull();
+    }
   }
 }
