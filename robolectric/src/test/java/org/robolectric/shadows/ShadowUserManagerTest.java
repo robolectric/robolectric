@@ -696,7 +696,7 @@ public class ShadowUserManagerTest {
     shadowOf(userManager)
         .addProfile(TEST_USER_HANDLE, PROFILE_USER_HANDLE, PROFILE_USER_NAME, PROFILE_USER_FLAGS);
 
-    // getProfiles(userId) include user itself and asssociated profiles.
+    // getProfiles(userId) include user itself and associated profiles.
     assertThat(userManager.getProfiles(TEST_USER_HANDLE).get(0).id).isEqualTo(TEST_USER_HANDLE);
     assertThat(userManager.getProfiles(TEST_USER_HANDLE).get(1).id).isEqualTo(PROFILE_USER_HANDLE);
   }
