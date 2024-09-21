@@ -36,9 +36,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowActivityManagerTest {
@@ -488,14 +488,14 @@ public class ShadowActivityManagerTest {
   public void activityManager_activityContextEnabled_retrievesConsistentLowRamDeviceStatus() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       ActivityManager applicationActivityManager =
           (ActivityManager)
               ApplicationProvider.getApplicationContext()
                   .getSystemService(Context.ACTIVITY_SERVICE);
 
-      activity = Robolectric.setupActivity(TestActivity.class);
+      Activity activity = controller.get();
       ActivityManager activityActivityManager =
           (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
 
@@ -504,9 +504,6 @@ public class ShadowActivityManagerTest {
 
       assertThat(activityLowRamStatus).isEqualTo(applicationLowRamStatus);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

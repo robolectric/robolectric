@@ -16,6 +16,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 /** Unit test for {@link ShadowAutofillManager}. */
@@ -65,11 +66,11 @@ public class ShadowAutofillManagerTest {
   public void autofillManager_activityContextEnabled_differentInstancesRetrieveSameInfo() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       AutofillManager applicationAutofillManager = context.getSystemService(AutofillManager.class);
 
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       AutofillManager activityAutofillManager = activity.getSystemService(AutofillManager.class);
 
       assertNotSame(applicationAutofillManager, activityAutofillManager);
@@ -80,9 +81,6 @@ public class ShadowAutofillManagerTest {
       assertEquals(applicationAutofillManager.isEnabled(), activityAutofillManager.isEnabled());
 
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

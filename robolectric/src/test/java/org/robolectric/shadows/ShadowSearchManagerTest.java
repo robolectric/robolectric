@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -22,11 +23,11 @@ public class ShadowSearchManagerTest {
       searchManager_activityContextEnabled_differentInstancesRetrieveGlobalSearchActivity() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       SearchManager applicationSearchManager =
           RuntimeEnvironment.getApplication().getSystemService(SearchManager.class);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       SearchManager activitySearchManager = activity.getSystemService(SearchManager.class);
 
       assertThat(applicationSearchManager).isNotSameInstanceAs(activitySearchManager);
@@ -37,9 +38,6 @@ public class ShadowSearchManagerTest {
 
       assertThat(activityGlobalSearchActivity).isEqualTo(applicationGlobalSearchActivity);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

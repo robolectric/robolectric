@@ -27,9 +27,9 @@ import org.mockito.ArgumentMatcher;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.testing.TestActivity;
 
 /** Unit tests for {@link ShadowUwbManager}. */
 @RunWith(RobolectricTestRunner.class)
@@ -226,11 +226,11 @@ public class ShadowUwbManagerTest {
   public void uwbManager_activityContextEnabled_differentInstancesRetrieveSpecificationInfo() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       UwbManager applicationUwbManager =
           RuntimeEnvironment.getApplication().getSystemService(UwbManager.class);
-      activity = Robolectric.setupActivity(TestActivity.class);
+      Activity activity = controller.get();
       UwbManager activityUwbManager = activity.getSystemService(UwbManager.class);
 
       assertThat(applicationUwbManager).isNotSameInstanceAs(activityUwbManager);
@@ -240,9 +240,6 @@ public class ShadowUwbManagerTest {
 
       assertThat(activitySpecificationInfo).isEqualTo(applicationSpecificationInfo);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

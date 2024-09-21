@@ -40,8 +40,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.testing.TestActivity;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
@@ -736,9 +736,9 @@ public class ShadowConnectivityManagerTest {
   public void connectivityManager_instanceBasedOnSdkVersion() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
-      activity = Robolectric.setupActivity(TestActivity.class);
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
+      Activity activity = controller.get();
       ConnectivityManager activityConnectivityManager =
           (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
 
@@ -752,9 +752,6 @@ public class ShadowConnectivityManagerTest {
 
       assertThat(activityActiveNetwork).isEqualTo(applicationActiveNetwork);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

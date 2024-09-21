@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 /** Unit tests for {@see ShadowDropboxManager}. */
@@ -125,8 +126,8 @@ public class ShadowDropBoxManagerTest {
   public void dropBoxManager_activityContextEnabled_differentInstancesVerifyTagEnabled() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       DropBoxManager applicationDropBoxManager =
           (DropBoxManager)
               ApplicationProvider.getApplicationContext().getSystemService(Context.DROPBOX_SERVICE);
@@ -135,7 +136,7 @@ public class ShadowDropBoxManagerTest {
       String data = "testData";
       applicationDropBoxManager.addText(tag, data);
 
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       DropBoxManager activityDropBoxManager =
           (DropBoxManager) activity.getSystemService(Context.DROPBOX_SERVICE);
 
@@ -144,9 +145,6 @@ public class ShadowDropBoxManagerTest {
 
       assertThat(activityTagEnabled).isEqualTo(applicationTagEnabled);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

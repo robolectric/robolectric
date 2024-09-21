@@ -41,10 +41,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.ServiceController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowTelecomManager.CallRequestMode;
-import org.robolectric.shadows.testing.TestActivity;
 import org.robolectric.shadows.testing.TestConnectionService;
 
 @RunWith(AndroidJUnit4.class)
@@ -758,13 +758,13 @@ public class ShadowTelecomManagerTest {
   public void telecomManager_activityContextEnabled_differentInstancesRetrieveDefaultDialer() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       TelecomManager applicationTelecomManager =
           (TelecomManager)
               ApplicationProvider.getApplicationContext().getSystemService(Context.TELECOM_SERVICE);
 
-      activity = Robolectric.setupActivity(TestActivity.class);
+      Activity activity = controller.get();
       TelecomManager activityTelecomManager =
           (TelecomManager) activity.getSystemService(Context.TELECOM_SERVICE);
 
@@ -773,9 +773,6 @@ public class ShadowTelecomManagerTest {
 
       assertThat(activityDefaultDialer).isEqualTo(applicationDefaultDialer);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

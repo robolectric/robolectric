@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -165,25 +166,22 @@ public class ShadowBluetoothManagerTest {
   public void bluetoothManager_activityContextEnabled_retrievesSameAdapter() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
 
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       BluetoothManager applicationBluetoothManager =
           (BluetoothManager)
               ApplicationProvider.getApplicationContext()
                   .getSystemService(Context.BLUETOOTH_SERVICE);
 
       BluetoothAdapter applicationAdapter = applicationBluetoothManager.getAdapter();
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       BluetoothManager activityBluetoothManager = activity.getSystemService(BluetoothManager.class);
 
       BluetoothAdapter activityAdapter = activityBluetoothManager.getAdapter();
 
       assertThat(applicationAdapter).isEqualTo(activityAdapter);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

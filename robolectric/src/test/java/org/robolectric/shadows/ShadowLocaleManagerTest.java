@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -98,12 +99,12 @@ public final class ShadowLocaleManagerTest {
   public void localeManager_activityContextEnabled_differentInstancesRetrieveLocales() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       LocaleManager applicationLocaleManager =
           (LocaleManager)
               ApplicationProvider.getApplicationContext().getSystemService(Context.LOCALE_SERVICE);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       LocaleManager activityLocaleManager =
           (LocaleManager) activity.getSystemService(Context.LOCALE_SERVICE);
 
@@ -114,9 +115,6 @@ public final class ShadowLocaleManagerTest {
 
       assertThat(activityLocales).isEqualTo(applicationLocales);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

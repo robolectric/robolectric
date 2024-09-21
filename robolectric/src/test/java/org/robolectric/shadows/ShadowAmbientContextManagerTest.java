@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -195,11 +196,11 @@ public class ShadowAmbientContextManagerTest {
   public void ambientContextManager_activityContextEnabled_differentInstancesQueryStatus() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       AmbientContextManager applicationAmbientContextManager =
           RuntimeEnvironment.getApplication().getSystemService(AmbientContextManager.class);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       AmbientContextManager activityAmbientContextManager =
           activity.getSystemService(AmbientContextManager.class);
 
@@ -238,9 +239,6 @@ public class ShadowAmbientContextManagerTest {
     } catch (Exception e) {
       fail("Test failed due to exception: " + e.getMessage());
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
