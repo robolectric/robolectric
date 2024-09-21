@@ -13,8 +13,6 @@ import static android.os.UserManager.RESTRICTION_SOURCE_SYSTEM;
 import static android.os.UserManager.USER_TYPE_FULL_GUEST;
 import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
 import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest.permission;
@@ -28,7 +26,6 @@ import android.content.pm.UserInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IUserManager;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
@@ -80,9 +77,11 @@ public class ShadowUserManager {
   private final Object lock = new Object();
 
   @RealObject private UserManager realObject;
-  private static UserManagerState userManagerState;
+  private static UserManagerState userManagerState = new UserManagerState();
 
-  private Context context;
+  private Context getContext() {
+    return reflector(UserManagerReflector.class, realObject).getContext();
+  }
 
   /**
    * Global UserManager state. Shared across {@link UserManager}s created in different {@link
@@ -151,18 +150,6 @@ public class ShadowUserManager {
       userProfilesListMap.get(id).add(new UserHandle(id));
       userPidMap.put(id, Process.myUid());
     }
-  }
-
-  @Implementation
-  protected void __constructor__(Context context, IUserManager service) {
-    this.context = context;
-    invokeConstructor(
-        UserManager.class,
-        realObject,
-        from(Context.class, context),
-        from(IUserManager.class, service));
-
-    userManagerState = ShadowApplication.getInstance().getUserManagerState();
   }
 
   /**
@@ -243,12 +230,12 @@ public class ShadowUserManager {
   @Implementation(minSdk = R)
   protected List<UserHandle> getAllProfiles() {
     ArrayList<UserHandle> userHandles = new ArrayList<>();
-    if (userManagerState.userProfilesListMap.containsKey(context.getUserId())) {
-      userHandles.addAll(userManagerState.userProfilesListMap.get(context.getUserId()));
+    if (userManagerState.userProfilesListMap.containsKey(getContext().getUserId())) {
+      userHandles.addAll(userManagerState.userProfilesListMap.get(getContext().getUserId()));
       return userHandles;
     }
 
-    userHandles.add(UserHandle.of(context.getUserId()));
+    userHandles.add(UserHandle.of(getContext().getUserId()));
     return userHandles;
   }
 
@@ -287,7 +274,7 @@ public class ShadowUserManager {
     }
 
     int profileId = userManagerState.nextUserId++;
-    addProfile(context.getUserId(), profileId, name, flags);
+    addProfile(getContext().getUserId(), profileId, name, flags);
     userManagerState.userInfoMap.get(profileId).userType = userType;
     return UserHandle.of(profileId);
   }
@@ -385,7 +372,7 @@ public class ShadowUserManager {
     }
 
     if (RuntimeEnvironment.getApiLevel() >= R) {
-      return isManagedProfile(context.getUserId());
+      return isManagedProfile(getContext().getUserId());
     }
 
     return false;
@@ -440,7 +427,7 @@ public class ShadowUserManager {
       return userManagerState.cloneProfile;
     }
 
-    UserInfo info = getUserInfo(context.getUserId());
+    UserInfo info = getUserInfo(getContext().getUserId());
     return info != null && info.isCloneProfile();
   }
 
@@ -456,7 +443,7 @@ public class ShadowUserManager {
           "You need INTERACT_ACROSS_USERS or MANAGE_USERS permission to: check isProfile");
     }
 
-    return getUserInfo(context.getUserId()).isProfile();
+    return getUserInfo(getContext().getUserId()).isProfile();
   }
 
   @Implementation(minSdk = R)
@@ -465,7 +452,7 @@ public class ShadowUserManager {
       throw new SecurityException("You need MANAGE_USERS permission to: check user type");
     }
 
-    UserInfo info = getUserInfo(context.getUserId());
+    UserInfo info = getUserInfo(getContext().getUserId());
     return info != null && info.userType != null && info.userType.equals(userType);
   }
 
@@ -598,7 +585,7 @@ public class ShadowUserManager {
   @Implementation(minSdk = Q)
   protected String getUserName() {
     if (RuntimeEnvironment.getApiLevel() >= R) {
-      return getUserName(context.getUserId());
+      return getUserName(getContext().getUserId());
     }
 
     return getUserName(UserHandle.myUserId());
@@ -609,7 +596,7 @@ public class ShadowUserManager {
     if (userManagerState.enforcePermissions && !hasManageUsersPermission()) {
       throw new SecurityException("You need MANAGE_USERS permission to: rename users");
     }
-    UserInfo user = getUserInfo(context.getUserId());
+    UserInfo user = getUserInfo(getContext().getUserId());
     user.name = name;
   }
 
@@ -624,7 +611,7 @@ public class ShadowUserManager {
 
     int userId = UserHandle.myUserId();
     if (RuntimeEnvironment.getApiLevel() >= R) {
-      userId = context.getUserId();
+      userId = getContext().getUserId();
     }
 
     return userManagerState.userIcon.get(userId);
@@ -638,7 +625,7 @@ public class ShadowUserManager {
 
     int userId = UserHandle.myUserId();
     if (RuntimeEnvironment.getApiLevel() >= R) {
-      userId = context.getUserId();
+      userId = getContext().getUserId();
     }
 
     userManagerState.userIcon.put(userId, icon);
@@ -676,30 +663,30 @@ public class ShadowUserManager {
   }
 
   private boolean hasManageUsersPermission() {
-    return context
+    return getContext()
             .getPackageManager()
-            .checkPermission(permission.MANAGE_USERS, context.getPackageName())
+            .checkPermission(permission.MANAGE_USERS, getContext().getPackageName())
         == PackageManager.PERMISSION_GRANTED;
   }
 
   private boolean hasCreateUsersPermission() {
-    return context
+    return getContext()
             .getPackageManager()
-            .checkPermission(permission.CREATE_USERS, context.getPackageName())
+            .checkPermission(permission.CREATE_USERS, getContext().getPackageName())
         == PackageManager.PERMISSION_GRANTED;
   }
 
   private boolean hasModifyQuietModePermission() {
-    return context
+    return getContext()
             .getPackageManager()
-            .checkPermission(permission.MODIFY_QUIET_MODE, context.getPackageName())
+            .checkPermission(permission.MODIFY_QUIET_MODE, getContext().getPackageName())
         == PackageManager.PERMISSION_GRANTED;
   }
 
   private boolean hasGetAccountsPrivilegedPermission() {
-    return context
+    return getContext()
             .getPackageManager()
-            .checkPermission(permission.GET_ACCOUNTS_PRIVILEGED, context.getPackageName())
+            .checkPermission(permission.GET_ACCOUNTS_PRIVILEGED, getContext().getPackageName())
         == PackageManager.PERMISSION_GRANTED;
   }
 
@@ -990,7 +977,7 @@ public class ShadowUserManager {
     intent.putExtra(Intent.EXTRA_USER, profileHandle);
     intent.setFlags(Intent.FLAG_RECEIVER_FOREGROUND | Intent.FLAG_RECEIVER_REGISTERED_ONLY);
     // Send the broadcast to the context-registered receivers.
-    context.sendBroadcast(intent);
+    getContext().sendBroadcast(intent);
   }
 
   /**
@@ -1136,7 +1123,7 @@ public class ShadowUserManager {
 
     ShadowProcess.setUid(userManagerState.userPidMap.get(userId));
 
-    Application application = (Application) context.getApplicationContext();
+    Application application = (Application) getContext().getApplicationContext();
     ShadowContextImpl shadowContext = Shadow.extract(application.getBaseContext());
     shadowContext.setUserId(userId);
 
@@ -1262,6 +1249,9 @@ public class ShadowUserManager {
 
     @Accessor("mUserId")
     void setUserId(int userId);
+
+    @Accessor("mContext")
+    Context getContext();
   }
 
   @Implementation(minSdk = TIRAMISU)
