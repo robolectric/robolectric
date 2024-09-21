@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -58,11 +59,11 @@ public final class ShadowRestrictionsManagerTest {
   public void restrictionsManager_activityContextEnabled_hasConsistentRestrictionsProvider() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       RestrictionsManager applicationRestrictionsManager =
           ApplicationProvider.getApplicationContext().getSystemService(RestrictionsManager.class);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       RestrictionsManager activityRestrictionsManager =
           activity.getSystemService(RestrictionsManager.class);
 
@@ -73,9 +74,6 @@ public final class ShadowRestrictionsManagerTest {
 
       assertThat(activityHasProvider).isEqualTo(applicationHasProvider);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

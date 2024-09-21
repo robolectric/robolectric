@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowMediaRouter}. */
@@ -135,14 +136,14 @@ public final class ShadowMediaRouterTest {
   public void mediaRouter_activityContextEnabled_differentInstancesRetrieveDefaultRoute() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       MediaRouter applicationMediaRouter =
           (MediaRouter)
               ApplicationProvider.getApplicationContext()
                   .getSystemService(Context.MEDIA_ROUTER_SERVICE);
 
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       MediaRouter activityMediaRouter =
           (MediaRouter) activity.getSystemService(Context.MEDIA_ROUTER_SERVICE);
 
@@ -153,9 +154,6 @@ public final class ShadowMediaRouterTest {
 
       assertThat(activityDefaultRoute).isEqualTo(applicationDefaultRoute);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

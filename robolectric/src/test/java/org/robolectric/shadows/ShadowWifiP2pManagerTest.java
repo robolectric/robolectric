@@ -22,8 +22,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowWifiP2pManagerTest {
@@ -191,9 +191,9 @@ public class ShadowWifiP2pManagerTest {
           latch.countDown();
         });
 
-    Activity activity = null;
-    try {
-      activity = Robolectric.setupActivity(TestActivity.class);
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
+      Activity activity = controller.get();
       WifiP2pManager activityWifiP2pManager =
           (WifiP2pManager) activity.getSystemService(Context.WIFI_P2P_SERVICE);
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -220,9 +220,6 @@ public class ShadowWifiP2pManagerTest {
     } catch (InterruptedException e) {
       fail("Failed because of latch interrupt");
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

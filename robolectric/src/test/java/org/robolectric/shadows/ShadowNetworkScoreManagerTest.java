@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -46,11 +47,11 @@ public final class ShadowNetworkScoreManagerTest {
       networkScoreManager_activityContextEnabled_differentInstancesRetrieveActiveScorerPackage() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       NetworkScoreManager applicationNetworkScoreManager =
           RuntimeEnvironment.getApplication().getSystemService(NetworkScoreManager.class);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       NetworkScoreManager activityNetworkScoreManager =
           activity.getSystemService(NetworkScoreManager.class);
 
@@ -61,9 +62,6 @@ public final class ShadowNetworkScoreManagerTest {
 
       assertThat(activityScorerPackage).isEqualTo(applicationScorerPackage);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

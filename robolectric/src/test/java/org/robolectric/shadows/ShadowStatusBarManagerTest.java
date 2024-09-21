@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -95,11 +96,11 @@ public final class ShadowStatusBarManagerTest {
   public void statusBarManager_activityContextEnabled_performOperations() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       StatusBarManager applicationStatusBarManager =
           RuntimeEnvironment.getApplication().getSystemService(StatusBarManager.class);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       StatusBarManager activityStatusBarManager = activity.getSystemService(StatusBarManager.class);
 
       assertThat(applicationStatusBarManager).isNotSameInstanceAs(activityStatusBarManager);
@@ -121,9 +122,6 @@ public final class ShadowStatusBarManagerTest {
       assertThat(activityShadowStatusBarManager.getDisable2Flags())
           .isEqualTo(StatusBarManager.DISABLE2_GLOBAL_ACTIONS);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

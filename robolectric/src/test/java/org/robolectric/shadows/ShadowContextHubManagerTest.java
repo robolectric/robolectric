@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -172,13 +173,13 @@ public class ShadowContextHubManagerTest {
   public void contextHubManager_instance_retrievesSameContextHubInfo() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
 
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       ContextHubManager applicationContextHubManager =
           context.getSystemService(ContextHubManager.class);
 
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       ContextHubManager activityContextHubManager =
           activity.getSystemService(ContextHubManager.class);
 
@@ -192,9 +193,6 @@ public class ShadowContextHubManagerTest {
 
       assertThat(activityContextHubs).isEqualTo(applicationContextHubs);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

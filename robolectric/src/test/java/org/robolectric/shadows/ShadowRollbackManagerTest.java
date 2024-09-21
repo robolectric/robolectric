@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 /** Test for {@link ShadowRollbackManager}. */
@@ -78,12 +79,12 @@ public final class ShadowRollbackManagerTest {
   public void rollbackManager_reloadPersistedData_differentInstancesRetrieveRollbacks() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       RollbackManager applicationRollbackManager =
           (RollbackManager)
               RuntimeEnvironment.getApplication().getSystemService(Context.ROLLBACK_SERVICE);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       RollbackManager activityRollbackManager =
           (RollbackManager) activity.getSystemService(Context.ROLLBACK_SERVICE);
 
@@ -99,9 +100,6 @@ public final class ShadowRollbackManagerTest {
 
       assertThat(activityAvailableRollbacks).isEqualTo(applicationAvailableRollbacks);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

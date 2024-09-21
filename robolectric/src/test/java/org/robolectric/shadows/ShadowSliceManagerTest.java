@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowSliceManager}. */
@@ -102,11 +103,11 @@ public final class ShadowSliceManagerTest {
   public void sliceManager_activityContextEnabled_differentInstancesRetrieveSlices() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       SliceManager applicationSliceManager =
           ApplicationProvider.getApplicationContext().getSystemService(SliceManager.class);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       SliceManager activitySliceManager = activity.getSystemService(SliceManager.class);
 
       assertThat(applicationSliceManager).isNotSameInstanceAs(activitySliceManager);
@@ -128,9 +129,6 @@ public final class ShadowSliceManagerTest {
       assertThat(applicationPinnedSlices).isEqualTo(activityPinnedSlices);
 
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

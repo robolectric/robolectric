@@ -47,6 +47,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -456,12 +457,12 @@ public class ShadowLauncherAppsTest {
   public void launcherApps_activityContextEnabled_differentInstancesRetrieveProfiles() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
 
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       LauncherApps applicationLauncherApps =
           ApplicationProvider.getApplicationContext().getSystemService(LauncherApps.class);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       LauncherApps activityLauncherApps = activity.getSystemService(LauncherApps.class);
 
       assertThat(applicationLauncherApps).isNotSameInstanceAs(activityLauncherApps);
@@ -474,9 +475,6 @@ public class ShadowLauncherAppsTest {
 
       assertThat(activityProfiles).isEqualTo(applicationProfiles);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

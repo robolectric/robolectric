@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 /** Junit test for {@link ShadowEuiccManager}. */
@@ -65,12 +66,12 @@ public class ShadowEuiccManagerTest {
   public void euiccManager_activityContextEnabled_differentInstancesRetrieveEids() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       EuiccManager applicationEuiccManager =
           (EuiccManager)
               ApplicationProvider.getApplicationContext().getSystemService(Context.EUICC_SERVICE);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       EuiccManager activityEuiccManager =
           (EuiccManager) activity.getSystemService(Context.EUICC_SERVICE);
 
@@ -81,9 +82,6 @@ public class ShadowEuiccManagerTest {
 
       assertThat(activityEid).isEqualTo(applicationEid);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
