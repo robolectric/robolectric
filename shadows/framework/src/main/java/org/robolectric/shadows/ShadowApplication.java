@@ -34,7 +34,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivityThread._ActivityThread_;
 import org.robolectric.shadows.ShadowActivityThread._AppBindData_;
-import org.robolectric.shadows.ShadowUserManager.UserManagerState;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.Reflector;
@@ -47,7 +46,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   private ShadowPopupMenu latestPopupMenu;
   private PopupWindow latestPopupWindow;
   private ListPopupWindow latestListPopupWindow;
-  private UserManagerState userManagerState;
 
   /**
    * @deprecated Use {@code shadowOf({@link ApplicationProvider#getApplicationContext()})} instead.
@@ -324,14 +322,6 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   protected void setLatestListPopupWindow(ListPopupWindow latestListPopupWindow) {
     this.latestListPopupWindow = latestListPopupWindow;
-  }
-
-  UserManagerState getUserManagerState() {
-    if (userManagerState == null) {
-      userManagerState = new UserManagerState();
-    }
-
-    return userManagerState;
   }
 
   public static final class Wrapper {
