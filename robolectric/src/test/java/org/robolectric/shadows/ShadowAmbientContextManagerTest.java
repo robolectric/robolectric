@@ -15,6 +15,7 @@ import androidx.test.core.app.ApplicationProvider;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -211,8 +212,9 @@ public class ShadowAmbientContextManagerTest {
 
       Executor executor = Executors.newSingleThreadExecutor();
 
-      Set<Integer> eventTypes =
-          Set.of(AmbientContextEvent.EVENT_COUGH, AmbientContextEvent.EVENT_SNORE);
+      Set<Integer> eventTypes = new HashSet<>();
+      eventTypes.add(AmbientContextEvent.EVENT_COUGH);
+      eventTypes.add(AmbientContextEvent.EVENT_SNORE);
 
       applicationAmbientContextManager.queryAmbientContextServiceStatus(
           eventTypes,
