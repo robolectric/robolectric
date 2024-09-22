@@ -299,4 +299,11 @@ public class ShadowAccessibilityManagerTest {
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
+
+  @Test
+  public void reset_afterSetEnabledAccessibilityServiceListNull() {
+    shadowOf(accessibilityManager).setEnabledAccessibilityServiceList(null);
+    ShadowAccessibilityManager.reset();
+    assertThat(accessibilityManager.getAccessibilityServiceList()).isEmpty();
+  }
 }
