@@ -839,4 +839,11 @@ public class ShadowConnectivityManagerTest {
       assertThat(connectivityManager.getActiveNetwork()).isNotNull();
     }
   }
+
+  @Config(minSdk = M)
+  @Test
+  public void getActiveNetwork_afterSetActiveNetworkInfoNull() {
+    shadowOf(connectivityManager).setActiveNetworkInfo(null);
+    assertThat(connectivityManager.getActiveNetwork()).isNull();
+  }
 }
