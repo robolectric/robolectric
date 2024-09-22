@@ -239,8 +239,8 @@ public class ShadowConnectivityManager {
    */
   @Implementation(minSdk = M)
   protected Network getActiveNetwork() {
-    if (defaultNetworkActive) {
-      return netIdToNetwork.get(getActiveNetworkInfo().getType());
+    if (defaultNetworkActive && activeNetworkInfo != null) {
+      return netIdToNetwork.get(activeNetworkInfo.getType());
     }
     return null;
   }
