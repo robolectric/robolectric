@@ -18,6 +18,7 @@ import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
 import android.view.accessibility.IAccessibilityManager;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -134,6 +135,7 @@ public class ShadowAccessibilityManager {
   }
 
   public void setAccessibilityServiceList(List<ServiceInfo> accessibilityServiceList) {
+    Preconditions.checkNotNull(accessibilityServiceList);
     this.accessibilityServiceList = new ArrayList<>(accessibilityServiceList);
   }
 
@@ -141,19 +143,13 @@ public class ShadowAccessibilityManager {
   @Implementation
   protected List<AccessibilityServiceInfo> getEnabledAccessibilityServiceList(
       int feedbackTypeFlags) {
-    // TODO(hoisie): prohibit null values for enabledAccessibilityServiceList
-    if (enabledAccessibilityServiceList == null) {
-      return null;
-    }
     return Collections.unmodifiableList(enabledAccessibilityServiceList);
   }
 
   public void setEnabledAccessibilityServiceList(
       List<AccessibilityServiceInfo> enabledAccessibilityServiceList) {
-    this.enabledAccessibilityServiceList =
-        enabledAccessibilityServiceList == null
-            ? null
-            : new ArrayList<>(enabledAccessibilityServiceList);
+    Preconditions.checkNotNull(enabledAccessibilityServiceList);
+    this.enabledAccessibilityServiceList = new ArrayList<>(enabledAccessibilityServiceList);
   }
 
   @Implementation
@@ -163,6 +159,7 @@ public class ShadowAccessibilityManager {
 
   public void setInstalledAccessibilityServiceList(
       List<AccessibilityServiceInfo> installedAccessibilityServiceList) {
+    Preconditions.checkNotNull(accessibilityServiceList);
     this.installedAccessibilityServiceList = new ArrayList<>(installedAccessibilityServiceList);
   }
 
