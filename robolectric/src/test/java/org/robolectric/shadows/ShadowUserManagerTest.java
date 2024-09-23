@@ -63,6 +63,23 @@ public class ShadowUserManagerTest {
     userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
   }
 
+  /**
+   * {@link ShadowUserManager} should support methods getting invoked when UserManager objects are
+   * returned from package contexts.
+   *
+   * <p>The root cause of this issue is that calling {@link Context#getApplicationContext()} returns
+   * null on a package context.
+   */
+  @Config(minSdk = R)
+  @Test
+  public void packageContextImpl_isUserOfType() throws Exception {
+    Context packageContext =
+        context.createPackageContextAsUser(
+            context.getPackageName(), 0, UserHandle.of(/* userId= */ 0));
+    UserManager packageUserManager = packageContext.getSystemService(UserManager.class);
+    assertThat(packageUserManager.isUserOfType("sdfasdfsadf")).isFalse();
+  }
+
   @Test
   public void shouldGetUserProfiles() {
     assertThat(userManager.getUserProfiles()).contains(Process.myUserHandle());
