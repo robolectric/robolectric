@@ -64,9 +64,7 @@ public class ShadowAccessibilityManager {
     sentAccessibilityEvents.clear();
     enabled = false;
     installedAccessibilityServiceList.clear();
-    // enabledAccessibilityServiceList may be null, so set it to a new list.
-    // TODO(hoisie): change this to clear when null enabledAccessibilityServiceList is not allowed.
-    enabledAccessibilityServiceList = new ArrayList<>();
+    enabledAccessibilityServiceList.clear();
     accessibilityServiceList.clear();
     onAccessibilityStateChangeListeners.clear();
     touchExplorationEnabled = false;
@@ -159,7 +157,7 @@ public class ShadowAccessibilityManager {
 
   public void setInstalledAccessibilityServiceList(
       List<AccessibilityServiceInfo> installedAccessibilityServiceList) {
-    Preconditions.checkNotNull(accessibilityServiceList);
+    Preconditions.checkNotNull(installedAccessibilityServiceList);
     this.installedAccessibilityServiceList = new ArrayList<>(installedAccessibilityServiceList);
   }
 
