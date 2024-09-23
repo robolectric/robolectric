@@ -26,6 +26,7 @@ import android.content.pm.UserInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IUserManager;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
@@ -48,6 +49,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -79,8 +81,24 @@ public class ShadowUserManager {
   @RealObject private UserManager realObject;
   private static UserManagerState userManagerState = new UserManagerState();
 
+  private Context context;
+
   private Context getContext() {
-    return reflector(UserManagerReflector.class, realObject).getContext();
+    return context;
+  }
+
+  /**
+   * Shadowing this is currently required because the real UserManager constructor stores the result
+   * of context.getApplicationContext(), which may be null due to a separate Robolectric bug.
+   */
+  @Implementation
+  protected void __constructor__(Context context, IUserManager service) {
+    Shadow.invokeConstructor(
+        UserManager.class,
+        realObject,
+        ClassParameter.from(Context.class, context),
+        ClassParameter.from(IUserManager.class, service));
+    this.context = context;
   }
 
   /**
@@ -1249,9 +1267,6 @@ public class ShadowUserManager {
 
     @Accessor("mUserId")
     void setUserId(int userId);
-
-    @Accessor("mContext")
-    Context getContext();
   }
 
   @Implementation(minSdk = TIRAMISU)
