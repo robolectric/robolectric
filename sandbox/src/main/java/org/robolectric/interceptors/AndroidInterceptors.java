@@ -48,7 +48,9 @@ public class AndroidInterceptors {
                 new NoOpInterceptor(),
                 new SocketInterceptor(),
                 new ReferenceRefersToInterceptor(),
-                new NioUtilsFreeDirectBufferInterceptor()));
+                new NioUtilsFreeDirectBufferInterceptor(),
+                new NioUtilsUnsafeArrayInterceptor(),
+                new NioUtilsUnsafeArrayOffsetInterceptor()));
 
     if (Util.getJavaVersion() >= 9) {
       interceptors.add(new CleanerInterceptor());
@@ -528,6 +530,55 @@ public class AndroidInterceptors {
     public MethodHandle getMethodHandle(String methodName, MethodType type)
         throws NoSuchMethodException, IllegalAccessException {
       return lookup.findStatic(getClass(), METHOD, methodType(void.class, ByteBuffer.class));
+    }
+  }
+
+  /** AndroidInterceptor for NioUtils.unsafeArray. */
+  public static class NioUtilsUnsafeArrayInterceptor extends Interceptor {
+    private static final String METHOD = "unsafeArray";
+
+    public NioUtilsUnsafeArrayInterceptor() {
+      super(new MethodRef("java.nio.NioUtils", METHOD));
+    }
+
+    @SuppressWarnings("ByteBufferBackingArray")
+    static byte[] unsafeArray(ByteBuffer buffer) {
+      return buffer.array();
+    }
+
+    @Override
+    public Function<Object, Object> handle(MethodSignature methodSignature) {
+      return (theClass, value, params) -> unsafeArray((ByteBuffer) value);
+    }
+
+    @Override
+    public MethodHandle getMethodHandle(String methodName, MethodType type)
+        throws NoSuchMethodException, IllegalAccessException {
+      return lookup.findStatic(getClass(), METHOD, methodType(byte[].class, ByteBuffer.class));
+    }
+  }
+
+  /** AndroidInterceptor for NioUtils.unsafeArrayOffset. */
+  public static class NioUtilsUnsafeArrayOffsetInterceptor extends Interceptor {
+    private static final String METHOD = "unsafeArrayOffset";
+
+    public NioUtilsUnsafeArrayOffsetInterceptor() {
+      super(new MethodRef("java.nio.NioUtils", METHOD));
+    }
+
+    static int unsafeArrayOffset(ByteBuffer buffer) {
+      return buffer.arrayOffset();
+    }
+
+    @Override
+    public Function<Object, Object> handle(MethodSignature methodSignature) {
+      return (theClass, value, params) -> unsafeArrayOffset((ByteBuffer) value);
+    }
+
+    @Override
+    public MethodHandle getMethodHandle(String methodName, MethodType type)
+        throws NoSuchMethodException, IllegalAccessException {
+      return lookup.findStatic(getClass(), METHOD, methodType(int.class, ByteBuffer.class));
     }
   }
 }

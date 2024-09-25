@@ -1,9 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.media.AudioTrack.ERROR_BAD_VALUE;
 import static android.media.AudioTrack.ERROR_DEAD_OBJECT;
-import static android.media.AudioTrack.WRITE_BLOCKING;
-import static android.media.AudioTrack.WRITE_NON_BLOCKING;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
@@ -13,6 +10,7 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -27,7 +25,6 @@ import android.media.PlaybackParams;
 import android.os.Build.VERSION;
 import android.os.Handler;
 import android.os.Parcel;
-import android.util.Log;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -94,6 +91,9 @@ public class ShadowAudioTrack {
   private static final List<OnAudioDataWrittenListener> audioDataWrittenListeners =
       new CopyOnWriteArrayList<>();
   private static int minBufferSize = DEFAULT_MIN_BUFFER_SIZE;
+
+  @SuppressWarnings("NonFinalStaticField")
+  private static boolean illegalStateOnPlayEnabled = false;
 
   private int numBytesReceived;
   private PlaybackParams playbackParams;
@@ -314,9 +314,29 @@ public class ShadowAudioTrack {
     return maybeWriteBytes(dataToWrite);
   }
 
+  /**
+   * @see #native_write_byte(byte[], int, int, int, boolean)
+   */
+  @Implementation(minSdk = M, maxSdk = P)
+  protected int native_write_native_bytes(
+      Object audioData, int positionInBytes, int sizeInBytes, int format, boolean blocking) {
+    return maybeWriteBytes(((ByteBuffer) audioData), sizeInBytes);
+  }
+
+  /**
+   * @see #native_write_byte(byte[], int, int, int, boolean)
+   */
+  @Implementation(minSdk = Q)
+  protected int native_write_native_bytes(
+      ByteBuffer audioData, int positionInBytes, int sizeInBytes, int format, boolean blocking) {
+    return maybeWriteBytes(audioData, sizeInBytes);
+  }
+
   private int maybeWriteBytes(ByteBuffer audioData, int sizeInBytes) {
+    int previousPosition = audioData.position();
     byte[] dataToWrite = new byte[sizeInBytes];
     audioData.get(dataToWrite);
+    audioData.position(previousPosition); // Restore the original position
     return maybeWriteBytes(dataToWrite);
   }
 
@@ -370,30 +390,18 @@ public class ShadowAudioTrack {
     return playbackParams;
   }
 
-  /**
-   * Returns the number of bytes to write, except with invalid parameters. If the {@link AudioTrack}
-   * was created for a non-PCM encoding that can no longer be played directly, it returns {@link
-   * AudioTrack#ERROR_DEAD_OBJECT}. Assumes {@link AudioTrack} is already initialized (object
-   * properly created). Do not block even if {@link AudioTrack} in offload mode is in STOPPING play
-   * state. This method returns immediately even with {@link AudioTrack#WRITE_BLOCKING}
-   */
-  @Implementation
-  protected int write(@NonNull ByteBuffer audioData, int sizeInBytes, @WriteMode int writeMode) {
-    if (writeMode != WRITE_BLOCKING && writeMode != WRITE_NON_BLOCKING) {
-      Log.e(TAG, "ShadowAudioTrack.write() called with invalid blocking mode");
-      return ERROR_BAD_VALUE;
-    }
-    if (sizeInBytes < 0 || sizeInBytes > audioData.remaining()) {
-      Log.e(TAG, "ShadowAudioTrack.write() called with invalid size (" + sizeInBytes + ") value");
-      return ERROR_BAD_VALUE;
-    }
-
-    return maybeWriteBytes(audioData, sizeInBytes);
-  }
-
   @Implementation
   protected int getPlaybackHeadPosition() {
     return numBytesReceived / audioTrack.getFormat().getFrameSizeInBytes();
+  }
+
+  @Implementation
+  protected void play() {
+    if (illegalStateOnPlayEnabled) {
+      throw new IllegalStateException("illegalStateOnPlayEnabled == true");
+    }
+    //noinspection ResultOfMethodCallIgnored
+    directlyOn(audioTrack, AudioTrack.class, "play");
   }
 
   @Implementation
@@ -419,12 +427,18 @@ public class ShadowAudioTrack {
     ShadowAudioTrack.audioDataWrittenListeners.remove(listener);
   }
 
+  /** Simulates an {@link AudioTrack} {@link IllegalStateException} while playing. */
+  public static void enableIllegalStateOnPlay(boolean enabled) {
+    illegalStateOnPlayEnabled = enabled;
+  }
+
   @Resetter
   public static void resetTest() {
     audioDataWrittenListeners.clear();
     clearDirectPlaybackSupportedFormats();
     clearAllowedNonPcmEncodings();
     routedDevice = null;
+    illegalStateOnPlayEnabled = false;
   }
 
   private static boolean isPcm(int encoding) {
