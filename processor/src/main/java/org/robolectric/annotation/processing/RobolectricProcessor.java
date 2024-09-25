@@ -44,6 +44,8 @@ public class RobolectricProcessor extends AbstractProcessor {
   private static final String SDKS_FILE = "org.robolectric.annotation.processing.sdks";
   private static final String DISABLE_INDEVELOPMENT =
       "org.robolectric.annotation.processing.disableInDevelopment";
+  private static final String ALLOW_LOOSE_SIGNATURES =
+      "org.robolectric.annotation.processing.allowLooseSignatures";
 
   /** required for Android Development. */
   private static final String VALIDATE_COMPILE_SDKS =
@@ -67,6 +69,7 @@ public class RobolectricProcessor extends AbstractProcessor {
   private boolean allowInDev;
   private String overrideSdkLocation;
   private int overrideSdkInt;
+  private boolean allowLooseSignatures;
 
   /** Default constructor. */
   public RobolectricProcessor() {}
@@ -101,7 +104,8 @@ public class RobolectricProcessor extends AbstractProcessor {
 
     addValidator(new ImplementationValidator(modelBuilder, environment));
     addValidator(
-        new ImplementsValidator(modelBuilder, environment, sdkCheckMode, sdkStore, allowInDev));
+        new ImplementsValidator(
+            modelBuilder, environment, sdkCheckMode, sdkStore, allowInDev, allowLooseSignatures));
     addValidator(new RealObjectValidator(modelBuilder, environment));
     addValidator(new ResetterValidator(modelBuilder, environment));
   }
@@ -156,6 +160,8 @@ public class RobolectricProcessor extends AbstractProcessor {
       this.priority = Integer.parseInt(options.getOrDefault(PRIORITY, "0"));
       this.allowInDev =
           !"true".equalsIgnoreCase(options.getOrDefault(DISABLE_INDEVELOPMENT, "false"));
+      this.allowLooseSignatures =
+          "true".equalsIgnoreCase(options.getOrDefault(ALLOW_LOOSE_SIGNATURES, "false"));
       if (this.shadowPackage == null) {
         throw new IllegalArgumentException("no package specified for " + PACKAGE_OPT);
       }

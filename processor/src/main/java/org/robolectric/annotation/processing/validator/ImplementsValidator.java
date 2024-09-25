@@ -45,6 +45,7 @@ public class ImplementsValidator extends Validator {
   private final Kind checkKind;
   private final SdkStore sdkStore;
   private final boolean allowInDev;
+  private final boolean allowLooseSignatures;
 
   /** Supported modes for validation of {@link Implementation} methods against SDKs. */
   public enum SdkCheckMode {
@@ -58,7 +59,8 @@ public class ImplementsValidator extends Validator {
       ProcessingEnvironment env,
       SdkCheckMode sdkCheckMode,
       SdkStore sdkStore,
-      boolean allowInDev) {
+      boolean allowInDev,
+      boolean allowLooseSignatures) {
     super(modelBuilder, env, IMPLEMENTS_CLASS);
 
     this.env = env;
@@ -66,6 +68,7 @@ public class ImplementsValidator extends Validator {
     this.checkKind = sdkCheckMode == SdkCheckMode.WARN ? Kind.WARNING : Kind.ERROR;
     this.sdkStore = sdkStore;
     this.allowInDev = allowInDev;
+    this.allowLooseSignatures = allowLooseSignatures;
   }
 
   private TypeElement getClassNameTypeElement(AnnotationValue cv) {
@@ -148,6 +151,11 @@ public class ImplementsValidator extends Validator {
         Helpers.getAnnotationTypeMirrorValue(am, "looseSignatures");
     boolean looseSignatures =
         looseSignaturesAttr != null && (Boolean) looseSignaturesAttr.getValue();
+    if (looseSignatures && !allowLooseSignatures) {
+      error(
+          "looseSignatures is no longer allowed. Please use @ClassName or"
+              + " @Implementation(methodName = ...) instead.");
+    }
     String sdkClassNameFq = sdkClassNameFq(av, cv);
     validateShadow(sdkClassNameFq, shadowType, minSdk, maxSdk, looseSignatures, allowInDev);
 

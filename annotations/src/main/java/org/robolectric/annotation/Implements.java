@@ -50,8 +50,11 @@ public @interface Implements {
    * If true, when an exact method signature match isn't found, Robolectric will look for a method
    * with the same name but with all argument types replaced with java.lang.Object.
    *
+   * @deprecated Use the {@link org.robolectric.annotation.ClassName} annotation or the {@link
+   *     org.robolectric.annotation.Implementation#methodName()} annotation parameter instead.
    * @return True to disable strict signature matching.
    */
+  @Deprecated
   boolean looseSignatures() default false;
 
   /** If specified, the shadow class will be applied only for this SDK or greater. */

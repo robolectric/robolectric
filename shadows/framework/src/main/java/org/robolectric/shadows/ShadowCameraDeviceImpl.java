@@ -20,6 +20,7 @@ import android.view.Surface;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.List;
 import java.util.concurrent.Executor;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.InDevelopment;
@@ -33,7 +34,7 @@ import org.robolectric.util.reflector.WithType;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow class for {@link CameraDeviceImpl} */
-@Implements(value = CameraDeviceImpl.class, isInAndroidSdk = false, looseSignatures = true)
+@Implements(value = CameraDeviceImpl.class, isInAndroidSdk = false)
 public class ShadowCameraDeviceImpl {
   @RealObject private CameraDeviceImpl realObject;
   private boolean closed = false;
@@ -41,24 +42,25 @@ public class ShadowCameraDeviceImpl {
   @Implementation(minSdk = V.SDK_INT)
   @InDevelopment
   protected void __constructor__(
-      Object cameraId,
-      Object callback,
-      Object executor,
-      Object characteristics,
-      Object cameraManager,
-      Object appTargetSdkVersion,
-      Object ctx,
-      Object cameraDeviceSetup) {
+      String cameraId,
+      StateCallback callback,
+      Executor executor,
+      CameraCharacteristics characteristics,
+      CameraManager cameraManager,
+      int appTargetSdkVersion,
+      Context ctx,
+      @ClassName("android.hardware.camera2.CameraDevice$CameraDeviceSetup")
+          Object cameraDeviceSetup) {
     try {
       reflector(CameraDeviceImplReflector.class, realObject)
           .__constructor__(
-              (String) cameraId,
-              (StateCallback) callback,
-              (Executor) executor,
-              (CameraCharacteristics) characteristics,
-              (CameraManager) cameraManager,
-              (int) appTargetSdkVersion,
-              (Context) ctx,
+              cameraId,
+              callback,
+              executor,
+              characteristics,
+              cameraManager,
+              appTargetSdkVersion,
+              ctx,
               // TODO(juliansull) Remove once Robolectric compiles against Android V
               Class.forName("android.hardware.camera2.CameraDevice$CameraDeviceSetup")
                   .cast(cameraDeviceSetup));
