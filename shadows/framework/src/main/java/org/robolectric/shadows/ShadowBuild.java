@@ -219,6 +219,28 @@ public class ShadowBuild {
     radioVersionOverride = radioVersion;
   }
 
+  /**
+   * Sets the value of the {@link Build#SOC_MANUFACTURER} field.
+   *
+   * <p>It will be reset for the next test.
+   *
+   * <p>Added in API level 31.
+   */
+  public static void setSystemOnChipManufacturer(String systemOnChipManufacturer) {
+    ReflectionHelpers.setStaticField(Build.class, "SOC_MANUFACTURER", systemOnChipManufacturer);
+  }
+
+  /**
+   * Sets the value of the {@link Build#SOC_MODEL} field.
+   *
+   * <p>It will be reset for the next test.
+   *
+   * <p>Added in API level 31.
+   */
+  public static void setSystemOnChipModel(String systemOnChipModel) {
+    ReflectionHelpers.setStaticField(Build.class, "SOC_MODEL", systemOnChipModel);
+  }
+
   @Implementation
   protected static String getRadioVersion() {
     if (radioVersionOverride != null) {

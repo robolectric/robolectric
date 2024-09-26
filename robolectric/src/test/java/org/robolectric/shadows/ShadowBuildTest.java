@@ -157,6 +157,20 @@ public class ShadowBuildTest {
     assertThat(Build.SUPPORTED_ABIS).isEqualTo(new String[] {"x86"});
   }
 
+  @Test
+  @Config(minSdk = S)
+  public void systemOnChipManufacturer() {
+    ShadowBuild.setSystemOnChipManufacturer("manufacturer");
+    assertThat(Build.SOC_MANUFACTURER).isEqualTo("manufacturer");
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void systemOnChipModel() {
+    ShadowBuild.setSystemOnChipModel("model");
+    assertThat(Build.SOC_MODEL).isEqualTo("model");
+  }
+
   /** Verifies that each test gets a fresh set of Build values. */
   private void checkValues() {
     assertThat(Build.FINGERPRINT).isEqualTo("robolectric");
