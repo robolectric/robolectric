@@ -54,6 +54,7 @@ import javax.annotation.Nullable;
  */
 public final class AndroidVersions {
 
+  @SuppressWarnings("FieldMayBeFinal") // The value is changed via reflection in tests
   private static boolean warnOnly;
 
   private AndroidVersions() {}
@@ -89,17 +90,10 @@ public final class AndroidVersions {
      *
      * @param other the object to be compared.
      * @return 1 if this is greater than other, 0 if equal, -1 if less
-     * @throws IllegalStateException if other is not an instance of AndroidRelease.
+     * @throws NullPointerException if other is null.
      */
     @Override
     public int compareTo(AndroidRelease other) {
-      if (other == null) {
-        throw new IllegalStateException(
-            "Only "
-                + AndroidVersions.class.getName()
-                + " should define Releases, illegal class "
-                + other.getClass());
-      }
       return Integer.compare(this.getSdkInt(), other.getSdkInt());
     }
 
@@ -952,7 +946,7 @@ public final class AndroidVersions {
             current = shortCodeToAllReleases.get(codename);
             // else, assume the fullname is the first letter is correct.
             if (current == null) {
-              current = shortCodeToAllReleases.get(String.valueOf(foundCode));
+              current = shortCodeToAllReleases.get(foundCode);
             }
           }
           if (current == null) {
@@ -1080,7 +1074,7 @@ public final class AndroidVersions {
 
   private static final SdkInformation information;
 
-  private static final void errorMessage(String errorMessage, @Nullable Exception ex) {
+  private static void errorMessage(String errorMessage, @Nullable Exception ex) {
     if (warnOnly) {
       System.err.println(errorMessage);
     } else {
