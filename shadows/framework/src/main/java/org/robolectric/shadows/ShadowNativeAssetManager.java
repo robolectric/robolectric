@@ -4,6 +4,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetManager;
 import android.content.res.XmlBlock;
+import android.util.TypedValue;
 import dalvik.system.VMRuntime;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -12,6 +13,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
@@ -51,27 +53,53 @@ public class ShadowNativeAssetManager extends ShadowAssetManager {
       long outValuesAddress,
       long outIndicesAddress) {
     Objects.requireNonNull(inAttrs, "inAttrs");
-    ShadowVMRuntime shadowVmRuntime = Shadow.extract(VMRuntime.getRuntime());
-    int[] outValues = (int[]) shadowVmRuntime.getObjectForAddress(outValuesAddress);
-    int[] outIndices = (int[]) shadowVmRuntime.getObjectForAddress(outIndicesAddress);
-    synchronized (this) {
-      // Need to synchronize on AssetManager because we will be accessing
-      // the native implementation of AssetManager.
-      assetManagerReflector.ensureValidLocked();
-      long xmlParserPtr =
-          parser != null ? reflector(XmlBlockParserReflector.class, parser).getParseState() : 0;
-      ReflectionHelpers.callStaticMethod(
-          AssetManager.class,
-          Shadow.directNativeMethodName(AssetManager.class.getName(), "nativeApplyStyleWithArray"),
-          ClassParameter.from(long.class, assetManagerReflector.getObject()),
-          ClassParameter.from(long.class, themePtr),
-          ClassParameter.from(int.class, defStyleAttr),
-          ClassParameter.from(int.class, defStyleRes),
-          ClassParameter.from(long.class, xmlParserPtr),
-          ClassParameter.from(int[].class, inAttrs),
-          ClassParameter.from(int[].class, outValues),
-          ClassParameter.from(int[].class, outIndices));
-    }
+    PerfStatsCollector.getInstance()
+        .measure(
+            "native applyStyle",
+            () -> {
+              ShadowVMRuntime shadowVmRuntime = Shadow.extract(VMRuntime.getRuntime());
+              int[] outValues = (int[]) shadowVmRuntime.getObjectForAddress(outValuesAddress);
+              int[] outIndices = (int[]) shadowVmRuntime.getObjectForAddress(outIndicesAddress);
+              synchronized (this) {
+                // Need to synchronize on AssetManager because we will be accessing
+                // the native implementation of AssetManager.
+                assetManagerReflector.ensureValidLocked();
+                long xmlParserPtr =
+                    parser != null
+                        ? reflector(XmlBlockParserReflector.class, parser).getParseState()
+                        : 0;
+                ReflectionHelpers.callStaticMethod(
+                    AssetManager.class,
+                    Shadow.directNativeMethodName(
+                        AssetManager.class.getName(), "nativeApplyStyleWithArray"),
+                    ClassParameter.from(long.class, assetManagerReflector.getObject()),
+                    ClassParameter.from(long.class, themePtr),
+                    ClassParameter.from(int.class, defStyleAttr),
+                    ClassParameter.from(int.class, defStyleRes),
+                    ClassParameter.from(long.class, xmlParserPtr),
+                    ClassParameter.from(int[].class, inAttrs),
+                    ClassParameter.from(int[].class, outValues),
+                    ClassParameter.from(int[].class, outIndices));
+              }
+            });
+  }
+
+  @Implementation
+  protected static int nativeGetResourceValue(
+      long ptr, int resid, short density, TypedValue typed_value, boolean resolve_references) {
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "native nativeGetResourceValue",
+            () ->
+                ReflectionHelpers.callStaticMethod(
+                    AssetManager.class,
+                    Shadow.directNativeMethodName(
+                        AssetManager.class.getName(), "nativeGetResourceValue"),
+                    ClassParameter.from(long.class, ptr),
+                    ClassParameter.from(int.class, resid),
+                    ClassParameter.from(short.class, density),
+                    ClassParameter.from(TypedValue.class, typed_value),
+                    ClassParameter.from(boolean.class, resolve_references)));
   }
 
   @ForType(AssetManager.class)

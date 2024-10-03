@@ -24,7 +24,6 @@ import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.CppAssetManager.FileType;
 import org.robolectric.res.android.Idmap.LoadedIdmap;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
-import org.robolectric.util.PerfStatsCollector;
 
 //
 // #ifndef APKASSETS_H_
@@ -234,25 +233,6 @@ public class CppApkAssets {
       LoadedIdmap loaded_idmap,
       boolean system,
       boolean load_as_shared_library) {
-    return PerfStatsCollector.getInstance()
-        .measure(
-            "load binary " + (system ? "framework" : "app") + " resources",
-            () ->
-                LoadImpl_measured(
-                    fd, path, idmap_asset, loaded_idmap, system, load_as_shared_library));
-  }
-
-  // std::unique_ptr<const ApkAssets> ApkAssets::LoadImpl(
-  //     unique_fd fd, const std::string& path, std::unique_ptr<Asset> idmap_asset,
-  //     std::unique_ptr<const LoadedIdmap> loaded_idmap, bool system, bool load_as_shared_library)
-  // {
-  static CppApkAssets LoadImpl_measured(
-      int fd,
-      String path,
-      Asset idmap_asset,
-      LoadedIdmap loaded_idmap,
-      boolean system,
-      boolean load_as_shared_library) {
     Ref<ZipArchiveHandle> unmanaged_handle = new Ref<>(null);
     int result;
     if (fd >= 0) {
@@ -284,7 +264,7 @@ public class CppApkAssets {
 
     // Open the resource table via mmap unless it is compressed. This logic is taken care of by
     // Open.
-    loaded_apk.resources_asset_ = loaded_apk.Open(kResourcesArsc, Asset.AccessMode.ACCESS_BUFFER);
+    loaded_apk.resources_asset_ = loaded_apk.Open(kResourcesArsc, AccessMode.ACCESS_BUFFER);
     if (loaded_apk.resources_asset_ == null) {
       System.err.println("Failed to open '" + kResourcesArsc + "' in APK '" + path + "'.");
       return null;
@@ -312,6 +292,11 @@ public class CppApkAssets {
     // Need to force a move for mingw32.
     return loaded_apk;
   }
+
+  // std::unique_ptr<const ApkAssets> ApkAssets::LoadImpl(
+  //     unique_fd fd, const std::string& path, std::unique_ptr<Asset> idmap_asset,
+  //     std::unique_ptr<const LoadedIdmap> loaded_idmap, bool system, bool load_as_shared_library)
+  // {
 
   private static String ErrorCodeString(int result) {
     return "Error " + result;
