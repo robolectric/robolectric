@@ -5,7 +5,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.InDevelopment;
 import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.W;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link PathIterator} in LEGACY graphics. */
 @Implements(
@@ -26,7 +26,7 @@ public class ShadowPathIterator {
 
   /** Also shadow the upcoming indevelopment nNextHost */
   @InDevelopment
-  @Implementation(minSdk = W.SDK_INT)
+  @Implementation(minSdk = V.SDK_INT)
   protected static int nNextHost(long nativeIterator, float[] points) {
     return PathIterator.VERB_DONE;
   }
