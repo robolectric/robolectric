@@ -7,6 +7,7 @@ import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import android.os.Build.VERSION;
@@ -19,8 +20,10 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.RandomAccessFile;
 import java.time.Duration;
 import java.util.Arrays;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +45,21 @@ public class OsTest {
     }
   }
 
+  @After
+  public void tearDown() {
+    if (file != null && file.exists()) {
+      file.delete();
+    }
+  }
+
+  @Test
+  public void rootIsExecutable() throws Exception {
+    int fileMode = Os.stat("/").st_mode;
+    assertThat(fileMode & OsConstants.S_IXUSR).isEqualTo(OsConstants.S_IXUSR);
+    assertThat(fileMode & OsConstants.S_IXGRP).isEqualTo(OsConstants.S_IXGRP);
+    assertThat(fileMode & OsConstants.S_IXOTH).isEqualTo(OsConstants.S_IXOTH);
+  }
+
   @Test
   public void getStat_returnCorrectMode() throws Exception {
     StructStat stat = Os.stat(path);
@@ -59,6 +77,16 @@ public class OsTest {
   public void getStat_returnCorrectModifiedTime() throws Exception {
     StructStat stat = Os.stat(path);
     assertThat(stat.st_mtime).isEqualTo(Duration.ofMillis(file.lastModified()).getSeconds());
+  }
+
+  @Test
+  public void getStat_executableFalse() throws Exception {
+    int fileMode = Os.stat(path).st_mode;
+    assertThat(fileMode & OsConstants.S_IXUSR).isEqualTo(0);
+
+    assertTrue(file.setExecutable(true));
+    fileMode = Os.stat(path).st_mode;
+    assertThat(fileMode & OsConstants.S_IXUSR).isEqualTo(OsConstants.S_IXUSR);
   }
 
   @Test
@@ -101,6 +129,21 @@ public class OsTest {
       final byte[] buffer = new byte[10];
       Arrays.fill(buffer, (byte) '-');
       assertThrows(ErrnoException.class, () -> Os.pread(fd, buffer, 0, 5, 0));
+    }
+  }
+
+  // verify pread can be called multiple continuous times
+  // this is intended to verify behavior when reading from a large file
+  @Test
+  public void pread_chained() throws Exception {
+    FileDescriptor fd = new RandomAccessFile(file, "r").getFD();
+
+    final byte[] buffer = new byte[10];
+    int read = 1;
+    int offset = 0;
+    while (read > 0) {
+      read = Os.pread(fd, buffer, 0, 5, offset);
+      offset += read;
     }
   }
 }

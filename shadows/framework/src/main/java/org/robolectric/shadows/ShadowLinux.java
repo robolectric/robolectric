@@ -32,7 +32,7 @@ public class ShadowLinux {
 
   @Implementation
   public StructStat stat(String path) throws ErrnoException {
-    int mode = OsConstantsValues.getMode(path);
+    int mode = ShadowOsConstants.getMode(path);
     long size = 0;
     long modifiedTime = 0;
     if (path != null) {
@@ -98,7 +98,10 @@ public class ShadowLinux {
   @Implementation
   protected int pread(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount, long offset)
       throws ErrnoException, InterruptedIOException {
-    try (FileInputStream is = new FileInputStream(fd)) {
+    // explicitly do not close the opened InputStream here, as java's FileDescriptor will close
+    // and become invalid
+    try {
+      FileInputStream is = new FileInputStream(fd);
       FileChannel channel = is.getChannel();
       ByteBuffer buf = ByteBuffer.wrap(bytes, byteOffset, byteCount);
       return channel.read(buf, offset);

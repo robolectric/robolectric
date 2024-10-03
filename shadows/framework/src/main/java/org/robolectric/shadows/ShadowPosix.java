@@ -26,7 +26,7 @@ public class ShadowPosix {
   @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
   public static @ClassName("android.system.StructStat") Object stat(String path)
       throws ErrnoException {
-    int mode = OsConstantsValues.getMode(path);
+    int mode = ShadowOsConstants.getMode(path);
     long size = 0;
     long modifiedTime = 0;
     if (path != null) {
