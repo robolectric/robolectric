@@ -85,9 +85,17 @@ public class AndroidInterceptors {
 
     static Object setInt(FileDescriptor input, int value) {
       try {
-        input.getClass().getDeclaredField("fd").setInt(input, value);
-      } catch (Exception e) {
-        // Ignore
+        final Object obj =
+            Class.forName("jdk.internal.access.SharedSecrets")
+                .getMethod("getJavaIOFileDescriptorAccess")
+                .invoke(null);
+        Class.forName("jdk.internal.access.JavaIOFileDescriptorAccess")
+            .getMethod("set", FileDescriptor.class, int.class)
+            .invoke(obj, input, value);
+      } catch (ReflectiveOperationException e) {
+        throw new RuntimeException(
+            "Failed to interact with raw FileDescriptor internals;" + " perhaps JRE has changed?",
+            e);
       }
       return null;
     }
