@@ -43,6 +43,7 @@ import android.content.pm.ICrossProfileApps;
 import android.content.pm.ILauncherApps;
 import android.content.pm.IShortcutService;
 import android.content.rollback.IRollbackManager;
+import android.credentials.ICredentialManager;
 import android.hardware.ISensorPrivacyManager;
 import android.hardware.biometrics.IAuthService;
 import android.hardware.biometrics.IBiometricService;
@@ -320,6 +321,7 @@ public class ShadowServiceManager {
     }
     if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
       addBinderService(binderServices, Context.VIRTUAL_DEVICE_SERVICE, IVirtualDeviceManager.class);
+      addBinderService(binderServices, Context.CREDENTIAL_SERVICE, ICredentialManager.class);
       addBinderService(
           binderServices, Context.WEARABLE_SENSING_SERVICE, IWearableSensingManager.class);
     }
