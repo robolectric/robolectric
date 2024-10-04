@@ -1,5 +1,5 @@
 [versions]
-robolectric-nativeruntime-dist-compat = "1.0.14"
+robolectric-nativeruntime-dist-compat = "1.0.15"
 
 # https://developer.android.com/studio/releases
 android-gradle = "8.6.0"

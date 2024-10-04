@@ -34,6 +34,12 @@ public final class PathNatives {
 
   public static native void nRQuadTo(long nPath, float dx1, float dy1, float dx2, float dy2);
 
+  public static native void nConicTo(
+      long nPath, float x1, float y1, float x2, float y2, float weight);
+
+  public static native void nRConicTo(
+      long nPath, float dx1, float dy1, float dx2, float dy2, float weight);
+
   public static native void nCubicTo(
       long nPath, float x1, float y1, float x2, float y2, float x3, float y3);
 
@@ -93,6 +99,10 @@ public final class PathNatives {
 
   public static native boolean nIsRect(long nPath, RectF rect);
 
+  public static native int nGetGenerationID(long nativePath);
+
+  public static native boolean nIsInterpolatable(long startPath, long endPath);
+
   public static native void nReset(long nPath);
 
   public static native void nRewind(long nPath);
@@ -106,6 +116,9 @@ public final class PathNatives {
   public static native void nSetFillType(long nPath, int ft);
 
   public static native float[] nApproximate(long nPath, float error);
+
+  public static native boolean nInterpolate(
+      long startPath, long endPath, float t, long interpolatedPath);
 
   private PathNatives() {}
 }

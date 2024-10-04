@@ -41,7 +41,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = U.SDK_INT)
@@ -173,8 +172,7 @@ public class ShadowNativePathIteratorTest {
     assertEquals(PathIterator.VERB_DONE, segment.getVerb());
   }
 
-  // TODO(hoisie): Enable for U when Path.conicTo is supported in RNG
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = U.SDK_INT)
   @Test
   public void testIterable() {
     mPath.lineTo(100f, 200f);
@@ -248,8 +246,7 @@ public class ShadowNativePathIteratorTest {
     assertEquals(PathIterator.VERB_DONE, iterator.next().getVerb());
   }
 
-  // TODO(hoisie): Enable for U when Path.conicTo is supported in RNG
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = U.SDK_INT)
   @Test
   public void testConic() {
     mPath.conicTo(100f, 200f, 300f, 400f, 2f);
@@ -335,8 +332,7 @@ public class ShadowNativePathIteratorTest {
     assertEquals(PathIterator.VERB_DONE, iterator.next().getVerb());
   }
 
-  // TODO(hoisie): Enable for U when Path.getGenerationId is supported in RNG
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = U.SDK_INT)
   @Test
   public void testPathModification() {
     mPath.lineTo(100f, 200f);
@@ -395,8 +391,7 @@ public class ShadowNativePathIteratorTest {
     }
   }
 
-  // TODO(hoisie): Enable for U when Path.conicTo is supported in RNG
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = U.SDK_INT)
   @Test
   public void testRecreation() {
     mPath.moveTo(10f, 10f);
