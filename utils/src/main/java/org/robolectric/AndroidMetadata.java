@@ -14,5 +14,4 @@ public class AndroidMetadata {
   public Map<String, String> getDeviceBootProperties() {
     return deviceBootProperties;
   }
-
 }
