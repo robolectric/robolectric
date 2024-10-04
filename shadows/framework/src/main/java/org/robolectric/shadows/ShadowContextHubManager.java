@@ -418,4 +418,3 @@ public class ShadowContextHubManager {
     void setContents(List<NanoAppState> contents);
   }
 }
-
