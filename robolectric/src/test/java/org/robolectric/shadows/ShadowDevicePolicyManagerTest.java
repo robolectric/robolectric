@@ -39,6 +39,7 @@ import android.app.Application;
 import android.app.KeyguardManager;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
+import android.app.admin.SystemUpdateInfo;
 import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
 import android.content.Context;
@@ -2763,5 +2764,54 @@ public final class ShadowDevicePolicyManagerTest {
       }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void notifyPendingSystemUpdate_unknownSecurityStatus_setsPendingSystemUpdate() {
+    long updateTime = 123456L;
+
+    devicePolicyManager.notifyPendingSystemUpdate(updateTime);
+
+    SystemUpdateInfo systemUpdateInfo = devicePolicyManager.getPendingSystemUpdate(null);
+    assertThat(systemUpdateInfo.getReceivedTime()).isEqualTo(updateTime);
+    assertThat(systemUpdateInfo.getSecurityPatchState())
+        .isEqualTo(SystemUpdateInfo.SECURITY_PATCH_STATE_UNKNOWN);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void notifyPendingSystemUpdate_securityPatch_setsPendingSystemUpdate() {
+    long updateTime = 123456L;
+
+    devicePolicyManager.notifyPendingSystemUpdate(updateTime, /* isSecurityPatch= */ true);
+
+    SystemUpdateInfo systemUpdateInfo = devicePolicyManager.getPendingSystemUpdate(null);
+    assertThat(systemUpdateInfo.getReceivedTime()).isEqualTo(updateTime);
+    assertThat(systemUpdateInfo.getSecurityPatchState())
+        .isEqualTo(SystemUpdateInfo.SECURITY_PATCH_STATE_TRUE);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void notifyPendingSystemUpdate_notSecurityPatch_setsPendingSystemUpdate() {
+    long updateTime = 123456L;
+
+    devicePolicyManager.notifyPendingSystemUpdate(updateTime, /* isSecurityPatch= */ false);
+
+    SystemUpdateInfo systemUpdateInfo = devicePolicyManager.getPendingSystemUpdate(null);
+    assertThat(systemUpdateInfo.getReceivedTime()).isEqualTo(updateTime);
+    assertThat(systemUpdateInfo.getSecurityPatchState())
+        .isEqualTo(SystemUpdateInfo.SECURITY_PATCH_STATE_FALSE);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setPendingSystemUpdate_null_clearsPendingSystemUpdate() {
+    devicePolicyManager.notifyPendingSystemUpdate(123456L);
+
+    shadowOf(devicePolicyManager).setPendingSystemUpdate(null);
+
+    assertThat(devicePolicyManager.getPendingSystemUpdate(null)).isNull();
   }
 }
