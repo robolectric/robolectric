@@ -1,14 +1,17 @@
 package org.robolectric.shadows;
 
+
 import android.net.wifi.WifiUsabilityStatsEntry;
 import android.net.wifi.WifiUsabilityStatsEntry.ContentionTimeStats;
 import android.net.wifi.WifiUsabilityStatsEntry.RadioStats;
 import android.net.wifi.WifiUsabilityStatsEntry.RateStats;
 import android.os.Build.VERSION_CODES;
 import android.util.SparseArray;
+import java.lang.reflect.Constructor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Builder for {@link WifiUsabilityStatsEntry}. */
 public class WifiUsabilityStatsEntryBuilder {
@@ -76,6 +79,51 @@ public class WifiUsabilityStatsEntryBuilder {
           ClassParameter.from(int.class, cellularSignalStrengthDbm),
           ClassParameter.from(int.class, cellularSignalStrengthDb),
           ClassParameter.from(boolean.class, isSameRegisteredCell));
+    } else if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT && getNumOfConstructorParams() == 41) {
+      return ReflectionHelpers.callConstructor(
+          WifiUsabilityStatsEntry.class,
+          ClassParameter.from(long.class, timeStampMillis),
+          ClassParameter.from(int.class, rssi),
+          ClassParameter.from(int.class, linkSpeedMbps),
+          ClassParameter.from(long.class, totalTxSuccess),
+          ClassParameter.from(long.class, totalTxRetries),
+          ClassParameter.from(long.class, totalTxBad),
+          ClassParameter.from(long.class, totalRxSuccess),
+          ClassParameter.from(long.class, totalRadioOnTimeMillis),
+          ClassParameter.from(long.class, totalRadioTxTimeMillis),
+          ClassParameter.from(long.class, totalRadioRxTimeMillis),
+          ClassParameter.from(long.class, totalScanTimeMillis),
+          ClassParameter.from(long.class, totalNanScanTimeMillis),
+          ClassParameter.from(long.class, totalBackgroundScanTimeMillis),
+          ClassParameter.from(long.class, totalRoamScanTimeMillis),
+          ClassParameter.from(long.class, totalPnoScanTimeMillis),
+          ClassParameter.from(long.class, totalHotspot2ScanTimeMillis),
+          ClassParameter.from(long.class, totalCcaBusyFreqTimeMillis),
+          ClassParameter.from(long.class, totalRadioOnFreqTimeMillis),
+          ClassParameter.from(long.class, totalBeaconRx),
+          ClassParameter.from(int.class, probeStatusSinceLastUpdate),
+          ClassParameter.from(int.class, probeElapsedTimeSinceLastUpdateMillis),
+          ClassParameter.from(int.class, probeMcsRateSinceLastUpdate),
+          ClassParameter.from(int.class, rxLinkSpeedMbps),
+          ClassParameter.from(int.class, timeSliceDutyCycleInPercent),
+          ClassParameter.from(ContentionTimeStats[].class, new ContentionTimeStats[] {}),
+          ClassParameter.from(RateStats[].class, new RateStats[] {}),
+          ClassParameter.from(RadioStats[].class, new RadioStats[] {}),
+          ClassParameter.from(int.class, CHANNEL_UTILIZATION_RATIO),
+          ClassParameter.from(boolean.class, isThroughputSufficient),
+          ClassParameter.from(boolean.class, isWifiScoringEnabled),
+          ClassParameter.from(boolean.class, isCellularDataAvailable),
+          ClassParameter.from(int.class, cellularDataNetworkType),
+          ClassParameter.from(int.class, cellularSignalStrengthDbm),
+          ClassParameter.from(int.class, cellularSignalStrengthDb),
+          ClassParameter.from(boolean.class, isSameRegisteredCell),
+          ClassParameter.from(SparseArray.class, new SparseArray<>()),
+          ClassParameter.from(int.class, 0), // new in post V
+          ClassParameter.from(int.class, 0), // new in post V
+          ClassParameter.from(long.class, 0), // new in post V
+          ClassParameter.from(long.class, 0), // new in post V
+          ClassParameter.from(int.class, 0) // new in post V
+          );
     } else if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.TIRAMISU) {
       return ReflectionHelpers.callConstructor(
           WifiUsabilityStatsEntry.class,
@@ -319,5 +367,14 @@ public class WifiUsabilityStatsEntryBuilder {
   public WifiUsabilityStatsEntryBuilder setIsWifiScoringEnabled(boolean enabled) {
     this.isWifiScoringEnabled = enabled;
     return this;
+  }
+
+  private static int getNumOfConstructorParams() {
+    for (Constructor<?> constructor : WifiUsabilityStatsEntry.class.getDeclaredConstructors()) {
+      if (constructor.getParameterCount() > 0) {
+        return constructor.getParameterCount();
+      }
+    }
+    throw new IllegalStateException("Could not find a WifiUsabilityStatsEntry constructor");
   }
 }
