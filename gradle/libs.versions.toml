@@ -22,8 +22,7 @@ findbugs-jsr305 = "3.0.2"
 hamcrest = "2.0.0.0"
 
 # https://github.com/google/error-prone/releases
-error-prone = "2.19.1"
-error-prone-javac = "9+181-r4173-1"
+error-prone = "2.33.0"
 
 # https://github.com/tbroyer/gradle-errorprone-plugin/releases
 error-prone-gradle = "4.0.1"
@@ -157,7 +156,6 @@ error-prone-annotations = { module = "com.google.errorprone:error_prone_annotati
 error-prone-refaster = { module = "com.google.errorprone:error_prone_refaster", version.ref = "error-prone" }
 error-prone-check-api = { module = "com.google.errorprone:error_prone_check_api", version.ref = "error-prone" }
 error-prone-test-helpers = { module = "com.google.errorprone:error_prone_test_helpers", version.ref = "error-prone" }
-error-prone-javac = { module = "com.google.errorprone:javac", version.ref = "error-prone-javac" }
 
 conscrypt-openjdk-uber = { module = "org.conscrypt:conscrypt-openjdk-uber", version.ref = "conscrypt" }
 bcprov-jdk18on = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }

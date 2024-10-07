@@ -6,7 +6,7 @@ import android.view.animation.LayoutAnimationController;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/** Fake shadow for testing {@link org.robolectric.errorprone.bugpatterns.ShadowUsageCheck}. */
+/** Fake shadow for testing {@link org.robolectric.errorprone.bugpatterns.RobolectricShadow}. */
 @Implements(ViewGroup.class)
 public class XShadowViewGroup {
   @Implementation
