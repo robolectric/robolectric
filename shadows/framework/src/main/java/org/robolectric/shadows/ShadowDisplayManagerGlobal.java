@@ -274,12 +274,23 @@ public class ShadowDisplayManagerGlobal {
       }
     }
 
+    // for android Q through V
     // @Override
     public void setVirtualDisplayState(IVirtualDisplayCallback token, boolean isOn) {
       Integer id = virtualDisplayIds.get(token);
       DisplayInfo displayInfo = displayInfos.get(id);
-      displayInfo.state = isOn ? Display.STATE_ON : Display.STATE_OFF;
-      changeDisplay(id, displayInfo);
+      int newState = isOn ? Display.STATE_ON : Display.STATE_OFF;
+      if (displayInfo.state != newState) {
+        displayInfo.state = newState;
+        changeDisplay(id, displayInfo);
+      }
+    }
+
+    public void setVirtualDisplaySurface(IVirtualDisplayCallback token, Surface surface) {
+      // in post android V, the setVirtualDisplayState has been removed and the virtual device
+      // state is propagated from system service
+      // TODO: also check power group state if > android V
+      setVirtualDisplayState(token, surface != null);
     }
 
     private synchronized int addDisplay(DisplayInfo displayInfo) {
