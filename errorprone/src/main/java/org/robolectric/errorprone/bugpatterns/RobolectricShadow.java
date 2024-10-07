@@ -59,7 +59,7 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
   private static final Matcher<MethodTree> implementationMethodMatcher =
       hasAnnotation(Implementation.class);
 
-  private boolean doScanJavadoc = false;
+  private final boolean doScanJavadoc = false;
 
   @Override
   public Description matchClass(ClassTree classTree, VisitorState state) {

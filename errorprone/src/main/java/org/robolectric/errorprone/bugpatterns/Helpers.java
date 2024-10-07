@@ -29,7 +29,7 @@ public class Helpers {
   public static boolean isInShadowClass(TreePath path, VisitorState state) {
     Tree leaf = path.getLeaf();
     JCClassDecl classDecl =
-        JCClassDecl.class.isInstance(leaf)
+        leaf instanceof JCClassDecl
             ? (JCClassDecl) leaf
             : findEnclosingNode(state.getPath(), JCClassDecl.class);
 
