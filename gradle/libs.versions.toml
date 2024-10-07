@@ -26,7 +26,7 @@ error-prone = "2.19.1"
 error-prone-javac = "9+181-r4173-1"
 
 # https://github.com/tbroyer/gradle-errorprone-plugin/releases
-error-prone-gradle = "3.1.0"
+error-prone-gradle = "4.0.1"
 
 # https://kotlinlang.org/docs/releases.html#release-details
 kotlin = "2.0.20"
