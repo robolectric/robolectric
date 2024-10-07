@@ -11,6 +11,10 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      android-gradle-plugin:
+        patterns:
+          - "com.android.tools:common:*"
+          - "com.android.tools.build:gradle*"
       androidx-test:
         patterns:
           - "androidx.test*"
