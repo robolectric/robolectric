@@ -62,11 +62,10 @@ public class Reflector {
       return (T) staticReflectorCache.get(iClass);
     }
 
-    Class<?> targetClass = determineTargetClass(iClass);
-
     Constructor<? extends T> ctor = (Constructor<? extends T>) cache.get(iClass);
     try {
       if (ctor == null) {
+        Class<?> targetClass = determineTargetClass(iClass);
         Class<? extends T> reflectorClass =
             PerfStatsCollector.getInstance()
                 .measure(
