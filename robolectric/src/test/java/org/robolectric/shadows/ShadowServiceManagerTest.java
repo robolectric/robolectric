@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import android.app.IActivityTaskManager;
 import android.content.Context;
 import android.os.Build.VERSION_CODES;
 import android.os.IBinder;
@@ -77,5 +78,13 @@ public final class ShadowServiceManagerTest {
     e.shutdown();
     e.awaitTermination(10, SECONDS);
     assertThat(thrownException.get()).isNull();
+  }
+
+  @Test
+  public void addService_concrete_shouldReturnService() {
+    IActivityTaskManager.Default defaultAtms = new IActivityTaskManager.Default();
+    ShadowServiceManager.addBinderService("activity_task", IActivityTaskManager.class, defaultAtms);
+
+    assertThat(defaultAtms.asBinder()).isSameInstanceAs(ServiceManager.getService("activity_task"));
   }
 }
