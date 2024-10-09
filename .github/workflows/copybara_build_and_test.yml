@@ -29,7 +29,8 @@ jobs:
       - name: Build
         run: |
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
-          ./gradlew assemble testClasses --parallel --stacktrace --no-watch-fs
+          ./gradlew assemble testClasses --parallel --stacktrace --no-watch-fs \
+            -Drobolectric.usePreinstrumentedJars=false \
 
       - name: Integration tests
         run: |
@@ -40,6 +41,7 @@ jobs:
             -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
             -Drobolectric.enabledSdks=34 \
             -Dorg.gradle.workers.max=2 \
+            -Drobolectric.usePreinstrumentedJars=false \
             -x :integration_tests:nativegraphics:test \
             -x :integration_tests:sdkcompat:test \
           )
@@ -51,3 +53,4 @@ jobs:
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
           ./gradlew :integration_tests:sdkcompat:test --info --stacktrace --continue --no-watch-fs \
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
+          -Drobolectric.usePreinstrumentedJars=false \

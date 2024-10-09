@@ -55,6 +55,7 @@ jobs:
           --no-watch-fs
           "-Drobolectric.alwaysIncludeVariantMarkersInTestName=true"
           "-Dorg.gradle.workers.max=2"
+          "-Drobolectric.usePreinstrumentedJars=false"
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
