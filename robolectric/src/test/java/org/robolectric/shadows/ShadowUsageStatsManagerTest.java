@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.Application;
@@ -20,6 +21,7 @@ import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.PersistableBundle;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
@@ -35,8 +37,13 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageLimitObserver;
 import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageObserver;
+import org.robolectric.shadows.ShadowUsageStatsManager.EventReflector;
 import org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver;
 import org.robolectric.shadows.ShadowUsageStatsManager.UsageStatsBuilder;
+import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.WithType;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Test for {@link ShadowUsageStatsManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -1062,5 +1069,103 @@ public class ShadowUsageStatsManagerTest {
       }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
+  }
+
+  @Test
+  @Config(minSdk = V.SDK_INT)
+  public void testQueryEvents_newApiV_shouldReturn() throws Exception {
+    // These events should be returned.
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(1000L)
+                .setPackage(TEST_PACKAGE_NAME1)
+                .setEventType(Event.MOVE_TO_BACKGROUND)
+                .build());
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(1001L)
+                .setPackage(TEST_PACKAGE_NAME1)
+                .setEventType(Event.MOVE_TO_FOREGROUND)
+                .build());
+    PersistableBundle extras = new PersistableBundle();
+    extras.putString("fakekey", "fakevalue");
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(1500L)
+                .setPackage(TEST_PACKAGE_NAME2)
+                .setEventType(Event.USER_INTERACTION)
+                .setExtras(extras)
+                .build());
+
+    // These events should be filtered out.
+    // Timestamp too late.
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(3000L)
+                .setPackage(TEST_PACKAGE_NAME1)
+                .setEventType(Event.USER_INTERACTION)
+                .build());
+    // Wrong type.
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(1000L)
+                .setEventType(Event.SYSTEM_INTERACTION)
+                .build());
+
+    Object queryBuilder =
+        reflector(UsageEventsQueryBuilderReflector.class).newBuilder(1000L, 2000L);
+    UsageEventsQueryBuilderReflector queryBuilderReflector =
+        reflector(UsageEventsQueryBuilderReflector.class, queryBuilder);
+    queryBuilderReflector.setEventTypes(
+        Event.MOVE_TO_BACKGROUND, Event.MOVE_TO_FOREGROUND, Event.USER_INTERACTION);
+    UsageEvents events =
+        reflector(UsageStatsManagerReflector.class, usageStatsManager)
+            .queryEvents(queryBuilderReflector.build());
+
+    Event event = new Event();
+
+    assertThat(events.hasNextEvent()).isTrue();
+    assertThat(events.getNextEvent(event)).isTrue();
+    assertThat(event.getPackageName()).isEqualTo(TEST_PACKAGE_NAME1);
+    assertThat(event.getTimeStamp()).isEqualTo(1000L);
+    assertThat(event.getEventType()).isEqualTo(Event.MOVE_TO_BACKGROUND);
+
+    assertThat(events.hasNextEvent()).isTrue();
+    assertThat(events.getNextEvent(event)).isTrue();
+    assertThat(event.getPackageName()).isEqualTo(TEST_PACKAGE_NAME1);
+    assertThat(event.getTimeStamp()).isEqualTo(1001L);
+    assertThat(event.getEventType()).isEqualTo(Event.MOVE_TO_FOREGROUND);
+
+    assertThat(events.hasNextEvent()).isTrue();
+    assertThat(events.getNextEvent(event)).isTrue();
+    assertThat(event.getPackageName()).isEqualTo(TEST_PACKAGE_NAME2);
+    assertThat(event.getTimeStamp()).isEqualTo(1500L);
+    assertThat(event.getEventType()).isEqualTo(Event.USER_INTERACTION);
+    EventReflector eventReflector = reflector(EventReflector.class, event);
+    extras = eventReflector.getExtras();
+    assertThat(extras.getString("fakekey")).isEqualTo("fakevalue");
+
+    assertThat(events.hasNextEvent()).isFalse();
+  }
+
+  // TODO: remove reflection calls once Android V is fully supported.
+  @ForType(UsageStatsManager.class)
+  interface UsageStatsManagerReflector {
+    UsageEvents queryEvents(@WithType("android.app.usage.UsageEventsQuery") Object query);
+  }
+
+  @ForType(className = "android.app.usage.UsageEventsQuery$Builder")
+  interface UsageEventsQueryBuilderReflector {
+    @Constructor
+    Object newBuilder(long beginTimeMillis, long endTimeMillis);
+
+    Object setEventTypes(int... eventTypes);
+
+    Object build();
   }
 }
