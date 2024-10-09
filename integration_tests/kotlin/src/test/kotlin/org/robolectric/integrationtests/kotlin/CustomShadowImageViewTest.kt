@@ -18,7 +18,8 @@ class CustomShadowImageViewTest {
   fun `use custom ShadowImageView`() {
     val activity = Robolectric.setupActivity(Activity::class.java)
     val imageView = ImageView(activity)
-    (activity.findViewById(android.R.id.content) as ViewGroup).addView(imageView)
+    val viewGroup: ViewGroup = activity.findViewById(android.R.id.content)!!
+    viewGroup.addView(imageView)
     val shadowImageView = Shadow.extract<CustomShadowImageView>(imageView)
     assertThat(shadowImageView).isNotNull()
     assertThat(shadowImageView.realImageView).isSameInstanceAs(imageView)

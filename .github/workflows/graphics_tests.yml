@@ -43,6 +43,11 @@ jobs:
       - name: Show runner info
         run: uname -a
 
+      - name: Disable graphics tests for Windows on Android V
+        if: runner.os == "windows"
+        run: |
+          echo "robolectric.enabledSdks=26,27,28,29,30,31,32,33,34" >> $env:GITHUB_ENV
+
       - name: Run unit tests
         env:
           SKIP_ERRORPRONE: true
@@ -55,6 +60,7 @@ jobs:
           --no-watch-fs
           "-Drobolectric.alwaysIncludeVariantMarkersInTestName=true"
           "-Dorg.gradle.workers.max=2"
+          "-Drobolectric.usePreinstrumentedJars=false"
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
