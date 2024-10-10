@@ -10,7 +10,9 @@ import android.nfc.INfcCardEmulation;
 import android.nfc.cardemulation.CardEmulation;
 import android.provider.Settings;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -19,11 +21,13 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow implementation of {@link CardEmulation}. */
 @Implements(CardEmulation.class)
 public class ShadowCardEmulation {
 
+  private static final Set<ComponentName> defaultObserveModeEnabledServices = new HashSet<>();
   private static Map<String, ComponentName> defaultServiceForCategoryMap = new HashMap<>();
   private static ComponentName preferredService = null;
 
@@ -43,6 +47,17 @@ public class ShadowCardEmulation {
   @Implementation
   public boolean unsetPreferredService(Activity activity) {
     preferredService = null;
+    return true;
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected boolean setShouldDefaultToObserveModeForService(
+      ComponentName service, boolean shouldDefaultToObserveMode) {
+    if (shouldDefaultToObserveMode) {
+      defaultObserveModeEnabledServices.add(service);
+    } else {
+      defaultObserveModeEnabledServices.remove(service);
+    }
     return true;
   }
 
@@ -72,6 +87,13 @@ public class ShadowCardEmulation {
         RuntimeEnvironment.getApplication().getContentResolver(),
         Settings.Secure.NFC_PAYMENT_FOREGROUND,
         value ? 1 : 0);
+  }
+
+  /**
+   * Returns whether the given service has dynamically set observe mode to be enabled by default.
+   */
+  public static boolean getShouldDefaultToObserveModeForService(ComponentName service) {
+    return defaultObserveModeEnabledServices.contains(service);
   }
 
   @Resetter
