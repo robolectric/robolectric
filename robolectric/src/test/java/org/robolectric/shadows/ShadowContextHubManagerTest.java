@@ -271,4 +271,25 @@ public class ShadowContextHubManagerTest {
     verify(callback, never()).onNanoAppEnabled(any(), anyLong());
     verify(callback, never()).onNanoAppDisabled(any(), anyLong());
   }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void checkNanoAppLoadedState() {
+    ContextHubManager contextHubManager = context.getSystemService(ContextHubManager.class);
+    ContextHubClientCallback callback = mock(ContextHubClientCallback.class);
+    contextHubManager.createClient(null, callback);
+    List<ContextHubInfo> contextHubInfoList = contextHubManager.getContextHubs();
+
+    ShadowContextHubManager shadowManager = Shadow.extract(contextHubManager);
+    shadowManager.broadcastClientAuthorizationChanged(1, 2);
+
+    long nanoAppId = 5;
+    int nanoAppVersion = 1;
+    shadowManager.addNanoApp(
+        contextHubInfoList.get(0), /* nanoAppUid= */ 0, nanoAppId, nanoAppVersion);
+    assertThat(shadowManager.nanoAppIsLoaded(nanoAppId)).isTrue();
+
+    shadowManager.unloadNanoApp(contextHubInfoList.get(0), nanoAppId);
+    assertThat(shadowManager.nanoAppIsLoaded(nanoAppId)).isFalse();
+  }
 }

@@ -39,7 +39,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowContextHubClient.ContextHubClientReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link ContextHubManager}. */
@@ -52,6 +52,7 @@ public class ShadowContextHubManager {
       new ConcurrentHashMap<>();
   private static final Multimap<ContextHubInfo, Integer> contextHubToNanoappUid =
       Multimaps.synchronizedMultimap(HashMultimap.<ContextHubInfo, Integer>create());
+  private static final Map<Long, ContextHubInfo> nanoAppIdToInfo = new ConcurrentHashMap<>();
   private static final HashMultimap<String, ContextHubClient> attributionTagToClientMap =
       HashMultimap.create();
   private static final Map<ContextHubClient, ContextHubClientCallbackDetails>
@@ -67,6 +68,7 @@ public class ShadowContextHubManager {
     NanoAppInstanceInfo instanceInfo =
         createInstanceInfo(info, nanoAppUid, nanoAppId, nanoAppVersion);
     nanoAppUidToInfo.put(nanoAppUid, instanceInfo);
+    nanoAppIdToInfo.put(nanoAppId, info);
   }
 
   /** Creates and returns a {@link NanoAppInstanceInfo}. */
@@ -198,6 +200,25 @@ public class ShadowContextHubManager {
     return client;
   }
 
+  @Implementation(minSdk = VERSION_CODES.S)
+  @HiddenApi
+  protected @ClassName("android.hardware.location.ContextHubTransaction<java.lang.Void>") Object
+      unloadNanoApp(ContextHubInfo contextHubInfo, long nanoAppId) {
+    nanoAppIdToInfo.remove(nanoAppId);
+    @SuppressWarnings("unchecked")
+    ContextHubTransaction<Void> transaction =
+        ReflectionHelpers.callConstructor(
+            ContextHubTransaction.class,
+            ClassParameter.from(int.class, ContextHubTransaction.TYPE_UNLOAD_NANOAPP));
+
+    // @SuppressWarnings("unchecked")
+    ContextHubTransaction.Response<List<NanoAppState>> response =
+        reflector(ReflectorContextHubTransactionResponse.class)
+            .create(ContextHubTransaction.RESULT_SUCCESS, null);
+    reflector(ReflectorContextHubTransaction.class, transaction).setResponse(response);
+    return transaction;
+  }
+
   @Nullable
   public List<ContextHubClient> getClientsWithAttributionTag(String attributionTag) {
     return ImmutableList.copyOf(attributionTagToClientMap.get(attributionTag));
@@ -307,6 +328,11 @@ public class ShadowContextHubManager {
     }
   }
 
+  /** Returns true if the nanoapp is loaded. */
+  public boolean nanoAppIsLoaded(long nanoAppId) {
+    return nanoAppIdToInfo.containsKey(nanoAppId);
+  }
+
   @Resetter
   public static void clearContextHubClientWithPendingIntentList() {
     contextHubClientWithPendingIntentList.clear();
@@ -314,6 +340,7 @@ public class ShadowContextHubManager {
     contextHubToNanoappUid.clear();
     attributionTagToClientMap.clear();
     contextHubClientCallbacks.clear();
+    nanoAppIdToInfo.clear();
   }
 
   @Implementation(minSdk = VERSION_CODES.P)
@@ -336,13 +363,9 @@ public class ShadowContextHubManager {
             new NanoAppState(info.getAppId(), info.getAppVersion(), true /* enabled */));
       }
     }
-    @SuppressWarnings("unchecked")
     ContextHubTransaction.Response<List<NanoAppState>> response =
-        ReflectionHelpers.newInstance(ContextHubTransaction.Response.class);
-    ReflectorContextHubTransactionResponse reflectedResponse =
-        reflector(ReflectorContextHubTransactionResponse.class, response);
-    reflectedResponse.setResult(ContextHubTransaction.RESULT_SUCCESS);
-    reflectedResponse.setContents(nanoAppStates);
+        reflector(ReflectorContextHubTransactionResponse.class)
+            .create(ContextHubTransaction.RESULT_SUCCESS, nanoAppStates);
     reflector(ReflectorContextHubTransaction.class, transaction).setResponse(response);
     return transaction;
   }
@@ -411,11 +434,8 @@ public class ShadowContextHubManager {
   /** Accessor interface for {@link ContextHubTransaction.Response}'s internals. */
   @ForType(ContextHubTransaction.Response.class)
   private interface ReflectorContextHubTransactionResponse {
-    @Accessor("mResult")
-    void setResult(int result);
-
-    @Accessor("mContents")
-    void setContents(List<NanoAppState> contents);
+    @Constructor
+    ContextHubTransaction.Response<List<NanoAppState>> create(int result, Object contents);
   }
 }
 
