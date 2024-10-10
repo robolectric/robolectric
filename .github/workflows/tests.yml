@@ -39,7 +39,8 @@ jobs:
       - name: Build
         run: |
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
-          ./gradlew assemble testClasses --parallel --stacktrace --no-watch-fs
+          ./gradlew assemble testClasses --parallel --stacktrace --no-watch-fs \
+            -Drobolectric.usePreinstrumentedJars=false \
 
   unit-tests:
     runs-on: ubuntu-22.04
@@ -69,6 +70,7 @@ jobs:
           -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
           -Dorg.gradle.workers.max=2 \
+          -Drobolectric.usePreinstrumentedJars=false \
           -x :integration_tests:nativegraphics:test \
           -x :integration_tests:roborazzi:test
 
