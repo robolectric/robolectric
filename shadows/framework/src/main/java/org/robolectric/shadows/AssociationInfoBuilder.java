@@ -1,12 +1,17 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.companion.AssociationInfo;
+import android.graphics.drawable.Icon;
 import android.net.MacAddress;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.WithType;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Builder for {@link AssociationInfo}. */
@@ -109,6 +114,28 @@ public class AssociationInfoBuilder {
     try {
       MacAddress macAddress =
           deviceMacAddress == null ? null : MacAddress.fromString(deviceMacAddress);
+
+      if (getNumOfConstructorParams() == 16) {
+        return reflector(AssociationInfoReflector.class)
+            .nwwAssociationInfoPostV(
+                id,
+                userId,
+                packageName,
+                tag,
+                macAddress,
+                displayName,
+                deviceProfile,
+                associatedDevice,
+                selfManaged,
+                notifyOnDeviceNearby,
+                revoked,
+                pending,
+                approvedMs,
+                lastTimeConnectedMs,
+                systemDataSyncFlags,
+                null /* icon */);
+      }
+      // TODO: convert the rest of this logic to use number of parameters and reflector
       if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
         // We have two different constructors for AssociationInfo across
         // T branches. aosp has the constructor that takes a new "revoked" parameter.
@@ -201,5 +228,37 @@ public class AssociationInfoBuilder {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static int getNumOfConstructorParams() {
+    for (java.lang.reflect.Constructor<?> constructor :
+        AssociationInfo.class.getDeclaredConstructors()) {
+      if (constructor.getParameterCount() > 1) {
+        return constructor.getParameterCount();
+      }
+    }
+    throw new IllegalStateException("Could not find a AssociationInfo constructor");
+  }
+
+  @ForType(AssociationInfo.class)
+  interface AssociationInfoReflector {
+    @Constructor
+    AssociationInfo nwwAssociationInfoPostV(
+        int id,
+        int userId,
+        String packageName,
+        String tag,
+        MacAddress macAddress,
+        CharSequence displayName,
+        String deviceProfile,
+        @WithType("android.companion.AssociatedDevice") Object associatedDevice,
+        boolean selfManaged,
+        boolean notifyOnDeviceNearby,
+        boolean revoked,
+        boolean pending,
+        long timeApprovedMs,
+        long lastTimeConnectedMs,
+        int systemDataSyncFlags,
+        Icon icon);
   }
 }
