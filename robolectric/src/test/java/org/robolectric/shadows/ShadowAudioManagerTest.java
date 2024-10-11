@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1590,6 +1591,136 @@ public class ShadowAudioManagerTest {
     } finally {
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void onCommunicationDeviceChangedListener_registerListener_getCalls() throws Exception {
+    AudioManager.OnCommunicationDeviceChangedListener mockListener =
+        mock(AudioManager.OnCommunicationDeviceChangedListener.class);
+    AudioDeviceInfo device = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
+
+    audioManager.addOnCommunicationDeviceChangedListener(directExecutor(), mockListener);
+    shadowOf(audioManager).callOnCommunicationDeviceChangedListeners(device);
+
+    verify(mockListener).onCommunicationDeviceChanged(device);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void onCommunicationDeviceChangedListener_unregisterListener_noCalls() throws Exception {
+    AudioManager.OnCommunicationDeviceChangedListener mockListener =
+        mock(AudioManager.OnCommunicationDeviceChangedListener.class);
+    AudioDeviceInfo device = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
+
+    audioManager.addOnCommunicationDeviceChangedListener(directExecutor(), mockListener);
+    audioManager.removeOnCommunicationDeviceChangedListener(mockListener);
+    shadowOf(audioManager).callOnCommunicationDeviceChangedListeners(device);
+
+    verifyNoMoreInteractions(mockListener);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void onCommunicationDeviceChangedListener_severalListener_allGetCalls() throws Exception {
+    AudioManager.OnCommunicationDeviceChangedListener mockListener1 =
+        mock(AudioManager.OnCommunicationDeviceChangedListener.class);
+    AudioManager.OnCommunicationDeviceChangedListener mockListener2 =
+        mock(AudioManager.OnCommunicationDeviceChangedListener.class);
+    AudioDeviceInfo device = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
+
+    audioManager.addOnCommunicationDeviceChangedListener(directExecutor(), mockListener1);
+    audioManager.addOnCommunicationDeviceChangedListener(directExecutor(), mockListener2);
+    shadowOf(audioManager).callOnCommunicationDeviceChangedListeners(device);
+
+    verify(mockListener1).onCommunicationDeviceChanged(device);
+    verify(mockListener2).onCommunicationDeviceChanged(device);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void
+      onCommunicationDeviceChangedListener_oneOfSeveralListenerRemoved_onlyRegisterdGetCalls()
+          throws Exception {
+    AudioManager.OnCommunicationDeviceChangedListener mockListener1 =
+        mock(AudioManager.OnCommunicationDeviceChangedListener.class);
+    AudioManager.OnCommunicationDeviceChangedListener mockListener2 =
+        mock(AudioManager.OnCommunicationDeviceChangedListener.class);
+    AudioDeviceInfo device = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
+
+    audioManager.addOnCommunicationDeviceChangedListener(directExecutor(), mockListener1);
+    audioManager.addOnCommunicationDeviceChangedListener(directExecutor(), mockListener2);
+    audioManager.removeOnCommunicationDeviceChangedListener(mockListener1);
+    shadowOf(audioManager).callOnCommunicationDeviceChangedListeners(device);
+
+    verifyNoMoreInteractions(mockListener1);
+    verify(mockListener2).onCommunicationDeviceChanged(device);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void onCommunicationDeviceChangedListener_callWithNullAudioDeviceInfo_receiveNull()
+      throws Exception {
+    AudioManager.OnCommunicationDeviceChangedListener mockListener =
+        mock(AudioManager.OnCommunicationDeviceChangedListener.class);
+
+    audioManager.addOnCommunicationDeviceChangedListener(directExecutor(), mockListener);
+    shadowOf(audioManager).callOnCommunicationDeviceChangedListeners(null);
+
+    verify(mockListener).onCommunicationDeviceChanged(null);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void onCommunicationDeviceChangedListener_removeBeforeAddingListener_throwsException()
+      throws Exception {
+    AudioManager.OnCommunicationDeviceChangedListener mockListener =
+        mock(AudioManager.OnCommunicationDeviceChangedListener.class);
+
+    Assert.assertThrows(
+        IllegalArgumentException.class,
+        () -> audioManager.removeOnCommunicationDeviceChangedListener(mockListener));
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void onCommunicationDeviceChangedListener_addSameTwice_throwsException() throws Exception {
+    AudioManager.OnCommunicationDeviceChangedListener mockListener =
+        mock(AudioManager.OnCommunicationDeviceChangedListener.class);
+
+    audioManager.addOnCommunicationDeviceChangedListener(directExecutor(), mockListener);
+    Assert.assertThrows(
+        IllegalArgumentException.class,
+        () -> audioManager.addOnCommunicationDeviceChangedListener(directExecutor(), mockListener));
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void onCommunicationDeviceChangedListener_addNullListener_throwsException()
+      throws Exception {
+    Assert.assertThrows(
+        NullPointerException.class,
+        () -> audioManager.addOnCommunicationDeviceChangedListener(directExecutor(), null));
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void onCommunicationDeviceChangedListener_addNullExecutor_throwsException()
+      throws Exception {
+    AudioManager.OnCommunicationDeviceChangedListener mockListener =
+        mock(AudioManager.OnCommunicationDeviceChangedListener.class);
+
+    Assert.assertThrows(
+        NullPointerException.class,
+        () -> audioManager.addOnCommunicationDeviceChangedListener(null, mockListener));
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void onCommunicationDeviceChangedListener_removeNull_throwsException() throws Exception {
+    Assert.assertThrows(
+        NullPointerException.class,
+        () -> audioManager.removeOnCommunicationDeviceChangedListener(null));
   }
 
   private static AudioDeviceInfo createAudioDevice(int type) throws ReflectiveOperationException {
