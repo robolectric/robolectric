@@ -6,17 +6,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Indicates that the annotated type is intended as a replacement for another type.
- *
- * @deprecated Use {@link Supersedes} instead. This annotation is misspelled.
- */
+/** Indicates that the annotated type is intended as a replacement for another type. */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Deprecated
-public @interface Supercedes {
+public @interface Supersedes {
 
-  /** The type that is superseded by the annotated type. */
+  /** The type that is superceded by the annotated type. */
   Class<?> value();
 }
