@@ -53,6 +53,31 @@ To get Robolectric up and running on your machine, check out
 To get a high-level overview of Robolectric's architecture, check out
 [ARCHITECTURE.md](ARCHITECTURE.md).
 
+## Development model
+
+Robolectric is actively developed in several locations. The primary location is
+this GitHub repository, which is considered the *source-of-truth* for
+Robolectric code. It is where contributions from the broader Android developer
+community occur. There is also an active development tree of Robolectric
+internally at Google, where contributions from first-party Android developers
+occur. By having a development tree of Robolectric internally at Google, it
+enables first-party Android developers to more efficiently make contributions
+to Robolectric. This tree is synced directly to the [google
+branch](https://github.com/robolectric/robolectric/tree/google) branch every
+time a change occurs using the `Copybara` code sync tool. Bidirectional merges
+of this branch and the `master` branch occur regularly.
+
+Robolectric also has usage in the Android platform via the
+[external/robolectric](https://cs.android.com/android/platform/superproject/main/+/main:external/robolectric/)
+repo project. Contributions to this source tree are typically related to new
+SDK support and evolving platform APIs. Changes from this branch are upstreamed
+to the internal Robolectric tree at Google, which eventually propagate to the
+GitHub branches.
+
+Although complex, this distributed development model enables Android developers
+in different environments to use and contribute to Robolectric, while allowing
+changes to eventually make their way to public Robolectric releases.
+
 ## Using Snapshots
 
 If you would like to live on the bleeding edge, you can try running against a snapshot build. Keep in mind that snapshots represent the most recent changes on the `master` and may contain bugs.
