@@ -115,6 +115,26 @@ public class ShadowNetworkCapabilities {
         .setLinkDownstreamBandwidthKbps(kbps);
   }
 
+  /** Sets the LinkUpstreamBandwidthKbps of the NetworkCapabilities. */
+  @HiddenApi
+  @Implementation(maxSdk = O_MR1, methodName = "setLinkUpstreamBandwidthKbps")
+  protected void setLinkUpstreamBandwidthKbpsPrePie(int kbps) {
+    reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
+        .setLinkUpstreamBandwidthKbps(kbps);
+  }
+
+  /**
+   * Sets the LinkUpstreamBandwidthKbps of the NetworkCapabilities.
+   *
+   * <p>Return type changed to {@code NetworkCapabilities} starting from Pie.
+   */
+  @HiddenApi
+  @Implementation(minSdk = P)
+  public NetworkCapabilities setLinkUpstreamBandwidthKbps(int kbps) {
+    return reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
+        .setLinkUpstreamBandwidthKbps(kbps);
+  }
+
   /** Clears capabilities. */
   public void clearCapabilities() {
     if (RuntimeEnvironment.getApiLevel() < M) {
@@ -162,5 +182,8 @@ public class ShadowNetworkCapabilities {
 
     @Direct
     NetworkCapabilities setLinkDownstreamBandwidthKbps(int kbps);
+
+    @Direct
+    NetworkCapabilities setLinkUpstreamBandwidthKbps(int kbps);
   }
 }
