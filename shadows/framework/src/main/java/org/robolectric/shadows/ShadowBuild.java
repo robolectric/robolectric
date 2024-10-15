@@ -11,6 +11,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
@@ -241,6 +242,17 @@ public class ShadowBuild {
     ReflectionHelpers.setStaticField(Build.class, "SOC_MODEL", systemOnChipModel);
   }
 
+  /**
+   * Sets the value of the {@link Build#ODM_SKU} field.
+   *
+   * <p>It will be reset for the next test.
+   *
+   * <p>Added in API level 31.
+   */
+  public static void setOdmSku(String odmSku) {
+    reflector(_Build_.class).setOdmSku(odmSku);
+  }
+
   @Implementation
   protected static String getRadioVersion() {
     if (radioVersionOverride != null) {
@@ -268,6 +280,10 @@ public class ShadowBuild {
 
     @Static
     void __staticInitializer__();
+
+    @Static
+    @Accessor("ODM_SKU")
+    void setOdmSku(String odmSku);
 
     @Static
     @Direct
