@@ -8,11 +8,11 @@ import static org.mockito.Mockito.verify;
 
 import android.view.Choreographer;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.time.Duration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
-import org.robolectric.util.TimeUtils;
 
 /** Unit tests for {@link ShadowLegacyChoreographer}. */
 @RunWith(AndroidJUnit4.class)
@@ -21,7 +21,7 @@ public class ShadowLegacyChoreographerTest {
 
   @Test
   public void setFrameInterval_shouldUpdateFrameInterval() {
-    final long frameInterval = 10 * TimeUtils.NANOS_PER_MS;
+    final long frameInterval = Duration.ofMillis(10).toNanos();
     ShadowLegacyChoreographer.setFrameInterval(frameInterval);
 
     final Choreographer instance = ShadowLegacyChoreographer.getInstance();
@@ -47,6 +47,7 @@ public class ShadowLegacyChoreographerTest {
     assertThat(ShadowLegacyChoreographer.getFrameInterval()).isEqualTo(1);
 
     ShadowLegacyChoreographer.reset();
-    assertThat(ShadowLegacyChoreographer.getFrameInterval()).isEqualTo(10 * TimeUtils.NANOS_PER_MS);
+    assertThat(ShadowLegacyChoreographer.getFrameInterval())
+        .isEqualTo(Duration.ofMillis(10).toNanos());
   }
 }
