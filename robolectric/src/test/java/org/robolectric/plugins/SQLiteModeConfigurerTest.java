@@ -1,5 +1,6 @@
 package org.robolectric.plugins;
 
+import static com.google.common.base.StandardSystemProperty.OS_NAME;
 import static com.google.common.truth.Truth.assertThat;
 
 import java.util.Properties;
@@ -31,17 +32,20 @@ public class SQLiteModeConfigurerTest {
 
   @Test
   public void osArchSpecificConfig() {
-    Properties systemProperties1 = new Properties();
-    systemProperties1.setProperty("os.name", "Mac OS X");
-    SQLiteModeConfigurer configurer1 =
-        new SQLiteModeConfigurer(systemProperties1, new PackagePropertiesLoader());
-    assertThat(configurer1.defaultConfig()).isSameInstanceAs(Mode.NATIVE);
+    String oldName = OS_NAME.value();
+    try {
+      System.setProperty("os.name", "Mac OS X");
+      SQLiteModeConfigurer configurer1 =
+          new SQLiteModeConfigurer(System.getProperties(), new PackagePropertiesLoader());
+      assertThat(configurer1.defaultConfig()).isSameInstanceAs(Mode.NATIVE);
 
-    Properties systemProperties2 = new Properties();
-    systemProperties2.setProperty("os.name", "Windows 7");
-    SQLiteModeConfigurer configurer2 =
-        new SQLiteModeConfigurer(systemProperties2, new PackagePropertiesLoader());
+      System.setProperty("os.name", "Windows 7");
+      SQLiteModeConfigurer configurer2 =
+          new SQLiteModeConfigurer(System.getProperties(), new PackagePropertiesLoader());
 
-    assertThat(configurer2.defaultConfig()).isSameInstanceAs(Mode.LEGACY);
+      assertThat(configurer2.defaultConfig()).isSameInstanceAs(Mode.LEGACY);
+    } finally {
+      System.setProperty("os.name", oldName);
+    }
   }
 }

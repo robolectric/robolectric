@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static com.google.common.base.StandardSystemProperty.OS_NAME;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -21,11 +20,11 @@ import android.view.Choreographer;
 import android.view.Surface;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
-import java.util.Locale;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.OsUtil;
 import org.robolectric.util.reflector.ForType;
 
 @Config(minSdk = Q)
@@ -110,7 +109,7 @@ public class ShadowNativeHardwareRendererTest {
 
       // Check that the pixel at (0, 0) is white.
       assertThat(Integer.toHexString(dstImageData[0])).isEqualTo("ffffffff");
-      if (isMac()) {
+      if (OsUtil.isMac()) {
         // Check for red pixels in ABGR format on Mac.
         assertThat(Integer.toHexString(dstImageData[1])).isEqualTo("ff0000ff");
         assertThat(Integer.toHexString(dstImageData[2])).isEqualTo("ff0000ff");
@@ -165,9 +164,5 @@ public class ShadowNativeHardwareRendererTest {
   @ForType(HardwareRenderer.class)
   interface HardwareRendererReflector {
     void setWideGamut(boolean wideGamut);
-  }
-
-  private static boolean isMac() {
-    return OS_NAME.value().toLowerCase(Locale.ROOT).contains("mac");
   }
 }

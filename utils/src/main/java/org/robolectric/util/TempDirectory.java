@@ -15,7 +15,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,7 +44,7 @@ public class TempDirectory {
       Collections.synchronizedSet(new HashSet<>());
 
   static {
-    if (isWindows()) {
+    if (OsUtil.isWindows()) {
       TempDirectory.findObsoleteWindowsTempDirectoriesInBackground();
     }
   }
@@ -86,7 +85,7 @@ public class TempDirectory {
         deletionExecutorService.execute(undeletedDirectory::destroy);
       }
     }
-    if (isWindows()) {
+    if (OsUtil.isWindows()) {
       synchronized (obsoleteTempDirectoriesToDelete) {
         for (Path obsoletePath : obsoleteTempDirectoriesToDelete) {
           deletionExecutorService.execute(() -> destroyObsoleteTempDirectory(obsoletePath));
@@ -141,7 +140,7 @@ public class TempDirectory {
       clearDirectory(basePath);
       Files.delete(basePath);
     } catch (IOException e) {
-      if (isWindows()) {
+      if (OsUtil.isWindows()) {
         // Windows is much more protective of files that have been opened in native code. For
         // instance, unlike in Mac and Linux, it's not possible to delete nativeruntime files
         // (dlls, fonts, icu data) in the same process where they were opened. Because of
@@ -162,7 +161,8 @@ public class TempDirectory {
           public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
               throws IOException {
             // Avoid deleting the obsolete temp directory marker
-            if (!(isWindows() && file.getFileName().toString().equals(OBSOLETE_MARKER_FILE_NAME))) {
+            if (!(OsUtil.isWindows()
+                && file.getFileName().toString().equals(OBSOLETE_MARKER_FILE_NAME))) {
               Files.delete(file);
             }
             return FileVisitResult.CONTINUE;
@@ -176,10 +176,6 @@ public class TempDirectory {
             return FileVisitResult.CONTINUE;
           }
         });
-  }
-
-  private static boolean isWindows() {
-    return System.getProperty("os.name").toLowerCase(Locale.US).contains("win");
   }
 
   private static void findObsoleteWindowsTempDirectoriesInBackground() {

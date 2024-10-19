@@ -22,11 +22,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import javax.annotation.Priority;
 import org.robolectric.pluginapi.NativeRuntimeLoader;
+import org.robolectric.util.OsUtil;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.inject.Injector;
@@ -154,9 +156,10 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   }
 
   private static boolean isSupported() {
-    return ("mac".equals(osName()) && ("aarch64".equals(arch()) || "x86_64".equals(arch())))
-        || ("linux".equals(osName()) && "x86_64".equals(arch()))
-        || ("windows".equals(osName()) && "x86_64".equals(arch()));
+    return (OsUtil.isMac()
+            && (Objects.equals(arch(), "aarch64") || Objects.equals(arch(), "x86_64")))
+        || (OsUtil.isLinux() && Objects.equals(arch(), "x86_64"))
+        || (OsUtil.isWindows() && Objects.equals(arch(), "x86_64"));
   }
 
   private static String nativeLibraryPath() {
@@ -167,12 +170,11 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   }
 
   private static String osName() {
-    String osName = OS_NAME.value().toLowerCase(Locale.US);
-    if (osName.contains("linux")) {
+    if (OsUtil.isLinux()) {
       return "linux";
-    } else if (osName.contains("mac")) {
+    } else if (OsUtil.isMac()) {
       return "mac";
-    } else if (osName.contains("win")) {
+    } else if (OsUtil.isWindows()) {
       return "windows";
     }
     return "unknown";
