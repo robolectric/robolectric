@@ -20,6 +20,7 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.integrationtests.sdkcompat.MainActivity.CreationSource
+import org.robolectric.shadows.ShadowApplication
 import org.robolectric.testapp.TestActivity
 
 @RunWith(RobolectricTestRunner::class)
@@ -29,6 +30,12 @@ class NormalCompatibilityTest {
   @Test
   fun `Environment SDK is 29`() {
     assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.Q)
+  }
+
+  @Test
+  fun `Retrieve ShadowApplication from Application succeed`() {
+    val shadowApplication: ShadowApplication = Shadows.shadowOf(application)
+    assertThat(shadowApplication).isNotNull()
   }
 
   @Test
