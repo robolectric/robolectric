@@ -62,10 +62,12 @@ community occur. There is also an active development tree of Robolectric
 internally at Google, where contributions from first-party Android developers
 occur. By having a development tree of Robolectric internally at Google, it
 enables first-party Android developers to more efficiently make contributions
-to Robolectric. This tree is synced directly to the [google
-branch](https://github.com/robolectric/robolectric/tree/google) branch every
-time a change occurs using the `Copybara` code sync tool. Bidirectional merges
-of this branch and the `master` branch occur regularly.
+to Robolectric. This tree is synced directly to the [`google`
+branch](https://github.com/robolectric/robolectric/tree/google) every
+time a change occurs using the [`Copybara`](https://github.com/google/copybara)
+code sync tool. Bidirectional merges of this branch and the
+[`master`](https://github.com/robolectric/robolectric/tree/master) branch occur
+regularly.
 
 Robolectric also has usage in the Android platform via the
 [external/robolectric](https://cs.android.com/android/platform/superproject/main/+/main:external/robolectric/)
