@@ -51,7 +51,7 @@ To get Robolectric up and running on your machine, check out
 [this guide](https://robolectric.org/building-robolectric/).
 
 To get a high-level overview of Robolectric's architecture, check out
-[ARCHITECTURE.md](ARCHITECTURE.md).
+[robolectric.org](https://robolectric.org/architecture).
 
 ## Development model
 
