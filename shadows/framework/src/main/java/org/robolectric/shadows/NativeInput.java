@@ -2,7 +2,10 @@ package org.robolectric.shadows;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.NativeAndroidInput.AINPUT_EVENT_TYPE_MOTION;
+import static org.robolectric.shadows.NativeAndroidInput.AINPUT_SOURCE_CLASS_JOYSTICK;
 import static org.robolectric.shadows.NativeAndroidInput.AINPUT_SOURCE_CLASS_POINTER;
+import static org.robolectric.shadows.NativeAndroidInput.AINPUT_SOURCE_CLASS_POSITION;
+import static org.robolectric.shadows.NativeAndroidInput.AINPUT_SOURCE_MOUSE_RELATIVE;
 import static org.robolectric.shadows.NativeAndroidInput.AKEY_EVENT_FLAG_CANCELED;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_CANCEL;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_DOWN;
@@ -30,7 +33,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.android.Ref;
+import org.robolectric.versioning.AndroidVersions;
 
 /**
  * Java representation of framework native input Transliterated from oreo-mr1 (SDK 27)
@@ -436,6 +441,9 @@ public class NativeInput {
 
     public float getAxisValue(int axis, int pointerIndex) {
       float value = getRawPointerCoords(pointerIndex).getAxisValue(axis);
+      if (shouldDisregardTransformation(mSource)) {
+        return value;
+      }
       switch (axis) {
         case AMOTION_EVENT_AXIS_X:
           return value + mXOffset;
@@ -507,6 +515,9 @@ public class NativeInput {
 
     public float getHistoricalAxisValue(int axis, int pointerIndex, int historicalIndex) {
       float value = getHistoricalRawPointerCoords(pointerIndex, historicalIndex).getAxisValue(axis);
+      if (shouldDisregardTransformation(mSource)) {
+        return value;
+      }
       switch (axis) {
         case AMOTION_EVENT_AXIS_X:
           return value + mXOffset;
@@ -953,6 +964,27 @@ public class NativeInput {
 
     List<NativeInput.PointerCoords> getSamplePointerCoords() {
       return mSamplePointerCoords;
+    }
+
+    // frameworks/native/libs/input/Input.cpp#isFromSource
+    private static boolean isFromSource(int source, int test) {
+      return (source & test) == test;
+    }
+
+    // frameworks/native/libs/input/Input.cpp#shouldDisregardTransformation
+    private static boolean shouldDisregardTransformation(int source) {
+      // From the ctesque test result, the offsetLocation is not supported by non pointer source
+      // sources from Android 12L. So this method expects itself can work from Android 12L.
+      if (RuntimeEnvironment.getApiLevel() >= AndroidVersions.Sv2.SDK_INT) {
+        // See
+        // https://cs.android.com/android/_/android/platform/frameworks/native/+/7e1ee565b3fe4738e6771bceb2e9679562232992.
+        // Do not apply any transformations to axes from joysticks, touchpads, or relative mice.
+        return isFromSource(source, AINPUT_SOURCE_CLASS_JOYSTICK)
+            || isFromSource(source, AINPUT_SOURCE_CLASS_POSITION)
+            || isFromSource(source, AINPUT_SOURCE_MOUSE_RELATIVE);
+      } else {
+        return false;
+      }
     }
   }
 }
