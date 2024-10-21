@@ -1,0 +1,27 @@
+name: Update Contributor Guidelines webpage
+
+on:
+  pull_request:
+    branches: [ master ]
+    types: [ closed ]
+    paths:
+      - '.github/CONTRIBUTING.md'
+
+jobs:
+  remind_webpage_update:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Remind about Contributor Guidelines webpage update
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `The Contributor Guidelines have been modified. Don't forget to redeploy the
+                [website](https://github.com/robolectric/robolectric.github.io) for the changes
+                to be visible on the website as well.`
+            })
