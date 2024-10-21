@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -8,6 +9,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.app.UiModeManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -18,6 +20,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
@@ -306,5 +309,49 @@ public class ShadowUIModeManagerTest {
     pi.versionCode = 1;
     pi.requestedPermissions = permissions;
     ((ShadowPackageManager) Shadow.extract(context.getPackageManager())).installPackage(pi);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void uiModeManager_activityContextEnabled_differentInstancesRetrieveSameValues() {
+    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
+    System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
+    try {
+      UiModeManager applicationUiModeManager =
+          (UiModeManager)
+              ApplicationProvider.getApplicationContext().getSystemService(Context.UI_MODE_SERVICE);
+      activity = Robolectric.setupActivity(Activity.class);
+      UiModeManager activityUiModeManager =
+          (UiModeManager) activity.getSystemService(Context.UI_MODE_SERVICE);
+
+      assertThat(applicationUiModeManager).isNotSameInstanceAs(activityUiModeManager);
+
+      int applicationNightMode = applicationUiModeManager.getNightMode();
+      int activityNightMode = activityUiModeManager.getNightMode();
+
+      assertThat(applicationNightMode).isEqualTo(activityNightMode);
+
+      int testMode = UiModeManager.MODE_NIGHT_YES;
+      if (applicationNightMode != testMode) {
+        applicationUiModeManager.setNightMode(testMode);
+        activityUiModeManager.setNightMode(testMode);
+      }
+
+      assertThat(applicationUiModeManager.getNightMode()).isEqualTo(testMode);
+      assertThat(activityUiModeManager.getNightMode()).isEqualTo(testMode);
+
+      // Additional test case for default reset method
+      applicationUiModeManager.setNightMode(UiModeManager.MODE_NIGHT_NO);
+      activityUiModeManager.setNightMode(UiModeManager.MODE_NIGHT_NO);
+
+      assertThat(applicationUiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_NO);
+      assertThat(activityUiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_NO);
+    } finally {
+      if (activity != null) {
+        activity.finish();
+      }
+      System.setProperty("robolectric.createActivityContexts", originalProperty);
+    }
   }
 }
