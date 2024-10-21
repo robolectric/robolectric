@@ -31,14 +31,14 @@ public final class AndroidVersionsTest {
   }
 
   @Test
-  public void testStandardInitializationW() {
-    assertThat(AndroidVersions.W.SDK_INT).isEqualTo(36);
-    assertThat(AndroidVersions.W.SHORT_CODE).isEqualTo("W");
-    assertThat(AndroidVersions.W.VERSION).isEqualTo("16");
-    assertThat(new AndroidVersions.W().getSdkInt()).isEqualTo(36);
-    assertThat(new AndroidVersions.W().getShortCode()).isEqualTo("W");
-    assertThat(new AndroidVersions.W().getVersion()).isEqualTo("16");
-    assertThat(new AndroidVersions.W().isReleased()).isFalse();
+  public void testStandardInitializationBaklava() {
+    assertThat(AndroidVersions.Baklava.SDK_INT).isEqualTo(36);
+    assertThat(AndroidVersions.Baklava.SHORT_CODE).isEqualTo("Baklava");
+    assertThat(AndroidVersions.Baklava.VERSION).isEqualTo("16");
+    assertThat(new AndroidVersions.Baklava().getSdkInt()).isEqualTo(36);
+    assertThat(new AndroidVersions.Baklava().getShortCode()).isEqualTo("Baklava");
+    assertThat(new AndroidVersions.Baklava().getVersion()).isEqualTo("16");
+    assertThat(new AndroidVersions.Baklava().isReleased()).isFalse();
   }
 
   @Test

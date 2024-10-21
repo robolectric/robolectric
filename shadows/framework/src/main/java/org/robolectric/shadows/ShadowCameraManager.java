@@ -124,7 +124,7 @@ public class ShadowCameraManager {
     return openCameraDeviceUserAsync(cameraId, callback, executor, uid, oomScoreOffset);
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = V.SDK_INT, maxSdk = V.SDK_INT)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId,
       CameraDevice.StateCallback callback,
