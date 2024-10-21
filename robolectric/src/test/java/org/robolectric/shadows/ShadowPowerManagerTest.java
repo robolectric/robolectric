@@ -257,6 +257,16 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void setIsDeviceIdleMode_broadcastsChange() {
+    shadowOf(powerManager).setIsDeviceIdleMode(true);
+    assertThat(shadowOf(context).getBroadcastIntents())
+        .comparingElementsUsing(Correspondence.from(Intent::filterEquals, "is filterEqual to"))
+        .contains(new Intent(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED));
+    shadowOf(context).clearBroadcastIntents();
+  }
+
+  @Test
   @Config(minSdk = N)
   public void isLightDeviceIdleMode_shouldGetAndSet() {
     assertThat(powerManager.isLightDeviceIdleMode()).isFalse();

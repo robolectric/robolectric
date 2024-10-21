@@ -162,6 +162,7 @@ public class ShadowPowerManager {
   /** Sets the value returned by {@link #isDeviceIdleMode()}. */
   public void setIsDeviceIdleMode(boolean isDeviceIdleMode) {
     this.isDeviceIdleMode = isDeviceIdleMode;
+    getContext().sendBroadcast(new Intent(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED));
   }
 
   /**
