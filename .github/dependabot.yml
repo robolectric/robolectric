@@ -13,7 +13,7 @@ updates:
     groups:
       android-gradle-plugin:
         patterns:
-          - "com.android.tools:common:*"
+          - "com.android.tools:common"
           - "com.android.tools.build:gradle*"
       androidx-test:
         patterns:
