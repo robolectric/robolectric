@@ -14,6 +14,8 @@ public final class PathIteratorNatives {
 
   public static native int nNext(long nativeIterator, long pointsAddress);
 
+  public static native int nNextHost(long nativeIterator, float[] pointsArray);
+
   public static native int nPeek(long nativeIterator);
 
   private PathIteratorNatives() {}
