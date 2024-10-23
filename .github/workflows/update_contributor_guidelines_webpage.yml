@@ -1,0 +1,34 @@
+name: Update Contributor Guidelines webpage
+
+on:
+  pull_request:
+    branches: [ master ]
+    types: [ closed ]
+    paths:
+      - '.github/CONTRIBUTING.md'
+
+jobs:
+  update_contributor_guidelines_webpage:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout robolectric.github.io
+        uses: actions/checkout@v4
+        with:
+          repository: robolectric/robolectric.github.io
+
+      - name: Create PR to update robolectric.org
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b redeploy_contributor_guidelines
+          git commit -m "Redeploy contributor guidelines" \
+            -m "[Contributor guidelines](https://github.com/robolectric/robolectric/blob/master/.github/CONTRIBUTING.md) have been updated." \
+            -m "Merge this PR to redeploy the [contributor guidelines](https://robolectric.org/contributing/) on the website." \
+            -m "This PR was opened because ${{ github.event.pull_request.url }} was merged."
+            --allow-empty
+          git push --set-upstream origin redeploy_contributor_guidelines
+          gh pr create --fill
