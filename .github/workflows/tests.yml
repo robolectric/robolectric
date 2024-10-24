@@ -23,7 +23,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
           ./gradlew assemble testClasses --parallel --stacktrace --no-watch-fs
 
   unit-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: build
     strategy:
       fail-fast: false
@@ -80,7 +80,7 @@ jobs:
           path: '**/build/test-results/**/TEST-*.xml'
 
   instrumentation-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     needs: build
 
@@ -169,7 +169,7 @@ jobs:
             **/build/outputs/*/connected/*
 
   publish-to-snapshots:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     env:
       SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
