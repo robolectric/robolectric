@@ -48,7 +48,7 @@ class AndroidSdk(
   }
 
   companion object {
-    private const val PREINSTRUMENTED_VERSION = 6
+    private const val PREINSTRUMENTED_VERSION = 7
 
     val LOLLIPOP = AndroidSdk(21, "5.0.2_r3", "r0")
     val LOLLIPOP_MR1 = AndroidSdk(22, "5.1.1_r9", "r2")
