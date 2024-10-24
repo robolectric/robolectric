@@ -30,7 +30,6 @@ import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.Function;
 import org.robolectric.util.PerfStatsCollector;
-import org.robolectric.util.Util;
 
 /**
  * ShadowWrangler matches shadowed classes up with corresponding shadows based on a {@link
@@ -71,24 +70,6 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
-
-  // Required to support the equivalent of MethodHandles.privateLookupIn in Java 8. It allows
-  // calling protected constructors using incokespecial.
-  private static final boolean HAS_PRIVATE_LOOKUP_IN = Util.getJavaVersion() >= 9;
-  private static final Constructor<MethodHandles.Lookup> JAVA_8_LOOKUP_CTOR;
-
-  static {
-    if (!HAS_PRIVATE_LOOKUP_IN) {
-      try {
-        JAVA_8_LOOKUP_CTOR = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
-        JAVA_8_LOOKUP_CTOR.setAccessible(true);
-      } catch (NoSuchMethodException e) {
-        throw new AssertionError(e);
-      }
-    } else {
-      JAVA_8_LOOKUP_CTOR = null;
-    }
-  }
 
   private static final Class<?>[] NO_ARGS = new Class<?>[0];
   static final Object NO_SHADOW = new Object();
@@ -213,7 +194,7 @@ public class ShadowWrangler implements ClassHandler {
                 // the wrong constructor may be called in situations where constructors with
                 // identical signatures are shadowed in object hierarchies.
                 mh =
-                    privateLookupFor(shadowMethod.getDeclaringClass())
+                    MethodHandles.privateLookupIn(shadowMethod.getDeclaringClass(), LOOKUP)
                         .unreflectSpecial(shadowMethod, shadowMethod.getDeclaringClass());
               } else {
                 mh = LOOKUP.unreflect(shadowMethod);
@@ -227,18 +208,6 @@ public class ShadowWrangler implements ClassHandler {
                 return mh;
               }
             });
-  }
-
-  private MethodHandles.Lookup privateLookupFor(Class<?> lookupClass)
-      throws IllegalAccessException {
-    if (HAS_PRIVATE_LOOKUP_IN) {
-      return MethodHandles.privateLookupIn(lookupClass, LOOKUP);
-    }
-    try {
-      return JAVA_8_LOOKUP_CTOR.newInstance(lookupClass);
-    } catch (ReflectiveOperationException e) {
-      throw new LinkageError(e.getMessage(), e);
-    }
   }
 
   /**

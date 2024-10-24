@@ -22,7 +22,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import org.robolectric.fakes.CleanerCompat;
@@ -30,33 +29,26 @@ import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.MethodRef;
 import org.robolectric.internal.bytecode.MethodSignature;
 import org.robolectric.util.Function;
-import org.robolectric.util.Util;
 
 public class AndroidInterceptors {
   private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
   public static Collection<Interceptor> all() {
-    List<Interceptor> interceptors =
-        new ArrayList<>(
-            asList(
-                new LinkedHashMapEldestInterceptor(),
-                new SystemTimeInterceptor(),
-                new SystemArrayCopyInterceptor(),
-                new LocaleAdjustLanguageCodeInterceptor(),
-                new SystemLogInterceptor(),
-                new FileDescriptorInterceptor(),
-                new NoOpInterceptor(),
-                new SocketInterceptor(),
-                new ReferenceRefersToInterceptor(),
-                new NioUtilsFreeDirectBufferInterceptor(),
-                new NioUtilsUnsafeArrayInterceptor(),
-                new NioUtilsUnsafeArrayOffsetInterceptor()));
-
-    if (Util.getJavaVersion() >= 9) {
-      interceptors.add(new CleanerInterceptor());
-    }
-
-    return interceptors;
+    return new ArrayList<>(
+        asList(
+            new LinkedHashMapEldestInterceptor(),
+            new SystemTimeInterceptor(),
+            new SystemArrayCopyInterceptor(),
+            new LocaleAdjustLanguageCodeInterceptor(),
+            new SystemLogInterceptor(),
+            new FileDescriptorInterceptor(),
+            new NoOpInterceptor(),
+            new SocketInterceptor(),
+            new ReferenceRefersToInterceptor(),
+            new NioUtilsFreeDirectBufferInterceptor(),
+            new NioUtilsUnsafeArrayInterceptor(),
+            new NioUtilsUnsafeArrayOffsetInterceptor(),
+            new CleanerInterceptor()));
   }
 
   /**

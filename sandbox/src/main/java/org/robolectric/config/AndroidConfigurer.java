@@ -7,7 +7,6 @@ import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.MethodRef;
 import org.robolectric.internal.bytecode.ShadowProviders;
-import org.robolectric.util.Util;
 
 /** Instruments the Android jars */
 public class AndroidConfigurer {
@@ -77,9 +76,7 @@ public class AndroidConfigurer {
         .addClassNameTranslation("java.lang.UnsafeByteSequence", Object.class.getName())
         .addClassNameTranslation("java.util.jar.StrictJarFile", Object.class.getName());
 
-    if (Util.getJavaVersion() >= 9) {
-      builder.addClassNameTranslation("sun.misc.Cleaner", "java.lang.ref.Cleaner$Cleanable");
-    }
+    builder.addClassNameTranslation("sun.misc.Cleaner", "java.lang.ref.Cleaner$Cleanable");
 
     // Don't acquire legacy support packages.
     builder
