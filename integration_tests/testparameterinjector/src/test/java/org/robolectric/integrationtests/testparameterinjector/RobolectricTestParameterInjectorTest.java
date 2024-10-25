@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.integrationtests.testparameterinjector;
 
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
@@ -7,6 +7,7 @@ import android.os.Build.VERSION;
 import com.google.testing.junit.testparameterinjector.TestParameter;
 import java.util.ArrayList;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
@@ -15,6 +16,7 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
+import org.robolectric.RobolectricTestParameterInjector;
 import org.robolectric.annotation.Config;
 
 @SuppressWarnings({"TestMethodWithIncorrectSignature", "UnconstructableJUnitTestCase"})
@@ -33,6 +35,7 @@ public class RobolectricTestParameterInjectorTest {
         });
   }
 
+  @Ignore
   public static class NoInjection {
     @Config(sdk = S)
     @Test
@@ -50,6 +53,7 @@ public class RobolectricTestParameterInjectorTest {
     assertThat(runner.testCount()).isEqualTo(1);
   }
 
+  @Ignore
   @Config(sdk = Config.NEWEST_SDK)
   public static class InjectedMethod {
     @Test
@@ -71,6 +75,7 @@ public class RobolectricTestParameterInjectorTest {
     assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?true\\]");
   }
 
+  @Ignore
   @Config(sdk = Config.NEWEST_SDK)
   public static class InjectedField {
     @TestParameter({"hello", "world"})
@@ -96,6 +101,7 @@ public class RobolectricTestParameterInjectorTest {
     assertThat(descriptions.get(1).getMethodName()).isEqualTo("test[world]");
   }
 
+  @Ignore
   @Config(sdk = Config.NEWEST_SDK)
   public static class InjectedConstructor {
     private final int param;
@@ -122,6 +128,7 @@ public class RobolectricTestParameterInjectorTest {
     assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?2\\]");
   }
 
+  @Ignore
   @Config(sdk = Config.NEWEST_SDK)
   public static class InjectedEnum {
     enum Value {
@@ -148,6 +155,7 @@ public class RobolectricTestParameterInjectorTest {
     assertThat(descriptions.get(1).getMethodName()).isEqualTo("test[TWO]");
   }
 
+  @Ignore
   public static class MultiSdk {
     @Test
     @Config(sdk = {28, 31})
@@ -175,6 +183,7 @@ public class RobolectricTestParameterInjectorTest {
 
   // Simulate behavior of proto lite enum toString which includes the object hashcode (proto lite
   // toString tries to avoid dep on enum name so that the name can be stripped by appreduce).
+  @Ignore
   @Config(sdk = Config.NEWEST_SDK)
   public static class HashCodeToString {
     enum HashCodeToStringValue {
@@ -202,11 +211,13 @@ public class RobolectricTestParameterInjectorTest {
     assertThat(runner.testCount()).isEqualTo(2);
   }
 
+  @Ignore
   public static class Base {
     @Test
     public void test() {}
   }
 
+  @Ignore
   @Config(sdk = Config.NEWEST_SDK)
   public static class Child extends Base {
     @Override
