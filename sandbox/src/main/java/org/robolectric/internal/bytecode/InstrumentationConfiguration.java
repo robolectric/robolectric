@@ -158,6 +158,12 @@ public class InstrumentationConfiguration {
    * @return True if the resource should be loaded.
    */
   public boolean shouldAcquireResource(String name) {
+    if (name.contains("android_runtime")) {
+      return true;
+    }
+    if (name.contains("icudt75l.dat")) {
+      return true;
+    }
     return RESOURCES_TO_ALWAYS_ACQUIRE.contains(name);
   }
 

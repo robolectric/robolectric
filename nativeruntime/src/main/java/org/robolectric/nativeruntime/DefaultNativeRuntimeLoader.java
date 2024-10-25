@@ -5,9 +5,11 @@ import static com.google.common.base.StandardSystemProperty.OS_ARCH;
 import static com.google.common.base.StandardSystemProperty.OS_NAME;
 
 import android.database.CursorWindow;
+import android.graphics.Typeface;
 import android.os.Build;
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -28,8 +30,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import javax.annotation.Priority;
 import org.robolectric.pluginapi.NativeRuntimeLoader;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.OsUtil;
 import org.robolectric.util.PerfStatsCollector;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.inject.Injector;
 
@@ -41,6 +45,91 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
 
   private static final AtomicReference<NativeRuntimeLoader> nativeRuntimeLoader =
       new AtomicReference<>();
+
+  protected static final String METHOD_BINDING_FORMAT = "$$robo$$${method}$nativeBinding";
+
+  // Core classes for which native methods are to be registered for Android V and above.
+  protected static final ImmutableList<String> CORE_CLASS_NATIVES =
+      ImmutableList.copyOf(
+          new String[] {
+            "android.animation.PropertyValuesHolder",
+            "android.database.CursorWindow",
+            "android.database.sqlite.SQLiteConnection",
+            "android.database.sqlite.SQLiteRawStatement",
+            "android.media.ImageReader",
+            "android.view.Surface",
+            "com.android.internal.util.VirtualRefBasePtr",
+            "libcore.util.NativeAllocationRegistry",
+          });
+
+  // Graphics classes for which native methods are to be registered.
+  protected static final ImmutableList<String> GRAPHICS_CLASS_NATIVES =
+      ImmutableList.copyOf(
+          new String[] {
+            "android.graphics.Bitmap",
+            "android.graphics.BitmapFactory",
+            "android.graphics.ByteBufferStreamAdaptor",
+            "android.graphics.Camera",
+            "android.graphics.Canvas",
+            "android.graphics.CanvasProperty",
+            "android.graphics.Color",
+            "android.graphics.ColorFilter",
+            "android.graphics.ColorSpace",
+            "android.graphics.CreateJavaOutputStreamAdaptor",
+            "android.graphics.DrawFilter",
+            "android.graphics.FontFamily",
+            "android.graphics.Gainmap",
+            "android.graphics.Graphics",
+            "android.graphics.HardwareRenderer",
+            "android.graphics.HardwareRendererObserver",
+            "android.graphics.ImageDecoder",
+            "android.graphics.Interpolator",
+            "android.graphics.MaskFilter",
+            "android.graphics.Matrix",
+            "android.graphics.NinePatch",
+            "android.graphics.Paint",
+            "android.graphics.Path",
+            "android.graphics.PathEffect",
+            "android.graphics.PathIterator",
+            "android.graphics.PathMeasure",
+            "android.graphics.Picture",
+            "android.graphics.RecordingCanvas",
+            "android.graphics.Region",
+            "android.graphics.RenderEffect",
+            "android.graphics.RenderNode",
+            "android.graphics.Shader",
+            "android.graphics.Typeface",
+            "android.graphics.YuvImage",
+            "android.graphics.animation.NativeInterpolatorFactory",
+            "android.graphics.animation.RenderNodeAnimator",
+            "android.graphics.drawable.AnimatedVectorDrawable",
+            "android.graphics.drawable.AnimatedImageDrawable",
+            "android.graphics.drawable.VectorDrawable",
+            "android.graphics.fonts.Font",
+            "android.graphics.fonts.FontFamily",
+            "android.graphics.text.LineBreaker",
+            "android.graphics.text.MeasuredText",
+            "android.graphics.text.TextRunShaper",
+            "android.util.PathParser",
+          });
+
+  /**
+   * {@link #DEFERRED_STATIC_INITIALIZERS} that invoke their own native methods in static
+   * initializers. Unlike libcore, registering JNI on the JVM causes static initialization to be
+   * performed on the class. Because of this, static initializers cannot invoke the native methods
+   * of the class under registration. Executing these static initializers must be deferred until
+   * after JNI has been registered.
+   */
+  protected static final ImmutableList<String> DEFERRED_STATIC_INITIALIZERS =
+      ImmutableList.copyOf(
+          new String[] {
+            "android.graphics.FontFamily",
+            "android.graphics.Path",
+            "android.graphics.PathIterator",
+            "android.graphics.Typeface",
+            "android.graphics.text.MeasuredText$Builder",
+            "android.media.ImageReader",
+          });
 
   private TempDirectory extractDirectory;
 
@@ -77,12 +166,22 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
               "loadNativeRuntime",
               () -> {
                 extractDirectory = new TempDirectory("nativeruntime");
-                System.setProperty("icu.locale.default", Locale.getDefault().toLanguageTag());
                 if (Build.VERSION.SDK_INT >= O) {
+                  // Only copy fonts if graphics is supported, not just SQLite.
                   maybeCopyFonts(extractDirectory);
                 }
                 maybeCopyIcuData(extractDirectory);
+                if (isAndroidVOrGreater()) {
+                  System.setProperty("core_native_classes", String.join(",", CORE_CLASS_NATIVES));
+                  System.setProperty(
+                      "graphics_native_classes", String.join(",", GRAPHICS_CLASS_NATIVES));
+                  System.setProperty("method_binding_format", METHOD_BINDING_FORMAT);
+                }
                 loadLibrary(extractDirectory);
+                if (isAndroidVOrGreater()) {
+                  invokeDeferredStaticInitializers();
+                  Typeface.loadPreinstalledSystemFontMap();
+                }
               });
     } catch (IOException e) {
       throw new AssertionError("Unable to load Robolectric native runtime library", e);
@@ -93,14 +192,16 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   private void maybeCopyIcuData(TempDirectory tempDirectory) throws IOException {
     URL icuDatUrl;
     try {
-      icuDatUrl = Resources.getResource("icu/icudt68l.dat");
+      icuDatUrl =
+          Resources.getResource(isAndroidVOrGreater() ? "icu/icudt75l.dat" : "icu/icudt68l.dat");
     } catch (IllegalArgumentException e) {
       return;
     }
     Path icuPath = tempDirectory.create("icu");
-    Path icuDatPath = icuPath.resolve("icudt68l.dat");
+    Path icuDatPath = icuPath.resolve(isAndroidVOrGreater() ? "icudt75l.dat" : "icudt68l.dat");
     Resources.asByteSource(icuDatUrl).copyTo(Files.asByteSink(icuDatPath.toFile()));
     System.setProperty("icu.data.path", icuDatPath.toAbsolutePath().toString());
+    System.setProperty("icu.locale.default", Locale.getDefault().toLanguageTag());
   }
 
   /**
@@ -148,7 +249,9 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   }
 
   private void loadLibrary(TempDirectory tempDirectory) throws IOException {
-    String libraryName = System.mapLibraryName("robolectric-nativeruntime");
+    String libraryName =
+        System.mapLibraryName(
+            isAndroidVOrGreater() ? "android_runtime" : "robolectric-nativeruntime");
     Path libraryPath = tempDirectory.getBasePath().resolve(libraryName);
     URL libraryResource = Resources.getResource(nativeLibraryPath());
     Resources.asByteSource(libraryResource).copyTo(Files.asByteSink(libraryPath.toFile()));
@@ -166,7 +269,11 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
     String os = osName();
     String arch = arch();
     return String.format(
-        "native/%s/%s/%s", os, arch, System.mapLibraryName("robolectric-nativeruntime"));
+        "native/%s/%s/%s",
+        os,
+        arch,
+        System.mapLibraryName(
+            isAndroidVOrGreater() ? "android_runtime" : "robolectric-nativeruntime"));
   }
 
   private static String osName() {
@@ -201,5 +308,16 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   @VisibleForTesting
   static void resetLoaded() {
     loaded.set(false);
+  }
+
+  protected void invokeDeferredStaticInitializers() {
+    for (String className : DEFERRED_STATIC_INITIALIZERS) {
+      ReflectionHelpers.callStaticMethod(
+          Shadow.class.getClassLoader(), className, "__staticInitializer__");
+    }
+  }
+
+  private static boolean isAndroidVOrGreater() {
+    return Build.VERSION.SDK_INT >= /* VANILLA_ICE_CREAM */ 35;
   }
 }

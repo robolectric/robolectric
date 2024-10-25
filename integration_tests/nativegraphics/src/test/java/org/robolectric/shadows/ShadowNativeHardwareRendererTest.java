@@ -23,9 +23,11 @@ import java.nio.IntBuffer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.OsUtil;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.V;
 
 @Config(minSdk = Q)
 @RunWith(RobolectricTestRunner.class)
@@ -109,12 +111,12 @@ public class ShadowNativeHardwareRendererTest {
 
       // Check that the pixel at (0, 0) is white.
       assertThat(Integer.toHexString(dstImageData[0])).isEqualTo("ffffffff");
-      if (OsUtil.isMac()) {
-        // Check for red pixels in ABGR format on Mac.
+      if (OsUtil.isMac() && RuntimeEnvironment.getApiLevel() < V.SDK_INT) {
+        // Check for red pixels in ABGR format on Mac for U and below.
         assertThat(Integer.toHexString(dstImageData[1])).isEqualTo("ff0000ff");
         assertThat(Integer.toHexString(dstImageData[2])).isEqualTo("ff0000ff");
       } else {
-        // Check for red pixels in ARGB format on Linux/Windows.
+        // Check for red pixels in ARGB format on Linux/Windows, and for Mac for V and above.
         assertThat(Integer.toHexString(dstImageData[1])).isEqualTo("ffff0000");
         assertThat(Integer.toHexString(dstImageData[2])).isEqualTo("ffff0000");
       }
