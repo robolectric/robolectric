@@ -96,6 +96,8 @@ okhttp = "4.12.0"
 # https://github.com/powermock/powermock/releases
 powermock = "2.0.9"
 
+snakeyaml = "2.3"
+
 sqlite4java = "1.0.392"
 
 # https://developer.android.com/jetpack/androidx/versions
@@ -187,6 +189,8 @@ powermock-api-mockito2 = { module = "org.powermock:powermock-api-mockito2", vers
 powermock-classloading-xstream = { module = "org.powermock:powermock-classloading-xstream", version.ref = "powermock" }
 
 robolectric-nativeruntime-dist-compat = { module = "org.robolectric:nativeruntime-dist-compat", version.ref = "robolectric-nativeruntime-dist-compat" }
+
+snakeyaml = {module = "org.yaml:snakeyaml", version.ref="snakeyaml" }
 
 sqlite4java = { module = "com.almworks.sqlite4java:sqlite4java", version.ref = "sqlite4java" }
 sqlite4java-osx = { module = "com.almworks.sqlite4java:libsqlite4java-osx", version.ref = "sqlite4java" }

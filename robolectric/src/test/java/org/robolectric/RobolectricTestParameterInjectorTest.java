@@ -1,12 +1,11 @@
 package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.S;
-import static com.google.common.truth.Correspondence.transforming;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build.VERSION;
-import com.google.common.truth.Correspondence;
 import com.google.testing.junit.testparameterinjector.TestParameter;
+import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -21,9 +20,6 @@ import org.robolectric.annotation.Config;
 @SuppressWarnings({"TestMethodWithIncorrectSignature", "UnconstructableJUnitTestCase"})
 @RunWith(JUnit4.class)
 public class RobolectricTestParameterInjectorTest {
-  private static final Correspondence<Description, String> METHOD_NAME_TRANSFORM =
-      transforming(Description::getMethodName, "has method name");
-
   private final RunNotifier runNotifier = new RunNotifier();
 
   @Before
@@ -69,9 +65,10 @@ public class RobolectricTestParameterInjectorTest {
     runner.run(runNotifier);
 
     assertThat(runner.testCount()).isEqualTo(2);
-    assertThat(runner.getDescription().getChildren())
-        .comparingElementsUsing(METHOD_NAME_TRANSFORM)
-        .containsExactly("test[param=true]", "test[param=false]");
+    ArrayList<Description> descriptions = runner.getDescription().getChildren();
+    // In gradle it's test[false], in bazel it's test[param=false].
+    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?false\\]");
+    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?true\\]");
   }
 
   @Config(sdk = Config.NEWEST_SDK)
@@ -92,9 +89,11 @@ public class RobolectricTestParameterInjectorTest {
     runner.run(runNotifier);
 
     assertThat(runner.testCount()).isEqualTo(2);
-    assertThat(runner.getDescription().getChildren())
-        .comparingElementsUsing(METHOD_NAME_TRANSFORM)
-        .containsExactly("test[hello]", "test[world]");
+
+    assertThat(runner.testCount()).isEqualTo(2);
+    ArrayList<Description> descriptions = runner.getDescription().getChildren();
+    assertThat(descriptions.get(0).getMethodName()).isEqualTo("test[hello]");
+    assertThat(descriptions.get(1).getMethodName()).isEqualTo("test[world]");
   }
 
   @Config(sdk = Config.NEWEST_SDK)
@@ -116,11 +115,11 @@ public class RobolectricTestParameterInjectorTest {
     Runner runner = new RobolectricTestParameterInjector(InjectedConstructor.class);
 
     runner.run(runNotifier);
-
     assertThat(runner.testCount()).isEqualTo(2);
-    assertThat(runner.getDescription().getChildren())
-        .comparingElementsUsing(METHOD_NAME_TRANSFORM)
-        .containsExactly("test[param=1]", "test[param=2]");
+    ArrayList<Description> descriptions = runner.getDescription().getChildren();
+    // In gradle it's test[1], in bazel it's test[param=1].
+    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?1\\]");
+    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?2\\]");
   }
 
   @Config(sdk = Config.NEWEST_SDK)
@@ -143,9 +142,10 @@ public class RobolectricTestParameterInjectorTest {
     runner.run(runNotifier);
 
     assertThat(runner.testCount()).isEqualTo(2);
-    assertThat(runner.getDescription().getChildren())
-        .comparingElementsUsing(METHOD_NAME_TRANSFORM)
-        .containsExactly("test[ONE]", "test[TWO]");
+
+    ArrayList<Description> descriptions = runner.getDescription().getChildren();
+    assertThat(descriptions.get(0).getMethodName()).isEqualTo("test[ONE]");
+    assertThat(descriptions.get(1).getMethodName()).isEqualTo("test[TWO]");
   }
 
   public static class MultiSdk {
@@ -164,13 +164,13 @@ public class RobolectricTestParameterInjectorTest {
     runner.run(runNotifier);
 
     assertThat(runner.testCount()).isEqualTo(4);
-    assertThat(runner.getDescription().getChildren())
-        .comparingElementsUsing(METHOD_NAME_TRANSFORM)
-        .containsExactly(
-            "test[param=true]",
-            "test[param=false]",
-            "test[param=true][28]",
-            "test[param=false][28]");
+
+    ArrayList<Description> descriptions = runner.getDescription().getChildren();
+    // In gradle it's test[false][28], in bazel it's test[param=false][28].
+    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?false\\]\\[28\\]");
+    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?true\\]\\[28\\]");
+    assertThat(descriptions.get(2).getMethodName()).matches("test\\[(param=)?false\\]");
+    assertThat(descriptions.get(3).getMethodName()).matches("test\\[(param=)?true\\]");
   }
 
   // Simulate behavior of proto lite enum toString which includes the object hashcode (proto lite

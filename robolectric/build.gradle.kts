@@ -31,6 +31,8 @@ dependencies {
   api(project(":shadows:framework"))
 
   implementation(libs.conscrypt.openjdk.uber)
+  implementation(libs.snakeyaml)
+
   api(libs.bcprov.jdk18on)
   compileOnly(libs.findbugs.jsr305)
 
