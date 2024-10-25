@@ -36,6 +36,7 @@ import android.view.animation.Transformation;
 import com.google.common.annotations.Beta;
 import com.google.common.collect.ImmutableList;
 import java.io.PrintStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -53,7 +54,6 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowViewRootImpl.ViewRootImplReflector;
-import org.robolectric.util.TimeUtils;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -767,7 +767,7 @@ public class ShadowView {
         startTime = animation.getStartTime();
         elapsedTime +=
             ShadowLooper.looperMode().equals(LooperMode.Mode.LEGACY)
-                ? ShadowChoreographer.getFrameInterval() / TimeUtils.NANOS_PER_MS
+                ? Duration.ofNanos(ShadowChoreographer.getFrameInterval()).toMillis()
                 : ShadowChoreographer.getFrameDelay().toMillis();
         Choreographer.getInstance().postCallback(Choreographer.CALLBACK_ANIMATION, this, null);
       } else if (animationRunner == this) {

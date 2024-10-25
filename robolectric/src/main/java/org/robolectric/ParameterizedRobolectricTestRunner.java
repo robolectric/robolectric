@@ -38,6 +38,8 @@ import org.robolectric.util.ReflectionHelpers;
  * <p>This class takes care of the fact that the test runner and the test class are actually loaded
  * from different class loaders and therefore parameter objects created by one cannot be assigned to
  * instances of the other.
+ *
+ * <p>See also {@link RobolectricTestParameterInjector} for a more modern alternative.
  */
 public final class ParameterizedRobolectricTestRunner extends Suite {
 

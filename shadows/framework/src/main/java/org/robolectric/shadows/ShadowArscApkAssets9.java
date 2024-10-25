@@ -24,6 +24,7 @@ import org.robolectric.res.android.CppApkAssets;
 import org.robolectric.res.android.Registries;
 import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.shadows.ShadowApkAssets.Picker;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -122,30 +123,35 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       return cachedApkAssetsPtr;
     }
 
-    ATRACE_NAME(String.format("LoadApkAssets(%s)", path));
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "load binary " + (system ? "framework" : "app") + " resources",
+            () -> {
+              ATRACE_NAME(String.format("LoadApkAssets(%s)", path));
 
-    CppApkAssets apk_assets;
-    try {
-      if (overlay) {
-        apk_assets = CppApkAssets.LoadOverlay(path, system);
-      } else if (forceSharedLib) {
-        apk_assets = CppApkAssets.LoadAsSharedLibrary(path, system);
-      } else {
-        apk_assets = CppApkAssets.Load(path, system);
-      }
-    } catch (OutOfMemoryError e) {
-      OutOfMemoryError outOfMemoryError = new OutOfMemoryError("Failed to load " + path);
-      outOfMemoryError.initCause(e);
-      throw outOfMemoryError;
-    }
+              CppApkAssets apk_assets;
+              try {
+                if (overlay) {
+                  apk_assets = CppApkAssets.LoadOverlay(path, system);
+                } else if (forceSharedLib) {
+                  apk_assets = CppApkAssets.LoadAsSharedLibrary(path, system);
+                } else {
+                  apk_assets = CppApkAssets.Load(path, system);
+                }
+              } catch (OutOfMemoryError e) {
+                OutOfMemoryError outOfMemoryError = new OutOfMemoryError("Failed to load " + path);
+                outOfMemoryError.initCause(e);
+                throw outOfMemoryError;
+              }
 
-    if (apk_assets == null) {
-      String error_msg = String.format("Failed to load asset path %s", path);
-      throw new IOException(error_msg);
-    }
-    long ptr = Registries.NATIVE_APK_ASSETS_REGISTRY.register(apk_assets);
-    ApkAssetsCache.put(path, system, RuntimeEnvironment.getApiLevel(), ptr);
-    return ptr;
+              if (apk_assets == null) {
+                String error_msg = String.format("Failed to load asset path %s", path);
+                throw new IOException(error_msg);
+              }
+              long ptr = Registries.NATIVE_APK_ASSETS_REGISTRY.register(apk_assets);
+              ApkAssetsCache.put(path, system, RuntimeEnvironment.getApiLevel(), ptr);
+              return ptr;
+            });
   }
 
   @Implementation(minSdk = R)

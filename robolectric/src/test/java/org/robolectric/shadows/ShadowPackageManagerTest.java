@@ -119,6 +119,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import org.junit.After;
 import org.junit.Assert;
@@ -4704,6 +4705,38 @@ public class ShadowPackageManagerTest {
         .asList()
         .containsExactly(preferredOrder, priority, defaultResolveInfo)
         .inOrder();
+  }
+
+  @Test
+  public void reQueryOverriddenIntents_shouldReturnsDifferentInstancesOfSameParcelables() {
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.activityInfo = new ActivityInfo();
+    resolveInfo.activityInfo.packageName = "test.package";
+    resolveInfo.activityInfo.name = "test.activity";
+    shadowOf(packageManager).addResolveInfoForIntent(intent, resolveInfo);
+
+    List<ResolveInfo> resolveInfoList1 = packageManager.queryIntentActivities(intent, 0);
+    List<ResolveInfo> resolveInfoList2 = packageManager.queryIntentActivities(intent, 0);
+
+    assertThat(resolveInfoList1).hasSize(1);
+    assertThat(resolveInfoList2).hasSize(1);
+    assertThat(resolveInfoList1).containsNoneIn(resolveInfoList2);
+
+    Iterator<ResolveInfo> iterator1 = resolveInfoList1.iterator();
+    Iterator<ResolveInfo> iterator2 = resolveInfoList2.iterator();
+    while (iterator1.hasNext() && iterator2.hasNext()) {
+      ResolveInfo parcellable1 = iterator1.next();
+      ResolveInfo parcellable2 = iterator2.next();
+      ActivityInfo activityInfo1 = parcellable1.activityInfo;
+      ActivityInfo activityInfo2 = parcellable2.activityInfo;
+
+      assertThat(activityInfo1.packageName).isEqualTo("test.package");
+      assertThat(activityInfo1.name).isEqualTo("test.activity");
+
+      assertThat(activityInfo1.packageName).isEqualTo(activityInfo2.packageName);
+      assertThat(activityInfo1.name).isEqualTo(activityInfo2.name);
+    }
   }
 
   private static PackageInfo createPackageInfoWithPackageName(String packageName) {

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -19,15 +20,18 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Parcel;
+import android.os.PersistableBundle;
 import android.util.ArraySet;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Range;
 import com.google.common.collect.SetMultimap;
+import com.google.common.primitives.Ints;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,10 +43,14 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow of {@link UsageStatsManager}. */
 @Implements(value = UsageStatsManager.class)
@@ -232,6 +240,22 @@ public class ShadowUsageStatsManager {
     List<Event> results =
         ImmutableList.copyOf(
             Iterables.concat(eventsByTimeStamp.subMap(beginTime, endTime).values()));
+    return createUsageEvents(results);
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected UsageEvents queryEvents(@ClassName("android.app.usage.UsageEventsQuery") Object query) {
+    UsageEventsQueryReflector queryReflector = reflector(UsageEventsQueryReflector.class, query);
+    long beginTime = queryReflector.getBeginTimeMillis();
+    long endTime = queryReflector.getEndTimeMillis();
+    int[] eventTypes = queryReflector.getEventTypes();
+    ImmutableSet<Integer> eventTypesSet = ImmutableSet.copyOf(Ints.asList(eventTypes));
+    List<Event> results = new ArrayList<>();
+    for (Event event : Iterables.concat(eventsByTimeStamp.subMap(beginTime, endTime).values())) {
+      if (eventTypesSet.contains(event.getEventType())) {
+        results.add(event);
+      }
+    }
     return createUsageEvents(results);
   }
 
@@ -781,5 +805,30 @@ public class ShadowUsageStatsManager {
       event.mBucketAndReason |= bucket << 16;
       return this;
     }
+
+    @TargetApi(V.SDK_INT)
+    public EventBuilder setExtras(PersistableBundle extras) {
+      EventReflector eventReflector = reflector(EventReflector.class, event);
+      eventReflector.setExtras(extras);
+      return this;
+    }
+  }
+
+  // TODO: remove reflection calls once Android V is fully supported.
+  @ForType(className = "android.app.usage.UsageEventsQuery")
+  interface UsageEventsQueryReflector {
+    int[] getEventTypes();
+
+    long getBeginTimeMillis();
+
+    long getEndTimeMillis();
+  }
+
+  @ForType(Event.class)
+  interface EventReflector {
+    @Accessor("mExtras")
+    void setExtras(PersistableBundle extras);
+
+    PersistableBundle getExtras();
   }
 }

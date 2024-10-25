@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
-import static com.google.common.base.StandardSystemProperty.OS_NAME;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertSame;
 import static org.junit.Assert.assertEquals;
@@ -24,13 +23,13 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.function.IntFunction;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.OsUtil;
 import org.robolectric.versioning.AndroidVersions.V;
 
 @Config(minSdk = P)
@@ -77,7 +76,7 @@ public class ShadowNativeImageDecoderTest {
                 new Record(R.drawable.webp_test, 640, 480, "image/webp", false, false, SRGB)));
 
     // x-adobe-dng is not supported on Windows
-    if (!OS_NAME.value().toLowerCase(Locale.ROOT).contains("win")) {
+    if (!OsUtil.isWindows()) {
       records.add(new Record(R.raw.sample_1mp, 600, 338, "image/x-adobe-dng", false, false, SRGB));
     }
 

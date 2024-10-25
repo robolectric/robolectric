@@ -48,7 +48,7 @@ class AndroidSdk(
   }
 
   companion object {
-    private const val PREINSTRUMENTED_VERSION = 6
+    private const val PREINSTRUMENTED_VERSION = 7
 
     val LOLLIPOP = AndroidSdk(21, "5.0.2_r3", "r0")
     val LOLLIPOP_MR1 = AndroidSdk(22, "5.1.1_r9", "r2")
@@ -64,9 +64,10 @@ class AndroidSdk(
     val S_V2 = AndroidSdk(32, "12.1", "8229987")
     val TIRAMISU = AndroidSdk(33, "13", "9030017")
     val U = AndroidSdk(34, "14", "10818077")
+    val V = AndroidSdk(35, "15", "12543294")
 
     val ALL_SDKS =
-      listOf(LOLLIPOP, LOLLIPOP_MR1, M, N, N_MR1, O, O_MR1, P, Q, R, S, S_V2, TIRAMISU, U)
+      listOf(LOLLIPOP, LOLLIPOP_MR1, M, N, N_MR1, O, O_MR1, P, Q, R, S, S_V2, TIRAMISU, U, V)
 
     val MAX_SDK = ALL_SDKS.maxBy { it.apiLevel }
   }

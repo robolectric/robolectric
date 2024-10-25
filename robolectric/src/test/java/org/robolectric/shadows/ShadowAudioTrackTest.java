@@ -650,6 +650,32 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
     assertThat(listenerCounter2.get()).isEqualTo(2);
   }
 
+  @Test
+  @Config(minSdk = N)
+  public void play_illegalStateOnPlayEnabled_throws() {
+    ShadowAudioTrack.enableIllegalStateOnPlay(/* enabled= */ true);
+    AudioTrack audioTrack = new AudioTrack.Builder().build();
+    assertThrows(IllegalStateException.class, audioTrack::play);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void play_illegalStateOnPlayEnabled_thenDisabled_notThrowing() {
+    ShadowAudioTrack.enableIllegalStateOnPlay(/* enabled= */ true);
+    AudioTrack audioTrack = new AudioTrack.Builder().build();
+    ShadowAudioTrack.enableIllegalStateOnPlay(/* enabled= */ false);
+    audioTrack.play();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void play_illegalStateOnPlayEnabled_reset_notThrowing() {
+    ShadowAudioTrack.enableIllegalStateOnPlay(/* enabled= */ true);
+    AudioTrack audioTrack = new AudioTrack.Builder().build();
+    ShadowAudioTrack.resetTest();
+    audioTrack.play();
+  }
+
   @Override
   @Config(minSdk = Q)
   public void onAudioDataWritten(

@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 
-import com.android.server.pm.parsing.library.PackageSharedLibraryUpdater;
 import java.util.List;
 import java.util.function.Supplier;
 import org.robolectric.annotation.Implementation;
@@ -25,9 +24,7 @@ public class ShadowPackageBackwardCompatibility {
    */
   @Implementation(minSdk = P)
   protected static boolean addOptionalUpdater(
-      List<PackageSharedLibraryUpdater> packageUpdaters,
-      String className,
-      Supplier<PackageSharedLibraryUpdater> defaultUpdater) {
+      List<Object> packageUpdaters, String className, Supplier<Object> defaultUpdater) {
     return false;
   }
 }

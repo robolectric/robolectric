@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
@@ -143,6 +144,24 @@ public class ShadowMediaPlayerTest {
 
     MediaPlayer mp = MediaPlayer.create(context, 123, new AudioAttributes.Builder().build(), 42);
     assertThat(mp.getAudioSessionId()).isEqualTo(42);
+  }
+
+  @Test
+  public void create_withResourceIdAudioAttributesAndAudioSessionId_shouldSetAudioAttributes() {
+    Application context = ApplicationProvider.getApplicationContext();
+    ShadowMediaPlayer.addMediaInfo(
+        DataSource.toDataSource("android.resource://" + context.getPackageName() + "/123"),
+        new ShadowMediaPlayer.MediaInfo(100, 10));
+
+    AudioAttributes audioAttributes =
+        new AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .build();
+    MediaPlayer mp = MediaPlayer.create(context, 123, audioAttributes, 42);
+
+    ShadowMediaPlayer shadow = shadowOf(mp);
+    assertThat(shadow.getAudioAttributes()).isEqualTo(audioAttributes);
   }
 
   @Test
@@ -674,6 +693,23 @@ public class ShadowMediaPlayerTest {
   @Test
   public void testStopStates() {
     testStates("stop", EnumSet.of(IDLE, INITIALIZED, ERROR), onErrorTester, STOPPED);
+  }
+
+  @Test
+  public void testSetAudioAttributes() {
+    AudioAttributes audioAttributes =
+        new AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .build();
+    mediaPlayer.setAudioAttributes(audioAttributes);
+
+    assertThat(shadowMediaPlayer.getAudioAttributes()).isEqualTo(audioAttributes);
+  }
+
+  @Test
+  public void testSetAudioAttributes_nullAudioAttributes_throwsIllegalArgumentException() {
+    assertThrows(IllegalArgumentException.class, () -> mediaPlayer.setAudioAttributes(null));
   }
 
   @Test

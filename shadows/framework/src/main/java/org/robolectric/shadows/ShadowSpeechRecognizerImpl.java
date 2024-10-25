@@ -46,7 +46,6 @@ import org.robolectric.versioning.AndroidVersions.V;
  */
 @Implements(
     className = ShadowSpeechRecognizerImpl.CLASS_NAME,
-    looseSignatures = true,
     isInAndroidSdk = false,
     minSdk = V.SDK_INT)
 public class ShadowSpeechRecognizerImpl extends ShadowSpeechRecognizer {

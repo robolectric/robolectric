@@ -864,26 +864,36 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       short density,
       @NonNull TypedValue typed_value,
       boolean resolve_references) {
-    CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    final Ref<Res_value> value = new Ref<>(null);
-    final Ref<ResTable_config> selected_config = new Ref<>(null);
-    final Ref<Integer> flags = new Ref<>(0);
-    ApkAssetsCookie cookie =
-        assetmanager.GetResource(
-            resid, false /*may_be_bag*/, (short) (density), value, selected_config, flags);
-    if (cookie.intValue() == kInvalidCookie) {
-      return ApkAssetsCookieToJavaCookie(K_INVALID_COOKIE);
-    }
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "binary nativeGetResourceValue",
+            () -> {
+              CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
+              final Ref<Res_value> value = new Ref<>(null);
+              final Ref<ResTable_config> selected_config = new Ref<>(null);
+              final Ref<Integer> flags = new Ref<>(0);
+              ApkAssetsCookie cookie =
+                  assetmanager.GetResource(
+                      resid,
+                      false /*may_be_bag*/,
+                      (short) (density),
+                      value,
+                      selected_config,
+                      flags);
+              if (cookie.intValue() == kInvalidCookie) {
+                return ApkAssetsCookieToJavaCookie(K_INVALID_COOKIE);
+              }
 
-    final Ref<Integer> ref = new Ref<>(resid);
-    if (resolve_references) {
-      cookie = assetmanager.ResolveReference(cookie, value, selected_config, flags, ref);
-      if (cookie.intValue() == kInvalidCookie) {
-        return ApkAssetsCookieToJavaCookie(K_INVALID_COOKIE);
-      }
-    }
-    return CopyValue(
-        cookie, value.get(), ref.get(), flags.get(), selected_config.get(), typed_value);
+              final Ref<Integer> ref = new Ref<>(resid);
+              if (resolve_references) {
+                cookie = assetmanager.ResolveReference(cookie, value, selected_config, flags, ref);
+                if (cookie.intValue() == kInvalidCookie) {
+                  return ApkAssetsCookieToJavaCookie(K_INVALID_COOKIE);
+                }
+              }
+              return CopyValue(
+                  cookie, value.get(), ref.get(), flags.get(), selected_config.get(), typed_value);
+            });
   }
 
   // static jint NativeGetResourceBagValue(JNIEnv* env, jclass /*clazz*/, jlong ptr, jint resid,

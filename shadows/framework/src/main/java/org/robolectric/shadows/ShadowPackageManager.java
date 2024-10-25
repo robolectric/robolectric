@@ -29,6 +29,7 @@ import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.util.Arrays.asList;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -80,6 +81,7 @@ import android.util.Pair;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.errorprone.annotations.InlineMe;
@@ -1355,13 +1357,9 @@ public class ShadowPackageManager {
   protected List<ResolveInfo> queryOverriddenIntents(Intent intent, int flags) {
     List<ResolveInfo> overrides = resolveInfoForIntent.get(intent);
     if (overrides == null) {
-      return Collections.emptyList();
+      return ImmutableList.of();
     }
-    List<ResolveInfo> result = new ArrayList<>(overrides.size());
-    for (ResolveInfo resolveInfo : overrides) {
-      result.add(ShadowResolveInfo.newResolveInfo(resolveInfo));
-    }
-    return result;
+    return overrides.stream().map(ShadowResolveInfo::newResolveInfo).collect(toImmutableList());
   }
 
   /**

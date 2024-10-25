@@ -31,6 +31,8 @@ dependencies {
   api(project(":shadows:framework"))
 
   implementation(libs.conscrypt.openjdk.uber)
+  implementation(libs.snakeyaml)
+
   api(libs.bcprov.jdk18on)
   compileOnly(libs.findbugs.jsr305)
 
@@ -40,6 +42,7 @@ dependencies {
 
   api("androidx.test:monitor:$axtMonitorVersion@aar")
   implementation("androidx.test.espresso:espresso-idling-resource:$espressoVersion@aar")
+  implementation("com.google.testparameterinjector:test-parameter-injector:1.18@jar")
 
   testImplementation(libs.androidx.annotation)
   testImplementation(libs.junit4)

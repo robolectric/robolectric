@@ -115,6 +115,13 @@ public class ShadowNetworkCapabilitiesTest {
   }
 
   @Test
+  public void setLinkUpstreamBandwidthKbps() {
+    NetworkCapabilities networkCapabilities = ShadowNetworkCapabilities.newInstance();
+    shadowOf(networkCapabilities).setLinkUpstreamBandwidthKbps(100);
+    assertThat(networkCapabilities.getLinkUpstreamBandwidthKbps()).isEqualTo(100);
+  }
+
+  @Test
   public void resetCapabilities_resetsCapabilities() {
     NetworkCapabilities networkCapabilities = ShadowNetworkCapabilities.newInstance();
     ShadowNetworkCapabilities shadowNetworkCapabilities = shadowOf(networkCapabilities);

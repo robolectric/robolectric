@@ -22,7 +22,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import org.robolectric.fakes.CleanerCompat;
@@ -30,31 +29,26 @@ import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.MethodRef;
 import org.robolectric.internal.bytecode.MethodSignature;
 import org.robolectric.util.Function;
-import org.robolectric.util.Util;
 
 public class AndroidInterceptors {
   private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
   public static Collection<Interceptor> all() {
-    List<Interceptor> interceptors =
-        new ArrayList<>(
-            asList(
-                new LinkedHashMapEldestInterceptor(),
-                new SystemTimeInterceptor(),
-                new SystemArrayCopyInterceptor(),
-                new LocaleAdjustLanguageCodeInterceptor(),
-                new SystemLogInterceptor(),
-                new FileDescriptorInterceptor(),
-                new NoOpInterceptor(),
-                new SocketInterceptor(),
-                new ReferenceRefersToInterceptor(),
-                new NioUtilsFreeDirectBufferInterceptor()));
-
-    if (Util.getJavaVersion() >= 9) {
-      interceptors.add(new CleanerInterceptor());
-    }
-
-    return interceptors;
+    return new ArrayList<>(
+        asList(
+            new LinkedHashMapEldestInterceptor(),
+            new SystemTimeInterceptor(),
+            new SystemArrayCopyInterceptor(),
+            new LocaleAdjustLanguageCodeInterceptor(),
+            new SystemLogInterceptor(),
+            new FileDescriptorInterceptor(),
+            new NoOpInterceptor(),
+            new SocketInterceptor(),
+            new ReferenceRefersToInterceptor(),
+            new NioUtilsFreeDirectBufferInterceptor(),
+            new NioUtilsUnsafeArrayInterceptor(),
+            new NioUtilsUnsafeArrayOffsetInterceptor(),
+            new CleanerInterceptor()));
   }
 
   /**
@@ -83,9 +77,17 @@ public class AndroidInterceptors {
 
     static Object setInt(FileDescriptor input, int value) {
       try {
-        input.getClass().getDeclaredField("fd").setInt(input, value);
-      } catch (Exception e) {
-        // Ignore
+        final Object obj =
+            Class.forName("jdk.internal.access.SharedSecrets")
+                .getMethod("getJavaIOFileDescriptorAccess")
+                .invoke(null);
+        Class.forName("jdk.internal.access.JavaIOFileDescriptorAccess")
+            .getMethod("set", FileDescriptor.class, int.class)
+            .invoke(obj, input, value);
+      } catch (ReflectiveOperationException e) {
+        throw new RuntimeException(
+            "Failed to interact with raw FileDescriptor internals;" + " perhaps JRE has changed?",
+            e);
       }
       return null;
     }
@@ -528,6 +530,55 @@ public class AndroidInterceptors {
     public MethodHandle getMethodHandle(String methodName, MethodType type)
         throws NoSuchMethodException, IllegalAccessException {
       return lookup.findStatic(getClass(), METHOD, methodType(void.class, ByteBuffer.class));
+    }
+  }
+
+  /** AndroidInterceptor for NioUtils.unsafeArray. */
+  public static class NioUtilsUnsafeArrayInterceptor extends Interceptor {
+    private static final String METHOD = "unsafeArray";
+
+    public NioUtilsUnsafeArrayInterceptor() {
+      super(new MethodRef("java.nio.NioUtils", METHOD));
+    }
+
+    @SuppressWarnings("ByteBufferBackingArray")
+    static byte[] unsafeArray(ByteBuffer buffer) {
+      return buffer.array();
+    }
+
+    @Override
+    public Function<Object, Object> handle(MethodSignature methodSignature) {
+      return (theClass, value, params) -> unsafeArray((ByteBuffer) value);
+    }
+
+    @Override
+    public MethodHandle getMethodHandle(String methodName, MethodType type)
+        throws NoSuchMethodException, IllegalAccessException {
+      return lookup.findStatic(getClass(), METHOD, methodType(byte[].class, ByteBuffer.class));
+    }
+  }
+
+  /** AndroidInterceptor for NioUtils.unsafeArrayOffset. */
+  public static class NioUtilsUnsafeArrayOffsetInterceptor extends Interceptor {
+    private static final String METHOD = "unsafeArrayOffset";
+
+    public NioUtilsUnsafeArrayOffsetInterceptor() {
+      super(new MethodRef("java.nio.NioUtils", METHOD));
+    }
+
+    static int unsafeArrayOffset(ByteBuffer buffer) {
+      return buffer.arrayOffset();
+    }
+
+    @Override
+    public Function<Object, Object> handle(MethodSignature methodSignature) {
+      return (theClass, value, params) -> unsafeArrayOffset((ByteBuffer) value);
+    }
+
+    @Override
+    public MethodHandle getMethodHandle(String methodName, MethodType type)
+        throws NoSuchMethodException, IllegalAccessException {
+      return lookup.findStatic(getClass(), METHOD, methodType(int.class, ByteBuffer.class));
     }
   }
 }

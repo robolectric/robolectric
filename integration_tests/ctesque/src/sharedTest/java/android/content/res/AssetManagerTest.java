@@ -7,6 +7,7 @@ import android.content.Context;
 import android.os.ParcelFileDescriptor;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.io.CharStreams;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -66,6 +67,22 @@ public class AssetManagerTest {
     String actual = CharStreams.toString(isr);
     assertThat(actual).isEqualTo("assetsHome!");
     assertThat(assetFileDescriptor.getLength()).isEqualTo(11);
+  }
+
+  @Test
+  public void openFd_readLargeAsset() throws Exception {
+    try (AssetFileDescriptor assetFileDescriptor = assetManager.openFd("robolectric.png")) {
+      FileInputStream fis = assetFileDescriptor.createInputStream();
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      int read = 0;
+      // choose a buffer size < file length
+      byte[] buf = new byte[8192];
+      while ((read = fis.read(buf)) > 0) {
+        bos.write(buf, 0, read);
+      }
+      byte[] output = bos.toByteArray();
+      assertThat(output).hasLength(23447);
+    }
   }
 
   @Test

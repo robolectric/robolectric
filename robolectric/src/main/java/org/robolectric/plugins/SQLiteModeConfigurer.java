@@ -1,15 +1,14 @@
 package org.robolectric.plugins;
 
-import static com.google.common.base.StandardSystemProperty.OS_NAME;
 
 import com.google.auto.service.AutoService;
-import java.util.Locale;
 import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.SQLiteMode.Mode;
 import org.robolectric.pluginapi.config.Configurer;
 import org.robolectric.plugins.config.SingleValueConfigurer;
+import org.robolectric.util.OsUtil;
 
 /** Provides configuration to Robolectric for its @{@link SQLiteMode} annotation. */
 @AutoService(Configurer.class)
@@ -20,7 +19,7 @@ public class SQLiteModeConfigurer extends SingleValueConfigurer<SQLiteMode, SQLi
     super(
         SQLiteMode.class,
         SQLiteMode.Mode.class,
-        defaultValue(systemProperties),
+        defaultValue(),
         propertyFileLoader,
         systemProperties);
   }
@@ -31,10 +30,9 @@ public class SQLiteModeConfigurer extends SingleValueConfigurer<SQLiteMode, SQLi
   }
 
   @Nonnull
-  private static final SQLiteMode.Mode defaultValue(Properties properties) {
-    String os = properties.getProperty(OS_NAME.key(), "").toLowerCase(Locale.US);
+  private static final SQLiteMode.Mode defaultValue() {
     // NATIVE SQLite mode not supported on Windows
-    if (os.contains("win")) {
+    if (OsUtil.isWindows()) {
       return Mode.LEGACY;
     }
     return Mode.NATIVE;

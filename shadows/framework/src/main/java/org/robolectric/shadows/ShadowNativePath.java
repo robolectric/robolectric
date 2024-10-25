@@ -94,6 +94,17 @@ public class ShadowNativePath extends ShadowPath {
     PathNatives.nRQuadTo(nPath, dx1, dy1, dx2, dy2);
   }
 
+  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  protected static void nConicTo(long nPath, float x1, float y1, float x2, float y2, float weight) {
+    PathNatives.nConicTo(nPath, x1, y1, x2, y2, weight);
+  }
+
+  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  protected static void nRConicTo(
+      long nPath, float dx1, float dy1, float dx2, float dy2, float weight) {
+    PathNatives.nRConicTo(nPath, dx1, dy1, dx2, dy2, weight);
+  }
+
   @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nCubicTo(
       long nPath, float x1, float y1, float x2, float y2, float x3, float y3) {
@@ -246,8 +257,19 @@ public class ShadowNativePath extends ShadowPath {
   }
 
   @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  protected static boolean nInterpolate(
+      long startPath, long endPath, float t, long interpolatedPath) {
+    return PathNatives.nInterpolate(startPath, endPath, t, interpolatedPath);
+  }
+
+  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
   protected static int nGetGenerationID(long nativePath) {
-    return 0;
+    return PathNatives.nGetGenerationID(nativePath);
+  }
+
+  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  protected static boolean nIsInterpolatable(long startPath, long endPath) {
+    return PathNatives.nIsInterpolatable(startPath, endPath);
   }
 
   @Override

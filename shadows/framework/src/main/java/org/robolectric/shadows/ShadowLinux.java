@@ -14,6 +14,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousCloseException;
+import java.nio.channels.FileChannel;
 import java.time.Duration;
 import libcore.io.Linux;
 import org.robolectric.annotation.Implementation;
@@ -29,7 +32,7 @@ public class ShadowLinux {
 
   @Implementation
   public StructStat stat(String path) throws ErrnoException {
-    int mode = OsConstantsValues.getMode(path);
+    int mode = ShadowOsConstants.getMode(path);
     long size = 0;
     long modifiedTime = 0;
     if (path != null) {
@@ -95,14 +98,18 @@ public class ShadowLinux {
   @Implementation
   protected int pread(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount, long offset)
       throws ErrnoException, InterruptedIOException {
-
-    try (FileInputStream fis = new FileInputStream(fd)) {
-      for (long n = offset; n > 0; ) {
-        n -= fis.skip(n);
-      }
-      return fis.read(bytes, byteOffset, byteCount);
+    // explicitly do not close the opened InputStream here, as java's FileDescriptor will close
+    // and become invalid
+    try {
+      FileInputStream is = new FileInputStream(fd);
+      FileChannel channel = is.getChannel();
+      ByteBuffer buf = ByteBuffer.wrap(bytes, byteOffset, byteCount);
+      return channel.read(buf, offset);
+    } catch (AsynchronousCloseException e) {
+      throw new InterruptedIOException(e.getMessage());
     } catch (IOException e) {
-      return -1;
+      // Most likely EIO
+      throw new ErrnoException("pread", OsConstants.EIO, e);
     }
   }
 

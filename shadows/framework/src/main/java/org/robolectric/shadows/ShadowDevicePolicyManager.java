@@ -17,6 +17,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.accounts.Account;
 import android.annotation.NonNull;
@@ -33,6 +34,7 @@ import android.app.admin.DevicePolicyManager.PasswordComplexity;
 import android.app.admin.DevicePolicyManager.UserProvisioningState;
 import android.app.admin.DevicePolicyState;
 import android.app.admin.IDevicePolicyManager;
+import android.app.admin.SystemUpdateInfo;
 import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
 import android.content.Context;
@@ -70,6 +72,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link DevicePolicyManager}. */
@@ -157,6 +161,7 @@ public class ShadowDevicePolicyManager {
   private static List<UserHandle> policyManagedProfiles = new ArrayList<>();
   @Nullable private static PersistableBundle lastTransferOwnershipBundle;
   private static Object /* DevicePolicyState */ devicePolicyState;
+  @Nullable private static SystemUpdateInfo systemUpdateInfo;
 
   @Resetter
   public static void reset() {
@@ -1657,5 +1662,39 @@ public class ShadowDevicePolicyManager {
    */
   public void setDevicePolicyState(Object policyState) {
     devicePolicyState = policyState;
+  }
+
+  /**
+   * Set the {@link SystemUpdateInfo} to be returned by {@link
+   * DevicePolicyManager#getPendingSystemUpdate(ComponentName)}.
+   */
+  public void setPendingSystemUpdate(@Nullable SystemUpdateInfo info) {
+    systemUpdateInfo = info;
+  }
+
+  @Implementation(minSdk = O)
+  protected void notifyPendingSystemUpdate(long updateReceivedTime) {
+    systemUpdateInfo = reflector(SystemUpdateInfoReflector.class).of(updateReceivedTime);
+  }
+
+  @Implementation(minSdk = O)
+  protected void notifyPendingSystemUpdate(long updateReceivedTime, boolean isSecurityPatch) {
+    systemUpdateInfo =
+        reflector(SystemUpdateInfoReflector.class).of(updateReceivedTime, isSecurityPatch);
+  }
+
+  @Implementation(minSdk = O)
+  @Nullable
+  protected SystemUpdateInfo getPendingSystemUpdate(@Nullable ComponentName admin) {
+    return systemUpdateInfo;
+  }
+
+  @ForType(SystemUpdateInfo.class)
+  interface SystemUpdateInfoReflector {
+    @Static
+    SystemUpdateInfo of(long updateReceivedTime);
+
+    @Static
+    SystemUpdateInfo of(long updateReceivedTime, boolean isSecurityPatch);
   }
 }

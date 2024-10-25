@@ -31,6 +31,7 @@ import org.robolectric.versioning.AndroidVersions.S;
 import org.robolectric.versioning.AndroidVersions.Sv2;
 import org.robolectric.versioning.AndroidVersions.T;
 import org.robolectric.versioning.AndroidVersions.U;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /**
  * Robolectric's default {@link SdkProvider}.
@@ -45,7 +46,7 @@ public class DefaultSdkProvider implements SdkProvider {
 
   private static final int RUNNING_JAVA_VERSION = Util.getJavaVersion();
 
-  private static final int PREINSTRUMENTED_VERSION = 6;
+  private static final int PREINSTRUMENTED_VERSION = 7;
 
   private final DependencyResolver dependencyResolver;
 
@@ -75,6 +76,7 @@ public class DefaultSdkProvider implements SdkProvider {
     knownSdks.put(Sv2.SDK_INT, new DefaultSdk(Sv2.SDK_INT, "12.1", "8229987", "REL", 9));
     knownSdks.put(T.SDK_INT, new DefaultSdk(T.SDK_INT, "13", "9030017", "Tiramisu", 9));
     knownSdks.put(U.SDK_INT, new DefaultSdk(U.SDK_INT, "14", "10818077", "REL", 17));
+    knownSdks.put(V.SDK_INT, new DefaultSdk(V.SDK_INT, "15", "12543294", "REL", 17));
   }
 
   @Override

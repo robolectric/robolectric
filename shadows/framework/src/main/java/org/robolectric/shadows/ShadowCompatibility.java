@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.compat.Compatibility;
-import android.compat.annotation.ChangeId;
 import android.os.Build.VERSION_CODES;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -34,7 +33,7 @@ public class ShadowCompatibility {
   @RealObject protected static Compatibility realCompatibility;
 
   @Implementation(minSdk = VERSION_CODES.S_V2)
-  protected static boolean isChangeEnabled(@ChangeId long changeId) {
+  protected static boolean isChangeEnabled(long changeId) {
     if (changeId == CALL_ACTIVITY_RESULT_BEFORE_RESUME) {
       return false;
     } else if (ENABLED_SINCE_TARGET_SDK.containsKey(changeId)) {
@@ -60,6 +59,6 @@ public class ShadowCompatibility {
 
     @Direct
     @Static
-    boolean isChangeEnabled(@ChangeId long changeId);
+    boolean isChangeEnabled(long changeId);
   }
 }

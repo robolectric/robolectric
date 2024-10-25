@@ -28,7 +28,6 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.util.TimeUtils;
 
 /** A specialized test for verifying that looper state is cleared properly between tests. */
 @RunWith(JUnit4.class)
@@ -229,7 +228,7 @@ public class ShadowLooperResetterTest {
       // ensure callback happened and that clock is consistent with Choreographer's frame time
       // tracking
       assertThat(frameTimeNanosResult.get())
-          .isEqualTo(SystemClock.uptimeMillis() * TimeUtils.NANOS_PER_MS);
+          .isEqualTo(Duration.ofMillis(SystemClock.uptimeMillis()).toNanos());
 
       // Now set Choreographer so it expects there is a pending vsync+frame callback.
       // Choreographer will ignore vsync+frame requests if there is already one pending.
@@ -300,7 +299,7 @@ public class ShadowLooperResetterTest {
       // ensure callback happened and that clock is consistent with Choreographer's frame time
       // tracking
       assertThat(frameTimeNanosResult.get())
-          .isEqualTo(SystemClock.uptimeMillis() * TimeUtils.NANOS_PER_MS);
+          .isEqualTo(Duration.ofMillis(SystemClock.uptimeMillis()).toNanos());
 
       // Now set Choreographer so it expects there is a pending vsync+frame callback.
       // Choreographer will ignore vsync+frame requests if there is already one pending.
@@ -385,7 +384,7 @@ public class ShadowLooperResetterTest {
       // ensure callback happened and that clock is consistent with Choreographer's frame time
       // tracking
       assertThat(frameTimeNanosResult.get())
-          .isEqualTo(SystemClock.uptimeMillis() * TimeUtils.NANOS_PER_MS);
+          .isEqualTo(Duration.ofMillis(SystemClock.uptimeMillis()).toNanos());
 
       // Now set Choreographer so it expects there is a pending vsync+frame callback.
       // Choreographer will ignore vsync+frame requests if there is already one pending.

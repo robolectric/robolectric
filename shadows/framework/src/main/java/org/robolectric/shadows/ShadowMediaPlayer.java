@@ -17,6 +17,7 @@ import static org.robolectric.shadows.ShadowMediaPlayer.State.PREPARING;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.STARTED;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.STOPPED;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
 import android.content.Context;
@@ -49,6 +50,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.util.DataSource;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /**
@@ -407,6 +410,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   private int audioStreamType;
   private boolean looping;
   private int pendingSeek = -1;
+  private AudioAttributes audioAttributes;
 
   /** Various source variables from setDataSource() */
   private Uri sourceUri;
@@ -538,6 +542,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     if (mp != null) {
       ShadowMediaPlayer shadow = Shadow.extract(mp);
       shadow.audioSessionId = audioSessionId;
+      mp.setAudioAttributes(audioAttributes);
     }
     return mp;
   }
@@ -1179,6 +1184,15 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     audioSessionId = sessionId;
   }
 
+  @Implementation
+  protected void setAudioAttributes(AudioAttributes audioAttributes) {
+    if (audioAttributes == null) {
+      throw new IllegalArgumentException("AudioAttributes must not be null");
+    }
+    reflector(MediaPlayerBaseReflector.class, player).setAudioAttributes(audioAttributes);
+    this.audioAttributes = audioAttributes;
+  }
+
   private static final EnumSet<State> nonPlayingStates = EnumSet.of(IDLE, INITIALIZED, STOPPED);
 
   @Implementation
@@ -1402,6 +1416,15 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   /**
+   * Retrieves the currently set {@link AudioAttributes}.
+   *
+   * @return The current {@link AudioAttributes}.
+   */
+  public AudioAttributes getAudioAttributes() {
+    return audioAttributes;
+  }
+
+  /**
    * Retrieves the pending seek setting.
    *
    * @return The position to which the shadow player is seeking for the seek in progress (ie, after
@@ -1571,6 +1594,12 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
       // to PLAYBACK_COMPLETED
       state = ERROR;
     }
+  }
+
+  @ForType(MediaPlayer.class)
+  interface MediaPlayerBaseReflector {
+    @Direct
+    void setAudioAttributes(AudioAttributes attributes);
   }
 
   @Resetter
