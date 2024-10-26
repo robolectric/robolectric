@@ -5,7 +5,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.robolectric.integrationtests.androidx">
   <uses-sdk
-      android:targetSdkVersion="34" />
+      android:targetSdkVersion="35" />
 
   <application />
 

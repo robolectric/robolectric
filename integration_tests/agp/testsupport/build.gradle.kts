@@ -11,7 +11,7 @@ android {
     targetCompatibility = JavaVersion.VERSION_1_8
   }
 
-  testOptions.targetSdk = 34
+  testOptions.targetSdk = 35
 }
 
 dependencies { api(project(":integration_tests:agp")) }
