@@ -65,6 +65,13 @@ class GradleManagedDevicePlugin : Plugin<Project> {
           systemImageSource = "aosp-atd"
         }
 
+        // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi35DebugAndroidTest
+        localDevices.register(NAME_API_35) {
+          device = "Nexus One"
+          apiLevel = 35
+          systemImageSource = "aosp"
+        }
+
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneIntegrationTestGroupDebugAndroidTest
         groups.register("nexusOneIntegrationTestGroup") {
           targetDevices.add(devices[NAME_API_29])
@@ -73,6 +80,7 @@ class GradleManagedDevicePlugin : Plugin<Project> {
           targetDevices.add(devices[NAME_API_32])
           targetDevices.add(devices[NAME_API_33])
           targetDevices.add(devices[NAME_API_34])
+          targetDevices.add(devices[NAME_API_35])
         }
       } // managedDevices
     } // testOptions
@@ -85,5 +93,6 @@ class GradleManagedDevicePlugin : Plugin<Project> {
     private const val NAME_API_32 = "nexusOneApi32"
     private const val NAME_API_33 = "nexusOneApi33"
     private const val NAME_API_34 = "nexusOneApi34"
+    private const val NAME_API_35 = "nexusOneApi35"
   }
 }
