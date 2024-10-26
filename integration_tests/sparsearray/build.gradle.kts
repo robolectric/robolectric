@@ -20,7 +20,7 @@ android {
   kotlinOptions { jvmTarget = "1.8" }
 
   testOptions {
-    targetSdk = 34
+    targetSdk = 35
     unitTests.isIncludeAndroidResources = true
   }
 }

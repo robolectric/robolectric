@@ -5,7 +5,7 @@
 
   <uses-sdk
       android:minSdkVersion="21"
-      android:targetSdkVersion="34"/>
+      android:targetSdkVersion="35"/>
 
   <application
         android:appComponentFactory="org.robolectric.integrationtests.axt.ActivityScenarioTest$CustomAppComponentFactory">
