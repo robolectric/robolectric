@@ -12,7 +12,11 @@
         android:name="org.robolectric.integrationtests.axt.EspressoActivity"
         android:exported="true"/>
     <activity
+        android:name="org.robolectric.integrationtests.axt.NoActionBarEspressoActivity"
+        android:exported="true"/>
+    <activity
         android:name="org.robolectric.integrationtests.axt.EspressoScrollingActivity"
+        android:theme="@style/Theme.AppCompat.NoActionBar"
         android:exported="true"/>
 
     <activity

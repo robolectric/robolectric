@@ -15,7 +15,17 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:name="org.robolectric.integrationtests.axt.NoActionBarEspressoActivity"
+            android:label="Activity Label"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity android:name="org.robolectric.integrationtests.axt.EspressoScrollingActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:exported="true" />
         <activity android:name="org.robolectric.integrationtests.axt.ActivityWithPlatformMenu"
             android:exported="true">

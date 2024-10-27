@@ -9,6 +9,7 @@
 
   <application>
     <activity android:name=".EspressoActivity" android:exported="true"/>
+    <activity android:name=".NoActionBarEspressoActivity" android:exported="true"/>
   </application>
 
   <instrumentation
