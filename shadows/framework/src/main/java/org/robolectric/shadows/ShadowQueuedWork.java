@@ -25,7 +25,7 @@ public class ShadowQueuedWork {
       resetStateApi26();
     } else {
       QueuedWork.waitToFinish();
-      reflector(_QueuedWork_.class).setSingleThreadExecutor(null);
+      reflector(QueuedWorkReflector.class).setSingleThreadExecutor(null);
     }
   }
 
@@ -34,16 +34,15 @@ public class ShadowQueuedWork {
     if (queuedWorkHandler != null) {
       queuedWorkHandler.removeCallbacksAndMessages(null);
     }
-    _QueuedWork_ _queuedWorkStatic_ = reflector(_QueuedWork_.class);
-    _queuedWorkStatic_.getFinishers().clear();
-    _queuedWorkStatic_.getWork().clear();
-    _queuedWorkStatic_.setNumWaits(0);
-    _queuedWorkStatic_.setHandler(null);
+    QueuedWorkReflector queuedWorkReflector = reflector(QueuedWorkReflector.class);
+    queuedWorkReflector.getFinishers().clear();
+    queuedWorkReflector.getWork().clear();
+    queuedWorkReflector.setNumWaits(0);
   }
 
   /** Accessor interface for {@link QueuedWork}'s internals. */
   @ForType(QueuedWork.class)
-  interface _QueuedWork_ {
+  interface QueuedWorkReflector {
 
     @Static
     @Accessor("sFinishers")
@@ -65,5 +64,8 @@ public class ShadowQueuedWork {
     @Static
     @Accessor("sHandler")
     void setHandler(Handler handler);
+
+    @Static
+    void add(Runnable runnable);
   }
 }
