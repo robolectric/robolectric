@@ -48,10 +48,6 @@ public class Helpers {
     @Override
     public boolean apply(Type type, VisitorState state) {
       Type bound = expected.get(state);
-      if (bound == null || type == null) {
-        // TODO(cushon): type suppliers are allowed to return null :(
-        return false;
-      }
       return ASTHelpers.isCastable(type, bound, state);
     }
   }
