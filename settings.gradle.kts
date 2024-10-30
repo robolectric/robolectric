@@ -41,6 +41,7 @@ include(
   ":integration_tests:sdkcompat",
   ":integration_tests:security-providers",
   ":integration_tests:sparsearray",
+  ":integration_tests:testparameterinjector",
   ":integration_tests:versioning",
   ":junit",
   ":nativeruntime",
