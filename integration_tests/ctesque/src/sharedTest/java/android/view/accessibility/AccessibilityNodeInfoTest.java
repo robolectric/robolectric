@@ -19,12 +19,15 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build;
 import android.view.View;
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.testapp.ActivityWithAnotherTheme;
 
 /**
  * CTS for {@link AccessibilityNodeInfo}.
@@ -52,5 +55,27 @@ public class AccessibilityNodeInfoTest {
     secondInfo.setSource(view, /* virtualDescendantId */ 1);
 
     assertThat(secondInfo.getWindowId()).isEqualTo(firstInfo.getWindowId());
+  }
+
+  @Test
+  @SdkSuppress(minSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @Config(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @GraphicsMode(GraphicsMode.Mode.NATIVE)
+  public void directAccessibilityConnection_queryChildCount() throws Exception {
+    String originalAni = System.getProperty("robolectric.useRealAni", "");
+    System.setProperty("robolectric.useRealAni", "true");
+    try (ActivityScenario<ActivityWithAnotherTheme> scenario =
+        ActivityScenario.launch(ActivityWithAnotherTheme.class)) {
+      scenario.onActivity(
+          activity -> {
+            View rootView = activity.findViewById(android.R.id.content);
+            AccessibilityNodeInfo node = rootView.createAccessibilityNodeInfo();
+            node.setQueryFromAppProcessEnabled(rootView, true);
+            assertThat(node.getChildCount()).isEqualTo(1);
+            assertThat(node.getChild(0)).isNotNull();
+          });
+    } finally {
+      System.setProperty("robolectric.useRealAni", originalAni);
+    }
   }
 }
