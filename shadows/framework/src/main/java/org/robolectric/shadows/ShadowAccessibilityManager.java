@@ -8,16 +8,19 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
+import android.graphics.Matrix;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.ArrayMap;
 import android.util.Log;
+import android.view.MagnificationSpec;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
 import android.view.accessibility.IAccessibilityManager;
+import android.view.accessibility.IAccessibilityManager.WindowTransformationSpec;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
@@ -26,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.Nullable;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -37,6 +41,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.U;
 
 @Implements(AccessibilityManager.class)
 public class ShadowAccessibilityManager {
@@ -228,6 +233,23 @@ public class ShadowAccessibilityManager {
   protected void performAccessibilityShortcut() {
     setEnabled(true);
     setTouchExplorationEnabled(true);
+  }
+
+  /**
+   * This shadow method is required because {@link
+   * android.view.accessibility.DirectAccessibilityConnection} calls it to determine if any
+   * transformations have occurred on this window.
+   */
+  @Implementation(minSdk = U.SDK_INT)
+  protected @ClassName("android.view.accessibility.IAccessibilityManager.WindowTransformationSpec")
+  Object getWindowTransformationSpec(int windowId) {
+    // Return a value that represents no transformation.
+    WindowTransformationSpec spec = new WindowTransformationSpec();
+    spec.magnificationSpec = new MagnificationSpec();
+    float[] matrix = new float[9];
+    Matrix.IDENTITY_MATRIX.getValues(matrix);
+    spec.transformationMatrix = matrix;
+    return spec;
   }
 
   /**

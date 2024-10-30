@@ -115,6 +115,9 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) {
+    if (useRealAni()) {
+      return reflector(AccessibilityNodeInfoReflector.class).obtain(info);
+    }
     final ShadowAccessibilityNodeInfo shadowInfo = Shadow.extract(info);
     final AccessibilityNodeInfo obtainedInstance = shadowInfo.getClone();
 
@@ -130,6 +133,9 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain(View view) {
+    if (useRealAni()) {
+      return reflector(AccessibilityNodeInfoReflector.class).obtain(view);
+    }
     // We explicitly avoid allocating the AccessibilityNodeInfo from the actual pool by using the
     // private constructor. Not doing so affects test suites which use both shadow and
     // non-shadow objects.
@@ -161,11 +167,17 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain() {
+    if (useRealAni()) {
+      return reflector(AccessibilityNodeInfoReflector.class).obtain();
+    }
     return obtain(new View(RuntimeEnvironment.getApplication().getApplicationContext()));
   }
 
   @Implementation
   protected static AccessibilityNodeInfo obtain(View root, int virtualDescendantId) {
+    if (useRealAni()) {
+      return reflector(AccessibilityNodeInfoReflector.class).obtain(root, virtualDescendantId);
+    }
     AccessibilityNodeInfo node = obtain(root);
     return node;
   }
@@ -206,6 +218,10 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected void recycle() {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.recycle();
+      return;
+    }
     final StrictEqualityNodeWrapper wrapper =
         new StrictEqualityNodeWrapper(realAccessibilityNodeInfo);
     if (!obtainedInstances.containsKey(wrapper)) {
@@ -243,6 +259,9 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected int getChildCount() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getChildCount();
+    }
     if (children == null) {
       return 0;
     }
@@ -252,6 +271,9 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected AccessibilityNodeInfo getChild(int index) {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getChild(index);
+    }
     if (children == null) {
       return null;
     }
@@ -266,6 +288,9 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected AccessibilityNodeInfo getParent() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getParent();
+    }
     if (parent == null) {
       return null;
     }
@@ -275,6 +300,9 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected boolean refresh() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.refresh();
+    }
     return refreshReturnValue;
   }
 
@@ -302,16 +330,26 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected void setText(CharSequence t) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.setText(t);
+      return;
+    }
     text = t;
   }
 
   @Implementation
   protected CharSequence getText() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getText();
+    }
     return text;
   }
 
   @Implementation
   protected AccessibilityNodeInfo getLabelFor() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getLabelFor();
+    }
     if (labelFor == null) {
       return null;
     }
@@ -320,6 +358,10 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   public void setLabelFor(AccessibilityNodeInfo info) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.setLabelFor(info);
+      return;
+    }
     if (labelFor != null) {
       labelFor.recycle();
     }
@@ -329,6 +371,9 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected AccessibilityNodeInfo getLabeledBy() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getLabeledBy();
+    }
     if (labeledBy == null) {
       return null;
     }
@@ -337,6 +382,10 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   public void setLabeledBy(AccessibilityNodeInfo info) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.setLabeledBy(info);
+      return;
+    }
     if (labeledBy != null) {
       labeledBy.recycle();
     }
@@ -346,6 +395,9 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected AccessibilityNodeInfo getTraversalAfter() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getTraversalAfter();
+    }
     if (traversalAfter == null) {
       return null;
     }
@@ -355,6 +407,10 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected void setTraversalAfter(View view, int virtualDescendantId) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.setTraversalAfter(view, virtualDescendantId);
+      return;
+    }
     if (this.traversalAfter != null) {
       this.traversalAfter.recycle();
     }
@@ -381,6 +437,9 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected AccessibilityNodeInfo getTraversalBefore() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getTraversalBefore();
+    }
     if (traversalBefore == null) {
       return null;
     }
@@ -390,6 +449,10 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected void setTraversalBefore(View info, int virtualDescendantId) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.setTraversalBefore(info, virtualDescendantId);
+      return;
+    }
     if (this.traversalBefore != null) {
       this.traversalBefore.recycle();
     }
@@ -416,22 +479,36 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected void setSource(View source) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.setSource(source);
+      return;
+    }
     this.view = source;
   }
 
   @Implementation
   protected void setSource(View root, int virtualDescendantId) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.setSource(root, virtualDescendantId);
+      return;
+    }
     this.view = root;
   }
 
   @Implementation
   protected AccessibilityWindowInfo getWindow() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getWindow();
+    }
     return accessibilityWindowInfo;
   }
 
   /** Returns the id of the window from which the info comes. */
   @Implementation
   protected int getWindowId() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getWindowId();
+    }
     return (accessibilityWindowInfo == null) ? -1 : accessibilityWindowInfo.getId();
   }
 
@@ -441,11 +518,17 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected boolean performAction(int action) {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.performAction(action);
+    }
     return performAction(action, null);
   }
 
   @Implementation
   protected boolean performAction(int action, Bundle arguments) {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.performAction(action, arguments);
+    }
     if (performedActionAndArgsList == null) {
       performedActionAndArgsList = new ArrayList<>();
     }
@@ -461,6 +544,9 @@ public class ShadowAccessibilityNodeInfo {
   @Implementation
   @Override
   public boolean equals(Object object) {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.equals(object);
+    }
     if (!(object instanceof AccessibilityNodeInfo)) {
       return false;
     }
@@ -480,6 +566,9 @@ public class ShadowAccessibilityNodeInfo {
   @Implementation
   @Override
   public int hashCode() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.hashCode();
+    }
     // This is 0 for a reason. If you change it, you will break the obtained
     // instances map in a manner that is remarkably difficult to debug.
     // Having a dynamic hash code keeps this object from being located
@@ -504,12 +593,20 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected void addChild(View child) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.addChild(child);
+      return;
+    }
     AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(child);
     addChild(node);
   }
 
   @Implementation
   protected void addChild(View root, int virtualDescendantId) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.addChild(root, virtualDescendantId);
+      return;
+    }
     AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(root, virtualDescendantId);
     addChild(node);
   }
@@ -654,11 +751,18 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected int describeContents() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.describeContents();
+    }
     return 0;
   }
 
   @Implementation
   protected void writeToParcel(Parcel dest, int flags) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.writeToParcel(dest, flags);
+      return;
+    }
     StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(realAccessibilityNodeInfo);
     int keyOfWrapper = -1;
     for (int i = 0; i < orderedInstances.size(); i++) {
@@ -686,6 +790,9 @@ public class ShadowAccessibilityNodeInfo {
   @Override
   @Implementation
   public String toString() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.toString();
+    }
     return "ShadowAccessibilityNodeInfo@"
         + System.identityHashCode(this)
         + ":{text:"
@@ -729,5 +836,112 @@ public class ShadowAccessibilityNodeInfo {
 
     @Direct
     void setBoundsInParent(Rect b);
+
+    @Direct
+    @Static
+    AccessibilityNodeInfo obtain(AccessibilityNodeInfo info);
+
+    @Direct
+    @Static
+    AccessibilityNodeInfo obtain(View view);
+
+    @Direct
+    @Static
+    AccessibilityNodeInfo obtain();
+
+    @Direct
+    @Static
+    AccessibilityNodeInfo obtain(View root, int virtualDescendantId);
+
+    @Direct
+    void recycle();
+
+    @Direct
+    int getChildCount();
+
+    @Direct
+    AccessibilityNodeInfo getChild(int index);
+
+    @Direct
+    AccessibilityNodeInfo getParent();
+
+    @Direct
+    boolean refresh();
+
+    @Direct
+    void setText(CharSequence t);
+
+    @Direct
+    CharSequence getText();
+
+    @Direct
+    AccessibilityNodeInfo getLabelFor();
+
+    @Direct
+    void setLabelFor(AccessibilityNodeInfo info);
+
+    @Direct
+    AccessibilityNodeInfo getLabeledBy();
+
+    @Direct
+    void setLabeledBy(AccessibilityNodeInfo info);
+
+    @Direct
+    AccessibilityNodeInfo getTraversalAfter();
+
+    @Direct
+    void setTraversalAfter(View view, int virtualDescendantId);
+
+    @Direct
+    AccessibilityNodeInfo getTraversalBefore();
+
+    @Direct
+    void setTraversalBefore(View info, int virtualDescendantId);
+
+    @Direct
+    void setSource(View source);
+
+    @Direct
+    void setSource(View root, int virtualDescendantId);
+
+    @Direct
+    AccessibilityWindowInfo getWindow();
+
+    @Direct
+    int getWindowId();
+
+    @Direct
+    boolean performAction(int action);
+
+    @Direct
+    boolean performAction(int action, Bundle arguments);
+
+    @Override
+    @Direct
+    boolean equals(Object object);
+
+    @Override
+    @Direct
+    int hashCode();
+
+    @Direct
+    void addChild(View child);
+
+    @Direct
+    void addChild(View child, int id);
+
+    @Direct
+    int describeContents();
+
+    @Override
+    @Direct
+    String toString();
+
+    @Direct
+    void writeToParcel(Parcel dest, int flags);
+  }
+
+  static boolean useRealAni() {
+    return Boolean.parseBoolean(System.getProperty("robolectric.useRealAni", "false"));
   }
 }
