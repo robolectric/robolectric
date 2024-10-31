@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.view.View;
@@ -21,6 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
@@ -297,6 +299,14 @@ public class ShadowAccessibilityNodeInfoTest {
     node.setHeading(true);
     assertThat(node.isHeading()).isTrue();
     assertThat(root.getChild(0).isHeading()).isTrue();
+  }
+
+  @Test
+  public void getSourceNodeId_notZero() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    View view = activity.findViewById(android.R.id.content);
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(view);
+    assertThat(node.getSourceNodeId()).isNotEqualTo(0);
   }
 
   @Test
