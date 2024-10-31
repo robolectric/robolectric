@@ -479,19 +479,13 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected void setSource(View source) {
-    if (useRealAni()) {
-      accessibilityNodeInfoReflector.setSource(source);
-      return;
-    }
+    accessibilityNodeInfoReflector.setSource(source);
     this.view = source;
   }
 
   @Implementation
   protected void setSource(View root, int virtualDescendantId) {
-    if (useRealAni()) {
-      accessibilityNodeInfoReflector.setSource(root, virtualDescendantId);
-      return;
-    }
+    accessibilityNodeInfoReflector.setSource(root, virtualDescendantId);
     this.view = root;
   }
 
