@@ -6,12 +6,14 @@ import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Rect;
+import android.os.Build.VERSION_CODES;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -40,24 +42,7 @@ public class ShadowAccessibilityWindowInfo {
 
   private Rect boundsInScreen = new Rect();
 
-  private int type = AccessibilityWindowInfo.TYPE_APPLICATION;
-
-  private int layer = 0;
-
-  private CharSequence title = null;
-
-  private boolean isAccessibilityFocused = false;
-
-  private boolean isActive = false;
-
-  private boolean isFocused = false;
-
-  private boolean isPictureInPicture = false;
-
-  @RealObject private AccessibilityWindowInfo mRealAccessibilityWindowInfo;
-
-  @Implementation
-  protected void __constructor__() {}
+  @RealObject private AccessibilityWindowInfo realAccessibilityWindowInfo;
 
   @Implementation
   protected static AccessibilityWindowInfo obtain() {
@@ -86,13 +71,15 @@ public class ShadowAccessibilityWindowInfo {
     newShadow.parent = parent;
     newShadow.rootNode = rootNode;
     newShadow.anchorNode = anchorNode;
-    newShadow.type = type;
-    newShadow.layer = layer;
-    newShadow.setId(getId());
-    newShadow.title = title;
-    newShadow.isAccessibilityFocused = isAccessibilityFocused;
-    newShadow.isActive = isActive;
-    newShadow.isFocused = isFocused;
+    newInfo.setType(realAccessibilityWindowInfo.getType());
+    newInfo.setLayer(realAccessibilityWindowInfo.getLayer());
+    newInfo.setId(realAccessibilityWindowInfo.getId());
+    newInfo.setAccessibilityFocused(realAccessibilityWindowInfo.isAccessibilityFocused());
+    newInfo.setActive(realAccessibilityWindowInfo.isActive());
+    newInfo.setFocused(realAccessibilityWindowInfo.isFocused());
+    if (RuntimeEnvironment.getApiLevel() >= N) {
+      newInfo.setTitle(realAccessibilityWindowInfo.getTitle());
+    }
     if (children != null) {
       newShadow.children = new ArrayList<>(children);
     } else {
@@ -125,7 +112,7 @@ public class ShadowAccessibilityWindowInfo {
         System.err.println(
             String.format(
                 "Leaked type = %d, id = %d. Stack trace:",
-                shadow.getType(), wrapper.mInfo.getId()));
+                shadow.realAccessibilityWindowInfo.getType(), wrapper.mInfo.getId()));
         for (final StackTraceElement stackTraceElement : obtainedInstances.get(wrapper)) {
           System.err.println(stackTraceElement.toString());
         }
@@ -144,7 +131,7 @@ public class ShadowAccessibilityWindowInfo {
     final AccessibilityWindowInfo window = (AccessibilityWindowInfo) object;
     final ShadowAccessibilityWindowInfo otherShadow = Shadow.extract(window);
 
-    boolean areEqual = (type == otherShadow.getType());
+    boolean areEqual = (realAccessibilityWindowInfo.getType() == window.getType());
     areEqual &=
         (parent == null)
             ? (otherShadow.getParent() == null)
@@ -157,15 +144,18 @@ public class ShadowAccessibilityWindowInfo {
         (anchorNode == null)
             ? (otherShadow.getAnchor() == null)
             : anchorNode.equals(otherShadow.getAnchor());
-    areEqual &= (layer == otherShadow.getLayer());
-    areEqual &= (getId() == otherShadow.getId());
-    areEqual &= (title == otherShadow.getTitle());
-    areEqual &= (isAccessibilityFocused == otherShadow.isAccessibilityFocused());
-    areEqual &= (isActive == otherShadow.isActive());
-    areEqual &= (isFocused == otherShadow.isFocused());
+    areEqual &= (realAccessibilityWindowInfo.getLayer() == window.getLayer());
+    areEqual &= (realAccessibilityWindowInfo.getId() == window.getId());
+    if (RuntimeEnvironment.getApiLevel() >= N) {
+      areEqual &= (realAccessibilityWindowInfo.getTitle() == window.getTitle());
+    }
+    areEqual &=
+        (realAccessibilityWindowInfo.isAccessibilityFocused() == window.isAccessibilityFocused());
+    areEqual &= (realAccessibilityWindowInfo.isActive() == window.isActive());
+    areEqual &= (realAccessibilityWindowInfo.isFocused() == window.isFocused());
     Rect anotherBounds = new Rect();
     otherShadow.getBoundsInScreen(anotherBounds);
-    areEqual &= (boundsInScreen.equals(anotherBounds));
+    areEqual &= boundsInScreen.equals(anotherBounds);
     return areEqual;
   }
 
@@ -176,11 +166,6 @@ public class ShadowAccessibilityWindowInfo {
     // a manner that is remarkably difficult to debug. Having a dynamic hash code keeps this
     // object from being located in the map if it was mutated after being obtained.
     return 0;
-  }
-
-  @Implementation
-  protected int getType() {
-    return type;
   }
 
   @Implementation
@@ -217,48 +202,12 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   @Implementation
-  protected boolean isActive() {
-    return isActive;
-  }
-
-  @Implementation
-  protected int getId() {
-    return reflector(AccessibilityWindowInfoReflector.class, mRealAccessibilityWindowInfo).getId();
-  }
-
-  @Implementation
   protected void getBoundsInScreen(Rect outBounds) {
     if (boundsInScreen == null) {
       outBounds.setEmpty();
     } else {
       outBounds.set(boundsInScreen);
     }
-  }
-
-  @Implementation
-  protected int getLayer() {
-    return layer;
-  }
-
-  /** Returns the title of this window, or {@code null} if none is available. */
-  @Implementation(minSdk = N)
-  protected CharSequence getTitle() {
-    return title;
-  }
-
-  @Implementation
-  protected boolean isFocused() {
-    return isFocused;
-  }
-
-  @Implementation
-  protected boolean isAccessibilityFocused() {
-    return isAccessibilityFocused;
-  }
-
-  @Implementation(minSdk = O)
-  protected boolean isInPictureInPictureMode() {
-    return isPictureInPicture;
   }
 
   @Implementation
@@ -276,7 +225,7 @@ public class ShadowAccessibilityWindowInfo {
 
   @Implementation
   public void setType(int value) {
-    type = value;
+    reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo).setType(value);
   }
 
   @Implementation(maxSdk = Q)
@@ -286,22 +235,23 @@ public class ShadowAccessibilityWindowInfo {
 
   @Implementation
   public void setAccessibilityFocused(boolean value) {
-    isAccessibilityFocused = value;
+    reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+        .setAccessibilityFocused(value);
   }
 
   @Implementation
   public void setActive(boolean value) {
-    isActive = value;
+    reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo).setActive(value);
   }
 
   @Implementation
   public void setId(int value) {
-    reflector(AccessibilityWindowInfoReflector.class, mRealAccessibilityWindowInfo).setId(value);
+    reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo).setId(value);
   }
 
   @Implementation
   public void setLayer(int value) {
-    layer = value;
+    reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo).setLayer(value);
   }
 
   /**
@@ -311,17 +261,25 @@ public class ShadowAccessibilityWindowInfo {
    */
   @Implementation(minSdk = N)
   public void setTitle(CharSequence value) {
-    title = value;
+    reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo).setTitle(value);
   }
 
   @Implementation
   public void setFocused(boolean focused) {
-    isFocused = focused;
+    reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+        .setFocused(focused);
   }
 
   @Implementation(minSdk = O)
   public void setPictureInPicture(boolean pictureInPicture) {
-    isPictureInPicture = pictureInPicture;
+    reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+        .setPictureInPicture(pictureInPicture);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.R)
+  public void setDisplayId(int displayId) {
+    reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+        .setDisplayId(displayId);
   }
 
   public void addChild(AccessibilityWindowInfo child) {
@@ -330,7 +288,7 @@ public class ShadowAccessibilityWindowInfo {
     }
 
     children.add(child);
-    ((ShadowAccessibilityWindowInfo) Shadow.extract(child)).parent = mRealAccessibilityWindowInfo;
+    ((ShadowAccessibilityWindowInfo) Shadow.extract(child)).parent = realAccessibilityWindowInfo;
   }
 
   /**
@@ -370,9 +328,9 @@ public class ShadowAccessibilityWindowInfo {
     return "ShadowAccessibilityWindowInfo@"
         + System.identityHashCode(this)
         + ":{id:"
-        + getId()
+        + realAccessibilityWindowInfo.getId()
         + ", title:"
-        + title
+        + realAccessibilityWindowInfo.getTitle()
         + "}";
   }
 
@@ -380,9 +338,30 @@ public class ShadowAccessibilityWindowInfo {
   interface AccessibilityWindowInfoReflector {
 
     @Direct
-    int getId();
+    void setId(int value);
 
     @Direct
-    void setId(int value);
+    void setType(int value);
+
+    @Direct
+    void setAccessibilityFocused(boolean value);
+
+    @Direct
+    void setActive(boolean value);
+
+    @Direct
+    void setLayer(int value);
+
+    @Direct
+    void setTitle(CharSequence value);
+
+    @Direct
+    void setFocused(boolean focused);
+
+    @Direct
+    void setPictureInPicture(boolean pictureInPicture);
+
+    @Direct
+    void setDisplayId(int displayId);
   }
 }
