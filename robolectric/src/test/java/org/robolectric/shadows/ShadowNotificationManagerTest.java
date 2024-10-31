@@ -9,7 +9,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
 import android.app.Activity;
 import android.app.AutomaticZenRule;
@@ -36,10 +35,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.LooperMode;
 
 @RunWith(AndroidJUnit4.class)
-@LooperMode(PAUSED)
 public class ShadowNotificationManagerTest {
   private NotificationManager notificationManager;
   private Notification notification1 = new Notification();
