@@ -249,7 +249,7 @@ public class ShadowPendingIntent {
             (Activity) null,
             intentToSend,
             requestCode,
-            (Bundle) null);
+            options);
       }
     } else if (isBroadcast()) {
       for (Intent intentToSend : intentsToSend) {
