@@ -43,10 +43,10 @@ public class RuntimeEnvironment {
   private static Scheduler masterScheduler;
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
   private static Path androidFrameworkJar;
-  public static Path compileTimeSystemResourcesFile;
 
   private static Supplier<Application> applicationSupplier;
   private static final Object supplierLock = new Object();
+  private static Supplier<Path> compileTimeSystemResourcesSupplier;
 
   /**
    * Get a reference to the {@link Application} under test.
@@ -286,5 +286,19 @@ public class RuntimeEnvironment {
 
   public static Path getAndroidFrameworkJarPath() {
     return RuntimeEnvironment.androidFrameworkJar;
+  }
+
+  /** internal use only */
+  public static void setCompileTimeSystemResources(
+      Supplier<Path> compileTimeSystemResourcesSupplier) {
+    RuntimeEnvironment.compileTimeSystemResourcesSupplier = compileTimeSystemResourcesSupplier;
+  }
+
+  /**
+   * @deprecated obsolete do not use
+   */
+  @Deprecated
+  public static Path getCompileTimeSystemResourcesPath() {
+    return compileTimeSystemResourcesSupplier.get();
   }
 }
