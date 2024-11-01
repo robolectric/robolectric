@@ -35,7 +35,9 @@ import java.util.function.DoubleUnaryOperator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.versioning.AndroidVersions.V;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = O)
@@ -75,15 +77,20 @@ public class ShadowNativeColorSpaceTest {
   @Test
   public void testNamedColorSpaces() {
     for (ColorSpace.Named named : ColorSpace.Named.values()) {
-      // OK_LAB is behind a feature flag that is not yet enabled by default.
-      if (Objects.equals(named.toString(), "OK_LAB")) {
+      // OK_LAB is behind a feature flag that is not yet enabled by default on V.
+      if (Objects.equals(named.toString(), "OK_LAB")
+          && RuntimeEnvironment.getApiLevel() <= V.SDK_INT) {
+        continue;
+      }
+      // DISPLAY_BT2020 is behind a feature flag that is not yet enabled by default.
+      if (Objects.equals(named.toString(), "DISPLAY_BT2020")) {
         continue;
       }
 
       ColorSpace colorSpace = ColorSpace.get(named);
       assertNotNull(colorSpace.getName());
       assertNotNull(colorSpace);
-      assertEquals(named.ordinal(), colorSpace.getId());
+      assertEquals(named + " ordinal does not match", named.ordinal(), colorSpace.getId());
       assertTrue(colorSpace.getComponentCount() >= 1);
       assertTrue(colorSpace.getComponentCount() <= 4);
     }
@@ -341,14 +348,19 @@ public class ShadowNativeColorSpaceTest {
   @Test
   @Config(minSdk = Q)
   public void testIsSRGB() {
-    for (ColorSpace.Named e : ColorSpace.Named.values()) {
-      // OK_LAB is behind a feature flag that is not yet enabled by default.
-      if (Objects.equals(e.toString(), "OK_LAB")) {
+    for (ColorSpace.Named named : ColorSpace.Named.values()) {
+      // OK_LAB is behind a feature flag that is not yet enabled by default on V.
+      if (Objects.equals(named.toString(), "OK_LAB")
+          && RuntimeEnvironment.getApiLevel() <= V.SDK_INT) {
+        continue;
+      }
+      // DISPLAY_BT2020 is behind a feature flag that is not yet enabled by default.
+      if (Objects.equals(named.toString(), "DISPLAY_BT2020")) {
         continue;
       }
 
-      ColorSpace colorSpace = ColorSpace.get(e);
-      if (e == ColorSpace.Named.SRGB) {
+      ColorSpace colorSpace = ColorSpace.get(named);
+      if (named == ColorSpace.Named.SRGB) {
         assertTrue(colorSpace.isSrgb());
       } else {
         assertFalse("Incorrectly treating " + colorSpace + " as SRGB!", colorSpace.isSrgb());

@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.fail;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.ReflectionHelpers.setField;
@@ -21,7 +22,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadow.api.Shadow;
@@ -29,6 +29,7 @@ import org.robolectric.shadows.ShadowMessage.MessageReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Unit tests for {@link ShadowLegacyMessageQueue}. */
 @RunWith(AndroidJUnit4.class)
@@ -73,7 +74,11 @@ public class ShadowLegacyMessageQueueTest {
     scheduler = shadowQueue.getScheduler();
     scheduler.pause();
     testMessage = handler.obtainMessage();
-    quitField = "mQuitting";
+    if (getApiLevel() <= V.SDK_INT) {
+      quitField = "mQuitting";
+    } else {
+      quitField = "mLegacyQuitting";
+    }
   }
 
   @Test
@@ -260,7 +265,7 @@ public class ShadowLegacyMessageQueueTest {
   }
 
   private static int postSyncBarrier(MessageQueue queue) {
-    if (RuntimeEnvironment.getApiLevel() >= M) {
+    if (getApiLevel() >= M) {
       return queue.postSyncBarrier();
     } else {
       return ReflectionHelpers.callInstanceMethod(
