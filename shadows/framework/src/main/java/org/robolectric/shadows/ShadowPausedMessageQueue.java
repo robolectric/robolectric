@@ -123,21 +123,13 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     // mark the queue as blocked and wait on a new message.
     synchronized (realQueue) {
       if (isIdle()) {
-        if (getApiLevel() <= V.SDK_INT) {
-          ReflectionHelpers.setField(realQueue, "mBlocked", true);
-        } else {
-          ReflectionHelpers.setField(realQueue, "mLegacyBlocked", true);
-        }
+        ReflectionHelpers.setField(realQueue, "mBlocked", true);
         try {
           realQueue.wait(timeout);
         } catch (InterruptedException ignored) {
           // Fall through and unblock with no messages.
         } finally {
-          if (getApiLevel() <= V.SDK_INT) {
-            ReflectionHelpers.setField(realQueue, "mBlocked", false);
-          } else {
-            ReflectionHelpers.setField(realQueue, "mLegacyBlocked", true);
-          }
+          ReflectionHelpers.setField(realQueue, "mBlocked", false);
         }
       }
     }
@@ -239,11 +231,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   }
 
   boolean isQuitting() {
-    if (getApiLevel() <= V.SDK_INT) {
-      return reflector(MessageQueueReflector.class, realQueue).getQuitting();
-    } else {
-      return reflector(MessageQueueReflector.class, realQueue).getLegacyQuitting();
-    }
+    return reflector(MessageQueueReflector.class, realQueue).getQuitting();
   }
 
   Duration getNextScheduledTaskTime() {
@@ -334,13 +322,8 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
             queueReflector.setLast(null);
           }
         }
-        if (msg.isAsynchronous()) {
-          if (getApiLevel() == V.SDK_INT) {
+        if (msg.isAsynchronous() && getApiLevel() >= V.SDK_INT) {
             queueReflector.setAsyncMessageCount(queueReflector.getAsyncMessageCount() - 1);
-          } else if (getApiLevel() > V.SDK_INT) {
-            queueReflector.setLegacyAsyncMessageCount(
-                queueReflector.getLegacyAsyncMessageCount() - 1);
-          }
         }
       }
       return msg;
@@ -356,12 +339,9 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
       msgQueue.setMessages(null);
       msgQueue.setIdleHandlers(new ArrayList<>());
       msgQueue.setNextBarrierToken(0);
-      if (getApiLevel() == V.SDK_INT) {
+      if (getApiLevel() >= V.SDK_INT) {
         msgQueue.setLast(null);
         msgQueue.setAsyncMessageCount(0);
-      } else if (getApiLevel() > V.SDK_INT) {
-        msgQueue.setLast(null);
-        msgQueue.setLegacyAsyncMessageCount(0);
       }
     }
     setUncaughtException(null);
@@ -447,12 +427,9 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
         msg = next;
       }
       reflector(MessageQueueReflector.class, realQueue).setMessages(null);
-      if (getApiLevel() == V.SDK_INT) {
+      if (getApiLevel() >= V.SDK_INT) {
         reflector(MessageQueueReflector.class, realQueue).setLast(null);
         reflector(MessageQueueReflector.class, realQueue).setAsyncMessageCount(0);
-      } else if (getApiLevel() > V.SDK_INT) {
-        reflector(MessageQueueReflector.class, realQueue).setLast(null);
-        reflector(MessageQueueReflector.class, realQueue).setLegacyAsyncMessageCount(0);
       }
     }
   }
@@ -492,9 +469,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     @Accessor("mQuitting")
     boolean getQuitting();
 
-    @Accessor("mLegacyQuitting")
-    boolean getLegacyQuitting();
-
     @Accessor("mLast")
     void setLast(Message msg);
 
@@ -503,11 +477,5 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
     @Accessor("mAsyncMessageCount")
     void setAsyncMessageCount(int asyncMessageCount);
-
-    @Accessor("mLegacyAsyncMessageCount")
-    int getLegacyAsyncMessageCount();
-
-    @Accessor("mLegacyAsyncMessageCount")
-    void setLegacyAsyncMessageCount(int asyncMessageCount);
   }
 }
