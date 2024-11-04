@@ -1,6 +1,7 @@
 package org.robolectric.preinstrumented;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -38,7 +39,8 @@ public class JarInstrumentorTest {
   @Test
   public void processCommandLine_legacyUsage() throws Exception {
     spyDummyInstrumentor.processCommandLine(new String[] {"source.jar", "dest.jar"});
-    verify(spyDummyInstrumentor).instrumentJar(new File("source.jar"), new File("dest.jar"));
+    verify(spyDummyInstrumentor)
+        .instrumentJar(eq(new File("source.jar")), eq(new File("dest.jar")));
   }
 
   @Test

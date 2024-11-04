@@ -1,8 +1,13 @@
 package org.robolectric.preinstrumented;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Locale;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -31,22 +37,14 @@ public class JarInstrumentor {
 
   private static final int ONE_MB = 1024 * 1024;
 
-  private static final ImmutableSet<String> NON_CLASS_FILES_TO_KEEP =
-      ImmutableSet.of(
-          "android/icu/impl/data", // Required by android.icu.impl.locale.LikelySubtags
-          "AndroidManifest.xml",
-          "assets/", // These are referenced by the platform resources.arsc
-          "build.prop",
-          "com/android/i18n/phonenumbers/data/", // Required by android.telephony.PhoneNumberUtils
-          "res/",
-          "resources.arsc",
-          "usr/share/zoneinfo/" // Required by android.text.format.Time
-          );
-
   private static final Injector INJECTOR = new Injector.Builder().build();
 
   private final ClassInstrumentor classInstrumentor;
   private final InstrumentationConfiguration instrumentationConfiguration;
+
+  private boolean hasResourcesToKeepFile;
+  private ImmutableSet<String> resourceFilesToKeep = ImmutableSet.of();
+  private ImmutableSet<String> resourceDirsToKeep = ImmutableSet.of();
 
   public static void main(String[] args) throws IOException, ClassNotFoundException {
     new JarInstrumentor().processCommandLine(args);
@@ -64,16 +62,44 @@ public class JarInstrumentor {
 
   @VisibleForTesting
   void processCommandLine(String[] args) throws IOException, ClassNotFoundException {
-    if (args.length == 2) {
-      File sourceFile = new File(args[0]);
-      File destJarFile = new File(args[1]);
-
-      instrumentJar(sourceFile, destJarFile);
-      return;
+    if (args.length < 2) {
+      System.err.println(
+          "Usage: JarInstrumentor"
+              + " [--resources_to_keep=file path containing resource list]"
+              + " <source jar> <destjar> ");
+      exit(1);
     }
+    File sourceFile = null;
+    File destFile = null;
 
-    System.err.println("Usage: JarInstrumentor <source jar> <dest jar> ");
-    exit(1);
+    for (String arg : args) {
+      if (arg.startsWith("--resources_to_keep=")) {
+        File resourcesToKeepFile = new File(arg.substring(arg.indexOf('=') + 1));
+        if (!resourcesToKeepFile.exists()) {
+          System.err.println("Resources file does not exist: " + resourcesToKeepFile);
+          exit(1);
+          return;
+        }
+        List<String> resourceFiles = Files.readLines(resourcesToKeepFile, UTF_8);
+        resourceFilesToKeep =
+            ImmutableSet.copyOf(Iterables.filter(resourceFiles, s -> !s.endsWith("/")));
+        resourceDirsToKeep =
+            ImmutableSet.copyOf(Iterables.filter(resourceFiles, s -> s.endsWith("/")));
+        Preconditions.checkState(
+            !resourceFilesToKeep.isEmpty() && !resourceDirsToKeep.isEmpty(),
+            "Resource files and directories must be specified.");
+        hasResourcesToKeepFile = true;
+      } else if (arg.startsWith("--")) {
+        System.err.println("Unknown flag: " + arg);
+        exit(1);
+        return;
+      } else if (sourceFile == null) {
+        sourceFile = new File(arg);
+      } else if (destFile == null) {
+        destFile = new File(arg);
+      }
+    }
+    instrumentJar(sourceFile, destFile);
   }
 
   /** Calls {@link System#exit(int)}. Overridden during tests to avoid exiting during tests. */
@@ -145,13 +171,22 @@ public class JarInstrumentor {
                 "Skipping instrumenting due to NegativeArraySizeException for class: " + className);
           }
         } else {
-          for (String s : NON_CLASS_FILES_TO_KEEP) {
-            if (name.startsWith(s)) {
-              jarOut.putNextEntry(createJarEntry(jarEntry));
-              ByteStreams.copy(jarFile.getInputStream(jarEntry), jarOut);
-              nonClassCount++;
-              break;
+          boolean shouldKeep = true;
+          if (hasResourcesToKeepFile) {
+            shouldKeep = false;
+            if (resourceFilesToKeep.contains(name)) {
+              shouldKeep = true;
             }
+            for (String dir : resourceDirsToKeep) {
+              if (name.startsWith(dir)) {
+                shouldKeep = true;
+              }
+            }
+          }
+          if (shouldKeep) {
+            jarOut.putNextEntry(createJarEntry(jarEntry));
+            ByteStreams.copy(jarFile.getInputStream(jarEntry), jarOut);
+            nonClassCount++;
           }
         }
       }
