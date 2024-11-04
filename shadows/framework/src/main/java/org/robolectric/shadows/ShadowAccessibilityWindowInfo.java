@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -108,52 +107,6 @@ public class ShadowAccessibilityWindowInfo {
     }
 
     return (obtainedInstances.size() != 0);
-  }
-
-  @SuppressWarnings("ReferenceEquality")
-  public boolean deepEquals(Object object) {
-    if (!(object instanceof AccessibilityWindowInfo)) {
-      return false;
-    }
-
-    final AccessibilityWindowInfo window = (AccessibilityWindowInfo) object;
-    final ShadowAccessibilityWindowInfo otherShadow = Shadow.extract(window);
-
-    boolean areEqual = (realAccessibilityWindowInfo.getType() == window.getType());
-    areEqual &=
-        (parent == null)
-            ? (otherShadow.getParent() == null)
-            : parent.equals(otherShadow.getParent());
-    areEqual &=
-        (rootNode == null)
-            ? (otherShadow.getRoot() == null)
-            : rootNode.equals(otherShadow.getRoot());
-    areEqual &=
-        (anchorNode == null)
-            ? (otherShadow.getAnchor() == null)
-            : anchorNode.equals(otherShadow.getAnchor());
-    areEqual &= (realAccessibilityWindowInfo.getLayer() == window.getLayer());
-    areEqual &= (realAccessibilityWindowInfo.getId() == window.getId());
-    if (RuntimeEnvironment.getApiLevel() >= N) {
-      areEqual &= (realAccessibilityWindowInfo.getTitle() == window.getTitle());
-    }
-    areEqual &=
-        (realAccessibilityWindowInfo.isAccessibilityFocused() == window.isAccessibilityFocused());
-    areEqual &= (realAccessibilityWindowInfo.isActive() == window.isActive());
-    areEqual &= (realAccessibilityWindowInfo.isFocused() == window.isFocused());
-    Rect anotherBounds = new Rect();
-    otherShadow.getBoundsInScreen(anotherBounds);
-    areEqual &= boundsInScreen.equals(anotherBounds);
-    return areEqual;
-  }
-
-  @Override
-  @Implementation
-  public int hashCode() {
-    // This is 0 for a reason. If you change it, you will break the obtained instances map in
-    // a manner that is remarkably difficult to debug. Having a dynamic hash code keeps this
-    // object from being located in the map if it was mutated after being obtained.
-    return 0;
   }
 
   @Implementation
