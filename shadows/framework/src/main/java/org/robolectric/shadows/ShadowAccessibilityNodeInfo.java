@@ -136,11 +136,45 @@ public class ShadowAccessibilityNodeInfo {
     if (useRealAni()) {
       return reflector(AccessibilityNodeInfoReflector.class).obtain(view);
     }
-    // We explicitly avoid allocating the AccessibilityNodeInfo from the actual pool by using the
-    // private constructor. Not doing so affects test suites which use both shadow and
-    // non-shadow objects.
+    // Call the constructor directly to avoid using the object pool.
     final AccessibilityNodeInfo obtainedInstance =
         ReflectionHelpers.callConstructor(AccessibilityNodeInfo.class);
+    obtainedInstance.setSource(view);
+    initShadow(obtainedInstance);
+    return obtainedInstance;
+  }
+
+  @Implementation
+  protected static AccessibilityNodeInfo obtain(View root, int virtualDescendantId) {
+    if (useRealAni()) {
+      return reflector(AccessibilityNodeInfoReflector.class).obtain(root, virtualDescendantId);
+    }
+
+    // Call the constructor directly to avoid using the object pool.
+    final AccessibilityNodeInfo obtainedInstance =
+        ReflectionHelpers.callConstructor(AccessibilityNodeInfo.class);
+    obtainedInstance.setSource(root, virtualDescendantId);
+    initShadow(obtainedInstance);
+    return obtainedInstance;
+  }
+
+  @Implementation
+  protected static AccessibilityNodeInfo obtain() {
+    if (useRealAni()) {
+      return reflector(AccessibilityNodeInfoReflector.class).obtain();
+    }
+    AccessibilityNodeInfo obtainedInstance =
+        ReflectionHelpers.callConstructor(AccessibilityNodeInfo.class);
+    initShadow(obtainedInstance);
+    // TODO(hoisie): Remove this hack. It was added many years ago for and is highly inconsistent
+    // with real Android. It is a broken and arbitrary way to make ANI objects not be
+    // considered equal to each other.
+    ShadowAccessibilityNodeInfo shadowObtained = Shadow.extract(obtainedInstance);
+    shadowObtained.view = new View(RuntimeEnvironment.getApplication().getApplicationContext());
+    return obtainedInstance;
+  }
+
+  private static void initShadow(AccessibilityNodeInfo obtainedInstance) {
     final ShadowAccessibilityNodeInfo shadowObtained = Shadow.extract(obtainedInstance);
 
     /*
@@ -154,7 +188,6 @@ public class ShadowAccessibilityNodeInfo {
      */
     shadowObtained.performedActionAndArgsList = new ArrayList<>();
 
-    shadowObtained.view = view;
     sAllocationCount++;
     if (shadowObtained.mOriginNodeId == 0) {
       shadowObtained.mOriginNodeId = sAllocationCount;
@@ -162,24 +195,6 @@ public class ShadowAccessibilityNodeInfo {
     StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(obtainedInstance);
     obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
     orderedInstances.put(sAllocationCount, wrapper);
-    return obtainedInstance;
-  }
-
-  @Implementation
-  protected static AccessibilityNodeInfo obtain() {
-    if (useRealAni()) {
-      return reflector(AccessibilityNodeInfoReflector.class).obtain();
-    }
-    return obtain(new View(RuntimeEnvironment.getApplication().getApplicationContext()));
-  }
-
-  @Implementation
-  protected static AccessibilityNodeInfo obtain(View root, int virtualDescendantId) {
-    if (useRealAni()) {
-      return reflector(AccessibilityNodeInfoReflector.class).obtain(root, virtualDescendantId);
-    }
-    AccessibilityNodeInfo node = obtain(root);
-    return node;
   }
 
   /**

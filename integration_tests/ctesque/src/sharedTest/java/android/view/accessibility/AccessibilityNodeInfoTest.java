@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.testapp.ActivityWithAnotherTheme;
+import org.robolectric.util.ReflectionHelpers;
 
 /**
  * CTS for {@link AccessibilityNodeInfo}.
@@ -55,6 +56,20 @@ public class AccessibilityNodeInfoTest {
     secondInfo.setSource(view, /* virtualDescendantId */ 1);
 
     assertThat(secondInfo.getWindowId()).isEqualTo(firstInfo.getWindowId());
+  }
+
+  @Test
+  public void obtain_withWindow_returnsWindowId() throws Exception {
+    try (ActivityScenario<ActivityWithAnotherTheme> scenario =
+        ActivityScenario.launch(ActivityWithAnotherTheme.class)) {
+      scenario.onActivity(
+          activity -> {
+            View rootView = activity.findViewById(android.R.id.content);
+            AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(rootView);
+            long sourceNodeId = ReflectionHelpers.getField(node, "mSourceNodeId");
+            assertThat(sourceNodeId).isNotEqualTo(-1);
+          });
+    }
   }
 
   @Test
