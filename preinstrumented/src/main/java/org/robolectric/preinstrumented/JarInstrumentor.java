@@ -42,6 +42,9 @@ public class JarInstrumentor {
   private final ClassInstrumentor classInstrumentor;
   private final InstrumentationConfiguration instrumentationConfiguration;
 
+  private boolean hasPackagesToKeepFile;
+  private ImmutableSet<String> packagesToKeep = ImmutableSet.of();
+
   private boolean hasResourcesToKeepFile;
   private ImmutableSet<String> resourceFilesToKeep = ImmutableSet.of();
   private ImmutableSet<String> resourceDirsToKeep = ImmutableSet.of();
@@ -65,15 +68,26 @@ public class JarInstrumentor {
     if (args.length < 2) {
       System.err.println(
           "Usage: JarInstrumentor"
+              + " [--packages_to_keep=file path containing package list]"
               + " [--resources_to_keep=file path containing resource list]"
-              + " <source jar> <destjar> ");
+              + " <source jar> <dest jar> ");
       exit(1);
     }
     File sourceFile = null;
     File destFile = null;
 
     for (String arg : args) {
-      if (arg.startsWith("--resources_to_keep=")) {
+      if (arg.startsWith("--packages_to_keep=")) {
+        File packagesToKeepFile = new File(arg.substring(arg.indexOf('=') + 1));
+        if (!packagesToKeepFile.exists()) {
+          System.err.println("Packages file does not exist: " + packagesToKeepFile);
+          exit(1);
+          return;
+        }
+        hasPackagesToKeepFile = true;
+        packagesToKeep = ImmutableSet.copyOf(Files.readLines(packagesToKeepFile, UTF_8));
+        Preconditions.checkState(!packagesToKeep.isEmpty(), "Package files must be non-empty.");
+      } else if (arg.startsWith("--resources_to_keep=")) {
         File resourcesToKeepFile = new File(arg.substring(arg.indexOf('=') + 1));
         if (!resourcesToKeepFile.exists()) {
           System.err.println("Resources file does not exist: " + resourcesToKeepFile);
@@ -153,6 +167,14 @@ public class JarInstrumentor {
           jarOut.putNextEntry(createJarEntry(jarEntry));
         } else if (name.endsWith(".class")) {
           String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
+
+          int lastDotIndex = className.lastIndexOf('.');
+          if (lastDotIndex != -1) {
+            String packageName = className.substring(0, lastDotIndex);
+            if (hasPackagesToKeepFile && !packagesToKeep.contains(packageName)) {
+              continue;
+            }
+          }
 
           try {
             byte[] classBytes = getClassBytes(className, jarFile);
