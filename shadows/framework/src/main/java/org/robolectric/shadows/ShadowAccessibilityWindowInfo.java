@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -40,7 +41,7 @@ public class ShadowAccessibilityWindowInfo {
 
   private AccessibilityNodeInfo anchorNode = null;
 
-  private Rect boundsInScreen = new Rect();
+  private Rect boundsInScreenOverride;
 
   @RealObject private AccessibilityWindowInfo realAccessibilityWindowInfo;
 
@@ -63,7 +64,9 @@ public class ShadowAccessibilityWindowInfo {
     final ShadowAccessibilityWindowInfo shadowInfo = Shadow.extract(window);
     final ShadowAccessibilityWindowInfo newShadow = Shadow.extract(newInstance);
 
-    newShadow.boundsInScreen = new Rect(shadowInfo.boundsInScreen);
+    if (shadowInfo.boundsInScreenOverride != null) {
+      newShadow.boundsInScreenOverride = new Rect(shadowInfo.boundsInScreenOverride);
+    }
     newShadow.parent = shadowInfo.parent;
     newShadow.rootNode = shadowInfo.rootNode;
     newShadow.anchorNode = shadowInfo.anchorNode;
@@ -144,10 +147,11 @@ public class ShadowAccessibilityWindowInfo {
 
   @Implementation
   protected void getBoundsInScreen(Rect outBounds) {
-    if (boundsInScreen == null) {
-      outBounds.setEmpty();
+    if (boundsInScreenOverride != null) {
+      outBounds.set(boundsInScreenOverride);
     } else {
-      outBounds.set(boundsInScreen);
+      reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+          .getBoundsInScreen(outBounds);
     }
   }
 
@@ -171,7 +175,12 @@ public class ShadowAccessibilityWindowInfo {
 
   @Implementation(maxSdk = Q)
   public void setBoundsInScreen(Rect bounds) {
-    boundsInScreen.set(bounds);
+    if (RuntimeEnvironment.getApiLevel() <= Q) {
+      reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+          .setBoundsInScreen(bounds);
+    } else {
+      boundsInScreenOverride = bounds;
+    }
   }
 
   @Implementation
@@ -263,18 +272,6 @@ public class ShadowAccessibilityWindowInfo {
     }
   }
 
-  @Override
-  @Implementation
-  public String toString() {
-    return "ShadowAccessibilityWindowInfo@"
-        + System.identityHashCode(this)
-        + ":{id:"
-        + realAccessibilityWindowInfo.getId()
-        + ", title:"
-        + realAccessibilityWindowInfo.getTitle()
-        + "}";
-  }
-
   @ForType(AccessibilityWindowInfo.class)
   interface AccessibilityWindowInfoReflector {
 
@@ -304,6 +301,12 @@ public class ShadowAccessibilityWindowInfo {
 
     @Direct
     void setDisplayId(int displayId);
+
+    @Direct
+    void setBoundsInScreen(Rect bounds);
+
+    @Direct
+    void getBoundsInScreen(Rect outBounds);
 
     @Direct
     @Static
