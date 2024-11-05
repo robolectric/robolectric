@@ -20,6 +20,7 @@ permissions:
 jobs:
   graphics_tests:
     strategy:
+      fail-fast: false
       matrix:
         device: [
           macos-13, # Tests Mac x86_64
