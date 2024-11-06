@@ -34,6 +34,7 @@ import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Properties of {@link android.view.accessibility.AccessibilityNodeInfo} that are normally locked
@@ -100,6 +101,8 @@ public class ShadowAccessibilityNodeInfo {
 
   private OnPerformActionListener actionListener;
 
+  private boolean queryFromAppProcessWasEnabled;
+
   @RealObject private AccessibilityNodeInfo realAccessibilityNodeInfo;
 
   @ReflectorObject AccessibilityNodeInfoReflector accessibilityNodeInfoReflector;
@@ -112,7 +115,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) {
-    if (useRealAni()) {
+    if (useRealAniPropEnabled()) {
       return reflector(AccessibilityNodeInfoReflector.class).obtain(info);
     }
     // We explicitly avoid allocating the AccessibilityNodeInfo from the actual pool by using
@@ -175,7 +178,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain(View view) {
-    if (useRealAni()) {
+    if (useRealAniPropEnabled()) {
       return reflector(AccessibilityNodeInfoReflector.class).obtain(view);
     }
     // Call the constructor directly to avoid using the object pool.
@@ -188,7 +191,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain(View root, int virtualDescendantId) {
-    if (useRealAni()) {
+    if (useRealAniPropEnabled()) {
       return reflector(AccessibilityNodeInfoReflector.class).obtain(root, virtualDescendantId);
     }
 
@@ -202,7 +205,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain() {
-    if (useRealAni()) {
+    if (useRealAniPropEnabled()) {
       return reflector(AccessibilityNodeInfoReflector.class).obtain();
     }
     AccessibilityNodeInfo obtainedInstance =
@@ -746,6 +749,17 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   /**
+   * After {@link AccessibilityNodeInfo#setQueryFromAppProcessEnabled(View, boolean)} is called, we
+   * will have direct access to the real {@link AccessibilityNodeInfo} hierarchy, so we want all
+   * future interactions with ANI to use the real object.
+   */
+  @Implementation(minSdk = U.SDK_INT)
+  protected void setQueryFromAppProcessEnabled(View view, boolean enabled) {
+    accessibilityNodeInfoReflector.setQueryFromAppProcessEnabled(view, enabled);
+    queryFromAppProcessWasEnabled = (enabled == true);
+  }
+
+  /**
    * Configure the return result of an action if it is performed
    *
    * @param listener The listener.
@@ -915,9 +929,16 @@ public class ShadowAccessibilityNodeInfo {
     AccessibilityNodeInfo newInstance(AccessibilityNodeInfo other);
 
     void init(AccessibilityNodeInfo other);
+
+    @Direct
+    void setQueryFromAppProcessEnabled(View view, boolean enabled);
   }
 
-  static boolean useRealAni() {
+  private boolean useRealAni() {
+    return queryFromAppProcessWasEnabled || ShadowAccessibilityNodeInfo.useRealAniPropEnabled();
+  }
+
+  static boolean useRealAniPropEnabled() {
     return Boolean.parseBoolean(System.getProperty("robolectric.useRealAni", "false"));
   }
 }

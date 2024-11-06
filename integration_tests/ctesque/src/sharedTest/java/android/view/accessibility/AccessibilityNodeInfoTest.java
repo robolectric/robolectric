@@ -77,8 +77,6 @@ public class AccessibilityNodeInfoTest {
   @Config(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
   @GraphicsMode(GraphicsMode.Mode.NATIVE)
   public void directAccessibilityConnection_queryChildCount() throws Exception {
-    String originalAni = System.getProperty("robolectric.useRealAni", "");
-    System.setProperty("robolectric.useRealAni", "true");
     try (ActivityScenario<ActivityWithAnotherTheme> scenario =
         ActivityScenario.launch(ActivityWithAnotherTheme.class)) {
       scenario.onActivity(
@@ -89,8 +87,6 @@ public class AccessibilityNodeInfoTest {
             assertThat(node.getChildCount()).isEqualTo(1);
             assertThat(node.getChild(0)).isNotNull();
           });
-    } finally {
-      System.setProperty("robolectric.useRealAni", originalAni);
     }
   }
 }
