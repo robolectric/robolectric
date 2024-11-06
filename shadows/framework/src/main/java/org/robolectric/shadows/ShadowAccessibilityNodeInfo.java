@@ -112,6 +112,9 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) {
+    if (useRealAni()) {
+      return reflector(AccessibilityNodeInfoReflector.class).obtain(info);
+    }
     // We explicitly avoid allocating the AccessibilityNodeInfo from the actual pool by using
     // the private constructor. Not doing so affects test suites which use both shadow and
     // non-shadow objects.
