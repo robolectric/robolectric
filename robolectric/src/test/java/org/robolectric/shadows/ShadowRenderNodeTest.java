@@ -15,6 +15,8 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.annotation.GraphicsMode.Mode;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -22,6 +24,7 @@ import org.robolectric.util.ReflectionHelpers;
  * RenderNode} was moved to a public API to open access to it.
  */
 @RunWith(AndroidJUnit4.class)
+@GraphicsMode(Mode.LEGACY)
 public final class ShadowRenderNodeTest {
 
   @Test

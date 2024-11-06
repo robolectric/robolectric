@@ -22,9 +22,12 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.annotation.GraphicsMode.Mode;
 
 /** Tests for {@link ShadowSurface}. */
 @RunWith(AndroidJUnit4.class)
+@GraphicsMode(Mode.LEGACY)
 public class ShadowSurfaceTest {
   private final SurfaceTexture texture = new SurfaceTexture(0);
   private final Surface surface = new Surface(texture);

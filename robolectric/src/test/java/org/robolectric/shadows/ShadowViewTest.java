@@ -60,9 +60,12 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.annotation.GraphicsMode.Mode;
 import org.robolectric.util.TestRunnable;
 
 @RunWith(AndroidJUnit4.class)
+@GraphicsMode(Mode.LEGACY)
 public class ShadowViewTest {
   private View view;
   private List<String> transcript;

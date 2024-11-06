@@ -20,11 +20,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.annotation.GraphicsMode.Mode;
 import org.robolectric.shadows.ShadowLog.LogItem;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TestUtil;
 
 @RunWith(AndroidJUnit4.class)
+@GraphicsMode(Mode.LEGACY)
 public class ShadowTypefaceTest {
 
   private File fontFile;
