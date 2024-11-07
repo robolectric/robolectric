@@ -7,8 +7,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.View;
@@ -51,20 +49,6 @@ public class ShadowAccessibilityNodeInfo {
   private static final SparseArray<StrictEqualityNodeWrapper> orderedInstances =
       new SparseArray<>();
 
-  public static final Parcelable.Creator<AccessibilityNodeInfo> CREATOR =
-      new Parcelable.Creator<AccessibilityNodeInfo>() {
-
-        @Override
-        public AccessibilityNodeInfo createFromParcel(Parcel source) {
-          return obtain(orderedInstances.get(source.readInt()).mInfo);
-        }
-
-        @Override
-        public AccessibilityNodeInfo[] newArray(int size) {
-          return new AccessibilityNodeInfo[size];
-        }
-      };
-
   private static int sAllocationCount = 0;
 
   private static final int PASTEABLE_MASK = 0x00000040;
@@ -106,12 +90,6 @@ public class ShadowAccessibilityNodeInfo {
   @RealObject private AccessibilityNodeInfo realAccessibilityNodeInfo;
 
   @ReflectorObject AccessibilityNodeInfoReflector accessibilityNodeInfoReflector;
-
-  @Implementation
-  protected void __constructor__() {
-    reflector(AccessibilityNodeInfoReflector.class).setCreator(ShadowAccessibilityNodeInfo.CREATOR);
-    Shadow.invokeConstructor(AccessibilityNodeInfo.class, realAccessibilityNodeInfo);
-  }
 
   @Implementation
   protected static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) {
@@ -390,16 +368,14 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected void setText(CharSequence t) {
-    if (useRealAni()) {
-      accessibilityNodeInfoReflector.setText(t);
-      return;
-    }
+    // Call the original method to set the underlying fields.
+    accessibilityNodeInfoReflector.setText(t);
     text = t;
   }
 
   @Implementation
   protected CharSequence getText() {
-    if (useRealAni()) {
+    if (useRealAni() || text == null) {
       return accessibilityNodeInfoReflector.getText();
     }
     return text;
@@ -723,31 +699,6 @@ public class ShadowAccessibilityNodeInfo {
     }
   }
 
-  @Implementation
-  protected int describeContents() {
-    if (useRealAni()) {
-      return accessibilityNodeInfoReflector.describeContents();
-    }
-    return 0;
-  }
-
-  @Implementation
-  protected void writeToParcel(Parcel dest, int flags) {
-    if (useRealAni()) {
-      accessibilityNodeInfoReflector.writeToParcel(dest, flags);
-      return;
-    }
-    StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(realAccessibilityNodeInfo);
-    int keyOfWrapper = -1;
-    for (int i = 0; i < orderedInstances.size(); i++) {
-      if (orderedInstances.valueAt(i).equals(wrapper)) {
-        keyOfWrapper = orderedInstances.keyAt(i);
-        break;
-      }
-    }
-    dest.writeInt(keyOfWrapper);
-  }
-
   /**
    * After {@link AccessibilityNodeInfo#setQueryFromAppProcessEnabled(View, boolean)} is called, we
    * will have direct access to the real {@link AccessibilityNodeInfo} hierarchy, so we want all
@@ -789,10 +740,6 @@ public class ShadowAccessibilityNodeInfo {
 
   @ForType(AccessibilityNodeInfo.class)
   interface AccessibilityNodeInfoReflector {
-    @Static
-    @Accessor("CREATOR")
-    void setCreator(Parcelable.Creator<AccessibilityNodeInfo> creator);
-
     @Static
     AccessibilityAction getActionSingleton(int id);
 
@@ -915,15 +862,9 @@ public class ShadowAccessibilityNodeInfo {
     @Direct
     void addChild(View child, int id);
 
-    @Direct
-    int describeContents();
-
     @Override
     @Direct
     String toString();
-
-    @Direct
-    void writeToParcel(Parcel dest, int flags);
 
     @Constructor
     AccessibilityNodeInfo newInstance(AccessibilityNodeInfo other);

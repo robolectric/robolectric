@@ -18,6 +18,7 @@ package android.view.accessibility;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build;
+import android.os.Parcel;
 import android.view.View;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -59,7 +60,7 @@ public class AccessibilityNodeInfoTest {
   }
 
   @Test
-  public void obtain_withWindow_returnsWindowId() throws Exception {
+  public void obtain_withWindow_returnsWindowId() {
     try (ActivityScenario<ActivityWithAnotherTheme> scenario =
         ActivityScenario.launch(ActivityWithAnotherTheme.class)) {
       scenario.onActivity(
@@ -73,10 +74,26 @@ public class AccessibilityNodeInfoTest {
   }
 
   @Test
+  public void getText_afterCreateFromParcel() {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    node.setText("hello world");
+    node.setContentDescription("hello world");
+
+    Parcel parcel = Parcel.obtain();
+    node.writeToParcel(parcel, /* flags= */ 0);
+    parcel.setDataPosition(0);
+    final AccessibilityNodeInfo node2 = AccessibilityNodeInfo.CREATOR.createFromParcel(parcel);
+
+    assertThat(node.getText().toString()).isEqualTo(node2.getText().toString());
+    assertThat(node.getContentDescription().toString())
+        .isEqualTo(node2.getContentDescription().toString());
+  }
+
+  @Test
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
   @Config(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
   @GraphicsMode(GraphicsMode.Mode.NATIVE)
-  public void directAccessibilityConnection_queryChildCount() throws Exception {
+  public void directAccessibilityConnection_queryChildCount() {
     try (ActivityScenario<ActivityWithAnotherTheme> scenario =
         ActivityScenario.launch(ActivityWithAnotherTheme.class)) {
       scenario.onActivity(
