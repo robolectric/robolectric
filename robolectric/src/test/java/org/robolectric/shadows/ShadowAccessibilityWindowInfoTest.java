@@ -20,9 +20,7 @@ public class ShadowAccessibilityWindowInfoTest {
 
   @Before
   public void setUp() {
-    ShadowAccessibilityWindowInfo.resetObtainedInstances();
-    assertThat(ShadowAccessibilityWindowInfo.areThereUnrecycledWindows(true)).isEqualTo(false);
-    window = ShadowAccessibilityWindowInfo.obtain();
+    window = AccessibilityWindowInfo.obtain();
     assertThat(window).isNotNull();
     shadow = shadowOf(window);
   }

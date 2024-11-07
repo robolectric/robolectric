@@ -10,15 +10,12 @@ import android.os.Build.VERSION_CODES;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
@@ -29,10 +26,6 @@ import org.robolectric.util.reflector.Static;
  */
 @Implements(value = AccessibilityWindowInfo.class)
 public class ShadowAccessibilityWindowInfo {
-
-  private static final Map<StrictEqualityWindowWrapper, StackTraceElement[]> obtainedInstances =
-      new HashMap<>();
-
   private List<AccessibilityWindowInfo> children = null;
 
   private AccessibilityWindowInfo parent = null;
@@ -46,20 +39,9 @@ public class ShadowAccessibilityWindowInfo {
   @RealObject private AccessibilityWindowInfo realAccessibilityWindowInfo;
 
   @Implementation
-  protected static AccessibilityWindowInfo obtain() {
-    final AccessibilityWindowInfo obtainedInstance =
-        ReflectionHelpers.callConstructor(AccessibilityWindowInfo.class);
-    StrictEqualityWindowWrapper wrapper = new StrictEqualityWindowWrapper(obtainedInstance);
-    obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
-    return obtainedInstance;
-  }
-
-  @Implementation
   protected static AccessibilityWindowInfo obtain(AccessibilityWindowInfo window) {
     final AccessibilityWindowInfo newInstance =
         reflector(AccessibilityWindowInfoReflector.class).obtain(window);
-    StrictEqualityWindowWrapper wrapper = new StrictEqualityWindowWrapper(newInstance);
-    obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
 
     final ShadowAccessibilityWindowInfo shadowInfo = Shadow.extract(window);
     final ShadowAccessibilityWindowInfo newShadow = Shadow.extract(newInstance);
@@ -77,39 +59,6 @@ public class ShadowAccessibilityWindowInfo {
       newShadow.children = null;
     }
     return newInstance;
-  }
-
-  /**
-   * Clear list of obtained instance objects. {@code areThereUnrecycledWindows} will always return
-   * false if called immediately afterwards.
-   */
-  public static void resetObtainedInstances() {
-    obtainedInstances.clear();
-  }
-
-  /**
-   * Check for leaked objects that were {@code obtain}ed but never {@code recycle}d.
-   *
-   * @param printUnrecycledWindowsToSystemErr - if true, stack traces of calls to {@code obtain}
-   *     that lack matching calls to {@code recycle} are dumped to System.err.
-   * @return {@code true} if there are unrecycled windows
-   */
-  public static boolean areThereUnrecycledWindows(boolean printUnrecycledWindowsToSystemErr) {
-    if (printUnrecycledWindowsToSystemErr) {
-      for (final StrictEqualityWindowWrapper wrapper : obtainedInstances.keySet()) {
-        final ShadowAccessibilityWindowInfo shadow = Shadow.extract(wrapper.mInfo);
-
-        System.err.println(
-            String.format(
-                "Leaked type = %d, id = %d. Stack trace:",
-                shadow.realAccessibilityWindowInfo.getType(), wrapper.mInfo.getId()));
-        for (final StackTraceElement stackTraceElement : obtainedInstances.get(wrapper)) {
-          System.err.println(stackTraceElement.toString());
-        }
-      }
-    }
-
-    return (obtainedInstances.size() != 0);
   }
 
   @Implementation
@@ -239,37 +188,6 @@ public class ShadowAccessibilityWindowInfo {
 
     children.add(child);
     ((ShadowAccessibilityWindowInfo) Shadow.extract(child)).parent = realAccessibilityWindowInfo;
-  }
-
-  /**
-   * Private class to keep different windows referring to the same window straight in the
-   * mObtainedInstances map.
-   */
-  private static class StrictEqualityWindowWrapper {
-    public final AccessibilityWindowInfo mInfo;
-
-    public StrictEqualityWindowWrapper(AccessibilityWindowInfo info) {
-      mInfo = info;
-    }
-
-    @Override
-    @SuppressWarnings("ReferenceEquality")
-    public boolean equals(Object object) {
-      if (object == null) {
-        return false;
-      }
-
-      if (!(object instanceof StrictEqualityWindowWrapper)) {
-        return false;
-      }
-      final StrictEqualityWindowWrapper wrapper = (StrictEqualityWindowWrapper) object;
-      return mInfo == wrapper.mInfo;
-    }
-
-    @Override
-    public int hashCode() {
-      return mInfo.hashCode();
-    }
   }
 
   @ForType(AccessibilityWindowInfo.class)
