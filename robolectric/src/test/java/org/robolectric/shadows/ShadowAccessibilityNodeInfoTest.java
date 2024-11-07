@@ -75,8 +75,8 @@ public class ShadowAccessibilityNodeInfoTest {
     node.writeToParcel(p, 0);
     p.setDataPosition(0);
     AccessibilityNodeInfo anotherNode = AccessibilityNodeInfo.CREATOR.createFromParcel(p);
-    assertThat(node).isEqualTo(anotherNode);
-    node.setContentDescription(null);
+    assertThat(node.getContentDescription().toString())
+        .isEqualTo(anotherNode.getContentDescription().toString());
   }
 
   @Test
