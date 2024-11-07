@@ -319,6 +319,15 @@ public class ShadowAccessibilityNodeInfoTest {
     }
   }
 
+  @Test
+  public void obtainWithNode_afterSetSealed() {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    node.setSealed(true);
+    assertThat(node.isSealed()).isTrue();
+    AccessibilityNodeInfo node2 = AccessibilityNodeInfo.obtain(node);
+    assertThat(node2.isSealed()).isTrue();
+  }
+
   @After
   public void tearDown() {
     ShadowAccessibilityNodeInfo.resetObtainedInstances();
