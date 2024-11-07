@@ -93,7 +93,8 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) {
-    if (useRealAniPropEnabled()) {
+    final ShadowAccessibilityNodeInfo shadowInfo = Shadow.extract(info);
+    if (useRealAniPropEnabled() || shadowInfo.queryFromAppProcessWasEnabled) {
       return reflector(AccessibilityNodeInfoReflector.class).obtain(info);
     }
     // We explicitly avoid allocating the AccessibilityNodeInfo from the actual pool by using
@@ -108,7 +109,6 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     final ShadowAccessibilityNodeInfo newShadow = Shadow.extract(newInfo);
-    final ShadowAccessibilityNodeInfo shadowInfo = Shadow.extract(info);
 
     newShadow.mOriginNodeId = shadowInfo.mOriginNodeId;
     Rect boundsInScreen = new Rect();
