@@ -1,7 +1,7 @@
 plugins { alias(libs.plugins.android.library) }
 
 android {
-  compileSdk = 34
+  compileSdk = 35
   namespace = "org.robolectric.testapp"
 
   defaultConfig {

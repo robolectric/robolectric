@@ -6,7 +6,7 @@ plugins {
 // test with a project that depends on the stubs jar, not org.robolectric:android-all
 
 android {
-  compileSdk = 34
+  compileSdk = 35
   namespace = "org.robolectric"
 
   defaultConfig { minSdk = 21 }
