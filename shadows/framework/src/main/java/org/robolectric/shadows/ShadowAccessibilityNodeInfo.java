@@ -10,7 +10,6 @@ import android.util.Pair;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
-import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.view.accessibility.AccessibilityWindowInfo;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +25,6 @@ import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -49,10 +47,6 @@ public class ShadowAccessibilityNodeInfo {
       new SparseArray<>();
 
   private static int sAllocationCount = 0;
-
-  private static final int PASTEABLE_MASK = 0x00000040;
-
-  private static final int TEXT_SELECTION_SETABLE_MASK = 0x00000100;
 
   /**
    * Uniquely identifies the origin of the AccessibilityNodeInfo for equality testing. Two instances
@@ -340,24 +334,6 @@ public class ShadowAccessibilityNodeInfo {
 
   public void setRefreshReturnValue(boolean refreshReturnValue) {
     this.refreshReturnValue = refreshReturnValue;
-  }
-
-  public boolean isPasteable() {
-    return (accessibilityNodeInfoReflector.getBooleanProperties() & PASTEABLE_MASK) != 0;
-  }
-
-  public boolean isTextSelectionSetable() {
-    return (accessibilityNodeInfoReflector.getBooleanProperties() & TEXT_SELECTION_SETABLE_MASK)
-        != 0;
-  }
-
-  public void setTextSelectionSetable(boolean isTextSelectionSetable) {
-    accessibilityNodeInfoReflector.setBooleanProperty(
-        TEXT_SELECTION_SETABLE_MASK, isTextSelectionSetable);
-  }
-
-  public void setPasteable(boolean isPasteable) {
-    accessibilityNodeInfoReflector.setBooleanProperty(PASTEABLE_MASK, isPasteable);
   }
 
   @Implementation
@@ -734,20 +710,6 @@ public class ShadowAccessibilityNodeInfo {
 
   @ForType(AccessibilityNodeInfo.class)
   interface AccessibilityNodeInfoReflector {
-    @Static
-    AccessibilityAction getActionSingleton(int id);
-
-    @Accessor("mBooleanProperties")
-    int getBooleanProperties();
-
-    void setBooleanProperty(int property, boolean value);
-
-    @Accessor("mActions")
-    void setActionsList(ArrayList<AccessibilityAction> actions);
-
-    @Accessor("mActions")
-    void setActionsMask(int actions); // pre-L
-
     @Direct
     @Static
     AccessibilityNodeInfo obtain(AccessibilityNodeInfo info);
