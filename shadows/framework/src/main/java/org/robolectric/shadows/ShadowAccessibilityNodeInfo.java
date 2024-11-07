@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Pair;
 import android.util.SparseArray;
@@ -111,11 +110,6 @@ public class ShadowAccessibilityNodeInfo {
     final ShadowAccessibilityNodeInfo newShadow = Shadow.extract(newInfo);
 
     newShadow.mOriginNodeId = shadowInfo.mOriginNodeId;
-    Rect boundsInScreen = new Rect();
-    info.getBoundsInScreen(boundsInScreen);
-    newInfo.setBoundsInScreen(boundsInScreen);
-    newShadow.accessibilityNodeInfoReflector.setBooleanProperties(
-        shadowInfo.accessibilityNodeInfoReflector.getBooleanProperties());
     newShadow.text = shadowInfo.text;
     newShadow.performedActionAndArgsList = shadowInfo.performedActionAndArgsList;
     newShadow.parent = shadowInfo.parent;
@@ -746,9 +740,6 @@ public class ShadowAccessibilityNodeInfo {
     @Accessor("mBooleanProperties")
     int getBooleanProperties();
 
-    @Accessor("mBooleanProperties")
-    void setBooleanProperties(int properties);
-
     void setBooleanProperty(int property, boolean value);
 
     @Accessor("mActions")
@@ -756,18 +747,6 @@ public class ShadowAccessibilityNodeInfo {
 
     @Accessor("mActions")
     void setActionsMask(int actions); // pre-L
-
-    @Direct
-    void getBoundsInScreen(Rect outBounds);
-
-    @Direct
-    void getBoundsInParent(Rect outBounds);
-
-    @Direct
-    void setBoundsInScreen(Rect b);
-
-    @Direct
-    void setBoundsInParent(Rect b);
 
     @Direct
     @Static
