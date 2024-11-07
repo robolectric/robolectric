@@ -122,7 +122,7 @@ public class ShadowAccessibilityNodeInfoTest {
     assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_SET_SELECTION);
     assertThat(node.getTextSelectionStart()).isEqualTo(0);
     assertThat(node.getTextSelectionEnd()).isEqualTo(1);
-    AccessibilityWindowInfo window = ShadowAccessibilityWindowInfo.obtain();
+    AccessibilityWindowInfo window = AccessibilityWindowInfo.obtain();
     shadow.setAccessibilityWindowInfo(window);
     assertThat(node.getWindow()).isEqualTo(window);
     shadow.setAccessibilityWindowInfo(null);
