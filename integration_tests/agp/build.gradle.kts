@@ -24,7 +24,6 @@ dependencies {
   // Testing dependencies
   testImplementation(project(":testapp"))
   testImplementation(project(":robolectric"))
-  testImplementation(project(":integration_tests:agp:testsupport"))
 
   testImplementation(libs.junit4)
   testImplementation(libs.androidx.test.core)
