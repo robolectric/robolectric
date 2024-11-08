@@ -81,8 +81,13 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     public ArscResourceResolver(Context context) {
       this.context = context;
 
-      ShadowAssetManager.ArscBase shadowArscAssetManager = Shadow.extract(context.getAssets());
-      this.resTable = shadowArscAssetManager.getCompileTimeResTable();
+      ShadowAssetManager shadowAssetManager = Shadow.extract(context.getAssets());
+      if (shadowAssetManager instanceof ShadowAssetManager.ArscBase) {
+        this.resTable = ((ShadowAssetManager.ArscBase) shadowAssetManager).getCompileTimeResTable();
+      } else {
+        throw new IllegalStateException(
+            "AttributeSetBuilder is only supported in BINARY resources mode");
+      }
     }
 
     @Override
