@@ -15,11 +15,7 @@ import org.robolectric.util.reflector.Static;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for new SurfaceSyncGroup introduced in android U. */
-@Implements(
-    value = SurfaceSyncGroup.class,
-    minSdk = U.SDK_INT,
-    // TODO: remove when minimum supported compileSdk is >= 34
-    isInAndroidSdk = false)
+@Implements(value = SurfaceSyncGroup.class, minSdk = U.SDK_INT)
 public class ShadowSurfaceSyncGroup {
 
   @Resetter

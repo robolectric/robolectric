@@ -16,11 +16,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for VirtualDeviceManager. */
-@Implements(
-    value = WearableSensingManager.class,
-    minSdk = U.SDK_INT,
-    // TODO: remove when minimum supported compileSdk is >= 34
-    isInAndroidSdk = false)
+@Implements(value = WearableSensingManager.class, minSdk = U.SDK_INT)
 public class ShadowWearableSensingManager {
 
   private static @StatusCode Integer provideDataStreamResult =

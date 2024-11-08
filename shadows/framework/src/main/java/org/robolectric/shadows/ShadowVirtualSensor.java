@@ -9,11 +9,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for VirtualSensor. */
-@Implements(
-    value = VirtualSensor.class,
-    minSdk = U.SDK_INT,
-    // TODO: remove when minimum supported compileSdk is >= 34
-    isInAndroidSdk = false)
+@Implements(value = VirtualSensor.class, minSdk = U.SDK_INT)
 public class ShadowVirtualSensor {
 
   private int deviceId = 0;

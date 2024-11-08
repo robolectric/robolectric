@@ -11,11 +11,7 @@ import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Fake implementation for Gainmap class. */
-@Implements(
-    value = Gainmap.class,
-    minSdk = U.SDK_INT,
-    // TODO: remove when minimum supported compileSdk is >= 34
-    isInAndroidSdk = false)
+@Implements(value = Gainmap.class, minSdk = U.SDK_INT)
 public class ShadowGainmap {
 
   @RealObject Gainmap realGainmap;
