@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 
-import java.io.InputStream;
 
 @SuppressWarnings("UnusedDeclaration")
 public abstract class ShadowAssetInputStream {
@@ -9,11 +8,18 @@ public abstract class ShadowAssetInputStream {
   public static class Picker extends ResourceModeShadowPicker<ShadowAssetInputStream> {
 
     public Picker() {
-      super(ShadowArscAssetInputStream.class, ShadowArscAssetInputStream.class);
+      super(
+          ShadowArscAssetInputStream.class,
+          ShadowArscAssetInputStream.class,
+          ShadowArscAssetInputStream.class,
+          ShadowArscAssetInputStream.class,
+          ShadowNativeAssetInputStream.class);
     }
   }
 
-  abstract InputStream getDelegate();
-
+  /**
+   * @deprecated should only be used in LEGACY graphics mode
+   */
+  @Deprecated
   abstract boolean isNinePatch();
 }
