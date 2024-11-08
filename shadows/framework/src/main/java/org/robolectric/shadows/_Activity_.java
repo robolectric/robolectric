@@ -163,6 +163,7 @@ public interface _Activity_ {
       CharSequence activityTitle,
       @WithType("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances) {
+    Configuration config = new Configuration(application.getResources().getConfiguration());
     int apiLevel = RuntimeEnvironment.getApiLevel();
     if (apiLevel == Build.VERSION_CODES.LOLLIPOP) {
       attach(
@@ -178,7 +179,7 @@ public interface _Activity_ {
           null,
           null,
           lastNonConfigurationInstances,
-          application.getResources().getConfiguration(),
+          config,
           null);
     } else if (apiLevel <= Build.VERSION_CODES.M) {
       attach(
@@ -194,7 +195,7 @@ public interface _Activity_ {
           null,
           null,
           lastNonConfigurationInstances,
-          application.getResources().getConfiguration(),
+          config,
           "referrer",
           null);
     } else if (apiLevel <= Build.VERSION_CODES.N_MR1) {
@@ -211,7 +212,7 @@ public interface _Activity_ {
           null,
           null,
           lastNonConfigurationInstances,
-          application.getResources().getConfiguration(),
+          config,
           "referrer",
           null,
           null);
@@ -229,7 +230,7 @@ public interface _Activity_ {
           null,
           null,
           lastNonConfigurationInstances,
-          application.getResources().getConfiguration(),
+          config,
           "referrer",
           null,
           null,
@@ -248,7 +249,7 @@ public interface _Activity_ {
           null,
           null,
           lastNonConfigurationInstances,
-          application.getResources().getConfiguration(),
+          config,
           "referrer",
           null,
           null,
@@ -268,7 +269,7 @@ public interface _Activity_ {
           null,
           null,
           lastNonConfigurationInstances,
-          application.getResources().getConfiguration(),
+          config,
           "referrer",
           null,
           null,
