@@ -14,8 +14,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.ResourcesMode;
+import org.robolectric.annotation.ResourcesMode.Mode;
 
 @RunWith(AndroidJUnit4.class)
+@ResourcesMode(Mode.BINARY)
 public class ShadowEditTextTest {
   private EditText editText;
   private Application context;

@@ -23,6 +23,7 @@ import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 @GraphicsMode(Mode.LEGACY)
+
 public class ShadowBitmapDrawableTest {
   private final Resources resources = ApplicationProvider.getApplicationContext().getResources();
 

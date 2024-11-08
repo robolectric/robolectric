@@ -51,7 +51,7 @@ public class ResourceModeShadowPicker<T> implements ShadowPicker<T> {
 
   @Override
   public Class<? extends T> pickShadowClass() {
-    if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT
+    if (RuntimeEnvironment.getApiLevel() > V.SDK_INT
         && nativeShadowClass != null
         && ConfigurationRegistry.get(ResourcesMode.Mode.class) == Mode.NATIVE) {
       return nativeShadowClass;

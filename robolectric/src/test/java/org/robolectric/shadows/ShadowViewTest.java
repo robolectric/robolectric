@@ -62,10 +62,12 @@ import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
+import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.util.TestRunnable;
 
 @RunWith(AndroidJUnit4.class)
 @GraphicsMode(Mode.LEGACY)
+
 public class ShadowViewTest {
   private View view;
   private List<String> transcript;
@@ -359,6 +361,7 @@ public class ShadowViewTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void shouldAddOnClickListenerFromAttribute() throws Exception {
     AttributeSet attrs =
         Robolectric.buildAttributeSet().addAttribute(android.R.attr.onClick, "clickMe").build();
@@ -368,6 +371,7 @@ public class ShadowViewTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void shouldCallOnClickWithAttribute() throws Exception {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
 

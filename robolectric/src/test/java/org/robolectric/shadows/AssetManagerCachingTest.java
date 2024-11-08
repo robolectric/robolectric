@@ -13,12 +13,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.ResourcesMode;
+import org.robolectric.annotation.ResourcesMode.Mode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.versioning.AndroidVersions.P;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = P.SDK_INT)
+@ResourcesMode(Mode.BINARY)
 public class AssetManagerCachingTest {
   private static final AtomicLong systemNativePtr = new AtomicLong();
 

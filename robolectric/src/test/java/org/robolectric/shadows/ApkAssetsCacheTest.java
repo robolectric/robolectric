@@ -16,6 +16,8 @@ import org.junit.runners.MethodSorters;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.ResourcesMode;
+import org.robolectric.annotation.ResourcesMode.Mode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager._AssetManager28_;
 
@@ -23,6 +25,7 @@ import org.robolectric.shadows.ShadowAssetManager._AssetManager28_;
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = P)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@ResourcesMode(Mode.BINARY)
 public class ApkAssetsCacheTest {
   private static String propertyName() {
     return "org.robolectric.ApkAssetsCacheTest.ptrs" + RuntimeEnvironment.getApiLevel();

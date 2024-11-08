@@ -15,10 +15,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.ResourcesMode;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 @RunWith(AndroidJUnit4.class)
+
 public class XmlPullParserTest {
 
   // emulator output:
@@ -97,6 +99,7 @@ public class XmlPullParserTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void buildAttrSet() {
     XmlResourceParser parser =
         (XmlResourceParser)

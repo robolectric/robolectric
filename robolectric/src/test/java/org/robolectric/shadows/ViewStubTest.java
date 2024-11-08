@@ -17,8 +17,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.ResourcesMode;
 
 @RunWith(AndroidJUnit4.class)
+
 public class ViewStubTest {
   private Context ctxt;
 
@@ -53,6 +55,7 @@ public class ViewStubTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void shouldApplyAttributes() {
     ViewStub viewStub =
         new ViewStub(

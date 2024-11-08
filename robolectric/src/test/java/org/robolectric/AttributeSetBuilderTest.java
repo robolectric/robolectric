@@ -15,10 +15,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.ResourcesMode;
+import org.robolectric.annotation.ResourcesMode.Mode;
 import org.robolectric.res.AttributeResource;
 
 /** Tests for {@link Robolectric#buildAttributeSet()} */
 @RunWith(AndroidJUnit4.class)
+@ResourcesMode(Mode.BINARY)
 public class AttributeSetBuilderTest {
 
   private static final String APP_NS = RES_AUTO_NS_URI;
