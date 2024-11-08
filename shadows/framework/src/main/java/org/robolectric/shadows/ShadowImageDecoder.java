@@ -3,10 +3,10 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetManager;
 import android.content.res.AssetManager.AssetInputStream;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ColorSpace;
@@ -21,12 +21,15 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import libcore.io.IoUtils;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 // transliterated from
 // https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android/graphics/ImageDecoder.cpp
@@ -150,14 +153,12 @@ public class ShadowImageDecoder {
         });
   }
 
-  protected static ImageDecoder ImageDecoder_nCreateAsset(long asset_ptr, Source source)
-      throws DecodeException {
+  protected static ImageDecoder ImageDecoder_nCreateAsset(
+      AssetInputStream assetInputStream /*long asset_ptr*/, Source source) throws DecodeException {
     // Asset* asset = reinterpret_cast<Asset*>(assetPtr);
     // SkStream stream = new AssetStreamAdaptor(asset);
     // return jniCreateDecoder(stream, source);
-    Resources resources = ReflectionHelpers.getField(source, "mResources");
-    AssetInputStream assetInputStream =
-        ShadowAssetInputStream.createAssetInputStream(null, asset_ptr, resources.getAssets());
+
     return jniCreateDecoder(
         new ImgStream() {
           @Override
@@ -275,11 +276,6 @@ public class ShadowImageDecoder {
   // native method implementations...
 
   @Implementation(maxSdk = Q)
-  protected static ImageDecoder nCreate(long asset, Source source) throws IOException {
-    return ImageDecoder_nCreateAsset(asset, source);
-  }
-
-  @Implementation(maxSdk = Q)
   protected static ImageDecoder nCreate(ByteBuffer buffer, int position, int limit, Source src)
       throws IOException {
     return ImageDecoder_nCreateByteBuffer(buffer, position, limit, src);
@@ -302,10 +298,28 @@ public class ShadowImageDecoder {
     return ImageDecoder_nCreateFd(fd, src);
   }
 
-  @Implementation(minSdk = R)
-  protected static ImageDecoder nCreate(long asset, boolean preferAnimation, Source source)
+  @Implementation(maxSdk = Q)
+  protected static ImageDecoder createFromAsset(AssetInputStream ais, Source source)
       throws IOException {
-    return ImageDecoder_nCreateAsset(asset, source);
+    return createFromAsset(ais, false, source);
+  }
+
+  @Implementation(minSdk = R)
+  protected static ImageDecoder createFromAsset(
+      AssetInputStream ais, boolean preferAnimation, Source source) throws IOException {
+    // copy the real android implementation to retain access to the AssetInputStream
+    ImageDecoder decoder = null;
+    try {
+      decoder = ImageDecoder_nCreateAsset(ais, source);
+    } finally {
+      if (decoder == null) {
+        IoUtils.closeQuietly(ais);
+      } else {
+        reflector(ImageDecoderReflector.class, decoder).setInputStream(ais);
+        reflector(ImageDecoderReflector.class, decoder).setOwnsInputStream(true);
+      }
+    }
+    return decoder;
   }
 
   @Implementation(minSdk = R)
@@ -418,5 +432,14 @@ public class ShadowImageDecoder {
   @Implementation
   protected static ColorSpace nGetColorSpace(long nativePtr) {
     return ImageDecoder_nGetColorSpace(nativePtr);
+  }
+
+  @ForType(ImageDecoder.class)
+  interface ImageDecoderReflector {
+    @Accessor("mInputStream")
+    void setInputStream(InputStream is);
+
+    @Accessor("mOwnsInputStream")
+    void setOwnsInputStream(boolean value);
   }
 }
