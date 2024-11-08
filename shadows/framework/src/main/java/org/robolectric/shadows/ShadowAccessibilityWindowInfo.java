@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static org.robolectric.shadows.ShadowAccessibilityNodeInfo.checkRealAniDisabled;
+import static org.robolectric.shadows.ShadowAccessibilityNodeInfo.useRealAni;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Rect;
@@ -43,6 +45,10 @@ public class ShadowAccessibilityWindowInfo {
     final AccessibilityWindowInfo newInstance =
         reflector(AccessibilityWindowInfoReflector.class).obtain(window);
 
+    if (useRealAni()) {
+      return newInstance;
+    }
+
     final ShadowAccessibilityWindowInfo shadowInfo = Shadow.extract(window);
     final ShadowAccessibilityWindowInfo newShadow = Shadow.extract(newInstance);
 
@@ -63,6 +69,10 @@ public class ShadowAccessibilityWindowInfo {
 
   @Implementation
   protected int getChildCount() {
+    if (useRealAni()) {
+      return reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+          .getChildCount();
+    }
     if (children == null) {
       return 0;
     }
@@ -72,6 +82,10 @@ public class ShadowAccessibilityWindowInfo {
 
   @Implementation
   protected AccessibilityWindowInfo getChild(int index) {
+    if (useRealAni()) {
+      return reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+          .getChild(index);
+    }
     if (children == null) {
       return null;
     }
@@ -81,39 +95,57 @@ public class ShadowAccessibilityWindowInfo {
 
   @Implementation
   protected AccessibilityWindowInfo getParent() {
+    if (useRealAni()) {
+      return reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+          .getParent();
+    }
     return parent;
   }
 
   @Implementation
   protected AccessibilityNodeInfo getRoot() {
+    if (useRealAni()) {
+      return reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+          .getRoot();
+    }
     return (rootNode == null) ? null : AccessibilityNodeInfo.obtain(rootNode);
   }
 
   @Implementation(minSdk = N)
   protected AccessibilityNodeInfo getAnchor() {
+    if (useRealAni()) {
+      return reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+          .getAnchor();
+    }
     return (anchorNode == null) ? null : AccessibilityNodeInfo.obtain(anchorNode);
   }
 
   @Implementation
   protected void getBoundsInScreen(Rect outBounds) {
-    if (boundsInScreenOverride != null) {
-      outBounds.set(boundsInScreenOverride);
-    } else {
+    if (useRealAni() || boundsInScreenOverride == null) {
       reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
           .getBoundsInScreen(outBounds);
+    } else {
+      outBounds.set(boundsInScreenOverride);
     }
   }
 
   @Implementation
   protected void recycle() {
+    if (useRealAni()) {
+      reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo).recycle();
+      return;
+    }
     // This shadow does not track recycling of windows.
   }
 
   public void setRoot(AccessibilityNodeInfo root) {
+    checkRealAniDisabled();
     rootNode = root;
   }
 
   public void setAnchor(AccessibilityNodeInfo anchor) {
+    checkRealAniDisabled();
     anchorNode = anchor;
   }
 
@@ -182,6 +214,7 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   public void addChild(AccessibilityWindowInfo child) {
+    checkRealAniDisabled();
     if (children == null) {
       children = new ArrayList<>();
     }
@@ -225,6 +258,24 @@ public class ShadowAccessibilityWindowInfo {
 
     @Direct
     void getBoundsInScreen(Rect outBounds);
+
+    @Direct
+    int getChildCount();
+
+    @Direct
+    AccessibilityWindowInfo getChild(int index);
+
+    @Direct
+    AccessibilityWindowInfo getParent();
+
+    @Direct
+    AccessibilityNodeInfo getRoot();
+
+    @Direct
+    AccessibilityNodeInfo getAnchor();
+
+    @Direct
+    void recycle();
 
     @Direct
     @Static
