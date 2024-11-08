@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.view.accessibility.AccessibilityWindowInfo;
+import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -84,7 +85,7 @@ public class ShadowAccessibilityNodeInfo {
 
   private OnPerformActionListener actionListener;
 
-  private boolean queryFromAppProcessWasEnabled;
+  private static boolean queryFromAppProcessWasEnabled;
 
   @RealObject private AccessibilityNodeInfo realAccessibilityNodeInfo;
 
@@ -92,8 +93,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) {
-    final ShadowAccessibilityNodeInfo shadowInfo = Shadow.extract(info);
-    if (useRealAniPropEnabled() || shadowInfo.queryFromAppProcessWasEnabled) {
+    if (useRealAni()) {
       return reflector(AccessibilityNodeInfoReflector.class).obtain(info);
     }
     // We explicitly avoid allocating the AccessibilityNodeInfo from the actual pool by using
@@ -108,7 +108,7 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     final ShadowAccessibilityNodeInfo newShadow = Shadow.extract(newInfo);
-
+    final ShadowAccessibilityNodeInfo shadowInfo = Shadow.extract(info);
     newShadow.mOriginNodeId = shadowInfo.mOriginNodeId;
     newShadow.text = shadowInfo.text;
     newShadow.performedActionAndArgsList = shadowInfo.performedActionAndArgsList;
@@ -150,7 +150,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain(View view) {
-    if (useRealAniPropEnabled()) {
+    if (useRealAni()) {
       return reflector(AccessibilityNodeInfoReflector.class).obtain(view);
     }
     // Call the constructor directly to avoid using the object pool.
@@ -163,7 +163,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain(View root, int virtualDescendantId) {
-    if (useRealAniPropEnabled()) {
+    if (useRealAni()) {
       return reflector(AccessibilityNodeInfoReflector.class).obtain(root, virtualDescendantId);
     }
 
@@ -177,7 +177,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain() {
-    if (useRealAniPropEnabled()) {
+    if (useRealAni()) {
       return reflector(AccessibilityNodeInfoReflector.class).obtain();
     }
     AccessibilityNodeInfo obtainedInstance =
@@ -222,6 +222,7 @@ public class ShadowAccessibilityNodeInfo {
    * @return {@code true} if there are unrecycled nodes
    */
   public static boolean areThereUnrecycledNodes(boolean printUnrecycledNodesToSystemErr) {
+    checkRealAniDisabled();
     if (printUnrecycledNodesToSystemErr) {
       for (final StrictEqualityNodeWrapper wrapper : obtainedInstances.keySet()) {
         final ShadowAccessibilityNodeInfo shadow = Shadow.extract(wrapper.mInfo);
@@ -246,6 +247,7 @@ public class ShadowAccessibilityNodeInfo {
   public static void resetObtainedInstances() {
     obtainedInstances.clear();
     orderedInstances.clear();
+    queryFromAppProcessWasEnabled = false;
   }
 
   @Implementation
@@ -339,6 +341,7 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   public void setRefreshReturnValue(boolean refreshReturnValue) {
+    checkRealAniDisabled();
     this.refreshReturnValue = refreshReturnValue;
   }
 
@@ -364,7 +367,9 @@ public class ShadowAccessibilityNodeInfo {
   protected void setText(CharSequence t) {
     // Call the original method to set the underlying fields.
     accessibilityNodeInfoReflector.setText(t);
-    text = t;
+    if (!useRealAni()) {
+      text = t;
+    }
   }
 
   @Implementation
@@ -388,10 +393,8 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   public void setLabelFor(AccessibilityNodeInfo info) {
-    if (useRealAni()) {
-      accessibilityNodeInfoReflector.setLabelFor(info);
-      return;
-    }
+    checkRealAniDisabled();
+
     if (labelFor != null) {
       labelFor.recycle();
     }
@@ -412,10 +415,7 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   public void setLabeledBy(AccessibilityNodeInfo info) {
-    if (useRealAni()) {
-      accessibilityNodeInfoReflector.setLabeledBy(info);
-      return;
-    }
+    checkRealAniDisabled();
     if (labeledBy != null) {
       labeledBy.recycle();
     }
@@ -458,6 +458,7 @@ public class ShadowAccessibilityNodeInfo {
    * @see #getTraversalAfter()
    */
   public void setTraversalAfter(AccessibilityNodeInfo info) {
+    checkRealAniDisabled();
     if (this.traversalAfter != null) {
       this.traversalAfter.recycle();
     }
@@ -500,6 +501,7 @@ public class ShadowAccessibilityNodeInfo {
    * @see #getTraversalBefore()
    */
   public void setTraversalBefore(AccessibilityNodeInfo info) {
+    checkRealAniDisabled();
     if (this.traversalBefore != null) {
       this.traversalBefore.recycle();
     }
@@ -510,13 +512,17 @@ public class ShadowAccessibilityNodeInfo {
   @Implementation
   protected void setSource(View source) {
     accessibilityNodeInfoReflector.setSource(source);
-    this.view = source;
+    if (!useRealAni()) {
+      this.view = source;
+    }
   }
 
   @Implementation
   protected void setSource(View root, int virtualDescendantId) {
     accessibilityNodeInfoReflector.setSource(root, virtualDescendantId);
-    this.view = root;
+    if (!useRealAni()) {
+      this.view = root;
+    }
   }
 
   @Implementation
@@ -537,6 +543,7 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   public void setAccessibilityWindowInfo(AccessibilityWindowInfo info) {
+    checkRealAniDisabled();
     accessibilityWindowInfo = info;
   }
 
@@ -606,6 +613,7 @@ public class ShadowAccessibilityNodeInfo {
    * @param child The node to be added as a child.
    */
   public void addChild(AccessibilityNodeInfo child) {
+    checkRealAniDisabled();
     if (children == null) {
       children = new ArrayList<>();
     }
@@ -639,6 +647,7 @@ public class ShadowAccessibilityNodeInfo {
    * @return The list of arguments for the various calls to performAction. Unmodifiable.
    */
   public List<Integer> getPerformedActions() {
+    checkRealAniDisabled();
     if (performedActionAndArgsList == null) {
       performedActionAndArgsList = new ArrayList<>();
     }
@@ -657,6 +666,7 @@ public class ShadowAccessibilityNodeInfo {
    * @return The list of arguments for the various calls to performAction. Unmodifiable.
    */
   public List<Pair<Integer, Bundle>> getPerformedActionsWithArgs() {
+    checkRealAniDisabled();
     if (performedActionAndArgsList == null) {
       performedActionAndArgsList = new ArrayList<>();
     }
@@ -701,7 +711,9 @@ public class ShadowAccessibilityNodeInfo {
   @Implementation(minSdk = U.SDK_INT)
   protected void setQueryFromAppProcessEnabled(View view, boolean enabled) {
     accessibilityNodeInfoReflector.setQueryFromAppProcessEnabled(view, enabled);
-    queryFromAppProcessWasEnabled = (enabled == true);
+    if (enabled) {
+      queryFromAppProcessWasEnabled = true;
+    }
   }
 
   /**
@@ -710,6 +722,7 @@ public class ShadowAccessibilityNodeInfo {
    * @param listener The listener.
    */
   public void setOnPerformActionListener(OnPerformActionListener listener) {
+    checkRealAniDisabled();
     actionListener = listener;
   }
 
@@ -789,13 +802,7 @@ public class ShadowAccessibilityNodeInfo {
     AccessibilityNodeInfo getLabelFor();
 
     @Direct
-    void setLabelFor(AccessibilityNodeInfo info);
-
-    @Direct
     AccessibilityNodeInfo getLabeledBy();
-
-    @Direct
-    void setLabeledBy(AccessibilityNodeInfo info);
 
     @Direct
     AccessibilityNodeInfo getTraversalAfter();
@@ -854,11 +861,19 @@ public class ShadowAccessibilityNodeInfo {
     void setQueryFromAppProcessEnabled(View view, boolean enabled);
   }
 
-  private boolean useRealAni() {
-    return queryFromAppProcessWasEnabled || ShadowAccessibilityNodeInfo.useRealAniPropEnabled();
+  static boolean useRealAni() {
+    return queryFromAppProcessWasEnabled
+        || Boolean.parseBoolean(System.getProperty("robolectric.useRealAni", "false"));
   }
 
-  static boolean useRealAniPropEnabled() {
-    return Boolean.parseBoolean(System.getProperty("robolectric.useRealAni", "false"));
+  static void checkRealAniDisabled() {
+    Preconditions.checkState(
+        !queryFromAppProcessWasEnabled,
+        "This API is not supported after a call to"
+            + " AccessibilityNodeInfo#setQueryFromAppProcessEnabled.");
+    boolean useRealAni =
+        Boolean.parseBoolean(System.getProperty("robolectric.useRealAni", "false"));
+    Preconditions.checkState(
+        !useRealAni, "This API is not supported when 'robolectric.useRealAni' is true");
   }
 }
