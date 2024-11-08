@@ -1,4 +1,4 @@
-package org.robolectric.integrationtests.agp.testsupport;
+package org.robolectric.integrationtests.agp;
 
 import android.app.Activity;
 
