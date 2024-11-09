@@ -132,11 +132,13 @@ public class ShadowAccessibilityWindowInfo {
 
   @Implementation
   protected void recycle() {
-    if (useRealAni()) {
-      reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo).recycle();
-      return;
-    }
-    // This shadow does not track recycling of windows.
+    reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo).recycle();
+    // Clear shadow fields.
+    children = null;
+    parent = null;
+    rootNode = null;
+    anchorNode = null;
+    boundsInScreenOverride = null;
   }
 
   public void setRoot(AccessibilityNodeInfo root) {
