@@ -36,12 +36,12 @@ jobs:
           # Only run integration tests on Copybara PRs
           (cd integration_tests && \
             SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
-            ../gradlew test --info --stacktrace --continue --parallel --no-watch-fs \
+            ../gradlew test --stacktrace --continue --parallel --no-watch-fs \
             -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
             -Drobolectric.enabledSdks=34 \
             -Dorg.gradle.workers.max=2 \
             -x :integration_tests:nativegraphics:test \
-            -x :integration_tests:sdkcompat:test \
+            -x :integration_tests:sdkcompat:test
           )
 
       - name: SdkCompat tests
@@ -49,5 +49,5 @@ jobs:
           # `SdkCompat tests` is run as a separate step because it has to run on all SDK levels, and
           # the `Integration tests` step only runs on a single SDK level.
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
-          ./gradlew :integration_tests:sdkcompat:test --info --stacktrace --continue --no-watch-fs \
-          -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
+          ./gradlew :integration_tests:sdkcompat:test --stacktrace --continue --no-watch-fs \
+          -Drobolectric.alwaysIncludeVariantMarkersInTestName=true
