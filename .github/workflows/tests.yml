@@ -39,7 +39,7 @@ jobs:
       - name: Build
         run: |
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
-          ./gradlew assemble testClasses --parallel --stacktrace --no-watch-fs
+          ./gradlew assemble testClasses --stacktrace --no-watch-fs
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -64,7 +64,6 @@ jobs:
         run: |
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew test \
           --stacktrace --continue \
-          --parallel \
           --no-watch-fs \
           -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
