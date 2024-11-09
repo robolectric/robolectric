@@ -112,11 +112,8 @@ public class ShadowAccessibilityNodeInfoTest {
     node = AccessibilityNodeInfo.obtain();
     node.setClickable(false);
     shadow = shadowOf(node);
-    shadow.setPasteable(false);
     assertThat(node.isClickable()).isEqualTo(false);
-    assertThat(shadow.isPasteable()).isEqualTo(false);
     node.setText("Test");
-    shadow.setTextSelectionSetable(true);
     node.addAction(AccessibilityNodeInfo.ACTION_SET_SELECTION);
     node.setTextSelection(0, 1);
     assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_SET_SELECTION);
@@ -128,14 +125,11 @@ public class ShadowAccessibilityNodeInfoTest {
     shadow.setAccessibilityWindowInfo(null);
     // Remove action was added in API 21
     node.removeAction(AccessibilityAction.ACTION_SET_SELECTION);
-    shadow.setPasteable(true);
-    shadow.setTextSelectionSetable(false);
     node.addAction(AccessibilityNodeInfo.ACTION_PASTE);
     assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_PASTE);
     node.setClickable(true);
     assertThat(node.isClickable()).isEqualTo(true);
     node.setClickable(false);
-    shadow.setPasteable(false);
     node.removeAction(AccessibilityNodeInfo.ACTION_PASTE);
     node.addAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
     assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
