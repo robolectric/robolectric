@@ -29,14 +29,14 @@ jobs:
       - name: Build
         run: |
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
-          ./gradlew assemble testClasses --parallel --stacktrace --no-watch-fs
+          ./gradlew assemble testClasses --stacktrace --no-watch-fs
 
       - name: Integration tests
         run: |
           # Only run integration tests on Copybara PRs
           (cd integration_tests && \
             SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
-            ../gradlew test --stacktrace --continue --parallel --no-watch-fs \
+            ../gradlew test --stacktrace --continue --no-watch-fs \
             -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
             -Drobolectric.enabledSdks=34 \
             -Dorg.gradle.workers.max=2 \
