@@ -67,4 +67,13 @@ public class ShadowAccessibilityWindowInfoTest {
     window.setPictureInPicture(true);
     assertThat(window.isInPictureInPictureMode()).isTrue();
   }
+
+  @Test
+  public void shadowFieldsClearedAfterRecycle() {
+    AccessibilityWindowInfo window2 = AccessibilityWindowInfo.obtain();
+    shadow.addChild(window2);
+    assertThat(shadow.getChild(0)).isEqualTo(window2);
+    window.recycle();
+    assertThat(shadow.getChild(0)).isNull();
+  }
 }
