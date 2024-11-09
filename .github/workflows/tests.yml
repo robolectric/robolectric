@@ -63,7 +63,7 @@ jobs:
       - name: Run unit tests
         run: |
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew test \
-          --info --stacktrace --continue \
+          --stacktrace --continue \
           --parallel \
           --no-watch-fs \
           -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
@@ -154,7 +154,7 @@ jobs:
           profile: Nexus One
           script: |
             adb shell wm density 240
-            SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --info --stacktrace --no-watch-fs -Dorg.gradle.workers.max=2
+            SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --stacktrace --no-watch-fs -Dorg.gradle.workers.max=2
 
       - name: Upload test results
         if: always()

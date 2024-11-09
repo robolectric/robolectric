@@ -55,7 +55,7 @@ jobs:
         run: >
           ./gradlew
           :integration_tests:nativegraphics:testDebugUnitTest
-          --info --stacktrace --continue
+          --stacktrace --continue
           --parallel
           --no-watch-fs
           "-Drobolectric.alwaysIncludeVariantMarkersInTestName=true"
