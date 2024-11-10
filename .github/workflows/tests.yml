@@ -39,7 +39,7 @@ jobs:
       - name: Build
         run: |
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
-          ./gradlew assemble testClasses --stacktrace --no-watch-fs
+          ./gradlew assemble testClasses --stacktrace
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -64,7 +64,6 @@ jobs:
         run: |
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew test \
           --stacktrace --continue \
-          --no-watch-fs \
           -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
           -Dorg.gradle.workers.max=2 \
@@ -156,7 +155,7 @@ jobs:
           profile: Nexus One
           script: |
             adb shell wm density 240
-            SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --stacktrace --no-watch-fs -Dorg.gradle.workers.max=2
+            SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --stacktrace -Dorg.gradle.workers.max=2
 
       - name: Upload test results
         if: always()
@@ -186,4 +185,4 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Publish
-        run: ./gradlew publish --stacktrace --no-watch-fs
+        run: ./gradlew publish --stacktrace

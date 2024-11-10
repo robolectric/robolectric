@@ -56,7 +56,6 @@ jobs:
           ./gradlew
           :integration_tests:nativegraphics:testDebugUnitTest
           --stacktrace --continue
-          --no-watch-fs
           "-Drobolectric.alwaysIncludeVariantMarkersInTestName=true"
           "-Drobolectric.enabledSdks=${{ env.ENABLED_SDKS }}"
           "-Dorg.gradle.workers.max=2"
