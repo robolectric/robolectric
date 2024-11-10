@@ -20,7 +20,6 @@ rootProject.name = "robolectric"
 include(
   ":annotations",
   ":errorprone",
-  ":integration_tests:agp",
   ":integration_tests:androidx",
   ":integration_tests:androidx_test",
   ":integration_tests:ctesque",
