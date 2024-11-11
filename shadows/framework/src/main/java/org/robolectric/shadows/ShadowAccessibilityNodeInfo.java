@@ -512,10 +512,10 @@ public class ShadowAccessibilityNodeInfo {
   /** Returns the id of the window from which the info comes. */
   @Implementation
   protected int getWindowId() {
-    if (useRealAni()) {
+    if (useRealAni() || accessibilityWindowInfo == null) {
       return accessibilityNodeInfoReflector.getWindowId();
     }
-    return (accessibilityWindowInfo == null) ? -1 : accessibilityWindowInfo.getId();
+    return accessibilityWindowInfo.getId();
   }
 
   public void setAccessibilityWindowInfo(AccessibilityWindowInfo info) {

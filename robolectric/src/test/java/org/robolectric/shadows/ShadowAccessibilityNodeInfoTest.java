@@ -306,7 +306,8 @@ public class ShadowAccessibilityNodeInfoTest {
   @Test
   public void testConstructor() {
     AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
-    assertThat(node.getWindowId()).isEqualTo(AccessibilityWindowInfo.UNDEFINED_WINDOW_ID);
+    assertThat(node.getWindowId())
+        .isEqualTo(RuntimeEnvironment.getApiLevel() >= O ? -1 : Integer.MAX_VALUE);
     if (RuntimeEnvironment.getApiLevel() >= O) {
       // This constant does not exists pre-O.
       assertThat(node.getSourceNodeId()).isEqualTo(AccessibilityNodeInfo.UNDEFINED_NODE_ID);

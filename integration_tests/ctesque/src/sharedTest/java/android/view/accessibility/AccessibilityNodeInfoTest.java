@@ -59,6 +59,13 @@ public class AccessibilityNodeInfoTest {
     assertThat(secondInfo.getWindowId()).isEqualTo(firstInfo.getWindowId());
   }
 
+  /** Pre-O, the window id is set to Integer.MAX_VALUE. Post-O, the window id is set to -1. */
+  @Test
+  public void obtain_noArgs_windowId() {
+    assertThat(AccessibilityNodeInfo.obtain().getWindowId())
+        .isEqualTo(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? -1 : Integer.MAX_VALUE);
+  }
+
   @Test
   public void obtain_withWindow_returnsWindowId() {
     try (ActivityScenario<ActivityWithAnotherTheme> scenario =
@@ -103,6 +110,7 @@ public class AccessibilityNodeInfoTest {
             node.setQueryFromAppProcessEnabled(rootView, true);
             assertThat(node.getChildCount()).isEqualTo(1);
             assertThat(node.getChild(0)).isNotNull();
+            assertThat(node.getWindowId()).isEqualTo(-1);
           });
     }
   }
