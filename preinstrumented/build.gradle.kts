@@ -36,11 +36,14 @@ val instrumentAll by
         val outputPath =
           layout.buildDirectory.file(androidSdk.preinstrumentedJarFileName).get().asFile.path
 
-        javaexec {
-          classpath = sourceSets.getByName("main").runtimeClasspath
-          mainClass.set(javaMainClass)
-          args = listOf(inputPath, outputPath)
-        }
+        providers
+          .javaexec {
+            classpath = sourceSets.getByName("main").runtimeClasspath
+            mainClass.set(javaMainClass)
+            args = listOf(inputPath, outputPath)
+          }
+          .result
+          .get()
       }
     }
   }

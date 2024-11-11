@@ -184,13 +184,16 @@ fun prefetchSdk(
   println("Prefetching $coordinates...")
 
   // Prefetch into Maven local repo...
-  project.exec {
-    val mvnCommand =
-      "mvn -q dependency:get -DrepoUrl=https://maven.google.com " +
-        "-DgroupId=$groupId -DartifactId=$artifactId -Dversion=$version"
+  project.providers
+    .exec {
+      val mvnCommand =
+        "mvn -q dependency:get -DrepoUrl=https://maven.google.com " +
+          "-DgroupId=$groupId -DartifactId=$artifactId -Dversion=$version"
 
-    commandLine(mvnCommand.split(" "))
-  }
+      commandLine(mvnCommand.split(" "))
+    }
+    .result
+    .get()
 
   // Prefetch into Gradle local cache...
   val config = configurations.create("sdk$apiLevel")
