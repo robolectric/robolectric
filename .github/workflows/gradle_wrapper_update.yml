@@ -1,0 +1,21 @@
+name: Update Gradle Wrapper
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+
+jobs:
+  update-gradle-wrapper:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update Gradle Wrapper
+        uses: gradle-update/update-gradle-wrapper-action@v2
+        with:
+          labels: dependencies
+          commit-message-template: |
+            Update Gradle Wrapper from %sourceVersion% to %targetVersion%
+
+            Release notes are available [here](https://docs.gradle.org/%targetVersion%/release-notes.html).
