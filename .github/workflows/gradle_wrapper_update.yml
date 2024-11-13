@@ -3,6 +3,16 @@ name: Update Gradle Wrapper
 on:
   schedule:
     - cron: "0 9 * * 1"
+  workflow_dispatch:
+    inputs:
+      gradle_version:
+        description: "Gradle version"
+        required: true
+        default: "latest"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   update-gradle-wrapper:
@@ -11,11 +21,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update Gradle Wrapper
-        uses: gradle-update/update-gradle-wrapper-action@v2
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          labels: dependencies
-          commit-message-template: |
-            Update Gradle Wrapper from %sourceVersion% to %targetVersion%
+          distribution: "adopt"
+          java-version: 17
 
-            Release notes are available [here](https://docs.gradle.org/%targetVersion%/release-notes.html).
+      - name: Check for a new version
+        id: check-for-update
+        run: |
+          ./gradlew wrapper --gradle-version ${{ inputs.gradle_version }}
+
+          if ! git diff-index --quiet HEAD --; then
+            gradleVersion=$(./gradlew -v | grep "Gradle" | awk "{print $2}")
+
+            echo "gradleVersion=$gradleVersion" > $GITHUB_OUTPUT
+          fi
+
+      - name: Update the Gradle Wrapper
+        if: ${{ steps.check-for-update.outputs.gradleVersion }}
+        run: ./gradlew wrapper
+
+      - name: Create Pull Request
+        if: ${{ steps.check-for-update.outputs.gradleVersion }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GRADLE_VERSION: ${{ steps.check-for-update.outputs.gradleVersion }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b update-gradle-$GRADLE_VERSION
+          git add -A
+          git commit -m "Update to Gradle $GRADLE_VERSION" \
+            -m "Release notes: https://docs.gradle.org/$GRADLE_VERSION/release-notes.html"
+          git push --set-upstream origin update-gradle-$GRADLE_VERSION
+          gh pr create --fill
