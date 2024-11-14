@@ -66,6 +66,7 @@ public class ShadowAudioManager {
   public static final ImmutableList<Integer> ALL_STREAMS =
       ImmutableList.of(
           AudioManager.STREAM_MUSIC,
+          AudioManager.STREAM_ASSISTANT,
           AudioManager.STREAM_ALARM,
           AudioManager.STREAM_NOTIFICATION,
           AudioManager.STREAM_RING,
