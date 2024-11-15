@@ -4,7 +4,13 @@ import android.annotation.IdRes;
 import android.util.AttributeSet;
 import org.robolectric.Robolectric;
 
-/** Builder of {@link AttributeSet}s. */
+/**
+ * Builder of {@link AttributeSet}s.
+ *
+ * @deprecated use Xml.asAttributeSet instead. Not supported in {@link
+ *     org.robolectric.annotation.ResourcesMode.Mode.NATIVE}
+ */
+@Deprecated
 public interface AttributeSetBuilder extends Robolectric.AttributeSetBuilder {
 
   /**

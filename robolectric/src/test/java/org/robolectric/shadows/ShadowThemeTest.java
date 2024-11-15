@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.shadows.testing.TestActivity;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -202,6 +203,7 @@ public class ShadowThemeTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void whenStyleSpecifiesAttr_obtainStyledAttribute_findsCorrectValue() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);
@@ -253,6 +255,7 @@ public class ShadowThemeTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void whenAttrSetAttrSpecifiesAttr_obtainStyledAttribute_returnsItsValue() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);
@@ -272,6 +275,7 @@ public class ShadowThemeTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void dimenRef() {
     AttributeSet attributeSet =
         Robolectric.buildAttributeSet()
@@ -285,6 +289,7 @@ public class ShadowThemeTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void dimenRefRef() {
     AttributeSet attributeSet =
         Robolectric.buildAttributeSet()

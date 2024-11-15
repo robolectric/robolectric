@@ -79,7 +79,7 @@ public abstract class ShadowAssetManager {
         for (AssetPath assetPath : getAssetPaths()) {
           if (assetPath.isSystem) {
             compileTimeCppAssetManager.addDefaultAssets(
-                RuntimeEnvironment.compileTimeSystemResourcesFile);
+                RuntimeEnvironment.getCompileTimeSystemResourcesPath());
           } else {
             compileTimeCppAssetManager.addAssetPath(new String8(assetPath.file), null, false);
           }

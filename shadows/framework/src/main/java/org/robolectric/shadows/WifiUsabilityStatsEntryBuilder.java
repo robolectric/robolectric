@@ -7,11 +7,10 @@ import android.net.wifi.WifiUsabilityStatsEntry.RadioStats;
 import android.net.wifi.WifiUsabilityStatsEntry.RateStats;
 import android.os.Build.VERSION_CODES;
 import android.util.SparseArray;
-import java.lang.reflect.Constructor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.versioning.AndroidVersions.V;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Builder for {@link WifiUsabilityStatsEntry}. */
 public class WifiUsabilityStatsEntryBuilder {
@@ -79,7 +78,7 @@ public class WifiUsabilityStatsEntryBuilder {
           ClassParameter.from(int.class, cellularSignalStrengthDbm),
           ClassParameter.from(int.class, cellularSignalStrengthDb),
           ClassParameter.from(boolean.class, isSameRegisteredCell));
-    } else if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT && getNumOfConstructorParams() == 41) {
+    } else if (RuntimeEnvironment.getApiLevel() >= Baklava.SDK_INT) {
       return ReflectionHelpers.callConstructor(
           WifiUsabilityStatsEntry.class,
           ClassParameter.from(long.class, timeStampMillis),
@@ -118,11 +117,24 @@ public class WifiUsabilityStatsEntryBuilder {
           ClassParameter.from(int.class, cellularSignalStrengthDb),
           ClassParameter.from(boolean.class, isSameRegisteredCell),
           ClassParameter.from(SparseArray.class, new SparseArray<>()),
-          ClassParameter.from(int.class, 0), // new in post V
-          ClassParameter.from(int.class, 0), // new in post V
-          ClassParameter.from(long.class, 0), // new in post V
-          ClassParameter.from(long.class, 0), // new in post V
-          ClassParameter.from(int.class, 0) // new in post V
+          /* new in post V */
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(long.class, 0),
+          ClassParameter.from(long.class, 0),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(boolean.class, false),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(boolean.class, false),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(int.class, 0)
+          /* end new in post V */
           );
     } else if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.TIRAMISU) {
       return ReflectionHelpers.callConstructor(
@@ -367,14 +379,5 @@ public class WifiUsabilityStatsEntryBuilder {
   public WifiUsabilityStatsEntryBuilder setIsWifiScoringEnabled(boolean enabled) {
     this.isWifiScoringEnabled = enabled;
     return this;
-  }
-
-  private static int getNumOfConstructorParams() {
-    for (Constructor<?> constructor : WifiUsabilityStatsEntry.class.getDeclaredConstructors()) {
-      if (constructor.getParameterCount() > 0) {
-        return constructor.getParameterCount();
-      }
-    }
-    throw new IllegalStateException("Could not find a WifiUsabilityStatsEntry constructor");
   }
 }

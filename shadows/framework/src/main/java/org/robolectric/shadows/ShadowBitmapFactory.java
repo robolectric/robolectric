@@ -162,9 +162,6 @@ public class ShadowBitmapFactory {
       if (sais.isNinePatch()) {
         ninePatchChunk = new byte[0];
       }
-      if (sais.getDelegate() != null) {
-        is = sais.getDelegate();
-      }
     }
 
     try {

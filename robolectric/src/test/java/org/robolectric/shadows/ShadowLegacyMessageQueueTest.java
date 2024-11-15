@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.fail;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.ReflectionHelpers.setField;
@@ -21,7 +22,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadow.api.Shadow;
@@ -260,7 +260,7 @@ public class ShadowLegacyMessageQueueTest {
   }
 
   private static int postSyncBarrier(MessageQueue queue) {
-    if (RuntimeEnvironment.getApiLevel() >= M) {
+    if (getApiLevel() >= M) {
       return queue.postSyncBarrier();
     } else {
       return ReflectionHelpers.callInstanceMethod(

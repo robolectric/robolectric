@@ -397,7 +397,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     Package parsedPackage;
 
-    RuntimeEnvironment.compileTimeSystemResourcesFile = compileSdk.getJarPath();
+    // lazy load the compile sdk jar path. It should only be needed when the deprecated
+    // AttributeSetBuilder is used
+    RuntimeEnvironment.setCompileTimeSystemResources(compileSdk::getJarPath);
 
     Path packageFile = appManifest.getApkFile();
     if (packageFile != null) {

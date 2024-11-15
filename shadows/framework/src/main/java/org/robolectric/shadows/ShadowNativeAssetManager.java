@@ -3,11 +3,14 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetManager;
+import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.XmlBlock;
 import android.util.TypedValue;
 import dalvik.system.VMRuntime;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -17,6 +20,7 @@ import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.V;
 
@@ -37,6 +41,33 @@ public class ShadowNativeAssetManager extends ShadowAssetManager {
   @Override
   long getNativePtr() {
     throw new UnsupportedOperationException();
+  }
+
+  @Implementation
+  protected InputStream open(String fileName, int accessMode) {
+    // intercept real method to handle nine patch for LEGACY graphics mode
+    InputStream is = assetManagerReflector.open(fileName, accessMode);
+    setNinePatch(fileName, is);
+    return is;
+  }
+
+  private static void setNinePatch(String fileName, InputStream is) {
+    if (is instanceof AssetInputStream) {
+      ShadowNativeAssetInputStream snais = Shadow.extract(is);
+      // this is a dubious assumption, but this is the logic with BINARY resources mode:
+      // assume nine patch based on file name
+      if (fileName != null && fileName.toLowerCase(Locale.ENGLISH).endsWith(".9.png")) {
+        snais.setNinePatch(true);
+      }
+    }
+  }
+
+  @Implementation
+  protected InputStream openNonAsset(int cookie, String fileName, int accessMode) {
+    // intercept real method to handle nine patch for LEGACY graphics mode
+    InputStream is = assetManagerReflector.openNonAsset(cookie, fileName, accessMode);
+    setNinePatch(fileName, is);
+    return is;
   }
 
   /**
@@ -108,6 +139,12 @@ public class ShadowNativeAssetManager extends ShadowAssetManager {
     long getObject();
 
     void ensureValidLocked();
+
+    @Direct
+    InputStream open(String fileName, int accessMode);
+
+    @Direct
+    InputStream openNonAsset(int cookie, String fileName, int accessMode);
   }
 
   @ForType(XmlBlock.Parser.class)

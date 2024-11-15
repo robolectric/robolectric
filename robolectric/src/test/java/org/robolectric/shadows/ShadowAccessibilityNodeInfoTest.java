@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.view.View;
@@ -21,6 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
@@ -73,8 +75,8 @@ public class ShadowAccessibilityNodeInfoTest {
     node.writeToParcel(p, 0);
     p.setDataPosition(0);
     AccessibilityNodeInfo anotherNode = AccessibilityNodeInfo.CREATOR.createFromParcel(p);
-    assertThat(node).isEqualTo(anotherNode);
-    node.setContentDescription(null);
+    assertThat(node.getContentDescription().toString())
+        .isEqualTo(anotherNode.getContentDescription().toString());
   }
 
   @Test
@@ -110,30 +112,24 @@ public class ShadowAccessibilityNodeInfoTest {
     node = AccessibilityNodeInfo.obtain();
     node.setClickable(false);
     shadow = shadowOf(node);
-    shadow.setPasteable(false);
     assertThat(node.isClickable()).isEqualTo(false);
-    assertThat(shadow.isPasteable()).isEqualTo(false);
     node.setText("Test");
-    shadow.setTextSelectionSetable(true);
     node.addAction(AccessibilityNodeInfo.ACTION_SET_SELECTION);
     node.setTextSelection(0, 1);
     assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_SET_SELECTION);
     assertThat(node.getTextSelectionStart()).isEqualTo(0);
     assertThat(node.getTextSelectionEnd()).isEqualTo(1);
-    AccessibilityWindowInfo window = ShadowAccessibilityWindowInfo.obtain();
+    AccessibilityWindowInfo window = AccessibilityWindowInfo.obtain();
     shadow.setAccessibilityWindowInfo(window);
     assertThat(node.getWindow()).isEqualTo(window);
     shadow.setAccessibilityWindowInfo(null);
     // Remove action was added in API 21
     node.removeAction(AccessibilityAction.ACTION_SET_SELECTION);
-    shadow.setPasteable(true);
-    shadow.setTextSelectionSetable(false);
     node.addAction(AccessibilityNodeInfo.ACTION_PASTE);
     assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_PASTE);
     node.setClickable(true);
     assertThat(node.isClickable()).isEqualTo(true);
     node.setClickable(false);
-    shadow.setPasteable(false);
     node.removeAction(AccessibilityNodeInfo.ACTION_PASTE);
     node.addAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
     assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
@@ -300,13 +296,31 @@ public class ShadowAccessibilityNodeInfoTest {
   }
 
   @Test
+  public void getSourceNodeId_notZero() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    View view = activity.findViewById(android.R.id.content);
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(view);
+    assertThat(node.getSourceNodeId()).isNotEqualTo(0);
+  }
+
+  @Test
   public void testConstructor() {
     AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
-    assertThat(node.getWindowId()).isEqualTo(AccessibilityWindowInfo.UNDEFINED_WINDOW_ID);
+    assertThat(node.getWindowId())
+        .isEqualTo(RuntimeEnvironment.getApiLevel() >= O ? -1 : Integer.MAX_VALUE);
     if (RuntimeEnvironment.getApiLevel() >= O) {
       // This constant does not exists pre-O.
       assertThat(node.getSourceNodeId()).isEqualTo(AccessibilityNodeInfo.UNDEFINED_NODE_ID);
     }
+  }
+
+  @Test
+  public void obtainWithNode_afterSetSealed() {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    node.setSealed(true);
+    assertThat(node.isSealed()).isTrue();
+    AccessibilityNodeInfo node2 = AccessibilityNodeInfo.obtain(node);
+    assertThat(node2.isSealed()).isTrue();
   }
 
   @After

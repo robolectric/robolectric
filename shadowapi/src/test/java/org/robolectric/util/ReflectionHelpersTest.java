@@ -17,6 +17,16 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ReflectionHelpersTest {
 
   @Test
+  public void hasConstructor() {
+    assertThat(ReflectionHelpers.hasConstructor(ExampleClass.class, String.class)).isTrue();
+    assertThat(ReflectionHelpers.hasConstructor(ExampleClass.class, int.class)).isTrue();
+    assertThat(ReflectionHelpers.hasConstructor(ExampleClass.class, int.class, int.class))
+        .isFalse();
+    assertThat(ReflectionHelpers.hasConstructor(ExampleClass.class, double.class)).isFalse();
+    assertThat(ReflectionHelpers.hasConstructor(ExampleClass.class, Object.class)).isFalse();
+  }
+
+  @Test
   public void getFieldReflectively_getsPrivateFields() {
     ExampleDescendant example = new ExampleDescendant();
     example.overridden = 5;

@@ -23,6 +23,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.ResourcesMode;
+import org.robolectric.annotation.ResourcesMode.Mode;
 
 /** Tests of the {@link ShadowContextImpl} class */
 @RunWith(AndroidJUnit4.class)
@@ -270,6 +272,7 @@ public class ShadowContextTest {
   }
 
   @Test
+  @ResourcesMode(Mode.BINARY)
   public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet()

@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowActivity.IntentForResult;
 
 @SuppressWarnings("deprecation")
 @RunWith(AndroidJUnit4.class)
@@ -735,6 +736,44 @@ public class ShadowPendingIntentTest {
     ShadowApplication shadowApplication = shadowOf((Application) context);
     Bundle sendOptions = shadowApplication.getBroadcastOptions(intent);
     assertThat(sendOptions.getBoolean(keyDontSendToRestrictedApps)).isTrue();
+  }
+
+  /** Verify options are sent along with the Activity PendingIntent. */
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void send_activityWithOptions() throws CanceledException {
+    Intent intent = new Intent().setPackage("dummy.package");
+    Bundle creatorOptions = new Bundle();
+    creatorOptions.putBoolean("creator", true);
+    PendingIntent pendingIntent =
+        PendingIntent.getActivity(
+            context, /* requestCode= */ 0, intent, /* flags= */ 0, creatorOptions);
+
+    // Add an option when sending the Activity PendingIntent.
+    Bundle senderOptions = new Bundle();
+    senderOptions.putBoolean("sender", true);
+
+    // Send the pendingIntent with options.
+    pendingIntent.send(
+        context,
+        /* code= */ 0,
+        intent,
+        /* onFinished= */ null,
+        /* handler= */ null,
+        /* requiredPermission= */ null,
+        senderOptions);
+    // Verify that PendingIntent.getOptions() are from the creator.
+    assertThat(shadowOf(pendingIntent).getOptions()).isNotNull();
+    assertThat(shadowOf(pendingIntent).getOptions().keySet()).containsExactly("creator");
+
+    // Verify senderOptions are used when sending the PendingIntent.
+    ShadowApplication shadowApplication = shadowOf((Application) context);
+    IntentForResult intentForResult = shadowApplication.peekNextStartedActivityForResult();
+    assertThat(intentForResult).isNotNull();
+    assertThat(intentForResult.intent).isNotNull();
+    assertThat(intentForResult.intent.getPackage()).isEqualTo("dummy.package");
+    assertThat(intentForResult.options).isNotNull();
+    assertThat(intentForResult.options.keySet()).containsExactly("sender");
   }
 
   @Test

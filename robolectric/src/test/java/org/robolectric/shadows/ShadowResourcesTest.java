@@ -33,8 +33,11 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.ResourcesMode;
+import org.robolectric.annotation.ResourcesMode.Mode;
 
 @RunWith(AndroidJUnit4.class)
+@ResourcesMode(Mode.BINARY)
 public class ShadowResourcesTest {
   private static final int FIRST_RESOURCE_COLOR_ID = android.R.color.system_neutral1_0;
   private static final int LAST_RESOURCE_COLOR_ID = android.R.color.system_accent3_1000;

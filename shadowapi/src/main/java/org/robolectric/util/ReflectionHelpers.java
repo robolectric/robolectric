@@ -534,6 +534,45 @@ public class ReflectionHelpers {
     }
   }
 
+  /**
+   * Reflectively check if a class has a given constructor.
+   *
+   * @param parameterTypes in order parameters of the constructor.
+   * @param clazzName Target class name.
+   * @return boolean to indicate whether the constructor exists or not on the clazz.
+   */
+  public static boolean hasConstructor(String clazzName, Class<?>... parameterTypes) {
+    Class<?> clazz =
+        ReflectionHelpers.loadClass(Thread.currentThread().getContextClassLoader(), clazzName);
+    return hasConstructor(clazz, parameterTypes);
+  }
+
+  /**
+   * Reflectively check if a class has a given constructor.
+   *
+   * @param parameterTypes in order parameters of the constructor.
+   * @param clazz Target class.
+   * @return boolean to indicate whether the constructor exists or not on the clazz.
+   */
+  public static boolean hasConstructor(Class<?> clazz, Class<?>... parameterTypes) {
+    for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
+      Class<?>[] paramTypes = constructor.getParameterTypes();
+      if (paramTypes.length == parameterTypes.length) {
+        boolean match = true;
+        for (int i = 0; i < paramTypes.length; i++) {
+          if (!paramTypes[i].isAssignableFrom(parameterTypes[i])) {
+            match = false;
+            break;
+          }
+        }
+        if (match) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   private static <R, E extends Exception> R traverseClassHierarchy(
       Class<?> targetClass, Class<? extends E> exceptionClass, InsideTraversal<R> insideTraversal)
       throws Exception {

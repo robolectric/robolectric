@@ -18,13 +18,18 @@ package android.view.accessibility;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build;
+import android.os.Parcel;
 import android.view.View;
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.testapp.ActivityWithAnotherTheme;
+import org.robolectric.util.ReflectionHelpers;
 
 /**
  * CTS for {@link AccessibilityNodeInfo}.
@@ -52,5 +57,61 @@ public class AccessibilityNodeInfoTest {
     secondInfo.setSource(view, /* virtualDescendantId */ 1);
 
     assertThat(secondInfo.getWindowId()).isEqualTo(firstInfo.getWindowId());
+  }
+
+  /** Pre-O, the window id is set to Integer.MAX_VALUE. Post-O, the window id is set to -1. */
+  @Test
+  public void obtain_noArgs_windowId() {
+    assertThat(AccessibilityNodeInfo.obtain().getWindowId())
+        .isEqualTo(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? -1 : Integer.MAX_VALUE);
+  }
+
+  @Test
+  public void obtain_withWindow_returnsWindowId() {
+    try (ActivityScenario<ActivityWithAnotherTheme> scenario =
+        ActivityScenario.launch(ActivityWithAnotherTheme.class)) {
+      scenario.onActivity(
+          activity -> {
+            View rootView = activity.findViewById(android.R.id.content);
+            AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(rootView);
+            long sourceNodeId = ReflectionHelpers.getField(node, "mSourceNodeId");
+            assertThat(sourceNodeId).isNotEqualTo(-1);
+          });
+    }
+  }
+
+  @Test
+  public void getText_afterCreateFromParcel() {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    node.setText("hello world");
+    node.setContentDescription("hello world");
+
+    Parcel parcel = Parcel.obtain();
+    node.writeToParcel(parcel, /* flags= */ 0);
+    parcel.setDataPosition(0);
+    final AccessibilityNodeInfo node2 = AccessibilityNodeInfo.CREATOR.createFromParcel(parcel);
+
+    assertThat(node.getText().toString()).isEqualTo(node2.getText().toString());
+    assertThat(node.getContentDescription().toString())
+        .isEqualTo(node2.getContentDescription().toString());
+  }
+
+  @Test
+  @SdkSuppress(minSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @Config(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @GraphicsMode(GraphicsMode.Mode.NATIVE)
+  public void directAccessibilityConnection_queryChildCount() {
+    try (ActivityScenario<ActivityWithAnotherTheme> scenario =
+        ActivityScenario.launch(ActivityWithAnotherTheme.class)) {
+      scenario.onActivity(
+          activity -> {
+            View rootView = activity.findViewById(android.R.id.content);
+            AccessibilityNodeInfo node = rootView.createAccessibilityNodeInfo();
+            node.setQueryFromAppProcessEnabled(rootView, true);
+            assertThat(node.getChildCount()).isEqualTo(1);
+            assertThat(node.getChild(0)).isNotNull();
+            assertThat(node.getWindowId()).isEqualTo(-1);
+          });
+    }
   }
 }

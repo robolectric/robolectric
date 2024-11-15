@@ -4,8 +4,11 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import android.content.Context;
+import android.os.Binder;
 import android.os.Build.VERSION_CODES;
 import android.os.IBinder;
+import android.os.IInterface;
+import android.os.RemoteException;
 import android.os.ServiceManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.android.internal.view.IInputMethodManager;
@@ -77,5 +80,45 @@ public final class ShadowServiceManagerTest {
     e.shutdown();
     e.awaitTermination(10, SECONDS);
     assertThat(thrownException.get()).isNull();
+  }
+
+  @Test
+  public void addService_concrete_shouldReturnService() throws RemoteException {
+    StubbedInterface expectedStub = new StubbedInterface();
+    ShadowServiceManager.addBinderService("activity_task", IStubbedInterface.class, expectedStub);
+
+    IBinder iBinder = ServiceManager.getService("activity_task");
+    IStubbedInterface foundStub = StubbedInterface.Stub.asInterface(iBinder);
+
+    foundStub.reportCalled();
+    assertThat(expectedStub.called).isTrue();
+  }
+
+  // Stub interface to test that the service is returned correctly
+  private static class StubbedInterface implements IStubbedInterface {
+
+    IBinder binder = new Binder();
+    boolean called = false;
+
+    public abstract static class Stub extends Binder implements IStubbedInterface {
+      public static IStubbedInterface asInterface(IBinder obj) {
+        IInterface inter = obj.queryLocalInterface(IStubbedInterface.class.getCanonicalName());
+        return (IStubbedInterface) inter;
+      }
+    }
+
+    @Override
+    public IBinder asBinder() {
+      return binder;
+    }
+
+    @Override
+    public void reportCalled() {
+      called = true;
+    }
+  }
+
+  interface IStubbedInterface extends IInterface {
+    void reportCalled() throws RemoteException;
   }
 }

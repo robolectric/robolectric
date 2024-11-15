@@ -6,7 +6,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -20,11 +19,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.LooperMode;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 
 @RunWith(AndroidJUnit4.class)
-@LooperMode(PAUSED)
 public class ShadowPausedSystemClockTest {
 
   @Test

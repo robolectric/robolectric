@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.res.AttributeResource;
 
 @RunWith(AndroidJUnit4.class)
@@ -42,6 +43,7 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void getInt_withFlags_shouldReturnValue() {
     TypedArray typedArray =
         context.obtainStyledAttributes(
@@ -60,6 +62,7 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void getResourceId_shouldReturnActualValue() {
     TypedArray typedArray =
         context.obtainStyledAttributes(
@@ -78,6 +81,7 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void getFraction_shouldReturnGivenValue() {
     TypedArray typedArray =
         context.obtainStyledAttributes(
@@ -94,6 +98,7 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void getDimension_shouldReturnGivenValue() {
     TypedArray typedArray =
         context.obtainStyledAttributes(
@@ -103,6 +108,7 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void getDrawable_withExplicitColorValue_shouldReturnColorDrawable() {
     TypedArray typedArray =
         context.obtainStyledAttributes(
@@ -115,6 +121,7 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void getTextArray_whenNoSuchAttribute_shouldReturnNull() {
     TypedArray typedArray =
         context.obtainStyledAttributes(
@@ -130,6 +137,7 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void getTextArray_shouldReturnValues() {
     TypedArray typedArray =
         context.obtainStyledAttributes(
@@ -141,6 +149,7 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void hasValue_withValue() {
     TypedArray typedArray =
         context.obtainStyledAttributes(
@@ -158,6 +167,7 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void hasValue_withNullValue() {
     TypedArray typedArray =
         context.obtainStyledAttributes(
@@ -169,6 +179,7 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
+  @ResourcesMode(ResourcesMode.Mode.BINARY)
   public void shouldEnumeratePresentValues() {
     TypedArray typedArray =
         context.obtainStyledAttributes(

@@ -12,11 +12,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.annotation.GraphicsMode.Mode;
 import org.robolectric.util.TestUtil;
 
 /** Tests for {@link org.robolectric.shadows.ShadowFontBuilder} */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = Q)
+@GraphicsMode(Mode.LEGACY)
 public class ShadowFontBuilderTest {
   private File fontFile;
 

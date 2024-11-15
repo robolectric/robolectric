@@ -427,7 +427,11 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
     for (ActivityController<?> controller : controllers) {
       if (createdActivities.contains(controller)) {
         Activity activity = controller.get();
-        controller.configurationChange(newConfig, newMetrics, changedConfig);
+        if (Boolean.getBoolean("robolectric.configurationChangeFix")) {
+          controller.configurationChange(newConfig, newMetrics);
+        } else {
+          controller.configurationChange(newConfig, newMetrics, changedConfig);
+        }
         // If the activity is recreated then make the new activity visible, this should be done by
         // configurationChange but there's a pre-existing TODO to address this and it will require
         // more work to make it function correctly.

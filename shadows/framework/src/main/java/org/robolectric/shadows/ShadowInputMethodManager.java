@@ -26,12 +26,15 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.U;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for InputMethodManager. */
 @Implements(value = InputMethodManager.class)
@@ -91,9 +94,20 @@ public class ShadowInputMethodManager {
     return showSoftInput(view, flags, resultReceiver, reason);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = V.SDK_INT)
   protected boolean hideSoftInputFromWindow(
       IBinder windowToken, int flags, ResultReceiver resultReceiver, int ignoredReason) {
+    return hideSoftInputFromWindow(windowToken, flags, resultReceiver);
+  }
+
+  @Implementation(minSdk = Baklava.SDK_INT)
+  @InDevelopment
+  protected boolean hideSoftInputFromWindow(
+      IBinder windowToken,
+      int flags,
+      ResultReceiver resultReceiver,
+      int ignoredReason,
+      @ClassName("android.view.inputmethod.ImeTracker$Token") Object statsToken) {
     return hideSoftInputFromWindow(windowToken, flags, resultReceiver);
   }
 

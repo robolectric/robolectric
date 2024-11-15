@@ -1,11 +1,14 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Application;
 import android.app.ResourcesManager;
 import android.content.Context;
+import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -20,6 +23,7 @@ import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
+import org.robolectric.util.reflector.ForType;
 
 public class RuntimeEnvironment {
   /**
@@ -43,10 +47,10 @@ public class RuntimeEnvironment {
   private static Scheduler masterScheduler;
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
   private static Path androidFrameworkJar;
-  public static Path compileTimeSystemResourcesFile;
 
   private static Supplier<Application> applicationSupplier;
   private static final Object supplierLock = new Object();
+  private static Supplier<Path> compileTimeSystemResourcesSupplier;
 
   /**
    * Get a reference to the {@link Application} under test.
@@ -227,9 +231,17 @@ public class RuntimeEnvironment {
   private static void updateConfiguration(
       Configuration configuration, DisplayMetrics displayMetrics) {
     // Update the resources last so that listeners will have a consistent environment.
-    // TODO(paulsowden): Can we call ResourcesManager.getInstance().applyConfigurationToResources()?
     if (ResourcesManager.getInstance().getConfiguration() != null) {
-      ResourcesManager.getInstance().getConfiguration().updateFrom(configuration);
+      if (Boolean.getBoolean("robolectric.configurationChangeFix")) {
+        if (getApiLevel() <= Q) {
+          reflector(ResourcesManagerReflector.class, ResourcesManager.getInstance())
+              .applyConfigurationToResourcesLocked(configuration, null);
+        } else {
+          ResourcesManager.getInstance().applyConfigurationToResources(configuration, null);
+        }
+      } else {
+        ResourcesManager.getInstance().getConfiguration().updateFrom(configuration);
+      }
     }
     Resources.getSystem().updateConfiguration(configuration, displayMetrics);
     if (RuntimeEnvironment.application != null) {
@@ -286,5 +298,25 @@ public class RuntimeEnvironment {
 
   public static Path getAndroidFrameworkJarPath() {
     return RuntimeEnvironment.androidFrameworkJar;
+  }
+
+  /** internal use only */
+  public static void setCompileTimeSystemResources(
+      Supplier<Path> compileTimeSystemResourcesSupplier) {
+    RuntimeEnvironment.compileTimeSystemResourcesSupplier = compileTimeSystemResourcesSupplier;
+  }
+
+  /**
+   * @deprecated obsolete do not use
+   */
+  @Deprecated
+  public static Path getCompileTimeSystemResourcesPath() {
+    return compileTimeSystemResourcesSupplier.get();
+  }
+
+  @ForType(ResourcesManager.class)
+  interface ResourcesManagerReflector {
+    boolean applyConfigurationToResourcesLocked(
+        Configuration configuration, CompatibilityInfo compatibilityInfo);
   }
 }

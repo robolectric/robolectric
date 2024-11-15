@@ -469,7 +469,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     @Accessor("mQuitting")
     boolean getQuitting();
 
-    // start for android V
     @Accessor("mLast")
     void setLast(Message msg);
 
@@ -478,6 +477,5 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
     @Accessor("mAsyncMessageCount")
     void setAsyncMessageCount(int asyncMessageCount);
-    // end android V
   }
 }

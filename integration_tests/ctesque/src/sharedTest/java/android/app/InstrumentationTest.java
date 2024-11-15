@@ -3,7 +3,6 @@ package android.app;
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
-import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -12,14 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.LooperMode;
 
 /**
  * Tests to verify android.app.Instrumentation APIs behave consistently between Robolectric and
  * device.
  */
 @RunWith(AndroidJUnit4.class)
-@LooperMode(PAUSED)
 public final class InstrumentationTest {
 
   /**

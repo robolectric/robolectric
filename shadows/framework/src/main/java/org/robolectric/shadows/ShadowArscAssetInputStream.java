@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetManager.AssetInputStream;
-import java.io.InputStream;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.Asset;
@@ -16,11 +15,6 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowArscAssetInputStream extends ShadowAssetInputStream {
 
   @RealObject private AssetInputStream realObject;
-
-  @Override
-  InputStream getDelegate() {
-    return realObject;
-  }
 
   private Asset getAsset() {
     long assetPtr = reflector(_AssetInputStream_.class, realObject).getNativeAsset();

@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.os.AsyncTask;
@@ -22,12 +21,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.android.util.concurrent.PausedExecutorService;
-import org.robolectric.annotation.LooperMode;
 import org.robolectric.util.Join;
 
 /** Unit tests for {@link ShadowPausedAsyncTask}. */
 @RunWith(AndroidJUnit4.class)
-@LooperMode(PAUSED)
 public class ShadowPausedAsyncTaskTest {
   private List<String> transcript;
 

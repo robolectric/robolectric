@@ -11,7 +11,6 @@ import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
-import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
@@ -242,7 +241,6 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  @LooperMode(PAUSED)
   public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided()
       throws InterruptedException {
     HandlerThread handlerThread = new HandlerThread("test");

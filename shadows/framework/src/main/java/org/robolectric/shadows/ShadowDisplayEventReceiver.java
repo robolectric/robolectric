@@ -26,11 +26,13 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /**
@@ -241,11 +243,28 @@ public class ShadowDisplayEventReceiver {
         return vsyncEventDataReflector.newVsyncEventData(
             timelineArray, /* preferredFrameTimelineIndex= */ 0, /* frameInterval= */ 1);
       } else {
-        return vsyncEventDataReflector.newVsyncEventData(
-            timelineArray,
-            /* preferredFrameTimelineIndex= */ 0,
-            timelineArrayLength,
-            /* frameInterval= */ 1);
+        boolean baklavaConstructor =
+            ReflectionHelpers.hasConstructor(
+                DisplayEventReceiver.VsyncEventData.class,
+                DisplayEventReceiver.VsyncEventData.FrameTimeline[].class,
+                int.class,
+                int.class,
+                long.class,
+                int.class);
+        if (RuntimeEnvironment.getApiLevel() < Baklava.SDK_INT || !baklavaConstructor) {
+          return vsyncEventDataReflector.newVsyncEventData(
+              timelineArray,
+              /* preferredFrameTimelineIndex= */ 0,
+              timelineArrayLength,
+              /* frameInterval= */ 1);
+        } else {
+          return vsyncEventDataReflector.newVsyncEventData(
+              timelineArray,
+              /* preferredFrameTimelineIndex= */ 0,
+              timelineArrayLength,
+              /* frameInterval= */ 1,
+              /* numberQueuedBuffers= */ 0);
+        }
       }
     } catch (ClassNotFoundException e) {
       throw new LinkageError("Unable to construct VsyncEventData", e);
@@ -309,6 +328,15 @@ public class ShadowDisplayEventReceiver {
         int preferredFrameTimelineIndex,
         int timelineArrayLength,
         long frameInterval);
+
+    @Constructor
+    Object newVsyncEventData(
+        @WithType("[Landroid.view.DisplayEventReceiver$VsyncEventData$FrameTimeline;")
+            Object frameTimelineArray,
+        int preferredFrameTimelineIndex,
+        int timelineArrayLength,
+        long frameInterval,
+        int numberQueuedBuffers);
   }
 
   @ForType(className = "android.view.DisplayEventReceiver$VsyncEventData$FrameTimeline")
