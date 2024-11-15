@@ -1,7 +1,6 @@
 package org.robolectric.android;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import android.util.Log;
@@ -9,6 +8,7 @@ import android.view.View;
 import android.widget.Toast;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.testing.EqualsTester;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,6 +34,6 @@ public class ShadowingTest {
   @Test
   public void shouldDelegateToObjectEqualsIfShadowHasNone() throws Exception {
     View view = new View(ApplicationProvider.getApplicationContext());
-    assertEquals(view, view);
+    new EqualsTester().addEqualityGroup(view).testEquals();
   }
 }
