@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.content.pm.PackageInstaller;
-import android.content.pm.PackageInstaller.PreapprovalDetails;
 import android.content.pm.PackageInstaller.SessionInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.VersionedPackage;
@@ -33,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -343,7 +343,9 @@ public class ShadowPackageInstaller {
 
     @Implementation(minSdk = UPSIDE_DOWN_CAKE)
     protected void requestUserPreapproval(
-        @NonNull PreapprovalDetails details, @NonNull IntentSender statusReceiver) {
+        @NonNull @ClassName("android.content.pm.PackageInstaller$PreapprovalDetails")
+            Object details,
+        @NonNull IntentSender statusReceiver) {
       preapprovalStatusReceiver = statusReceiver;
     }
 
