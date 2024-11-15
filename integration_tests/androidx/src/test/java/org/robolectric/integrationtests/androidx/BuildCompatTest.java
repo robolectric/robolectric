@@ -50,6 +50,18 @@ public class BuildCompatTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.O_MR1)
+  public void isAtLeastOMR1() {
+    assertThat(BuildCompat.isAtLeastOMR1()).isTrue();
+  }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.O)
+  public void isAtLeastOMR1_preOMR1() {
+    assertThat(BuildCompat.isAtLeastOMR1()).isFalse();
+  }
+
+  @Test
   @Config(minSdk = Build.VERSION_CODES.P)
   public void isAtLeastP() {
     assertThat(BuildCompat.isAtLeastP()).isTrue();
@@ -77,5 +89,71 @@ public class BuildCompatTest {
   @Config(minSdk = Build.VERSION_CODES.R)
   public void isAtLeastR() {
     assertThat(BuildCompat.isAtLeastR()).isTrue();
+  }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.Q)
+  public void isAtLeastR_preR() {
+    assertThat(BuildCompat.isAtLeastR()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void isAtLeastS() {
+    assertThat(BuildCompat.isAtLeastS()).isTrue();
+  }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.R)
+  public void isAtLeastS_preS() {
+    assertThat(BuildCompat.isAtLeastS()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S_V2)
+  public void isAtLeastSv2() {
+    assertThat(BuildCompat.isAtLeastSv2()).isTrue();
+  }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.S)
+  public void isAtLeastSv2_preSv2() {
+    assertThat(BuildCompat.isAtLeastSv2()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.TIRAMISU)
+  public void isAtLeastT() {
+    assertThat(BuildCompat.isAtLeastT()).isTrue();
+  }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.S_V2)
+  public void isAtLeastT_preT() {
+    assertThat(BuildCompat.isAtLeastT()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void isAtLeastU() {
+    assertThat(BuildCompat.isAtLeastU()).isTrue();
+  }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.TIRAMISU)
+  public void isAtLeastU_preU() {
+    assertThat(BuildCompat.isAtLeastU()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.VANILLA_ICE_CREAM)
+  public void isAtLeastV() {
+    assertThat(BuildCompat.isAtLeastV()).isTrue();
+  }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void isAtLeastV_preV() {
+    assertThat(BuildCompat.isAtLeastV()).isFalse();
   }
 }
