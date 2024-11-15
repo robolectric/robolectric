@@ -56,10 +56,10 @@ public final class AndroidVersionsTest {
   public void testStandardInitializationU() {
     assertThat(AndroidVersions.U.SDK_INT).isEqualTo(34);
     assertThat(AndroidVersions.U.SHORT_CODE).isEqualTo("U");
-    assertThat(AndroidVersions.U.VERSION).isEqualTo("14.0");
+    assertThat(AndroidVersions.U.VERSION).isEqualTo("14");
     assertThat(new AndroidVersions.U().getSdkInt()).isEqualTo(34);
     assertThat(new AndroidVersions.U().getShortCode()).isEqualTo("U");
-    assertThat(new AndroidVersions.U().getVersion()).isEqualTo("14.0");
+    assertThat(new AndroidVersions.U().getVersion()).isEqualTo("14");
     assertThat(new AndroidVersions.U().isReleased()).isTrue();
   }
 
@@ -67,10 +67,10 @@ public final class AndroidVersionsTest {
   public void testStandardInitializationT() {
     assertThat(AndroidVersions.T.SDK_INT).isEqualTo(33);
     assertThat(AndroidVersions.T.SHORT_CODE).isEqualTo("T");
-    assertThat(AndroidVersions.T.VERSION).isEqualTo("13.0");
+    assertThat(AndroidVersions.T.VERSION).isEqualTo("13");
     assertThat(new AndroidVersions.T().getSdkInt()).isEqualTo(33);
     assertThat(new AndroidVersions.T().getShortCode()).isEqualTo("T");
-    assertThat(new AndroidVersions.T().getVersion()).isEqualTo("13.0");
+    assertThat(new AndroidVersions.T().getVersion()).isEqualTo("13");
     assertThat(new AndroidVersions.T().isReleased()).isTrue();
   }
 
@@ -89,10 +89,10 @@ public final class AndroidVersionsTest {
   public void testStandardInitializationS() {
     assertThat(AndroidVersions.S.SDK_INT).isEqualTo(31);
     assertThat(AndroidVersions.S.SHORT_CODE).isEqualTo("S");
-    assertThat(AndroidVersions.S.VERSION).isEqualTo("12.0");
+    assertThat(AndroidVersions.S.VERSION).isEqualTo("12");
     assertThat(new AndroidVersions.S().getSdkInt()).isEqualTo(31);
     assertThat(new AndroidVersions.S().getShortCode()).isEqualTo("S");
-    assertThat(new AndroidVersions.S().getVersion()).isEqualTo("12.0");
+    assertThat(new AndroidVersions.S().getVersion()).isEqualTo("12");
     assertThat(new AndroidVersions.S().isReleased()).isTrue();
   }
 
@@ -100,10 +100,10 @@ public final class AndroidVersionsTest {
   public void testStandardInitializationR() {
     assertThat(AndroidVersions.R.SDK_INT).isEqualTo(30);
     assertThat(AndroidVersions.R.SHORT_CODE).isEqualTo("R");
-    assertThat(AndroidVersions.R.VERSION).isEqualTo("11.0");
+    assertThat(AndroidVersions.R.VERSION).isEqualTo("11");
     assertThat(new AndroidVersions.R().getSdkInt()).isEqualTo(30);
     assertThat(new AndroidVersions.R().getShortCode()).isEqualTo("R");
-    assertThat(new AndroidVersions.R().getVersion()).isEqualTo("11.0");
+    assertThat(new AndroidVersions.R().getVersion()).isEqualTo("11");
     assertThat(new AndroidVersions.R().isReleased()).isTrue();
   }
 
@@ -111,10 +111,10 @@ public final class AndroidVersionsTest {
   public void testStandardInitializationQ() {
     assertThat(AndroidVersions.Q.SDK_INT).isEqualTo(29);
     assertThat(AndroidVersions.Q.SHORT_CODE).isEqualTo("Q");
-    assertThat(AndroidVersions.Q.VERSION).isEqualTo("10.0");
+    assertThat(AndroidVersions.Q.VERSION).isEqualTo("10");
     assertThat(new AndroidVersions.Q().getSdkInt()).isEqualTo(29);
     assertThat(new AndroidVersions.Q().getShortCode()).isEqualTo("Q");
-    assertThat(new AndroidVersions.Q().getVersion()).isEqualTo("10.0");
+    assertThat(new AndroidVersions.Q().getVersion()).isEqualTo("10");
     assertThat(new AndroidVersions.Q().isReleased()).isTrue();
   }
 
@@ -122,10 +122,10 @@ public final class AndroidVersionsTest {
   public void testStandardInitializationP() {
     assertThat(AndroidVersions.P.SDK_INT).isEqualTo(28);
     assertThat(AndroidVersions.P.SHORT_CODE).isEqualTo("P");
-    assertThat(AndroidVersions.P.VERSION).isEqualTo("9.0");
+    assertThat(AndroidVersions.P.VERSION).isEqualTo("9");
     assertThat(new AndroidVersions.P().getSdkInt()).isEqualTo(28);
     assertThat(new AndroidVersions.P().getShortCode()).isEqualTo("P");
-    assertThat(new AndroidVersions.P().getVersion()).isEqualTo("9.0");
+    assertThat(new AndroidVersions.P().getVersion()).isEqualTo("9");
     assertThat(new AndroidVersions.P().isReleased()).isTrue();
   }
 
