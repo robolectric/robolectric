@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -402,6 +403,80 @@ public class ShadowSubscriptionManagerTest {
     ShadowSubscriptionManager.reset();
     assertThat(SubscriptionManager.getPhoneId(123))
         .isEqualTo(ShadowSubscriptionManager.INVALID_PHONE_INDEX);
+  }
+
+  @Test
+  public void getSubId() {
+    // Explicitly callable without any permissions.
+    shadowOf(subscriptionManager).setReadPhoneStatePermission(false);
+
+    assertThat(SubscriptionManager.getSubId(/* slotIndex= */ 0)).isNull();
+
+    shadowOf(subscriptionManager)
+        .setActiveSubscriptionInfos(
+            SubscriptionInfoBuilder.newBuilder()
+                .setId(123)
+                .setSimSlotIndex(0)
+                .buildSubscriptionInfo(),
+            SubscriptionInfoBuilder.newBuilder()
+                .setId(456)
+                .setSimSlotIndex(1)
+                .buildSubscriptionInfo());
+    int[] subId = SubscriptionManager.getSubId(/* slotIndex= */ 0);
+    assertThat(subId).hasLength(1);
+    assertThat(subId[0]).isEqualTo(123);
+
+    assertThat(SubscriptionManager.getSubId(/* slotIndex= */ 2)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getSubscriptionIds() {
+    // Explicitly callable without any permissions.
+    shadowOf(subscriptionManager).setReadPhoneStatePermission(false);
+
+    assertThat(subscriptionManager.getSubscriptionIds(/* slotIndex= */ 0)).isNull();
+
+    shadowOf(subscriptionManager)
+        .setActiveSubscriptionInfos(
+            SubscriptionInfoBuilder.newBuilder()
+                .setId(123)
+                .setSimSlotIndex(0)
+                .buildSubscriptionInfo(),
+            SubscriptionInfoBuilder.newBuilder()
+                .setId(456)
+                .setSimSlotIndex(1)
+                .buildSubscriptionInfo());
+    int[] subId = subscriptionManager.getSubscriptionIds(/* slotIndex= */ 0);
+    assertThat(subId).hasLength(1);
+    assertThat(subId[0]).isEqualTo(123);
+
+    assertThat(subscriptionManager.getSubscriptionIds(/* slotIndex= */ 2)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getSubscriptionId() {
+    // Explicitly callable without any permissions.
+    shadowOf(subscriptionManager).setReadPhoneStatePermission(false);
+
+    assertThat(SubscriptionManager.getSubscriptionId(/* slotIndex= */ 0))
+        .isEqualTo(SubscriptionManager.INVALID_SUBSCRIPTION_ID);
+
+    shadowOf(subscriptionManager)
+        .setActiveSubscriptionInfos(
+            SubscriptionInfoBuilder.newBuilder()
+                .setId(123)
+                .setSimSlotIndex(0)
+                .buildSubscriptionInfo(),
+            SubscriptionInfoBuilder.newBuilder()
+                .setId(456)
+                .setSimSlotIndex(1)
+                .buildSubscriptionInfo());
+    assertThat(SubscriptionManager.getSubscriptionId(/* slotIndex= */ 0)).isEqualTo(123);
+
+    assertThat(SubscriptionManager.getSubscriptionId(/* slotIndex= */ 2))
+        .isEqualTo(SubscriptionManager.INVALID_SUBSCRIPTION_ID);
   }
 
   @Test

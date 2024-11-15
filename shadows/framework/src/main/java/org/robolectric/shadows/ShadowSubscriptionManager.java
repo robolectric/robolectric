@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.os.Build.VERSION;
 import android.telephony.SubscriptionInfo;
@@ -128,19 +129,19 @@ public class ShadowSubscriptionManager {
 
   /**
    * Cache of {@link SubscriptionInfo} used by {@link #getActiveSubscriptionInfoList}. Managed by
-   * {@link #setActiveSubscriptionInfoList}.
+   * {@link #setActiveSubscriptionInfoList}. May be {@code null}.
    */
-  private List<SubscriptionInfo> subscriptionList = new ArrayList<>();
+  private static List<SubscriptionInfo> subscriptionList = new ArrayList<>();
 
   /**
    * Cache of {@link SubscriptionInfo} used by {@link #getAccessibleSubscriptionInfoList}. Managed
-   * by {@link #setAccessibleSubscriptionInfos}.
+   * by {@link #setAccessibleSubscriptionInfos}. May be {@code null}.
    */
   private List<SubscriptionInfo> accessibleSubscriptionList = new ArrayList<>();
 
   /**
    * Cache of {@link SubscriptionInfo} used by {@link #getAvailableSubscriptionInfoList}. Managed by
-   * {@link #setAvailableSubscriptionInfos}.
+   * {@link #setAvailableSubscriptionInfos}. May be {@code null}.
    */
   private List<SubscriptionInfo> availableSubscriptionList = new ArrayList<>();
 
@@ -467,6 +468,47 @@ public class ShadowSubscriptionManager {
   }
 
   /**
+   * Older form of {@link #getSubscriptionId} that was designed prior to mainstream multi-SIM
+   * support, so its {@code int[]} return type ended up being an unused vestige from that older
+   * design.
+   */
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  @HiddenApi
+  protected static int[] getSubId(int slotIndex) {
+    int subId = getSubscriptionId(slotIndex);
+    return subId == SubscriptionManager.INVALID_SUBSCRIPTION_ID ? null : new int[] {subId};
+  }
+
+  /**
+   * Older form of {@link #getSubscriptionId} that was designed prior to mainstream multi-SIM
+   * support, so its {@code int[]} return type ended up being an unused vestige from that older
+   * design.
+   */
+  @Implementation(minSdk = Q)
+  protected int[] getSubscriptionIds(int slotIndex) {
+    return getSubId(slotIndex);
+  }
+
+  /**
+   * Derives the subscription ID corresponding to an "active" {@link SubscriptionInfo} for the given
+   * SIM slot index.
+   */
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected static int getSubscriptionId(int slotIndex) {
+    // Intentionally not re-calling getActiveSubscriptionInfoForSimSlotIndex since this API does not
+    // require any permissions (and this is static).
+    if (subscriptionList == null) {
+      return SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+    }
+    for (SubscriptionInfo info : subscriptionList) {
+      if (info.getSimSlotIndex() == slotIndex) {
+        return info.getSubscriptionId();
+      }
+    }
+    return SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+  }
+
+  /**
    * When set to false methods requiring {@link android.Manifest.permission.READ_PHONE_STATE}
    * permission will throw a {@link SecurityException}. By default it's set to true for backwards
    * compatibility.
@@ -533,6 +575,7 @@ public class ShadowSubscriptionManager {
     defaultSmsSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     defaultVoiceSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     defaultSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+    subscriptionList = new ArrayList<>();
     phoneIds.clear();
     phoneNumberMap.clear();
     readPhoneStatePermission = true;
