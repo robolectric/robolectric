@@ -24,11 +24,29 @@ public final class AndroidVersionsTest {
   }
 
   @Test
+  @Config(sdk = 35)
+  public void testStandardInitializationV() {
+    assertThat(AndroidVersions.V.SDK_INT).isEqualTo(35);
+    assertThat(AndroidVersions.V.SHORT_CODE).isEqualTo("V");
+    assertThat(new AndroidVersions.V().getVersion()).isEqualTo("15");
+    assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("V");
+  }
+
+  @Test
+  @Config(sdk = 34)
+  public void testStandardInitializationU() {
+    assertThat(AndroidVersions.U.SDK_INT).isEqualTo(34);
+    assertThat(AndroidVersions.U.SHORT_CODE).isEqualTo("U");
+    assertThat(new AndroidVersions.U().getVersion()).isEqualTo("14");
+    assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("U");
+  }
+
+  @Test
   @Config(sdk = 33)
   public void testStandardInitializationT() {
     assertThat(AndroidVersions.T.SDK_INT).isEqualTo(33);
     assertThat(AndroidVersions.T.SHORT_CODE).isEqualTo("T");
-    assertThat(new AndroidVersions.T().getVersion()).isEqualTo("13.0");
+    assertThat(new AndroidVersions.T().getVersion()).isEqualTo("13");
     assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("T");
   }
 
@@ -46,7 +64,7 @@ public final class AndroidVersionsTest {
   public void testStandardInitializationS() {
     assertThat(AndroidVersions.S.SDK_INT).isEqualTo(31);
     assertThat(AndroidVersions.S.SHORT_CODE).isEqualTo("S");
-    assertThat(new AndroidVersions.S().getVersion()).isEqualTo("12.0");
+    assertThat(new AndroidVersions.S().getVersion()).isEqualTo("12");
     assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("S");
   }
 
@@ -55,7 +73,7 @@ public final class AndroidVersionsTest {
   public void testStandardInitializationR() {
     assertThat(AndroidVersions.R.SDK_INT).isEqualTo(30);
     assertThat(AndroidVersions.R.SHORT_CODE).isEqualTo("R");
-    assertThat(new AndroidVersions.R().getVersion()).isEqualTo("11.0");
+    assertThat(new AndroidVersions.R().getVersion()).isEqualTo("11");
     assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("R");
   }
 
@@ -64,7 +82,7 @@ public final class AndroidVersionsTest {
   public void testStandardInitializationQ() {
     assertThat(AndroidVersions.Q.SDK_INT).isEqualTo(29);
     assertThat(AndroidVersions.Q.SHORT_CODE).isEqualTo("Q");
-    assertThat(new AndroidVersions.Q().getVersion()).isEqualTo("10.0");
+    assertThat(new AndroidVersions.Q().getVersion()).isEqualTo("10");
     assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("Q");
   }
 
@@ -73,7 +91,7 @@ public final class AndroidVersionsTest {
   public void testStandardInitializationP() {
     assertThat(AndroidVersions.P.SDK_INT).isEqualTo(28);
     assertThat(AndroidVersions.P.SHORT_CODE).isEqualTo("P");
-    assertThat(new AndroidVersions.P().getVersion()).isEqualTo("9.0");
+    assertThat(new AndroidVersions.P().getVersion()).isEqualTo("9");
     assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("P");
   }
 
