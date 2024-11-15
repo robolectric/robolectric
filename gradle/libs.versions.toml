@@ -106,12 +106,8 @@ androidx-biometric = "1.1.0"
 androidx-constraintlayout = "2.2.0"
 androidx-core = "1.15.0"
 androidx-fragment = "1.8.5"
-androidx-multidex = "2.0.1"
 androidx-window = "1.3.0"
 androidx-room = "2.6.1"
-
-# https://maven.google.com/web/index.html?q=multidex#com.android.support:multidex
-android-multidex = "1.0.3"
 
 # https://github.com/android/android-test/tags
 androidx-test-core = "1.6.1"
@@ -191,7 +187,7 @@ powermock-classloading-xstream = { module = "org.powermock:powermock-classloadin
 
 robolectric-nativeruntime-dist-compat = { module = "org.robolectric:nativeruntime-dist-compat", version.ref = "robolectric-nativeruntime-dist-compat" }
 
-snakeyaml = {module = "org.yaml:snakeyaml", version.ref="snakeyaml" }
+snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
 
 sqlite4java = { module = "com.almworks.sqlite4java:sqlite4java", version.ref = "sqlite4java" }
 sqlite4java-osx = { module = "com.almworks.sqlite4java:libsqlite4java-osx", version.ref = "sqlite4java" }
@@ -216,7 +212,6 @@ androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayo
 androidx-core = { module = "androidx.core:core", version.ref = "androidx-core" }
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "androidx-fragment" }
 androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", version.ref = "androidx-fragment" }
-androidx-multidex = { module = "androidx.multidex:multidex", version.ref = "androidx-multidex" }
 androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "androidx-room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidx-room" }
@@ -246,8 +241,6 @@ play-services-base-for-shadows = { module = "com.google.android.gms:play-service
 play-services-basement-for-shadows = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-for-shadows" }
 
 play-services-basement = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-basement" }
-
-android-multidex = { module = "com.android.support:multidex", version.ref = "android-multidex" }
 
 spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-gradle" }
 
