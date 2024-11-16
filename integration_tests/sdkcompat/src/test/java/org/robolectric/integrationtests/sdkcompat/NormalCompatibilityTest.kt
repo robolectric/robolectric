@@ -101,4 +101,10 @@ class NormalCompatibilityTest {
     val activity = Robolectric.setupActivity(MainActivity::class.java)
     assertThat(activity.creationSource).isEqualTo(CreationSource.DEFAULT_CONSTRUCTOR)
   }
+
+  @Test
+  fun `Retrieve PackageInstaller succeed`() {
+    val packageInstaller = application.packageManager.packageInstaller
+    assertThat(packageInstaller).isNotNull()
+  }
 }
