@@ -122,6 +122,9 @@ androidx-test-monitor = "1.7.2"
 androidx-test-runner = "1.6.2"
 androidx-test-services = "1.5.0"
 
+# https://developer.android.com/jetpack/androidx/releases/compose
+androidx-compose-bom = "2024.10.01"
+
 # for shadows/playservices/build.gradle
 androidx-fragment-for-shadows = "1.2.0"
 play-services-for-shadows = "17.0.0"
@@ -230,6 +233,13 @@ androidx-test-espresso-intents = { module = "androidx.test.espresso:espresso-int
 androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-ext-junit" }
 androidx-test-ext-truth = { module = "androidx.test.ext:truth", version.ref = "androidx-test-ext-truth" }
 
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidx-compose-bom" }
+androidx-compose-ui = { module = "androidx.compose.ui:ui" }
+androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+
 androidx-fragment-for-shadows = { module = "androidx.fragment:fragment", version.ref = "androidx-fragment-for-shadows" }
 play-services-auth-for-shadows = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-for-shadows" }
 play-services-base-for-shadows = { module = "com.google.android.gms:play-services-base", version.ref = "play-services-for-shadows" }
@@ -256,6 +266,7 @@ jacoco = { id = "jacoco" }
 java = { id = "java" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 robolectric-android-project = { id = "org.robolectric.gradle.AndroidProjectConfigPlugin" }
 robolectric-deployed-java-module = { id = "org.robolectric.gradle.DeployedRoboJavaModulePlugin" }
 robolectric-gradle-managed-device = { id = "org.robolectric.gradle.GradleManagedDevicePlugin" }
