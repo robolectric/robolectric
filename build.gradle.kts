@@ -26,6 +26,7 @@ plugins {
   alias(libs.plugins.robolectric.spotless)
   alias(libs.plugins.robolectric.javadoc)
   alias(libs.plugins.roborazzi) apply false
+  alias(libs.plugins.compose.compiler) apply false
 }
 
 allprojects {

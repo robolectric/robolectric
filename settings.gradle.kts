@@ -22,6 +22,7 @@ include(
   ":errorprone",
   ":integration_tests:androidx",
   ":integration_tests:androidx_test",
+  ":integration_tests:composeui",
   ":integration_tests:ctesque",
   ":integration_tests:dependency-on-stubs",
   ":integration_tests:jacoco-offline",
