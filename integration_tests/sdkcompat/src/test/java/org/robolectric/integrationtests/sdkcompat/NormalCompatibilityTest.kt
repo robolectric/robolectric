@@ -13,7 +13,6 @@ import android.view.PixelCopy
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
 import org.robolectric.Robolectric.buildActivity
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
@@ -76,30 +75,36 @@ class NormalCompatibilityTest {
 
   @Test
   fun `PixelCopy request`() {
-    val testActivity = Robolectric.setupActivity(TestActivity::class.java)
-    val bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
-    val listener = PixelCopy.OnPixelCopyFinishedListener {}
-    val srcRect = Rect(0, 0, 100, 100)
-    PixelCopy.request(
-      testActivity.window,
-      srcRect,
-      bitmap,
-      listener,
-      Handler(Looper.getMainLooper()),
-    )
+    buildActivity(TestActivity::class.java).use { controller ->
+      val testActivity = controller.setup().get()
+      val bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+      val listener = PixelCopy.OnPixelCopyFinishedListener {}
+      val srcRect = Rect(0, 0, 100, 100)
+      PixelCopy.request(
+        testActivity.window,
+        srcRect,
+        bitmap,
+        listener,
+        Handler(Looper.getMainLooper()),
+      )
+    }
   }
 
   @Test
   fun `MainActivity created correctly using AppComponentFactory`() {
-    val activity = Robolectric.setupActivity(MainActivity::class.java)
-    assertThat(activity.creationSource).isEqualTo(CreationSource.CUSTOM_CONSTRUCTOR)
+    buildActivity(MainActivity::class.java).use { controller ->
+      val activity = controller.setup().get()
+      assertThat(activity.creationSource).isEqualTo(CreationSource.CUSTOM_CONSTRUCTOR)
+    }
   }
 
   @Test
   @Config(minSdk = 19, maxSdk = 27)
   fun `MainActivity created correctly using default constructor on api lower than 28`() {
-    val activity = Robolectric.setupActivity(MainActivity::class.java)
-    assertThat(activity.creationSource).isEqualTo(CreationSource.DEFAULT_CONSTRUCTOR)
+    buildActivity(MainActivity::class.java).use { controller ->
+      val activity = controller.setup().get()
+      assertThat(activity.creationSource).isEqualTo(CreationSource.DEFAULT_CONSTRUCTOR)
+    }
   }
 
   @Test

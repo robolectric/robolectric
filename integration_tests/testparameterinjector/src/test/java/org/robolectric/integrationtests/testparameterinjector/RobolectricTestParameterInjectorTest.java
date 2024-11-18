@@ -7,6 +7,7 @@ import static com.google.common.truth.Truth.assertThat;
 import android.os.Build.VERSION;
 import com.google.testing.junit.testparameterinjector.TestParameter;
 import java.util.ArrayList;
+import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -21,7 +22,12 @@ import org.junit.runners.JUnit4;
 import org.robolectric.RobolectricTestParameterInjector;
 import org.robolectric.annotation.Config;
 
-@SuppressWarnings({"TestMethodWithIncorrectSignature", "UnconstructableJUnitTestCase"})
+@SuppressWarnings({
+  "IgnoreWithoutReason",
+  "NewClassNamingConvention",
+  "TestMethodWithIncorrectSignature",
+  "UnconstructableJUnitTestCase"
+})
 @RunWith(JUnit4.class)
 public class RobolectricTestParameterInjectorTest {
   private String priorAlwaysInclude;
@@ -40,7 +46,7 @@ public class RobolectricTestParameterInjectorTest {
     runNotifier.addListener(
         new RunListener() {
           @Override
-          public void testFailure(Failure failure) throws Exception {
+          public void testFailure(Failure failure) {
             throw new AssertionError("Unexpected test failure: " + failure, failure.getException());
           }
         });
@@ -93,8 +99,8 @@ public class RobolectricTestParameterInjectorTest {
     assertThat(runner.testCount()).isEqualTo(2);
     ArrayList<Description> descriptions = runner.getDescription().getChildren();
     // In Gradle it's test[false], in Bazel it's test[param=false].
-    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?false\\]");
-    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?true\\]");
+    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?false]");
+    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?true]");
   }
 
   @Ignore
@@ -146,8 +152,8 @@ public class RobolectricTestParameterInjectorTest {
     assertThat(runner.testCount()).isEqualTo(2);
     ArrayList<Description> descriptions = runner.getDescription().getChildren();
     // In Gradle it's test[1], in Bazel it's test[param=1].
-    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?1\\]");
-    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?2\\]");
+    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?1]");
+    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?2]");
   }
 
   @Ignore
@@ -197,10 +203,10 @@ public class RobolectricTestParameterInjectorTest {
 
     ArrayList<Description> descriptions = runner.getDescription().getChildren();
     // In Gradle it's test[false][28], in Bazel it's test[param=false][28].
-    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?false\\]\\[28\\]");
-    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?true\\]\\[28\\]");
-    assertThat(descriptions.get(2).getMethodName()).matches("test\\[(param=)?false\\]");
-    assertThat(descriptions.get(3).getMethodName()).matches("test\\[(param=)?true\\]");
+    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?false]\\[28]");
+    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?true]\\[28]");
+    assertThat(descriptions.get(2).getMethodName()).matches("test\\[(param=)?false]");
+    assertThat(descriptions.get(3).getMethodName()).matches("test\\[(param=)?true]");
   }
 
   // Simulate the behavior of proto lite enum toString which includes the object hashcode (proto
@@ -213,6 +219,7 @@ public class RobolectricTestParameterInjectorTest {
       TWO;
 
       @Override
+      @Nonnull
       public String toString() {
         return "" + super.hashCode();
       }

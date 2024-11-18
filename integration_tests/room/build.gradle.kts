@@ -25,7 +25,6 @@ dependencies {
   testImplementation(project(":testapp"))
   testImplementation(project(":robolectric"))
   testImplementation(libs.junit4)
-  testImplementation(libs.guava.testlib)
   testImplementation(libs.truth)
   implementation(libs.androidx.room.runtime)
   annotationProcessor(libs.androidx.room.compiler)
