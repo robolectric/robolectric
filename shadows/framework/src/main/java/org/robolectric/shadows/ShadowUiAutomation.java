@@ -137,7 +137,8 @@ public class ShadowUiAutomation {
                   Canvas windowCanvas = new Canvas(window);
                   rootView.draw(windowCanvas);
                 }
-                screenshotCanvas.drawBitmap(window, root.params.x, root.params.y, paint);
+                screenshotCanvas.drawBitmap(
+                    window, root.locationOnScreen.x, root.locationOnScreen.y, paint);
               }
               return screenshot;
             });
@@ -181,14 +182,14 @@ public class ShadowUiAutomation {
     for (int i = 0; i < touchableRoots.size(); i++) {
       Root root = touchableRoots.get(i);
       if (i == touchableRoots.size() - 1 || root.isTouchModal() || root.isTouchInside(event)) {
-        event.offsetLocation(-root.params.x, -root.params.y);
+        event.offsetLocation(-root.locationOnScreen.x, -root.locationOnScreen.y);
         root.getRootView().dispatchTouchEvent(event);
-        event.offsetLocation(root.params.x, root.params.y);
+        event.offsetLocation(root.locationOnScreen.x, root.locationOnScreen.y);
         break;
       } else if (event.getActionMasked() == MotionEvent.ACTION_DOWN && root.watchTouchOutside()) {
         MotionEvent outsideEvent = MotionEvent.obtain(event);
         outsideEvent.setAction(MotionEvent.ACTION_OUTSIDE);
-        outsideEvent.offsetLocation(-root.params.x, -root.params.y);
+        outsideEvent.offsetLocation(-root.locationOnScreen.x, -root.locationOnScreen.y);
         root.getRootView().dispatchTouchEvent(outsideEvent);
         outsideEvent.recycle();
       }
@@ -283,11 +284,16 @@ public class ShadowUiAutomation {
     final ViewRootImpl impl;
     final WindowManager.LayoutParams params;
     final int index;
+    final Point locationOnScreen;
 
     Root(ViewRootImpl impl, WindowManager.LayoutParams params, int index) {
       this.impl = impl;
       this.params = params;
       this.index = index;
+
+      int[] coords = new int[2];
+      getRootView().getLocationOnScreen(coords);
+      locationOnScreen = new Point(coords[0], coords[1]);
     }
 
     int getIndex() {
@@ -304,10 +310,10 @@ public class ShadowUiAutomation {
 
     boolean isTouchInside(MotionEvent event) {
       int index = event.getActionIndex();
-      return event.getX(index) >= params.x
-          && event.getX(index) <= params.x + impl.getView().getWidth()
-          && event.getY(index) >= params.y
-          && event.getY(index) <= params.y + impl.getView().getHeight();
+      return event.getX(index) >= locationOnScreen.x
+          && event.getX(index) <= locationOnScreen.x + impl.getView().getWidth()
+          && event.getY(index) >= locationOnScreen.y
+          && event.getY(index) <= locationOnScreen.y + impl.getView().getHeight();
     }
 
     boolean isTouchModal() {

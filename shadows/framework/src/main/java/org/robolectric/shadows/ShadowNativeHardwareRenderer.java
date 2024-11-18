@@ -54,6 +54,11 @@ public class ShadowNativeHardwareRenderer {
     return HardwareRendererNatives.isWebViewOverlaysEnabled();
   }
 
+  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
+  protected static boolean nIsDrawingEnabled() {
+    return true;
+  }
+
   @Implementation(maxSdk = U.SDK_INT)
   protected static void setupShadersDiskCache(String cacheFile, String skiaCacheFile) {
     HardwareRendererNatives.setupShadersDiskCache(cacheFile, skiaCacheFile);
@@ -121,9 +126,9 @@ public class ShadowNativeHardwareRenderer {
     HardwareRendererNatives.nSetSurface(nativeProxy, window, discardBuffer);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S)
   protected static void nSetSurfaceControl(long nativeProxy, long nativeSurfaceControl) {
-    HardwareRendererNatives.nSetSurfaceControl(nativeProxy, nativeSurfaceControl);
+    // SurfaceControl is not in RNG
   }
 
   @Implementation(maxSdk = U.SDK_INT)
