@@ -27,7 +27,6 @@ android {
 
 dependencies {
   compileOnly(AndroidSdk.MAX_SDK.coordinates)
-  implementation(project(path = ":shadowapi", configuration = "default"))
 
   testCompileOnly(AndroidSdk.MAX_SDK.coordinates)
   testRuntimeOnly(AndroidSdk.MAX_SDK.coordinates)

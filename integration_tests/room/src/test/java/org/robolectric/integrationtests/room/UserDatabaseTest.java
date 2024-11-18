@@ -12,7 +12,7 @@ import org.robolectric.annotation.SQLiteMode;
 public final class UserDatabaseTest {
 
   /**
-   * There was an issue using Room with {@link SQLiteMode.Mode.LEGACY}. The {@link
+   * There was an issue using Room with {@link SQLiteMode.Mode#LEGACY}. The {@link
    * android.database.sqlite.SQLiteException} exceptions were wrapped in a way that was not
    * compatible with Room.
    */

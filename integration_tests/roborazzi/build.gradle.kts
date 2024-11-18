@@ -54,7 +54,6 @@ dependencies {
   api(project(":robolectric"))
   testImplementation(libs.androidx.test.core)
   testImplementation(libs.junit4)
-  testImplementation(libs.truth)
   testImplementation(libs.roborazzi)
   testImplementation(libs.roborazzi.rule)
 }
