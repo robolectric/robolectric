@@ -100,9 +100,6 @@ class RoborazziCaptureTest {
   }
 
   companion object {
-    // TODO(hoisie): `robolectric.screenshot.hwrdr.native` is obsolete, remove it after the next
-    // Robolectric point release.
-    const val USE_HARDWARE_RENDERER_NATIVE_ENV = "robolectric.screenshot.hwrdr.native"
     const val PIXEL_COPY_RENDER_MODE = "robolectric.pixelCopyRenderMode"
   }
 }
@@ -114,24 +111,15 @@ private fun registerActivityToPackageManager(activity: String) {
     .addActivityIfNotPresent(ComponentName(appContext.packageName, activity))
 }
 
-@Suppress("ForbiddenComment")
 private fun hardwareRendererEnvironment(block: () -> Unit) {
-  val originalHwrdrOption =
-    System.getProperty(RoborazziCaptureTest.USE_HARDWARE_RENDERER_NATIVE_ENV, null)
   val originalPixelCopyOption =
     System.getProperty(RoborazziCaptureTest.PIXEL_COPY_RENDER_MODE, null)
-  // This cause ClassNotFoundException: java.nio.NioUtils
-  // TODO: Remove comment out after fix this issue
-  // https://github.com/robolectric/robolectric/issues/8081#issuecomment-1858726896
-  // System.setProperty(USE_HARDWARE_RENDERER_NATIVE_ENV, "true")
   try {
     block()
   } finally {
-    if (originalHwrdrOption == null) {
-      System.clearProperty(RoborazziCaptureTest.USE_HARDWARE_RENDERER_NATIVE_ENV)
+    if (originalPixelCopyOption == null) {
       System.clearProperty(RoborazziCaptureTest.PIXEL_COPY_RENDER_MODE)
     } else {
-      System.setProperty(RoborazziCaptureTest.USE_HARDWARE_RENDERER_NATIVE_ENV, originalHwrdrOption)
       System.setProperty(RoborazziCaptureTest.PIXEL_COPY_RENDER_MODE, originalPixelCopyOption)
     }
   }
