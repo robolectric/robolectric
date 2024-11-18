@@ -17,7 +17,7 @@
 package org.robolectric.nativeruntime;
 
 /**
- * Native methods for {@link ImageDecoder} JNI registration.
+ * Native methods for {@link android.graphics.HardwareRendererObserver} JNI registration.
  *
  * <p>Native method signatures are derived from
  * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r1:frameworks/base/graphics/java/android/graphics/HardwareRendererObserver.java

@@ -2,7 +2,6 @@ package org.robolectric.nativeruntime;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.app.Application;
 import android.database.CursorWindow;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,10 +21,9 @@ public final class DefaultNativeRuntimeLazyLoadTest {
    *
    * <p>Note that lazy loading is disabled for V and above.
    */
-  @SuppressWarnings("UnusedVariable")
   @Test
-  public void lazyLoad() throws Exception {
-    Application application = RuntimeEnvironment.getApplication();
+  public void lazyLoad() {
+    RuntimeEnvironment.getApplication();
     assertThat(DefaultNativeRuntimeLoader.isLoaded()).isFalse();
     CursorWindow cursorWindow = new CursorWindow("hi");
     cursorWindow.close();

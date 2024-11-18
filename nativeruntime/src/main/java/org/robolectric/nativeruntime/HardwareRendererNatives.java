@@ -26,7 +26,7 @@ import android.view.Surface;
 import java.io.FileDescriptor;
 
 /**
- * Native methods for {@link HardwareRenderer} JNI registration.
+ * Native methods for {@link android.graphics.HardwareRenderer} JNI registration.
  *
  * <p>Native method signatures are derived from
  * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r1:frameworks/base/graphics/java/android/graphics/HardwareRenderer.java
