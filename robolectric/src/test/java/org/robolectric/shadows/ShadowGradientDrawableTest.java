@@ -12,10 +12,12 @@ import org.junit.runner.RunWith;
 public class ShadowGradientDrawableTest {
   @Test
   public void testGetLastSetColor_returnsColor() {
-    GradientDrawable gradientDrawable = new GradientDrawable();
-    ShadowGradientDrawable shadowGradientDrawable = shadowOf(gradientDrawable);
     int color = 123;
+    GradientDrawable gradientDrawable = new GradientDrawable();
+
     gradientDrawable.setColor(color);
+
+    ShadowGradientDrawable shadowGradientDrawable = shadowOf(gradientDrawable);
     assertThat(shadowGradientDrawable.getLastSetColor()).isEqualTo(color);
   }
 
