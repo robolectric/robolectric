@@ -483,7 +483,7 @@ public class ShadowWindowManagerGlobal {
                 edge, // swipe edge
                 null);
       } else {
-            throw new IllegalStateException("Could not find a BackMotionEvent constructor to call");
+        throw new IllegalStateException("Could not find a BackMotionEvent constructor to call");
       }
     }
 

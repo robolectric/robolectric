@@ -20,7 +20,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.ResourcesMode;
 
 @RunWith(AndroidJUnit4.class)
-
 public class ViewStubTest {
   private Context ctxt;
 
