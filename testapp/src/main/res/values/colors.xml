@@ -22,4 +22,8 @@
   <color name="test_ARGB8">#00000002</color>
   <color name="test_RGB4">#00f</color>
   <color name="test_RGB8">#000004</color>
+
+  <color name="colorPrimary">#008577</color>
+  <color name="colorPrimaryDark">#00574B</color>
+  <color name="colorAccent">#D81B60</color>
 </resources>

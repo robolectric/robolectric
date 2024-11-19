@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copied from https://cs.android.com/android/platform/superproject/main/+/main:cts/tests/tests/graphics/res/drawable/gradientdrawable_noCenterColor_all_theme.xml -->
+<shape
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:startColor="@color/color_primary_csl_with_theme_attr"
+        android:endColor="@color/color_primary_dark_csl_with_theme_attr"/>
+</shape>

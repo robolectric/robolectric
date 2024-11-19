@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme_MixedGradientTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <!-- overwrite the default gradient type to be radial in the theme -->
+        <item name="GradientType">1</item>
+    </style>
+
+    <attr name="colorPrimary" format="reference|color" />
+    <attr name="colorPrimaryDark" format="reference|color" />
+    <attr name="colorAccent" format="reference|color" />
+
+    <!-- default gradient type of linear -->
+    <attr name="GradientType" format="integer">0</attr>
+</resources>
