@@ -20,7 +20,6 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 @RunWith(AndroidJUnit4.class)
-
 public class XmlPullParserTest {
 
   // emulator output:
