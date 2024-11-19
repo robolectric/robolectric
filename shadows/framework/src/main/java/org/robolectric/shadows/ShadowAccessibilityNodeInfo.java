@@ -7,17 +7,14 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Bundle;
 import android.util.Pair;
-import android.util.SparseArray;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -40,12 +37,6 @@ import org.robolectric.versioning.AndroidVersions.U;
  */
 @Implements(AccessibilityNodeInfo.class)
 public class ShadowAccessibilityNodeInfo {
-  // Map of obtained instances of the class along with stack traces of how they were obtained
-  private static final Map<StrictEqualityNodeWrapper, StackTraceElement[]> obtainedInstances =
-      new HashMap<>();
-
-  private static final SparseArray<StrictEqualityNodeWrapper> orderedInstances =
-      new SparseArray<>();
 
   private static int sAllocationCount = 0;
 
@@ -136,9 +127,6 @@ public class ShadowAccessibilityNodeInfo {
     if (shadowInfo.mOriginNodeId == 0) {
       shadowInfo.mOriginNodeId = sAllocationCount;
     }
-    StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(newInfo);
-    obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
-    orderedInstances.put(sAllocationCount, wrapper);
     return newInfo;
   }
 
@@ -203,44 +191,10 @@ public class ShadowAccessibilityNodeInfo {
     if (shadowObtained.mOriginNodeId == 0) {
       shadowObtained.mOriginNodeId = sAllocationCount;
     }
-    StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(obtainedInstance);
-    obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
-    orderedInstances.put(sAllocationCount, wrapper);
   }
 
-  /**
-   * Check for leaked objects that were {@code obtain}ed but never {@code recycle}d.
-   *
-   * @param printUnrecycledNodesToSystemErr - if true, stack traces of calls to {@code obtain} that
-   *     lack matching calls to {@code recycle} are dumped to System.err.
-   * @return {@code true} if there are unrecycled nodes
-   */
-  public static boolean areThereUnrecycledNodes(boolean printUnrecycledNodesToSystemErr) {
-    checkRealAniDisabled();
-    if (printUnrecycledNodesToSystemErr) {
-      for (final StrictEqualityNodeWrapper wrapper : obtainedInstances.keySet()) {
-        final ShadowAccessibilityNodeInfo shadow = Shadow.extract(wrapper.mInfo);
-
-        System.err.printf(
-            "Leaked contentDescription = %s. Stack trace:%n",
-            shadow.realAccessibilityNodeInfo.getContentDescription());
-        for (final StackTraceElement stackTraceElement : obtainedInstances.get(wrapper)) {
-          System.err.println(stackTraceElement.toString());
-        }
-      }
-    }
-
-    return (obtainedInstances.size() != 0);
-  }
-
-  /**
-   * Clear list of obtained instance objects. {@code areThereUnrecycledNodes} will always return
-   * false if called immediately afterwards.
-   */
   @Resetter
   public static void resetObtainedInstances() {
-    obtainedInstances.clear();
-    orderedInstances.clear();
     queryFromAppProcessWasEnabled = false;
   }
 
@@ -249,11 +203,6 @@ public class ShadowAccessibilityNodeInfo {
     if (useRealAni()) {
       accessibilityNodeInfoReflector.recycle();
       return;
-    }
-    final StrictEqualityNodeWrapper wrapper =
-        new StrictEqualityNodeWrapper(realAccessibilityNodeInfo);
-    if (!obtainedInstances.containsKey(wrapper)) {
-      throw new IllegalStateException();
     }
 
     if (labelFor != null) {
@@ -272,17 +221,6 @@ public class ShadowAccessibilityNodeInfo {
         traversalBefore.recycle();
       }
     }
-
-    obtainedInstances.remove(wrapper);
-    int keyOfWrapper = -1;
-    for (int i = 0; i < orderedInstances.size(); i++) {
-      int key = orderedInstances.keyAt(i);
-      if (orderedInstances.get(key).equals(wrapper)) {
-        keyOfWrapper = key;
-        break;
-      }
-    }
-    orderedInstances.remove(keyOfWrapper);
   }
 
   @Implementation
@@ -647,36 +585,6 @@ public class ShadowAccessibilityNodeInfo {
       performedActionAndArgsList = new ArrayList<>();
     }
     return Collections.unmodifiableList(performedActionAndArgsList);
-  }
-
-  /**
-   * Private class to keep different nodes referring to the same view straight in the
-   * mObtainedInstances map.
-   */
-  private static class StrictEqualityNodeWrapper {
-    public final AccessibilityNodeInfo mInfo;
-
-    public StrictEqualityNodeWrapper(AccessibilityNodeInfo info) {
-      mInfo = info;
-    }
-
-    @Override
-    @SuppressWarnings("ReferenceEquality")
-    public boolean equals(Object object) {
-      if (object == null) {
-        return false;
-      }
-      if (!(object instanceof StrictEqualityNodeWrapper)) {
-        return false;
-      }
-      final StrictEqualityNodeWrapper wrapper = (StrictEqualityNodeWrapper) object;
-      return mInfo == wrapper.mInfo;
-    }
-
-    @Override
-    public int hashCode() {
-      return mInfo.hashCode();
-    }
   }
 
   /**
