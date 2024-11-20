@@ -486,6 +486,7 @@ public class ShadowAccessibilityNodeInfo {
    * Equality check based on reference equality of the Views from which these instances were
    * created, or the equality of their assigned IDs.
    */
+  @SuppressWarnings("EqualsHashCode")
   @Implementation
   @Override
   public boolean equals(Object object) {
@@ -506,19 +507,6 @@ public class ShadowAccessibilityNodeInfo {
       return this.mOriginNodeId == otherShadow.mOriginNodeId;
     }
     throw new IllegalStateException("Node has neither an ID nor View");
-  }
-
-  @Implementation
-  @Override
-  public int hashCode() {
-    if (useRealAni()) {
-      return accessibilityNodeInfoReflector.hashCode();
-    }
-    // This is 0 for a reason. If you change it, you will break the obtained
-    // instances map in a manner that is remarkably difficult to debug.
-    // Having a dynamic hash code keeps this object from being located
-    // in the map if it was mutated after being obtained.
-    return 0;
   }
 
   /**
@@ -612,21 +600,6 @@ public class ShadowAccessibilityNodeInfo {
 
   public interface OnPerformActionListener {
     boolean onPerformAccessibilityAction(int action, Bundle arguments);
-  }
-
-  @Override
-  @Implementation
-  public String toString() {
-    if (useRealAni()) {
-      return accessibilityNodeInfoReflector.toString();
-    }
-    return "ShadowAccessibilityNodeInfo@"
-        + System.identityHashCode(this)
-        + ":{text:"
-        + text
-        + ", className:"
-        + realAccessibilityNodeInfo.getClassName()
-        + "}";
   }
 
   @ForType(AccessibilityNodeInfo.class)
