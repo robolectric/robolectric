@@ -56,7 +56,7 @@ import org.robolectric.versioning.AndroidVersions;
 /** Encapsulates a collection of Android framework jars. */
 public class SdkStore {
 
-  private static final String VALID_CLASS_NAME_ANNOTATION_CHARS = "^[a-zA-Z0-9_$.;\\[\\]]+$";
+  private static final String VALID_CLASS_NAME_ANNOTATION_CHARS = "^\\[?[a-zA-Z0-9_$.]+;?$";
 
   private final Set<Sdk> sdks = new TreeSet<>();
   private boolean loaded = false;
@@ -606,7 +606,13 @@ public class SdkStore {
                     + "."
                     + methodElement.getSimpleName());
           }
-          paramType = className.value().replace('$', '.');
+          paramType = className.value();
+          if (paramType.startsWith("[")) {
+            // Convert an array type descriptor to a Java class name.
+            // e.g. '[java.lang.String;'-> 'java.lang.String[]'
+            paramType = Type.getType(paramType).getClassName();
+          }
+          paramType = paramType.replace('$', '.');
         }
 
         String paramTypeWithoutGenerics = typeWithoutGenerics(paramType);
