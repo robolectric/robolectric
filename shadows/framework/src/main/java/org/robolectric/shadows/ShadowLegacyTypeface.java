@@ -35,6 +35,7 @@ import org.robolectric.res.Fs;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.T;
 import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
@@ -53,13 +54,12 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
     description = findById(fontId);
   }
 
-  @Implementation(minSdk = U.SDK_INT)
-  @InDevelopment
+  @Implementation(minSdk = U.SDK_INT, maxSdk = V.SDK_INT)
   protected void __constructor__(long fontId, String familyName) {
     description = findById(fontId);
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = Baklava.SDK_INT)
   @InDevelopment
   protected void __constructor__(long fontId, String familyName, Typeface derivedFrom) {
     description = findById(fontId);
