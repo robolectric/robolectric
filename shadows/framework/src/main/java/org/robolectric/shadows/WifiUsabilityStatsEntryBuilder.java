@@ -133,6 +133,7 @@ public class WifiUsabilityStatsEntryBuilder {
           ClassParameter.from(boolean.class, false),
           ClassParameter.from(int.class, 0),
           ClassParameter.from(int.class, 0),
+          ClassParameter.from(int.class, 0),
           ClassParameter.from(int.class, 0)
           /* end new in post V */
           );

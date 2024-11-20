@@ -23,7 +23,6 @@ import java.util.concurrent.Executor;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -31,6 +30,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow class for {@link CameraDeviceImpl} */
@@ -40,7 +40,6 @@ public class ShadowCameraDeviceImpl {
   private boolean closed = false;
 
   @Implementation(minSdk = V.SDK_INT)
-  @InDevelopment
   protected void __constructor__(
       String cameraId,
       StateCallback callback,
@@ -64,6 +63,43 @@ public class ShadowCameraDeviceImpl {
               // TODO(juliansull) Remove once Robolectric compiles against Android V
               Class.forName("android.hardware.camera2.CameraDevice$CameraDeviceSetup")
                   .cast(cameraDeviceSetup));
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+
+    // When singleThreadedDeviceExecutor flag is set, this gets put on a background thread.
+    // This isn't necessary for Robolectric as there is no real camera, so we default back to the
+    // given executor.
+    reflector(CameraDeviceImplReflector.class, realObject)
+        .setDeviceExecutor(MoreExecutors.directExecutor());
+  }
+
+  @Implementation(minSdk = Baklava.SDK_INT)
+  protected void __constructor__(
+      String cameraId,
+      StateCallback callback,
+      Executor executor,
+      CameraCharacteristics characteristics,
+      CameraManager cameraManager,
+      int appTargetSdkVersion,
+      Context ctx,
+      @ClassName("android.hardware.camera2.CameraDevice$CameraDeviceSetup")
+          Object cameraDeviceSetup,
+      boolean unused) {
+    try {
+      reflector(CameraDeviceImplReflector.class, realObject)
+          .__constructor__(
+              cameraId,
+              callback,
+              executor,
+              characteristics,
+              cameraManager,
+              appTargetSdkVersion,
+              ctx,
+              // TODO(juliansull) Remove once Robolectric compiles against Android V
+              Class.forName("android.hardware.camera2.CameraDevice$CameraDeviceSetup")
+                  .cast(cameraDeviceSetup),
+              unused);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
@@ -166,6 +202,19 @@ public class ShadowCameraDeviceImpl {
         Context ctx,
         @WithType("android.hardware.camera2.CameraDevice$CameraDeviceSetup")
             Object cameraDeviceSetup);
+
+    @Direct
+    void __constructor__(
+        String cameraId,
+        StateCallback callback,
+        Executor executor,
+        CameraCharacteristics characteristics,
+        CameraManager cameraManager,
+        int appTargetSdkVersion,
+        Context ctx,
+        @WithType("android.hardware.camera2.CameraDevice$CameraDeviceSetup")
+            Object cameraDeviceSetup,
+        boolean unused);
 
     @Accessor("mDeviceExecutor")
     void setDeviceExecutor(Executor executor);
