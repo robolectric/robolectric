@@ -26,54 +26,54 @@ public class RoboMenuItemTest {
   }
 
   @Test
-  public void shouldCheckTheMenuItem() throws Exception {
+  public void shouldCheckTheMenuItem() {
     assertThat(item.isChecked()).isFalse();
     item.setChecked(true);
     assertThat(item.isChecked()).isTrue();
   }
 
   @Test
-  public void shouldAllowSettingCheckable() throws Exception {
+  public void shouldAllowSettingCheckable() {
     assertThat(item.isCheckable()).isFalse();
     item.setCheckable(true);
     assertThat(item.isCheckable()).isTrue();
   }
 
   @Test
-  public void shouldAllowSettingVisible() throws Exception {
+  public void shouldAllowSettingVisible() {
     assertThat(item.isVisible()).isTrue();
     item.setVisible(false);
     assertThat(item.isVisible()).isFalse();
   }
 
   @Test
-  public void expandActionView_shouldReturnFalseIfActionViewIsNull() throws Exception {
+  public void expandActionView_shouldReturnFalseIfActionViewIsNull() {
     item.setActionView(null);
     assertThat(item.expandActionView()).isFalse();
   }
 
   @Test
-  public void expandActionView_shouldSetExpandedTrue() throws Exception {
+  public void expandActionView_shouldSetExpandedTrue() {
     item.setActionView(new View(ApplicationProvider.getApplicationContext()));
     assertThat(item.expandActionView()).isTrue();
     assertThat(item.isActionViewExpanded()).isTrue();
   }
 
   @Test
-  public void expandActionView_shouldInvokeListener() throws Exception {
+  public void expandActionView_shouldInvokeListener() {
     item.setActionView(new View(ApplicationProvider.getApplicationContext()));
     item.expandActionView();
     assertThat(listener.expanded).isTrue();
   }
 
   @Test
-  public void collapseActionView_shouldReturnFalseIfActionViewIsNull() throws Exception {
+  public void collapseActionView_shouldReturnFalseIfActionViewIsNull() {
     item.setActionView(null);
     assertThat(item.collapseActionView()).isFalse();
   }
 
   @Test
-  public void collapseActionView_shouldSetExpandedFalse() throws Exception {
+  public void collapseActionView_shouldSetExpandedFalse() {
     item.setActionView(new View(ApplicationProvider.getApplicationContext()));
     item.expandActionView();
     assertThat(item.collapseActionView()).isTrue();
@@ -81,7 +81,7 @@ public class RoboMenuItemTest {
   }
 
   @Test
-  public void collapseActionView_shouldInvokeListener() throws Exception {
+  public void collapseActionView_shouldInvokeListener() {
     item.setActionView(new View(ApplicationProvider.getApplicationContext()));
     listener.expanded = true;
     item.collapseActionView();
@@ -89,7 +89,7 @@ public class RoboMenuItemTest {
   }
 
   @Test
-  public void methodsShouldReturnThis() throws Exception {
+  public void methodsShouldReturnThis() {
     item = item.setEnabled(true);
     assertThat(item).isNotNull();
     item = item.setOnMenuItemClickListener(null);
@@ -131,7 +131,7 @@ public class RoboMenuItemTest {
   }
 
   @Test
-  public void setIcon_shouldNullifyOnZero() throws Exception {
+  public void setIcon_shouldNullifyOnZero() {
     assertThat(item.getIcon()).isNull();
     item.setIcon(R.drawable.an_image);
     assertThat(shadowOf(item.getIcon()).getCreatedFromResId()).isEqualTo(R.drawable.an_image);
@@ -140,7 +140,7 @@ public class RoboMenuItemTest {
   }
 
   @Test
-  public void getIcon_shouldReturnDrawableFromSetIconDrawable() throws Exception {
+  public void getIcon_shouldReturnDrawableFromSetIconDrawable() {
     Drawable testDrawable =
         ApplicationProvider.getApplicationContext().getResources().getDrawable(R.drawable.an_image);
     assertThat(testDrawable).isNotNull();
@@ -150,14 +150,14 @@ public class RoboMenuItemTest {
   }
 
   @Test
-  public void getIcon_shouldReturnDrawableFromSetIconResourceId() throws Exception {
+  public void getIcon_shouldReturnDrawableFromSetIconResourceId() {
     assertThat(item.getIcon()).isNull();
     item.setIcon(R.drawable.an_other_image);
     assertThat(shadowOf(item.getIcon()).getCreatedFromResId()).isEqualTo(R.drawable.an_other_image);
   }
 
   @Test
-  public void setOnActionExpandListener_shouldReturnMenuItem() throws Exception {
+  public void setOnActionExpandListener_shouldReturnMenuItem() {
     assertThat(item.setOnActionExpandListener(listener)).isSameInstanceAs(item);
   }
 
