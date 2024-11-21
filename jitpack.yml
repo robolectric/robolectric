@@ -1,0 +1,4 @@
+before_install:
+  - sdkmanager "platforms;android-34"
+  - sdk install java 17-open
+  - sdk use java 17-open
