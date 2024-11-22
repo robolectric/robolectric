@@ -13,10 +13,10 @@ import android.provider.Settings.Secure;
 import android.view.accessibility.CaptioningManager;
 import android.view.accessibility.CaptioningManager.CaptionStyle;
 import android.view.accessibility.CaptioningManager.CaptioningChangeListener;
-import androidx.annotation.NonNull;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +55,7 @@ public final class ShadowCaptioningManagerTest {
     }
 
     @Override
-    public void onUserStyleChanged(@NonNull CaptionStyle userStyle) {
+    public void onUserStyleChanged(@Nonnull CaptionStyle userStyle) {
       captionStyle = userStyle;
     }
 

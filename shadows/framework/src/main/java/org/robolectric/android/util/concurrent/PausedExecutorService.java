@@ -1,6 +1,5 @@
 package org.robolectric.android.util.concurrent;
 
-import android.annotation.NonNull;
 import com.google.common.annotations.Beta;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AbstractFuture;
@@ -15,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.util.Logger;
 
@@ -159,7 +159,7 @@ public class PausedExecutorService extends AbstractExecutorService {
   }
 
   @Override
-  public void execute(@NonNull Runnable command) {
+  public void execute(@Nonnull Runnable command) {
     if (command instanceof DeferredTask) {
       deferredTasks.add(command);
     } else {

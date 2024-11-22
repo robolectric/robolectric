@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
-import android.annotation.Nullable;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable.Creator;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.VisualVoicemailSms;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;

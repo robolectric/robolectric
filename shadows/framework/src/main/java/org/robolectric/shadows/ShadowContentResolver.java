@@ -12,7 +12,6 @@ import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.accounts.Account;
-import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
@@ -50,6 +49,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
+import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -517,7 +517,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected @NonNull ContentProviderResult[] applyBatch(
+  protected @Nonnull ContentProviderResult[] applyBatch(
       String authority, ArrayList<ContentProviderOperation> operations)
       throws OperationApplicationException {
     ContentProvider provider = getProvider(authority, getContext());
@@ -655,7 +655,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected void takePersistableUriPermission(@NonNull Uri uri, int modeFlags) {
+  protected void takePersistableUriPermission(@Nonnull Uri uri, int modeFlags) {
     Objects.requireNonNull(uri, "uri may not be null");
     modeFlags &= (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
@@ -683,7 +683,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected void releasePersistableUriPermission(@NonNull Uri uri, int modeFlags) {
+  protected void releasePersistableUriPermission(@Nonnull Uri uri, int modeFlags) {
     Objects.requireNonNull(uri, "uri may not be null");
     modeFlags &= (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
@@ -717,12 +717,12 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  @NonNull
+  @Nonnull
   protected List<UriPermission> getPersistedUriPermissions() {
     return uriPermissions;
   }
 
-  private void addUriPermission(@NonNull Uri uri, int modeFlags) {
+  private void addUriPermission(@Nonnull Uri uri, int modeFlags) {
     UriPermission perm =
         ReflectionHelpers.callConstructor(
             UriPermission.class,

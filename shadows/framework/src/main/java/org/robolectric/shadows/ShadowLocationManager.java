@@ -12,7 +12,6 @@ import static android.provider.Settings.Secure.LOCATION_MODE_SENSORS_ONLY;
 import static android.provider.Settings.Secure.LOCATION_PROVIDERS_ALLOWED;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import android.annotation.Nullable;
 import android.annotation.RequiresApi;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
@@ -56,6 +55,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;

@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.Nullable;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.appwidget.AppWidgetHostView;
@@ -28,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

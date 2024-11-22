@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
-import android.annotation.Nullable;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraCharacteristics.Key;
 import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;

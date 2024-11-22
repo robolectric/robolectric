@@ -3,8 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.content.Context;
 import android.content.om.OverlayInfo;
 import android.content.om.OverlayManager;
@@ -12,6 +10,8 @@ import android.content.pm.PackageManager;
 import android.os.UserHandle;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -60,12 +60,12 @@ public final class ShadowOverlayManager {
   @Implementation
   @Nullable
   protected OverlayInfo getOverlayInfo(
-      @NonNull String packageName, @NonNull UserHandle userHandle) {
+      @Nonnull String packageName, @Nonnull UserHandle userHandle) {
     return overlaysByPackageName.get(packageName);
   }
 
   @Implementation
-  protected void setEnabled(@NonNull String packageName, boolean enable, @NonNull UserHandle user) {
+  protected void setEnabled(@Nonnull String packageName, boolean enable, @Nonnull UserHandle user) {
     checkPermission();
 
     OverlayInfo overlay = overlaysByPackageName.get(packageName);

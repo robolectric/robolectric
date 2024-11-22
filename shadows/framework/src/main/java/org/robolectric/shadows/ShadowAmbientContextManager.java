@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.annotation.Nullable;
 import android.app.PendingIntent;
 import android.app.ambientcontext.AmbientContextEventRequest;
 import android.app.ambientcontext.AmbientContextManager;
@@ -9,6 +8,7 @@ import com.android.internal.annotations.GuardedBy;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;

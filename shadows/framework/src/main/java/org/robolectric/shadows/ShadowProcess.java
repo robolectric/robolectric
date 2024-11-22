@@ -3,12 +3,12 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkArgument;
 
-import android.annotation.NonNull;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -191,7 +191,7 @@ public class ShadowProcess {
    *
    * @param processName New process name to set. Cannot be null.
    */
-  public static void setProcessName(@NonNull String processName) {
+  public static void setProcessName(@Nonnull String processName) {
     ShadowProcess.processName = processName;
   }
 }

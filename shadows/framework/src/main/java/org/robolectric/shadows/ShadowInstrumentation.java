@@ -14,7 +14,6 @@ import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.Fragment;
@@ -57,6 +56,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;

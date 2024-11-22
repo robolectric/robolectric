@@ -9,7 +9,6 @@ import static org.robolectric.shadows.ShadowView.useRealGraphics;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.FloatRange;
-import android.annotation.Nullable;
 import android.app.Instrumentation;
 import android.content.ClipData;
 import android.content.Context;
@@ -34,6 +33,7 @@ import java.io.Closeable;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;

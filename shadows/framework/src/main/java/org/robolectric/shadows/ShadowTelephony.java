@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
-import android.annotation.Nullable;
 import android.content.Context;
 import android.provider.Telephony;
 import android.provider.Telephony.Sms;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;

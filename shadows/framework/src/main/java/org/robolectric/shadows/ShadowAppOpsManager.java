@@ -10,8 +10,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.annotation.RequiresApi;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
@@ -50,6 +48,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
@@ -226,7 +226,7 @@ public class ShadowAppOpsManager {
   @Implementation(minSdk = Q)
   @HiddenApi
   @SystemApi
-  @NonNull
+  @Nonnull
   protected List<PackageOps> getPackagesForOps(@Nullable String[] ops) {
     List<PackageOps> result = null;
 

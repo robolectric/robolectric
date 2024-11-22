@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.content.res.ApkAssets;
 import android.content.res.AssetManager;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.InDevelopment;
@@ -83,7 +83,7 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
       /* Used only when locales is null or empty. */
       @Nullable String defaultLocale,
       /* At this moment, only the first element in locales is used and others are ignored. */
-      @NonNull String[] locales,
+      @Nonnull String[] locales,
       int orientation,
       int touchscreen,
       int density,
@@ -133,7 +133,7 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
   @Implementation(minSdk = V.SDK_INT)
   @InDevelopment
   protected static void nativeSetApkAssets(
-      long ptr, @NonNull ApkAssets[] apkAssets, boolean invalidateCaches, boolean preset) {
+      long ptr, @Nonnull ApkAssets[] apkAssets, boolean invalidateCaches, boolean preset) {
     nativeSetApkAssets(ptr, apkAssets, invalidateCaches);
   }
 }

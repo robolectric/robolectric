@@ -32,12 +32,12 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Xml;
 import androidx.annotation.IntegerRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import com.google.common.base.MoreObjects;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.junit.Assert;
 import org.robolectric.RuntimeEnvironment;
 import org.xmlpull.v1.XmlPullParser;
@@ -256,8 +256,8 @@ public final class DrawableTestUtils {
    * referred from the resource id, plus optionally {@code extras}, and "_golden"
    */
   static void saveAutoNamedVectorDrawableIntoPNG(
-      @NonNull Context context,
-      @NonNull Bitmap bitmap,
+      @Nonnull Context context,
+      @Nonnull Bitmap bitmap,
       @IntegerRes int resId,
       @Nullable String extras)
       throws IOException {
@@ -274,7 +274,7 @@ public final class DrawableTestUtils {
 
   /** Save a {@code bitmap} to the {@code fileFullName} plus "_golden". */
   static void saveVectorDrawableIntoPNG(
-      @NonNull Bitmap bitmap, @NonNull String outputFolder, @NonNull String fileFullName)
+      @Nonnull Bitmap bitmap, @Nonnull String outputFolder, @Nonnull String fileFullName)
       throws IOException {
     // Save the image to the disk.
     FileOutputStream out = null;

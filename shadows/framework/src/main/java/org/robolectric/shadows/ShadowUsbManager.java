@@ -9,7 +9,6 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.getStaticField;
 
-import android.annotation.Nullable;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.hardware.usb.UsbAccessory;
@@ -25,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;

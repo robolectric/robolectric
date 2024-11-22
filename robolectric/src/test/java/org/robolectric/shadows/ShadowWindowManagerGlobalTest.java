@@ -17,14 +17,14 @@ import android.view.ViewConfiguration;
 import android.window.BackEvent;
 import android.window.OnBackAnimationCallback;
 import android.window.OnBackInvokedDispatcher;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -252,12 +252,12 @@ public class ShadowWindowManagerGlobalTest {
     public boolean onBackCancelledCalled = false;
 
     @Override
-    public void onBackStarted(@NonNull BackEvent backEvent) {
+    public void onBackStarted(@Nonnull BackEvent backEvent) {
       onBackStarted = backEvent;
     }
 
     @Override
-    public void onBackProgressed(@NonNull BackEvent backEvent) {
+    public void onBackProgressed(@Nonnull BackEvent backEvent) {
       onBackProgressed.add(backEvent);
     }
 
