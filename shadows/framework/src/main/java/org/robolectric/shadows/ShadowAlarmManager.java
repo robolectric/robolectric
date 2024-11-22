@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.app.AlarmManager.RTC_WAKEUP;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.Nullable;
 import android.app.AlarmManager;
 import android.app.AlarmManager.AlarmClockInfo;
 import android.app.AlarmManager.OnAlarmListener;
@@ -24,6 +23,7 @@ import java.util.PriorityQueue;
 import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

@@ -2,9 +2,9 @@ package org.robolectric.shadows;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import android.annotation.NonNull;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
+import javax.annotation.Nonnull;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -21,7 +21,7 @@ public class SensorEventBuilder {
     return new SensorEventBuilder();
   }
 
-  public SensorEventBuilder setValues(@NonNull float[] value) {
+  public SensorEventBuilder setValues(@Nonnull float[] value) {
     values = value;
     return this;
   }
@@ -30,7 +30,7 @@ public class SensorEventBuilder {
    * If the 'type' property of Sensor is all that is important to your use case, an instance of from
    * ShadowSensor.newInstance(sensorType) should suffice.
    */
-  public SensorEventBuilder setSensor(@NonNull Sensor value) {
+  public SensorEventBuilder setSensor(@Nonnull Sensor value) {
     sourceSensor = value;
     return this;
   }

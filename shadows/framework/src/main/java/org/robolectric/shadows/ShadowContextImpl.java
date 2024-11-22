@@ -8,7 +8,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.app.ActivityThread;
 import android.app.LoadedApk;
@@ -40,6 +39,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

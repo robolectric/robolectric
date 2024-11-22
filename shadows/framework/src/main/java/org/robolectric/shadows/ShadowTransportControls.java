@@ -17,11 +17,11 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.Nullable;
 import android.media.Rating;
 import android.media.session.MediaController.TransportControls;
 import android.net.Uri;
 import android.os.Bundle;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

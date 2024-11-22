@@ -9,7 +9,6 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.Nullable;
 import android.annotation.RequiresApi;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -24,6 +23,7 @@ import android.view.Surface;
 import com.google.auto.value.AutoBuilder;
 import java.util.HashMap;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.internal.DisplayConfig;

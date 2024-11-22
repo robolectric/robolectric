@@ -8,7 +8,6 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 
-import android.annotation.NonNull;
 import android.app.AutomaticZenRule;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -30,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -425,7 +425,7 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = Q)
-  protected boolean canNotifyAsPackage(@NonNull String pkg) {
+  protected boolean canNotifyAsPackage(@Nonnull String pkg) {
     // TODO: This doesn't work correctly with notification delegates because
     // ShadowNotificationManager doesn't respect the associated context, it just uses the global
     // RuntimeEnvironment.getApplication() context.
@@ -443,7 +443,7 @@ public class ShadowNotificationManager {
    * @param otherPackage the package for which the current package can notify on behalf
    * @param canNotify whether the current package is set as notification delegate for 'otherPackage'
    */
-  public void setCanNotifyAsPackage(@NonNull String otherPackage, boolean canNotify) {
+  public void setCanNotifyAsPackage(@Nonnull String otherPackage, boolean canNotify) {
     if (canNotify) {
       canNotifyOnBehalfPackages.add(otherPackage);
     } else {

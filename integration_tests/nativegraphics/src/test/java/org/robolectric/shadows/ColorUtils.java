@@ -19,10 +19,10 @@ package org.robolectric.shadows;
 import static org.junit.Assert.fail;
 
 import android.graphics.Color;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import java.util.function.Function;
 import java.util.function.IntUnaryOperator;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public final class ColorUtils {
   public static void verifyColor(int expected, int observed) {
@@ -41,7 +41,7 @@ public final class ColorUtils {
    * @param observed Observed color.
    * @param tolerance Per-channel tolerance by which the color can mismatch.
    */
-  public static void verifyColor(@NonNull String s, int expected, int observed, int tolerance) {
+  public static void verifyColor(@Nonnull String s, int expected, int observed, int tolerance) {
     s +=
         " expected 0x"
             + Integer.toHexString(expected)
@@ -66,7 +66,7 @@ public final class ColorUtils {
    * @param tolerance Per-channel tolerance by which the color can mismatch.
    */
   public static void verifyColor(
-      @NonNull String msg, Color expected, Color observed, float tolerance) {
+      @Nonnull String msg, Color expected, Color observed, float tolerance) {
     if (!expected.getColorSpace().equals(observed.getColorSpace())) {
       fail(
           "Cannot compare Colors with different color spaces! expected: "
@@ -90,7 +90,7 @@ public final class ColorUtils {
   }
 
   private static void buildErrorString(
-      @NonNull String s,
+      @Nonnull String s,
       @Nullable String red,
       @Nullable String green,
       @Nullable String blue,

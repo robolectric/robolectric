@@ -9,8 +9,6 @@ import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
 import android.media.MediaCodec.CodecException;
@@ -31,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -461,7 +461,7 @@ public class ShadowMediaCodec {
    */
   @Implementation(maxSdk = TIRAMISU)
   protected void validateOutputByteBuffer(
-      @Nullable ByteBuffer[] buffers, int index, @NonNull BufferInfo info) {
+      @Nullable ByteBuffer[] buffers, int index, @Nonnull BufferInfo info) {
     if (buffers != null && index >= 0 && index < buffers.length) {
       Buffer buffer = (Buffer) buffers[index];
       if (buffer != null) {
@@ -472,7 +472,7 @@ public class ShadowMediaCodec {
 
   @Implementation(minSdk = U.SDK_INT)
   protected void validateOutputByteBufferLocked(
-      @Nullable ByteBuffer[] buffers, int index, @NonNull BufferInfo info) {
+      @Nullable ByteBuffer[] buffers, int index, @Nonnull BufferInfo info) {
     validateOutputByteBuffer(buffers, index, info);
   }
 

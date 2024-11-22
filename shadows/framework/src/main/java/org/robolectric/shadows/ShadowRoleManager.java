@@ -3,8 +3,6 @@ package org.robolectric.shadows;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.app.role.IRoleManager;
 import android.app.role.RoleManager;
 import android.content.Context;
@@ -16,6 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -68,7 +68,7 @@ public class ShadowRoleManager {
    * @return whether the calling application is holding the role
    */
   @Implementation
-  protected boolean isRoleHeld(@NonNull String roleName) {
+  protected boolean isRoleHeld(@Nonnull String roleName) {
     Preconditions.checkStringNotEmpty(roleName, "roleName cannot be null or empty");
     return context.getPackageName().equals(roleToHolder.get(roleName));
   }
@@ -79,13 +79,13 @@ public class ShadowRoleManager {
    *
    * <p>This method makes the role available as well.
    */
-  public void addHeldRole(@NonNull String roleName) {
+  public void addHeldRole(@Nonnull String roleName) {
     addAvailableRole(roleName);
     roleToHolder.put(roleName, context.getPackageName());
   }
 
   /* Remove a role previously added via {@link #addHeldRole(String)}. */
-  public void removeHeldRole(@NonNull String roleName) {
+  public void removeHeldRole(@Nonnull String roleName) {
     Preconditions.checkArgument(isRoleHeld(roleName), "the supplied roleName was never added.");
     roleToHolder.put(roleName, null);
   }
@@ -101,7 +101,7 @@ public class ShadowRoleManager {
    * @return whether the role is available
    */
   @Implementation
-  protected boolean isRoleAvailable(@NonNull String roleName) {
+  protected boolean isRoleAvailable(@Nonnull String roleName) {
     Preconditions.checkStringNotEmpty(roleName, "roleName cannot be null or empty");
     return roleToHolder.containsKey(roleName);
   }
@@ -110,7 +110,7 @@ public class ShadowRoleManager {
    * Add a role that will be recognized as available when invoking {@link
    * RoleManager#isRoleAvailable(String)}.
    */
-  public void addAvailableRole(@NonNull String roleName) {
+  public void addAvailableRole(@Nonnull String roleName) {
     Preconditions.checkStringNotEmpty(roleName, "roleName cannot be null or empty");
     if (!isRoleAvailable(roleName)) {
       roleToHolder.put(roleName, null);
@@ -118,7 +118,7 @@ public class ShadowRoleManager {
   }
 
   /* Remove a role previously added via {@link #addAvailableRole(String)}. */
-  public void removeAvailableRole(@NonNull String roleName) {
+  public void removeAvailableRole(@Nonnull String roleName) {
     Preconditions.checkArgument(
         roleToHolder.containsKey(roleName), "the supplied roleName was never added.");
     roleToHolder.remove(roleName);
@@ -126,17 +126,17 @@ public class ShadowRoleManager {
 
   @Nullable
   @Implementation(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-  protected String getDefaultApplication(@NonNull String roleName) {
+  protected String getDefaultApplication(@Nonnull String roleName) {
     return roleToHolder.get(roleName);
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
   protected void setDefaultApplication(
-      @NonNull String roleName,
+      @Nonnull String roleName,
       @Nullable String packageName,
       int flags,
-      @NonNull Executor executor,
-      @NonNull Consumer<Boolean> callback) {
+      @Nonnull Executor executor,
+      @Nonnull Consumer<Boolean> callback) {
     Preconditions.checkArgument(
         Arrays.asList(DEFAULT_APPLICATION_ROLES).contains(roleName),
         "the supplied roleName in not a default app.");

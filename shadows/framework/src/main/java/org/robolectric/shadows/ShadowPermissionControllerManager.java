@@ -6,7 +6,6 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplicationPackageManager.PERMISSION_CONTROLLER_PACKAGE_NAME;
 
 import android.annotation.CallbackExecutor;
-import android.annotation.NonNull;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -24,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nonnull;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -41,7 +41,7 @@ public class ShadowPermissionControllerManager {
   @RealObject PermissionControllerManager realObject;
 
   @Implementation
-  protected void __constructor__(@NonNull Context context, @NonNull Handler handler) {
+  protected void __constructor__(@Nonnull Context context, @Nonnull Handler handler) {
     packageManager = context.getPackageManager();
     if (resolveInfoRegistered.compareAndSet(false, true)) {
       ensureResolveInfoRegistered();
@@ -63,11 +63,11 @@ public class ShadowPermissionControllerManager {
    */
   @Implementation
   protected void revokeRuntimePermissions(
-      @NonNull Map<String, List<String>> request,
+      @Nonnull Map<String, List<String>> request,
       boolean doDryRun,
       @Reason int reason,
-      @NonNull @CallbackExecutor Executor executor,
-      @NonNull OnRevokeRuntimePermissionsCallback callback) {
+      @Nonnull @CallbackExecutor Executor executor,
+      @Nonnull OnRevokeRuntimePermissionsCallback callback) {
     if (doDryRun) {
       throw new UnsupportedOperationException("Dry run not implemented");
     }

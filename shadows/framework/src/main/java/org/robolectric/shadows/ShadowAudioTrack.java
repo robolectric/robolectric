@@ -12,8 +12,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.annotation.RequiresApi;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
@@ -36,6 +34,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -125,7 +125,7 @@ public class ShadowAudioTrack {
    * @param attr The {@link AudioAttributes}.
    */
   public static void addDirectPlaybackSupport(
-      @NonNull AudioFormat format, @NonNull AudioAttributes attr) {
+      @Nonnull AudioFormat format, @Nonnull AudioAttributes attr) {
     checkNotNull(format);
     checkNotNull(attr);
     checkArgument(!isPcm(format.getEncoding()));
@@ -287,12 +287,12 @@ public class ShadowAudioTrack {
       int buffSizeInBytes,
       int mode,
       int[] sessionId,
-      @NonNull Parcel attributionSource,
+      @Nonnull Parcel attributionSource,
       long nativeAudioTrack,
       boolean offload,
       int encapsulationMode,
       Object tunerConfiguration,
-      @NonNull String opPackageName) {
+      @Nonnull String opPackageName) {
     // If offload, AudioTrack.Builder.build() has checked offload support via AudioSystem.
     if (!offload && !isPcm(audioFormat) && !allowedNonPcmEncodings.contains(audioFormat)) {
       return AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED;
@@ -364,7 +364,7 @@ public class ShadowAudioTrack {
 
   @Implementation(minSdk = N)
   protected void addOnRoutingChangedListener(
-      @NonNull OnRoutingChangedListener listener, Handler handler) {
+      @Nonnull OnRoutingChangedListener listener, Handler handler) {
     OnRoutingChangedListenerInfo listenerInfo =
         new OnRoutingChangedListenerInfo(listener, audioTrack, handler);
     onRoutingChangedListeners.add(listenerInfo);
@@ -374,18 +374,18 @@ public class ShadowAudioTrack {
   }
 
   @Implementation(minSdk = N)
-  protected void removeOnRoutingChangedListener(@NonNull OnRoutingChangedListener listener) {
+  protected void removeOnRoutingChangedListener(@Nonnull OnRoutingChangedListener listener) {
     onRoutingChangedListeners.removeIf(
         registeredListener -> registeredListener.listener.equals(listener));
   }
 
   @Implementation(minSdk = M)
-  public void setPlaybackParams(@NonNull PlaybackParams params) {
+  public void setPlaybackParams(@Nonnull PlaybackParams params) {
     playbackParams = checkNotNull(params, "Illegal null params");
   }
 
   @Implementation(minSdk = M)
-  @NonNull
+  @Nonnull
   protected PlaybackParams getPlaybackParams() {
     return playbackParams;
   }

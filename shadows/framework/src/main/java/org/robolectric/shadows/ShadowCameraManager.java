@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.NonNull;
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
@@ -23,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -88,15 +88,15 @@ public class ShadowCameraManager {
   }
 
   @Implementation
-  @NonNull
+  @Nonnull
   protected String[] getCameraIdList() throws CameraAccessException {
     Set<String> cameraIds = cameraIdToCharacteristics.keySet();
     return cameraIds.toArray(new String[0]);
   }
 
   @Implementation
-  @NonNull
-  protected CameraCharacteristics getCameraCharacteristics(@NonNull String cameraId) {
+  @Nonnull
+  protected CameraCharacteristics getCameraCharacteristics(@Nonnull String cameraId) {
     Preconditions.checkNotNull(cameraId);
     CameraCharacteristics characteristics = cameraIdToCharacteristics.get(cameraId);
     Preconditions.checkArgument(characteristics != null);
@@ -104,7 +104,7 @@ public class ShadowCameraManager {
   }
 
   @Implementation(minSdk = VERSION_CODES.M)
-  protected void setTorchMode(@NonNull String cameraId, boolean enabled) {
+  protected void setTorchMode(@Nonnull String cameraId, boolean enabled) {
     Preconditions.checkNotNull(cameraId);
     Preconditions.checkArgument(cameraIdToCharacteristics.keySet().contains(cameraId));
     cameraTorches.put(cameraId, enabled);
@@ -313,7 +313,7 @@ public class ShadowCameraManager {
    * Calls all registered callbacks's onCameraAvailable method. This is a no-op if no callbacks are
    * registered.
    */
-  private void triggerOnCameraAvailable(@NonNull String cameraId) {
+  private void triggerOnCameraAvailable(@Nonnull String cameraId) {
     Preconditions.checkNotNull(cameraId);
     for (CameraManager.AvailabilityCallback callback : registeredCallbacks) {
       callback.onCameraAvailable(cameraId);
@@ -324,7 +324,7 @@ public class ShadowCameraManager {
    * Calls all registered callbacks's onCameraUnavailable method. This is a no-op if no callbacks
    * are registered.
    */
-  private void triggerOnCameraUnavailable(@NonNull String cameraId) {
+  private void triggerOnCameraUnavailable(@Nonnull String cameraId) {
     Preconditions.checkNotNull(cameraId);
     for (CameraManager.AvailabilityCallback callback : registeredCallbacks) {
       callback.onCameraUnavailable(cameraId);
@@ -338,7 +338,7 @@ public class ShadowCameraManager {
    *
    * @throws IllegalArgumentException if there's already an existing camera with the given id.
    */
-  public void addCamera(@NonNull String cameraId, @NonNull CameraCharacteristics characteristics) {
+  public void addCamera(@Nonnull String cameraId, @Nonnull CameraCharacteristics characteristics) {
     Preconditions.checkNotNull(cameraId);
     Preconditions.checkNotNull(characteristics);
     Preconditions.checkArgument(!cameraIdToCharacteristics.containsKey(cameraId));
@@ -352,7 +352,7 @@ public class ShadowCameraManager {
    *
    * @throws IllegalArgumentException if there is not an existing camera with the given id.
    */
-  public void removeCamera(@NonNull String cameraId) {
+  public void removeCamera(@Nonnull String cameraId) {
     Preconditions.checkNotNull(cameraId);
     Preconditions.checkArgument(cameraIdToCharacteristics.containsKey(cameraId));
 
@@ -361,7 +361,7 @@ public class ShadowCameraManager {
   }
 
   /** Returns what the supplied camera's torch is set to. */
-  public boolean getTorchMode(@NonNull String cameraId) {
+  public boolean getTorchMode(@Nonnull String cameraId) {
     Preconditions.checkNotNull(cameraId);
     Preconditions.checkArgument(cameraIdToCharacteristics.keySet().contains(cameraId));
     Boolean torchState = cameraTorches.get(cameraId);

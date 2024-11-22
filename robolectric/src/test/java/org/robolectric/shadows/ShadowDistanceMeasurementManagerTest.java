@@ -14,13 +14,13 @@ import android.bluetooth.le.DistanceMeasurementParams;
 import android.bluetooth.le.DistanceMeasurementResult;
 import android.bluetooth.le.DistanceMeasurementSession;
 import android.content.Context;
-import androidx.annotation.NonNull;
 import androidx.test.core.app.ApplicationProvider;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,7 +53,7 @@ public class ShadowDistanceMeasurementManagerTest {
   private final Object distanceMeasurementSessionCallback =
       new DistanceMeasurementSession.Callback() {
         @Override
-        public void onStarted(@NonNull DistanceMeasurementSession session) {
+        public void onStarted(@Nonnull DistanceMeasurementSession session) {
           startedDistanceMeasurementSession = session;
         }
 
@@ -63,13 +63,13 @@ public class ShadowDistanceMeasurementManagerTest {
         }
 
         @Override
-        public void onStopped(@NonNull DistanceMeasurementSession session, int reason) {
+        public void onStopped(@Nonnull DistanceMeasurementSession session, int reason) {
           onStoppedReason = reason;
         }
 
         @Override
         public void onResult(
-            @NonNull BluetoothDevice device, @NonNull DistanceMeasurementResult result) {
+            @Nonnull BluetoothDevice device, @Nonnull DistanceMeasurementResult result) {
           distanceMeasurementResults.add(result);
         }
       };

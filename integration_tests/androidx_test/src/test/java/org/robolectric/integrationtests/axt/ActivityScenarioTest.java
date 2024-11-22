@@ -12,8 +12,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Looper;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.R;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -25,6 +23,8 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -123,10 +123,10 @@ public class ActivityScenarioTest {
 
   public static class CustomAppComponentFactory extends AppComponentFactory {
 
-    @NonNull
+    @Nonnull
     @Override
     public Activity instantiateActivity(
-        @NonNull ClassLoader cl, @NonNull String className, @Nullable Intent intent)
+        @Nonnull ClassLoader cl, @Nonnull String className, @Nullable Intent intent)
         throws ClassNotFoundException, IllegalAccessException, InstantiationException {
       if (className.contains(ActivityWithCustomConstructor.class.getName())) {
         return new ActivityWithCustomConstructor(100);

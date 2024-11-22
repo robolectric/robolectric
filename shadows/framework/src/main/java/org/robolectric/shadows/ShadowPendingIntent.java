@@ -12,7 +12,6 @@ import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityThread;
@@ -33,6 +32,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
@@ -69,7 +69,7 @@ public class ShadowPendingIntent {
 
   @RealObject private PendingIntent realPendingIntent;
 
-  @NonNull private Intent[] savedIntents;
+  @Nonnull private Intent[] savedIntents;
   private Context savedContext;
   private Type type;
   private int requestCode;
@@ -88,43 +88,43 @@ public class ShadowPendingIntent {
 
   @Implementation
   protected static PendingIntent getActivity(
-      Context context, int requestCode, @NonNull Intent intent, int flags) {
+      Context context, int requestCode, @Nonnull Intent intent, int flags) {
     return create(context, new Intent[] {intent}, Type.ACTIVITY, requestCode, flags, null);
   }
 
   @Implementation
   protected static PendingIntent getActivity(
-      Context context, int requestCode, @NonNull Intent intent, int flags, Bundle options) {
+      Context context, int requestCode, @Nonnull Intent intent, int flags, Bundle options) {
     return create(context, new Intent[] {intent}, Type.ACTIVITY, requestCode, flags, options);
   }
 
   @Implementation
   protected static PendingIntent getActivities(
-      Context context, int requestCode, @NonNull Intent[] intents, int flags) {
+      Context context, int requestCode, @Nonnull Intent[] intents, int flags) {
     return create(context, intents, Type.ACTIVITY, requestCode, flags, null);
   }
 
   @Implementation
   protected static PendingIntent getActivities(
-      Context context, int requestCode, @NonNull Intent[] intents, int flags, Bundle options) {
+      Context context, int requestCode, @Nonnull Intent[] intents, int flags, Bundle options) {
     return create(context, intents, Type.ACTIVITY, requestCode, flags, options);
   }
 
   @Implementation
   protected static PendingIntent getBroadcast(
-      Context context, int requestCode, @NonNull Intent intent, int flags) {
+      Context context, int requestCode, @Nonnull Intent intent, int flags) {
     return create(context, new Intent[] {intent}, Type.BROADCAST, requestCode, flags, null);
   }
 
   @Implementation
   protected static PendingIntent getService(
-      Context context, int requestCode, @NonNull Intent intent, int flags) {
+      Context context, int requestCode, @Nonnull Intent intent, int flags) {
     return create(context, new Intent[] {intent}, Type.SERVICE, requestCode, flags, null);
   }
 
   @Implementation(minSdk = O)
   protected static PendingIntent getForegroundService(
-      Context context, int requestCode, @NonNull Intent intent, int flags) {
+      Context context, int requestCode, @Nonnull Intent intent, int flags) {
     return create(
         context, new Intent[] {intent}, Type.FOREGROUND_SERVICE, requestCode, flags, null);
   }
@@ -541,7 +541,7 @@ public class ShadowPendingIntent {
 
   @Implementation
   @Nullable
-  public static PendingIntent readPendingIntentOrNullFromParcel(@NonNull Parcel in) {
+  public static PendingIntent readPendingIntentOrNullFromParcel(@Nonnull Parcel in) {
     int intentIndex = in.readInt();
     if (intentIndex == NULL_PENDING_INTENT_VALUE) {
       return null;
@@ -551,7 +551,7 @@ public class ShadowPendingIntent {
 
   @Implementation
   public static void writePendingIntentOrNullToParcel(
-      @Nullable PendingIntent sender, @NonNull Parcel out) {
+      @Nullable PendingIntent sender, @Nonnull Parcel out) {
     if (sender == null) {
       out.writeInt(NULL_PENDING_INTENT_VALUE);
       return;

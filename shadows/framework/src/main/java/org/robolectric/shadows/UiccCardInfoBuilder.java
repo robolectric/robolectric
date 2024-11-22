@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.annotation.NonNull;
 import android.annotation.RequiresApi;
 import android.os.Build.VERSION_CODES;
 import android.telephony.UiccCardInfo;
@@ -8,6 +7,7 @@ import android.telephony.UiccPortInfo;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -76,7 +76,7 @@ public class UiccCardInfoBuilder {
 
   @CanIgnoreReturnValue
   @RequiresApi(VERSION_CODES.TIRAMISU)
-  public UiccCardInfoBuilder setPorts(@NonNull List<UiccPortInfo> portList) {
+  public UiccCardInfoBuilder setPorts(@Nonnull List<UiccPortInfo> portList) {
     this.portList = portList;
     return this;
   }

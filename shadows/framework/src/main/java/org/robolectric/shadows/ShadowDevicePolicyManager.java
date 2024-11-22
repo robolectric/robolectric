@@ -20,8 +20,6 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.accounts.Account;
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
@@ -65,6 +63,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
@@ -1372,7 +1372,7 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  protected boolean hasGrantedPolicy(@NonNull ComponentName admin, int usesPolicy) {
+  protected boolean hasGrantedPolicy(@Nonnull ComponentName admin, int usesPolicy) {
     enforceActiveAdmin(admin);
     Set<Integer> policyGrantedSet = adminPolicyGrantedMap.get(admin);
     return policyGrantedSet != null && policyGrantedSet.contains(usesPolicy);
@@ -1404,38 +1404,38 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  protected void setLockTaskPackages(@NonNull ComponentName admin, String[] packages) {
+  protected void setLockTaskPackages(@Nonnull ComponentName admin, String[] packages) {
     enforceDeviceOwnerOrProfileOwner(admin);
     lockTaskPackages.clear();
     Collections.addAll(lockTaskPackages, packages);
   }
 
   @Implementation
-  protected String[] getLockTaskPackages(@NonNull ComponentName admin) {
+  protected String[] getLockTaskPackages(@Nonnull ComponentName admin) {
     enforceDeviceOwnerOrProfileOwner(admin);
     return lockTaskPackages.toArray(new String[0]);
   }
 
   @Implementation
-  protected boolean isLockTaskPermitted(@NonNull String pkg) {
+  protected boolean isLockTaskPermitted(@Nonnull String pkg) {
     return lockTaskPackages.contains(pkg);
   }
 
   @Implementation(minSdk = O)
-  protected void setAffiliationIds(@NonNull ComponentName admin, @NonNull Set<String> ids) {
+  protected void setAffiliationIds(@Nonnull ComponentName admin, @Nonnull Set<String> ids) {
     enforceDeviceOwnerOrProfileOwner(admin);
     affiliationIds.clear();
     affiliationIds.addAll(ids);
   }
 
   @Implementation(minSdk = O)
-  protected Set<String> getAffiliationIds(@NonNull ComponentName admin) {
+  protected Set<String> getAffiliationIds(@Nonnull ComponentName admin) {
     enforceDeviceOwnerOrProfileOwner(admin);
     return affiliationIds;
   }
 
   @Implementation(minSdk = M)
-  protected void setPermissionPolicy(@NonNull ComponentName admin, int policy) {
+  protected void setPermissionPolicy(@Nonnull ComponentName admin, int policy) {
     enforceDeviceOwnerOrProfileOwner(admin);
     permissionPolicy = policy;
   }
@@ -1453,7 +1453,7 @@ public class ShadowDevicePolicyManager {
    *     be an active administrator, or an exception will be thrown. This value must never be null.
    * @param usesPolicy the uses-policy to check
    */
-  public void grantPolicy(@NonNull ComponentName admin, int usesPolicy) {
+  public void grantPolicy(@Nonnull ComponentName admin, int usesPolicy) {
     enforceActiveAdmin(admin);
     Set<Integer> policyGrantedSet = adminPolicyGrantedMap.get(admin);
     if (policyGrantedSet == null) {

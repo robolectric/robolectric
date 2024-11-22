@@ -10,7 +10,6 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.base.Verify.verifyNotNull;
 
-import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
@@ -39,6 +38,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.robolectric.android.controller.ServiceController;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;

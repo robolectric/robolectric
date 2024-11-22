@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
-import android.annotation.Nullable;
 import android.app.backup.BackupDataOutput;
 import com.google.common.collect.ImmutableList;
 import java.io.FileDescriptor;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.ReflectorObject;
