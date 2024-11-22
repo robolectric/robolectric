@@ -888,22 +888,6 @@ public class ShadowInstrumentation {
         intent, /* userHandle= */ null, /* receiverPermission= */ null, context);
   }
 
-  Intent registerReceiver(
-      BroadcastReceiver receiver, IntentFilter filter, int flags, Context context) {
-    return registerReceiver(receiver, filter, null, null, flags, context);
-  }
-
-  Intent registerReceiver(
-      BroadcastReceiver receiver,
-      IntentFilter filter,
-      String broadcastPermission,
-      Handler scheduler,
-      int flags,
-      Context context) {
-    return registerReceiverWithContext(
-        receiver, filter, broadcastPermission, scheduler, flags, context);
-  }
-
   Intent registerReceiverWithContext(
       BroadcastReceiver receiver,
       IntentFilter filter,
