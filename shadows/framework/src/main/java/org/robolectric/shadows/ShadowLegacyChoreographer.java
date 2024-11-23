@@ -182,5 +182,7 @@ public class ShadowLegacyChoreographer extends ShadowChoreographer {
     }
     instance = makeThreadLocal();
     FRAME_INTERVAL = Duration.ofMillis(10).toNanos();
+    postCallbackDelayMillis = 0;
+    postFrameCallbackDelayMillis = 0;
   }
 }

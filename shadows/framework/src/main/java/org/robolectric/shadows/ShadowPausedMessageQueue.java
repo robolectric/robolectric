@@ -4,8 +4,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Looper;
@@ -25,7 +23,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowMessage.MessageReflector;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -54,7 +51,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   // versions
   @Implementation
   protected void __constructor__(boolean quitAllowed) {
-    invokeConstructor(MessageQueue.class, realQueue, from(boolean.class, quitAllowed));
+    reflector(MessageQueueReflector.class, realQueue).__constructor__(quitAllowed);
     long ptr = nativeQueueRegistry.register(this);
     reflector(MessageQueueReflector.class, realQueue).setPtr(ptr);
     clockListener =
@@ -123,13 +120,13 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     // mark the queue as blocked and wait on a new message.
     synchronized (realQueue) {
       if (isIdle()) {
-        ReflectionHelpers.setField(realQueue, "mBlocked", true);
+        reflector(MessageQueueReflector.class, realQueue).setBlocked(true);
         try {
           realQueue.wait(timeout);
         } catch (InterruptedException ignored) {
           // Fall through and unblock with no messages.
         } finally {
-          ReflectionHelpers.setField(realQueue, "mBlocked", false);
+          reflector(MessageQueueReflector.class, realQueue).setBlocked(false);
         }
       }
     }
@@ -438,6 +435,9 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   @ForType(MessageQueue.class)
   private interface MessageQueueReflector {
     @Direct
+    void __constructor__(boolean quitAllowed);
+
+    @Direct
     boolean enqueueMessage(Message msg, long when);
 
     Message next();
@@ -477,5 +477,8 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
     @Accessor("mAsyncMessageCount")
     void setAsyncMessageCount(int asyncMessageCount);
+
+    @Accessor("mBlocked")
+    void setBlocked(boolean blocked);
   }
 }

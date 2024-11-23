@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static android.content.Intent.ACTION_SCREEN_ON;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -50,6 +49,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow of PowerManager */
@@ -91,8 +91,8 @@ public class ShadowPowerManager {
 
   @Implementation
   protected PowerManager.WakeLock newWakeLock(int flags, String tag) {
-    PowerManager.WakeLock wl = Shadow.newInstanceOf(PowerManager.WakeLock.class);
-    ((ShadowWakeLock) Shadow.extract(wl)).setTag(tag);
+    PowerManager.WakeLock wl =
+        reflector(PowerManagerReflector.class, realPowerManager).newWakeLock(flags, tag);
     latestWakeLock = wl;
     return wl;
   }
@@ -462,10 +462,11 @@ public class ShadowPowerManager {
 
   @Implements(PowerManager.WakeLock.class)
   public static class ShadowWakeLock {
+    @RealObject private PowerManager.WakeLock realWakeLock;
+
     private boolean refCounted = true;
     private WorkSource workSource = null;
     private int timesHeld = 0;
-    private String tag = null;
     private List<Optional<Long>> timeoutTimestampList = new ArrayList<>();
 
     private void acquireInternal(Optional<Long> timeoutOptional) {
@@ -570,18 +571,18 @@ public class ShadowPowerManager {
     @HiddenApi
     @Implementation(minSdk = O)
     public String getTag() {
-      return tag;
+      return reflector(WakeLockReflector.class, realWakeLock).getTag();
     }
 
-    /** Sets the tag. */
-    @Implementation(minSdk = LOLLIPOP_MR1)
-    protected void setTag(String tag) {
-      this.tag = tag;
+    @ForType(PowerManager.WakeLock.class)
+    private interface WakeLockReflector {
+      @Accessor("mTag")
+      String getTag();
     }
   }
 
   private Context getContext() {
-    return reflector(ReflectorPowerManager.class, realPowerManager).getContext();
+    return reflector(PowerManagerReflector.class, realPowerManager).getContext();
   }
 
   @Implementation(minSdk = TIRAMISU)
@@ -679,9 +680,12 @@ public class ShadowPowerManager {
 
   /** Reflector interface for {@link PowerManager}'s internals. */
   @ForType(PowerManager.class)
-  private interface ReflectorPowerManager {
+  private interface PowerManagerReflector {
 
     @Accessor("mContext")
     Context getContext();
+
+    @Direct
+    WakeLock newWakeLock(int flags, String tag);
   }
 }

@@ -59,6 +59,11 @@ public class ShadowSurface {
   }
 
   @Implementation
+  protected void checkNotReleasedLocked() {
+    checkNotReleased();
+  }
+
+  @Implementation
   protected boolean isValid() {
     return valid.get();
   }

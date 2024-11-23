@@ -148,6 +148,10 @@ public class ShadowDisplayManagerGlobal {
     mDm.removeDisplay(displayId);
   }
 
+  SystemUi getSystemUi(int displayId) {
+    return mDm.getSystemUi(displayId);
+  }
+
   /**
    * A delegating proxy for the IDisplayManager system service.
    *
@@ -157,6 +161,7 @@ public class ShadowDisplayManagerGlobal {
    */
   private static class DisplayManagerProxyDelegate {
     private final TreeMap<Integer, DisplayInfo> displayInfos = new TreeMap<>();
+    private final Map<Integer, SystemUi> systemUis = new HashMap<>();
     private int nextDisplayId = 0;
     private final List<IDisplayManagerCallback> callbacks = new ArrayList<>();
     private final Map<IVirtualDisplayCallback, Integer> virtualDisplayIds = new HashMap<>();
@@ -181,6 +186,10 @@ public class ShadowDisplayManagerGlobal {
     @SuppressWarnings("unused")
     public int[] getDisplayIds(boolean ignoredIncludeDisabled) {
       return getDisplayIds();
+    }
+
+    public SystemUi getSystemUi(int displayId) {
+      return systemUis.get(displayId);
     }
 
     // @Override
@@ -299,6 +308,7 @@ public class ShadowDisplayManagerGlobal {
       if (RuntimeEnvironment.getApiLevel() >= Q) {
         displayInfo.displayId = nextId;
       }
+      systemUis.put(nextId, new SystemUi(nextId));
       notifyListeners(nextId, DisplayManagerGlobal.EVENT_DISPLAY_ADDED);
       return nextId;
     }
@@ -318,6 +328,7 @@ public class ShadowDisplayManagerGlobal {
       }
 
       displayInfos.remove(displayId);
+      systemUis.remove(displayId);
       notifyListeners(displayId, DisplayManagerGlobal.EVENT_DISPLAY_REMOVED);
     }
 

@@ -10,6 +10,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.content.Context;
 import android.graphics.Insets;
 import android.graphics.Rect;
+import android.util.SparseIntArray;
 import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.InsetsState;
@@ -82,13 +83,13 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
           insetsState,
           "calculateInsets",
           ClassParameter.from(Rect.class, bounds),
-          null,
+          ClassParameter.from(InsetsState.class, null),
           ClassParameter.from(Boolean.TYPE, isScreenRound),
           ClassParameter.from(Boolean.TYPE, alwaysConsumeSystemBars),
-          ClassParameter.from(DisplayCutout.ParcelableWrapper.class, displayCutout.get()),
+          ClassParameter.from(DisplayCutout.class, displayCutout.get()),
           ClassParameter.from(int.class, SOFT_INPUT_ADJUST_NOTHING),
           ClassParameter.from(int.class, SYSTEM_UI_FLAG_VISIBLE),
-          null);
+          ClassParameter.from(SparseIntArray.class, null));
     } else {
       return new WindowInsets.Builder()
           .setAlwaysConsumeSystemBars(alwaysConsumeSystemBars)

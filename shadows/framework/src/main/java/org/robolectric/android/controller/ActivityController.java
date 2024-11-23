@@ -234,7 +234,6 @@ public class ActivityController<T extends Activity>
     // root can be null if activity does not have content attached, or if looper is paused.
     // this is unusual but leave the check here for legacy compatibility
     if (root != null) {
-      callDispatchResized(root);
       shadowMainLooper.idleIfPaused();
     }
     return this;

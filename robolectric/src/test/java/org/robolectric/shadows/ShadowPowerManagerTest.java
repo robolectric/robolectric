@@ -56,7 +56,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void acquire_shouldAcquireAndReleaseReferenceCountedLock() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TAG");
     assertThat(lock.isHeld()).isFalse();
     lock.acquire();
     assertThat(lock.isHeld()).isTrue();
@@ -88,7 +88,7 @@ public class ShadowPowerManagerTest {
     ShadowPowerManager.reset();
     assertThat(ShadowPowerManager.getLatestWakeLock()).isNull();
 
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TAG");
     lock.acquire();
 
     assertThat(ShadowPowerManager.getLatestWakeLock()).isNotNull();
@@ -107,18 +107,18 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void newWakeLock_shouldCreateWakeLock() {
-    assertThat(powerManager.newWakeLock(0, "TAG")).isNotNull();
+    assertThat(powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TAG")).isNotNull();
   }
 
   @Test
   public void newWakeLock_shouldSetWakeLockTag() {
-    PowerManager.WakeLock wakeLock = powerManager.newWakeLock(0, "FOO");
+    PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "FOO");
     assertThat(shadowOf(wakeLock).getTag()).isEqualTo("FOO");
   }
 
   @Test
   public void newWakeLock_shouldAcquireAndReleaseNonReferenceCountedLock() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TAG");
     lock.setReferenceCounted(false);
 
     assertThat(lock.isHeld()).isFalse();
@@ -134,7 +134,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void newWakeLock_shouldThrowRuntimeExceptionIfLockIsUnderlocked() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TAG");
     try {
       lock.release();
       fail();
@@ -156,7 +156,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void isReferenceCounted_shouldGetAndSet() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TAG");
     assertThat(shadowOf(lock).isReferenceCounted()).isTrue();
     lock.setReferenceCounted(false);
     assertThat(shadowOf(lock).isReferenceCounted()).isFalse();
@@ -229,7 +229,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void workSource_shouldGetAndSet() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TAG");
     WorkSource workSource = new WorkSource();
     assertThat(shadowOf(lock).getWorkSource()).isNull();
     lock.setWorkSource(workSource);
@@ -294,7 +294,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void acquire_shouldIncreaseTimesHeld() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TAG");
 
     assertThat(shadowOf(lock).getTimesHeld()).isEqualTo(0);
 
@@ -307,7 +307,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void release_shouldNotDecreaseTimesHeld() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TAG");
     lock.acquire();
     lock.acquire();
 
@@ -474,7 +474,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void releaseWithFlags() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TAG");
     lock.acquire();
 
     lock.release(PowerManager.RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY);
@@ -484,7 +484,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void release() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TAG");
     lock.acquire();
 
     lock.release();
@@ -538,7 +538,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void isHeld_neverAcquired_returnsFalse() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TIMEOUT");
     lock.setReferenceCounted(false);
 
     assertThat(lock.isHeld()).isFalse();
@@ -546,7 +546,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void isHeld_wakeLockTimeout_returnsFalse() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TIMEOUT");
     lock.setReferenceCounted(false);
 
     lock.acquire(100);
@@ -557,7 +557,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void isHeld_wakeLockJustTimeout_returnsTrue() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TIMEOUT");
     lock.setReferenceCounted(false);
 
     lock.acquire(100);
@@ -568,7 +568,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void isHeld_wakeLockNotTimeout_returnsTrue() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TIMEOUT");
     lock.setReferenceCounted(false);
 
     lock.acquire(100);
@@ -579,7 +579,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void isHeld_unlimitedWakeLockAcquired_returnsTrue() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TIMEOUT");
     lock.setReferenceCounted(false);
 
     lock.acquire();
@@ -590,7 +590,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void release_isRefCounted_dequeueTheSmallestTimeoutLock() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TIMEOUT");
 
     // There are 2 wake lock acquires when calling release(). The wake lock with the smallest
     // timeout timestamp is release first.
@@ -604,7 +604,7 @@ public class ShadowPowerManagerTest {
 
   @Test
   public void release_isRefCounted_dequeueTimeoutLockBeforeUnlimited() {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TIMEOUT");
 
     // There are 2 wake lock acquires when calling release(). The lock with timeout 100ms will be
     // released first.

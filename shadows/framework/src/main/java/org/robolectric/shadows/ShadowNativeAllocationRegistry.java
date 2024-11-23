@@ -15,8 +15,8 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link NativeAllocationRegistry} that is backed by native code */
 @Implements(
@@ -36,7 +36,7 @@ public class ShadowNativeAllocationRegistry {
    * behavior of actual class.
    */
   @InDevelopment
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = Baklava.SDK_INT)
   protected void __constructor__(
       ClassLoader classLoader,
       Class clazz,

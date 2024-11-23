@@ -18,7 +18,6 @@ import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.view.accessibility.AccessibilityWindowInfo;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,13 +35,7 @@ public class ShadowAccessibilityNodeInfoTest {
   @Before
   public void setUp() {
     ShadowAccessibilityNodeInfo.resetObtainedInstances();
-    assertThat(ShadowAccessibilityNodeInfo.areThereUnrecycledNodes(true)).isEqualTo(false);
     node = AccessibilityNodeInfo.obtain();
-  }
-
-  @Test
-  public void shouldHaveObtainedNode() {
-    assertThat(ShadowAccessibilityNodeInfo.areThereUnrecycledNodes(false)).isEqualTo(true);
   }
 
   @Test
@@ -321,11 +314,5 @@ public class ShadowAccessibilityNodeInfoTest {
     assertThat(node.isSealed()).isTrue();
     AccessibilityNodeInfo node2 = AccessibilityNodeInfo.obtain(node);
     assertThat(node2.isSealed()).isTrue();
-  }
-
-  @After
-  public void tearDown() {
-    ShadowAccessibilityNodeInfo.resetObtainedInstances();
-    assertThat(ShadowAccessibilityNodeInfo.areThereUnrecycledNodes(true)).isEqualTo(false);
   }
 }

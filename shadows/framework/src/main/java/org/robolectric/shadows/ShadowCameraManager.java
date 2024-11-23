@@ -27,7 +27,6 @@ import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
@@ -36,6 +35,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
@@ -138,14 +138,14 @@ public class ShadowCameraManager {
   // in development API has reverted back to the T signature. Just use a different method name
   // to avoid conflicts.
   // TODO: increment this to  minSdk next-SDK-after-V once V is fully released
-  @Implementation(methodName = "openCameraDeviceUserAsync", minSdk = V.SDK_INT)
-  @InDevelopment
+  @Implementation(methodName = "openCameraDeviceUserAsync", minSdk = Baklava.SDK_INT)
   protected CameraDevice openCameraDeviceUserAsyncPostV(
       String cameraId,
       CameraDevice.StateCallback callback,
       Executor executor,
       int unusedClientUid,
-      int unusedOomScoreOffset) {
+      int unusedOomScoreOffset,
+      boolean unused) {
     return openCameraDeviceUserAsync(
         cameraId, callback, executor, unusedClientUid, unusedOomScoreOffset);
   }
@@ -285,7 +285,20 @@ public class ShadowCameraManager {
       CameraCharacteristics characteristics,
       Context context) {
     Map<String, CameraCharacteristics> cameraCharacteristicsMap = Collections.emptyMap();
-    if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= Baklava.SDK_INT) {
+      return reflector(ReflectorCameraDeviceImpl.class)
+          .newCameraDeviceImplPostV(
+              cameraId,
+              callback,
+              executor,
+              characteristics,
+              realObject,
+              context.getApplicationInfo().targetSdkVersion,
+              context,
+              null,
+              false);
+
+    } else if (RuntimeEnvironment.getApiLevel() == V.SDK_INT) {
       return reflector(ReflectorCameraDeviceImpl.class)
           .newCameraDeviceImplV(
               cameraId,
@@ -414,6 +427,19 @@ public class ShadowCameraManager {
         Context context,
         @WithType("android.hardware.camera2.CameraDevice$CameraDeviceSetup")
             Object cameraDeviceSetup);
+
+    @Constructor
+    CameraDeviceImpl newCameraDeviceImplPostV(
+        String cameraId,
+        CameraDevice.StateCallback callback,
+        Executor executor,
+        CameraCharacteristics characteristics,
+        CameraManager cameraManager,
+        int targetSdkVersion,
+        Context context,
+        @WithType("android.hardware.camera2.CameraDevice$CameraDeviceSetup")
+            Object cameraDeviceSetup,
+        boolean unused);
   }
 
   /** Accessor interface for {@link CameraManager}'s internals. */
