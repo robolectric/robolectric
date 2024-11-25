@@ -527,22 +527,20 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected void addChild(View child) {
-    if (useRealAni()) {
-      accessibilityNodeInfoReflector.addChild(child);
-      return;
+    accessibilityNodeInfoReflector.addChild(child);
+    if (!useRealAni()) {
+      AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(child);
+      addChild(node);
     }
-    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(child);
-    addChild(node);
   }
 
   @Implementation
   protected void addChild(View root, int virtualDescendantId) {
-    if (useRealAni()) {
-      accessibilityNodeInfoReflector.addChild(root, virtualDescendantId);
-      return;
+    accessibilityNodeInfoReflector.addChild(root, virtualDescendantId);
+    if (!useRealAni()) {
+      AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(root, virtualDescendantId);
+      addChild(node);
     }
-    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(root, virtualDescendantId);
-    addChild(node);
   }
 
   /**
