@@ -8,24 +8,29 @@ import android.graphics.drawable.Drawable;
 import android.view.MenuItem;
 import android.view.View;
 import androidx.test.core.app.ApplicationProvider;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Arrays;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.ParameterizedRobolectricTestRunner;
 import org.robolectric.R;
+import org.robolectric.RuntimeEnvironment;
 
-@RunWith(AndroidJUnit4.class)
+@RunWith(ParameterizedRobolectricTestRunner.class)
 public class RoboMenuItemTest {
   private Context context;
-  private MenuItem item;
+  @Nonnull private MenuItem item;
   private TestOnActionExpandListener listener;
+
+  public RoboMenuItemTest(@Nonnull RoboMenuItem roboMenuItem) {
+    item = roboMenuItem;
+  }
 
   @Before
   public void setUp() throws Exception {
     context = ApplicationProvider.getApplicationContext();
     listener = new TestOnActionExpandListener();
-    item = new RoboMenuItem(context);
     item.setOnActionExpandListener(listener);
   }
 
@@ -201,5 +206,13 @@ public class RoboMenuItemTest {
       expanded = false;
       return true;
     }
+  }
+
+  @ParameterizedRobolectricTestRunner.Parameters
+  public static Iterable<?> data() {
+    return Arrays.asList(
+        new RoboMenuItem(),
+        new RoboMenuItem(R.id.text1),
+        new RoboMenuItem(RuntimeEnvironment.getApplication()));
   }
 }

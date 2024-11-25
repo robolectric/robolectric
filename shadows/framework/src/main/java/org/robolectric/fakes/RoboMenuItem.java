@@ -34,7 +34,7 @@ public class RoboMenuItem implements MenuItem {
   @Nullable private View actionView;
   @Nullable private OnActionExpandListener actionExpandListener;
   private int order;
-  private Context context;
+  @Nonnull private final Context context;
   private char numericChar;
   private char alphaChar;
   @Nullable private ActionProvider actionProvider;
@@ -43,11 +43,12 @@ public class RoboMenuItem implements MenuItem {
     this(RuntimeEnvironment.getApplication());
   }
 
-  public RoboMenuItem(Context context) {
+  public RoboMenuItem(@Nonnull Context context) {
     this.context = context;
   }
 
   public RoboMenuItem(int itemId) {
+    this();
     this.itemId = itemId;
   }
 
