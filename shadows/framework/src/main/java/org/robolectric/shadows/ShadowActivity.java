@@ -114,6 +114,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Object splashScreen = null;
   private boolean showWhenLocked = false;
   private boolean turnScreenOn = false;
+  private boolean isTaskMovedToBack = false;
 
   public void setApplication(Application application) {
     reflector(_Activity_.class, realActivity).setApplication(application);
@@ -919,8 +920,24 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   protected boolean moveTaskToBack(boolean nonRoot) {
+    // If task has already moved to back, return true.
+    if (isTaskMovedToBack) {
+      return true;
+    }
+    // If nonRoot is false then #moveTaskToBack only works when activity is the root of the task.
+    if (!nonRoot && !mIsTaskRoot) {
+      return false;
+    }
+    isTaskMovedToBack = true;
     isInPictureInPictureMode = false;
     return true;
+  }
+
+  /**
+   * @return whether the task containing this activity is moved to the back of the activity stack.
+   */
+  public boolean isTaskMovedToBack() {
+    return isTaskMovedToBack;
   }
 
   /**

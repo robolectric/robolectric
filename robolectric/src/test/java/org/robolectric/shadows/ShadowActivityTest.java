@@ -144,6 +144,77 @@ public class ShadowActivityTest {
     }
   }
 
+  @Test
+  public void createRootActivity_moveTaskToBackNonRoot_shouldMoveTaskToBack() {
+    try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {
+      activity = controller.get();
+      controller.create();
+      shadowOf(activity).setIsTaskRoot(true);
+
+      boolean isTaskMovedToBack = activity.moveTaskToBack(/* nonRoot= */ true);
+
+      assertThat(isTaskMovedToBack).isTrue();
+      assertThat(shadowOf(activity).isTaskMovedToBack()).isTrue();
+    }
+  }
+
+  @Test
+  public void createNonRootActivity_moveTaskToBackNonRoot_shouldMoveTaskToBack() {
+    try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {
+      activity = controller.get();
+      controller.create();
+      shadowOf(activity).setIsTaskRoot(false);
+
+      boolean isTaskMovedToBack = activity.moveTaskToBack(/* nonRoot= */ true);
+
+      assertThat(isTaskMovedToBack).isTrue();
+      assertThat(shadowOf(activity).isTaskMovedToBack()).isTrue();
+    }
+  }
+
+  @Test
+  public void createNonRootActivity_moveTaskToBackRoot_shouldNotMoveTaskToBack() {
+    try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {
+      activity = controller.get();
+      controller.create();
+      shadowOf(activity).setIsTaskRoot(false);
+
+      boolean isTaskMovedToBack = activity.moveTaskToBack(/* nonRoot= */ false);
+
+      assertThat(isTaskMovedToBack).isFalse();
+      assertThat(shadowOf(activity).isTaskMovedToBack()).isFalse();
+    }
+  }
+
+  @Test
+  public void createRootActivity_moveTaskToBackRoot_shouldMoveTaskToBack() {
+    try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {
+      activity = controller.get();
+      controller.create();
+      shadowOf(activity).setIsTaskRoot(true);
+
+      boolean isTaskMovedToBack = activity.moveTaskToBack(/* nonRoot= */ false);
+
+      assertThat(isTaskMovedToBack).isTrue();
+      assertThat(shadowOf(activity).isTaskMovedToBack()).isTrue();
+    }
+  }
+
+  @Test
+  public void createNonRootActivity_moveTaskToBackNonRootThenRoot_moveTaskToBacksReturnTrue() {
+    try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {
+      activity = controller.get();
+      controller.create();
+      shadowOf(activity).setIsTaskRoot(false);
+
+      boolean isTaskMovedToBackNonRoot = activity.moveTaskToBack(/* nonRoot= */ true);
+      boolean isTaskMovedToBackRoot = activity.moveTaskToBack(/* nonRoot= */ false);
+
+      assertThat(isTaskMovedToBackNonRoot).isTrue();
+      assertThat(isTaskMovedToBackRoot).isTrue();
+    }
+  }
+
   public static final class LabelTestActivity1 extends Activity {}
 
   public static final class LabelTestActivity2 extends Activity {}
