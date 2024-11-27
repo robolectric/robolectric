@@ -232,7 +232,7 @@ public class RuntimeEnvironment {
       Configuration configuration, DisplayMetrics displayMetrics) {
     // Update the resources last so that listeners will have a consistent environment.
     if (ResourcesManager.getInstance().getConfiguration() != null) {
-      if (Boolean.getBoolean("robolectric.configurationChangeFix")) {
+      if (System.getProperty("robolectric.configurationChangeFix", "true").equals("true")) {
         if (getApiLevel() <= Q) {
           reflector(ResourcesManagerReflector.class, ResourcesManager.getInstance())
               .applyConfigurationToResourcesLocked(configuration, null);
