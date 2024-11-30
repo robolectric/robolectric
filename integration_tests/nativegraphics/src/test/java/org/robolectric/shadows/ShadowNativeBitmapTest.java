@@ -77,7 +77,7 @@ public class ShadowNativeBitmapTest {
   private BitmapFactory.Options options;
 
   public static List<ColorSpace> getRgbColorSpaces() {
-    List<ColorSpace> rgbColorSpaces = new ArrayList<ColorSpace>();
+    List<ColorSpace> rgbColorSpaces = new ArrayList<>();
     for (ColorSpace.Named e : ColorSpace.Named.values()) {
       ColorSpace cs = ColorSpace.get(e);
       if (cs.getModel() != ColorSpace.Model.RGB) {
@@ -437,7 +437,7 @@ public class ShadowNativeBitmapTest {
           try (HardwareBuffer hwBuffer =
               HardwareBuffer.create(
                   512, 512, HardwareBuffer.RGBA_8888, 1, HardwareBuffer.USAGE_CPU_WRITE_RARELY)) {
-            Bitmap bitmap = Bitmap.wrapHardwareBuffer(hwBuffer, ColorSpace.get(Named.SRGB));
+            Bitmap.wrapHardwareBuffer(hwBuffer, ColorSpace.get(Named.SRGB));
           }
         });
   }
@@ -452,7 +452,7 @@ public class ShadowNativeBitmapTest {
           try (HardwareBuffer hwBuffer =
               HardwareBuffer.create(
                   512, 512, HardwareBuffer.RGBA_8888, 1, HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE)) {
-            Bitmap bitmap = Bitmap.wrapHardwareBuffer(hwBuffer, ColorSpace.get(Named.CIE_LAB));
+            Bitmap.wrapHardwareBuffer(hwBuffer, ColorSpace.get(Named.CIE_LAB));
           }
         });
   }
@@ -587,7 +587,7 @@ public class ShadowNativeBitmapTest {
             bitmap.eraseColor(wideGamutLong);
 
             Color result = bitmap.getColor(0, 0);
-            if (bitmap.getColorSpace().equals(sRGB)) {
+            if (sRGB.equals(bitmap.getColorSpace())) {
               assertEquals(bitmap.getPixel(0, 0), result.toArgb());
             }
             if (eraseColorSpace.equals(bitmapColorSpace)) {
@@ -979,7 +979,7 @@ public class ShadowNativeBitmapTest {
       case ARGB_4444:
         // This shouldn't happen, since we don't allow creating or converting
         // to 4444.
-        assertFalse(true);
+        fail();
         break;
       case RGB_565:
         assertFalse(bitmap.hasAlpha());
@@ -1366,7 +1366,7 @@ public class ShadowNativeBitmapTest {
     Bitmap bitmap = Bitmap.createBitmap(1, 1, config);
     bitmap.setPremultiplied(true);
     bitmap.setPixel(0, 0, Color.TRANSPARENT);
-    assertTrue(bitmap.isPremultiplied() == expectedPremul);
+    assertEquals(bitmap.isPremultiplied(), expectedPremul);
 
     bitmap.setHasAlpha(false);
     assertFalse(bitmap.isPremultiplied());
@@ -1385,21 +1385,21 @@ public class ShadowNativeBitmapTest {
     // with premul, will store 2,2,2,2, so it doesn't get value correct
     Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
     bitmap.setPixel(0, 0, PREMUL_COLOR);
-    assertEquals(bitmap.getPixel(0, 0), PREMUL_ROUNDED_COLOR);
+    assertEquals(PREMUL_ROUNDED_COLOR, bitmap.getPixel(0, 0));
 
     // read premultiplied value directly
     bitmap.setPremultiplied(false);
-    assertEquals(bitmap.getPixel(0, 0), PREMUL_STORED_COLOR);
+    assertEquals(PREMUL_STORED_COLOR, bitmap.getPixel(0, 0));
 
     // value can now be stored/read correctly
     bitmap.setPixel(0, 0, PREMUL_COLOR);
-    assertEquals(bitmap.getPixel(0, 0), PREMUL_COLOR);
+    assertEquals(PREMUL_COLOR, bitmap.getPixel(0, 0));
 
     // verify with array methods
     int[] testArray = new int[] {PREMUL_COLOR};
     bitmap.setPixels(testArray, 0, 1, 0, 0, 1, 1);
     bitmap.getPixels(testArray, 0, 1, 0, 0, 1, 1);
-    assertEquals(bitmap.getPixel(0, 0), PREMUL_COLOR);
+    assertEquals(PREMUL_COLOR, bitmap.getPixel(0, 0));
   }
 
   @Test
@@ -1831,8 +1831,6 @@ public class ShadowNativeBitmapTest {
       StrictMode.setThreadPolicy(originalPolicy);
     }
   }
-
-  static final int ANDROID_BITMAP_FORMAT_RGBA_8888 = 1;
 
   private static int scaleFromDensity(int size, int sdensity, int tdensity) {
     if (sdensity == Bitmap.DENSITY_NONE || sdensity == tdensity) {

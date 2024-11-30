@@ -183,19 +183,19 @@ public class ShadowNativeTypefaceTest {
   }
 
   @Test
-  public void testCreateFromFileWithInvalidPath() throws IOException {
+  public void testCreateFromFileWithInvalidPath() {
     File file = new File("/invalid/path");
     assertThrows(RuntimeException.class, () -> Typeface.createFromFile(file));
   }
 
   @Test
-  public void testCreateFromFileByFileNameNull() throws IOException {
+  public void testCreateFromFileByFileNameNull() {
     // input abnormal params.
     assertThrows(NullPointerException.class, () -> Typeface.createFromFile((String) null));
   }
 
   @Test
-  public void testCreateFromFileByInvalidFileName() throws IOException {
+  public void testCreateFromFileByInvalidFileName() {
     // input abnormal params.
     assertThrows(RuntimeException.class, () -> Typeface.createFromFile("/invalid/path"));
   }

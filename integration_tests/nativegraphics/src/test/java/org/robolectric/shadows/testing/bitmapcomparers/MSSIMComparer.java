@@ -34,7 +34,7 @@ public class MSSIMComparer extends BitmapComparer {
   public static final double CONSTANT_C2 = Math.pow(CONSTANT_L * CONSTANT_K2, 2);
   public static final int WINDOW_SIZE = 10;
 
-  private double threshold;
+  private final double threshold;
 
   public MSSIMComparer(double threshold) {
     this.threshold = threshold;

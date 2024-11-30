@@ -2,6 +2,8 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -92,7 +94,7 @@ public class ShadowNativeAnimatedVectorDrawableTest {
 
     drawable.start();
 
-    assertEquals(true, Shadows.shadowOf(drawable).isStartInitiated());
+    assertTrue(Shadows.shadowOf(drawable).isStartInitiated());
   }
 
   @Test
@@ -116,6 +118,6 @@ public class ShadowNativeAnimatedVectorDrawableTest {
     drawable.start();
     drawable.stop();
 
-    assertEquals(false, Shadows.shadowOf(drawable).isStartInitiated());
+    assertFalse(Shadows.shadowOf(drawable).isStartInitiated());
   }
 }

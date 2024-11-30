@@ -123,14 +123,14 @@ public class ShadowNativeRegionTest {
   private Region region;
 
   private void verifyPointsInsideRegion(int[][] area) {
-    for (int i = 0; i < area.length; i++) {
-      assertTrue(region.contains(area[i][0], area[i][1]));
+    for (int[] ints : area) {
+      assertTrue(region.contains(ints[0], ints[1]));
     }
   }
 
   private void verifyPointsOutsideRegion(int[][] area) {
-    for (int i = 0; i < area.length; i++) {
-      assertFalse(region.contains(area[i][0], area[i][1]));
+    for (int[] ints : area) {
+      assertFalse(region.contains(ints[0], ints[1]));
     }
   }
 

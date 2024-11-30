@@ -13,6 +13,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -890,7 +891,7 @@ public class ShadowNativePaintTest {
   }
 
   @Test
-  public void testGetTextWidths() throws Exception {
+  public void testGetTextWidths() {
     String text = "HIJKLMN";
     char[] textChars = text.toCharArray();
     SpannedString textSpan = new SpannedString(text);
@@ -1383,8 +1384,8 @@ public class ShadowNativePaintTest {
     }
 
     float totalWidth = 0;
-    for (int i = 0; i < widths.length; i++) {
-      totalWidth += widths[i];
+    for (float width : widths) {
+      totalWidth += width;
     }
 
     // Test measuring the widths of the entire text
@@ -1579,10 +1580,9 @@ public class ShadowNativePaintTest {
 
     // We don't require gender-neutral emoji, but if present, results must be consistent
     // whether VS is present or not.
-    assertTrue(
-        p.hasGlyph("\uD83D\uDC69\u200D\u2695")
-            == // WOMAN, ZWJ, STAFF OF AESCULAPIUS
-            p.hasGlyph("\uD83D\uDC69\u200D\u2695\uFE0F")); // above + VS16
+    assertEquals(
+        p.hasGlyph("\uD83D\uDC69\u200D\u2695"), // WOMAN, ZWJ, STAFF OF AESCULAPIUS
+        p.hasGlyph("\uD83D\uDC69\u200D\u2695\uFE0F")); // above + VS16
   }
 
   @Test
@@ -1940,7 +1940,7 @@ public class ShadowNativePaintTest {
         final int offset =
             p.getOffsetForAdvance(
                 string, 0, string.length(), 0, string.length(), false, widthToOffset);
-        assertFalse(1 == offset);
+        assertNotEquals(1, offset);
         assertTrue(0 == offset || string.length() == offset);
       }
     }
@@ -1952,7 +1952,7 @@ public class ShadowNativePaintTest {
         final int offset =
             p.getOffsetForAdvance(
                 string, 0, string.length(), 0, string.length(), false, widthToOffset);
-        assertFalse(2 == offset);
+        assertNotEquals(2, offset);
         assertTrue(0 == offset || string.length() == offset);
       }
       {
@@ -2104,7 +2104,7 @@ public class ShadowNativePaintTest {
   }
 
   @Test
-  public void testGetRunCursor_currsor_at() {
+  public void testGetRunCursor_cursor_at() {
     assertEquals(0, getTextRunCursor("abc", 0, CURSOR_AT));
     assertEquals(1, getTextRunCursor("abc", 1, CURSOR_AT));
     assertEquals(2, getTextRunCursor("abc", 2, CURSOR_AT));

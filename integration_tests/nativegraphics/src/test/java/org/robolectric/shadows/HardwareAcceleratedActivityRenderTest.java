@@ -26,7 +26,7 @@ import org.robolectric.annotation.Config;
 @Config(minSdk = Q)
 public class HardwareAcceleratedActivityRenderTest {
   @Test
-  public void hardwareAcceleratedActivity_setup() throws Exception {
+  public void hardwareAcceleratedActivity_setup() {
     // Setting up an Activity is a smoke test that exercises much of the HardwareRenderer /
     // RenderNode / RecordingCanvas native code.
     Robolectric.setupActivity(HardwareAcceleratedActivity.class);

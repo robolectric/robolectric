@@ -49,10 +49,10 @@ public final class ColorUtils {
             + Integer.toHexString(observed)
             + ", tolerated channel error 0x"
             + tolerance;
-    String red = verifyChannel("red", expected, observed, tolerance, (i) -> Color.red(i));
-    String green = verifyChannel("green", expected, observed, tolerance, (i) -> Color.green(i));
-    String blue = verifyChannel("blue", expected, observed, tolerance, (i) -> Color.blue(i));
-    String alpha = verifyChannel("alpha", expected, observed, tolerance, (i) -> Color.alpha(i));
+    String red = verifyChannel("red", expected, observed, tolerance, Color::red);
+    String green = verifyChannel("green", expected, observed, tolerance, Color::green);
+    String blue = verifyChannel("blue", expected, observed, tolerance, Color::blue);
+    String alpha = verifyChannel("alpha", expected, observed, tolerance, Color::alpha);
 
     buildErrorString(s, red, green, blue, alpha);
   }
@@ -81,10 +81,10 @@ public final class ColorUtils {
             + observed
             + ", tolerated channel error "
             + tolerance;
-    String red = verifyChannel("red", expected, observed, tolerance, (c) -> c.red());
-    String green = verifyChannel("green", expected, observed, tolerance, (c) -> c.green());
-    String blue = verifyChannel("blue", expected, observed, tolerance, (c) -> c.blue());
-    String alpha = verifyChannel("alpha", expected, observed, tolerance, (c) -> c.alpha());
+    String red = verifyChannel("red", expected, observed, tolerance, Color::red);
+    String green = verifyChannel("green", expected, observed, tolerance, Color::green);
+    String blue = verifyChannel("blue", expected, observed, tolerance, Color::blue);
+    String alpha = verifyChannel("alpha", expected, observed, tolerance, Color::alpha);
 
     buildErrorString(msg, red, green, blue, alpha);
   }
@@ -95,18 +95,18 @@ public final class ColorUtils {
       @Nullable String green,
       @Nullable String blue,
       @Nullable String alpha) {
-    String err = null;
+    StringBuilder error = null;
     for (String channel : new String[] {red, green, blue, alpha}) {
       if (channel == null) {
         continue;
       }
-      if (err == null) {
-        err = s;
+      if (error == null) {
+        error = new StringBuilder(s);
       }
-      err += "\n\t\t" + channel;
+      error.append("\n\t\t").append(channel);
     }
-    if (err != null) {
-      fail(err);
+    if (error != null) {
+      fail(error.toString());
     }
   }
 

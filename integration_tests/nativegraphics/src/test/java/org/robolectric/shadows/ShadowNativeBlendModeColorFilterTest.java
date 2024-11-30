@@ -19,8 +19,6 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = Q) // Added in API 29
 public class ShadowNativeBlendModeColorFilterTest {
-  private static final int TOLERANCE = 5;
-
   private static final int TEST_WIDTH = 90;
   private static final int TEST_HEIGHT = 90;
   private static final int LEFT_X = TEST_WIDTH / 4;

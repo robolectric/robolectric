@@ -85,7 +85,7 @@ public class BitmapUtils {
   public static boolean compareBitmaps(Bitmap bmp1, Bitmap bmp2) {
     final Boolean basicComparison = compareBasicBitmapsInfo(bmp1, bmp2);
     if (basicComparison != null) {
-      return basicComparison.booleanValue();
+      return basicComparison;
     }
 
     for (int i = 0; i < bmp1.getWidth(); i++) {
@@ -107,7 +107,7 @@ public class BitmapUtils {
   public static boolean compareBitmaps(Bitmap bmp1, Bitmap bmp2, double minimumPrecision) {
     final Boolean basicComparison = compareBasicBitmapsInfo(bmp1, bmp2);
     if (basicComparison != null) {
-      return basicComparison.booleanValue();
+      return basicComparison;
     }
 
     final int width = bmp1.getWidth();
@@ -210,7 +210,7 @@ public class BitmapUtils {
       boolean isPremultiplied) {
     final Boolean basicComparison = compareBasicBitmapsInfo(expected, actual);
     if (basicComparison != null) {
-      return basicComparison.booleanValue();
+      return basicComparison;
     }
 
     double mse = 0;
@@ -238,14 +238,13 @@ public class BitmapUtils {
         Log.d(TAG, "MSE too large for normal case: " + mse);
         return false;
       }
-      return true;
     } else {
       if (mse <= mseMargin) {
         Log.d(TAG, "MSE too small for abnormal case: " + mse);
         return false;
       }
-      return true;
     }
+    return true;
   }
 
   // Same as above, but asserts compareBitmapsMse's return value.

@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.O;
 import static org.junit.Assert.assertEquals;
 
 import android.animation.PropertyValuesHolder;
-import android.app.Instrumentation;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Before;
@@ -16,15 +15,13 @@ import org.robolectric.annotation.Config;
 @Config(minSdk = O)
 public class ShadowNativePropertyValuesHolderTest {
 
-  private Instrumentation instrumentation;
   private float startY;
   private float endY;
   private String property;
 
   @Before
   public void setup() {
-    instrumentation = InstrumentationRegistry.getInstrumentation();
-    instrumentation.setInTouchMode(false);
+    InstrumentationRegistry.getInstrumentation().setInTouchMode(false);
     property = "y";
     startY = 0;
     endY = 10;
