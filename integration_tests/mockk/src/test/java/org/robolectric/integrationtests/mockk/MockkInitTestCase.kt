@@ -24,7 +24,7 @@ class MockkInitTestCase {
   @Before fun setUp() = MockKAnnotations.init(this)
 
   @Test
-  fun `Mockk1`() {
+  fun mockk1() {
     every { returner.returnNumber() } returns 1
     assert(returner.returnNumber() == 1)
   }
