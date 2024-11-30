@@ -19,11 +19,7 @@ import kotlinx.coroutines.flow.flow
 /** A class that invokes Android Bluetooth LE APIs. */
 class BluetoothProvisioner(applicationContext: Context) {
 
-  val context: Context
-
-  init {
-    context = applicationContext
-  }
+  val context = applicationContext
 
   fun startScan(): Flow<BluetoothDevice> = callbackFlow {
     val scanCallback =

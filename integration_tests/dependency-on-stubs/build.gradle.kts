@@ -25,5 +25,4 @@ android {
 dependencies {
   testImplementation(project(":robolectric"))
   testImplementation(libs.junit4)
-  testImplementation(libs.truth)
 }
