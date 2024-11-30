@@ -881,7 +881,7 @@ public class ShadowNativeColorSpaceTest {
     }
   }
 
-  private static float[] identityMatrix =
+  private static final float[] identityMatrix =
       new float[] {
         1.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f,

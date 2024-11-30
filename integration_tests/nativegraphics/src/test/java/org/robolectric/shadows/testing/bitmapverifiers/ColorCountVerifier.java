@@ -19,9 +19,9 @@ import android.util.Log;
 import org.robolectric.shadows.testing.util.CompareUtils;
 
 public class ColorCountVerifier extends BitmapVerifier {
-  private int color;
-  private int count;
-  private int threshold;
+  private final int color;
+  private final int count;
+  private final int threshold;
 
   public ColorCountVerifier(int color, int count, int threshold) {
     this.color = color;

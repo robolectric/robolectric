@@ -62,6 +62,7 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -99,7 +100,7 @@ public class ShadowNativeStaticLayoutTest {
   /* the first line must have one tab. the others not. totally 6 lines
    */
   private static final CharSequence LAYOUT_TEXT =
-      "CharSe\tq\nChar" + "Sequence\nCharSequence\nHelllo\n, world\nLongLongLong";
+      "CharSe\tq\nChar" + "Sequence\nCharSequence\nHello\n, world\nLongLongLong";
 
   private static final CharSequence LAYOUT_TEXT_SINGLE_LINE = "CharSequence";
 
@@ -269,7 +270,7 @@ public class ShadowNativeStaticLayoutTest {
       StaticLayout layout = builder.build();
       assertEquals(ELLIPSIZE_WIDTH, layout.getEllipsizedWidth());
       assertEquals(DEFAULT_OUTER_WIDTH, layout.getWidth());
-      assertTrue(layout.getEllipsisCount(0) == 0);
+      assertEquals(0, layout.getEllipsisCount(0));
       assertTrue(layout.getEllipsisCount(5) > 0);
     }
     {
@@ -480,7 +481,7 @@ public class ShadowNativeStaticLayoutTest {
   /**
    * Returns an array of directionalities for the specified line. The array alternates counts of
    * characters in left-to-right and right-to-left segments of the line. We can not check the return
-   * value, for Directions's field is package private So only check it not null
+   * value, for Directions' field is package private So only check it not null
    */
   @Test
   public void testGetLineDirections() {
@@ -523,12 +524,12 @@ public class ShadowNativeStaticLayoutTest {
     // Multilines (6 lines) and TruncateAt.START so no ellipsis at all
     defaultLayout = createEllipsizeStaticLayout(LAYOUT_TEXT, TextUtils.TruncateAt.MIDDLE);
 
-    assertTrue(defaultLayout.getEllipsisCount(0) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(1) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(2) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(3) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(4) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(5) == 0);
+    assertEquals(0, defaultLayout.getEllipsisCount(0));
+    assertEquals(0, defaultLayout.getEllipsisCount(1));
+    assertEquals(0, defaultLayout.getEllipsisCount(2));
+    assertEquals(0, defaultLayout.getEllipsisCount(3));
+    assertEquals(0, defaultLayout.getEllipsisCount(4));
+    assertEquals(0, defaultLayout.getEllipsisCount(5));
 
     assertThrows(ArrayIndexOutOfBoundsException.class, () -> defaultLayout.getEllipsisCount(-1));
 
@@ -539,31 +540,31 @@ public class ShadowNativeStaticLayoutTest {
     // Multilines (6 lines) and TruncateAt.MIDDLE so no ellipsis at all
     defaultLayout = createEllipsizeStaticLayout(LAYOUT_TEXT, TextUtils.TruncateAt.MIDDLE);
 
-    assertTrue(defaultLayout.getEllipsisCount(0) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(1) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(2) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(3) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(4) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(5) == 0);
+    assertEquals(0, defaultLayout.getEllipsisCount(0));
+    assertEquals(0, defaultLayout.getEllipsisCount(1));
+    assertEquals(0, defaultLayout.getEllipsisCount(2));
+    assertEquals(0, defaultLayout.getEllipsisCount(3));
+    assertEquals(0, defaultLayout.getEllipsisCount(4));
+    assertEquals(0, defaultLayout.getEllipsisCount(5));
 
     // Multilines (6 lines) and TruncateAt.END so ellipsis only on the last line
     defaultLayout = createEllipsizeStaticLayout(LAYOUT_TEXT, TextUtils.TruncateAt.END);
 
-    assertTrue(defaultLayout.getEllipsisCount(0) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(1) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(2) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(3) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(4) == 0);
+    assertEquals(0, defaultLayout.getEllipsisCount(0));
+    assertEquals(0, defaultLayout.getEllipsisCount(1));
+    assertEquals(0, defaultLayout.getEllipsisCount(2));
+    assertEquals(0, defaultLayout.getEllipsisCount(3));
+    assertEquals(0, defaultLayout.getEllipsisCount(4));
     assertTrue(defaultLayout.getEllipsisCount(5) > 0);
 
     // Multilines (6 lines) and TruncateAt.MARQUEE so ellipsis only on the last line
     defaultLayout = createEllipsizeStaticLayout(LAYOUT_TEXT, TextUtils.TruncateAt.END);
 
-    assertTrue(defaultLayout.getEllipsisCount(0) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(1) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(2) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(3) == 0);
-    assertTrue(defaultLayout.getEllipsisCount(4) == 0);
+    assertEquals(0, defaultLayout.getEllipsisCount(0));
+    assertEquals(0, defaultLayout.getEllipsisCount(1));
+    assertEquals(0, defaultLayout.getEllipsisCount(2));
+    assertEquals(0, defaultLayout.getEllipsisCount(3));
+    assertEquals(0, defaultLayout.getEllipsisCount(4));
     assertTrue(defaultLayout.getEllipsisCount(5) > 0);
   }
 
@@ -655,7 +656,7 @@ public class ShadowNativeStaticLayoutTest {
 
   // String wrapper for testing not well known implementation of CharSequence.
   private static class FakeCharSequence implements CharSequence {
-    private String str;
+    private final String str;
 
     public FakeCharSequence(String str) {
       this.str = str;
@@ -672,11 +673,13 @@ public class ShadowNativeStaticLayoutTest {
     }
 
     @Override
+    @Nonnull
     public CharSequence subSequence(int start, int end) {
       return str.subSequence(start, end);
     }
 
     @Override
+    @Nonnull
     public String toString() {
       return str;
     }
@@ -716,13 +719,13 @@ public class ShadowNativeStaticLayoutTest {
 
     StringBuilder builder = new StringBuilder();
     for (int i = 0; i < seq.length(); ++i) {
-      builder.append(String.format("0x%04X ", Integer.valueOf(seq.charAt(i))));
+      builder.append(String.format("0x%04X ", (int) seq.charAt(i)));
     }
 
     return "testString: \""
-        + seq.toString()
+        + seq
         + "\"["
-        + builder.toString()
+        + builder
         + "]"
         + ", class: "
         + seq.getClass().getName()
@@ -1527,6 +1530,7 @@ public class ShadowNativeStaticLayoutTest {
     }
 
     @Override
+    @Nonnull
     public String toString() {
       return "{"
           + "mStrategy="
@@ -1820,19 +1824,19 @@ public class ShadowNativeStaticLayoutTest {
     private final List<int[]> history;
 
     FakeLineBackgroundSpan() {
-      history = new ArrayList<int[]>();
+      history = new ArrayList<>();
     }
 
     @Override
     public void drawBackground(
-        Canvas c,
-        Paint p,
+        @Nonnull Canvas c,
+        @Nonnull Paint p,
         int left,
         int right,
         int top,
         int baseline,
         int bottom,
-        CharSequence text,
+        @Nonnull CharSequence text,
         int start,
         int end,
         int lnum) {
@@ -1934,7 +1938,7 @@ public class ShadowNativeStaticLayoutTest {
         Bitmap.createBitmap(layout.getWidth(), layout.getHeight(), Bitmap.Config.RGB_565);
     final Canvas c = new Canvas(bmp);
     // Make sure draw won't cause crashes.
-    // draw eventualy calls TextLine.draw which was the problematic method.
+    // draw eventually calls TextLine.draw which was the problematic method.
     layout.draw(c);
   }
 }

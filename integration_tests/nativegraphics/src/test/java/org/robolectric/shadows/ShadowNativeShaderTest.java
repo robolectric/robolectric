@@ -22,7 +22,7 @@ import org.robolectric.annotation.Config;
 public class ShadowNativeShaderTest {
   @Test
   public void testConstructor() {
-    var unused = new Shader();
+    new Shader();
   }
 
   @Test

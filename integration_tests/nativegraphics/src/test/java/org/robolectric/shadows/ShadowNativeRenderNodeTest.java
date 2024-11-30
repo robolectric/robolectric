@@ -254,7 +254,7 @@ public class ShadowNativeRenderNodeTest {
 
   @Test
   @Config(minSdk = O, maxSdk = P)
-  public void testIsValid() throws Exception {
+  public void testIsValid() {
     Object renderNode = reflector(RenderNodeOpReflector.class).create("name", null);
     RenderNodeOpReflector renderNodeOpReflector =
         reflector(RenderNodeOpReflector.class, renderNode);
