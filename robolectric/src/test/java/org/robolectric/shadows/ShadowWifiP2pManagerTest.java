@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
@@ -14,6 +13,7 @@ import android.os.Build;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
@@ -203,7 +203,8 @@ public class ShadowWifiP2pManagerTest {
       }
 
       WifiP2pManager.Channel activityChannel =
-          activityWifiP2pManager.initialize(activity, activity.getMainLooper(), null);
+          Objects.requireNonNull(activityWifiP2pManager)
+              .initialize(activity, activity.getMainLooper(), null);
 
       activityWifiP2pManager.requestGroupInfo(
           activityChannel,
@@ -218,7 +219,7 @@ public class ShadowWifiP2pManagerTest {
 
       assertThat(applicationGroupNameHolder[0]).isEqualTo(activityGroupNameHolder[0]);
     } catch (InterruptedException e) {
-      fail("Failed because of latch interrupt");
+      throw new AssertionError("Failed because of latch interrupt", e);
     } finally {
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
