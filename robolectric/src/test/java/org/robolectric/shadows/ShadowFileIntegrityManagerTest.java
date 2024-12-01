@@ -8,6 +8,7 @@ import android.content.Context;
 import android.security.FileIntegrityManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Objects;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,8 +60,9 @@ public final class ShadowFileIntegrityManagerTest {
       assertThat(applicationFileIntegrityManager).isNotSameInstanceAs(activityFileIntegrityManager);
 
       boolean applicationApkVeritySupported =
-          applicationFileIntegrityManager.isApkVeritySupported();
-      boolean activityApkVeritySupported = activityFileIntegrityManager.isApkVeritySupported();
+          Objects.requireNonNull(applicationFileIntegrityManager).isApkVeritySupported();
+      boolean activityApkVeritySupported =
+          Objects.requireNonNull(activityFileIntegrityManager).isApkVeritySupported();
 
       assertThat(activityApkVeritySupported).isEqualTo(applicationApkVeritySupported);
     } finally {
