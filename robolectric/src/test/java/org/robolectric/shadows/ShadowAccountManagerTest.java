@@ -1079,7 +1079,7 @@ public class ShadowAccountManagerTest {
   @Config(minSdk = LOLLIPOP_MR1)
   public void removeAccountExplicitly() {
     assertThat(
-            am.removeAccountExplicitly(new Account("non_existant_account@gmail.com", "gmail.com")))
+            am.removeAccountExplicitly(new Account("non_existent_account@gmail.com", "gmail.com")))
         .isFalse();
     assertThat(am.removeAccountExplicitly(null)).isFalse();
 

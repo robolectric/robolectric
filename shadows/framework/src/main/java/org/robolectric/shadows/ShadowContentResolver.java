@@ -114,12 +114,12 @@ public class ShadowContentResolver {
 
   private static class ContentObserverEntry {
     public final Uri uri;
-    public final boolean notifyForDescendents;
+    public final boolean notifyForDescendants;
     public final ContentObserver observer;
 
-    private ContentObserverEntry(Uri uri, boolean notifyForDescendents, ContentObserver observer) {
+    private ContentObserverEntry(Uri uri, boolean notifyForDescendants, ContentObserver observer) {
       this.uri = uri;
-      this.notifyForDescendents = notifyForDescendents;
+      this.notifyForDescendants = notifyForDescendants;
       this.observer = observer;
 
       if (uri == null || observer == null) {
@@ -139,7 +139,7 @@ public class ShadowContentResolver {
       String testPath = test.getPath();
 
       return Objects.equals(uriPath, testPath)
-          || (notifyForDescendents && testPath != null && testPath.startsWith(uriPath));
+          || (notifyForDescendants && testPath != null && testPath.startsWith(uriPath));
     }
   }
 
@@ -925,20 +925,20 @@ public class ShadowContentResolver {
 
   @Implementation
   protected void registerContentObserver(
-      Uri uri, boolean notifyForDescendents, ContentObserver observer) {
+      Uri uri, boolean notifyForDescendants, ContentObserver observer) {
     if (uri == null || observer == null) {
       throw new NullPointerException();
     }
     if (registerContentProviderExceptions.containsKey(uri)) {
       throw registerContentProviderExceptions.get(uri);
     }
-    contentObservers.add(new ContentObserverEntry(uri, notifyForDescendents, observer));
+    contentObservers.add(new ContentObserverEntry(uri, notifyForDescendants, observer));
   }
 
   @Implementation
   protected void registerContentObserver(
-      Uri uri, boolean notifyForDescendents, ContentObserver observer, int userHandle) {
-    registerContentObserver(uri, notifyForDescendents, observer);
+      Uri uri, boolean notifyForDescendants, ContentObserver observer, int userHandle) {
+    registerContentObserver(uri, notifyForDescendants, observer);
   }
 
   @Implementation

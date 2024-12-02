@@ -111,7 +111,7 @@ public @interface Config {
   /**
    * Qualifiers specifying device configuration for this test, such as "fr-normal-port-hdpi".
    *
-   * <p>If the string is prefixed with '+', the qualifiers that follow are overlayed on any more
+   * <p>If the string is prefixed with '+', the qualifiers that follow are overlaid on any more
    * broadly-scoped qualifiers.
    *
    * @see <a href="http://robolectric.org/device-configuration">Device Configuration</a> for

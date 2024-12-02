@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.integration.axt.R;
 
-/** Test file for Espresso with scrolling logics. */
+/** Test file for Espresso with scrolling logic. */
 @RunWith(AndroidJUnit4.class)
 public class EspressoScrollingTest {
   @Rule

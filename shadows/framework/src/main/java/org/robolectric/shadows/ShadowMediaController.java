@@ -111,7 +111,7 @@ public class ShadowMediaController {
   }
 
   /**
-   * Saves the sessionActivty to control the return value of {@link
+   * Saves the sessionActivity to control the return value of {@link
    * MediaController#getSessionActivity()}.
    */
   public void setSessionActivity(PendingIntent sessionActivity) {
