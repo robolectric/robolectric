@@ -81,12 +81,6 @@ class PluginFinder {
       Supersedes supersedes = clazz.getAnnotation(Supersedes.class);
       if (supersedes != null) {
         superseded.add(supersedes.value());
-      } else {
-        // Check for the misspelled annotation.
-        Supercedes supercedes = clazz.getAnnotation(Supercedes.class);
-      if (supercedes != null) {
-          superseded.add(supercedes.value());
-        }
       }
     }
     if (superseded.isEmpty()) {
