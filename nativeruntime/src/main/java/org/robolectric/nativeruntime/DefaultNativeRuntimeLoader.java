@@ -266,7 +266,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
     return String.format("native/%s/%s/%s", osName(), arch(), libraryName());
   }
 
-  private static String libraryName() {
+  protected static String libraryName() {
     if (isAndroidVOrGreater()) {
       // For V and above, hwui's android_graphics_HardwareRenderer.cpp has shared library symbol
       // lookup logic that assumes that Windows library name is "libandroid_runtime.dll".

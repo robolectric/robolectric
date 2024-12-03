@@ -174,6 +174,7 @@ public class ShadowAudioManagerTest {
         case AudioManager.STREAM_NOTIFICATION:
         case AudioManager.STREAM_RING:
         case AudioManager.STREAM_SYSTEM:
+        case AudioManager.STREAM_ASSISTANT:
         case AudioManager.STREAM_VOICE_CALL:
         case AudioManager.STREAM_ACCESSIBILITY:
           assertThat(audioManager.getStreamMaxVolume(stream))
@@ -248,6 +249,7 @@ public class ShadowAudioManagerTest {
               .isEqualTo(ShadowAudioManager.MAX_VOLUME_MUSIC_DTMF);
           break;
 
+        case AudioManager.STREAM_ASSISTANT:
         case AudioManager.STREAM_ALARM:
         case AudioManager.STREAM_NOTIFICATION:
         case AudioManager.STREAM_RING:

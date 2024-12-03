@@ -427,7 +427,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
     for (ActivityController<?> controller : controllers) {
       if (createdActivities.contains(controller)) {
         Activity activity = controller.get();
-        if (Boolean.getBoolean("robolectric.configurationChangeFix")) {
+        if (System.getProperty("robolectric.configurationChangeFix", "true").equals("true")) {
           controller.configurationChange(newConfig, newMetrics);
         } else {
           controller.configurationChange(newConfig, newMetrics, changedConfig);

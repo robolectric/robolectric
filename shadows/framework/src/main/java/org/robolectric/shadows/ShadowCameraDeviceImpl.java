@@ -23,6 +23,7 @@ import java.util.concurrent.Executor;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -30,7 +31,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow class for {@link CameraDeviceImpl} */
@@ -40,6 +40,7 @@ public class ShadowCameraDeviceImpl {
   private boolean closed = false;
 
   @Implementation(minSdk = V.SDK_INT)
+  @InDevelopment
   protected void __constructor__(
       String cameraId,
       StateCallback callback,
@@ -74,7 +75,9 @@ public class ShadowCameraDeviceImpl {
         .setDeviceExecutor(MoreExecutors.directExecutor());
   }
 
-  @Implementation(minSdk = Baklava.SDK_INT)
+  // TODO(congxiliu) Change minsdk to Baklava once Baklava is fully released in AOSP
+  @Implementation(minSdk = V.SDK_INT)
+  @InDevelopment
   protected void __constructor__(
       String cameraId,
       StateCallback callback,

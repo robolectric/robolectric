@@ -14,8 +14,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
+import org.junit.runner.notification.RunListener;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
@@ -113,6 +116,23 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     this.sdkPicker = injector.getInstance(SdkPicker.class);
     this.configurationStrategy = injector.getInstance(ConfigurationStrategy.class);
     this.androidConfigurer = injector.getInstance(AndroidConfigurer.class);
+  }
+
+  @Override
+  public void run(RunNotifier notifier) {
+    ServiceLoader<RunListener> sl =
+        ServiceLoader.load(RunListener.class, Thread.currentThread().getContextClassLoader());
+    for (RunListener listener : sl) {
+      if (!listener.getClass().getPackageName().startsWith("org.robolectric")) {
+        Logger.warn(
+            "Adding a non-robolectric maintained RunListener"
+                + " (via Plugins/ServiceLoader) can lead to instability, use at your own risk.\n"
+                + "Listener in question : "
+                + listener.getClass().getName());
+      }
+      notifier.addListener(listener);
+    }
+    super.run(notifier);
   }
 
   /**

@@ -404,7 +404,7 @@ public class ActivityController<T extends Activity>
       Configuration newConfiguration, DisplayMetrics newMetrics) {
     ActivityReflector activityReflector = reflector(ActivityReflector.class, component);
     Configuration currentConfig =
-        Boolean.getBoolean("robolectric.configurationChangeFix")
+        System.getProperty("robolectric.configurationChangeFix", "true").equals("true")
             ? activityReflector.getCurrentConfig()
             : component.getResources().getConfiguration();
     return configurationChange(newConfiguration, newMetrics, currentConfig.diff(newConfiguration));
