@@ -127,7 +127,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         Logger.warn(
             "Adding a non-robolectric maintained RunListener"
                 + " (via Plugins/ServiceLoader) can lead to instability, use at your own risk.\n"
-                + "Listener is question : "
+                + "Listener in question : "
                 + listener.getClass().getName());
       }
       notifier.addListener(listener);
