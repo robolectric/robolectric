@@ -27,7 +27,7 @@ public class ShadowGradientDrawable extends ShadowDrawable {
   }
 
   @Implementation
-  public void setShape(int shape) {
+  protected void setShape(int shape) {
     this.shape = shape;
     reflector(GradientDrawableReflector.class, realGradientDrawable).setShape(shape);
   }
@@ -50,7 +50,7 @@ public class ShadowGradientDrawable extends ShadowDrawable {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.N)
-  public int getShape() {
+  protected int getShape() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
       return shape;
     }
