@@ -1,17 +1,13 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.companion.AssociatedDevice;
 import android.companion.AssociationInfo;
-import android.graphics.drawable.Icon;
 import android.net.MacAddress;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.reflector.Constructor;
-import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.WithType;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Builder for {@link AssociationInfo}. */
@@ -115,49 +111,7 @@ public class AssociationInfoBuilder {
       MacAddress macAddress =
           deviceMacAddress == null ? null : MacAddress.fromString(deviceMacAddress);
 
-      if (getNumOfConstructorParams() == 16) {
-        return reflector(AssociationInfoReflector.class)
-            .nwwAssociationInfoPostV(
-                id,
-                userId,
-                packageName,
-                tag,
-                macAddress,
-                displayName,
-                deviceProfile,
-                associatedDevice,
-                selfManaged,
-                notifyOnDeviceNearby,
-                revoked,
-                pending,
-                approvedMs,
-                lastTimeConnectedMs,
-                systemDataSyncFlags,
-                null /* icon */);
-      }
-      // TODO: convert the rest of this logic to use number of parameters and reflector
       if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
-        // We have two different constructors for AssociationInfo across
-        // T branches. aosp has the constructor that takes a new "revoked" parameter.
-        // Since there is not deterministic way to know which branch we are running in,
-        // we will reflect on the class to see if it has the mRevoked member.
-        // Based on the result we will either invoke the constructor with "revoked" or the
-        // one without this parameter.
-        if (ReflectionHelpers.hasField(AssociationInfo.class, "mRevoked")) {
-          return ReflectionHelpers.callConstructor(
-              AssociationInfo.class,
-              ClassParameter.from(int.class, id),
-              ClassParameter.from(int.class, userId),
-              ClassParameter.from(String.class, packageName),
-              ClassParameter.from(MacAddress.class, macAddress),
-              ClassParameter.from(CharSequence.class, displayName),
-              ClassParameter.from(String.class, deviceProfile),
-              ClassParameter.from(boolean.class, selfManaged),
-              ClassParameter.from(boolean.class, notifyOnDeviceNearby),
-              ClassParameter.from(boolean.class, revoked /*revoked only supported in aosp*/),
-              ClassParameter.from(long.class, approvedMs),
-              ClassParameter.from(long.class, lastTimeConnectedMs));
-        } else {
           return ReflectionHelpers.callConstructor(
               AssociationInfo.class,
               ClassParameter.from(int.class, id),
@@ -170,10 +124,8 @@ public class AssociationInfoBuilder {
               ClassParameter.from(boolean.class, notifyOnDeviceNearby),
               ClassParameter.from(long.class, approvedMs),
               ClassParameter.from(long.class, lastTimeConnectedMs));
-        }
-      } else if (RuntimeEnvironment.getApiLevel() <= U.SDK_INT) {
-        // AOSP does not yet contains the new fields - mAssociatedDevice & mSystemDataSyncFlags yet
-        if (ReflectionHelpers.hasField(AssociationInfo.class, "mAssociatedDevice")) {
+
+      } else if (RuntimeEnvironment.getApiLevel() == U.SDK_INT) {
           return ReflectionHelpers.callConstructor(
               AssociationInfo.class,
               ClassParameter.from(int.class, id),
@@ -191,74 +143,23 @@ public class AssociationInfoBuilder {
               ClassParameter.from(long.class, lastTimeConnectedMs),
               ClassParameter.from(int.class, systemDataSyncFlags));
         } else {
-          return ReflectionHelpers.callConstructor(
-              AssociationInfo.class,
-              ClassParameter.from(int.class, id),
-              ClassParameter.from(int.class, userId),
-              ClassParameter.from(String.class, packageName),
-              ClassParameter.from(MacAddress.class, macAddress),
-              ClassParameter.from(CharSequence.class, displayName),
-              ClassParameter.from(String.class, deviceProfile),
-              ClassParameter.from(boolean.class, selfManaged),
-              ClassParameter.from(boolean.class, notifyOnDeviceNearby),
-              ClassParameter.from(boolean.class, revoked),
-              ClassParameter.from(long.class, approvedMs),
-              ClassParameter.from(long.class, lastTimeConnectedMs));
-        }
-      } else {
-        return ReflectionHelpers.callConstructor(
-            AssociationInfo.class,
-            ClassParameter.from(int.class, id),
-            ClassParameter.from(int.class, userId),
-            ClassParameter.from(String.class, packageName),
-            ClassParameter.from(String.class, tag),
-            ClassParameter.from(MacAddress.class, macAddress),
-            ClassParameter.from(CharSequence.class, displayName),
-            ClassParameter.from(String.class, deviceProfile),
-            ClassParameter.from(
-                Class.forName("android.companion.AssociatedDevice"), associatedDevice),
-            ClassParameter.from(boolean.class, selfManaged),
-            ClassParameter.from(boolean.class, notifyOnDeviceNearby),
-            ClassParameter.from(boolean.class, revoked),
-            ClassParameter.from(boolean.class, pending),
-            ClassParameter.from(long.class, approvedMs),
-            ClassParameter.from(long.class, lastTimeConnectedMs),
-            ClassParameter.from(int.class, systemDataSyncFlags));
+        // delegate to platform builder
+        return new AssociationInfo.Builder(id, userId, packageName)
+            .setTag(tag)
+            .setDeviceMacAddress(macAddress)
+            .setDisplayName(displayName)
+            .setDeviceProfile(deviceProfile)
+            .setAssociatedDevice((AssociatedDevice) associatedDevice)
+            .setSelfManaged(selfManaged)
+            .setNotifyOnDeviceNearby(notifyOnDeviceNearby)
+            .setTimeApproved(approvedMs)
+            .setRevoked(revoked)
+            .setLastTimeConnected(lastTimeConnectedMs)
+            .setSystemDataSyncFlags(systemDataSyncFlags)
+            .build();
       }
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private static int getNumOfConstructorParams() {
-    for (java.lang.reflect.Constructor<?> constructor :
-        AssociationInfo.class.getDeclaredConstructors()) {
-      if (constructor.getParameterCount() > 1) {
-        return constructor.getParameterCount();
-      }
-    }
-    throw new IllegalStateException("Could not find a AssociationInfo constructor");
-  }
-
-  @ForType(AssociationInfo.class)
-  interface AssociationInfoReflector {
-    @Constructor
-    AssociationInfo nwwAssociationInfoPostV(
-        int id,
-        int userId,
-        String packageName,
-        String tag,
-        MacAddress macAddress,
-        CharSequence displayName,
-        String deviceProfile,
-        @WithType("android.companion.AssociatedDevice") Object associatedDevice,
-        boolean selfManaged,
-        boolean notifyOnDeviceNearby,
-        boolean revoked,
-        boolean pending,
-        long timeApprovedMs,
-        long lastTimeConnectedMs,
-        int systemDataSyncFlags,
-        Icon icon);
   }
 }
