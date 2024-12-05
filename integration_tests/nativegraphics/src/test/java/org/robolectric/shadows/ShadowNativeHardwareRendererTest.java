@@ -35,7 +35,7 @@ public class ShadowNativeHardwareRendererTest {
 
   @Test
   public void test_hardwareRenderer() {
-    var unused = new HardwareRenderer();
+    new HardwareRenderer();
   }
 
   @Config(maxSdk = R)

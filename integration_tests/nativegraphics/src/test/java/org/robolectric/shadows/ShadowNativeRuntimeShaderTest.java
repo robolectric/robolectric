@@ -71,7 +71,7 @@ public class ShadowNativeRuntimeShaderTest {
   @Config(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
   @Test
   public void testConstructorT() {
-    var unused = new RuntimeShader(SKSL);
+    new RuntimeShader(SKSL);
   }
 
   @Test
