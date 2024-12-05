@@ -5,6 +5,7 @@ import static com.google.errorprone.BugPattern.SeverityLevel.WARNING;
 import com.google.errorprone.BugCheckerRefactoringTestHelper;
 import com.google.errorprone.BugPattern;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -101,6 +102,7 @@ public class DeprecatedMethodsCheckTest {
         .doTest();
   }
 
+  @Ignore("This test fails in a bazel environment")
   @Test
   public void inlineShadowVars() {
     testHelper
@@ -169,6 +171,7 @@ public class DeprecatedMethodsCheckTest {
         .doTest();
   }
 
+  @Ignore("This test fails in a bazel environment")
   @Test
   public void useFrameworkMethodWhenAppropriateAfterApplicationSubstitution() {
     testHelper
