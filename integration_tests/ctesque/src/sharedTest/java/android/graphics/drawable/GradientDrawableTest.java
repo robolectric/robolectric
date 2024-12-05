@@ -77,9 +77,9 @@ public class GradientDrawableTest {
   public void testConstructor() {
     int[] color = new int[] {1, 2, 3};
 
-    new GradientDrawable();
-    new GradientDrawable(GradientDrawable.Orientation.BL_TR, color);
-    new GradientDrawable(null, null);
+    var unused = new GradientDrawable();
+    unused = new GradientDrawable(GradientDrawable.Orientation.BL_TR, color);
+    unused = new GradientDrawable(null, null);
   }
 
   @Test

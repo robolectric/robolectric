@@ -13,6 +13,6 @@ import org.robolectric.annotation.Config;
 public class ShadowNativeMaskFilterTest {
   @Test
   public void testConstructor() {
-    new MaskFilter();
+    var unused = new MaskFilter();
   }
 }

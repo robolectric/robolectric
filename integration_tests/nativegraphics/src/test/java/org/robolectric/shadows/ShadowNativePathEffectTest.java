@@ -14,6 +14,6 @@ public class ShadowNativePathEffectTest {
 
   @Test
   public void testConstructor() {
-    new PathEffect();
+    var unused = new PathEffect();
   }
 }

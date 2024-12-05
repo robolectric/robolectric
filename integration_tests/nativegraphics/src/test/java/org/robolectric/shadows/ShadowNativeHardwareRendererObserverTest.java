@@ -22,7 +22,7 @@ public class ShadowNativeHardwareRendererObserverTest {
   public void test_hardwareRenderer() {
     OnFrameMetricsAvailableListener listener = i -> {};
     if (RuntimeEnvironment.getApiLevel() >= S) {
-      new HardwareRendererObserver(listener, new long[0], new Handler(), false);
+      var unused = new HardwareRendererObserver(listener, new long[0], new Handler(), false);
     } else {
       ReflectionHelpers.callConstructor(
           HardwareRendererObserver.class,
