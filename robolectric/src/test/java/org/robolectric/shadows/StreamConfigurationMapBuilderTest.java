@@ -115,4 +115,16 @@ public class StreamConfigurationMapBuilderTest {
     assertThat(Arrays.asList(map.getInputSizes(PixelFormat.RGBA_8888)))
         .containsExactly(size1, size2);
   }
+
+  @Test
+  public void testGetOutputMinFrameDuration() {
+    Size size = new Size(1920, 1080);
+    StreamConfigurationMap map =
+        StreamConfigurationMapBuilder.newBuilder()
+            .addOutputSize(PixelFormat.RGBA_8888, size)
+            .build();
+    long duration = map.getOutputMinFrameDuration(PixelFormat.RGBA_8888, size);
+
+    assertThat(duration).isEqualTo(0);
+  }
 }
