@@ -18,6 +18,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @RunWith(RobolectricTestRunner.class)
 public class ShadowNativeHardwareRendererObserverTest {
 
+  @SuppressWarnings("CheckReturnValue")
   @Test
   public void test_hardwareRenderer() {
     OnFrameMetricsAvailableListener listener = i -> {};

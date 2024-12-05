@@ -73,6 +73,7 @@ public class GradientDrawableTest {
     mResources = InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
   }
 
+  @SuppressWarnings("CheckReturnValue")
   @Test
   public void testConstructor() {
     int[] color = new int[] {1, 2, 3};

@@ -68,6 +68,7 @@ public class ShadowNativeRuntimeShaderTest {
   }
 
   /** {@link #SKSL} does not compile on V and above. */
+  @SuppressWarnings("CheckReturnValue")
   @Config(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
   @Test
   public void testConstructorT() {

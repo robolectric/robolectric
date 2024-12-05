@@ -33,6 +33,7 @@ import org.robolectric.versioning.AndroidVersions.V;
 @RunWith(RobolectricTestRunner.class)
 public class ShadowNativeHardwareRendererTest {
 
+  @SuppressWarnings("CheckReturnValue")
   @Test
   public void test_hardwareRenderer() {
     new HardwareRenderer();
