@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.S;
 
 import android.os.SystemClock;
 import java.time.DateTimeException;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.concurrent.GuardedBy;
@@ -30,20 +32,21 @@ import org.robolectric.annotation.Resetter;
     isInAndroidSdk = false,
     shadowPicker = ShadowSystemClock.Picker.class)
 public class ShadowPausedSystemClock extends ShadowSystemClock {
-  private static final long INITIAL_TIME = 100;
-  private static final int MILLIS_PER_NANO = 1000000;
+  static final int MILLIS_PER_NANO = 1_000_000;
+  private static final int MILLIS_PER_MICRO = 1_000;
+  private static final long INITIAL_TIME_NS = 100 * MILLIS_PER_NANO;
 
   @SuppressWarnings("NonFinalStaticField")
   @GuardedBy("ShadowPausedSystemClock.class")
-  private static long currentUptimeMillis = INITIAL_TIME;
+  private static long currentUptimeNs = INITIAL_TIME_NS;
 
   @SuppressWarnings("NonFinalStaticField")
   @GuardedBy("ShadowPausedSystemClock.class")
-  private static long currentRealtimeMillis = INITIAL_TIME;
+  private static long currentRealtimeNs = INITIAL_TIME_NS;
 
   private static final List<Listener> listeners = new CopyOnWriteArrayList<>();
   // hopefully temporary list of clock listeners that are NOT cleared between tests
-  // This is needed to accomodate Loopers which are not reset between tests
+  // This is needed to accommodate Loopers which are not reset between tests
   private static final List<Listener> staticListeners = new CopyOnWriteArrayList<>();
 
   /** Callback for clock updates */
@@ -71,8 +74,8 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   @Implementation
   protected static void sleep(long millis) {
     synchronized (ShadowPausedSystemClock.class) {
-      currentUptimeMillis += millis;
-      currentRealtimeMillis += millis;
+      currentUptimeNs += (millis * MILLIS_PER_NANO);
+      currentRealtimeNs += (millis * MILLIS_PER_NANO);
     }
     informListeners();
   }
@@ -86,7 +89,7 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
    */
   protected static void deepSleep(long millis) {
     synchronized (ShadowPausedSystemClock.class) {
-      currentRealtimeMillis += millis;
+      currentRealtimeNs += (millis * MILLIS_PER_NANO);
     }
     informListeners();
   }
@@ -111,14 +114,15 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
    */
   @Implementation
   protected static boolean setCurrentTimeMillis(long millis) {
+    long newTimeNs = millis * MILLIS_PER_NANO;
     synchronized (ShadowPausedSystemClock.class) {
-      if (currentUptimeMillis > millis) {
+      if (currentUptimeNs > newTimeNs) {
         return false;
-      } else if (currentUptimeMillis == millis) {
+      } else if (currentUptimeNs == newTimeNs) {
         return true;
       } else {
-        currentUptimeMillis = millis;
-        currentRealtimeMillis = millis;
+        currentUptimeNs = newTimeNs;
+        currentRealtimeNs = newTimeNs;
       }
     }
     informListeners();
@@ -126,18 +130,23 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   }
 
   @Implementation
-  protected static synchronized long uptimeMillis() {
-    return currentUptimeMillis;
+  protected static long uptimeMillis() {
+    return uptimeNanos() / MILLIS_PER_NANO;
+  }
+
+  @Implementation(minSdk = S)
+  protected static synchronized long uptimeNanos() {
+    return currentUptimeNs;
   }
 
   @Implementation
-  protected static synchronized long elapsedRealtime() {
-    return currentRealtimeMillis;
+  protected static long elapsedRealtime() {
+    return elapsedRealtimeNanos() / MILLIS_PER_NANO;
   }
 
   @Implementation
-  protected static long elapsedRealtimeNanos() {
-    return elapsedRealtime() * MILLIS_PER_NANO;
+  protected static synchronized long elapsedRealtimeNanos() {
+    return currentRealtimeNs;
   }
 
   @Implementation
@@ -148,7 +157,7 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   @HiddenApi
   @Implementation
   protected static long currentThreadTimeMicro() {
-    return uptimeMillis() * 1000;
+    return uptimeNanos() / MILLIS_PER_MICRO;
   }
 
   @HiddenApi
@@ -161,16 +170,24 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   @HiddenApi
   protected static synchronized long currentNetworkTimeMillis() {
     if (networkTimeAvailable) {
-      return currentUptimeMillis;
+      return uptimeMillis();
     } else {
       throw new DateTimeException("Network time not available");
     }
   }
 
+  static void internalAdvanceBy(Duration duration) {
+    synchronized (ShadowPausedSystemClock.class) {
+      currentUptimeNs += duration.toNanos();
+      currentRealtimeNs += duration.toNanos();
+    }
+    informListeners();
+  }
+
   @Resetter
   public static synchronized void reset() {
-    currentUptimeMillis = INITIAL_TIME;
-    currentRealtimeMillis = INITIAL_TIME;
+    currentUptimeNs = INITIAL_TIME_NS;
+    currentRealtimeNs = INITIAL_TIME_NS;
     ShadowSystemClock.reset();
     listeners.clear();
   }
