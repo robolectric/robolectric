@@ -23,14 +23,14 @@ import org.robolectric.shadows.testing.util.CompareUtils;
 
 /** This class looks at every pixel in a given bitmap and verifies that it is correct. */
 public abstract class PerPixelBitmapVerifier extends BitmapVerifier {
-  private static final String TAG = "PerPixelBitmapVerifier";
+  private static final String TAG = "PerPixelBitmapVerifer";
   public static final int DEFAULT_THRESHOLD = 48;
 
   // total color difference tolerated without the pixel failing
-  private final int colorTolerance;
+  private int colorTolerance;
 
   // portion of bitmap allowed to fail pixel check
-  private final float spatialTolerance;
+  private float spatialTolerance;
 
   public PerPixelBitmapVerifier() {
     this(DEFAULT_THRESHOLD, 0);

@@ -80,6 +80,7 @@ public class ShadowAccessibilityRecord {
     reflector(AccessibilityRecordReflector.class, realRecord).setWindowId(id);
   }
 
+
   public View getSourceRoot() {
     return sourceRoot;
   }

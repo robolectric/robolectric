@@ -61,18 +61,18 @@ public class ShadowNativeRuntimeShaderTest {
   @Config(minSdk = S, maxSdk = S_V2)
   @Test
   public void testConstructor() {
-    ReflectionHelpers.callConstructor(
-        RuntimeShader.class,
-        ClassParameter.from(String.class, SKSL),
-        ClassParameter.from(boolean.class, false));
+    var unused =
+        ReflectionHelpers.callConstructor(
+            RuntimeShader.class,
+            ClassParameter.from(String.class, SKSL),
+            ClassParameter.from(boolean.class, false));
   }
 
   /** {@link #SKSL} does not compile on V and above. */
-  @SuppressWarnings("CheckReturnValue")
   @Config(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
   @Test
   public void testConstructorT() {
-    new RuntimeShader(SKSL);
+    var unused = new RuntimeShader(SKSL);
   }
 
   @Test

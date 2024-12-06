@@ -4,6 +4,8 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
@@ -40,8 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
@@ -87,25 +87,25 @@ public class ShadowUsageStatsManager {
 
     public static AppUsageObserver build(
         int observerId,
-        @Nonnull Collection<String> packageNames,
+        @NonNull Collection<String> packageNames,
         long timeLimit,
-        @Nonnull TimeUnit timeUnit,
-        @Nonnull PendingIntent callbackIntent) {
+        @NonNull TimeUnit timeUnit,
+        @NonNull PendingIntent callbackIntent) {
       return new AutoValue_ShadowUsageStatsManager_AppUsageObserver(
           observerId, ImmutableList.copyOf(packageNames), timeLimit, timeUnit, callbackIntent);
     }
 
     public abstract int getObserverId();
 
-    @Nonnull
+    @NonNull
     public abstract ImmutableList<String> getPackageNames();
 
     public abstract long getTimeLimit();
 
-    @Nonnull
+    @NonNull
     public abstract TimeUnit getTimeUnit();
 
-    @Nonnull
+    @NonNull
     public abstract PendingIntent getCallbackIntent();
   }
 
@@ -121,11 +121,11 @@ public class ShadowUsageStatsManager {
   public abstract static class UsageSessionObserver {
     public static UsageSessionObserver build(
         int observerId,
-        @Nonnull List<String> packageNames,
+        @NonNull List<String> packageNames,
         Duration sessionStepDuration,
         Duration thresholdDuration,
-        @Nonnull PendingIntent sessionStepTriggeredIntent,
-        @Nonnull PendingIntent sessionEndedIntent) {
+        @NonNull PendingIntent sessionStepTriggeredIntent,
+        @NonNull PendingIntent sessionEndedIntent) {
       return new AutoValue_ShadowUsageStatsManager_UsageSessionObserver(
           observerId,
           ImmutableList.copyOf(packageNames),
@@ -137,7 +137,7 @@ public class ShadowUsageStatsManager {
 
     public abstract int getObserverId();
 
-    @Nonnull
+    @NonNull
     public abstract ImmutableList<String> getPackageNames();
 
     @Nullable
@@ -146,10 +146,10 @@ public class ShadowUsageStatsManager {
     @Nullable
     public abstract Duration getThresholdDuration();
 
-    @Nonnull
+    @NonNull
     public abstract PendingIntent getSessionStepTriggeredIntent();
 
-    @Nonnull
+    @NonNull
     public abstract PendingIntent getSessionEndedIntent();
   }
 
@@ -170,10 +170,10 @@ public class ShadowUsageStatsManager {
 
     public AppUsageLimitObserver(
         int observerId,
-        @Nonnull List<String> packageNames,
-        @Nonnull Duration timeLimit,
-        @Nonnull Duration timeUsed,
-        @Nonnull PendingIntent callbackIntent) {
+        @NonNull List<String> packageNames,
+        @NonNull Duration timeLimit,
+        @NonNull Duration timeUsed,
+        @NonNull PendingIntent callbackIntent) {
       this.observerId = observerId;
       this.packageNames = ImmutableList.copyOf(packageNames);
       this.timeLimit = checkNotNull(timeLimit);
@@ -185,22 +185,22 @@ public class ShadowUsageStatsManager {
       return observerId;
     }
 
-    @Nonnull
+    @NonNull
     public ImmutableList<String> getPackageNames() {
       return packageNames;
     }
 
-    @Nonnull
+    @NonNull
     public Duration getTimeLimit() {
       return timeLimit;
     }
 
-    @Nonnull
+    @NonNull
     public Duration getTimeUsed() {
       return timeUsed;
     }
 
-    @Nonnull
+    @NonNull
     public PendingIntent getCallbackIntent() {
       return callbackIntent;
     }

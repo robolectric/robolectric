@@ -42,7 +42,8 @@ public final class HardwareRenderingScreenshot {
 
   /**
    * Indicates whether {@link #takeScreenshot(View, Bitmap)} can run, by validating the API level,
-   * the value of the {@link #PIXEL_COPY_RENDER_MODE} property, and the {@link GraphicsMode}.
+   * the presence of the {@link #USE_HARDWARE_RENDERER_NATIVE_ENV} property, and the {@link
+   * GraphicsMode}.
    */
   static boolean canTakeScreenshot(View view) {
     return RuntimeEnvironment.getApiLevel() >= P

@@ -62,7 +62,10 @@ public class ShadowNativeRadialGradientTest {
     canvas.drawPaint(paint);
 
     final ColorSpace bitmapColorSpace = bitmap.getColorSpace();
-    Function<Long, Color> convert = (l) -> Color.valueOf(Color.convert(l, bitmapColorSpace));
+    Function<Long, Color> convert =
+        (l) -> {
+          return Color.valueOf(Color.convert(l, bitmapColorSpace));
+        };
 
     final Color centerColor = bitmap.getColor(50, 50);
     ColorUtils.verifyColor("Center color should be red!", convert.apply(red), centerColor, 0.034f);
@@ -144,7 +147,9 @@ public class ShadowNativeRadialGradientTest {
     int[] colors = null;
     assertThrows(
         NullPointerException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 1, colors, null, TileMode.CLAMP));
+        () -> {
+          RadialGradient unused = new RadialGradient(0.5f, 0.5f, 1, colors, null, TileMode.CLAMP);
+        });
   }
 
   @Test
@@ -153,14 +158,19 @@ public class ShadowNativeRadialGradientTest {
     long[] colors = null;
     assertThrows(
         NullPointerException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 1, colors, null, TileMode.CLAMP));
+        () -> {
+          RadialGradient unused = new RadialGradient(0.5f, 0.5f, 1, colors, null, TileMode.CLAMP);
+        });
   }
 
   @Test
   public void testNoColorInts() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 1, new int[0], null, TileMode.CLAMP));
+        () -> {
+          RadialGradient unused =
+              new RadialGradient(0.5f, 0.5f, 1, new int[0], null, TileMode.CLAMP);
+        });
   }
 
   @Test
@@ -168,14 +178,20 @@ public class ShadowNativeRadialGradientTest {
   public void testNoColorLongs() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 1, new long[0], null, TileMode.CLAMP));
+        () -> {
+          RadialGradient unused =
+              new RadialGradient(0.5f, 0.5f, 1, new long[0], null, TileMode.CLAMP);
+        });
   }
 
   @Test
   public void testOneColorInts() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 1, new int[1], null, TileMode.CLAMP));
+        () -> {
+          RadialGradient unused =
+              new RadialGradient(0.5f, 0.5f, 1, new int[1], null, TileMode.CLAMP);
+        });
   }
 
   @Test
@@ -183,7 +199,10 @@ public class ShadowNativeRadialGradientTest {
   public void testOneColorLongs() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 1, new long[1], null, TileMode.CLAMP));
+        () -> {
+          RadialGradient unused =
+              new RadialGradient(0.5f, 0.5f, 1, new long[1], null, TileMode.CLAMP);
+        });
   }
 
   @Test
@@ -194,7 +213,9 @@ public class ShadowNativeRadialGradientTest {
     colors[1] = Color.pack(.5f, .5f, .5f, 1.0f, ColorSpace.get(ColorSpace.Named.DISPLAY_P3));
     assertThrows(
         IllegalArgumentException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 1, colors, null, TileMode.CLAMP));
+        () -> {
+          RadialGradient unused = new RadialGradient(0.5f, 0.5f, 1, colors, null, TileMode.CLAMP);
+        });
   }
 
   @Test
@@ -204,7 +225,9 @@ public class ShadowNativeRadialGradientTest {
     long color1 = Color.pack(.5f, .5f, .5f, 1.0f, ColorSpace.get(ColorSpace.Named.DISPLAY_P3));
     assertThrows(
         IllegalArgumentException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 1, color0, color1, TileMode.CLAMP));
+        () -> {
+          RadialGradient unused = new RadialGradient(0.5f, 0.5f, 1, color0, color1, TileMode.CLAMP);
+        });
   }
 
   @Test
@@ -212,7 +235,10 @@ public class ShadowNativeRadialGradientTest {
   public void testMismatchPositionsInts() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 1, new int[2], new float[3], TileMode.CLAMP));
+        () -> {
+          RadialGradient unused =
+              new RadialGradient(0.5f, 0.5f, 1, new int[2], new float[3], TileMode.CLAMP);
+        });
   }
 
   @Test
@@ -220,16 +246,23 @@ public class ShadowNativeRadialGradientTest {
   public void testMismatchPositionsLongs() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 1, new long[2], new float[3], TileMode.CLAMP));
+        () -> {
+          RadialGradient unused =
+              new RadialGradient(0.5f, 0.5f, 1, new long[2], new float[3], TileMode.CLAMP);
+        });
   }
 
   @Test
   @Config(minSdk = Q)
   public void testInvalidColorLongs() {
-    long[] colors = new long[] {-1L, -2L};
+    long[] colors = new long[2];
+    colors[0] = -1L;
+    colors[0] = -2L;
     assertThrows(
         IllegalArgumentException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 1, colors, null, TileMode.CLAMP));
+        () -> {
+          RadialGradient unused = new RadialGradient(0.5f, 0.5f, 1, colors, null, TileMode.CLAMP);
+        });
   }
 
   @Test
@@ -237,7 +270,10 @@ public class ShadowNativeRadialGradientTest {
   public void testInvalidColorLong() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 1, -1L, Color.pack(Color.RED), TileMode.CLAMP));
+        () -> {
+          RadialGradient unused =
+              new RadialGradient(0.5f, 0.5f, 1, -1L, Color.pack(Color.RED), TileMode.CLAMP);
+        });
   }
 
   @Test
@@ -245,7 +281,10 @@ public class ShadowNativeRadialGradientTest {
   public void testInvalidColorLong2() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 1, Color.pack(Color.RED), -1L, TileMode.CLAMP));
+        () -> {
+          RadialGradient unused =
+              new RadialGradient(0.5f, 0.5f, 1, Color.pack(Color.RED), -1L, TileMode.CLAMP);
+        });
   }
 
   @Test
@@ -253,7 +292,10 @@ public class ShadowNativeRadialGradientTest {
   public void testZeroRadius() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new RadialGradient(0.5f, 0.5f, 0, Color.RED, Color.BLUE, TileMode.CLAMP));
+        () -> {
+          RadialGradient unused =
+              new RadialGradient(0.5f, 0.5f, 0, Color.RED, Color.BLUE, TileMode.CLAMP);
+        });
   }
 
   @Test
@@ -261,9 +303,11 @@ public class ShadowNativeRadialGradientTest {
   public void testZeroRadiusArray() {
     assertThrows(
         IllegalArgumentException.class,
-        () ->
-            new RadialGradient(
-                0.5f, 0.5f, 0, new int[] {Color.RED, Color.BLUE}, null, TileMode.CLAMP));
+        () -> {
+          RadialGradient unused =
+              new RadialGradient(
+                  0.5f, 0.5f, 0, new int[] {Color.RED, Color.BLUE}, null, TileMode.CLAMP);
+        });
   }
 
   @Test
@@ -271,9 +315,11 @@ public class ShadowNativeRadialGradientTest {
   public void testZeroRadiusLong() {
     assertThrows(
         IllegalArgumentException.class,
-        () ->
-            new RadialGradient(
-                0.5f, 0.5f, 0, Color.pack(Color.RED), Color.pack(Color.BLUE), TileMode.CLAMP));
+        () -> {
+          RadialGradient unused =
+              new RadialGradient(
+                  0.5f, 0.5f, 0, Color.pack(Color.RED), Color.pack(Color.BLUE), TileMode.CLAMP);
+        });
   }
 
   @Test
@@ -281,13 +327,15 @@ public class ShadowNativeRadialGradientTest {
   public void testZeroRadiusLongArray() {
     assertThrows(
         IllegalArgumentException.class,
-        () ->
-            new RadialGradient(
-                0.5f,
-                0.5f,
-                0,
-                new long[] {Color.pack(Color.RED), Color.pack(Color.BLUE)},
-                null,
-                TileMode.CLAMP));
+        () -> {
+          RadialGradient unused =
+              new RadialGradient(
+                  0.5f,
+                  0.5f,
+                  0,
+                  new long[] {Color.pack(Color.RED), Color.pack(Color.BLUE)},
+                  null,
+                  TileMode.CLAMP);
+        });
   }
 }

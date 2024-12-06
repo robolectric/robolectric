@@ -4,6 +4,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
+import android.annotation.NonNull;
 import android.annotation.RequiresApi;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
@@ -21,7 +22,6 @@ import android.util.ArrayMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
-import javax.annotation.Nonnull;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -72,7 +72,7 @@ public class ShadowImsMmTelManager {
   @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
   @Implementation
   protected void registerImsRegistrationCallback(
-      @Nonnull @CallbackExecutor Executor executor, @Nonnull ImsMmTelManager.RegistrationCallback c)
+      @NonNull @CallbackExecutor Executor executor, @NonNull ImsMmTelManager.RegistrationCallback c)
       throws ImsException {
     if (!imsAvailableOnDevice) {
       throw new ImsException(
@@ -88,8 +88,8 @@ public class ShadowImsMmTelManager {
       })
   @Implementation(minSdk = VERSION_CODES.R)
   protected void registerImsRegistrationCallback(
-      @Nonnull @CallbackExecutor Executor executor,
-      @Nonnull RegistrationManager.RegistrationCallback c)
+      @NonNull @CallbackExecutor Executor executor,
+      @NonNull RegistrationManager.RegistrationCallback c)
       throws ImsException {
     if (!imsAvailableOnDevice) {
       throw new ImsException(
@@ -101,7 +101,7 @@ public class ShadowImsMmTelManager {
   @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
   @Implementation
   protected void unregisterImsRegistrationCallback(
-      @Nonnull ImsMmTelManager.RegistrationCallback c) {
+      @NonNull ImsMmTelManager.RegistrationCallback c) {
     registrationCallbackExecutorMap.remove(c);
   }
 
@@ -112,7 +112,7 @@ public class ShadowImsMmTelManager {
       })
   @Implementation(minSdk = VERSION_CODES.R)
   protected void unregisterImsRegistrationCallback(
-      @Nonnull RegistrationManager.RegistrationCallback c) {
+      @NonNull RegistrationManager.RegistrationCallback c) {
     registrationManagerCallbackExecutorMap.remove(c);
   }
 
@@ -135,7 +135,7 @@ public class ShadowImsMmTelManager {
   }
 
   @RequiresApi(api = VERSION_CODES.S)
-  public void setImsRegistering(@Nonnull ImsRegistrationAttributes attrs) {
+  public void setImsRegistering(@NonNull ImsRegistrationAttributes attrs) {
     for (Map.Entry<RegistrationManager.RegistrationCallback, Executor> entry :
         registrationManagerCallbackExecutorMap.entrySet()) {
       entry.getValue().execute(() -> entry.getKey().onRegistering(attrs));
@@ -162,7 +162,7 @@ public class ShadowImsMmTelManager {
   }
 
   @RequiresApi(api = VERSION_CODES.S)
-  public void setImsRegistered(@Nonnull ImsRegistrationAttributes attrs) {
+  public void setImsRegistered(@NonNull ImsRegistrationAttributes attrs) {
     for (Map.Entry<RegistrationManager.RegistrationCallback, Executor> entry :
         registrationManagerCallbackExecutorMap.entrySet()) {
       entry.getValue().execute(() -> entry.getKey().onRegistered(attrs));
@@ -175,7 +175,7 @@ public class ShadowImsMmTelManager {
    *
    * @see #registerImsRegistrationCallback(Executor, RegistrationCallback)
    */
-  public void setImsUnregistered(@Nonnull ImsReasonInfo imsReasonInfo) {
+  public void setImsUnregistered(@NonNull ImsReasonInfo imsReasonInfo) {
     this.imsRegistrationTech = ImsRegistrationImplBase.REGISTRATION_TECH_NONE;
     for (Map.Entry<ImsMmTelManager.RegistrationCallback, Executor> entry :
         registrationCallbackExecutorMap.entrySet()) {
@@ -194,7 +194,7 @@ public class ShadowImsMmTelManager {
    *
    * @see #registerImsRegistrationCallback(Executor, RegistrationCallback)
    */
-  public void setOnTechnologyChangeFailed(int imsRadioTech, @Nonnull ImsReasonInfo imsReasonInfo) {
+  public void setOnTechnologyChangeFailed(int imsRadioTech, @NonNull ImsReasonInfo imsReasonInfo) {
     for (Map.Entry<RegistrationManager.RegistrationCallback, Executor> entry :
         registrationManagerCallbackExecutorMap.entrySet()) {
       entry
@@ -247,7 +247,7 @@ public class ShadowImsMmTelManager {
   @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
   @Implementation
   protected void registerMmTelCapabilityCallback(
-      @Nonnull @CallbackExecutor Executor executor, @Nonnull CapabilityCallback c)
+      @NonNull @CallbackExecutor Executor executor, @NonNull CapabilityCallback c)
       throws ImsException {
     if (!imsAvailableOnDevice) {
       throw new ImsException(
@@ -258,7 +258,7 @@ public class ShadowImsMmTelManager {
 
   @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
   @Implementation
-  protected void unregisterMmTelCapabilityCallback(@Nonnull CapabilityCallback c) {
+  protected void unregisterMmTelCapabilityCallback(@NonNull CapabilityCallback c) {
     capabilityCallbackExecutorMap.remove(c);
   }
 
@@ -276,7 +276,7 @@ public class ShadowImsMmTelManager {
    * CapabilityCallback#onCapabilitiesStatusChanged(MmTelCapabilities)} if IMS has been registered
    * using {@link #setImsUnregistered(ImsReasonInfo)}.
    */
-  public void setMmTelCapabilitiesAvailable(@Nonnull MmTelCapabilities capabilities) {
+  public void setMmTelCapabilitiesAvailable(@NonNull MmTelCapabilities capabilities) {
     this.mmTelCapabilitiesAvailable = capabilities;
     if (imsRegistrationTech != ImsRegistrationImplBase.REGISTRATION_TECH_NONE) {
       for (Map.Entry<CapabilityCallback, Executor> entry :

@@ -4,6 +4,7 @@ import static com.google.errorprone.BugPattern.SeverityLevel.WARNING;
 
 import com.google.errorprone.BugCheckerRefactoringTestHelper;
 import com.google.errorprone.BugPattern;
+import java.io.IOException;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -12,7 +13,7 @@ import org.junit.runners.JUnit4;
 
 /** Tests for {@link DeprecatedMethodsCheck} */
 @RunWith(JUnit4.class)
-@SuppressWarnings("BugPatternNaming")
+@SuppressWarnings("LineLength")
 public class DeprecatedMethodsCheckTest {
   private BugCheckerRefactoringTestHelper testHelper;
 
@@ -24,7 +25,7 @@ public class DeprecatedMethodsCheckTest {
   }
 
   @Test
-  public void replaceShadowApplicationGetInstance() {
+  public void replaceShadowApplicationGetInstance() throws IOException {
     testHelper
         .addInputLines(
             "in/SomeTest.java",
@@ -59,7 +60,7 @@ public class DeprecatedMethodsCheckTest {
   }
 
   @Test
-  public void replaceShadowApplicationGetLatestStuff() {
+  public void replaceShadowApplicationGetLatestStuff() throws IOException {
     testHelper
         .addInputLines(
             "in/SomeTest.java",
@@ -102,9 +103,9 @@ public class DeprecatedMethodsCheckTest {
         .doTest();
   }
 
-  @Ignore("This test fails in a bazel environment")
   @Test
-  public void inlineShadowVars() {
+  @Ignore("multiple-step refactorings not currently supported")
+  public void inlineShadowVars() throws IOException {
     testHelper
         .addInputLines(
             "in/SomeTest.java",
@@ -137,7 +138,7 @@ public class DeprecatedMethodsCheckTest {
   }
 
   @Test
-  public void useShadowsNonStaticIfAlreadyImported() {
+  public void useShadowsNonStaticIfAlreadyImported() throws IOException {
     testHelper
         .addInputLines(
             "in/SomeTest.java",
@@ -171,9 +172,9 @@ public class DeprecatedMethodsCheckTest {
         .doTest();
   }
 
-  @Ignore("This test fails in a bazel environment")
   @Test
-  public void useFrameworkMethodWhenAppropriateAfterApplicationSubstitution() {
+  @Ignore("multiple-step refactorings not currently supported")
+  public void useFrameworkMethodWhenAppropriateAfterApplicationSubstitution() throws IOException {
     testHelper
         .addInputLines(
             "in/SomeTest.java",

@@ -1,7 +1,6 @@
 package android.app;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assume.assumeTrue;
 
 import android.Manifest;
 import android.accounts.Account;
@@ -884,7 +883,6 @@ public class ContextTest {
     EuiccManager applicationEuiccManager =
         (EuiccManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.EUICC_SERVICE);
-    assumeTrue(applicationEuiccManager != null);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
       scenario.onActivity(
           activity -> {
@@ -914,7 +912,6 @@ public class ContextTest {
     EuiccManager applicationEuiccManager =
         (EuiccManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.EUICC_SERVICE);
-    assumeTrue(applicationEuiccManager != null);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
       scenario.onActivity(
           activity -> {

@@ -2,7 +2,9 @@
 <!--
   Manifest for androidx integration test module
 -->
-<manifest>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <application />
+    <application>
+    </application>
 </manifest>
+

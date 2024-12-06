@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -101,11 +100,11 @@ public class ShadowVpnManagerTest {
   public void vpnManager_activityContextEnabled_differentInstancesInteract() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       VpnManager applicationVpnManager =
           RuntimeEnvironment.getApplication().getSystemService(VpnManager.class);
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(Activity.class);
       VpnManager activityVpnManager = activity.getSystemService(VpnManager.class);
 
       assertThat(applicationVpnManager).isNotSameInstanceAs(activityVpnManager);
@@ -116,6 +115,9 @@ public class ShadowVpnManagerTest {
 
       assertThat(activityProfileState).isEqualTo(applicationProfileState);
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

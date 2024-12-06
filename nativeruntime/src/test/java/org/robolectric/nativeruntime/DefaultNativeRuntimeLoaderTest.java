@@ -25,8 +25,7 @@ public final class DefaultNativeRuntimeLoaderTest {
   }
 
   @Test
-  public void concurrentLoad() {
-    //noinspection resource
+  public void concurrentLoad() throws Exception {
     executor.execute(() -> SQLiteDatabase.create(null));
     CursorWindow cursorWindow = new CursorWindow("sdfsdf");
     cursorWindow.close();

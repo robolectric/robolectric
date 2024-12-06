@@ -1,91 +1,60 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.util.reflector.Reflector.reflector;
-
 import android.os.CountDownTimer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(CountDownTimer.class)
 public class ShadowCountDownTimer {
-  static final String PROPERTY_USE_REAL_IMPL = "robolectric.useRealCountDownTimer";
-
   private boolean started;
-  @RealObject private CountDownTimer realCountDownTimer;
+  private long countDownInterval;
+  private long millisInFuture;
+
+  @RealObject CountDownTimer countDownTimer;
+
+  @Implementation
+  protected void __constructor__(long millisInFuture, long countDownInterval) {
+    this.countDownInterval = countDownInterval;
+    this.millisInFuture = millisInFuture;
+    this.started = false;
+    Shadow.invokeConstructor(
+        CountDownTimer.class,
+        countDownTimer,
+        ClassParameter.from(long.class, millisInFuture),
+        ClassParameter.from(long.class, countDownInterval));
+  }
 
   @Implementation
   protected synchronized CountDownTimer start() {
     started = true;
-
-    if (useRealCountDownTimer()) {
-      return reflector(CountDownTimerReflector.class, realCountDownTimer).start();
-    } else {
-      return realCountDownTimer;
-    }
+    return countDownTimer;
   }
 
   @Implementation
-  protected synchronized void cancel() {
+  protected void cancel() {
     started = false;
-
-    reflector(CountDownTimerReflector.class, realCountDownTimer).cancel();
   }
 
   public void invokeTick(long millisUntilFinished) {
-    realCountDownTimer.onTick(millisUntilFinished);
+    countDownTimer.onTick(millisUntilFinished);
   }
 
   public void invokeFinish() {
-    realCountDownTimer.onFinish();
+    countDownTimer.onFinish();
   }
 
   public boolean hasStarted() {
     return started;
   }
 
-  public boolean isCancelled() {
-    return reflector(CountDownTimerReflector.class, realCountDownTimer).getCancelled();
-  }
-
   public long getCountDownInterval() {
-    return reflector(CountDownTimerReflector.class, realCountDownTimer).getCountDownInterval();
+    return countDownInterval;
   }
 
   public long getMillisInFuture() {
-    return reflector(CountDownTimerReflector.class, realCountDownTimer).getMillisInFuture();
-  }
-
-  /**
-   * If the {@code robolectric.useRealCountDownTimer} system property is {@code true}, the real
-   * framework code of {@link CountDownTimer} is used.
-   *
-   * <p>If it is {@code false}, the {@link #start()} and {@link #cancel()} methods are no-ops.
-   *
-   * <p>This allows tests to use the old behavior (ie. the no-op version) during a migration.
-   */
-  private static boolean useRealCountDownTimer() {
-    return Boolean.parseBoolean(System.getProperty(PROPERTY_USE_REAL_IMPL, "true"));
-  }
-
-  @ForType(CountDownTimer.class)
-  interface CountDownTimerReflector {
-    @Direct
-    CountDownTimer start();
-
-    @Direct
-    void cancel();
-
-    @Accessor("mCancelled")
-    boolean getCancelled();
-
-    @Accessor("mCountdownInterval")
-    long getCountDownInterval();
-
-    @Accessor("mMillisInFuture")
-    long getMillisInFuture();
+    return millisInFuture;
   }
 }

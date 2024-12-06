@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.app.ActivityThread;
 import android.app.LoadedApk;
@@ -39,7 +40,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -71,8 +71,8 @@ public class ShadowContextImpl {
 
   /**
    * Returns the handle to a system-level service by name. If the service is not available in
-   * Robolectric, or it is set to unavailable in {@link
-   * ShadowServiceManager#setServiceAvailability}, {@code null} will be returned.
+   * Roboletric, or it is set to unavailable in {@link ShadowServiceManager#setServiceAvailability},
+   * {@code null} will be returned.
    */
   @Implementation
   @Nullable

@@ -8,7 +8,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -20,8 +19,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowClipboardManagerTest {
@@ -162,8 +161,8 @@ public class ShadowClipboardManagerTest {
   public void clipboardManager_instance_retrievesSamePrimaryClip() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    TestActivity activity = null;
+    try {
       ClipboardManager applicationClipboardManager =
           (ClipboardManager)
               ApplicationProvider.getApplicationContext()
@@ -171,7 +170,7 @@ public class ShadowClipboardManagerTest {
       ClipData clipData = ClipData.newPlainText("label", "text");
       applicationClipboardManager.setPrimaryClip(clipData);
 
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(TestActivity.class);
       ClipboardManager activityClipboardManager =
           (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
 
@@ -180,6 +179,9 @@ public class ShadowClipboardManagerTest {
 
       assertThat(activityClipData.toString()).isEqualTo(applicationClipData.toString());
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

@@ -8,6 +8,8 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.ComponentName;
 import android.content.IntentSender;
 import android.content.pm.ApplicationInfo;
@@ -36,8 +38,6 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -182,7 +182,7 @@ public class ShadowLauncherApps {
 
   @Implementation(minSdk = Q)
   protected void startPackageInstallerSessionDetailsActivity(
-      @Nonnull SessionInfo sessionInfo, @Nullable Rect sourceBounds, @Nullable Bundle opts) {
+      @NonNull SessionInfo sessionInfo, @Nullable Rect sourceBounds, @Nullable Bundle opts) {
     throw new UnsupportedOperationException(
         "This method is not currently supported in Robolectric.");
   }
@@ -196,7 +196,7 @@ public class ShadowLauncherApps {
 
   @Implementation(minSdk = O)
   protected List<LauncherActivityInfo> getShortcutConfigActivityList(
-      @Nullable String packageName, @Nonnull UserHandle user) {
+      @Nullable String packageName, @NonNull UserHandle user) {
     return shortcutActivityList.get(user).stream()
         .filter(matchesPackage(packageName))
         .collect(Collectors.toList());
@@ -204,7 +204,7 @@ public class ShadowLauncherApps {
 
   @Implementation(minSdk = O)
   @Nullable
-  protected IntentSender getShortcutConfigActivityIntent(@Nonnull LauncherActivityInfo info) {
+  protected IntentSender getShortcutConfigActivityIntent(@NonNull LauncherActivityInfo info) {
     throw new UnsupportedOperationException(
         "This method is not currently supported in Robolectric.");
   }
@@ -223,7 +223,7 @@ public class ShadowLauncherApps {
 
   @Implementation(minSdk = O)
   protected ApplicationInfo getApplicationInfo(
-      @Nonnull String packageName, int flags, @Nonnull UserHandle user)
+      @NonNull String packageName, int flags, @NonNull UserHandle user)
       throws NameNotFoundException {
     if (applicationInfoList.containsKey(user)) {
       Map<String, ApplicationInfo> map = applicationInfoList.get(user);
@@ -269,7 +269,7 @@ public class ShadowLauncherApps {
 
   @Implementation(minSdk = Q)
   protected boolean shouldHideFromSuggestions(
-      @Nonnull String packageName, @Nonnull UserHandle user) {
+      @NonNull String packageName, @NonNull UserHandle user) {
     throw new UnsupportedOperationException(
         "This method is not currently supported in Robolectric.");
   }
@@ -301,7 +301,7 @@ public class ShadowLauncherApps {
   @Implementation(minSdk = N_MR1)
   @Nullable
   protected List<ShortcutInfo> getShortcuts(
-      @Nonnull ShortcutQuery query, @Nonnull UserHandle user) {
+      @NonNull ShortcutQuery query, @NonNull UserHandle user) {
     if (reflector(ReflectorShortcutQuery.class, query).getChangedSince() != 0) {
       throw new UnsupportedOperationException(
           "Robolectric does not currently support ShortcutQueries that filter on time since"
@@ -335,7 +335,7 @@ public class ShadowLauncherApps {
 
   @Implementation(minSdk = N_MR1)
   protected void pinShortcuts(
-      @Nonnull String packageName, @Nonnull List<String> shortcutIds, @Nonnull UserHandle user) {
+      @NonNull String packageName, @NonNull List<String> shortcutIds, @NonNull UserHandle user) {
     Iterable<ShortcutInfo> changed =
         Iterables.filter(shortcuts, shortcut -> !shortcutIds.contains(shortcut.getId()));
     List<ShortcutInfo> ret = Lists.newArrayList(changed);
@@ -348,18 +348,18 @@ public class ShadowLauncherApps {
 
   @Implementation(minSdk = N_MR1)
   protected void startShortcut(
-      @Nonnull String packageName,
-      @Nonnull String shortcutId,
+      @NonNull String packageName,
+      @NonNull String shortcutId,
       @Nullable Rect sourceBounds,
       @Nullable Bundle startActivityOptions,
-      @Nonnull UserHandle user) {
+      @NonNull UserHandle user) {
     throw new UnsupportedOperationException(
         "This method is not currently supported in Robolectric.");
   }
 
   @Implementation(minSdk = N_MR1)
   protected void startShortcut(
-      @Nonnull ShortcutInfo shortcut,
+      @NonNull ShortcutInfo shortcut,
       @Nullable Rect sourceBounds,
       @Nullable Bundle startActivityOptions) {
     throw new UnsupportedOperationException(
@@ -387,19 +387,19 @@ public class ShadowLauncherApps {
 
   @Implementation(minSdk = Q)
   protected void registerPackageInstallerSessionCallback(
-      @Nonnull Executor executor, @Nonnull SessionCallback callback) {
+      @NonNull Executor executor, @NonNull SessionCallback callback) {
     throw new UnsupportedOperationException(
         "This method is not currently supported in Robolectric.");
   }
 
   @Implementation(minSdk = Q)
-  protected void unregisterPackageInstallerSessionCallback(@Nonnull SessionCallback callback) {
+  protected void unregisterPackageInstallerSessionCallback(@NonNull SessionCallback callback) {
     throw new UnsupportedOperationException(
         "This method is not currently supported in Robolectric.");
   }
 
   @Implementation(minSdk = Q)
-  @Nonnull
+  @NonNull
   protected List<SessionInfo> getAllPackageInstallerSessions() {
     throw new UnsupportedOperationException(
         "This method is not currently supported in Robolectric.");

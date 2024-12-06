@@ -36,7 +36,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowPowerManager.ShadowLowPowerStandbyPortsLock;
@@ -750,12 +749,12 @@ public class ShadowPowerManagerTest {
   public void powerManager_activityContextEnabled_checkIsInteractive() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       PowerManager applicationPowerManager =
           (PowerManager)
               ApplicationProvider.getApplicationContext().getSystemService(Context.POWER_SERVICE);
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(Activity.class);
       PowerManager activityPowerManager =
           (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
 
@@ -766,6 +765,9 @@ public class ShadowPowerManagerTest {
 
       assertThat(activityIsInteractive).isEqualTo(applicationIsInteractive);
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

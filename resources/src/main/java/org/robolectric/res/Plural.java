@@ -17,6 +17,9 @@ public class Plural {
     } else if ("two".equals(quantity)) {
       num = 2;
       usedInEnglish = false;
+    } else if ("other".equals(quantity)) {
+      num = -1;
+      usedInEnglish = true;
     } else {
       num = -1;
       usedInEnglish = true;

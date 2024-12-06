@@ -43,7 +43,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -554,11 +553,11 @@ public class ShadowAppWidgetManagerTest {
   public void appWidgetManager_activityContextEnabled_sharedState() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       AppWidgetManager applicationAppWidgetManager =
           context.getSystemService(AppWidgetManager.class);
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(Activity.class);
       AppWidgetManager activityAppWidgetManager = activity.getSystemService(AppWidgetManager.class);
 
       assertThat(applicationAppWidgetManager).isNotSameInstanceAs(activityAppWidgetManager);
@@ -567,6 +566,9 @@ public class ShadowAppWidgetManagerTest {
 
       assertThat(activityAppWidgetManager.getAppWidgetOptions(1)).isNotNull();
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

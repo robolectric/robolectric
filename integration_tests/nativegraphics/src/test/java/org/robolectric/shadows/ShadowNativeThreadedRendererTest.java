@@ -15,6 +15,7 @@ import org.robolectric.annotation.Config;
 public class ShadowNativeThreadedRendererTest {
   @Test
   public void testInitialization() {
-    ThreadedRenderer.create(ApplicationProvider.getApplicationContext(), false, "Name");
+    ThreadedRenderer unused =
+        ThreadedRenderer.create(ApplicationProvider.getApplicationContext(), false, "Name");
   }
 }

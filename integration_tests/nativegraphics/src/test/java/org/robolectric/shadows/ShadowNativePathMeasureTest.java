@@ -67,7 +67,10 @@ public class ShadowNativePathMeasureTest {
     float[] tan = {1f};
 
     assertThrows(
-        ArrayIndexOutOfBoundsException.class, () -> pathMeasure.getPosTan(distance, pos, tan));
+        ArrayIndexOutOfBoundsException.class,
+        () -> {
+          pathMeasure.getPosTan(distance, pos, tan);
+        });
   }
 
   @Test

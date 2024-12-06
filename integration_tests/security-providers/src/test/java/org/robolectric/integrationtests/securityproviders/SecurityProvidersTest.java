@@ -1,6 +1,5 @@
 package org.robolectric.integrationtests.securityproviders;
 
-import java.net.URI;
 import java.net.URL;
 import java.security.Provider;
 import java.security.Security;
@@ -23,7 +22,7 @@ public class SecurityProvidersTest {
 
   @Test
   public void jsseProvider_isFunctioning() throws Exception {
-    URL url = new URI("https://www.google.com").toURL();
+    URL url = new URL("https://www.google.com");
     url.openConnection().getInputStream();
   }
 
@@ -34,6 +33,6 @@ public class SecurityProvidersTest {
     }
     OkHttpClient client = new OkHttpClient.Builder().build();
     Request request = new Request.Builder().url("https://www.google.com").build();
-    client.newCall(request).execute().close();
+    client.newCall(request).execute();
   }
 }

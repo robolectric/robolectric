@@ -26,6 +26,10 @@ class RoboJavaModulePlugin : Plugin<Project> {
     if (!skipErrorProne) {
       project.pluginManager.apply("net.ltgt.errorprone")
       project.dependencies.add("errorprone", project.libs.findLibrary("error-prone-core").get())
+      project.dependencies.add(
+        "errorproneJavac",
+        project.libs.findLibrary("error-prone-javac").get(),
+      )
     }
 
     project.tasks.withType<JavaCompile>().configureEach {

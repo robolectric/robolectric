@@ -78,7 +78,7 @@ public class ShadowNativePictureTest {
 
     assertEquals(beforeSaveCount, canvas.getSaveCount());
 
-    assertEquals(beforeMatrix, canvas.getMatrix());
+    assertTrue(beforeMatrix.equals(canvas.getMatrix()));
 
     Rect afterClip = new Rect();
 

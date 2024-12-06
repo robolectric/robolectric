@@ -286,7 +286,6 @@ public class ResTableTheme {
 
   private void dumpToLog() {}
 
-  @SuppressWarnings("DuplicateBranches") // The 'else' clause contains TODOs to remove duplication
   public int setTo(ResTableTheme other) {
     styles.clear();
     styles.addAll(other.styles);

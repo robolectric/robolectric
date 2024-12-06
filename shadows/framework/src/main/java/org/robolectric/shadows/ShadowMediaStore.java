@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory.Options;
@@ -12,8 +14,6 @@ import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -145,7 +145,7 @@ public class ShadowMediaStore {
 
   @Implementation(minSdk = TIRAMISU)
   protected static boolean isSupportedCloudMediaProviderAuthority(
-      @Nonnull ContentResolver resolver, @Nonnull String authority) {
+      @NonNull ContentResolver resolver, @NonNull String authority) {
     return supportedCloudMediaProviderAuthorities.contains(authority);
   }
 
@@ -153,7 +153,7 @@ public class ShadowMediaStore {
    * Mutator method to add the input {@code authorities} to the list of supported cloud media
    * provider authorities.
    */
-  public static void addSupportedCloudMediaProviderAuthorities(@Nonnull List<String> authorities) {
+  public static void addSupportedCloudMediaProviderAuthorities(@NonNull List<String> authorities) {
     supportedCloudMediaProviderAuthorities.addAll(authorities);
   }
 
@@ -164,7 +164,7 @@ public class ShadowMediaStore {
 
   @Implementation(minSdk = TIRAMISU)
   protected static boolean isCurrentCloudMediaProviderAuthority(
-      @Nonnull ContentResolver resolver, @Nonnull String authority) {
+      @NonNull ContentResolver resolver, @NonNull String authority) {
     return currentCloudMediaProviderAuthority.equals(authority);
   }
 

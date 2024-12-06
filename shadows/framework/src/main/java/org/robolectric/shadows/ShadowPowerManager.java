@@ -16,6 +16,8 @@ import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.TargetApi;
@@ -38,8 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
@@ -328,7 +328,7 @@ public class ShadowPowerManager {
   @RequiresPermission(android.Manifest.permission.DEVICE_POWER)
   @Implementation(minSdk = S)
   protected void setBatteryDischargePrediction(
-      @Nonnull Duration timeRemaining, boolean isPersonalized) {
+      @NonNull Duration timeRemaining, boolean isPersonalized) {
     this.batteryDischargePrediction = timeRemaining;
     this.isBatteryDischargePredictionPersonalized = isPersonalized;
   }

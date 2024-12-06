@@ -110,11 +110,7 @@ public class AccessibilityNodeInfoTest {
             node.setQueryFromAppProcessEnabled(rootView, true);
             assertThat(node.getChildCount()).isEqualTo(1);
             assertThat(node.getChild(0)).isNotNull();
-            // Only expect getWindowId() is -1 in Robolectric environment.
-            // TODO remove Robolectric checking after fixing Robolectric's implementation.
-            if (Build.FINGERPRINT.equals("robolectric")) {
-              assertThat(node.getWindowId()).isEqualTo(-1);
-            }
+            assertThat(node.getWindowId()).isEqualTo(-1);
           });
     }
   }

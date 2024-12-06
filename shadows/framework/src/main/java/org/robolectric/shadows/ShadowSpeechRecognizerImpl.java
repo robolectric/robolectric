@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.NonNull;
 import android.annotation.RequiresApi;
 import android.content.Context;
 import android.content.Intent;
@@ -13,7 +14,6 @@ import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
 import java.util.Queue;
 import java.util.concurrent.Executor;
-import javax.annotation.Nonnull;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -85,9 +85,9 @@ public class ShadowSpeechRecognizerImpl extends ShadowSpeechRecognizer {
   @Implementation(minSdk = VERSION_CODES.TIRAMISU)
   @Override
   protected void checkRecognitionSupport(
-      @Nonnull Intent recognizerIntent,
-      @Nonnull Executor executor,
-      @Nonnull @ClassName("android.speech.RecognitionSupportCallback") Object supportListener) {
+      @NonNull Intent recognizerIntent,
+      @NonNull Executor executor,
+      @NonNull @ClassName("android.speech.RecognitionSupportCallback") Object supportListener) {
     super.checkRecognitionSupport(recognizerIntent, executor, supportListener);
   }
 

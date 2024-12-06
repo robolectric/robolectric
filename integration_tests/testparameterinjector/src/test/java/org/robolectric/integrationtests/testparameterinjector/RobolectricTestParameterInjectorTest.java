@@ -1,14 +1,11 @@
 package org.robolectric.integrationtests.testparameterinjector;
 
-import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build.VERSION;
 import com.google.testing.junit.testparameterinjector.TestParameter;
 import java.util.ArrayList;
-import javax.annotation.Nonnull;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -22,45 +19,20 @@ import org.junit.runners.JUnit4;
 import org.robolectric.RobolectricTestParameterInjector;
 import org.robolectric.annotation.Config;
 
-@SuppressWarnings({
-  "IgnoreWithoutReason",
-  "NewClassNamingConvention",
-  "TestMethodWithIncorrectSignature",
-  "UnconstructableJUnitTestCase"
-})
+@SuppressWarnings({"TestMethodWithIncorrectSignature", "UnconstructableJUnitTestCase"})
 @RunWith(JUnit4.class)
 public class RobolectricTestParameterInjectorTest {
-  private String priorAlwaysInclude;
-  private String priorEnabledSdks;
-  private RunNotifier runNotifier;
+  private final RunNotifier runNotifier = new RunNotifier();
 
   @Before
   public void setup() {
-    priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
-    System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
-
-    priorEnabledSdks = System.getProperty("robolectric.enabledSdks");
-    System.clearProperty("robolectric.enabledSdks");
-
-    runNotifier = new RunNotifier();
     runNotifier.addListener(
         new RunListener() {
           @Override
-          public void testFailure(Failure failure) {
+          public void testFailure(Failure failure) throws Exception {
             throw new AssertionError("Unexpected test failure: " + failure, failure.getException());
           }
         });
-  }
-
-  @After
-  public void tearDown() {
-    if (priorAlwaysInclude != null) {
-      System.setProperty("robolectric.alwaysIncludeVariantMarkersInTestName", priorAlwaysInclude);
-    }
-
-    if (priorEnabledSdks != null) {
-      System.setProperty("robolectric.enabledSdks", priorEnabledSdks);
-    }
   }
 
   @Ignore
@@ -98,9 +70,9 @@ public class RobolectricTestParameterInjectorTest {
 
     assertThat(runner.testCount()).isEqualTo(2);
     ArrayList<Description> descriptions = runner.getDescription().getChildren();
-    // In Gradle it's test[false], in Bazel it's test[param=false].
-    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?false]");
-    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?true]");
+    // In gradle it's test[false], in bazel it's test[param=false].
+    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?false\\]");
+    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?true\\]");
   }
 
   @Ignore
@@ -151,15 +123,15 @@ public class RobolectricTestParameterInjectorTest {
     runner.run(runNotifier);
     assertThat(runner.testCount()).isEqualTo(2);
     ArrayList<Description> descriptions = runner.getDescription().getChildren();
-    // In Gradle it's test[1], in Bazel it's test[param=1].
-    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?1]");
-    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?2]");
+    // In gradle it's test[1], in bazel it's test[param=1].
+    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?1\\]");
+    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?2\\]");
   }
 
   @Ignore
   @Config(sdk = Config.NEWEST_SDK)
   public static class InjectedEnum {
-    public enum Value {
+    enum Value {
       ONE,
       TWO
     }
@@ -186,10 +158,10 @@ public class RobolectricTestParameterInjectorTest {
   @Ignore
   public static class MultiSdk {
     @Test
-    @Config(sdk = {P, S})
+    @Config(sdk = {28, 31})
     public void test(@TestParameter boolean param) {
       assertThat(param).isAnyOf(true, false);
-      assertThat(VERSION.SDK_INT).isAnyOf(P, S);
+      assertThat(VERSION.SDK_INT).isAnyOf(28, 31);
     }
   }
 
@@ -202,24 +174,23 @@ public class RobolectricTestParameterInjectorTest {
     assertThat(runner.testCount()).isEqualTo(4);
 
     ArrayList<Description> descriptions = runner.getDescription().getChildren();
-    // In Gradle it's test[false][28], in Bazel it's test[param=false][28].
-    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?false]\\[28]");
-    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?true]\\[28]");
-    assertThat(descriptions.get(2).getMethodName()).matches("test\\[(param=)?false]");
-    assertThat(descriptions.get(3).getMethodName()).matches("test\\[(param=)?true]");
+    // In gradle it's test[false][28], in bazel it's test[param=false][28].
+    assertThat(descriptions.get(0).getMethodName()).matches("test\\[(param=)?false\\]\\[28\\]");
+    assertThat(descriptions.get(1).getMethodName()).matches("test\\[(param=)?true\\]\\[28\\]");
+    assertThat(descriptions.get(2).getMethodName()).matches("test\\[(param=)?false\\]");
+    assertThat(descriptions.get(3).getMethodName()).matches("test\\[(param=)?true\\]");
   }
 
-  // Simulate the behavior of proto lite enum toString which includes the object hashcode (proto
-  // lite toString tries to avoid dep on enum name so that the name can be stripped by appreduce).
+  // Simulate behavior of proto lite enum toString which includes the object hashcode (proto lite
+  // toString tries to avoid dep on enum name so that the name can be stripped by appreduce).
   @Ignore
   @Config(sdk = Config.NEWEST_SDK)
   public static class HashCodeToString {
-    public enum HashCodeToStringValue {
+    enum HashCodeToStringValue {
       ONE,
       TWO;
 
       @Override
-      @Nonnull
       public String toString() {
         return "" + super.hashCode();
       }

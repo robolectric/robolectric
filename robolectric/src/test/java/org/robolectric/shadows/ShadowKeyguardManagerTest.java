@@ -21,8 +21,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowKeyguardManagerTest {
@@ -198,13 +198,13 @@ public class ShadowKeyguardManagerTest {
   public void keyguardManager_activityContextEnabled_retrievesSameState() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       KeyguardManager applicationKeyguardManager =
           (KeyguardManager)
               ApplicationProvider.getApplicationContext()
                   .getSystemService(Context.KEYGUARD_SERVICE);
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(TestActivity.class);
       KeyguardManager activityKeyguardManager =
           (KeyguardManager) activity.getSystemService(Context.KEYGUARD_SERVICE);
 
@@ -213,6 +213,9 @@ public class ShadowKeyguardManagerTest {
 
       assertThat(activityIsKeyguardLocked).isEqualTo(applicationIsKeyguardLocked);
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

@@ -11,6 +11,7 @@ import android.util.SparseIntArray;
 import com.google.common.collect.ImmutableList;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.List;
+import java.util.Optional;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -81,6 +82,13 @@ public class AudioDeviceInfoBuilder {
   }
 
   private static int externalToInternalType(int externalType) {
-    return reflector(AudioDeviceInfoReflector.class).getExtToIntDeviceMapping().get(externalType);
+    return Optional.ofNullable(
+            reflector(AudioDeviceInfoReflector.class).getExtToIntDeviceMapping().get(externalType))
+        .orElseThrow(
+            () ->
+                new IllegalArgumentException(
+                    "External type "
+                        + externalType
+                        + " does not have a mapping to an internal type defined."));
   }
 }

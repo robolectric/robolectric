@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
@@ -13,7 +14,6 @@ import android.os.Build;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
@@ -22,8 +22,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowWifiP2pManagerTest {
@@ -191,9 +191,9 @@ public class ShadowWifiP2pManagerTest {
           latch.countDown();
         });
 
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
-      Activity activity = controller.get();
+    Activity activity = null;
+    try {
+      activity = Robolectric.setupActivity(TestActivity.class);
       WifiP2pManager activityWifiP2pManager =
           (WifiP2pManager) activity.getSystemService(Context.WIFI_P2P_SERVICE);
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -203,8 +203,7 @@ public class ShadowWifiP2pManagerTest {
       }
 
       WifiP2pManager.Channel activityChannel =
-          Objects.requireNonNull(activityWifiP2pManager)
-              .initialize(activity, activity.getMainLooper(), null);
+          activityWifiP2pManager.initialize(activity, activity.getMainLooper(), null);
 
       activityWifiP2pManager.requestGroupInfo(
           activityChannel,
@@ -219,8 +218,11 @@ public class ShadowWifiP2pManagerTest {
 
       assertThat(applicationGroupNameHolder[0]).isEqualTo(activityGroupNameHolder[0]);
     } catch (InterruptedException e) {
-      throw new AssertionError("Failed because of latch interrupt", e);
+      fail("Failed because of latch interrupt");
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

@@ -28,7 +28,7 @@ public class ShadowNativeAnimatedImageDrawableTest {
   }
 
   @Test
-  public void testInflate() {
+  public void testInflate() throws Exception {
     AnimatedImageDrawable aid = (AnimatedImageDrawable) resources.getDrawable(R.drawable.animated);
     assertThat(aid).isNotNull();
   }

@@ -17,10 +17,8 @@ public class FragmentScenarioTest {
   @Test
   public void launchFragment() {
     final AtomicReference<Fragment> loadedFragment = new AtomicReference<>();
-    try (FragmentScenario<Fragment> scenario = FragmentScenario.launch(Fragment.class)) {
-      scenario.onFragment(loadedFragment::set);
-      assertThat(loadedFragment.get()).isNotNull();
-    }
+    FragmentScenario.launch(Fragment.class).onFragment(loadedFragment::set);
+    assertThat(loadedFragment.get()).isNotNull();
   }
 
   /**
@@ -32,9 +30,7 @@ public class FragmentScenarioTest {
   @Config(instrumentedPackages = "androidx.")
   public void launchFragmentInstrumented() {
     final AtomicReference<Fragment> loadedFragment = new AtomicReference<>();
-    try (FragmentScenario<Fragment> scenario = FragmentScenario.launch(Fragment.class)) {
-      scenario.onFragment(loadedFragment::set);
-      assertThat(loadedFragment.get()).isNotNull();
-    }
+    FragmentScenario.launch(Fragment.class).onFragment(loadedFragment::set);
+    assertThat(loadedFragment.get()).isNotNull();
   }
 }

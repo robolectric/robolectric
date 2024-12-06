@@ -17,8 +17,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestActivity;
 
 /** Unit tests for {@link org.robolectric.shadows.ShadowRoleManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -135,11 +135,11 @@ public final class ShadowRoleManagerTest {
   public void roleManager_activityContextEnabled_differentInstancesRetrieveRoles() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       RoleManager applicationRoleManager = roleManager;
 
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(TestActivity.class);
       RoleManager activityRoleManager =
           (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
 
@@ -150,6 +150,9 @@ public final class ShadowRoleManagerTest {
 
       assertThat(activityRoleHeld).isEqualTo(applicationRoleHeld);
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

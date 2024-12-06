@@ -23,8 +23,7 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ReplacementSpan;
 import com.google.common.base.Splitter;
-import javax.annotation.Nonnull;
-import org.junit.Assert;
+import junit.framework.Assert;
 
 /**
  * Represents an editor state.
@@ -58,13 +57,13 @@ public class EditorState {
   private static class MockReplacementSpan extends ReplacementSpan {
     @Override
     public int getSize(
-        @Nonnull Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
+        Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
       return 0;
     }
 
     @Override
     public void draw(
-        @Nonnull Canvas canvas,
+        Canvas canvas,
         CharSequence text,
         int start,
         int end,
@@ -72,7 +71,7 @@ public class EditorState {
         int top,
         int y,
         int bottom,
-        @Nonnull Paint paint) {}
+        Paint paint) {}
   }
 
   // Returns true if the code point is ASCII and graph.

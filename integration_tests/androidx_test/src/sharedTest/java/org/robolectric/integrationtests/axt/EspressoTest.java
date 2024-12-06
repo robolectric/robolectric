@@ -4,6 +4,7 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.pressKey;
+import static androidx.test.espresso.action.ViewActions.swipeUp;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.action.ViewActions.typeTextIntoFocusedView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -20,6 +21,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import androidx.test.annotation.UiThreadTest;
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.Espresso;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -37,8 +39,8 @@ import org.robolectric.integration.axt.R;
 public final class EspressoTest {
 
   @Rule
-  public ActivityScenarioRule<NoActionBarEspressoActivity> activityRule =
-      new ActivityScenarioRule<>(NoActionBarEspressoActivity.class);
+  public ActivityScenarioRule<EspressoActivity> activityRule =
+      new ActivityScenarioRule<>(EspressoActivity.class);
 
   @Test
   public void onIdle_doesnt_block() {
@@ -190,6 +192,11 @@ public final class EspressoTest {
   }
 
   @Test
+  public void customActivityLabel() {
+    onView(withText("Activity Label")).check(matches(isCompletelyDisplayed()));
+  }
+
+  @Test
   public void changeText_withCloseSoftKeyboard() {
     // Type text and then press the button.
     onView(withId(R.id.edit_text)).perform(typeText("anything"), closeSoftKeyboard());
@@ -205,6 +212,16 @@ public final class EspressoTest {
     onView(withId(R.id.edit_text)).perform(typeTextIntoFocusedView("Other text."));
 
     onView(withId(R.id.edit_text)).check(matches(withText("Some text.\nOther text.")));
+  }
+
+  @Test
+  public void clickButton_after_swipeUp() {
+    try (ActivityScenario<EspressoScrollingActivity> activityScenario =
+        ActivityScenario.launch(EspressoScrollingActivity.class)) {
+      onView(withId(R.id.scroll_view)).perform(swipeUp());
+      onView(withId(R.id.button)).perform(click());
+      activityScenario.onActivity(action -> assertThat(action.buttonClicked).isTrue());
+    }
   }
 
   @Test

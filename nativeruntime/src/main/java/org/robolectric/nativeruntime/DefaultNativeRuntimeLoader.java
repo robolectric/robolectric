@@ -114,7 +114,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
           });
 
   /**
-   * {@code DEFERRED_STATIC_INITIALIZERS} that invoke their own native methods in static
+   * {@link #DEFERRED_STATIC_INITIALIZERS} that invoke their own native methods in static
    * initializers. Unlike libcore, registering JNI on the JVM causes static initialization to be
    * performed on the class. Because of this, static initializers cannot invoke the native methods
    * of the class under registration. Executing these static initializers must be deferred until
@@ -209,7 +209,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
    * graphics.
    */
   private void maybeCopyFonts(TempDirectory tempDirectory) throws IOException {
-    URI fontsUri;
+    URI fontsUri = null;
     try {
       fontsUri = Resources.getResource("fonts/").toURI();
     } catch (IllegalArgumentException | URISyntaxException e) {

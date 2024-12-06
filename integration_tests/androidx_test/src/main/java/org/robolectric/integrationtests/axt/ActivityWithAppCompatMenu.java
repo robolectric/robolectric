@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import org.robolectric.integration.axt.R;
 
@@ -27,7 +26,7 @@ public class ActivityWithAppCompatMenu extends AppCompatActivity {
   }
 
   @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+  public boolean onOptionsItemSelected(MenuItem item) {
     menuClicked = true;
     return true;
   }

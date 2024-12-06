@@ -15,7 +15,6 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -64,12 +63,12 @@ public class ShadowTranslationManagerTest {
   public void translationManager_activityContextEnabled_differentInstancesRetrieveCapabilities() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       TranslationManager applicationTranslationManager =
           ApplicationProvider.getApplicationContext().getSystemService(TranslationManager.class);
 
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(Activity.class);
       TranslationManager activityTranslationManager =
           activity.getSystemService(TranslationManager.class);
 
@@ -82,6 +81,9 @@ public class ShadowTranslationManagerTest {
 
       assertThat(activityCapabilities).isEqualTo(applicationCapabilities);
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

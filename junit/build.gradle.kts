@@ -4,8 +4,11 @@ plugins {
 }
 
 dependencies {
+  api(project(":annotations"))
   api(project(":sandbox"))
   api(project(":pluginapi"))
+  api(project(":shadowapi"))
+  api(project(":utils:reflector"))
 
   compileOnly(libs.findbugs.jsr305)
   compileOnly(libs.junit4)

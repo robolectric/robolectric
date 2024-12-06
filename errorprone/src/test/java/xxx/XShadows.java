@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * Fake {@link org.robolectric.internal.ShadowProvider} for testing {@link
- * org.robolectric.errorprone.bugpatterns.RobolectricShadow}.
+ * org.robolectric.errorprone.bugpatterns.ShadowUsageCheck}.
  */
 public class XShadows implements org.robolectric.internal.ShadowProvider {
   public static XShadowAlertDialog shadowOf(AlertDialog actual) {

@@ -35,7 +35,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowUsbManager._UsbManagerQ_;
 import org.robolectric.shadows.ShadowUsbManager._UsbManager_;
@@ -253,11 +252,11 @@ public class ShadowUsbManagerTest {
   public void usbManager_activityContextEnabled_differentInstancesRetrieveSameUsbDevices() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       UsbManager applicationUsbManager =
           ApplicationProvider.getApplicationContext().getSystemService(UsbManager.class);
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(Activity.class);
       UsbManager activityUsbManager = activity.getSystemService(UsbManager.class);
 
       assertThat(applicationUsbManager).isNotSameInstanceAs(activityUsbManager);
@@ -267,6 +266,9 @@ public class ShadowUsbManagerTest {
 
       assertThat(activityDevices).isEqualTo(applicationDevices);
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

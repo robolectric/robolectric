@@ -1,5 +1,6 @@
 package org.robolectric.android.util.concurrent;
 
+import android.annotation.NonNull;
 import com.google.common.annotations.Beta;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.Collection;
@@ -10,7 +11,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import javax.annotation.Nonnull;
 import org.robolectric.annotation.LooperMode;
 
 /**
@@ -62,25 +62,25 @@ public class InlineExecutorService implements ExecutorService {
     return delegateService.awaitTermination(l, timeUnit);
   }
 
-  @Nonnull
+  @NonNull
   @Override
-  public <T> Future<T> submit(@Nonnull Callable<T> task) {
+  public <T> Future<T> submit(@NonNull Callable<T> task) {
     Future<T> future = delegateService.submit(task);
     delegateService.runAll();
     return future;
   }
 
-  @Nonnull
+  @NonNull
   @Override
-  public <T> Future<T> submit(@Nonnull Runnable task, T result) {
+  public <T> Future<T> submit(@NonNull Runnable task, T result) {
     Future<T> future = delegateService.submit(task, result);
     delegateService.runAll();
     return future;
   }
 
-  @Nonnull
+  @NonNull
   @Override
-  public Future<?> submit(@Nonnull Runnable task) {
+  public Future<?> submit(@NonNull Runnable task) {
     Future<?> future = delegateService.submit(task);
     delegateService.runAll();
     return future;
@@ -88,36 +88,36 @@ public class InlineExecutorService implements ExecutorService {
 
   @Override
   @SuppressWarnings("FutureReturnValueIgnored")
-  public void execute(@Nonnull Runnable command) {
+  public void execute(@NonNull Runnable command) {
     delegateService.execute(command);
     delegateService.runAll();
   }
 
-  @Nonnull
+  @NonNull
   @Override
-  public <T> List<Future<T>> invokeAll(@Nonnull Collection<? extends Callable<T>> tasks)
+  public <T> List<Future<T>> invokeAll(@NonNull Collection<? extends Callable<T>> tasks)
       throws InterruptedException {
     return delegateService.invokeAll(tasks);
   }
 
-  @Nonnull
+  @NonNull
   @Override
   public <T> List<Future<T>> invokeAll(
-      @Nonnull Collection<? extends Callable<T>> tasks, long timeout, @Nonnull TimeUnit unit)
+      @NonNull Collection<? extends Callable<T>> tasks, long timeout, @NonNull TimeUnit unit)
       throws InterruptedException {
     return delegateService.invokeAll(tasks, timeout, unit);
   }
 
-  @Nonnull
+  @NonNull
   @Override
-  public <T> T invokeAny(@Nonnull Collection<? extends Callable<T>> tasks)
+  public <T> T invokeAny(@NonNull Collection<? extends Callable<T>> tasks)
       throws ExecutionException, InterruptedException {
     return delegateService.invokeAny(tasks);
   }
 
   @Override
   public <T> T invokeAny(
-      @Nonnull Collection<? extends Callable<T>> tasks, long timeout, @Nonnull TimeUnit unit)
+      @NonNull Collection<? extends Callable<T>> tasks, long timeout, @NonNull TimeUnit unit)
       throws ExecutionException, InterruptedException, TimeoutException {
     return delegateService.invokeAny(tasks, timeout, unit);
   }

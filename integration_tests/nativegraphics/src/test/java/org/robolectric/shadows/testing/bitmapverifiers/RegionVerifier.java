@@ -36,7 +36,7 @@ public class RegionVerifier extends BitmapVerifier {
     }
   }
 
-  private final List<SubRegionVerifiers> regionVerifiers = new ArrayList<>();
+  private List<SubRegionVerifiers> regionVerifiers = new ArrayList<>();
 
   @Override
   public boolean verify(int[] bitmap, int offset, int stride, int width, int height) {
@@ -47,9 +47,9 @@ public class RegionVerifier extends BitmapVerifier {
         Rect area = subRegionVerifier.region.getBounds();
         isVerified &= verifySubRect(bitmap, offset, stride, subRegionVerifier.verifier, area);
       } else {
-        RegionIterator iterator = new RegionIterator(subRegionVerifier.region);
+        RegionIterator iter = new RegionIterator(subRegionVerifier.region);
         Rect area = new Rect();
-        while (iterator.next(area)) {
+        while (iter.next(area)) {
           isVerified &= verifySubRect(bitmap, offset, stride, subRegionVerifier.verifier, area);
         }
       }

@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-  compileSdk = 35
+  compileSdk = 34
   namespace = "org.robolectric.integrationtests.memoryleaks"
 
   defaultConfig { minSdk = 21 }
@@ -15,7 +15,7 @@ android {
   }
 
   testOptions {
-    targetSdk = 35
+    targetSdk = 34
     unitTests.isIncludeAndroidResources = true
   }
 }

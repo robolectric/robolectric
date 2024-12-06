@@ -11,9 +11,8 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = O)
 public class ShadowNativeMaskFilterTest {
-  @SuppressWarnings("CheckReturnValue")
   @Test
   public void testConstructor() {
-    new MaskFilter();
+    var unused = new MaskFilter();
   }
 }

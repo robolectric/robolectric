@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.IntStream;
-import javax.annotation.Nonnull;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
@@ -53,7 +52,6 @@ public final class RobolectricTestParameterInjector extends RobolectricTestRunne
   }
 
   @Override
-  @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
     return new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method))
         .doNotAcquireClass(DelegateTestRunner.class)

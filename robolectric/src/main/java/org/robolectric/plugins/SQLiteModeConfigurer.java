@@ -1,5 +1,6 @@
 package org.robolectric.plugins;
 
+
 import com.google.auto.service.AutoService;
 import java.util.Properties;
 import javax.annotation.Nonnull;

@@ -32,7 +32,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAlarmManager.ScheduledAlarm;
 
@@ -671,14 +670,14 @@ public class ShadowAlarmManagerTest {
   public void alarmManager_instance_retrievesSameAlarmClockInfo() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
+    Activity activity = null;
 
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    try {
       AlarmManager applicationAlarmManager =
           (AlarmManager)
               ApplicationProvider.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
 
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(Activity.class);
       AlarmManager activityAlarmManager =
           (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
 
@@ -688,6 +687,9 @@ public class ShadowAlarmManagerTest {
 
       assertThat(activityAlarmClock).isEqualTo(applicationAlarmClock);
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+
+
 @SuppressWarnings("UnusedDeclaration")
 public abstract class ShadowAssetInputStream {
 

@@ -9,5 +9,6 @@ dependencies {
   compileOnly(AndroidSdk.MAX_SDK.coordinates)
   testImplementation(libs.truth)
   testImplementation(libs.junit4)
+  testImplementation(libs.javax.annotation.api)
   testCompileOnly(AndroidSdk.MAX_SDK.coordinates) // compile against latest Android SDK
 }

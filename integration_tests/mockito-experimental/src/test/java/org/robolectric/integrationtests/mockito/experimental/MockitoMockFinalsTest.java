@@ -36,7 +36,7 @@ public class MockitoMockFinalsTest {
   }
 
   static final class User {
-    int getId() {
+    final int getId() {
       return -1;
     }
   }

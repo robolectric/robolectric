@@ -48,7 +48,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
-import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -279,7 +278,9 @@ public class ShadowNativeBitmapFactoryTest {
 
     assertThrows(
         IllegalArgumentException.class,
-        () -> BitmapFactory.decodeResource(res, R.drawable.pass, options));
+        () -> {
+          BitmapFactory.decodeResource(res, R.drawable.pass, options);
+        });
   }
 
   /** Create bitmap sized to load unscaled resources: start, pass, and alpha */
@@ -344,7 +345,9 @@ public class ShadowNativeBitmapFactoryTest {
     options.inMutable = true;
     options.inScaled = false;
     options.inSampleSize = 4;
-    options.inBitmap = BitmapFactory.decodeResource(res, R.drawable.robot, options);
+    Bitmap reduced = BitmapFactory.decodeResource(res, R.drawable.robot, options);
+
+    options.inBitmap = reduced;
     options.inSampleSize = 1;
     assertThrows(
         "should throw exception due to lack of space",
@@ -407,8 +410,8 @@ public class ShadowNativeBitmapFactoryTest {
     options.inSampleSize = 2;
     Bitmap scaleReduced = BitmapFactory.decodeResource(res, R.drawable.robot, options);
     // verify that density isn't incorrectly carried over during bitmap reuse
-    assertNotEquals(2, densityReduced.getDensity());
-    assertNotEquals(0, densityReduced.getDensity());
+    assertFalse(densityReduced.getDensity() == 2);
+    assertFalse(densityReduced.getDensity() == 0);
     assertSame(densityReduced, scaleReduced);
   }
 
@@ -427,19 +430,17 @@ public class ShadowNativeBitmapFactoryTest {
     options.inInputShareable = false;
     byte[] array = obtainArray();
     Bitmap purgeableBitmap = BitmapFactory.decodeByteArray(array, 0, array.length, options);
-    assertNotEquals(0, purgeableBitmap.getAllocationByteCount());
+    assertFalse(purgeableBitmap.getAllocationByteCount() == 0);
   }
 
   private int defaultCreationDensity;
 
-  private void verifyScaled(@Nullable Bitmap b) {
-    assertNotNull(b);
+  private void verifyScaled(Bitmap b) {
     assertEquals(START_WIDTH * 2, b.getWidth());
     assertEquals(2, b.getDensity());
   }
 
-  private void verifyUnscaled(@Nullable Bitmap b) {
-    assertNotNull(b);
+  private void verifyUnscaled(Bitmap b) {
     assertEquals(START_WIDTH, b.getWidth());
     assertEquals(b.getDensity(), defaultCreationDensity);
   }
@@ -477,30 +478,28 @@ public class ShadowNativeBitmapFactoryTest {
 
   @Test
   public void testDecodeFileDescriptor1() throws IOException {
-    try (ParcelFileDescriptor pfd = obtainParcelDescriptor(obtainPath())) {
-      FileDescriptor input = pfd.getFileDescriptor();
-      Rect r = new Rect(1, 1, 1, 1);
-      Bitmap b = BitmapFactory.decodeFileDescriptor(input, r, opt1);
-      assertNotNull(b);
-      // Test the bitmap size
-      assertEquals(START_HEIGHT, b.getHeight());
-      assertEquals(START_WIDTH, b.getWidth());
-      // Test if no bitmap
-      assertNull(BitmapFactory.decodeFileDescriptor(input, r, opt2));
-    }
+    ParcelFileDescriptor pfd = obtainParcelDescriptor(obtainPath());
+    FileDescriptor input = pfd.getFileDescriptor();
+    Rect r = new Rect(1, 1, 1, 1);
+    Bitmap b = BitmapFactory.decodeFileDescriptor(input, r, opt1);
+    assertNotNull(b);
+    // Test the bitmap size
+    assertEquals(START_HEIGHT, b.getHeight());
+    assertEquals(START_WIDTH, b.getWidth());
+    // Test if no bitmap
+    assertNull(BitmapFactory.decodeFileDescriptor(input, r, opt2));
   }
 
   @Test
   public void testDecodeFileDescriptor2() throws IOException {
-    try (ParcelFileDescriptor pfd = obtainParcelDescriptor(obtainPath())) {
-      FileDescriptor input = pfd.getFileDescriptor();
-      Bitmap b = BitmapFactory.decodeFileDescriptor(input);
+    ParcelFileDescriptor pfd = obtainParcelDescriptor(obtainPath());
+    FileDescriptor input = pfd.getFileDescriptor();
+    Bitmap b = BitmapFactory.decodeFileDescriptor(input);
 
-      assertNotNull(b);
-      // Test the bitmap size
-      assertEquals(START_HEIGHT, b.getHeight());
-      assertEquals(START_WIDTH, b.getWidth());
-    }
+    assertNotNull(b);
+    // Test the bitmap size
+    assertEquals(START_HEIGHT, b.getHeight());
+    assertEquals(START_WIDTH, b.getWidth());
   }
 
   @Test
@@ -512,32 +511,30 @@ public class ShadowNativeBitmapFactoryTest {
       for (int j = 0; j < actualOffsets.length; ++j) {
         long actualOffset = actualOffsets[j];
         String path = obtainPath(testImage.id, actualOffset);
+        RandomAccessFile file = new RandomAccessFile(path, "r");
+        FileDescriptor fd = file.getFD();
+        assertTrue(fd.valid());
 
-        try (RandomAccessFile file = new RandomAccessFile(path, "r")) {
-          FileDescriptor fd = file.getFD();
-          assertTrue(fd.valid());
+        // Set the offset to ACTUAL_OFFSET
+        file.seek(actualOffset);
+        assertEquals(file.getFilePointer(), actualOffset);
 
-          // Set the offset to ACTUAL_OFFSET
-          file.seek(actualOffset);
-          assertEquals(file.getFilePointer(), actualOffset);
+        // Now decode. This should be successful and leave the offset
+        // unchanged.
+        Bitmap b = BitmapFactory.decodeFileDescriptor(fd);
+        assertNotNull(b);
+        assertEquals(file.getFilePointer(), actualOffset);
 
-          // Now decode. This should be successful and leave the offset
-          // unchanged.
-          Bitmap b = BitmapFactory.decodeFileDescriptor(fd);
-          assertNotNull(b);
-          assertEquals(file.getFilePointer(), actualOffset);
+        // Now use the other offset. It should fail to decode, and
+        // the offset should remain unchanged.
+        long otherOffset = actualOffsets[(j + 1) % actualOffsets.length];
+        assertFalse(otherOffset == actualOffset);
+        file.seek(otherOffset);
+        assertEquals(file.getFilePointer(), otherOffset);
 
-          // Now use the other offset. It should fail to decode, and
-          // the offset should remain unchanged.
-          long otherOffset = actualOffsets[(j + 1) % actualOffsets.length];
-          assertNotEquals(otherOffset, actualOffset);
-          file.seek(otherOffset);
-          assertEquals(file.getFilePointer(), otherOffset);
-
-          b = BitmapFactory.decodeFileDescriptor(fd);
-          assertNull(b);
-          assertEquals(file.getFilePointer(), otherOffset);
-        }
+        b = BitmapFactory.decodeFileDescriptor(fd);
+        assertNull(b);
+        assertEquals(file.getFilePointer(), otherOffset);
       }
     }
   }
@@ -607,9 +604,10 @@ public class ShadowNativeBitmapFactoryTest {
     File dir = RuntimeEnvironment.getApplication().getFilesDir();
     dir.mkdirs();
 
-    String name = RuntimeEnvironment.getApplication().getResources().getResourceEntryName(resId);
+    String name =
+        RuntimeEnvironment.getApplication().getResources().getResourceEntryName(resId).toString();
     if (offset > 0) {
-      name = name + "_" + offset;
+      name = name + "_" + String.valueOf(offset);
     }
 
     File file = new File(dir, name);
@@ -626,7 +624,7 @@ public class ShadowNativeBitmapFactoryTest {
     // Write a bunch of zeroes before the image.
     assertThat(offset).isAtMost(1024);
     fOutput.write(dataBuffer, 0, (int) offset);
-    int readLength;
+    int readLength = 0;
     while ((readLength = is.read(dataBuffer)) != -1) {
       fOutput.write(dataBuffer, 0, readLength);
     }

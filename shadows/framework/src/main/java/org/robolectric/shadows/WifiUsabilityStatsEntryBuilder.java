@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+
 import android.net.wifi.WifiUsabilityStatsEntry;
 import android.net.wifi.WifiUsabilityStatsEntry.ContentionTimeStats;
 import android.net.wifi.WifiUsabilityStatsEntry.RadioStats;

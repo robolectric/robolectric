@@ -12,9 +12,8 @@ import org.robolectric.annotation.Config;
 @Config(minSdk = O)
 public class ShadowNativePathEffectTest {
 
-  @SuppressWarnings("CheckReturnValue")
   @Test
   public void testConstructor() {
-    new PathEffect();
+    var unused = new PathEffect();
   }
 }

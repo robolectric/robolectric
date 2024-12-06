@@ -72,10 +72,8 @@ public abstract class BaseMemoryLeaksTest {
   // that run.
   public void aaa_activityCanBeGcdBetweenTest_1() {
     assertThat(awr).isNull();
-    try (ActivityController<Activity> ac = Robolectric.buildActivity(Activity.class)) {
-      ac.setup();
-      awr = new WeakReference<>(ac.get());
-    }
+    ActivityController<Activity> ac = Robolectric.buildActivity(Activity.class).setup();
+    awr = new WeakReference<>(ac.get());
   }
 
   @Test

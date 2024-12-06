@@ -28,7 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -1079,7 +1078,7 @@ public class ShadowAccountManagerTest {
   @Config(minSdk = LOLLIPOP_MR1)
   public void removeAccountExplicitly() {
     assertThat(
-            am.removeAccountExplicitly(new Account("non_existent_account@gmail.com", "gmail.com")))
+            am.removeAccountExplicitly(new Account("non_existant_account@gmail.com", "gmail.com")))
         .isFalse();
     assertThat(am.removeAccountExplicitly(null)).isFalse();
 
@@ -1140,10 +1139,10 @@ public class ShadowAccountManagerTest {
   public void accountManager_activityContextEnabled_differentInstancesRetrieveAccounts() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       AccountManager applicationAccountManager = appContext.getSystemService(AccountManager.class);
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(Activity.class);
       AccountManager activityAccountManager = activity.getSystemService(AccountManager.class);
 
       assertThat(applicationAccountManager).isNotSameInstanceAs(activityAccountManager);
@@ -1155,6 +1154,9 @@ public class ShadowAccountManagerTest {
 
       assertThat(activityAccounts).isEqualTo(applicationAccounts);
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

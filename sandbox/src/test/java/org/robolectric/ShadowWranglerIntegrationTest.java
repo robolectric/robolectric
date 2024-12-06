@@ -348,10 +348,6 @@ public class ShadowWranglerIntegrationTest {
     public CharSequence aMethod(CharSequence s) {
       return s;
     }
-
-    public CharSequence aMethodWithArrayParam(CharSequence[] s) {
-      return String.join(",", s);
-    }
   }
 
   @Instrument
@@ -383,8 +379,6 @@ public class ShadowWranglerIntegrationTest {
   @Test
   public void methodMatch_shouldAllowClassNameAnnotatedMatches() {
     assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("ClassNameAnnotated-bc");
-    assertThat(new AClassWithDifficultArgs().aMethodWithArrayParam(new CharSequence[] {"bc", "de"}))
-        .isEqualTo("ClassNameAnnotated-bc,de");
   }
 
   @SandboxConfig(shadows = ShadowAClassWithDifficultArgsUseClassNameButUnmatchedReturn.class)
@@ -448,11 +442,6 @@ public class ShadowWranglerIntegrationTest {
     protected @ClassName("java.lang.CharSequence") Object aMethod(
         @ClassName("java.lang.CharSequence") Object s) {
       return "ClassNameAnnotated-" + s;
-    }
-
-    protected @ClassName("java.lang.CharSequence") Object aMethodWithArrayParam(
-        @ClassName("[Ljava.lang.CharSequence;") Object s) {
-      return "ClassNameAnnotated-" + String.join(",", (CharSequence[]) s);
     }
   }
 

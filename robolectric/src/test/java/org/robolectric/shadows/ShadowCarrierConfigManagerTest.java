@@ -18,7 +18,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 /** Junit test for {@link ShadowCarrierConfigManager}. */
@@ -165,14 +164,14 @@ public class ShadowCarrierConfigManagerTest {
   public void carrierConfigManager_activityContextEnabled_retrievesSameConfigs() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       CarrierConfigManager applicationCarrierConfigManager =
           (CarrierConfigManager)
               ApplicationProvider.getApplicationContext()
                   .getSystemService(Context.CARRIER_CONFIG_SERVICE);
 
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(Activity.class);
       CarrierConfigManager activityCarrierConfigManager =
           (CarrierConfigManager) activity.getSystemService(Context.CARRIER_CONFIG_SERVICE);
 
@@ -198,6 +197,9 @@ public class ShadowCarrierConfigManagerTest {
       applicationParcel.recycle();
       activityParcel.recycle();
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

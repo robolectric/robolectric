@@ -50,7 +50,10 @@ public class SamplePointWideGamutVerifier extends BitmapVerifier {
 
       Color actual = bitmap.getColor(p.x, p.y).convert(expected.getColorSpace());
 
-      boolean localSuccess = floatCompare(expected.red(), actual.red(), eps);
+      boolean localSuccess = true;
+      if (!floatCompare(expected.red(), actual.red(), eps)) {
+        localSuccess = false;
+      }
       if (!floatCompare(expected.green(), actual.green(), eps)) {
         localSuccess = false;
       }

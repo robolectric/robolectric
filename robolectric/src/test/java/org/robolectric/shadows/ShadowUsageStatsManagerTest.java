@@ -34,7 +34,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageLimitObserver;
 import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageObserver;
@@ -1047,14 +1046,14 @@ public class ShadowUsageStatsManagerTest {
   public void usageStatsManager_activityContextEnabled_differentInstancesRetrieveBuckets() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       UsageStatsManager applicationUsageStatsManager =
           (UsageStatsManager)
               ApplicationProvider.getApplicationContext()
                   .getSystemService(Context.USAGE_STATS_SERVICE);
 
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(Activity.class);
       UsageStatsManager activityUsageStatsManager =
           (UsageStatsManager) activity.getSystemService(Context.USAGE_STATS_SERVICE);
 
@@ -1065,6 +1064,9 @@ public class ShadowUsageStatsManagerTest {
 
       assertThat(applicationBucket).isEqualTo(activityBucket);
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

@@ -125,6 +125,12 @@ public class ShadowDisplayEventReceiver {
     } else if (RuntimeEnvironment.getApiLevel() < S) {
       displayEventReceiverReflector.onVsync(
           ShadowSystem.nanoTime(), 0L, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
+    } else if (RuntimeEnvironment.getApiLevel() < TIRAMISU) {
+      displayEventReceiverReflector.onVsync(
+          ShadowSystem.nanoTime(),
+          0L, /* physicalDisplayId currently ignored */
+          /* frame= */ 1,
+          newVsyncEventData() /* VsyncEventData */);
     } else {
       displayEventReceiverReflector.onVsync(
           ShadowSystem.nanoTime(),

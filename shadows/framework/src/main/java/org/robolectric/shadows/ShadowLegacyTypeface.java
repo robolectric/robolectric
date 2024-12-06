@@ -171,26 +171,26 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
   @HiddenApi
   @Implementation
   protected static Typeface createFromFamilies(
-      @ClassName("[Landroid.graphics.FontFamily;") Object families) {
+      @ClassName("android.graphics.FontFamily[]") Object families) {
     return null;
   }
 
   @HiddenApi
   @Implementation(maxSdk = N_MR1)
   protected static Typeface createFromFamiliesWithDefault(
-      @ClassName("[Landroid.graphics.FontFamily;") Object families) {
+      @ClassName("android.graphics.FontFamily[]") Object families) {
     return null;
   }
 
   @Implementation(minSdk = O, maxSdk = O_MR1)
   protected static Typeface createFromFamiliesWithDefault(
-      @ClassName("[Landroid.graphics.FontFamily;") Object families, int weight, int italic) {
+      @ClassName("android.graphics.FontFamily[]") Object families, int weight, int italic) {
     return createUnderlyingTypeface("fake-font", Typeface.NORMAL);
   }
 
   @Implementation(minSdk = P)
   protected static Typeface createFromFamiliesWithDefault(
-      @ClassName("[Landroid.graphics.FontFamily;") Object families,
+      @ClassName("android.graphics.FontFamily[]") Object families,
       String fallbackName,
       int weight,
       int italic) {
@@ -202,7 +202,7 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
       String xmlPath,
       String fontDir,
       ArrayMap<String, Typeface> fontMap,
-      ArrayMap<String, /*android.graphics.FontFamily[]*/ ?> fallbackMap) {
+      ArrayMap<String, @ClassName("android.graphics.FontFamily[]") Object> fallbackMap) {
     fontMap.put("sans-serif", createUnderlyingTypeface("sans-serif", 0));
   }
 
@@ -215,7 +215,7 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
   protected static void initSystemDefaultTypefaces(
       Map<String, Typeface> systemFontMap,
       Map<String, /*android.graphics.FontFamily[]*/ ?> fallbacks,
-      @ClassName("[Landroid.text.FontConfig$Alias;") Object aliases) {}
+      @ClassName("android.text.FontConfig$Alias[]") Object aliases) {}
 
   @Resetter
   public static synchronized void reset() {

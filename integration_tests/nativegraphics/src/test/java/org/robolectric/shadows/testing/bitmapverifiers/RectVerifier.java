@@ -19,9 +19,9 @@ import android.graphics.Rect;
 
 /** Tests to see if there is rectangle of a certain color, with a background given */
 public class RectVerifier extends PerPixelBitmapVerifier {
-  private final int outerColor;
-  private final int innerColor;
-  private final Rect innerRect;
+  private int outerColor;
+  private int innerColor;
+  private Rect innerRect;
 
   public RectVerifier(int outerColor, int innerColor, Rect innerRect) {
     this(outerColor, innerColor, innerRect, DEFAULT_THRESHOLD);

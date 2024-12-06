@@ -140,8 +140,9 @@ public class ShadowNativeMeasuredParagraphTest {
   public void buildForStaticLayout() {
 
     MeasuredParagraph mt =
-        reflector(MeasuredParagraphReflector.class)
-            .buildForStaticLayout(paint, "XXX", 0, 3, LTR, false, false, null);
+        (MeasuredParagraph)
+            reflector(MeasuredParagraphReflector.class)
+                .buildForStaticLayout(paint, "XXX", 0, 3, LTR, false, false, null);
     assertNotNull(mt);
     assertNotNull(mt.getChars());
     assertEquals("XXX", charsToString(mt.getChars()));
@@ -156,8 +157,9 @@ public class ShadowNativeMeasuredParagraphTest {
 
     // Recycle it
     MeasuredParagraph mt2 =
-        reflector(MeasuredParagraphReflector.class)
-            .buildForStaticLayout(paint, "_VVV_", 1, 4, RTL, false, false, mt);
+        (MeasuredParagraph)
+            reflector(MeasuredParagraphReflector.class)
+                .buildForStaticLayout(paint, "_VVV_", 1, 4, RTL, false, false, mt);
     assertEquals(mt2, mt);
     assertNotNull(mt2.getChars());
     assertEquals("VVV", charsToString(mt.getChars()));

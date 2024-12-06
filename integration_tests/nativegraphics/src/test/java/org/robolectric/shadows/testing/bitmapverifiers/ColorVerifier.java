@@ -19,7 +19,7 @@ import androidx.annotation.ColorInt;
 
 /** Checks to see if a bitmap is entirely a single color */
 public class ColorVerifier extends PerPixelBitmapVerifier {
-  @ColorInt private final int color;
+  @ColorInt private int color;
 
   public ColorVerifier(@ColorInt int color) {
     this(color, DEFAULT_THRESHOLD);

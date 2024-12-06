@@ -19,6 +19,7 @@ import static org.robolectric.shadows.ShadowMediaPlayer.State.STOPPED;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.NonNull;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
@@ -42,7 +43,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Random;
 import java.util.TreeMap;
-import javax.annotation.Nonnull;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -555,7 +555,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   @Implementation(minSdk = U.SDK_INT)
-  protected void __constructor__(@Nonnull Context context, int sessionId) {
+  protected void __constructor__(@NonNull Context context, int sessionId) {
     init();
     // Ensure that the real object is set up properly.
     Shadow.invokeConstructor(

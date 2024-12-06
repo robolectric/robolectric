@@ -25,7 +25,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Looper;
-import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.HapticFeedbackConstants;
@@ -67,6 +66,7 @@ import org.robolectric.util.TestRunnable;
 
 @RunWith(AndroidJUnit4.class)
 @GraphicsMode(Mode.LEGACY)
+
 public class ShadowViewTest {
   private View view;
   private List<String> transcript;
@@ -535,7 +535,7 @@ public class ShadowViewTest {
 
     verifyNoMoreInteractions(listener);
 
-    SystemClock.setCurrentTimeMillis(1000);
+    ShadowSystemClock.advanceBy(Duration.ofMillis(1000));
     shadowMainLooper().idle();
 
     verify(listener).onAnimationStart(animation);

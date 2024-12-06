@@ -1,6 +1,5 @@
 package org.robolectric.integrationtests.kotlin.flow
 
-import android.app.Application
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanResult
@@ -31,7 +30,7 @@ import org.robolectric.shadows.ShadowBluetoothLeScanner
 @Config(sdk = [S])
 class BluetoothProvisionerTest {
 
-  val context: Application = RuntimeEnvironment.getApplication()
+  val context = RuntimeEnvironment.getApplication()
 
   val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 

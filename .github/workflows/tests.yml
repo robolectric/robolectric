@@ -23,7 +23,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -39,15 +39,15 @@ jobs:
       - name: Build
         run: |
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
-          ./gradlew assemble testClasses --stacktrace
+          ./gradlew assemble testClasses --parallel --stacktrace --no-watch-fs
 
   unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build
     strategy:
       fail-fast: false
       matrix:
-        api-versions: [ '21,22,23', '24,25,26', '27,28,29', '30,31,32', '33,34,35' ]
+        api-versions: [ '21,22,23', '24,25,26', '27,28,29', '30,31,32', '33,34' ]
 
     steps:
       - uses: actions/checkout@v4
@@ -63,7 +63,9 @@ jobs:
       - name: Run unit tests
         run: |
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew test \
-          --stacktrace --continue \
+          --info --stacktrace --continue \
+          --parallel \
+          --no-watch-fs \
           -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
           -Dorg.gradle.workers.max=2 \
@@ -78,7 +80,7 @@ jobs:
           path: '**/build/test-results/**/TEST-*.xml'
 
   instrumentation-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 60
     needs: build
 
@@ -155,7 +157,7 @@ jobs:
           profile: Nexus One
           script: |
             adb shell wm density 240
-            SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --stacktrace -Dorg.gradle.workers.max=2
+            SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --info --stacktrace --no-watch-fs -Dorg.gradle.workers.max=2
 
       - name: Upload test results
         if: always()
@@ -167,7 +169,7 @@ jobs:
             **/build/outputs/*/connected/*
 
   publish-to-snapshots:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
@@ -185,4 +187,4 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Publish
-        run: ./gradlew publish --stacktrace
+        run: ./gradlew publish --stacktrace --no-watch-fs

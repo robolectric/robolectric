@@ -15,7 +15,6 @@ import androidx.test.core.app.ApplicationProvider;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -27,7 +26,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -196,11 +194,11 @@ public class ShadowAmbientContextManagerTest {
   public void ambientContextManager_activityContextEnabled_differentInstancesQueryStatus() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       AmbientContextManager applicationAmbientContextManager =
           RuntimeEnvironment.getApplication().getSystemService(AmbientContextManager.class);
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(Activity.class);
       AmbientContextManager activityAmbientContextManager =
           activity.getSystemService(AmbientContextManager.class);
 
@@ -213,9 +211,8 @@ public class ShadowAmbientContextManagerTest {
 
       Executor executor = Executors.newSingleThreadExecutor();
 
-      Set<Integer> eventTypes = new HashSet<>();
-      eventTypes.add(AmbientContextEvent.EVENT_COUGH);
-      eventTypes.add(AmbientContextEvent.EVENT_SNORE);
+      Set<Integer> eventTypes =
+          Set.of(AmbientContextEvent.EVENT_COUGH, AmbientContextEvent.EVENT_SNORE);
 
       applicationAmbientContextManager.queryAmbientContextServiceStatus(
           eventTypes,
@@ -239,6 +236,9 @@ public class ShadowAmbientContextManagerTest {
     } catch (Exception e) {
       fail("Test failed due to exception: " + e.getMessage());
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

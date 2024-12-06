@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.robolectric.Robolectric;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 /** Tests for ShadowColorDisplayManager. */
@@ -160,11 +159,11 @@ public class ShadowColorDisplayManagerTest {
   public void colorDisplayManager_activityContextEnabled_differentInstancesRetrieveSettings() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       ColorDisplayManager appColorDisplayManager =
           ApplicationProvider.getApplicationContext().getSystemService(ColorDisplayManager.class);
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(Activity.class);
       ColorDisplayManager activityColorDisplayManager =
           activity.getSystemService(ColorDisplayManager.class);
 
@@ -179,6 +178,9 @@ public class ShadowColorDisplayManagerTest {
       assertThat(activityNightDisplayActivated).isEqualTo(appNightDisplayActivated);
 
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

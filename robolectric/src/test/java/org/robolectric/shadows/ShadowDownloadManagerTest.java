@@ -20,10 +20,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowDownloadManager.CompletedDownload;
 import org.robolectric.shadows.ShadowDownloadManager.ShadowRequest;
+import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDownloadManagerTest {
@@ -424,13 +424,13 @@ public class ShadowDownloadManagerTest {
   public void downloadManager_activityContextEnabled_retrievesSameMimeTypeForDownloadedFile() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       DownloadManager applicationDownloadManager =
           (DownloadManager)
               RuntimeEnvironment.getApplication().getSystemService(Context.DOWNLOAD_SERVICE);
 
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(TestActivity.class);
       DownloadManager activityDownloadManager =
           (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
 
@@ -442,6 +442,9 @@ public class ShadowDownloadManagerTest {
 
       assertThat(activityMimeType).isEqualTo(applicationMimeType);
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

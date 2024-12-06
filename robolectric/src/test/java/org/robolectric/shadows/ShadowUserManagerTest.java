@@ -39,7 +39,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowUserManager.UserState;
@@ -1188,12 +1187,12 @@ public class ShadowUserManagerTest {
   public void userManager_activityContextEnabled_consistentAcrossContexts() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    try (ActivityController<Activity> controller =
-        Robolectric.buildActivity(Activity.class).setup()) {
+    Activity activity = null;
+    try {
       UserManager applicationUserManager =
           (UserManager)
               ApplicationProvider.getApplicationContext().getSystemService(Context.USER_SERVICE);
-      Activity activity = controller.get();
+      activity = Robolectric.setupActivity(Activity.class);
       UserManager activityUserManager =
           (UserManager) activity.getSystemService(Context.USER_SERVICE);
 
@@ -1204,6 +1203,9 @@ public class ShadowUserManagerTest {
 
       assertThat(isAdminActivity).isEqualTo(isAdminApplication);
     } finally {
+      if (activity != null) {
+        activity.finish();
+      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

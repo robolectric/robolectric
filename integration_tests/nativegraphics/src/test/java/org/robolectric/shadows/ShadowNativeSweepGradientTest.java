@@ -163,40 +163,60 @@ public class ShadowNativeSweepGradientTest {
   @Test
   public void testNullColorInts() {
     int[] colors = null;
-    assertThrows(NullPointerException.class, () -> new SweepGradient(1, 0.5f, colors, null));
+    assertThrows(
+        NullPointerException.class,
+        () -> {
+          SweepGradient unused = new SweepGradient(1, 0.5f, colors, null);
+        });
   }
 
   @Test
   @Config(minSdk = Q)
   public void testNullColorLongs() {
     long[] colors = null;
-    assertThrows(NullPointerException.class, () -> new SweepGradient(1, 0.5f, colors, null));
+    assertThrows(
+        NullPointerException.class,
+        () -> {
+          SweepGradient unused = new SweepGradient(1, 0.5f, colors, null);
+        });
   }
 
   @Test
   public void testNoColorInts() {
     assertThrows(
-        IllegalArgumentException.class, () -> new SweepGradient(1, 0.5f, new int[0], null));
+        IllegalArgumentException.class,
+        () -> {
+          SweepGradient unused = new SweepGradient(1, 0.5f, new int[0], null);
+        });
   }
 
   @Test
   @Config(minSdk = Q)
   public void testNoColorLongs() {
     assertThrows(
-        IllegalArgumentException.class, () -> new SweepGradient(1, 0.5f, new long[0], null));
+        IllegalArgumentException.class,
+        () -> {
+          SweepGradient unused = new SweepGradient(1, 0.5f, new long[0], null);
+        });
   }
 
   @Test
   public void testOneColorInts() {
     assertThrows(
-        IllegalArgumentException.class, () -> new SweepGradient(1, 0.5f, new int[1], null));
+        IllegalArgumentException.class,
+        () -> {
+          SweepGradient unused = new SweepGradient(1, 0.5f, new int[1], null);
+        });
   }
 
   @Test
   @Config(minSdk = Q)
   public void testOneColorLongs() {
     assertThrows(
-        IllegalArgumentException.class, () -> new SweepGradient(1, 0.5f, new long[1], null));
+        IllegalArgumentException.class,
+        () -> {
+          SweepGradient unused = new SweepGradient(1, 0.5f, new long[1], null);
+        });
   }
 
   @Test
@@ -205,7 +225,11 @@ public class ShadowNativeSweepGradientTest {
     long[] colors = new long[2];
     colors[0] = Color.pack(Color.BLUE);
     colors[1] = Color.pack(.5f, .5f, .5f, 1.0f, ColorSpace.get(ColorSpace.Named.DISPLAY_P3));
-    assertThrows(IllegalArgumentException.class, () -> new SweepGradient(1, 0.5f, colors, null));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          SweepGradient unused = new SweepGradient(1, 0.5f, colors, null);
+        });
   }
 
   @Test
@@ -213,13 +237,20 @@ public class ShadowNativeSweepGradientTest {
   public void testMismatchColorLongs2() {
     long color0 = Color.pack(Color.BLUE);
     long color1 = Color.pack(.5f, .5f, .5f, 1.0f, ColorSpace.get(ColorSpace.Named.DISPLAY_P3));
-    assertThrows(IllegalArgumentException.class, () -> new SweepGradient(1, 0.5f, color0, color1));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          SweepGradient unused = new SweepGradient(1, 0.5f, color0, color1);
+        });
   }
 
   @Test
   public void testMismatchPositionsInts() {
     assertThrows(
-        IllegalArgumentException.class, () -> new SweepGradient(1, 0.5f, new int[2], new float[3]));
+        IllegalArgumentException.class,
+        () -> {
+          SweepGradient unused = new SweepGradient(1, 0.5f, new int[2], new float[3]);
+        });
   }
 
   @Test
@@ -227,14 +258,22 @@ public class ShadowNativeSweepGradientTest {
   public void testMismatchPositionsLongs() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new SweepGradient(1, 0.5f, new long[2], new float[3]));
+        () -> {
+          SweepGradient unused = new SweepGradient(1, 0.5f, new long[2], new float[3]);
+        });
   }
 
   @Test
   @Config(minSdk = Q)
   public void testInvalidColorLongs() {
-    long[] colors = new long[] {-1L, -2L};
-    assertThrows(IllegalArgumentException.class, () -> new SweepGradient(1, 0.5f, colors, null));
+    long[] colors = new long[2];
+    colors[0] = -1L;
+    colors[0] = -2L;
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          SweepGradient unused = new SweepGradient(1, 0.5f, colors, null);
+        });
   }
 
   @Test
@@ -242,7 +281,9 @@ public class ShadowNativeSweepGradientTest {
   public void testInvalidColorLong() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new SweepGradient(1, 0.5f, -1L, Color.pack(Color.RED)));
+        () -> {
+          SweepGradient unused = new SweepGradient(1, 0.5f, -1L, Color.pack(Color.RED));
+        });
   }
 
   @Test
@@ -250,7 +291,9 @@ public class ShadowNativeSweepGradientTest {
   public void testInvalidColorLong2() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new SweepGradient(1, 0.5f, Color.pack(Color.RED), -1L));
+        () -> {
+          SweepGradient unused = new SweepGradient(1, 0.5f, Color.pack(Color.RED), -1L);
+        });
   }
 
   private String toString(double angle) {
@@ -274,7 +317,10 @@ public class ShadowNativeSweepGradientTest {
     canvas.drawPaint(paint);
 
     final ColorSpace bitmapColorSpace = bitmap.getColorSpace();
-    Function<Long, Color> convert = (l) -> Color.valueOf(Color.convert(l, bitmapColorSpace));
+    Function<Long, Color> convert =
+        (l) -> {
+          return Color.valueOf(Color.convert(l, bitmapColorSpace));
+        };
 
     Color lastColor = null;
     double lastAngle = 0;

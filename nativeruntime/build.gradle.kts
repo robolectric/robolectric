@@ -63,6 +63,7 @@ if (System.getenv("PUBLISH_NATIVERUNTIME_DIST_COMPAT") == "true") {
 dependencies {
   api(project(":shadowapi"))
   api(project(":utils"))
+  api(project(":utils:reflector"))
   api(libs.guava)
 
   implementation(libs.robolectric.nativeruntime.dist.compat)
