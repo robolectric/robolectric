@@ -28,7 +28,7 @@ public final class EspressoWithPausedLooperTest {
   public void launchActivity() {}
 
   @Test
-  public void onIdle_doesnt_block() {
+  public void onIdle_does_not_block() {
     Espresso.onIdle();
   }
 

@@ -39,6 +39,9 @@ public class ActivityScenarioTest {
 
   private static final List<String> callbacks = new ArrayList<>();
 
+  /**
+   * @noinspection NewClassNamingConvention
+   */
   public static class TranscriptActivity extends Activity {
 
     @Override
@@ -96,6 +99,9 @@ public class ActivityScenarioTest {
     }
   }
 
+  /**
+   * @noinspection NewClassNamingConvention
+   */
   public static class LifecycleOwnerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle bundle) {
@@ -109,6 +115,9 @@ public class ActivityScenarioTest {
     callbacks.clear();
   }
 
+  /**
+   * @noinspection NewClassNamingConvention
+   */
   public static class ActivityWithCustomConstructor extends Activity {
     private final int intValue;
 
@@ -121,6 +130,9 @@ public class ActivityScenarioTest {
     }
   }
 
+  /**
+   * @noinspection NewClassNamingConvention
+   */
   public static class CustomAppComponentFactory extends AppComponentFactory {
 
     @Nonnull
@@ -324,9 +336,8 @@ public class ActivityScenarioTest {
     try (ActivityScenario<TranscriptActivity> activityScenario =
         ActivityScenario.launch(TranscriptActivity.class)) {
       activityScenario.onActivity(
-          activity -> {
-            assertThat(Looper.getMainLooper().getThread()).isEqualTo(Thread.currentThread());
-          });
+          activity ->
+              assertThat(Looper.getMainLooper().getThread()).isEqualTo(Thread.currentThread()));
     }
   }
 
@@ -334,10 +345,7 @@ public class ActivityScenarioTest {
   public void getCallingActivity_empty() {
     try (ActivityScenario<TranscriptActivity> activityScenario =
         ActivityScenario.launch(TranscriptActivity.class)) {
-      activityScenario.onActivity(
-          activity -> {
-            assertThat(activity.getCallingActivity()).isNull();
-          });
+      activityScenario.onActivity(activity -> assertThat(activity.getCallingActivity()).isNull());
     }
   }
 
@@ -346,10 +354,9 @@ public class ActivityScenarioTest {
     try (ActivityScenario<TranscriptActivity> activityScenario =
         ActivityScenario.launchActivityForResult(TranscriptActivity.class)) {
       activityScenario.onActivity(
-          activity -> {
-            assertThat(activity.getCallingActivity().getPackageName())
-                .isEqualTo("org.robolectric.integrationtests.axt");
-          });
+          activity ->
+              assertThat(activity.getCallingActivity().getPackageName())
+                  .isEqualTo("org.robolectric.integrationtests.axt"));
     }
   }
 
@@ -359,10 +366,7 @@ public class ActivityScenarioTest {
     try (ActivityScenario<ActivityWithCustomConstructor> activityScenario =
         ActivityScenario.launch(ActivityWithCustomConstructor.class)) {
       assertThat(activityScenario.getState()).isEqualTo(State.RESUMED);
-      activityScenario.onActivity(
-          activity -> {
-            assertThat(activity.getIntValue()).isEqualTo(100);
-          });
+      activityScenario.onActivity(activity -> assertThat(activity.getIntValue()).isEqualTo(100));
     }
   }
 }
