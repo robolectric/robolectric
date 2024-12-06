@@ -310,7 +310,7 @@ public class ImplementsValidator extends Validator {
       Kind kind = sdkCheckMode == SdkCheckMode.WARN ? Kind.WARNING : Kind.ERROR;
       Problems problems = new Problems(kind);
 
-      for (SdkStore.Sdk sdk : sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk)) {
+      for (SdkStore.Sdk sdk : sdkStore.sdksMatching(null, classMinSdk, classMaxSdk)) {
         String problem = sdk.verifyMethod(sdkClassName, methodElement, looseSignatures, allowInDev);
         if (problem == null && sdk.getClassInfo(sdkClassName) != null) {
           problems.add(
@@ -345,9 +345,8 @@ public class ImplementsValidator extends Validator {
     Elements elementUtils = env.getElementUtils();
     modelBuilder.documentType(elem, elementUtils.getDocComment(elem), imports);
 
-    for (Element memberElement : ElementFilter.methodsIn(elem.getEnclosedElements())) {
+    for (ExecutableElement memberElement : ElementFilter.methodsIn(elem.getEnclosedElements())) {
       try {
-        ExecutableElement methodElement = (ExecutableElement) memberElement;
         Implementation implementation = memberElement.getAnnotation(Implementation.class);
 
         DocumentedMethod documentedMethod = new DocumentedMethod(memberElement.toString());
@@ -359,14 +358,14 @@ public class ImplementsValidator extends Validator {
           documentedMethod.minSdk = sdkOrNull(implementation.minSdk());
           documentedMethod.maxSdk = sdkOrNull(implementation.maxSdk());
         }
-        for (VariableElement variableElement : methodElement.getParameters()) {
+        for (VariableElement variableElement : memberElement.getParameters()) {
           documentedMethod.params.add(variableElement.toString());
         }
-        documentedMethod.returnType = methodElement.getReturnType().toString();
-        for (TypeMirror typeMirror : methodElement.getThrownTypes()) {
+        documentedMethod.returnType = memberElement.getReturnType().toString();
+        for (TypeMirror typeMirror : memberElement.getThrownTypes()) {
           documentedMethod.exceptions.add(typeMirror.toString());
         }
-        String docMd = elementUtils.getDocComment(methodElement);
+        String docMd = elementUtils.getDocComment(memberElement);
         if (docMd != null) {
           documentedMethod.setDocumentation(docMd);
         }
@@ -392,10 +391,7 @@ public class ImplementsValidator extends Validator {
     }
 
     void add(String problem, int sdkInt) {
-      Set<Integer> sdks = problems.get(problem);
-      if (sdks == null) {
-        problems.put(problem, sdks = new TreeSet<>());
-      }
+      Set<Integer> sdks = problems.computeIfAbsent(problem, k -> new TreeSet<>());
       sdks.add(sdkInt);
     }
 

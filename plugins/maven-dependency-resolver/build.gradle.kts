@@ -26,7 +26,6 @@ dependencies {
   annotationProcessor(libs.auto.value)
 
   testImplementation(libs.junit4)
-  testImplementation(libs.mockito)
   testImplementation(libs.truth)
   testImplementation(libs.kotlin.stdlib)
 }

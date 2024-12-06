@@ -93,9 +93,10 @@ public final class SingleClassSubject extends Subject {
       this.source = source;
     }
 
-    public SingleLineClause withErrorContaining(final String messageFragment) {
+    public SingleLineClause<UnsuccessfulCompilationClause> withErrorContaining(
+        final String messageFragment) {
       try {
-        return new SingleLineClause(unsuccessful.withErrorContaining(messageFragment).in(source));
+        return new SingleLineClause<>(unsuccessful.withErrorContaining(messageFragment).in(source));
       } catch (AssertionError e) {
         failWithoutActual(simpleFact(e.getMessage()));
       }
@@ -120,23 +121,18 @@ public final class SingleClassSubject extends Subject {
       return this;
     }
 
-    final class SingleLineClause implements CompileTester.ChainingClause<SingleFileClause> {
+    final class SingleLineClause<T> implements CompileTester.ChainingClause<SingleFileClause> {
 
-      LineClause lineClause;
+      LineClause<T> lineClause;
 
-      public SingleLineClause(LineClause lineClause) {
+      public SingleLineClause(LineClause<T> lineClause) {
         this.lineClause = lineClause;
       }
 
       public CompileTester.ChainingClause<SingleFileClause> onLine(long lineNumber) {
         try {
           lineClause.onLine(lineNumber);
-          return new CompileTester.ChainingClause<SingleFileClause>() {
-            @Override
-            public SingleFileClause and() {
-              return SingleFileClause.this;
-            }
-          };
+          return () -> SingleFileClause.this;
         } catch (AssertionError e) {
           failWithoutActual(simpleFact(e.getMessage()));
         }

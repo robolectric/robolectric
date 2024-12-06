@@ -43,7 +43,6 @@ dependencies {
 
   compileOnly(libs.findbugs.jsr305)
   api(libs.asm)
-  api(libs.asm.commons)
   api(libs.asm.util)
   api(libs.guava)
   api(libs.gson)

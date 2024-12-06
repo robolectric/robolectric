@@ -49,7 +49,7 @@ public class RobolectricProcessorTest {
                 forSourceString("HelloWorld", "final class HelloWorld {}")))
         .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
         .compilesWithoutError();
-    // .and().generatesNoSources(); Should add this assertion onces
+    // .and().generatesNoSources(); Should add this assertion once
     // it becomes available in compile-testing
   }
 

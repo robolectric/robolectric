@@ -8,6 +8,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
+@Suppress("DEPRECATION")
 class MavenRoboSettingsTest {
   private var originalMavenRepositoryId: String? = null
   private var originalMavenRepositoryUrl: String? = null

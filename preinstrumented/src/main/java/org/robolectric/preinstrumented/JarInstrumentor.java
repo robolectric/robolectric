@@ -1,6 +1,7 @@
 package org.robolectric.preinstrumented;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.newOutputStream;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -10,7 +11,6 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -152,7 +152,8 @@ public class JarInstrumentor {
     }
 
     try (JarOutputStream jarOut =
-        new JarOutputStream(new BufferedOutputStream(new FileOutputStream(destJarFile), ONE_MB))) {
+        new JarOutputStream(
+            new BufferedOutputStream(newOutputStream(destJarFile.toPath()), ONE_MB))) {
       Enumeration<JarEntry> entries = jarFile.entries();
       while (entries.hasMoreElements()) {
         JarEntry jarEntry = entries.nextElement();
@@ -195,13 +196,11 @@ public class JarInstrumentor {
         } else {
           boolean shouldKeep = true;
           if (hasResourcesToKeepFile) {
-            shouldKeep = false;
-            if (resourceFilesToKeep.contains(name)) {
-              shouldKeep = true;
-            }
+            shouldKeep = resourceFilesToKeep.contains(name);
             for (String dir : resourceDirsToKeep) {
               if (name.startsWith(dir)) {
                 shouldKeep = true;
+                break;
               }
             }
           }
@@ -215,13 +214,12 @@ public class JarInstrumentor {
     }
 
     long elapsedNs = System.nanoTime() - startNs;
-    System.out.println(
-        String.format(
-            Locale.getDefault(),
-            "Wrote %d classes and %d resources in %1.2f seconds",
-            classCount,
-            nonClassCount,
-            elapsedNs / 1000000000.0));
+    System.out.printf(
+        Locale.getDefault(),
+        "Wrote %d classes and %d resources in %1.2f seconds%n",
+        classCount,
+        nonClassCount,
+        elapsedNs / 1000000000.0);
   }
 
   private static byte[] getClassBytes(String className, JarFile jarFile)

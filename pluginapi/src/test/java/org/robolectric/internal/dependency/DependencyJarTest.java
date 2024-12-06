@@ -9,7 +9,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class DependencyJarTest {
   @Test
-  public void testGetShortName() throws Exception {
+  public void testGetShortName() {
     assertThat(new DependencyJar("com.group", "artifact", "1.3", null).getShortName())
         .isEqualTo("com.group:artifact:1.3");
     assertThat(new DependencyJar("com.group", "artifact", "1.3", "dll").getShortName())

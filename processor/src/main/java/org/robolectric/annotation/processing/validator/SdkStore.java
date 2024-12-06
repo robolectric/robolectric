@@ -7,7 +7,6 @@ import static org.robolectric.annotation.processing.validator.ImplementsValidato
 import com.google.common.collect.ImmutableList;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,7 +138,12 @@ public class SdkStore {
     StringBuilder builder = new StringBuilder();
     builder.append("SdkStore [");
     for (Sdk sdk : sdks.stream().sorted().collect(Collectors.toList())) {
-      builder.append("    " + sdk.sdkRelease.getSdkInt() + " : " + sdk.path + "\n");
+      builder
+          .append("    ")
+          .append(sdk.sdkRelease.getSdkInt())
+          .append(" : ")
+          .append(sdk.path)
+          .append("\n");
     }
     builder.append("]");
     return builder.toString();
@@ -157,11 +160,11 @@ public class SdkStore {
    */
   private static String compilationSdkTarget() {
     String cmd = System.getProperty("sun.java.command");
-    Pattern pattern = Pattern.compile("((-cp)|(-classpath))\\s(?<cp>[a-zA-Z-_0-9\\-\\:\\/\\.]*)");
+    Pattern pattern = Pattern.compile("((-cp)|(-classpath))\\s(?<cp>[a-zA-Z-_0-9\\-:/.]*)");
     Matcher matcher = pattern.matcher(cmd);
     if (matcher.find()) {
       String classpathString = matcher.group("cp");
-      List<String> cp = Arrays.asList(classpathString.split(":"));
+      String[] cp = classpathString.split(":");
       for (String fileStr : cp) {
         try (JarFile jarFile = new JarFile(fileStr)) {
           ZipEntry entry = jarFile.getEntry("build.prop");
@@ -191,28 +194,22 @@ public class SdkStore {
   private static ImmutableList<Sdk> loadFromSources(
       boolean localSdk, String sdkFileName, String overrideSdkLocation, int overrideSdkInt) {
     if (localSdk) {
-      Sdk sdk = null;
       if (overrideSdkLocation != null) {
-        sdk = new Sdk(overrideSdkLocation, overrideSdkInt);
-        return sdk == null ? ImmutableList.of() : ImmutableList.of(sdk);
+        Sdk sdk = new Sdk(overrideSdkLocation, overrideSdkInt);
+        return ImmutableList.of(sdk);
       } else {
         String target = compilationSdkTarget();
         if (target != null) {
-          sdk = new Sdk(target);
+          Sdk sdk = new Sdk(target);
           // We don't want to test released versions in Android source tree.
-          return sdk == null || sdk.sdkRelease.isReleased()
-              ? ImmutableList.of()
-              : ImmutableList.of(sdk);
+          return sdk.sdkRelease.isReleased() ? ImmutableList.of() : ImmutableList.of(sdk);
         }
       }
     }
     if (sdkFileName == null || Files.notExists(Paths.get(sdkFileName))) {
       return ImmutableList.of();
     }
-    try (InputStream resIn = new FileInputStream(sdkFileName)) {
-      if (resIn == null) {
-        throw new RuntimeException("no such file " + sdkFileName);
-      }
+    try (InputStream resIn = Files.newInputStream(Paths.get(sdkFileName))) {
       BufferedReader in =
           new BufferedReader(new InputStreamReader(resIn, Charset.defaultCharset()));
       List<Sdk> sdks = new ArrayList<>();
@@ -265,11 +262,10 @@ public class SdkStore {
       }
       if (sdkInt == null) {
         this.sdkRelease = readSdkVersion();
-        this.sdkInt = sdkRelease.getSdkInt();
       } else {
         this.sdkRelease = AndroidVersions.getReleaseForSdkInt(sdkInt);
-        this.sdkInt = sdkRelease.getSdkInt();
       }
+      this.sdkInt = sdkRelease.getSdkInt();
     }
 
     /**
@@ -352,16 +348,13 @@ public class SdkStore {
       InDevelopment[] inDev = annotatedElement.getAnnotationsByType(InDevelopment.class);
       // Marked in development, sdk is not released, or is the last release (which may still be
       // marked unreleased in g/main aosp/main.
-      if (allowInDev
+      return allowInDev
           && inDev.length > 0
           && (!sdkRelease.isReleased()
               || sdkRelease
                   == AndroidVersions.getReleases().stream()
                       .max(AndroidVersions.AndroidRelease::compareTo)
-                      .get())) {
-        return true;
-      }
-      return false;
+                      .get());
     }
 
     private static boolean typeIsOkForLooseSignatures(
@@ -473,7 +466,7 @@ public class SdkStore {
           inputStreamSupplier =
               () -> {
                 try {
-                  return new FileInputStream(classFile);
+                  return Files.newInputStream(classFile.toPath());
                 } catch (IOException ioe) {
                   throw new RuntimeException("could not read file in path " + working, ioe);
                 }
@@ -517,8 +510,7 @@ public class SdkStore {
       } else {
         signature = "";
       }
-      for (Object aMethod : classNode.methods) {
-        MethodNode method = ((MethodNode) aMethod);
+      for (MethodNode method : classNode.methods) {
         MethodInfo methodInfo = new MethodInfo(method);
         MethodExtraInfo methodExtraInfo = new MethodExtraInfo(method);
         methods.put(methodInfo, methodExtraInfo);
