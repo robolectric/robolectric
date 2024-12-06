@@ -25,6 +25,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.HapticFeedbackConstants;
@@ -535,7 +536,7 @@ public class ShadowViewTest {
 
     verifyNoMoreInteractions(listener);
 
-    ShadowSystemClock.advanceBy(Duration.ofMillis(1000));
+    SystemClock.setCurrentTimeMillis(1000);
     shadowMainLooper().idle();
 
     verify(listener).onAnimationStart(animation);

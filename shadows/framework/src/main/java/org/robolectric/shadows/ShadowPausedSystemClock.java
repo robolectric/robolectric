@@ -108,20 +108,7 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
    *
    * <p>This API sets both of the elapsed realtime and uptime to the specified value.
    *
-   * <p>Use of this method is discouraged. It currently has the following inconsistent behavior:
-   *
-   * <ol>
-   *   <li>>It doesn't check permissions. In real android this method is protected by the
-   *       signature/privileged SET_TIME permission, thus it is uncallable by most apps
-   *   <li>It doesn't actually change the value of System.currentTimeMillis for non-instrumented
-   *       code aka nearly all user tests and apps It only allows advancing the current time, not
-   *       moving it backwards
-   *   <li>It incorrectly changes the value of SystemClock.uptime, elapsedRealtime, and for
-   *       instrumented code System.nanoTime. In real android these are all independent clocks
-   * </ol>
-   *
-   * <p>It is recommended to use ShadowSystemClock.advanceBy instead to advance
-   * SystemClock.uptimeMillis and SystemClock.elapsedRealTime
+   * <p>Currently does not perform any permission checks.
    *
    * @return false if specified time is less than current uptime.
    */

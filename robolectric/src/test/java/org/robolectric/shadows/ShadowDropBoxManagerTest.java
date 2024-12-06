@@ -14,7 +14,6 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,9 +102,9 @@ public class ShadowDropBoxManagerTest {
   @Test
   public void testAddText() {
     long baseTimestamp = 55000L;
-    ShadowSystemClock.advanceBy(55000 - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
+    SystemClock.setCurrentTimeMillis(baseTimestamp);
     manager.addText(TAG, "HELLO WORLD");
-    ShadowSystemClock.advanceBy(100, TimeUnit.MILLISECONDS);
+    SystemClock.setCurrentTimeMillis(baseTimestamp + 100);
     manager.addText(TAG, "GOODBYE WORLD");
 
     Entry entry = manager.getNextEntry(null, 0);

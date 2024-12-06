@@ -109,12 +109,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
     long endingTimeMs = SystemClock.uptimeMillis() + timeUnit.toMillis(time);
     long nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
     while (nextScheduledTimeMs != 0 && nextScheduledTimeMs <= endingTimeMs) {
-      ShadowSystemClock.advanceBy(
-          nextScheduledTimeMs - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
+      SystemClock.setCurrentTimeMillis(nextScheduledTimeMs);
       idle();
       nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
     }
-    ShadowSystemClock.advanceBy(endingTimeMs - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
+    SystemClock.setCurrentTimeMillis(endingTimeMs);
     // the last SystemClock update might have added new tasks to the main looper via Choreographer
     // so idle once more.
     idle();
