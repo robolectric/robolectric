@@ -18,13 +18,13 @@ public class JarInstrumentorTest {
   private JarInstrumentor spyDummyInstrumentor;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     JarInstrumentor dummyInstrumentor =
         new JarInstrumentor() {
           @Override
           protected void instrumentJar(File sourceJarFile, File destJarFile) {
             // No-op. We only want to test the command line processing. Stub the actual
-            // instrumention.
+            // instrumentation.
           }
 
           @Override

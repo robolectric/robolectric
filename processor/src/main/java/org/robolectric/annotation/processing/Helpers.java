@@ -7,6 +7,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Map.Entry;
+import javax.annotation.Nonnull;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -122,12 +123,12 @@ public class Helpers {
   private final Equivalence<TypeMirror> typeMirrorEq =
       new Equivalence<TypeMirror>() {
         @Override
-        protected boolean doEquivalent(TypeMirror a, TypeMirror b) {
+        protected boolean doEquivalent(@Nonnull TypeMirror a, @Nonnull TypeMirror b) {
           return types.isSameType(a, b);
         }
 
         @Override
-        protected int doHash(TypeMirror t) {
+        protected int doHash(@Nonnull TypeMirror t) {
           // We're not using the hash.
           return 0;
         }
@@ -145,7 +146,7 @@ public class Helpers {
         }
 
         @Override
-        protected int doHash(TypeParameterElement arg0) {
+        protected int doHash(@Nonnull TypeParameterElement arg0) {
           // We don't use the hash code.
           return 0;
         }
@@ -192,11 +193,7 @@ public class Helpers {
     if (av == null) {
       return null;
     }
-    TypeMirror type = Helpers.getAnnotationTypeMirrorValue(av);
-    if (type == null) {
-      return null;
-    }
-    return type;
+    return Helpers.getAnnotationTypeMirrorValue(av);
   }
 
   String getPackageOf(TypeElement typeElement) {

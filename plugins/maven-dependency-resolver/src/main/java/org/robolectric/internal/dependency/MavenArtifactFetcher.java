@@ -207,10 +207,10 @@ public class MavenArtifactFetcher {
 
     private final URL remoteURL;
     private final File localFile;
-    private String repositoryUserName;
-    private String repositoryPassword;
-    private String proxyHost;
-    private int proxyPort;
+    private final String repositoryUserName;
+    private final String repositoryPassword;
+    private final String proxyHost;
+    private final int proxyPort;
 
     public FetchToFileTask(
         URL remoteURL,
@@ -227,6 +227,7 @@ public class MavenArtifactFetcher {
       this.proxyPort = proxyPort;
     }
 
+    @Nonnull
     @Override
     public ListenableFuture<Void> call() throws Exception {
       URLConnection connection;

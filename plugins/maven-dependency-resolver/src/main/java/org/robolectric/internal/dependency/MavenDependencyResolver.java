@@ -39,7 +39,6 @@ import org.xml.sax.SAXException;
  */
 public class MavenDependencyResolver implements DependencyResolver {
 
-  private final ExecutorService executorService;
   private final MavenArtifactFetcher mavenArtifactFetcher;
   private final File localRepositoryDir;
 
@@ -60,7 +59,6 @@ public class MavenDependencyResolver implements DependencyResolver {
       String repositoryPassword,
       String proxyHost,
       int proxyPort) {
-    this.executorService = createExecutorService();
     this.localRepositoryDir = getLocalRepositoryDir();
     this.mavenArtifactFetcher =
         createMavenFetcher(
@@ -70,7 +68,7 @@ public class MavenDependencyResolver implements DependencyResolver {
             proxyHost,
             proxyPort,
             localRepositoryDir,
-            this.executorService);
+            createExecutorService());
   }
 
   @Override

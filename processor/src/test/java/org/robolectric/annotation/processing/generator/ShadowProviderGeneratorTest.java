@@ -26,7 +26,7 @@ public class ShadowProviderGeneratorTest {
   private StringWriter writer;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     model = mock(RobolectricModel.class);
     generator =
         new ShadowProviderGenerator(
@@ -35,7 +35,7 @@ public class ShadowProviderGeneratorTest {
   }
 
   @Test
-  public void resettersAreOnlyCalledIfSdkMatches() throws Exception {
+  public void resettersAreOnlyCalledIfSdkMatches() {
     when(model.getVisibleShadowTypes()).thenReturn(Collections.emptyList());
 
     List<ResetterInfo> resetterInfos = new ArrayList<>();

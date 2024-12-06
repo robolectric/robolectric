@@ -3,6 +3,7 @@ package org.robolectric.annotation.processing.generator;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -29,7 +30,8 @@ public class ServiceLoaderGenerator extends Generator {
     try {
       FileObject file =
           filer.createResource(StandardLocation.CLASS_OUTPUT, "", "META-INF/services/" + fileName);
-      PrintWriter pw = new PrintWriter(new OutputStreamWriter(file.openOutputStream(), "UTF-8"));
+      PrintWriter pw =
+          new PrintWriter(new OutputStreamWriter(file.openOutputStream(), StandardCharsets.UTF_8));
       pw.print(shadowPackage + '.' + GEN_CLASS + '\n');
       pw.close();
     } catch (IOException e) {

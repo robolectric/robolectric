@@ -20,16 +20,16 @@ public class RealObjectValidator extends FoundOnImplementsValidator {
   }
 
   public static String join(List<?> params) {
-    StringBuilder retval = new StringBuilder();
+    StringBuilder result = new StringBuilder();
     boolean comma = false;
     for (Object p : params) {
       if (comma) {
-        retval.append(',');
+        result.append(',');
       }
       comma = true;
-      retval.append(p);
+      result.append(p);
     }
-    return retval.toString();
+    return result.toString();
   }
 
   TypeVisitor<Void, VariableElement> typeVisitor =
