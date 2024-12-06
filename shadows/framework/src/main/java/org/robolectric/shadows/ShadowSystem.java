@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.os.SystemClock;
-import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.LooperMode;
 
 public class ShadowSystem {
@@ -16,7 +15,7 @@ public class ShadowSystem {
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       return ShadowLegacySystemClock.nanoTime();
     } else {
-      return TimeUnit.MILLISECONDS.toNanos(SystemClock.uptimeMillis());
+      return ShadowPausedSystemClock.uptimeNanos();
     }
   }
 

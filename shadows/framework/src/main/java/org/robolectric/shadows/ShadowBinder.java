@@ -3,9 +3,15 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.Q;
 
 import android.os.Binder;
+import android.os.IBinder.DeathRecipient;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -18,6 +24,8 @@ public class ShadowBinder {
   private static Integer callingUid;
   private static Integer callingPid;
   private static UserHandle callingUserHandle;
+
+  private final List<WeakReference<DeathRecipient>> deathRecipients = new ArrayList<>();
 
   @Implementation
   protected boolean transact(int code, Parcel data, Parcel reply, int flags)
@@ -42,6 +50,30 @@ public class ShadowBinder {
       reply.setDataPosition(0);
     }
     return result;
+  }
+
+  @Implementation
+  protected void linkToDeath(DeathRecipient deathRecipient, int flags) {
+    // The caller must hold a strong reference, the binder does not.
+    deathRecipients.add(new WeakReference<>(deathRecipient));
+  }
+
+  @Implementation
+  protected boolean unlinkToDeath(DeathRecipient deathRecipient, int flags) {
+    WeakReference<DeathRecipient> itemToRemove = null;
+    for (WeakReference<DeathRecipient> item : deathRecipients) {
+      // If the same recipient is registered twice, it must be unregistered twice as well.
+      if (item.get() == deathRecipient) {
+        itemToRemove = item;
+        break;
+      }
+    }
+    if (itemToRemove != null) {
+      deathRecipients.remove(itemToRemove);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   @Implementation
@@ -84,6 +116,14 @@ public class ShadowBinder {
       return callingUserHandle;
     }
     return android.os.Process.myUserHandle();
+  }
+
+  public List<DeathRecipient> getDeathRecipients() {
+    return deathRecipients.stream()
+        .map(Reference::get)
+        // References that have been collected will be null.
+        .filter(Objects::nonNull)
+        .toList();
   }
 
   public static void setCallingPid(int pid) {

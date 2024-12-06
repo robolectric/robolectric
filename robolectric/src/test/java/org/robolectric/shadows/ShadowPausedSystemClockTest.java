@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -165,6 +166,22 @@ public class ShadowPausedSystemClockTest {
     assertThat(SystemClock.uptimeMillis()).isEqualTo(1100);
     assertThat(SystemClock.elapsedRealtime()).isEqualTo(1100);
     assertThat(SystemClock.currentThreadTimeMillis()).isEqualTo(1100);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void advanceTimeBy_shouldAdvanceNanoTime() {
+    long startUptimeNanos = SystemClock.uptimeNanos();
+    long startUptimeMs = SystemClock.uptimeMillis();
+    ShadowSystemClock.advanceBy(Duration.ofNanos(100));
+
+    assertThat(SystemClock.uptimeNanos()).isEqualTo(startUptimeNanos + 100);
+    assertThat(SystemClock.uptimeMillis()).isEqualTo(startUptimeMs);
+
+    ShadowSystemClock.advanceBy(Duration.ofMillis(1));
+    assertThat(SystemClock.uptimeMillis()).isEqualTo(startUptimeMs + 1);
+    assertThat(SystemClock.uptimeNanos())
+        .isEqualTo(startUptimeNanos + 100 + ShadowPausedSystemClock.MILLIS_PER_NANO);
   }
 
   @Test

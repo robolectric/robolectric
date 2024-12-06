@@ -9,6 +9,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.os.Binder;
+import android.os.IBinder.DeathRecipient;
 import android.os.Parcel;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -43,6 +44,52 @@ public class ShadowBinderTest {
     assertThat(testBinder.flags).isEqualTo(3);
     reply.readException();
     assertThat(reply.readString()).isEqualTo("Hello Robolectric");
+  }
+
+  @Test
+  public void testLinkToDeath() throws Exception {
+    Binder binder = new Binder();
+    DeathRecipient recipient = () -> {};
+    binder.linkToDeath(recipient, 0);
+    assertThat(shadowOf(binder).getDeathRecipients()).containsExactly(recipient);
+  }
+
+  @Test
+  public void testLinkToDeath_unlink() throws Exception {
+    Binder binder = new Binder();
+    DeathRecipient recipient = () -> {};
+    // recipient doesn't exist, returns false.
+    assertThat(binder.unlinkToDeath(recipient, 0)).isFalse();
+
+    binder.linkToDeath(recipient, 0);
+    // recipient exists, return true.
+    assertThat(binder.unlinkToDeath(recipient, 0)).isTrue();
+    assertThat(shadowOf(binder).getDeathRecipients()).isEmpty();
+  }
+
+  @Test
+  public void testLinkToDeath_twice() throws Exception {
+    Binder binder = new Binder();
+    DeathRecipient recipient = () -> {};
+    binder.linkToDeath(recipient, 0);
+    binder.linkToDeath(recipient, 0);
+    assertThat(shadowOf(binder).getDeathRecipients()).containsExactly(recipient, recipient);
+
+    binder.unlinkToDeath(recipient, 0);
+    assertThat(shadowOf(binder).getDeathRecipients()).containsExactly(recipient);
+  }
+
+  @Test
+  public void testLinkToDeath_weakReference() throws Exception {
+    Binder binder = new Binder();
+    binder.linkToDeath(
+        new DeathRecipient() {
+          @Override
+          public void binderDied() {}
+        },
+        0);
+    System.gc();
+    assertThat(shadowOf(binder).getDeathRecipients()).isEmpty();
   }
 
   static class TestBinder extends Binder {

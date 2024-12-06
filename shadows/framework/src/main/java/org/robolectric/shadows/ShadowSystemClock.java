@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.Q;
 import static java.time.ZoneOffset.UTC;
 import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
+import static org.robolectric.shadows.ShadowLooper.looperMode;
 
 import android.os.SimpleClock;
 import android.os.SystemClock;
@@ -71,7 +72,7 @@ public abstract class ShadowSystemClock {
    * available.
    */
   public static void advanceBy(long time, TimeUnit unit) {
-    SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + unit.toMillis(time));
+    advanceBy(Duration.of(time, unit.toChronoUnit()));
   }
 
   /**
@@ -80,7 +81,11 @@ public abstract class ShadowSystemClock {
    * @param duration The interval by which to advance.
    */
   public static void advanceBy(Duration duration) {
-    SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + duration.toMillis());
+    if (looperMode() == Mode.LEGACY) {
+      SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + duration.toMillis());
+    } else {
+      ShadowPausedSystemClock.internalAdvanceBy(duration);
+    }
   }
 
   /**
