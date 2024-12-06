@@ -34,6 +34,7 @@ public class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
   }
 
   @Override
+  @Nonnull
   protected AndroidSandbox getSandbox(FrameworkMethod method) {
     AndroidSandbox sandbox = super.getSandbox(method);
     latestSandbox = sandbox;

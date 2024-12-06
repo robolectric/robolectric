@@ -25,7 +25,7 @@ public final class ShadowNativeAllocationRegistryTest {
   // TODO(hoisie): choose a different free function to test in V and above.
   @Config(maxSdk = U.SDK_INT)
   @Test
-  public void applyFreeFunction_matrix() throws Exception {
+  public void applyFreeFunction_matrix() {
     WeakReference<Matrix> weakMatrix = new WeakReference<>(newMatrix());
     // Invokes 'applyFreeFunction' when the matrix is GC'd.
     GcFinalization.awaitClear(weakMatrix);

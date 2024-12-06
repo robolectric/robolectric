@@ -30,13 +30,9 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 public class ShadowNativeLineBreakerTest {
 
-  private static final String TAG = "LineBreakerTest";
-
-  private static Paint paint;
-
   @Before
   public void setup() {
-    paint = new Paint();
+    Paint paint = new Paint();
     Context context = RuntimeEnvironment.getApplication();
     AssetManager am = context.getAssets();
     Typeface tf = new Typeface.Builder(am, "fonts/layout/linebreak.ttf").build();

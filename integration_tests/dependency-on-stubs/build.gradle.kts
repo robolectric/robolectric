@@ -6,7 +6,7 @@ plugins {
 // test with a project that depends on the stubs jar, not org.robolectric:android-all
 
 android {
-  compileSdk = 34
+  compileSdk = 35
   namespace = "org.robolectric"
 
   defaultConfig { minSdk = 21 }
@@ -17,7 +17,7 @@ android {
   }
 
   testOptions {
-    targetSdk = 34
+    targetSdk = 35
     unitTests.isIncludeAndroidResources = true
   }
 }
@@ -25,5 +25,4 @@ android {
 dependencies {
   testImplementation(project(":robolectric"))
   testImplementation(libs.junit4)
-  testImplementation(libs.truth)
 }

@@ -26,8 +26,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.annotation.AnyRes;
 import android.annotation.ArrayRes;
 import android.annotation.AttrRes;
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.annotation.StyleRes;
 import android.content.res.ApkAssets;
 import android.content.res.AssetManager;
@@ -49,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -526,7 +526,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static void nativeSetApkAssets(
       long ptr,
-      @NonNull android.content.res.ApkAssets[] apk_assets_array,
+      @Nonnull android.content.res.ApkAssets[] apk_assets_array,
       boolean invalidate_caches) {
     ATRACE_NAME("AssetManager::SetApkAssets");
 
@@ -626,7 +626,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
 
   // static jobject NativeGetAssignedPackageIdentifiers(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
   @Implementation(minSdk = P, maxSdk = Q)
-  protected static @NonNull SparseArray<String> nativeGetAssignedPackageIdentifiers(long ptr) {
+  protected static @Nonnull SparseArray<String> nativeGetAssignedPackageIdentifiers(long ptr) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
 
     SparseArray<String> sparse_array = new SparseArray<>();
@@ -659,7 +659,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
 
   // static jobjectArray NativeList(JNIEnv* env, jclass /*clazz*/, jlong ptr, jstring path) {
   @Implementation(minSdk = P)
-  protected static @Nullable String[] nativeList(long ptr, @NonNull String path)
+  protected static @Nullable String[] nativeList(long ptr, @Nonnull String path)
       throws IOException {
     String path_utf8 = path;
     if (path_utf8 == null) {
@@ -701,7 +701,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   // static jlong NativeOpenAsset(JNIEnv* env, jclass /*clazz*/, jlong ptr, jstring asset_path,
   //                              jint access_mode) {
   @Implementation(minSdk = P)
-  protected static long nativeOpenAsset(long ptr, @NonNull String asset_path, int access_mode)
+  protected static long nativeOpenAsset(long ptr, @Nonnull String asset_path, int access_mode)
       throws FileNotFoundException {
     String asset_path_utf8 = asset_path;
     if (asset_path_utf8 == null) {
@@ -730,7 +730,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   //                                  jlongArray out_offsets) {
   @Implementation(minSdk = P)
   protected static ParcelFileDescriptor nativeOpenAssetFd(
-      long ptr, @NonNull String asset_path, long[] out_offsets) throws IOException {
+      long ptr, @Nonnull String asset_path, long[] out_offsets) throws IOException {
     String asset_path_utf8 = asset_path;
     if (asset_path_utf8 == null) {
       // This will throw NPE.
@@ -751,7 +751,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   //                                 jstring asset_path, jint access_mode) {
   @Implementation(minSdk = P)
   protected static long nativeOpenNonAsset(
-      long ptr, int jcookie, @NonNull String asset_path, int access_mode)
+      long ptr, int jcookie, @Nonnull String asset_path, int access_mode)
       throws FileNotFoundException {
     ApkAssetsCookie cookie = JavaCookieToApkAssetsCookie(jcookie);
     String asset_path_utf8 = asset_path;
@@ -788,7 +788,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   //                                     jstring asset_path, jlongArray out_offsets) {
   @Implementation(minSdk = P)
   protected static @Nullable ParcelFileDescriptor nativeOpenNonAssetFd(
-      long ptr, int jcookie, @NonNull String asset_path, @NonNull long[] out_offsets)
+      long ptr, int jcookie, @Nonnull String asset_path, @Nonnull long[] out_offsets)
       throws IOException {
     ApkAssetsCookie cookie = JavaCookieToApkAssetsCookie(jcookie);
     String asset_path_utf8 = asset_path;
@@ -816,7 +816,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   // static jlong NativeOpenXmlAsset(JNIEnv* env, jobject /*clazz*/, jlong ptr, jint jcookie,
   //                                 jstring asset_path) {
   @Implementation(minSdk = P)
-  protected static long nativeOpenXmlAsset(long ptr, int jcookie, @NonNull String asset_path)
+  protected static long nativeOpenXmlAsset(long ptr, int jcookie, @Nonnull String asset_path)
       throws FileNotFoundException {
     ApkAssetsCookie cookie = JavaCookieToApkAssetsCookie(jcookie);
     String asset_path_utf8 = asset_path;
@@ -862,7 +862,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       long ptr,
       @AnyRes int resid,
       short density,
-      @NonNull TypedValue typed_value,
+      @Nonnull TypedValue typed_value,
       boolean resolve_references) {
     return PerfStatsCollector.getInstance()
         .measure(
@@ -900,7 +900,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   //                                       jint bag_entry_id, jobject typed_value) {
   @Implementation(minSdk = P)
   protected static int nativeGetResourceBagValue(
-      long ptr, @AnyRes int resid, int bag_entry_id, @NonNull TypedValue typed_value) {
+      long ptr, @AnyRes int resid, int bag_entry_id, @Nonnull TypedValue typed_value) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
     ResolvedBag bag = assetmanager.GetBag(resid);
     if (bag == null) {
@@ -1118,7 +1118,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   //                                    jintArray out_data) {
   @Implementation(minSdk = P)
   protected static int nativeGetResourceArray(
-      long ptr, @ArrayRes int resid, @NonNull int[] out_data) {
+      long ptr, @ArrayRes int resid, @Nonnull int[] out_data) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
     ResolvedBag bag = assetmanager.GetBag(resid);
     if (bag == null) {
@@ -1177,7 +1177,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   //                                         jstring def_type, jstring def_package) {
   @Implementation(minSdk = P)
   protected static @AnyRes int nativeGetResourceIdentifier(
-      long ptr, @NonNull String name, @Nullable String def_type, @Nullable String def_package) {
+      long ptr, @Nonnull String name, @Nullable String def_type, @Nullable String def_package) {
     String name_utf8 = name;
     if (name_utf8 == null) {
       // This will throw NPE.
@@ -1374,7 +1374,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       @AttrRes int def_style_attr,
       @StyleRes int def_style_resid,
       long xml_parser_ptr,
-      @NonNull int[] java_attrs,
+      @Nonnull int[] java_attrs,
       long out_values_ptr,
       long out_indices_ptr) {
     PerfStatsCollector.getInstance()
@@ -1398,7 +1398,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       @AttrRes int def_style_attr,
       @StyleRes int def_style_resid,
       long xml_parser_ptr,
-      @NonNull int[] java_attrs,
+      @Nonnull int[] java_attrs,
       long out_values_ptr,
       long out_indices_ptr) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
@@ -1445,9 +1445,9 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       @AttrRes int def_style_attr,
       @StyleRes int def_style_resid,
       @Nullable int[] java_values,
-      @NonNull int[] java_attrs,
-      @NonNull int[] out_java_values,
-      @NonNull int[] out_java_indices) {
+      @Nonnull int[] java_attrs,
+      @Nonnull int[] out_java_values,
+      @Nonnull int[] out_java_indices) {
     int attrs_len = java_attrs.length;
     int out_values_len = out_java_values.length;
     if (out_values_len < (attrs_len * STYLE_NUM_ENTRIES)) {
@@ -1535,9 +1535,9 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   protected static boolean nativeRetrieveAttributes(
       long ptr,
       long xml_parser_ptr,
-      @NonNull int[] java_attrs,
-      @NonNull int[] out_java_values,
-      @NonNull int[] out_java_indices) {
+      @Nonnull int[] java_attrs,
+      @Nonnull int[] out_java_values,
+      @Nonnull int[] out_java_indices) {
     int attrs_len = java_attrs.length;
     int out_values_len = out_java_values.length;
     if (out_values_len < (attrs_len * STYLE_NUM_ENTRIES)) {
@@ -1673,7 +1673,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       long ptr,
       long theme_ptr,
       @AttrRes int resid,
-      @NonNull TypedValue typed_value,
+      @Nonnull TypedValue typed_value,
       boolean resolve_references) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
     Theme theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(theme_ptr);

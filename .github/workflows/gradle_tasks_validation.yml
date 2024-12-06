@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   run_aggregateDocs:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
           path: build/docs
 
   run_javadocJar:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -61,7 +61,7 @@ jobs:
 
 
   run_instrumentAll:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -84,7 +84,7 @@ jobs:
         run: PREINSTRUMENTED_SDK_VERSIONS=33 PUBLISH_PREINSTRUMENTED_JARS=true ./gradlew :preinstrumented:publishToMavenLocal
 
   run_publishToMavenLocal:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -98,4 +98,4 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Publish to Maven local
-        run: ./gradlew publishToMavenLocal --no-watch-fs
+        run: ./gradlew publishToMavenLocal

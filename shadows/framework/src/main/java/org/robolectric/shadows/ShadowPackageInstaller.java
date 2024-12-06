@@ -6,14 +6,11 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.content.pm.PackageInstaller;
-import android.content.pm.PackageInstaller.PreapprovalDetails;
 import android.content.pm.PackageInstaller.SessionInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.VersionedPackage;
@@ -32,7 +29,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -79,7 +79,7 @@ public class ShadowPackageInstaller {
 
   @Implementation
   protected void registerSessionCallback(
-      @NonNull PackageInstaller.SessionCallback callback, @NonNull Handler handler) {
+      @Nonnull PackageInstaller.SessionCallback callback, @Nonnull Handler handler) {
     CallbackInfo callbackInfo = new CallbackInfo();
     callbackInfo.callback = callback;
     callbackInfo.handler = handler;
@@ -87,7 +87,7 @@ public class ShadowPackageInstaller {
   }
 
   @Implementation
-  protected void unregisterSessionCallback(@NonNull PackageInstaller.SessionCallback callback) {
+  protected void unregisterSessionCallback(@Nonnull PackageInstaller.SessionCallback callback) {
     for (Iterator<CallbackInfo> i = callbackInfos.iterator(); i.hasNext(); ) {
       final CallbackInfo callbackInfo = i.next();
       if (callbackInfo.callback == callback) {
@@ -104,7 +104,7 @@ public class ShadowPackageInstaller {
   }
 
   @Implementation
-  protected int createSession(@NonNull PackageInstaller.SessionParams params) throws IOException {
+  protected int createSession(@Nonnull PackageInstaller.SessionParams params) throws IOException {
     final PackageInstaller.SessionInfo sessionInfo = new PackageInstaller.SessionInfo();
     sessionInfo.sessionId = nextSessionId++;
     sessionInfo.active = true;
@@ -135,7 +135,7 @@ public class ShadowPackageInstaller {
   }
 
   @Implementation
-  @NonNull
+  @Nonnull
   protected PackageInstaller.Session openSession(int sessionId) throws IOException {
     if (!sessionInfos.containsKey(sessionId)) {
       throw new SecurityException("Invalid session Id: " + sessionId);
@@ -343,7 +343,9 @@ public class ShadowPackageInstaller {
 
     @Implementation(minSdk = UPSIDE_DOWN_CAKE)
     protected void requestUserPreapproval(
-        @NonNull PreapprovalDetails details, @NonNull IntentSender statusReceiver) {
+        @Nonnull @ClassName("android.content.pm.PackageInstaller$PreapprovalDetails")
+            Object details,
+        @Nonnull IntentSender statusReceiver) {
       preapprovalStatusReceiver = statusReceiver;
     }
 
@@ -353,14 +355,14 @@ public class ShadowPackageInstaller {
     }
 
     @Implementation(minSdk = UPSIDE_DOWN_CAKE)
-    @NonNull
+    @Nonnull
     protected PersistableBundle getAppMetadata() {
       return appMetadata;
     }
 
     @Implementation
-    @NonNull
-    protected OutputStream openWrite(@NonNull String name, long offsetBytes, long lengthBytes)
+    @Nonnull
+    protected OutputStream openWrite(@Nonnull String name, long offsetBytes, long lengthBytes)
         throws IOException {
       outputStream =
           new OutputStream() {
@@ -377,10 +379,10 @@ public class ShadowPackageInstaller {
     }
 
     @Implementation
-    protected void fsync(@NonNull OutputStream out) throws IOException {}
+    protected void fsync(@Nonnull OutputStream out) throws IOException {}
 
     @Implementation
-    protected void commit(@NonNull IntentSender statusReceiver) {
+    protected void commit(@Nonnull IntentSender statusReceiver) {
       this.statusReceiver = statusReceiver;
       if (outputStreamOpen) {
         throw new SecurityException("OutputStream still open");

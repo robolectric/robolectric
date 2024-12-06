@@ -2,9 +2,9 @@
 robolectric-nativeruntime-dist-compat = "1.0.16"
 
 # https://developer.android.com/studio/releases
-android-gradle = "8.6.0"
+android-gradle = "8.7.2"
 
-android-tools-common = "31.6.0"
+android-tools-common = "31.7.2"
 
 # The runtime dependency for Android classes when Robolectric tests are run
 androidstubs = "34"
@@ -13,7 +13,7 @@ androidstubs = "34"
 conscrypt = "2.5.2"
 
 # https://github.com/bcgit/bc-java/tags
-bouncycastle = "1.78.1"
+bouncycastle = "1.79"
 
 # https://github.com/findbugsproject/findbugs/tags
 findbugs-jsr305 = "3.0.2"
@@ -22,20 +22,19 @@ findbugs-jsr305 = "3.0.2"
 hamcrest = "2.0.0.0"
 
 # https://github.com/google/error-prone/releases
-error-prone = "2.19.1"
-error-prone-javac = "9+181-r4173-1"
+error-prone = "2.36.0"
 
 # https://github.com/tbroyer/gradle-errorprone-plugin/releases
-error-prone-gradle = "3.1.0"
+error-prone-gradle = "4.1.0"
 
 # https://kotlinlang.org/docs/releases.html#release-details
-kotlin = "2.0.20"
+kotlin = "2.1.0"
 
 # https://github.com/Kotlin/kotlinx.coroutines/releases/
 kotlinx-coroutines = '1.9.0'
 
 # https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
-spotless-gradle = "6.25.0"
+spotless-gradle = "7.0.0.BETA4"
 
 # https://detekt.dev/changelog
 detekt-gradle = "1.23.7"
@@ -45,7 +44,7 @@ apache-http-core = "4.0.1"
 apache-http-client = "4.0.3"
 
 # https://asm.ow2.io/versions.html
-asm = "9.7"
+asm = "9.7.1"
 
 # https://github.com/google/auto/releases
 auto-common = "1.2.2"
@@ -56,7 +55,7 @@ auto-value = "1.11.0"
 compile-testing = "0.21.0"
 
 # https://github.com/google/guava/releases
-guava-jre = "31.1-jre"
+guava-jre = "33.3.1-jre"
 
 # https://github.com/google/gson/releases
 gson = "2.11.0"
@@ -65,7 +64,7 @@ gson = "2.11.0"
 truth = "1.4.2"
 
 # https://github.com/unicode-org/icu/releases
-icu4j = "75.1"
+icu4j = "76.1"
 
 # https://www.eclemma.org/jacoco/
 jacoco = "0.8.11"
@@ -79,7 +78,7 @@ javax-inject = "1"
 junit4 = "4.13.2"
 
 # https://github.com/google/libphonenumber/releases
-libphonenumber = "8.13.46"
+libphonenumber = "8.13.51"
 
 # https://github.com/mockito/mockito/releases
 mockito = "4.11.0"
@@ -88,7 +87,7 @@ mockito = "4.11.0"
 mockk = "1.13.7"
 
 # https://github.com/takahirom/roborazzi/releases
-roborazzi = "1.26.0"
+roborazzi = "1.34.0"
 
 # https://square.github.io/okhttp/changelogs/changelog/
 okhttp = "4.12.0"
@@ -101,18 +100,14 @@ snakeyaml = "2.3"
 sqlite4java = "1.0.392"
 
 # https://developer.android.com/jetpack/androidx/versions
-androidx-annotation = "1.8.2"
+androidx-annotation = "1.9.1"
 androidx-appcompat = "1.7.0"
 androidx-biometric = "1.1.0"
-androidx-constraintlayout = "2.1.4"
-androidx-core = "1.13.1"
-androidx-fragment = "1.8.3"
-androidx-multidex = "2.0.1"
+androidx-constraintlayout = "2.2.0"
+androidx-core = "1.15.0"
+androidx-fragment = "1.8.5"
 androidx-window = "1.3.0"
 androidx-room = "2.6.1"
-
-# https://maven.google.com/web/index.html?q=multidex#com.android.support:multidex
-android-multidex = "1.0.3"
 
 # https://github.com/android/android-test/tags
 androidx-test-core = "1.6.1"
@@ -122,6 +117,9 @@ androidx-test-ext-truth = "1.6.0"
 androidx-test-monitor = "1.7.2"
 androidx-test-runner = "1.6.2"
 androidx-test-services = "1.5.0"
+
+# https://developer.android.com/jetpack/androidx/releases/compose
+androidx-compose-bom = "2024.11.00"
 
 # for shadows/playservices/build.gradle
 androidx-fragment-for-shadows = "1.2.0"
@@ -159,7 +157,6 @@ error-prone-annotations = { module = "com.google.errorprone:error_prone_annotati
 error-prone-refaster = { module = "com.google.errorprone:error_prone_refaster", version.ref = "error-prone" }
 error-prone-check-api = { module = "com.google.errorprone:error_prone_check_api", version.ref = "error-prone" }
 error-prone-test-helpers = { module = "com.google.errorprone:error_prone_test_helpers", version.ref = "error-prone" }
-error-prone-javac = { module = "com.google.errorprone:javac", version.ref = "error-prone-javac" }
 
 conscrypt-openjdk-uber = { module = "org.conscrypt:conscrypt-openjdk-uber", version.ref = "conscrypt" }
 bcprov-jdk18on = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
@@ -183,14 +180,13 @@ libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", vers
 okhttp = { module = "com.squareup.okhttp3:okhttp" }
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }
 
-powermock-module-junit4 = { module = "org.powermock:powermock-module-junit4", version.ref = "powermock" }
 powermock-module-junit4-rule = { module = "org.powermock:powermock-module-junit4-rule", version.ref = "powermock" }
 powermock-api-mockito2 = { module = "org.powermock:powermock-api-mockito2", version.ref = "powermock" }
 powermock-classloading-xstream = { module = "org.powermock:powermock-classloading-xstream", version.ref = "powermock" }
 
 robolectric-nativeruntime-dist-compat = { module = "org.robolectric:nativeruntime-dist-compat", version.ref = "robolectric-nativeruntime-dist-compat" }
 
-snakeyaml = {module = "org.yaml:snakeyaml", version.ref="snakeyaml" }
+snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
 
 sqlite4java = { module = "com.almworks.sqlite4java:sqlite4java", version.ref = "sqlite4java" }
 sqlite4java-osx = { module = "com.almworks.sqlite4java:libsqlite4java-osx", version.ref = "sqlite4java" }
@@ -215,7 +211,6 @@ androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayo
 androidx-core = { module = "androidx.core:core", version.ref = "androidx-core" }
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "androidx-fragment" }
 androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", version.ref = "androidx-fragment" }
-androidx-multidex = { module = "androidx.multidex:multidex", version.ref = "androidx-multidex" }
 androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "androidx-room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidx-room" }
@@ -232,6 +227,13 @@ androidx-test-espresso-intents = { module = "androidx.test.espresso:espresso-int
 androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-ext-junit" }
 androidx-test-ext-truth = { module = "androidx.test.ext:truth", version.ref = "androidx-test-ext-truth" }
 
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidx-compose-bom" }
+androidx-compose-ui = { module = "androidx.compose.ui:ui" }
+androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+
 androidx-fragment-for-shadows = { module = "androidx.fragment:fragment", version.ref = "androidx-fragment-for-shadows" }
 play-services-auth-for-shadows = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-for-shadows" }
 play-services-base-for-shadows = { module = "com.google.android.gms:play-services-base", version.ref = "play-services-for-shadows" }
@@ -239,13 +241,11 @@ play-services-basement-for-shadows = { module = "com.google.android.gms:play-ser
 
 play-services-basement = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-basement" }
 
-android-multidex = { module = "com.android.support:multidex", version.ref = "android-multidex" }
-
 spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-gradle" }
 
 [bundles]
 play-services-for-shadows = ["androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows"]
-powermock = ["powermock-module-junit4", "powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-xstream"]
+powermock = ["powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-xstream"]
 sqlite4java-native = ["sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86"]
 
 [plugins]
@@ -258,6 +258,7 @@ jacoco = { id = "jacoco" }
 java = { id = "java" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 robolectric-android-project = { id = "org.robolectric.gradle.AndroidProjectConfigPlugin" }
 robolectric-deployed-java-module = { id = "org.robolectric.gradle.DeployedRoboJavaModulePlugin" }
 robolectric-gradle-managed-device = { id = "org.robolectric.gradle.GradleManagedDevicePlugin" }

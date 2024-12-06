@@ -128,7 +128,11 @@ public class IntentsTest {
     assertThat(getIntents()).comparingElementsUsing(all(action(), data())).contains(expectedIntent);
   }
 
-  /** Activity that captures calls to {#onActivityResult() } */
+  /**
+   * Activity that captures calls to {@link Activity#onActivityResult(int, int, Intent)}
+   *
+   * @noinspection NewClassNamingConvention
+   */
   public static class ResultCapturingActivity extends Activity {
 
     private ActivityResult activityResult;
@@ -165,7 +169,11 @@ public class IntentsTest {
     }
   }
 
-  /** Dummy activity whose calls we intent to we're stubbing out. */
+  /**
+   * Dummy activity whose calls we intent to we're stubbing out.
+   *
+   * @noinspection NewClassNamingConvention
+   */
   public static class DummyActivity extends Activity {}
 
   @Test
@@ -173,17 +181,18 @@ public class IntentsTest {
     intending(hasComponent(hasClassName(DummyActivity.class.getName())))
         .respondWith(new ActivityResult(Activity.RESULT_OK, new Intent().putExtra("key", 123)));
 
-    ActivityScenario<ResultCapturingActivity> activityScenario =
-        ActivityScenario.launch(ResultCapturingActivity.class);
+    try (ActivityScenario<ResultCapturingActivity> activityScenario =
+        ActivityScenario.launch(ResultCapturingActivity.class)) {
+      activityScenario.onActivity(
+          activity ->
+              activity.startActivityForResult(new Intent(activity, DummyActivity.class), 0));
 
-    activityScenario.onActivity(
-        activity -> activity.startActivityForResult(new Intent(activity, DummyActivity.class), 0));
-
-    activityScenario.onActivity(
-        activity -> {
-          assertThat(activity.activityResult.getResultCode()).isEqualTo(Activity.RESULT_OK);
-          assertThat(activity.activityResult.getResultData()).extras().containsKey("key");
-        });
+      activityScenario.onActivity(
+          activity -> {
+            assertThat(activity.activityResult.getResultCode()).isEqualTo(Activity.RESULT_OK);
+            assertThat(activity.activityResult.getResultData()).extras().containsKey("key");
+          });
+    }
   }
 
   @Test

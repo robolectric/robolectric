@@ -3,13 +3,13 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.os.PersistableBundle;
 import android.telephony.CarrierConfigManager;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -63,8 +63,8 @@ public class ShadowCarrierConfigManager {
    * invalid {@code subId}.
    */
   @Implementation(minSdk = U.SDK_INT)
-  @NonNull
-  public PersistableBundle getConfigForSubId(int subId, @NonNull String... keys) {
+  @Nonnull
+  public PersistableBundle getConfigForSubId(int subId, @Nonnull String... keys) {
     checkReadPhoneStatePermission();
 
     PersistableBundle bundle = getConfigForSubId(subId);

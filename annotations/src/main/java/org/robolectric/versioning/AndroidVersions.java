@@ -54,6 +54,7 @@ import javax.annotation.Nullable;
  */
 public final class AndroidVersions {
 
+  @SuppressWarnings("FieldMayBeFinal") // The value is changed via reflection in tests
   private static boolean warnOnly;
 
   private AndroidVersions() {}
@@ -89,17 +90,10 @@ public final class AndroidVersions {
      *
      * @param other the object to be compared.
      * @return 1 if this is greater than other, 0 if equal, -1 if less
-     * @throws IllegalStateException if other is not an instance of AndroidRelease.
+     * @throws NullPointerException if other is null.
      */
     @Override
     public int compareTo(AndroidRelease other) {
-      if (other == null) {
-        throw new IllegalStateException(
-            "Only "
-                + AndroidVersions.class.getName()
-                + " should define Releases, illegal class "
-                + other.getClass());
-      }
       return Integer.compare(this.getSdkInt(), other.getSdkInt());
     }
 
@@ -406,9 +400,9 @@ public final class AndroidVersions {
   }
 
   /**
-   * Release: 7.1 <br>
+   * Version: 7.1 <br>
    * ShortCode: NMR1 <br>
-   * SDK Framework: 25 <br>
+   * SDK API Level: 25 <br>
    * release: true <br>
    */
   public static final class NMR1 extends AndroidReleased {
@@ -436,7 +430,7 @@ public final class AndroidVersions {
   }
 
   /**
-   * Release: 8.0 <br>
+   * Version: 8.0 <br>
    * ShortCode: O <br>
    * SDK API Level: 26 <br>
    * release: true <br>
@@ -466,7 +460,7 @@ public final class AndroidVersions {
   }
 
   /**
-   * Release: 8.1 <br>
+   * Version: 8.1 <br>
    * ShortCode: OMR1 <br>
    * SDK API Level: 27 <br>
    * release: true <br>
@@ -496,7 +490,7 @@ public final class AndroidVersions {
   }
 
   /**
-   * Release: 9.0 <br>
+   * Version: 9 <br>
    * ShortCode: P <br>
    * SDK API Level: 28 <br>
    * release: true <br>
@@ -507,7 +501,7 @@ public final class AndroidVersions {
 
     public static final String SHORT_CODE = "P";
 
-    public static final String VERSION = "9.0";
+    public static final String VERSION = "9";
 
     @Override
     public int getSdkInt() {
@@ -526,7 +520,7 @@ public final class AndroidVersions {
   }
 
   /**
-   * Release: 10.0 <br>
+   * Version: 10 <br>
    * ShortCode: Q <br>
    * SDK API Level: 29 <br>
    * release: true <br>
@@ -537,7 +531,7 @@ public final class AndroidVersions {
 
     public static final String SHORT_CODE = "Q";
 
-    public static final String VERSION = "10.0";
+    public static final String VERSION = "10";
 
     @Override
     public int getSdkInt() {
@@ -556,7 +550,7 @@ public final class AndroidVersions {
   }
 
   /**
-   * Release: 11.0 <br>
+   * Version: 11 <br>
    * ShortCode: R <br>
    * SDK API Level: 30 <br>
    * release: true <br>
@@ -567,7 +561,7 @@ public final class AndroidVersions {
 
     public static final String SHORT_CODE = "R";
 
-    public static final String VERSION = "11.0";
+    public static final String VERSION = "11";
 
     @Override
     public int getSdkInt() {
@@ -586,7 +580,7 @@ public final class AndroidVersions {
   }
 
   /**
-   * Release: 12.0 <br>
+   * Version: 12 <br>
    * ShortCode: S <br>
    * SDK API Level: 31 <br>
    * release: true <br>
@@ -597,7 +591,7 @@ public final class AndroidVersions {
 
     public static final String SHORT_CODE = "S";
 
-    public static final String VERSION = "12.0";
+    public static final String VERSION = "12";
 
     @Override
     public int getSdkInt() {
@@ -616,7 +610,7 @@ public final class AndroidVersions {
   }
 
   /**
-   * Release: 12.1 <br>
+   * Version: 12.1 <br>
    * ShortCode: Sv2 <br>
    * SDK API Level: 32 <br>
    * release: true <br>
@@ -647,7 +641,7 @@ public final class AndroidVersions {
   }
 
   /**
-   * Release: 13.0 <br>
+   * Version: 13 <br>
    * ShortCode: T <br>
    * SDK API Level: 33 <br>
    * release: true <br>
@@ -658,7 +652,7 @@ public final class AndroidVersions {
 
     public static final String SHORT_CODE = "T";
 
-    public static final String VERSION = "13.0";
+    public static final String VERSION = "13";
 
     @Override
     public int getSdkInt() {
@@ -677,7 +671,7 @@ public final class AndroidVersions {
   }
 
   /**
-   * Potential Release: 14.0 <br>
+   * Version: 14 <br>
    * ShortCode: U <br>
    * SDK API Level: 34 <br>
    * release: false <br>
@@ -688,7 +682,7 @@ public final class AndroidVersions {
 
     public static final String SHORT_CODE = "U";
 
-    public static final String VERSION = "14.0";
+    public static final String VERSION = "14";
 
     @Override
     public int getSdkInt() {
@@ -707,10 +701,10 @@ public final class AndroidVersions {
   }
 
   /**
-   * Potential Release: 15.0 <br>
+   * Version: 15 <br>
    * ShortCode: V <br>
-   * SDK API Level: 34+ <br>
-   * release: false <br>
+   * SDK API Level: 35 <br>
+   * release: true <br>
    */
   public static final class V extends AndroidReleased {
 
@@ -952,7 +946,7 @@ public final class AndroidVersions {
             current = shortCodeToAllReleases.get(codename);
             // else, assume the fullname is the first letter is correct.
             if (current == null) {
-              current = shortCodeToAllReleases.get(String.valueOf(foundCode));
+              current = shortCodeToAllReleases.get(foundCode);
             }
           }
           if (current == null) {
@@ -1080,7 +1074,7 @@ public final class AndroidVersions {
 
   private static final SdkInformation information;
 
-  private static final void errorMessage(String errorMessage, @Nullable Exception ex) {
+  private static void errorMessage(String errorMessage, @Nullable Exception ex) {
     if (warnOnly) {
       System.err.println(errorMessage);
     } else {

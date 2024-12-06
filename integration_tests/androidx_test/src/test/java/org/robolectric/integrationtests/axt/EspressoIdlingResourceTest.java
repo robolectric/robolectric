@@ -42,7 +42,7 @@ public final class EspressoIdlingResourceTest {
   }
 
   @Test
-  public void onIdle_idlingResourceIsIdle_doesntBlock() {
+  public void onIdle_idlingResourceIsIdle_doesNotBlock() {
     AtomicBoolean didCheckIdle = new AtomicBoolean();
     idlingRegistry.register(
         new NamedIdleResource("Test", /* isIdle= */ true) {
@@ -179,6 +179,9 @@ public final class EspressoIdlingResourceTest {
     }
   }
 
+  /**
+   * @noinspection NewClassNamingConvention
+   */
   private static class NamedIdleResource implements IdlingResource {
     final String name;
     final AtomicBoolean isIdle;

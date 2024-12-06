@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowCrossProfileApps.StartedActivity;
@@ -693,13 +694,13 @@ public class ShadowCrossProfileAppsTest {
       crossProfileApps_activityContextEnabled_differentInstancesRetrieveTargetUserProfiles() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       CrossProfileApps applicationCrossProfileApps =
           (CrossProfileApps)
               ApplicationProvider.getApplicationContext()
                   .getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       CrossProfileApps activityCrossProfileApps =
           (CrossProfileApps) activity.getSystemService(Context.CROSS_PROFILE_APPS_SERVICE);
 
@@ -712,9 +713,6 @@ public class ShadowCrossProfileAppsTest {
 
       assertThat(activityTargetUserProfiles).isEqualTo(applicationTargetUserProfiles);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

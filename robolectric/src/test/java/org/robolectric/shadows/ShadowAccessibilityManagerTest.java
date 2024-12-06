@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -274,13 +275,13 @@ public class ShadowAccessibilityManagerTest {
   public void accessibilityManager_activityContextEnabled_differentInstancesHaveSameServices() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       AccessibilityManager applicationAccessibilityManager =
           (AccessibilityManager)
               ApplicationProvider.getApplicationContext()
                   .getSystemService(Context.ACCESSIBILITY_SERVICE);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       AccessibilityManager activityAccessibilityManager =
           (AccessibilityManager) activity.getSystemService(Context.ACCESSIBILITY_SERVICE);
 
@@ -293,9 +294,6 @@ public class ShadowAccessibilityManagerTest {
 
       assertThat(activityServices).isEqualTo(applicationServices);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

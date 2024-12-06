@@ -5,10 +5,11 @@
 
   <uses-sdk
       android:minSdkVersion="21"
-      android:targetSdkVersion="34"/>
+      android:targetSdkVersion="35"/>
 
   <application>
     <activity android:name=".EspressoActivity" android:exported="true"/>
+    <activity android:name=".NoActionBarEspressoActivity" android:exported="true"/>
   </application>
 
   <instrumentation

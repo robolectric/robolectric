@@ -47,6 +47,9 @@ public class ActivityTestRuleTest {
         }
       };
 
+  /**
+   * @noinspection NewClassNamingConvention
+   */
   public static class TranscriptActivity extends Activity {
     Bundle receivedBundle;
 

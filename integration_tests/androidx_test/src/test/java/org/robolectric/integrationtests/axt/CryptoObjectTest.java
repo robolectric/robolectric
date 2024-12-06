@@ -2,13 +2,11 @@ package org.robolectric.integrationtests.axt;
 
 import static org.junit.Assert.fail;
 
-import androidx.annotation.NonNull;
 import androidx.biometric.BiometricPrompt;
 import androidx.biometric.BiometricPrompt.PromptInfo;
 import androidx.fragment.app.FragmentActivity;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.Executor;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import org.junit.Before;
@@ -33,22 +31,7 @@ public class CryptoObjectTest {
       throws NoSuchPaddingException, NoSuchAlgorithmException {
     BiometricPrompt biometricPrompt =
         new BiometricPrompt(
-            fragmentActivity,
-            new Executor() {
-              @Override
-              public void execute(Runnable command) {}
-            },
-            new BiometricPrompt.AuthenticationCallback() {
-              @Override
-              public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {}
-
-              @Override
-              public void onAuthenticationSucceeded(
-                  @NonNull BiometricPrompt.AuthenticationResult result) {}
-
-              @Override
-              public void onAuthenticationFailed() {}
-            });
+            fragmentActivity, command -> {}, new BiometricPrompt.AuthenticationCallback() {});
 
     PromptInfo promptInfo =
         new PromptInfo.Builder()

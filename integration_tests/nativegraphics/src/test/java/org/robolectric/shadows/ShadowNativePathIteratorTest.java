@@ -383,7 +383,7 @@ public class ShadowNativePathIteratorTest {
       PathIterator iterator = mPath.getPathIterator();
       assertEquals(PathIterator.VERB_MOVE, iterator.next(pointsArray, offset));
       assertEquals(PathIterator.VERB_LINE, iterator.next(pointsArray, offset));
-      assertEquals(0f, pointsArray[offset + 0], 0f);
+      assertEquals(0f, pointsArray[offset], 0f);
       assertEquals(0f, pointsArray[offset + 1], 0f);
       assertEquals(100f, pointsArray[offset + 2], 0f);
       assertEquals(200f, pointsArray[offset + 3], 0f);

@@ -16,7 +16,6 @@ import org.robolectric.annotation.GraphicsMode.Mode;
 
 @RunWith(AndroidJUnit4.class)
 @GraphicsMode(Mode.LEGACY)
-
 public class ShadowScrollViewTest {
   @Test
   public void shouldSmoothScrollTo() {

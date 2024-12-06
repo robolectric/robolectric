@@ -29,7 +29,6 @@ import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.FloatRange;
-import android.annotation.Nullable;
 import android.app.Instrumentation;
 import android.content.ClipData;
 import android.content.Context;
@@ -78,6 +77,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
@@ -949,7 +949,7 @@ public class ShadowWindowManagerGlobal {
                 edge, // swipe edge
                 null);
       } else {
-            throw new IllegalStateException("Could not find a BackMotionEvent constructor to call");
+        throw new IllegalStateException("Could not find a BackMotionEvent constructor to call");
       }
     }
 

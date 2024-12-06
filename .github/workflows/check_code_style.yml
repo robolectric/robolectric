@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   check_code_style:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
 
       - name: Download google-java-format
         run: |
-          googleJavaFormatVersion="1.23.0"
+          googleJavaFormatVersion="1.25.0"
           curl -L -o $HOME/google-java-format.jar https://github.com/google/google-java-format/releases/download/v${googleJavaFormatVersion}/google-java-format-${googleJavaFormatVersion}-all-deps.jar
           curl -L -o $HOME/google-java-format-diff.py https://raw.githubusercontent.com/google/google-java-format/v${googleJavaFormatVersion}/scripts/google-java-format-diff.py
           chmod +x $HOME/google-java-format-diff.py

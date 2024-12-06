@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 
-import android.annotation.NonNull;
 import android.media.MediaCodec;
 import android.media.MediaMuxer;
 import android.media.MediaMuxer.Format;
@@ -14,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -54,7 +54,7 @@ public class ShadowMediaMuxer {
    * method overrides that behavior to instead open and maintain a FileOutputStream.
    */
   @Implementation
-  protected void __constructor__(@NonNull String path, @Format int format) throws IOException {
+  protected void __constructor__(@Nonnull String path, @Format int format) throws IOException {
     if (path == null) {
       throw new IllegalArgumentException("path must not be null");
     }
@@ -90,7 +90,7 @@ public class ShadowMediaMuxer {
    * MediaMuxer instances.
    */
   @Implementation
-  protected static long nativeSetup(@NonNull FileDescriptor fd, int format) throws IOException {
+  protected static long nativeSetup(@Nonnull FileDescriptor fd, int format) throws IOException {
     FileOutputStream outputStream = fdToStream.get(fd);
     if (outputStream == null) {
       // If this MediaMuxer was constructed with the un-shadowed MediaMuxer(FileDescriptor, int), no
@@ -111,7 +111,7 @@ public class ShadowMediaMuxer {
   /** Returns an incremented track id for the associated muxer. */
   @Implementation
   protected static int nativeAddTrack(
-      long nativeObject, @NonNull String[] keys, @NonNull Object[] values) {
+      long nativeObject, @Nonnull String[] keys, @Nonnull Object[] values) {
     AtomicInteger nextTrackIndex = nextTrackIndices.get(nativeObject);
     if (nextTrackIndex == null) {
       throw new IllegalStateException("No next track index configured for key: " + nativeObject);
@@ -125,7 +125,7 @@ public class ShadowMediaMuxer {
   protected static void nativeWriteSampleData(
       long nativeObject,
       int trackIndex,
-      @NonNull ByteBuffer byteBuf,
+      @Nonnull ByteBuffer byteBuf,
       int offset,
       int size,
       long presentationTimeUs,

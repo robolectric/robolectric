@@ -17,12 +17,12 @@ import android.view.Display;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
-import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -139,7 +139,7 @@ public class ShadowAccessibilityServiceTest {
     TakeScreenshotCallback takeScreenshotCallback =
         new TakeScreenshotCallback() {
           @Override
-          public void onSuccess(@NonNull ScreenshotResult screenshotResult) {
+          public void onSuccess(@Nonnull ScreenshotResult screenshotResult) {
             screenshotResultAtomicReference.set(screenshotResult);
           }
 
@@ -164,7 +164,7 @@ public class ShadowAccessibilityServiceTest {
     TakeScreenshotCallback takeScreenshotCallback =
         new TakeScreenshotCallback() {
           @Override
-          public void onSuccess(@NonNull ScreenshotResult screenshotResult) {}
+          public void onSuccess(@Nonnull ScreenshotResult screenshotResult) {}
 
           @Override
           public void onFailure(int errorCode) {
@@ -188,7 +188,7 @@ public class ShadowAccessibilityServiceTest {
     TakeScreenshotCallback takeScreenshotCallback =
         new TakeScreenshotCallback() {
           @Override
-          public void onSuccess(@NonNull ScreenshotResult screenshotResult) {
+          public void onSuccess(@Nonnull ScreenshotResult screenshotResult) {
             screenshotResultAtomicReference.set(screenshotResult);
           }
 

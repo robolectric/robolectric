@@ -11,6 +11,10 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      android-gradle-plugin:
+        patterns:
+          - "com.android.tools:common"
+          - "com.android.tools.build:gradle*"
       androidx-test:
         patterns:
           - "androidx.test*"
@@ -18,10 +22,6 @@ updates:
         patterns:
           - "androidx.*"
     ignore:
-      # don't auto update guava since it requires updating gradle
-      - dependency-name: "*guava*"
-      # don't auto update errorprone since it requires updating guava
-      - dependency-name: "*errorprone*"
       # don't auto update nativeruntime-dist-compat since it needs
       # to be updated with code changes together
       - dependency-name: "org.robolectric:nativeruntime-dist-compat"

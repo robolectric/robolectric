@@ -4,8 +4,6 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.graphics.fonts.Font;
 import android.graphics.fonts.FontCustomizationParser;
 import android.graphics.fonts.FontFamily;
@@ -23,6 +21,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Map;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
@@ -88,7 +88,7 @@ public class ShadowNativeSystemFonts {
 
   @Implementation(minSdk = Q, maxSdk = Q)
   @Nullable
-  protected static ByteBuffer mmap(@NonNull String fullPath) {
+  protected static ByteBuffer mmap(@Nonnull String fullPath) {
     try (FileInputStream file = new FileInputStream(fullPath)) {
       final FileChannel fileChannel = file.getChannel();
       final long fontSize = fileChannel.size();

@@ -25,7 +25,7 @@ jobs:
         device: [
           macos-13, # Tests Mac x86_64
           macos-14, # Tests Mac arm64
-          ubuntu-22.04, # Tests Linux x86_64
+          ubuntu-latest, # Tests Linux x86_64
           windows-2022, # Tests Windows x86_64
         ]
     runs-on: ${{ matrix.device }}
@@ -51,9 +51,7 @@ jobs:
         run: >
           ./gradlew
           :integration_tests:nativegraphics:testDebugUnitTest
-          --info --stacktrace --continue
-          --parallel
-          --no-watch-fs
+          --stacktrace --continue
           "-Drobolectric.alwaysIncludeVariantMarkersInTestName=true"
           "-Dorg.gradle.workers.max=2"
 

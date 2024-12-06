@@ -33,6 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
@@ -40,7 +41,6 @@ import org.robolectric.shadows.ShadowWallpaperManager.WallpaperCommandRecord;
 
 @RunWith(AndroidJUnit4.class)
 @GraphicsMode(Mode.LEGACY)
-
 public class ShadowWallpaperManagerTest {
 
   private static final Bitmap TEST_IMAGE_1 = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
@@ -591,9 +591,9 @@ public class ShadowWallpaperManagerTest {
   public void wallpaperManager_activityContextEnabled_retrievesSameWallpaper() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
-      activity = Robolectric.setupActivity(Activity.class);
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
+      Activity activity = controller.get();
       WallpaperManager applicationWallpaperManager =
           (WallpaperManager) application.getSystemService(Context.WALLPAPER_SERVICE);
       WallpaperManager activityWallpaperManager =
@@ -607,9 +607,6 @@ public class ShadowWallpaperManagerTest {
 
       assertThat(activityWallpaper).isEqualTo(applicationWallpaper);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

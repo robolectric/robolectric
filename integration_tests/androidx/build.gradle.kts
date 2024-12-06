@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = 35
   namespace = "org.robolectric.integrationtests.androidx"
 
   defaultConfig { minSdk = 21 }
@@ -15,14 +15,13 @@ android {
   }
 
   testOptions {
-    targetSdk = 34
+    targetSdk = 35
     unitTests.isIncludeAndroidResources = true
   }
 }
 
 dependencies {
   implementation(libs.kotlinx.coroutines.android)
-  implementation(libs.androidx.appcompat)
   implementation(libs.androidx.window)
 
   // Testing dependencies
@@ -31,10 +30,6 @@ dependencies {
   testImplementation(libs.junit4)
   testImplementation(libs.androidx.test.core)
   testImplementation(libs.androidx.core)
-  testImplementation(libs.androidx.test.runner)
-  testImplementation(libs.androidx.test.rules)
-  testImplementation(libs.androidx.test.espresso.intents)
-  testImplementation(libs.androidx.test.ext.truth)
   testImplementation(libs.androidx.test.ext.junit)
   testImplementation(libs.truth)
 }

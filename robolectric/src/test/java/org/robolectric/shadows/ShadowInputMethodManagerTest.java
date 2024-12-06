@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -161,13 +162,13 @@ public class ShadowInputMethodManagerTest {
       inputMethodManager_activityContextEnabled_differentInstancesRetrieveInputMethodList() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       InputMethodManager applicationInputMethodManager =
           (InputMethodManager)
               ApplicationProvider.getApplicationContext()
                   .getSystemService(Context.INPUT_METHOD_SERVICE);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       InputMethodManager activityInputMethodManager =
           (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -179,9 +180,6 @@ public class ShadowInputMethodManagerTest {
       assertThat(activityIsAcceptingText).isEqualTo(applicationIsAcceptingText);
 
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

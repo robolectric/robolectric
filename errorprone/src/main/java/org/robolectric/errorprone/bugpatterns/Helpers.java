@@ -29,7 +29,7 @@ public class Helpers {
   public static boolean isInShadowClass(TreePath path, VisitorState state) {
     Tree leaf = path.getLeaf();
     JCClassDecl classDecl =
-        JCClassDecl.class.isInstance(leaf)
+        leaf instanceof JCClassDecl
             ? (JCClassDecl) leaf
             : findEnclosingNode(state.getPath(), JCClassDecl.class);
 
@@ -48,10 +48,6 @@ public class Helpers {
     @Override
     public boolean apply(Type type, VisitorState state) {
       Type bound = expected.get(state);
-      if (bound == null || type == null) {
-        // TODO(cushon): type suppliers are allowed to return null :(
-        return false;
-      }
       return ASTHelpers.isCastable(type, bound, state);
     }
   }

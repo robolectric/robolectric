@@ -53,7 +53,6 @@ import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 @GraphicsMode(Mode.LEGACY)
-
 public class ShadowTextViewTest {
 
   private static final String INITIAL_TEXT = "initial text";

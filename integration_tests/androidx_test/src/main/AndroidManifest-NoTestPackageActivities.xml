@@ -4,7 +4,7 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.robolectric.integration.axt">
-    <uses-sdk android:targetSdkVersion="34"/>
+    <uses-sdk android:targetSdkVersion="35"/>
 
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
@@ -12,7 +12,12 @@
         <activity android:name="org.robolectric.integrationtests.axt.EspressoActivity"
                   android:label="Activity Label"
                   android:exported="true" />
+        <activity android:name="org.robolectric.integrationtests.axt.NoActionBarEspressoActivity"
+            android:label="Activity Label"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:exported="true" />
         <activity android:name="org.robolectric.integrationtests.axt.EspressoScrollingActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:exported="true" />
         <activity android:name="org.robolectric.integrationtests.axt.ActivityWithPlatformMenu"
             android:exported="true">

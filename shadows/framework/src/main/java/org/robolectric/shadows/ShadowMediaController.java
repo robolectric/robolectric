@@ -2,8 +2,6 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.app.PendingIntent;
 import android.media.MediaMetadata;
 import android.media.Rating;
@@ -15,6 +13,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -111,7 +111,7 @@ public class ShadowMediaController {
   }
 
   /**
-   * Saves the sessionActivty to control the return value of {@link
+   * Saves the sessionActivity to control the return value of {@link
    * MediaController#getSessionActivity()}.
    */
   public void setSessionActivity(PendingIntent sessionActivity) {
@@ -140,7 +140,7 @@ public class ShadowMediaController {
    * registered callbacks. Handler is just passed on to the real class.
    */
   @Implementation
-  protected void registerCallback(@NonNull Callback callback, @Nullable Handler handler) {
+  protected void registerCallback(@Nonnull Callback callback, @Nullable Handler handler) {
     callbacks.add(callback);
     reflector(MediaControllerReflector.class, realMediaController)
         .registerCallback(callback, handler);
@@ -151,7 +151,7 @@ public class ShadowMediaController {
    * registered callbacks.
    */
   @Implementation
-  protected void unregisterCallback(@NonNull Callback callback) {
+  protected void unregisterCallback(@Nonnull Callback callback) {
     callbacks.remove(callback);
     reflector(MediaControllerReflector.class, realMediaController).unregisterCallback(callback);
   }
@@ -206,9 +206,9 @@ public class ShadowMediaController {
   interface MediaControllerReflector {
 
     @Direct
-    void registerCallback(@NonNull Callback callback, @Nullable Handler handler);
+    void registerCallback(@Nonnull Callback callback, @Nullable Handler handler);
 
     @Direct
-    void unregisterCallback(@NonNull Callback callback);
+    void unregisterCallback(@Nonnull Callback callback);
   }
 }

@@ -15,7 +15,7 @@ import org.robolectric.RobolectricTestRunner;
 @RunWith(RobolectricTestRunner.class)
 public class MockitoMockJavaFrameworkTest {
   @Test
-  public void file_getAbsolutePath_isMockable() throws Exception {
+  public void file_getAbsolutePath_isMockable() {
     File file = mock(File.class);
     doReturn("absolute/path").when(file).getAbsolutePath();
     assertThat(file.getAbsolutePath()).isEqualTo("absolute/path");

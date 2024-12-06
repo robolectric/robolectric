@@ -1,5 +1,8 @@
 package org.robolectric.fakes;
 
+import android.annotation.DrawableRes;
+import android.annotation.LayoutRes;
+import android.annotation.StringRes;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -9,36 +12,43 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 
-/** Robolectric implementation of {@link android.view.MenuItem}. */
+/** Robolectric implementation of {@link MenuItem}. */
 public class RoboMenuItem implements MenuItem {
   private int itemId;
   private int groupId;
-  private CharSequence title;
+  @Nullable private CharSequence title;
+  @Nullable private CharSequence titleCondensed;
   private boolean enabled = true;
   private boolean checked = false;
   private boolean checkable = false;
   private boolean visible = true;
   private boolean expanded = false;
-  private OnMenuItemClickListener menuItemClickListener;
-  public Drawable icon;
-  private Intent intent;
-  private SubMenu subMenu;
-  private View actionView;
-  private OnActionExpandListener actionExpandListener;
+  @Nullable private OnMenuItemClickListener menuItemClickListener;
+  @Nullable public Drawable icon;
+  @Nullable private Intent intent;
+  @Nullable private SubMenu subMenu;
+  @Nullable private View actionView;
+  @Nullable private OnActionExpandListener actionExpandListener;
   private int order;
-  private Context context;
+  @Nonnull private final Context context;
+  private char numericChar;
+  private char alphaChar;
+  @Nullable private ActionProvider actionProvider;
 
   public RoboMenuItem() {
     this(RuntimeEnvironment.getApplication());
   }
 
-  public RoboMenuItem(Context context) {
+  public RoboMenuItem(@Nonnull Context context) {
     this.context = context;
   }
 
   public RoboMenuItem(int itemId) {
+    this();
     this.itemId = itemId;
   }
 
@@ -70,85 +80,103 @@ public class RoboMenuItem implements MenuItem {
   }
 
   @Override
-  public MenuItem setTitle(CharSequence title) {
+  @Nonnull
+  public MenuItem setTitle(@Nullable CharSequence title) {
     this.title = title;
     return this;
   }
 
   @Override
-  public MenuItem setTitle(int title) {
+  @Nonnull
+  public MenuItem setTitle(@StringRes int title) {
+    this.title = title == 0 ? null : context.getString(title);
     return this;
   }
 
   @Override
+  @Nullable
   public CharSequence getTitle() {
     return title;
   }
 
   @Override
-  public MenuItem setTitleCondensed(CharSequence title) {
+  @Nonnull
+  public MenuItem setTitleCondensed(@Nullable CharSequence title) {
+    this.titleCondensed = title;
     return this;
   }
 
   @Override
+  @Nullable
   public CharSequence getTitleCondensed() {
-    return null;
+    return titleCondensed;
   }
 
   @Override
-  public MenuItem setIcon(Drawable icon) {
+  @Nonnull
+  public MenuItem setIcon(@Nullable Drawable icon) {
     this.icon = icon;
     return this;
   }
 
   @Override
-  public MenuItem setIcon(int iconRes) {
-    this.icon = iconRes == 0 ? null : context.getResources().getDrawable(iconRes);
+  @Nonnull
+  public MenuItem setIcon(@DrawableRes int iconRes) {
+    this.icon = iconRes == 0 ? null : context.getDrawable(iconRes);
     return this;
   }
 
   @Override
+  @Nullable
   public Drawable getIcon() {
     return this.icon;
   }
 
   @Override
-  public MenuItem setIntent(Intent intent) {
+  @Nonnull
+  public MenuItem setIntent(@Nullable Intent intent) {
     this.intent = intent;
     return this;
   }
 
   @Override
+  @Nullable
   public Intent getIntent() {
     return this.intent;
   }
 
   @Override
+  @Nonnull
   public MenuItem setShortcut(char numericChar, char alphaChar) {
     return this;
   }
 
   @Override
+  @Nonnull
   public MenuItem setNumericShortcut(char numericChar) {
+    this.numericChar = numericChar;
     return this;
   }
 
   @Override
   public char getNumericShortcut() {
-    return 0;
+    return numericChar;
   }
 
   @Override
+  @Nonnull
   public MenuItem setAlphabeticShortcut(char alphaChar) {
+    this.alphaChar = alphaChar;
     return this;
   }
 
   @Override
   public char getAlphabeticShortcut() {
-    return 0;
+    return alphaChar;
   }
 
   @Override
+  @Nonnull
   public MenuItem setCheckable(boolean checkable) {
     this.checkable = checkable;
     return this;
@@ -160,6 +188,7 @@ public class RoboMenuItem implements MenuItem {
   }
 
   @Override
+  @Nonnull
   public MenuItem setChecked(boolean checked) {
     this.checked = checked;
     return this;
@@ -171,6 +200,7 @@ public class RoboMenuItem implements MenuItem {
   }
 
   @Override
+  @Nonnull
   public MenuItem setVisible(boolean visible) {
     this.visible = visible;
     return this;
@@ -182,6 +212,7 @@ public class RoboMenuItem implements MenuItem {
   }
 
   @Override
+  @Nonnull
   public MenuItem setEnabled(boolean enabled) {
     this.enabled = enabled;
     return this;
@@ -198,21 +229,25 @@ public class RoboMenuItem implements MenuItem {
   }
 
   @Override
+  @Nullable
   public SubMenu getSubMenu() {
     return subMenu;
   }
 
-  public void setSubMenu(SubMenu subMenu) {
+  public void setSubMenu(@Nullable SubMenu subMenu) {
     this.subMenu = subMenu;
   }
 
   @Override
-  public MenuItem setOnMenuItemClickListener(OnMenuItemClickListener menuItemClickListener) {
+  @Nonnull
+  public MenuItem setOnMenuItemClickListener(
+      @Nullable OnMenuItemClickListener menuItemClickListener) {
     this.menuItemClickListener = menuItemClickListener;
     return this;
   }
 
   @Override
+  @Nullable
   public ContextMenu.ContextMenuInfo getMenuInfo() {
     return null;
   }
@@ -229,35 +264,42 @@ public class RoboMenuItem implements MenuItem {
   public void setShowAsAction(int actionEnum) {}
 
   @Override
+  @Nonnull
   public MenuItem setShowAsActionFlags(int actionEnum) {
     return this;
   }
 
   @Override
-  public MenuItem setActionView(View view) {
+  @Nonnull
+  public MenuItem setActionView(@Nullable View view) {
     actionView = view;
     return this;
   }
 
   @Override
-  public MenuItem setActionView(int resId) {
+  @Nonnull
+  public MenuItem setActionView(@LayoutRes int resId) {
     actionView = LayoutInflater.from(context).inflate(resId, null);
     return this;
   }
 
   @Override
+  @Nullable
   public View getActionView() {
     return actionView;
   }
 
   @Override
-  public MenuItem setActionProvider(ActionProvider actionProvider) {
+  @Nonnull
+  public MenuItem setActionProvider(@Nullable ActionProvider actionProvider) {
+    this.actionProvider = actionProvider;
     return this;
   }
 
   @Override
+  @Nullable
   public ActionProvider getActionProvider() {
-    return null;
+    return actionProvider;
   }
 
   @Override
@@ -294,7 +336,8 @@ public class RoboMenuItem implements MenuItem {
   }
 
   @Override
-  public MenuItem setOnActionExpandListener(OnActionExpandListener listener) {
+  @Nonnull
+  public MenuItem setOnActionExpandListener(@Nullable OnActionExpandListener listener) {
     actionExpandListener = listener;
     return this;
   }

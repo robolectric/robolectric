@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = 35
   namespace = "org.robolectric.integrationtests.room"
 
   defaultConfig { minSdk = 21 }
@@ -15,7 +15,7 @@ android {
   }
 
   testOptions {
-    targetSdk = 34
+    targetSdk = 35
     unitTests.isIncludeAndroidResources = true
   }
 }
@@ -25,7 +25,6 @@ dependencies {
   testImplementation(project(":testapp"))
   testImplementation(project(":robolectric"))
   testImplementation(libs.junit4)
-  testImplementation(libs.guava.testlib)
   testImplementation(libs.truth)
   implementation(libs.androidx.room.runtime)
   annotationProcessor(libs.androidx.room.compiler)

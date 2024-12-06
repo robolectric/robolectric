@@ -12,7 +12,6 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.TargetApi;
 import android.media.AudioAttributes;
@@ -41,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
@@ -474,21 +474,21 @@ public class ShadowAudioManager {
    * </ol>
    */
   @Implementation(minSdk = R)
-  @NonNull
+  @Nonnull
   protected List</*android.media.AudioDeviceAttributes*/ ?> getDevicesForAttributes(
-      @NonNull AudioAttributes attributes) {
+      @Nonnull AudioAttributes attributes) {
     ImmutableList<Object> devices = devicesForAttributes.get(attributes);
     return devices == null ? defaultDevicesForAttributes : devices;
   }
 
   /** Sets the devices associated with the given audio stream. */
   public void setDevicesForAttributes(
-      @NonNull AudioAttributes attributes, @NonNull ImmutableList<Object> devices) {
+      @Nonnull AudioAttributes attributes, @Nonnull ImmutableList<Object> devices) {
     devicesForAttributes.put(attributes, devices);
   }
 
   /** Sets the devices to use as default for all audio streams. */
-  public void setDefaultDevicesForAttributes(@NonNull ImmutableList<Object> devices) {
+  public void setDefaultDevicesForAttributes(@Nonnull ImmutableList<Object> devices) {
     defaultDevicesForAttributes = devices;
   }
 
@@ -500,16 +500,16 @@ public class ShadowAudioManager {
    * return value of this method.
    */
   @Implementation(minSdk = TIRAMISU)
-  @NonNull
+  @Nonnull
   protected List<AudioDeviceInfo> getAudioDevicesForAttributes(
-      @NonNull AudioAttributes attributes) {
+      @Nonnull AudioAttributes attributes) {
     ImmutableList<AudioDeviceInfo> devices = audioDevicesForAttributes.get(attributes);
     return devices == null ? ImmutableList.of() : devices;
   }
 
   /** Sets the audio devices returned from {@link #getAudioDevicesForAttributes}. */
   public void setAudioDevicesForAttributes(
-      @NonNull AudioAttributes attributes, @NonNull ImmutableList<AudioDeviceInfo> devices) {
+      @Nonnull AudioAttributes attributes, @Nonnull ImmutableList<AudioDeviceInfo> devices) {
     audioDevicesForAttributes.put(attributes, devices);
   }
 
@@ -973,7 +973,7 @@ public class ShadowAudioManager {
   @Implementation(minSdk = P)
   @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING)
   protected int registerAudioPolicy(
-      @NonNull @ClassName("android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
+      @Nonnull @ClassName("android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
     Preconditions.checkNotNull(audioPolicy, "Illegal null AudioPolicy argument");
     AudioPolicy policy = (AudioPolicy) audioPolicy;
     String id = getIdForAudioPolicy(audioPolicy);
@@ -988,7 +988,7 @@ public class ShadowAudioManager {
   @HiddenApi
   @Implementation(minSdk = Q)
   protected void unregisterAudioPolicy(
-      @NonNull @ClassName("android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
+      @Nonnull @ClassName("android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
     Preconditions.checkNotNull(audioPolicy, "Illegal null AudioPolicy argument");
     AudioPolicy policy = (AudioPolicy) audioPolicy;
     registeredAudioPolicies.remove(getIdForAudioPolicy(policy));
@@ -1010,8 +1010,8 @@ public class ShadowAudioManager {
    * #removeOutputDeviceWithDirectProfiles(AudioDeviceInfo)}.
    */
   @Implementation(minSdk = TIRAMISU)
-  @NonNull
-  protected List<AudioProfile> getDirectProfilesForAttributes(@NonNull AudioAttributes attributes) {
+  @Nonnull
+  protected List<AudioProfile> getDirectProfilesForAttributes(@Nonnull AudioAttributes attributes) {
     ImmutableSet.Builder<AudioProfile> audioProfiles = new ImmutableSet.Builder<>();
     for (int i = 0; i < outputDevicesWithDirectProfiles.size(); i++) {
       audioProfiles.addAll(outputDevicesWithDirectProfiles.get(i).getAudioProfiles());
@@ -1057,7 +1057,7 @@ public class ShadowAudioManager {
     return audioSessionIdCounter++;
   }
 
-  private static String getIdForAudioPolicy(@NonNull Object audioPolicy) {
+  private static String getIdForAudioPolicy(@Nonnull Object audioPolicy) {
     return Integer.toString(System.identityHashCode(audioPolicy));
   }
 

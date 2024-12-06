@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copied from https://cs.android.com/android/platform/superproject/main/+/main:cts/tests/tests/graphics/res/drawable/gradientdrawable_mix_theme.xml -->
+<shape
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:type="?attr/GradientType"
+        android:gradientRadius="87px"
+        android:centerColor="@color/colorPrimary"
+        android:endColor="?attr/colorPrimaryDark"/>
+</shape>

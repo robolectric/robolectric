@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowCameraManager}. */
@@ -415,12 +416,12 @@ public class ShadowCameraManagerTest {
       throws Exception {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       CameraManager applicationCameraManager =
           (CameraManager)
               ApplicationProvider.getApplicationContext().getSystemService(Context.CAMERA_SERVICE);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       CameraManager activityCameraManager =
           (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
 
@@ -440,9 +441,6 @@ public class ShadowCameraManagerTest {
 
       assertThat(activityCameraIdList).isEqualTo(applicationCameraIdList);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

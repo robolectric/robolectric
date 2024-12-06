@@ -3,8 +3,6 @@ package org.robolectric.shadows;
 import static android.companion.virtual.VirtualDeviceManager.LAUNCH_SUCCESS;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.app.PendingIntent;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceManager;
@@ -33,6 +31,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -211,17 +211,17 @@ public class ShadowVirtualDeviceManager {
     @Implementation
     protected void launchPendingIntent(
         int displayId,
-        @NonNull PendingIntent pendingIntent,
-        @NonNull Executor executor,
-        @NonNull IntConsumer listener) {
+        @Nonnull PendingIntent pendingIntent,
+        @Nonnull Executor executor,
+        @Nonnull IntConsumer listener) {
       this.pendingIntent = pendingIntent;
       executor.execute(() -> listener.accept(pendingIntentResultCode));
     }
 
     @Implementation
     protected VirtualMouse createVirtualMouse(
-        @NonNull VirtualDisplay display,
-        @NonNull String inputDeviceName,
+        @Nonnull VirtualDisplay display,
+        @Nonnull String inputDeviceName,
         int vendorId,
         int productId) {
       return createVirtualMouse(
@@ -229,7 +229,7 @@ public class ShadowVirtualDeviceManager {
     }
 
     @Implementation
-    protected VirtualMouse createVirtualMouse(@NonNull VirtualMouseConfig config) {
+    protected VirtualMouse createVirtualMouse(@Nonnull VirtualMouseConfig config) {
       IBinder token =
           new Binder("android.hardware.input.VirtualMouse:" + config.getInputDeviceName());
       VirtualMouseReflector accessor = reflector(VirtualMouseReflector.class);
@@ -248,8 +248,8 @@ public class ShadowVirtualDeviceManager {
 
     @Implementation
     protected VirtualTouchscreen createVirtualTouchscreen(
-        @NonNull VirtualDisplay display,
-        @NonNull String inputDeviceName,
+        @Nonnull VirtualDisplay display,
+        @Nonnull String inputDeviceName,
         int vendorId,
         int productId) {
       int displayWidth = 720;
@@ -262,7 +262,7 @@ public class ShadowVirtualDeviceManager {
 
     @Implementation
     protected VirtualTouchscreen createVirtualTouchscreen(
-        @NonNull VirtualTouchscreenConfig config) {
+        @Nonnull VirtualTouchscreenConfig config) {
       IBinder token =
           new Binder("android.hardware.input.VirtualTouchscreen:" + config.getInputDeviceName());
       VirtualTouchscreenReflector accessor = reflector(VirtualTouchscreenReflector.class);
@@ -275,7 +275,7 @@ public class ShadowVirtualDeviceManager {
     }
 
     @Implementation
-    protected VirtualKeyboard createVirtualKeyboard(@NonNull VirtualKeyboardConfig config) {
+    protected VirtualKeyboard createVirtualKeyboard(@Nonnull VirtualKeyboardConfig config) {
       IBinder token =
           new Binder("android.hardware.input.VirtualKeyboard:" + config.getInputDeviceName());
       VirtualKeyboardReflector accessor = reflector(VirtualKeyboardReflector.class);
@@ -289,7 +289,7 @@ public class ShadowVirtualDeviceManager {
 
     @Implementation
     protected VirtualDisplay createVirtualDisplay(
-        @NonNull VirtualDisplayConfig config,
+        @Nonnull VirtualDisplayConfig config,
         @Nullable Executor executor,
         @Nullable VirtualDisplay.Callback callback) {
       return DisplayManagerGlobal.getInstance()

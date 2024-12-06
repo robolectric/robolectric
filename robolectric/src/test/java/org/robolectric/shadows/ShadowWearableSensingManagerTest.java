@@ -24,6 +24,7 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -111,11 +112,11 @@ public class ShadowWearableSensingManagerTest {
   public void wearableSensingManager_activityContextEnabled_differentInstancesProvideDataStream() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       WearableSensingManager applicationWearableSensingManager =
           RuntimeEnvironment.getApplication().getSystemService(WearableSensingManager.class);
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       WearableSensingManager activityWearableSensingManager =
           activity.getSystemService(WearableSensingManager.class);
 
@@ -139,11 +140,7 @@ public class ShadowWearableSensingManagerTest {
           activityPfd, executor, activityStatusConsumer);
 
       assertThat(activityStatus[0]).isEqualTo(applicationStatus[0]);
-
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   validate_commit_message:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +37,7 @@ jobs:
           fi
 
       - name: Validate commit body
+        if: github.actor != 'dependabot[bot]'
         run: |
           # Check that the commit has a body
           commit_body="$(git log -1 --pretty=format:'%b' | grep -v 'PiperOrigin-RevId')"

@@ -6,7 +6,6 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import android.annotation.NonNull;
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioSystem;
@@ -17,6 +16,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
 import java.util.Optional;
+import javax.annotation.Nonnull;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -95,7 +95,7 @@ public class ShadowAudioSystem {
    *     and {@link AudioSystem#DIRECT_BITSTREAM_SUPPORTED}
    */
   public static void setDirectPlaybackSupport(
-      @NonNull AudioFormat format, @NonNull AudioAttributes attr, int directPlaybackSupport) {
+      @Nonnull AudioFormat format, @Nonnull AudioAttributes attr, int directPlaybackSupport) {
     checkNotNull(format, "Illegal null AudioFormat");
     checkNotNull(attr, "Illegal null AudioAttributes");
     directPlaybackSupportTable.put(format, attr.getUsage(), directPlaybackSupport);
@@ -112,7 +112,7 @@ public class ShadowAudioSystem {
    */
   @Implementation(minSdk = TIRAMISU)
   protected static int getDirectPlaybackSupport(
-      @NonNull AudioFormat format, @NonNull AudioAttributes attr) {
+      @Nonnull AudioFormat format, @Nonnull AudioAttributes attr) {
     return Optional.ofNullable(directPlaybackSupportTable.get(format, attr.getUsage()))
         .orElse(AudioSystem.DIRECT_NOT_SUPPORTED);
   }
@@ -129,7 +129,7 @@ public class ShadowAudioSystem {
    *     AudioSystem#OFFLOAD_SUPPORTED} or {@link AudioSystem#OFFLOAD_GAPLESS_SUPPORTED}.
    */
   public static void setOffloadPlaybackSupport(
-      @NonNull AudioFormat format, @NonNull AudioAttributes attr, int offloadSupport) {
+      @Nonnull AudioFormat format, @Nonnull AudioAttributes attr, int offloadSupport) {
     checkNotNull(format, "Illegal null AudioFormat");
     checkNotNull(attr, "Illegal null AudioAttributes");
     offloadPlaybackSupportTable.put(
@@ -151,7 +151,7 @@ public class ShadowAudioSystem {
    * @param attr the {@link AudioAttributes} to be used for playback
    */
   public static void setOffloadSupported(
-      @NonNull AudioFormat format, @NonNull AudioAttributes attr, boolean supported) {
+      @Nonnull AudioFormat format, @Nonnull AudioAttributes attr, boolean supported) {
     OffloadSupportFormat offloadSupportFormat =
         new OffloadSupportFormat(
             format.getEncoding(),

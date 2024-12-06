@@ -67,7 +67,6 @@ import org.robolectric.util.TestRunnable;
 
 @RunWith(AndroidJUnit4.class)
 @GraphicsMode(Mode.LEGACY)
-
 public class ShadowViewTest {
   private View view;
   private List<String> transcript;

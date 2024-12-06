@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = 35
   namespace = "org.robolectric.integration.roborazzi"
 
   defaultConfig { minSdk = 21 }
@@ -21,7 +21,7 @@ android {
   kotlinOptions { jvmTarget = "1.8" }
 
   testOptions {
-    targetSdk = 34
+    targetSdk = 35
     unitTests {
       isIncludeAndroidResources = true
       all {
@@ -54,7 +54,6 @@ dependencies {
   api(project(":robolectric"))
   testImplementation(libs.androidx.test.core)
   testImplementation(libs.junit4)
-  testImplementation(libs.truth)
   testImplementation(libs.roborazzi)
   testImplementation(libs.roborazzi.rule)
 }

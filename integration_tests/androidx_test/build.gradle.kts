@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = 35
   namespace = "org.robolectric.integration.axt"
 
   defaultConfig {
@@ -21,7 +21,7 @@ android {
   }
 
   testOptions {
-    targetSdk = 34
+    targetSdk = 35
     unitTests.isIncludeAndroidResources = true
   }
 
@@ -49,7 +49,6 @@ dependencies {
 
   // Testing dependencies
   testImplementation(project(":robolectric"))
-  testImplementation(libs.androidx.test.runner)
   testImplementation(libs.junit4)
   testImplementation(libs.androidx.test.rules)
   testImplementation(libs.androidx.test.espresso.intents)
@@ -63,12 +62,9 @@ dependencies {
   testImplementation(libs.truth)
 
   androidTestImplementation(project(":annotations"))
-  androidTestImplementation(libs.androidx.test.runner)
   androidTestImplementation(libs.junit4)
   androidTestImplementation(libs.androidx.test.rules)
-  androidTestImplementation(libs.androidx.test.espresso.intents)
   androidTestImplementation(libs.androidx.test.espresso.core)
-  androidTestImplementation(libs.androidx.test.ext.truth)
   androidTestImplementation(libs.androidx.test.core)
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(platform(libs.kotlin.bom))

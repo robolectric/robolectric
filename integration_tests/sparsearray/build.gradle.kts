@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = 35
   namespace = "org.robolectric.sparsearray"
 
   defaultConfig { minSdk = 21 }
@@ -20,14 +20,13 @@ android {
   kotlinOptions { jvmTarget = "1.8" }
 
   testOptions {
-    targetSdk = 34
+    targetSdk = 35
     unitTests.isIncludeAndroidResources = true
   }
 }
 
 dependencies {
   compileOnly(AndroidSdk.MAX_SDK.coordinates)
-  implementation(project(path = ":shadowapi", configuration = "default"))
 
   testCompileOnly(AndroidSdk.MAX_SDK.coordinates)
   testRuntimeOnly(AndroidSdk.MAX_SDK.coordinates)

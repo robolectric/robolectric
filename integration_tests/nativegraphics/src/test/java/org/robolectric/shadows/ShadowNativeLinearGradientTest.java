@@ -67,15 +67,11 @@ public class ShadowNativeLinearGradientTest {
     long green = Color.pack(0, 1, 0, 1, p3);
     long blue = Color.pack(0, 0, 1, 1, p3);
     long[] colors = new long[] {blue, green, red};
-    float[] positions = null;
 
-    LinearGradient lg = new LinearGradient(0, 0, 0, 40, colors, positions, TileMode.CLAMP);
+    LinearGradient lg = new LinearGradient(0, 0, 0, 40, colors, null, TileMode.CLAMP);
     Bitmap b = drawLinearGradient(lg, Bitmap.Config.RGBA_F16);
     final ColorSpace bitmapColorSpace = b.getColorSpace();
-    Function<Long, Color> convert =
-        (l) -> {
-          return Color.valueOf(Color.convert(l, bitmapColorSpace));
-        };
+    Function<Long, Color> convert = (l) -> Color.valueOf(Color.convert(l, bitmapColorSpace));
 
     ColorUtils.verifyColor(
         "Top-most color should be mostly blue!", convert.apply(blue), b.getColor(0, 0), 0.09f);
@@ -152,10 +148,7 @@ public class ShadowNativeLinearGradientTest {
     int[] colors = null;
     assertThrows(
         NullPointerException.class,
-        () -> {
-          LinearGradient unused =
-              new LinearGradient(0.5f, 0, 1.5f, 0, colors, null, TileMode.CLAMP);
-        });
+        () -> new LinearGradient(0.5f, 0, 1.5f, 0, colors, null, TileMode.CLAMP));
   }
 
   @Test
@@ -164,10 +157,7 @@ public class ShadowNativeLinearGradientTest {
     long[] colors = null;
     assertThrows(
         NullPointerException.class,
-        () -> {
-          LinearGradient unused =
-              new LinearGradient(0.5f, 0, 1.5f, 0, colors, null, TileMode.CLAMP);
-        });
+        () -> new LinearGradient(0.5f, 0, 1.5f, 0, colors, null, TileMode.CLAMP));
   }
 
   @Test
@@ -175,10 +165,7 @@ public class ShadowNativeLinearGradientTest {
   public void testNoColorInts() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> {
-          LinearGradient unused =
-              new LinearGradient(0.5f, 0, 1.5f, 0, new int[0], null, TileMode.CLAMP);
-        });
+        () -> new LinearGradient(0.5f, 0, 1.5f, 0, new int[0], null, TileMode.CLAMP));
   }
 
   @Test
@@ -186,10 +173,7 @@ public class ShadowNativeLinearGradientTest {
   public void testNoColorLongs() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> {
-          LinearGradient unused =
-              new LinearGradient(0.5f, 0, 1.5f, 0, new long[0], null, TileMode.CLAMP);
-        });
+        () -> new LinearGradient(0.5f, 0, 1.5f, 0, new long[0], null, TileMode.CLAMP));
   }
 
   @Test
@@ -197,10 +181,7 @@ public class ShadowNativeLinearGradientTest {
   public void testOneColorInts() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> {
-          LinearGradient unused =
-              new LinearGradient(0.5f, 0, 1.5f, 0, new int[1], null, TileMode.CLAMP);
-        });
+        () -> new LinearGradient(0.5f, 0, 1.5f, 0, new int[1], null, TileMode.CLAMP));
   }
 
   @Test
@@ -208,10 +189,7 @@ public class ShadowNativeLinearGradientTest {
   public void testOneColorLongs() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> {
-          LinearGradient unused =
-              new LinearGradient(0.5f, 0, 1.5f, 0, new long[1], null, TileMode.CLAMP);
-        });
+        () -> new LinearGradient(0.5f, 0, 1.5f, 0, new long[1], null, TileMode.CLAMP));
   }
 
   @Test
@@ -222,10 +200,7 @@ public class ShadowNativeLinearGradientTest {
     colors[1] = Color.pack(.5f, .5f, .5f, 1.0f, ColorSpace.get(ColorSpace.Named.DISPLAY_P3));
     assertThrows(
         IllegalArgumentException.class,
-        () -> {
-          LinearGradient unused =
-              new LinearGradient(0.5f, 0, 1.5f, 0, colors, null, TileMode.CLAMP);
-        });
+        () -> new LinearGradient(0.5f, 0, 1.5f, 0, colors, null, TileMode.CLAMP));
   }
 
   @Test
@@ -235,10 +210,7 @@ public class ShadowNativeLinearGradientTest {
     long color1 = Color.pack(.5f, .5f, .5f, 1.0f, ColorSpace.get(ColorSpace.Named.DISPLAY_P3));
     assertThrows(
         IllegalArgumentException.class,
-        () -> {
-          LinearGradient unused =
-              new LinearGradient(0.5f, 0, 1.5f, 0, color0, color1, TileMode.CLAMP);
-        });
+        () -> new LinearGradient(0.5f, 0, 1.5f, 0, color0, color1, TileMode.CLAMP));
   }
 
   @Test
@@ -246,10 +218,7 @@ public class ShadowNativeLinearGradientTest {
   public void testMismatchPositionsInts() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> {
-          LinearGradient unused =
-              new LinearGradient(0.5f, 0, 1.5f, 0, new int[2], new float[3], TileMode.CLAMP);
-        });
+        () -> new LinearGradient(0.5f, 0, 1.5f, 0, new int[2], new float[3], TileMode.CLAMP));
   }
 
   @Test
@@ -257,24 +226,16 @@ public class ShadowNativeLinearGradientTest {
   public void testMismatchPositionsLongs() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> {
-          LinearGradient unused =
-              new LinearGradient(0.5f, 0, 1.5f, 0, new long[2], new float[3], TileMode.CLAMP);
-        });
+        () -> new LinearGradient(0.5f, 0, 1.5f, 0, new long[2], new float[3], TileMode.CLAMP));
   }
 
   @Test
   @Config(minSdk = Q)
   public void testInvalidColorLongs() {
-    long[] colors = new long[2];
-    colors[0] = -1L;
-    colors[0] = -2L;
+    long[] colors = new long[] {-1L, -2L};
     assertThrows(
         IllegalArgumentException.class,
-        () -> {
-          LinearGradient unused =
-              new LinearGradient(0.5f, 0, 1.5f, 0, colors, null, TileMode.CLAMP);
-        });
+        () -> new LinearGradient(0.5f, 0, 1.5f, 0, colors, null, TileMode.CLAMP));
   }
 
   @Test
@@ -282,10 +243,7 @@ public class ShadowNativeLinearGradientTest {
   public void testInvalidColorLong() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> {
-          LinearGradient unused =
-              new LinearGradient(0.5f, 0, 1.5f, 0, -1L, Color.pack(Color.RED), TileMode.CLAMP);
-        });
+        () -> new LinearGradient(0.5f, 0, 1.5f, 0, -1L, Color.pack(Color.RED), TileMode.CLAMP));
   }
 
   @Test
@@ -293,9 +251,6 @@ public class ShadowNativeLinearGradientTest {
   public void testInvalidColorLong2() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> {
-          LinearGradient unused =
-              new LinearGradient(0.5f, 0, 1.5f, 0, Color.pack(Color.RED), -1L, TileMode.CLAMP);
-        });
+        () -> new LinearGradient(0.5f, 0, 1.5f, 0, Color.pack(Color.RED), -1L, TileMode.CLAMP));
   }
 }

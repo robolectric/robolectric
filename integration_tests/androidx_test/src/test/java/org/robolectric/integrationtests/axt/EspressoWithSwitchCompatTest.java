@@ -19,7 +19,7 @@ import org.robolectric.integration.axt.R;
 public class EspressoWithSwitchCompatTest {
   @Test
   public void switchCompatTest() {
-    try (ActivityScenario<ActivityWithSwitchCompat> scenario =
+    try (ActivityScenario<ActivityWithSwitchCompat> ignored =
         ActivityScenario.launch(ActivityWithSwitchCompat.class)) {
       onView(withId(R.id.switch_compat_2)).check(matches(isCompletelyDisplayed())).perform(click());
     }

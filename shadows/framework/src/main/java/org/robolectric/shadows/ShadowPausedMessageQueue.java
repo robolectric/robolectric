@@ -320,7 +320,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
           }
         }
         if (msg.isAsynchronous() && getApiLevel() >= V.SDK_INT) {
-            queueReflector.setAsyncMessageCount(queueReflector.getAsyncMessageCount() - 1);
+          queueReflector.setAsyncMessageCount(queueReflector.getAsyncMessageCount() - 1);
         }
       }
       return msg;

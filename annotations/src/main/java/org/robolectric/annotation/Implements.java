@@ -74,10 +74,9 @@ public @interface Implements {
    * If set to true, Robolectric will invoke the native method variant instead of the no-op variant.
    * This requires the native method to be bound, or an {@link UnsatisfiedLinkError} will occur.
    *
-   * <p>{@link Implements#callNativeMethodsByDefault()} has precedence over {@link
-   * Implements#callThroughByDefault()} For instance, if both {@link
-   * Implements#callNativeMethodsByDefault()} and {@link Implements#callThroughByDefault()} are
-   * true, the native method variant will be preferred over the no-op native variant.
+   * <p>This method has precedence over {@link Implements#callThroughByDefault()}. For instance, if
+   * both this method and {@link Implements#callThroughByDefault()} are true, the native method
+   * variant will be preferred over the no-op native variant.
    */
   boolean callNativeMethodsByDefault() default false;
 

@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = 35
   namespace = "org.robolectric.shadows"
 
   defaultConfig { minSdk = 26 }
 
   testOptions {
-    targetSdk = 34
+    targetSdk = 35
     unitTests {
       isIncludeAndroidResources = true
       all { it.systemProperty("robolectric.graphicsMode", "NATIVE") }

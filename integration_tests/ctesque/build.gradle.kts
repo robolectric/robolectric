@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = 35
   namespace = "org.robolectric.integrationtests.ctesque"
 
   defaultConfig {
@@ -16,7 +16,7 @@ android {
   lint { abortOnError = false }
 
   testOptions {
-    targetSdk = 34
+    targetSdk = 35
     unitTests.isIncludeAndroidResources = true
   }
 

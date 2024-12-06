@@ -33,9 +33,10 @@ import org.robolectric.versioning.AndroidVersions.V;
 @RunWith(RobolectricTestRunner.class)
 public class ShadowNativeHardwareRendererTest {
 
+  @SuppressWarnings("CheckReturnValue")
   @Test
   public void test_hardwareRenderer() {
-    HardwareRenderer unused = new HardwareRenderer();
+    new HardwareRenderer();
   }
 
   @Config(maxSdk = R)
@@ -50,7 +51,7 @@ public class ShadowNativeHardwareRendererTest {
   public void choreographer_firstCalled() {
     // In some SDK levels, the Choreographer constructor ends up calling
     // HardwareRenderer.nHackySetRTAnimationsEnabled. Ensure that RNG is loaded if this happens.
-    var unused = Choreographer.getInstance();
+    Choreographer.getInstance();
   }
 
   @Test

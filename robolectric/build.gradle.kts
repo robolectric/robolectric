@@ -54,6 +54,7 @@ dependencies {
   testImplementation("androidx.test.ext:truth:$axtTruthVersion@aar")
   testImplementation("androidx.test:runner:$axtRunnerVersion@aar")
   testImplementation(libs.guava)
+  testImplementation(libs.guava.testlib)
   testCompileOnly(AndroidSdk.MAX_SDK.coordinates) // compile against latest Android SDK
   testRuntimeOnly(androidStubsJar())
 }

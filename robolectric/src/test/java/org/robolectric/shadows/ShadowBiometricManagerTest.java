@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -108,12 +109,12 @@ public class ShadowBiometricManagerTest {
   public void biometricManager_activityContextEnabled_differentInstancesRetrieveSameResult() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       BiometricManager applicationBiometricManager =
           ApplicationProvider.getApplicationContext().getSystemService(BiometricManager.class);
 
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       BiometricManager activityBiometricManager = activity.getSystemService(BiometricManager.class);
 
       assertThat(applicationBiometricManager).isNotSameInstanceAs(activityBiometricManager);
@@ -123,9 +124,6 @@ public class ShadowBiometricManagerTest {
 
       assertThat(activityCanAuthenticate).isEqualTo(applicationCanAuthenticate);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

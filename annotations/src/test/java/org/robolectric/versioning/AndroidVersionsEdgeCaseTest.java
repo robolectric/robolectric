@@ -1,9 +1,11 @@
 package org.robolectric.versioning;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -36,7 +38,10 @@ public final class AndroidVersionsEdgeCaseTest {
       SdkInformation information = AndroidVersions.gatherStaticSdkInformationFromThisClass();
       earliestUnrelease = information.earliestUnreleased;
       information.computeCurrentSdk(
-          earliestUnrelease.getSdkInt(), earliestUnrelease.getVersion(), "REL", Arrays.asList());
+          earliestUnrelease.getSdkInt(),
+          earliestUnrelease.getVersion(),
+          "REL",
+          Collections.emptyList());
       assertThat(this).isNull();
     } catch (RuntimeException e) {
       assertThat(e)
@@ -69,7 +74,7 @@ public final class AndroidVersionsEdgeCaseTest {
           latestRelease.getSdkInt(),
           null,
           latestRelease.getShortCode(),
-          Arrays.asList(latestRelease.getShortCode()));
+          Collections.singletonList(latestRelease.getShortCode()));
       assertThat(this).isNull();
     } catch (RuntimeException e) {
       assertThat(e)
@@ -85,7 +90,7 @@ public final class AndroidVersionsEdgeCaseTest {
 
   @Test
   public void sdkIntReleasedButStillReportsCodeName_warningMode() {
-    AndroidRelease latestRelease = null;
+    AndroidRelease latestRelease;
     try {
       forceWarningMode(true);
       SdkInformation information = AndroidVersions.gatherStaticSdkInformationFromThisClass();
@@ -95,7 +100,7 @@ public final class AndroidVersionsEdgeCaseTest {
           latestRelease.getSdkInt(),
           null,
           information.latestRelease.getShortCode(),
-          Arrays.asList(latestRelease.getShortCode()));
+          Collections.singletonList(latestRelease.getShortCode()));
     } catch (Throwable t) {
       assertThat(t).isNull();
     }
@@ -115,7 +120,7 @@ public final class AndroidVersionsEdgeCaseTest {
         latestRelease.getSdkInt(),
         null,
         information.latestRelease.getShortCode(),
-        Arrays.asList(latestRelease.getShortCode()));
+        Collections.singletonList(latestRelease.getShortCode()));
     assertThat(this).isNotNull();
   }
 
@@ -131,5 +136,11 @@ public final class AndroidVersionsEdgeCaseTest {
     } catch (Throwable t) {
       assertThat(t).isNull();
     }
+  }
+
+  @Test
+  public void compareToNull_throwsNullPointerException() {
+    //noinspection DataFlowIssue Passing null to ensure that the right exception is thrown
+    assertThrows(NullPointerException.class, () -> new AndroidVersions.T().compareTo(null));
   }
 }

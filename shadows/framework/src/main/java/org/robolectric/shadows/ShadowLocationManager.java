@@ -12,7 +12,6 @@ import static android.provider.Settings.Secure.LOCATION_MODE_SENSORS_ONLY;
 import static android.provider.Settings.Secure.LOCATION_PROVIDERS_ALLOWED;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import android.annotation.Nullable;
 import android.annotation.RequiresApi;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
@@ -56,6 +55,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
@@ -1633,7 +1633,7 @@ public class ShadowLocationManager {
         if (newLocationMode != oldLocationMode) {
           // this sets LOCATION_MODE and LOCATION_PROVIDERS_ALLOWED
           setLocationModeInternal(newLocationMode);
-        } else if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.Q) {
+        } else {
           if (enabled == this.enabled) {
             return;
           }
@@ -1642,15 +1642,6 @@ public class ShadowLocationManager {
           // set LOCATION_PROVIDERS_ALLOWED directly, without setting LOCATION_MODE. do this even
           // though LOCATION_PROVIDERS_ALLOWED is not the source of truth - we keep it up to date,
           // but ignore any direct writes to it
-          ShadowSettings.ShadowSecure.updateEnabledProviders(
-              getContext().getContentResolver(), name, enabled);
-        } else {
-          if (enabled == this.enabled) {
-            return;
-          }
-
-          this.enabled = enabled;
-          // set LOCATION_PROVIDERS_ALLOWED directly, without setting LOCATION_MODE
           ShadowSettings.ShadowSecure.updateEnabledProviders(
               getContext().getContentResolver(), name, enabled);
         }

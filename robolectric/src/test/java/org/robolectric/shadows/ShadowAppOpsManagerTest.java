@@ -49,6 +49,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAppOpsManager.ModeAndException;
 import org.robolectric.util.ReflectionHelpers;
@@ -774,15 +775,15 @@ public class ShadowAppOpsManagerTest {
   public void appOpsManager_activityContextEnabled_differentInstancesRetrieveOps() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       // Get the AppOpsManager instances
       AppOpsManager applicationAppOpsManager =
           ApplicationProvider.getApplicationContext().getSystemService(AppOpsManager.class);
       ShadowAppOpsManager shadowApplicationAppOpsManager =
           Shadows.shadowOf(applicationAppOpsManager);
 
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       AppOpsManager activityAppOpsManager = activity.getSystemService(AppOpsManager.class);
       ShadowAppOpsManager shadowActivityAppOpsManager = Shadows.shadowOf(activityAppOpsManager);
 
@@ -796,9 +797,6 @@ public class ShadowAppOpsManagerTest {
 
       assertThat(activityPackageOpsList).isEqualTo(applicationPackageOpsList);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

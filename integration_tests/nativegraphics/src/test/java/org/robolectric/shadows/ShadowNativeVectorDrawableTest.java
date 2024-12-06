@@ -41,10 +41,10 @@ import android.graphics.drawable.Drawable.ConstantState;
 import android.graphics.drawable.VectorDrawable;
 import android.util.AttributeSet;
 import android.util.Xml;
-import androidx.annotation.Nullable;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
+import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -317,13 +317,13 @@ public class ShadowNativeVectorDrawableTest {
     }
 
     final StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < stateSet.length; i++) {
-      final String state = resources.getResourceName(stateSet[i]);
+    for (int i : stateSet) {
+      final String state = resources.getResourceName(i);
       final int stateIndex = state.indexOf("state_");
       if (stateIndex >= 0) {
         builder.append(state.substring(stateIndex + 6));
       } else {
-        builder.append(stateSet[i]);
+        builder.append(i);
       }
     }
 
@@ -414,7 +414,7 @@ public class ShadowNativeVectorDrawableTest {
   }
 
   @Test
-  public void testGetOpacity() throws XmlPullParserException, IOException {
+  public void testGetOpacity() {
     VectorDrawable vectorDrawable = new VectorDrawable();
 
     assertEquals("Default alpha should be 255", 255, vectorDrawable.getAlpha());
@@ -466,7 +466,7 @@ public class ShadowNativeVectorDrawableTest {
   }
 
   @Test
-  public void testTint() throws IOException {
+  public void testTint() {
     Drawable drawable = resources.getDrawable(R.drawable.vector_icon_delete);
     drawable = drawable.mutate();
     drawable.setTint(Color.BLUE);

@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -143,12 +144,12 @@ public class ShadowStorageManagerTest {
   public void storageManager_activityContextEnabled_differentInstancesRetrieveVolumes() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       StorageManager applicationStorageManager =
           RuntimeEnvironment.getApplication().getSystemService(StorageManager.class);
 
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
       StorageManager activityStorageManager = activity.getSystemService(StorageManager.class);
 
       assertThat(applicationStorageManager).isNotSameInstanceAs(activityStorageManager);
@@ -158,9 +159,6 @@ public class ShadowStorageManagerTest {
 
       assertThat(activityVolumes).isEqualTo(applicationVolumes);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

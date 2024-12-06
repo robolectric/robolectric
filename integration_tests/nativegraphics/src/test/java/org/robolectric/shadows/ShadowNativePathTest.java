@@ -439,10 +439,7 @@ public class ShadowNativePathTest {
   public void legacyShadowPathAPIs_notSupported() {
     Path path = new Path();
     assertThrows(
-        UnsupportedOperationException.class,
-        () -> {
-          ((ShadowPath) Shadow.extract(path)).getPoints();
-        });
+        UnsupportedOperationException.class, () -> ((ShadowPath) Shadow.extract(path)).getPoints());
   }
 
   private void addRectToPath(Path path) {

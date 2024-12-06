@@ -33,7 +33,6 @@ dependencies {
 
   // Testing dependencies
   testImplementation(libs.junit4)
-  testImplementation(libs.truth)
   testImplementation(libs.error.prone.test.helpers)
   testCompileOnly(AndroidSdk.MAX_SDK.coordinates)
 }

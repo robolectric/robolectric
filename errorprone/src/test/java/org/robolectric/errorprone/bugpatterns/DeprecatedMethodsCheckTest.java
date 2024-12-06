@@ -4,7 +4,6 @@ import static com.google.errorprone.BugPattern.SeverityLevel.WARNING;
 
 import com.google.errorprone.BugCheckerRefactoringTestHelper;
 import com.google.errorprone.BugPattern;
-import java.io.IOException;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -13,7 +12,7 @@ import org.junit.runners.JUnit4;
 
 /** Tests for {@link DeprecatedMethodsCheck} */
 @RunWith(JUnit4.class)
-@SuppressWarnings("LineLength")
+@SuppressWarnings("BugPatternNaming")
 public class DeprecatedMethodsCheckTest {
   private BugCheckerRefactoringTestHelper testHelper;
 
@@ -25,7 +24,7 @@ public class DeprecatedMethodsCheckTest {
   }
 
   @Test
-  public void replaceShadowApplicationGetInstance() throws IOException {
+  public void replaceShadowApplicationGetInstance() {
     testHelper
         .addInputLines(
             "in/SomeTest.java",
@@ -60,7 +59,7 @@ public class DeprecatedMethodsCheckTest {
   }
 
   @Test
-  public void replaceShadowApplicationGetLatestStuff() throws IOException {
+  public void replaceShadowApplicationGetLatestStuff() {
     testHelper
         .addInputLines(
             "in/SomeTest.java",
@@ -103,9 +102,9 @@ public class DeprecatedMethodsCheckTest {
         .doTest();
   }
 
+  @Ignore("This test fails in a bazel environment")
   @Test
-  @Ignore("multiple-step refactorings not currently supported")
-  public void inlineShadowVars() throws IOException {
+  public void inlineShadowVars() {
     testHelper
         .addInputLines(
             "in/SomeTest.java",
@@ -138,7 +137,7 @@ public class DeprecatedMethodsCheckTest {
   }
 
   @Test
-  public void useShadowsNonStaticIfAlreadyImported() throws IOException {
+  public void useShadowsNonStaticIfAlreadyImported() {
     testHelper
         .addInputLines(
             "in/SomeTest.java",
@@ -172,9 +171,9 @@ public class DeprecatedMethodsCheckTest {
         .doTest();
   }
 
+  @Ignore("This test fails in a bazel environment")
   @Test
-  @Ignore("multiple-step refactorings not currently supported")
-  public void useFrameworkMethodWhenAppropriateAfterApplicationSubstitution() throws IOException {
+  public void useFrameworkMethodWhenAppropriateAfterApplicationSubstitution() {
     testHelper
         .addInputLines(
             "in/SomeTest.java",

@@ -111,7 +111,7 @@ public @interface Config {
   /**
    * Qualifiers specifying device configuration for this test, such as "fr-normal-port-hdpi".
    *
-   * <p>If the string is prefixed with '+', the qualifiers that follow are overlayed on any more
+   * <p>If the string is prefixed with '+', the qualifiers that follow are overlaid on any more
    * broadly-scoped qualifiers.
    *
    * @see <a href="http://robolectric.org/device-configuration">Device Configuration</a> for
@@ -186,7 +186,7 @@ public @interface Config {
     private final String[] libraries;
 
     public static Config fromProperties(Properties properties) {
-      if (properties == null || properties.size() == 0) return null;
+      if (properties == null || properties.isEmpty()) return null;
       return new Implementation(
           parseSdkArrayProperty(properties.getProperty("sdk", "")),
           parseSdkInt(properties.getProperty("minSdk", "-1")),
@@ -216,7 +216,7 @@ public @interface Config {
     private static Class<?>[] parseClasses(String input) {
       if (input.isEmpty()) return new Class[0];
       final String[] classNames = input.split("[, ]+", 0);
-      final Class[] classes = new Class[classNames.length];
+      final Class<?>[] classes = new Class[classNames.length];
       for (int i = 0; i < classNames.length; i++) {
         classes[i] = parseClass(classNames[i]);
       }
@@ -560,7 +560,7 @@ public @interface Config {
       this.fontScale = pick(this.fontScale, overlayFontScale, DEFAULT_FONT_SCALE);
 
       String qualifiersOverlayValue = overlayConfig.qualifiers();
-      if (qualifiersOverlayValue != null && !qualifiersOverlayValue.equals("")) {
+      if (qualifiersOverlayValue != null && !qualifiersOverlayValue.isEmpty()) {
         if (qualifiersOverlayValue.startsWith("+")) {
           this.qualifiers = this.qualifiers + " " + qualifiersOverlayValue;
         } else {
@@ -575,20 +575,18 @@ public @interface Config {
 
       List<Class<?>> shadows = new ArrayList<>(Arrays.asList(this.shadows));
       shadows.addAll(Arrays.asList(overlayConfig.shadows()));
-      this.shadows = shadows.toArray(new Class[shadows.size()]);
+      this.shadows = shadows.toArray(new Class[0]);
 
       Set<String> instrumentedPackages = new HashSet<>();
       instrumentedPackages.addAll(Arrays.asList(this.instrumentedPackages));
       instrumentedPackages.addAll(Arrays.asList(overlayConfig.instrumentedPackages()));
-      this.instrumentedPackages =
-          instrumentedPackages.toArray(new String[instrumentedPackages.size()]);
-
+      this.instrumentedPackages = instrumentedPackages.toArray(new String[0]);
       this.application = pick(this.application, overlayConfig.application(), DEFAULT_APPLICATION);
 
       Set<String> libraries = new HashSet<>();
       libraries.addAll(Arrays.asList(this.libraries));
       libraries.addAll(Arrays.asList(overlayConfig.libraries()));
-      this.libraries = libraries.toArray(new String[libraries.size()]);
+      this.libraries = libraries.toArray(new String[0]);
 
       return this;
     }

@@ -8,13 +8,14 @@ import android.content.Context;
 import android.security.FileIntegrityManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Objects;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = R)
@@ -45,28 +46,26 @@ public final class ShadowFileIntegrityManagerTest {
   public void fileIntegrityManager_activityContextEnabled_retrievesSameValues() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       FileIntegrityManager applicationFileIntegrityManager =
           (FileIntegrityManager)
               ApplicationProvider.getApplicationContext()
                   .getSystemService(Context.FILE_INTEGRITY_SERVICE);
 
-      activity = Robolectric.setupActivity(TestActivity.class);
+      Activity activity = controller.get();
       FileIntegrityManager activityFileIntegrityManager =
           (FileIntegrityManager) activity.getSystemService(Context.FILE_INTEGRITY_SERVICE);
 
       assertThat(applicationFileIntegrityManager).isNotSameInstanceAs(activityFileIntegrityManager);
 
       boolean applicationApkVeritySupported =
-          applicationFileIntegrityManager.isApkVeritySupported();
-      boolean activityApkVeritySupported = activityFileIntegrityManager.isApkVeritySupported();
+          Objects.requireNonNull(applicationFileIntegrityManager).isApkVeritySupported();
+      boolean activityApkVeritySupported =
+          Objects.requireNonNull(activityFileIntegrityManager).isApkVeritySupported();
 
       assertThat(activityApkVeritySupported).isEqualTo(applicationApkVeritySupported);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }

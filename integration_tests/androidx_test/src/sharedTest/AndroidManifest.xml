@@ -12,7 +12,11 @@
         android:name="org.robolectric.integrationtests.axt.EspressoActivity"
         android:exported="true"/>
     <activity
+        android:name="org.robolectric.integrationtests.axt.NoActionBarEspressoActivity"
+        android:exported="true"/>
+    <activity
         android:name="org.robolectric.integrationtests.axt.EspressoScrollingActivity"
+        android:theme="@style/Theme.AppCompat.NoActionBar"
         android:exported="true"/>
 
     <activity
@@ -34,6 +38,6 @@
 
   <instrumentation
       android:name="androidx.test.runner.AndroidJUnitRunner"
-      android:targetPackage="org.robolectric.integration.axt"/>
+      android:targetPackage="org.robolectric.integrationtests.axt"/>
 
 </manifest>

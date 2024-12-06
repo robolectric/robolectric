@@ -38,8 +38,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest.permission;
 import android.annotation.DrawableRes;
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.StringRes;
 import android.annotation.UserIdInt;
@@ -115,6 +113,8 @@ import java.util.SortedMap;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.GetInstallerPackageNameMode;
@@ -1034,7 +1034,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected Resources getResourcesForApplication(@NonNull ApplicationInfo applicationInfo)
+  protected Resources getResourcesForApplication(@Nonnull ApplicationInfo applicationInfo)
       throws PackageManager.NameNotFoundException {
     synchronized (lock) {
       if (getContext().getPackageName().equals(applicationInfo.packageName)) {
@@ -1578,12 +1578,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = N)
-  protected @NonNull String getServicesSystemSharedLibraryPackageName() {
+  protected @Nonnull String getServicesSystemSharedLibraryPackageName() {
     return null;
   }
 
   @Implementation(minSdk = N)
-  protected @NonNull String getSharedSystemSharedLibraryPackageName() {
+  protected @Nonnull String getSharedSystemSharedLibraryPackageName() {
     return "";
   }
 
@@ -2065,7 +2065,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = M)
-  protected @NonNull List<VolumeInfo> getPrimaryStorageCandidateVolumes() {
+  protected @Nonnull List<VolumeInfo> getPrimaryStorageCandidateVolumes() {
     return null;
   }
 
@@ -2473,7 +2473,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   private interface ReflectorApplicationPackageManager {
 
     @Direct
-    Resources getResourcesForApplication(@NonNull ApplicationInfo applicationInfo);
+    Resources getResourcesForApplication(@Nonnull ApplicationInfo applicationInfo);
 
     @Direct
     Drawable getDrawable(

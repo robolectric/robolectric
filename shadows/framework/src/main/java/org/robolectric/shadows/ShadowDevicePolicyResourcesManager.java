@@ -2,13 +2,13 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.app.admin.DevicePolicyResourcesManager;
 import android.os.Build.VERSION_CODES;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -30,14 +30,14 @@ public class ShadowDevicePolicyResourcesManager {
    * Override string returned by the resource identified by {@code stringId}. Reset the override by
    * providing null as the {@code vaNlue}.
    */
-  public void setString(@NonNull String stringId, String value) {
+  public void setString(@Nonnull String stringId, String value) {
     stringMappings.put(stringId, value);
   }
 
   @Implementation
   @Nullable
   protected String getString(
-      @NonNull String stringId, @NonNull Supplier<String> defaultStringLoader) {
+      @Nonnull String stringId, @Nonnull Supplier<String> defaultStringLoader) {
     String value = stringMappings.get(stringId);
     if (value != null) {
       return value;
@@ -50,6 +50,6 @@ public class ShadowDevicePolicyResourcesManager {
   @ForType(DevicePolicyResourcesManager.class)
   interface DevicePolicyResourcesManagerReflector {
     @Direct
-    String getString(@NonNull String stringId, @NonNull Supplier<String> defaultStringLoader);
+    String getString(@Nonnull String stringId, @Nonnull Supplier<String> defaultStringLoader);
   }
 }

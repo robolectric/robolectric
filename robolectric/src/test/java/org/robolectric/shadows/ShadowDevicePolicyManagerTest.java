@@ -69,6 +69,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -2739,14 +2740,14 @@ public final class ShadowDevicePolicyManagerTest {
   public void devicePolicyManager_instance_retrievesSameAdminStatus() {
     String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
     System.setProperty("robolectric.createActivityContexts", "true");
-    Activity activity = null;
-    try {
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class).setup()) {
       DevicePolicyManager applicationDpm =
           (DevicePolicyManager)
               ApplicationProvider.getApplicationContext()
                   .getSystemService(Context.DEVICE_POLICY_SERVICE);
 
-      activity = Robolectric.setupActivity(Activity.class);
+      Activity activity = controller.get();
 
       DevicePolicyManager activityDpm =
           (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
@@ -2759,9 +2760,6 @@ public final class ShadowDevicePolicyManagerTest {
 
       assertThat(activityAdminActive).isEqualTo(applicationAdminActive);
     } finally {
-      if (activity != null) {
-        activity.finish();
-      }
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
