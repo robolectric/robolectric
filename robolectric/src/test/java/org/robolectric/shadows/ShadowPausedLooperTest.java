@@ -162,7 +162,7 @@ public class ShadowPausedLooperTest {
     ShadowPausedLooper shadowLooper = Shadow.extract(handlerThread.getLooper());
     shadowLooper.idle();
     verify(mockRunnable, times(0)).run();
-    ShadowSystemClock.advanceBy(Duration.ofMillis(100));
+    SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + 100);
     shadowLooper.idle();
     verify(mockRunnable, times(1)).run();
   }
