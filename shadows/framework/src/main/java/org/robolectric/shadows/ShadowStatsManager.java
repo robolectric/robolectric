@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
 
+import android.app.PendingIntent;
 import android.app.StatsManager;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,12 +20,15 @@ public class ShadowStatsManager {
   private static byte[] statsMetadata = new byte[] {};
 
   private static final Map<Long, byte[]> configDataMap = new HashMap<>();
+  private static final Map<BroadcastSubscriberKey, PendingIntent> broadcastSubscriberMap =
+      new HashMap<>();
 
   @Resetter
   public static void reset() {
     reportDataMap.clear();
     statsMetadata = new byte[] {};
     configDataMap.clear();
+    broadcastSubscriberMap.clear();
   }
 
   /** Adds metrics data that the shadow should return from {@link StatsManager#getReports()}. */
@@ -48,6 +52,17 @@ public class ShadowStatsManager {
     return configDataMap.getOrDefault(configKey, new byte[] {});
   }
 
+  /**
+   * Retrieves the broadcast subscriber map stored in the shadow as a result of {@link
+   * StatsManager#setBroadcastSubscriber()}.
+   *
+   * @return A map where the keys are {@link BroadcastSubscriberKey} objects, which contain the
+   *     configKey and subscriberId, and the values are {@link PendingIntent} objects.
+   */
+  public static Map<BroadcastSubscriberKey, PendingIntent> getBroadcastSubscriberMap() {
+    return broadcastSubscriberMap;
+  }
+
   @Implementation
   protected byte[] getReports(long configKey) {
     byte[] data = reportDataMap.getOrDefault(configKey, new byte[] {});
@@ -69,4 +84,17 @@ public class ShadowStatsManager {
   protected void removeConfig(long configKey) {
     configDataMap.remove(configKey);
   }
+
+  @Implementation
+  protected void setBroadcastSubscriber(
+      PendingIntent pendingIntent, long configKey, long subscriberId) {
+    BroadcastSubscriberKey key = new BroadcastSubscriberKey(configKey, subscriberId);
+    if (pendingIntent != null) {
+      broadcastSubscriberMap.put(key, pendingIntent);
+    } else {
+      broadcastSubscriberMap.remove(key);
+    }
+  }
+
+  record BroadcastSubscriberKey(long configKey, long subscriberId) {}
 }
