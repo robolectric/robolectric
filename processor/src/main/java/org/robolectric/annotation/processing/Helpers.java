@@ -20,14 +20,14 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.SimpleAnnotationValueVisitor6;
-import javax.lang.model.util.SimpleElementVisitor6;
+import javax.lang.model.util.SimpleAnnotationValueVisitor8;
+import javax.lang.model.util.SimpleElementVisitor8;
 import javax.lang.model.util.Types;
 
 public class Helpers {
 
   private static final AnnotationValueVisitor<TypeMirror, Void> TYPE_MIRROR_VISITOR =
-      new SimpleAnnotationValueVisitor6<TypeMirror, Void>() {
+      new SimpleAnnotationValueVisitor8<TypeMirror, Void>() {
         @Override
         public TypeMirror visitType(TypeMirror t, Void arg) {
           return t;
@@ -35,7 +35,7 @@ public class Helpers {
       };
 
   private static final ElementVisitor<TypeElement, Void> TYPE_ELEMENT_VISITOR =
-      new SimpleElementVisitor6<TypeElement, Void>() {
+      new SimpleElementVisitor8<TypeElement, Void>() {
         @Override
         public TypeElement visitType(TypeElement e, Void p) {
           return e;
@@ -43,7 +43,7 @@ public class Helpers {
       };
 
   private static final AnnotationValueVisitor<String, Void> STRING_VISITOR =
-      new SimpleAnnotationValueVisitor6<String, Void>() {
+      new SimpleAnnotationValueVisitor8<String, Void>() {
         @Override
         public String visitString(String s, Void arg) {
           return s;
@@ -51,7 +51,7 @@ public class Helpers {
       };
 
   private static final AnnotationValueVisitor<Integer, Void> INT_VISITOR =
-      new SimpleAnnotationValueVisitor6<Integer, Void>() {
+      new SimpleAnnotationValueVisitor8<Integer, Void>() {
         @Override
         public Integer visitInt(int i, Void aVoid) {
           return i;

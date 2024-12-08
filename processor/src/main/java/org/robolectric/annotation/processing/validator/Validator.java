@@ -11,7 +11,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.AbstractElementVisitor6;
+import javax.lang.model.util.AbstractElementVisitor8;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
@@ -28,7 +28,7 @@ public abstract class Validator implements ElementVisitor<Void, Element> {
   protected final Helpers helpers;
   // This is the easiest way to do it because visit() is final in AbstractEV6
   final ElementVisitor<Void, Element> visitorAdapter =
-      new AbstractElementVisitor6<Void, Element>() {
+      new AbstractElementVisitor8<Void, Element>() {
 
         @Override
         public Void visitPackage(PackageElement e, Element p) {
