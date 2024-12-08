@@ -29,8 +29,8 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVisitor;
-import javax.lang.model.util.SimpleElementVisitor6;
-import javax.lang.model.util.SimpleTypeVisitor6;
+import javax.lang.model.util.SimpleElementVisitor8;
+import javax.lang.model.util.SimpleTypeVisitor8;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.ShadowPicker;
 
@@ -70,7 +70,7 @@ public class RobolectricModel {
   }
 
   private static final ElementVisitor<TypeElement, Void> TYPE_ELEMENT_VISITOR =
-      new SimpleElementVisitor6<TypeElement, Void>() {
+      new SimpleElementVisitor8<TypeElement, Void>() {
         @Override
         public TypeElement visitType(TypeElement e, Void p) {
           return e;
@@ -201,8 +201,8 @@ public class RobolectricModel {
             referentMap.put(type, referents.getKey());
           } else {
             for (TypeElement type : c) {
-              SimpleElementVisitor6<Void, TypeElement> visitor =
-                  new SimpleElementVisitor6<Void, TypeElement>() {
+              ElementVisitor<Void, TypeElement> visitor =
+                  new SimpleElementVisitor8<Void, TypeElement>() {
                     @Override
                     public Void visitType(TypeElement parent, TypeElement type) {
                       nextRound.put(parent.getSimpleName() + "." + type.getSimpleName(), type);
@@ -276,7 +276,7 @@ public class RobolectricModel {
     }
 
     private final TypeVisitor<String, Void> findReferent =
-        new SimpleTypeVisitor6<String, Void>() {
+        new SimpleTypeVisitor8<String, Void>() {
           @Override
           public String visitDeclared(DeclaredType t, Void p) {
             return referentMap.get(t.asElement());
