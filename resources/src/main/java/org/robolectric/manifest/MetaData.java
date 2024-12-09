@@ -126,7 +126,7 @@ public final class MetaData {
    */
   public static int getColor(String value) {
     if (value != null) {
-      if (value.startsWith("#") == false) {
+      if (!value.startsWith("#")) {
         throw new NumberFormatException(String.format("Color value '%s' must start with #", value));
       }
 

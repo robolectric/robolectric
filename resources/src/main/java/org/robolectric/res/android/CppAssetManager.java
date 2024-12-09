@@ -942,7 +942,7 @@ public class CppAssetManager {
   static Asset openAssetFromFileLocked(final String8 pathName, AccessMode mode) {
     Asset pAsset;
 
-    if (pathName.getPathExtension().toLowerCase().equals(".gz")) {
+    if (pathName.getPathExtension().equalsIgnoreCase(".gz")) {
       // printf("TRYING '%s'\n", (final char*) pathName);
       pAsset = Asset.createFromCompressedFile(pathName.string(), mode);
     } else {
@@ -1609,7 +1609,7 @@ public class CppAssetManager {
     @Override
     public String toString() {
       String id = Integer.toString(System.identityHashCode(this), 16);
-      return "SharedZip{mPath='" + mPath + "\', id=0x" + id + "}";
+      return "SharedZip{mPath='" + mPath + "', id=0x" + id + "}";
     }
   }
 
@@ -1771,8 +1771,6 @@ public class CppAssetManager {
         Path path;
         switch (assetPath.type) {
           case kFileTypeDirectory:
-            path = Fs.fromUrl(assetPath.path.string());
-            break;
           case kFileTypeRegular:
             path = Fs.fromUrl(assetPath.path.string());
             break;

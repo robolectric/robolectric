@@ -694,10 +694,6 @@ public class LoadedArsc {
             {
               ResTable_typeSpec type_spec =
                   new ResTable_typeSpec(child_chunk.myBuf(), child_chunk.myOffset());
-              if (type_spec == null) {
-                logError("RES_TABLE_TYPE_SPEC_TYPE too small.");
-                return emptyBraces();
-              }
 
               if (type_spec.id == 0) {
                 logError("RES_TABLE_TYPE_SPEC_TYPE has invalid ID 0.");
@@ -1068,9 +1064,7 @@ public class LoadedArsc {
 
     if (iter.HadError()) {
       logError(iter.GetLastError());
-      if (iter.HadFatalError()) {
-        return false;
-      }
+      return !iter.HadFatalError();
     }
     return true;
   }

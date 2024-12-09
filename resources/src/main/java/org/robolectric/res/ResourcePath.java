@@ -2,6 +2,7 @@ package org.robolectric.res;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 
 @SuppressWarnings("NewApi")
 public class ResourcePath {
@@ -53,14 +54,10 @@ public class ResourcePath {
 
     ResourcePath that = (ResourcePath) o;
 
-    if (rClass != null ? !rClass.equals(that.rClass) : that.rClass != null) return false;
-    if (resourceBase != null ? !resourceBase.equals(that.resourceBase) : that.resourceBase != null)
-      return false;
-    if (assetsDir != null ? !assetsDir.equals(that.assetsDir) : that.assetsDir != null)
-      return false;
-    return internalRClass != null
-        ? internalRClass.equals(that.internalRClass)
-        : that.internalRClass == null;
+    if (!Objects.equals(rClass, that.rClass)) return false;
+    if (!Objects.equals(resourceBase, that.resourceBase)) return false;
+    if (!Objects.equals(assetsDir, that.assetsDir)) return false;
+    return Objects.equals(internalRClass, that.internalRClass);
   }
 
   @Override

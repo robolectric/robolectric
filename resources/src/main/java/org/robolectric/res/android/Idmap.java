@@ -12,6 +12,7 @@ import static org.robolectric.res.android.Util.dtohs;
 import static org.robolectric.res.android.Util.logError;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import org.robolectric.res.android.ResourceTypes.IdmapEntry_header;
 import org.robolectric.res.android.ResourceTypes.Idmap_header;
@@ -181,6 +182,7 @@ class Idmap {
         if ((data_size - SIZEOF_CPTR) / SIZEOF_INT < dtohs(entry_header.entry_count)) {
           logError(
               String.format(
+                  Locale.getDefault(),
                   "Idmap too small for the number of entries (%d)",
                   (int) dtohs(entry_header.entry_count)));
           return emptyBraces();

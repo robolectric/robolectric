@@ -207,7 +207,7 @@ public class ResXMLParser {
     int id = getAttributeNamespaceID(idx);
     // printf("attribute namespace=%d  idx=%d  event=%s\n", id, idx, mEventCode);
     if (kDebugXMLNoisy) {
-      System.out.println(String.format("getAttributeNamespace 0x%x=0x%x\n", idx, id));
+      System.out.printf("getAttributeNamespace 0x%x=0x%x\n%n", idx, id);
     }
     return id >= 0 ? mTree.mStrings.stringAt(id, outLen) : null;
   }
@@ -216,7 +216,7 @@ public class ResXMLParser {
     int id = getAttributeNamespaceID(idx);
     // printf("attribute namespace=%d  idx=%d  event=%s\n", id, idx, mEventCode);
     if (kDebugXMLNoisy) {
-      System.out.println(String.format("getAttributeNamespace 0x%x=0x%x\n", idx, id));
+      System.out.printf("getAttributeNamespace 0x%x=0x%x\n%n", idx, id);
     }
     return id >= 0 ? mTree.mStrings.string8At(id, outLen) : null;
   }
@@ -240,7 +240,7 @@ public class ResXMLParser {
     int id = getAttributeNameID(idx);
     // printf("attribute name=%d  idx=%d  event=%s\n", id, idx, mEventCode);
     if (kDebugXMLNoisy) {
-      System.out.println(String.format("getAttributeName 0x%x=0x%x\n", idx, id));
+      System.out.printf("getAttributeName 0x%x=0x%x\n%n", idx, id);
     }
     return id >= 0 ? mTree.mStrings.stringAt(id, outLen) : null;
   }
@@ -249,7 +249,7 @@ public class ResXMLParser {
     int id = getAttributeNameID(idx);
     // printf("attribute name=%d  idx=%d  event=%s\n", id, idx, mEventCode);
     if (kDebugXMLNoisy) {
-      System.out.println(String.format("getAttributeName 0x%x=0x%x\n", idx, id));
+      System.out.printf("getAttributeName 0x%x=0x%x\n%n", idx, id);
     }
     return id >= 0 ? mTree.mStrings.string8At(id, outLen) : null;
   }
@@ -286,7 +286,7 @@ public class ResXMLParser {
   final String getAttributeStringValue(int idx, Ref<Integer> outLen) {
     int id = getAttributeValueStringID(idx);
     if (kDebugXMLNoisy) {
-      System.out.println(String.format("getAttributeValue 0x%x=0x%x\n", idx, id));
+      System.out.printf("getAttributeValue 0x%x=0x%x\n%n", idx, id);
     }
     return id >= 0 ? mTree.mStrings.stringAt(id, outLen) : null;
   }

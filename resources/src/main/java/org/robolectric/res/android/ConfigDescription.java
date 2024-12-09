@@ -48,8 +48,8 @@ public class ConfigDescription {
 
   private static final String kWildcardName = "any";
 
-  private static final Pattern MCC_PATTERN = Pattern.compile("mcc([\\d]+)");
-  private static final Pattern MNC_PATTERN = Pattern.compile("mnc([\\d]+)");
+  private static final Pattern MCC_PATTERN = Pattern.compile("mcc(\\d+)");
+  private static final Pattern MNC_PATTERN = Pattern.compile("mnc(\\d+)");
   private static final Pattern SMALLEST_SCREEN_WIDTH_PATTERN = Pattern.compile("^sw([0-9]+)dp");
   private static final Pattern SCREEN_WIDTH_PATTERN = Pattern.compile("^w([0-9]+)dp");
   private static final Pattern SCREEN_HEIGHT_PATTERN = Pattern.compile("^h([0-9]+)dp");
@@ -74,8 +74,7 @@ public class ConfigDescription {
 
     void set_script(String script_chars) {
       script =
-          String.valueOf(Character.toUpperCase(script_chars.charAt(0)))
-              + script_chars.substring(1).toLowerCase();
+          Character.toUpperCase(script_chars.charAt(0)) + script_chars.substring(1).toLowerCase();
     }
 
     void set_variant(String variant_chars) {
@@ -208,14 +207,14 @@ public class ConfigDescription {
     if (part_iter.hasNext() && parseMcc(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseMnc(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
@@ -228,7 +227,7 @@ public class ConfigDescription {
       } else {
         locale.writeTo(out);
         if (!part_iter.hasNext()) {
-          success = !part_iter.hasNext();
+          success = true;
         }
       }
     }
@@ -236,140 +235,140 @@ public class ConfigDescription {
     if (part_iter.hasNext() && parseLayoutDirection(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseSmallestScreenWidthDp(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseScreenWidthDp(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseScreenHeightDp(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseScreenLayoutSize(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseScreenLayoutLong(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseScreenRound(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseWideColorGamut(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseHdr(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseOrientation(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseUiModeType(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseUiModeNight(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseDensity(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseTouchscreen(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseKeysHidden(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseKeyboard(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseNavHidden(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseNavigation(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseScreenSize(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 
     if (part_iter.hasNext() && parseVersion(part_iter.peek(), out)) {
       part_iter.next();
       if (!part_iter.hasNext()) {
-        success = !part_iter.hasNext();
+        success = true;
       }
     }
 

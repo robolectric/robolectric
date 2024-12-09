@@ -3,7 +3,6 @@ package org.robolectric.res;
 import com.google.errorprone.annotations.InlineMe;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -25,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.util.Util;
 
@@ -119,10 +119,6 @@ public abstract class Fs {
   }
 
   public static InputStream getInputStream(Path path) throws IOException {
-    // otherwise we get ClosedByInterruptException, meh
-    if (path.toUri().getScheme().equals("file")) {
-      return new BufferedInputStream(new FileInputStream(path.toFile()));
-    }
     return new BufferedInputStream(Files.newInputStream(path));
   }
 
@@ -252,8 +248,9 @@ public abstract class Fs {
       return delegate.supportedFileAttributeViews();
     }
 
+    @Nonnull
     @Override
-    public Path getPath(String first, String... more) {
+    public Path getPath(@Nonnull String first, @Nonnull String... more) {
       return delegate.getPath(first, more);
     }
 

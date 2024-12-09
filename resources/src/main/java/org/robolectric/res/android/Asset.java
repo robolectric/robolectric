@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.robolectric.res.FileTypedResource;
@@ -320,7 +321,7 @@ public abstract class Asset {
           res.append("    ");
           res.append(cur.getAssetSource());
           long size = (cur.getLength() + 512) / 1024;
-          String buf = String.format(": %dK\n", (int) size);
+          String buf = String.format(Locale.getDefault(), ": %dK\n", (int) size);
           res.append(buf);
         }
         cur = cur.mNext;
@@ -791,8 +792,10 @@ public abstract class Asset {
            * hosed.
            */
           actual = mFp.read(buf, 0, count);
-          if (actual == 0) // something failed -- I/O error?
-          return -1;
+          // something failed -- I/O error?
+          if (actual == 0) {
+            return -1;
+          }
 
           assert (actual == count);
         } catch (IOException e) {
@@ -992,7 +995,7 @@ public abstract class Asset {
 
     private static FileDescriptor open(String fname) {
       try {
-        return new FileInputStream(new File(fname)).getFD();
+        return new FileInputStream(fname).getFD();
       } catch (IOException e) {
         return null;
       }

@@ -98,32 +98,29 @@ public class StyleResolver implements Style {
     TypedResource typedResource = resourceProvider.getValue(styleRef, config);
 
     if (typedResource == null) {
-      StringBuilder builder =
-          new StringBuilder("Could not find any resource")
-              .append(" from reference ")
-              .append(styleRef)
-              .append(" from ")
-              .append(style)
-              .append(" with ")
-              .append(theme);
-      throw new RuntimeException(builder.toString());
+      String builder =
+          "Could not find any resource from reference "
+              + styleRef
+              + " from "
+              + style
+              + " with "
+              + theme;
+      throw new RuntimeException(builder);
     }
 
     Object data = typedResource.getData();
     if (data instanceof StyleData) {
       return (StyleData) data;
     } else {
-      StringBuilder builder =
-          new StringBuilder(styleRef.toString())
-              .append(" does not resolve to a Style.")
-              .append(" got ")
-              .append(data)
-              .append(" instead. ")
-              .append(" from ")
-              .append(style)
-              .append(" with ")
-              .append(theme);
-      throw new RuntimeException(builder.toString());
+      String builder =
+          styleRef
+              + " does not resolve to a Style. got "
+              + data
+              + " instead. from "
+              + style
+              + " with "
+              + theme;
+      throw new RuntimeException(builder);
     }
   }
 
