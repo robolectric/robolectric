@@ -105,7 +105,7 @@ public class AttributeResolution {
         defStyleRes != 0 ? res.getBagLocked(defStyleRes, defStyleStart, defStyleTypeSetFlags) : -1;
     defStyleTypeSetFlags.set(defStyleTypeSetFlags.get() | defStyleBagTypeSetFlags.get());
     //    const ResTable::bag_entry* const defStyleEnd = defStyleStart + (bagOff >= 0 ? bagOff : 0);
-    final int defStyleEnd = (bagOff >= 0 ? bagOff : 0);
+    final int defStyleEnd = Math.max(bagOff, 0);
     BagAttributeFinder defStyleAttrFinder =
         new BagAttributeFinder(defStyleStart.get(), defStyleEnd);
 

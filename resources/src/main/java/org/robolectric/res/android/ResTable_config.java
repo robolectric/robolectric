@@ -1001,7 +1001,7 @@ public class ResTable_config {
     //    screenHeightDp = htods(screenHeightDp);
   }
 
-  static final int compareLocales(final ResTable_config l, final ResTable_config r) {
+  static int compareLocales(final ResTable_config l, final ResTable_config r) {
     if (l.locale() != r.locale()) {
       // NOTE: This is the old behaviour with respect to comparison orders.
       // The diff value here doesn't make much sense (given our bit packing scheme)
@@ -1353,12 +1353,9 @@ public class ResTable_config {
           if (fixedMySL == fixedOSL) {
             // If the two are the same, but 'this' is actually
             // undefined, then the other is really a better match.
-            if (mySL == 0) return false;
-            return true;
+            return mySL != 0;
           }
-          if (fixedMySL != fixedOSL) {
-            return fixedMySL > fixedOSL;
-          }
+          return fixedMySL > fixedOSL;
         }
         if (((screenLayout ^ o.screenLayout) & MASK_SCREENLONG) != 0
             && isTruthy(requested.screenLayout & MASK_SCREENLONG)) {
@@ -1715,9 +1712,7 @@ public class ResTable_config {
       if (sdkVersion != 0 && sdkVersion > settings.sdkVersion) {
         return false;
       }
-      if (minorVersion != 0 && minorVersion != settings.minorVersion) {
-        return false;
-      }
+      return minorVersion == 0 || minorVersion == settings.minorVersion;
     }
     return true;
   }
@@ -1993,8 +1988,7 @@ public class ResTable_config {
       final int size = separator - start;
       state = assignLocaleComponent(this, in.substring(start), size, state);
       if (state.parserState == State.IGNORE_THE_REST) {
-
-        System.err.println(String.format("Invalid BCP-47 locale string: %s", in));
+        System.err.printf("Invalid BCP-47 locale string: %s%n", in);
         break;
       }
 
@@ -2204,12 +2198,8 @@ public class ResTable_config {
     // Finally, the languages, although equivalent, may still be different
     // (like for Tagalog and Filipino). Identical is better than just
     // equivalent.
-    if (areIdentical(language, requested.language)
-        && !areIdentical(o.language, requested.language)) {
-      return true;
-    }
-
-    return false;
+    return areIdentical(language, requested.language)
+        && !areIdentical(o.language, requested.language);
   }
 
   private String str(byte[] country) {
@@ -2369,7 +2359,7 @@ public class ResTable_config {
       }
       if (minorVersion != o.minorVersion) {
         if (!isTruthy(minorVersion)) return false;
-        if (!isTruthy(o.minorVersion)) return true;
+        return !isTruthy(o.minorVersion);
       }
     }
     return false;

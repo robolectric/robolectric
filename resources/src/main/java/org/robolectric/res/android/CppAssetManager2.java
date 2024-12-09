@@ -635,7 +635,7 @@ public class CppAssetManager2 {
     }
 
     if (!is_valid_resid(resid)) {
-      System.err.println(String.format("Invalid ID 0x%08x.", resid));
+      System.err.printf("Invalid ID 0x%08x.%n", resid);
       return K_INVALID_COOKIE;
     }
 
@@ -645,8 +645,7 @@ public class CppAssetManager2 {
 
     final byte package_idx = package_ids_[package_id];
     if (package_idx == (byte) 0xff) {
-      System.err.println(
-          String.format("No package ID %02x found for ID 0x%08x.", package_id, resid));
+      System.err.printf("No package ID %02x found for ID 0x%08x.%n", package_id, resid);
       return K_INVALID_COOKIE;
     }
 
@@ -865,7 +864,7 @@ public class CppAssetManager2 {
 
     if (isTruthy(dtohl(entry.get().entry.flags) & ResTable_entry.FLAG_COMPLEX)) {
       if (!may_be_bag) {
-        System.err.println(String.format("Resource %08x is a complex map type.", resid));
+        System.err.printf("Resource %08x is a complex map type.%n", resid);
         return K_INVALID_COOKIE;
       }
 
@@ -1022,8 +1021,8 @@ public class CppAssetManager2 {
           // Attributes, arrays, etc don't have a resource id as the name. They specify
           // other data, which would be wrong to change via a lookup.
           if (entry.dynamic_ref_table.lookupResourceId(new_key) != NO_ERROR) {
-            System.err.println(
-                String.format("Failed to resolve key 0x%08x in bag 0x%08x.", new_key.get(), resid));
+            System.err.printf(
+                "Failed to resolve key 0x%08x in bag 0x%08x.%n", new_key.get(), resid);
             return null;
           }
         }
@@ -1038,10 +1037,9 @@ public class CppAssetManager2 {
         int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
         new_entry_.value = valueRef.get();
         if (err != NO_ERROR) {
-          System.err.println(
-              String.format(
-                  "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.",
-                  new_entry_.value.dataType, new_entry_.value.data, new_key.get()));
+          System.err.printf(
+              "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.%n",
+              new_entry_.value.dataType, new_entry_.value.data, new_key.get());
           return null;
         }
         // ++new_entry;
@@ -1065,8 +1063,7 @@ public class CppAssetManager2 {
     final ResolvedBag parent_bag = GetBag(parent_resid.get(), child_resids);
     if (parent_bag == null) {
       // Failed to get the parent that should exist.
-      System.err.println(
-          String.format("Failed to find parent 0x%08x of bag 0x%08x.", parent_resid.get(), resid));
+      System.err.printf("Failed to find parent 0x%08x of bag 0x%08x.%n", parent_resid.get(), resid);
       return null;
     }
 
@@ -1093,9 +1090,8 @@ public class CppAssetManager2 {
       final Ref<Integer> child_keyRef = new Ref<>(dtohl(map_entry.name.ident));
       if (!is_internal_resid(child_keyRef.get())) {
         if (entry.dynamic_ref_table.lookupResourceId(child_keyRef) != NO_ERROR) {
-          System.err.println(
-              String.format(
-                  "Failed to resolve key 0x%08x in bag 0x%08x.", child_keyRef.get(), resid));
+          System.err.printf(
+              "Failed to resolve key 0x%08x in bag 0x%08x.%n", child_keyRef.get(), resid);
           return null;
         }
       }
@@ -1120,10 +1116,9 @@ public class CppAssetManager2 {
         int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
         new_entry_.value = valueRef.get();
         if (err != NO_ERROR) {
-          System.err.println(
-              String.format(
-                  "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.",
-                  new_entry_.value.dataType, new_entry_.value.data, child_key));
+          System.err.printf(
+              "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.%n",
+              new_entry_.value.dataType, new_entry_.value.data, child_key);
           return null;
         }
 
@@ -1152,8 +1147,7 @@ public class CppAssetManager2 {
       final Ref<Integer> new_key = new Ref<>(map_entry.name.ident);
       if (!is_internal_resid(new_key.get())) {
         if (entry.dynamic_ref_table.lookupResourceId(new_key) != NO_ERROR) {
-          System.err.println(
-              String.format("Failed to resolve key 0x%08x in bag 0x%08x.", new_key.get(), resid));
+          System.err.printf("Failed to resolve key 0x%08x in bag 0x%08x.%n", new_key.get(), resid);
           return null;
         }
       }
@@ -1168,10 +1162,9 @@ public class CppAssetManager2 {
       int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
       new_entry_.value = valueRef.get();
       if (err != NO_ERROR) {
-        System.err.println(
-            String.format(
-                "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.",
-                new_entry_.value.dataType, new_entry_.value.data, new_key.get()));
+        System.err.printf(
+            "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.%n",
+            new_entry_.value.dataType, new_entry_.value.data, new_key.get());
         return null;
       }
       // ++map_entry;
@@ -1409,16 +1402,12 @@ public class CppAssetManager2 {
     }
 
     private static class ThemeEntry {
-      static final int SIZEOF = 8 + Res_value.SIZEOF;
-
       ApkAssetsCookie cookie;
       int type_spec_flags;
       Res_value value;
     }
 
     private static class ThemeType {
-      static final int SIZEOF_WITHOUT_ENTRIES = 8;
-
       int entry_count;
       ThemeEntry[] entries;
     }

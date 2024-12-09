@@ -46,6 +46,6 @@ public class ContentProviderData extends PackageItemData {
   }
 
   public boolean isEnabled() {
-    return attributes.containsKey(ENABLED) ? Boolean.parseBoolean(attributes.get(ENABLED)) : true;
+    return !attributes.containsKey(ENABLED) || Boolean.parseBoolean(attributes.get(ENABLED));
   }
 }

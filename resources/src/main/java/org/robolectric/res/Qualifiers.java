@@ -108,7 +108,7 @@ public class Qualifiers {
   public static String addSmallestScreenWidth(String qualifiers, int smallestScreenWidth) {
     int qualifiersSmallestScreenWidth = Qualifiers.getSmallestScreenWidth(qualifiers);
     if (qualifiersSmallestScreenWidth == -1) {
-      if (qualifiers.length() > 0) {
+      if (!qualifiers.isEmpty()) {
         qualifiers += "-";
       }
       qualifiers += "sw" + smallestScreenWidth + "dp";
@@ -138,7 +138,7 @@ public class Qualifiers {
   public static String addScreenWidth(String qualifiers, int screenWidth) {
     int qualifiersScreenWidth = Qualifiers.getScreenWidth(qualifiers);
     if (qualifiersScreenWidth == -1) {
-      if (qualifiers.length() > 0) {
+      if (!qualifiers.isEmpty()) {
         qualifiers += "-";
       }
       qualifiers += "w" + screenWidth + "dp";

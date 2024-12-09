@@ -215,7 +215,6 @@ public class LocaleData {
       // We don't know anything about the locale
       //      memset(out, '\0', SCRIPT_LENGTH);
       Arrays.fill(out, (byte) 0);
-      return;
     } else {
       // We found the locale.
       //      memcpy(out, SCRIPT_CODES[lookup_result.second], SCRIPT_LENGTH);

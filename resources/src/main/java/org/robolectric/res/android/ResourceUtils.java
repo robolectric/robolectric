@@ -83,11 +83,11 @@ class ResourceUtils {
     int end = start + str.length();
     int current = start;
     while (current != end) {
-      if (out_type.get().length() == 0 && str.charAt(current) == '/') {
+      if (out_type.get().isEmpty() && str.charAt(current) == '/') {
         has_type_separator = true;
         out_type.set(str.substring(start, current));
         start = current + 1;
-      } else if (out_package.get().length() == 0 && str.charAt(current) == ':') {
+      } else if (out_package.get().isEmpty() && str.charAt(current) == ':') {
         has_package_separator = true;
         out_package.set(str.substring(start, current));
         start = current + 1;

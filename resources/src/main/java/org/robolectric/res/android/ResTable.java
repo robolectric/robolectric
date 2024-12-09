@@ -1032,13 +1032,12 @@ public class ResTable {
         final int newEntryCount = dtohl(type.entryCount);
 
         if (kDebugLoadTableNoisy) {
-          System.out.println(
-              String.format(
-                  "Type off 0x%x: type=0x%x, headerSize=0x%x, size=%d\n",
-                  base - chunk.myOffset(),
-                  dtohs(type.header.type),
-                  dtohs(type.header.headerSize),
-                  typeSize));
+          System.out.printf(
+              "Type off 0x%x: type=0x%x, headerSize=0x%x, size=%d\n%n",
+              base - chunk.myOffset(),
+              dtohs(type.header.type),
+              dtohs(type.header.headerSize),
+              typeSize);
         }
         // Check if the table uses compact encoding.
         int bytesPerEntry = isTruthy(type.flags & ResTable_type.FLAG_OFFSET16) ? 2 : 4;
@@ -1323,7 +1322,7 @@ public class ResTable {
     for (PackageGroup group : mPackageGroups.values()) {
       if (!Objects.equals(packageName.trim(), group.name.trim())) {
         if (kDebugTableNoisy) {
-          System.out.println(String.format("Skipping package group: %s\n", group.name));
+          System.out.printf("Skipping package group: %s\n%n", group.name);
         }
         continue;
       }
@@ -2555,11 +2554,7 @@ public class ResTable {
       return false;
     }
     outName.name = entry.keyStr.string();
-    if (outName.name == null) {
-      return false;
-    }
-
-    return true;
+    return outName.name != null;
   }
 
   String getResourceName(int resId) {
@@ -2947,7 +2942,7 @@ public class ResTable {
       final Ref<bag_entry[]> parentBag = new Ref<>(null);
       final Ref<Integer> parentTypeSpecFlags = new Ref<>(0);
       final int NP = getBagLocked(resolvedParent.get(), parentBag, parentTypeSpecFlags);
-      final int NT = ((NP >= 0) ? NP : 0) + N;
+      final int NT = Math.max(NP, 0) + N;
       set = new bag_set(NT);
       if (NP > 0) {
         set.copyFrom(parentBag.get(), NP);
