@@ -6,7 +6,7 @@ import java.util.List;
 /** Represents the list of styles applied to a Theme. */
 public class ThemeStyleSet implements Style {
 
-  private List<OverlayedStyle> styles = new ArrayList<>();
+  private final List<OverlayedStyle> styles = new ArrayList<>();
 
   @Override
   public AttributeResource getAttrValue(ResName attrName) {
@@ -44,7 +44,7 @@ public class ThemeStyleSet implements Style {
     if (styles.isEmpty()) {
       return "theme with no applied styles";
     } else {
-      return "theme with applied styles: " + styles + "";
+      return "theme with applied styles: " + styles;
     }
   }
 

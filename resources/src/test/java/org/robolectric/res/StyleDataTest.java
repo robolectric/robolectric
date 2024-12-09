@@ -3,6 +3,7 @@ package org.robolectric.res;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
 
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -22,7 +23,8 @@ public class StyleDataTest {
             "library.resource",
             "Theme_MyApp",
             "Theme_Material",
-            asList(new AttributeResource(myLibSearchViewStyle, "lib_value", "library.resource")));
+            Collections.singletonList(
+                new AttributeResource(myLibSearchViewStyle, "lib_value", "library.resource")));
 
     assertThat(styleData.getAttrValue(myAppSearchViewStyle).value).isEqualTo("lib_value");
     assertThat(styleData.getAttrValue(myLibSearchViewStyle).value).isEqualTo("lib_value");
@@ -37,7 +39,8 @@ public class StyleDataTest {
             "android",
             "Theme_Material",
             "Theme",
-            asList(new AttributeResource(androidSearchViewStyle, "android_value", "android")));
+            Collections.singletonList(
+                new AttributeResource(androidSearchViewStyle, "android_value", "android")));
 
     assertThat(styleData.getAttrValue(androidSearchViewStyle).value).isEqualTo("android_value");
 
@@ -70,7 +73,7 @@ public class StyleDataTest {
             "library.resource",
             "Theme_MyApp",
             "Theme_Material",
-            asList(
+            Collections.singletonList(
                 new AttributeResource(myLibSearchViewStyle, "\n lib_value ", "library.resource")));
 
     assertThat(styleData.getAttrValue(myAppSearchViewStyle).value).isEqualTo("\n lib_value ");

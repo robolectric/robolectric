@@ -17,7 +17,7 @@ public class StaxStyleLoader extends StaxLoader {
         "item",
         new NodeHandler() {
           private String attrName;
-          private StringBuilder buf = new StringBuilder();
+          private final StringBuilder buf = new StringBuilder();
 
           @Override
           public void onStart(XMLStreamReader xml, XmlContext xmlContext) {

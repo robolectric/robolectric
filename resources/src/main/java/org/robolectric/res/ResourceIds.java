@@ -20,7 +20,7 @@ public class ResourceIds {
     return resId & 0x0000FFFF;
   }
 
-  public static int makeIdentifer(int packageIdentifier, int typeIdentifier, int entryIdenifier) {
-    return packageIdentifier << 24 | typeIdentifier << 16 | entryIdenifier;
+  public static int makeIdentifier(int packageIdentifier, int typeIdentifier, int entryIdentifier) {
+    return packageIdentifier << 24 | typeIdentifier << 16 | entryIdentifier;
   }
 }
