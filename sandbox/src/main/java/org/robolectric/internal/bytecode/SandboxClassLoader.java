@@ -28,6 +28,10 @@ import org.robolectric.util.Util;
 public class SandboxClassLoader extends URLClassLoader {
   // The directory where instrumented class files will be dumped
   private static final String DUMP_CLASSES_PROPERTY = "robolectric.dumpClassesDirectory";
+
+  // Whether to log resources abd classes loaded from android-all jars.
+  private static final boolean LOG_RESOURCE_USAGE = false;
+
   private static final AtomicInteger DUMP_CLASSES_COUNTER = new AtomicInteger();
 
   private final InstrumentationConfiguration config;
@@ -103,18 +107,31 @@ public class SandboxClassLoader extends URLClassLoader {
   @Override
   public URL getResource(String name) {
     if (config.shouldAcquireResource(name)) {
-      return resourceProvider.getResource(name);
+      return getResourceUrl(name);
     }
     URL fromParent = super.getResource(name);
     if (fromParent != null) {
       return fromParent;
     }
-    return resourceProvider.getResource(name);
+    return getResourceUrl(name);
   }
 
-  private InputStream getClassBytesAsStreamPreferringLocalUrls(String resName) {
+  private URL getResourceUrl(String name) {
+    URL result = resourceProvider.getResource(name);
+    if (LOG_RESOURCE_USAGE && result != null) {
+      PerfStatsCollector.getInstance().incrementCount("SandboxClassLoader.getResource " + name);
+    }
+    return result;
+  }
+
+  private InputStream getClassBytesAsStreamPreferringLocalUrls(String className) {
+    String resName = className.replace('.', '/') + ".class";
     InputStream fromUrlsClassLoader = resourceProvider.getResourceAsStream(resName);
     if (fromUrlsClassLoader != null) {
+      if (LOG_RESOURCE_USAGE) {
+        PerfStatsCollector.getInstance()
+            .incrementCount("SandboxClassLoader.classResourceLoaded " + className);
+      }
       return fromUrlsClassLoader;
     }
     return super.getResourceAsStream(resName);
@@ -171,8 +188,7 @@ public class SandboxClassLoader extends URLClassLoader {
   }
 
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
-    String classFilename = className.replace('.', '/') + ".class";
-    try (InputStream classBytesStream = getClassBytesAsStreamPreferringLocalUrls(classFilename)) {
+    try (InputStream classBytesStream = getClassBytesAsStreamPreferringLocalUrls(className)) {
       if (classBytesStream == null) {
         throw new ClassNotFoundException(className);
       }
