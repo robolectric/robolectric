@@ -15,7 +15,9 @@ public class LocalControlledLooper implements ControlledLooper {
 
   @Override
   public void drainMainThreadUntilIdle() {
-    shadowMainLooper().idle();
+    if (shadowMainLooper().isPaused()) {
+      shadowMainLooper().idle();
+    }
   }
 
   @Override
