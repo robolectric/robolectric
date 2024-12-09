@@ -80,7 +80,7 @@ public class LoadedArsc {
     }
 
     String package_name;
-    int package_id = 0;
+    int package_id;
   }
 
   // TypeSpec is going to be immediately proceeded by
@@ -225,7 +225,6 @@ public class LoadedArsc {
     IdmapEntry_header idmap_header_;
     final List<ResTable_type> types_ = new ArrayList<>();
   }
-  ;
 
   //  }  // namespace
 
@@ -693,10 +692,6 @@ public class LoadedArsc {
             {
               ResTable_typeSpec type_spec =
                   new ResTable_typeSpec(child_chunk.myBuf(), child_chunk.myOffset());
-              if (type_spec == null) {
-                logError("RES_TABLE_TYPE_SPEC_TYPE too small.");
-                return emptyBraces();
-              }
 
               if (type_spec.id == 0) {
                 logError("RES_TABLE_TYPE_SPEC_TYPE has invalid ID 0.");
@@ -897,7 +892,7 @@ public class LoadedArsc {
 
       // Flatten and construct the TypeSpecs.
       for (Entry<Integer, TypeSpecPtrBuilder> entry : type_builder_map.entrySet()) {
-        byte type_idx = (byte) entry.getKey().byteValue();
+        byte type_idx = entry.getKey().byteValue();
         TypeSpec type_spec_ptr = entry.getValue().Build();
         if (type_spec_ptr == null) {
           logError("Too many type configurations, overflow detected.");
@@ -1055,9 +1050,6 @@ public class LoadedArsc {
 
             LoadedPackage loaded_package =
                 LoadedPackage.Load(child_chunk, loaded_idmap, system_, load_as_shared_library);
-            if (!isTruthy(loaded_package)) {
-              return false;
-            }
             packages_.add(loaded_package);
           }
           break;
@@ -1070,9 +1062,7 @@ public class LoadedArsc {
 
     if (iter.HadError()) {
       logError(iter.GetLastError());
-      if (iter.HadFatalError()) {
-        return false;
-      }
+      return !iter.HadFatalError();
     }
     return true;
   }

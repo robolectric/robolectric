@@ -1,6 +1,7 @@
 package org.robolectric.res.android;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.nio.file.Files.newOutputStream;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
@@ -61,7 +62,7 @@ public final class ZipFileROTest {
   public void open_emptyZip() throws Exception {
     // ensure ZipFileRO cam handle an empty zip file with no central directory
     File blob = File.createTempFile("prefix", "zip");
-    try (ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(blob))) {}
+    try (ZipOutputStream zip = new ZipOutputStream(newOutputStream(blob.toPath()))) {}
 
     ZipFileRO zipFile = ZipFileRO.open(blob.toString());
     assertThat(zipFile).isNotNull();

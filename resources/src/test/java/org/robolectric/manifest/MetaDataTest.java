@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.res.ResourceTable;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /** Tests for {@link MetaData} */
 @RunWith(JUnit4.class)
@@ -28,10 +27,10 @@ public class MetaDataTest {
   }
 
   @Test
-  public void testNonExistantResource_throwsResourceNotFoundException() throws Exception {
-    Element metaDataElement = createMetaDataNode("aName", "@xml/non_existant_resource");
+  public void testNonExistentResource_throwsResourceNotFoundException() {
+    Element metaDataElement = createMetaDataNode("aName", "@xml/non_existent_resource");
 
-    MetaData metaData = new MetaData(ImmutableList.<Node>of(metaDataElement));
+    MetaData metaData = new MetaData(ImmutableList.of(metaDataElement));
 
     assertThrows(RoboNotFoundException.class, () -> metaData.init(resourceProvider, "a.package"));
   }

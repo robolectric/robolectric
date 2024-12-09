@@ -2,7 +2,6 @@ package org.robolectric.res.android;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 // roughly transliterated from system/core/libutils/include/utils/SortedVector.h and
@@ -10,7 +9,7 @@ import java.util.List;
 public class SortedVector<T extends Comparable<T>> {
 
   // internal storage for the data. Re-sorted on insertion
-  private List<T> mStorage;
+  private final List<T> mStorage;
 
   SortedVector(int itemSize) {
     mStorage = new ArrayList<>(itemSize);
@@ -22,14 +21,7 @@ public class SortedVector<T extends Comparable<T>> {
 
   public void add(T info) {
     mStorage.add(info);
-    Collections.sort(
-        mStorage,
-        new Comparator<T>() {
-          @Override
-          public int compare(T t, T t1) {
-            return t.compareTo(t1);
-          }
-        });
+    Collections.sort(mStorage, Comparable::compareTo);
   }
 
   public int size() {

@@ -234,13 +234,12 @@ public class CppAssetManager {
     synchronized (mLock) {
       asset_path ap = new asset_path();
 
-      String8 realPath = path;
       if (kAppZipName != null) {
-        realPath.appendPath(kAppZipName);
+        path.appendPath(kAppZipName);
       }
-      ap.type = getFileType(realPath.string());
+      ap.type = getFileType(path.string());
       if (ap.type == FileType.kFileTypeRegular) {
-        ap.path = realPath;
+        ap.path = path;
       } else {
         ap.path = path;
         ap.type = getFileType(path.string());
@@ -324,7 +323,7 @@ public class CppAssetManager {
   //        // delete idmap;
   //
   //        if (overlayPath != packagePath) {
-  //          ALOGW("idmap file %s inconcistent: expected path %s does not match actual path %s\n",
+  //          ALOGW("idmap file %s inconsistent: expected path %s does not match actual path %s\n",
   //              idmapPath.string(), packagePath.string(), overlayPath.string());
   //          return false;
   //        }
@@ -820,8 +819,7 @@ public class CppAssetManager {
   }
 
   final ResTable getResources(boolean required) {
-    final ResTable rt = getResTable(required);
-    return rt;
+    return getResTable(required);
   }
 
   //  boolean isUpToDate()
@@ -942,9 +940,9 @@ public class CppAssetManager {
    * claims to be a ".gz" but isn't.
    */
   static Asset openAssetFromFileLocked(final String8 pathName, AccessMode mode) {
-    Asset pAsset = null;
+    Asset pAsset;
 
-    if (pathName.getPathExtension().toLowerCase().equals(".gz")) {
+    if (pathName.getPathExtension().equalsIgnoreCase(".gz")) {
       // printf("TRYING '%s'\n", (final char*) pathName);
       pAsset = Asset.createFromCompressedFile(pathName.string(), mode);
     } else {
@@ -963,7 +961,7 @@ public class CppAssetManager {
    */
   static Asset openAssetFromZipLocked(
       final ZipFileRO pZipFile, final ZipEntryRO entry, AccessMode mode, final String8 entryName) {
-    Asset pAsset = null;
+    Asset pAsset;
 
     // TODO: look for previously-created shared memory slice?
     final Ref<Short> method = new Ref<>((short) 0);
@@ -1030,7 +1028,7 @@ public class CppAssetManager {
        *
        * We start with Zip archives, then do loose files.
        */
-      pMergedInfo = new Ref<>(new SortedVector<AssetDir.FileInfo>());
+      pMergedInfo = new Ref<>(new SortedVector<>());
 
       int i = mAssetPaths.size();
       while (i > 0) {
@@ -1168,7 +1166,7 @@ public class CppAssetManager {
           // printf("+++ no match on '%s'\n", (final char*) match);
         }
 
-        ALOGD("HEY: size=%d removing %d\n", (int) pContents.size(), i);
+        ALOGD("HEY: size=%d removing %d\n", pContents.size(), i);
         pContents.removeAt(i);
         i--; // adjust "for" loop
         count--; //  and loop limit
@@ -1611,7 +1609,7 @@ public class CppAssetManager {
     @Override
     public String toString() {
       String id = Integer.toString(System.identityHashCode(this), 16);
-      return "SharedZip{mPath='" + mPath + "\', id=0x" + id + "}";
+      return "SharedZip{mPath='" + mPath + "', id=0x" + id + "}";
     }
   }
 
@@ -1773,8 +1771,6 @@ public class CppAssetManager {
         Path path;
         switch (assetPath.type) {
           case kFileTypeDirectory:
-            path = Fs.fromUrl(assetPath.path.string());
-            break;
           case kFileTypeRegular:
             path = Fs.fromUrl(assetPath.path.string());
             break;
