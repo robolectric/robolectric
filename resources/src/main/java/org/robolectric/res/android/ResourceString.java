@@ -137,7 +137,7 @@ public final class ResourceString {
 
   /** Builds a string from a null-terminated char data. */
   public static String buildString(char[] data) {
-    int count = 0;
+    int count;
     for (count = 0; count < data.length; count++) {
       if (data[count] == 0) {
         break;

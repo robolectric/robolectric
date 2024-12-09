@@ -22,14 +22,14 @@ import java.util.Map;
  */
 class ResourceRemapper {
 
-  private BiMap<String, Integer> resIds = HashBiMap.create();
-  private ResourceIdGenerator resourceIdGenerator = new ResourceIdGenerator(0x7F);
+  private final BiMap<String, Integer> resIds = HashBiMap.create();
+  private final ResourceIdGenerator resourceIdGenerator = new ResourceIdGenerator(0x7F);
 
   /**
    * @param primaryRClass - An R class (usually the applications) that can be assumed to have a
-   *     complete set of IDs. If this is provided then use the values from this class for
-   *     re-writting all values in follow up calls to {@link #remapRClass(Class)}. If it is not
-   *     provided the ResourceRemapper will generate its own unique non-conflicting IDs.
+   *     complete set of IDs. If this is provided then use the values from this class for re-writing
+   *     all values in follow up calls to {@link #remapRClass(Class)}. If it is not provided the
+   *     ResourceRemapper will generate its own unique non-conflicting IDs.
    */
   ResourceRemapper(Class<?> primaryRClass) {
     if (primaryRClass != null) {

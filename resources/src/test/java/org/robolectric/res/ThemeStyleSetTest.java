@@ -14,12 +14,12 @@ public class ThemeStyleSetTest {
   private ThemeStyleSet themeStyleSet;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     themeStyleSet = new ThemeStyleSet();
   }
 
   @Test
-  public void shouldFindAttributesFromAnAppliedStyle() throws Exception {
+  public void shouldFindAttributesFromAnAppliedStyle() {
     themeStyleSet = new ThemeStyleSet();
     themeStyleSet.apply(
         createStyle(
@@ -36,7 +36,7 @@ public class ThemeStyleSetTest {
   }
 
   @Test
-  public void shouldFindAttributesFromAnAppliedFromForcedStyle() throws Exception {
+  public void shouldFindAttributesFromAnAppliedFromForcedStyle() {
     themeStyleSet.apply(
         createStyle(
             "style1",
