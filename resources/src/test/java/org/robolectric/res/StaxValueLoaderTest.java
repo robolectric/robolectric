@@ -23,7 +23,7 @@ public class StaxValueLoaderTest {
   private StaxDocumentLoader staxDocumentLoader;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     resourceTable = new PackageResourceTable("pkg");
 
     topLevelNodeHandler = new NodeHandler();

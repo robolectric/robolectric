@@ -151,12 +151,12 @@ public class AndroidManifest implements UsesSdk {
     return themeRef;
   }
 
-  public String getRClassName() throws Exception {
+  public String getRClassName() {
     parseAndroidManifest();
     return rClassName;
   }
 
-  public Class getRClass() {
+  public Class<?> getRClass() {
     try {
       String rClassName = getRClassName();
       return Class.forName(rClassName);
@@ -249,7 +249,7 @@ public class AndroidManifest implements UsesSdk {
                 + "testOptions.unitTests.includeAndroidResources = true to your build.gradle");
       }
 
-      if (packageName == null || packageName.equals("")) {
+      if (packageName == null || packageName.isEmpty()) {
         packageName = "org.robolectric.default";
       }
 
@@ -435,9 +435,6 @@ public class AndroidManifest implements UsesSdk {
     ActivityData targetActivity = null;
     if (isAlias) {
       String targetName = resolveClassRef(activityAttrs.get(ActivityData.getTargetAttr("android")));
-      if (activityName == null) {
-        return;
-      }
       // The target activity should have been parsed already so if it exists we should find it in
       // activityDatas.
       targetActivity = activityDatas.get(targetName);
@@ -665,7 +662,7 @@ public class AndroidManifest implements UsesSdk {
   public Map<String, Object> getApplicationMetaData() {
     parseAndroidManifest();
     if (applicationMetaData == null) {
-      applicationMetaData = new MetaData(Collections.<Node>emptyList());
+      applicationMetaData = new MetaData(Collections.emptyList());
     }
     return applicationMetaData.getValueMap();
   }

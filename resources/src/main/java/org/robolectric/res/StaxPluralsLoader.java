@@ -20,20 +20,18 @@ public class StaxPluralsLoader extends StaxLoader {
           private final StringBuilder buf = new StringBuilder();
 
           @Override
-          public void onStart(XMLStreamReader xml, XmlContext xmlContext)
-              throws XMLStreamException {
+          public void onStart(XMLStreamReader xml, XmlContext xmlContext) {
             quantity = xml.getAttributeValue(null, "quantity");
             buf.setLength(0);
           }
 
           @Override
-          public void onCharacters(XMLStreamReader xml, XmlContext xmlContext)
-              throws XMLStreamException {
+          public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) {
             buf.append(xml.getText());
           }
 
           @Override
-          public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+          public void onEnd(XMLStreamReader xml, XmlContext xmlContext) {
             plurals.add(new Plural(quantity, buf.toString()));
           }
 
@@ -50,7 +48,7 @@ public class StaxPluralsLoader extends StaxLoader {
   }
 
   @Override
-  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) {
     resourceTable.addResource(
         attrType, name, new PluralRules(new ArrayList<>(plurals), resType, xmlContext));
     plurals.clear();

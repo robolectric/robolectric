@@ -16,12 +16,8 @@ public class StaxAttrLoader extends StaxLoader {
     addHandler(
         "*",
         new NodeHandler() {
-          private String value;
-          private String name;
-
           @Override
-          public void onStart(XMLStreamReader xml, XmlContext xmlContext)
-              throws XMLStreamException {
+          public void onStart(XMLStreamReader xml, XmlContext xmlContext) {
             String type = xml.getLocalName();
             if (pairs.isEmpty()) {
               if (format == null) {
@@ -30,17 +26,16 @@ public class StaxAttrLoader extends StaxLoader {
                 format = format + "|" + type;
               }
             }
-            name = xml.getAttributeValue(null, "name");
-            value = xml.getAttributeValue(null, "value");
+            String name = xml.getAttributeValue(null, "name");
+            String value = xml.getAttributeValue(null, "value");
             pairs.add(new AttrData.Pair(name, value));
           }
 
           @Override
-          public void onCharacters(XMLStreamReader xml, XmlContext xmlContext)
-              throws XMLStreamException {}
+          public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) {}
 
           @Override
-          public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {}
+          public void onEnd(XMLStreamReader xml, XmlContext xmlContext) {}
         });
   }
 
@@ -51,7 +46,7 @@ public class StaxAttrLoader extends StaxLoader {
   }
 
   @Override
-  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) {
     AttrData attrData = new AttrData(name, format, new ArrayList<>(pairs));
     pairs.clear();
 

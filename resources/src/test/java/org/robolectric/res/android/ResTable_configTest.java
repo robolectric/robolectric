@@ -10,7 +10,7 @@ import org.junit.runners.JUnit4;
 public class ResTable_configTest {
 
   @Test
-  public void testLocale() throws Exception {
+  public void testLocale() {
     ResTable_config resTable_config = new ResTable_config();
     resTable_config.language[0] = 'e';
     resTable_config.language[1] = 'n';

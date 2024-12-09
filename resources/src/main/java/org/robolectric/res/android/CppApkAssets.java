@@ -252,10 +252,9 @@ public class CppApkAssets {
     CppApkAssets loaded_apk = new CppApkAssets(unmanaged_handle.get(), path);
 
     // Find the resource table.
-    String entry_name = kResourcesArsc;
     Ref<ZipEntry> entry = new Ref<>(null);
     // result = FindEntry(loaded_apk.zip_handle_.get(), entry_name, &entry);
-    result = ZipFileRO.FindEntry(loaded_apk.zip_handle_, entry_name, entry);
+    result = ZipFileRO.FindEntry(loaded_apk.zip_handle_, kResourcesArsc, entry);
     if (result != 0) {
       // There is no resources.arsc, so create an empty LoadedArsc and return.
       loaded_apk.loaded_arsc_ = LoadedArsc.CreateEmpty();
@@ -284,10 +283,6 @@ public class CppApkAssets {
                 .order(ByteOrder.LITTLE_ENDIAN),
             0 /*(int) loaded_apk.resources_asset_.getLength()*/);
     loaded_apk.loaded_arsc_ = LoadedArsc.Load(data, loaded_idmap, system, load_as_shared_library);
-    if (loaded_apk.loaded_arsc_ == null) {
-      System.err.println("Failed to load '" + kResourcesArsc + "' in APK '" + path + "'.");
-      return null;
-    }
 
     // Need to force a move for mingw32.
     return loaded_apk;
@@ -308,9 +303,8 @@ public class CppApkAssets {
       return null;
     }
 
-    String name = path;
     ZipEntryRO entry;
-    entry = zipFileRO.findEntryByName(name);
+    entry = zipFileRO.findEntryByName(path);
     // int result = FindEntry(zip_handle_.get(), name, &entry);
     // if (result != 0) {
     //   LOG(ERROR) + "No entry '" + path + "' found in APK '" + path_ + "'";

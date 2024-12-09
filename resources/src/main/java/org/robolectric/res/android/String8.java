@@ -11,7 +11,7 @@ import org.robolectric.res.Fs;
 @SuppressWarnings("NewApi")
 public class String8 {
 
-  private StringBuilder mString;
+  private final StringBuilder mString;
 
   public String8() {
     this("");
@@ -382,7 +382,7 @@ public class String8 {
   }
 
   public String8 appendPath(String name) {
-    if (name.length() == 0) {
+    if (name.isEmpty()) {
       // nothing to do
       return this;
     }
@@ -431,7 +431,7 @@ public class String8 {
     String8 string8 = (String8) o;
 
     return mString != null
-        ? mString.toString().equals(string8.mString.toString())
+        ? mString.toString().contentEquals(string8.mString)
         : string8.mString == null;
   }
 
