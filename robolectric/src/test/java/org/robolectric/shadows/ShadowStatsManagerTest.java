@@ -2,7 +2,9 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.PendingIntent;
 import android.app.StatsManager;
+import android.content.Intent;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import org.junit.Test;
@@ -129,5 +131,61 @@ public final class ShadowStatsManagerTest {
     ShadowStatsManager.reset();
 
     assertThat(ShadowStatsManager.getConfigData(config1Id)).isEqualTo(new byte[] {});
+  }
+
+  @Test
+  public void reset_clearsBroadcastSubscriberMap_mapIsEmpty() throws Exception {
+    StatsManager statsManager =
+        ApplicationProvider.getApplicationContext().getSystemService(StatsManager.class);
+    long configId = 1L;
+    long subscriberId = 1L;
+    PendingIntent pendingIntent =
+        PendingIntent.getBroadcast(
+            ApplicationProvider.getApplicationContext(),
+            /* requestCode= */ 0,
+            new Intent("action"),
+            /* flags= */ 0);
+
+    statsManager.setBroadcastSubscriber(pendingIntent, configId, subscriberId);
+
+    ShadowStatsManager.reset();
+
+    assertThat(ShadowStatsManager.getBroadcastSubscriberMap()).isEmpty();
+  }
+
+  @Test
+  public void setBroadcastSubscriber_pendintIntentNotNull_addsToBroadcastSubscriberMap()
+      throws Exception {
+    StatsManager statsManager =
+        ApplicationProvider.getApplicationContext().getSystemService(StatsManager.class);
+    long configId = 1L;
+    long subscriberId = 1L;
+    PendingIntent pendingIntent =
+        PendingIntent.getBroadcast(
+            ApplicationProvider.getApplicationContext(),
+            /* requestCode= */ 0,
+            new Intent("action"),
+            /* flags= */ 0);
+
+    statsManager.setBroadcastSubscriber(pendingIntent, configId, subscriberId);
+
+    ShadowStatsManager.BroadcastSubscriberKey key =
+        ShadowStatsManager.BroadcastSubscriberKey.create(configId, subscriberId);
+    assertThat(ShadowStatsManager.getBroadcastSubscriberMap()).containsExactly(key, pendingIntent);
+  }
+
+  @Test
+  public void setBroadcastSubscriber_pendintIntentIsNull_removesFromBroadcastSubscriberMap()
+      throws Exception {
+    StatsManager statsManager =
+        ApplicationProvider.getApplicationContext().getSystemService(StatsManager.class);
+    long configId = 1L;
+    long subscriberId = 1L;
+
+    statsManager.setBroadcastSubscriber(null, configId, subscriberId);
+
+    ShadowStatsManager.BroadcastSubscriberKey key =
+        ShadowStatsManager.BroadcastSubscriberKey.create(configId, subscriberId);
+    assertThat(ShadowStatsManager.getBroadcastSubscriberMap().get(key)).isNull();
   }
 }
