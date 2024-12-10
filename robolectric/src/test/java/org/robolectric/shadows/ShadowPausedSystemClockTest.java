@@ -186,7 +186,7 @@ public class ShadowPausedSystemClockTest {
 
   @Test
   public void simulateDeepSleep_shouldOnlyAdvanceElapsedRealtime() {
-    SystemClock.setCurrentTimeMillis(1000);
+    ShadowSystemClock.advanceBy(1000 - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
 
     ShadowPausedSystemClock.simulateDeepSleep(Duration.ofMillis(100));
 
@@ -197,13 +197,13 @@ public class ShadowPausedSystemClockTest {
 
   @Test
   public void testElapsedRealtime() {
-    SystemClock.setCurrentTimeMillis(1000);
+    ShadowSystemClock.advanceBy(1000 - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
     assertThat(SystemClock.elapsedRealtime()).isEqualTo(1000);
   }
 
   @Test
   public void testElapsedRealtimeNanos() {
-    SystemClock.setCurrentTimeMillis(1000);
+    ShadowSystemClock.advanceBy(1000 - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
     assertThat(SystemClock.elapsedRealtimeNanos()).isEqualTo(1000000000);
   }
 
@@ -261,5 +261,12 @@ public class ShadowPausedSystemClockTest {
     } catch (DateTimeException e) {
       // pass
     }
+  }
+
+  @Test
+  public void advanceBy_shouldIgnoreNegativeTime() {
+    long currentTime = SystemClock.uptimeMillis();
+    ShadowPausedSystemClock.advanceBy(Duration.ofMillis(-1));
+    assertThat(SystemClock.uptimeMillis()).isEqualTo(currentTime);
   }
 }
