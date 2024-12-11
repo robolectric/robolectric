@@ -316,6 +316,7 @@ public final class ShadowOsConstants {
     initConstant("PR_SET_DUMPABLE", 0x0000004);
     initConstant("PR_SET_NO_NEW_PRIVS", 0x0000026);
     initConstant("RLIMIT_NOFILE", 0x0000007);
+    initConstant("RLIMIT_RTPRIO", 0x000000e);
     initConstant("RTMGRP_IPV4_IFADDR", 0x0000010);
     initConstant("RTMGRP_IPV4_MROUTE", 0x0000020);
     initConstant("RTMGRP_IPV4_ROUTE", 0x0000040);

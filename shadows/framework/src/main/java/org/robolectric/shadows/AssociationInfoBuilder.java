@@ -5,10 +5,12 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import android.companion.AssociatedDevice;
 import android.companion.AssociationInfo;
 import android.net.MacAddress;
+import com.google.common.base.Preconditions;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.versioning.AndroidVersions.U;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Builder for {@link AssociationInfo}. */
 public class AssociationInfoBuilder {
@@ -52,6 +54,8 @@ public class AssociationInfoBuilder {
   }
 
   public AssociationInfoBuilder setTag(String tag) {
+    Preconditions.checkState(
+        RuntimeEnvironment.getApiLevel() <= V.SDK_INT, "tag was removed in post-V SDKs");
     this.tag = tag;
     return this;
   }
@@ -144,19 +148,23 @@ public class AssociationInfoBuilder {
               ClassParameter.from(int.class, systemDataSyncFlags));
         } else {
         // delegate to platform builder
-        return new AssociationInfo.Builder(id, userId, packageName)
-            .setTag(tag)
-            .setDeviceMacAddress(macAddress)
-            .setDisplayName(displayName)
-            .setDeviceProfile(deviceProfile)
-            .setAssociatedDevice((AssociatedDevice) associatedDevice)
-            .setSelfManaged(selfManaged)
-            .setNotifyOnDeviceNearby(notifyOnDeviceNearby)
-            .setTimeApproved(approvedMs)
-            .setRevoked(revoked)
-            .setLastTimeConnected(lastTimeConnectedMs)
-            .setSystemDataSyncFlags(systemDataSyncFlags)
-            .build();
+        AssociationInfo.Builder builder =
+            new AssociationInfo.Builder(id, userId, packageName)
+                .setDeviceMacAddress(macAddress)
+                .setDisplayName(displayName)
+                .setDeviceProfile(deviceProfile)
+                .setAssociatedDevice((AssociatedDevice) associatedDevice)
+                .setSelfManaged(selfManaged)
+                .setNotifyOnDeviceNearby(notifyOnDeviceNearby)
+                .setTimeApproved(approvedMs)
+                .setRevoked(revoked)
+                .setLastTimeConnected(lastTimeConnectedMs)
+                .setSystemDataSyncFlags(systemDataSyncFlags);
+        // tag was removed in Baklava
+        if (tag != null) {
+          builder.setTag(tag);
+        }
+        return builder.build();
       }
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);

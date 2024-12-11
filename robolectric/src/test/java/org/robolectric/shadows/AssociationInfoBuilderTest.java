@@ -44,7 +44,6 @@ public final class AssociationInfoBuilderTest {
             .setId(ID)
             .setUserId(USER_ID)
             .setPackageName(PACKAGE_NAME)
-            .setTag(TAG_NAME)
             .setDeviceMacAddress(DEVICE_MAC_ADDRESS)
             .setDisplayName(DISPLAY_NAME)
             .setAssociatedDevice(associatedDeviceValue)
@@ -75,11 +74,6 @@ public final class AssociationInfoBuilderTest {
       int systemDataSyncFlags =
           ReflectionHelpers.callInstanceMethod(info, "getSystemDataSyncFlags");
       assertThat(systemDataSyncFlags).isEqualTo(SYSTEM_DATA_SYNC_FALGS);
-    }
-
-    if (ReflectionHelpers.hasField(AssociationInfo.class, "mTag")) {
-      String tag = ReflectionHelpers.callInstanceMethod(info, "getTag");
-      assertThat(tag).isEqualTo(TAG_NAME);
     }
 
     if (ReflectionHelpers.hasField(AssociationInfo.class, "mRevoked")) {
