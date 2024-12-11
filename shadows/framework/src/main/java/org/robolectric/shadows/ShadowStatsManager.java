@@ -97,9 +97,10 @@ public class ShadowStatsManager {
     }
   }
 
+  /** A key used to store the configKey and subscriberId in the broadcastSubscriberMap. */
   @AutoValue
-  abstract static class BroadcastSubscriberKey {
-    static BroadcastSubscriberKey create(long key, long id) {
+  public abstract static class BroadcastSubscriberKey {
+    public static BroadcastSubscriberKey create(long key, long id) {
       return new AutoValue_ShadowStatsManager_BroadcastSubscriberKey(key, id);
     }
 
