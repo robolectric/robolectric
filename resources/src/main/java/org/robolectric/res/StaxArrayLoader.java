@@ -21,19 +21,17 @@ public class StaxArrayLoader extends StaxLoader {
         "item",
         new NodeHandler() {
           @Override
-          public void onStart(XMLStreamReader xml, XmlContext xmlContext)
-              throws XMLStreamException {
+          public void onStart(XMLStreamReader xml, XmlContext xmlContext) {
             buf.setLength(0);
           }
 
           @Override
-          public void onCharacters(XMLStreamReader xml, XmlContext xmlContext)
-              throws XMLStreamException {
+          public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) {
             buf.append(xml.getText());
           }
 
           @Override
-          public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+          public void onEnd(XMLStreamReader xml, XmlContext xmlContext) {
             ResType resType =
                 scalarResType == null ? ResType.inferType(buf.toString()) : scalarResType;
             items.add(new TypedResource<>(buf.toString(), resType, xmlContext));
@@ -53,7 +51,7 @@ public class StaxArrayLoader extends StaxLoader {
   }
 
   @Override
-  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) {
     resourceTable.addResource(attrType, name, new TypedResource<>(items, resType, xmlContext));
   }
 }

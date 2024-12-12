@@ -134,9 +134,7 @@ public class ResName {
 
     if (!packageName.equals(resName.packageName)) return false;
     if (!type.equals(resName.type)) return false;
-    if (!name.equals(resName.name)) return false;
-
-    return true;
+    return name.equals(resName.name);
   }
 
   @Override

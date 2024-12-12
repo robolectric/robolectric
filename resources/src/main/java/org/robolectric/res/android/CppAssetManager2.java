@@ -104,7 +104,6 @@ public class CppAssetManager2 {
         return "Entry{" + "key=" + key + ", value=" + value + '}';
       }
     }
-    ;
 
     // Denotes the configuration axis that this bag varies with.
     // If a configuration changes with respect to one of these axis,
@@ -118,7 +117,6 @@ public class CppAssetManager2 {
     // of the Entry structs that follow this structure and avoids a bunch of casts.
     public Entry[] entries;
   }
-  ;
 
   // AssetManager2 is the main entry point for accessing assets and resources.
   // AssetManager2 provides caching of resources retrieved via the underlying ApkAssets.
@@ -136,7 +134,6 @@ public class CppAssetManager2 {
     // public String entry16 = null;
     // int entry_len = 0;
   }
-  ;
 
   public CppAssetManager2() {}
 
@@ -291,9 +288,7 @@ public class CppAssetManager2 {
   void BuildDynamicRefTable() {
     package_groups_.clear();
     //    package_ids_.fill(0xff);
-    for (int i = 0; i < package_ids_.length; i++) {
-      package_ids_[i] = (byte) 0xff;
-    }
+    Arrays.fill(package_ids_, (byte) 0xff);
 
     // 0x01 is reserved for the android package.
     int next_package_id = 0x02;
@@ -640,7 +635,7 @@ public class CppAssetManager2 {
     }
 
     if (!is_valid_resid(resid)) {
-      System.err.println(String.format("Invalid ID 0x%08x.", resid));
+      System.err.printf("Invalid ID 0x%08x.%n", resid);
       return K_INVALID_COOKIE;
     }
 
@@ -650,8 +645,7 @@ public class CppAssetManager2 {
 
     final byte package_idx = package_ids_[package_id];
     if (package_idx == (byte) 0xff) {
-      System.err.println(
-          String.format("No package ID %02x found for ID 0x%08x.", package_id, resid));
+      System.err.printf("No package ID %02x found for ID 0x%08x.%n", package_id, resid);
       return K_INVALID_COOKIE;
     }
 
@@ -685,18 +679,15 @@ public class CppAssetManager2 {
         continue;
       }
 
-      int local_entry_idx = entry_idx;
-
       // If there is an IDMAP supplied with this package, translate the entry ID.
       if (type_spec.idmap_entries != null) {
-        if (!LoadedIdmap.Lookup(
-            type_spec.idmap_entries, local_entry_idx, new Ref<>(local_entry_idx))) {
+        if (!LoadedIdmap.Lookup(type_spec.idmap_entries, entry_idx, new Ref<>(entry_idx))) {
           // There is no mapping, so the resource is not meant to be in this overlay package.
           continue;
         }
       }
 
-      type_flags |= type_spec.GetFlagsForEntryIndex(local_entry_idx);
+      type_flags |= type_spec.GetFlagsForEntryIndex(entry_idx);
 
       // If the package is an overlay, then even configurations that are the same MUST be chosen.
       boolean package_is_overlay = loaded_package.IsOverlay();
@@ -715,7 +706,7 @@ public class CppAssetManager2 {
             // The configuration matches and is better than the previous selection.
             // Find the entry value if it exists for this configuration.
             ResTable_type type_chunk = filtered_group.types.get(i);
-            int offset = LoadedPackage.GetEntryOffset(type_chunk, local_entry_idx);
+            int offset = LoadedPackage.GetEntryOffset(type_chunk, entry_idx);
             if (offset == ResTable_type.NO_ENTRY) {
               continue;
             }
@@ -743,7 +734,7 @@ public class CppAssetManager2 {
                 || (package_is_overlay && this_config.compare(best_config) == 0)) {
               // The configuration matches and is better than the previous selection.
               // Find the entry value if it exists for this configuration.
-              int offset = LoadedPackage.GetEntryOffset(type, local_entry_idx);
+              int offset = LoadedPackage.GetEntryOffset(type, entry_idx);
               if (offset == ResTable_type.NO_ENTRY) {
                 continue;
               }
@@ -873,7 +864,7 @@ public class CppAssetManager2 {
 
     if (isTruthy(dtohl(entry.get().entry.flags) & ResTable_entry.FLAG_COMPLEX)) {
       if (!may_be_bag) {
-        System.err.println(String.format("Resource %08x is a complex map type.", resid));
+        System.err.printf("Resource %08x is a complex map type.%n", resid);
         return K_INVALID_COOKIE;
       }
 
@@ -1030,8 +1021,8 @@ public class CppAssetManager2 {
           // Attributes, arrays, etc don't have a resource id as the name. They specify
           // other data, which would be wrong to change via a lookup.
           if (entry.dynamic_ref_table.lookupResourceId(new_key) != NO_ERROR) {
-            System.err.println(
-                String.format("Failed to resolve key 0x%08x in bag 0x%08x.", new_key.get(), resid));
+            System.err.printf(
+                "Failed to resolve key 0x%08x in bag 0x%08x.%n", new_key.get(), resid);
             return null;
           }
         }
@@ -1046,10 +1037,9 @@ public class CppAssetManager2 {
         int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
         new_entry_.value = valueRef.get();
         if (err != NO_ERROR) {
-          System.err.println(
-              String.format(
-                  "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.",
-                  new_entry_.value.dataType, new_entry_.value.data, new_key.get()));
+          System.err.printf(
+              "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.%n",
+              new_entry_.value.dataType, new_entry_.value.data, new_key.get());
           return null;
         }
         // ++new_entry;
@@ -1073,8 +1063,7 @@ public class CppAssetManager2 {
     final ResolvedBag parent_bag = GetBag(parent_resid.get(), child_resids);
     if (parent_bag == null) {
       // Failed to get the parent that should exist.
-      System.err.println(
-          String.format("Failed to find parent 0x%08x of bag 0x%08x.", parent_resid.get(), resid));
+      System.err.printf("Failed to find parent 0x%08x of bag 0x%08x.%n", parent_resid.get(), resid);
       return null;
     }
 
@@ -1101,9 +1090,8 @@ public class CppAssetManager2 {
       final Ref<Integer> child_keyRef = new Ref<>(dtohl(map_entry.name.ident));
       if (!is_internal_resid(child_keyRef.get())) {
         if (entry.dynamic_ref_table.lookupResourceId(child_keyRef) != NO_ERROR) {
-          System.err.println(
-              String.format(
-                  "Failed to resolve key 0x%08x in bag 0x%08x.", child_keyRef.get(), resid));
+          System.err.printf(
+              "Failed to resolve key 0x%08x in bag 0x%08x.%n", child_keyRef.get(), resid);
           return null;
         }
       }
@@ -1128,10 +1116,9 @@ public class CppAssetManager2 {
         int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
         new_entry_.value = valueRef.get();
         if (err != NO_ERROR) {
-          System.err.println(
-              String.format(
-                  "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.",
-                  new_entry_.value.dataType, new_entry_.value.data, child_key));
+          System.err.printf(
+              "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.%n",
+              new_entry_.value.dataType, new_entry_.value.data, child_key);
           return null;
         }
 
@@ -1160,8 +1147,7 @@ public class CppAssetManager2 {
       final Ref<Integer> new_key = new Ref<>(map_entry.name.ident);
       if (!is_internal_resid(new_key.get())) {
         if (entry.dynamic_ref_table.lookupResourceId(new_key) != NO_ERROR) {
-          System.err.println(
-              String.format("Failed to resolve key 0x%08x in bag 0x%08x.", new_key.get(), resid));
+          System.err.printf("Failed to resolve key 0x%08x in bag 0x%08x.%n", new_key.get(), resid);
           return null;
         }
       }
@@ -1176,10 +1162,9 @@ public class CppAssetManager2 {
       int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
       new_entry_.value = valueRef.get();
       if (err != NO_ERROR) {
-        System.err.println(
-            String.format(
-                "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.",
-                new_entry_.value.dataType, new_entry_.value.data, new_key.get()));
+        System.err.printf(
+            "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.%n",
+            new_entry_.value.dataType, new_entry_.value.data, new_key.get());
         return null;
       }
       // ++map_entry;
@@ -1410,25 +1395,21 @@ public class CppAssetManager2 {
     private final CppAssetManager2 asset_manager_;
     private int type_spec_flags_ = 0;
     //  std.array<std.unique_ptr<Package>, kPackageCount> packages_;
-    private ThemePackage[] packages_ = new ThemePackage[kPackageCount];
+    private final ThemePackage[] packages_ = new ThemePackage[kPackageCount];
 
     public Theme(CppAssetManager2 cppAssetManager2) {
       asset_manager_ = cppAssetManager2;
     }
 
     private static class ThemeEntry {
-      static final int SIZEOF = 8 + Res_value.SIZEOF;
-
       ApkAssetsCookie cookie;
       int type_spec_flags;
       Res_value value;
     }
 
     private static class ThemeType {
-      static final int SIZEOF_WITHOUT_ENTRIES = 8;
-
       int entry_count;
-      ThemeEntry entries[];
+      ThemeEntry[] entries;
     }
 
     //  static final int kPackageCount = std.numeric_limits<byte>.max() + 1;

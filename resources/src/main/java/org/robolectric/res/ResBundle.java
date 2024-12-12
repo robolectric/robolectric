@@ -29,7 +29,7 @@ public class ResBundle {
 
     public TypedResource pick(ResName resName, ResTable_config toMatch) {
       List<TypedResource> values = map.get(resName);
-      if (values == null || values.size() == 0) return null;
+      if (values == null || values.isEmpty()) return null;
 
       TypedResource bestMatchSoFar = null;
       for (TypedResource candidate : values) {

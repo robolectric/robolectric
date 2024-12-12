@@ -72,7 +72,7 @@ public class ActivityData {
     return getBooleanAttr(withXMLNS(ALWAYS_RETAIN_TASK_STATE), false);
   }
 
-  public boolean isClearTaskOnLaungh() {
+  public boolean isClearTaskOnLaunch() {
     return getBooleanAttr(withXMLNS(CLEAR_TASK_ON_LAUNCH), false);
   }
 

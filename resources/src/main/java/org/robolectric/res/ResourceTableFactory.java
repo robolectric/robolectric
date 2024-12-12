@@ -56,7 +56,7 @@ public class ResourceTableFactory {
   }
 
   private void addRClassValues(PackageResourceTable resourceTable, Class<?> rClass) {
-    for (Class innerClass : rClass.getClasses()) {
+    for (Class<?> innerClass : rClass.getClasses()) {
       String resourceType = innerClass.getSimpleName();
       if (!resourceType.equals("styleable")) {
         for (Field field : innerClass.getDeclaredFields()) {
@@ -88,7 +88,7 @@ public class ResourceTableFactory {
    * field.
    */
   private void addMissingStyleableAttributes(PackageResourceTable resourceTable, Class<?> rClass) {
-    for (Class innerClass : rClass.getClasses()) {
+    for (Class<?> innerClass : rClass.getClasses()) {
       if (innerClass.getSimpleName().equals("styleable")) {
         String styleableName = null; // Current styleable name
         int[] styleableArray = null; // Current styleable value array or references
