@@ -108,6 +108,7 @@ androidx-core = "1.15.0"
 androidx-fragment = "1.8.5"
 androidx-window = "1.3.0"
 androidx-room = "2.6.1"
+androidx-recyclerview = "1.3.2"
 
 # https://github.com/android/android-test/tags
 androidx-test-core = "1.6.1"
@@ -214,6 +215,7 @@ androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", ver
 androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "androidx-room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidx-room" }
+androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "androidx-recyclerview" }
 
 androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }
 androidx-test-monitor = { module = "androidx.test:monitor", version.ref = "androidx-test-monitor" }
