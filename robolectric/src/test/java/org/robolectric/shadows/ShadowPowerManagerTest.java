@@ -769,4 +769,14 @@ public class ShadowPowerManagerTest {
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
+
+  @Test
+  public void toString_shouldWork() {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "TAG");
+    assertThat(lock.toString()).contains("held=false");
+    lock.acquire();
+    assertThat(lock.toString()).contains("held=true");
+    lock.release();
+    assertThat(lock.toString()).contains("held=false");
+  }
 }

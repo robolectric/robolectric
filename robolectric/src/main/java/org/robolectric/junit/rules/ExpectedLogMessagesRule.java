@@ -76,6 +76,10 @@ public final class ExpectedLogMessagesRule implements TestRule {
       ImmutableSet.of(
           "Typeface",
           "RingtoneManager",
+          // When Robolectric's shadow of PowerManager.WakeLock.acquire() was updated to set some
+          // bits on the underlying WakeLock object, it started logging a wtf when a WakeLock was
+          // still held when it was finalized.
+          "PowerManager",
           // Fails when attempting to preload classes by name
           "PhonePolicy",
           // Ignore MultiDex log messages
