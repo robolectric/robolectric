@@ -16,6 +16,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,15 +34,21 @@ public class ShadowWifiP2pManagerTest {
   private ShadowWifiP2pManager shadowManager;
   @Mock private WifiP2pManager.ChannelListener mockListener;
   private WifiP2pManager.Channel channel;
+  private AutoCloseable mock;
 
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
+    mock = MockitoAnnotations.openMocks(this);
     context = ApplicationProvider.getApplicationContext();
     manager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
     shadowManager = shadowOf(manager);
     channel = manager.initialize(context, context.getMainLooper(), mockListener);
     assertThat(channel).isNotNull();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    mock.close();
   }
 
   @Test

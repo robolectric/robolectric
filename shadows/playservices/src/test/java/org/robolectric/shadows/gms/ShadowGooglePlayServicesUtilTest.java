@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.content.Context;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,9 +34,16 @@ public class ShadowGooglePlayServicesUtilTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
 
+  private AutoCloseable mock;
+
   @Before
   public void setup() {
-    MockitoAnnotations.initMocks(this);
+    mock = MockitoAnnotations.openMocks(this);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    mock.close();
   }
 
   @Test

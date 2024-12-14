@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import javax.annotation.Nullable;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,13 +34,15 @@ public class ShadowUsbDeviceConnectionTest {
 
   private UsbManager usbManager;
 
+  private AutoCloseable mock;
+
   @Mock private UsbDevice usbDevice;
   @Mock private UsbConfiguration usbConfiguration;
   @Mock private UsbInterface usbInterface;
 
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
+    mock = MockitoAnnotations.openMocks(this);
     usbManager =
         (UsbManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.USB_SERVICE);
@@ -49,6 +52,11 @@ public class ShadowUsbDeviceConnectionTest {
     when(usbDevice.getConfiguration(0)).thenReturn(usbConfiguration);
     when(usbConfiguration.getInterfaceCount()).thenReturn(1);
     when(usbConfiguration.getInterface(0)).thenReturn(usbInterface);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    mock.close();
   }
 
   @Test

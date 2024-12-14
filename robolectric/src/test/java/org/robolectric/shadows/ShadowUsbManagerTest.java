@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,19 +49,26 @@ public class ShadowUsbManagerTest {
 
   private UsbManager usbManager;
 
+  private AutoCloseable mock;
+
   @Mock UsbDevice usbDevice1;
   @Mock UsbDevice usbDevice2;
   @Mock UsbAccessory usbAccessory;
 
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
+    mock = MockitoAnnotations.openMocks(this);
     usbManager =
         (UsbManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.USB_SERVICE);
 
     when(usbDevice1.getDeviceName()).thenReturn(DEVICE_NAME_1);
     when(usbDevice2.getDeviceName()).thenReturn(DEVICE_NAME_2);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    mock.close();
   }
 
   @Test

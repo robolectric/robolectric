@@ -7,6 +7,7 @@ import android.app.Notification;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,9 +22,11 @@ public class ShadowJobServiceTest {
   private JobService jobService;
   @Mock private JobParameters params;
 
+  private AutoCloseable mock;
+
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
+    mock = MockitoAnnotations.openMocks(this);
     jobService =
         new JobService() {
           @Override
@@ -36,6 +39,11 @@ public class ShadowJobServiceTest {
             return false;
           }
         };
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    mock.close();
   }
 
   @Test
