@@ -33,16 +33,16 @@ public class InstrumentationConfiguration {
 
   static final ImmutableSet<String> PACKAGES_TO_NEVER_ACQUIRE =
       ImmutableSet.of(
-          "com.sun",
-          "java",
-          "javax",
-          "jdk.internal",
-          "org.junit",
+          "com.sun.",
+          "java.",
+          "javax.",
+          "jdk.internal.",
+          "org.junit.",
           "org.robolectric.annotation.",
           "org.robolectric.internal.",
           "org.robolectric.pluginapi.",
           "org.robolectric.util.",
-          "sun");
+          "sun.");
 
   // Must always acquire these as they change from API level to API level
   static final ImmutableSet<String> RESOURCES_TO_ALWAYS_ACQUIRE =
