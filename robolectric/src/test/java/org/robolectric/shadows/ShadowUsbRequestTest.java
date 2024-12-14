@@ -35,13 +35,15 @@ public class ShadowUsbRequestTest {
   private UsbManager usbManager;
   private UsbRequest dataRequest;
 
+  private AutoCloseable mock;
+
   @Mock private UsbDevice usbDevice;
   @Mock private UsbConfiguration usbConfiguration;
   @Mock private UsbInterface usbInterface;
 
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
+    mock = MockitoAnnotations.openMocks(this);
     usbManager =
         (UsbManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.USB_SERVICE);
@@ -58,8 +60,9 @@ public class ShadowUsbRequestTest {
   }
 
   @After
-  public void tearDown() {
+  public void tearDown() throws Exception {
     dataRequest.close();
+    mock.close();
   }
 
   @Test

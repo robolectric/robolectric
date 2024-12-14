@@ -18,6 +18,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,6 +41,7 @@ public final class ShadowCaptioningManagerTest {
 
   private CaptioningManager captioningManager;
   private Context context;
+  private AutoCloseable mock;
 
   public class TestCaptioningChangeListener extends CaptioningChangeListener {
     public boolean isEnabled = false;
@@ -82,12 +84,17 @@ public final class ShadowCaptioningManagerTest {
 
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
+    mock = MockitoAnnotations.openMocks(this);
     captioningManager =
         (CaptioningManager)
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.CAPTIONING_SERVICE);
     context = RuntimeEnvironment.getApplication();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    mock.close();
   }
 
   @Test
