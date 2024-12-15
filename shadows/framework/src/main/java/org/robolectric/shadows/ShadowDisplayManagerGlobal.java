@@ -41,11 +41,11 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link DisplayManagerGlobal}. */
 @Implements(value = DisplayManagerGlobal.class, isInAndroidSdk = false)
 public class ShadowDisplayManagerGlobal {
+  private static final String TOPOLOGY_LISTENERS_FIELD_NAME = "mTopologyListeners";
   private static DisplayManagerGlobal instance;
 
   private float saturationLevel = 1f;
@@ -92,8 +92,8 @@ public class ShadowDisplayManagerGlobal {
     List<Handler> displayListeners = createDisplayListeners();
     displayManagerGlobal.setDisplayListeners(displayListeners);
     displayManagerGlobal.setDisplayInfoCache(new SparseArray<>());
-    if (RuntimeEnvironment.getApiLevel() > V.SDK_INT) {
-      displayManagerGlobal.setTopologyListeners(new CopyOnWriteArrayList());
+    if (ReflectionHelpers.hasField(DisplayManagerGlobal.class, TOPOLOGY_LISTENERS_FIELD_NAME)) {
+      displayManagerGlobal.setTopologyListeners(new CopyOnWriteArrayList<>());
     }
     return instance;
   }
