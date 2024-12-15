@@ -116,37 +116,37 @@ public class AssociationInfoBuilder {
           deviceMacAddress == null ? null : MacAddress.fromString(deviceMacAddress);
 
       if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
-          return ReflectionHelpers.callConstructor(
-              AssociationInfo.class,
-              ClassParameter.from(int.class, id),
-              ClassParameter.from(int.class, userId),
-              ClassParameter.from(String.class, packageName),
-              ClassParameter.from(MacAddress.class, macAddress),
-              ClassParameter.from(CharSequence.class, displayName),
-              ClassParameter.from(String.class, deviceProfile),
-              ClassParameter.from(boolean.class, selfManaged),
-              ClassParameter.from(boolean.class, notifyOnDeviceNearby),
-              ClassParameter.from(long.class, approvedMs),
-              ClassParameter.from(long.class, lastTimeConnectedMs));
+        return ReflectionHelpers.callConstructor(
+            AssociationInfo.class,
+            ClassParameter.from(int.class, id),
+            ClassParameter.from(int.class, userId),
+            ClassParameter.from(String.class, packageName),
+            ClassParameter.from(MacAddress.class, macAddress),
+            ClassParameter.from(CharSequence.class, displayName),
+            ClassParameter.from(String.class, deviceProfile),
+            ClassParameter.from(boolean.class, selfManaged),
+            ClassParameter.from(boolean.class, notifyOnDeviceNearby),
+            ClassParameter.from(long.class, approvedMs),
+            ClassParameter.from(long.class, lastTimeConnectedMs));
 
       } else if (RuntimeEnvironment.getApiLevel() == U.SDK_INT) {
-          return ReflectionHelpers.callConstructor(
-              AssociationInfo.class,
-              ClassParameter.from(int.class, id),
-              ClassParameter.from(int.class, userId),
-              ClassParameter.from(String.class, packageName),
-              ClassParameter.from(MacAddress.class, macAddress),
-              ClassParameter.from(CharSequence.class, displayName),
-              ClassParameter.from(String.class, deviceProfile),
-              ClassParameter.from(
-                  Class.forName("android.companion.AssociatedDevice"), associatedDevice),
-              ClassParameter.from(boolean.class, selfManaged),
-              ClassParameter.from(boolean.class, notifyOnDeviceNearby),
-              ClassParameter.from(boolean.class, revoked),
-              ClassParameter.from(long.class, approvedMs),
-              ClassParameter.from(long.class, lastTimeConnectedMs),
-              ClassParameter.from(int.class, systemDataSyncFlags));
-        } else {
+        return ReflectionHelpers.callConstructor(
+            AssociationInfo.class,
+            ClassParameter.from(int.class, id),
+            ClassParameter.from(int.class, userId),
+            ClassParameter.from(String.class, packageName),
+            ClassParameter.from(MacAddress.class, macAddress),
+            ClassParameter.from(CharSequence.class, displayName),
+            ClassParameter.from(String.class, deviceProfile),
+            ClassParameter.from(
+                Class.forName("android.companion.AssociatedDevice"), associatedDevice),
+            ClassParameter.from(boolean.class, selfManaged),
+            ClassParameter.from(boolean.class, notifyOnDeviceNearby),
+            ClassParameter.from(boolean.class, revoked),
+            ClassParameter.from(long.class, approvedMs),
+            ClassParameter.from(long.class, lastTimeConnectedMs),
+            ClassParameter.from(int.class, systemDataSyncFlags));
+      } else {
         // delegate to platform builder
         AssociationInfo.Builder builder =
             new AssociationInfo.Builder(id, userId, packageName)
@@ -161,8 +161,12 @@ public class AssociationInfoBuilder {
                 .setLastTimeConnected(lastTimeConnectedMs)
                 .setSystemDataSyncFlags(systemDataSyncFlags);
         // tag was removed in Baklava
-        if (tag != null) {
-          builder.setTag(tag);
+        if (ReflectionHelpers.hasMethod(AssociationInfo.Builder.class, "setTag", String.class)) {
+          ReflectionHelpers.callInstanceMethod(
+              AssociationInfo.Builder.class,
+              builder,
+              "setTag",
+              ClassParameter.from(String.class, tag));
         }
         return builder.build();
       }

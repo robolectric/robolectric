@@ -573,6 +573,35 @@ public class ReflectionHelpers {
     return false;
   }
 
+  /**
+   * Reflectively check if a class has a given method.
+   *
+   * @param parameterTypes in order parameters of the method.
+   * @param clazz Target class.
+   * @param methodName Target method name.
+   * @return boolean to indicate whether the constructor exists or not on the clazz.
+   */
+  public static boolean hasMethod(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+    for (Method method : clazz.getDeclaredMethods()) {
+      Class<?>[] paramTypes = method.getParameterTypes();
+      if (method.getName().equals(methodName)) {
+        if (paramTypes.length == parameterTypes.length) {
+          boolean match = true;
+          for (int i = 0; i < paramTypes.length; i++) {
+            if (!paramTypes[i].isAssignableFrom(parameterTypes[i])) {
+              match = false;
+              break;
+            }
+          }
+          if (match) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
   private static <R, E extends Exception> R traverseClassHierarchy(
       Class<?> targetClass, Class<? extends E> exceptionClass, InsideTraversal<R> insideTraversal)
       throws Exception {
