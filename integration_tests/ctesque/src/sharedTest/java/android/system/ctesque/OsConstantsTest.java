@@ -34,7 +34,31 @@ public final class OsConstantsTest {
           "SEEK_SET",
           "SHUT_RD",
           "STDIN_FILENO",
-          "_SC_ARG_MAX");
+          "_SC_ARG_MAX",
+          "MADV_NORMAL",
+          "MADV_RANDOM",
+          "MADV_SEQUENTIAL",
+          "MADV_WILLNEED",
+          "MADV_DONTNEED",
+          "MADV_REMOVE",
+          "MADV_DONTFORK",
+          "MADV_DOFORK",
+          "MADV_HWPOISON",
+          "MADV_MERGEABLE",
+          "MADV_UNMERGEABLE",
+          "MADV_SOFT_OFFLINE",
+          "MADV_HUGEPAGE",
+          "MADV_NOHUGEPAGE",
+          "MADV_COLLAPSE",
+          "MADV_DONTDUMP",
+          "MADV_DODUMP",
+          "MADV_FREE",
+          "MADV_WIPEONFORK",
+          "MADV_KEEPONFORK",
+          "MADV_COLD",
+          "MADV_PAGEOUT",
+          "MADV_POPULATE_READ",
+          "MADV_POPULATE_WRITE");
 
   @Test
   public void valuesAreDistinct() throws Exception {
