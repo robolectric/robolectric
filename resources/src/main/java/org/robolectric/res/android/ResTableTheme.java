@@ -28,7 +28,7 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 public class ResTableTheme {
 
   private final List<AppliedStyle> styles = new ArrayList<>();
-  private static boolean styleDebug = false;
+  private static final boolean styleDebug = false;
   private static final type_info EMPTY_TYPE_INFO = new type_info();
   private static final theme_entry EMPTY_THEME_ENTRY = new theme_entry();
 
@@ -54,14 +54,14 @@ public class ResTableTheme {
     if (styles.isEmpty()) {
       return "theme with no applied styles";
     } else {
-      return "theme with applied styles: " + styles + "";
+      return "theme with applied styles: " + styles;
     }
   }
 
-  private ResTable mTable;
-  private boolean kDebugTableTheme = false;
-  private boolean kDebugTableNoisy = false;
-  private package_info[] mPackages = new package_info[Res_MAXPACKAGE];
+  private final ResTable mTable;
+  private final boolean kDebugTableTheme = false;
+  private final boolean kDebugTableNoisy = false;
+  private final package_info[] mPackages = new package_info[Res_MAXPACKAGE];
   private Ref<Integer> mTypeSpecFlags = new Ref<>(0);
 
   public ResTableTheme(ResTable resources) {
@@ -152,7 +152,7 @@ public class ResTableTheme {
       if (kDebugTableTheme) {
         ALOGI(
             "Resolving attr reference: blockIndex=%d, type=0x%x, data=0x%x\n",
-            (int) blockIndex, (int) inOutValue.get().dataType, inOutValue.get().data);
+            blockIndex, (int) inOutValue.get().dataType, inOutValue.get().data);
       }
       if (inoutTypeSpecFlags != null)
         inoutTypeSpecFlags.set(inoutTypeSpecFlags.get() | newTypeSpecFlags.get());
@@ -193,9 +193,8 @@ public class ResTableTheme {
     int numEntries = 0;
     theme_entry[] curEntries = null;
 
-    final int end = N;
     int bagIndex = 0;
-    while (bagIndex < end) {
+    while (bagIndex < N) {
       bag_entry bagEntry = bag.get()[bagIndex];
       final int attrRes = bagEntry.map.name.ident;
       final int p = Res_GETPACKAGE(attrRes);
@@ -377,7 +376,6 @@ public class ResTableTheme {
       }
     }
   }
-  ;
 
   static class type_info {
     int numEntries;
@@ -398,7 +396,6 @@ public class ResTableTheme {
       }
     }
   }
-  ;
 
   static class package_info {
     type_info[] types = new type_info[Res_MAXTYPE + 1];
@@ -416,7 +413,6 @@ public class ResTableTheme {
       }
     }
   }
-  ;
 
   static final int Res_MAXPACKAGE = 255;
   static final int Res_MAXTYPE = 255;

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.robolectric.res.FileTypedResource;
@@ -80,7 +81,7 @@ public abstract class Asset {
           return enumMode;
         }
       }
-      throw new IllegalArgumentException("invalid mode " + Integer.toString(mode));
+      throw new IllegalArgumentException("invalid mode " + mode);
     }
   }
 
@@ -320,7 +321,7 @@ public abstract class Asset {
           res.append("    ");
           res.append(cur.getAssetSource());
           long size = (cur.getLength() + 512) / 1024;
-          String buf = String.format(": %dK\n", (int) size);
+          String buf = String.format(Locale.getDefault(), ": %dK\n", (int) size);
           res.append(buf);
         }
         cur = cur.mNext;
@@ -779,7 +780,7 @@ public abstract class Asset {
         // if (ftell(mFp) != mStart + mOffset) {
         try {
           if (mFp.getFilePointer() != mStart + mOffset) {
-            ALOGE("Hosed: %d != %d+%d\n", mFp.getFilePointer(), (long) mStart, (long) mOffset);
+            ALOGE("Hosed: %d != %d+%d\n", mFp.getFilePointer(), mStart, mOffset);
             assert false;
           }
 
@@ -791,8 +792,10 @@ public abstract class Asset {
            * hosed.
            */
           actual = mFp.read(buf, 0, count);
-          if (actual == 0) // something failed -- I/O error?
-          return -1;
+          // something failed -- I/O error?
+          if (actual == 0) {
+            return -1;
+          }
 
           assert (actual == count);
         } catch (IOException e) {
@@ -892,7 +895,7 @@ public abstract class Asset {
           return null;
         }
 
-        ALOGV("Asset %s allocating buffer size %d (smaller than threshold)", this, (int) allocLen);
+        ALOGV("Asset %s allocating buffer size %d (smaller than threshold)", this, allocLen);
         if (mLength > 0) {
           try {
             // long oldPosn = ftell(mFp);
@@ -901,7 +904,7 @@ public abstract class Asset {
             mFp.seek(mStart);
             // if (fread(buf, 1, mLength, mFp) != (size_t) mLength) {
             if (mFp.read(buf, 0, toIntExact(mLength)) != (int) mLength) {
-              ALOGE("failed reading %d bytes\n", (long) mLength);
+              ALOGE("failed reading %d bytes\n", mLength);
               // delete[] buf;
               return null;
             }
@@ -992,7 +995,7 @@ public abstract class Asset {
 
     private static FileDescriptor open(String fname) {
       try {
-        return new FileInputStream(new File(fname)).getFD();
+        return new FileInputStream(fname).getFD();
       } catch (IOException e) {
         return null;
       }
@@ -1313,7 +1316,7 @@ public abstract class Asset {
     @Override
     public byte[] getBuffer(boolean wordAligned) {
       // return mBuf = mMap.getDataPtr();
-      byte[] buf = null;
+      byte[] buf;
 
       if (mBuf != null) return mBuf;
 

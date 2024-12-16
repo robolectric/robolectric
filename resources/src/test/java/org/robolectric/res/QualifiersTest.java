@@ -13,12 +13,12 @@ import org.robolectric.res.android.ResTable_config;
 @RunWith(JUnit4.class)
 public class QualifiersTest {
   @Test
-  public void testQualifiers() throws Exception {
+  public void testQualifiers() {
     assertThat(configFrom("values-land-finger")).isEqualTo("land-finger");
   }
 
   @Test
-  public void testWhenQualifiersFailToParse() throws Exception {
+  public void testWhenQualifiersFailToParse() {
     try {
       configFrom("values-unknown-v23");
       fail("Expected exception");
@@ -38,7 +38,7 @@ public class QualifiersTest {
   ///////// deprecated stuff...
 
   @Test
-  public void addSmallestScreenWidth() throws Exception {
+  public void addSmallestScreenWidth() {
     assertThat(Qualifiers.addSmallestScreenWidth("", 320)).isEqualTo("sw320dp");
     assertThat(Qualifiers.addSmallestScreenWidth("sw160dp", 320)).isEqualTo("sw160dp");
     assertThat(Qualifiers.addSmallestScreenWidth("sw480dp", 320)).isEqualTo("sw480dp");
@@ -51,7 +51,7 @@ public class QualifiersTest {
   }
 
   @Test
-  public void addScreenWidth() throws Exception {
+  public void addScreenWidth() {
     assertThat(Qualifiers.addScreenWidth("", 320)).isEqualTo("w320dp");
     assertThat(Qualifiers.addScreenWidth("w160dp", 320)).isEqualTo("w160dp");
     assertThat(Qualifiers.addScreenWidth("w480dp", 320)).isEqualTo("w480dp");
