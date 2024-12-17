@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.companion.AssociatedDevice;
 import android.companion.AssociationInfo;
@@ -9,8 +10,8 @@ import com.google.common.base.Preconditions;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Builder for {@link AssociationInfo}. */
 public class AssociationInfoBuilder {
@@ -54,8 +55,10 @@ public class AssociationInfoBuilder {
   }
 
   public AssociationInfoBuilder setTag(String tag) {
+    // tag was removed in Baklava
     Preconditions.checkState(
-        RuntimeEnvironment.getApiLevel() <= V.SDK_INT, "tag was removed in post-V SDKs");
+        ReflectionHelpers.hasMethod(AssociationInfo.Builder.class, "setTag", String.class),
+        "tag was removed in post-V SDKs");
     this.tag = tag;
     return this;
   }
@@ -160,18 +163,19 @@ public class AssociationInfoBuilder {
                 .setRevoked(revoked)
                 .setLastTimeConnected(lastTimeConnectedMs)
                 .setSystemDataSyncFlags(systemDataSyncFlags);
-        // tag was removed in Baklava
-        if (ReflectionHelpers.hasMethod(AssociationInfo.Builder.class, "setTag", String.class)) {
-          ReflectionHelpers.callInstanceMethod(
-              AssociationInfo.Builder.class,
-              builder,
-              "setTag",
-              ClassParameter.from(String.class, tag));
+        // setTag was removed in Baklava
+        if (tag != null) {
+          reflector(BuilderReflector.class, builder).setTag(tag);
         }
         return builder.build();
       }
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @ForType(AssociationInfo.Builder.class)
+  private interface BuilderReflector {
+    void setTag(String tag);
   }
 }
