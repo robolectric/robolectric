@@ -1425,7 +1425,7 @@ public class CppAssetManager2 {
       static final int SIZEOF_WITHOUT_ENTRIES = 8;
 
       int entry_count;
-      ThemeEntry entries[];
+      ThemeEntry[] entries;
     }
 
     //  static final int kPackageCount = std.numeric_limits<byte>.max() + 1;
