@@ -249,7 +249,7 @@ public class ZipFileRO {
    * Create a new FileMap object that spans the data in "entry".
    */
   /*FileMap*/ ZipFileRO(org.robolectric.res.android.ZipFileRO.ZipEntryRO entry) {
-    throw new UnsupportedOperationException("Implememnt me");
+    throw new UnsupportedOperationException("Implement me");
 
     //    final ZipEntryRO *zipEntry = reinterpret_cast<ZipEntryRO*>(entry);
     //    final ZipEntry& ze = zipEntry.entry;
@@ -302,7 +302,7 @@ public class ZipFileRO {
    */
   boolean uncompressEntry(
       org.robolectric.res.android.ZipFileRO.ZipEntryRO entry, Object buffer, int size) {
-    throw new UnsupportedOperationException("Implememnt me");
+    throw new UnsupportedOperationException("Implement me");
     //    ZipEntryRO *zipEntry = reinterpret_cast<ZipEntryRO*>(entry);
     //    final int error = ExtractToMemory(mHandle, &(zipEntry.entry),
     //    (uint8_t*) buffer, size);
@@ -320,7 +320,7 @@ public class ZipFileRO {
    * This doesn't verify the data's CRC, but probably should.
    */
   boolean uncompressEntry(org.robolectric.res.android.ZipFileRO.ZipEntryRO entry, int fd) {
-    throw new UnsupportedOperationException("Implememnt me");
+    throw new UnsupportedOperationException("Implement me");
     //    ZipEntryRO *zipEntry = reinterpret_cast<ZipEntryRO*>(entry);
     //    final int error = ExtractEntryToFile(mHandle, &(zipEntry.entry), fd);
     //    if (error) {

@@ -324,7 +324,7 @@ public class CppAssetManager {
   //        // delete idmap;
   //
   //        if (overlayPath != packagePath) {
-  //          ALOGW("idmap file %s inconcistent: expected path %s does not match actual path %s\n",
+  //          ALOGW("idmap file %s inconsistent: expected path %s does not match actual path %s\n",
   //              idmapPath.string(), packagePath.string(), overlayPath.string());
   //          return false;
   //        }
