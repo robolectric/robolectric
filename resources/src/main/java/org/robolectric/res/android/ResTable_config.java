@@ -1014,7 +1014,7 @@ public class ResTable_config {
     // systems should happen very infrequently (if at all.)
     // The comparison code relies on memcmp low-level optimizations that make it
     // more efficient than strncmp.
-    final byte emptyScript[] = {'\0', '\0', '\0', '\0'};
+    final byte[] emptyScript = {'\0', '\0', '\0', '\0'};
     final byte[] lScript = l.localeScriptWasComputed ? emptyScript : l.localeScript;
     final byte[] rScript = r.localeScriptWasComputed ? emptyScript : r.localeScript;
     //    int script = memcmp(lScript, rScript);

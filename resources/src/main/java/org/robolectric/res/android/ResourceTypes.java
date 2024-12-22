@@ -1591,7 +1591,7 @@ public class ResourceTypes {
     short overlay_type_id;
     short entry_count;
     short entry_id_offset;
-    int entries[];
+    int[] entries;
 
     IdmapEntry_header(ByteBuffer buf, int offset) {
       super(buf, offset);
