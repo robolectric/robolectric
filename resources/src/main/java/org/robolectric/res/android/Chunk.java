@@ -152,7 +152,6 @@ class Chunk {
     boolean HasNext() {
       return !HadError() && len_ != 0;
     }
-    ;
 
     // Returns whether there was an error and processing should stop
     boolean HadError() {

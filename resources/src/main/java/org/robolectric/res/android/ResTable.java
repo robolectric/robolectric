@@ -2741,7 +2741,6 @@ public class ResTable {
     int[] resourceIDMap;
     int resourceIDMapSize;
   }
-  ;
 
   public static class Entry {
     ResTable_config config;
@@ -3099,7 +3098,6 @@ public class ResTable {
       //      curOff += size + sizeof(*map)-sizeof(map->value);
       curOff += size + ResTable_map.SIZEOF - Res_value.SIZEOF;
     }
-    ;
 
     if (curEntry > set.numAttrs) {
       set.numAttrs = curEntry;
@@ -3148,7 +3146,6 @@ public class ResTable {
       bag_entries = newEntries;
     }
   }
-  ;
 
   /**
    * Configuration dependent cached data. This must be cleared when the configuration is changed
@@ -3165,7 +3162,6 @@ public class ResTable {
     // ResTable.
     List<List<ResTable_type>> filteredConfigs;
   }
-  ;
 
   private int Res_MAKEID(int packageId, int typeId, int entryId) {
     return (((packageId + 1) << 24) | (((typeId + 1) & 0xFF) << 16) | (entryId & 0xFFFF));

@@ -128,7 +128,6 @@ public class AssetDir {
       return pVector.indexOf(tmpInfo);
     }
   }
-  ;
 
   /* AssetManager uses this to initialize us */
   void setFileList(SortedVector<FileInfo> list) {
