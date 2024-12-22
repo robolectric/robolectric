@@ -35,7 +35,7 @@ public class MetaDataTest {
   }
 
   @Test
-  public void testNonExistantResource_throwsResourceNotFoundException() throws Exception {
+  public void testNonExistantResource_throwsResourceNotFoundException() {
     Element metaDataElement = createMetaDataNode("aName", "@xml/non_existant_resource");
 
     MetaData metaData = new MetaData(ImmutableList.<Node>of(metaDataElement));

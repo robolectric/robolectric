@@ -20,8 +20,7 @@ public class StaxAttrLoader extends StaxLoader {
           private String name;
 
           @Override
-          public void onStart(XMLStreamReader xml, XmlContext xmlContext)
-              throws XMLStreamException {
+          public void onStart(XMLStreamReader xml, XmlContext xmlContext) {
             String type = xml.getLocalName();
             if (pairs.isEmpty()) {
               if (format == null) {
@@ -36,11 +35,10 @@ public class StaxAttrLoader extends StaxLoader {
           }
 
           @Override
-          public void onCharacters(XMLStreamReader xml, XmlContext xmlContext)
-              throws XMLStreamException {}
+          public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) {}
 
           @Override
-          public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {}
+          public void onEnd(XMLStreamReader xml, XmlContext xmlContext) {}
         });
   }
 
@@ -51,7 +49,7 @@ public class StaxAttrLoader extends StaxLoader {
   }
 
   @Override
-  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) {
     AttrData attrData = new AttrData(name, format, new ArrayList<>(pairs));
     pairs.clear();
 

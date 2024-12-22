@@ -22,12 +22,12 @@ public class StaxValueLoader extends StaxLoader {
   }
 
   @Override
-  public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+  public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) {
     buf.append(xml.getText());
   }
 
   @Override
-  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) {
     String s = buf.toString();
     if (resType == ResType.CHAR_SEQUENCE) {
       s = StringResources.processStringResources(s);

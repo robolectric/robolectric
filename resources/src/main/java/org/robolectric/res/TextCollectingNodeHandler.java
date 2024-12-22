@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 public class TextCollectingNodeHandler extends NodeHandler {
@@ -11,7 +10,7 @@ public class TextCollectingNodeHandler extends NodeHandler {
   }
 
   @Override
-  public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+  public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) {
     buf.append(xml.getText());
   }
 
