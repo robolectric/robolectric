@@ -103,7 +103,7 @@ public class AttributeResolution9 {
           theme, def_style_attr, def_style_res);
     }
 
-    CppAssetManager2 assetmanager = theme.GetAssetManager();
+    CppAssetManager2 assetManager = theme.GetAssetManager();
     ResTable_config config = new ResTable_config();
     Res_value value;
 
@@ -125,7 +125,7 @@ public class AttributeResolution9 {
     // Retrieve the default style bag, if requested.
     ResolvedBag default_style_bag = null;
     if (def_style_res != 0) {
-      default_style_bag = assetmanager.GetBag(def_style_res);
+      default_style_bag = assetManager.GetBag(def_style_res);
       if (default_style_bag != null) {
         def_style_flags.set(def_style_flags.get() | default_style_bag.type_spec_flags);
       }
@@ -170,9 +170,9 @@ public class AttributeResolution9 {
         }
       }
 
-      int resid = 0;
+      int resId = 0;
       final Ref<Res_value> valueRef = new Ref<>(value);
-      final Ref<Integer> residRef = new Ref<>(resid);
+      final Ref<Integer> residRef = new Ref<>(resId);
       final Ref<Integer> type_set_flagsRef = new Ref<>(type_set_flags);
       final Ref<ResTable_config> configRef = new Ref<>(config);
       if (value.dataType != Res_value.TYPE_NULL) {
@@ -194,7 +194,7 @@ public class AttributeResolution9 {
             ALOGI("-> From theme: type=0x%x, data=0x%08x", value.dataType, value.data);
           }
           new_cookie =
-              assetmanager.ResolveReference(
+              assetManager.ResolveReference(
                   new_cookie, valueRef, configRef, type_set_flagsRef, residRef);
           if (new_cookie.intValue() != kInvalidCookie) {
             cookie = new_cookie;
@@ -205,7 +205,7 @@ public class AttributeResolution9 {
         }
       }
       value = valueRef.get();
-      resid = residRef.get();
+      resId = residRef.get();
       type_set_flags = type_set_flagsRef.get();
       config = configRef.get();
 
@@ -226,7 +226,7 @@ public class AttributeResolution9 {
       out_values[destOffset + STYLE_TYPE] = value.dataType;
       out_values[destOffset + STYLE_DATA] = value.data;
       out_values[destOffset + STYLE_ASSET_COOKIE] = ApkAssetsCookieToJavaCookie(cookie);
-      out_values[destOffset + STYLE_RESOURCE_ID] = resid;
+      out_values[destOffset + STYLE_RESOURCE_ID] = resId;
       out_values[destOffset + STYLE_CHANGING_CONFIGURATIONS] = type_set_flags;
       out_values[destOffset + STYLE_DENSITY] = config.density;
 
@@ -248,7 +248,7 @@ public class AttributeResolution9 {
       Theme theme,
       ResXMLParser xml_parser,
       int def_style_attr,
-      int def_style_resid,
+      int def_style_res_id,
       int[] attrs,
       int attrs_length,
       int[] out_values,
@@ -256,10 +256,10 @@ public class AttributeResolution9 {
     if (kDebugStyles) {
       ALOGI(
           "APPLY STYLE: theme=%s defStyleAttr=0x%x defStyleRes=0x%x xml=%s",
-          theme, def_style_attr, def_style_resid, xml_parser);
+          theme, def_style_attr, def_style_res_id, xml_parser);
     }
 
-    CppAssetManager2 assetmanager = theme.GetAssetManager();
+    CppAssetManager2 assetManager = theme.GetAssetManager();
     final Ref<ResTable_config> config = new Ref<>(new ResTable_config());
     final Ref<Res_value> value = new Ref<>(new Res_value());
 
@@ -270,13 +270,13 @@ public class AttributeResolution9 {
     if (def_style_attr != 0) {
       if (theme.GetAttribute(def_style_attr, value, def_style_flags).intValue() != kInvalidCookie) {
         if (value.get().dataType == DataType.REFERENCE.code()) {
-          def_style_resid = value.get().data;
+          def_style_res_id = value.get().data;
         }
       }
     }
 
     // Retrieve the style resource ID associated with the current XML tag's style attribute.
-    int style_resid = 0;
+    int style_res_id = 0;
     final Ref<Integer> style_flags = new Ref<>(0);
     if (xml_parser != null) {
       int idx = xml_parser.indexOfStyle();
@@ -290,15 +290,15 @@ public class AttributeResolution9 {
         }
 
         if (value.get().dataType == DataType.REFERENCE.code()) {
-          style_resid = value.get().data;
+          style_res_id = value.get().data;
         }
       }
     }
 
     // Retrieve the default style bag, if requested.
     ResolvedBag default_style_bag = null;
-    if (def_style_resid != 0) {
-      default_style_bag = assetmanager.GetBag(def_style_resid);
+    if (def_style_res_id != 0) {
+      default_style_bag = assetManager.GetBag(def_style_res_id);
       if (default_style_bag != null) {
         def_style_flags.set(def_style_flags.get() | default_style_bag.type_spec_flags);
       }
@@ -308,8 +308,8 @@ public class AttributeResolution9 {
 
     // Retrieve the style class bag, if requested.
     ResolvedBag xml_style_bag = null;
-    if (style_resid != 0) {
-      xml_style_bag = assetmanager.GetBag(style_resid);
+    if (style_res_id != 0) {
+      xml_style_bag = assetManager.GetBag(style_res_id);
       if (xml_style_bag != null) {
         style_flags.set(style_flags.get() | xml_style_bag.type_spec_flags);
       }
@@ -383,11 +383,11 @@ public class AttributeResolution9 {
         }
       }
 
-      final Ref<Integer> resid = new Ref<>(0);
+      final Ref<Integer> resId = new Ref<>(0);
       if (value.get().dataType != DataType.NULL.code()) {
         // Take care of resolving the found resource to its final value.
         ApkAssetsCookie new_cookie =
-            theme.ResolveAttributeReference(cookie, value, config, type_set_flags, resid);
+            theme.ResolveAttributeReference(cookie, value, config, type_set_flags, resId);
         if (new_cookie.intValue() != kInvalidCookie) {
           cookie = new_cookie;
         }
@@ -403,7 +403,7 @@ public class AttributeResolution9 {
             ALOGI("-> From theme: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
           }
           new_cookie =
-              assetmanager.ResolveReference(new_cookie, value, config, type_set_flags, resid);
+              assetManager.ResolveReference(new_cookie, value, config, type_set_flags, resId);
           if (new_cookie.intValue() != kInvalidCookie) {
             cookie = new_cookie;
           }
@@ -437,7 +437,7 @@ public class AttributeResolution9 {
       out_values[destIndex + STYLE_TYPE] = res_value.dataType;
       out_values[destIndex + STYLE_DATA] = res_value.data;
       out_values[destIndex + STYLE_ASSET_COOKIE] = ApkAssetsCookieToJavaCookie(cookie);
-      out_values[destIndex + STYLE_RESOURCE_ID] = resid.get();
+      out_values[destIndex + STYLE_RESOURCE_ID] = resId.get();
       out_values[destIndex + STYLE_CHANGING_CONFIGURATIONS] = type_set_flags.get();
       out_values[destIndex + STYLE_DENSITY] = config.get().density;
 
@@ -453,8 +453,8 @@ public class AttributeResolution9 {
       // if (false && res_value.dataType == DataType.ATTRIBUTE.code()) {
       //   final Ref<ResourceName> attrName = new Ref<>(null);
       //   final Ref<ResourceName> attrRefName = new Ref<>(null);
-      //   boolean gotName = assetmanager.GetResourceName(cur_ident, attrName);
-      //   boolean gotRefName = assetmanager.GetResourceName(res_value.data, attrRefName);
+      //   boolean gotName = assetManager.GetResourceName(cur_ident, attrName);
+      //   boolean gotRefName = assetManager.GetResourceName(res_value.data, attrRefName);
       //   Logger.warn(
       //       "Failed to resolve attribute lookup: %s=\"?%s\"; theme: %s",
       //       gotName ? attrName.get() : "unknown", gotRefName ? attrRefName.get() : "unknown",
@@ -469,7 +469,7 @@ public class AttributeResolution9 {
   }
 
   public static boolean RetrieveAttributes(
-      CppAssetManager2 assetmanager,
+      CppAssetManager2 assetManager,
       ResXMLParser xml_parser,
       int[] attrs,
       int attrs_length,
@@ -509,11 +509,11 @@ public class AttributeResolution9 {
         cur_xml_attr = xml_parser.getAttributeNameResID(ix);
       }
 
-      final Ref<Integer> resid = new Ref<>(0);
+      final Ref<Integer> resId = new Ref<>(0);
       if (value.get().dataType != Res_value.TYPE_NULL) {
         // Take care of resolving the found resource to its final value.
         ApkAssetsCookie new_cookie =
-            assetmanager.ResolveReference(cookie, value, config, type_set_flags, resid);
+            assetManager.ResolveReference(cookie, value, config, type_set_flags, resId);
         if (new_cookie.intValue() != kInvalidCookie) {
           cookie = new_cookie;
         }
@@ -529,7 +529,7 @@ public class AttributeResolution9 {
       out_values[baseDest + STYLE_TYPE] = value.get().dataType;
       out_values[baseDest + STYLE_DATA] = value.get().data;
       out_values[baseDest + STYLE_ASSET_COOKIE] = ApkAssetsCookieToJavaCookie(cookie);
-      out_values[baseDest + STYLE_RESOURCE_ID] = resid.get();
+      out_values[baseDest + STYLE_RESOURCE_ID] = resId.get();
       out_values[baseDest + STYLE_CHANGING_CONFIGURATIONS] = type_set_flags.get();
       out_values[baseDest + STYLE_DENSITY] = config.get().density;
 
