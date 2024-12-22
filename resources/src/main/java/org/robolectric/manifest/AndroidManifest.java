@@ -151,7 +151,7 @@ public class AndroidManifest implements UsesSdk {
     return themeRef;
   }
 
-  public String getRClassName() throws Exception {
+  public String getRClassName() {
     parseAndroidManifest();
     return rClassName;
   }

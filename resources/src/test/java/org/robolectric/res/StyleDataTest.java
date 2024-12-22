@@ -64,7 +64,7 @@ public class StyleDataTest {
   }
 
   @Test
-  public void getAttrValue_willReturnTrimmedAttributeValues() throws Exception {
+  public void getAttrValue_willReturnTrimmedAttributeValues() {
     StyleData styleData =
         new StyleData(
             "library.resource",

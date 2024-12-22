@@ -20,20 +20,18 @@ public class StaxStyleLoader extends StaxLoader {
           private StringBuilder buf = new StringBuilder();
 
           @Override
-          public void onStart(XMLStreamReader xml, XmlContext xmlContext)
-              throws XMLStreamException {
+          public void onStart(XMLStreamReader xml, XmlContext xmlContext) {
             attrName = xml.getAttributeValue(null, "name");
             buf.setLength(0);
           }
 
           @Override
-          public void onCharacters(XMLStreamReader xml, XmlContext xmlContext)
-              throws XMLStreamException {
+          public void onCharacters(XMLStreamReader xml, XmlContext xmlContext) {
             buf.append(xml.getText());
           }
 
           @Override
-          public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+          public void onEnd(XMLStreamReader xml, XmlContext xmlContext) {
             ResName attrResName =
                 ResName.qualifyResName(attrName, xmlContext.getPackageName(), "attr");
             attributeResources.add(
@@ -50,7 +48,7 @@ public class StaxStyleLoader extends StaxLoader {
   }
 
   @Override
-  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) throws XMLStreamException {
+  public void onEnd(XMLStreamReader xml, XmlContext xmlContext) {
     String styleParent = parent;
 
     if (styleParent == null) {
