@@ -43,7 +43,6 @@ public class ZipFileRO {
     //    ZipEntryRO(final ZipEntryRO& other);
     //    ZipEntryRO& operator=(final ZipEntryRO& other);
   }
-  ;
 
   //  ~ZipFileRO() {
   @Override

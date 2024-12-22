@@ -377,7 +377,6 @@ public class ResTableTheme {
       }
     }
   }
-  ;
 
   static class type_info {
     int numEntries;
@@ -398,7 +397,6 @@ public class ResTableTheme {
       }
     }
   }
-  ;
 
   static class package_info {
     type_info[] types = new type_info[Res_MAXTYPE + 1];
@@ -416,7 +414,6 @@ public class ResTableTheme {
       }
     }
   }
-  ;
 
   static final int Res_MAXPACKAGE = 255;
   static final int Res_MAXTYPE = 255;

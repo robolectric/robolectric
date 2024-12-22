@@ -395,7 +395,6 @@ public class ResourceTypes {
       return "ResTable_ref{ident=" + ident + '}';
     }
   }
-  ;
 
   /** Reference to a string in a string pool. */
   public static class ResStringPool_ref {
@@ -624,7 +623,6 @@ public class ResourceTypes {
       return name.index == END && firstChar == END && lastChar == END;
     }
   }
-  ;
 
   /**
    * ******************************************************************** XML Tree
@@ -701,7 +699,6 @@ public class ResourceTypes {
           contents);
     }
   }
-  ;
 
   /**
    * Extended XML tree node for CDATA tags -- includes the CDATA string. Appears header.headerSize
@@ -722,7 +719,6 @@ public class ResourceTypes {
       this.typedData = new Res_value((byte) dataType, data);
     }
   }
-  ;
 
   /**
    * Extended XML tree node for namespace start/end nodes. Appears header.headerSize bytes after a
@@ -740,7 +736,6 @@ public class ResourceTypes {
       this.uri = new ResStringPool_ref(buf, offset + 4);
     }
   }
-  ;
 
   /**
    * Extended XML tree node for element start/end nodes. Appears header.headerSize bytes after a
@@ -779,7 +774,6 @@ public class ResourceTypes {
       }
     }
   }
-  ;
 
   /**
    * Extended XML tree node for start tags -- includes attribute information. Appears
@@ -916,7 +910,6 @@ public class ResourceTypes {
       }
     }
   }
-  ;
 
   static class ResXMLTree_attribute {
     public static final int SIZEOF = 12 + ResourceTypes.Res_value.SIZEOF;
@@ -948,7 +941,6 @@ public class ResourceTypes {
       ResourceTypes.Res_value.write(buf, resValueDataType, resValueData);
     }
   }
-  ;
 
   /**
    * ******************************************************************** RESOURCE TABLE
@@ -1029,7 +1021,6 @@ public class ResourceTypes {
       typeIdOffset = buf.getInt(offset + ResChunk_header.SIZEOF + 4 + 256 + 16);
     }
   }
-  ;
 
   // The most specific locale can consist of:
   //
@@ -1099,7 +1090,6 @@ public class ResourceTypes {
       return ints;
     }
   }
-  ;
 
   /**
    * A collection of resource entries for a particular resource data type.
@@ -1240,7 +1230,6 @@ public class ResourceTypes {
       return dtohl(byteBuffer.getInt(offset + entriesStart + entryOffset + STRING_POOL_REF_OFFSET));
     }
   }
-  ;
 
   // The minimum size required to read any version of ResTable_type.
   //   constexpr size_t kResTableTypeMinSize =
@@ -1275,7 +1264,6 @@ public class ResourceTypes {
       this.offset = buf.getShort(offset + 2);
     }
   }
-  ;
 
   /**
    * This is the beginning of information about an entry in the resource table. It holds the
@@ -1376,7 +1364,6 @@ public class ResourceTypes {
       count = buf.getInt(offset + ResTable_entry.SIZEOF + ResTable_ref.SIZEOF);
     }
   }
-  ;
 
   /** A single name/value mapping that is part of a complex resource entry. */
   public static class ResTable_map extends WithOffset {
@@ -1482,7 +1469,6 @@ public class ResourceTypes {
       return "ResTable_map{" + "name=" + name + ", value=" + value + '}';
     }
   }
-  ;
 
   /**
    * A package-id to package name mapping for any shared libraries used in this resource table. The
@@ -1504,7 +1490,6 @@ public class ResourceTypes {
       count = buf.getInt(offset + ResChunk_header.SIZEOF);
     }
   }
-  ;
 
   /** A shared library package-id to package name entry. */
   static class ResTable_lib_entry extends WithOffset {
@@ -1527,7 +1512,6 @@ public class ResourceTypes {
       }
     }
   }
-  ;
 
   /**
    * A map that allows rewriting staged (non-finalized) resource ids to their finalized

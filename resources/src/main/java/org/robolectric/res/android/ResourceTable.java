@@ -14,7 +14,6 @@ public class ResourceTable {
       this.description = description;
     }
   }
-  ;
 
   public static flag_entry[] gFormatFlags = {
     new flag_entry(

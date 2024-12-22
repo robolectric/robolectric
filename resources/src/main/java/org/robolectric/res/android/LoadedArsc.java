@@ -225,7 +225,6 @@ public class LoadedArsc {
     IdmapEntry_header idmap_header_;
     final List<ResTable_type> types_ = new ArrayList<>();
   }
-  ;
 
   //  }  // namespace
 

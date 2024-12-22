@@ -104,7 +104,6 @@ public class CppAssetManager2 {
         return "Entry{" + "key=" + key + ", value=" + value + '}';
       }
     }
-    ;
 
     // Denotes the configuration axis that this bag varies with.
     // If a configuration changes with respect to one of these axis,
@@ -118,7 +117,6 @@ public class CppAssetManager2 {
     // of the Entry structs that follow this structure and avoids a bunch of casts.
     public Entry[] entries;
   }
-  ;
 
   // AssetManager2 is the main entry point for accessing assets and resources.
   // AssetManager2 provides caching of resources retrieved via the underlying ApkAssets.
@@ -136,7 +134,6 @@ public class CppAssetManager2 {
     // public String entry16 = null;
     // int entry_len = 0;
   }
-  ;
 
   public CppAssetManager2() {}
 

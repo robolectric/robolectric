@@ -594,5 +594,4 @@ public class ResXMLParser {
     ResXMLTree_node curNode;
     int curExt;
   }
-  ;
 }
