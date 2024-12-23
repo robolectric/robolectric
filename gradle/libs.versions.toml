@@ -31,7 +31,7 @@ error-prone-gradle = "4.1.0"
 kotlin = "2.1.0"
 
 # https://github.com/Kotlin/kotlinx.coroutines/releases/
-kotlinx-coroutines = '1.9.0'
+kotlinx-coroutines = '1.10.1'
 
 # https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
 spotless-gradle = "7.0.0.BETA4"
