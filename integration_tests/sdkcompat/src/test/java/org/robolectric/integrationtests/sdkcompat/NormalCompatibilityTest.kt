@@ -5,6 +5,7 @@ import android.content.Context.VIBRATOR_SERVICE
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.os.Build
+import android.os.Build.VERSION_CODES.Q
 import android.os.Handler
 import android.os.Looper
 import android.os.Vibrator
@@ -28,7 +29,7 @@ class NormalCompatibilityTest {
 
   @Test
   fun `Environment SDK is 29`() {
-    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.Q)
+    assertThat(Build.VERSION.SDK_INT).isEqualTo(Q)
   }
 
   @Test
@@ -71,6 +72,11 @@ class NormalCompatibilityTest {
   @Test
   fun `Get default Vibrator succeed`() {
     assertThat(application.getSystemService(VIBRATOR_SERVICE) as Vibrator).isNotNull()
+  }
+
+  @Test
+  fun `Get companion device succeed`() {
+    assertThat(application.getSystemService(Context.COMPANION_DEVICE_SERVICE)).isNotNull()
   }
 
   @Test
