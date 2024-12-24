@@ -154,7 +154,7 @@ public class LocaleData {
     }
 
     int[] request_ancestors = new int[MAX_PARENT_DEPTH + 1];
-    final Ref<Long> left_right_indexRef = new Ref<Long>(null);
+    final Ref<Long> left_right_indexRef = new Ref<>(null);
     // Find the parents of the request, but stop as soon as we saw left or right
     final int[] left_and_right = {left, right};
     final int ancestor_count =
@@ -177,7 +177,7 @@ public class LocaleData {
     final int right_distance =
         findDistance(right, requested_script, request_ancestors, ancestor_count);
     if (left_distance != right_distance) {
-      return (int) right_distance - (int) left_distance; // smaller distance is better
+      return right_distance - left_distance; // smaller distance is better
     }
     // If we are here, left and right are equidistant from the request. We will
     // try and see if any of them is a representative locale.
@@ -215,7 +215,6 @@ public class LocaleData {
       // We don't know anything about the locale
       //      memset(out, '\0', SCRIPT_LENGTH);
       Arrays.fill(out, (byte) 0);
-      return;
     } else {
       // We found the locale.
       //      memcpy(out, SCRIPT_CODES[lookup_result.second], SCRIPT_LENGTH);

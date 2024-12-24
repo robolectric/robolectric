@@ -22,8 +22,8 @@ import java.util.Map;
  */
 class ResourceRemapper {
 
-  private BiMap<String, Integer> resIds = HashBiMap.create();
-  private ResourceIdGenerator resourceIdGenerator = new ResourceIdGenerator(0x7F);
+  private final BiMap<String, Integer> resIds = HashBiMap.create();
+  private final ResourceIdGenerator resourceIdGenerator = new ResourceIdGenerator(0x7F);
 
   /**
    * @param primaryRClass - An R class (usually the applications) that can be assumed to have a

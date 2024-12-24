@@ -46,7 +46,7 @@ public class ResourceTypes {
         }
         ALOGW(
             "%s size 0x%x or headerSize 0x%x is not on an integer boundary.",
-            name, (int) size, (int) headerSize);
+            name, size, (int) headerSize);
         return BAD_TYPE;
       }
       ALOGW("%s size 0x%x is smaller than header size 0x%x.", name, size, headerSize);

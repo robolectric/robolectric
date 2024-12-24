@@ -195,9 +195,7 @@ public class ResTable {
   int add(ResTable src, boolean isSystemAsset) {
     mError = src.mError;
 
-    for (int i = 0; i < src.mHeaders.size(); i++) {
-      mHeaders.add(src.mHeaders.get(i));
-    }
+    mHeaders.addAll(src.mHeaders);
 
     for (PackageGroup srcPg : src.mPackageGroups.values()) {
       PackageGroup pg =
@@ -208,9 +206,7 @@ public class ResTable {
               false /* appAsLib */,
               isSystemAsset || srcPg.isSystemAsset,
               srcPg.isDynamic);
-      for (int j = 0; j < srcPg.packages.size(); j++) {
-        pg.packages.add(srcPg.packages.get(j));
-      }
+      pg.packages.addAll(srcPg.packages);
 
       for (Integer typeId : srcPg.types.keySet()) {
         List<Type> typeList = computeIfAbsent(pg.types, typeId, key -> new ArrayList<>());
@@ -266,7 +262,7 @@ public class ResTable {
     if (dataSize < ResTable_header.SIZEOF) {
       ALOGE(
           "Invalid data. Size(%d) is smaller than a ResTable_header(%d).",
-          (int) dataSize, (int) ResTable_header.SIZEOF);
+          dataSize, ResTable_header.SIZEOF);
       return UNKNOWN_ERROR;
     }
 
@@ -316,13 +312,13 @@ public class ResTable {
     if (dtohs(header.header.header.headerSize) > header.size || header.size > dataSize) {
       ALOGW(
           "Bad resource table: header size 0x%x or total size 0x%x is larger than data size 0x%x\n",
-          (int) dtohs(header.header.header.headerSize), (int) header.size, (int) dataSize);
+          (int) dtohs(header.header.header.headerSize), header.size, dataSize);
       return (mError = BAD_TYPE);
     }
     if (((dtohs(header.header.header.headerSize) | header.size) & 0x3) != 0) {
       ALOGW(
           "Bad resource table: header size 0x%x or total size 0x%x is not on an integer boundary\n",
-          (int) dtohs(header.header.header.headerSize), (int) header.size);
+          (int) dtohs(header.header.header.headerSize), header.size);
       return (mError = BAD_TYPE);
     }
     //    header->dataEnd = ((const uint8_t*)header->header) + header->size;
@@ -348,7 +344,7 @@ public class ResTable {
             dtohs(chunk.type),
             dtohs(chunk.headerSize),
             dtohl(chunk.size),
-            (Object) (chunk.myOffset() - header.header.myOffset()));
+            (chunk.myOffset() - header.header.myOffset()));
       }
       final int csize = dtohl(chunk.size);
       final int ctype = dtohs(chunk.type);
@@ -394,7 +390,7 @@ public class ResTable {
     if (curPackage < dtohl(header.header.packageCount)) {
       ALOGW(
           "Fewer package chunks (%d) were found than the %d declared in the header.",
-          (int) curPackage, dtohl(header.header.packageCount));
+          curPackage, dtohl(header.header.packageCount));
       return (mError = BAD_TYPE);
     }
     mError = header.values.getError();
@@ -533,7 +529,7 @@ public class ResTable {
       if (kDebugTableTheme) {
         ALOGI(
             "Resolving reference 0x%x: newIndex=%d, type=0x%x, data=0x%x\n",
-            value.get().data, (int) newIndex, (int) value.get().dataType, value.get().data);
+            value.get().data, newIndex, (int) value.get().dataType, value.get().data);
       }
       // printf("Getting reference 0x%08x: newIndex=%d\n", value.data, newIndex);
       if (inoutTypeSpecFlags != null) {
@@ -623,12 +619,12 @@ public class ResTable {
       // Check that the entry idx is within range of the declared entry count (ResTable_typeSpec).
       // Particular types (ResTable_type) may be encoded with sparse entries, and so their
       // entryCount do not need to match.
-      if (((int) realEntryIndex) >= typeSpec.entryCount) {
+      if ((realEntryIndex) >= typeSpec.entryCount) {
         ALOGW(
             "For resource 0x%08x, entry index(%d) is beyond type entryCount(%d)",
             Res_MAKEID(packageGroup.id - 1, typeIndex, entryIndex),
             entryIndex,
-            ((int) typeSpec.entryCount));
+            typeSpec.entryCount);
         // We should normally abort here, but some legacy apps declare
         // resources in the 'android' package (old bug in AAPT).
         continue;
@@ -853,7 +849,7 @@ public class ResTable {
       isDynamic = true;
     }
 
-    PackageGroup group = null;
+    PackageGroup group;
     ResTablePackage _package = new ResTablePackage(this, header, pkg);
     if (_package == NULL) {
       return (mError = NO_MEMORY);
@@ -1001,7 +997,7 @@ public class ResTable {
               if (existingType.entryCount != newEntryCount && idmapEntry == null) {
                 ALOGW(
                     "ResTable_typeSpec entry count inconsistent: given %d, previously %d",
-                    (int) newEntryCount, (int) existingType.entryCount);
+                    newEntryCount, existingType.entryCount);
                 // We should normally abort here, but some legacy apps declare
                 // resources in the 'android' package (old bug in AAPT).
               }
@@ -1036,13 +1032,12 @@ public class ResTable {
         final int newEntryCount = dtohl(type.entryCount);
 
         if (kDebugLoadTableNoisy) {
-          System.out.println(
-              String.format(
-                  "Type off 0x%x: type=0x%x, headerSize=0x%x, size=%d\n",
-                  base - chunk.myOffset(),
-                  dtohs(type.header.type),
-                  dtohs(type.header.headerSize),
-                  typeSize));
+          System.out.printf(
+              "Type off 0x%x: type=0x%x, headerSize=0x%x, size=%d\n%n",
+              base - chunk.myOffset(),
+              dtohs(type.header.type),
+              dtohs(type.header.headerSize),
+              typeSize);
         }
         // Check if the table uses compact encoding.
         int bytesPerEntry = isTruthy(type.flags & ResTable_type.FLAG_OFFSET16) ? 2 : 4;
@@ -1327,7 +1322,7 @@ public class ResTable {
     for (PackageGroup group : mPackageGroups.values()) {
       if (!Objects.equals(packageName.trim(), group.name.trim())) {
         if (kDebugTableNoisy) {
-          System.out.println(String.format("Skipping package group: %s\n", group.name));
+          System.out.printf("Skipping package group: %s\n%n", group.name);
         }
         continue;
       }
@@ -2465,8 +2460,8 @@ public class ResTable {
     LOG_FATAL_IF(
         idx >= mPackageGroups.size(),
         "Requested package index %d past package count %d",
-        (int) idx,
-        (int) mPackageGroups.size());
+        idx,
+        mPackageGroups.size());
     return mPackageGroups.get(keyFor(idx)).name;
   }
 
@@ -2477,8 +2472,8 @@ public class ResTable {
     LOG_FATAL_IF(
         idx >= mPackageGroups.size(),
         "Requested package index %d past package count %d",
-        (int) idx,
-        (int) mPackageGroups.size());
+        idx,
+        mPackageGroups.size());
     return mPackageGroups.get(keyFor(idx)).id;
   }
 
@@ -2489,8 +2484,8 @@ public class ResTable {
     LOG_FATAL_IF(
         idx >= mPackageGroups.size(),
         "Requested package index %d past package count %d",
-        (int) idx,
-        (int) mPackageGroups.size());
+        idx,
+        mPackageGroups.size());
     PackageGroup group = mPackageGroups.get(keyFor(idx));
     return group.largestTypeId;
   }
@@ -2559,11 +2554,7 @@ public class ResTable {
       return false;
     }
     outName.name = entry.keyStr.string();
-    if (outName.name == null) {
-      return false;
-    }
-
-    return true;
+    return outName.name != null;
   }
 
   String getResourceName(int resId) {
@@ -2802,7 +2793,6 @@ public class ResTable {
 
     int typeIdOffset;
   }
-  ;
 
   public static class bag_entry {
     public int stringBlock;
@@ -2860,7 +2850,7 @@ public class ResTable {
     }
 
     final int NENTRY = typeConfigs.get(0).entryCount;
-    if (e >= (int) NENTRY) {
+    if (e >= NENTRY) {
       ALOGW(
           "Entry identifier 0x%x is larger than entry count 0x%x",
           e, (int) typeConfigs.get(0).entryCount);
@@ -2952,7 +2942,7 @@ public class ResTable {
       final Ref<bag_entry[]> parentBag = new Ref<>(null);
       final Ref<Integer> parentTypeSpecFlags = new Ref<>(0);
       final int NP = getBagLocked(resolvedParent.get(), parentBag, parentTypeSpecFlags);
-      final int NT = ((NP >= 0) ? NP : 0) + N;
+      final int NT = Math.max(NP, 0) + N;
       set = new bag_set(NT);
       if (NP > 0) {
         set.copyFrom(parentBag.get(), NP);
@@ -2999,7 +2989,7 @@ public class ResTable {
       if (curOff > (dtohl(entry.type.header.size) - ResTable_map.SIZEOF)) {
         ALOGW(
             "ResTable_map at %d is beyond type chunk data %d",
-            (int) curOff, dtohl(entry.type.header.size));
+            curOff, dtohl(entry.type.header.size));
         return BAD_TYPE;
       }
       //      map = (const ResTable_map*)(((const uint8_t*)entry.type) + curOff);
@@ -3013,7 +3003,7 @@ public class ResTable {
         if (grp.dynamicRefTable.lookupResourceId(newName) != NO_ERROR) {
           ALOGE(
               "Failed resolving ResTable_map name at %d with ident 0x%08x",
-              (int) curEntry, (int) newName.get());
+              curEntry, newName.get());
           return UNKNOWN_ERROR;
         }
       }
@@ -3135,8 +3125,8 @@ public class ResTable {
     }
 
     public void copyFrom(bag_entry[] parentBag, int count) {
-      for (int i = 0; i < count; i++) {
-        bag_entries[i] = parentBag[i];
+      if (count >= 0) {
+        System.arraycopy(parentBag, 0, bag_entries, 0, count);
       }
     }
 
