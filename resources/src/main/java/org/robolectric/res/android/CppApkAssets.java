@@ -284,10 +284,6 @@ public class CppApkAssets {
                 .order(ByteOrder.LITTLE_ENDIAN),
             0 /*(int) loaded_apk.resources_asset_.getLength()*/);
     loaded_apk.loaded_arsc_ = LoadedArsc.Load(data, loaded_idmap, system, load_as_shared_library);
-    if (loaded_apk.loaded_arsc_ == null) {
-      System.err.println("Failed to load '" + kResourcesArsc + "' in APK '" + path + "'.");
-      return null;
-    }
 
     // Need to force a move for mingw32.
     return loaded_apk;

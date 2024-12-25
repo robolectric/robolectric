@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.robolectric.res.android.Chunk.Iterator;
 import org.robolectric.res.android.Idmap.LoadedIdmap;
 import org.robolectric.res.android.ResourceTypes.IdmapEntry_header;
@@ -602,6 +603,7 @@ public class LoadedArsc {
       return 0;
     }
 
+    @Nonnull
     static LoadedPackage Load(
         Chunk chunk, LoadedIdmap loaded_idmap, boolean system, boolean load_as_shared_library) {
       // ATRACE_NAME("LoadedPackage::Load");
@@ -1054,9 +1056,6 @@ public class LoadedArsc {
 
             LoadedPackage loaded_package =
                 LoadedPackage.Load(child_chunk, loaded_idmap, system_, load_as_shared_library);
-            if (!isTruthy(loaded_package)) {
-              return false;
-            }
             packages_.add(loaded_package);
           }
           break;
@@ -1086,6 +1085,7 @@ public class LoadedArsc {
   // If `load_as_shared_library` is set to true, the application package (0x7f) is treated
   // as a shared library (0x00). When loaded into an AssetManager, the package will be assigned an
   // ID.
+  @Nonnull
   static LoadedArsc Load(
       StringPiece data,
       LoadedIdmap loaded_idmap /* = null */,
