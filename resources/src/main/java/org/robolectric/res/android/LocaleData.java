@@ -154,7 +154,7 @@ public class LocaleData {
     }
 
     int[] request_ancestors = new int[MAX_PARENT_DEPTH + 1];
-    final Ref<Long> left_right_indexRef = new Ref<Long>(null);
+    final Ref<Long> left_right_indexRef = new Ref<>(null);
     // Find the parents of the request, but stop as soon as we saw left or right
     final int[] left_and_right = {left, right};
     final int ancestor_count =

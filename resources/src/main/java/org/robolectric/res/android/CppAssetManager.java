@@ -1030,7 +1030,7 @@ public class CppAssetManager {
        *
        * We start with Zip archives, then do loose files.
        */
-      pMergedInfo = new Ref<>(new SortedVector<AssetDir.FileInfo>());
+      pMergedInfo = new Ref<>(new SortedVector<>());
 
       int i = mAssetPaths.size();
       while (i > 0) {

@@ -15,8 +15,7 @@ public class ActivityDataTest {
   public void test_non_android_namespace() {
     HashMap<String, String> attrs = new HashMap<>();
     attrs.put("testns:name", ".test.TestActivity");
-    ActivityData activityData =
-        new ActivityData("testns", attrs, new ArrayList<IntentFilterData>());
+    ActivityData activityData = new ActivityData("testns", attrs, new ArrayList<>());
 
     assertThat(activityData.getName()).isEqualTo(".test.TestActivity");
     assertThat(activityData.getAllAttributes().get("android:name")).isNull();
@@ -26,7 +25,7 @@ public class ActivityDataTest {
   public void test_config_changes() {
     HashMap<String, String> attrs = new HashMap<>();
     attrs.put("android:configChanges", "mcc|screenLayout|orientation");
-    ActivityData activityData = new ActivityData(attrs, new ArrayList<IntentFilterData>());
+    ActivityData activityData = new ActivityData(attrs, new ArrayList<>());
 
     assertThat(activityData.getConfigChanges()).isEqualTo("mcc|screenLayout|orientation");
   }

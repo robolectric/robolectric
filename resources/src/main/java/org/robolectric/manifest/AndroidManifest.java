@@ -156,7 +156,7 @@ public class AndroidManifest implements UsesSdk {
     return rClassName;
   }
 
-  public Class getRClass() {
+  public Class<?> getRClass() {
     try {
       String rClassName = getRClassName();
       return Class.forName(rClassName);
@@ -665,7 +665,7 @@ public class AndroidManifest implements UsesSdk {
   public Map<String, Object> getApplicationMetaData() {
     parseAndroidManifest();
     if (applicationMetaData == null) {
-      applicationMetaData = new MetaData(Collections.<Node>emptyList());
+      applicationMetaData = new MetaData(Collections.emptyList());
     }
     return applicationMetaData.getValueMap();
   }
