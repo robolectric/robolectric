@@ -2802,7 +2802,6 @@ public class ResTable {
 
     int typeIdOffset;
   }
-  ;
 
   public static class bag_entry {
     public int stringBlock;
