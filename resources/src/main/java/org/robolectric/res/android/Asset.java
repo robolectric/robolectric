@@ -80,7 +80,7 @@ public abstract class Asset {
           return enumMode;
         }
       }
-      throw new IllegalArgumentException("invalid mode " + Integer.toString(mode));
+      throw new IllegalArgumentException("invalid mode " + mode);
     }
   }
 
@@ -779,7 +779,7 @@ public abstract class Asset {
         // if (ftell(mFp) != mStart + mOffset) {
         try {
           if (mFp.getFilePointer() != mStart + mOffset) {
-            ALOGE("Hosed: %d != %d+%d\n", mFp.getFilePointer(), (long) mStart, (long) mOffset);
+            ALOGE("Hosed: %d != %d+%d\n", mFp.getFilePointer(), mStart, mOffset);
             assert false;
           }
 
@@ -892,7 +892,7 @@ public abstract class Asset {
           return null;
         }
 
-        ALOGV("Asset %s allocating buffer size %d (smaller than threshold)", this, (int) allocLen);
+        ALOGV("Asset %s allocating buffer size %d (smaller than threshold)", this, allocLen);
         if (mLength > 0) {
           try {
             // long oldPosn = ftell(mFp);
@@ -901,7 +901,7 @@ public abstract class Asset {
             mFp.seek(mStart);
             // if (fread(buf, 1, mLength, mFp) != (size_t) mLength) {
             if (mFp.read(buf, 0, toIntExact(mLength)) != (int) mLength) {
-              ALOGE("failed reading %d bytes\n", (long) mLength);
+              ALOGE("failed reading %d bytes\n", mLength);
               // delete[] buf;
               return null;
             }

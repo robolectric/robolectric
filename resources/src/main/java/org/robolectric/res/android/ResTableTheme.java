@@ -54,7 +54,7 @@ public class ResTableTheme {
     if (styles.isEmpty()) {
       return "theme with no applied styles";
     } else {
-      return "theme with applied styles: " + styles + "";
+      return "theme with applied styles: " + styles;
     }
   }
 
@@ -152,7 +152,7 @@ public class ResTableTheme {
       if (kDebugTableTheme) {
         ALOGI(
             "Resolving attr reference: blockIndex=%d, type=0x%x, data=0x%x\n",
-            (int) blockIndex, (int) inOutValue.get().dataType, inOutValue.get().data);
+            blockIndex, (int) inOutValue.get().dataType, inOutValue.get().data);
       }
       if (inoutTypeSpecFlags != null)
         inoutTypeSpecFlags.set(inoutTypeSpecFlags.get() | newTypeSpecFlags.get());

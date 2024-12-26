@@ -898,7 +898,7 @@ public class LoadedArsc {
 
       // Flatten and construct the TypeSpecs.
       for (Entry<Integer, TypeSpecPtrBuilder> entry : type_builder_map.entrySet()) {
-        byte type_idx = (byte) entry.getKey().byteValue();
+        byte type_idx = entry.getKey().byteValue();
         TypeSpec type_spec_ptr = entry.getValue().Build();
         if (type_spec_ptr == null) {
           logError("Too many type configurations, overflow detected.");

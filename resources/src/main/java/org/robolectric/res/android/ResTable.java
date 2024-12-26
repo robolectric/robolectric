@@ -266,7 +266,7 @@ public class ResTable {
     if (dataSize < ResTable_header.SIZEOF) {
       ALOGE(
           "Invalid data. Size(%d) is smaller than a ResTable_header(%d).",
-          (int) dataSize, (int) ResTable_header.SIZEOF);
+          dataSize, ResTable_header.SIZEOF);
       return UNKNOWN_ERROR;
     }
 
@@ -316,13 +316,13 @@ public class ResTable {
     if (dtohs(header.header.header.headerSize) > header.size || header.size > dataSize) {
       ALOGW(
           "Bad resource table: header size 0x%x or total size 0x%x is larger than data size 0x%x\n",
-          (int) dtohs(header.header.header.headerSize), (int) header.size, (int) dataSize);
+          (int) dtohs(header.header.header.headerSize), header.size, dataSize);
       return (mError = BAD_TYPE);
     }
     if (((dtohs(header.header.header.headerSize) | header.size) & 0x3) != 0) {
       ALOGW(
           "Bad resource table: header size 0x%x or total size 0x%x is not on an integer boundary\n",
-          (int) dtohs(header.header.header.headerSize), (int) header.size);
+          (int) dtohs(header.header.header.headerSize), header.size);
       return (mError = BAD_TYPE);
     }
     //    header->dataEnd = ((const uint8_t*)header->header) + header->size;
@@ -348,7 +348,7 @@ public class ResTable {
             dtohs(chunk.type),
             dtohs(chunk.headerSize),
             dtohl(chunk.size),
-            (Object) (chunk.myOffset() - header.header.myOffset()));
+            chunk.myOffset() - header.header.myOffset());
       }
       final int csize = dtohl(chunk.size);
       final int ctype = dtohs(chunk.type);
@@ -394,7 +394,7 @@ public class ResTable {
     if (curPackage < dtohl(header.header.packageCount)) {
       ALOGW(
           "Fewer package chunks (%d) were found than the %d declared in the header.",
-          (int) curPackage, dtohl(header.header.packageCount));
+          curPackage, dtohl(header.header.packageCount));
       return (mError = BAD_TYPE);
     }
     mError = header.values.getError();
@@ -533,7 +533,7 @@ public class ResTable {
       if (kDebugTableTheme) {
         ALOGI(
             "Resolving reference 0x%x: newIndex=%d, type=0x%x, data=0x%x\n",
-            value.get().data, (int) newIndex, (int) value.get().dataType, value.get().data);
+            value.get().data, newIndex, (int) value.get().dataType, value.get().data);
       }
       // printf("Getting reference 0x%08x: newIndex=%d\n", value.data, newIndex);
       if (inoutTypeSpecFlags != null) {
@@ -623,12 +623,12 @@ public class ResTable {
       // Check that the entry idx is within range of the declared entry count (ResTable_typeSpec).
       // Particular types (ResTable_type) may be encoded with sparse entries, and so their
       // entryCount do not need to match.
-      if (((int) realEntryIndex) >= typeSpec.entryCount) {
+      if (realEntryIndex >= typeSpec.entryCount) {
         ALOGW(
             "For resource 0x%08x, entry index(%d) is beyond type entryCount(%d)",
             Res_MAKEID(packageGroup.id - 1, typeIndex, entryIndex),
             entryIndex,
-            ((int) typeSpec.entryCount));
+            typeSpec.entryCount);
         // We should normally abort here, but some legacy apps declare
         // resources in the 'android' package (old bug in AAPT).
         continue;
@@ -1001,7 +1001,7 @@ public class ResTable {
               if (existingType.entryCount != newEntryCount && idmapEntry == null) {
                 ALOGW(
                     "ResTable_typeSpec entry count inconsistent: given %d, previously %d",
-                    (int) newEntryCount, (int) existingType.entryCount);
+                    newEntryCount, existingType.entryCount);
                 // We should normally abort here, but some legacy apps declare
                 // resources in the 'android' package (old bug in AAPT).
               }
@@ -2465,8 +2465,8 @@ public class ResTable {
     LOG_FATAL_IF(
         idx >= mPackageGroups.size(),
         "Requested package index %d past package count %d",
-        (int) idx,
-        (int) mPackageGroups.size());
+        idx,
+        mPackageGroups.size());
     return mPackageGroups.get(keyFor(idx)).name;
   }
 
@@ -2477,8 +2477,8 @@ public class ResTable {
     LOG_FATAL_IF(
         idx >= mPackageGroups.size(),
         "Requested package index %d past package count %d",
-        (int) idx,
-        (int) mPackageGroups.size());
+        idx,
+        mPackageGroups.size());
     return mPackageGroups.get(keyFor(idx)).id;
   }
 
@@ -2489,8 +2489,8 @@ public class ResTable {
     LOG_FATAL_IF(
         idx >= mPackageGroups.size(),
         "Requested package index %d past package count %d",
-        (int) idx,
-        (int) mPackageGroups.size());
+        idx,
+        mPackageGroups.size());
     PackageGroup group = mPackageGroups.get(keyFor(idx));
     return group.largestTypeId;
   }
@@ -2859,10 +2859,10 @@ public class ResTable {
     }
 
     final int NENTRY = typeConfigs.get(0).entryCount;
-    if (e >= (int) NENTRY) {
+    if (e >= NENTRY) {
       ALOGW(
           "Entry identifier 0x%x is larger than entry count 0x%x",
-          e, (int) typeConfigs.get(0).entryCount);
+          e, typeConfigs.get(0).entryCount);
       return BAD_INDEX;
     }
 
@@ -2998,7 +2998,7 @@ public class ResTable {
       if (curOff > (dtohl(entry.type.header.size) - ResTable_map.SIZEOF)) {
         ALOGW(
             "ResTable_map at %d is beyond type chunk data %d",
-            (int) curOff, dtohl(entry.type.header.size));
+            curOff, dtohl(entry.type.header.size));
         return BAD_TYPE;
       }
       //      map = (const ResTable_map*)(((const uint8_t*)entry.type) + curOff);
@@ -3012,7 +3012,7 @@ public class ResTable {
         if (grp.dynamicRefTable.lookupResourceId(newName) != NO_ERROR) {
           ALOGE(
               "Failed resolving ResTable_map name at %d with ident 0x%08x",
-              (int) curEntry, (int) newName.get());
+              curEntry, newName.get());
           return UNKNOWN_ERROR;
         }
       }

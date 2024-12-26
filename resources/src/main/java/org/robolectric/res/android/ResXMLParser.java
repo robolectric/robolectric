@@ -256,7 +256,7 @@ public class ResXMLParser {
 
   public int getAttributeNameResID(int idx) {
     int id = getAttributeNameID(idx);
-    if (id >= 0 && (int) id < mTree.mNumResIds) {
+    if (id >= 0 && id < mTree.mNumResIds) {
       int resId = dtohl(mTree.mResIds[id]);
       if (mTree.mDynamicRefTable != null) {
         final Ref<Integer> resIdRef = new Ref<>(resId);
@@ -557,8 +557,8 @@ public class ResXMLParser {
             "Bad XML block: header type 0x%x in node at 0x%x has size %d, need %d\n",
             (int) dtohs(next.header.type),
             (next.myOffset() - mTree.mHeader.myOffset()),
-            (int) (totalSize - headerSize),
-            (int) minExtSize);
+            (totalSize - headerSize),
+            minExtSize);
         return (mEventCode = BAD_DOCUMENT);
       }
 

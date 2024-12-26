@@ -1168,7 +1168,7 @@ public class CppAssetManager {
           // printf("+++ no match on '%s'\n", (final char*) match);
         }
 
-        ALOGD("HEY: size=%d removing %d\n", (int) pContents.size(), i);
+        ALOGD("HEY: size=%d removing %d\n", pContents.size(), i);
         pContents.removeAt(i);
         i--; // adjust "for" loop
         count--; //  and loop limit

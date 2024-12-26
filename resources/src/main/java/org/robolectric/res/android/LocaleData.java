@@ -177,7 +177,7 @@ public class LocaleData {
     final int right_distance =
         findDistance(right, requested_script, request_ancestors, ancestor_count);
     if (left_distance != right_distance) {
-      return (int) right_distance - (int) left_distance; // smaller distance is better
+      return right_distance - left_distance; // smaller distance is better
     }
     // If we are here, left and right are equidistant from the request. We will
     // try and see if any of them is a representative locale.

@@ -44,7 +44,7 @@ public class ThemeStyleSet implements Style {
     if (styles.isEmpty()) {
       return "theme with no applied styles";
     } else {
-      return "theme with applied styles: " + styles + "";
+      return "theme with applied styles: " + styles;
     }
   }
 

@@ -140,7 +140,7 @@ public class DynamicRefTable {
       return UNKNOWN_ERROR;
     }
 
-    resId.set((res & 0x00ffffff) | (((int) translatedId) << 24));
+    resId.set((res & 0x00ffffff) | (translatedId << 24));
     return NO_ERROR;
   }
 
