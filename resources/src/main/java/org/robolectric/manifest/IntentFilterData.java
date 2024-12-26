@@ -93,8 +93,8 @@ public class IntentFilterData {
   }
 
   public static class DataAuthority {
-    private String host;
-    private String port;
+    private final String host;
+    private final String port;
 
     public DataAuthority(String host, String port) {
       this.host = host;

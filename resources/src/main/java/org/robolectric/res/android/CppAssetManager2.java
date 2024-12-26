@@ -1407,7 +1407,7 @@ public class CppAssetManager2 {
     private final CppAssetManager2 asset_manager_;
     private int type_spec_flags_ = 0;
     //  std.array<std.unique_ptr<Package>, kPackageCount> packages_;
-    private ThemePackage[] packages_ = new ThemePackage[kPackageCount];
+    private final ThemePackage[] packages_ = new ThemePackage[kPackageCount];
 
     public Theme(CppAssetManager2 cppAssetManager2) {
       asset_manager_ = cppAssetManager2;

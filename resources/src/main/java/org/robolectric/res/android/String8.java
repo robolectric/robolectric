@@ -11,7 +11,7 @@ import org.robolectric.res.Fs;
 @SuppressWarnings("NewApi")
 public class String8 {
 
-  private StringBuilder mString;
+  private final StringBuilder mString;
 
   public String8() {
     this("");

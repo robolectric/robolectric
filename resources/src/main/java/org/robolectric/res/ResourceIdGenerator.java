@@ -7,10 +7,10 @@ import java.util.Map;
 public class ResourceIdGenerator {
 
   private final Map<String, TypeTracker> typeInfo = new HashMap<>();
-  private int packageIdentifier;
+  private final int packageIdentifier;
 
   private static class TypeTracker {
-    private int typeIdentifier;
+    private final int typeIdentifier;
     private int currentMaxEntry;
 
     TypeTracker(int typeIdentifier) {

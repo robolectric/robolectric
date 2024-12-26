@@ -10,7 +10,7 @@ import java.util.List;
 public class SortedVector<T extends Comparable<T>> {
 
   // internal storage for the data. Re-sorted on insertion
-  private List<T> mStorage;
+  private final List<T> mStorage;
 
   SortedVector(int itemSize) {
     mStorage = new ArrayList<>(itemSize);
