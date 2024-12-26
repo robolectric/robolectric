@@ -31,7 +31,7 @@ import org.robolectric.res.android.ResourceTypes.WithOffset;
 @SuppressWarnings("NewApi")
 public class ResStringPool {
 
-  private static boolean kDebugStringPoolNoisy = false;
+  private static final boolean kDebugStringPoolNoisy = false;
 
   private final long myNativePtr;
 

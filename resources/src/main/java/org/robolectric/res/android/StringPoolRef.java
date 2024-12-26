@@ -9,7 +9,7 @@ package org.robolectric.res.android;
 class StringPoolRef {
 
   private final ResStringPool mPool;
-  private int mIndex;
+  private final int mIndex;
 
   StringPoolRef(final ResStringPool pool, int index) {
     this.mPool = pool;

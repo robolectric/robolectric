@@ -28,7 +28,7 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 public class ResTableTheme {
 
   private final List<AppliedStyle> styles = new ArrayList<>();
-  private static boolean styleDebug = false;
+  private static final boolean styleDebug = false;
   private static final type_info EMPTY_TYPE_INFO = new type_info();
   private static final theme_entry EMPTY_THEME_ENTRY = new theme_entry();
 
@@ -58,10 +58,10 @@ public class ResTableTheme {
     }
   }
 
-  private ResTable mTable;
-  private boolean kDebugTableTheme = false;
-  private boolean kDebugTableNoisy = false;
-  private package_info[] mPackages = new package_info[Res_MAXPACKAGE];
+  private final ResTable mTable;
+  private final boolean kDebugTableTheme = false;
+  private final boolean kDebugTableNoisy = false;
+  private final package_info[] mPackages = new package_info[Res_MAXPACKAGE];
   private Ref<Integer> mTypeSpecFlags = new Ref<>(0);
 
   public ResTableTheme(ResTable resources) {

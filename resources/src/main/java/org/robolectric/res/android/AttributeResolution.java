@@ -40,7 +40,7 @@ public class AttributeResolution {
 
   public static class XmlAttributeFinder {
 
-    private ResXMLParser xmlParser;
+    private final ResXMLParser xmlParser;
 
     public XmlAttributeFinder(ResXMLParser xmlParser) {
       this.xmlParser = xmlParser;

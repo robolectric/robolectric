@@ -14,7 +14,7 @@ public class BroadcastReceiverData extends PackageItemData {
 
   private final Map<String, String> attributes;
   private final List<String> actions;
-  private List<IntentFilterData> intentFilters;
+  private final List<IntentFilterData> intentFilters;
 
   public BroadcastReceiverData(
       Map<String, String> attributes, MetaData metaData, List<IntentFilterData> intentFilters) {

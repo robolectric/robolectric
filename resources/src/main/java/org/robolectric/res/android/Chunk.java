@@ -71,7 +71,7 @@ class Chunk {
   }
 
   // private:
-  private ResChunk_header device_chunk_;
+  private final ResChunk_header device_chunk_;
 
   public ResTable_header asResTable_header() {
     if (header_size() >= ResTable_header.SIZEOF) {
