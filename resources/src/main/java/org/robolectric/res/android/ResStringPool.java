@@ -163,7 +163,7 @@ public class ResStringPool {
     if (mHeader.header.headerSize > mHeader.header.size || mHeader.header.size > size) {
       ALOGW(
           "Bad string block: header size %d or total size %d is larger than data size %d\n",
-          (int) mHeader.header.headerSize, (int) mHeader.header.size, (int) size);
+          (int) mHeader.header.headerSize, mHeader.header.size, size);
       return (mError = BAD_TYPE);
     }
     mSize = mHeader.header.size;
@@ -174,8 +174,7 @@ public class ResStringPool {
           || (mHeader.header.headerSize + (mHeader.stringCount * 4 /*sizeof(uint32_t)*/)) > size) {
         ALOGW(
             "Bad string block: entry of %d items extends past data size %d\n",
-            (int) (mHeader.header.headerSize + (mHeader.stringCount * 4 /*sizeof(uint32_t)*/)),
-            (int) size);
+            (mHeader.header.headerSize + (mHeader.stringCount * 4 /*sizeof(uint32_t)*/)), size);
         return (mError = BAD_TYPE);
       }
 
@@ -191,7 +190,7 @@ public class ResStringPool {
       if (mHeader.stringsStart >= (mSize - 2 /*sizeof(uint16_t)*/)) {
         ALOGW(
             "Bad string block: string pool starts at %d, after total size %d\n",
-            (int) mHeader.stringsStart, (int) mHeader.header.size);
+            mHeader.stringsStart, mHeader.header.size);
         return (mError = BAD_TYPE);
       }
 
@@ -204,14 +203,14 @@ public class ResStringPool {
         if (mHeader.stylesStart >= (mSize - 2 /*sizeof(uint16_t)*/)) {
           ALOGW(
               "Bad style block: style block starts at %d past data size of %d\n",
-              (int) mHeader.stylesStart, (int) mHeader.header.size);
+              mHeader.stylesStart, mHeader.header.size);
           return (mError = BAD_TYPE);
         }
         // check invariant: styles follow the strings
         if (mHeader.stylesStart <= mHeader.stringsStart) {
           ALOGW(
               "Bad style block: style block starts at %d, before strings at %d\n",
-              (int) mHeader.stylesStart, (int) mHeader.stringsStart);
+              mHeader.stylesStart, mHeader.stringsStart);
           return (mError = BAD_TYPE);
         }
         mStringPoolSize = (mHeader.stylesStart - mHeader.stringsStart) / charSize;
@@ -219,8 +218,7 @@ public class ResStringPool {
 
       // check invariant: stringCount > 0 requires a string pool to exist
       if (mStringPoolSize == 0) {
-        ALOGW(
-            "Bad string block: stringCount is %d but pool size is 0\n", (int) mHeader.stringCount);
+        ALOGW("Bad string block: stringCount is %d but pool size is 0\n", mHeader.stringCount);
         return (mError = BAD_TYPE);
       }
 
@@ -266,17 +264,17 @@ public class ResStringPool {
       }
 
       //      if (((const uint8_t*)mEntryStyles-(const uint8_t*)mHeader) > (int)size) {
-      if ((mEntryStyles.myOffset() - mHeader.myOffset()) > (int) size) {
+      if ((mEntryStyles.myOffset() - mHeader.myOffset()) > size) {
         ALOGW(
             "Bad string block: entry of %d styles extends past data size %d\n",
-            (int) mEntryStyles.myOffset(), (int) size);
+            mEntryStyles.myOffset(), size);
         return (mError = BAD_TYPE);
       }
       mStyles = mHeader.stylesStart;
       if (mHeader.stylesStart >= mHeader.header.size) {
         ALOGW(
             "Bad string block: style pool starts %d, after total size %d\n",
-            (int) mHeader.stylesStart, (int) mHeader.header.size);
+            mHeader.stylesStart, mHeader.header.size);
         return (mError = BAD_TYPE);
       }
       mStylePoolSize = (mHeader.header.size - mHeader.stylesStart) /* / sizeof(uint32_t)*/;
@@ -446,9 +444,7 @@ public class ResStringPool {
       } else {
         ALOGW(
             "Bad string block: string #%d entry is at %d, past end at %d\n",
-            (int) idx,
-            (int) (off * 2 /*sizeof(uint16_t)*/),
-            (int) (mStringPoolSize * 2 /*sizeof(uint16_t)*/));
+            idx, (off * 2 /*sizeof(uint16_t)*/), (mStringPoolSize * 2 /*sizeof(uint16_t)*/));
       }
     }
     return null;
@@ -481,7 +477,7 @@ public class ResStringPool {
       } else {
         ALOGW(
             "Bad string block: style #%d entry is at %d, past end at %d\n",
-            (int) idx, (int) (off * SIZEOF_INT), (int) (mStylePoolSize * SIZEOF_INT));
+            idx, (off * SIZEOF_INT), (mStylePoolSize * SIZEOF_INT));
       }
     }
     return null;
@@ -511,7 +507,7 @@ public class ResStringPool {
         String s = stringAt(mid);
         int c = s != null ? s.compareTo(str) : -1;
         if (kDebugStringPoolNoisy) {
-          ALOGI("Looking at %s, cmp=%d, l/mid/h=%d/%d/%d\n", s, c, (int) l, (int) mid, (int) h);
+          ALOGI("Looking at %s, cmp=%d, l/mid/h=%d/%d/%d\n", s, c, l, mid, h);
         }
         if (c == 0) {
           if (kDebugStringPoolNoisy) {

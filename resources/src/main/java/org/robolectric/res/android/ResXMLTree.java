@@ -102,7 +102,7 @@ public class ResXMLTree {
     if (dtohs(mHeader.header.headerSize) > mSize || mSize > size) {
       ALOGW(
           "Bad XML block: header size %d or total size %d is larger than data size %d\n",
-          (int) dtohs(mHeader.header.headerSize), (int) dtohl(mHeader.header.size), (int) size);
+          (int) dtohs(mHeader.header.headerSize), dtohl(mHeader.header.size), size);
       mError = BAD_TYPE;
       mParser.restart();
       return mError;
@@ -240,11 +240,9 @@ public class ResXMLTree {
         }
         ALOGW(
             "Bad XML block: node attributes use 0x%x bytes, only have 0x%x bytes\n",
-            (int) (dtohs(attrExt.attributeStart) + attrSize), (int) (size - headerSize));
+            (dtohs(attrExt.attributeStart) + attrSize), (size - headerSize));
       } else {
-        ALOGW(
-            "Bad XML start block: node header size 0x%x, size 0x%x\n",
-            (int) headerSize, (int) size);
+        ALOGW("Bad XML start block: node header size 0x%x, size 0x%x\n", (int) headerSize, size);
       }
       return BAD_TYPE;
     }
