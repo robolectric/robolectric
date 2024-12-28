@@ -2027,9 +2027,7 @@ public class ResTable_config {
   }
 
   private void clear(byte[] bytes) {
-    for (int i = 0; i < bytes.length; i++) {
-      bytes[i] = 0;
-    }
+    Arrays.fill(bytes, (byte) 0);
   }
 
   /**

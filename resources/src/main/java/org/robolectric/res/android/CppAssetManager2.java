@@ -288,9 +288,7 @@ public class CppAssetManager2 {
   void BuildDynamicRefTable() {
     package_groups_.clear();
     //    package_ids_.fill(0xff);
-    for (int i = 0; i < package_ids_.length; i++) {
-      package_ids_[i] = (byte) 0xff;
-    }
+    Arrays.fill(package_ids_, (byte) 0xff);
 
     // 0x01 is reserved for the android package.
     int next_package_id = 0x02;
