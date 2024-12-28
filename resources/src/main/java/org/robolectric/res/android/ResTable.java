@@ -195,9 +195,7 @@ public class ResTable {
   int add(ResTable src, boolean isSystemAsset) {
     mError = src.mError;
 
-    for (int i = 0; i < src.mHeaders.size(); i++) {
-      mHeaders.add(src.mHeaders.get(i));
-    }
+    mHeaders.addAll(src.mHeaders);
 
     for (PackageGroup srcPg : src.mPackageGroups.values()) {
       PackageGroup pg =
@@ -208,9 +206,7 @@ public class ResTable {
               false /* appAsLib */,
               isSystemAsset || srcPg.isSystemAsset,
               srcPg.isDynamic);
-      for (int j = 0; j < srcPg.packages.size(); j++) {
-        pg.packages.add(srcPg.packages.get(j));
-      }
+      pg.packages.addAll(srcPg.packages);
 
       for (Integer typeId : srcPg.types.keySet()) {
         List<Type> typeList = computeIfAbsent(pg.types, typeId, key -> new ArrayList<>());
@@ -3134,8 +3130,8 @@ public class ResTable {
     }
 
     public void copyFrom(bag_entry[] parentBag, int count) {
-      for (int i = 0; i < count; i++) {
-        bag_entries[i] = parentBag[i];
+      if (count >= 0) {
+        System.arraycopy(parentBag, 0, bag_entries, 0, count);
       }
     }
 
