@@ -49,7 +49,7 @@ public class ResourceIdGenerator {
       typeTracker = new TypeTracker(getNextFreeTypeIdentifier());
       typeInfo.put(type, typeTracker);
     }
-    return ResourceIds.makeIdentifer(
+    return ResourceIds.makeIdentifier(
         packageIdentifier, typeTracker.getTypeIdentifier(), typeTracker.getFreeIdentifier());
   }
 

@@ -35,7 +35,7 @@ public class ResourceIdsTest {
 
   @Test
   public void testMakeIdentifier() {
-    assertThat(ResourceIds.makeIdentifer(0x01, 0x01, 0x9876)).isEqualTo(0x01019876);
-    assertThat(ResourceIds.makeIdentifer(0x7F, 0x78, 0x1234)).isEqualTo(0x7F781234);
+    assertThat(ResourceIds.makeIdentifier(0x01, 0x01, 0x9876)).isEqualTo(0x01019876);
+    assertThat(ResourceIds.makeIdentifier(0x7F, 0x78, 0x1234)).isEqualTo(0x7F781234);
   }
 }
