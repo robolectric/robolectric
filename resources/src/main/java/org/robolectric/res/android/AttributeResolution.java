@@ -289,7 +289,6 @@ public class AttributeResolution {
             : -1;
     defStyleTypeSetFlags.set(defStyleTypeSetFlags.get() | defStyleBagTypeSetFlags.get());
     // const ResTable::bag_entry* defStyleAttrEnd = defStyleAttrStart + (bagOff >= 0 ? bagOff : 0);
-    final ResTable.bag_entry defStyleAttrEnd = null;
     // BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleAttrStart,
     // defStyleAttrEnd);
     BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleAttrStart.get(), bagOff);
@@ -300,7 +299,6 @@ public class AttributeResolution {
     bagOff = style != 0 ? res.getBagLocked(style, styleAttrStart, styleTypeSetFlags) : -1;
     styleTypeSetFlags.set(styleTypeSetFlags.get() | styleBagTypeSetFlags.get());
     // final ResTable::bag_entry* final styleAttrEnd = styleAttrStart + (bagOff >= 0 ? bagOff : 0);
-    final ResTable.bag_entry styleAttrEnd = null;
     // BagAttributeFinder styleAttrFinder = new BagAttributeFinder(styleAttrStart, styleAttrEnd);
     BagAttributeFinder styleAttrFinder = new BagAttributeFinder(styleAttrStart.get(), bagOff);
 
@@ -342,7 +340,7 @@ public class AttributeResolution {
           && value.get().data != Res_value.DATA_NULL_EMPTY) {
         // Walk through the style class values looking for the requested attribute.
         final ResTable.bag_entry styleAttrEntry = styleAttrFinder.find(curIdent);
-        if (styleAttrEntry != styleAttrEnd) {
+        if (styleAttrEntry != null) {
           // We found the attribute we were looking for.
           block = styleAttrEntry.stringBlock;
           typeSetFlags.set(styleTypeSetFlags.get());
@@ -357,7 +355,7 @@ public class AttributeResolution {
           && value.get().data != Res_value.DATA_NULL_EMPTY) {
         // Walk through the default style values looking for the requested attribute.
         final ResTable.bag_entry defStyleAttrEntry = defStyleAttrFinder.find(curIdent);
-        if (defStyleAttrEntry != defStyleAttrEnd) {
+        if (defStyleAttrEntry != null) {
           // We found the attribute we were looking for.
           block = defStyleAttrEntry.stringBlock;
           typeSetFlags.set(styleTypeSetFlags.get());

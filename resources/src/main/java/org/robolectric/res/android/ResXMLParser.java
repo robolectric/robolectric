@@ -358,9 +358,8 @@ public class ResXMLParser {
 
   int indexOfAttribute(final String ns, final String attr) {
     String nsStr = ns != null ? ns : "";
-    String attrStr = attr;
     return indexOfAttribute(
-        isTruthy(ns) ? nsStr : null, isTruthy(ns) ? nsStr.length() : 0, attrStr, attrStr.length());
+        isTruthy(ns) ? nsStr : null, isTruthy(ns) ? nsStr.length() : 0, attr, attr.length());
   }
 
   public int indexOfAttribute(final String ns, int nsLen, final String attr, int attrLen) {
@@ -529,7 +528,7 @@ public class ResXMLParser {
       final int headerSize = dtohs(next.header.headerSize);
       final int totalSize = dtohl(next.header.size);
       mCurExt = next.myOffset() + headerSize;
-      int minExtSize = 0;
+      int minExtSize;
       int eventCode = dtohs(next.header.type);
       switch ((mEventCode = eventCode)) {
         case RES_XML_START_NAMESPACE_TYPE:

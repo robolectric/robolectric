@@ -193,9 +193,8 @@ public class ResTableTheme {
     int numEntries = 0;
     theme_entry[] curEntries = null;
 
-    final int end = N;
     int bagIndex = 0;
-    while (bagIndex < end) {
+    while (bagIndex < N) {
       bag_entry bagEntry = bag.get()[bagIndex];
       final int attrRes = bagEntry.map.name.ident;
       final int p = Res_GETPACKAGE(attrRes);

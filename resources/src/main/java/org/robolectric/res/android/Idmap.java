@@ -54,7 +54,7 @@ class Idmap {
   // A LoadedIdmap can be set alongside the overlay's LoadedArsc to allow the overlay ApkAssets to
   // masquerade as the target ApkAssets resources.
   static class LoadedIdmap {
-    Idmap_header header_ = null;
+    Idmap_header header_;
     String overlay_apk_path_;
     final Map<Byte, IdmapEntry_header> type_map_ = new HashMap<>();
 

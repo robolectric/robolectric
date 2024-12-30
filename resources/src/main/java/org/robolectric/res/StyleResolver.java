@@ -51,8 +51,7 @@ public class StyleResolver implements Style {
 
     // todo: is this tested?
     if (theme != null) {
-      AttributeResource value = theme.getAttrValue(resName);
-      if (value != null) return value;
+      return theme.getAttrValue(resName);
     }
 
     return null;
