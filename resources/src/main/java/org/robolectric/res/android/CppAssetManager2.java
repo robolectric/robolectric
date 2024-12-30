@@ -680,18 +680,15 @@ public class CppAssetManager2 {
         continue;
       }
 
-      int local_entry_idx = entry_idx;
-
       // If there is an IDMAP supplied with this package, translate the entry ID.
       if (type_spec.idmap_entries != null) {
-        if (!LoadedIdmap.Lookup(
-            type_spec.idmap_entries, local_entry_idx, new Ref<>(local_entry_idx))) {
+        if (!LoadedIdmap.Lookup(type_spec.idmap_entries, entry_idx, new Ref<>(entry_idx))) {
           // There is no mapping, so the resource is not meant to be in this overlay package.
           continue;
         }
       }
 
-      type_flags |= type_spec.GetFlagsForEntryIndex(local_entry_idx);
+      type_flags |= type_spec.GetFlagsForEntryIndex(entry_idx);
 
       // If the package is an overlay, then even configurations that are the same MUST be chosen.
       boolean package_is_overlay = loaded_package.IsOverlay();
@@ -710,7 +707,7 @@ public class CppAssetManager2 {
             // The configuration matches and is better than the previous selection.
             // Find the entry value if it exists for this configuration.
             ResTable_type type_chunk = filtered_group.types.get(i);
-            int offset = LoadedPackage.GetEntryOffset(type_chunk, local_entry_idx);
+            int offset = LoadedPackage.GetEntryOffset(type_chunk, entry_idx);
             if (offset == ResTable_type.NO_ENTRY) {
               continue;
             }
@@ -738,7 +735,7 @@ public class CppAssetManager2 {
                 || (package_is_overlay && this_config.compare(best_config) == 0)) {
               // The configuration matches and is better than the previous selection.
               // Find the entry value if it exists for this configuration.
-              int offset = LoadedPackage.GetEntryOffset(type, local_entry_idx);
+              int offset = LoadedPackage.GetEntryOffset(type, entry_idx);
               if (offset == ResTable_type.NO_ENTRY) {
                 continue;
               }

@@ -234,13 +234,12 @@ public class CppAssetManager {
     synchronized (mLock) {
       asset_path ap = new asset_path();
 
-      String8 realPath = path;
       if (kAppZipName != null) {
-        realPath.appendPath(kAppZipName);
+        path.appendPath(kAppZipName);
       }
-      ap.type = getFileType(realPath.string());
+      ap.type = getFileType(path.string());
       if (ap.type == FileType.kFileTypeRegular) {
-        ap.path = realPath;
+        ap.path = path;
       } else {
         ap.path = path;
         ap.type = getFileType(path.string());
@@ -820,8 +819,7 @@ public class CppAssetManager {
   }
 
   final ResTable getResources(boolean required) {
-    final ResTable rt = getResTable(required);
-    return rt;
+    return getResTable(required);
   }
 
   //  boolean isUpToDate()
@@ -942,7 +940,7 @@ public class CppAssetManager {
    * claims to be a ".gz" but isn't.
    */
   static Asset openAssetFromFileLocked(final String8 pathName, AccessMode mode) {
-    Asset pAsset = null;
+    Asset pAsset;
 
     if (pathName.getPathExtension().toLowerCase().equals(".gz")) {
       // printf("TRYING '%s'\n", (final char*) pathName);
@@ -963,7 +961,7 @@ public class CppAssetManager {
    */
   static Asset openAssetFromZipLocked(
       final ZipFileRO pZipFile, final ZipEntryRO entry, AccessMode mode, final String8 entryName) {
-    Asset pAsset = null;
+    Asset pAsset;
 
     // TODO: look for previously-created shared memory slice?
     final Ref<Short> method = new Ref<>((short) 0);

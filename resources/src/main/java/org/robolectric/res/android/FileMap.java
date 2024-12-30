@@ -193,7 +193,7 @@ public class FileMap {
     // }
     // mBasePtr = ptr;
 
-    mFileName = origFileName != null ? origFileName : null;
+    mFileName = origFileName;
     // mBaseLength = adjLength;
     mDataOffset = offset;
     // mDataPtr = mBasePtr + adjust;
@@ -311,8 +311,7 @@ public class FileMap {
     }
     // scanOffset is now start of end of central directory record
     // the 'offset to central dir' data is at position 16 in the record
-    int offsetToCentralDir = readInt(buffer, scanOffset + 16);
-    return offsetToCentralDir;
+    return readInt(buffer, scanOffset + 16);
   }
 
   private static int findCentralDir64(byte[] buffer) throws IOException {

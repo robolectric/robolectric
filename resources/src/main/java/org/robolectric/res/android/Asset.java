@@ -1313,7 +1313,7 @@ public abstract class Asset {
     @Override
     public byte[] getBuffer(boolean wordAligned) {
       // return mBuf = mMap.getDataPtr();
-      byte[] buf = null;
+      byte[] buf;
 
       if (mBuf != null) return mBuf;
 

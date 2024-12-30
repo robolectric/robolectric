@@ -81,7 +81,7 @@ public class LoadedArsc {
     }
 
     String package_name;
-    int package_id = 0;
+    int package_id;
   }
 
   // TypeSpec is going to be immediately proceeded by

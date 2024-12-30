@@ -849,7 +849,7 @@ public class ResTable {
       isDynamic = true;
     }
 
-    PackageGroup group = null;
+    PackageGroup group;
     ResTablePackage _package = new ResTablePackage(this, header, pkg);
     if (_package == NULL) {
       return (mError = NO_MEMORY);

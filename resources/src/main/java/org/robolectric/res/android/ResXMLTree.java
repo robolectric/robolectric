@@ -190,7 +190,6 @@ public class ResXMLTree {
 
     mError = mStrings.getError();
 
-    done:
     mParser.restart();
     return mError;
   }
