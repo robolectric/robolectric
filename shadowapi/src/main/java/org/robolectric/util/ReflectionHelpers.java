@@ -86,12 +86,12 @@ public class ReflectionHelpers {
    *
    * @param clazz the class to provide a proxy instance of.
    * @param delegate the object to delegate matching method calls to. A 'matching method' must have
-   *     exactlu the same method name and parameter class names as the desired method.
+   *     exactly the same method name and parameter class names as the desired method.
    *     The @ClassName annotation can be applied to provide a custom class name.
    * @return a new "Delegating Proxy" instance of the given class.
    */
   public static <T> T createDelegatingProxy(Class<T> clazz, final Object delegate) {
-    final Class delegateClass = delegate.getClass();
+    final Class<?> delegateClass = delegate.getClass();
     return (T)
         Proxy.newProxyInstance(
             clazz.getClassLoader(),
@@ -241,7 +241,8 @@ public class ReflectionHelpers {
   public static boolean hasField(Class<?> clazz, String fieldName) {
     try {
       Field field = clazz.getDeclaredField(fieldName);
-      return (field != null);
+      //noinspection ConstantValue
+      return field != null;
     } catch (NoSuchFieldException e) {
       return false;
     }
