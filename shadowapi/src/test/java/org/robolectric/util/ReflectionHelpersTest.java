@@ -105,7 +105,7 @@ public class ReflectionHelpersTest {
   }
 
   @Test
-  public void getFinalStaticFieldReflectively_withFieldName_getsStaticField() throws Exception {
+  public void getFinalStaticFieldReflectively_withFieldName_getsStaticField() {
     assertThat((int) ReflectionHelpers.getStaticField(ExampleBase.class, "BASE")).isEqualTo(8);
   }
 
@@ -116,7 +116,7 @@ public class ReflectionHelpersTest {
 
     ReflectionHelpers.setStaticField(field, 7);
     assertWithMessage("startingValue").that(startingValue).isEqualTo(6);
-    assertWithMessage("DESCENDENT").that(ExampleDescendant.DESCENDANT).isEqualTo(7);
+    assertWithMessage("DESCENDANT").that(ExampleDescendant.DESCENDANT).isEqualTo(7);
 
     /// Reset the value to avoid test pollution
     ReflectionHelpers.setStaticField(field, startingValue);
@@ -128,7 +128,7 @@ public class ReflectionHelpersTest {
 
     ReflectionHelpers.setStaticField(ExampleDescendant.class, "DESCENDANT", 7);
     assertWithMessage("startingValue").that(startingValue).isEqualTo(6);
-    assertWithMessage("DESCENDENT").that(ExampleDescendant.DESCENDANT).isEqualTo(7);
+    assertWithMessage("DESCENDANT").that(ExampleDescendant.DESCENDANT).isEqualTo(7);
 
     // Reset the value to avoid test pollution
     ReflectionHelpers.setStaticField(ExampleDescendant.class, "DESCENDANT", startingValue);
@@ -304,14 +304,14 @@ public class ReflectionHelpersTest {
   }
 
   @Test
-  public void callHasField_withstaticandregularmember() {
+  public void callHasField_withStaticAndRegularMember() {
     assertWithMessage("has field failed for member: unusedName")
         .that(ReflectionHelpers.hasField(FieldTestClass.class, "unusedName"))
         .isTrue();
     assertWithMessage("has field failed for member: unusedStaticName")
         .that(ReflectionHelpers.hasField(FieldTestClass.class, "unusedStaticName"))
         .isTrue();
-    assertWithMessage("has field failed for non existant member: noname")
+    assertWithMessage("has field failed for non existent member: noname")
         .that(ReflectionHelpers.hasField(FieldTestClass.class, "noname"))
         .isFalse();
   }
@@ -367,13 +367,10 @@ public class ReflectionHelpersTest {
     assertThat(fixture.delegateMethod("value", "value2")).isEqualTo("called valuevalue2");
   }
 
-  @SuppressWarnings("serial")
   private static class TestError extends Error {}
 
-  @SuppressWarnings("serial")
   private static class TestException extends Exception {}
 
-  @SuppressWarnings("serial")
   private static class TestRuntimeException extends RuntimeException {}
 
   @SuppressWarnings("unused")

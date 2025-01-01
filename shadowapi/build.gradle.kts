@@ -10,5 +10,4 @@ dependencies {
   api(project(":utils"))
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
-  testImplementation(libs.mockito)
 }
