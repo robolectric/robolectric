@@ -275,7 +275,7 @@ public class ClassInstrumentor {
 
   /**
    * Adds a call $$robo$init, which instantiates a shadow object if required. This is to support
-   * custom shadows for Jacoco-instrumented classes (except cnstructor shadows).
+   * custom shadows for Jacoco-instrumented classes (except constructor shadows).
    */
   protected void addCallToRoboInit(MutableClass mutableClass, MethodNode ctor) {
     AbstractInsnNode returnNode =
@@ -618,7 +618,7 @@ public class ClassInstrumentor {
 
   protected String[] exceptionArray(MethodNode method) {
     List<String> exceptions = method.exceptions;
-    return exceptions.toArray(new String[exceptions.size()]);
+    return exceptions.toArray(new String[0]);
   }
 
   /** Filters methods that might need special treatment because of various reasons */

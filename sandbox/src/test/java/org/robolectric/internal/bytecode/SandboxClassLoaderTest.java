@@ -73,12 +73,12 @@ import org.robolectric.util.Util;
 public class SandboxClassLoaderTest {
 
   private ClassLoader classLoader;
-  private List<String> transcript = new ArrayList<>();
-  private MyClassHandler classHandler = new MyClassHandler(transcript);
+  private final List<String> transcript = new ArrayList<>();
+  private final MyClassHandler classHandler = new MyClassHandler(transcript);
   private ShadowImpl shadow;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     shadow = new ShadowImpl();
   }
 
@@ -121,9 +121,10 @@ public class SandboxClassLoaderTest {
     InstrumentationConfiguration config = mock(InstrumentationConfiguration.class);
     when(config.shouldAcquire(anyString())).thenReturn(false);
     when(config.shouldInstrument(any(ClassDetails.class))).thenReturn(false);
-    ClassLoader classLoader = new SandboxClassLoader(config);
-    Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
-    assertSame(getClass().getClassLoader(), exampleClass.getClassLoader());
+    try (SandboxClassLoader classLoader = new SandboxClassLoader(config)) {
+      Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
+      assertSame(getClass().getClassLoader(), exampleClass.getClassLoader());
+    }
   }
 
   @Test
@@ -353,8 +354,8 @@ public class SandboxClassLoaderTest {
                 + " hortense)");
 
     // should not run constructor bodies...
-    assertEquals(null, getDeclaredFieldValue(aClass, o, "name"));
-    assertEquals(null, getDeclaredFieldValue(aClass, o, "uninstrumentedParent"));
+    assertNull(getDeclaredFieldValue(aClass, o, "name"));
+    assertNull(getDeclaredFieldValue(aClass, o, "uninstrumentedParent"));
   }
 
   @Test
@@ -381,10 +382,10 @@ public class SandboxClassLoaderTest {
         findDirectMethod(aClass, "__constructor__", uninstrumentedParentClass, String.class);
     Object uninstrumentedParentIn =
         uninstrumentedParentClass.getDeclaredConstructor(String.class).newInstance("hortense");
-    assertEquals(null, directMethod.invoke(instance, uninstrumentedParentIn, "foo"));
+    assertNull(directMethod.invoke(instance, uninstrumentedParentIn, "foo"));
     assertThat(transcript).isEmpty();
 
-    assertEquals(null, getDeclaredFieldValue(aClass, instance, "name"));
+    assertNull(getDeclaredFieldValue(aClass, instance, "name"));
     Object uninstrumentedParentOut =
         getDeclaredFieldValue(aClass, instance, "uninstrumentedParent");
     assertEquals(
@@ -392,7 +393,7 @@ public class SandboxClassLoaderTest {
         getDeclaredFieldValue(uninstrumentedParentClass, uninstrumentedParentOut, "parentName"));
 
     Method directMethod2 = findDirectMethod(aClass, "__constructor__", String.class);
-    assertEquals(null, directMethod2.invoke(instance, "hortense"));
+    assertNull(directMethod2.invoke(instance, "hortense"));
     assertThat(transcript).isEmpty();
 
     assertEquals("hortense", getDeclaredFieldValue(aClass, instance, "name"));
@@ -546,7 +547,7 @@ public class SandboxClassLoaderTest {
   }
 
   @Test
-  public void shouldReverseAnArray() throws Exception {
+  public void shouldReverseAnArray() {
     assertArrayEquals(new Integer[] {5, 4, 3, 2, 1}, Util.reverse(new Integer[] {1, 2, 3, 4, 5}));
     assertArrayEquals(new Integer[] {4, 3, 2, 1}, Util.reverse(new Integer[] {1, 2, 3, 4}));
     assertArrayEquals(new Integer[] {1}, Util.reverse(new Integer[] {1}));
@@ -564,16 +565,15 @@ public class SandboxClassLoaderTest {
 
   public static class MyClassHandler implements ClassHandler {
     private static final Object GENERATE_YOUR_OWN_VALUE = new Object();
-    private List<String> transcript;
+    private final List<String> transcript;
     private Object valueToReturn = GENERATE_YOUR_OWN_VALUE;
-    private Object valueToReturnFromIntercept = null;
 
     public MyClassHandler(List<String> transcript) {
       this.transcript = transcript;
     }
 
     @Override
-    public void classInitializing(Class clazz) {}
+    public void classInitializing(Class<?> clazz) {}
 
     public Object methodInvoked(
         String simpleClassName,
@@ -597,7 +597,7 @@ public class SandboxClassLoaderTest {
       transcript.add(buf.toString());
 
       if (valueToReturn != GENERATE_YOUR_OWN_VALUE) return valueToReturn;
-      return "response from " + buf.toString();
+      return "response from " + buf;
     }
 
     @Override
@@ -658,8 +658,7 @@ public class SandboxClassLoaderTest {
     }
 
     @Override
-    public Object intercept(String signature, Object instance, Object[] params, Class theClass)
-        throws Throwable {
+    public Object intercept(String signature, Object instance, Object[] params, Class<?> theClass) {
       StringBuilder buf = new StringBuilder();
       buf.append("intercept: ").append(signature).append(" with params (");
       for (int i = 0; i < params.length; i++) {
@@ -670,7 +669,7 @@ public class SandboxClassLoaderTest {
       }
       buf.append(")");
       transcript.add(buf.toString());
-      return valueToReturnFromIntercept;
+      return null;
     }
 
     @Override
@@ -691,7 +690,7 @@ public class SandboxClassLoaderTest {
     setStaticField(
         classLoader.loadClass(InvokeDynamicSupport.class.getName()),
         "INTERCEPTORS",
-        new Interceptors(Collections.<Interceptor>emptyList()));
+        new Interceptors(Collections.emptyList()));
     setStaticField(
         classLoader.loadClass(Shadow.class.getName()),
         "SHADOW_IMPL",
@@ -712,17 +711,19 @@ public class SandboxClassLoaderTest {
   public void shouldDumpClassesWhenConfigured() throws Exception {
     Path tempDir = Files.createTempDirectory("SandboxClassLoaderTest");
     System.setProperty("robolectric.dumpClassesDirectory", tempDir.toAbsolutePath().toString());
-    ClassLoader classLoader = new SandboxClassLoader(configureBuilder().build());
-    classLoader.loadClass(AnExampleClass.class.getName());
-    try (Stream<Path> stream = Files.list(tempDir)) {
-      List<Path> files = stream.collect(Collectors.toList());
-      assertThat(files).hasSize(1);
-      assertThat(files.get(0).toAbsolutePath().toString())
-          .containsMatch("org.robolectric.testing.AnExampleClass-robo-instrumented-\\d+.class");
-      Files.delete(files.get(0));
-    } finally {
-      Files.delete(tempDir);
-      System.clearProperty("robolectric.dumpClassesDirectory");
+    try (SandboxClassLoader classLoader = new SandboxClassLoader(configureBuilder().build())) {
+      classLoader.loadClass(AnExampleClass.class.getName());
+
+      try (Stream<Path> stream = Files.list(tempDir)) {
+        List<Path> files = stream.collect(Collectors.toList());
+        assertThat(files).hasSize(1);
+        assertThat(files.get(0).toAbsolutePath().toString())
+            .containsMatch("org.robolectric.testing.AnExampleClass-robo-instrumented-\\d+.class");
+        Files.delete(files.get(0));
+      } finally {
+        Files.delete(tempDir);
+        System.clearProperty("robolectric.dumpClassesDirectory");
+      }
     }
   }
 }

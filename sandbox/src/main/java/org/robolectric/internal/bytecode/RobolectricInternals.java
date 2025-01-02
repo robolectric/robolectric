@@ -17,7 +17,7 @@ public class RobolectricInternals {
   private static ClassLoader classLoader;
 
   @SuppressWarnings("UnusedDeclaration")
-  public static void classInitializing(Class clazz) throws Exception {
+  public static void classInitializing(Class<?> clazz) {
     classHandler.classInitializing(clazz);
   }
 
@@ -36,8 +36,8 @@ public class RobolectricInternals {
     return classHandler.stripStackTrace(exception);
   }
 
-  public static Object intercept(String signature, Object instance, Object[] params, Class theClass)
-      throws Throwable {
+  public static Object intercept(
+      String signature, Object instance, Object[] params, Class<?> theClass) throws Throwable {
     try {
       return classHandler.intercept(signature, instance, params, theClass);
     } catch (java.lang.LinkageError e) {

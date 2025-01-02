@@ -12,13 +12,13 @@ enum RoboType {
   DOUBLE(Double.TYPE),
   OBJECT(null);
 
-  RoboType(Class type) {
+  RoboType(Class<?> type) {
     this.type = type;
   }
 
-  private final Class type;
+  private final Class<?> type;
 
-  public static Class findPrimitiveClass(String name) {
+  public static Class<?> findPrimitiveClass(String name) {
     for (RoboType type : RoboType.values()) {
       if (type.type != null && type.type.getName().equals(name)) {
         return type.type;

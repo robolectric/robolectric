@@ -18,7 +18,7 @@ public interface ClassHandler {
    *
    * @param clazz the class being loaded
    */
-  void classInitializing(Class clazz);
+  void classInitializing(Class<?> clazz);
 
   /**
    * Called by Robolectric to determine how to create and initialize a shadow object when a new

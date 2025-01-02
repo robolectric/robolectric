@@ -172,7 +172,7 @@ public class RobolectricInternalsTest {
 
   @Instrument
   static class Outer {
-    public String outerParam = null;
+    public String outerParam;
 
     public Outer(String param) {
       this.outerParam = param;

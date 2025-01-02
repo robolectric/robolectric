@@ -7,7 +7,7 @@ import org.robolectric.util.Function;
 import org.robolectric.util.ReflectionHelpers;
 
 public abstract class Interceptor {
-  private MethodRef[] methodRefs;
+  private final MethodRef[] methodRefs;
 
   public Interceptor(MethodRef... methodRefs) {
     this.methodRefs = methodRefs;
@@ -25,11 +25,7 @@ public abstract class Interceptor {
   @Nonnull
   protected static Function<Object, Object> returnDefaultValue(
       final MethodSignature methodSignature) {
-    return new Function<Object, Object>() {
-      @Override
-      public Object call(Class<?> theClass, Object value, Object[] params) {
-        return ReflectionHelpers.defaultValueForType(methodSignature.returnType);
-      }
-    };
+    return (theClass, value, params) ->
+        ReflectionHelpers.defaultValueForType(methodSignature.returnType);
   }
 }

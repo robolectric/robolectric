@@ -12,7 +12,7 @@ public class ShadowInvalidator {
     SwitchPoint.invalidateAll(new SwitchPoint[] {DUMMY});
   }
 
-  private Map<String, SwitchPoint> switchPoints;
+  private final Map<String, SwitchPoint> switchPoints;
 
   public ShadowInvalidator() {
     this.switchPoints = new HashMap<>();

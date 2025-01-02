@@ -56,23 +56,23 @@ public class ShadowImpl implements IShadow {
   }
 
   @Override
-  @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
+  @SuppressWarnings("TypeParameterUnusedInFormals")
   public <R, T> R directlyOn(
       T shadowedObject,
       Class<T> clazz,
       String methodName,
       ReflectionHelpers.ClassParameter<?>... paramValues) {
     String directMethodName = directMethodName(clazz.getName(), methodName);
-    return (R)
-        ReflectionHelpers.callInstanceMethod(clazz, shadowedObject, directMethodName, paramValues);
+    return ReflectionHelpers.callInstanceMethod(
+        clazz, shadowedObject, directMethodName, paramValues);
   }
 
   @Override
-  @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
+  @SuppressWarnings("TypeParameterUnusedInFormals")
   public <R, T> R directlyOn(
       Class<T> clazz, String methodName, ReflectionHelpers.ClassParameter<?>... paramValues) {
     String directMethodName = directMethodName(clazz.getName(), methodName);
-    return (R) ReflectionHelpers.callStaticMethod(clazz, directMethodName, paramValues);
+    return ReflectionHelpers.callStaticMethod(clazz, directMethodName, paramValues);
   }
 
   private <T> T createProxy(T shadowedObject, Class<T> clazz) {
@@ -80,12 +80,12 @@ public class ShadowImpl implements IShadow {
   }
 
   @Override
-  @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
+  @SuppressWarnings("TypeParameterUnusedInFormals")
   public <R> R invokeConstructor(
       Class<? extends R> clazz, R instance, ReflectionHelpers.ClassParameter<?>... paramValues) {
     String directMethodName =
         directMethodName(clazz.getName(), ShadowConstants.CONSTRUCTOR_METHOD_NAME);
-    return (R) ReflectionHelpers.callInstanceMethod(clazz, instance, directMethodName, paramValues);
+    return ReflectionHelpers.callInstanceMethod(clazz, instance, directMethodName, paramValues);
   }
 
   @Override
