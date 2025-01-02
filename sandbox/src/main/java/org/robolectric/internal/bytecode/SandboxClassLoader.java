@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -91,9 +93,9 @@ public class SandboxClassLoader extends URLClassLoader {
         try {
           urls.add(new File(entry).toURI().toURL());
         } catch (SecurityException e) { // File.toURI checks to see if the file is a directory
-          urls.add(new URL("file", null, new File(entry).getAbsolutePath()));
+          urls.add(new URI("file", null, new File(entry).getAbsolutePath()).toURL());
         }
-      } catch (MalformedURLException e) {
+      } catch (MalformedURLException | URISyntaxException e) {
         Logger.strict("malformed classpath entry: " + entry, e);
       }
     }

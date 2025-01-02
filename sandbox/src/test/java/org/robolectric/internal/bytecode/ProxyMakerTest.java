@@ -12,12 +12,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ProxyMakerTest {
   private static final ProxyMaker.MethodMapper IDENTITY_NAME =
-      new ProxyMaker.MethodMapper() {
-        @Override
-        public String getName(String className, String methodName) {
-          return methodName;
-        }
-      };
+      (className, methodName) -> methodName;
 
   @Test
   public void proxyCall() {

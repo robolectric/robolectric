@@ -2,6 +2,7 @@ package org.robolectric;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -16,7 +17,7 @@ import org.robolectric.internal.bytecode.SandboxConfig;
 @RunWith(SandboxTestRunner.class)
 public class StaticInitializerTest {
   @Test
-  public void whenClassIsUnshadowed_shouldPerformStaticInitialization() throws Exception {
+  public void whenClassIsUnshadowed_shouldPerformStaticInitialization() {
     assertEquals("Floyd", ClassWithStaticInitializerA.name);
   }
 
@@ -48,7 +49,7 @@ public class StaticInitializerTest {
   public void whenClassHasShadowWithOverrideMethod_shouldDeferStaticInitialization()
       throws Exception {
     assertFalse(ShadowClassWithStaticInitializerOverride.initialized);
-    assertEquals(null, ClassWithStaticInitializerC.name);
+    assertNull(ClassWithStaticInitializerC.name);
     assertTrue(ShadowClassWithStaticInitializerOverride.initialized);
 
     RobolectricInternals.performStaticInitialization(ClassWithStaticInitializerC.class);

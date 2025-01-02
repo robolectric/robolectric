@@ -139,7 +139,7 @@ public class ShadowWranglerIntegrationTest {
 
   @Instrument
   public static class ThrowInShadowMethod {
-    public void method() throws IOException {}
+    public void method() {}
   }
 
   @Implements(ThrowInShadowMethod.class)
@@ -278,11 +278,11 @@ public class ShadowWranglerIntegrationTest {
   }
 
   private ShadowFoo shadowOf(Foo foo) {
-    return (ShadowFoo) Shadow.extract(foo);
+    return Shadow.extract(foo);
   }
 
   private ShadowTextFoo shadowOf(TextFoo foo) {
-    return (ShadowTextFoo) Shadow.extract(foo);
+    return Shadow.extract(foo);
   }
 
   @Implements(Foo.class)
@@ -357,11 +357,11 @@ public class ShadowWranglerIntegrationTest {
   @Instrument
   public static class AClassWithGenericFunctionParam {
     public CharSequence aMethod(List<CharSequence> strs) {
-      String ret = "";
+      StringBuilder ret = new StringBuilder();
       for (CharSequence s : strs) {
-        ret = ret + s;
+        ret.append(s);
       }
-      return ret;
+      return ret.toString();
     }
   }
 

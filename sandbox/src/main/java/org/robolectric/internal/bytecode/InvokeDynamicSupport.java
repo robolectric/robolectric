@@ -133,8 +133,7 @@ public class InvokeDynamicSupport {
 
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrapIntrinsic(
-      MethodHandles.Lookup caller, String name, MethodType type, String callee)
-      throws IllegalAccessException {
+      MethodHandles.Lookup caller, String name, MethodType type, String callee) {
     return PerfStatsCollector.getInstance()
         .measure(
             "invokedynamic bootstrap intrinsic",

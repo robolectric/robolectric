@@ -13,13 +13,13 @@ import org.robolectric.internal.bytecode.SandboxConfig;
 public class ClassicSuperHandlingTest {
   @Test
   @SandboxConfig(shadows = {ChildShadow.class, ParentShadow.class, GrandparentShadow.class})
-  public void uninstrumentedSubclassesShouldBeAbleToCallSuperWithoutLooping() throws Exception {
+  public void uninstrumentedSubclassesShouldBeAbleToCallSuperWithoutLooping() {
     assertEquals("4-3s-2s-1s-boof", new BabiesHavingBabies().method("boof"));
   }
 
   @Test
   @SandboxConfig(shadows = {ChildShadow.class, ParentShadow.class, GrandparentShadow.class})
-  public void shadowInvocationWhenAllAreShadowed() throws Exception {
+  public void shadowInvocationWhenAllAreShadowed() {
     assertEquals("3s-2s-1s-boof", new Child().method("boof"));
     assertEquals("2s-1s-boof", new Parent().method("boof"));
     assertEquals("1s-boof", new Grandparent().method("boof"));

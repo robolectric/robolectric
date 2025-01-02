@@ -205,9 +205,7 @@ public class ShadowMap {
 
     ShadowMap shadowMap = (ShadowMap) o;
 
-    if (!overriddenShadows.equals(shadowMap.overriddenShadows)) return false;
-
-    return true;
+    return overriddenShadows.equals(shadowMap.overriddenShadows);
   }
 
   @Override

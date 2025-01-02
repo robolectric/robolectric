@@ -8,13 +8,13 @@ import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 import static org.objectweb.asm.Opcodes.V1_7;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
@@ -34,8 +34,8 @@ import sun.misc.Unsafe;
 @Deprecated
 public class ProxyMaker {
   private static final String TARGET_FIELD = "__proxy__";
-  private static final Class UNSAFE_CLASS = Unsafe.class;
-  private static final Class LOOKUP_CLASS = MethodHandles.Lookup.class;
+  private static final Class<Unsafe> UNSAFE_CLASS = Unsafe.class;
+  private static final Class<MethodHandles.Lookup> LOOKUP_CLASS = MethodHandles.Lookup.class;
   private static final Unsafe UNSAFE;
   private static final java.lang.reflect.Method DEFINE_ANONYMOUS_CLASS;
 
@@ -163,7 +163,7 @@ public class ProxyMaker {
     if (DEBUG) {
       File file = new File("/tmp", targetClass.getCanonicalName() + "-DirectProxy.class");
       System.out.println("Generated Direct Proxy: " + file.getAbsolutePath());
-      try (OutputStream out = new FileOutputStream(file)) {
+      try (OutputStream out = Files.newOutputStream(file.toPath())) {
         out.write(bytecode);
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -197,7 +197,7 @@ public class ProxyMaker {
     if (DEFINE_ANONYMOUS_CLASS != null) {
       return (Class<?>) DEFINE_ANONYMOUS_CLASS.invoke(UNSAFE, targetClass, bytes, (Object[]) null);
     } else {
-      MethodHandles.Lookup lookup = (MethodHandles.Lookup) LOOKUP.in(targetClass);
+      MethodHandles.Lookup lookup = LOOKUP.in(targetClass);
       MethodHandles.Lookup definedLookup =
           (MethodHandles.Lookup)
               HIDDEN_DEFINE_METHOD.invoke(lookup, bytes, false, HIDDEN_CLASS_OPTIONS);

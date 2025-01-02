@@ -135,16 +135,13 @@ public class AndroidInterceptors {
 
     @Override
     public Function<Object, Object> handle(MethodSignature methodSignature) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          if ("release$".equals(methodSignature.methodName)) {
-            return release((FileDescriptor) value);
-          } else if ("getInt$".equals(methodSignature.methodName)) {
-            return getInt((FileDescriptor) value);
-          } else {
-            return setInt((FileDescriptor) value, (int) params[0]);
-          }
+      return (theClass, value, params) -> {
+        if ("release$".equals(methodSignature.methodName)) {
+          return release((FileDescriptor) value);
+        } else if ("getInt$".equals(methodSignature.methodName)) {
+          return getInt((FileDescriptor) value);
+        } else {
+          return setInt((FileDescriptor) value, (int) params[0]);
         }
       };
     }
@@ -171,18 +168,13 @@ public class AndroidInterceptors {
     }
 
     @Nullable
-    static Object eldest(LinkedHashMap map) {
+    static Object eldest(LinkedHashMap<?, ?> map) {
       return map.isEmpty() ? null : map.entrySet().iterator().next();
     }
 
     @Override
     public Function<Object, Object> handle(MethodSignature methodSignature) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          return eldest((LinkedHashMap) value);
-        }
-      };
+      return (theClass, value, params) -> eldest((LinkedHashMap<?, ?>) value);
     }
 
     @Override
@@ -201,16 +193,13 @@ public class AndroidInterceptors {
 
     @Override
     public Function<Object, Object> handle(final MethodSignature methodSignature) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          ClassLoader cl = theClass.getClassLoader();
-          try {
-            Class<?> shadowSystemClass = cl.loadClass("org.robolectric.shadows.ShadowSystem");
-            return callStaticMethod(shadowSystemClass, methodSignature.methodName);
-          } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-          }
+      return (theClass, value, params) -> {
+        ClassLoader cl = theClass.getClassLoader();
+        try {
+          Class<?> shadowSystemClass = cl.loadClass("org.robolectric.shadows.ShadowSystem");
+          return callStaticMethod(shadowSystemClass, methodSignature.methodName);
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException(e);
         }
       };
     }
@@ -242,14 +231,11 @@ public class AndroidInterceptors {
 
     @Override
     public Function<Object, Object> handle(MethodSignature methodSignature) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          //noinspection SuspiciousSystemArraycopy
-          System.arraycopy(
-              params[0], (Integer) params[1], params[2], (Integer) params[3], (Integer) params[4]);
-          return null;
-        }
+      return (theClass, value, params) -> {
+        //noinspection SuspiciousSystemArraycopy
+        System.arraycopy(
+            params[0], (Integer) params[1], params[2], (Integer) params[3], (Integer) params[4]);
+        return null;
       };
     }
 
@@ -285,12 +271,7 @@ public class AndroidInterceptors {
 
     @Override
     public Function<Object, Object> handle(MethodSignature methodSignature) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          return adjustLanguageCode((String) params[0]);
-        }
-      };
+      return (theClass, value, params) -> adjustLanguageCode((String) params[0]);
     }
 
     @Override
@@ -428,8 +409,7 @@ public class AndroidInterceptors {
     }
 
     @Override
-    public MethodHandle getMethodHandle(String methodName, MethodType type)
-        throws NoSuchMethodException, IllegalAccessException {
+    public MethodHandle getMethodHandle(String methodName, MethodType type) {
       MethodHandle nothing = constant(Void.class, null).asType(methodType(void.class));
 
       if (type.parameterCount() != 0) {
@@ -453,12 +433,7 @@ public class AndroidInterceptors {
 
     @Override
     public Function<Object, Object> handle(MethodSignature methodSignature) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          return getFileDescriptor((Socket) value);
-        }
-      };
+      return (theClass, value, params) -> getFileDescriptor((Socket) value);
     }
 
     @Override
@@ -480,13 +455,13 @@ public class AndroidInterceptors {
           new MethodRef(PhantomReference.class.getName(), METHOD));
     }
 
-    static boolean refersTo(Reference ref, Object obj) {
+    static boolean refersTo(Reference<?> ref, Object obj) {
       return ref.get() == obj;
     }
 
     @Override
     public Function<Object, Object> handle(MethodSignature methodSignature) {
-      return (theClass, value, params) -> refersTo((Reference) value, params[0]);
+      return (theClass, value, params) -> refersTo((Reference<?>) value, params[0]);
     }
 
     @Override

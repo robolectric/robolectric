@@ -14,8 +14,7 @@ import org.robolectric.testing.Pony;
 public class RealApisTest {
   @Test
   @SandboxConfig(shadows = {ShimmeryShadowPony.class})
-  public void whenShadowHandlerIsInRealityBasedMode_shouldNotCallRealForUnshadowedMethod()
-      throws Exception {
+  public void whenShadowHandlerIsInRealityBasedMode_shouldNotCallRealForUnshadowedMethod() {
     assertEquals("Off I saunter to the salon!", new Pony().saunter("the salon"));
   }
 
@@ -24,7 +23,7 @@ public class RealApisTest {
 
   @Test
   @SandboxConfig(shadows = {ShadowOfClassWithSomeConstructors.class})
-  public void shouldCallOriginalConstructorBodySomehow() throws Exception {
+  public void shouldCallOriginalConstructorBodySomehow() {
     ClassWithSomeConstructors o = new ClassWithSomeConstructors("my name");
     assertEquals("my name", o.name);
   }

@@ -9,7 +9,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
   public JavaVersion(String version) {
     versions = new ArrayList<>();
-    Scanner s = new Scanner(version).useDelimiter("[^\\d]+");
+    Scanner s = new Scanner(version).useDelimiter("\\D+");
     while (s.hasNext()) {
       versions.add(s.nextInt());
     }

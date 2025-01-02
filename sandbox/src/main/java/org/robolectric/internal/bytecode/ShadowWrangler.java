@@ -49,12 +49,7 @@ import org.robolectric.util.PerfStatsCollector;
 @Priority(Integer.MIN_VALUE)
 public class ShadowWrangler implements ClassHandler {
   public static final Function<Object, Object> DO_NOTHING_HANDLER =
-      new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          return null;
-        }
-      };
+      (theClass, value, params) -> null;
   public static final Method CALL_REAL_CODE = null;
   public static final MethodHandle DO_NOTHING =
       constant(Void.class, null).asType(methodType(void.class));
@@ -119,7 +114,7 @@ public class ShadowWrangler implements ClassHandler {
 
   @SuppressWarnings("ReferenceEquality")
   @Override
-  public void classInitializing(Class clazz) {
+  public void classInitializing(Class<?> clazz) {
     try {
       Method method =
           pickShadowMethod(clazz, ShadowConstants.STATIC_INITIALIZER_METHOD_NAME, NO_ARGS);
@@ -385,7 +380,7 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   @Override
-  public Object intercept(String signature, Object instance, Object[] params, Class theClass)
+  public Object intercept(String signature, Object instance, Object[] params, Class<?> theClass)
       throws Throwable {
     final MethodSignature methodSignature = MethodSignature.parse(signature);
     return interceptors.getInterceptionHandler(methodSignature).call(theClass, instance, params);
@@ -436,7 +431,7 @@ public class ShadowWrangler implements ClassHandler {
         previousMethodName = methodName;
         previousFileName = fileName;
       }
-      throwable.setStackTrace(stackTrace.toArray(new StackTraceElement[stackTrace.size()]));
+      throwable.setStackTrace(stackTrace.toArray(new StackTraceElement[0]));
     }
     return throwable;
   }
