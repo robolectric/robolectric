@@ -1,11 +1,11 @@
 package org.robolectric.util.reflector;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -120,7 +120,7 @@ public class Reflector {
     if (DEBUG) {
       File file = new File("/tmp", reflectorClassName + ".class");
       System.out.println("Generated reflector: " + file.getAbsolutePath());
-      try (OutputStream out = new FileOutputStream(file)) {
+      try (OutputStream out = Files.newOutputStream(file.toPath())) {
         out.write(bytecode);
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -146,7 +146,7 @@ public class Reflector {
     ClassLoader classLoader =
         new ClassLoader(iClass.getClassLoader()) {
           @Override
-          protected Class<?> findClass(String name) throws ClassNotFoundException {
+          protected Class<?> findClass(String name) {
             return defineClass(name, bytecode, 0, bytecode.length);
           }
         };

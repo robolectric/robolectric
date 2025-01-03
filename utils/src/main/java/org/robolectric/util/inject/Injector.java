@@ -244,7 +244,6 @@ public class Injector {
     return new MemoizingProvider<>(tProvider);
   }
 
-  @SuppressWarnings("unchecked")
   @Nonnull
   private <T> T inject(@Nonnull Class<? extends T> implementingClass) {
     Constructor<T> ctor;
@@ -264,6 +263,7 @@ public class Injector {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private <T> Constructor<T> findConstructor(@Nonnull Class<? extends T> implementingClass) {
     List<Constructor<T>> injectCtors = new ArrayList<>();
     List<Constructor<T>> otherCtors = new ArrayList<>();
@@ -405,7 +405,7 @@ public class Injector {
       this(theInterface, null);
     }
 
-    public Key(Type theInterface, String name) {
+    public Key(@Nonnull Type theInterface, String name) {
       this.theInterface = theInterface;
       this.name = name;
     }
@@ -423,7 +423,7 @@ public class Injector {
       if (!(o instanceof Key)) {
         return false;
       }
-      Key key = (Key) o;
+      Key<?> key = (Key<?>) o;
       return theInterface.equals(key.theInterface) && Objects.equals(name, key.name);
     }
 
@@ -447,7 +447,7 @@ public class Injector {
       StringBuilder buf = new StringBuilder();
       buf.append(
           theInterface instanceof Class
-              ? ((Class) theInterface).getSimpleName()
+              ? ((Class<?>) theInterface).getSimpleName()
               : theInterface.getTypeName());
       if (name != null) {
         buf.append(" \"").append(name).append("\"");
@@ -456,7 +456,7 @@ public class Injector {
     }
 
     public boolean isArray() {
-      return (theInterface instanceof Class && ((Class) theInterface).isArray())
+      return (theInterface instanceof Class && ((Class<?>) theInterface).isArray())
           || theInterface instanceof GenericArrayType;
     }
 
@@ -471,7 +471,7 @@ public class Injector {
     Class<?> getComponentType() {
       if (isArray()) {
         if (theInterface instanceof Class) {
-          return ((Class) theInterface).getComponentType();
+          return ((Class<?>) theInterface).getComponentType();
         } else if (theInterface instanceof GenericArrayType) {
           Type genericComponentType = ((GenericArrayType) theInterface).getGenericComponentType();
           return (Class<?>) ((ParameterizedType) genericComponentType).getRawType();
@@ -479,7 +479,7 @@ public class Injector {
           throw new InjectionException(this, new IllegalArgumentException());
         }
       } else if (isCollection() && theInterface instanceof ParameterizedType) {
-        return (Class) ((ParameterizedType) theInterface).getActualTypeArguments()[0];
+        return (Class<?>) ((ParameterizedType) theInterface).getActualTypeArguments()[0];
       } else {
         throw new IllegalStateException(theInterface + "...?");
       }
@@ -487,7 +487,7 @@ public class Injector {
 
     boolean isAutoFactory() {
       return theInterface instanceof Class
-          && ((Class) theInterface).isAnnotationPresent(AutoFactory.class);
+          && ((Class<?>) theInterface).isAnnotationPresent(AutoFactory.class);
     }
   }
 

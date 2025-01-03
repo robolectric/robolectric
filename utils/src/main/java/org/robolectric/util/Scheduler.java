@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 
 /**
  * Class that manages a queue of Runnables that are scheduled to run now (or at some time in the
@@ -397,7 +398,7 @@ public class Scheduler {
     }
 
     @Override
-    public int compareTo(ScheduledRunnable runnable) {
+    public int compareTo(@Nonnull ScheduledRunnable runnable) {
       int timeCompare = Long.compare(scheduledTime, runnable.scheduledTime);
       if (timeCompare == 0) {
         return Long.compare(timeDisambiguator, runnable.timeDisambiguator);

@@ -25,20 +25,20 @@ public class InjectorTest {
   private final List<Class<?>> pluginClasses = new ArrayList<>();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     builder = new Injector.Builder();
     injector = builder.build();
   }
 
   @Test
-  public void whenImplSpecified_shouldProvideInstance() throws Exception {
+  public void whenImplSpecified_shouldProvideInstance() {
     injector = builder.bind(Thing.class, MyThing.class).build();
 
     assertThat(injector.getInstance(Thing.class)).isInstanceOf(MyThing.class);
   }
 
   @Test
-  public void whenImplSpecified_shouldUseSameInstance() throws Exception {
+  public void whenImplSpecified_shouldUseSameInstance() {
     injector = builder.bind(Thing.class, MyThing.class).build();
 
     Thing thing = injector.getInstance(Thing.class);
@@ -46,36 +46,36 @@ public class InjectorTest {
   }
 
   @Test
-  public void whenServiceSpecified_shouldProvideInstance() throws Exception {
+  public void whenServiceSpecified_shouldProvideInstance() {
     assertThat(injector.getInstance(Thing.class)).isInstanceOf(ThingFromServiceConfig.class);
   }
 
   @Test
-  public void whenServiceSpecified_shouldUseSameInstance() throws Exception {
+  public void whenServiceSpecified_shouldUseSameInstance() {
     Thing thing = injector.getInstance(Thing.class);
     assertThat(injector.getInstance(Thing.class)).isSameInstanceAs(thing);
   }
 
   @Test
-  public void whenConcreteClassRequested_shouldProvideInstance() throws Exception {
+  public void whenConcreteClassRequested_shouldProvideInstance() {
     assertThat(injector.getInstance(MyUmm.class)).isInstanceOf(MyUmm.class);
   }
 
   @Test
-  public void whenDefaultSpecified_shouldProvideInstance() throws Exception {
+  public void whenDefaultSpecified_shouldProvideInstance() {
     injector = builder.bindDefault(Umm.class, MyUmm.class).build();
 
     assertThat(injector.getInstance(Umm.class)).isInstanceOf(MyUmm.class);
   }
 
   @Test
-  public void whenDefaultSpecified_shouldUseSameInstance() throws Exception {
+  public void whenDefaultSpecified_shouldUseSameInstance() {
     Thing thing = injector.getInstance(Thing.class);
     assertThat(injector.getInstance(Thing.class)).isSameInstanceAs(thing);
   }
 
   @Test
-  public void whenNoImplOrServiceOrDefaultSpecified_shouldThrow() throws Exception {
+  public void whenNoImplOrServiceOrDefaultSpecified_shouldThrow() {
     try {
       injector.getInstance(Umm.class);
       fail();
@@ -85,8 +85,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void registerDefaultService_providesFallbackImplOnlyIfNoServiceSpecified()
-      throws Exception {
+  public void registerDefaultService_providesFallbackImplOnlyIfNoServiceSpecified() {
     builder.bindDefault(Thing.class, MyThing.class);
 
     assertThat(injector.getInstance(Thing.class)).isInstanceOf(ThingFromServiceConfig.class);
@@ -96,7 +95,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void shouldPreferSingularPublicConstructorAnnotatedInject() throws Exception {
+  public void shouldPreferSingularPublicConstructorAnnotatedInject() {
     injector = builder.bind(Thing.class, MyThing.class).bind(Umm.class, MyUmm.class).build();
 
     Umm umm = injector.getInstance(Umm.class);
@@ -111,7 +110,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void shouldAcceptSingularPublicConstructorWithoutInjectAnnotation() throws Exception {
+  public void shouldAcceptSingularPublicConstructorWithoutInjectAnnotation() {
     injector =
         builder.bind(Thing.class, MyThing.class).bind(Umm.class, MyUmmNoInject.class).build();
 
@@ -127,7 +126,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void whenArrayRequested_mayReturnMultiplePlugins() throws Exception {
+  public void whenArrayRequested_mayReturnMultiplePlugins() {
     MultiThing[] multiThings = injector.getInstance(MultiThing[].class);
 
     // X comes first because it has a higher priority
@@ -137,7 +136,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void whenCollectionRequested_mayReturnMultiplePlugins() throws Exception {
+  public void whenCollectionRequested_mayReturnMultiplePlugins() {
     ThingRequiringMultiThings it = injector.getInstance(ThingRequiringMultiThings.class);
 
     // X comes first because it has a higher priority
@@ -147,7 +146,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void whenListRequested_itIsUnmodifiable() throws Exception {
+  public void whenListRequested_itIsUnmodifiable() {
     ThingRequiringMultiThings it = injector.getInstance(ThingRequiringMultiThings.class);
 
     try {
@@ -159,7 +158,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void autoFactory_factoryMethodsCreateNewInstances() throws Exception {
+  public void autoFactory_factoryMethodsCreateNewInstances() {
     injector = builder.bind(Umm.class, MyUmm.class).build();
     FooFactory factory = injector.getInstance(FooFactory.class);
     Foo chauncey = factory.create("Chauncey");
@@ -170,7 +169,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void autoFactory_injectedValuesComeFromSuperInjector() throws Exception {
+  public void autoFactory_injectedValuesComeFromSuperInjector() {
     injector = builder.bind(Umm.class, MyUmm.class).build();
     FooFactory factory = injector.getInstance(FooFactory.class);
     Foo chauncey = factory.create("Chauncey");
@@ -178,7 +177,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void whenFactoryRequested_createsInjectedFactory() throws Exception {
+  public void whenFactoryRequested_createsInjectedFactory() {
     injector = builder.bind(Umm.class, MyUmm.class).build();
     FooFactory factory = injector.getInstance(FooFactory.class);
     Foo chauncey = factory.create("Chauncey");
@@ -191,7 +190,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void scopedInjector_shouldCheckParentBeforeProvidingDefault() throws Exception {
+  public void scopedInjector_shouldCheckParentBeforeProvidingDefault() {
     injector = builder.build();
     Injector subInjector = new Injector.Builder(injector).build();
 
@@ -200,7 +199,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void shouldInjectByNamedKeys() throws Exception {
+  public void shouldInjectByNamedKeys() {
     injector =
         builder
             .bind(new Injector.Key<>(String.class, "namedThing"), "named value")
@@ -212,7 +211,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void shouldPreferPluginsOverConcreteClass() throws Exception {
+  public void shouldPreferPluginsOverConcreteClass() {
     PluginFinder pluginFinder = new PluginFinder(new MyServiceFinderAdapter(pluginClasses));
     Injector injector = new Injector.Builder(null, pluginFinder).build();
     pluginClasses.add(SubclassOfConcreteThing.class);
@@ -221,7 +220,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void subInjectorIsUsedForResolvingTransitiveDependencies() throws Exception {
+  public void subInjectorIsUsedForResolvingTransitiveDependencies() {
     FakeSandboxManager sandboxManager = injector.getInstance(FakeSandboxManager.class);
     FakeSdk runtimeSdk = new FakeSdk("runtime");
     FakeSdk compileSdk = new FakeSdk("compile");
@@ -232,7 +231,7 @@ public class InjectorTest {
 
   @Test
   @Ignore("todo")
-  public void objectsCreatedByFactoryShareTransitiveDependencies() throws Exception {
+  public void objectsCreatedByFactoryShareTransitiveDependencies() {
     FakeSandboxManager sandboxManager = injector.getInstance(FakeSandboxManager.class);
     FakeSdk runtimeSdk = new FakeSdk("runtime");
     FakeSdk compileASdk = new FakeSdk("compileA");
@@ -243,7 +242,7 @@ public class InjectorTest {
   }
 
   @Test
-  public void shouldProvideDecentErrorMessages() throws Exception {
+  public void shouldProvideDecentErrorMessages() {
     FakeSandboxManager sandboxManager = injector.getInstance(FakeSandboxManager.class);
     Exception actualException = null;
     try {
@@ -258,7 +257,7 @@ public class InjectorTest {
 
   @Test
   @Ignore("todo")
-  public void shouldOnlyAttemptToResolveTypesKnownToClassLoader() throws Exception {}
+  public void shouldOnlyAttemptToResolveTypesKnownToClassLoader() {}
 
   /////////////////////////////
 
@@ -295,7 +294,7 @@ public class InjectorTest {
     }
 
     @SuppressWarnings("unused")
-    public MyUmm(String thingz) {
+    public MyUmm(String thing) {
       this.thing = null;
     }
   }
