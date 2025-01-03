@@ -17,13 +17,12 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @RunWith(JUnit4.class)
 public class ReflectorTest {
 
-  private SomeClass someClass;
   private _SomeClass_ reflector;
   private _SomeClass_ staticReflector;
 
   @Before
-  public void setUp() throws Exception {
-    someClass = new SomeClass("c");
+  public void setUp() {
+    SomeClass someClass = new SomeClass("c");
     reflector = reflector(_SomeClass_.class, someClass);
 
     staticReflector = reflector(_SomeClass_.class, null);
@@ -144,11 +143,11 @@ public class ReflectorTest {
     _SomeClass_ accessor = reflector(_SomeClass_.class, i);
 
     time("ReflectionHelpers", 10_000_000, this::constructorByReflectionHelpers);
-    time("accessor", 10_000_000, () -> constructorByReflector());
+    time("accessor", 10_000_000, this::constructorByReflector);
     time("saved accessor", 10_000_000, () -> constructorBySavedReflector(accessor));
 
-    time("ReflectionHelpers", 10_000_000, () -> constructorByReflectionHelpers());
-    time("accessor", 10_000_000, () -> constructorByReflector());
+    time("ReflectionHelpers", 10_000_000, this::constructorByReflectionHelpers);
+    time("accessor", 10_000_000, this::constructorByReflector);
     time("saved accessor", 10_000_000, () -> constructorBySavedReflector(accessor));
   }
 
@@ -259,8 +258,8 @@ public class ReflectorTest {
     for (int i = 0; i < times; i++) {
       runnable.run();
     }
-    long elasedMs = System.currentTimeMillis() - startTime;
-    System.out.println(name + " took " + elasedMs);
+    long elapsedMs = System.currentTimeMillis() - startTime;
+    System.out.println(name + " took " + elapsedMs);
   }
 
   private String methodByReflectionHelpers(SomeClass o) {

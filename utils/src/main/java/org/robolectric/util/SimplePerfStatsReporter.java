@@ -6,7 +6,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 import org.robolectric.AndroidMetadata;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
@@ -99,7 +101,7 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
       if (success != metricKey.success) {
         return false;
       }
-      if (name != null ? !name.equals(metricKey.name) : metricKey.name != null) {
+      if (!Objects.equals(name, metricKey.name)) {
         return false;
       }
       if (sdkLevel != metricKey.sdkLevel) {
@@ -117,7 +119,7 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
     }
 
     @Override
-    public int compareTo(MetricKey o) {
+    public int compareTo(@Nonnull MetricKey o) {
       int i = name.compareTo(o.name);
       if (i != 0) {
         return i;

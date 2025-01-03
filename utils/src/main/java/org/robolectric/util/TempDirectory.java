@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.annotation.Nonnull;
 
 /**
  * A helper class for working with temporary directories. All temporary directories created by this
@@ -64,7 +65,7 @@ public class TempDirectory {
 
     synchronized (tempDirectoriesToDelete) {
       // If we haven't initialised the shutdown hook we should set everything up.
-      if (tempDirectoriesToDelete.size() == 0) {
+      if (tempDirectoriesToDelete.isEmpty()) {
         // Use a manual hook that actually clears the directory
         // This is necessary because File.deleteOnExit won't delete non empty directories
         Runtime.getRuntime().addShutdownHook(new Thread(TempDirectory::clearAllDirectories));
@@ -157,8 +158,9 @@ public class TempDirectory {
     Files.walkFileTree(
         directory,
         new SimpleFileVisitor<Path>() {
+          @Nonnull
           @Override
-          public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+          public FileVisitResult visitFile(Path file, @Nonnull BasicFileAttributes attrs)
               throws IOException {
             // Avoid deleting the obsolete temp directory marker
             if (!(OsUtil.isWindows()
@@ -168,6 +170,7 @@ public class TempDirectory {
             return FileVisitResult.CONTINUE;
           }
 
+          @Nonnull
           @Override
           public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
             if (!dir.equals(directory)) {

@@ -49,7 +49,6 @@ public class UnsafeAccess {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> Class<?> defineClass(Class<T> iClass, String reflectorClassName, byte[] bytecode) {
       // use reflection to call since this method does not exist on JDK11
       try {

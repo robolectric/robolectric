@@ -4,12 +4,12 @@ import java.util.Collection;
 
 /** Utility class used to join strings together with a delimiter. */
 public class Join {
-  public static String join(String delimiter, Collection collection) {
+  public static String join(String delimiter, Collection<?> collection) {
     String del = "";
     StringBuilder sb = new StringBuilder();
     for (Object obj : collection) {
       String asString = obj == null ? null : obj.toString();
-      if (obj != null && asString.length() > 0) {
+      if (obj != null && !asString.isEmpty()) {
         sb.append(del).append(obj);
         del = delimiter;
       }
@@ -22,7 +22,7 @@ public class Join {
     StringBuilder sb = new StringBuilder();
     for (Object obj : collection) {
       String asString = obj == null ? null : obj.toString();
-      if (asString != null && asString.length() > 0) {
+      if (asString != null && !asString.isEmpty()) {
         sb.append(del).append(asString);
         del = delimiter;
       }

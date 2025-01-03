@@ -6,7 +6,7 @@ import org.robolectric.util.inject.PluginFinder.ServiceFinderAdapter
 internal class MyServiceFinderAdapter(private val pluginClasses: List<Class<*>>) :
   ServiceFinderAdapter(null) {
   @Nonnull
-  public override fun <T> load(pluginType: Class<T>): Iterable<Class<out T>> {
+  override fun <T> load(pluginType: Class<T>): Iterable<Class<out T>> {
     return fill()
   }
 

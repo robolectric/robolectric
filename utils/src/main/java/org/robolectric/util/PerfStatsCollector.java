@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
@@ -169,7 +170,7 @@ public class PerfStatsCollector {
       if (success != metricKey.success) {
         return false;
       }
-      return name != null ? name.equals(metricKey.name) : metricKey.name == null;
+      return Objects.equals(name, metricKey.name);
     }
 
     @Override
