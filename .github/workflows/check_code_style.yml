@@ -46,6 +46,7 @@ jobs:
           echo "Running google-java-format-diff against 'origin/$base_branch'"
           git fetch origin "$base_branch" --depth 1
           diff=$(git diff -U0 $(git merge-base HEAD origin/$base_branch) -- . \
+            ':(exclude)processor/src/test/resources/org/robolectric/Robolectric_*.java' \
             ':(exclude)robolectric/src/test/java/org/robolectric/R.java' \
             ':(exclude)robolectric/src/test/java/org/robolectric/Manifest.java' \
             | $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1)

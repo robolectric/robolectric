@@ -1,4 +1,5 @@
 package org.robolectric;
+
 import com.example.objects.AnyObject;
 import com.example.objects.innerpackage.InnerPackageDummy;
 import java.util.AbstractMap;
@@ -31,19 +32,19 @@ public class Shadows implements ShadowProvider {
   }
 
   public static ShadowClassNameOnly shadowOf(AnyObject actual) {
-    return (ShadowClassNameOnly) Shadow.extract(actual);
+    return Shadow.extract(actual);
   }
 
   public static ShadowDummy shadowOf(com.example.objects.Dummy actual) {
-    return (ShadowDummy) Shadow.extract(actual);
+    return Shadow.extract(actual);
   }
 
   public static ShadowDummy2 shadowOf(org.example.objects.Dummy actual) {
-    return (ShadowDummy2) Shadow.extract(actual);
+    return Shadow.extract(actual);
   }
 
   public static ShadowInnerPackageDummy shadowOf(InnerPackageDummy actual) {
-    return (ShadowInnerPackageDummy) Shadow.extract(actual);
+    return Shadow.extract(actual);
   }
 
   @Override

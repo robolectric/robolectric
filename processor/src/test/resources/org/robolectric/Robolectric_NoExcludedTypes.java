@@ -1,4 +1,5 @@
 package org.robolectric;
+
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
