@@ -1,4 +1,5 @@
 package org.robolectric;
+
 import com.example.objects.Dummy;
 import com.example.objects.ParameterizedDummy;
 import java.util.AbstractMap;
@@ -27,11 +28,11 @@ public class Shadows implements ShadowProvider {
   }
 
   public static ShadowDummy shadowOf(Dummy actual) {
-    return (ShadowDummy) Shadow.extract(actual);
+    return Shadow.extract(actual);
   }
 
   public static <T,N extends Number> ShadowParameterizedDummy<T,N> shadowOf(ParameterizedDummy<T,N> actual) {
-    return (ShadowParameterizedDummy<T,N>) Shadow.extract(actual);
+    return Shadow.extract(actual);
   }
 
   @Override

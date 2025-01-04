@@ -1,4 +1,5 @@
 package org.robolectric;
+
 import com.example.objects.OuterDummy.InnerDummy;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -28,10 +29,8 @@ public class Shadows implements ShadowProvider {
             "org.robolectric.annotation.processing.shadows.ShadowInnerDummyWithPicker$ShadowInnerDummyWithPicker3"));
   }
 
-  public static org.robolectric.annotation.processing.shadows.ShadowInnerDummyWithPicker shadowOf(
-      InnerDummy actual) {
-    return (org.robolectric.annotation.processing.shadows.ShadowInnerDummyWithPicker)
-        Shadow.extract(actual);
+  public static ShadowInnerDummyWithPicker shadowOf(InnerDummy actual) {
+    return Shadow.extract(actual);
   }
 
   @Override
