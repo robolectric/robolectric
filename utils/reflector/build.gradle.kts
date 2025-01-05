@@ -6,7 +6,6 @@ plugins {
 dependencies {
   api(libs.asm)
   api(libs.asm.commons)
-  api(libs.asm.util)
   api(project(":utils"))
 
   testImplementation(project(":shadowapi"))
