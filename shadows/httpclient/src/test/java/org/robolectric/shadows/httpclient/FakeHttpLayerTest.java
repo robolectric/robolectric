@@ -19,42 +19,42 @@ public class FakeHttpLayerTest {
   private FakeHttpLayer.RequestMatcherBuilder requestMatcherBuilder;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     requestMatcherBuilder = new FakeHttpLayer.RequestMatcherBuilder();
   }
 
   @Test
-  public void requestMatcherBuilder_shouldAddHost() throws Exception {
+  public void requestMatcherBuilder_shouldAddHost() {
     requestMatcherBuilder.host("example.com");
     assertThat(requestMatcherBuilder.getHostname()).isEqualTo("example.com");
   }
 
   @Test
-  public void requestMatcherBuilder_shouldAddMethod() throws Exception {
+  public void requestMatcherBuilder_shouldAddMethod() {
     requestMatcherBuilder.method("POST");
     assertThat(requestMatcherBuilder.getMethod()).isEqualTo("POST");
   }
 
   @Test
-  public void requestMatcherBuilder_shouldAddPath() throws Exception {
+  public void requestMatcherBuilder_shouldAddPath() {
     requestMatcherBuilder.path("foo/bar");
     assertThat(requestMatcherBuilder.getPath()).isEqualTo("/foo/bar");
   }
 
   @Test
-  public void requestMatcherBuilder_shouldAddParams() throws Exception {
+  public void requestMatcherBuilder_shouldAddParams() {
     requestMatcherBuilder.param("param1", "param one");
     assertThat(requestMatcherBuilder.getParam("param1")).isEqualTo("param one");
   }
 
   @Test
-  public void requestMatcherBuilder_shouldAddHeaders() throws Exception {
+  public void requestMatcherBuilder_shouldAddHeaders() {
     requestMatcherBuilder.header("header1", "header one");
     assertThat(requestMatcherBuilder.getHeader("header1")).isEqualTo("header one");
   }
 
   @Test
-  public void matches_shouldMatchHeaders() throws Exception {
+  public void matches_shouldMatchHeaders() {
     requestMatcherBuilder.header("header1", "header one");
     HttpGet match = new HttpGet("example.com");
     HttpGet noMatch = new HttpGet("example.com");

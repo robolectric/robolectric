@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 public class TestHttpResponseTest {
 
   @Test
-  public void shouldSupportGetFirstHeader() throws Exception {
+  public void shouldSupportGetFirstHeader() {
     HttpResponse resp =
         new TestHttpResponse(304, "REDIRECTED", new BasicHeader("Location", "http://bar.com"));
 
@@ -28,7 +28,7 @@ public class TestHttpResponseTest {
   }
 
   @Test
-  public void shouldSupportGetLastHeader() throws Exception {
+  public void shouldSupportGetLastHeader() {
     HttpResponse resp =
         new TestHttpResponse(
             304,
@@ -44,7 +44,7 @@ public class TestHttpResponseTest {
   }
 
   @Test
-  public void shouldSupportContainsHeader() throws Exception {
+  public void shouldSupportContainsHeader() {
     HttpResponse resp =
         new TestHttpResponse(304, "ZOMBO", new BasicHeader("X-Zombo-Com", "Welcome"));
 
@@ -53,7 +53,7 @@ public class TestHttpResponseTest {
   }
 
   @Test
-  public void shouldSupportHeaderIterator() throws Exception {
+  public void shouldSupportHeaderIterator() {
     HttpResponse resp =
         new TestHttpResponse(
             304,
@@ -70,7 +70,7 @@ public class TestHttpResponseTest {
   }
 
   @Test
-  public void shouldSupportHeaderIteratorWithArg() throws Exception {
+  public void shouldSupportHeaderIteratorWithArg() {
     HttpResponse resp =
         new TestHttpResponse(
             304,
@@ -89,7 +89,7 @@ public class TestHttpResponseTest {
   }
 
   @Test
-  public void shouldSupportGetHeadersWithArg() throws Exception {
+  public void shouldSupportGetHeadersWithArg() {
     HttpResponse resp =
         new TestHttpResponse(
             304,

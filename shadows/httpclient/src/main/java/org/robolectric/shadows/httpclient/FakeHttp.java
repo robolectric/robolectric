@@ -36,7 +36,7 @@ public class FakeHttp {
           "FakeHttp.getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody,"
               + " contentType)",
       imports = "org.robolectric.shadows.httpclient.FakeHttp")
-  public static final void addPendingHttpResponseWithContentType(
+  public static void addPendingHttpResponseWithContentType(
       int statusCode, String responseBody, Header contentType) {
     getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody, contentType);
   }

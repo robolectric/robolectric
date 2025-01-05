@@ -28,7 +28,7 @@ public class FakeHttpLayer {
   private HttpResponse defaultHttpResponse;
   private boolean interceptHttpRequests = true;
   private boolean logHttpRequests = false;
-  private List<byte[]> httpResposeContent = new ArrayList<>();
+  private final List<byte[]> httpResponseContent = new ArrayList<>();
   private boolean interceptResponseContent;
 
   public HttpRequestInfo getLastSentHttpRequestInfo() {
@@ -44,13 +44,7 @@ public class FakeHttpLayer {
   }
 
   public void addPendingHttpResponse(final HttpResponse httpResponse) {
-    addPendingHttpResponse(
-        new HttpResponseGenerator() {
-          @Override
-          public HttpResponse getResponse(HttpRequest request) {
-            return httpResponse;
-          }
-        });
+    addPendingHttpResponse(request -> httpResponse);
   }
 
   public void addPendingHttpResponse(HttpResponseGenerator httpResponseGenerator) {
@@ -194,7 +188,7 @@ public class FakeHttpLayer {
   }
 
   public HttpRequestInfo getNextSentHttpRequestInfo() {
-    return httpRequestInfos.size() > 0 ? httpRequestInfos.remove(0) : null;
+    return !httpRequestInfos.isEmpty() ? httpRequestInfos.remove(0) : null;
   }
 
   public void logHttpRequests() {
@@ -242,11 +236,11 @@ public class FakeHttpLayer {
   }
 
   public void addHttpResponseContent(byte[] content) {
-    this.httpResposeContent.add(content);
+    this.httpResponseContent.add(content);
   }
 
   public List<byte[]> getHttpResposeContentList() {
-    return httpResposeContent;
+    return httpResponseContent;
   }
 
   /**
@@ -290,7 +284,7 @@ public class FakeHttpLayer {
   }
 
   public static class RequestMatcherResponseRule implements HttpEntityStub.ResponseRule {
-    private RequestMatcher requestMatcher;
+    private final RequestMatcher requestMatcher;
     private HttpResponse responseToGive;
     private IOException ioException;
     private HttpException httpException;
@@ -338,8 +332,8 @@ public class FakeHttpLayer {
   }
 
   public static class DefaultRequestMatcher implements RequestMatcher {
-    private String method;
-    private String uri;
+    private final String method;
+    private final String uri;
 
     public DefaultRequestMatcher(String method, String uri) {
       this.method = method;
@@ -354,7 +348,7 @@ public class FakeHttpLayer {
   }
 
   public static class UriRequestMatcher implements RequestMatcher {
-    private String uri;
+    private final String uri;
 
     public UriRequestMatcher(String uri) {
       this.uri = uri;
@@ -369,8 +363,8 @@ public class FakeHttpLayer {
   public static class RequestMatcherBuilder implements RequestMatcher {
     private String method, hostname, path;
     private boolean noParams;
-    private Map<String, String> params = new HashMap<>();
-    private Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> params = new HashMap<>();
+    private final Map<String, String> headers = new HashMap<>();
     private PostBodyMatcher postBodyMatcher;
 
     public interface PostBodyMatcher {
@@ -438,13 +432,13 @@ public class FakeHttpLayer {
       if (noParams && uri.getRawQuery() != null) {
         return false;
       }
-      if (params.size() > 0) {
+      if (!params.isEmpty()) {
         Map<String, String> requestParams = ParamsParser.parseParams(request);
         if (!requestParams.equals(params)) {
           return false;
         }
       }
-      if (headers.size() > 0) {
+      if (!headers.isEmpty()) {
         Map<String, String> actualRequestHeaders = new HashMap<>();
         for (Header header : request.getAllHeaders()) {
           actualRequestHeaders.put(header.getName(), header.getValue());
@@ -495,7 +489,7 @@ public class FakeHttpLayer {
   }
 
   public static class UriRegexMatcher implements RequestMatcher {
-    private String method;
+    private final String method;
     private final Pattern uriRegex;
 
     public UriRegexMatcher(String method, String uriRegex) {

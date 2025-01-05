@@ -21,10 +21,10 @@ import org.apache.http.params.HttpParams;
 
 public class TestHttpResponse extends HttpResponseStub {
 
-  private int statusCode;
+  private final int statusCode;
   private byte[] responseBody;
-  private TestStatusLine statusLine = new TestStatusLine();
-  private TestHttpEntity httpEntity = new TestHttpEntity();
+  private final TestStatusLine statusLine = new TestStatusLine();
+  private final TestHttpEntity httpEntity = new TestHttpEntity();
   private int openEntityContentStreamCount = 0;
   private Header[] headers = new Header[0];
   private HttpParams params = new BasicHttpParams();
@@ -94,7 +94,7 @@ public class TestHttpResponse extends HttpResponseStub {
     for (Header h : headers) {
       if (h.getName().equalsIgnoreCase(s)) found.add(h);
     }
-    return found.toArray(new Header[found.size()]);
+    return found.toArray(new Header[0]);
   }
 
   @Override
@@ -102,7 +102,7 @@ public class TestHttpResponse extends HttpResponseStub {
     List<Header> temp = new ArrayList<>();
     Collections.addAll(temp, headers);
     temp.add(header);
-    headers = temp.toArray(new Header[temp.size()]);
+    headers = temp.toArray(new Header[0]);
   }
 
   @Override
@@ -203,8 +203,6 @@ public class TestHttpResponse extends HttpResponseStub {
 
   public class TestHttpEntity extends HttpEntityStub {
 
-    private ByteArrayInputStream inputStream;
-
     @Override
     public long getContentLength() {
       return responseBody.length;
@@ -226,22 +224,15 @@ public class TestHttpResponse extends HttpResponseStub {
     }
 
     @Override
-    public boolean isRepeatable() {
-      return true;
-    }
-
-    @Override
-    public InputStream getContent() throws IOException, IllegalStateException {
+    public InputStream getContent() throws IllegalStateException {
       openEntityContentStreamCount++;
-      inputStream =
-          new ByteArrayInputStream(responseBody) {
-            @Override
-            public void close() throws IOException {
-              openEntityContentStreamCount--;
-              super.close();
-            }
-          };
-      return inputStream;
+      return new ByteArrayInputStream(responseBody) {
+        @Override
+        public void close() throws IOException {
+          openEntityContentStreamCount--;
+          super.close();
+        }
+      };
     }
 
     @Override
@@ -250,7 +241,7 @@ public class TestHttpResponse extends HttpResponseStub {
     }
 
     @Override
-    public void consumeContent() throws IOException {}
+    public void consumeContent() {}
   }
 
   public class TestStatusLine extends StatusLineStub {

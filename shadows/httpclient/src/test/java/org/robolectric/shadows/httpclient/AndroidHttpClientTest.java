@@ -19,13 +19,13 @@ import org.robolectric.RuntimeEnvironment;
 public class AndroidHttpClientTest {
 
   @Test
-  public void testNewInstance() throws Exception {
+  public void testNewInstance() {
     AndroidHttpClient client = AndroidHttpClient.newInstance("foo");
     assertThat(client).isNotNull();
   }
 
   @Test
-  public void testNewInstanceWithContext() throws Exception {
+  public void testNewInstanceWithContext() {
     AndroidHttpClient client =
         AndroidHttpClient.newInstance("foo", RuntimeEnvironment.getApplication());
     assertThat(client).isNotNull();

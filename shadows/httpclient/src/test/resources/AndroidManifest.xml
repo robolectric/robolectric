@@ -4,6 +4,5 @@
 
     <uses-sdk android:targetSdkVersion="19"/>
 
-    <application android:name="android.app.Application">
-    </application>
+    <application android:name="android.app.Application"/>
 </manifest>

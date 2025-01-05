@@ -181,7 +181,7 @@ public class DefaultRequestDirector implements RequestDirector {
 
   private int redirectCount;
 
-  private int maxRedirects;
+  private final int maxRedirects;
 
   private HttpHost virtualHost;
 
@@ -328,12 +328,11 @@ public class DefaultRequestDirector implements RequestDirector {
   public HttpResponse execute(HttpHost target, HttpRequest request, HttpContext context)
       throws HttpException, IOException {
 
-    HttpRequest orig = request;
-    RequestWrapper origWrapper = wrapRequest(orig);
+    RequestWrapper origWrapper = wrapRequest(request);
     origWrapper.setParams(params);
     HttpRoute origRoute = determineRoute(target, origWrapper, context);
 
-    virtualHost = (HttpHost) orig.getParams().getParameter(ClientPNames.VIRTUAL_HOST);
+    virtualHost = (HttpHost) request.getParams().getParameter(ClientPNames.VIRTUAL_HOST);
 
     RoutedRequest roureq = new RoutedRequest(origWrapper, origRoute);
 
@@ -361,8 +360,8 @@ public class DefaultRequestDirector implements RequestDirector {
         // Allocate connection if needed
         if (managedConn == null) {
           ClientConnectionRequest connRequest = connManager.requestConnection(route, userToken);
-          if (orig instanceof AbortableHttpRequest) {
-            ((AbortableHttpRequest) orig).setConnectionRequest(connRequest);
+          if (request instanceof AbortableHttpRequest) {
+            ((AbortableHttpRequest) request).setConnectionRequest(connRequest);
           }
 
           try {
@@ -385,8 +384,8 @@ public class DefaultRequestDirector implements RequestDirector {
           }
         }
 
-        if (orig instanceof AbortableHttpRequest) {
-          ((AbortableHttpRequest) orig).setReleaseTrigger(managedConn);
+        if (request instanceof AbortableHttpRequest) {
+          ((AbortableHttpRequest) request).setReleaseTrigger(managedConn);
         }
 
         // Reopen connection if needed
@@ -581,8 +580,8 @@ public class DefaultRequestDirector implements RequestDirector {
     // it is released.
     try {
       managedConn.releaseConnection();
-    } catch (IOException ignored) {
-      this.log.debug("IOException releasing connection", ignored);
+    } catch (IOException exception) {
+      this.log.debug("IOException releasing connection", exception);
     }
     managedConn = null;
   }
@@ -843,23 +842,17 @@ public class DefaultRequestDirector implements RequestDirector {
       port = scheme.getDefaultPort();
     }
 
-    StringBuilder buffer = new StringBuilder(host.length() + 6);
-    buffer.append(host);
-    buffer.append(':');
-    buffer.append(Integer.toString(port));
-
-    String authority = buffer.toString();
+    String authority = host + ':' + port;
     ProtocolVersion ver = HttpProtocolParams.getVersion(params);
-    HttpRequest req = new BasicHttpRequest("CONNECT", authority, ver);
 
-    return req;
+    return new BasicHttpRequest("CONNECT", authority, ver);
   }
 
   /**
    * Analyzes a response to check need for a followup.
    *
    * @param roureq the request and route.
-   * @param response the response to analayze
+   * @param response the response to analyze
    * @param context the context used for the current request execution
    * @return the followup request and route if there is a followup, or {@code null} if the response
    *     should be returned as is
@@ -1006,8 +999,8 @@ public class DefaultRequestDirector implements RequestDirector {
       // ensure the connection manager properly releases this connection
       try {
         mcc.releaseConnection();
-      } catch (IOException ignored) {
-        this.log.debug("Error releasing connection", ignored);
+      } catch (IOException exception) {
+        this.log.debug("Error releasing connection", exception);
       }
     }
   } // abortConnection
