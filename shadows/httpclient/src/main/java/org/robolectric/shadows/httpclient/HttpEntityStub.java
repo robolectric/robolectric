@@ -55,7 +55,7 @@ public class HttpEntityStub implements HttpEntity {
     throw new UnsupportedOperationException();
   }
 
-  public static interface ResponseRule {
+  public interface ResponseRule {
     boolean matches(HttpRequest request);
 
     HttpResponse getResponse() throws HttpException, IOException;

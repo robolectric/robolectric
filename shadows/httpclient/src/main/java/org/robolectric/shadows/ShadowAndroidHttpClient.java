@@ -6,7 +6,6 @@ import java.io.IOException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -21,7 +20,7 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(AndroidHttpClient.class)
 public class ShadowAndroidHttpClient {
 
-  private HttpClient httpClient = new DefaultHttpClient();
+  private final HttpClient httpClient = new DefaultHttpClient();
 
   @Implementation
   protected static AndroidHttpClient newInstance(String userAgent) {
@@ -44,34 +43,31 @@ public class ShadowAndroidHttpClient {
   }
 
   @Implementation
-  protected HttpResponse execute(HttpUriRequest httpUriRequest)
-      throws IOException, ClientProtocolException {
+  protected HttpResponse execute(HttpUriRequest httpUriRequest) throws IOException {
     return httpClient.execute(httpUriRequest);
   }
 
   @Implementation
   protected HttpResponse execute(HttpUriRequest httpUriRequest, HttpContext httpContext)
-      throws IOException, ClientProtocolException {
+      throws IOException {
     return httpClient.execute(httpUriRequest, httpContext);
   }
 
   @Implementation
-  protected HttpResponse execute(HttpHost httpHost, HttpRequest httpRequest)
-      throws IOException, ClientProtocolException {
+  protected HttpResponse execute(HttpHost httpHost, HttpRequest httpRequest) throws IOException {
     return httpClient.execute(httpHost, httpRequest);
   }
 
   @Implementation
   protected HttpResponse execute(
-      HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext)
-      throws IOException, ClientProtocolException {
+      HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext) throws IOException {
     return httpClient.execute(httpHost, httpRequest, httpContext);
   }
 
   @Implementation
   protected <T> T execute(
       HttpUriRequest httpUriRequest, ResponseHandler<? extends T> responseHandler)
-      throws IOException, ClientProtocolException {
+      throws IOException {
     return httpClient.execute(httpUriRequest, responseHandler);
   }
 
@@ -80,14 +76,14 @@ public class ShadowAndroidHttpClient {
       HttpUriRequest httpUriRequest,
       ResponseHandler<? extends T> responseHandler,
       HttpContext httpContext)
-      throws IOException, ClientProtocolException {
+      throws IOException {
     return httpClient.execute(httpUriRequest, responseHandler, httpContext);
   }
 
   @Implementation
   protected <T> T execute(
       HttpHost httpHost, HttpRequest httpRequest, ResponseHandler<? extends T> responseHandler)
-      throws IOException, ClientProtocolException {
+      throws IOException {
     return httpClient.execute(httpHost, httpRequest, responseHandler);
   }
 
@@ -97,7 +93,7 @@ public class ShadowAndroidHttpClient {
       HttpRequest httpRequest,
       ResponseHandler<? extends T> responseHandler,
       HttpContext httpContext)
-      throws IOException, ClientProtocolException {
+      throws IOException {
     return httpClient.execute(httpHost, httpRequest, responseHandler, httpContext);
   }
 }

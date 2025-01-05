@@ -6,11 +6,9 @@ import static org.junit.Assert.assertTrue;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import org.apache.http.HttpException;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.DefaultRequestDirector;
-import org.apache.http.protocol.HttpContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,13 +45,7 @@ public class FakeHttpTest {
   private void makeRequest(String uri) throws HttpException, IOException {
     FakeHttp.addPendingHttpResponse(200, "a happy response body");
 
-    ConnectionKeepAliveStrategy connectionKeepAliveStrategy =
-        new ConnectionKeepAliveStrategy() {
-          @Override
-          public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
-            return 0;
-          }
-        };
+    ConnectionKeepAliveStrategy connectionKeepAliveStrategy = (httpResponse, httpContext) -> 0;
     DefaultRequestDirector requestDirector =
         new DefaultRequestDirector(
             null,
