@@ -14,7 +14,6 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowGoogleApiAvailability {
   private int availabilityCode = ConnectionResult.SERVICE_MISSING;
   private boolean isUserResolvableError = false;
-  private String openSourceSoftwareLicenseInfo = "";
   private Dialog errorDialog;
 
   @Implementation
@@ -42,7 +41,7 @@ public class ShadowGoogleApiAvailability {
 
   @Implementation
   public String getOpenSourceSoftwareLicenseInfo(Context context) {
-    return openSourceSoftwareLicenseInfo;
+    return "";
   }
 
   @Implementation
