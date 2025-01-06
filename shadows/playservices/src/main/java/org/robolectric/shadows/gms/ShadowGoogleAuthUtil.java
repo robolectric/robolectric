@@ -207,7 +207,7 @@ public class ShadowGoogleAuthUtil {
         String authority,
         Bundle syncBundle)
         throws IOException, UserRecoverableNotifiedException, GoogleAuthException {
-      if (authority == null || authority.length() == 0) {
+      if (authority == null || authority.isEmpty()) {
         throw new IllegalArgumentException("Authority cannot be empty.");
       }
       return "token";
