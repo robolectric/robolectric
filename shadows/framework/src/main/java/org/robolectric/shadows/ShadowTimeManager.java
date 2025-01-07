@@ -32,8 +32,8 @@ public class ShadowTimeManager {
   private static TimeZoneConfiguration timeZoneConfiguration;
 
   /**
-   * Capabilites are predefined and not controlled by user, so they can't be changed via TimeManager
-   * API.
+   * Capabilities are predefined and not controlled by user, so they can't be changed via
+   * TimeManager API.
    */
   public void setCapabilityState(String capability, @CapabilityState int value) {
     TimeZoneCapabilities.Builder builder = new TimeZoneCapabilities.Builder(timeZoneCapabilities);
@@ -121,6 +121,16 @@ public class ShadowTimeManager {
         new TimeZoneCapabilities.Builder(UserHandle.CURRENT)
             .setConfigureAutoDetectionEnabledCapability(Capabilities.CAPABILITY_POSSESSED)
             .setConfigureGeoDetectionEnabledCapability(Capabilities.CAPABILITY_POSSESSED);
+
+    if (ReflectionHelpers.hasMethod(
+        TimeZoneCapabilities.Builder.class,
+        "setConfigureNotificationsEnabledCapability",
+        int.class)) {
+      ReflectionHelpers.callInstanceMethod(
+          timeZoneCapabilitiesBuilder,
+          "setConfigureNotificationsEnabledCapability",
+          ClassParameter.from(int.class, Capabilities.CAPABILITY_POSSESSED));
+    }
 
     if (RuntimeEnvironment.getApiLevel() >= U.SDK_INT) {
       ReflectionHelpers.callInstanceMethod(
