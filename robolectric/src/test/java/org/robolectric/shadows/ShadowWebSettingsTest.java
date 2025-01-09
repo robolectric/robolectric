@@ -27,4 +27,11 @@ public final class ShadowWebSettingsTest {
 
     assertThat(WebSettings.getDefaultUserAgent(context)).isEqualTo("Chrome/71.0.143.1");
   }
+
+  @Test
+  public void setDefaultUserAgent_nullArgument() {
+    ShadowWebSettings.setDefaultUserAgent(null);
+
+    assertThat(WebSettings.getDefaultUserAgent(context)).isNotEmpty();
+  }
 }

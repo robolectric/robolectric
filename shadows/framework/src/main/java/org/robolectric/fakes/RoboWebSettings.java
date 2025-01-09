@@ -1,9 +1,15 @@
 package org.robolectric.fakes;
 
 import android.webkit.WebSettings;
+import javax.annotation.Nullable;
 
 /** Robolectric implementation of {@link android.webkit.WebSettings}. */
 public class RoboWebSettings extends WebSettings {
+  private static final String DEFAULT_USER_AGENT =
+      "Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30"
+          + " (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
+  @Nullable private static String defaultUserAgentOverride = null;
+
   private boolean blockNetworkImage = false;
   private boolean javaScriptEnabled = false;
   private boolean javaScriptCanOpenWindowAutomatically = false;
@@ -323,9 +329,7 @@ public class RoboWebSettings extends WebSettings {
 
   private boolean allowFileAccess = true;
   private boolean builtInZoomControls = true;
-  private String userAgentString =
-      "Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30"
-          + " (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
+  private String userAgentString = null;
 
   @Override
   public boolean getAllowFileAccess() {
@@ -348,13 +352,15 @@ public class RoboWebSettings extends WebSettings {
   }
 
   @Override
-  public synchronized void setUserAgentString(String ua) {
+  public synchronized void setUserAgentString(@Nullable String ua) {
     userAgentString = ua;
   }
 
   @Override
   public synchronized String getUserAgentString() {
-    return userAgentString;
+    return userAgentString == null || userAgentString.isEmpty()
+        ? getDefaultUserAgent()
+        : userAgentString;
   }
 
   // End API 3
@@ -676,4 +682,28 @@ public class RoboWebSettings extends WebSettings {
   }
 
   // End API 29
+
+  /**
+   * Returns the default User-Agent used by a WebView. An instance of WebView could use a different
+   * User-Agent if a call is made to {@link WebSettings#setUserAgentString(String)}.
+   *
+   * <p>The default User-Agent can be overridden (for the entire application) by calling {@link
+   * #setDefaultUserAgentOverride(String)}.
+   */
+  public static String getDefaultUserAgent() {
+    return defaultUserAgentOverride == null ? DEFAULT_USER_AGENT : defaultUserAgentOverride;
+  }
+
+  /**
+   * Overrides the default user agent for all WebViews. The value set here is returned from {@link
+   * #getDefaultUserAgent()}.
+   *
+   * <p>Note that particular WebView instances will ignore this value if they have been configured
+   * with a custom user agent via {@link WebSettings#setUserAgentString(String)}.
+   *
+   * <p>If the value is null, the default user agent will be provided by Robolectric.
+   */
+  public static void setDefaultUserAgentOverride(@Nullable String defaultUserAgent) {
+    defaultUserAgentOverride = defaultUserAgent;
+  }
 }

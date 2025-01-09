@@ -32,6 +32,8 @@ public class RoboWebSettingsTest {
     assertThat(webSettings.getTextZoom()).isEqualTo(100);
     assertThat(webSettings.getDefaultTextEncodingName()).isEqualTo("UTF-8");
     assertThat(webSettings.getDefaultFontSize()).isEqualTo(16);
+    assertThat(webSettings.getUserAgentString()).isNotEmpty();
+    assertThat(RoboWebSettings.getDefaultUserAgent()).isNotEmpty();
 
     // deprecated methods
     assertThat(webSettings.getPluginsEnabled()).isFalse();
@@ -96,6 +98,23 @@ public class RoboWebSettingsTest {
       webSettings.setBuiltInZoomControls(value);
       assertThat(webSettings.getBuiltInZoomControls()).isEqualTo(value);
     }
+  }
+
+  @Test
+  public void testSetUserAgentString() {
+    String newUserAgentString = "Chrome/71.0.143.1";
+    webSettings.setUserAgentString(newUserAgentString);
+
+    assertThat(webSettings.getUserAgentString()).isEqualTo(newUserAgentString);
+  }
+
+  @Test
+  public void testSetUserAgentString_updateThenClear() {
+    webSettings.setUserAgentString("Chrome/71.0.143.1");
+
+    webSettings.setUserAgentString(null);
+
+    assertThat(webSettings.getUserAgentString()).isEqualTo(RoboWebSettings.getDefaultUserAgent());
   }
 
   @Test
@@ -289,5 +308,27 @@ public class RoboWebSettingsTest {
   public void testSetForceDark() {
     webSettings.setForceDark(WebSettings.FORCE_DARK_AUTO);
     assertThat(webSettings.getForceDark()).isEqualTo(WebSettings.FORCE_DARK_AUTO);
+  }
+
+  @Test
+  public void testSetDefaultUserAgentOverride() {
+    String defaultUserAgent = "Chrome/71.0.143.1";
+    RoboWebSettings.setDefaultUserAgentOverride(defaultUserAgent);
+
+    webSettings.setUserAgentString(null);
+
+    assertThat(webSettings.getUserAgentString()).isEqualTo(defaultUserAgent);
+    assertThat(RoboWebSettings.getDefaultUserAgent()).isEqualTo(defaultUserAgent);
+  }
+
+  @Test
+  public void testSetDefaultUserAgentOverride_reset() {
+    RoboWebSettings.setDefaultUserAgentOverride("Chrome/71.0.143.1");
+
+    RoboWebSettings.setDefaultUserAgentOverride(null);
+    webSettings.setUserAgentString(null);
+
+    assertThat(webSettings.getUserAgentString()).isNotEmpty();
+    assertThat(RoboWebSettings.getDefaultUserAgent()).isNotEmpty();
   }
 }
