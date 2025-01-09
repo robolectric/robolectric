@@ -20,6 +20,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
+import android.os.LocaleList;
 import android.os.Process;
 import android.os.UserHandle;
 import android.util.ArrayMap;
@@ -31,6 +32,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
@@ -68,6 +70,8 @@ public class ShadowActivityManager {
   private static final Deque<Object> appExitInfoList = new ArrayDeque<>();
   private ConfigurationInfo configurationInfo;
   private Context context;
+  private static final ArrayList<Locale> supportedLocales = new ArrayList<>();
+  private LocaleList deviceLocales;
 
   @Implementation
   protected void __constructor__(Context context, Handler handler) {
@@ -135,6 +139,25 @@ public class ShadowActivityManager {
     return recentTasks.size() > maxNum ? recentTasks.subList(0, maxNum) : recentTasks;
   }
 
+  /**
+   * Sets the current locales of the device. If the input is {@code null}, sets the {@link
+   * Locale#ENGLISH} as default locale.
+   */
+  @Implementation(minSdk = VERSION_CODES.Q)
+  protected void setDeviceLocales(LocaleList locales) {
+    deviceLocales =
+        locales == null ? LocaleList.forLanguageTags(Locale.ENGLISH.toLanguageTag()) : locales;
+  }
+
+  /**
+   * Gets the values set by {@link #setDeviceLocales(LocaleList)}.
+   *
+   * @return an {@link LocaleList} object contains the current locales.
+   */
+  public LocaleList getDeviceLocales() {
+    return deviceLocales;
+  }
+
   @Implementation
   protected List<ActivityManager.RunningServiceInfo> getRunningServices(int maxNum) {
     return services;
@@ -180,7 +203,7 @@ public class ShadowActivityManager {
     return true;
   }
 
-  @Implementation(minSdk = android.os.Build.VERSION_CODES.Q)
+  @Implementation(minSdk = VERSION_CODES.Q)
   protected boolean switchUser(UserHandle userHandle) {
     return switchUser(userHandle.getIdentifier());
   }
@@ -364,6 +387,7 @@ public class ShadowActivityManager {
     uidImportances.clear();
     appExitInfoList.clear();
     isLowRamDeviceOverride = null;
+    supportedLocales.clear();
   }
 
   /** Returns the background restriction state set by {@link #setBackgroundRestricted}. */
