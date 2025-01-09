@@ -93,14 +93,14 @@ public class ShadowActivityTest {
   private Activity activity;
 
   @Test
-  public void shouldUseApplicationLabelFromManifestAsTitleForActivity() throws Exception {
+  public void shouldUseApplicationLabelFromManifestAsTitleForActivity() {
     activity = Robolectric.setupActivity(LabelTestActivity1.class);
     assertThat(activity.getTitle()).isNotNull();
     assertThat(activity.getTitle().toString()).isEqualTo(activity.getString(R.string.app_name));
   }
 
   @Test
-  public void shouldUseActivityLabelFromManifestAsTitleForActivity() throws Exception {
+  public void shouldUseActivityLabelFromManifestAsTitleForActivity() {
     activity = Robolectric.setupActivity(LabelTestActivity2.class);
     assertThat(activity.getTitle()).isNotNull();
     assertThat(activity.getTitle().toString())
@@ -108,7 +108,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void shouldUseActivityLabelFromManifestAsTitleForActivityWithShortName() throws Exception {
+  public void shouldUseActivityLabelFromManifestAsTitleForActivityWithShortName() {
     activity = Robolectric.setupActivity(LabelTestActivity3.class);
     assertThat(activity.getTitle()).isNotNull();
     assertThat(activity.getTitle().toString())
@@ -223,8 +223,7 @@ public class ShadowActivityTest {
 
   @Test
   public void
-      shouldNotComplainIfActivityIsDestroyedWhileAnotherActivityHasRegisteredBroadcastReceivers()
-          throws Exception {
+      shouldNotComplainIfActivityIsDestroyedWhileAnotherActivityHasRegisteredBroadcastReceivers() {
     try (ActivityController<DialogCreatingActivity> controller =
         Robolectric.buildActivity(DialogCreatingActivity.class)) {
       activity = controller.get();

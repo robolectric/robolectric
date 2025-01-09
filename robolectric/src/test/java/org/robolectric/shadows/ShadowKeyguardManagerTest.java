@@ -52,7 +52,7 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
-  public void testShouldBeAbleToDisableTheKeyguardLock() throws Exception {
+  public void testShouldBeAbleToDisableTheKeyguardLock() {
     KeyguardManager.KeyguardLock lock = manager.newKeyguardLock(KEYGUARD_SERVICE);
     assertThat(shadowOf(lock).isEnabled()).isTrue();
 

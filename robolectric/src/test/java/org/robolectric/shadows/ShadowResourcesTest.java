@@ -301,7 +301,7 @@ public class ShadowResourcesTest {
 
   @Test
   @Config(minSdk = S)
-  public void getColor_shouldReturnCorrectMaterialYouColor() throws Exception {
+  public void getColor_shouldReturnCorrectMaterialYouColor() {
     SparseIntArray sparseArray =
         new SparseIntArray(LAST_RESOURCE_COLOR_ID - FIRST_RESOURCE_COLOR_ID + 1);
     IntStream.range(0, greenBlueColorBase.length)

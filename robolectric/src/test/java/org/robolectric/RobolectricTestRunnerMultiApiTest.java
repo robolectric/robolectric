@@ -342,17 +342,17 @@ public class RobolectricTestRunnerMultiApiTest {
     private List<String> ignored = new ArrayList<>();
 
     @Override
-    public void testStarted(Description description) throws Exception {
+    public void testStarted(Description description) {
       started.add(description.getDisplayName());
     }
 
     @Override
-    public void testFinished(Description description) throws Exception {
+    public void testFinished(Description description) {
       finished.add(description.getDisplayName());
     }
 
     @Override
-    public void testIgnored(Description description) throws Exception {
+    public void testIgnored(Description description) {
       ignored.add(description.getDisplayName());
     }
   }

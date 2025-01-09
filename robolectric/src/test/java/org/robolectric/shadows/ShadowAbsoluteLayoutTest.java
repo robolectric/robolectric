@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 public class ShadowAbsoluteLayoutTest {
 
   @Test
-  public void getLayoutParams_shouldReturnAbsoluteLayoutParams() throws Exception {
+  public void getLayoutParams_shouldReturnAbsoluteLayoutParams() {
     ViewGroup.LayoutParams layoutParams =
         new AbsoluteLayout(ApplicationProvider.getApplicationContext()) {
           @Override

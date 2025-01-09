@@ -29,14 +29,14 @@ public final class ShadowSoundTriggerManagerTest {
 
   @Config(sdk = VERSION_CODES.S)
   @Test
-  public void getModuleProperties_nullModuleProperties() throws Exception {
+  public void getModuleProperties_nullModuleProperties() {
     SoundTrigger.ModuleProperties moduleProperties = instance.getModuleProperties();
     assertThat(moduleProperties).isNull();
   }
 
   @Config(sdk = VERSION_CODES.R)
   @Test
-  public void getModuleProperties_nullPointExceptionAtAndroidR() throws Exception {
+  public void getModuleProperties_nullPointExceptionAtAndroidR() {
     try {
       SoundTrigger.ModuleProperties unused = instance.getModuleProperties();
       fail("Expect NullPointException");
@@ -47,7 +47,7 @@ public final class ShadowSoundTriggerManagerTest {
 
   @Config(sdk = VERSION_CODES.R)
   @Test
-  public void getModuleProperties_nonNullProperties() throws Exception {
+  public void getModuleProperties_nonNullProperties() {
     instance.setModuleProperties(
         (SoundTrigger.ModuleProperties) getModuleProperties("supportedModelArch", 1234));
     SoundTrigger.ModuleProperties moduleProperties = instance.getModuleProperties();

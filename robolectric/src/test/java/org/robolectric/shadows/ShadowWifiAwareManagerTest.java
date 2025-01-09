@@ -73,8 +73,7 @@ public final class ShadowWifiAwareManagerTest {
   }
 
   @Test
-  public void attach_shouldNotAttachSessionIfSessionDetachedAndWifiAwareUnavailable()
-      throws Exception {
+  public void attach_shouldNotAttachSessionIfSessionDetachedAndWifiAwareUnavailable() {
     shadowOf(wifiAwareManager).setAvailable(false);
     shadowOf(wifiAwareManager).setSessionDetached(true);
     TestAttachCallback testAttachCallback = new TestAttachCallback();

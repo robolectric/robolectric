@@ -75,7 +75,7 @@ public class BootstrapTest {
 
   @Test
   @Config(qualifiers = "w480dp-h640dp")
-  public void shouldSetUpRealisticDisplay() throws Exception {
+  public void shouldSetUpRealisticDisplay() {
     DisplayManager displayManager =
         (DisplayManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.DISPLAY_SERVICE);
@@ -106,7 +106,7 @@ public class BootstrapTest {
 
   @Test
   @Config(qualifiers = "w480dp-h640dp-land-hdpi")
-  public void shouldSetUpRealisticDisplay_landscapeHighDensity() throws Exception {
+  public void shouldSetUpRealisticDisplay_landscapeHighDensity() {
     DisplayManager displayManager =
         (DisplayManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.DISPLAY_SERVICE);
@@ -228,7 +228,7 @@ public class BootstrapTest {
   }
 
   @Test
-  public void applyQualifiers_longShouldMakeScreenTaller() throws Exception {
+  public void applyQualifiers_longShouldMakeScreenTaller() {
     Bootstrap.applyQualifiers(
         "long", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
     assertThat(configuration.smallestScreenWidthDp).isEqualTo(320);
@@ -239,8 +239,7 @@ public class BootstrapTest {
   }
 
   @Test
-  public void whenScreenRationGreatherThan175Percent_applyQualifiers_ShouldSetLong()
-      throws Exception {
+  public void whenScreenRationGreaterThan175Percent_applyQualifiers_ShouldSetLong() {
     Bootstrap.applyQualifiers(
         "w400dp-h200dp", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
     assertThat(configuration.screenWidthDp).isEqualTo(400);
@@ -301,7 +300,7 @@ public class BootstrapTest {
   }
 
   @Test
-  public void applyQualifiers_shouldSetLocaleScript() throws Exception {
+  public void applyQualifiers_shouldSetLocaleScript() {
     Bootstrap.applyQualifiers(
         "b+sr+Latn", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
@@ -319,7 +318,7 @@ public class BootstrapTest {
   }
 
   @Test
-  public void spaceSeparated_applyQualifiers_shouldReplaceQualifiers() throws Exception {
+  public void spaceSeparated_applyQualifiers_shouldReplaceQualifiers() {
     Bootstrap.applyQualifiers(
         "ru-rRU-h123dp-large fr-w321dp",
         RuntimeEnvironment.getApiLevel(),
@@ -331,7 +330,7 @@ public class BootstrapTest {
   }
 
   @Test
-  public void whenPrefixedWithPlus_applyQualifiers_shouldOverlayQualifiers() throws Exception {
+  public void whenPrefixedWithPlus_applyQualifiers_shouldOverlayQualifiers() {
     Bootstrap.applyQualifiers(
         "+en ru-rRU-h123dp-large +fr-w321dp-small",
         RuntimeEnvironment.getApiLevel(),
@@ -343,7 +342,7 @@ public class BootstrapTest {
   }
 
   @Test
-  public void whenAllPrefixedWithPlus_applyQualifiers_shouldOverlayQualifiers() throws Exception {
+  public void whenAllPrefixedWithPlus_applyQualifiers_shouldOverlayQualifiers() {
     Bootstrap.applyQualifiers(
         "+xxhdpi +ru-rRU-h123dp-large +fr-w321dp-small",
         RuntimeEnvironment.getApiLevel(),

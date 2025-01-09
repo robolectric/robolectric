@@ -44,7 +44,7 @@ public class LegacyDependencyResolverTest {
   }
 
   @Test
-  public void whenRobolectricDepsPropertiesProperty() throws Exception {
+  public void whenRobolectricDepsPropertiesProperty() {
     Path depsPath =
         tempDirectory.createFile(
             "deps.properties", "org.robolectric\\:android-all\\:" + VERSION + ": file-123.jar");
@@ -59,7 +59,7 @@ public class LegacyDependencyResolverTest {
   }
 
   @Test
-  public void whenRobolectricDepsPropertiesPropertyAndOfflineProperty() throws Exception {
+  public void whenRobolectricDepsPropertiesPropertyAndOfflineProperty() {
     Path depsPath =
         tempDirectory.createFile(
             "deps.properties", "org.robolectric\\:android-all\\:" + VERSION + ": file-123.jar");
@@ -75,7 +75,7 @@ public class LegacyDependencyResolverTest {
   }
 
   @Test
-  public void whenRobolectricDepsPropertiesResource() throws Exception {
+  public void whenRobolectricDepsPropertiesResource() {
     Path depsPath =
         tempDirectory.createFile(
             "deps.properties", "org.robolectric\\:android-all\\:" + VERSION + ": file-123.jar");
@@ -88,7 +88,7 @@ public class LegacyDependencyResolverTest {
   }
 
   @Test
-  public void whenRobolectricDependencyDirProperty() throws Exception {
+  public void whenRobolectricDependencyDirProperty() {
     Path jarsPath = tempDirectory.create("jars");
     Path sdkJarPath = tempDirectory.createFile("jars/android-all-" + VERSION + ".jar", "...");
 

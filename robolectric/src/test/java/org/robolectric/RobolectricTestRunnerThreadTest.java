@@ -16,7 +16,7 @@ public class RobolectricTestRunnerThreadTest {
   private static ClassLoader sClassLoader;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     sThread = Thread.currentThread();
     sClassLoader = Thread.currentThread().getContextClassLoader();
   }
@@ -46,7 +46,7 @@ public class RobolectricTestRunnerThreadTest {
   }
 
   @AfterClass
-  public static void afterClass() throws Exception {
+  public static void afterClass() {
     assertThat(Thread.currentThread() == sThread).isTrue();
     assertThat(Thread.currentThread().getContextClassLoader() == sClassLoader).isTrue();
   }

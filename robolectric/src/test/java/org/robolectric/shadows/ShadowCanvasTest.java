@@ -37,7 +37,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void shouldDescribeBitmapDrawing() throws Exception {
+  public void shouldDescribeBitmapDrawing() {
     Canvas canvas = new Canvas(targetBitmap);
     canvas.drawBitmap(imageBitmap, 1, 2, new Paint());
     canvas.drawBitmap(imageBitmap, 100, 200, new Paint());
@@ -52,7 +52,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void shouldDescribeBitmapDrawing_withDestinationRect() throws Exception {
+  public void shouldDescribeBitmapDrawing_withDestinationRect() {
     Canvas canvas = new Canvas(targetBitmap);
     canvas.drawBitmap(imageBitmap, new Rect(1, 2, 3, 4), new Rect(5, 6, 7, 8), new Paint());
 
@@ -63,7 +63,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void shouldDescribeBitmapDrawing_withDestinationRectF() throws Exception {
+  public void shouldDescribeBitmapDrawing_withDestinationRectF() {
     Canvas canvas = new Canvas(targetBitmap);
     canvas.drawBitmap(
         imageBitmap, new Rect(1, 2, 3, 4), new RectF(5.0f, 6.0f, 7.5f, 8.5f), new Paint());
@@ -75,7 +75,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void shouldDescribeBitmapDrawing_WithMatrix() throws Exception {
+  public void shouldDescribeBitmapDrawing_WithMatrix() {
     Canvas canvas = new Canvas(targetBitmap);
     canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
     canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
@@ -94,7 +94,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void visualize_shouldReturnDescription() throws Exception {
+  public void visualize_shouldReturnDescription() {
     Canvas canvas = new Canvas(targetBitmap);
     canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
     canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
@@ -107,7 +107,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void drawColor_shouldReturnDescription() throws Exception {
+  public void drawColor_shouldReturnDescription() {
     Canvas canvas = new Canvas(targetBitmap);
     canvas.drawColor(Color.WHITE);
     canvas.drawColor(Color.GREEN);
@@ -117,7 +117,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void drawPath_shouldRecordThePathAndThePaint() throws Exception {
+  public void drawPath_shouldRecordThePathAndThePaint() {
     Canvas canvas = new Canvas(targetBitmap);
     Path path = new Path();
     path.lineTo(10, 10);
@@ -141,8 +141,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void drawPath_shouldRecordThePointsOfEachPathEvenWhenItIsTheSameInstance()
-      throws Exception {
+  public void drawPath_shouldRecordThePointsOfEachPathEvenWhenItIsTheSameInstance() {
     Canvas canvas = new Canvas(targetBitmap);
     Paint paint = new Paint();
     Path path = new Path();
@@ -163,7 +162,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void drawPath_shouldAppendDescriptionToBitmap() throws Exception {
+  public void drawPath_shouldAppendDescriptionToBitmap() {
     Canvas canvas = new Canvas(targetBitmap);
     Path path1 = new Path();
     path1.lineTo(10, 10);
@@ -194,7 +193,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void resetCanvasHistory_shouldClearTheHistoryAndDescription() throws Exception {
+  public void resetCanvasHistory_shouldClearTheHistoryAndDescription() {
     Canvas canvas = new Canvas();
     canvas.drawPath(new Path(), new Paint());
     canvas.drawText("hi", 1, 2, new Paint());
@@ -208,7 +207,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void shouldGetAndSetHeightAndWidth() throws Exception {
+  public void shouldGetAndSetHeightAndWidth() {
     Canvas canvas = new Canvas();
     shadowOf(canvas).setWidth(99);
     shadowOf(canvas).setHeight(42);
@@ -218,7 +217,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void shouldRecordText() throws Exception {
+  public void shouldRecordText() {
     Canvas canvas = new Canvas();
     Paint paint = new Paint();
     Paint paint2 = new Paint();
@@ -243,7 +242,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void shouldRecordText_charArrayOverload() throws Exception {
+  public void shouldRecordText_charArrayOverload() {
     Canvas canvas = new Canvas();
     Paint paint = new Paint();
     paint.setColor(1);
@@ -261,7 +260,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void shouldRecordText_stringWithRangeOverload() throws Exception {
+  public void shouldRecordText_stringWithRangeOverload() {
     Canvas canvas = new Canvas();
     Paint paint = new Paint();
     paint.setColor(1);
@@ -279,7 +278,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void shouldRecordText_charSequenceOverload() throws Exception {
+  public void shouldRecordText_charSequenceOverload() {
     Canvas canvas = new Canvas();
     Paint paint = new Paint();
     paint.setColor(1);
@@ -298,7 +297,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void drawCircle_shouldRecordCirclePaintHistoryEvents() throws Exception {
+  public void drawCircle_shouldRecordCirclePaintHistoryEvents() {
     Canvas canvas = new Canvas();
     Paint paint0 = new Paint();
     Paint paint1 = new Paint();
@@ -318,7 +317,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void drawArc_shouldRecordArcHistoryEvents() throws Exception {
+  public void drawArc_shouldRecordArcHistoryEvents() {
     Canvas canvas = new Canvas();
     RectF oval0 = new RectF();
     RectF oval1 = new RectF();
@@ -342,7 +341,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void getArcHistoryCount_shouldReturnTotalNumberOfDrawArcEvents() throws Exception {
+  public void getArcHistoryCount_shouldReturnTotalNumberOfDrawArcEvents() {
     Canvas canvas = new Canvas();
     canvas.drawArc(new RectF(), 0f, 0f, true, new Paint());
     canvas.drawArc(new RectF(), 0f, 0f, true, new Paint());
@@ -351,7 +350,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void getRectHistoryCount_shouldReturnTotalNumberOfDrawRectEvents() throws Exception {
+  public void getRectHistoryCount_shouldReturnTotalNumberOfDrawRectEvents() {
     Canvas canvas = new Canvas();
     canvas.drawRect(1f, 2f, 3f, 4f, new Paint());
     canvas.drawRect(1f, 2f, 3f, 4f, new Paint());
@@ -369,7 +368,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void getOvalHistoryCount_shouldReturnTotalNumberOfDrawOvalEvents() throws Exception {
+  public void getOvalHistoryCount_shouldReturnTotalNumberOfDrawOvalEvents() {
     Canvas canvas = new Canvas();
     canvas.drawOval(new RectF(), new Paint());
     canvas.drawOval(new RectF(), new Paint());
@@ -378,7 +377,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void getLineHistoryCount_shouldReturnTotalNumberOfDrawLineEvents() throws Exception {
+  public void getLineHistoryCount_shouldReturnTotalNumberOfDrawLineEvents() {
     Canvas canvas = new Canvas();
     canvas.drawLine(0f, 1f, 2f, 3f, new Paint());
     canvas.drawLine(0f, 1f, 2f, 3f, new Paint());
@@ -387,7 +386,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void drawLine_shouldRecordLineHistoryEvents() throws Exception {
+  public void drawLine_shouldRecordLineHistoryEvents() {
     Canvas canvas = new Canvas();
     Paint paint0 = new Paint();
     paint0.setColor(Color.RED);
@@ -416,7 +415,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void drawOval_shouldRecordOvalHistoryEvents() throws Exception {
+  public void drawOval_shouldRecordOvalHistoryEvents() {
     Canvas canvas = new Canvas();
     RectF oval0 = new RectF();
     RectF oval1 = new RectF();
@@ -437,7 +436,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void drawRect_shouldRecordRectHistoryEvents() throws Exception {
+  public void drawRect_shouldRecordRectHistoryEvents() {
     Canvas canvas = new Canvas();
     Paint paint0 = new Paint();
     paint0.setColor(Color.WHITE);
@@ -570,7 +569,7 @@ public class ShadowCanvasTest {
   }
 
   @Test
-  public void drawRect_withRectF() throws Exception {
+  public void drawRect_withRectF() {
     Canvas canvas = new Canvas();
     Paint paint = new Paint();
     paint.setColor(Color.WHITE);

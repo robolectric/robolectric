@@ -24,7 +24,7 @@ public class RawResourceLoaderTest {
   }
 
   @Test
-  public void shouldReturnRawResourcesWithExtensions() throws Exception {
+  public void shouldReturnRawResourcesWithExtensions() {
     String f = (String) resourceTable.getValue(R.raw.raw_resource, new ResTable_config()).getData();
     assertThat(f)
         .isEqualTo(
@@ -36,7 +36,7 @@ public class RawResourceLoaderTest {
   }
 
   @Test
-  public void shouldReturnRawResourcesWithoutExtensions() throws Exception {
+  public void shouldReturnRawResourcesWithoutExtensions() {
     String f = (String) resourceTable.getValue(R.raw.raw_no_ext, new ResTable_config()).getData();
     assertThat(f)
         .isEqualTo(

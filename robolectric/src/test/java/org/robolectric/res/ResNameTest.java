@@ -9,7 +9,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ResNameTest {
   @Test
-  public void shouldQualify() throws Exception {
+  public void shouldQualify() {
     assertThat(ResName.qualifyResourceName("some.package:type/name", null, null))
         .isEqualTo("some.package:type/name");
     assertThat(ResName.qualifyResourceName("some.package:type/name", "default.package", "deftype"))
@@ -26,7 +26,7 @@ public class ResNameTest {
   }
 
   @Test
-  public void shouldQualifyResNameFromString() throws Exception {
+  public void shouldQualifyResNameFromString() {
     assertThat(ResName.qualifyResName("some.package:type/name", "default_package", "default_type"))
         .isEqualTo(new ResName("some.package", "type", "name"));
     assertThat(ResName.qualifyResName("some.package:name", "default_package", "default_type"))

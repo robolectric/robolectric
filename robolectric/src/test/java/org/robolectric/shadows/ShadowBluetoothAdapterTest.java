@@ -125,7 +125,7 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  public void canGetAndSetAddress() throws Exception {
+  public void canGetAndSetAddress() {
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
     shadowOf(adapter).setAddress("expected");
     assertThat(adapter.getAddress()).isEqualTo("expected");
@@ -163,7 +163,7 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  public void canGetBluetoothLeAdvertiser() throws Exception {
+  public void canGetBluetoothLeAdvertiser() {
     // bluetooth needs to be ON in APIS 21 and 22 for getBluetoothLeAdvertiser to return a
     // non null value
     bluetoothAdapter.enable();
@@ -172,7 +172,7 @@ public class ShadowBluetoothAdapterTest {
 
   @Test
   @Config(minSdk = M)
-  public void canGetAndSetBleScanAlwaysAvailable() throws Exception {
+  public void canGetAndSetBleScanAlwaysAvailable() {
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
 
     // By default, scanning with BT is not supported.
@@ -184,7 +184,7 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  public void canGetAndSetMultipleAdvertisementSupport() throws Exception {
+  public void canGetAndSetMultipleAdvertisementSupport() {
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
 
     // By default, multiple advertising is supported.
@@ -196,7 +196,7 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  public void canEnable_withAndroidApi() throws Exception {
+  public void canEnable_withAndroidApi() {
     bluetoothAdapter.enable();
     assertThat(bluetoothAdapter.isEnabled()).isTrue();
   }
@@ -219,14 +219,14 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  public void canDisable_withAndroidApi() throws Exception {
+  public void canDisable_withAndroidApi() {
     shadowOf(bluetoothAdapter).setEnabled(true);
     bluetoothAdapter.disable();
     assertThat(bluetoothAdapter.isEnabled()).isFalse();
   }
 
   @Test
-  public void name_getAndSet() throws Exception {
+  public void name_getAndSet() {
     // The name shouldn't be null, even before we set anything.
     assertThat(bluetoothAdapter.getName()).isNotNull();
 
@@ -261,7 +261,7 @@ public class ShadowBluetoothAdapterTest {
 
   @Test
   @Config(maxSdk = S_V2)
-  public void scanMode_getAndSet_none() throws Exception {
+  public void scanMode_getAndSet_none() {
     boolean result =
         ReflectionHelpers.callInstanceMethod(
             bluetoothAdapter,
@@ -273,7 +273,7 @@ public class ShadowBluetoothAdapterTest {
 
   @Test
   @Config(maxSdk = S_V2)
-  public void scanMode_getAndSet_invalid() throws Exception {
+  public void scanMode_getAndSet_invalid() {
     boolean result =
         ReflectionHelpers.callInstanceMethod(
             bluetoothAdapter, "setScanMode", ClassParameter.from(int.class, 9999));
@@ -329,7 +329,7 @@ public class ShadowBluetoothAdapterTest {
 
   @Config(minSdk = TIRAMISU)
   @Test
-  public void scanMode_getAndSet_connectable_T() throws Exception {
+  public void scanMode_getAndSet_connectable_T() {
     assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE))
         .isEqualTo(BluetoothStatusCodes.SUCCESS);
     assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE);
@@ -337,7 +337,7 @@ public class ShadowBluetoothAdapterTest {
 
   @Config(minSdk = TIRAMISU)
   @Test
-  public void scanMode_getAndSet_discoverable_T() throws Exception {
+  public void scanMode_getAndSet_discoverable_T() {
     assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE))
         .isEqualTo(BluetoothStatusCodes.SUCCESS);
     assertThat(bluetoothAdapter.getScanMode())
@@ -346,7 +346,7 @@ public class ShadowBluetoothAdapterTest {
 
   @Config(minSdk = TIRAMISU)
   @Test
-  public void scanMode_getAndSet_none_T() throws Exception {
+  public void scanMode_getAndSet_none_T() {
     assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_NONE))
         .isEqualTo(BluetoothStatusCodes.SUCCESS);
     assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_NONE);
@@ -354,13 +354,13 @@ public class ShadowBluetoothAdapterTest {
 
   @Config(minSdk = TIRAMISU)
   @Test
-  public void scanMode_getAndSet_invalid_T() throws Exception {
+  public void scanMode_getAndSet_invalid_T() {
     assertThat(bluetoothAdapter.setScanMode(9999)).isEqualTo(BluetoothStatusCodes.ERROR_UNKNOWN);
   }
 
   @Test
   @Config(minSdk = M)
-  public void isLeEnabled() throws Exception {
+  public void isLeEnabled() {
     // Le is enabled when either BT or BLE is enabled. Check all states.
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -461,7 +461,7 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  public void canGetProfileConnectionState() throws Exception {
+  public void canGetProfileConnectionState() {
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
     assertThat(adapter.getProfileConnectionState(BluetoothProfile.HEADSET))
         .isEqualTo(BluetoothProfile.STATE_DISCONNECTED);

@@ -31,13 +31,13 @@ import org.robolectric.shadows.testing.TestApplication;
 public class HierarchicalConfigurationStrategyTest {
 
   @Test
-  public void defaultValuesAreMerged() throws Exception {
+  public void defaultValuesAreMerged() {
     assertThat(configFor(Test2.class, "withoutAnnotation").manifest())
         .isEqualTo("AndroidManifest.xml");
   }
 
   @Test
-  public void globalValuesAreMerged() throws Exception {
+  public void globalValuesAreMerged() {
     assertThat(
             configFor(
                     Test2.class,
@@ -48,8 +48,7 @@ public class HierarchicalConfigurationStrategyTest {
   }
 
   @Test
-  public void whenClassHasConfigAnnotation_getConfig_shouldMergeClassAndMethodConfig()
-      throws Exception {
+  public void whenClassHasConfigAnnotation_getConfig_shouldMergeClassAndMethodConfig() {
     assertConfig(
         configFor(Test1.class, "withoutAnnotation"),
         new int[] {1},
@@ -91,8 +90,7 @@ public class HierarchicalConfigurationStrategyTest {
   }
 
   @Test
-  public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldUseMethodConfig()
-      throws Exception {
+  public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldUseMethodConfig() {
     assertConfig(
         configFor(Test2.class, "withoutAnnotation"),
         new int[0],
@@ -134,8 +132,8 @@ public class HierarchicalConfigurationStrategyTest {
   }
 
   @Test
-  public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig()
-      throws Exception {
+  public void
+      whenClassDoesntHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig() {
     assertConfig(
         configFor(Test1B.class, "withoutAnnotation"),
         new int[] {1},
@@ -178,8 +176,7 @@ public class HierarchicalConfigurationStrategyTest {
 
   @Test
   public void
-      whenClassAndParentClassHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig()
-          throws Exception {
+      whenClassAndParentClassHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig() {
     assertConfig(
         configFor(Test1C.class, "withoutAnnotation"),
         new int[] {1},
@@ -222,8 +219,7 @@ public class HierarchicalConfigurationStrategyTest {
 
   @Test
   public void
-      whenClassAndSubclassHaveConfigAnnotation_getConfig_shouldMergeClassSubclassAndMethodConfig()
-          throws Exception {
+      whenClassAndSubclassHaveConfigAnnotation_getConfig_shouldMergeClassSubclassAndMethodConfig() {
     assertConfig(
         configFor(Test1A.class, "withoutAnnotation"),
         new int[] {1},
@@ -266,8 +262,7 @@ public class HierarchicalConfigurationStrategyTest {
 
   @Test
   public void
-      whenClassDoesntHaveConfigAnnotationButSubclassDoes_getConfig_shouldMergeSubclassAndMethodConfig()
-          throws Exception {
+      whenClassDoesntHaveConfigAnnotationButSubclassDoes_getConfig_shouldMergeSubclassAndMethodConfig() {
     assertConfig(
         configFor(Test2A.class, "withoutAnnotation"),
         new int[0],
@@ -309,7 +304,7 @@ public class HierarchicalConfigurationStrategyTest {
   }
 
   @Test
-  public void shouldLoadDefaultsFromGlobalPropertiesFile() throws Exception {
+  public void shouldLoadDefaultsFromGlobalPropertiesFile() {
     String properties =
         "sdk: 432\n"
             + "manifest: --none\n"
@@ -341,7 +336,7 @@ public class HierarchicalConfigurationStrategyTest {
   }
 
   @Test
-  public void shouldMergeConfigFromTestClassPackageProperties() throws Exception {
+  public void shouldMergeConfigFromTestClassPackageProperties() {
     assertConfig(
         configFor(
             Test2.class,
@@ -360,7 +355,7 @@ public class HierarchicalConfigurationStrategyTest {
   }
 
   @Test
-  public void shouldMergeConfigUpPackageHierarchy() throws Exception {
+  public void shouldMergeConfigUpPackageHierarchy() {
     assertConfig(
         configFor(
             Test2.class,
@@ -385,7 +380,7 @@ public class HierarchicalConfigurationStrategyTest {
   }
 
   @Test
-  public void withEmptyShadowList_shouldLoadDefaultsFromGlobalPropertiesFile() throws Exception {
+  public void withEmptyShadowList_shouldLoadDefaultsFromGlobalPropertiesFile() {
     assertConfig(
         configFor(
             Test2.class,
@@ -572,11 +567,11 @@ public class HierarchicalConfigurationStrategyTest {
       assetDir = "test/assets")
   public static class Test1 {
     @Test
-    public void withoutAnnotation() throws Exception {}
+    public void withoutAnnotation() {}
 
     @Test
     @Config
-    public void withDefaultsAnnotation() throws Exception {}
+    public void withDefaultsAnnotation() {}
 
     @Test
     @Config(
@@ -590,17 +585,17 @@ public class HierarchicalConfigurationStrategyTest {
         qualifiers = "from-method",
         resourceDir = "method/res",
         assetDir = "method/assets")
-    public void withOverrideAnnotation() throws Exception {}
+    public void withOverrideAnnotation() {}
   }
 
   @Ignore
   public static class Test2 {
     @Test
-    public void withoutAnnotation() throws Exception {}
+    public void withoutAnnotation() {}
 
     @Test
     @Config
-    public void withDefaultsAnnotation() throws Exception {}
+    public void withDefaultsAnnotation() {}
 
     @Test
     @Config(
@@ -614,7 +609,7 @@ public class HierarchicalConfigurationStrategyTest {
         qualifiers = "from-method",
         resourceDir = "method/res",
         assetDir = "method/assets")
-    public void withOverrideAnnotation() throws Exception {}
+    public void withOverrideAnnotation() {}
   }
 
   @Ignore
@@ -629,12 +624,12 @@ public class HierarchicalConfigurationStrategyTest {
   public static class Test1B extends Test1 {
     @Override
     @Test
-    public void withoutAnnotation() throws Exception {}
+    public void withoutAnnotation() {}
 
     @Override
     @Test
     @Config
-    public void withDefaultsAnnotation() throws Exception {}
+    public void withDefaultsAnnotation() {}
 
     @Override
     @Test
@@ -645,7 +640,7 @@ public class HierarchicalConfigurationStrategyTest {
         packageName = "com.example.test",
         qualifiers = "from-method5",
         assetDir = "method5/assets")
-    public void withOverrideAnnotation() throws Exception {}
+    public void withOverrideAnnotation() {}
   }
 
   @Ignore

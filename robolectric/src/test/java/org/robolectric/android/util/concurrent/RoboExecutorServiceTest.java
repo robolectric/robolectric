@@ -36,7 +36,7 @@ public class RoboExecutorServiceTest {
   }
 
   @Test
-  public void execute_shouldRunStuffOnBackgroundThread() throws Exception {
+  public void execute_shouldRunStuffOnBackgroundThread() {
     executorService.execute(runnable);
 
     assertThat(transcript).isEmpty();

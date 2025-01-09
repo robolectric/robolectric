@@ -75,7 +75,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void sendBroadcast_shouldSendToManifestReceiver() throws Exception {
+  public void sendBroadcast_shouldSendToManifestReceiver() {
     ConfigTestReceiver receiver = getReceiverOfClass(ConfigTestReceiver.class);
 
     contextWrapper.sendBroadcast(new Intent(context, ConfigTestReceiver.class));
@@ -85,7 +85,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void sendBroadcastWithData_shouldSendToManifestReceiver() throws Exception {
+  public void sendBroadcastWithData_shouldSendToManifestReceiver() {
     ConfigTestReceiver receiver = getReceiverOfClass(ConfigTestReceiver.class);
 
     contextWrapper.sendBroadcast(
@@ -110,7 +110,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void registerReceiver_shouldRegisterForAllIntentFilterActions() throws Exception {
+  public void registerReceiver_shouldRegisterForAllIntentFilterActions() {
     BroadcastReceiver receiver = broadcastReceiver("Larry");
     contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
 
@@ -126,7 +126,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void sendBroadcast_shouldSendIntentToEveryInterestedReceiver() throws Exception {
+  public void sendBroadcast_shouldSendIntentToEveryInterestedReceiver() {
     BroadcastReceiver larryReceiver = broadcastReceiver("Larry");
     contextWrapper.registerReceiver(larryReceiver, intentFilter("foo", "baz"));
 
@@ -241,8 +241,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided()
-      throws InterruptedException {
+  public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided() {
     HandlerThread handlerThread = new HandlerThread("test");
     handlerThread.start();
 
@@ -273,7 +272,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void sendBroadcast_withClassSet_shouldSendIntentToSpecifiedReceiver() throws Exception {
+  public void sendBroadcast_withClassSet_shouldSendIntentToSpecifiedReceiver() {
     BroadcastReceiver larryReceiver =
         new BroadcastReceiver() {
           @Override
@@ -293,7 +292,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void sendOrderedBroadcast_shouldReturnValues() throws Exception {
+  public void sendOrderedBroadcast_shouldReturnValues() {
     String action = "test";
 
     IntentFilter lowFilter = new IntentFilter(action);
@@ -314,7 +313,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void sendOrderedBroadcastAsUser_shouldReturnValues() throws Exception {
+  public void sendOrderedBroadcastAsUser_shouldReturnValues() {
     String action = "test";
 
     IntentFilter lowFilter = new IntentFilter(action);
@@ -336,7 +335,7 @@ public class ShadowContextWrapperTest {
 
   @Test
   @Config(minSdk = M)
-  public void sendOrderedBroadcastAsUser_withAppOp_shouldReturnValues() throws Exception {
+  public void sendOrderedBroadcastAsUser_withAppOp_shouldReturnValues() {
     String action = "test";
 
     IntentFilter lowFilter = new IntentFilter(action);
@@ -370,7 +369,7 @@ public class ShadowContextWrapperTest {
 
   @Test
   @Config(minSdk = M)
-  public void sendOrderedBroadcastAsUser_withAppOpAndOptions_shouldReturnValues() throws Exception {
+  public void sendOrderedBroadcastAsUser_withAppOpAndOptions_shouldReturnValues() {
     String action = "test";
 
     IntentFilter lowFilter = new IntentFilter(action);
@@ -458,7 +457,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void sendOrderedBroadcast_shouldSendByPriority() throws Exception {
+  public void sendOrderedBroadcast_shouldSendByPriority() {
     String action = "test";
 
     IntentFilter lowFilter = new IntentFilter(action);
@@ -477,7 +476,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void orderedBroadcasts_shouldAbort() throws Exception {
+  public void orderedBroadcasts_shouldAbort() {
     String action = "test";
 
     IntentFilter lowFilter = new IntentFilter(action);
@@ -502,7 +501,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void unregisterReceiver_shouldUnregisterReceiver() throws Exception {
+  public void unregisterReceiver_shouldUnregisterReceiver() {
     BroadcastReceiver receiver = broadcastReceiver("Larry");
 
     contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
@@ -513,14 +512,12 @@ public class ShadowContextWrapperTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void unregisterReceiver_shouldThrowExceptionWhenReceiverIsNotRegistered()
-      throws Exception {
+  public void unregisterReceiver_shouldThrowExceptionWhenReceiverIsNotRegistered() {
     contextWrapper.unregisterReceiver(new AppWidgetProvider());
   }
 
   @Test
-  public void broadcastReceivers_shouldBeSharedAcrossContextsPerApplicationContext()
-      throws Exception {
+  public void broadcastReceivers_shouldBeSharedAcrossContextsPerApplicationContext() {
     BroadcastReceiver receiver = broadcastReceiver("Larry");
 
     Application application = ApplicationProvider.getApplicationContext();
@@ -605,7 +602,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void shouldReturnSameApplicationEveryTime() throws Exception {
+  public void shouldReturnSameApplicationEveryTime() {
     Activity activity = new Activity();
     assertThat(activity.getApplication()).isSameInstanceAs(activity.getApplication());
 
@@ -613,7 +610,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void shouldReturnSameApplicationContextEveryTime() throws Exception {
+  public void shouldReturnSameApplicationContextEveryTime() {
     Activity activity = Robolectric.setupActivity(Activity.class);
     assertThat(activity.getApplicationContext()).isSameInstanceAs(activity.getApplicationContext());
 
@@ -622,8 +619,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void shouldReturnApplicationContext_forViewContextInflatedWithApplicationContext()
-      throws Exception {
+  public void shouldReturnApplicationContext_forViewContextInflatedWithApplicationContext() {
     View view =
         LayoutInflater.from(ApplicationProvider.getApplicationContext())
             .inflate(R.layout.custom_layout, null);
@@ -633,7 +629,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void shouldReturnSameContentResolverEveryTime() throws Exception {
+  public void shouldReturnSameContentResolverEveryTime() {
     Activity activity = Robolectric.setupActivity(Activity.class);
     assertThat(activity.getContentResolver()).isSameInstanceAs(activity.getContentResolver());
 
@@ -642,17 +638,17 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void shouldReturnSameLocationManagerEveryTime() throws Exception {
+  public void shouldReturnSameLocationManagerEveryTime() {
     assertSameInstanceEveryTime(Context.LOCATION_SERVICE);
   }
 
   @Test
-  public void shouldReturnSameWifiManagerEveryTime() throws Exception {
+  public void shouldReturnSameWifiManagerEveryTime() {
     assertSameInstanceEveryTime(Context.WIFI_SERVICE);
   }
 
   @Test
-  public void shouldReturnSameAlarmServiceEveryTime() throws Exception {
+  public void shouldReturnSameAlarmServiceEveryTime() {
     assertSameInstanceEveryTime(Context.ALARM_SERVICE);
   }
 
@@ -849,8 +845,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void checkCallingPermissionsShouldReturnPermissionGrantedToAddedPermissions()
-      throws Exception {
+  public void checkCallingPermissionsShouldReturnPermissionGrantedToAddedPermissions() {
     shadowOf(contextWrapper).grantPermissions("foo", "bar");
     assertThat(contextWrapper.checkCallingPermission("foo")).isEqualTo(PERMISSION_GRANTED);
     assertThat(contextWrapper.checkCallingPermission("bar")).isEqualTo(PERMISSION_GRANTED);
@@ -858,8 +853,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void checkCallingOrSelfPermissionsShouldReturnPermissionGrantedToAddedPermissions()
-      throws Exception {
+  public void checkCallingOrSelfPermissionsShouldReturnPermissionGrantedToAddedPermissions() {
     shadowOf(contextWrapper).grantPermissions("foo", "bar");
     assertThat(contextWrapper.checkCallingOrSelfPermission("foo")).isEqualTo(PERMISSION_GRANTED);
     assertThat(contextWrapper.checkCallingOrSelfPermission("bar")).isEqualTo(PERMISSION_GRANTED);
@@ -867,8 +861,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void checkCallingPermission_shouldReturnPermissionDeniedForRemovedPermissions()
-      throws Exception {
+  public void checkCallingPermission_shouldReturnPermissionDeniedForRemovedPermissions() {
     shadowOf(contextWrapper).grantPermissions("foo", "bar");
     shadowOf(contextWrapper).denyPermissions("foo", "qux");
     assertThat(contextWrapper.checkCallingPermission("foo")).isEqualTo(PERMISSION_DENIED);
@@ -878,8 +871,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void checkCallingOrSelfPermission_shouldReturnPermissionDeniedForRemovedPermissions()
-      throws Exception {
+  public void checkCallingOrSelfPermission_shouldReturnPermissionDeniedForRemovedPermissions() {
     shadowOf(contextWrapper).grantPermissions("foo", "bar");
     shadowOf(contextWrapper).denyPermissions("foo", "qux");
     assertThat(contextWrapper.checkCallingOrSelfPermission("foo")).isEqualTo(PERMISSION_DENIED);

@@ -211,7 +211,7 @@ public abstract class ShadowNotificationBuilderTestBase {
   }
 
   @Test
-  public void build_addsActionToNotification() throws Exception {
+  public void build_addsActionToNotification() {
     PendingIntent action =
         PendingIntent.getBroadcast(ApplicationProvider.getApplicationContext(), 0, null, 0);
     Notification notification = builder.addAction(0, "Action", action).build();

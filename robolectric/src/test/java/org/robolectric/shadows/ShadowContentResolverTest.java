@@ -496,7 +496,7 @@ public class ShadowContentResolverTest {
 
   @Test
   public void openOutputStream_withRealContentProvider_canReadBytesWrittenToOutputStream()
-      throws IOException, RemoteException {
+      throws IOException {
     Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);
     Uri uri = Uri.parse("content://" + AUTHORITY + "/test/1");
 
@@ -590,7 +590,7 @@ public class ShadowContentResolverTest {
 
   @Test
   public void openOutputStream_withModeWithRealContentProvider_canReadBytesWrittenToOutputStream()
-      throws IOException, RemoteException {
+      throws IOException {
     Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);
     Uri uri = Uri.parse("content://" + AUTHORITY + "/test/1");
 
@@ -1116,7 +1116,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void shouldNotifyChildContentObservers() throws Exception {
+  public void shouldNotifyChildContentObservers() {
     TestContentObserver co1 = new TestContentObserver(null);
     TestContentObserver co2 = new TestContentObserver(null);
 
@@ -1183,8 +1183,7 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void openTypedAssetFileDescriptor_shouldOpenDescriptor()
-      throws IOException, RemoteException {
+  public void openTypedAssetFileDescriptor_shouldOpenDescriptor() throws IOException {
     Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);
 
     try (AssetFileDescriptor afd =

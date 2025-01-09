@@ -20,7 +20,7 @@ public class BackupAgentControllerTest {
       Robolectric.buildBackupAgent(MyBackupAgent.class);
 
   @Test
-  public void shouldSetBaseContext() throws Exception {
+  public void shouldSetBaseContext() {
     MyBackupAgent myBackupAgent = backupAgentController.get();
     assertThat(myBackupAgent.getBaseContext())
         .isEqualTo(((Application) ApplicationProvider.getApplicationContext()).getBaseContext());

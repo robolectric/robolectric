@@ -380,14 +380,14 @@ public class RobolectricTestRunnerTest {
   public static class TestWithOldSdk {
     @Config(sdk = Build.VERSION_CODES.HONEYCOMB)
     @Test
-    public void oldSdkMethod() throws Exception {
+    public void oldSdkMethod() {
       fail("I should not be run!");
     }
 
     @Ignore("This test shouldn't run, and shouldn't cause the test runner to fail")
     @Config(sdk = Build.VERSION_CODES.HONEYCOMB)
     @Test
-    public void ignoredOldSdkMethod() throws Exception {
+    public void ignoredOldSdkMethod() {
       fail("I should not be run!");
     }
   }

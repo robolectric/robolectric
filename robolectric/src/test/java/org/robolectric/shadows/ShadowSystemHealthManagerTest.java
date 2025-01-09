@@ -51,14 +51,14 @@ public final class ShadowSystemHealthManagerTest {
   }
 
   @Test
-  public void snapshotForMyUid_expectedResult() throws Exception {
+  public void snapshotForMyUid_expectedResult() {
     HealthStats stats = systemHealthManager.takeMyUidSnapshot();
 
     assertThat(stats).isEqualTo(MY_UID_HEALTH_STATS);
   }
 
   @Test
-  public void snapshotForOtherUids_expectedResult() throws Exception {
+  public void snapshotForOtherUids_expectedResult() {
     HealthStats stats1 = systemHealthManager.takeUidSnapshot(OTHER_UID_1);
     HealthStats stats2 = systemHealthManager.takeUidSnapshot(OTHER_UID_2);
 
@@ -67,7 +67,7 @@ public final class ShadowSystemHealthManagerTest {
   }
 
   @Test
-  public void snapshotForAllUids_expectedResult() throws Exception {
+  public void snapshotForAllUids_expectedResult() {
     int[] uids = {OTHER_UID_1, MY_UID, OTHER_UID_2};
 
     HealthStats[] stats = systemHealthManager.takeUidSnapshots(uids);

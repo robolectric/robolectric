@@ -54,7 +54,7 @@ public class ShadowLegacyAsyncTaskTest {
   }
 
   @Test
-  public void testCancelBeforeBackground() throws Exception {
+  public void testCancelBeforeBackground() {
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
 
     asyncTask.execute("a", "b");
@@ -133,7 +133,7 @@ public class ShadowLegacyAsyncTaskTest {
   }
 
   @Test
-  public void shouldGetStatusForAsyncTask() throws Exception {
+  public void shouldGetStatusForAsyncTask() {
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.PENDING);
     asyncTask.execute("a");

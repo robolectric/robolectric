@@ -158,7 +158,7 @@ public class ShadowMergeCursorTest {
   }
 
   @Test
-  public void testGetDataSingleCursor() throws Exception {
+  public void testGetDataSingleCursor() {
     Cursor[] cursors = new Cursor[1];
     cursors[0] = dbCursor1;
     cursor = new MergeCursor(cursors);
@@ -168,7 +168,7 @@ public class ShadowMergeCursorTest {
   }
 
   @Test
-  public void testGetDataMultipleCursor() throws Exception {
+  public void testGetDataMultipleCursor() {
     Cursor[] cursors = new Cursor[2];
     cursors[0] = dbCursor1;
     cursors[1] = dbCursor2;

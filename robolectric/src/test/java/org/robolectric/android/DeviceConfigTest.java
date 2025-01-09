@@ -120,7 +120,7 @@ public class DeviceConfigTest {
   }
 
   @Test
-  public void applyRules_heightWidthOrientation() throws Exception {
+  public void applyRules_heightWidthOrientation() {
     applyQualifiers("w800dp-h400dp-port");
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
 

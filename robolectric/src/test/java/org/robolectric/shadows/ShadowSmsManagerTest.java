@@ -304,8 +304,7 @@ public class ShadowSmsManagerTest {
 
   @Test
   @Config(minSdk = R)
-  public void getSmscAddress_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
-      throws Exception {
+  public void getSmscAddress_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() {
     shadowOf(smsManager).setSmscAddressPermission(false);
     assertThrows(SecurityException.class, () -> smsManager.getSmscAddress());
   }

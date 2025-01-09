@@ -78,8 +78,7 @@ public final class ShadowCameraDeviceImplTest {
 
   @Test
   @Config(sdk = VERSION_CODES.P)
-  public void createCaptureRequest_throwsIllegalStateExceptionAfterClose()
-      throws CameraAccessException {
+  public void createCaptureRequest_throwsIllegalStateExceptionAfterClose() {
     cameraDevice.close();
 
     IllegalStateException thrown =
@@ -114,8 +113,7 @@ public final class ShadowCameraDeviceImplTest {
 
   @Test
   @Config(sdk = VERSION_CODES.P)
-  public void createCaptureSession_throwsIllegalStateExceptionAfterClose()
-      throws CameraAccessException {
+  public void createCaptureSession_throwsIllegalStateExceptionAfterClose() {
     cameraDevice.close();
 
     IllegalStateException thrown =
@@ -131,8 +129,7 @@ public final class ShadowCameraDeviceImplTest {
 
   @Test
   @Config(sdk = VERSION_CODES.P)
-  public void createCaptureSession_configuration_throwsIllegalStateExceptionAfterClose()
-      throws CameraAccessException {
+  public void createCaptureSession_configuration_throwsIllegalStateExceptionAfterClose() {
     cameraDevice.close();
 
     SessionConfiguration configuration =

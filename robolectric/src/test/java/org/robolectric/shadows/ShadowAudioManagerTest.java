@@ -1661,8 +1661,7 @@ public class ShadowAudioManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void onCommunicationDeviceChangedListener_callWithNullAudioDeviceInfo_receiveNull()
-      throws Exception {
+  public void onCommunicationDeviceChangedListener_callWithNullAudioDeviceInfo_receiveNull() {
     AudioManager.OnCommunicationDeviceChangedListener mockListener =
         mock(AudioManager.OnCommunicationDeviceChangedListener.class);
 
@@ -1674,8 +1673,7 @@ public class ShadowAudioManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void onCommunicationDeviceChangedListener_removeBeforeAddingListener_throwsException()
-      throws Exception {
+  public void onCommunicationDeviceChangedListener_removeBeforeAddingListener_throwsException() {
     AudioManager.OnCommunicationDeviceChangedListener mockListener =
         mock(AudioManager.OnCommunicationDeviceChangedListener.class);
 
@@ -1686,7 +1684,7 @@ public class ShadowAudioManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void onCommunicationDeviceChangedListener_addSameTwice_throwsException() throws Exception {
+  public void onCommunicationDeviceChangedListener_addSameTwice_throwsException() {
     AudioManager.OnCommunicationDeviceChangedListener mockListener =
         mock(AudioManager.OnCommunicationDeviceChangedListener.class);
 
@@ -1698,8 +1696,7 @@ public class ShadowAudioManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void onCommunicationDeviceChangedListener_addNullListener_throwsException()
-      throws Exception {
+  public void onCommunicationDeviceChangedListener_addNullListener_throwsException() {
     Assert.assertThrows(
         NullPointerException.class,
         () -> audioManager.addOnCommunicationDeviceChangedListener(directExecutor(), null));
@@ -1707,8 +1704,7 @@ public class ShadowAudioManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void onCommunicationDeviceChangedListener_addNullExecutor_throwsException()
-      throws Exception {
+  public void onCommunicationDeviceChangedListener_addNullExecutor_throwsException() {
     AudioManager.OnCommunicationDeviceChangedListener mockListener =
         mock(AudioManager.OnCommunicationDeviceChangedListener.class);
 
@@ -1719,7 +1715,7 @@ public class ShadowAudioManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void onCommunicationDeviceChangedListener_removeNull_throwsException() throws Exception {
+  public void onCommunicationDeviceChangedListener_removeNull_throwsException() {
     Assert.assertThrows(
         NullPointerException.class,
         () -> audioManager.removeOnCommunicationDeviceChangedListener(null));

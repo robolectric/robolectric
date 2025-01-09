@@ -218,7 +218,7 @@ public class ShadowLauncherAppsTest {
 
   @Test
   @Config(minSdk = O)
-  public void testGetApplicationInfo_packageNotFound() throws Exception {
+  public void testGetApplicationInfo_packageNotFound() {
     Throwable throwable =
         assertThrows(
             NameNotFoundException.class,
@@ -231,7 +231,7 @@ public class ShadowLauncherAppsTest {
   }
 
   @Test
-  public void testGetApplicationInfo_incorrectPackage() throws Exception {
+  public void testGetApplicationInfo_incorrectPackage() {
     ApplicationInfo applicationInfo = new ApplicationInfo();
     applicationInfo.name = "Test app";
     shadowOf(launcherApps).addApplicationInfo(USER_HANDLE, TEST_PACKAGE_NAME_2, applicationInfo);

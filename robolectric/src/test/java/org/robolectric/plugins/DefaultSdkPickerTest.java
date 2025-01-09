@@ -37,14 +37,14 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void withDefaultSdk_shouldUseTargetSdkFromAndroidManifest() throws Exception {
+  public void withDefaultSdk_shouldUseTargetSdkFromAndroidManifest() {
     when(usesSdk.getTargetSdkVersion()).thenReturn(22);
     assertThat(sdkPicker.selectSdks(buildConfig(new Config.Builder()), usesSdk))
         .containsExactly(sdkCollection.getSdk(22));
   }
 
   @Test
-  public void withAllSdksConfig_shouldUseFullSdkRangeFromAndroidManifest() throws Exception {
+  public void withAllSdksConfig_shouldUseFullSdkRangeFromAndroidManifest() {
     when(usesSdk.getTargetSdkVersion()).thenReturn(22);
     when(usesSdk.getMinSdkVersion()).thenReturn(19);
     when(usesSdk.getMaxSdkVersion()).thenReturn(23);
@@ -59,8 +59,7 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void withAllSdksConfigAndNoMinSdkVersion_shouldUseFullSdkRangeFromAndroidManifest()
-      throws Exception {
+  public void withAllSdksConfigAndNoMinSdkVersion_shouldUseFullSdkRangeFromAndroidManifest() {
     when(usesSdk.getTargetSdkVersion()).thenReturn(22);
     when(usesSdk.getMinSdkVersion()).thenReturn(1);
     when(usesSdk.getMaxSdkVersion()).thenReturn(22);
@@ -77,8 +76,7 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void withAllSdksConfigAndNoMaxSdkVersion_shouldUseFullSdkRangeFromAndroidManifest()
-      throws Exception {
+  public void withAllSdksConfigAndNoMaxSdkVersion_shouldUseFullSdkRangeFromAndroidManifest() {
     when(usesSdk.getTargetSdkVersion()).thenReturn(22);
     when(usesSdk.getMinSdkVersion()).thenReturn(19);
     when(usesSdk.getMaxSdkVersion()).thenReturn(null);
@@ -93,7 +91,7 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void withMinSdkHigherThanSupportedRange_shouldReturnNone() throws Exception {
+  public void withMinSdkHigherThanSupportedRange_shouldReturnNone() {
     when(usesSdk.getTargetSdkVersion()).thenReturn(23);
     when(usesSdk.getMinSdkVersion()).thenReturn(1);
     when(usesSdk.getMaxSdkVersion()).thenReturn(null);
@@ -102,7 +100,7 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void withMinSdkHigherThanMaxSdk_shouldThrowError() throws Exception {
+  public void withMinSdkHigherThanMaxSdk_shouldThrowError() {
     when(usesSdk.getTargetSdkVersion()).thenReturn(23);
     when(usesSdk.getMinSdkVersion()).thenReturn(1);
     when(usesSdk.getMaxSdkVersion()).thenReturn(null);
@@ -118,7 +116,7 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void withTargetSdkLessThanMinSdk_shouldThrowError() throws Exception {
+  public void withTargetSdkLessThanMinSdk_shouldThrowError() {
     when(usesSdk.getMinSdkVersion()).thenReturn(23);
     when(usesSdk.getTargetSdkVersion()).thenReturn(22);
 
@@ -131,7 +129,7 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void withTargetSdkGreaterThanMaxSdk_shouldThrowError() throws Exception {
+  public void withTargetSdkGreaterThanMaxSdk_shouldThrowError() {
     when(usesSdk.getMaxSdkVersion()).thenReturn(21);
     when(usesSdk.getTargetSdkVersion()).thenReturn(22);
     try {
@@ -143,7 +141,7 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void shouldClipSdkRangeFromAndroidManifest() throws Exception {
+  public void shouldClipSdkRangeFromAndroidManifest() {
     when(usesSdk.getTargetSdkVersion()).thenReturn(1);
     when(usesSdk.getMinSdkVersion()).thenReturn(1);
     when(usesSdk.getMaxSdkVersion()).thenReturn(null);
@@ -152,7 +150,7 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void withMinSdk_shouldClipSdkRangeFromAndroidManifest() throws Exception {
+  public void withMinSdk_shouldClipSdkRangeFromAndroidManifest() {
     when(usesSdk.getTargetSdkVersion()).thenReturn(22);
     when(usesSdk.getMinSdkVersion()).thenReturn(19);
     when(usesSdk.getMaxSdkVersion()).thenReturn(23);
@@ -162,7 +160,7 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void withMaxSdk_shouldUseSdkRangeFromAndroidManifest() throws Exception {
+  public void withMaxSdk_shouldUseSdkRangeFromAndroidManifest() {
     when(usesSdk.getTargetSdkVersion()).thenReturn(22);
     when(usesSdk.getMinSdkVersion()).thenReturn(19);
     when(usesSdk.getMaxSdkVersion()).thenReturn(23);
@@ -171,7 +169,7 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void withExplicitSdk_selectSdks() throws Exception {
+  public void withExplicitSdk_selectSdks() {
     when(usesSdk.getTargetSdkVersion()).thenReturn(21);
     when(usesSdk.getMinSdkVersion()).thenReturn(19);
     when(usesSdk.getMaxSdkVersion()).thenReturn(22);
@@ -198,7 +196,7 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void withEnabledSdks_shouldRestrictAsSpecified() throws Exception {
+  public void withEnabledSdks_shouldRestrictAsSpecified() {
     when(usesSdk.getMinSdkVersion()).thenReturn(16);
     when(usesSdk.getMaxSdkVersion()).thenReturn(23);
     sdkPicker = new DefaultSdkPicker(sdkCollection, "17,18");
@@ -209,7 +207,7 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void shouldParseSdkSpecs() throws Exception {
+  public void shouldParseSdkSpecs() {
     assertThat(ConfigUtils.parseSdkArrayProperty("17,18"))
         .asList()
         .containsExactly(VERSION_CODES.JELLY_BEAN_MR1, VERSION_CODES.JELLY_BEAN_MR2);

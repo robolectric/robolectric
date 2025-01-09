@@ -48,7 +48,7 @@ public class RoboCursorTest {
   }
 
   @Test
-  public void query_shouldMakeQueryParamsAvailable() throws Exception {
+  public void query_shouldMakeQueryParamsAvailable() {
     contentResolver.query(
         uri, new String[] {"projection"}, "selection", new String[] {"selection"}, "sortOrder");
     assertThat(cursor.uri).isEqualTo(uri);
@@ -59,8 +59,7 @@ public class RoboCursorTest {
   }
 
   @Test
-  public void getColumnCount_whenSetColumnNamesHasntBeenCalled_shouldReturnCountFromData()
-      throws Exception {
+  public void getColumnCount_whenSetColumnNamesHasntBeenCalled_shouldReturnCountFromData() {
     RoboCursor cursor = new RoboCursor();
     cursor.setResults(
         new Object[][] {
@@ -74,14 +73,14 @@ public class RoboCursorTest {
   }
 
   @Test
-  public void getColumnName_shouldReturnColumnName() throws Exception {
+  public void getColumnName_shouldReturnColumnName() {
     assertThat(cursor.getColumnCount()).isEqualTo(8);
     assertThat(cursor.getColumnName(0)).isEqualTo(STRING_COLUMN);
     assertThat(cursor.getColumnName(1)).isEqualTo(LONG_COLUMN);
   }
 
   @Test
-  public void getType_shouldReturnColumnType() throws Exception {
+  public void getType_shouldReturnColumnType() {
     cursor.setResults(
         new Object[][] {
           new Object[] {"aString", 1234L, 42, new byte[] {1, 2, 3}, 255, 1.25f, 2.5d, null}
@@ -98,7 +97,7 @@ public class RoboCursorTest {
   }
 
   @Test
-  public void get_shouldReturnColumnValue() throws Exception {
+  public void get_shouldReturnColumnValue() {
     cursor.setResults(
         new Object[][] {
           new Object[] {"aString", 1234L, 42, new byte[] {1, 2, 3}, 255, 1.25f, 2.5d, null}
@@ -118,7 +117,7 @@ public class RoboCursorTest {
   }
 
   @Test
-  public void get_shouldConvert() throws Exception {
+  public void get_shouldConvert() {
     cursor.setResults(
         new Object[][] {
           new Object[] {"aString", "1234", "42", new byte[] {1, 2, 3}, 255, "1.25", 2.5d, null}
@@ -133,7 +132,7 @@ public class RoboCursorTest {
   }
 
   @Test
-  public void moveToNext_advancesToNextRow() throws Exception {
+  public void moveToNext_advancesToNextRow() {
     cursor.setResults(
         new Object[][] {
           new Object[] {"aString", 1234L, 41}, new Object[] {"anotherString", 5678L, 42}
@@ -152,7 +151,7 @@ public class RoboCursorTest {
   }
 
   @Test
-  public void moveToPosition_movesToAppropriateRow() throws Exception {
+  public void moveToPosition_movesToAppropriateRow() {
     cursor.setResults(
         new Object[][] {
           new Object[] {"aString", 1234L, 41}, new Object[] {"anotherString", 5678L, 42}
@@ -189,7 +188,7 @@ public class RoboCursorTest {
   }
 
   @Test
-  public void close_isRemembered() throws Exception {
+  public void close_isRemembered() {
     cursor.close();
     assertThat(cursor.getCloseWasCalled()).isTrue();
   }

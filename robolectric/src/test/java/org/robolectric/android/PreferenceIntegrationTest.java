@@ -24,7 +24,7 @@ import org.robolectric.Robolectric;
 public class PreferenceIntegrationTest {
 
   @Test
-  public void inflate_shouldCreateCorrectClasses() throws Exception {
+  public void inflate_shouldCreateCorrectClasses() {
     final PreferenceScreen screen = inflatePreferenceActivity();
     assertThat(screen.getPreference(0)).isInstanceOf(PreferenceCategory.class);
 
@@ -47,7 +47,7 @@ public class PreferenceIntegrationTest {
   }
 
   @Test
-  public void inflate_shouldParseIntentContainedInPreference() throws Exception {
+  public void inflate_shouldParseIntentContainedInPreference() {
     final PreferenceScreen screen = inflatePreferenceActivity();
     final Preference intentPreference = screen.findPreference("intent");
 
@@ -61,14 +61,14 @@ public class PreferenceIntegrationTest {
   }
 
   @Test
-  public void inflate_shouldBindPreferencesToPreferenceManager() throws Exception {
+  public void inflate_shouldBindPreferencesToPreferenceManager() {
     final PreferenceScreen screen = inflatePreferenceActivity();
     final Preference preference = screen.findPreference("preference");
     assertThat(preference.getPreferenceManager().findPreference("preference")).isNotNull();
   }
 
   @Test
-  public void setPersistent_shouldMarkThePreferenceAsPersistent() throws Exception {
+  public void setPersistent_shouldMarkThePreferenceAsPersistent() {
     final PreferenceScreen screen = inflatePreferenceActivity();
     final Preference preference = screen.findPreference("preference");
 
@@ -80,7 +80,7 @@ public class PreferenceIntegrationTest {
   }
 
   @Test
-  public void setEnabled_shouldEnableThePreference() throws Exception {
+  public void setEnabled_shouldEnableThePreference() {
     final PreferenceScreen screen = inflatePreferenceActivity();
     final Preference preference = screen.findPreference("preference");
 
@@ -92,7 +92,7 @@ public class PreferenceIntegrationTest {
   }
 
   @Test
-  public void setOrder_shouldSetOrderOnPreference() throws Exception {
+  public void setOrder_shouldSetOrderOnPreference() {
     final PreferenceScreen screen = inflatePreferenceActivity();
     final Preference preference = screen.findPreference("preference");
 
@@ -104,7 +104,7 @@ public class PreferenceIntegrationTest {
   }
 
   @Test
-  public void setDependency_shouldSetDependencyBetweenPreferences() throws Exception {
+  public void setDependency_shouldSetDependencyBetweenPreferences() {
     final PreferenceScreen screen = inflatePreferenceActivity();
     final Preference dependant = screen.findPreference("dependant");
     assertThat(dependant.getDependency()).isEqualTo("preference");
@@ -114,7 +114,7 @@ public class PreferenceIntegrationTest {
   }
 
   @Test
-  public void click_shouldCallPreferenceClickListener() throws Exception {
+  public void click_shouldCallPreferenceClickListener() {
     final PreferenceScreen screen = inflatePreferenceActivity();
     final Preference preference = screen.findPreference("preference");
 

@@ -64,7 +64,7 @@ public final class BarringInfoBuilderTest {
   }
 
   @Test
-  public void buildBarringInfo_fromSdkR() throws Exception {
+  public void buildBarringInfo_fromSdkR() {
     BarringServiceInfo barringServiceInfo =
         BarringServiceInfoBuilder.newBuilder()
             .setBarringType(BARRING_TYPE_CONDITIONAL)

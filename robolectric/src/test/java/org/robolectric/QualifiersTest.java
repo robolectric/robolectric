@@ -29,7 +29,7 @@ public class QualifiersTest {
 
   @Test
   @Config(sdk = 26)
-  public void testDefaultQualifiers() throws Exception {
+  public void testDefaultQualifiers() {
     assertThat(RuntimeEnvironment.getQualifiers())
         .isEqualTo(
             "en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
@@ -37,7 +37,7 @@ public class QualifiersTest {
 
   @Test
   @Config(qualifiers = "en", sdk = 26)
-  public void testDefaultQualifiers_withoutRegion() throws Exception {
+  public void testDefaultQualifiers_withoutRegion() {
     assertThat(RuntimeEnvironment.getQualifiers())
         .isEqualTo(
             "en-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
@@ -73,19 +73,19 @@ public class QualifiersTest {
 
   @Test
   @Config(qualifiers = "fr")
-  public void shouldGetFromMethod() throws Exception {
+  public void shouldGetFromMethod() {
     assertThat(RuntimeEnvironment.getQualifiers()).contains("fr");
   }
 
   @Test
   @Config(qualifiers = "de")
-  public void getQuantityString() throws Exception {
+  public void getQuantityString() {
     assertThat(resources.getQuantityString(R.plurals.minute, 2))
         .isEqualTo(resources.getString(R.string.minute_plural));
   }
 
   @Test
-  public void inflateLayout_defaultsTo_sw320dp() throws Exception {
+  public void inflateLayout_defaultsTo_sw320dp() {
     View view =
         Robolectric.setupActivity(Activity.class)
             .getLayoutInflater()
@@ -98,7 +98,7 @@ public class QualifiersTest {
 
   @Test
   @Config(qualifiers = "sw720dp")
-  public void inflateLayout_overridesTo_sw720dp() throws Exception {
+  public void inflateLayout_overridesTo_sw720dp() {
     View view =
         Robolectric.setupActivity(Activity.class)
             .getLayoutInflater()
@@ -111,7 +111,7 @@ public class QualifiersTest {
 
   @Test
   @Config(qualifiers = "b+sr+Latn")
-  public void supportsBcp47() throws Exception {
+  public void supportsBcp47() {
     assertThat(resources.getString(R.string.hello)).isEqualTo("Zdravo");
   }
 
@@ -123,7 +123,7 @@ public class QualifiersTest {
 
   @Test
   @Config(qualifiers = "land")
-  public void setQualifiers_updatesSystemAndAppResources() throws Exception {
+  public void setQualifiers_updatesSystemAndAppResources() {
     Resources systemResources = Resources.getSystem();
     Resources appResources = getApplicationContext().getResources();
 
@@ -140,12 +140,12 @@ public class QualifiersTest {
   }
 
   @Test
-  public void setQualifiers_allowsSameSdkVersion() throws Exception {
+  public void setQualifiers_allowsSameSdkVersion() {
     RuntimeEnvironment.setQualifiers("v" + RuntimeEnvironment.getApiLevel());
   }
 
   @Test
-  public void setQualifiers_disallowsOtherSdkVersions() throws Exception {
+  public void setQualifiers_disallowsOtherSdkVersions() {
     try {
       RuntimeEnvironment.setQualifiers("v13");
       fail();
@@ -157,7 +157,7 @@ public class QualifiersTest {
 
   @Test
   @Config(minSdk = O, qualifiers = "widecg-highdr-vrheadset")
-  public void testQualifiersNewIn26() throws Exception {
+  public void testQualifiersNewIn26() {
     assertThat(RuntimeEnvironment.getQualifiers()).contains("-widecg-highdr-");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("-vrheadset-");
   }

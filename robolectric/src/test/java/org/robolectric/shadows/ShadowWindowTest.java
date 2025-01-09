@@ -58,7 +58,7 @@ public class ShadowWindowTest {
 
   @Test
   @Config(minSdk = Q)
-  public void getSystemFlag_shouldReturnFlagsSetViaAddSystemFlags() throws Exception {
+  public void getSystemFlag_shouldReturnFlagsSetViaAddSystemFlags() {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     Window window = activity.getWindow();
     int fakeSystemFlag1 = 0b1;
@@ -70,7 +70,7 @@ public class ShadowWindowTest {
 
   @Test
   @Config(minSdk = Q)
-  public void getSystemFlag_callingAddSystemFlagsShouldNotOverrideExistingFlags() throws Exception {
+  public void getSystemFlag_callingAddSystemFlagsShouldNotOverrideExistingFlags() {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     Window window = activity.getWindow();
     int fakeSystemFlag1 = 0b1;
@@ -84,7 +84,7 @@ public class ShadowWindowTest {
 
   @Test
   @Config(maxSdk = VERSION_CODES.R)
-  public void getSystemFlag_shouldReturnFlagsSetViaAddPrivateFlags() throws Exception {
+  public void getSystemFlag_shouldReturnFlagsSetViaAddPrivateFlags() {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     Window window = activity.getWindow();
     int fakeSystemFlag1 = 0b1;
@@ -96,8 +96,7 @@ public class ShadowWindowTest {
 
   @Test
   @Config(maxSdk = VERSION_CODES.R)
-  public void getSystemFlag_callingAddPrivateFlagsShouldNotOverrideExistingFlags()
-      throws Exception {
+  public void getSystemFlag_callingAddPrivateFlagsShouldNotOverrideExistingFlags() {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     Window window = activity.getWindow();
     int fakeSystemFlag1 = 0b1;

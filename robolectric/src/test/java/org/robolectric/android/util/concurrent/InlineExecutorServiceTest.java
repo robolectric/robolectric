@@ -100,7 +100,7 @@ public class InlineExecutorServiceTest {
   }
 
   @Test
-  public void postingTasks() throws Exception {
+  public void postingTasks() {
     Runnable postingRunnable =
         new Runnable() {
           @Override

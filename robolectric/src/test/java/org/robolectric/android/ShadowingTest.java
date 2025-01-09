@@ -16,23 +16,23 @@ import org.junit.runner.RunWith;
 public class ShadowingTest {
 
   @Test
-  public void testPrintlnWorks() throws Exception {
+  public void testPrintlnWorks() {
     Log.println(1, "tag", "msg");
   }
 
   @Test
-  public void shouldDelegateToObjectToStringIfShadowHasNone() throws Exception {
+  public void shouldDelegateToObjectToStringIfShadowHasNone() {
     assertThat(new Toast(ApplicationProvider.getApplicationContext()).toString())
         .startsWith("android.widget.Toast@");
   }
 
   @Test
-  public void shouldDelegateToObjectHashCodeIfShadowHasNone() throws Exception {
+  public void shouldDelegateToObjectHashCodeIfShadowHasNone() {
     assertFalse(new View(ApplicationProvider.getApplicationContext()).hashCode() == 0);
   }
 
   @Test
-  public void shouldDelegateToObjectEqualsIfShadowHasNone() throws Exception {
+  public void shouldDelegateToObjectEqualsIfShadowHasNone() {
     View view = new View(ApplicationProvider.getApplicationContext());
     new EqualsTester().addEqualityGroup(view).testEquals();
   }

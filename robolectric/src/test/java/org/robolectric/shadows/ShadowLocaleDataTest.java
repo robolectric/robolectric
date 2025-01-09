@@ -23,7 +23,7 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowLocaleDataTest {
 
   @Test
-  public void shouldSupportLocaleEn_US() throws NoSuchFieldException, IllegalAccessException {
+  public void shouldSupportLocaleEn_US() {
     LocaleData localeData = LocaleData.get(Locale.US);
     LocaleDataReflector localeDataReflector = reflector(LocaleDataReflector.class, localeData);
     assertThat(localeData.amPm).isEqualTo(new String[] {"AM", "PM"});
@@ -125,7 +125,7 @@ public class ShadowLocaleDataTest {
   }
 
   @Test
-  public void shouldSupportLocaleEn_US_since() throws NoSuchFieldException, IllegalAccessException {
+  public void shouldSupportLocaleEn_US_since() {
     LocaleData localeData = LocaleData.get(Locale.US);
     LocaleDataReflector localeDataReflector = reflector(LocaleDataReflector.class, localeData);
 

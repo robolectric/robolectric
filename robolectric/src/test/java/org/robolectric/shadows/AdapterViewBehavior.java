@@ -49,7 +49,7 @@ public abstract class AdapterViewBehavior {
   }
 
   @Test
-  public void testSetAdapter_shouldCauseViewsToBeRenderedAsynchronously() throws Exception {
+  public void testSetAdapter_shouldCauseViewsToBeRenderedAsynchronously() {
     adapterView.setAdapter(new ShadowCountingAdapter(2));
 
     assertThat(adapterView.getCount()).isEqualTo(2);
@@ -62,7 +62,7 @@ public abstract class AdapterViewBehavior {
   }
 
   @Test
-  public void testSetEmptyView_shouldHideAdapterViewIfAdapterIsNull() throws Exception {
+  public void testSetEmptyView_shouldHideAdapterViewIfAdapterIsNull() {
     adapterView.setAdapter(null);
 
     View emptyView = new View(adapterView.getContext());
@@ -73,7 +73,7 @@ public abstract class AdapterViewBehavior {
   }
 
   @Test
-  public void testSetEmptyView_shouldHideAdapterViewIfAdapterViewIsEmpty() throws Exception {
+  public void testSetEmptyView_shouldHideAdapterViewIfAdapterViewIsEmpty() {
     adapterView.setAdapter(new ShadowCountingAdapter(0));
 
     View emptyView = new View(adapterView.getContext());
@@ -84,7 +84,7 @@ public abstract class AdapterViewBehavior {
   }
 
   @Test
-  public void testSetEmptyView_shouldHideEmptyViewIfAdapterViewIsNotEmpty() throws Exception {
+  public void testSetEmptyView_shouldHideEmptyViewIfAdapterViewIsNotEmpty() {
     adapterView.setAdapter(new ShadowCountingAdapter(1));
 
     View emptyView = new View(adapterView.getContext());
@@ -95,7 +95,7 @@ public abstract class AdapterViewBehavior {
   }
 
   @Test
-  public void testSetEmptyView_shouldHideEmptyViewWhenAdapterGetsNewItem() throws Exception {
+  public void testSetEmptyView_shouldHideEmptyViewWhenAdapterGetsNewItem() {
     ShadowCountingAdapter adapter = new ShadowCountingAdapter(0);
     adapterView.setAdapter(adapter);
 
@@ -114,7 +114,7 @@ public abstract class AdapterViewBehavior {
   }
 
   @Test
-  public void testSetEmptyView_shouldHideAdapterViewWhenAdapterBecomesEmpty() throws Exception {
+  public void testSetEmptyView_shouldHideAdapterViewWhenAdapterBecomesEmpty() {
     ShadowCountingAdapter adapter = new ShadowCountingAdapter(1);
     adapterView.setAdapter(adapter);
 

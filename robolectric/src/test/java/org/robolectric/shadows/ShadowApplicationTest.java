@@ -71,7 +71,7 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void shouldBeAContext() throws Exception {
+  public void shouldBeAContext() {
     assertThat(Robolectric.setupActivity(Activity.class).getApplication())
         .isSameInstanceAs(ApplicationProvider.getApplicationContext());
     assertThat(Robolectric.setupActivity(Activity.class).getApplication().getApplicationContext())
@@ -79,7 +79,7 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void shouldProvideServices() throws Exception {
+  public void shouldProvideServices() {
     assertThat(context.getSystemService(Context.ACTIVITY_SERVICE))
         .isInstanceOf(android.app.ActivityManager.class);
     assertThat(context.getSystemService(Context.POWER_SERVICE))
@@ -125,7 +125,7 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void shouldProvideServicesAvailableInAllSdKs() throws Exception {
+  public void shouldProvideServicesAvailableInAllSdKs() {
     assertThat(context.getSystemService(Context.DISPLAY_SERVICE))
         .isInstanceOf(android.hardware.display.DisplayManager.class);
     assertThat(context.getSystemService(Context.USER_SERVICE)).isInstanceOf(UserManager.class);
@@ -142,21 +142,21 @@ public class ShadowApplicationTest {
 
   @Test
   @Config(minSdk = LOLLIPOP_MR1)
-  public void shouldProvideServicesIntroducedInLollipopMr1() throws Exception {
+  public void shouldProvideServicesIntroducedInLollipopMr1() {
     assertThat(context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE))
         .isInstanceOf(SubscriptionManager.class);
   }
 
   @Test
   @Config(minSdk = M)
-  public void shouldProvideServicesIntroducedMarshmallow() throws Exception {
+  public void shouldProvideServicesIntroducedMarshmallow() {
     assertThat(context.getSystemService(Context.FINGERPRINT_SERVICE))
         .isInstanceOf(FingerprintManager.class);
   }
 
   @Test
   @Config(minSdk = O)
-  public void shouldProvideServicesIntroducedOreo() throws Exception {
+  public void shouldProvideServicesIntroducedOreo() {
     // Context.AUTOFILL_MANAGER_SERVICE is marked @hide and this is the documented way to obtain
     // this service.
     AutofillManager autofillManager = context.getSystemService(AutofillManager.class);
@@ -167,13 +167,13 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void shouldProvideLayoutInflater() throws Exception {
+  public void shouldProvideLayoutInflater() {
     Object systemService = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     assertThat(systemService).isInstanceOf(LayoutInflater.class);
   }
 
   @Test
-  public void shouldCorrectlyInstantiatedAccessibilityService() throws Exception {
+  public void shouldCorrectlyInstantiatedAccessibilityService() {
     AccessibilityManager accessibilityManager =
         (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
 
@@ -699,7 +699,7 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void canFindAllReceiversForAnIntent() throws Exception {
+  public void canFindAllReceiversForAnIntent() {
     BroadcastReceiver expectedReceiver = new TestBroadcastReceiver();
     assertFalse(shadowOf(context).hasReceiverForIntent(new Intent("Foo")));
     context.registerReceiver(expectedReceiver, new IntentFilter("Foo"));
@@ -771,12 +771,12 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
+  public void shouldRememberResourcesAfterLazilyLoading() {
     assertSame(context.getResources(), context.getResources());
   }
 
   @Test
-  public void startActivity_whenActivityCheckingEnabled_doesntFindResolveInfo() throws Exception {
+  public void startActivity_whenActivityCheckingEnabled_doesntFindResolveInfo() {
     shadowOf(context).checkActivities(true);
 
     String action = "com.does.not.exist.android.app.v2.mobile";
@@ -791,7 +791,7 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void startActivity_whenActivityCheckingEnabled_findsResolveInfo() throws Exception {
+  public void startActivity_whenActivityCheckingEnabled_findsResolveInfo() {
     shadowOf(context).checkActivities(true);
 
     context.startActivity(

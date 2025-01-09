@@ -83,7 +83,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   @LooperMode(LEGACY)
-  public void isMainThread_withArg_forNewThread_withSwitch() throws InterruptedException {
+  public void isMainThread_withArg_forNewThread_withSwitch() {
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
     assertThat(RuntimeEnvironment.isMainThread(t)).isTrue();

@@ -221,7 +221,7 @@ public class ShadowUsbManagerTest {
   }
 
   @Test
-  public void openDevice() throws Exception {
+  public void openDevice() {
     shadowOf(usbManager).addOrUpdateUsbDevice(usbDevice1, true);
     UsbDeviceConnection connection = usbManager.openDevice(usbDevice1);
     assertThat(connection).isNotNull();

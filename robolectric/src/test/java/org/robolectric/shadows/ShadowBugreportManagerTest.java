@@ -93,7 +93,7 @@ public final class ShadowBugreportManagerTest {
   }
 
   @Test
-  public void startBugreport_noPermission() throws Exception {
+  public void startBugreport_noPermission() {
     BugreportCallback callback = mock(BugreportCallback.class);
     shadowBugreportManager.setHasPermission(false);
 
@@ -167,7 +167,7 @@ public final class ShadowBugreportManagerTest {
 
   @Test
   @Config(minSdk = UPSIDE_DOWN_CAKE)
-  public void retrieveBugreport_noPermission() throws Exception {
+  public void retrieveBugreport_noPermission() {
     BugreportCallback callback = mock(BugreportCallback.class);
     shadowBugreportManager.setHasPermission(false);
 

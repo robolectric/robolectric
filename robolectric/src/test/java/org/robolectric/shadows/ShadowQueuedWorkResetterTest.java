@@ -44,7 +44,7 @@ public class ShadowQueuedWorkResetterTest {
 
     private static final AtomicInteger initialLooperCount = new AtomicInteger(-1);
 
-    private void doPostToQueuedWorkTest() throws InterruptedException {
+    private void doPostToQueuedWorkTest() {
       AtomicBoolean wasRun = new AtomicBoolean(false);
       if (RuntimeEnvironment.getApiLevel() < O) {
         reflector(QueuedWorkReflector.class).add(() -> wasRun.set(true));
@@ -59,12 +59,12 @@ public class ShadowQueuedWorkResetterTest {
     }
 
     @Test
-    public void postToQueuedTest() throws InterruptedException {
+    public void postToQueuedTest() {
       doPostToQueuedWorkTest();
     }
 
     @Test
-    public void anotherPostToQueuedWorkTest() throws InterruptedException {
+    public void anotherPostToQueuedWorkTest() {
       doPostToQueuedWorkTest();
     }
   }

@@ -66,7 +66,7 @@ public class DefaultManifestFactoryTest {
   }
 
   @Test
-  public void identify_configNoneShouldBeIgnored() throws Exception {
+  public void identify_configNoneShouldBeIgnored() {
     Properties properties = new Properties();
     properties.put("android_merged_manifest", "gradle/AndroidManifest.xml");
     properties.put("android_merged_resources", "gradle/res");
@@ -85,7 +85,7 @@ public class DefaultManifestFactoryTest {
   }
 
   @Test
-  public void identify_packageCanBeOverridenFromConfig() throws Exception {
+  public void identify_packageCanBeOverriddenFromConfig() {
     Properties properties = new Properties();
     properties.put("android_merged_manifest", "gradle/AndroidManifest.xml");
     properties.put("android_merged_resources", "gradle/res");

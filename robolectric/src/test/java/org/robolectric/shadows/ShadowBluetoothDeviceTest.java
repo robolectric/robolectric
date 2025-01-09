@@ -43,7 +43,7 @@ public class ShadowBluetoothDeviceTest {
   private final Application application = ApplicationProvider.getApplicationContext();
 
   @Test
-  public void canCreateBluetoothDeviceViaNewInstance() throws Exception {
+  public void canCreateBluetoothDeviceViaNewInstance() {
     // This test passes as long as no Exception is thrown. It tests if the constructor can be
     // executed without throwing an Exception when getService() is called inside.
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
@@ -51,7 +51,7 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  public void canSetAndGetUuids() throws Exception {
+  public void canSetAndGetUuids() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
     ParcelUuid[] uuids =

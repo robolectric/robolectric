@@ -320,7 +320,7 @@ public class ShadowPackageInstallerTest {
   }
 
   @Test
-  public void uninstallMaxVersion() throws Exception {
+  public void uninstallMaxVersion() {
     packageInstaller.uninstall("packageName", /* statusReceiver */ null);
 
     assertThat(shadowOf(packageInstaller).getLastUninstalledVersion("packageName"))
@@ -329,7 +329,7 @@ public class ShadowPackageInstallerTest {
   }
 
   @Test
-  public void uninstallMaxVersionWithStatusReceiver() throws Exception {
+  public void uninstallMaxVersionWithStatusReceiver() {
     IntentSender intentSender = createStatusReceiver();
     packageInstaller.uninstall("packageName", intentSender);
 
@@ -341,7 +341,7 @@ public class ShadowPackageInstallerTest {
 
   @Config(sdk = O)
   @Test
-  public void uninstallVersion() throws Exception {
+  public void uninstallVersion() {
     packageInstaller.uninstall(new VersionedPackage("packageName", 1), /* statusReceiver */ null);
 
     assertThat(shadowOf(packageInstaller).getLastUninstalledVersion("packageName")).isEqualTo(1);
@@ -350,7 +350,7 @@ public class ShadowPackageInstallerTest {
 
   @Config(sdk = UPSIDE_DOWN_CAKE)
   @Test
-  public void uninstallVersionWithFlags() throws Exception {
+  public void uninstallVersionWithFlags() {
     packageInstaller.uninstall(
         new VersionedPackage("packageName", 1), /* flags= */ 0, /* statusReceiver= */ null);
 
@@ -360,7 +360,7 @@ public class ShadowPackageInstallerTest {
 
   @Config(sdk = S)
   @Test
-  public void uninstallExtistingPackage() throws Exception {
+  public void uninstallExistingPackage() {
     packageInstaller.uninstallExistingPackage("packageName", /* IntentSender */ null);
 
     assertThat(shadowOf(packageInstaller).getLastUninstalledVersion("packageName"))
@@ -369,7 +369,7 @@ public class ShadowPackageInstallerTest {
   }
 
   @Test
-  public void nothingUninstalled() throws Exception {
+  public void nothingUninstalled() {
     assertThat(shadowOf(packageInstaller).getLastUninstalledVersion("packageName")).isNull();
     assertThat(shadowOf(packageInstaller).getLastUninstalledStatusReceiver("packageName")).isNull();
   }

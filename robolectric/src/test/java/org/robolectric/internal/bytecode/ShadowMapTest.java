@@ -59,13 +59,13 @@ public class ShadowMapTest {
   }
 
   @Test
-  public void shouldLookUpShadowClassesByNamingConvention() throws Exception {
+  public void shouldLookUpShadowClassesByNamingConvention() {
     ShadowMap map = baseShadowMap.newBuilder().build();
     assertThat(map.getShadowInfo(Activity.class, ShadowMatcher.MATCH_ALL)).isNull();
   }
 
   @Test
-  public void shouldNotReturnMismatchedClassesJustBecauseTheSimpleNameMatches() throws Exception {
+  public void shouldNotReturnMismatchedClassesJustBecauseTheSimpleNameMatches() {
     ShadowMap map = baseShadowMap.newBuilder().addShadowClasses(ShadowActivity.class).build();
     assertThat(
             map.getShadowInfo(android.app.Activity.class, ShadowMatcher.MATCH_ALL).shadowClassName)
@@ -101,7 +101,7 @@ public class ShadowMapTest {
   }
 
   @Test
-  public void equalsHashCode() throws Exception {
+  public void equalsHashCode() {
     ShadowMap a = baseShadowMap.newBuilder().addShadowClass(A, B, true, false, false).build();
     ShadowMap b = baseShadowMap.newBuilder().addShadowClass(A, B, true, false, false).build();
     assertThat(a).isEqualTo(b);

@@ -27,7 +27,7 @@ public class AttributeSetBuilderTest {
   private static final String APP_NS = RES_AUTO_NS_URI;
 
   @Test
-  public void getAttributeResourceValue_shouldReturnTheResourceValue() throws Exception {
+  public void getAttributeResourceValue_shouldReturnTheResourceValue() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.text, "@android:string/ok")
@@ -38,8 +38,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeResourceValueWithLeadingWhitespace_shouldReturnTheResourceValue()
-      throws Exception {
+  public void getAttributeResourceValueWithLeadingWhitespace_shouldReturnTheResourceValue() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.text, " @android:string/ok")
@@ -50,8 +49,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getSystemAttributeResourceValue_shouldReturnDefaultValueForNullResourceId()
-      throws Exception {
+  public void getSystemAttributeResourceValue_shouldReturnDefaultValueForNullResourceId() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.text, AttributeResource.NULL_VALUE)
@@ -64,8 +62,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getSystemAttributeResourceValue_shouldReturnDefaultValueForNonMatchingNamespaceId()
-      throws Exception {
+  public void getSystemAttributeResourceValue_shouldReturnDefaultValueForNonMatchingNamespaceId() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(android.R.attr.id, "@+id/text1").build();
 
@@ -76,7 +73,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void shouldCopeWithDefiningLocalIds() throws Exception {
+  public void shouldCopeWithDefiningLocalIds() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(android.R.attr.id, "@+id/text1").build();
 
@@ -85,8 +82,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeResourceValue_withNamespace_shouldReturnTheResourceValue()
-      throws Exception {
+  public void getAttributeResourceValue_withNamespace_shouldReturnTheResourceValue() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(R.attr.message, "@string/howdy").build();
 
@@ -95,8 +91,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeResourceValue_shouldReturnDefaultValueWhenAttributeIsNull()
-      throws Exception {
+  public void getAttributeResourceValue_shouldReturnDefaultValueWhenAttributeIsNull() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.text, AttributeResource.NULL_VALUE)
@@ -106,15 +101,14 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeResourceValue_shouldReturnDefaultValueWhenNotInAttributeSet()
-      throws Exception {
+  public void getAttributeResourceValue_shouldReturnDefaultValueWhenNotInAttributeSet() {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet().build();
 
     assertThat(roboAttributeSet.getAttributeResourceValue(APP_NS, "message", -1)).isEqualTo(-1);
   }
 
   @Test
-  public void getAttributeBooleanValue_shouldGetBooleanValuesFromAttributes() throws Exception {
+  public void getAttributeBooleanValue_shouldGetBooleanValuesFromAttributes() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(R.attr.isSugary, "true").build();
 
@@ -122,8 +116,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeBooleanValue_withNamespace_shouldGetBooleanValuesFromAttributes()
-      throws Exception {
+  public void getAttributeBooleanValue_withNamespace_shouldGetBooleanValuesFromAttributes() {
     // org.robolectric.lib1.R values should be reconciled to match org.robolectric.R values.
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(R.attr.isSugary, "true").build();
@@ -132,8 +125,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeBooleanValue_shouldReturnDefaultBooleanValueWhenNotInAttributeSet()
-      throws Exception {
+  public void getAttributeBooleanValue_shouldReturnDefaultBooleanValueWhenNotInAttributeSet() {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet().build();
 
     assertThat(
@@ -143,7 +135,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeValue_byName_shouldReturnValueFromAttribute() throws Exception {
+  public void getAttributeValue_byName_shouldReturnValueFromAttribute() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(R.attr.isSugary, "oh heck yeah").build();
 
@@ -155,8 +147,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeValue_byNameWithReference_shouldReturnFullyQualifiedValueFromAttribute()
-      throws Exception {
+  public void getAttributeValue_byNameWithReference_shouldReturnFullyQualifiedValueFromAttribute() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(R.attr.isSugary, "@string/ok").build();
 
@@ -164,7 +155,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeValue_byId_shouldReturnValueFromAttribute() throws Exception {
+  public void getAttributeValue_byId_shouldReturnValueFromAttribute() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(R.attr.isSugary, "oh heck yeah").build();
 
@@ -172,8 +163,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeValue_byIdWithReference_shouldReturnValueFromAttribute()
-      throws Exception {
+  public void getAttributeValue_byIdWithReference_shouldReturnValueFromAttribute() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(R.attr.isSugary, "@string/ok").build();
 
@@ -181,7 +171,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeIntValue_shouldReturnValueFromAttribute() throws Exception {
+  public void getAttributeIntValue_shouldReturnValueFromAttribute() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(R.attr.sugarinessPercent, "100").build();
 
@@ -190,7 +180,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeIntValue_shouldReturnHexValueFromAttribute() throws Exception {
+  public void getAttributeIntValue_shouldReturnHexValueFromAttribute() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(R.attr.sugarinessPercent, "0x10").build();
 
@@ -198,8 +188,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeIntValue_whenTypeAllowsIntOrEnum_withInt_shouldReturnInt()
-      throws Exception {
+  public void getAttributeIntValue_whenTypeAllowsIntOrEnum_withInt_shouldReturnInt() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(R.attr.numColumns, "3").build();
 
@@ -207,8 +196,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeIntValue_shouldReturnValueFromAttributeWhenNotInAttributeSet()
-      throws Exception {
+  public void getAttributeIntValue_shouldReturnValueFromAttributeWhenNotInAttributeSet() {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet().build();
 
     assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "sugarinessPercent", 42))
@@ -216,16 +204,14 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributesWhenNotInAttributeSet()
-      throws Exception {
+  public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributesWhenNotInAttributeSet() {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet().build();
 
     assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "itemType", 24)).isEqualTo(24);
   }
 
   @Test
-  public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributesInAttributeSet()
-      throws Exception {
+  public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributesInAttributeSet() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(R.attr.itemType, "ungulate").build();
 
@@ -238,7 +224,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void shouldFailOnMissingEnumValue() throws Exception {
+  public void shouldFailOnMissingEnumValue() {
     try {
       Robolectric.buildAttributeSet().addAttribute(R.attr.itemType, "simian").build();
       fail("should fail");
@@ -249,7 +235,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void shouldFailOnMissingFlagValue() throws Exception {
+  public void shouldFailOnMissingFlagValue() {
     try {
       Robolectric.buildAttributeSet().addAttribute(R.attr.scrollBars, "temporal").build();
       fail("should fail");
@@ -260,8 +246,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeIntValue_shouldReturnFlagValuesForFlagAttributesInAttributeSet()
-      throws Exception {
+  public void getAttributeIntValue_shouldReturnFlagValuesForFlagAttributesInAttributeSet() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet()
             .addAttribute(R.attr.scrollBars, "horizontal|vertical")
@@ -272,7 +257,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeFloatValue_shouldGetFloatValuesFromAttributes() throws Exception {
+  public void getAttributeFloatValue_shouldGetFloatValuesFromAttributes() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(R.attr.aspectRatio, "1234.456").build();
 
@@ -281,8 +266,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeFloatValue_shouldReturnDefaultFloatValueWhenNotInAttributeSet()
-      throws Exception {
+  public void getAttributeFloatValue_shouldReturnDefaultFloatValueWhenNotInAttributeSet() {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet().build();
 
     assertThat(roboAttributeSet.getAttributeFloatValue(APP_NS, "aspectRatio", 78.9f))
@@ -290,14 +274,14 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getClassAndIdAttribute_returnsZeroWhenNotSpecified() throws Exception {
+  public void getClassAndIdAttribute_returnsZeroWhenNotSpecified() {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet().build();
     assertThat(roboAttributeSet.getClassAttribute()).isNull();
     assertThat(roboAttributeSet.getIdAttribute()).isNull();
   }
 
   @Test
-  public void getClassAndIdAttribute_returnsAttr() throws Exception {
+  public void getClassAndIdAttribute_returnsAttr() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet()
             .setIdAttribute("the id")
@@ -308,14 +292,14 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getStyleAttribute_returnsZeroWhenNoStyle() throws Exception {
+  public void getStyleAttribute_returnsZeroWhenNoStyle() {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet().build();
 
     assertThat(roboAttributeSet.getStyleAttribute()).isEqualTo(0);
   }
 
   @Test
-  public void getStyleAttribute_returnsCorrectValue() throws Exception {
+  public void getStyleAttribute_returnsCorrectValue() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().setStyleAttribute("@style/Gastropod").build();
 
@@ -323,7 +307,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getStyleAttribute_whenStyleIsBogus() throws Exception {
+  public void getStyleAttribute_whenStyleIsBogus() {
     try {
       Robolectric.buildAttributeSet().setStyleAttribute("@style/non_existent_style").build();
       fail();
@@ -335,7 +319,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getAttributeNameResource() throws Exception {
+  public void getAttributeNameResource() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet().addAttribute(R.attr.aspectRatio, "1").build();
 
@@ -343,7 +327,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void shouldReturnAttributesInOrderOfNameResId() throws Exception {
+  public void shouldReturnAttributesInOrderOfNameResId() {
     AttributeSet roboAttributeSet =
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.height, "1px")
@@ -367,7 +351,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void whenAttrSetAttrSpecifiesUnknownStyle_throwsException() throws Exception {
+  public void whenAttrSetAttrSpecifiesUnknownStyle_throwsException() {
     try {
       Robolectric.buildAttributeSet()
           .addAttribute(R.attr.string2, "?org.robolectric:attr/noSuchAttr")
@@ -380,7 +364,7 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void whenAttrSetAttrSpecifiesUnknownReference_throwsException() throws Exception {
+  public void whenAttrSetAttrSpecifiesUnknownReference_throwsException() {
     try {
       Robolectric.buildAttributeSet()
           .addAttribute(R.attr.string2, "@org.robolectric:attr/noSuchRes")
