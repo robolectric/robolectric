@@ -24,10 +24,12 @@ import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.platform.app.InstrumentationRegistry;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.testapp.ActivityWithAnotherTheme;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -41,6 +43,9 @@ import org.robolectric.util.ReflectionHelpers;
  */
 @RunWith(AndroidJUnit4.class)
 public class AccessibilityNodeInfoTest {
+
+  @Rule public final SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   @Test
   @Config(minSdk = Build.VERSION_CODES.R)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.R)
@@ -94,6 +99,12 @@ public class AccessibilityNodeInfoTest {
     assertThat(node.getText().toString()).isEqualTo(node2.getText().toString());
     assertThat(node.getContentDescription().toString())
         .isEqualTo(node2.getContentDescription().toString());
+  }
+
+  @Test
+  public void obtain_equalsTo() {
+    setSystemPropertyRule.set("robolectric.useRealAni", "true");
+    assertThat(AccessibilityNodeInfo.obtain()).isEqualTo(AccessibilityNodeInfo.obtain());
   }
 
   @Test
