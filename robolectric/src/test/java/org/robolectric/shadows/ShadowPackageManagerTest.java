@@ -871,7 +871,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void getGroupOfPlatformPermission_fromManifest() throws Exception {
+  public void getGroupOfPlatformPermission_fromManifest() {
     String[] permissionGroupArg = new String[1];
 
     packageManager.getGroupOfPlatformPermission(
@@ -887,7 +887,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void getGroupOfPlatformPermission_fromExtraPermissions() throws Exception {
+  public void getGroupOfPlatformPermission_fromExtraPermissions() {
     String permissionName = "some_other_permission";
     String permissionGroupName = "some_other_permission_group";
     PermissionInfo permissionInfo = new PermissionInfo();
@@ -909,7 +909,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void getGroupOfPlatformPermission_fromExtraPermissionsPlatformPrefix() throws Exception {
+  public void getGroupOfPlatformPermission_fromExtraPermissionsPlatformPrefix() {
     String permissionName = "android.permission.some_other_permission";
     String permissionGroupName = "some_other_permission_group";
     PermissionInfo permissionInfo = new PermissionInfo();
@@ -931,7 +931,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void getGroupOfPlatformPermission_unknown() throws Exception {
+  public void getGroupOfPlatformPermission_unknown() {
     String[] permissionGroupArg = new String[1];
 
     packageManager.getGroupOfPlatformPermission(
@@ -947,7 +947,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void getGroupOfPlatformPermission_fromPlatform() throws Exception {
+  public void getGroupOfPlatformPermission_fromPlatform() {
     String[] permissionGroupArg = new String[1];
 
     packageManager.getGroupOfPlatformPermission(
@@ -963,7 +963,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void getGroupOfPlatformPermission_overriddenPlatformPermission() throws Exception {
+  public void getGroupOfPlatformPermission_overriddenPlatformPermission() {
     PermissionInfo permissionInfo = new PermissionInfo();
     permissionInfo.name = READ_CONTACTS;
     permissionInfo.group = permission_group.CALENDAR;
@@ -983,7 +983,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void getPlatformPermissionsForGroup_fromManifest() throws Exception {
+  public void getPlatformPermissionsForGroup_fromManifest() {
     List<List<String>> permissionsArg = new ArrayList<>();
 
     packageManager.getPlatformPermissionsForGroup(
@@ -1000,7 +1000,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void getPlatformPermissionsForGroup_fromExtraPermissions() throws Exception {
+  public void getPlatformPermissionsForGroup_fromExtraPermissions() {
     String permissionName1 = "some_other_permission";
     String permissionName2 = "android.permission.my_calendar_permission";
     String permissionGroupName = permission_group.CALENDAR;
@@ -1029,7 +1029,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void getPlatformPermissionsForGroup_unknown() throws Exception {
+  public void getPlatformPermissionsForGroup_unknown() {
     List<List<String>> permissionsArg = new ArrayList<>();
 
     packageManager.getPlatformPermissionsForGroup(
@@ -1046,7 +1046,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void getPlatformPermissionsForGroup_fromPlatform() throws Exception {
+  public void getPlatformPermissionsForGroup_fromPlatform() {
     List<List<String>> permissionsArg = new ArrayList<>();
 
     packageManager.getPlatformPermissionsForGroup(
@@ -1063,7 +1063,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void getPlatformPermissionsForGroup_overriddenPlatformPermission() throws Exception {
+  public void getPlatformPermissionsForGroup_overriddenPlatformPermission() {
     PermissionInfo permissionInfo = new PermissionInfo();
     permissionInfo.name = READ_CONTACTS;
     permissionInfo.group = permission_group.CALENDAR;
@@ -1702,7 +1702,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void addIntentFilterForComponent() throws Exception {
+  public void addIntentFilterForComponent() {
     ComponentName testComponent = new ComponentName("package", "name");
     IntentFilter intentFilter = new IntentFilter("ACTION");
     intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
@@ -1778,7 +1778,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void resolveExplicitIntent_sameApp() throws Exception {
+  public void resolveExplicitIntent_sameApp() {
     ComponentName testComponent = new ComponentName(RuntimeEnvironment.getApplication(), "name");
     IntentFilter intentFilter = new IntentFilter("ACTION");
 
@@ -1792,7 +1792,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = TIRAMISU)
-  public void resolveExplicitIntent_filterMatch() throws Exception {
+  public void resolveExplicitIntent_filterMatch() {
     ComponentName testComponent = new ComponentName("some.other.package", "name");
     IntentFilter intentFilter = new IntentFilter("ACTION");
 
@@ -1807,7 +1807,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = TIRAMISU)
-  public void resolveExplicitIntent_noFilterMatch() throws Exception {
+  public void resolveExplicitIntent_noFilterMatch() {
     ComponentName testComponent = new ComponentName("some.other.package", "name");
     IntentFilter intentFilter = new IntentFilter("ACTION");
 
@@ -1819,7 +1819,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(maxSdk = S)
-  public void resolveExplicitIntent_noFilterMatch_belowT() throws Exception {
+  public void resolveExplicitIntent_noFilterMatch_belowT() {
     ComponentName testComponent = new ComponentName("some.other.package", "name");
     IntentFilter intentFilter = new IntentFilter("ACTION");
 
@@ -1831,7 +1831,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = TIRAMISU)
-  public void resolveExplicitIntent_noFilterMatch_targetBelowT() throws Exception {
+  public void resolveExplicitIntent_noFilterMatch_targetBelowT() {
     PackageInfo testPackage =
         PackageInfoBuilder.newBuilder().setPackageName("some.other.package").build();
     testPackage.applicationInfo.targetSdkVersion = S;
@@ -1847,7 +1847,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = TIRAMISU)
-  public void resolveExplicitIntent_noAction() throws Exception {
+  public void resolveExplicitIntent_noAction() {
     ComponentName testComponent = new ComponentName("some.other.package", "name");
     IntentFilter intentFilter = new IntentFilter("ACTION");
 
@@ -3607,7 +3607,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = VERSION_CODES.R)
-  public void getInstallerSourceInfo_notExists_throwsException() throws Exception {
+  public void getInstallerSourceInfo_notExists_throwsException() {
     assertThrows(
         NameNotFoundException.class,
         () -> packageManager.getInstallSourceInfo("nonExistTarget.package"));
@@ -3961,7 +3961,7 @@ public class ShadowPackageManagerTest {
   private static class ActivityWithFilters extends Activity {}
 
   @Test
-  public void getIntentFiltersForComponent() throws Exception {
+  public void getIntentFiltersForComponent() {
     List<IntentFilter> intentFilters =
         shadowOf(packageManager)
             .getIntentFiltersForActivity(new ComponentName(context, ActivityWithFilters.class));
@@ -4982,7 +4982,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void getProperty_component() throws NameNotFoundException {
+  public void getProperty_component() {
     final ComponentName componentName =
         new ComponentName(RuntimeEnvironment.getApplication().getPackageName(), "mycomponentname");
     assertThrows(

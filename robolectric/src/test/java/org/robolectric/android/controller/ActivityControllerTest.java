@@ -101,14 +101,14 @@ public class ActivityControllerTest {
   }
 
   @Test
-  public void shouldSetIntent() throws Exception {
+  public void shouldSetIntent() {
     MyActivity myActivity = controller.create().get();
     assertThat(myActivity.getIntent()).isNotNull();
     assertThat(myActivity.getIntent().getComponent()).isEqualTo(componentName);
   }
 
   @Test
-  public void shouldSetIntentComponentWithCustomIntentWithoutComponentSet() throws Exception {
+  public void shouldSetIntentComponentWithCustomIntentWithoutComponentSet() {
     MyActivity myActivity =
         Robolectric.buildActivity(MyActivity.class, new Intent(Intent.ACTION_VIEW)).create().get();
     assertThat(myActivity.getIntent().getAction()).isEqualTo(Intent.ACTION_VIEW);
@@ -116,7 +116,7 @@ public class ActivityControllerTest {
   }
 
   @Test
-  public void shouldSetIntentForGivenActivityInstance() throws Exception {
+  public void shouldSetIntentForGivenActivityInstance() {
     ActivityController<MyActivity> activityController =
         ActivityController.of(new MyActivity()).create();
     assertThat(activityController.get().getIntent()).isNotNull();
@@ -124,7 +124,7 @@ public class ActivityControllerTest {
 
   @Test
   @LooperMode(LEGACY)
-  public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() throws Exception {
+  public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() {
     ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
@@ -132,7 +132,7 @@ public class ActivityControllerTest {
   }
 
   @Test
-  public void whenLooperIsAlreadyPaused_shouldCreateWithMainLooperPaused() throws Exception {
+  public void whenLooperIsAlreadyPaused_shouldCreateWithMainLooperPaused() {
     shadowMainLooper().pause();
     controller.create();
     assertThat(transcript).contains("finishedOnCreate");

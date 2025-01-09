@@ -51,6 +51,6 @@ public class RobolectricTestRunnerCleanupTest {
   @Ignore
   public static class TestWithEmptyTest {
     @Test
-    public void emptyTest() throws Exception {}
+    public void emptyTest() {}
   }
 }

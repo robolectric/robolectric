@@ -794,7 +794,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  public void addAccount_withOptionsShouldSupportGetNextAddAccountOptions() throws Exception {
+  public void addAccount_withOptionsShouldSupportGetNextAddAccountOptions() {
     assertThat(shadowOf(am).getNextAddAccountOptions()).isNull();
 
     shadowOf(am).addAuthenticator("google.com");
@@ -811,7 +811,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  public void addAccount_withOptionsShouldSupportPeekNextAddAccountOptions() throws Exception {
+  public void addAccount_withOptionsShouldSupportPeekNextAddAccountOptions() {
     assertThat(shadowOf(am).peekNextAddAccountOptions()).isNull();
 
     shadowOf(am).addAuthenticator("google.com");
@@ -847,7 +847,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  public void testGetAsSystemService() throws Exception {
+  public void testGetAsSystemService() {
     AccountManager systemService =
         (AccountManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.ACCOUNT_SERVICE);
@@ -1090,7 +1090,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  public void removeAllAccounts() throws Exception {
+  public void removeAllAccounts() {
 
     Account account = new Account("name@gmail.com", "gmail.com");
     shadowOf(am).addAccount(account);

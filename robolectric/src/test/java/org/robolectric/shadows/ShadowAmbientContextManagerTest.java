@@ -43,7 +43,7 @@ public class ShadowAmbientContextManagerTest {
   }
 
   @Test
-  public void default_shouldNotStoreAnyRequest() throws Exception {
+  public void default_shouldNotStoreAnyRequest() {
     assertThat(
             ((ShadowAmbientContextManager)
                     Shadow.extract(context.getSystemService(AmbientContextManager.class)))
@@ -52,7 +52,7 @@ public class ShadowAmbientContextManagerTest {
   }
 
   @Test
-  public void registerObserver_shouldStoreLastRequest() throws Exception {
+  public void registerObserver_shouldStoreLastRequest() {
     AmbientContextManager ambientContextManager =
         context.getSystemService(AmbientContextManager.class);
     AmbientContextEventRequest request =
@@ -79,7 +79,7 @@ public class ShadowAmbientContextManagerTest {
   }
 
   @Test
-  public void registerObserver_thenUnregister_shouldClearLastRequest() throws Exception {
+  public void registerObserver_thenUnregister_shouldClearLastRequest() {
     AmbientContextManager ambientContextManager =
         context.getSystemService(AmbientContextManager.class);
     AmbientContextEventRequest request =
@@ -165,8 +165,7 @@ public class ShadowAmbientContextManagerTest {
 
   @Test
   public void
-      getLastRequestedEventCodesForConsentActivity_consentActivityNeverStarted_shouldReturnNull()
-          throws Exception {
+      getLastRequestedEventCodesForConsentActivity_consentActivityNeverStarted_shouldReturnNull() {
     Set<Integer> lastRequestedEventCodes =
         ((ShadowAmbientContextManager)
                 Shadow.extract(context.getSystemService(AmbientContextManager.class)))
@@ -177,8 +176,7 @@ public class ShadowAmbientContextManagerTest {
 
   @Test
   public void
-      getLastRequestedEventCodesForConsentActivity_consentActivityStarted_shouldReturnRequestedEventCodes()
-          throws Exception {
+      getLastRequestedEventCodesForConsentActivity_consentActivityStarted_shouldReturnRequestedEventCodes() {
     AmbientContextManager ambientContextManager =
         context.getSystemService(AmbientContextManager.class);
     ImmutableSet<Integer> requestedEventCodes =

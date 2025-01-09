@@ -264,8 +264,7 @@ public class ShadowTelephonyManagerTest {
 
   @Test(expected = SecurityException.class)
   public void
-      getSimSerialNumber_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
-          throws Exception {
+      getSimSerialNumber_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() {
     shadowOf(telephonyManager).setReadPhoneStatePermission(false);
     telephonyManager.getSimSerialNumber();
   }
@@ -387,8 +386,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test(expected = SecurityException.class)
-  public void getDeviceId_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
-      throws Exception {
+  public void getDeviceId_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() {
     shadowOf(telephonyManager).setReadPhoneStatePermission(false);
     telephonyManager.getDeviceId();
   }
@@ -396,16 +394,14 @@ public class ShadowTelephonyManagerTest {
   @Test
   @Config(minSdk = M)
   public void
-      getDeviceIdForSlot_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
-          throws Exception {
+      getDeviceIdForSlot_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() {
     shadowOf(telephonyManager).setReadPhoneStatePermission(false);
     assertThrows(SecurityException.class, () -> telephonyManager.getDeviceId(1));
   }
 
   @Test
   public void
-      getDeviceSoftwareVersion_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
-          throws Exception {
+      getDeviceSoftwareVersion_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() {
     shadowOf(telephonyManager).setReadPhoneStatePermission(false);
     assertThrows(SecurityException.class, () -> telephonyManager.getDeviceSoftwareVersion());
   }
@@ -1154,8 +1150,7 @@ public class ShadowTelephonyManagerTest {
   @Test
   @Config(minSdk = M)
   public void
-      isTtyModeSupported_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
-          throws Exception {
+      isTtyModeSupported_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() {
     shadowOf(telephonyManager).setReadPhoneStatePermission(false);
     assertThrows(SecurityException.class, () -> telephonyManager.isTtyModeSupported());
   }

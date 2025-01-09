@@ -202,7 +202,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  public void triggerDisconnect_noCameraOpen() throws CameraAccessException {
+  public void triggerDisconnect_noCameraOpen() {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
     shadowOf(cameraManager).triggerDisconnect();
     // Nothing should happen - just make sure we don't crash.
@@ -263,7 +263,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  public void registerCallbackAvailable() throws CameraAccessException {
+  public void registerCallbackAvailable() {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);
     // Verify adding the camera triggers the callback
@@ -274,7 +274,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  public void unregisterCallbackAvailable() throws CameraAccessException {
+  public void unregisterCallbackAvailable() {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);
 
@@ -289,7 +289,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  public void registerCallbackUnavailable() throws CameraAccessException {
+  public void registerCallbackUnavailable() {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);
 
@@ -302,7 +302,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  public void unregisterCallbackUnavailable() throws CameraAccessException {
+  public void unregisterCallbackUnavailable() {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);
 
@@ -316,7 +316,7 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  public void registerCallbackUnavailableInvalidCameraId() throws CameraAccessException {
+  public void registerCallbackUnavailableInvalidCameraId() {
     CameraManager.AvailabilityCallback mockCallback =
         mock(CameraManager.AvailabilityCallback.class);
 

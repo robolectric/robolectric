@@ -193,7 +193,7 @@ public class ShadowLogTest {
   }
 
   @Test
-  public void shouldLogToProvidedStream() throws Exception {
+  public void shouldLogToProvidedStream() {
     final ByteArrayOutputStream bos = new ByteArrayOutputStream();
     PrintStream old = ShadowLog.stream;
     try {
@@ -214,7 +214,7 @@ public class ShadowLogTest {
   }
 
   @Test
-  public void shouldLogAccordingToTag() throws Exception {
+  public void shouldLogAccordingToTag() {
     ShadowLog.reset();
     Log.d("tag1", "1");
     Log.i("tag2", "2");
@@ -251,7 +251,7 @@ public class ShadowLogTest {
   }
 
   @Test
-  public void infoIsDefaultLoggableLevel() throws Exception {
+  public void infoIsDefaultLoggableLevel() {
     PrintStream old = ShadowLog.stream;
     ShadowLog.stream = null;
     assertFalse(Log.isLoggable("FOO", Log.VERBOSE));

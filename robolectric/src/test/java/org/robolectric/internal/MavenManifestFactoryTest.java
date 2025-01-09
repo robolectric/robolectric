@@ -23,7 +23,7 @@ public class MavenManifestFactoryTest {
   }
 
   @Test
-  public void identify() throws Exception {
+  public void identify() {
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
     assertThat(manifestIdentifier.getManifestFile())
         .isEqualTo(Paths.get("_fakefs_path").resolve("to").resolve("DifferentManifest.xml"));
@@ -31,7 +31,7 @@ public class MavenManifestFactoryTest {
   }
 
   @Test
-  public void withDotSlashManifest_identify() throws Exception {
+  public void withDotSlashManifest_identify() {
     configBuilder.setManifest("./DifferentManifest.xml");
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
@@ -42,7 +42,7 @@ public class MavenManifestFactoryTest {
   }
 
   @Test
-  public void withDotDotSlashManifest_identify() throws Exception {
+  public void withDotDotSlashManifest_identify() {
     configBuilder.setManifest("../DifferentManifest.xml");
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());

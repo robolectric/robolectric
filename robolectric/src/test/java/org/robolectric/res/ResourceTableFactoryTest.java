@@ -31,7 +31,7 @@ public class ResourceTableFactoryTest {
   }
 
   @Test
-  public void shouldHandleStyleable() throws Exception {
+  public void shouldHandleStyleable() {
     assertThat(appResourceTable.getResourceId(new ResName("org.robolectric:id/burritos")))
         .isEqualTo(R.id.burritos);
     assertThat(
@@ -41,13 +41,13 @@ public class ResourceTableFactoryTest {
   }
 
   @Test
-  public void shouldPrefixAllSystemResourcesWithAndroid() throws Exception {
+  public void shouldPrefixAllSystemResourcesWithAndroid() {
     assertThat(systemResourceTable.getResourceId(new ResName("android:id/text1")))
         .isEqualTo(android.R.id.text1);
   }
 
   @Test
-  public void shouldRetainPackageNameForFullyQualifiedQueries() throws Exception {
+  public void shouldRetainPackageNameForFullyQualifiedQueries() {
     assertThat(systemResourceTable.getResName(android.R.id.text1).getFullyQualifiedName())
         .isEqualTo("android:id/text1");
     assertThat(appResourceTable.getResName(R.id.burritos).getFullyQualifiedName())

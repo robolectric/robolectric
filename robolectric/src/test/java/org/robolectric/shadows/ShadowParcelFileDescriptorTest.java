@@ -89,7 +89,7 @@ public class ShadowParcelFileDescriptorTest {
   }
 
   @Test
-  public void testOpenWithOnCloseListener_nullHandler() throws Exception {
+  public void testOpenWithOnCloseListener_nullHandler() {
     final AtomicBoolean onCloseCalled = new AtomicBoolean(false);
     ParcelFileDescriptor.OnCloseListener onCloseListener =
         new ParcelFileDescriptor.OnCloseListener() {
@@ -106,7 +106,7 @@ public class ShadowParcelFileDescriptorTest {
   }
 
   @Test
-  public void testOpenWithOnCloseListener_nullOnCloseListener() throws Exception {
+  public void testOpenWithOnCloseListener_nullOnCloseListener() {
     HandlerThread handlerThread = new HandlerThread("test");
     handlerThread.start();
     Handler handler = new Handler(handlerThread.getLooper());

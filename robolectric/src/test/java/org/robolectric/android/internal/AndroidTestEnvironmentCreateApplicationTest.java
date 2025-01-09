@@ -34,7 +34,7 @@ public class AndroidTestEnvironmentCreateApplicationTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test
-  public void shouldThrowWhenManifestContainsBadApplicationClassName() throws Exception {
+  public void shouldThrowWhenManifestContainsBadApplicationClassName() {
     assertThrows(
         RuntimeException.class,
         () ->

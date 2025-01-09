@@ -40,7 +40,7 @@ public class SdkCollectionTest {
   }
 
   @Test
-  public void shouldComplainAboutDupes() throws Exception {
+  public void shouldComplainAboutDupes() {
     try {
       new SdkCollection(() -> Arrays.asList(fakeSdk1234, fakeSdk1234));
       fail();
@@ -50,7 +50,7 @@ public class SdkCollectionTest {
   }
 
   @Test
-  public void shouldCacheSdks() throws Exception {
+  public void shouldCacheSdks() {
     assertThat(sdkCollection.getSdk(1234)).isSameInstanceAs(fakeSdk1234);
     assertThat(sdkCollection.getSdk(1234)).isSameInstanceAs(fakeSdk1234);
 
@@ -58,25 +58,25 @@ public class SdkCollectionTest {
   }
 
   @Test
-  public void getMaxSupportedSdk() throws Exception {
+  public void getMaxSupportedSdk() {
     assertThat(sdkCollection.getMaxSupportedSdk()).isSameInstanceAs(fakeSdk1236);
   }
 
   @Test
-  public void getSdk_shouldReturnNullObjectForUnknownSdks() throws Exception {
+  public void getSdk_shouldReturnNullObjectForUnknownSdks() {
     assertThat(sdkCollection.getSdk(4321)).isNotNull();
     assertThat(sdkCollection.getSdk(4321).isKnown()).isFalse();
   }
 
   @Test
-  public void getKnownSdks_shouldReturnAll() throws Exception {
+  public void getKnownSdks_shouldReturnAll() {
     assertThat(sdkCollection.getKnownSdks())
         .containsExactly(fakeSdk1234, fakeSdk1235, fakeSdk1236, fakeUnsupportedSdk1237)
         .inOrder();
   }
 
   @Test
-  public void getSupportedSdks_shouldReturnOnlySupported() throws Exception {
+  public void getSupportedSdks_shouldReturnOnlySupported() {
     assertThat(sdkCollection.getSupportedSdks())
         .containsExactly(fakeSdk1234, fakeSdk1235, fakeSdk1236)
         .inOrder();

@@ -48,7 +48,7 @@ public class CustomConfigurerTest {
 
     @Test
     @SomeConfig(value = "the value")
-    public void shouldHaveValue() throws Exception {
+    public void shouldHaveValue() {
       SomeConfig someConfig = ConfigurationRegistry.get(SomeConfig.class);
       fail("someConfig value is " + someConfig.value());
     }

@@ -18,7 +18,7 @@ public class AndroidTranslatorClassInstrumentedTest {
 
   @Test
   @Config(shadows = ShadowPaintForTests.class)
-  public void testNativeMethodsAreDelegated() throws Exception {
+  public void testNativeMethodsAreDelegated() {
     Paint paint = new Paint();
     paint.setColor(1234);
 
@@ -45,7 +45,7 @@ public class AndroidTranslatorClassInstrumentedTest {
    */
   @Test
   @Config(shadows = {ShadowCustomPaint.class, ShadowPaintForTests.class})
-  public void testCustomMethodShadowed() throws Exception {
+  public void testCustomMethodShadowed() {
     CustomPaint customPaint = new CustomPaint();
     assertThat(customPaint.getColor()).isEqualTo(10);
     assertThat(customPaint.getColorName()).isEqualTo("rainbow");

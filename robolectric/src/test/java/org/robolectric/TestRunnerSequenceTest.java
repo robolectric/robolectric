@@ -74,12 +74,12 @@ public class TestRunnerSequenceTest {
   @Config(application = TestRunnerSequenceTest.MyApplication.class)
   public static class SimpleTest {
     @Test
-    public void shouldDoNothingMuch() throws Exception {
+    public void shouldDoNothingMuch() {
       StateHolder.transcript.add("TEST!");
     }
   }
 
-  private Result run(Runner runner) throws InitializationError {
+  private Result run(Runner runner) {
     RunNotifier notifier = new RunNotifier();
     Result result = new Result();
     notifier.addListener(result.createListener());

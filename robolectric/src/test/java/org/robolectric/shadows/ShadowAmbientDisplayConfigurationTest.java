@@ -29,7 +29,7 @@ public final class ShadowAmbientDisplayConfigurationTest {
   }
 
   @Test
-  public void ambientDisplayComponent_shouldReturnNullByDefault() throws Exception {
+  public void ambientDisplayComponent_shouldReturnNullByDefault() {
     String component =
         ReflectionHelpers.callInstanceMethod(
             instanceAmbientDisplayConfiguration, "ambientDisplayComponent");
@@ -37,8 +37,7 @@ public final class ShadowAmbientDisplayConfigurationTest {
   }
 
   @Test
-  public void ambientDisplayComponent_whenValidDozeComponentIsSet_shouldReturnDozeComponent()
-      throws Exception {
+  public void ambientDisplayComponent_whenValidDozeComponentIsSet_shouldReturnDozeComponent() {
     ShadowAmbientDisplayConfiguration.setDozeComponent(
         "com.google.android.aod/.TestDozeAlwaysOnDisplay");
 
@@ -49,8 +48,7 @@ public final class ShadowAmbientDisplayConfigurationTest {
   }
 
   @Test
-  public void ambientDisplayAvailable_whenValidDozeComponentIsSet_shouldReturnTrue()
-      throws Exception {
+  public void ambientDisplayAvailable_whenValidDozeComponentIsSet_shouldReturnTrue() {
     ShadowAmbientDisplayConfiguration.setDozeComponent(
         "com.google.android.aod/.TestDozeAlwaysOnDisplay");
 
@@ -62,8 +60,7 @@ public final class ShadowAmbientDisplayConfigurationTest {
   }
 
   @Test
-  public void ambientDisplayAvailable_whenInvalidDozeComponentIsSet_shouldReturnFalse()
-      throws Exception {
+  public void ambientDisplayAvailable_whenInvalidDozeComponentIsSet_shouldReturnFalse() {
     ShadowAmbientDisplayConfiguration.setDozeComponent("");
 
     assertThat(
@@ -75,8 +72,7 @@ public final class ShadowAmbientDisplayConfigurationTest {
 
   @Test
   public void
-      alwaysOnDisplayAvailable_whenOverrideDozeAlwaysOnDisplayAvailableStateToTrue_shouldReturnTrue()
-          throws Exception {
+      alwaysOnDisplayAvailable_whenOverrideDozeAlwaysOnDisplayAvailableStateToTrue_shouldReturnTrue() {
     ShadowAmbientDisplayConfiguration.setDozeAlwaysOnDisplayAvailable(
         /* dozeAlwaysOnDisplayAvailable= */ true);
 
@@ -89,8 +85,7 @@ public final class ShadowAmbientDisplayConfigurationTest {
 
   @Test
   public void
-      alwaysOnDisplayAvailable_whenOverrideDozeAlwaysOnDisplayAvailableStateToFalse_shouldReturnFalse()
-          throws Exception {
+      alwaysOnDisplayAvailable_whenOverrideDozeAlwaysOnDisplayAvailableStateToFalse_shouldReturnFalse() {
     ShadowAmbientDisplayConfiguration.setDozeAlwaysOnDisplayAvailable(
         /* dozeAlwaysOnDisplayAvailable= */ false);
 
@@ -103,8 +98,7 @@ public final class ShadowAmbientDisplayConfigurationTest {
 
   @Test
   public void
-      alwaysOnDisplayDebuggingEnabled_whenBothDebuggableAndAodSystemPropertyAreSet_shouldReturnTrue()
-          throws Exception {
+      alwaysOnDisplayDebuggingEnabled_whenBothDebuggableAndAodSystemPropertyAreSet_shouldReturnTrue() {
     ShadowSystemProperties.override("ro.debuggable", "1");
     ShadowSystemProperties.override("debug.doze.aod", "true");
 
@@ -117,8 +111,7 @@ public final class ShadowAmbientDisplayConfigurationTest {
 
   @Test
   public void
-      alwaysOnDisplayDebuggingEnabled_whenOnlyDebuggableSystemPropertyIsSet_shouldReturnFalse()
-          throws Exception {
+      alwaysOnDisplayDebuggingEnabled_whenOnlyDebuggableSystemPropertyIsSet_shouldReturnFalse() {
     ShadowSystemProperties.override("ro.debuggable", "1");
 
     assertThat(
@@ -129,8 +122,7 @@ public final class ShadowAmbientDisplayConfigurationTest {
   }
 
   @Test
-  public void alwaysOnDisplayDebuggingEnabled_whenOnlyAodSystemPropertyIsSet_shouldReturnFalse()
-      throws Exception {
+  public void alwaysOnDisplayDebuggingEnabled_whenOnlyAodSystemPropertyIsSet_shouldReturnFalse() {
     ShadowSystemProperties.override("debug.doze.aod", "true");
 
     assertThat(
@@ -142,8 +134,7 @@ public final class ShadowAmbientDisplayConfigurationTest {
 
   @Test
   public void
-      alwaysOnAvailable_whenValidSystemPropertiesAndValidDozeComponentAreSet_shouldReturnTrue()
-          throws Exception {
+      alwaysOnAvailable_whenValidSystemPropertiesAndValidDozeComponentAreSet_shouldReturnTrue() {
     ShadowSystemProperties.override("ro.debuggable", "1");
     ShadowSystemProperties.override("debug.doze.aod", "true");
 
@@ -161,8 +152,7 @@ public final class ShadowAmbientDisplayConfigurationTest {
 
   @Test
   public void
-      alwaysOnAvailable_whenOverrideDozeAlwaysOnDisplayAvailableStateAndValidDozeComponentAreSet_shouldReturnTrue()
-          throws Exception {
+      alwaysOnAvailable_whenOverrideDozeAlwaysOnDisplayAvailableStateAndValidDozeComponentAreSet_shouldReturnTrue() {
     ShadowSystemProperties.override("ro.debuggable", "0");
     ShadowSystemProperties.override("debug.doze.aod", "false");
 
@@ -179,7 +169,7 @@ public final class ShadowAmbientDisplayConfigurationTest {
   }
 
   @Test
-  public void alwaysOnAvailable_whenInvalidDozeComponentIsSet_shouldReturnFalse() throws Exception {
+  public void alwaysOnAvailable_whenInvalidDozeComponentIsSet_shouldReturnFalse() {
     ShadowSystemProperties.override("ro.debuggable", "1");
     ShadowSystemProperties.override("debug.doze.aod", "true");
 
@@ -196,8 +186,7 @@ public final class ShadowAmbientDisplayConfigurationTest {
 
   @Test
   public void
-      alwaysOnAvailable_whenInvalidSystemPropertiesAreSetAndOverrideDozeAlwaysOnDisplayAvailableStateToFalse_shouldReturnFalse()
-          throws Exception {
+      alwaysOnAvailable_whenInvalidSystemPropertiesAreSetAndOverrideDozeAlwaysOnDisplayAvailableStateToFalse_shouldReturnFalse() {
     ShadowSystemProperties.override("ro.debuggable", "0");
     ShadowSystemProperties.override("debug.doze.aod", "false");
 

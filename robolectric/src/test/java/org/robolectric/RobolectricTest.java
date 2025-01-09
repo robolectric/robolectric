@@ -39,7 +39,7 @@ public class RobolectricTest {
   private Application context = ApplicationProvider.getApplicationContext();
 
   @Test
-  public void clickOn_shouldThrowIfViewIsDisabled() throws Exception {
+  public void clickOn_shouldThrowIfViewIsDisabled() {
     View view = new View(context);
     view.setEnabled(false);
     assertThrows(RuntimeException.class, () -> ShadowView.clickOn(view));
@@ -47,14 +47,14 @@ public class RobolectricTest {
 
   @Test
   @LooperMode(LEGACY)
-  public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
+  public void shouldResetBackgroundSchedulerBeforeTests() {
     assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
     Robolectric.getBackgroundThreadScheduler().pause();
   }
 
   @Test
   @LooperMode(LEGACY)
-  public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
+  public void shouldResetBackgroundSchedulerAfterTests() {
     assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
     Robolectric.getBackgroundThreadScheduler().pause();
   }
@@ -72,7 +72,7 @@ public class RobolectricTest {
   }
 
   @Test
-  public void clickOn_shouldCallClickListener() throws Exception {
+  public void clickOn_shouldCallClickListener() {
     View view = new View(context);
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     OnClickListener testOnClickListener = mock(OnClickListener.class);
@@ -83,7 +83,7 @@ public class RobolectricTest {
   }
 
   @Test
-  public void checkActivities_shouldSetValueOnShadowApplication() throws Exception {
+  public void checkActivities_shouldSetValueOnShadowApplication() {
     ShadowApplication.getInstance().checkActivities(true);
     assertThrows(
         ActivityNotFoundException.class,
@@ -94,7 +94,7 @@ public class RobolectricTest {
 
   @Test
   @Config(sdk = Config.NEWEST_SDK)
-  public void setupActivity_returnsAVisibleActivity() throws Exception {
+  public void setupActivity_returnsAVisibleActivity() {
     LifeCycleActivity activity = Robolectric.setupActivity(LifeCycleActivity.class);
 
     assertThat(activity.isCreated()).isTrue();

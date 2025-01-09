@@ -1810,7 +1810,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   @Config(minSdk = N)
-  public void setPackagesSuspended_suspendsPossible() throws Exception {
+  public void setPackagesSuspended_suspendsPossible() {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
     shadowOf(packageManager).addPackage("installed");
     String[] packages = new String[] {"installed", "not.installed"};
@@ -1969,7 +1969,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   @Config(minSdk = N)
-  public void isPackagesSuspended_notInstalledPackage() throws Exception {
+  public void isPackagesSuspended_notInstalledPackage() {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
 
     try {

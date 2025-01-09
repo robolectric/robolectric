@@ -105,7 +105,7 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
-  public void postedBackgroundLooperTasksAreExecuted() throws InterruptedException {
+  public void postedBackgroundLooperTasksAreExecuted() {
     Runnable mockRunnable = mock(Runnable.class);
     Handler handler = new Handler(handlerThread.getLooper());
     handler.post(mockRunnable);
@@ -115,7 +115,7 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
-  public void postedBackgroundLooperTasksWhenPaused() throws InterruptedException {
+  public void postedBackgroundLooperTasksWhenPaused() {
     Runnable mockRunnable = mock(Runnable.class);
     shadowOf(handlerThread.getLooper()).pause();
     new Handler(handlerThread.getLooper()).post(mockRunnable);
@@ -155,8 +155,7 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
-  public void postedDelayedBackgroundLooperTasksAreExecutedOnlyWhenSystemClockAdvanced()
-      throws InterruptedException {
+  public void postedDelayedBackgroundLooperTasksAreExecutedOnlyWhenSystemClockAdvanced() {
     Runnable mockRunnable = mock(Runnable.class);
     new Handler(handlerThread.getLooper()).postDelayed(mockRunnable, 10);
     ShadowPausedLooper shadowLooper = Shadow.extract(handlerThread.getLooper());
@@ -467,7 +466,7 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
-  public void isIdle_paused() throws InterruptedException {
+  public void isIdle_paused() {
     ShadowLooper shadowLooper = shadowOf(handlerThread.getLooper());
     shadowLooper.pause();
     assertThat(shadowLooper.isIdle()).isTrue();

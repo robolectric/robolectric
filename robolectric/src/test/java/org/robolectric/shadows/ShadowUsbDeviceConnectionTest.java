@@ -134,7 +134,7 @@ public class ShadowUsbDeviceConnectionTest {
   }
 
   @Test
-  public void releaseInterface_closesOutgoingDataStream() throws Exception {
+  public void releaseInterface_closesOutgoingDataStream() {
     UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
     UsbInterface usbInterface = selectInterface(usbDevice);
     UsbEndpoint usbEndpointOut = getEndpoint(usbInterface, UsbConstants.USB_DIR_OUT);

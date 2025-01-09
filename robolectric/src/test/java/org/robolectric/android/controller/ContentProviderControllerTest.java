@@ -33,14 +33,14 @@ public class ContentProviderControllerTest {
   }
 
   @Test
-  public void shouldSetBaseContext() throws Exception {
+  public void shouldSetBaseContext() {
     TestContentProvider1 myContentProvider = controller.create().get();
     assertThat(myContentProvider.getContext())
         .isEqualTo(((Application) ApplicationProvider.getApplicationContext()).getBaseContext());
   }
 
   @Test
-  public void shouldInitializeFromManifestProviderInfo() throws Exception {
+  public void shouldInitializeFromManifestProviderInfo() {
     TestContentProvider1 myContentProvider = controller.create().get();
     assertThat(myContentProvider.getReadPermission()).isEqualTo("READ_PERMISSION");
     assertThat(myContentProvider.getWritePermission()).isEqualTo("WRITE_PERMISSION");
@@ -77,7 +77,7 @@ public class ContentProviderControllerTest {
   }
 
   @Test
-  public void whenNoProviderManifestEntryFound_shouldStillInitialize() throws Exception {
+  public void whenNoProviderManifestEntryFound_shouldStillInitialize() {
     TestContentProvider1 myContentProvider =
         Robolectric.buildContentProvider(NotInManifestContentProvider.class).create().get();
     assertThat(myContentProvider.getReadPermission()).isNull();
@@ -86,13 +86,13 @@ public class ContentProviderControllerTest {
   }
 
   @Test
-  public void create_shouldCallOnCreate() throws Exception {
+  public void create_shouldCallOnCreate() {
     TestContentProvider1 myContentProvider = controller.create().get();
     assertThat(myContentProvider.transcript).containsExactly("onCreate");
   }
 
   @Test
-  public void shutdown_shouldCallShutdown() throws Exception {
+  public void shutdown_shouldCallShutdown() {
     TestContentProvider1 myContentProvider = controller.shutdown().get();
     assertThat(myContentProvider.transcript).containsExactly("shutdown");
   }
@@ -111,7 +111,7 @@ public class ContentProviderControllerTest {
   }
 
   @Test
-  public void contentProviderShouldBeCreatedBeforeBeingRegistered() throws Exception {
+  public void contentProviderShouldBeCreatedBeforeBeingRegistered() {
     XContentProvider xContentProvider =
         Robolectric.setupContentProvider(XContentProvider.class, "x-authority");
     assertThat(xContentProvider.transcript).containsExactly("x-authority not registered yet");
@@ -122,7 +122,7 @@ public class ContentProviderControllerTest {
   }
 
   @Test
-  public void createContentProvider_nullAuthority() throws Exception {
+  public void createContentProvider_nullAuthority() {
     assertThrows(
         IllegalArgumentException.class,
         () ->

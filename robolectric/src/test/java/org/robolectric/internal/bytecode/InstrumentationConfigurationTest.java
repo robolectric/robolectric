@@ -25,7 +25,7 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldNotInstrumentAndroidAppClasses() throws Exception {
+  public void shouldNotInstrumentAndroidAppClasses() {
     assertThat(config.shouldInstrument(wrap("com.google.android.apps.Foo"))).isFalse();
   }
 
@@ -35,13 +35,13 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldNotInstrumentCoreJdkClasses() throws Exception {
+  public void shouldNotInstrumentCoreJdkClasses() {
     assertThat(config.shouldInstrument(wrap("java.lang.Object"))).isFalse();
     assertThat(config.shouldInstrument(wrap("java.lang.String"))).isFalse();
   }
 
   @Test
-  public void shouldInstrumentAndroidCoreClasses() throws Exception {
+  public void shouldInstrumentAndroidCoreClasses() {
     assertThat(config.shouldInstrument(wrap("android.content.Intent"))).isTrue();
     assertThat(config.shouldInstrument(wrap("android.and.now.for.something.completely.different")))
         .isTrue();
@@ -58,7 +58,7 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldAcquireAndroidRClasses() throws Exception {
+  public void shouldAcquireAndroidRClasses() {
     assertThat(config.shouldAcquire("android.Rfoo")).isTrue();
     assertThat(config.shouldAcquire("android.fooR")).isTrue();
     assertThat(config.shouldAcquire("android.R")).isTrue();
@@ -67,7 +67,7 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldAcquireRClasses() throws Exception {
+  public void shouldAcquireRClasses() {
     assertThat(config.shouldAcquire("com.whatever.Rfoo")).isTrue();
     assertThat(config.shouldAcquire("com.whatever.fooR")).isTrue();
     assertThat(config.shouldAcquire("com.whatever.R")).isTrue();
@@ -76,7 +76,7 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldNotAcquireExcludedPackages() throws Exception {
+  public void shouldNotAcquireExcludedPackages() {
     assertThat(config.shouldAcquire("scala.Test")).isFalse();
     assertThat(config.shouldAcquire("scala.util.Test")).isFalse();
     assertThat(config.shouldAcquire("org.specs2.whatever.foo")).isFalse();
@@ -85,22 +85,22 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldNotAcquireShadowClass() throws Exception {
+  public void shouldNotAcquireShadowClass() {
     assertThat(config.shouldAcquire("org.robolectric.shadow.api.Shadow")).isTrue();
   }
 
   @Test
-  public void shouldAcquireDistinguishedNameParser_Issue1864() throws Exception {
+  public void shouldAcquireDistinguishedNameParser_Issue1864() {
     assertThat(config.shouldAcquire("javax.net.ssl.DistinguishedNameParser")).isTrue();
   }
 
   @Test
-  public void shouldAcquireOpenglesGL_Issue2960() throws Exception {
+  public void shouldAcquireOpenglesGL_Issue2960() {
     assertThat(config.shouldAcquire("javax.microedition.khronos.opengles.GL")).isTrue();
   }
 
   @Test
-  public void shouldInstrumentCustomClasses() throws Exception {
+  public void shouldInstrumentCustomClasses() {
     String instrumentName = "com.whatever.SomeClassNameToInstrument";
     String notInstrumentName = "com.whatever.DoNotInstrumentMe";
     InstrumentationConfiguration customConfig =
@@ -110,7 +110,7 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void equals_ShouldCheckClassNames() throws Exception {
+  public void equals_ShouldCheckClassNames() {
     String instrumentName = "com.whatever.SomeClassNameToInstrument";
     InstrumentationConfiguration baseConfig = InstrumentationConfiguration.newBuilder().build();
     InstrumentationConfiguration customConfig =
@@ -120,7 +120,7 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldNotInstrumentListedClasses() throws Exception {
+  public void shouldNotInstrumentListedClasses() {
     String instrumentName = "android.foo.bar";
     InstrumentationConfiguration customConfig =
         InstrumentationConfiguration.newBuilder().doNotInstrumentClass(instrumentName).build();
@@ -129,7 +129,7 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldNotInstrumentPackages() throws Exception {
+  public void shouldNotInstrumentPackages() {
     String includedClass = "android.foo.Bar";
     String excludedClass = "androidx.test.foo.Bar";
     InstrumentationConfiguration customConfig =
@@ -143,7 +143,7 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldNotInstrumentClassNamesWithNullRegex() throws Exception {
+  public void shouldNotInstrumentClassNamesWithNullRegex() {
     InstrumentationConfiguration customConfig =
         InstrumentationConfiguration.newBuilder()
             .addInstrumentedPackage("com.random")
@@ -155,7 +155,7 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldNotInstrumentClassNamesWithRegex() throws Exception {
+  public void shouldNotInstrumentClassNamesWithRegex() {
     InstrumentationConfiguration customConfig =
         InstrumentationConfiguration.newBuilder()
             .addInstrumentedPackage("com.random")
@@ -167,7 +167,7 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldNotInstrumentClassNamesWithMultiRegex() throws Exception {
+  public void shouldNotInstrumentClassNamesWithMultiRegex() {
     InstrumentationConfiguration customConfig =
         InstrumentationConfiguration.newBuilder()
             .addInstrumentedPackage("com.random")
@@ -183,7 +183,7 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void removesRedundantPackageAndClassConfig() throws Exception {
+  public void removesRedundantPackageAndClassConfig() {
     InstrumentationConfiguration config1 =
         InstrumentationConfiguration.newBuilder()
             .addInstrumentedPackage("a.b")

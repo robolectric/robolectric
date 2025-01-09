@@ -263,7 +263,7 @@ public class ShadowTraceTest {
   }
 
   @Test
-  public void reset_resetsInternalState() throws Exception {
+  public void reset_resetsInternalState() {
     Trace.beginSection(/* sectionName= */ "section1");
     Trace.endSection();
     Trace.beginSection(/* sectionName= */ "section2");

@@ -35,21 +35,21 @@ public class IntentServiceControllerTest {
   }
 
   @Test
-  public void onBindShouldSetIntent() throws Exception {
+  public void onBindShouldSetIntent() {
     MyService myService = controller.create().bind().get();
     assertThat(myService.boundIntent).isNotNull();
     assertThat(myService.boundIntent.getComponent()).isEqualTo(componentName);
   }
 
   @Test
-  public void onStartCommandShouldSetIntent() throws Exception {
+  public void onStartCommandShouldSetIntent() {
     MyService myService = controller.create().startCommand(3, 4).get();
     assertThat(myService.startIntent).isNotNull();
     assertThat(myService.startIntent.getComponent()).isEqualTo(componentName);
   }
 
   @Test
-  public void onBindShouldSetIntentComponentWithCustomIntentWithoutComponentSet() throws Exception {
+  public void onBindShouldSetIntentComponentWithCustomIntentWithoutComponentSet() {
     MyService myService =
         Robolectric.buildIntentService(MyService.class, new Intent(Intent.ACTION_VIEW))
             .bind()
@@ -59,7 +59,7 @@ public class IntentServiceControllerTest {
   }
 
   @Test
-  public void shouldSetIntentForGivenServiceInstance() throws Exception {
+  public void shouldSetIntentForGivenServiceInstance() {
     IntentServiceController<MyService> intentServiceController =
         IntentServiceController.of(new MyService(), null).bind();
     assertThat(intentServiceController.get().boundIntent).isNotNull();
@@ -67,7 +67,7 @@ public class IntentServiceControllerTest {
 
   @Test
   @LooperMode(LEGACY)
-  public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() throws Exception {
+  public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() {
     ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
@@ -75,7 +75,7 @@ public class IntentServiceControllerTest {
   }
 
   @Test
-  public void whenLooperIsAlreadyPaused_shouldCreateWithMainLooperPaused() throws Exception {
+  public void whenLooperIsAlreadyPaused_shouldCreateWithMainLooperPaused() {
     shadowMainLooper().pause();
     controller.create();
     assertThat(transcript).contains("finishedOnCreate");

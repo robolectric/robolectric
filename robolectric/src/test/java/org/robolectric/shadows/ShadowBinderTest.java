@@ -47,7 +47,7 @@ public class ShadowBinderTest {
   }
 
   @Test
-  public void testLinkToDeath() throws Exception {
+  public void testLinkToDeath() {
     Binder binder = new Binder();
     DeathRecipient recipient = () -> {};
     binder.linkToDeath(recipient, 0);
@@ -55,7 +55,7 @@ public class ShadowBinderTest {
   }
 
   @Test
-  public void testLinkToDeath_unlink() throws Exception {
+  public void testLinkToDeath_unlink() {
     Binder binder = new Binder();
     DeathRecipient recipient = () -> {};
     // recipient doesn't exist, returns false.
@@ -68,7 +68,7 @@ public class ShadowBinderTest {
   }
 
   @Test
-  public void testLinkToDeath_twice() throws Exception {
+  public void testLinkToDeath_twice() {
     Binder binder = new Binder();
     DeathRecipient recipient = () -> {};
     binder.linkToDeath(recipient, 0);
@@ -80,7 +80,7 @@ public class ShadowBinderTest {
   }
 
   @Test
-  public void testLinkToDeath_weakReference() throws Exception {
+  public void testLinkToDeath_weakReference() {
     Binder binder = new Binder();
     binder.linkToDeath(
         new DeathRecipient() {

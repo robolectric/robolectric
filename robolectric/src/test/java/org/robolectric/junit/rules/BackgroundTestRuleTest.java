@@ -22,12 +22,12 @@ public final class BackgroundTestRuleTest {
 
   @Test
   @BackgroundTestRule.BackgroundTest
-  public void testRunsInBackground() throws Exception {
+  public void testRunsInBackground() {
     assertThat(Looper.myLooper()).isNotEqualTo(Looper.getMainLooper());
   }
 
   @Test
-  public void testNoAnnotation_runsOnMainThread() throws Exception {
+  public void testNoAnnotation_runsOnMainThread() {
     assertThat(Looper.myLooper()).isEqualTo(Looper.getMainLooper());
   }
 

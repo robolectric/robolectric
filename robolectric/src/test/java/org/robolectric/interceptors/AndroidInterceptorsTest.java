@@ -11,7 +11,7 @@ import org.robolectric.internal.bytecode.MethodRef;
 @RunWith(JUnit4.class)
 public class AndroidInterceptorsTest {
   @Test
-  public void allMethodRefs() throws Exception {
+  public void allMethodRefs() {
     assertThat(new Interceptors(AndroidInterceptors.all()).getAllMethodRefs())
         .containsAtLeast(
             new MethodRef("java.util.LinkedHashMap", "eldest"),
@@ -31,7 +31,7 @@ public class AndroidInterceptorsTest {
   }
 
   @Test
-  public void localeAdjustCodeInterceptor() throws Exception {
+  public void localeAdjustCodeInterceptor() {
     assertThat(adjust("EN")).isEqualTo("en");
     assertThat(adjust("he")).isEqualTo("iw");
     assertThat(adjust("yi")).isEqualTo("ji");

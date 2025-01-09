@@ -129,7 +129,7 @@ public class ResBundleTest {
   }
 
   @Test
-  public void shouldMatchQualifiersPerAndroidSpec() throws Exception {
+  public void shouldMatchQualifiersPerAndroidSpec() {
     assertEquals(
         "en-port",
         asResMap(
@@ -145,7 +145,7 @@ public class ResBundleTest {
   }
 
   @Test
-  public void shouldMatchQualifiersInSizeRange() throws Exception {
+  public void shouldMatchQualifiersInSizeRange() {
     assertEquals(
         "sw300dp-port",
         asResMap("", "sw200dp", "sw350dp-port", "sw300dp-port", "sw300dp")
@@ -154,7 +154,7 @@ public class ResBundleTest {
   }
 
   @Test
-  public void shouldPreferWidthOverHeight() throws Exception {
+  public void shouldPreferWidthOverHeight() {
     assertEquals(
         "sw300dp-w200dp",
         asResMap("", "sw200dp", "sw200dp-w300dp", "sw300dp-w200dp", "w300dp")

@@ -20,7 +20,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -590,8 +589,7 @@ public class ShadowTelecomManagerTest {
 
   @Config(minSdk = R)
   @Test
-  public void createLaunchEmergencyDialerIntent_whenPackageAvailable_shouldContainPackage()
-      throws NameNotFoundException {
+  public void createLaunchEmergencyDialerIntent_whenPackageAvailable_shouldContainPackage() {
     ComponentName componentName = new ComponentName("com.android.phone", "EmergencyDialer");
     shadowOf(context.getPackageManager()).addActivityIfNotPresent(componentName);
 
