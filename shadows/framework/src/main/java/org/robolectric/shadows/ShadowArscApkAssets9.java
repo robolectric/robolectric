@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ATRACE_NAME;
-import static org.robolectric.res.android.Util.JNI_TRUE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.ApkAssets;
@@ -242,11 +241,9 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     return apk_assets.GetLoadedArsc().GetStringPool().getNativePtr();
   }
 
-  // static jboolean NativeIsUpToDate(JNIEnv* /*env*/, jclass /*clazz*/, jlong ptr) {
   @Implementation
-  protected static boolean nativeIsUpToDate(long ptr) {
-    // (void)apk_assets;
-    return JNI_TRUE;
+  protected boolean isUpToDate() {
+    return true;
   }
 
   // static jlong NativeOpenXml(JNIEnv* env, jclass /*clazz*/, jlong ptr, jstring file_name) {

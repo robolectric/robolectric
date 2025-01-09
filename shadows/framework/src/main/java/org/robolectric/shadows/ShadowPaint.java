@@ -27,6 +27,7 @@ import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.versioning.AndroidVersions;
 import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
@@ -206,6 +207,13 @@ public class ShadowPaint {
 
   @Implementation
   protected Typeface setTypeface(Typeface typeface) {
+    this.typeface = typeface;
+    return typeface;
+  }
+
+  @Implementation(minSdk = AndroidVersions.Baklava.SDK_INT)
+  @InDevelopment
+  protected Typeface setTypefaceWithoutWarning(Typeface typeface) {
     this.typeface = typeface;
     return typeface;
   }
