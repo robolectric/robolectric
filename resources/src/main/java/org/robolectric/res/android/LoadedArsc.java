@@ -797,11 +797,8 @@ public class LoadedArsc {
               ResTable_lib_entry entryBegin = child_chunk.asResTable_lib_entry();
               // ResTable_lib_entry entry_end = entryBegin + dtohl(lib.count);
               // for (auto entryIter = entryBegin; entryIter != entry_end; ++entryIter) {
-              for (ResTable_lib_entry entryIter = entryBegin;
-                  entryIter.myOffset() != entryBegin.myOffset() + dtohl(lib.count);
-                  entryIter =
-                      new ResTable_lib_entry(
-                          entryIter.myBuf(), entryIter.myOffset() + ResTable_lib_entry.SIZEOF)) {
+              ResTable_lib_entry entryIter = entryBegin;
+              do {
                 String package_name =
                     Util.ReadUtf16StringFromDevice(
                         entryIter.packageName, entryIter.packageName.length);
@@ -818,7 +815,16 @@ public class LoadedArsc {
                 //     dtohl(entryIter.packageId));
                 loaded_package.dynamic_package_map_.add(
                     new DynamicPackageEntry(package_name, dtohl(entryIter.packageId)));
-              }
+
+                if (entryIter.myOffset() + ResTable_lib_entry.SIZEOF
+                    != entryBegin.myOffset() + dtohl(lib.count) * ResTable_lib_entry.SIZEOF) {
+                  entryIter =
+                      new ResTable_lib_entry(
+                          entryIter.myBuf(), entryIter.myOffset() + ResTable_lib_entry.SIZEOF);
+                } else {
+                  break;
+                }
+              } while (true);
             }
             break;
 

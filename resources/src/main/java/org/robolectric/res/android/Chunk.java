@@ -114,8 +114,9 @@ class Chunk {
   }
 
   public ResTable_lib_entry asResTable_lib_entry() {
-    if (header_size() >= ResTable_lib_entry.SIZEOF) {
-      return new ResTable_lib_entry(device_chunk_.myBuf(), device_chunk_.myOffset());
+    if (data_size() >= ResTable_lib_entry.SIZEOF) {
+      return new ResTable_lib_entry(
+          device_chunk_.myBuf(), device_chunk_.myOffset() + header_size());
     } else {
       return null;
     }
