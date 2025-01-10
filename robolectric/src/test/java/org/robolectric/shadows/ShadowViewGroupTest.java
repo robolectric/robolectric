@@ -162,7 +162,7 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void shouldfindViewWithTagFromCorrectViewGroup() {
+  public void shouldFindViewWithTagFromCorrectViewGroup() {
     root.removeAllViews();
     child1.setTag("tag1");
     child2.setTag("tag2");

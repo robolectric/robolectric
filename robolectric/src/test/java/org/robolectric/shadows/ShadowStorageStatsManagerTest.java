@@ -75,7 +75,7 @@ public final class ShadowStorageStatsManagerTest {
 
   @Test
   public void getFreeBytes_afterRemoveStorageDevice_throwsException() {
-    // Arange
+    // Arrange
     shadowOf(storageStatsManager).removeStorageDevice(StorageManager.UUID_DEFAULT);
 
     // Act & Assert
@@ -124,7 +124,7 @@ public final class ShadowStorageStatsManagerTest {
 
   @Test
   public void getTotalBytes_afterRemoveStorageDevice_throwsException() {
-    // Arange
+    // Arrange
     shadowOf(storageStatsManager).removeStorageDevice(StorageManager.UUID_DEFAULT);
 
     // Act & Assert

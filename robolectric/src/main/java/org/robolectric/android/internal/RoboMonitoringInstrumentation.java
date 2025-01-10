@@ -157,7 +157,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
   /**
    * Executes a runnable on the main thread, blocking until it is complete.
    *
-   * <p>When in INSTUMENTATION_TEST Looper mode, the runnable is posted to the main handler and the
+   * <p>When in INSTRUMENTATION_TEST Looper mode, the runnable is posted to the main handler and the
    * caller's thread blocks until that runnable has finished. When a Throwable is thrown in the
    * runnable, the exception is propagated back to the caller's thread. If it is an unchecked
    * throwable, it will be rethrown as is. If it is a checked exception, it will be rethrown as a

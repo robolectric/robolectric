@@ -655,76 +655,76 @@ public class ShadowContextWrapperTest {
   @Test
   @Config(minSdk = 23)
   public void checkSelfPermission() {
-    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSON"))
+    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSION"))
         .isEqualTo(PackageManager.PERMISSION_DENIED);
 
-    shadowContextWrapper.grantPermissions("MY_PERMISSON");
+    shadowContextWrapper.grantPermissions("MY_PERMISSION");
 
-    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSON"))
+    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSION"))
         .isEqualTo(PackageManager.PERMISSION_GRANTED);
-    assertThat(contextWrapper.checkSelfPermission("UNKNOWN_PERMISSON"))
+    assertThat(contextWrapper.checkSelfPermission("UNKNOWN_PERMISSION"))
         .isEqualTo(PackageManager.PERMISSION_DENIED);
   }
 
   @Test
   public void checkPermission_denied() {
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", /* pid= */ 1, /* uid= */ 1))
+    assertThat(contextWrapper.checkPermission("MY_PERMISSION", /* pid= */ 1, /* uid= */ 1))
         .isEqualTo(PackageManager.PERMISSION_DENIED);
 
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", /* pid= */ -1, /* uid= */ 1))
+    assertThat(contextWrapper.checkPermission("MY_PERMISSION", /* pid= */ -1, /* uid= */ 1))
         .isEqualTo(PackageManager.PERMISSION_DENIED);
   }
 
   @Test
   public void checkPermission_granted() {
-    shadowContextWrapper.grantPermissions(1, 1, "MY_PERMISSON");
+    shadowContextWrapper.grantPermissions(1, 1, "MY_PERMISSION");
 
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", /* pid= */ 1, /* uid= */ 1))
+    assertThat(contextWrapper.checkPermission("MY_PERMISSION", /* pid= */ 1, /* uid= */ 1))
         .isEqualTo(PackageManager.PERMISSION_GRANTED);
 
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", /* pid= */ 2, /* uid= */ 1))
+    assertThat(contextWrapper.checkPermission("MY_PERMISSION", /* pid= */ 2, /* uid= */ 1))
         .isEqualTo(PackageManager.PERMISSION_DENIED);
 
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", /* pid= */ -1, /* uid= */ 1))
+    assertThat(contextWrapper.checkPermission("MY_PERMISSION", /* pid= */ -1, /* uid= */ 1))
         .isEqualTo(PackageManager.PERMISSION_GRANTED);
   }
 
   @Test
   @Config(minSdk = 23)
   public void checkAdditionalSelfPermission() {
-    shadowContextWrapper.grantPermissions("MY_PERMISSON");
-    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSON"))
+    shadowContextWrapper.grantPermissions("MY_PERMISSION");
+    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSION"))
         .isEqualTo(PackageManager.PERMISSION_GRANTED);
-    assertThat(contextWrapper.checkSelfPermission("ANOTHER_PERMISSON"))
+    assertThat(contextWrapper.checkSelfPermission("ANOTHER_PERMISSION"))
         .isEqualTo(PackageManager.PERMISSION_DENIED);
 
-    shadowContextWrapper.grantPermissions("ANOTHER_PERMISSON");
-    assertThat(contextWrapper.checkSelfPermission("ANOTHER_PERMISSON"))
+    shadowContextWrapper.grantPermissions("ANOTHER_PERMISSION");
+    assertThat(contextWrapper.checkSelfPermission("ANOTHER_PERMISSION"))
         .isEqualTo(PackageManager.PERMISSION_GRANTED);
   }
 
   @Test
   @Config(minSdk = 23)
   public void revokeSelfPermission() {
-    shadowContextWrapper.grantPermissions("MY_PERMISSON");
+    shadowContextWrapper.grantPermissions("MY_PERMISSION");
 
-    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSON"))
+    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSION"))
         .isEqualTo(PackageManager.PERMISSION_GRANTED);
-    shadowContextWrapper.denyPermissions("MY_PERMISSON");
+    shadowContextWrapper.denyPermissions("MY_PERMISSION");
 
-    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSON"))
+    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSION"))
         .isEqualTo(PackageManager.PERMISSION_DENIED);
   }
 
   @Test
   public void revokePermissionUidPid() {
-    shadowContextWrapper.grantPermissions(1, 1, "MY_PERMISSON");
+    shadowContextWrapper.grantPermissions(1, 1, "MY_PERMISSION");
 
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", 1, 1))
+    assertThat(contextWrapper.checkPermission("MY_PERMISSION", 1, 1))
         .isEqualTo(PackageManager.PERMISSION_GRANTED);
-    shadowContextWrapper.denyPermissions(1, 1, "MY_PERMISSON");
+    shadowContextWrapper.denyPermissions(1, 1, "MY_PERMISSION");
 
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", 1, 1))
+    assertThat(contextWrapper.checkPermission("MY_PERMISSION", 1, 1))
         .isEqualTo(PackageManager.PERMISSION_DENIED);
   }
 

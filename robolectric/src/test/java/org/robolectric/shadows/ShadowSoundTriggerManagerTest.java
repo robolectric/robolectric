@@ -56,7 +56,7 @@ public final class ShadowSoundTriggerManagerTest {
     assertThat(moduleProperties.getVersion()).isEqualTo(1234);
   }
 
-  // Construct a dummuy {@code SoundTrigger.ModuleProperties}. Return Object because {@code
+  // Construct a dummy {@code SoundTrigger.ModuleProperties}. Return Object because {@code
   // SoundTrigger.ModuleProperties} is not exist in public Android SDK.
   private Object getModuleProperties(String supportedModelArch, int version) {
     return new SoundTrigger.ModuleProperties(

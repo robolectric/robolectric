@@ -25,7 +25,7 @@ public final class AssociationInfoBuilderTest {
   private static final long APPROVED_MS = 1234L;
   private static final boolean REVOKED = true;
   private static final long LAST_TIME_CONNECTED_MS = 5678L;
-  private static final int SYSTEM_DATA_SYNC_FALGS = 7;
+  private static final int SYSTEM_DATA_SYNC_FLAGS = 7;
 
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
@@ -54,7 +54,7 @@ public final class AssociationInfoBuilderTest {
             .setApprovedMs(APPROVED_MS)
             .setRevoked(REVOKED)
             .setLastTimeConnectedMs(LAST_TIME_CONNECTED_MS)
-            .setSystemDataSyncFlags(SYSTEM_DATA_SYNC_FALGS)
+            .setSystemDataSyncFlags(SYSTEM_DATA_SYNC_FLAGS)
             .build();
 
     assertThat(info.getId()).isEqualTo(ID);
@@ -74,7 +74,7 @@ public final class AssociationInfoBuilderTest {
       assertThat(associatedDevice).isEqualTo(associatedDeviceValue);
       int systemDataSyncFlags =
           ReflectionHelpers.callInstanceMethod(info, "getSystemDataSyncFlags");
-      assertThat(systemDataSyncFlags).isEqualTo(SYSTEM_DATA_SYNC_FALGS);
+      assertThat(systemDataSyncFlags).isEqualTo(SYSTEM_DATA_SYNC_FLAGS);
     }
 
     if (ReflectionHelpers.hasField(AssociationInfo.class, "mTag")) {

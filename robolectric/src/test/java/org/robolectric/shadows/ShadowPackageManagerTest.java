@@ -3389,7 +3389,7 @@ public class ShadowPackageManagerTest {
   @Test
   public void getPermissionInfo_notFound() {
     try {
-      packageManager.getPermissionInfo("non_existant_permission", 0);
+      packageManager.getPermissionInfo("non_existent_permission", 0);
       fail("should have thrown NameNotFoundException");
     } catch (NameNotFoundException e) {
       // expected

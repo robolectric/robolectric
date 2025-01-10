@@ -36,7 +36,7 @@ public class ShadowChoreographerTest {
   }
 
   @Test
-  public void setPaused_isPaused_doesntRunWhenClockAdancedLessThanFrameDelay() {
+  public void setPaused_isPaused_doesntRunWhenClockAdvancedLessThanFrameDelay() {
     ShadowChoreographer.setPaused(true);
     ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
     AtomicBoolean didRun = new AtomicBoolean();

@@ -188,7 +188,7 @@ public class ShadowBluetoothHeadsetTest {
   }
 
   @Test
-  public void startVoiceRecogntion_shouldEmitBroadcast() {
+  public void startVoiceRecognition_shouldEmitBroadcast() {
     shadowOf(bluetoothHeadset).addConnectedDevice(device1);
     IntentFilter intentFilter = new IntentFilter(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED);
     List<Integer> extraStateList = new ArrayList<>();
@@ -210,7 +210,7 @@ public class ShadowBluetoothHeadsetTest {
   }
 
   @Test
-  public void startVoiceRecogniton_returnsFalseIfAlreadyStarted() {
+  public void startVoiceRecognition_returnsFalseIfAlreadyStarted() {
     shadowOf(bluetoothHeadset).addConnectedDevice(device1);
     shadowOf(bluetoothHeadset).addConnectedDevice(device2);
 
@@ -220,7 +220,7 @@ public class ShadowBluetoothHeadsetTest {
   }
 
   @Test
-  public void startVoiceRecogntion_stopsAlreadyStartedRecognition() {
+  public void startVoiceRecognition_stopsAlreadyStartedRecognition() {
     shadowOf(bluetoothHeadset).addConnectedDevice(device1);
     shadowOf(bluetoothHeadset).addConnectedDevice(device2);
 

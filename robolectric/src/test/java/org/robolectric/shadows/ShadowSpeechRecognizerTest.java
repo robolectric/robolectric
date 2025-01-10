@@ -148,7 +148,7 @@ public class ShadowSpeechRecognizerTest {
     speechRecognizer =
         SpeechRecognizer.createSpeechRecognizer(
             ApplicationProvider.getApplicationContext(),
-            new ComponentName("org.robolectrc", "FakeComponent"));
+            new ComponentName("org.robolectric", "FakeComponent"));
     speechRecognizer.setRecognitionListener(listener);
     speechRecognizer.startListening(new Intent());
     shadowOf(getMainLooper()).idle();

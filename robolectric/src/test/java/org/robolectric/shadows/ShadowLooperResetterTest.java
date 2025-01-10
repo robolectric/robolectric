@@ -325,7 +325,7 @@ public class ShadowLooperResetterTest {
     }
   }
 
-  /** Tests for potentially race conditions where Looper is quit asynchrounously at end of test */
+  /** Tests for potentially race conditions where Looper is quit asynchronously at end of test */
   @Test
   public void choreographerQuitPost() throws InitializationError {
     Runner runner = new RobolectricTestRunner(ChoreographerResetQuitTest.class);

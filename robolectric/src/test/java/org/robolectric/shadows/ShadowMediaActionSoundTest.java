@@ -82,7 +82,7 @@ public final class ShadowMediaActionSoundTest {
 
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
-  public void mustPlayShutterSound_overrident_correctValue() {
+  public void mustPlayShutterSound_overridden_correctValue() {
     ShadowMediaActionSound.setMustPlayShutterSound(true);
 
     assertThat(MediaActionSound.mustPlayShutterSound()).isTrue();

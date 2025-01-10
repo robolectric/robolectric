@@ -169,7 +169,7 @@ public class ShadowCookieManagerTest {
   }
 
   @Test
-  public void shouldSetCookieWithInvalidExpiesValue() {
+  public void shouldSetCookieWithInvalidExpiresValue() {
     cookieManager.setCookie(httpUrl, "name=value; Expires=3234asdfasdf10:18:14 GMT");
     assertThat(cookieManager.getCookie(url)).isEqualTo("name=value");
   }

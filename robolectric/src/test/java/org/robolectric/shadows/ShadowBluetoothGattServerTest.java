@@ -387,7 +387,7 @@ public class ShadowBluetoothGattServerTest {
   }
 
   @Test
-  public void test_isConnectionCancelled_afterCancelConnection_aftereNotifyConnection() {
+  public void test_isConnectionCancelled_afterCancelConnection_afterNotifyConnection() {
     shadowOf(server).setGattServerCallback(callback);
     shadowOf(server).notifyConnection(device);
     server.cancelConnection(device);

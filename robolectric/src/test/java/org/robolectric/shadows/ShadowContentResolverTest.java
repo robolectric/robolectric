@@ -500,7 +500,7 @@ public class ShadowContentResolverTest {
     Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);
     Uri uri = Uri.parse("content://" + AUTHORITY + "/test/1");
 
-    // Write content through given outputstream
+    // Write content through given outputStream
     try (OutputStream outputStream = contentResolver.openOutputStream(uri)) {
       outputStream.write("foo".getBytes(UTF_8));
     }
@@ -525,7 +525,7 @@ public class ShadowContentResolverTest {
 
           @Override
           public String toString() {
-            return "outputstream for " + uri;
+            return "outputStream for " + uri;
           }
         };
 
@@ -594,7 +594,7 @@ public class ShadowContentResolverTest {
     Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);
     Uri uri = Uri.parse("content://" + AUTHORITY + "/test/1");
 
-    // Write content through given outputstream
+    // Write content through given outputStream
     try (OutputStream outputStream = contentResolver.openOutputStream(uri, "wt")) {
       outputStream.write("foo".getBytes(UTF_8));
     }
@@ -619,7 +619,7 @@ public class ShadowContentResolverTest {
 
           @Override
           public String toString() {
-            return "outputstream for " + uri;
+            return "outputStream for " + uri;
           }
         };
 

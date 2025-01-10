@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowResultReceiverTest {
   @Test
-  public void callingSend_shouldCallOverridenOnReceiveResultWithTheSameArguments() {
+  public void callingSend_shouldCallOverriddenOnReceiveResultWithTheSameArguments() {
     TestResultReceiver testResultReceiver = new TestResultReceiver(null);
     Bundle bundle = new Bundle();
 

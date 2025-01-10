@@ -26,7 +26,7 @@ public class ResourceTableTest {
   }
 
   @Test
-  public void getPackageIdentifier_shouldReturnPackageIdentiferOfItsResources() {
+  public void getPackageIdentifier_shouldReturnPackageIdentifierOfItsResources() {
     resourceTable.addResource(0x02999999, "type", "name");
 
     assertThat(resourceTable.getPackageIdentifier()).isEqualTo(0x02);

@@ -191,7 +191,7 @@ public class ShadowListViewTest {
   @Test(expected = IllegalArgumentException.class)
   public void clickItemContainingText_shouldThrowExceptionIfNotFound() {
     ShadowListView shadowListView = prepareListWithThreeItems();
-    shadowListView.clickFirstItemContainingText("Non-existant item");
+    shadowListView.clickFirstItemContainingText("Non-existent item");
   }
 
   @Test(expected = UnsupportedOperationException.class)
@@ -228,7 +228,7 @@ public class ShadowListViewTest {
   }
 
   @Test
-  public void shouldRecordLatestCallToSmoothScrollToPostion() {
+  public void shouldRecordLatestCallToSmoothScrollToPosition() {
     listView.smoothScrollToPosition(10);
     assertThat(shadowOf(listView).getSmoothScrolledPosition()).isEqualTo(10);
   }
@@ -255,7 +255,7 @@ public class ShadowListViewTest {
   }
 
   @Test
-  public void givenNoItemsChecked_whenGettingCheckedItemOisition_thenReturnInvalidPosition() {
+  public void givenNoItemsChecked_whenGettingCheckedItemPosition_thenReturnInvalidPosition() {
     prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
     assertThat(listView.getCheckedItemPosition()).isEqualTo(ListView.INVALID_POSITION);

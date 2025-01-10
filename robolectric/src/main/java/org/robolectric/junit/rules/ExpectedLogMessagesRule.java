@@ -159,8 +159,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
    * will fail.
    *
    * <p>This will also match any log statement which contains a throwable as well. For verifying the
-   * throwable, please see {@link #expectLogMessageWithThrowable(int, String, Matcher<String>,
-   * Matcher<Throwable>)}.
+   * throwable, please see {@link #expectLogMessageWithThrowable(int, String, Matcher, Matcher)}}.
    *
    * <p>Do not use this to suppress failures. Use this to test that expected error cases in your
    * code cause log messages to be printed.
@@ -187,7 +186,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
 
   /**
    * Adds an expected log statement using a regular expression. If this log is not printed during
-   * test execution, the test case will fail. When possible, log output should be made determinstic
+   * test execution, the test case will fail. When possible, log output should be made deterministic
    * and {@link #expectLogMessage(int, String, String)} used instead.
    *
    * <p>This will also match any log statement which contain a throwable as well. For verifying the

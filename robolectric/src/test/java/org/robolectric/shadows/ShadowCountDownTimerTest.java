@@ -43,7 +43,7 @@ public class ShadowCountDownTimerTest {
           }
 
           @Override
-          public void onTick(long millisUnitilFinished) {
+          public void onTick(long millisUntilFinished) {
             message = MESSAGE_TICK;
           }
         };

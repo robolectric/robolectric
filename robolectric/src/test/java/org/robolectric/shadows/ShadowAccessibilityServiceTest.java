@@ -225,13 +225,13 @@ public class ShadowAccessibilityServiceTest {
 
   @Test
   @Config(minSdk = R)
-  public void getWindowsforDefaultDisplay_returnEmptyList() {
+  public void getWindowsForDefaultDisplay_returnEmptyList() {
     assertThat(service.getWindowsOnAllDisplays().get(Display.DEFAULT_DISPLAY)).isEmpty();
   }
 
   @Test
   @Config(minSdk = R)
-  public void getWindowsforNonDefaultDisplay_returnNullList() {
+  public void getWindowsForNonDefaultDisplay_returnNullList() {
     assertThat(service.getWindowsOnAllDisplays().get(Display.DEFAULT_DISPLAY + 1)).isNull();
   }
 

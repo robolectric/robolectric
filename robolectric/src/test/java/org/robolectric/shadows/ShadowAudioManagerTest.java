@@ -1642,7 +1642,7 @@ public class ShadowAudioManagerTest {
   @Test
   @Config(minSdk = S)
   public void
-      onCommunicationDeviceChangedListener_oneOfSeveralListenerRemoved_onlyRegisterdGetCalls()
+      onCommunicationDeviceChangedListener_oneOfSeveralListenerRemoved_onlyRegisteredGetCalls()
           throws Exception {
     AudioManager.OnCommunicationDeviceChangedListener mockListener1 =
         mock(AudioManager.OnCommunicationDeviceChangedListener.class);

@@ -83,7 +83,7 @@ public class ShadowBiometricManagerTest {
   @Test
   @Config(minSdk = R)
   public void
-      testCanAuthenticateBiometricWeak_serviceConnected_noWeakButHaveStrongEntrolled_canAuthenticate() {
+      testCanAuthenticateBiometricWeak_serviceConnected_noWeakButHaveStrongEnrolled_canAuthenticate() {
     ShadowBiometricManager shadowBiometricManager = Shadow.extract(biometricManager);
     shadowBiometricManager.setCanAuthenticate(true);
     shadowBiometricManager.setAuthenticatorType(BiometricManager.Authenticators.BIOMETRIC_STRONG);

@@ -150,7 +150,7 @@ public class ShadowSurfaceTest {
    */
   @Config(minSdk = Q)
   @Test
-  public void copyFrom_surfaceControl_lockHardwareCavnvas() {
+  public void copyFrom_surfaceControl_lockHardwareCanvas() {
     SurfaceSession session = new SurfaceSession();
     SurfaceControl surfaceControl =
         new SurfaceControl.Builder(session).setBufferSize(100, 100).setName("").build();

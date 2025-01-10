@@ -195,12 +195,12 @@ public class ShadowBluetoothGattTest {
   }
 
   @Test
-  public void isNotClosedbeforeClose() {
+  public void isNotClosedBeforeClose() {
     assertThat(shadowOf(bluetoothGatt).isClosed()).isFalse();
   }
 
   @Test
-  public void isClosedafterClose() {
+  public void isClosedAfterClose() {
     bluetoothGatt.close();
     assertThat(shadowOf(bluetoothGatt).isClosed()).isTrue();
   }

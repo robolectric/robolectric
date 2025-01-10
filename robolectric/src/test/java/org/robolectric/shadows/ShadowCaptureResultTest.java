@@ -28,7 +28,7 @@ public class ShadowCaptureResultTest {
   }
 
   @Test
-  public void testGetUnrecongizedKey() {
+  public void testGetUnrecognizedKey() {
     assertThat(captureResult.get(timestampKey)).isNull();
   }
 
