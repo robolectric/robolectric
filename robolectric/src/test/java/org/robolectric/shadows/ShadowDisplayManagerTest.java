@@ -346,7 +346,7 @@ public class ShadowDisplayManagerTest {
 
   @Test
   @Config(minSdk = P)
-  public void setSaturationLevel_setToNegativevalueViaShadow_shouldThrow() {
+  public void setSaturationLevel_setToNegativeValueViaShadow_shouldThrow() {
     try {
       shadowOf(instance).setSaturationLevel(-0.1f);
       fail("Expected IllegalArgumentException thrown");

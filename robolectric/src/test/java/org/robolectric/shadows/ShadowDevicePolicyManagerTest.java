@@ -954,7 +954,7 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  public void getAccountTypesWithManagementDisabledShouldReturnNothingWhenNoAccountIsDislabed() {
+  public void getAccountTypesWithManagementDisabledShouldReturnNothingWhenNoAccountIsDisabled() {
     // GIVEN no account type has ever been disabled
 
     // WHEN get disabled account types using

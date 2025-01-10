@@ -70,7 +70,7 @@ public final class ShadowBugreportManagerTest {
     shadowBugreportManager.requestBugreport(
         new BugreportParams(BugreportParams.BUGREPORT_MODE_INTERACTIVE), title, description);
 
-    // executeOnFInished() will call resetParams(), which should not crash from referencing any null
+    // executeOnFinished() will call resetParams(), which should not crash from referencing any null
     // values.
     shadowBugreportManager.executeOnFinished();
   }

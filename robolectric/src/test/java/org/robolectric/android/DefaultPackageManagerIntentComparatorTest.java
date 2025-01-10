@@ -29,8 +29,8 @@ public class DefaultPackageManagerIntentComparatorTest {
   public void canSustainConcurrentModification() {
     final IntentComparator intentComparator = new IntentComparator();
 
-    Intent intent1 = new Intent("actionstring0");
-    Intent intent2 = new Intent("actionstring1");
+    Intent intent1 = new Intent("actionString0");
+    Intent intent2 = new Intent("actionString1");
     assertThat(intentComparator.compare(intent1, intent2)).isEqualTo(-1);
   }
 }

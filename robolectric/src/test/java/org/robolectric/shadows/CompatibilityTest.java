@@ -40,7 +40,7 @@ public class CompatibilityTest {
   }
 
   @Test
-  public void edgeToEdgeEncorcement_minSdk() {
+  public void edgeToEdgeEnforcement_minSdk() {
     assertThat(ShadowCompatibility.isEnabled(ENFORCE_EDGE_TO_EDGE, U.SDK_INT)).isFalse();
     assertThat(ShadowCompatibility.isEnabled(ENFORCE_EDGE_TO_EDGE, V.SDK_INT)).isTrue();
   }

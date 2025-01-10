@@ -331,7 +331,7 @@ public class ShadowAppWidgetManagerTest {
   }
 
   @Test
-  public void updateAppWidget_landscapeAndPortrait_doesntReapplyDifferntViews() {
+  public void updateAppWidget_landscapeAndPortrait_doesntReapplyDifferentViews() {
     ComponentName provider = new ComponentName(context, SpanishTestAppWidgetProvider.class);
     appWidgetManager.bindAppWidgetIdIfAllowed(789, provider);
 

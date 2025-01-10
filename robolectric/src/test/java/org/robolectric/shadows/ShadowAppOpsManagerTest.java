@@ -137,7 +137,7 @@ public class ShadowAppOpsManagerTest {
 
   @Test
   @Config(sdk = VERSION_CODES.Q)
-  public void noModeSet_q_noteProxyOpNoThrow_withproxiedUid_shouldReturnModeAllowed() {
+  public void noModeSet_q_noteProxyOpNoThrow_withProxiedUid_shouldReturnModeAllowed() {
     int result = appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1, Binder.getCallingUid());
     assertThat(result).isEqualTo(MODE_ALLOWED);
   }

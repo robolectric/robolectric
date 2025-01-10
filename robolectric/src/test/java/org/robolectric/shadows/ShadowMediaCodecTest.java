@@ -154,8 +154,8 @@ public final class ShadowMediaCodecTest {
 
     codec.releaseOutputBuffer(bufferIndex, /* render= */ false);
     // We should be able to dequeue the corresponding input buffer.
-    int dequeuedInputbufferIndex = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
-    assertThat(dequeuedInputbufferIndex).isEqualTo(bufferIndex);
+    int dequeuedInputBufferIndex = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+    assertThat(dequeuedInputBufferIndex).isEqualTo(bufferIndex);
   }
 
   @Test

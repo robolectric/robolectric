@@ -408,7 +408,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  public void removeAccount_doesNotNotifyIfUnuccessful() {
+  public void removeAccount_doesNotNotifyIfUnsuccessful() {
     Account account = new Account("name", "type");
 
     TestOnAccountsUpdateListener listener = new TestOnAccountsUpdateListener();

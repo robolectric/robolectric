@@ -33,7 +33,7 @@ public class ShadowPausedAsyncTaskTest {
     transcript = new ArrayList<>();
   }
 
-  /** Test uses AsyncTask without overridding executor. */
+  /** Test uses AsyncTask without overriding executor. */
   @Test
   public void testNormalFlow() throws Exception {
     AsyncTask<String, String, String> asyncTask = new RecordingAsyncTask();

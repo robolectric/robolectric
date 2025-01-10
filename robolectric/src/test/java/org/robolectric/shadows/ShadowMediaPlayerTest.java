@@ -1135,7 +1135,7 @@ public class ShadowMediaPlayerTest {
   }
 
   @Test
-  public void testSimulatenousEventsAllRun() {
+  public void testSimultaneousEventsAllRun() {
     // Simultaneous events should all run even if
     // one of them stops playback.
     MediaEvent e1 = (mp, smp) -> smp.doStop();

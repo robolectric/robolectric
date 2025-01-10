@@ -8,7 +8,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowLooper;
 
 /**
- * Performs thread checking when in INSTRUMENTAION_TEST Looper Mode where the test thread is
+ * Performs thread checking when in INSTRUMENTATION_TEST Looper Mode where the test thread is
  * distinct from the main thread. No-op for other modes because everything is executed on the main
  * thread (except for manually created worker threads).
  */

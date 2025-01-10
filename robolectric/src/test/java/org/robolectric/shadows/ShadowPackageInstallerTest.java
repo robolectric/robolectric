@@ -145,7 +145,7 @@ public class ShadowPackageInstallerTest {
   }
 
   @Test(expected = SecurityException.class)
-  public void packageInstallerOpenSession_nonExistantSessionThrowsException() throws Exception {
+  public void packageInstallerOpenSession_nonExistentSessionThrowsException() throws Exception {
     packageInstaller.openSession(-99);
   }
 

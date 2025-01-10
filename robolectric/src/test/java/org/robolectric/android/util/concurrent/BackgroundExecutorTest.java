@@ -26,7 +26,7 @@ public class BackgroundExecutorTest {
   }
 
   @Test
-  public void forRunnable_exceptionsPropogated() {
+  public void forRunnable_exceptionsPropagated() {
     try {
       runInBackground(
           (Runnable)
@@ -53,7 +53,7 @@ public class BackgroundExecutorTest {
   }
 
   @Test
-  public void forCallable_runtimeExceptionsPropogated() {
+  public void forCallable_runtimeExceptionsPropagated() {
     try {
       runInBackground(
           (Callable<?>)

@@ -47,10 +47,10 @@ public class StringResourcesTest {
   @Test
   public void shouldTrimWhitespace() {
     assertThat(StringResources.processStringResources("    ")).isEmpty();
-    assertThat(StringResources.processStringResources("Trailingwhitespace    "))
-        .isEqualTo("Trailingwhitespace");
-    assertThat(StringResources.processStringResources("Leadingwhitespace    "))
-        .isEqualTo("Leadingwhitespace");
+    assertThat(StringResources.processStringResources("TrailingWhitespace    "))
+        .isEqualTo("TrailingWhitespace");
+    assertThat(StringResources.processStringResources("    LeadingWhitespace"))
+        .isEqualTo("LeadingWhitespace");
   }
 
   @Test

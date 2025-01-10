@@ -73,7 +73,7 @@ public class ShadowMapTest {
   }
 
   @Test
-  public void getInvalidatedClasses_disjoin() {
+  public void getInvalidatedClasses_disjoint() {
     ShadowMap current =
         baseShadowMap.newBuilder().addShadowClass(A1, A2, true, false, false).build();
     ShadowMap previous =

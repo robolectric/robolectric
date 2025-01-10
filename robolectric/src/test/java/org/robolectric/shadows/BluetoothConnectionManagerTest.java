@@ -79,28 +79,28 @@ public final class BluetoothConnectionManagerTest {
   }
 
   @Test
-  public void test_isConnected_gattClientandServerConnection() {
+  public void test_isConnected_gattClientAndServerConnection() {
     this.manager.registerGattClientConnection(REMOTE_ADDRESS1);
     this.manager.registerGattServerConnection(REMOTE_ADDRESS1);
     assertThat(this.manager.isConnected(REMOTE_ADDRESS1)).isTrue();
   }
 
   @Test
-  public void test_isNotConnected_unregistedGattClientConnection() {
+  public void test_isNotConnected_unregisteredGattClientConnection() {
     this.manager.registerGattClientConnection(REMOTE_ADDRESS1);
     this.manager.unregisterGattClientConnection(REMOTE_ADDRESS1);
     assertThat(this.manager.isConnected(REMOTE_ADDRESS1)).isFalse();
   }
 
   @Test
-  public void test_isNotConnected_unregistedGattServerConnection() {
+  public void test_isNotConnected_unregisteredGattServerConnection() {
     this.manager.registerGattServerConnection(REMOTE_ADDRESS1);
     this.manager.unregisterGattServerConnection(REMOTE_ADDRESS1);
     assertThat(this.manager.isConnected(REMOTE_ADDRESS1)).isFalse();
   }
 
   @Test
-  public void test_isConnected_gattClientConnection_unregistedGattServerConnection() {
+  public void test_isConnected_gattClientConnection_unregisteredGattServerConnection() {
     this.manager.registerGattClientConnection(REMOTE_ADDRESS1);
     this.manager.registerGattServerConnection(REMOTE_ADDRESS1);
     this.manager.unregisterGattServerConnection(REMOTE_ADDRESS1);
@@ -108,7 +108,7 @@ public final class BluetoothConnectionManagerTest {
   }
 
   @Test
-  public void test_isConnected_gattServerConnection_unregistedGattClientConnection() {
+  public void test_isConnected_gattServerConnection_unregisteredGattClientConnection() {
     this.manager.registerGattServerConnection(REMOTE_ADDRESS1);
     this.manager.registerGattClientConnection(REMOTE_ADDRESS1);
     this.manager.unregisterGattClientConnection(REMOTE_ADDRESS1);

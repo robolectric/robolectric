@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
-/** Test for {@link ShadowServiceState}. */
+/** Test for {@link ServiceState}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = P)
 public class ServiceStateBuilderTest {

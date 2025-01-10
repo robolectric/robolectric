@@ -369,7 +369,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void
-      testSetCompountDrawablesWithIntrinsicBounds_int_shouldCreateDrawablesWithResourceIds() {
+      testSetCompoundDrawablesWithIntrinsicBounds_int_shouldCreateDrawablesWithResourceIds() {
     textView.setCompoundDrawablesWithIntrinsicBounds(
         R.drawable.an_image,
         R.drawable.an_other_image,
@@ -389,7 +389,7 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void testSetCompountDrawablesWithIntrinsicBounds_int_shouldNotCreateDrawablesForZero() {
+  public void testSetCompoundDrawablesWithIntrinsicBounds_int_shouldNotCreateDrawablesForZero() {
     textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 
     assertNull(textView.getCompoundDrawables()[0]);

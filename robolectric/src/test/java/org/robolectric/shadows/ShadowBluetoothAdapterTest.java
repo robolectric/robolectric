@@ -772,7 +772,7 @@ public class ShadowBluetoothAdapterTest {
   @Config(minSdk = TIRAMISU)
   @Test
   @SuppressWarnings("JdkImmutableCollections")
-  public void getResgisteredUuids_returnsRegisteredServers() {
+  public void getRegisteredUuids_returnsRegisteredServers() {
     PendingIntent rfcommServerIntent = createTestPendingIntent(testIntent);
 
     Set<UUID> serverUuids = Set.of(UUID1, UUID2, UUID3, UUID4, UUID5);

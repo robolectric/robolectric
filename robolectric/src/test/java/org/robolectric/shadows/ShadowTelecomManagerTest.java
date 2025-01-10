@@ -99,7 +99,7 @@ public class ShadowTelecomManagerTest {
 
   @Test
   @Config(minSdk = UPSIDE_DOWN_CAKE)
-  public void registerWithTransactionalCapabilites_addsSelfManagedCapability() {
+  public void registerWithTransactionalCapabilities_addsSelfManagedCapability() {
     PhoneAccountHandle handle = createHandle("id");
     PhoneAccount phoneAccount =
         PhoneAccount.builder(handle, "main_account")

@@ -323,7 +323,7 @@ public class ShadowActivityManagerTest {
 
   @Config(minSdk = R)
   @Test
-  public void getHistoricalProcessExitReasons_recordsRetunredInCorrectOrder() {
+  public void getHistoricalProcessExitReasons_recordsReturnedInCorrectOrder() {
     addApplicationExitInfo(/* pid= */ 1);
     addApplicationExitInfo(/* pid= */ 2);
     addApplicationExitInfo(/* pid= */ 3);

@@ -25,64 +25,64 @@ public final class ExpectedLogMessagesRuleTest {
 
   @Test
   public void testExpectErrorLogDoesNotFail() {
-    Log.e("Mytag", "What's up");
-    rule.expectLogMessage(Log.ERROR, "Mytag", "What's up");
+    Log.e("MyTag", "What's up");
+    rule.expectLogMessage(Log.ERROR, "MyTag", "What's up");
   }
 
   @Test
   public void testExpectWarnLogDoesNotFail() {
-    Log.w("Mytag", "What's up");
-    rule.expectLogMessage(Log.WARN, "Mytag", "What's up");
+    Log.w("MyTag", "What's up");
+    rule.expectLogMessage(Log.WARN, "MyTag", "What's up");
   }
 
   @Test
   public void testAndroidExpectedLogMessagesFailsWithMessage() {
     expectedException.expect(AssertionError.class);
-    Log.e("Mytag", "What's up");
+    Log.e("MyTag", "What's up");
   }
 
   @Test
   public void testAndroidExpectedLogMessagesDoesNotFailWithExpected() {
-    rule.expectErrorsForTag("Mytag");
-    Log.e("Mytag", "What's up");
+    rule.expectErrorsForTag("MyTag");
+    Log.e("MyTag", "What's up");
   }
 
   @Test
   public void testNoExpectedMessageFailsTest() {
     expectedException.expect(AssertionError.class);
-    rule.expectLogMessage(Log.ERROR, "Mytag", "What's up");
+    rule.expectLogMessage(Log.ERROR, "MyTag", "What's up");
   }
 
   @Test
   public void testNoExpectedTagFailsTest() {
     expectedException.expect(AssertionError.class);
-    rule.expectErrorsForTag("Mytag");
+    rule.expectErrorsForTag("MyTag");
   }
 
   @Test
   public void testExpectLogMessageWithThrowable() {
     final Throwable throwable = new Throwable("lorem ipsum");
-    Log.e("Mytag", "What's up", throwable);
-    rule.expectLogMessageWithThrowable(Log.ERROR, "Mytag", "What's up", throwable);
+    Log.e("MyTag", "What's up", throwable);
+    rule.expectLogMessageWithThrowable(Log.ERROR, "MyTag", "What's up", throwable);
   }
 
   @Test
   public void testExpectLogMessageWithThrowableMatcher() {
     final IllegalArgumentException exception = new IllegalArgumentException("lorem ipsum");
-    Log.e("Mytag", "What's up", exception);
+    Log.e("MyTag", "What's up", exception);
     rule.expectLogMessageWithThrowableMatcher(
-        Log.ERROR, "Mytag", "What's up", instanceOf(IllegalArgumentException.class));
+        Log.ERROR, "MyTag", "What's up", instanceOf(IllegalArgumentException.class));
   }
 
   @Test
   public void testMultipleExpectLogMessagee() {
     final Throwable throwable = new Throwable("lorem ipsum");
-    Log.e("Mytag", "What's up", throwable);
-    Log.e("Mytag", "Message 2");
-    Log.e("Mytag", "Message 3", throwable);
-    rule.expectLogMessageWithThrowable(Log.ERROR, "Mytag", "What's up", throwable);
-    rule.expectLogMessage(Log.ERROR, "Mytag", "Message 2");
-    rule.expectLogMessage(Log.ERROR, "Mytag", "Message 3");
+    Log.e("MyTag", "What's up", throwable);
+    Log.e("MyTag", "Message 2");
+    Log.e("MyTag", "Message 3", throwable);
+    rule.expectLogMessageWithThrowable(Log.ERROR, "MyTag", "What's up", throwable);
+    rule.expectLogMessage(Log.ERROR, "MyTag", "Message 2");
+    rule.expectLogMessage(Log.ERROR, "MyTag", "Message 3");
   }
 
   @Test
@@ -108,10 +108,10 @@ public final class ExpectedLogMessagesRuleTest {
 
   @Test
   public void testExpectedLogMessageFailureOutput() {
-    Log.e("Mytag", "message1");
-    Log.e("Mytag", "message2"); // Not expected
-    rule.expectLogMessage(Log.ERROR, "Mytag", "message1");
-    rule.expectLogMessage(Log.ERROR, "Mytag", "message3"); // Not logged
+    Log.e("MyTag", "message1");
+    Log.e("MyTag", "message2"); // Not expected
+    rule.expectLogMessage(Log.ERROR, "MyTag", "message1");
+    rule.expectLogMessage(Log.ERROR, "MyTag", "message3"); // Not logged
 
     expectedException.expect(
         new TypeSafeMatcher<AssertionError>() {
@@ -123,7 +123,7 @@ public final class ExpectedLogMessagesRuleTest {
                         "[\\s\\S]*Expected, and observed:\\s+\\[LogItem\\{"
                             + "\\s+timeString='.+'"
                             + "\\s+type=6"
-                            + "\\s+tag='Mytag'"
+                            + "\\s+tag='MyTag'"
                             + "\\s+msg='message1'"
                             + "\\s+throwable=null"
                             + "\\s+}]"
@@ -134,7 +134,7 @@ public final class ExpectedLogMessagesRuleTest {
                         "[\\s\\S]*Observed, but not expected:\\s+\\[LogItem\\{"
                             + "\\s+timeString='.+'"
                             + "\\s+type=6"
-                            + "\\s+tag='Mytag'"
+                            + "\\s+tag='MyTag'"
                             + "\\s+msg='message2'"
                             + "\\s+throwable=null"
                             + "\\s+}][\\s\\S]*")
@@ -142,7 +142,7 @@ public final class ExpectedLogMessagesRuleTest {
                     .getMessage()
                     .matches(
                         "[\\s\\S]*Expected, but not observed: \\[ExpectedLogItem\\{timeString='.+',"
-                            + " type=6, tag='Mytag', msg='message3'}]"
+                            + " type=6, tag='MyTag', msg='message3'}]"
                             + "[\\s\\S]*");
           }
 
@@ -155,12 +155,12 @@ public final class ExpectedLogMessagesRuleTest {
 
   @Test
   public void testExpectedLogMessageWithMatcherFailureOutput() {
-    Log.e("Mytag", "message1");
-    Log.e("Mytag", "message2", new IllegalArgumentException()); // Not expected
-    rule.expectLogMessage(Log.ERROR, "Mytag", "message1");
+    Log.e("MyTag", "message1");
+    Log.e("MyTag", "message2", new IllegalArgumentException()); // Not expected
+    rule.expectLogMessage(Log.ERROR, "MyTag", "message1");
     rule.expectLogMessageWithThrowableMatcher(
         Log.ERROR,
-        "Mytag",
+        "MyTag",
         "message2",
         instanceOf(UnsupportedOperationException.class)); // Not logged
 
@@ -168,7 +168,7 @@ public final class ExpectedLogMessagesRuleTest {
         "[\\s\\S]*Expected, and observed:\\s+\\[LogItem\\{"
             + "\\s+timeString='.+'"
             + "\\s+type=6"
-            + "\\s+tag='Mytag'"
+            + "\\s+tag='MyTag'"
             + "\\s+msg='message1'"
             + "\\s+throwable=null"
             + "\\s+}]"
@@ -177,7 +177,7 @@ public final class ExpectedLogMessagesRuleTest {
         "[\\s\\S]*Observed, but not expected:\\s+\\[LogItem\\{"
             + "\\s+timeString='.+'"
             + "\\s+type=6"
-            + "\\s+tag='Mytag'"
+            + "\\s+tag='MyTag'"
             + "\\s+msg='message2'"
             + "\\s+throwable=java.lang.IllegalArgumentException"
             + "(\\s+at .*\\)\\R)+"
@@ -185,7 +185,7 @@ public final class ExpectedLogMessagesRuleTest {
     String expectedNotObservedPattern =
         "[\\s\\S]*Expected, but not observed:"
             + " \\[ExpectedLogItem\\{timeString='.+',"
-            + " type=6, tag='Mytag', msg='message2', throwable="
+            + " type=6, tag='MyTag', msg='message2', throwable="
             + ".*UnsupportedOperationException.*}][\\s\\S]*";
     expectedException.expect(
         new TypeSafeMatcher<AssertionError>() {
@@ -210,24 +210,24 @@ public final class ExpectedLogMessagesRuleTest {
   }
 
   @Test
-  public void expectLogMessage_duplicateExpectatedValues_areDeduplicated() {
-    Log.e("Mytag", "message1");
-    rule.expectLogMessage(Log.ERROR, "Mytag", "message1");
-    rule.expectLogMessage(Log.ERROR, "Mytag", "message1");
+  public void expectLogMessage_duplicateExpectedValues_areDeduplicated() {
+    Log.e("MyTag", "message1");
+    rule.expectLogMessage(Log.ERROR, "MyTag", "message1");
+    rule.expectLogMessage(Log.ERROR, "MyTag", "message1");
   }
 
   @Test
-  public void expectLogMessageWithPattern_duplicateExpectatedValues_areDeduplicated() {
-    Log.e("Mytag", "message1");
-    rule.expectLogMessagePattern(Log.ERROR, "Mytag", Pattern.compile("message1"));
-    rule.expectLogMessagePattern(Log.ERROR, "Mytag", Pattern.compile("message1"));
+  public void expectLogMessageWithPattern_duplicateExpectedValues_areDeduplicated() {
+    Log.e("MyTag", "message1");
+    rule.expectLogMessagePattern(Log.ERROR, "MyTag", Pattern.compile("message1"));
+    rule.expectLogMessagePattern(Log.ERROR, "MyTag", Pattern.compile("message1"));
   }
 
   @Test
   public void expectLogMessage_duplicateMatchers_areNotDeduplicated() {
-    Log.e("Mytag", "message1");
-    rule.expectLogMessage(Log.ERROR, "Mytag", Matchers.equalTo("message1"));
-    rule.expectLogMessage(Log.ERROR, "Mytag", Matchers.equalTo("message1"));
+    Log.e("MyTag", "message1");
+    rule.expectLogMessage(Log.ERROR, "MyTag", Matchers.equalTo("message1"));
+    rule.expectLogMessage(Log.ERROR, "MyTag", Matchers.equalTo("message1"));
     expectedException.expect(Matchers.isA(AssertionError.class));
   }
 }
