@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -152,6 +153,9 @@ public class ShadowActivityThread {
               throws Exception {
             if (method.getName().equals("getSplitPermissions")) {
               return Collections.emptyList();
+            }
+            if (method.getName().equals("getPermissionRequestState")) {
+              return PERMISSION_GRANTED;
             }
             return method.getDefaultValue();
           }
