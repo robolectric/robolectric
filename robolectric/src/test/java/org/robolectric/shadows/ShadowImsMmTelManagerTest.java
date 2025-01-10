@@ -20,6 +20,7 @@ import android.telephony.ims.stub.ImsRegistrationImplBase;
 import android.util.ArraySet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -296,7 +297,7 @@ public class ShadowImsMmTelManagerTest {
     CapabilityCallback capabilityCallback =
         new CapabilityCallback() {
           @Override
-          public void onCapabilitiesStatusChanged(MmTelCapabilities capabilities) {
+          public void onCapabilitiesStatusChanged(@Nonnull MmTelCapabilities capabilities) {
             super.onCapabilitiesStatusChanged(capabilities);
             mmTelCapabilities[0] = capabilities;
           }
@@ -328,7 +329,7 @@ public class ShadowImsMmTelManagerTest {
     CapabilityCallback capabilityCallback =
         new CapabilityCallback() {
           @Override
-          public void onCapabilitiesStatusChanged(MmTelCapabilities capabilities) {
+          public void onCapabilitiesStatusChanged(@Nonnull MmTelCapabilities capabilities) {
             super.onCapabilitiesStatusChanged(capabilities);
             mmTelCapabilities[0] = capabilities;
           }

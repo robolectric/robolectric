@@ -15,6 +15,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -128,7 +129,7 @@ public class ShadowBinderTest {
   static class TestThrowingBinder extends Binder {
 
     @Override
-    protected boolean onTransact(int code, Parcel data, Parcel reply, int flags) {
+    protected boolean onTransact(int code, @Nonnull Parcel data, Parcel reply, int flags) {
       throw new SecurityException("Halt! Who goes there?");
     }
   }

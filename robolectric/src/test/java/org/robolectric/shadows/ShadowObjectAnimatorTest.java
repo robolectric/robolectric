@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -20,22 +21,22 @@ public class ShadowObjectAnimatorTest {
   private final Animator.AnimatorListener listener =
       new Animator.AnimatorListener() {
         @Override
-        public void onAnimationStart(Animator animation) {
+        public void onAnimationStart(@Nonnull Animator animation) {
           listenerEvents.add("started");
         }
 
         @Override
-        public void onAnimationEnd(Animator animation) {
+        public void onAnimationEnd(@Nonnull Animator animation) {
           listenerEvents.add("ended");
         }
 
         @Override
-        public void onAnimationCancel(Animator animation) {
+        public void onAnimationCancel(@Nonnull Animator animation) {
           listenerEvents.add("cancelled");
         }
 
         @Override
-        public void onAnimationRepeat(Animator animation) {
+        public void onAnimationRepeat(@Nonnull Animator animation) {
           listenerEvents.add("repeated");
         }
       };

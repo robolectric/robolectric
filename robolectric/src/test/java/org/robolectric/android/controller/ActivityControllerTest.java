@@ -28,6 +28,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -551,14 +552,14 @@ public class ActivityControllerTest {
 
   public static class MyActivity extends Activity {
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+    protected void onRestoreInstanceState(@Nonnull Bundle savedInstanceState) {
       super.onRestoreInstanceState(savedInstanceState);
       transcribeWhilePaused("onRestoreInstanceState");
       transcript.add("finishedOnRestoreInstanceState");
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@Nonnull Bundle outState) {
       super.onSaveInstanceState(outState);
       transcribeWhilePaused("onSaveInstanceState");
       transcript.add("finishedOnSaveInstanceState");
@@ -651,7 +652,7 @@ public class ActivityControllerTest {
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@Nonnull Configuration newConfig) {
       super.onConfigurationChanged(newConfig);
       transcribeWhilePaused("onConfigurationChanged");
       transcript.add("finishedOnConfigurationChanged");
@@ -687,13 +688,13 @@ public class ActivityControllerTest {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@Nonnull Bundle outState) {
       super.onSaveInstanceState(outState);
       outState.putSerializable("test", new Exception());
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@Nonnull Configuration newConfig) {
       this.newConfig = new Configuration(newConfig);
       super.onConfigurationChanged(newConfig);
     }

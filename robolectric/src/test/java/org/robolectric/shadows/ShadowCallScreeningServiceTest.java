@@ -7,6 +7,7 @@ import android.telecom.Call;
 import android.telecom.CallScreeningService;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Optional;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,7 +61,7 @@ public class ShadowCallScreeningServiceTest {
 
   private static class TestCallScreeningService extends CallScreeningService {
     @Override
-    public void onScreenCall(Call.Details details) {
+    public void onScreenCall(@Nonnull Call.Details details) {
       CallResponse callResponse =
           new CallResponse.Builder()
               .setDisallowCall(true)

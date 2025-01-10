@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 
 /** Test class for a ContentProvider with multiple authorities */
 public class TestContentProvider3And4 extends ContentProvider {
@@ -26,28 +27,33 @@ public class TestContentProvider3And4 extends ContentProvider {
 
   @Override
   public Cursor query(
-      Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+      @Nonnull Uri uri,
+      String[] projection,
+      String selection,
+      String[] selectionArgs,
+      String sortOrder) {
     transcript.add("query for " + uri);
     return null;
   }
 
   @Override
-  public String getType(Uri uri) {
+  public String getType(@Nonnull Uri uri) {
     return null;
   }
 
   @Override
-  public Uri insert(Uri uri, ContentValues values) {
+  public Uri insert(@Nonnull Uri uri, ContentValues values) {
     return null;
   }
 
   @Override
-  public int delete(Uri uri, String selection, String[] selectionArgs) {
+  public int delete(@Nonnull Uri uri, String selection, String[] selectionArgs) {
     return 0;
   }
 
   @Override
-  public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+  public int update(
+      @Nonnull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
     return 0;
   }
 }

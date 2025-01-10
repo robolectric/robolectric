@@ -4,6 +4,7 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
+import javax.annotation.Nonnull;
 
 public class CustomConstructorContentProvider extends ContentProvider {
   private final int intValue;
@@ -22,27 +23,27 @@ public class CustomConstructorContentProvider extends ContentProvider {
   }
 
   @Override
-  public Cursor query(Uri uri, String[] strings, String s, String[] strings1, String s1) {
+  public Cursor query(@Nonnull Uri uri, String[] strings, String s, String[] strings1, String s1) {
     return null;
   }
 
   @Override
-  public String getType(Uri uri) {
+  public String getType(@Nonnull Uri uri) {
     return null;
   }
 
   @Override
-  public Uri insert(Uri uri, ContentValues contentValues) {
+  public Uri insert(@Nonnull Uri uri, ContentValues contentValues) {
     return null;
   }
 
   @Override
-  public int delete(Uri uri, String s, String[] strings) {
+  public int delete(@Nonnull Uri uri, String s, String[] strings) {
     return 0;
   }
 
   @Override
-  public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
+  public int update(@Nonnull Uri uri, ContentValues contentValues, String s, String[] strings) {
     return 0;
   }
 }

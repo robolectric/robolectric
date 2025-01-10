@@ -17,6 +17,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -135,7 +136,7 @@ public class ShadowDrawableTest {
     public boolean boundsChanged;
 
     @Override
-    public void draw(Canvas canvas) {}
+    public void draw(@Nonnull Canvas canvas) {}
 
     @Override
     public void setAlpha(int alpha) {}
@@ -149,7 +150,7 @@ public class ShadowDrawableTest {
     }
 
     @Override
-    protected void onBoundsChange(Rect bounds) {
+    protected void onBoundsChange(@Nonnull Rect bounds) {
       boundsChanged = true;
       super.onBoundsChange(bounds);
     }

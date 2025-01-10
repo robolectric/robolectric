@@ -18,6 +18,7 @@ import android.speech.SpeechRecognizer;
 import android.util.Log;
 import androidx.test.core.app.ApplicationProvider;
 import java.util.ArrayList;
+import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -307,7 +308,7 @@ public class ShadowSpeechRecognizerTest {
     RecognitionSupport recognitionSupportReceived;
 
     @Override
-    public void onSupportResult(RecognitionSupport recognitionSupport) {
+    public void onSupportResult(@Nonnull RecognitionSupport recognitionSupport) {
       recognitionSupportReceived = recognitionSupport;
     }
 

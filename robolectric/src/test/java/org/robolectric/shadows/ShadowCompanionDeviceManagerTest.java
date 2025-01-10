@@ -18,6 +18,7 @@ import android.net.MacAddress;
 import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.Executors;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,7 +104,7 @@ public class ShadowCompanionDeviceManagerTest {
     CompanionDeviceManager.Callback callback =
         new CompanionDeviceManager.Callback() {
           @Override
-          public void onDeviceFound(IntentSender chooserLauncher) {}
+          public void onDeviceFound(@Nonnull IntentSender chooserLauncher) {}
 
           @Override
           public void onFailure(CharSequence error) {}
@@ -367,7 +368,7 @@ public class ShadowCompanionDeviceManagerTest {
   private CompanionDeviceManager.Callback createCallback() {
     return new CompanionDeviceManager.Callback() {
       @Override
-      public void onDeviceFound(IntentSender chooserLauncher) {}
+      public void onDeviceFound(@Nonnull IntentSender chooserLauncher) {}
 
       @Override
       public void onFailure(CharSequence error) {}

@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1762,7 +1763,7 @@ public class ShadowLocationManagerTest {
     final ArrayList<Integer> flushes = new ArrayList<>();
 
     @Override
-    public void onLocationChanged(Location location) {
+    public void onLocationChanged(@Nonnull Location location) {
       locations.add(location);
     }
 
@@ -1770,12 +1771,12 @@ public class ShadowLocationManagerTest {
     public void onStatusChanged(String s, int i, Bundle bundle) {}
 
     @Override
-    public void onProviderEnabled(String s) {
+    public void onProviderEnabled(@Nonnull String s) {
       providerEnableds.add(true);
     }
 
     @Override
-    public void onProviderDisabled(String s) {
+    public void onProviderDisabled(@Nonnull String s) {
       providerEnableds.add(false);
     }
 
@@ -1794,7 +1795,7 @@ public class ShadowLocationManagerTest {
     }
 
     @Override
-    public void onLocationChanged(Location location) {
+    public void onLocationChanged(@Nonnull Location location) {
       locationManager.removeUpdates(this);
       super.onLocationChanged(location);
     }

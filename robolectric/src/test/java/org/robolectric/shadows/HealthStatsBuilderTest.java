@@ -9,6 +9,7 @@ import android.util.ArrayMap;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.primitives.Ints;
 import java.util.HashSet;
+import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -162,6 +163,7 @@ public class HealthStatsBuilderTest {
       super(c);
     }
 
+    @Nonnull
     @Override
     public Object[] toArray() {
       Object[] forward = super.toArray();

@@ -49,6 +49,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1387,7 +1388,7 @@ public class ShadowWifiManagerTest {
     private final BlockingQueue<IncomingFailure> incomingFailures = new LinkedBlockingQueue<>();
 
     @Override
-    public void onConnectionFailed(WifiNetworkSpecifier wifiNetworkSpecifier, int i) {
+    public void onConnectionFailed(@Nonnull WifiNetworkSpecifier wifiNetworkSpecifier, int i) {
       incomingFailures.add(new IncomingFailure(wifiNetworkSpecifier, i));
     }
   }

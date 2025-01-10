@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.core.view.MotionEventBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,17 +71,17 @@ public class ShadowGestureDetectorTest {
     GestureDetector.OnDoubleTapListener onDoubleTapListener =
         new GestureDetector.OnDoubleTapListener() {
           @Override
-          public boolean onSingleTapConfirmed(MotionEvent e) {
+          public boolean onSingleTapConfirmed(@Nonnull MotionEvent e) {
             return false;
           }
 
           @Override
-          public boolean onDoubleTap(MotionEvent e) {
+          public boolean onDoubleTap(@Nonnull MotionEvent e) {
             return false;
           }
 
           @Override
-          public boolean onDoubleTapEvent(MotionEvent e) {
+          public boolean onDoubleTapEvent(@Nonnull MotionEvent e) {
             return false;
           }
         };
@@ -102,28 +103,30 @@ public class ShadowGestureDetectorTest {
 
   private static class TestOnGestureListener implements GestureDetector.OnGestureListener {
     @Override
-    public boolean onDown(MotionEvent e) {
+    public boolean onDown(@Nonnull MotionEvent e) {
       return false;
     }
 
     @Override
-    public void onShowPress(MotionEvent e) {}
+    public void onShowPress(@Nonnull MotionEvent e) {}
 
     @Override
-    public boolean onSingleTapUp(MotionEvent e) {
+    public boolean onSingleTapUp(@Nonnull MotionEvent e) {
       return false;
     }
 
     @Override
-    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+    public boolean onScroll(
+        MotionEvent e1, @Nonnull MotionEvent e2, float distanceX, float distanceY) {
       return false;
     }
 
     @Override
-    public void onLongPress(MotionEvent e) {}
+    public void onLongPress(@Nonnull MotionEvent e) {}
 
     @Override
-    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+    public boolean onFling(
+        MotionEvent e1, @Nonnull MotionEvent e2, float velocityX, float velocityY) {
       return false;
     }
   }

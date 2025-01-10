@@ -28,6 +28,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
@@ -540,7 +541,7 @@ public class ShadowViewGroupTest {
     }
 
     @Override
-    public void draw(Canvas canvas) {
+    public void draw(@Nonnull Canvas canvas) {
       super.draw(canvas);
       wasDrawn = true;
     }

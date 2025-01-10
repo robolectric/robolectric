@@ -12,6 +12,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,7 +66,7 @@ public class ShadowGeocoderTTest {
     Geocoder.GeocodeListener geocodeListener =
         new Geocoder.GeocodeListener() {
           @Override
-          public void onGeocode(List<Address> list) {
+          public void onGeocode(@Nonnull List<Address> list) {
             decodedAddresses = list;
           }
 
@@ -125,7 +126,7 @@ public class ShadowGeocoderTTest {
     Geocoder.GeocodeListener geocodeListener =
         new Geocoder.GeocodeListener() {
           @Override
-          public void onGeocode(List<Address> list) {
+          public void onGeocode(@Nonnull List<Address> list) {
             decodedAddresses = list;
           }
 

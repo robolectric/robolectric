@@ -59,6 +59,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -120,7 +121,7 @@ public class ShadowContentResolverTest {
 
           @Override
           public Cursor query(
-              Uri uri,
+              @Nonnull Uri uri,
               String[] projection,
               String selection,
               String[] selectionArgs,
@@ -129,23 +130,23 @@ public class ShadowContentResolverTest {
           }
 
           @Override
-          public Uri insert(Uri uri, ContentValues values) {
+          public Uri insert(@Nonnull Uri uri, ContentValues values) {
             return null;
           }
 
           @Override
-          public int delete(Uri uri, String selection, String[] selectionArgs) {
+          public int delete(@Nonnull Uri uri, String selection, String[] selectionArgs) {
             return -1;
           }
 
           @Override
           public int update(
-              Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+              @Nonnull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
             return -1;
           }
 
           @Override
-          public String getType(Uri uri) {
+          public String getType(@Nonnull Uri uri) {
             return "mytype";
           }
         });
@@ -731,7 +732,7 @@ public class ShadowContentResolverTest {
 
           @Override
           public Cursor query(
-              Uri uri,
+              @Nonnull Uri uri,
               String[] projection,
               String selection,
               String[] selectionArgs,
@@ -743,25 +744,25 @@ public class ShadowContentResolverTest {
           }
 
           @Override
-          public String getType(Uri uri) {
+          public String getType(@Nonnull Uri uri) {
             return null;
           }
 
           @Override
-          public Uri insert(Uri uri, ContentValues values) {
+          public Uri insert(@Nonnull Uri uri, ContentValues values) {
             operations.add("insert");
             return ContentUris.withAppendedId(uri, 1);
           }
 
           @Override
-          public int delete(Uri uri, String selection, String[] selectionArgs) {
+          public int delete(@Nonnull Uri uri, String selection, String[] selectionArgs) {
             operations.add("delete");
             return 0;
           }
 
           @Override
           public int update(
-              Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+              @Nonnull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
             operations.add("update");
             return 0;
           }
@@ -1015,7 +1016,7 @@ public class ShadowContentResolverTest {
 
           @Override
           public Cursor query(
-              Uri uri,
+              @Nonnull Uri uri,
               String[] projection,
               String selection,
               String[] selectionArgs,
@@ -1024,23 +1025,23 @@ public class ShadowContentResolverTest {
           }
 
           @Override
-          public Uri insert(Uri uri, ContentValues values) {
+          public Uri insert(@Nonnull Uri uri, ContentValues values) {
             return null;
           }
 
           @Override
-          public int delete(Uri uri, String selection, String[] selectionArgs) {
+          public int delete(@Nonnull Uri uri, String selection, String[] selectionArgs) {
             return -1;
           }
 
           @Override
           public int update(
-              Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+              @Nonnull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
             return -1;
           }
 
           @Override
-          public String getType(Uri uri) {
+          public String getType(@Nonnull Uri uri) {
             return null;
           }
         });
@@ -1293,32 +1294,34 @@ public class ShadowContentResolverTest {
     }
 
     @Override
-    public Cursor query(Uri uri, String[] strings, String s, String[] strings1, String s1) {
+    public Cursor query(
+        @Nonnull Uri uri, String[] strings, String s, String[] strings1, String s1) {
       return null;
     }
 
     @Override
-    public String getType(Uri uri) {
+    public String getType(@Nonnull Uri uri) {
       return null;
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues contentValues) {
+    public Uri insert(@Nonnull Uri uri, ContentValues contentValues) {
       return null;
     }
 
     @Override
-    public int delete(Uri uri, String s, String[] strings) {
+    public int delete(@Nonnull Uri uri, String s, String[] strings) {
       return 0;
     }
 
     @Override
-    public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
+    public int update(@Nonnull Uri uri, ContentValues contentValues, String s, String[] strings) {
       return 0;
     }
 
     @Override
-    public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
+    public ParcelFileDescriptor openFile(@Nonnull Uri uri, @Nonnull String mode)
+        throws FileNotFoundException {
       final File file =
           new File(ApplicationProvider.getApplicationContext().getFilesDir(), "test_file");
       try {

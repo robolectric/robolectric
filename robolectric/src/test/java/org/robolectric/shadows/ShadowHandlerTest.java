@@ -14,6 +14,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +34,7 @@ public class ShadowHandlerTest {
   private final Handler.Callback callback =
       new Handler.Callback() {
         @Override
-        public boolean handleMessage(Message msg) {
+        public boolean handleMessage(@Nonnull Message msg) {
           hasHandlerCallbackHandledMessage = true;
           return false;
         }
@@ -348,7 +349,7 @@ public class ShadowHandlerTest {
     Handler handler =
         new Handler() {
           @Override
-          public void handleMessage(Message msg) {
+          public void handleMessage(@Nonnull Message msg) {
             wasRun[0] = true;
           }
         };
@@ -365,7 +366,7 @@ public class ShadowHandlerTest {
     Handler handler =
         new Handler() {
           @Override
-          public void handleMessage(Message msg) {
+          public void handleMessage(@Nonnull Message msg) {
             runAt.add(shadowOf(Looper.myLooper()).getScheduler().getCurrentTime());
           }
         };
@@ -390,7 +391,7 @@ public class ShadowHandlerTest {
     Handler handler =
         new Handler() {
           @Override
-          public void handleMessage(Message msg) {
+          public void handleMessage(@Nonnull Message msg) {
             wasRun[0] = true;
           }
         };
@@ -507,7 +508,7 @@ public class ShadowHandlerTest {
     Handler h =
         new Handler(Looper.myLooper()) {
           @Override
-          public void handleMessage(Message msg) {
+          public void handleMessage(@Nonnull Message msg) {
             assertFalse(hasMessages(0));
           }
         };
