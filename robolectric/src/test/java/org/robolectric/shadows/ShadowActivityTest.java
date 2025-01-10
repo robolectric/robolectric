@@ -73,6 +73,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -1046,7 +1047,8 @@ public class ShadowActivityTest {
 
     @Override
     public void onGetDirectActions(
-        CancellationSignal cancellationSignal, Consumer<List<DirectAction>> callback) {
+        @Nonnull CancellationSignal cancellationSignal,
+        @Nonnull Consumer<List<DirectAction>> callback) {
       if (returnMalformedDirectAction) {
         callback.accept(Collections.singletonList(getMalformedDirectAction()));
       } else {
@@ -1861,37 +1863,37 @@ public class ShadowActivityTest {
     }
 
     @Override
-    public void onActivityCreated(Activity activity, Bundle bundle) {
+    public void onActivityCreated(@Nonnull Activity activity, Bundle bundle) {
       transcript.add("onActivityCreated");
     }
 
     @Override
-    public void onActivityStarted(Activity activity) {
+    public void onActivityStarted(@Nonnull Activity activity) {
       transcript.add("onActivityStarted");
     }
 
     @Override
-    public void onActivityResumed(Activity activity) {
+    public void onActivityResumed(@Nonnull Activity activity) {
       transcript.add("onActivityResumed");
     }
 
     @Override
-    public void onActivityPaused(Activity activity) {
+    public void onActivityPaused(@Nonnull Activity activity) {
       transcript.add("onActivityPaused");
     }
 
     @Override
-    public void onActivityStopped(Activity activity) {
+    public void onActivityStopped(@Nonnull Activity activity) {
       transcript.add("onActivityStopped");
     }
 
     @Override
-    public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
+    public void onActivitySaveInstanceState(@Nonnull Activity activity, @Nonnull Bundle bundle) {
       transcript.add("onActivitySaveInstanceState");
     }
 
     @Override
-    public void onActivityDestroyed(Activity activity) {
+    public void onActivityDestroyed(@Nonnull Activity activity) {
       transcript.add("onActivityDestroyed");
     }
   }

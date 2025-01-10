@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,17 +57,17 @@ public class ShadowCaptureRequestBuilderTest {
 
   private class CameraStateCallback extends CameraDevice.StateCallback {
     @Override
-    public void onOpened(CameraDevice camera) {
+    public void onOpened(@Nonnull CameraDevice camera) {
       cameraDevice = camera;
     }
 
     @Override
-    public void onDisconnected(CameraDevice camera) {
+    public void onDisconnected(@Nonnull CameraDevice camera) {
       fail();
     }
 
     @Override
-    public void onError(CameraDevice camera, int error) {
+    public void onError(@Nonnull CameraDevice camera, int error) {
       fail();
     }
   }

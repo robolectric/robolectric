@@ -35,6 +35,7 @@ import android.telephony.TelephonyManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Arrays;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -326,10 +327,10 @@ public class ShadowConnectivityManagerTest {
   private static ConnectivityManager.NetworkCallback createSimpleCallback() {
     return new ConnectivityManager.NetworkCallback() {
       @Override
-      public void onAvailable(Network network) {}
+      public void onAvailable(@Nonnull Network network) {}
 
       @Override
-      public void onLost(Network network) {}
+      public void onLost(@Nonnull Network network) {}
     };
   }
 

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -515,6 +516,7 @@ public class ShadowIntentTest {
       return s.length();
     }
 
+    @Nonnull
     @Override
     public CharSequence subSequence(int start, int end) {
       return s.subSequence(start, end);

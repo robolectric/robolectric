@@ -13,6 +13,7 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -100,7 +101,7 @@ public class ShadowTabSpecTest {
   private static class TestIcon extends Drawable {
 
     @Override
-    public void draw(Canvas canvas) {}
+    public void draw(@Nonnull Canvas canvas) {}
 
     @Override
     public void setAlpha(int alpha) {}

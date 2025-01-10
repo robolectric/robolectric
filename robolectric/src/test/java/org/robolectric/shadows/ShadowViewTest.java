@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -964,19 +965,19 @@ public class ShadowViewTest {
     View.OnAttachStateChangeListener attachListener1 =
         new View.OnAttachStateChangeListener() {
           @Override
-          public void onViewAttachedToWindow(View v) {}
+          public void onViewAttachedToWindow(@Nonnull View v) {}
 
           @Override
-          public void onViewDetachedFromWindow(View v) {}
+          public void onViewDetachedFromWindow(@Nonnull View v) {}
         };
 
     View.OnAttachStateChangeListener attachListener2 =
         new View.OnAttachStateChangeListener() {
           @Override
-          public void onViewAttachedToWindow(View v) {}
+          public void onViewAttachedToWindow(@Nonnull View v) {}
 
           @Override
-          public void onViewDetachedFromWindow(View v) {}
+          public void onViewDetachedFromWindow(@Nonnull View v) {}
         };
 
     testView.addOnAttachStateChangeListener(attachListener1);

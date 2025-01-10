@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import android.app.Application;
 import androidx.test.internal.platform.content.PermissionGranter;
 import androidx.test.platform.app.InstrumentationRegistry;
+import javax.annotation.Nonnull;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
 
@@ -15,7 +16,7 @@ public class LocalPermissionGranter implements PermissionGranter {
   private String[] permissions;
 
   @Override
-  public void addPermissions(String... permissions) {
+  public void addPermissions(@Nonnull String... permissions) {
     this.permissions = permissions;
   }
 

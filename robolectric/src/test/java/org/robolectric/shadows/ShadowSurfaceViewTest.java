@@ -10,6 +10,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.Window;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -88,13 +89,13 @@ public class ShadowSurfaceViewTest {
 
   private static class TestCallback implements SurfaceHolder.Callback {
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {}
+    public void surfaceCreated(@Nonnull SurfaceHolder holder) {}
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {}
+    public void surfaceDestroyed(@Nonnull SurfaceHolder holder) {}
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {}
+    public void surfaceChanged(@Nonnull SurfaceHolder holder, int format, int w, int h) {}
   }
 
   private static class TestActivity extends Activity {

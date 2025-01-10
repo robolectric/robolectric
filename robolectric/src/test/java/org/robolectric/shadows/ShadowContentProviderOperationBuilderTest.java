@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,7 +40,7 @@ public class ShadowContentProviderOperationBuilderTest {
 
           @Override
           public Cursor query(
-              Uri uri,
+              @Nonnull Uri uri,
               String[] projection,
               String selection,
               String[] selectionArgs,
@@ -48,23 +49,23 @@ public class ShadowContentProviderOperationBuilderTest {
           }
 
           @Override
-          public String getType(Uri uri) {
+          public String getType(@Nonnull Uri uri) {
             return null;
           }
 
           @Override
-          public Uri insert(Uri uri, ContentValues values) {
+          public Uri insert(@Nonnull Uri uri, ContentValues values) {
             return null;
           }
 
           @Override
-          public int delete(Uri uri, String selection, String[] selectionArgs) {
+          public int delete(@Nonnull Uri uri, String selection, String[] selectionArgs) {
             return 0;
           }
 
           @Override
           public int update(
-              Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+              @Nonnull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
             request.uri = uri;
             request.values = values;
             request.selection = selection;

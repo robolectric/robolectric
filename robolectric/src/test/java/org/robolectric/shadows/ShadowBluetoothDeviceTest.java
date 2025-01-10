@@ -282,6 +282,7 @@ public class ShadowBluetoothDeviceTest {
         implements ShadowBluetoothDevice.BluetoothGattConnectionInterceptor {
       @Nullable private BluetoothGatt interceptedGatt = null;
 
+      @Nullable
       public BluetoothGatt getInterceptedGatt() {
         return interceptedGatt;
       }

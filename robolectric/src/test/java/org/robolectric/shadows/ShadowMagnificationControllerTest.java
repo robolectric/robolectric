@@ -10,6 +10,7 @@ import android.graphics.Region;
 import android.os.Looper;
 import android.view.accessibility.AccessibilityEvent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -169,8 +170,8 @@ public final class ShadowMagnificationControllerTest {
 
     @Override
     public void onMagnificationChanged(
-        MagnificationController controller,
-        Region region,
+        @Nonnull MagnificationController controller,
+        @Nonnull Region region,
         float scale,
         float centerX,
         float centerY) {

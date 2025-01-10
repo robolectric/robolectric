@@ -13,6 +13,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,6 +38,7 @@ public class ShadowAutoCompleteTextViewTest {
       super(context, android.R.layout.simple_list_item_1);
     }
 
+    @Nonnull
     @Override
     public Filter getFilter() {
       return new AutoCompleteFilter();

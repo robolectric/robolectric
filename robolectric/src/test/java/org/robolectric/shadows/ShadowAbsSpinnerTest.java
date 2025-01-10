@@ -16,6 +16,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -127,8 +128,9 @@ public class ShadowAbsSpinnerTest {
       super(context, android.R.layout.simple_spinner_item, testItems);
     }
 
+    @Nonnull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @Nonnull ViewGroup parent) {
       return new View(getContext());
     }
   }

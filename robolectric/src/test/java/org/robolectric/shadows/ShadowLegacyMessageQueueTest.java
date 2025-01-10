@@ -18,6 +18,7 @@ import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -50,7 +51,7 @@ public class ShadowLegacyMessageQueueTest {
     }
 
     @Override
-    public void handleMessage(Message msg) {
+    public void handleMessage(@Nonnull Message msg) {
       handled.add(msg);
     }
   }
@@ -162,7 +163,7 @@ public class ShadowLegacyMessageQueueTest {
     Handler handler =
         new Handler(looper) {
           @Override
-          public void handleMessage(Message msg) {
+          public void handleMessage(@Nonnull Message msg) {
             boolean inUse = callInstanceMethod(msg, "isInUse");
             assertWithMessage(msg.what + ":inUse").that(inUse).isTrue();
             Message next = reflector(MessageReflector.class, msg).getNext();

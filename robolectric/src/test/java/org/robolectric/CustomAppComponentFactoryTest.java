@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import javax.annotation.Nonnull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.CustomConstructorServices.CustomConstructorIntentService;
@@ -124,27 +125,28 @@ public class CustomAppComponentFactoryTest {
     }
 
     @Override
-    public Cursor query(Uri uri, String[] strings, String s, String[] strings1, String s1) {
+    public Cursor query(
+        @Nonnull Uri uri, String[] strings, String s, String[] strings1, String s1) {
       return null;
     }
 
     @Override
-    public String getType(Uri uri) {
+    public String getType(@Nonnull Uri uri) {
       return null;
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues contentValues) {
+    public Uri insert(@Nonnull Uri uri, ContentValues contentValues) {
       return null;
     }
 
     @Override
-    public int delete(Uri uri, String s, String[] strings) {
+    public int delete(@Nonnull Uri uri, String s, String[] strings) {
       return 0;
     }
 
     @Override
-    public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
+    public int update(@Nonnull Uri uri, ContentValues contentValues, String s, String[] strings) {
       return 0;
     }
   }
