@@ -37,7 +37,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
-          java-version: 17
+          java-version-file: .github/.java-version
 
       - uses: gradle/actions/setup-gradle@v4
 
