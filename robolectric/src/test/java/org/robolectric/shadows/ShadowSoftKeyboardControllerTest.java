@@ -21,12 +21,11 @@ import org.robolectric.annotation.Config;
 @Config(minSdk = N)
 public final class ShadowSoftKeyboardControllerTest {
 
-  private MyService myService;
   private SoftKeyboardController softKeyboardController;
 
   @Before
   public void setUp() {
-    myService = Robolectric.setupService(MyService.class);
+    MyService myService = Robolectric.setupService(MyService.class);
     softKeyboardController = myService.getSoftKeyboardController();
   }
 

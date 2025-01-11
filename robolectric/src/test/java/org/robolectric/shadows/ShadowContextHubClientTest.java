@@ -101,8 +101,6 @@ public final class ShadowContextHubClientTest {
     ContextHubManager contextHubManager = context.getSystemService(ContextHubManager.class);
     ContextHubInfo contextHubInfo = contextHubManager.getContextHubs().get(0);
     ContextHubClientCallback contextHubClientCallback = new ContextHubClientCallback();
-    ContextHubClient contextHubClient =
-        contextHubManager.createClient(contextHubInfo, contextHubClientCallback);
-    return contextHubClient;
+    return contextHubManager.createClient(contextHubInfo, contextHubClientCallback);
   }
 }

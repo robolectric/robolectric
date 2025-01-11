@@ -398,7 +398,7 @@ public class Robolectric {
           Service instance =
               factory.instantiateService(
                   loadedApk.getClassLoader(), serviceClass.getName(), intent);
-          if (instance != null && serviceClass.isAssignableFrom(instance.getClass())) {
+          if (serviceClass.isAssignableFrom(instance.getClass())) {
             return (T) instance;
           }
         } catch (ReflectiveOperationException e) {
@@ -418,7 +418,7 @@ public class Robolectric {
         try {
           ContentProvider instance =
               factory.instantiateProvider(loadedApk.getClassLoader(), providerClass.getName());
-          if (instance != null && providerClass.isAssignableFrom(instance.getClass())) {
+          if (providerClass.isAssignableFrom(instance.getClass())) {
             return (T) instance;
           }
         } catch (ReflectiveOperationException e) {
@@ -439,7 +439,7 @@ public class Robolectric {
           Activity instance =
               factory.instantiateActivity(
                   loadedApk.getClassLoader(), activityClass.getName(), intent);
-          if (instance != null && activityClass.isAssignableFrom(instance.getClass())) {
+          if (activityClass.isAssignableFrom(instance.getClass())) {
             return (T) instance;
           }
         } catch (ReflectiveOperationException e) {

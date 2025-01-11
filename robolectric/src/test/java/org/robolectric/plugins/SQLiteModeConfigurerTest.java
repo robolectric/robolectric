@@ -45,7 +45,11 @@ public class SQLiteModeConfigurerTest {
 
       assertThat(configurer2.defaultConfig()).isSameInstanceAs(Mode.LEGACY);
     } finally {
-      System.setProperty("os.name", oldName);
+      if (oldName != null) {
+        System.setProperty("os.name", oldName);
+      } else {
+        System.clearProperty("os.name");
+      }
     }
   }
 }

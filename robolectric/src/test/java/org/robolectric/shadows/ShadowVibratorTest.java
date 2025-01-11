@@ -249,9 +249,10 @@ public class ShadowVibratorTest {
 
     vibrator.vibrate(/* delay= */ 200, audioAttributes);
 
-    AudioAttributes actualAudioAttriubes = shadowOf(vibrator).getAudioAttributesFromLastVibration();
-    assertThat(actualAudioAttriubes.getAllFlags()).isEqualTo(audioAttributes.getAllFlags());
-    assertThat(actualAudioAttriubes.getUsage()).isEqualTo(audioAttributes.getUsage());
+    AudioAttributes actualAudioAttributes =
+        shadowOf(vibrator).getAudioAttributesFromLastVibration();
+    assertThat(actualAudioAttributes.getAllFlags()).isEqualTo(audioAttributes.getAllFlags());
+    assertThat(actualAudioAttributes.getUsage()).isEqualTo(audioAttributes.getUsage());
   }
 
   @Config(minSdk = S)

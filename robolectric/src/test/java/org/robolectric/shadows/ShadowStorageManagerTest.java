@@ -115,7 +115,7 @@ public class ShadowStorageManagerTest {
   public void getStorageVolumeFromAnUserContext() {
     File file1 = new File(internalStorage);
     shadowOf(storageManager).addStorageVolume(buildAndGetStorageVolume(file1, "internal"));
-    Context userContext = getApplication();
+    Context userContext;
 
     try {
       userContext =

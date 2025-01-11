@@ -167,7 +167,7 @@ public class ShadowCompanionDeviceManagerTest {
             .setNotifyOnDeviceNearby(false)
             .setApprovedMs(0)
             .setLastTimeConnectedMs(0);
-    Object associatedDeviceValue = null;
+    Object associatedDeviceValue;
     if (ReflectionHelpers.hasField(AssociationInfo.class, "mAssociatedDevice")) {
       try {
         Class<?> associatedDeviceClazz = Class.forName("android.companion.AssociatedDevice");

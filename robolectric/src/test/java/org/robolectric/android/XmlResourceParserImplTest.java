@@ -240,12 +240,8 @@ public class XmlResourceParserImplTest {
     List<Integer> actualDepths = new ArrayList<>();
     int evt;
     while ((evt = parser.next()) != XmlResourceParser.END_DOCUMENT) {
-      switch (evt) {
-        case (XmlResourceParser.START_TAG):
-          {
-            actualDepths.add(parser.getDepth());
-            break;
-          }
+      if (evt == XmlResourceParser.START_TAG) {
+        actualDepths.add(parser.getDepth());
       }
     }
     assertThat(actualDepths).isEqualTo(expectedDepths);
@@ -388,7 +384,7 @@ public class XmlResourceParserImplTest {
   @Test
   public void testGetAttributeEscapedValue() {
     forgeAndOpenDocument("<foo bar=\"\\'\"/>");
-    assertThat(parser.getAttributeValue(0)).isEqualTo("\'");
+    assertThat(parser.getAttributeValue(0)).isEqualTo("'");
   }
 
   @Test
@@ -399,8 +395,8 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetNodeTextEscapedValue() {
-    forgeAndOpenDocument("<foo>\'</foo>");
-    assertThat(parser.getText()).isEqualTo("\'");
+    forgeAndOpenDocument("<foo>'</foo>");
+    assertThat(parser.getText()).isEqualTo("'");
   }
 
   @Test

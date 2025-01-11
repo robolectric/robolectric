@@ -505,7 +505,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // Delegate DELEGATION_PACKAGE_ACCESS scope to an app but not caller
     String delegatedApp = "com.example.not.caller";
-    List<String> scopes = Arrays.asList(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
+    List<String> scopes = Collections.singletonList(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
     devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
 
     // Then DevicePolicyManager#setApplicationHidden should fail with SecurityException
@@ -534,7 +534,7 @@ public final class ShadowDevicePolicyManagerTest {
     // Delegate DELEGATION_PACKAGE_ACCESS scope to another app such that the delegated app
     // has the access to call setApplicationHidden
     String delegatedApp = context.getPackageName();
-    List<String> scopes = Arrays.asList(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
+    List<String> scopes = Collections.singletonList(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
     devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
 
     // Then DevicePolicyManager#setApplicationHidden is called to hide the app,
@@ -790,7 +790,8 @@ public final class ShadowDevicePolicyManagerTest {
 
     // Delegate DELEGATION_APP_RESTRICTIONS scope to an app but not caller
     String delegatedApp = "com.example.not.caller";
-    List<String> scopes = Arrays.asList(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS);
+    List<String> scopes =
+        Collections.singletonList(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS);
     devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
 
     // Then DevicePolicyManager#setApplicationRestrictions should fail with SecurityException
@@ -817,7 +818,8 @@ public final class ShadowDevicePolicyManagerTest {
     // Delegate DELEGATION_APP_RESTRICTIONS scope to another app such that the delegated app
     // has the access to call setApplicationRestriction
     String delegatedApp = context.getPackageName();
-    List<String> scopes = Arrays.asList(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS);
+    List<String> scopes =
+        Collections.singletonList(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS);
     devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
 
     // WHEN DevicePolicyManager#setApplicationRestrictions is called to set the restrictions
@@ -851,11 +853,13 @@ public final class ShadowDevicePolicyManagerTest {
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
 
     // GIVEN the caller has delegated scopes
-    List<String> initialScopes = Arrays.asList(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS);
+    List<String> initialScopes =
+        Collections.singletonList(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS);
     devicePolicyManager.setDelegatedScopes(testComponent, "com.example.app", initialScopes);
 
     // WHEN setDelegatedScopes is called again
-    List<String> newScopes = Arrays.asList(DevicePolicyManager.DELEGATION_ENABLE_SYSTEM_APP);
+    List<String> newScopes =
+        Collections.singletonList(DevicePolicyManager.DELEGATION_ENABLE_SYSTEM_APP);
     devicePolicyManager.setDelegatedScopes(testComponent, "com.example.app", newScopes);
 
     // THEN the new scopes should be set
@@ -1910,7 +1914,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // Delegate DELEGATION_PACKAGE_ACCESS scope to an app but not caller
     String delegatedApp = "com.example.not.caller";
-    List<String> scopes = Arrays.asList(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
+    List<String> scopes = Collections.singletonList(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
     devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
 
     // Then DevicePolicyManager#setPackagesSuspended should fail with SecurityException
@@ -1939,7 +1943,7 @@ public final class ShadowDevicePolicyManagerTest {
     // Delegate DELEGATION_PACKAGE_ACCESS scope to another app such that the delegated app
     // has the access to call setPackageSuspended
     String delegatedApp = context.getPackageName();
-    List<String> scopes = Arrays.asList(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
+    List<String> scopes = Collections.singletonList(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
     devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
 
     // Then DevicePolicyManager#setPackageSuspended is called to suspend the package
@@ -2678,7 +2682,7 @@ public final class ShadowDevicePolicyManagerTest {
   @Config(minSdk = TIRAMISU)
   @Test
   public void getPolicyManagedProfiles_shouldReturnSetVal() {
-    List<UserHandle> policyManagedProfiles = Arrays.asList(UserHandle.SYSTEM);
+    List<UserHandle> policyManagedProfiles = Collections.singletonList(UserHandle.SYSTEM);
     shadowDevicePolicyManager.setPolicyManagedProfiles(policyManagedProfiles);
     assertThat(devicePolicyManager.getPolicyManagedProfiles(UserHandle.SYSTEM))
         .isEqualTo(policyManagedProfiles);

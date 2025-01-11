@@ -119,7 +119,7 @@ public class MavenManifestFactory implements ManifestFactory {
         if (Files.isDirectory(libraryDir)) {
           // Ignore directories without any files
           Path[] libraryBaseDirFiles = Fs.listFiles(libraryDir);
-          if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
+          if (libraryBaseDirFiles.length > 0) {
             List<ManifestIdentifier> libraries =
                 findLibraries(libraryDir.resolve(Config.DEFAULT_RES_FOLDER));
             libraryBaseDirs.add(

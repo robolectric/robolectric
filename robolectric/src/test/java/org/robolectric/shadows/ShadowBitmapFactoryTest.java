@@ -135,8 +135,8 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
-  public void decodeBytes_shouldSetDescriptionAndCreatedFrom() throws Exception {
-    byte[] yummyBites = "Hi!".getBytes("UTF-8");
+  public void decodeBytes_shouldSetDescriptionAndCreatedFrom() {
+    byte[] yummyBites = "Hi!".getBytes(UTF_8);
     Bitmap bitmap = BitmapFactory.decodeByteArray(yummyBites, 100, 100);
     ShadowBitmap shadowBitmap = shadowOf(bitmap);
     assertEquals("Bitmap for 3 bytes 100..100", shadowBitmap.getDescription());
@@ -146,8 +146,8 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
-  public void decodeBytes_shouldSetDescriptionAndCreatedFromWithOptions() throws Exception {
-    byte[] yummyBites = "Hi!".getBytes("UTF-8");
+  public void decodeBytes_shouldSetDescriptionAndCreatedFromWithOptions() {
+    byte[] yummyBites = "Hi!".getBytes(UTF_8);
     BitmapFactory.Options options = new BitmapFactory.Options();
     Bitmap bitmap = BitmapFactory.decodeByteArray(yummyBites, 100, 100, options);
     ShadowBitmap shadowBitmap = shadowOf(bitmap);
@@ -529,7 +529,7 @@ public class ShadowBitmapFactoryTest {
     InputStream inputStream = com.google.common.io.Resources.getResource(imagePath).openStream();
     File tempFile = Files.createTempFile("ShadowBitmapFactoryTest", null).toFile();
     tempFile.deleteOnExit();
-    ByteStreams.copy(inputStream, new FileOutputStream(tempFile));
+    ByteStreams.copy(inputStream, Files.newOutputStream(tempFile.toPath()));
     return tempFile;
   }
 

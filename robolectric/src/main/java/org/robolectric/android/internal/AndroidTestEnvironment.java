@@ -324,66 +324,63 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     RuntimeEnvironment.application = application;
 
-    if (application != null) {
-      final Class<?> appBindDataClass;
-      try {
-        appBindDataClass = Class.forName("android.app.ActivityThread$AppBindData");
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-      final Object appBindData = ReflectionHelpers.callConstructor(appBindDataClass);
-      final _AppBindData_ _appBindData_ = reflector(_AppBindData_.class, appBindData);
-      _appBindData_.setProcessName(parsedPackage.packageName);
-      _appBindData_.setAppInfo(applicationInfo);
-      activityThreadReflector.setBoundApplication(appBindData);
-
-      final LoadedApk loadedApk =
-          activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
-      final _LoadedApk_ _loadedApk_ = reflector(_LoadedApk_.class, loadedApk);
-
-      Context contextImpl =
-          reflector(_ContextImpl_.class).createAppContext(activityThread, loadedApk);
-      ShadowPackageManager shadowPackageManager = Shadow.extract(contextImpl.getPackageManager());
-      shadowPackageManager.addPackageInternal(parsedPackage);
-      activityThreadReflector.setInitialApplication(application);
-      ShadowApplication shadowApplication = Shadow.extract(application);
-      shadowApplication.callAttach(contextImpl);
-      reflector(_ContextImpl_.class, contextImpl).setOuterContext(application);
-      if (apiLevel >= VERSION_CODES.O) {
-        reflector(_ContextImpl_.class, contextImpl)
-            .setClassLoader(this.getClass().getClassLoader());
-      }
-
-      Resources appResources = application.getResources();
-      _loadedApk_.setResources(appResources);
-      _loadedApk_.setApplication(application);
-      if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.O) {
-        // Preload fonts resources
-        FontsContract.setApplicationContextForResources(application);
-      }
-      registerBroadcastReceivers(application, appManifest, loadedApk);
-
-      appResources.updateConfiguration(androidConfiguration, Bootstrap.getDisplayMetrics());
-
-      // Circumvent the 'No Compatibility callbacks set!' log. See #8509
-      if (apiLevel >= AndroidVersions.V.SDK_INT) {
-        // Adds loggableChanges parameter.
-        ReflectionHelpers.callStaticMethod(
-            AppCompatCallbacks.class,
-            "install",
-            ClassParameter.from(long[].class, new long[0]),
-            ClassParameter.from(long[].class, new long[0]));
-      } else if (apiLevel >= AndroidVersions.R.SDK_INT) {
-        // Invoke the previous version.
-        ReflectionHelpers.callStaticMethod(
-            AppCompatCallbacks.class, "install", ClassParameter.from(long[].class, new long[0]));
-      }
-
-      PerfStatsCollector.getInstance()
-          .measure(
-              "application onCreate()",
-              () -> androidInstrumentation.callApplicationOnCreate(application));
+    final Class<?> appBindDataClass;
+    try {
+      appBindDataClass = Class.forName("android.app.ActivityThread$AppBindData");
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
     }
+    final Object appBindData = ReflectionHelpers.callConstructor(appBindDataClass);
+    final _AppBindData_ _appBindData_ = reflector(_AppBindData_.class, appBindData);
+    _appBindData_.setProcessName(parsedPackage.packageName);
+    _appBindData_.setAppInfo(applicationInfo);
+    activityThreadReflector.setBoundApplication(appBindData);
+
+    final LoadedApk loadedApk =
+        activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
+    final _LoadedApk_ _loadedApk_ = reflector(_LoadedApk_.class, loadedApk);
+
+    Context contextImpl =
+        reflector(_ContextImpl_.class).createAppContext(activityThread, loadedApk);
+    ShadowPackageManager shadowPackageManager = Shadow.extract(contextImpl.getPackageManager());
+    shadowPackageManager.addPackageInternal(parsedPackage);
+    activityThreadReflector.setInitialApplication(application);
+    ShadowApplication shadowApplication = Shadow.extract(application);
+    shadowApplication.callAttach(contextImpl);
+    reflector(_ContextImpl_.class, contextImpl).setOuterContext(application);
+    if (apiLevel >= VERSION_CODES.O) {
+      reflector(_ContextImpl_.class, contextImpl).setClassLoader(this.getClass().getClassLoader());
+    }
+
+    Resources appResources = application.getResources();
+    _loadedApk_.setResources(appResources);
+    _loadedApk_.setApplication(application);
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.O) {
+      // Preload fonts resources
+      FontsContract.setApplicationContextForResources(application);
+    }
+    registerBroadcastReceivers(application, appManifest, loadedApk);
+
+    appResources.updateConfiguration(androidConfiguration, Bootstrap.getDisplayMetrics());
+
+    // Circumvent the 'No Compatibility callbacks set!' log. See #8509
+    if (apiLevel >= AndroidVersions.V.SDK_INT) {
+      // Adds loggableChanges parameter.
+      ReflectionHelpers.callStaticMethod(
+          AppCompatCallbacks.class,
+          "install",
+          ClassParameter.from(long[].class, new long[0]),
+          ClassParameter.from(long[].class, new long[0]));
+    } else if (apiLevel >= AndroidVersions.R.SDK_INT) {
+      // Invoke the previous version.
+      ReflectionHelpers.callStaticMethod(
+          AppCompatCallbacks.class, "install", ClassParameter.from(long[].class, new long[0]));
+    }
+
+    PerfStatsCollector.getInstance()
+        .measure(
+            "application onCreate()",
+            () -> androidInstrumentation.callApplicationOnCreate(application));
 
     return application;
   }

@@ -785,7 +785,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testCreateAndDropTable() throws Exception {
+  public void testCreateAndDropTable() {
     SQLiteDatabase db = openOrCreateDatabase("db1");
     db.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
     Cursor c = db.query("FOO", null, null, null, null, null, null);

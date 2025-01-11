@@ -71,7 +71,7 @@ public class ShadowViewGroupTest {
     child3.addView(child3a);
     child3.addView(child3b);
 
-    defaultLineSeparator = System.getProperty("line.separator");
+    defaultLineSeparator = System.lineSeparator();
     System.setProperty("line.separator", "\n");
   }
 

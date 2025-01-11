@@ -24,13 +24,12 @@ public final class ShadowLocaleManagerTest {
   private static final String DEFAULT_PACKAGE_NAME = "my.app";
   private static final LocaleList DEFAULT_LOCALES = LocaleList.forLanguageTags("en-XC,ar-XB");
 
-  private Context context;
   private LocaleManager localeManager;
   private ShadowLocaleManager shadowLocaleManager;
 
   @Before
   public void setUp() {
-    context = ApplicationProvider.getApplicationContext();
+    Context context = ApplicationProvider.getApplicationContext();
     localeManager = context.getSystemService(LocaleManager.class);
     shadowLocaleManager = Shadow.extract(localeManager);
   }

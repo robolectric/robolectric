@@ -26,7 +26,6 @@ import org.robolectric.android.AndroidSdkShadowMatcher;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.LooperMode;
-import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.config.AndroidConfigurer;
@@ -247,26 +246,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     Sdk sdk = roboMethod.getSdk();
 
     InstrumentationConfiguration classLoaderConfig = createClassLoaderConfig(method);
-    ResourcesMode.Mode resourcesMode =
-        roboMethod.configuration == null
-            ? ResourcesMode.Mode.BINARY
-            : roboMethod.configuration.get(ResourcesMode.Mode.class);
-    ;
-
-    LooperMode.Mode looperMode =
-        roboMethod.configuration == null
-            ? Mode.LEGACY
-            : roboMethod.configuration.get(LooperMode.Mode.class);
-
-    SQLiteMode.Mode sqliteMode =
-        roboMethod.configuration == null
-            ? SQLiteMode.Mode.LEGACY
-            : roboMethod.configuration.get(SQLiteMode.Mode.class);
-
-    GraphicsMode.Mode graphicsMode =
-        roboMethod.configuration == null
-            ? GraphicsMode.Mode.LEGACY
-            : roboMethod.configuration.get(GraphicsMode.Mode.class);
+    ResourcesMode.Mode resourcesMode = roboMethod.configuration.get(ResourcesMode.Mode.class);
+    LooperMode.Mode looperMode = roboMethod.configuration.get(LooperMode.Mode.class);
+    SQLiteMode.Mode sqliteMode = roboMethod.configuration.get(SQLiteMode.Mode.class);
+    GraphicsMode.Mode graphicsMode = roboMethod.configuration.get(GraphicsMode.Mode.class);
 
     sdk.verifySupportedSdk(method.getDeclaringClass().getName());
     return sandboxManager.getAndroidSandbox(
@@ -488,9 +471,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     Collections.addAll(extraShadows, config.shadows());
     return extraShadows.toArray(new Class<?>[] {});
   }
-
-  @Override
-  protected void afterClass() {}
 
   @Override
   public Object createTest() throws Exception {

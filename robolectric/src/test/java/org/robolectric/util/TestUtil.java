@@ -1,10 +1,6 @@
 package org.robolectric.util;
 
-import com.google.common.io.CharStreams;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.Properties;
 import org.robolectric.R;
@@ -57,18 +53,9 @@ public abstract class TestUtil {
     return SYSTEM_RESOURCE_PATH;
   }
 
-  public static ResourcePath sdkResources(int apiLevel) {
-    Path path = getSdkCollection().getSdk(apiLevel).getJarPath();
-    return new ResourcePath(null, path.resolve("raw-res/res"), null, null);
-  }
-
-  public static String readString(InputStream is) throws IOException {
-    return CharStreams.toString(new InputStreamReader(is, "UTF-8"));
-  }
-
   public static synchronized SdkCollection getSdkCollection() {
     if (sdkCollection == null) {
-      sdkCollection = getInjectedInstance(SdkCollection.class);
+      sdkCollection = injector.getInstance(SdkCollection.class);
     }
     return sdkCollection;
   }
@@ -79,9 +66,5 @@ public abstract class TestUtil {
     } else {
       System.setProperty(name, value);
     }
-  }
-
-  private static <T> T getInjectedInstance(Class<T> clazz) {
-    return injector.getInstance(clazz);
   }
 }

@@ -346,11 +346,10 @@ public class ShadowListViewTest {
     return new ListAdapterBuilder();
   }
 
-  private ListAdapter prepareWithListAdapter() {
+  private void prepareWithListAdapter() {
     ListAdapter adapter = new ListAdapter("a", "b", "c");
     listView.setAdapter(adapter);
     shadowOf(listView).populateItems();
-    return adapter;
   }
 
   private ShadowListView prepareListWithThreeItems() {

@@ -200,7 +200,7 @@ public class ShadowLogTest {
       ShadowLog.stream = new PrintStream(bos);
       Log.d("tag", "msg");
       assertThat(new String(bos.toByteArray(), UTF_8))
-          .isEqualTo("D/tag: msg" + System.getProperty("line.separator"));
+          .isEqualTo("D/tag: msg" + System.lineSeparator());
 
       Log.w("tag", new RuntimeException());
       assertTrue(new String(bos.toByteArray(), UTF_8).contains("RuntimeException"));

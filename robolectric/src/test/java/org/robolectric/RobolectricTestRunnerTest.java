@@ -12,9 +12,9 @@ import android.app.Application;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import java.io.FileOutputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.spi.FileSystemProvider;
@@ -466,7 +466,7 @@ public class RobolectricTestRunnerTest {
 
       try {
         Path jarPath = tempDirectory.create("some-jar").resolve("some.jar");
-        try (JarOutputStream out = new JarOutputStream(new FileOutputStream(jarPath.toFile()))) {
+        try (JarOutputStream out = new JarOutputStream(Files.newOutputStream(jarPath))) {
           out.putNextEntry(new JarEntry("README.txt"));
           out.write("hi!".getBytes(StandardCharsets.UTF_8));
         }
@@ -562,12 +562,14 @@ public class RobolectricTestRunnerTest {
     @Override
     public void testFailure(Failure failure) {
       Throwable exception = failure.getException();
-      String message = exception.getMessage();
-      if (message == null) {
-        message = exception.toString();
+      StringBuilder message = new StringBuilder();
+      if (exception.getMessage() == null) {
+        message.append(exception);
+      } else {
+        message.append(exception.getMessage());
       }
       for (Throwable suppressed : exception.getSuppressed()) {
-        message += "\nSuppressed: " + suppressed.getMessage();
+        message.append("\nSuppressed: ").append(suppressed.getMessage());
       }
       events.add("failure: " + message);
     }

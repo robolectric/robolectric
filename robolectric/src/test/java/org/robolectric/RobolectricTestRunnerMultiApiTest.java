@@ -51,10 +51,7 @@ public class RobolectricTestRunnerMultiApiTest {
   private MyRunListener runListener;
 
   private int numSupportedApis;
-  private String priorResourcesMode;
   private String priorAlwaysInclude;
-
-  private SdkCollection sdkCollection;
 
   @Before
   public void setUp() {
@@ -63,10 +60,8 @@ public class RobolectricTestRunnerMultiApiTest {
     runListener = new MyRunListener();
     runNotifier = new RunNotifier();
     runNotifier.addListener(runListener);
-    sdkCollection = new SdkCollection(() -> map(APIS_FOR_TEST));
+    SdkCollection sdkCollection = new SdkCollection(() -> map(APIS_FOR_TEST));
     delegateSdkPicker = new DefaultSdkPicker(sdkCollection, null);
-
-    priorResourcesMode = System.getProperty("robolectric.resourcesMode");
 
     priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
     System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");

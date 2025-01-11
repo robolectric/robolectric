@@ -198,7 +198,7 @@ public class ShadowUsageStatsManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.P)
-  public void testGetAppStandbyBucket_withPackageName() throws Exception {
+  public void testGetAppStandbyBucket_withPackageName() {
     assertThat(shadowOf(usageStatsManager).getAppStandbyBuckets()).isEmpty();
 
     shadowOf(usageStatsManager).setAppStandbyBucket("app1", UsageStatsManager.STANDBY_BUCKET_RARE);
@@ -214,7 +214,7 @@ public class ShadowUsageStatsManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.P)
-  public void testSetAppStandbyBuckets() throws Exception {
+  public void testSetAppStandbyBuckets() {
     assertThat(shadowOf(usageStatsManager).getAppStandbyBuckets()).isEmpty();
     assertThat(shadowOf(usageStatsManager).getAppStandbyBucket("app1"))
         .isEqualTo(UsageStatsManager.STANDBY_BUCKET_ACTIVE);
@@ -230,7 +230,7 @@ public class ShadowUsageStatsManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.P)
-  public void testGetAppStandbyBucket_currentApp() throws Exception {
+  public void testGetAppStandbyBucket_currentApp() {
     shadowOf(usageStatsManager).setCurrentAppStandbyBucket(UsageStatsManager.STANDBY_BUCKET_RARE);
     assertThat(shadowOf(usageStatsManager).getAppStandbyBucket())
         .isEqualTo(UsageStatsManager.STANDBY_BUCKET_RARE);

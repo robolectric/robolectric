@@ -15,11 +15,11 @@ public final class SingleValueConfigurerTest {
 
   public enum Value {
     ON,
-    OFF;
+    OFF,
   }
 
   public @interface ValueConfig {
-    public Value value() default Value.ON;
+    Value value() default Value.ON;
   }
 
   public static class ValueConfigReader extends SingleValueConfigurer<ValueConfig, Value> {

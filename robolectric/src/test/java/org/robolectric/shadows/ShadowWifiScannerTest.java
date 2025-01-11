@@ -105,7 +105,7 @@ public class ShadowWifiScannerTest {
   }
 
   private static ImmutableList<ScanResult> createFakeScanResults() {
-    ScanResult scanResult = null;
+    ScanResult scanResult;
 
     if (Build.VERSION.SDK_INT >= VERSION_CODES.R) {
       // informationElements added in R

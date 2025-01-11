@@ -111,11 +111,11 @@ public class ShadowWallpaperManagerTest {
 
   @Test
   public void hasResourceWallpaper_wallpaperResourceSet_returnsTrue() throws IOException {
-    int resid = 5;
-    manager.setResource(resid);
+    int resId = 5;
+    manager.setResource(resId);
 
     assertThat(manager.hasResourceWallpaper(1)).isFalse();
-    assertThat(manager.hasResourceWallpaper(resid)).isTrue();
+    assertThat(manager.hasResourceWallpaper(resId)).isTrue();
   }
 
   @Test

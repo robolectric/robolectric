@@ -58,8 +58,6 @@ public class ShadowBluetoothGattServerTest {
           UUID.fromString("00000000-0000-0000-0001-0000000000A1"),
           BluetoothGattService.SERVICE_TYPE_PRIMARY);
 
-  private BluetoothManager manager;
-  private Context context;
   private BluetoothGattServer server;
   private BluetoothDevice device;
 
@@ -97,8 +95,9 @@ public class ShadowBluetoothGattServerTest {
   @Before
   @Config()
   public void setUp() {
-    context = ApplicationProvider.getApplicationContext();
-    manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+    Context context = ApplicationProvider.getApplicationContext();
+    BluetoothManager manager =
+        (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
     server = manager.openGattServer(context, new BluetoothGattServerCallback() {}, 0);
     device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
   }

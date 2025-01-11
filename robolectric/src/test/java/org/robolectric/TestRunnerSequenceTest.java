@@ -28,8 +28,6 @@ public class TestRunnerSequenceTest {
     public static List<String> transcript;
   }
 
-  private String priorResourcesMode;
-
   @Before
   public void setUp() throws Exception {
     StateHolder.transcript = new ArrayList<>();

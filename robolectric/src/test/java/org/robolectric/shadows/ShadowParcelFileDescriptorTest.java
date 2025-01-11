@@ -497,7 +497,7 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testClose_afterDup_doesNotCloseOriginalFd() throws Exception {
-    ParcelFileDescriptor pfd = null;
+    ParcelFileDescriptor pfd;
     File tempFile = File.createTempFile("testFile", ".txt");
     String content = "abc123";
     Files.asCharSink(tempFile, UTF_8).write(content);

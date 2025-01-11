@@ -25,12 +25,11 @@ public class ReflectorObjectTest {
 
   static final String TEST_STRING = "A test string.";
 
-  private SomeClass someClass;
   private ShadowClass shadowClass;
 
   @Before
   public void setUp() throws Exception {
-    someClass = new SomeClass();
+    SomeClass someClass = new SomeClass();
     shadowClass = Shadow.extract(someClass);
   }
 
