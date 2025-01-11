@@ -40,8 +40,8 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowNotificationManagerTest {
   private NotificationManager notificationManager;
-  private Notification notification1 = new Notification();
-  private Notification notification2 = new Notification();
+  private final Notification notification1 = new Notification();
+  private final Notification notification2 = new Notification();
 
   @Before
   public void setUp() {

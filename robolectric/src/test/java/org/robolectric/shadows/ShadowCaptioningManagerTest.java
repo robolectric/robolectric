@@ -33,7 +33,7 @@ import org.robolectric.annotation.Config;
 @Config(minSdk = KITKAT)
 public final class ShadowCaptioningManagerTest {
 
-  private TestCaptioningChangeListener captioningChangeListener =
+  private final TestCaptioningChangeListener captioningChangeListener =
       new TestCaptioningChangeListener();
 
   private static final int ENABLED = 1;
@@ -43,7 +43,7 @@ public final class ShadowCaptioningManagerTest {
   private Context context;
   private AutoCloseable mock;
 
-  public class TestCaptioningChangeListener extends CaptioningChangeListener {
+  public static class TestCaptioningChangeListener extends CaptioningChangeListener {
     public boolean isEnabled = false;
     @Nullable public CaptionStyle captionStyle = null;
     @Nullable public Locale locale = null;

@@ -38,7 +38,7 @@ public class ShadowMediaMetadataRetrieverTest {
   private final MediaMetadataRetriever retriever2 = new MediaMetadataRetriever();
   private final Bitmap bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
   private final Bitmap bitmap2 = Bitmap.createBitmap(11, 11, Bitmap.Config.ARGB_8888);
-  private FileDescriptor fd = new FileDescriptor();
+  private final FileDescriptor fd = new FileDescriptor();
 
   @Test
   public void extractMetadata_shouldReturnValue() {

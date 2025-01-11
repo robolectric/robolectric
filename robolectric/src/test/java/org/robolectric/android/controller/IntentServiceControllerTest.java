@@ -115,7 +115,7 @@ public class IntentServiceControllerTest {
   }
 
   public static class MyService extends IntentService {
-    private Handler handler = new Handler(Looper.getMainLooper());
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     public Intent boundIntent;
 

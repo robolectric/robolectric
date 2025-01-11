@@ -318,7 +318,7 @@ public class ShadowSensorManagerTest {
 
   private static class TestSensorEventListener implements SensorEventListener2 {
     private Optional<SensorEvent> latestSensorEvent = Optional.absent();
-    private List<Sensor> onFlushCompletedCalls = new ArrayList<>();
+    private final List<Sensor> onFlushCompletedCalls = new ArrayList<>();
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}

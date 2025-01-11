@@ -66,7 +66,7 @@ public class ShadowBluetoothLeAdvertiserTest {
 
   private Optional<Integer> advertisingSetStartStatusOptional;
   private boolean advertisingSetStopped;
-  private AdvertisingSetCallback advertisingSetCallback =
+  private final AdvertisingSetCallback advertisingSetCallback =
       new AdvertisingSetCallback() {
         @Override
         public void onAdvertisingSetStarted(

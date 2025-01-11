@@ -29,7 +29,7 @@ public class SQLiteModeConfigurer extends SingleValueConfigurer<SQLiteMode, SQLi
   }
 
   @Nonnull
-  private static final SQLiteMode.Mode defaultValue() {
+  private static SQLiteMode.Mode defaultValue() {
     // NATIVE SQLite mode not supported on Windows
     if (OsUtil.isWindows()) {
       return Mode.LEGACY;

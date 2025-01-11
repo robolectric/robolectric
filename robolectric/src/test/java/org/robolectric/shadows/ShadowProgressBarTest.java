@@ -20,7 +20,7 @@ import org.robolectric.annotation.ResourcesMode.Mode;
 @ResourcesMode(Mode.BINARY)
 public class ShadowProgressBarTest {
 
-  private int[] testValues = {0, 1, 2, 100};
+  private final int[] testValues = {0, 1, 2, 100};
   private ProgressBar progressBar;
 
   @Before

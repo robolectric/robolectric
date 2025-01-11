@@ -835,8 +835,8 @@ public class ShadowViewTest {
 
   private static class TestView2 extends View {
 
-    private int minWidth;
-    private int minHeight;
+    private final int minWidth;
+    private final int minHeight;
 
     public TestView2(Context context, int minWidth, int minHeight) {
       super(context);
@@ -1163,8 +1163,8 @@ public class ShadowViewTest {
   }
 
   public static class MyView extends LinearLayout {
-    private String name;
-    private List<String> transcript;
+    private final String name;
+    private final List<String> transcript;
 
     public MyView(String name, List<String> transcript) {
       super(ApplicationProvider.getApplicationContext());

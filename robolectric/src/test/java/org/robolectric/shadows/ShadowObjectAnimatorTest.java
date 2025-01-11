@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowObjectAnimatorTest {
   private final AnimatorTarget target = new AnimatorTarget();
-  private List<String> listenerEvents = new ArrayList<>();
+  private final List<String> listenerEvents = new ArrayList<>();
 
   private final Animator.AnimatorListener listener =
       new Animator.AnimatorListener() {

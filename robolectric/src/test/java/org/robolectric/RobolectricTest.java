@@ -36,7 +36,7 @@ import org.robolectric.util.ReflectionHelpers;
 @RunWith(AndroidJUnit4.class)
 public class RobolectricTest {
 
-  private Application context = ApplicationProvider.getApplicationContext();
+  private final Application context = ApplicationProvider.getApplicationContext();
 
   @Test
   public void clickOn_shouldThrowIfViewIsDisabled() {

@@ -137,7 +137,7 @@ public class Robolectric {
    */
   @Deprecated
   @SuppressWarnings("InlineMeSuggester")
-  public static final <T extends Activity> T setupActivity(Class<T> activityClass) {
+  public static <T extends Activity> T setupActivity(Class<T> activityClass) {
     return buildActivity(activityClass).setup().get();
   }
 

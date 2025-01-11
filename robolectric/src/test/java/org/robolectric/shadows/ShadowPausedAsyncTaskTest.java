@@ -244,7 +244,7 @@ public class ShadowPausedAsyncTaskTest {
 
   private static class BlockingAsyncTask extends AsyncTask<Void, Void, Void> {
 
-    private CountDownLatch latch = new CountDownLatch(1);
+    private final CountDownLatch latch = new CountDownLatch(1);
 
     @Override
     protected Void doInBackground(Void... voids) {

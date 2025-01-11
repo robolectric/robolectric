@@ -412,7 +412,7 @@ public class ShadowContextWrapperTest {
 
   private static final class FooReceiver extends BroadcastReceiver {
     private int resultCode;
-    private SettableFuture<Void> settableFuture = SettableFuture.create();
+    private final SettableFuture<Void> settableFuture = SettableFuture.create();
 
     @Override
     public void onReceive(Context context, Intent intent) {

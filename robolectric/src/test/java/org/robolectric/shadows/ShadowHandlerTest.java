@@ -517,7 +517,7 @@ public class ShadowHandlerTest {
   }
 
   private class Say implements Runnable {
-    private String event;
+    private final String event;
 
     public Say(String event) {
       this.event = event;
