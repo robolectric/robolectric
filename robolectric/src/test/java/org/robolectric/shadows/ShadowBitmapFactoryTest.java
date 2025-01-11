@@ -4,6 +4,7 @@ import static com.google.common.io.Resources.toByteArray;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
@@ -183,7 +184,7 @@ public class ShadowBitmapFactoryTest {
     options.inSampleSize = 100;
     Bitmap bitmap =
         BitmapFactory.decodeResource(context.getResources(), R.drawable.an_image, options);
-    assertEquals(true, shadowOf(bitmap).getDescription().contains("inSampleSize=100"));
+    assertTrue(shadowOf(bitmap).getDescription().contains("inSampleSize=100"));
   }
 
   @Test
@@ -195,7 +196,7 @@ public class ShadowBitmapFactoryTest {
     Bitmap bitmap =
         BitmapFactory.decodeResourceStream(
             context.getResources(), null, inputStream, null, options);
-    assertEquals(true, shadowOf(bitmap).getDescription().contains("inSampleSize=100"));
+    assertTrue(shadowOf(bitmap).getDescription().contains("inSampleSize=100"));
   }
 
   @Test

@@ -725,7 +725,7 @@ public class ShadowPausedLooperTest {
         });
     shadowLooper.idle();
     assertThat(token.get()).isNotEqualTo(-1);
-    assertThat(wasRun.get()).isEqualTo(false);
+    assertThat(wasRun.get()).isFalse();
     // should be effectively a no-op and not deadlock
     shadowLooper.idle();
     // remove sync barriers messages need to get posted as async
@@ -734,7 +734,7 @@ public class ShadowPausedLooperTest {
           removeSyncBarrierCompat(handlerThread.getLooper(), token.get());
         });
     shadowLooper.idle();
-    assertThat(wasRun.get()).isEqualTo(true);
+    assertThat(wasRun.get()).isTrue();
   }
 
   /** Similar to previous test but with a running aka unpaused looper. */
@@ -756,7 +756,7 @@ public class ShadowPausedLooperTest {
         });
     shadowLooper.idle();
     assertThat(token.get()).isNotEqualTo(-1);
-    assertThat(wasRun.get()).isEqualTo(false);
+    assertThat(wasRun.get()).isFalse();
     // should be effectively a no-op and not deadlock
     shadowLooper.idle();
     // remove sync barriers messages need to get posted as async
@@ -765,7 +765,7 @@ public class ShadowPausedLooperTest {
           removeSyncBarrierCompat(handlerThread.getLooper(), token.get());
         });
     shadowLooper.idle();
-    assertThat(wasRun.get()).isEqualTo(true);
+    assertThat(wasRun.get()).isTrue();
   }
 
   private static class BlockingRunnable implements Runnable {

@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.accounts.Account;
@@ -421,7 +421,7 @@ public class ShadowParcelTest {
     parcel.setDataPosition(0);
     final long[] longs2 = new long[longs.length];
     parcel.readLongArray(longs2);
-    assertTrue(Arrays.equals(longs, longs2));
+    assertArrayEquals(longs, longs2);
   }
 
   @Test
@@ -446,7 +446,7 @@ public class ShadowParcelTest {
     parcel.setDataPosition(0);
     final float[] floats2 = new float[floats.length];
     parcel.readFloatArray(floats2);
-    assertTrue(Arrays.equals(floats, floats2));
+    assertArrayEquals(floats, floats2, 0f);
   }
 
   @Test
@@ -463,7 +463,7 @@ public class ShadowParcelTest {
     parcel.setDataPosition(0);
     final double[] doubles2 = new double[doubles.length];
     parcel.readDoubleArray(doubles2);
-    assertTrue(Arrays.equals(doubles, doubles2));
+    assertArrayEquals(doubles, doubles2, 0.0);
   }
 
   @Test
@@ -480,7 +480,7 @@ public class ShadowParcelTest {
     parcel.setDataPosition(0);
     final String[] strings2 = new String[strings.length];
     parcel.readStringArray(strings2);
-    assertTrue(Arrays.equals(strings, strings2));
+    assertArrayEquals(strings, strings2);
   }
 
   @Test
@@ -589,7 +589,7 @@ public class ShadowParcelTest {
     assertThat(parcel.dataSize()).isEqualTo(4);
     parcel.setDataPosition(0);
     byte[] actualBytes = parcel.createByteArray();
-    assertTrue(Arrays.equals(bytes, actualBytes));
+    assertArrayEquals(bytes, actualBytes);
   }
 
   @Test
@@ -639,7 +639,7 @@ public class ShadowParcelTest {
     parcel.setDataPosition(0);
     byte[] actualBytes = new byte[bytes.length];
     parcel.readByteArray(actualBytes);
-    assertTrue(Arrays.equals(bytes, actualBytes));
+    assertArrayEquals(bytes, actualBytes);
   }
 
   @Test(expected = RuntimeException.class)
@@ -922,7 +922,7 @@ public class ShadowParcelTest {
     parcel.writeStringArray(strs);
     parcel.setDataPosition(0);
     String[] newStrs = parcel.createStringArray();
-    assertTrue(Arrays.equals(strs, newStrs));
+    assertArrayEquals(strs, newStrs);
   }
 
   @Test

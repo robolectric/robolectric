@@ -349,8 +349,7 @@ public class ShadowWindowManagerGlobalTest {
     controller.get().getWindow().getInsetsController().show(WindowInsets.Type.statusBars());
     idleMainLooper();
 
-    assertThat(controller.get().windowInsets.isVisible(WindowInsets.Type.statusBars()))
-        .isEqualTo(true);
+    assertThat(controller.get().windowInsets.isVisible(WindowInsets.Type.statusBars())).isTrue();
   }
 
   @Config(minSdk = R)
@@ -367,8 +366,7 @@ public class ShadowWindowManagerGlobalTest {
     controller2.get().getWindow().getInsetsController().hide(WindowInsets.Type.statusBars());
     idleMainLooper();
 
-    assertThat(controller2.get().windowInsets.isVisible(WindowInsets.Type.statusBars()))
-        .isEqualTo(false);
+    assertThat(controller2.get().windowInsets.isVisible(WindowInsets.Type.statusBars())).isFalse();
   }
 
   public static final class WindowInsetsActivity extends Activity {

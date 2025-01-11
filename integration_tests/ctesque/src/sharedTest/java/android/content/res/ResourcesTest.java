@@ -259,13 +259,13 @@ public class ResourcesTest {
 
   @Test
   public void getBoolean() {
-    assertThat(resources.getBoolean(R.bool.false_bool_value)).isEqualTo(false);
-    assertThat(resources.getBoolean(R.bool.true_as_item)).isEqualTo(true);
+    assertThat(resources.getBoolean(R.bool.false_bool_value)).isFalse();
+    assertThat(resources.getBoolean(R.bool.true_as_item)).isTrue();
   }
 
   @Test
   public void getBoolean_withReference() {
-    assertThat(resources.getBoolean(R.bool.reference_to_true)).isEqualTo(true);
+    assertThat(resources.getBoolean(R.bool.reference_to_true)).isTrue();
   }
 
   @Test
@@ -332,7 +332,7 @@ public class ResourcesTest {
 
   @Test
   public void getDimension_withReference() {
-    assertThat(resources.getBoolean(R.bool.reference_to_true)).isEqualTo(true);
+    assertThat(resources.getBoolean(R.bool.reference_to_true)).isTrue();
   }
 
   @Test

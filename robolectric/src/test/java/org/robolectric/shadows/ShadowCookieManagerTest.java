@@ -124,12 +124,12 @@ public class ShadowCookieManagerTest {
   @Test
   public void shouldHaveCookieWhenCookieIsSet() {
     cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
-    assertThat(cookieManager.hasCookies()).isEqualTo(true);
+    assertThat(cookieManager.hasCookies()).isTrue();
   }
 
   @Test
   public void shouldNotHaveCookieWhenCookieIsNotSet() {
-    assertThat(cookieManager.hasCookies()).isEqualTo(false);
+    assertThat(cookieManager.hasCookies()).isFalse();
   }
 
   @Test
@@ -191,7 +191,7 @@ public class ShadowCookieManagerTest {
     cookieManager.setAcceptCookie(false);
     cookieManager.setCookie(httpUrl, "name=value; Expires=3234asdfasdf10:18:14 GMT");
     assertThat(cookieManager.getCookie(url)).isEqualTo("name=value");
-    assertThat(cookieManager.acceptCookie()).isEqualTo(false);
+    assertThat(cookieManager.acceptCookie()).isFalse();
   }
 
   @Test

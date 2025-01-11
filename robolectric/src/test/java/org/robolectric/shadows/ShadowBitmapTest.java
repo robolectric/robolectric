@@ -165,7 +165,7 @@ public class ShadowBitmapTest {
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(100);
     assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(50);
     assertThat(shadowBitmap.getCreatedFromMatrix()).isEqualTo(m);
-    assertThat(shadowBitmap.getCreatedFromFilter()).isEqualTo(true);
+    assertThat(shadowBitmap.getCreatedFromFilter()).isTrue();
     assertThat(shadowBitmap.getWidth()).isEqualTo(50);
     assertThat(shadowBitmap.getHeight()).isEqualTo(100);
   }

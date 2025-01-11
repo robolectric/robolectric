@@ -136,7 +136,9 @@ public class ShadowSensorManagerTest {
 
     shadow.sendSensorEventToListeners(event);
 
-    assertThat(listener.getLatestSensorEvent().get()).isEqualTo(event);
+    Optional<SensorEvent> latestSensorEvent = listener.getLatestSensorEvent();
+    assertThat(latestSensorEvent).isPresent();
+    assertThat(latestSensorEvent).hasValue(event);
   }
 
   @Test
@@ -150,8 +152,13 @@ public class ShadowSensorManagerTest {
 
     shadow.sendSensorEventToListeners(event);
 
-    assertThat(listener1.getLatestSensorEvent().get()).isEqualTo(event);
-    assertThat(listener2.getLatestSensorEvent().get()).isEqualTo(event);
+    Optional<SensorEvent> latestSensorEvent1 = listener1.getLatestSensorEvent();
+    assertThat(latestSensorEvent1).isPresent();
+    assertThat(latestSensorEvent1).hasValue(event);
+
+    Optional<SensorEvent> latestSensorEvent2 = listener2.getLatestSensorEvent();
+    assertThat(latestSensorEvent2).isPresent();
+    assertThat(latestSensorEvent2).hasValue(event);
   }
 
   @Test

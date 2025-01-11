@@ -349,17 +349,17 @@ public class XmlResourceParserImplTest {
   public void testIsEmptyElementTag() throws Exception {
     assertWithMessage("Before START_DOCUMENT should return false.")
         .that(parser.isEmptyElementTag())
-        .isEqualTo(false);
+        .isFalse();
 
     forgeAndOpenDocument("<foo><bar/></foo>");
     assertWithMessage("Not empty tag should return false.")
         .that(parser.isEmptyElementTag())
-        .isEqualTo(false);
+        .isFalse();
 
     forgeAndOpenDocument("<foo/>");
     assertWithMessage("In the Android implementation this method always return false.")
         .that(parser.isEmptyElementTag())
-        .isEqualTo(false);
+        .isFalse();
   }
 
   @Test

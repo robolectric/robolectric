@@ -140,10 +140,8 @@ public class AttributeSetBuilderTest {
         Robolectric.buildAttributeSet().addAttribute(R.attr.isSugary, "oh heck yeah").build();
 
     assertThat(roboAttributeSet.getAttributeValue(APP_NS, "isSugary")).isEqualTo("false");
-    assertThat(roboAttributeSet.getAttributeBooleanValue(APP_NS, "isSugary", true))
-        .isEqualTo(false);
-    assertThat(roboAttributeSet.getAttributeBooleanValue(APP_NS, "animalStyle", true))
-        .isEqualTo(true);
+    assertThat(roboAttributeSet.getAttributeBooleanValue(APP_NS, "isSugary", true)).isFalse();
+    assertThat(roboAttributeSet.getAttributeBooleanValue(APP_NS, "animalStyle", true)).isTrue();
   }
 
   @Test
