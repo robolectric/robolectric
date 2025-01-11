@@ -111,7 +111,7 @@ public class ShadowLocationManagerTest {
   public void testGetAllProviders() {
     assertThat(locationManager.getAllProviders())
         .containsExactly(GPS_PROVIDER, NETWORK_PROVIDER, PASSIVE_PROVIDER);
-    shadowLocationManager.setProviderProperties(MY_PROVIDER, (ProviderProperties) null);
+    shadowLocationManager.setProviderProperties(MY_PROVIDER, null);
     assertThat(locationManager.getAllProviders())
         .containsExactly(MY_PROVIDER, GPS_PROVIDER, NETWORK_PROVIDER, PASSIVE_PROVIDER);
   }

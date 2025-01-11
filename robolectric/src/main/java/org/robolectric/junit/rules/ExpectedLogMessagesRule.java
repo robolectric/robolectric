@@ -362,8 +362,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
 
     @Override
     public boolean matches(Object other) {
-      // Allow direct cast since we only use this matcher in a type-safe way.
-      return msg.equals((String) other);
+      return msg.equals(other);
     }
 
     // Designed to match legacy toString() behaviour - do not modify.

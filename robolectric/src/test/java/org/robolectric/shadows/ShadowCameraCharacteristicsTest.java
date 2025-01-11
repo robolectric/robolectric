@@ -13,8 +13,8 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowCameraCharacteristicsTest {
 
-  private final CameraCharacteristics.Key key0 =
-      new CameraCharacteristics.Key("key0", Integer.class);
+  private final CameraCharacteristics.Key<Integer> key0 =
+      new CameraCharacteristics.Key<>("key0", Integer.class);
   private final CameraCharacteristics cameraCharacteristics =
       ShadowCameraCharacteristics.newCameraCharacteristics();
 

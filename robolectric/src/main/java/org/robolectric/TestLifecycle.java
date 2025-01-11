@@ -2,7 +2,7 @@ package org.robolectric;
 
 import java.lang.reflect.Method;
 
-public interface TestLifecycle<T> {
+public interface TestLifecycle {
 
   /**
    * Called before each test method is run.

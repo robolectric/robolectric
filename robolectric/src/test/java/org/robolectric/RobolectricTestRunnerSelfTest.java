@@ -102,8 +102,7 @@ public class RobolectricTestRunnerSelfTest {
 
     @Override
     public void onTerminate() {
-      onTerminateCalledFromMain =
-          Boolean.valueOf(Looper.getMainLooper().getThread() == Thread.currentThread());
+      onTerminateCalledFromMain = Looper.getMainLooper().getThread() == Thread.currentThread();
     }
   }
 }

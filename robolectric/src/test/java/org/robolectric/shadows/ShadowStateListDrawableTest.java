@@ -30,7 +30,7 @@ public class ShadowStateListDrawableTest {
     Drawable drawableForState = shadow.getDrawableForState(states);
 
     assertNotNull(drawableForState);
-    assertThat(((ShadowBitmapDrawable) shadowOf(drawableForState)).getCreatedFromResId())
+    assertThat(shadowOf(drawableForState).getCreatedFromResId())
         .isEqualTo(android.R.drawable.ic_delete);
   }
 
@@ -47,7 +47,7 @@ public class ShadowStateListDrawableTest {
     ShadowStateListDrawable shadow = shadowOf(stateListDrawable);
     Drawable drawableForState = shadow.getDrawableForState(StateSet.WILD_CARD);
     assertNotNull(drawableForState);
-    assertThat(((ShadowBitmapDrawable) shadowOf(drawableForState)).getCreatedFromResId())
+    assertThat(shadowOf(drawableForState).getCreatedFromResId())
         .isEqualTo(android.R.drawable.ic_delete);
   }
 }

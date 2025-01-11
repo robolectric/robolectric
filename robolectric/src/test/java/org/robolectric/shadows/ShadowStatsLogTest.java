@@ -34,7 +34,7 @@ public final class ShadowStatsLogTest {
     final int expectedAtomId = 0;
 
     assertEquals(1, ShadowStatsLog.getStatsLogs().size());
-    assertEquals((int) expectedAtomId, (int) ShadowStatsLog.getStatsLogs().get(0).atomId());
+    assertEquals(expectedAtomId, ShadowStatsLog.getStatsLogs().get(0).atomId());
 
     final ByteBuffer buffer =
         ByteBuffer.wrap(ShadowStatsLog.getStatsLogs().get(0).bytes())
@@ -88,7 +88,7 @@ public final class ShadowStatsLogTest {
     long maxTimestamp = SystemClock.elapsedRealtimeNanos();
 
     assertEquals(1, ShadowStatsLog.getStatsLogs().size());
-    assertEquals((int) expectedAtomId, (int) ShadowStatsLog.getStatsLogs().get(0).atomId());
+    assertEquals(expectedAtomId, ShadowStatsLog.getStatsLogs().get(0).atomId());
 
     final ByteBuffer buffer =
         ByteBuffer.wrap(ShadowStatsLog.getStatsLogs().get(0).bytes())
@@ -196,7 +196,7 @@ public final class ShadowStatsLogTest {
     long maxTimestamp = SystemClock.elapsedRealtimeNanos();
 
     assertEquals(1, ShadowStatsLog.getStatsLogs().size());
-    assertEquals((int) expectedAtomId, (int) ShadowStatsLog.getStatsLogs().get(0).atomId());
+    assertEquals(expectedAtomId, ShadowStatsLog.getStatsLogs().get(0).atomId());
 
     final ByteBuffer buffer =
         ByteBuffer.wrap(ShadowStatsLog.getStatsLogs().get(0).bytes())
