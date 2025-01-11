@@ -406,13 +406,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
       parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
     } else {
       parsedPackage = new Package("org.robolectric.default");
-      parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
     }
-
-    if (parsedPackage != null
-        && parsedPackage.applicationInfo != null
-        && RuntimeEnvironment.getApiLevel() >= P) {
-      parsedPackage.applicationInfo.appComponentFactory = appManifest.getAppComponentFactory();
+    if (parsedPackage != null && parsedPackage.applicationInfo != null) {
+      parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
+      if (RuntimeEnvironment.getApiLevel() >= P) {
+        parsedPackage.applicationInfo.appComponentFactory = appManifest.getAppComponentFactory();
+      }
     }
     return parsedPackage;
   }
