@@ -449,7 +449,6 @@ public class ActivityControllerTest {
   public void close_transitionsActivityStateToDestroyed() {
     Robolectric.buildActivity(MyActivity.class).close();
     assertThat(transcript).isEmpty();
-    transcript.clear();
 
     Robolectric.buildActivity(MyActivity.class).create().close();
     assertThat(transcript)

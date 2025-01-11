@@ -491,7 +491,6 @@ public class ShadowWifiManagerTest {
       fail("Expected exception");
     } catch (RuntimeException expected) {
     }
-    ;
   }
 
   @Test

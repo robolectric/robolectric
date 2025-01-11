@@ -27,7 +27,7 @@ public class ShadowColorDisplayManagerTest {
   private static final String PACKAGE_NAME = "test_package_name";
 
   // Must be optional to avoid ClassNotFoundException
-  Optional<ColorDisplayManager> instance;
+  private Optional<ColorDisplayManager> instance;
 
   @Before
   public void setUp() throws Exception {

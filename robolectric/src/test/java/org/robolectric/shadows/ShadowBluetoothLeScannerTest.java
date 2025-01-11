@@ -17,7 +17,6 @@ import android.content.Intent;
 import android.os.ParcelUuid;
 import androidx.test.core.app.ApplicationProvider;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -237,7 +236,8 @@ public class ShadowBluetoothLeScannerTest {
     shadowBluetoothLeScanner.addScanResult(scanResultTwo);
 
     ScanFilter filter = new ScanFilter.Builder().setDeviceAddress(addressOne).build();
-    bluetoothLeScanner.startScan(Arrays.asList(filter), /* settings= */ null, scanCallback);
+    bluetoothLeScanner.startScan(
+        Collections.singletonList(filter), /* settings= */ null, scanCallback);
 
     assertThat(scanCallback.scanResults).containsExactly(scanResultOne);
   }

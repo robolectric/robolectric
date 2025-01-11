@@ -41,14 +41,13 @@ public final class ShadowMediaControllerTest {
 
   private MediaController mediaController;
   private ShadowMediaController shadowMediaController;
-  private final String testPackageName = "FOO";
 
   @Before
   public void setUp() {
     Context context = ApplicationProvider.getApplicationContext();
     ISessionController binder = mock(ISessionController.class);
 
-    MediaSession.Token token = null;
+    MediaSession.Token token;
     if (RuntimeEnvironment.getApiLevel() <= Q) {
       token =
           ReflectionHelpers.callConstructor(
@@ -66,6 +65,7 @@ public final class ShadowMediaControllerTest {
 
   @Test
   public void setPackageName() {
+    String testPackageName = "FOO";
     shadowMediaController.setPackageName(testPackageName);
     assertEquals(testPackageName, mediaController.getPackageName());
   }

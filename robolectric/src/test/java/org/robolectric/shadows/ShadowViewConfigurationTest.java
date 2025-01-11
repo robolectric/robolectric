@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
 import android.view.ViewConfiguration;
@@ -98,8 +97,7 @@ public class ShadowViewConfigurationTest {
   public void testHasPermanentMenuKey() {
     assertThat(viewConfiguration.hasPermanentMenuKey()).isTrue();
 
-    ShadowViewConfiguration shadowViewConfiguration = shadowOf(viewConfiguration);
-    shadowViewConfiguration.setHasPermanentMenuKey(false);
+    ShadowViewConfiguration.setHasPermanentMenuKey(false);
     assertThat(viewConfiguration.hasPermanentMenuKey()).isFalse();
   }
 

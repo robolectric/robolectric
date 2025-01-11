@@ -12,7 +12,6 @@ import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 /** Wrapper for testing use of AndroidTestEnvironment. */
 public class BootstrapWrapper extends AndroidTestEnvironment implements BootstrapWrapperI {
   public AndroidTestEnvironment wrappedTestEnvironment;
-  public boolean legacyResources;
   public String tmpDirName;
   public Configuration config;
   public AndroidManifest appManifest;

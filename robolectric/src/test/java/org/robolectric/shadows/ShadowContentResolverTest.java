@@ -714,7 +714,6 @@ public class ShadowContentResolverTest {
     assertThat(uri.flags).isEqualTo(ContentResolver.NOTIFY_UPDATE);
   }
 
-  @SuppressWarnings("serial")
   @Test
   public void applyBatchForRegisteredProvider()
       throws RemoteException, OperationApplicationException {

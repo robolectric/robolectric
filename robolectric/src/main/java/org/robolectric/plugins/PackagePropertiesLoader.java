@@ -40,8 +40,7 @@ public class PackagePropertiesLoader {
     return cache.computeIfAbsent(
         propsFile,
         s -> {
-          final String resourceName = propsFile;
-          try (InputStream resourceAsStream = getResourceAsStream(resourceName)) {
+          try (InputStream resourceAsStream = getResourceAsStream(propsFile)) {
             if (resourceAsStream == null) {
               return null;
             }

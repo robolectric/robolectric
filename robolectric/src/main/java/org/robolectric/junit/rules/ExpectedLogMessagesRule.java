@@ -328,7 +328,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
 
       ExpectedLogItem log = (ExpectedLogItem) o;
       return type == log.type
-          && !(tag != null ? !tag.equals(log.tag) : log.tag != null)
+          && Objects.equals(tag, log.tag)
           && Objects.equals(msgMatcher, log.msgMatcher)
           && Objects.equals(throwableMatcher, log.throwableMatcher);
     }
@@ -410,7 +410,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
     // This matches legacy behaviour to allow ExpectedLogItem to de-duplicate regex expectations.
     @Override
     public boolean equals(Object other) {
-      return other instanceof MsgRegex ? isEqual(pattern, ((MsgRegex) other).pattern) : false;
+      return other instanceof MsgRegex && isEqual(pattern, ((MsgRegex) other).pattern);
     }
 
     @Override

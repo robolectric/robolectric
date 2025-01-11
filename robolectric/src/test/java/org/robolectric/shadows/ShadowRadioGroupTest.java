@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import android.app.Application;
+import android.content.Context;
 import android.widget.RadioGroup;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -16,12 +16,11 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowRadioGroupTest {
   private static final int BUTTON_ID = 3245;
-  private Application context;
   private RadioGroup radioGroup;
 
   @Before
   public void setUp() throws Exception {
-    context = ApplicationProvider.getApplicationContext();
+    Context context = ApplicationProvider.getApplicationContext();
     radioGroup = new RadioGroup(context);
   }
 

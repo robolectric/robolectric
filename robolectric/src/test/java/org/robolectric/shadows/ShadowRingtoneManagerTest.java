@@ -30,17 +30,15 @@ public final class ShadowRingtoneManagerTest {
   @Test
   public void getRingtone_noUriSet_returnNull() {
     Context appContext = ApplicationProvider.getApplicationContext();
-    int type = TYPE_RINGTONE;
 
-    assertThat(RingtoneManager.getActualDefaultRingtoneUri(appContext, type)).isNull();
+    assertThat(RingtoneManager.getActualDefaultRingtoneUri(appContext, TYPE_RINGTONE)).isNull();
   }
 
   @Test
   public void getRingtone_uriSetForDifferentType() {
     Context appContext = ApplicationProvider.getApplicationContext();
-    int type = TYPE_RINGTONE;
     Uri uri = Uri.parse("content://media/external/330");
-    RingtoneManager.setActualDefaultRingtoneUri(appContext, type, uri);
+    RingtoneManager.setActualDefaultRingtoneUri(appContext, TYPE_RINGTONE, uri);
 
     assertThat(RingtoneManager.getActualDefaultRingtoneUri(appContext, TYPE_ALARM)).isNull();
   }

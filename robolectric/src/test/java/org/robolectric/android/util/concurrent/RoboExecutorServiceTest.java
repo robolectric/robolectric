@@ -21,7 +21,6 @@ import org.robolectric.util.Scheduler;
 public class RoboExecutorServiceTest {
   private List<String> transcript;
   private RoboExecutorService executorService;
-  private Scheduler backgroundScheduler;
   private Runnable runnable;
 
   @Before
@@ -29,9 +28,9 @@ public class RoboExecutorServiceTest {
     transcript = new ArrayList<>();
     executorService = new RoboExecutorService();
 
-    backgroundScheduler = Robolectric.getBackgroundThreadScheduler();
-
+    Scheduler backgroundScheduler = Robolectric.getBackgroundThreadScheduler();
     backgroundScheduler.pause();
+
     runnable = () -> transcript.add("background event ran");
   }
 
