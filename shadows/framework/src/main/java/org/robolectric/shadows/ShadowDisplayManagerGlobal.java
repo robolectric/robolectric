@@ -48,6 +48,9 @@ public class ShadowDisplayManagerGlobal {
   private static final String TOPOLOGY_LISTENERS_FIELD_NAME = "mTopologyListeners";
   private static DisplayManagerGlobal instance;
 
+  // TODO: remove and use DisplayManagerGlobal directly when compiling against Baklava
+  private static final int EVENT_DISPLAY_BASIC_CHANGED = 2;
+
   private float saturationLevel = 1f;
   private final SparseArray<BrightnessConfiguration> brightnessConfiguration = new SparseArray<>();
   private final List<BrightnessChangeEvent> brightnessChangeEvents = new ArrayList<>();
@@ -323,7 +326,7 @@ public class ShadowDisplayManagerGlobal {
       }
 
       displayInfos.put(displayId, displayInfo);
-      notifyListeners(displayId, DisplayManagerGlobal.EVENT_DISPLAY_CHANGED);
+      notifyListeners(displayId, EVENT_DISPLAY_BASIC_CHANGED);
     }
 
     private synchronized void removeDisplay(int displayId) {
