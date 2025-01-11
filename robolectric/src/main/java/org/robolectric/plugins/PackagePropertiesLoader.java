@@ -36,7 +36,7 @@ public class PackagePropertiesLoader {
       buf.append(packageName.replace('.', '/'));
       buf.append('/');
     }
-    String propsFile = buf.toString() + propFileName + ".properties";
+    String propsFile = buf + propFileName + ".properties";
     return cache.computeIfAbsent(
         propsFile,
         s -> {

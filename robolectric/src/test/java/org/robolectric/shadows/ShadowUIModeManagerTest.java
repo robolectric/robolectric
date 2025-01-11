@@ -33,7 +33,7 @@ public class ShadowUIModeManagerTest {
   public void setUp() {
     context = ApplicationProvider.getApplicationContext();
     uiModeManager = (UiModeManager) context.getSystemService(Context.UI_MODE_SERVICE);
-    shadowUiModeManager = (ShadowUIModeManager) Shadow.extract(uiModeManager);
+    shadowUiModeManager = Shadow.extract(uiModeManager);
   }
 
   @Test

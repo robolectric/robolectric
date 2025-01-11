@@ -466,7 +466,7 @@ public class ShadowHandlerTest {
 
     Message m2 = new Handler().obtainMessage(1, "foo");
     assertThat(m2.what).isEqualTo(1);
-    assertThat(m2.obj).isEqualTo((Object) "foo");
+    assertThat(m2.obj).isEqualTo("foo");
 
     Message m3 = new Handler().obtainMessage(1, 2, 3);
     assertThat(m3.what).isEqualTo(1);
@@ -478,7 +478,7 @@ public class ShadowHandlerTest {
     assertThat(m4.what).isEqualTo(1);
     assertThat(m4.arg1).isEqualTo(2);
     assertThat(m4.arg2).isEqualTo(3);
-    assertThat(m4.obj).isEqualTo((Object) "foo");
+    assertThat(m4.obj).isEqualTo("foo");
   }
 
   @Test

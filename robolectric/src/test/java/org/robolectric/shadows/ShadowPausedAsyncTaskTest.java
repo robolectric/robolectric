@@ -181,7 +181,7 @@ public class ShadowPausedAsyncTaskTest {
           @Override
           protected Void doInBackground(Void... params) {
             boolean isMainLooper = Looper.getMainLooper().getThread() == Thread.currentThread();
-            transcript.add("doInBackground on main looper " + Boolean.toString(isMainLooper));
+            transcript.add("doInBackground on main looper " + isMainLooper);
             return null;
           }
         };

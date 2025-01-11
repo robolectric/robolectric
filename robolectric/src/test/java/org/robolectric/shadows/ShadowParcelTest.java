@@ -1128,7 +1128,7 @@ public class ShadowParcelTest {
     try {
       assertThat(parcel2.readString()).isEqualTo("hello world");
 
-      Intent unmarshalledIntent = (Intent) parcel2.readParcelable(Intent.class.getClassLoader());
+      Intent unmarshalledIntent = parcel2.readParcelable(Intent.class.getClassLoader());
       assertThat(unmarshalledIntent.getAction()).isEqualTo("action.foo");
       assertThat(unmarshalledIntent.getStringExtra("key1")).isEqualTo("str1");
       assertThat(unmarshalledIntent.getIntExtra("key2", -1)).isEqualTo(2);

@@ -89,8 +89,8 @@ public class ShadowContentResolverTest {
   public void setUp() {
     contentResolver = ApplicationProvider.getApplicationContext().getContentResolver();
     shadowContentResolver = shadowOf(contentResolver);
-    uri21 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/21");
-    uri22 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/22");
+    uri21 = Uri.parse(EXTERNAL_CONTENT_URI + "/21");
+    uri22 = Uri.parse(EXTERNAL_CONTENT_URI + "/22");
 
     a = new Account("a", "type");
     b = new Account("b", "type");
@@ -271,8 +271,7 @@ public class ShadowContentResolverTest {
     assertThat(shadowContentResolver.query(null, null, null, null, null)).isNull();
     BaseCursor cursor = new BaseCursor();
     shadowContentResolver.setCursor(cursor);
-    assertThat((BaseCursor) shadowContentResolver.query(null, null, null, null, null))
-        .isSameInstanceAs(cursor);
+    assertThat(shadowContentResolver.query(null, null, null, null, null)).isSameInstanceAs(cursor);
   }
 
   @Test
@@ -281,9 +280,7 @@ public class ShadowContentResolverTest {
         .isNull();
     BaseCursor cursor = new BaseCursor();
     shadowContentResolver.setCursor(cursor);
-    assertThat(
-            (BaseCursor)
-                shadowContentResolver.query(null, null, null, null, null, new CancellationSignal()))
+    assertThat(shadowContentResolver.query(null, null, null, null, null, new CancellationSignal()))
         .isSameInstanceAs(cursor);
   }
 
@@ -297,9 +294,9 @@ public class ShadowContentResolverTest {
     shadowContentResolver.setCursor(uri21, cursor21);
     shadowContentResolver.setCursor(uri22, cursor22);
 
-    assertThat((BaseCursor) shadowContentResolver.query(uri21, null, null, null, null))
+    assertThat(shadowContentResolver.query(uri21, null, null, null, null))
         .isSameInstanceAs(cursor21);
-    assertThat((BaseCursor) shadowContentResolver.query(uri22, null, null, null, null))
+    assertThat(shadowContentResolver.query(uri22, null, null, null, null))
         .isSameInstanceAs(cursor22);
   }
 
@@ -315,7 +312,7 @@ public class ShadowContentResolverTest {
     shadowContentResolver.setCursor(testCursor);
     Cursor cursor =
         shadowContentResolver.query(uri21, projection, selection, selectionArgs, sortOrder);
-    assertThat((QueryParamTrackingCursor) cursor).isEqualTo(testCursor);
+    assertThat(cursor).isEqualTo(testCursor);
     assertThat(testCursor.uri).isEqualTo(uri21);
     assertThat(testCursor.projection).isEqualTo(projection);
     assertThat(testCursor.selection).isEqualTo(selection);
@@ -338,7 +335,7 @@ public class ShadowContentResolverTest {
     QueryParamTrackingCursor testCursor = new QueryParamTrackingCursor();
     shadowContentResolver.setCursor(testCursor);
     Cursor cursor = shadowContentResolver.query(uri21, projection, queryArgs, null);
-    assertThat((QueryParamTrackingCursor) cursor).isEqualTo(testCursor);
+    assertThat(cursor).isEqualTo(testCursor);
     assertThat(testCursor.uri).isEqualTo(uri21);
     assertThat(testCursor.projection).isEqualTo(projection);
     assertThat(testCursor.selection).isEqualTo(selection);
@@ -1091,7 +1088,7 @@ public class ShadowContentResolverTest {
 
     contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
 
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).containsExactly((ContentObserver) co);
+    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).containsExactly(co);
 
     assertThat(co.changed).isFalse();
     contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);

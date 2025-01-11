@@ -56,8 +56,8 @@ public class ConfigMerger {
       config = override(config, packageConfig);
     }
 
-    for (Class clazz : reverse(parentClassesFor(testClass))) {
-      Config classConfig = (Config) clazz.getAnnotation(Config.class);
+    for (Class<?> clazz : reverse(parentClassesFor(testClass))) {
+      Config classConfig = clazz.getAnnotation(Config.class);
       config = override(config, classConfig);
     }
 
@@ -123,8 +123,8 @@ public class ConfigMerger {
   }
 
   @Nonnull
-  private List<Class> parentClassesFor(Class testClass) {
-    List<Class> testClassHierarchy = new ArrayList<>();
+  private List<Class<?>> parentClassesFor(Class<?> testClass) {
+    List<Class<?>> testClassHierarchy = new ArrayList<>();
     while (testClass != null && !testClass.equals(Object.class)) {
       testClassHierarchy.add(testClass);
       testClass = testClass.getSuperclass();

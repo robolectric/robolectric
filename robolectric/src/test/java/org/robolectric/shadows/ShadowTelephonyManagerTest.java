@@ -821,9 +821,8 @@ public class ShadowTelephonyManagerTest {
   }
 
   private String callGetSimCountryIso(TelephonyManager telephonyManager, int subId) {
-    return (String)
-        ReflectionHelpers.callInstanceMethod(
-            telephonyManager, "getSimCountryIso", ClassParameter.from(int.class, subId));
+    return ReflectionHelpers.callInstanceMethod(
+        telephonyManager, "getSimCountryIso", ClassParameter.from(int.class, subId));
   }
 
   @Test

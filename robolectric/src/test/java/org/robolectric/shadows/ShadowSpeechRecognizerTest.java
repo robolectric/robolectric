@@ -273,7 +273,7 @@ public class ShadowSpeechRecognizerTest {
         new RecognitionSupport.Builder().addInstalledOnDeviceLanguage("en-US").build();
     speechRecognizer.checkRecognitionSupport(new Intent(), executor, supportCallback);
 
-    ((ShadowSpeechRecognizer) shadowOf(speechRecognizer)).triggerSupportResult(recognitionSupport);
+    shadowOf(speechRecognizer).triggerSupportResult(recognitionSupport);
     executor.runAll();
 
     assertThat(supportCallback.recognitionSupportReceived).isEqualTo(recognitionSupport);
@@ -286,7 +286,7 @@ public class ShadowSpeechRecognizerTest {
     TestRecognitionSupportCallback supportCallback = new TestRecognitionSupportCallback();
     speechRecognizer.checkRecognitionSupport(new Intent(), executor, supportCallback);
 
-    ((ShadowSpeechRecognizer) shadowOf(speechRecognizer)).triggerSupportError(1);
+    shadowOf(speechRecognizer).triggerSupportError(1);
     executor.runAll();
 
     assertThat(supportCallback.errorReceived).isEqualTo(1);
@@ -298,7 +298,7 @@ public class ShadowSpeechRecognizerTest {
     Intent modelDownloadIntent = new Intent();
     speechRecognizer.triggerModelDownload(modelDownloadIntent);
 
-    assertThat(((ShadowSpeechRecognizer) shadowOf(speechRecognizer)).getLatestModelDownloadIntent())
+    assertThat(shadowOf(speechRecognizer).getLatestModelDownloadIntent())
         .isSameInstanceAs(modelDownloadIntent);
   }
 

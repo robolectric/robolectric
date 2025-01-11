@@ -101,7 +101,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
       this.name = name;
     }
 
-    private Object createTestInstance(Class bootstrappedClass) throws Exception {
+    private Object createTestInstance(Class<?> bootstrappedClass) throws Exception {
       Constructor<?>[] constructors = bootstrappedClass.getConstructors();
       Assert.assertEquals(1, constructors.length);
       if (!fieldsAreAnnotated()) {
@@ -177,7 +177,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
                 Locale.US,
                 "Provided %d parameters, but only found fields for parameters: %s",
                 parameters.length,
-                parameterFieldsFound.toString()));
+                parameterFieldsFound));
       }
     }
 
@@ -241,7 +241,8 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
     }
 
     @Override
-    protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
+    protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(
+        Class<?> bootstrappedTestClass) {
       try {
         return new HelperTestRunner(bootstrappedTestClass) {
           @Override
@@ -262,7 +263,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
 
           @Override
           public String toString() {
-            return "HelperTestRunner for " + TestClassRunnerForParameters.this.toString();
+            return "HelperTestRunner for " + TestClassRunnerForParameters.this;
           }
         };
       } catch (InitializationError initializationError) {
@@ -285,7 +286,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
    * Only called reflectively. Do not use programmatically.
    */
   public ParameterizedRobolectricTestRunner(Class<?> klass) throws Throwable {
-    super(klass, Collections.<Runner>emptyList());
+    super(klass, Collections.emptyList());
     TestClass testClass = getTestClass();
     ClassLoader classLoader = getClass().getClassLoader();
     Parameters parameters =

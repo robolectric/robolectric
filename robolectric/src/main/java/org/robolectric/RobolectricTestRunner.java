@@ -544,7 +544,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     private final boolean alwaysIncludeVariantMarkersInName;
 
     private boolean includeVariantMarkersInTestName = true;
-    TestLifecycle<?> testLifecycle;
+    TestLifecycle testLifecycle;
     Sandbox sandbox;
     TestEnvironment testEnvironment;
 

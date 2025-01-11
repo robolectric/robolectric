@@ -2921,7 +2921,7 @@ public class ShadowPackageManagerTest {
   public void getPackagesForUid() {
     assertThat(packageManager.getPackagesForUid(10)).isNull();
 
-    shadowOf(packageManager).setPackagesForUid(10, new String[] {"a_name"});
+    shadowOf(packageManager).setPackagesForUid(10, "a_name");
 
     assertThat(packageManager.getPackagesForUid(10)).asList().containsExactly("a_name");
   }
@@ -2929,7 +2929,7 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = N)
   public void getPackageUid() throws NameNotFoundException {
-    shadowOf(packageManager).setPackagesForUid(10, new String[] {"a_name"});
+    shadowOf(packageManager).setPackagesForUid(10, "a_name");
     assertThat(packageManager.getPackageUid("a_name", 0)).isEqualTo(10);
   }
 
@@ -2947,7 +2947,7 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = TIRAMISU)
   public void getPackageUid_sdkT() throws NameNotFoundException {
-    shadowOf(packageManager).setPackagesForUid(10, new String[] {"a_name"});
+    shadowOf(packageManager).setPackagesForUid(10, "a_name");
     assertThat(packageManager.getPackageUid("a_name", PackageInfoFlags.of(0))).isEqualTo(10);
   }
 
@@ -2964,7 +2964,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getPackagesForUid_shouldReturnSetPackageName() {
-    shadowOf(packageManager).setPackagesForUid(10, new String[] {"a_name"});
+    shadowOf(packageManager).setPackagesForUid(10, "a_name");
     assertThat(packageManager.getPackagesForUid(10)).asList().containsExactly("a_name");
   }
 
@@ -4103,7 +4103,7 @@ public class ShadowPackageManagerTest {
         /* suspended= */ true,
         /* appExtras= */ null,
         /* launcherExtras= */ null,
-        /* dialogMessage= */ (String) null);
+        /* dialogMessage= */ null);
     assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isTrue();
   }
 
@@ -4131,13 +4131,13 @@ public class ShadowPackageManagerTest {
         /* suspended= */ true,
         /* appExtras= */ null,
         /* launcherExtras= */ null,
-        /* dialogMessage= */ (String) null);
+        /* dialogMessage= */ null);
     setPackagesSuspended(
         new String[] {TEST_PACKAGE_NAME},
         /* suspended= */ false,
         /* appExtras= */ null,
         /* launcherExtras= */ null,
-        /* dialogMessage= */ (String) null);
+        /* dialogMessage= */ null);
     assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isFalse();
   }
 
@@ -4174,7 +4174,7 @@ public class ShadowPackageManagerTest {
           /* suspended= */ true,
           /* appExtras= */ null,
           /* launcherExtras= */ null,
-          /* dialogMessage= */ (String) null);
+          /* dialogMessage= */ null);
       fail("Should have thrown UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
     }
@@ -4235,7 +4235,7 @@ public class ShadowPackageManagerTest {
           /* suspended= */ true,
           /* appExtras= */ null,
           /* launcherExtras= */ null,
-          /* dialogMessage= */ (String) null);
+          /* dialogMessage= */ null);
       fail("Should have thrown UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
     }
@@ -4305,7 +4305,7 @@ public class ShadowPackageManagerTest {
                 /* suspended= */ true,
                 /* appExtras= */ null,
                 /* launcherExtras= */ null,
-                /* dialogMessage= */ (String) null))
+                /* dialogMessage= */ null))
         .asList()
         .containsExactly("com.nonexistent.package", "android", context.getPackageName());
 
@@ -4430,7 +4430,7 @@ public class ShadowPackageManagerTest {
         /* suspended= */ false,
         /* appExtras= */ null,
         /* launcherExtras= */ null,
-        /* dialogMessage= */ (String) null);
+        /* dialogMessage= */ null);
 
     assertThat(
             setPackagesSuspended(
@@ -4444,7 +4444,7 @@ public class ShadowPackageManagerTest {
                 /* suspended= */ false,
                 /* appExtras= */ null,
                 /* launcherExtras= */ null,
-                /* dialogMessage= */ (String) null))
+                /* dialogMessage= */ null))
         .asList()
         .containsExactly("com.nonexistent.package", "android", context.getPackageName());
 

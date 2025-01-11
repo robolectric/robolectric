@@ -744,7 +744,7 @@ public class ShadowMediaPlayerTest {
     public Object[] args;
 
     public MethodSpec(String method) {
-      this(method, (Class<?>[]) null, (Object[]) null);
+      this(method, null, (Object[]) null);
     }
 
     public MethodSpec(String method, Class<?>[] argTypes, Object[] args) {
