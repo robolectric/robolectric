@@ -13,12 +13,12 @@ import org.robolectric.plugins.PackagePropertiesLoader;
 @RunWith(JUnit4.class)
 public final class SingleValueConfigurerTest {
 
-  public static enum Value {
+  public enum Value {
     ON,
     OFF;
   }
 
-  public static @interface ValueConfig {
+  public @interface ValueConfig {
     public Value value() default Value.ON;
   }
 

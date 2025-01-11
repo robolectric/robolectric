@@ -152,7 +152,7 @@ public class HealthStatsBuilderTest {
     assertThat(Ints.asList(reversedSetAsSortedArray)).isInStrictOrder();
   }
 
-  private final void compareTimers(TimerStat timer1, TimerStat timer2) {
+  private void compareTimers(TimerStat timer1, TimerStat timer2) {
     assertThat(timer1.getCount()).isEqualTo(timer2.getCount());
     assertThat(timer1.getTime()).isEqualTo(timer2.getTime());
   }

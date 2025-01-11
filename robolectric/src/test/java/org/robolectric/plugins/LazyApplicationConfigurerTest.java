@@ -13,7 +13,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class LazyApplicationConfigurerTest {
 
-  private LazyApplicationConfigurer configurer =
+  private final LazyApplicationConfigurer configurer =
       new LazyApplicationConfigurer(new Properties(), new PackagePropertiesLoader());
 
   @Test

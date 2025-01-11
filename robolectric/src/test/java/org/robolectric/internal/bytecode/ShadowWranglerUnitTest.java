@@ -18,7 +18,7 @@ import org.robolectric.util.Function;
 public class ShadowWranglerUnitTest {
   private ShadowWrangler shadowWrangler;
   private Interceptors interceptors;
-  private ShadowMatcher sdk23 = new AndroidSdkShadowMatcher(23);
+  private final ShadowMatcher sdk23 = new AndroidSdkShadowMatcher(23);
 
   @Before
   public void setup() throws Exception {

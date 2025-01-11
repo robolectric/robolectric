@@ -477,7 +477,7 @@ public class ShadowIntentTest {
   }
 
   private static class TestSerializable implements Serializable {
-    private String someValue;
+    private final String someValue;
 
     public TestSerializable(String someValue) {
       this.someValue = someValue;

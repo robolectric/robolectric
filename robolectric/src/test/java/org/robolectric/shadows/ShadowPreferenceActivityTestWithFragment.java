@@ -21,7 +21,8 @@ import org.robolectric.Robolectric;
  */
 @RunWith(AndroidJUnit4.class)
 public class ShadowPreferenceActivityTestWithFragment {
-  private TestPreferenceActivity activity = Robolectric.setupActivity(TestPreferenceActivity.class);
+  private final TestPreferenceActivity activity =
+      Robolectric.setupActivity(TestPreferenceActivity.class);
   private TestPreferenceFragment fragment;
   private static final String FRAGMENT_TAG = "fragmentPreferenceTag";
 

@@ -57,7 +57,7 @@ public class ShadowLegacyLooperTest {
   private class QuitThread extends Thread {
     private boolean hasContinued = false;
     private Looper looper;
-    private CountDownLatch started = new CountDownLatch(1);
+    private final CountDownLatch started = new CountDownLatch(1);
 
     public QuitThread() {
       super(testName.getMethodName());

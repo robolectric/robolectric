@@ -12,7 +12,7 @@ import org.robolectric.util.Logger;
 
 @SuppressWarnings("NewApi")
 public class DefaultManifestFactory implements ManifestFactory {
-  private Properties properties;
+  private final Properties properties;
 
   public DefaultManifestFactory(Properties properties) {
     this.properties = properties;

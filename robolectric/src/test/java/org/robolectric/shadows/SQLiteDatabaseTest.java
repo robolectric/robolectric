@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class SQLiteDatabaseTest {
   private SQLiteDatabase database;
-  private List<SQLiteDatabase> openDatabases = new ArrayList<>();
+  private final List<SQLiteDatabase> openDatabases = new ArrayList<>();
   private static final String ANY_VALID_SQL = "SELECT 1";
   private File databasePath;
 

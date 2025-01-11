@@ -115,7 +115,7 @@ public class ServiceControllerTest {
 
   public static class MyService extends Service {
 
-    private Handler handler = new Handler(Looper.getMainLooper());
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     public Intent boundIntent;
 

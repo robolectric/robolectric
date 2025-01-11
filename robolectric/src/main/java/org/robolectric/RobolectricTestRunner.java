@@ -90,7 +90,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private final ConfigurationStrategy configurationStrategy;
   private final AndroidConfigurer androidConfigurer;
 
-  private boolean alwaysIncludeVariantMarkersInName =
+  private final boolean alwaysIncludeVariantMarkersInName =
       Boolean.parseBoolean(
           System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName", "false"));
 

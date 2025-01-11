@@ -6,7 +6,7 @@ import java.net.URL;
 import org.robolectric.util.Logger;
 
 public class LocalDependencyResolver implements DependencyResolver {
-  private File offlineJarDir;
+  private final File offlineJarDir;
 
   public LocalDependencyResolver(File offlineJarDir) {
     super();

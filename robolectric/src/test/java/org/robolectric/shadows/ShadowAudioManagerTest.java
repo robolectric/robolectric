@@ -1736,7 +1736,7 @@ public class ShadowAudioManagerTest {
   }
 
   private static class LocalOnModeChangedListener implements OnModeChangedListener {
-    private List<Integer> modes = new ArrayList<>();
+    private final List<Integer> modes = new ArrayList<>();
 
     @Override
     public void onModeChanged(int mode) {

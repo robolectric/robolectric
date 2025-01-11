@@ -17,7 +17,7 @@ import org.robolectric.res.android.ResTable_config;
 
 @RunWith(JUnit4.class)
 public class ResBundleTest {
-  private ResBundle.ResMap resMap = new ResBundle.ResMap();
+  private final ResBundle.ResMap resMap = new ResBundle.ResMap();
   private ResName resName;
 
   @Before

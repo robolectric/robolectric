@@ -337,9 +337,9 @@ public class RobolectricTestRunnerMultiApiTest {
   }
 
   private static class MyRunListener extends RunListener {
-    private List<String> started = new ArrayList<>();
-    private List<String> finished = new ArrayList<>();
-    private List<String> ignored = new ArrayList<>();
+    private final List<String> started = new ArrayList<>();
+    private final List<String> finished = new ArrayList<>();
+    private final List<String> ignored = new ArrayList<>();
 
     @Override
     public void testStarted(Description description) {
