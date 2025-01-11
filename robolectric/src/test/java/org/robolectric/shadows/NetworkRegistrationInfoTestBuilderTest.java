@@ -69,7 +69,7 @@ public class NetworkRegistrationInfoTestBuilderTest {
   public void testSetEmergencyOnly_isSetInResultingObject() {
     NetworkRegistrationInfo networkRegistrationInfo =
         NetworkRegistrationInfoTestBuilder.newBuilder().setEmergencyOnly(true).build();
-    assertThat(networkRegistrationInfo.isEmergencyEnabled()).isEqualTo(true);
+    assertThat(networkRegistrationInfo.isEmergencyEnabled()).isTrue();
   }
 
   @Test

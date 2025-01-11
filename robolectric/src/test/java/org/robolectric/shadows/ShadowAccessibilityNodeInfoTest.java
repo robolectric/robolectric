@@ -105,7 +105,7 @@ public class ShadowAccessibilityNodeInfoTest {
     node = AccessibilityNodeInfo.obtain();
     node.setClickable(false);
     shadow = shadowOf(node);
-    assertThat(node.isClickable()).isEqualTo(false);
+    assertThat(node.isClickable()).isFalse();
     node.setText("Test");
     node.addAction(AccessibilityNodeInfo.ACTION_SET_SELECTION);
     node.setTextSelection(0, 1);
@@ -121,7 +121,7 @@ public class ShadowAccessibilityNodeInfoTest {
     node.addAction(AccessibilityNodeInfo.ACTION_PASTE);
     assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_PASTE);
     node.setClickable(true);
-    assertThat(node.isClickable()).isEqualTo(true);
+    assertThat(node.isClickable()).isTrue();
     node.setClickable(false);
     node.removeAction(AccessibilityNodeInfo.ACTION_PASTE);
     node.addAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
@@ -138,11 +138,11 @@ public class ShadowAccessibilityNodeInfoTest {
         (action, arguments) -> action == AccessibilityNodeInfo.ACTION_CLICK);
 
     boolean clickResult = node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-    assertThat(clickResult).isEqualTo(true);
-    assertThat(shadow.getPerformedActions().isEmpty()).isEqualTo(false);
+    assertThat(clickResult).isTrue();
+    assertThat(shadow.getPerformedActions().isEmpty()).isFalse();
     assertThat(shadow.getPerformedActions().get(0)).isEqualTo(AccessibilityNodeInfo.ACTION_CLICK);
     boolean longClickResult = node.performAction(AccessibilityNodeInfo.ACTION_LONG_CLICK);
-    assertThat(longClickResult).isEqualTo(false);
+    assertThat(longClickResult).isFalse();
     assertThat(shadow.getPerformedActions().size()).isEqualTo(2);
     assertThat(shadow.getPerformedActions().get(1))
         .isEqualTo(AccessibilityNodeInfo.ACTION_LONG_CLICK);

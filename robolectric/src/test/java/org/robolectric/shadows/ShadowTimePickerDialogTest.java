@@ -20,7 +20,7 @@ public class ShadowTimePickerDialogTest {
     ShadowTimePickerDialog shadow = shadowOf(timePickerDialog);
     assertThat(shadow.getHourOfDay()).isEqualTo(6);
     assertThat(shadow.getMinute()).isEqualTo(55);
-    assertThat(shadow.getIs24HourView()).isEqualTo(true);
+    assertThat(shadow.getIs24HourView()).isTrue();
   }
 
   @Test

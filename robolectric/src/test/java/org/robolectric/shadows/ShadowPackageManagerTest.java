@@ -2237,7 +2237,7 @@ public class ShadowPackageManagerTest {
     ActivityInfo activityInfoWithFilters =
         findActivity(packageInfo.activities, ActivityWithFilters.class.getName());
     assertThat(activityInfoWithFilters.packageName).isEqualTo("org.robolectric");
-    assertThat(activityInfoWithFilters.exported).isEqualTo(true);
+    assertThat(activityInfoWithFilters.exported).isTrue();
     assertThat(activityInfoWithFilters.permission).isEqualTo("com.foo.MY_PERMISSION");
   }
 
@@ -2669,8 +2669,8 @@ public class ShadowPackageManagerTest {
     assertThat(meta.getString("org.robolectric.metaName1")).isEqualTo("metaValue1");
     assertThat(meta.getString("org.robolectric.metaName2")).isEqualTo("metaValue2");
 
-    assertThat(meta.getBoolean("org.robolectric.metaFalseLiteral")).isEqualTo(false);
-    assertThat(meta.getBoolean("org.robolectric.metaTrueLiteral")).isEqualTo(true);
+    assertThat(meta.getBoolean("org.robolectric.metaFalseLiteral")).isFalse();
+    assertThat(meta.getBoolean("org.robolectric.metaTrueLiteral")).isTrue();
 
     assertThat(meta.getInt("org.robolectric.metaInt")).isEqualTo(123);
     assertThat(meta.getFloat("org.robolectric.metaFloat")).isEqualTo(1.23f);

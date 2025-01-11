@@ -530,9 +530,10 @@ public class ShadowTextViewTest {
   }
 
   private void assertEachTextWatcherEventWasInvoked(MockTextWatcher mockTextWatcher) {
-    assertTrue(
+    assertEquals(
         "Expected each TextWatcher event to" + " have" + " been" + " invoked" + " once",
-        mockTextWatcher.methodsCalled.size() == 3);
+        3,
+        mockTextWatcher.methodsCalled.size());
 
     assertThat(mockTextWatcher.methodsCalled.get(0)).isEqualTo("beforeTextChanged");
     assertThat(mockTextWatcher.methodsCalled.get(1)).isEqualTo("onTextChanged");

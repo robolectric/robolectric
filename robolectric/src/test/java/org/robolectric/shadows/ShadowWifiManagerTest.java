@@ -150,10 +150,10 @@ public class ShadowWifiManagerTest {
   @Test
   public void getIsScanAlwaysAvailable() {
     shadowOf(wifiManager).setIsScanAlwaysAvailable(true);
-    assertThat(wifiManager.isScanAlwaysAvailable()).isEqualTo(true);
+    assertThat(wifiManager.isScanAlwaysAvailable()).isTrue();
 
     shadowOf(wifiManager).setIsScanAlwaysAvailable(false);
-    assertThat(wifiManager.isScanAlwaysAvailable()).isEqualTo(false);
+    assertThat(wifiManager.isScanAlwaysAvailable()).isFalse();
   }
 
   @Test

@@ -1,7 +1,7 @@
 package org.robolectric.android;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 
 import android.util.Log;
 import android.view.View;
@@ -28,7 +28,7 @@ public class ShadowingTest {
 
   @Test
   public void shouldDelegateToObjectHashCodeIfShadowHasNone() {
-    assertFalse(new View(ApplicationProvider.getApplicationContext()).hashCode() == 0);
+    assertNotEquals(0, new View(ApplicationProvider.getApplicationContext()).hashCode());
   }
 
   @Test

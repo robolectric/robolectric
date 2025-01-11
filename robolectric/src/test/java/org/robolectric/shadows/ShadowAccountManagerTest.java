@@ -970,7 +970,7 @@ public class ShadowAccountManagerTest {
         am.hasFeatures(account, new String[] {"FEATURE_1", "FEATURE_2"}, callback, new Handler());
 
     assertThat(future.isDone()).isTrue();
-    assertThat(future.getResult().booleanValue()).isEqualTo(true);
+    assertThat(future.getResult()).isTrue();
 
     shadowMainLooper().idle();
     assertThat(callback.hasBeenCalled()).isTrue();
@@ -987,7 +987,7 @@ public class ShadowAccountManagerTest {
         am.hasFeatures(account, new String[] {"FEATURE_1", "FEATURE_2"}, callback, new Handler());
 
     assertThat(future.isDone()).isTrue();
-    assertThat(future.getResult().booleanValue()).isEqualTo(false);
+    assertThat(future.getResult()).isFalse();
     shadowMainLooper().idle();
     assertThat(callback.hasBeenCalled()).isTrue();
   }

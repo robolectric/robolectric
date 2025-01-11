@@ -7,7 +7,6 @@ import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
@@ -540,7 +539,7 @@ public class ShadowContextWrapperTest {
     contextWrapper.sendBroadcast(broadcastIntent);
 
     List<Intent> broadcastIntents = shadowOf(contextWrapper).getBroadcastIntents();
-    assertTrue(broadcastIntents.size() == 1);
+    assertEquals(1, broadcastIntents.size());
     assertEquals(broadcastIntent, broadcastIntents.get(0));
   }
 

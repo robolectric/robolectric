@@ -168,7 +168,7 @@ public final class ShadowCaptioningManagerTest {
   public void setSystemAudioCaptioningEnabled_updatesValue() {
     captioningManager.setSystemAudioCaptioningEnabled(true);
 
-    assertThat(captioningManager.isSystemAudioCaptioningEnabled()).isEqualTo(true);
+    assertThat(captioningManager.isSystemAudioCaptioningEnabled()).isTrue();
   }
 
   @Test
@@ -177,7 +177,7 @@ public final class ShadowCaptioningManagerTest {
     captioningManager.setSystemAudioCaptioningEnabled(false);
 
     shadowOf(Looper.getMainLooper()).idle();
-    assertThat(captioningChangeListener.systemAudioCaptioningEnabled).isEqualTo(false);
+    assertThat(captioningChangeListener.systemAudioCaptioningEnabled).isFalse();
   }
 
   @Test
@@ -185,7 +185,7 @@ public final class ShadowCaptioningManagerTest {
   public void setSystemAudioCaptioningUiEnabled_updatesValue() {
     captioningManager.setSystemAudioCaptioningUiEnabled(true);
 
-    assertThat(captioningManager.isSystemAudioCaptioningUiEnabled()).isEqualTo(true);
+    assertThat(captioningManager.isSystemAudioCaptioningUiEnabled()).isTrue();
   }
 
   @Test
@@ -194,7 +194,7 @@ public final class ShadowCaptioningManagerTest {
     captioningManager.setSystemAudioCaptioningUiEnabled(false);
 
     shadowOf(Looper.getMainLooper()).idle();
-    assertThat(captioningChangeListener.systemAudioCaptioningUiEnabled).isEqualTo(false);
+    assertThat(captioningChangeListener.systemAudioCaptioningUiEnabled).isFalse();
   }
 
   @Test

@@ -9,6 +9,7 @@ import static com.google.common.truth.Truth.assertThat;
 import android.telephony.UiccPortInfo;
 import android.telephony.UiccSlotInfo;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Optional;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -32,10 +33,10 @@ public class UiccSlotInfoBuilderTest {
     assertThat(slotInfo).isNotNull();
     assertThat(slotInfo.getCardId()).isEqualTo("cardId");
     assertThat(slotInfo.getIsEuicc()).isTrue();
-    assertThat(slotInfo.getIsExtendedApduSupported()).isEqualTo(true);
+    assertThat(slotInfo.getIsExtendedApduSupported()).isTrue();
     assertThat(slotInfo.getCardStateInfo()).isEqualTo(CARD_STATE_INFO_PRESENT);
     if (RuntimeEnvironment.getApiLevel() >= Q) {
-      assertThat(slotInfo.isRemovable()).isEqualTo(true);
+      assertThat(slotInfo.isRemovable()).isTrue();
     }
   }
 
@@ -54,13 +55,15 @@ public class UiccSlotInfoBuilderTest {
     assertThat(slotInfo).isNotNull();
     assertThat(slotInfo.getCardId()).isEqualTo("cardId");
     assertThat(slotInfo.getIsEuicc()).isTrue();
-    assertThat(slotInfo.getIsExtendedApduSupported()).isEqualTo(true);
+    assertThat(slotInfo.getIsExtendedApduSupported()).isTrue();
     assertThat(slotInfo.getCardStateInfo()).isEqualTo(CARD_STATE_INFO_PRESENT);
     assertThat(slotInfo.getPorts()).hasSize(1);
-    UiccPortInfo portInfo = slotInfo.getPorts().stream().findFirst().get();
+    Optional<UiccPortInfo> portInfoOptional = slotInfo.getPorts().stream().findFirst();
+    assertThat(portInfoOptional).isPresent();
+    UiccPortInfo portInfo = portInfoOptional.get();
     assertThat(portInfo.getIccId()).isEqualTo("iccId");
     assertThat(portInfo.getPortIndex()).isEqualTo(1);
     assertThat(portInfo.getLogicalSlotIndex()).isEqualTo(1);
-    assertThat(portInfo.isActive()).isEqualTo(true);
+    assertThat(portInfo.isActive()).isTrue();
   }
 }

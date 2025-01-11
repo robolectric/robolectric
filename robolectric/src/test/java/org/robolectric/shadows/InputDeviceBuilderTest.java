@@ -44,8 +44,8 @@ public class InputDeviceBuilderTest {
 
     assertThat(device.getSources()).isEqualTo(InputDevice.SOURCE_HDMI);
     assertThat(device.getKeyboardType()).isEqualTo(InputDevice.KEYBOARD_TYPE_NON_ALPHABETIC);
-    assertThat(device.getVibrator().hasVibrator()).isEqualTo(true);
-    assertThat(device.hasMicrophone()).isEqualTo(true);
+    assertThat(device.getVibrator().hasVibrator()).isTrue();
+    assertThat(device.hasMicrophone()).isTrue();
   }
 
   // regression test that directly using the platform InputDevice.Builder is functioning correctly.

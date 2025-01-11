@@ -213,7 +213,7 @@ public class ShadowCameraTest {
 
     assertThat(shadowCamera.hasRequestedAutoFocus()).isTrue();
     shadowCamera.invokeAutoFocusCallback(true, camera);
-    assertThat(callback.success).isEqualTo(true);
+    assertThat(callback.success).isTrue();
     assertThat(callback.camera).isEqualTo(camera);
 
     assertThat(shadowCamera.hasRequestedAutoFocus()).isFalse();

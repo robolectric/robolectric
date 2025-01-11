@@ -400,7 +400,7 @@ public class ShadowContentResolverTest {
     ProviderInfo providerInfo = captor.getValue();
 
     assertThat(providerInfo.authority).isEqualTo("the-authority");
-    assertThat(providerInfo.grantUriPermissions).isEqualTo(true);
+    assertThat(providerInfo.grantUriPermissions).isTrue();
   }
 
   @Test(expected = UnsupportedOperationException.class)

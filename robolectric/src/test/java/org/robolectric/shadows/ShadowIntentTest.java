@@ -47,7 +47,7 @@ public class ShadowIntentTest {
   @Test
   public void testGetExtraReturnsNull_whenThereAreNoExtrasAdded() {
     Intent intent = new Intent();
-    assertEquals(intent.getExtras(), null);
+    assertNull(intent.getExtras());
   }
 
   @Test
@@ -342,7 +342,7 @@ public class ShadowIntentTest {
     assertEquals("com.foobar.app", intentA.getPackage());
     assertSame(cn, intentA.getComponent());
     assertEquals(23, intentA.getIntExtra("FOO", -1));
-    assertEquals(result, flags);
+    assertEquals(flags, result);
   }
 
   @Test

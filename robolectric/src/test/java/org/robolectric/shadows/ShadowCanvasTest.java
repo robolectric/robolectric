@@ -134,7 +134,7 @@ public class ShadowCanvasTest {
     ShadowCanvas shadow = shadowOf(canvas);
     assertThat(shadow.getPathPaintHistoryCount()).isEqualTo(1);
     ShadowPath drawnPath = shadowOf(shadow.getDrawnPath(0));
-    assertEquals(drawnPath.getPoints().get(0), new ShadowPath.Point(10, 10, LINE_TO));
+    assertEquals(new ShadowPath.Point(10, 10, LINE_TO), drawnPath.getPoints().get(0));
     Paint drawnPathPaint = shadow.getDrawnPathPaint(0);
     assertThat(drawnPathPaint.getColor()).isEqualTo(Color.RED);
     assertThat(drawnPathPaint.getAlpha()).isEqualTo(7);
@@ -156,9 +156,9 @@ public class ShadowCanvasTest {
     ShadowCanvas shadow = shadowOf(canvas);
     assertThat(shadow.getPathPaintHistoryCount()).isEqualTo(2);
     assertEquals(
-        shadowOf(shadow.getDrawnPath(0)).getPoints().get(0), new ShadowPath.Point(10, 10, LINE_TO));
+        new ShadowPath.Point(10, 10, LINE_TO), shadowOf(shadow.getDrawnPath(0)).getPoints().get(0));
     assertEquals(
-        shadowOf(shadow.getDrawnPath(1)).getPoints().get(0), new ShadowPath.Point(20, 20, LINE_TO));
+        new ShadowPath.Point(20, 20, LINE_TO), shadowOf(shadow.getDrawnPath(1)).getPoints().get(0));
   }
 
   @Test

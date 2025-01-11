@@ -27,7 +27,7 @@ public class ShadowAccessibilityWindowInfoTest {
 
   @Test
   public void shouldNotHaveRootNode() {
-    assertThat(shadow.getRoot() == null).isEqualTo(true);
+    assertThat(shadow.getRoot() == null).isTrue();
   }
 
   @Test

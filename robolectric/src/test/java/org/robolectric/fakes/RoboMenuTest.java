@@ -3,13 +3,13 @@ package org.robolectric.fakes;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.view.MenuItem;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -31,7 +31,7 @@ public class RoboMenuTest {
     menu.removeItem(10);
 
     item = (RoboMenuItem) menu.findItem(10);
-    Assert.assertNull(item);
+    assertNull(item);
   }
 
   @Test
@@ -52,13 +52,13 @@ public class RoboMenuTest {
     menu.add(0, 10, 0, org.robolectric.R.string.ok);
 
     RoboMenuItem item = (RoboMenuItem) menu.findItem(10);
-    Assert.assertNull(item.getIntent());
+    assertNull(item.getIntent());
 
     Intent intent = new Intent(a, Activity.class);
     item.setIntent(intent);
     item.click();
 
-    Assert.assertNotNull(item);
+    assertNotNull(item);
 
     Intent startedIntent = ShadowApplication.getInstance().getNextStartedActivity();
     assertNotNull(startedIntent);

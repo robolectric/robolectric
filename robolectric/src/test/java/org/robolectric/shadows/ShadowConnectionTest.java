@@ -24,9 +24,8 @@ public class ShadowConnectionTest {
 
     Optional<String> eventOptional = shadowOf(connection).getLastConnectionEvent();
 
-    assertThat(eventOptional.isPresent()).isTrue();
-
-    assertThat(eventOptional.get()).isEqualTo("TEST_EVENT");
+    assertThat(eventOptional).isPresent();
+    assertThat(eventOptional).hasValue("TEST_EVENT");
   }
 
   @Test
