@@ -75,6 +75,15 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
+  @Config(manifest = "TestAndroidManifestWithTargetSdk34.xml")
+  public void shouldReturnTargetSdkVersionFromConfigManifest() {
+    assertThat(RuntimeEnvironment.getApplication().getApplicationInfo().targetSdkVersion)
+        .isEqualTo(34);
+    assertThat(ApplicationProvider.getApplicationContext().getApplicationInfo().targetSdkVersion)
+        .isEqualTo(34);
+  }
+
+  @Test
   public void sendBroadcast_shouldSendToManifestReceiver() {
     ConfigTestReceiver receiver = getReceiverOfClass(ConfigTestReceiver.class);
 
