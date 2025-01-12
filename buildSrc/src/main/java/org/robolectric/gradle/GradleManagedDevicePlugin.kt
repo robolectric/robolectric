@@ -33,35 +33,35 @@ class GradleManagedDevicePlugin : Plugin<Project> {
         localDevices.register(NAME_API_30) {
           device = "Nexus One"
           apiLevel = 30
-          systemImageSource = "aosp-atd"
+          systemImageSource = "aosp"
         }
 
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi31DebugAndroidTest
         localDevices.register(NAME_API_31) {
           device = "Nexus One"
           apiLevel = 31
-          systemImageSource = "aosp-atd"
+          systemImageSource = "aosp"
         }
 
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi32DebugAndroidTest
         localDevices.register(NAME_API_32) {
           device = "Nexus One"
           apiLevel = 32
-          systemImageSource = "aosp-atd"
+          systemImageSource = "aosp"
         }
 
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi33DebugAndroidTest
         localDevices.register(NAME_API_33) {
           device = "Nexus One"
           apiLevel = 33
-          systemImageSource = "aosp-atd"
+          systemImageSource = "aosp"
         }
 
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi34DebugAndroidTest
         localDevices.register(NAME_API_34) {
           device = "Nexus One"
           apiLevel = 34
-          systemImageSource = "aosp-atd"
+          systemImageSource = "aosp"
         }
 
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi35DebugAndroidTest
