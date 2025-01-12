@@ -1,10 +1,9 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.Robolectric.buildActivity;
 
-import android.app.Activity;
 import android.preference.ListPreference;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +17,7 @@ public class ShadowListPreferenceTest {
 
   @Before
   public void setUp() throws Exception {
-    listPreference = new ListPreference(buildActivity(Activity.class).create().get());
+    listPreference = new ListPreference(ApplicationProvider.getApplicationContext());
   }
 
   @Test
