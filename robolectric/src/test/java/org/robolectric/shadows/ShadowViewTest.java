@@ -78,7 +78,7 @@ public class ShadowViewTest {
     InstrumentationRegistry.getInstrumentation().setInTouchMode(false);
     transcript = new ArrayList<>();
     context = ApplicationProvider.getApplicationContext();
-    view = Robolectric.setupActivity(ContainerActivity.class).getView();
+    view = setupActivity(ContainerActivity.class).getView();
   }
 
   public static class ContainerActivity extends Activity {
@@ -861,7 +861,7 @@ public class ShadowViewTest {
     parent.addView(new MyView("child", transcript));
     assertThat(transcript).isEmpty();
 
-    Activity activity = Robolectric.buildActivity(ContentViewActivity.class).setup().get();
+    Activity activity = buildActivity(ContentViewActivity.class).setup().get();
     activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
     shadowMainLooper().idle();
     assertThat(transcript).containsExactly("parent attached", "child attached");
@@ -891,7 +891,7 @@ public class ShadowViewTest {
     assertThat(parent.getWindowId()).isNull();
     assertThat(child.getWindowId()).isNull();
 
-    Activity activity = Robolectric.buildActivity(ContentViewActivity.class).create().get();
+    Activity activity = buildActivity(ContentViewActivity.class).create().get();
     activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
     shadowMainLooper().idle();
 
@@ -912,7 +912,7 @@ public class ShadowViewTest {
   @Test
   public void removeAllViews_shouldCallOnAttachedToAndDetachedFromWindow() {
     MyView parent = new MyView("parent", transcript);
-    Activity activity = Robolectric.buildActivity(ContentViewActivity.class).create().get();
+    Activity activity = buildActivity(ContentViewActivity.class).create().get();
     activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
 
     parent.addView(new MyView("child", transcript));
@@ -1015,8 +1015,7 @@ public class ShadowViewTest {
   @Test
   public void usesDefaultGlobalVisibleRect() {
 
-    final ActivityController<Activity> activityController =
-        Robolectric.buildActivity(Activity.class);
+    final ActivityController<Activity> activityController = buildActivity(Activity.class);
     final Activity activity = activityController.get();
     TextView fooView = new TextView(activity);
     activity.setContentView(
