@@ -68,7 +68,7 @@ class GradleManagedDevicePlugin : Plugin<Project> {
         localDevices.register(NAME_API_35) {
           device = "Nexus One"
           apiLevel = 35
-          systemImageSource = "aosp"
+          systemImageSource = "aosp-atd"
         }
 
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneIntegrationTestGroupDebugAndroidTest
