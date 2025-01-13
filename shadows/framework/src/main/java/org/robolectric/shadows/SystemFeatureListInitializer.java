@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.pm.PackageManager;
 import android.os.Build.VERSION_CODES;
+import android.os.SystemProperties;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +34,17 @@ final class SystemFeatureListInitializer {
       // Starting in V, FEATURE_TELEPHONY_SUBSCRIPTION is required for some system services,
       // such as VcnManager.
       features.put(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION, true);
+    }
+    final int vendorApiLevel = SystemProperties.getInt("ro.vendor.api_level", 0);
+    if (vendorApiLevel >= 202404) {
+      // Devices shipped with 2024Q2 or later are required to declare FEATURE_TELEPHONY_*
+      // for individual sub-features (calling, messaging, data)
+      features.put(PackageManager.FEATURE_TELEPHONY_CALLING, true);
+      features.put(PackageManager.FEATURE_TELEPHONY_MESSAGING, true);
+      features.put(PackageManager.FEATURE_TELEPHONY_DATA, true);
+      features.put(PackageManager.FEATURE_TELEPHONY_EUICC, true);
+      features.put(PackageManager.FEATURE_TELEPHONY_EUICC_MEP, true);
+      features.put(PackageManager.FEATURE_TELEPHONY_IMS, true);
     }
 
     return ImmutableMap.copyOf(features);

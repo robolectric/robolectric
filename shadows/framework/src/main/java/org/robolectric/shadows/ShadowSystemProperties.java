@@ -6,10 +6,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Properties;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.versioning.AndroidVersions.V;
 
 @Implements(value = SystemProperties.class, isInAndroidSdk = false)
 public class ShadowSystemProperties {
@@ -125,6 +127,11 @@ public class ShadowSystemProperties {
     buildProperties.setProperty("debug.sqlite.syncmode", "OFF");
     buildProperties.setProperty("debug.sqlite.wal.syncmode", "OFF");
     buildProperties.setProperty("debug.sqlite.journalmode", "MEMORY");
+
+    // TODO: definitely put this into generated build.prop
+    if (RuntimeEnvironment.getApiLevel() > V.SDK_INT) {
+      buildProperties.setProperty("ro.vendor.api_level", "202404");
+    }
   }
 
   @Resetter
