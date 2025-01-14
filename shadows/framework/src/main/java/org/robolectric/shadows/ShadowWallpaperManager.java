@@ -43,6 +43,8 @@ public class ShadowWallpaperManager {
   private static final String TAG = "ShadowWallpaperManager";
   private static Bitmap lockScreenImage = null;
   private static Bitmap homeScreenImage = null;
+  private static Rect lockScreenVisibleCropHint = null;
+  private static Rect homeScreenVisibleCropHint = null;
   private static boolean isWallpaperAllowed = true;
   private static boolean isWallpaperSupported = true;
   private static WallpaperInfo wallpaperInfo = null;
@@ -100,7 +102,7 @@ public class ShadowWallpaperManager {
    * <p>After a success call, any previously set live wallpaper is removed,
    *
    * @param fullImage the bitmap image to be cached in the memory
-   * @param visibleCropHint not used
+   * @param visibleCropHint the visible crop hint to be cached in the memory
    * @param allowBackup not used
    * @param which either {@link WallpaperManager#FLAG_LOCK} or {WallpaperManager#FLAG_SYSTEM}
    * @return 0 if fails to cache. Otherwise, 1.
@@ -112,11 +114,13 @@ public class ShadowWallpaperManager {
     }
     if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
       lockScreenImage = fullImage;
+      lockScreenVisibleCropHint = visibleCropHint;
       wallpaperInfo = null;
     }
 
     if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
       homeScreenImage = fullImage;
+      homeScreenVisibleCropHint = visibleCropHint;
       wallpaperInfo = null;
     }
     return 1;
@@ -135,6 +139,20 @@ public class ShadowWallpaperManager {
       return lockScreenImage;
     } else if (which == WallpaperManager.FLAG_SYSTEM) {
       return homeScreenImage;
+    }
+    return null;
+  }
+
+  /**
+   * Returns the last visibleCropHint {@link Rect} provided to {@link WallpaperManager#setBitmap}
+   * associated with {@code which}.
+   */
+  @Nullable
+  public Rect getVisibleCropHint(int which) {
+    if (which == WallpaperManager.FLAG_LOCK) {
+      return lockScreenVisibleCropHint;
+    } else if (which == WallpaperManager.FLAG_SYSTEM) {
+      return homeScreenVisibleCropHint;
     }
     return null;
   }
@@ -192,10 +210,12 @@ public class ShadowWallpaperManager {
     }
     if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
       lockScreenImage = BitmapFactory.decodeStream(bitmapData);
+      lockScreenVisibleCropHint = visibleCropHint;
     }
 
     if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
       homeScreenImage = BitmapFactory.decodeStream(bitmapData);
+      homeScreenVisibleCropHint = visibleCropHint;
     }
     return 1;
   }
@@ -327,6 +347,8 @@ public class ShadowWallpaperManager {
   public static void reset() {
     lockScreenImage = null;
     homeScreenImage = null;
+    lockScreenVisibleCropHint = null;
+    homeScreenVisibleCropHint = null;
     isWallpaperAllowed = true;
     isWallpaperSupported = true;
     wallpaperInfo = null;
