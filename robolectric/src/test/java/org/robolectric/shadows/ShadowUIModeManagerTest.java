@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
@@ -298,6 +299,35 @@ public class ShadowUIModeManagerTest {
 
     assertThat(uiModeManager.getProjectingPackages(UiModeManager.PROJECTION_TYPE_ALL))
         .contains(RuntimeEnvironment.getApplication().getPackageName());
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getContrast_whenNotSet_returnsDefaultValueOfZero() {
+    assertThat(uiModeManager.getContrast()).isEqualTo(0.0f);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void setContrast_whenSet_valueIsReturnedByGetContrast() {
+    float expectedContrast = -0.16f;
+
+    shadowOf(uiModeManager).setContrast(expectedContrast);
+
+    float actualContrast = uiModeManager.getContrast();
+    assertThat(actualContrast).isEqualTo(expectedContrast);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void setContrast_whenCalledWithValueAboveOne_throws() {
+    assertThrows(IllegalArgumentException.class, () -> shadowOf(uiModeManager).setContrast(1.1f));
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void setContrast_whenCalledWithValueBelowMinusOne_throws() {
+    assertThrows(IllegalArgumentException.class, () -> shadowOf(uiModeManager).setContrast(-1.1f));
   }
 
   private void setPermissions(String... permissions) {
