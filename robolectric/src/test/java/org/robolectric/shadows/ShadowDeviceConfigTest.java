@@ -52,20 +52,12 @@ public class ShadowDeviceConfigTest {
 
   @Test
   public void getProperty_nullNamespace() {
-    assertThrows(
-        NullPointerException.class,
-        () -> {
-          DeviceConfig.getProperty(null, KEY);
-        });
+    assertThrows(NullPointerException.class, () -> DeviceConfig.getProperty(null, KEY));
   }
 
   @Test
   public void getProperty_nullName() {
-    assertThrows(
-        NullPointerException.class,
-        () -> {
-          DeviceConfig.getProperty(NAMESPACE, null);
-        });
+    assertThrows(NullPointerException.class, () -> DeviceConfig.getProperty(NAMESPACE, null));
   }
 
   @Test
@@ -104,10 +96,7 @@ public class ShadowDeviceConfigTest {
   @Test
   public void getString_nullName() {
     assertThrows(
-        NullPointerException.class,
-        () -> {
-          DeviceConfig.getString(NAMESPACE, null, "defaultValue");
-        });
+        NullPointerException.class, () -> DeviceConfig.getString(NAMESPACE, null, "defaultValue"));
   }
 
   @Test

@@ -29,12 +29,9 @@ public class InlineExecutorServiceTest {
   public void executionRunsInBackgroundThread() {
     final Thread testThread = Thread.currentThread();
     executorService.execute(
-        new Runnable() {
-          @Override
-          public void run() {
-            assertThat(Thread.currentThread()).isNotSameInstanceAs(testThread);
-            executedTasksRecord.add("task ran");
-          }
+        () -> {
+          assertThat(Thread.currentThread()).isNotSameInstanceAs(testThread);
+          executedTasksRecord.add("task ran");
         });
     assertThat(executedTasksRecord).containsExactly("task ran");
   }
@@ -84,12 +81,8 @@ public class InlineExecutorServiceTest {
   @Test
   public void exceptionsPropagated() {
     Callable<Void> throwingCallable =
-        new Callable<Void>() {
-
-          @Override
-          public Void call() throws Exception {
-            throw new IllegalStateException("I failed");
-          }
+        () -> {
+          throw new IllegalStateException("I failed");
         };
     try {
       executorService.submit(throwingCallable);
@@ -102,13 +95,10 @@ public class InlineExecutorServiceTest {
   @Test
   public void postingTasks() {
     Runnable postingRunnable =
-        new Runnable() {
-          @Override
-          public void run() {
-            executedTasksRecord.add("first");
-            executorService.execute(() -> executedTasksRecord.add("third"));
-            executedTasksRecord.add("second");
-          }
+        () -> {
+          executedTasksRecord.add("first");
+          executorService.execute(() -> executedTasksRecord.add("third"));
+          executedTasksRecord.add("second");
         };
     executorService.execute(postingRunnable);
 

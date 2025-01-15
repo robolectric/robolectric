@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 
+import android.os.Process;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -87,16 +88,8 @@ public class ShadowProcessTest {
     AtomicInteger tid1 = new AtomicInteger(0);
     AtomicInteger tid2 = new AtomicInteger(0);
 
-    Thread thread1 =
-        new Thread(
-            () -> {
-              tid1.set(android.os.Process.myTid());
-            });
-    Thread thread2 =
-        new Thread(
-            () -> {
-              tid2.set(android.os.Process.myTid());
-            });
+    Thread thread1 = new Thread(() -> tid1.set(Process.myTid()));
+    Thread thread2 = new Thread(() -> tid2.set(Process.myTid()));
     thread1.start();
     thread2.start();
     thread1.join();

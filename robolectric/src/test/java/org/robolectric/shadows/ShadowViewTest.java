@@ -149,12 +149,7 @@ public class ShadowViewTest {
     final List<String> transcript = new ArrayList<>();
 
     view.setOnFocusChangeListener(
-        new View.OnFocusChangeListener() {
-          @Override
-          public void onFocusChange(View v, boolean hasFocus) {
-            transcript.add(hasFocus ? "Gained focus" : "Lost focus");
-          }
-        });
+        (v, hasFocus) -> transcript.add(hasFocus ? "Gained focus" : "Lost focus"));
 
     assertFalse(view.isFocused());
     assertFalse(view.hasFocus());
@@ -488,12 +483,9 @@ public class ShadowViewTest {
   public void dispatchTouchEvent_listensToFalseFromListener() {
     final AtomicBoolean called = new AtomicBoolean(false);
     view.setOnTouchListener(
-        new View.OnTouchListener() {
-          @Override
-          public boolean onTouch(View view, MotionEvent motionEvent) {
-            called.set(true);
-            return false;
-          }
+        (view, motionEvent) -> {
+          called.set(true);
+          return false;
         });
     MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
     view.dispatchTouchEvent(event);
@@ -640,13 +632,7 @@ public class ShadowViewTest {
     assertThat(view.isClickable()).isTrue();
     view.setClickable(false);
     assertThat(view.isClickable()).isFalse();
-    view.setOnClickListener(
-        new OnClickListener() {
-          @Override
-          public void onClick(View v) {
-            ;
-          }
-        });
+    view.setOnClickListener(v -> {});
     assertThat(view.isClickable()).isTrue();
   }
 
@@ -657,13 +643,7 @@ public class ShadowViewTest {
     assertThat(view.isLongClickable()).isTrue();
     view.setLongClickable(false);
     assertThat(view.isLongClickable()).isFalse();
-    view.setOnLongClickListener(
-        new OnLongClickListener() {
-          @Override
-          public boolean onLongClick(View v) {
-            return false;
-          }
-        });
+    view.setOnLongClickListener(v -> false);
     assertThat(view.isLongClickable()).isTrue();
   }
 

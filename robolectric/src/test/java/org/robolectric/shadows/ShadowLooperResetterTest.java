@@ -276,15 +276,9 @@ public class ShadowLooperResetterTest {
     }
 
     @After
-    public void shutDown() throws InterruptedException {
+    public void shutDown() {
       // asynchronously quit handler thread to try to expose race conditions
-      executor.execute(
-          new Runnable() {
-            @Override
-            public void run() {
-              handlerThread.quit();
-            }
-          });
+      executor.execute(() -> handlerThread.quit());
     }
 
     private void doPostToChoreographerTest() {
@@ -355,12 +349,9 @@ public class ShadowLooperResetterTest {
         CountDownLatch latch = new CountDownLatch(1);
         new Handler(handlerThread.getLooper())
             .post(
-                new Runnable() {
-                  @Override
-                  public void run() {
-                    choreographer = Choreographer.getInstance();
-                    latch.countDown();
-                  }
+                () -> {
+                  choreographer = Choreographer.getInstance();
+                  latch.countDown();
                 });
         latch.await();
       }

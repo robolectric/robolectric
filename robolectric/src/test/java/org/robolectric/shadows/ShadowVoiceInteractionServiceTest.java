@@ -74,11 +74,7 @@ public class ShadowVoiceInteractionServiceTest {
   @Test
   @Config(minSdk = M)
   public void showSessionInvokedBeforeServiceReady_throwsException() {
-    assertThrows(
-        IllegalStateException.class,
-        () -> {
-          service.showSession(new Bundle(), 0);
-        });
+    assertThrows(IllegalStateException.class, () -> service.showSession(new Bundle(), 0));
   }
 
   @Test

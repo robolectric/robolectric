@@ -781,17 +781,8 @@ public class ShadowPendingIntentTest {
       throws CanceledException {
     final AtomicBoolean onSendFinishedCalled = new AtomicBoolean(false);
     PendingIntent.OnFinished onFinished =
-        new PendingIntent.OnFinished() {
-          @Override
-          public void onSendFinished(
-              PendingIntent pendingIntent,
-              Intent intent,
-              int resultCode,
-              String resultData,
-              Bundle resultExtras) {
+        (pendingIntent, intent, resultCode, resultData, resultExtras) ->
             onSendFinishedCalled.set(true);
-          }
-        };
     Intent intent = new Intent();
     PendingIntent pendingIntent =
         PendingIntent.getBroadcast(context, /* requestCode= */ 0, intent, /* flags= */ 0);
@@ -814,17 +805,8 @@ public class ShadowPendingIntentTest {
     Handler handler = new Handler(handlerThread.getLooper());
     final AtomicBoolean onSendFinishedCalled = new AtomicBoolean(false);
     PendingIntent.OnFinished onFinished =
-        new PendingIntent.OnFinished() {
-          @Override
-          public void onSendFinished(
-              PendingIntent pendingIntent,
-              Intent intent,
-              int resultCode,
-              String resultData,
-              Bundle resultExtras) {
+        (pendingIntent, intent, resultCode, resultData, resultExtras) ->
             onSendFinishedCalled.set(true);
-          }
-        };
     Intent intent = new Intent();
     PendingIntent pendingIntent =
         PendingIntent.getBroadcast(context, /* requestCode= */ 0, intent, /* flags= */ 0);
@@ -845,17 +827,8 @@ public class ShadowPendingIntentTest {
   public void send_withOutOnFinishedCallback_onFinishedCallbackReset() throws CanceledException {
     final AtomicBoolean onSendFinishedCalled = new AtomicBoolean(false);
     PendingIntent.OnFinished onFinished =
-        new PendingIntent.OnFinished() {
-          @Override
-          public void onSendFinished(
-              PendingIntent pendingIntent,
-              Intent intent,
-              int resultCode,
-              String resultData,
-              Bundle resultExtras) {
+        (pendingIntent, intent, resultCode, resultData, resultExtras) ->
             onSendFinishedCalled.set(true);
-          }
-        };
     Intent intent = new Intent();
     PendingIntent pendingIntent =
         PendingIntent.getBroadcast(context, /* requestCode= */ 0, intent, /* flags= */ 0);

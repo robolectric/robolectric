@@ -880,18 +880,17 @@ public class SQLiteDatabaseTest {
     final CountDownLatch sync = new CountDownLatch(1);
     final Throwable[] error = {null};
 
-    new Thread() {
-      @Override
-      public void run() {
-        try (Cursor c = executeQuery("select * from table_name")) {
-        } catch (Throwable e) {
-          e.printStackTrace();
-          error[0] = e;
-        } finally {
-          sync.countDown();
-        }
-      }
-    }.start();
+    new Thread(
+            () -> {
+              try (Cursor c = executeQuery("select * from table_name")) {
+              } catch (Throwable e) {
+                e.printStackTrace();
+                error[0] = e;
+              } finally {
+                sync.countDown();
+              }
+            })
+        .start();
 
     try {
       sync.await();

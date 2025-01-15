@@ -60,14 +60,11 @@ public final class BackgroundTestRule implements TestRule {
         // application loading in the future
         RuntimeEnvironment.getApplication();
         BackgroundExecutor.runInBackground(
-            new Runnable() {
-              @Override
-              public void run() {
-                try {
-                  base.evaluate();
-                } catch (Throwable t) {
-                  throwable.set(t);
-                }
+            () -> {
+              try {
+                base.evaluate();
+              } catch (Throwable t) {
+                throwable.set(t);
               }
             });
         if (throwable.get() != null) {

@@ -219,10 +219,7 @@ public class ShadowPowerManagerTest {
   @Config(minSdk = Q)
   public void addThermalStatusListener() {
     int[] listenerValue = new int[] {-1};
-    powerManager.addThermalStatusListener(
-        level -> {
-          listenerValue[0] = level;
-        });
+    powerManager.addThermalStatusListener(level -> listenerValue[0] = level);
     shadowOf(powerManager).setCurrentThermalStatus(PowerManager.THERMAL_STATUS_MODERATE);
     assertThat(listenerValue[0]).isEqualTo(PowerManager.THERMAL_STATUS_MODERATE);
   }
