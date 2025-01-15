@@ -237,6 +237,17 @@ public class ShadowSettingsTest {
   }
 
   @Test
+  public void settingsSecure_remove_removes() {
+    String mySetting = "mysetting";
+    Secure.putInt(contentResolver, mySetting, 1337);
+    assertThat(Secure.getInt(contentResolver, mySetting, -1)).isEqualTo(1337);
+
+    ShadowSettings.ShadowSecure.remove(mySetting);
+
+    assertThat(Secure.getInt(contentResolver, mySetting, -1)).isEqualTo(-1);
+  }
+
+  @Test
   public void testGlobalGetFloat() {
     float durationScale =
         Global.getFloat(
