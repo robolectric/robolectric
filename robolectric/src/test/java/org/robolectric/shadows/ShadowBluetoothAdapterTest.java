@@ -900,6 +900,7 @@ public class ShadowBluetoothAdapterTest {
   }
 
   private BluetoothAdapter.LeScanCallback newLeScanCallback() {
+    //noinspection Convert2Lambda
     return new BluetoothAdapter.LeScanCallback() {
       @Override
       public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {}

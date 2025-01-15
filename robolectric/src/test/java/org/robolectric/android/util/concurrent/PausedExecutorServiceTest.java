@@ -177,13 +177,10 @@ public class PausedExecutorServiceTest {
   @Test
   public void postingTasks() {
     Runnable postingRunnable =
-        new Runnable() {
-          @Override
-          public void run() {
-            executedTasksRecord.add("first");
-            executorService.execute(() -> executedTasksRecord.add("third"));
-            executedTasksRecord.add("second");
-          }
+        () -> {
+          executedTasksRecord.add("first");
+          executorService.execute(() -> executedTasksRecord.add("third"));
+          executedTasksRecord.add("second");
         };
     executorService.execute(postingRunnable);
     executorService.runAll();

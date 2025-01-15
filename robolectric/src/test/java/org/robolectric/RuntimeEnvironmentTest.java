@@ -45,13 +45,11 @@ public class RuntimeEnvironmentTest {
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
     Thread t =
-        new Thread() {
-          @Override
-          public void run() {
-            res.set(RuntimeEnvironment.isMainThread());
-            finished.countDown();
-          }
-        };
+        new Thread(
+            () -> {
+              res.set(RuntimeEnvironment.isMainThread());
+              finished.countDown();
+            });
     RuntimeEnvironment.setMainThread(Thread.currentThread());
     t.start();
     if (!finished.await(1000, MILLISECONDS)) {

@@ -364,8 +364,7 @@ public class AndroidTestEnvironmentTest {
             new StubSdk(RuntimeEnvironment.getApiLevel(), true),
             shadowProviders,
             telpArray);
-    RuntimeException e =
-        assertThrows(RuntimeException.class, () -> androidTestEnvironment.resetState());
+    RuntimeException e = assertThrows(RuntimeException.class, androidTestEnvironment::resetState);
     assertThat(e).hasMessageThat().contains("Reset failed");
     assertThat(workingShadowProvider.wasReset).isTrue();
   }

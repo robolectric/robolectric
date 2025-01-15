@@ -83,6 +83,7 @@ public class ShadowBinderTest {
   @Test
   public void testLinkToDeath_weakReference() {
     Binder binder = new Binder();
+    //noinspection Convert2Lambda
     binder.linkToDeath(
         new DeathRecipient() {
           @Override
@@ -175,7 +176,7 @@ public class ShadowBinderTest {
   public void testGetCallingUidOrThrowWithValueNotSet() {
     ShadowBinder.reset();
     IllegalStateException ex =
-        assertThrows(IllegalStateException.class, () -> Binder.getCallingUidOrThrow());
+        assertThrows(IllegalStateException.class, Binder::getCallingUidOrThrow);
 
     // Typo in "transaction" is intentional to match platform
     assertThat(ex).hasMessageThat().isEqualTo("Thread is not in a binder transcation");
@@ -201,7 +202,7 @@ public class ShadowBinderTest {
     ShadowBinder.setCallingUid(123);
     ShadowBinder.reset();
 
-    assertThrows(IllegalStateException.class, () -> Binder.getCallingUidOrThrow());
+    assertThrows(IllegalStateException.class, Binder::getCallingUidOrThrow);
   }
 
   @Test

@@ -194,7 +194,7 @@ public class ShadowAccessibilityManagerTest {
   @Test
   public void setTouchExplorationEnabled_invokesCallbacks() {
     AtomicBoolean enabled = new AtomicBoolean(false);
-    accessibilityManager.addTouchExplorationStateChangeListener(val -> enabled.set(val));
+    accessibilityManager.addTouchExplorationStateChangeListener(enabled::set);
     shadowOf(accessibilityManager).setTouchExplorationEnabled(true);
     assertThat(enabled.get()).isTrue();
     shadowOf(accessibilityManager).setTouchExplorationEnabled(false);

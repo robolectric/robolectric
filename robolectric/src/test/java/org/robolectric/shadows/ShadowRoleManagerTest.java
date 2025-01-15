@@ -94,11 +94,7 @@ public final class ShadowRoleManagerTest {
     AtomicBoolean resultHolder = new AtomicBoolean(false);
     shadowOf(roleManager)
         .setDefaultApplication(
-            RoleManager.ROLE_SMS,
-            "test.app",
-            0,
-            directExecutor(),
-            result -> resultHolder.set(result));
+            RoleManager.ROLE_SMS, "test.app", 0, directExecutor(), resultHolder::set);
     assertThat(roleManager.getDefaultApplication(RoleManager.ROLE_SMS)).isEqualTo("test.app");
     assertThat(resultHolder.get()).isTrue();
   }
@@ -109,11 +105,7 @@ public final class ShadowRoleManagerTest {
     AtomicBoolean resultHolder = new AtomicBoolean(true);
     shadowOf(roleManager)
         .setDefaultApplication(
-            RoleManager.ROLE_SMS,
-            "test.app",
-            0,
-            directExecutor(),
-            result -> resultHolder.set(result));
+            RoleManager.ROLE_SMS, "test.app", 0, directExecutor(), resultHolder::set);
     assertThat(resultHolder.get()).isFalse();
     assertThat(roleManager.getDefaultApplication(RoleManager.ROLE_SMS)).isNull();
   }

@@ -517,6 +517,7 @@ public class ShadowConnectivityManagerTest {
   }
 
   private static ConnectivityManager.OnNetworkActiveListener createSimpleOnNetworkActiveListener() {
+    //noinspection Convert2Lambda
     return new ConnectivityManager.OnNetworkActiveListener() {
       @Override
       public void onNetworkActive() {}

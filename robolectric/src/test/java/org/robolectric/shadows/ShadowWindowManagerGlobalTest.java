@@ -23,7 +23,6 @@ import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
-import android.view.View.OnTouchListener;
 import android.view.ViewConfiguration;
 import android.view.Window;
 import android.view.WindowInsets;
@@ -192,12 +191,9 @@ public class ShadowWindowManagerGlobalTest {
       activity
           .findViewById(android.R.id.content)
           .setOnTouchListener(
-              new OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                  touchEvents.add(event);
-                  return true;
-                }
+              (v, event) -> {
+                touchEvents.add(event);
+                return true;
               });
 
       ShadowWindowManagerGlobal.startPredictiveBackGesture(BackEvent.EDGE_LEFT).close();

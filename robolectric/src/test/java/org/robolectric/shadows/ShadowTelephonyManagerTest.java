@@ -86,7 +86,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import org.junit.Before;
@@ -332,12 +331,7 @@ public class ShadowTelephonyManagerTest {
     CountDownLatch callbackLatch = new CountDownLatch(1);
     shadowOf(telephonyManager)
         .requestCellInfoUpdate(
-            new Executor() {
-              @Override
-              public void execute(Runnable r) {
-                r.run();
-              }
-            },
+            Runnable::run,
             new CellInfoCallback() {
               @Override
               public void onCellInfo(@Nonnull List<CellInfo> list) {

@@ -444,6 +444,7 @@ public final class ShadowSafetyCenterManagerTest {
   }
 
   @Test
+  @SuppressWarnings("Convert2Lambda")
   public void throwOnSafetySourceId_safetyCenterEnabled_throwsForGivenIds() {
     SafetyCenterManager safetyCenterManager =
         getApplicationContext().getSystemService(SafetyCenterManager.class);

@@ -41,7 +41,7 @@ public final class ResponderLocationBuilderTest {
 
     assertThat(responderLocation.isLciSubelementValid()).isTrue();
     assertThat(responderLocation.isZaxisSubelementValid()).isFalse();
-    assertThrows(IllegalStateException.class, () -> responderLocation.getFloorNumber());
+    assertThrows(IllegalStateException.class, responderLocation::getFloorNumber);
   }
 
   @Test
@@ -62,8 +62,8 @@ public final class ResponderLocationBuilderTest {
 
     assertThat(responderLocation.isLciSubelementValid()).isFalse();
     assertThat(responderLocation.isZaxisSubelementValid()).isFalse();
-    assertThrows(IllegalStateException.class, () -> responderLocation.getAltitude());
-    assertThrows(IllegalStateException.class, () -> responderLocation.getFloorNumber());
+    assertThrows(IllegalStateException.class, responderLocation::getAltitude);
+    assertThrows(IllegalStateException.class, responderLocation::getFloorNumber);
   }
 
   @Test

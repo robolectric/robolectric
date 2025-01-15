@@ -142,13 +142,10 @@ public class ShadowInputMethodManagerTest {
     Bundle expectedBundle = new Bundle();
 
     ShadowInputMethodManager.PrivateCommandListener listener =
-        new ShadowInputMethodManager.PrivateCommandListener() {
-          @Override
-          public void onPrivateCommand(View view, String action, Bundle data) {
-            assertThat(view).isEqualTo(expectedView);
-            assertThat(action).isEqualTo(expectedAction);
-            assertThat(data).isEqualTo(expectedBundle);
-          }
+        (view, action, data) -> {
+          assertThat(view).isEqualTo(expectedView);
+          assertThat(action).isEqualTo(expectedAction);
+          assertThat(data).isEqualTo(expectedBundle);
         };
 
     shadow.setAppPrivateCommandListener(listener);

@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -272,13 +271,9 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       ShadowActivity shadowActivity, String target, int requestCode, ActivityResult ar) {
     new Handler(Looper.getMainLooper())
         .post(
-            new Runnable() {
-              @Override
-              public void run() {
+            () ->
                 shadowActivity.internalCallDispatchActivityResult(
-                    target, requestCode, ar.getResultCode(), ar.getResultData());
-              }
-            });
+                    target, requestCode, ar.getResultCode(), ar.getResultData()));
   }
 
   private ActivityResult stubResultFor(Intent intent) {
@@ -287,13 +282,8 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
     }
 
     FutureTask<ActivityResult> task =
-        new FutureTask<ActivityResult>(
-            new Callable<ActivityResult>() {
-              @Override
-              public ActivityResult call() throws Exception {
-                return IntentStubberRegistry.getInstance().getActivityResultForIntent(intent);
-              }
-            });
+        new FutureTask<>(
+            () -> IntentStubberRegistry.getInstance().getActivityResultForIntent(intent));
     ShadowInstrumentation.runOnMainSyncNoIdle(task);
 
     try {

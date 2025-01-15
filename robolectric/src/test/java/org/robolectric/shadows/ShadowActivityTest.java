@@ -1650,9 +1650,9 @@ public class ShadowActivityTest {
       testActivity.setReturnMalformedDirectAction(true);
       assertThrows(
           NullPointerException.class,
-          () -> {
-            shadowOf(testActivity).callOnGetDirectActions(new CancellationSignal(), (unused) -> {});
-          });
+          () ->
+              shadowOf(testActivity)
+                  .callOnGetDirectActions(new CancellationSignal(), (unused) -> {}));
     }
   }
 

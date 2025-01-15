@@ -91,7 +91,7 @@ public class ShadowInstrumentationTestLooperTest {
         () -> {
           throw new RuntimeException("Exception should be propagated!");
         });
-    assertThrows(RuntimeException.class, () -> shadowMainLooper.idle());
+    assertThrows(RuntimeException.class, shadowMainLooper::idle);
 
     // Restore main looper and main thread to avoid error at tear down
     ShadowPausedLooper.resetLoopers();
@@ -129,10 +129,7 @@ public class ShadowInstrumentationTestLooperTest {
     }
     Preconditions.checkNotNull(exception);
     ShadowPausedLooper.resetLoopers();
-    handler.post(
-        () -> {
-          didRun.set(true);
-        });
+    handler.post(() -> didRun.set(true));
     shadowLooper.idle();
 
     assertThat(didRun.get()).isTrue();
