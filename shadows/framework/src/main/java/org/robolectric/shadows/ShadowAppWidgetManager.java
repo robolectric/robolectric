@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.PendingIntent;
@@ -50,6 +51,7 @@ public class ShadowAppWidgetManager {
   private static boolean allowedToBindWidgets;
   private static boolean requestPinAppWidgetSupported = false;
   private static boolean validWidgetProviderComponentName = true;
+  private final Map<Integer, RemoteViews> widgetPreviews = new HashMap<>();
   private final ArrayList<AppWidgetProviderInfo> installedProviders = new ArrayList<>();
   private Multimap<UserHandle, AppWidgetProviderInfo> installedProvidersForProfile =
       HashMultimap.create();
@@ -300,6 +302,30 @@ public class ShadowAppWidgetManager {
     }
 
     return false;
+  }
+
+  /** Sets the widget preview for a given widget category in a local HashMap. */
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
+  protected boolean setWidgetPreview(
+      ComponentName provider, int widgetCategories, RemoteViews preview) {
+    widgetPreviews.put(widgetCategories, preview);
+    return true;
+  }
+
+  /**
+   * Gets the widget preview for a given widget category in a local HashMap. The UserHandle is
+   * ignored.
+   */
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
+  protected RemoteViews getWidgetPreview(
+      ComponentName provider, UserHandle user, int widgetCategories) {
+    return widgetPreviews.get(widgetCategories);
+  }
+
+  /** Removes the widget preview for a given widget category in a local HashMap. */
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
+  protected void removeWidgetPreview(ComponentName provider, int widgetCategories) {
+    widgetPreviews.remove(widgetCategories);
   }
 
   /**

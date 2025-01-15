@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertArrayEquals;
@@ -531,6 +532,47 @@ public class ShadowAppWidgetManagerTest {
         new ComponentName("C", "D"), null, testSuccessIntent);
     shadowOf(getMainLooper()).idle();
     assertEquals(2, callbackAppWidgetId.get());
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void widgetPreview_getWidgetPreview_noWidgetSet_returnsNull() {
+    RemoteViews result =
+        shadowAppWidgetManager.getWidgetPreview(new ComponentName("A", "B"), UserHandle.CURRENT, 0);
+    assertThat(result).isNull();
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void widgetPreview_setWidgetPreview_onlyReturnsWidgetForSetCategory() {
+    RemoteViews widgetPreview = new RemoteViews(context.getPackageName(), R.layout.remote_views);
+
+    shadowAppWidgetManager.setWidgetPreview(new ComponentName("A", "B"), 0, widgetPreview);
+
+    RemoteViews result =
+        shadowAppWidgetManager.getWidgetPreview(new ComponentName("A", "B"), UserHandle.CURRENT, 0);
+    assertThat(result).isNotNull();
+    assertThat(result).isEqualTo(widgetPreview);
+    result =
+        shadowAppWidgetManager.getWidgetPreview(new ComponentName("A", "B"), UserHandle.CURRENT, 1);
+    assertThat(result).isNull();
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void widgetPreview_setWidgetPreview_removeWidgetPreview_returnsNull() {
+    RemoteViews widgetPreview = new RemoteViews(context.getPackageName(), R.layout.remote_views);
+
+    shadowAppWidgetManager.setWidgetPreview(new ComponentName("A", "B"), 0, widgetPreview);
+
+    RemoteViews result =
+        shadowAppWidgetManager.getWidgetPreview(new ComponentName("A", "B"), UserHandle.CURRENT, 0);
+    assertThat(result).isNotNull();
+    assertThat(result).isEqualTo(widgetPreview);
+    shadowAppWidgetManager.removeWidgetPreview(new ComponentName("A", "B"), 0);
+    result =
+        shadowAppWidgetManager.getWidgetPreview(new ComponentName("A", "B"), UserHandle.CURRENT, 0);
+    assertThat(result).isNull();
   }
 
   /**
