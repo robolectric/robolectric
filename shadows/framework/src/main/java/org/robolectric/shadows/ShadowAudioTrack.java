@@ -67,7 +67,7 @@ public class ShadowAudioTrack {
      * @param audioData The data that is written to the {@link ShadowAudioTrack}.
      * @param format The output format of the {@link ShadowAudioTrack}.
      */
-    void onAudioDataWritten(ShadowAudioTrack audioTrack, byte[] audioData, AudioFormat format);
+    void onAudioDataWritten(AudioTrack audioTrack, byte[] audioData, AudioFormat format);
   }
 
   protected static final int DEFAULT_MIN_BUFFER_SIZE = 1024;
@@ -353,7 +353,7 @@ public class ShadowAudioTrack {
 
     numBytesReceived += audioData.length;
     for (OnAudioDataWrittenListener listener : audioDataWrittenListeners) {
-      listener.onAudioDataWritten(this, audioData, audioTrack.getFormat());
+      listener.onAudioDataWritten(audioTrack, audioData, audioTrack.getFormat());
     }
 
     return audioData.length;

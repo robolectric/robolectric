@@ -701,9 +701,8 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
 
   @Override
   @Config(minSdk = Q)
-  public void onAudioDataWritten(
-      ShadowAudioTrack audioTrack, byte[] audioData, AudioFormat format) {
-    shadowAudioTrack = audioTrack;
+  public void onAudioDataWritten(AudioTrack audioTrack, byte[] audioData, AudioFormat format) {
+    shadowAudioTrack = shadowOf(audioTrack);
     dataWrittenToShadowAudioTrack = audioData;
   }
 
