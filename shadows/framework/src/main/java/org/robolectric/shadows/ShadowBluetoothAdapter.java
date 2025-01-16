@@ -48,8 +48,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
@@ -57,6 +59,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -113,6 +116,7 @@ public class ShadowBluetoothAdapter {
   private final Map<Integer, List<BluetoothProfile.ServiceListener>>
       bluetoothProfileServiceListeners = new HashMap<>();
   private IBluetoothGatt ibluetoothGatt;
+  private /* IBluetoothAdvertise */ Object ibluetoothAdvertise;
 
   @Resetter
   public static void reset() {
@@ -792,6 +796,15 @@ public class ShadowBluetoothAdapter {
       ibluetoothGatt = BluetoothGattProxyDelegate.createBluetoothGattProxy();
     }
     return ibluetoothGatt;
+  }
+
+  @Implementation(minSdk = Baklava.SDK_INT)
+  @InDevelopment
+  protected @ClassName("android.bluetooth.IBluetoothAdvertise") Object getBluetoothAdvertise() {
+    if (ibluetoothAdvertise == null) {
+      ibluetoothAdvertise = BluetoothAdvertiseProxyDelegate.createBluetoothAdvertiseProxy();
+    }
+    return ibluetoothAdvertise;
   }
 
   private static final class BackgroundRfcommServerEntry {
