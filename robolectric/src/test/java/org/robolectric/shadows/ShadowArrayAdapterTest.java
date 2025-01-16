@@ -89,6 +89,20 @@ public class ShadowArrayAdapterTest {
   }
 
   @Test
+  public void setDropDownViewResource() {
+    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(context, R.layout.main);
+    ShadowArrayAdapter<String> shadow = Shadows.shadowOf(arrayAdapter);
+
+    assertThat(shadow.getResourceId()).isEqualTo(R.layout.main);
+    assertThat(shadow.getDropDownViewResourceId()).isEqualTo(R.layout.main);
+
+    arrayAdapter.setDropDownViewResource(R.layout.activity_list_item);
+
+    assertThat(shadow.getResourceId()).isEqualTo(R.layout.main);
+    assertThat(shadow.getDropDownViewResourceId()).isEqualTo(R.layout.activity_list_item);
+  }
+
+  @Test
   public void shouldClear() {
     arrayAdapter.clear();
     assertEquals(0, arrayAdapter.getCount());
