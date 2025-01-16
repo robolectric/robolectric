@@ -23,31 +23,31 @@ public class RobolectricTestRunnerThreadTest {
 
   @Before
   public void setUp() throws Exception {
-    assertThat(Thread.currentThread() == sThread).isTrue();
-    assertThat(Thread.currentThread().getContextClassLoader() == sClassLoader).isTrue();
+    assertThat(Thread.currentThread()).isEqualTo(sThread);
+    assertThat(Thread.currentThread().getContextClassLoader()).isEqualTo(sClassLoader);
   }
 
   @After
   public void tearDown() throws Exception {
-    assertThat(Thread.currentThread() == sThread).isTrue();
-    assertThat(Thread.currentThread().getContextClassLoader() == sClassLoader).isTrue();
+    assertThat(Thread.currentThread()).isEqualTo(sThread);
+    assertThat(Thread.currentThread().getContextClassLoader()).isEqualTo(sClassLoader);
   }
 
   @Test
   public void firstTest() {
-    assertThat(Thread.currentThread() == sThread).isTrue();
-    assertThat(Thread.currentThread().getContextClassLoader() == sClassLoader).isTrue();
+    assertThat(Thread.currentThread()).isEqualTo(sThread);
+    assertThat(Thread.currentThread().getContextClassLoader()).isEqualTo(sClassLoader);
   }
 
   @Test
   public void secondTest() {
-    assertThat(Thread.currentThread() == sThread).isTrue();
-    assertThat(Thread.currentThread().getContextClassLoader() == sClassLoader).isTrue();
+    assertThat(Thread.currentThread()).isEqualTo(sThread);
+    assertThat(Thread.currentThread().getContextClassLoader()).isEqualTo(sClassLoader);
   }
 
   @AfterClass
   public static void afterClass() throws Exception {
-    assertThat(Thread.currentThread() == sThread).isTrue();
-    assertThat(Thread.currentThread().getContextClassLoader() == sClassLoader).isTrue();
+    assertThat(Thread.currentThread()).isEqualTo(sThread);
+    assertThat(Thread.currentThread().getContextClassLoader()).isEqualTo(sClassLoader);
   }
 }

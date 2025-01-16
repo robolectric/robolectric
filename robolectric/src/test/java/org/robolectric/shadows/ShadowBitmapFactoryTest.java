@@ -100,7 +100,7 @@ public class ShadowBitmapFactoryTest {
     Resources resources = context.getResources();
     BitmapFactory.Options opts = new BitmapFactory.Options();
     Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.an_image, opts);
-    assertThat(bitmap.getPixel(0, 0) != 0).isTrue();
+    assertThat(bitmap.getPixel(0, 0)).isNotEqualTo(0);
   }
 
   @Test

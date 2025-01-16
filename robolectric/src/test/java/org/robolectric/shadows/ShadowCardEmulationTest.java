@@ -54,11 +54,11 @@ public final class ShadowCardEmulationTest {
 
   @Test
   public void setPreferredService_canCapture() {
-    assertThat(ShadowCardEmulation.getPreferredService() == null).isTrue();
+    assertThat(ShadowCardEmulation.getPreferredService()).isNull();
     cardEmulation.setPreferredService(activity, service);
-    assertThat(ShadowCardEmulation.getPreferredService().equals(service)).isTrue();
+    assertThat(ShadowCardEmulation.getPreferredService()).isEqualTo(service);
     cardEmulation.unsetPreferredService(activity);
-    assertThat(ShadowCardEmulation.getPreferredService() == null).isTrue();
+    assertThat(ShadowCardEmulation.getPreferredService()).isNull();
   }
 
   @Test
