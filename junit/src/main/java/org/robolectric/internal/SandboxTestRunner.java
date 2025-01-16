@@ -396,6 +396,17 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         });
   }
 
+  /**
+   * The goal of {@link HelperTestRunner} is to have {@link BlockJUnit4ClassRunner} instances that
+   * encapsulate bootstrapped test classes. When SandboxTestRunner is initially constructed, the
+   * test class is from the main app class loader. This test class can't be used to run tests
+   * because it can't load Android classes.
+   *
+   * <p>Because we need load a separate test class per sandbox, we need to create a new Runner that
+   * encapsulates the bootstrapped test class. This is primarily used to invoke the {@link
+   * ParentRunner#methodBlock(FrameworkMethod)}, which uses reflection to invoke before/after
+   * methods and test rules.
+   */
   protected static class HelperTestRunner extends BlockJUnit4ClassRunner {
     public FrameworkMethod frameworkMethod;
 
