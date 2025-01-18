@@ -9,6 +9,7 @@ import static android.content.ContentResolver.SCHEME_FILE;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.accounts.Account;
@@ -492,6 +493,13 @@ public class ShadowContentResolver {
     }
   }
 
+  @Implementation(minSdk = R)
+  protected void notifyChange(Collection<Uri> uris, ContentObserver observer, int flags) {
+    for (Uri uri : uris) {
+      notifyChange(uri, observer, flags);
+    }
+  }
+
   @Implementation(minSdk = N)
   protected void notifyChange(Uri uri, ContentObserver observer, int flags) {
     notifiedUris.add(new NotifiedUri(uri, observer, flags));
@@ -506,14 +514,18 @@ public class ShadowContentResolver {
     }
   }
 
+  /**
+   * @deprecated Use {@link #notifyChange(Uri, ContentObserver, int)} instead.
+   */
   @Implementation
+  @Deprecated
   protected void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
     notifyChange(uri, observer, syncToNetwork ? ContentResolver.NOTIFY_SYNC_TO_NETWORK : 0);
   }
 
   @Implementation
   protected void notifyChange(Uri uri, ContentObserver observer) {
-    notifyChange(uri, observer, false);
+    notifyChange(uri, observer, ContentResolver.NOTIFY_SYNC_TO_NETWORK);
   }
 
   @Implementation

@@ -38,6 +38,7 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Handler;
@@ -56,6 +57,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -674,20 +676,20 @@ public class ShadowContentResolverTest {
 
   @Test
   public void shouldTrackNotifiedUris() {
-    contentResolver.notifyChange(Uri.parse("foo"), null, true);
+    contentResolver.notifyChange(Uri.parse("foo"), null, false);
     contentResolver.notifyChange(Uri.parse("bar"), null);
 
     assertThat(shadowContentResolver.getNotifiedUris()).hasSize(2);
     ShadowContentResolver.NotifiedUri uri = shadowContentResolver.getNotifiedUris().get(0);
 
     assertThat(uri.uri.toString()).isEqualTo("foo");
-    assertThat(uri.syncToNetwork).isTrue();
+    assertThat(uri.syncToNetwork).isFalse();
     assertThat(uri.observer).isNull();
 
     uri = shadowContentResolver.getNotifiedUris().get(1);
 
     assertThat(uri.uri.toString()).isEqualTo("bar");
-    assertThat(uri.syncToNetwork).isFalse();
+    assertThat(uri.syncToNetwork).isTrue();
     assertThat(uri.observer).isNull();
   }
 
@@ -712,6 +714,38 @@ public class ShadowContentResolverTest {
     assertThat(uri.syncToNetwork).isFalse();
     assertThat(uri.observer).isNull();
     assertThat(uri.flags).isEqualTo(ContentResolver.NOTIFY_UPDATE);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void notifyChangeCollection_shouldTrackNotifiedUris() {
+    contentResolver.notifyChange(
+        Arrays.asList(Uri.parse("foo"), Uri.parse("bar")), null, ContentResolver.NOTIFY_UPDATE);
+
+    List<ShadowContentResolver.NotifiedUri> notifiedUris = shadowContentResolver.getNotifiedUris();
+    assertThat(notifiedUris).hasSize(2);
+
+    ShadowContentResolver.NotifiedUri uri = notifiedUris.get(0);
+
+    assertThat(uri.uri.toString()).isEqualTo("foo");
+    assertThat(uri.syncToNetwork).isFalse();
+    assertThat(uri.observer).isNull();
+    assertThat(uri.flags).isEqualTo(ContentResolver.NOTIFY_UPDATE);
+
+    uri = notifiedUris.get(1);
+
+    assertThat(uri.uri.toString()).isEqualTo("bar");
+    assertThat(uri.syncToNetwork).isFalse();
+    assertThat(uri.observer).isNull();
+    assertThat(uri.flags).isEqualTo(ContentResolver.NOTIFY_UPDATE);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void notifyChangeEmptyCollection_shouldNotTrackNotifiedUris() {
+    contentResolver.notifyChange(Collections.emptyList(), null, ContentResolver.NOTIFY_UPDATE);
+
+    assertThat(shadowContentResolver.getNotifiedUris()).isEmpty();
   }
 
   @Test
