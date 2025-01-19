@@ -42,7 +42,7 @@ public class ShadowGeocoderTest {
 
   @Test
   public void getFromLocationReturnsAnEmptyArrayByDefault() throws IOException {
-    assertThat(geocoder.getFromLocation(90.0, 90.0, 1)).hasSize(0);
+    assertThat(geocoder.getFromLocation(90.0, 90.0, 1)).isEmpty();
   }
 
   @Test

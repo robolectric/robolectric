@@ -131,7 +131,7 @@ public class ShadowActivityManagerTest {
     final ActivityManager.RunningAppProcessInfo process2 =
         buildProcessInfo(new ComponentName("org.robolectric", "Process 2"));
 
-    assertThat(activityManager.getRunningAppProcesses().size()).isEqualTo(1);
+    assertThat(activityManager.getRunningAppProcesses()).hasSize(1);
     ActivityManager.RunningAppProcessInfo myInfo = activityManager.getRunningAppProcesses().get(0);
     assertThat(myInfo.pid).isEqualTo(android.os.Process.myPid());
     assertThat(myInfo.uid).isEqualTo(android.os.Process.myUid());

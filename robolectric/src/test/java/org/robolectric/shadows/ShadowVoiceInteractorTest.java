@@ -138,7 +138,7 @@ public final class ShadowVoiceInteractorTest {
   }
 
   private void assertValues(List<String> promptMessage) {
-    assertThat(shadowVoiceInteractor.getVoiceInteractions().size()).isEqualTo(promptMessage.size());
+    assertThat(shadowVoiceInteractor.getVoiceInteractions()).hasSize(promptMessage.size());
     assertThat(shadowVoiceInteractor.getVoiceInteractions()).isEqualTo(promptMessage);
   }
 }

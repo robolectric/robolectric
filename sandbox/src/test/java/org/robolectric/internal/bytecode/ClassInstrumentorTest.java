@@ -73,7 +73,7 @@ public class ClassInstrumentorTest {
     // Side effect: original method has been made private.
     assertThat(methodNode.access & Opcodes.ACC_PRIVATE).isNotEqualTo(0);
     // Side effect: instructions have been rewritten to return 0.
-    assertThat(methodNode.instructions.size()).isEqualTo(2);
+    assertThat(methodNode.instructions).hasSize(2);
     assertThat(methodNode.instructions.get(0).getOpcode()).isEqualTo(Opcodes.ICONST_0);
     assertThat(methodNode.instructions.get(1).getOpcode()).isEqualTo(Opcodes.IRETURN);
   }

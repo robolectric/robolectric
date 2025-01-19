@@ -345,12 +345,12 @@ public class AndroidManifestTest {
     ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestActivity");
     final List<IntentFilterData> ifd = activityData.getIntentFilters();
     assertThat(ifd).isNotNull();
-    assertThat(ifd.size()).isEqualTo(1);
+    assertThat(ifd).hasSize(1);
 
     final IntentFilterData data = ifd.get(0);
-    assertThat(data.getActions().size()).isEqualTo(1);
+    assertThat(data.getActions()).hasSize(1);
     assertThat(data.getActions().get(0)).isEqualTo(Intent.ACTION_MAIN);
-    assertThat(data.getCategories().size()).isEqualTo(1);
+    assertThat(data.getCategories()).hasSize(1);
     assertThat(data.getCategories().get(0)).isEqualTo(Intent.CATEGORY_LAUNCHER);
   }
 
@@ -363,21 +363,21 @@ public class AndroidManifestTest {
     ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestActivity");
     final List<IntentFilterData> ifd = activityData.getIntentFilters();
     assertThat(ifd).isNotNull();
-    assertThat(ifd.size()).isEqualTo(2);
+    assertThat(ifd).hasSize(2);
 
     IntentFilterData data = ifd.get(0);
-    assertThat(data.getActions().size()).isEqualTo(1);
+    assertThat(data.getActions()).hasSize(1);
     assertThat(data.getActions().get(0)).isEqualTo(Intent.ACTION_MAIN);
-    assertThat(data.getCategories().size()).isEqualTo(1);
+    assertThat(data.getCategories()).hasSize(1);
     assertThat(data.getCategories().get(0)).isEqualTo(Intent.CATEGORY_LAUNCHER);
 
     data = ifd.get(1);
-    assertThat(data.getActions().size()).isEqualTo(3);
+    assertThat(data.getActions()).hasSize(3);
     assertThat(data.getActions().get(0)).isEqualTo(Intent.ACTION_VIEW);
     assertThat(data.getActions().get(1)).isEqualTo(Intent.ACTION_EDIT);
     assertThat(data.getActions().get(2)).isEqualTo(Intent.ACTION_PICK);
 
-    assertThat(data.getCategories().size()).isEqualTo(3);
+    assertThat(data.getCategories()).hasSize(3);
     assertThat(data.getCategories().get(0)).isEqualTo(Intent.CATEGORY_DEFAULT);
     assertThat(data.getCategories().get(1)).isEqualTo(Intent.CATEGORY_ALTERNATIVE);
     assertThat(data.getCategories().get(2)).isEqualTo(Intent.CATEGORY_SELECTED_ALTERNATIVE);
@@ -431,20 +431,20 @@ public class AndroidManifestTest {
     ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestActivity");
     final List<IntentFilterData> ifd = activityData.getIntentFilters();
     assertThat(ifd).isNotNull();
-    assertThat(ifd.size()).isEqualTo(1);
+    assertThat(ifd).hasSize(1);
 
     final IntentFilterData intentFilterData = ifd.get(0);
-    assertThat(intentFilterData.getActions().size()).isEqualTo(1);
+    assertThat(intentFilterData.getActions()).hasSize(1);
     assertThat(intentFilterData.getActions().get(0)).isEqualTo(Intent.ACTION_VIEW);
-    assertThat(intentFilterData.getCategories().size()).isEqualTo(1);
+    assertThat(intentFilterData.getCategories()).hasSize(1);
     assertThat(intentFilterData.getCategories().get(0)).isEqualTo(Intent.CATEGORY_DEFAULT);
 
-    assertThat(intentFilterData.getSchemes().size()).isEqualTo(3);
-    assertThat(intentFilterData.getAuthorities().size()).isEqualTo(3);
-    assertThat(intentFilterData.getMimeTypes().size()).isEqualTo(3);
-    assertThat(intentFilterData.getPaths().size()).isEqualTo(1);
-    assertThat(intentFilterData.getPathPatterns().size()).isEqualTo(1);
-    assertThat(intentFilterData.getPathPrefixes().size()).isEqualTo(1);
+    assertThat(intentFilterData.getSchemes()).hasSize(3);
+    assertThat(intentFilterData.getAuthorities()).hasSize(3);
+    assertThat(intentFilterData.getMimeTypes()).hasSize(3);
+    assertThat(intentFilterData.getPaths()).hasSize(1);
+    assertThat(intentFilterData.getPathPatterns()).hasSize(1);
+    assertThat(intentFilterData.getPathPrefixes()).hasSize(1);
 
     assertThat(intentFilterData.getSchemes().get(0)).isEqualTo("content");
     assertThat(intentFilterData.getPaths().get(0)).isEqualTo("/testPath/test.jpeg");

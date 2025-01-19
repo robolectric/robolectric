@@ -67,7 +67,7 @@ public class ShadowCameraTest {
     Camera.Parameters parameters = camera.getParameters();
     assertThat(parameters).isNotNull();
     assertThat(parameters.getSupportedPreviewFormats()).isNotNull();
-    assertThat(parameters.getSupportedPreviewFormats().size()).isNotEqualTo(0);
+    assertThat(parameters.getSupportedPreviewFormats()).isNotEmpty();
   }
 
   @Test

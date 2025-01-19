@@ -159,7 +159,7 @@ public class ShadowContentResolverTest {
     ContentValues contentValues = new ContentValues();
     contentValues.put("foo", "bar");
     contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
-    assertThat(shadowContentResolver.getInsertStatements().size()).isEqualTo(1);
+    assertThat(shadowContentResolver.getInsertStatements()).hasSize(1);
     assertThat(shadowContentResolver.getInsertStatements().get(0).getUri())
         .isEqualTo(EXTERNAL_CONTENT_URI);
     assertThat(
@@ -173,7 +173,7 @@ public class ShadowContentResolverTest {
     contentValues = new ContentValues();
     contentValues.put("hello", "world");
     contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
-    assertThat(shadowContentResolver.getInsertStatements().size()).isEqualTo(2);
+    assertThat(shadowContentResolver.getInsertStatements()).hasSize(2);
     assertThat(
             shadowContentResolver
                 .getInsertStatements()
@@ -189,7 +189,7 @@ public class ShadowContentResolverTest {
     contentValues.put("foo", "bar");
     contentResolver.update(
         EXTERNAL_CONTENT_URI, contentValues, "robolectric", new String[] {"awesome"});
-    assertThat(shadowContentResolver.getUpdateStatements().size()).isEqualTo(1);
+    assertThat(shadowContentResolver.getUpdateStatements()).hasSize(1);
     assertThat(shadowContentResolver.getUpdateStatements().get(0).getUri())
         .isEqualTo(EXTERNAL_CONTENT_URI);
     assertThat(
@@ -207,7 +207,7 @@ public class ShadowContentResolverTest {
     contentValues = new ContentValues();
     contentValues.put("hello", "world");
     contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, null, null);
-    assertThat(shadowContentResolver.getUpdateStatements().size()).isEqualTo(2);
+    assertThat(shadowContentResolver.getUpdateStatements()).hasSize(2);
     assertThat(shadowContentResolver.getUpdateStatements().get(1).getUri())
         .isEqualTo(EXTERNAL_CONTENT_URI);
     assertThat(
@@ -235,23 +235,23 @@ public class ShadowContentResolverTest {
 
   @Test
   public void delete_shouldTrackDeletedUris() {
-    assertThat(shadowContentResolver.getDeletedUris().size()).isEqualTo(0);
+    assertThat(shadowContentResolver.getDeletedUris()).isEmpty();
 
     assertThat(contentResolver.delete(uri21, null, null)).isEqualTo(1);
     assertThat(shadowContentResolver.getDeletedUris()).contains(uri21);
-    assertThat(shadowContentResolver.getDeletedUris().size()).isEqualTo(1);
+    assertThat(shadowContentResolver.getDeletedUris()).hasSize(1);
 
     assertThat(contentResolver.delete(uri22, null, null)).isEqualTo(1);
     assertThat(shadowContentResolver.getDeletedUris()).contains(uri22);
-    assertThat(shadowContentResolver.getDeletedUris().size()).isEqualTo(2);
+    assertThat(shadowContentResolver.getDeletedUris()).hasSize(2);
   }
 
   @Test
   public void delete_shouldTrackDeletedStatements() {
-    assertThat(shadowContentResolver.getDeleteStatements().size()).isEqualTo(0);
+    assertThat(shadowContentResolver.getDeleteStatements()).isEmpty();
 
     assertThat(contentResolver.delete(uri21, "id", new String[] {"5"})).isEqualTo(1);
-    assertThat(shadowContentResolver.getDeleteStatements().size()).isEqualTo(1);
+    assertThat(shadowContentResolver.getDeleteStatements()).hasSize(1);
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getUri()).isEqualTo(uri21);
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getContentProvider()).isNull();
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getWhere()).isEqualTo("id");
@@ -259,7 +259,7 @@ public class ShadowContentResolverTest {
         .isEqualTo("5");
 
     assertThat(contentResolver.delete(uri21, "foo", new String[] {"bar"})).isEqualTo(1);
-    assertThat(shadowContentResolver.getDeleteStatements().size()).isEqualTo(2);
+    assertThat(shadowContentResolver.getDeleteStatements()).hasSize(2);
     assertThat(shadowContentResolver.getDeleteStatements().get(1).getUri()).isEqualTo(uri21);
     assertThat(shadowContentResolver.getDeleteStatements().get(1).getWhere()).isEqualTo("foo");
     assertThat(shadowContentResolver.getDeleteStatements().get(1).getSelectionArgs()[0])
@@ -677,7 +677,7 @@ public class ShadowContentResolverTest {
     contentResolver.notifyChange(Uri.parse("foo"), null, true);
     contentResolver.notifyChange(Uri.parse("bar"), null);
 
-    assertThat(shadowContentResolver.getNotifiedUris().size()).isEqualTo(2);
+    assertThat(shadowContentResolver.getNotifiedUris()).hasSize(2);
     ShadowContentResolver.NotifiedUri uri = shadowContentResolver.getNotifiedUris().get(0);
 
     assertThat(uri.uri.toString()).isEqualTo("foo");
@@ -697,7 +697,7 @@ public class ShadowContentResolverTest {
     contentResolver.notifyChange(Uri.parse("foo"), null, ContentResolver.NOTIFY_SYNC_TO_NETWORK);
     contentResolver.notifyChange(Uri.parse("bar"), null, ContentResolver.NOTIFY_UPDATE);
 
-    assertThat(shadowContentResolver.getNotifiedUris().size()).isEqualTo(2);
+    assertThat(shadowContentResolver.getNotifiedUris()).hasSize(2);
 
     ShadowContentResolver.NotifiedUri uri = shadowContentResolver.getNotifiedUris().get(0);
 
@@ -782,7 +782,7 @@ public class ShadowContentResolverTest {
     List<ContentProviderOperation> resultOperations =
         shadowContentResolver.getContentProviderOperations(AUTHORITY);
     assertThat(resultOperations).isNotNull();
-    assertThat(resultOperations.size()).isEqualTo(0);
+    assertThat(resultOperations).isEmpty();
 
     Uri uri = Uri.parse("content://org.robolectric");
     ArrayList<ContentProviderOperation> operations = new ArrayList<>();
@@ -830,7 +830,7 @@ public class ShadowContentResolverTest {
     ContentResolver.requestSync(b, AUTHORITY, new Bundle());
 
     List<SyncInfo> syncs = ContentResolver.getCurrentSyncs();
-    assertThat(syncs.size()).isEqualTo(2);
+    assertThat(syncs).hasSize(2);
 
     SyncInfo syncA = Iterables.find(syncs, s -> s.account.equals(a));
     assertThat(syncA.account).isEqualTo(a);
@@ -842,7 +842,7 @@ public class ShadowContentResolverTest {
 
     ContentResolver.cancelSync(a, AUTHORITY);
     List<SyncInfo> syncsAgain = ContentResolver.getCurrentSyncs();
-    assertThat(syncsAgain.size()).isEqualTo(1);
+    assertThat(syncsAgain).hasSize(1);
 
     SyncInfo firstAgain = syncsAgain.get(0);
     assertThat(firstAgain.account).isEqualTo(b);
@@ -850,7 +850,7 @@ public class ShadowContentResolverTest {
 
     ContentResolver.cancelSync(b, AUTHORITY);
     List<SyncInfo> s = ContentResolver.getCurrentSyncs();
-    assertThat(s.size()).isEqualTo(0);
+    assertThat(s).isEmpty();
   }
 
   @Test
@@ -961,11 +961,11 @@ public class ShadowContentResolverTest {
 
   @Test
   public void shouldGetPeriodSyncs() {
-    assertThat(ContentResolver.getPeriodicSyncs(a, AUTHORITY).size()).isEqualTo(0);
+    assertThat(ContentResolver.getPeriodicSyncs(a, AUTHORITY)).isEmpty();
     ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000L);
 
     List<PeriodicSync> syncs = ContentResolver.getPeriodicSyncs(a, AUTHORITY);
-    assertThat(syncs.size()).isEqualTo(1);
+    assertThat(syncs).hasSize(1);
 
     PeriodicSync first = syncs.get(0);
     assertThat(first.account).isEqualTo(a);

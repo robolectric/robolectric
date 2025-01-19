@@ -160,7 +160,7 @@ public class ShadowNativeTextRunShaperTest {
     for (int i = 0; i < result.glyphCount(); ++i) {
       set.add(result.getFont(i));
     }
-    assertThat(set.size()).isEqualTo(2); // Roboto + Emoji is expected
+    assertThat(set).hasSize(2); // Roboto + Emoji is expected
   }
 
   @Test

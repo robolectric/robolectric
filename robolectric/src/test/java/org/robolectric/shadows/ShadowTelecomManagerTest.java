@@ -77,7 +77,7 @@ public class ShadowTelecomManagerTest {
   @Test
   public void registerAndUnRegister() {
     assertThat(shadowOf(telecomService).getAllPhoneAccountsCount()).isEqualTo(0);
-    assertThat(shadowOf(telecomService).getAllPhoneAccounts()).hasSize(0);
+    assertThat(shadowOf(telecomService).getAllPhoneAccounts()).isEmpty();
 
     PhoneAccountHandle handler = createHandle("id");
     PhoneAccount phoneAccount = PhoneAccount.builder(handler, "main_account").build();
@@ -93,8 +93,8 @@ public class ShadowTelecomManagerTest {
     telecomService.unregisterPhoneAccount(handler);
 
     assertThat(shadowOf(telecomService).getAllPhoneAccountsCount()).isEqualTo(0);
-    assertThat(shadowOf(telecomService).getAllPhoneAccounts()).hasSize(0);
-    assertThat(telecomService.getAllPhoneAccountHandles()).hasSize(0);
+    assertThat(shadowOf(telecomService).getAllPhoneAccounts()).isEmpty();
+    assertThat(telecomService.getAllPhoneAccountHandles()).isEmpty();
   }
 
   @Test
@@ -298,7 +298,7 @@ public class ShadowTelecomManagerTest {
     verifyNoMoreInteractions(connectionServiceListener);
 
     List<ConnectionRequest> values = requestCaptor.getAllValues();
-    assertThat(values.size()).isEqualTo(2);
+    assertThat(values).hasSize(2);
     ConnectionRequest request1 = values.get(0);
     ConnectionRequest request2 = values.get(1);
     assertThat(request1.getAddress()).isEqualTo(address1);

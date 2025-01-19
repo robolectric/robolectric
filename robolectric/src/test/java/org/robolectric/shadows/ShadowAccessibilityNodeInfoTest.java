@@ -143,7 +143,7 @@ public class ShadowAccessibilityNodeInfoTest {
     assertThat(shadow.getPerformedActions().get(0)).isEqualTo(AccessibilityNodeInfo.ACTION_CLICK);
     boolean longClickResult = node.performAction(AccessibilityNodeInfo.ACTION_LONG_CLICK);
     assertThat(longClickResult).isFalse();
-    assertThat(shadow.getPerformedActions().size()).isEqualTo(2);
+    assertThat(shadow.getPerformedActions()).hasSize(2);
     assertThat(shadow.getPerformedActions().get(1))
         .isEqualTo(AccessibilityNodeInfo.ACTION_LONG_CLICK);
   }

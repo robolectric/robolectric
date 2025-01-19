@@ -2525,9 +2525,9 @@ public class ShadowPackageManagerTest {
     int filterCount = packageManager.getPreferredActivities(filters, activities, null);
 
     assertThat(filterCount).isEqualTo(1);
-    assertThat(activities.size()).isEqualTo(1);
+    assertThat(activities).hasSize(1);
     assertThat(activities.get(0).getPackageName()).isEqualTo(packageName);
-    assertThat(filters.size()).isEqualTo(1);
+    assertThat(filters).hasSize(1);
 
     filterCount = packageManager.getPreferredActivities(filters, activities, "other");
 
@@ -3911,7 +3911,7 @@ public class ShadowPackageManagerTest {
 
     shadowOf(packageManager).doPendingUninstallCallbacks();
 
-    assertThat(shadowOf(packageManager).getDeletedPackages()).hasSize(0);
+    assertThat(shadowOf(packageManager).getDeletedPackages()).isEmpty();
     verify(mockObserver)
         .packageDeleted(packageInfo.packageName, PackageManager.DELETE_FAILED_INTERNAL_ERROR);
   }

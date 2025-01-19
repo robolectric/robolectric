@@ -231,7 +231,7 @@ public class ShadowWifiManagerTest {
 
     assertThat(wifiManager.updateNetwork(configuration)).isEqualTo(networkId);
     List<WifiConfiguration> configuredNetworks = wifiManager.getConfiguredNetworks();
-    assertThat(configuredNetworks.size()).isEqualTo(2);
+    assertThat(configuredNetworks).hasSize(2);
     assertThat(configuration.priority).isEqualTo(44);
     assertThat(configuredNetworks.get(1).priority).isEqualTo(44);
   }
@@ -261,12 +261,12 @@ public class ShadowWifiManagerTest {
     wifiManager.addNetwork(wifiConfiguration);
 
     List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
-    assertThat(list.size()).isEqualTo(1);
+    assertThat(list).hasSize(1);
 
     wifiManager.removeNetwork(0);
 
     list = wifiManager.getConfiguredNetworks();
-    assertThat(list.size()).isEqualTo(0);
+    assertThat(list).isEmpty();
   }
 
   @Test
@@ -357,12 +357,12 @@ public class ShadowWifiManagerTest {
     wifiManager.addNetwork(wifiConfiguration);
 
     List<WifiConfiguration> list = wifiManager.getPrivilegedConfiguredNetworks();
-    assertThat(list.size()).isEqualTo(1);
+    assertThat(list).hasSize(1);
 
     wifiManager.removeNetwork(0);
 
     list = wifiManager.getPrivilegedConfiguredNetworks();
-    assertThat(list.size()).isEqualTo(0);
+    assertThat(list).isEmpty();
   }
 
   @Test

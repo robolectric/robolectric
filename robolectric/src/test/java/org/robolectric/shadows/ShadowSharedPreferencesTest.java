@@ -39,7 +39,7 @@ public class ShadowSharedPreferencesTest {
 
     sharedPreferences = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE);
     // Ensure no shared preferences have leaked from previous tests.
-    assertThat(sharedPreferences.getAll()).hasSize(0);
+    assertThat(sharedPreferences.getAll()).isEmpty();
 
     editor = sharedPreferences.edit();
     editor.putBoolean("boolean", true);
