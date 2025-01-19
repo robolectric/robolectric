@@ -723,7 +723,7 @@ public class ShadowApplicationTest {
     Activity activity = Robolectric.setupActivity(Activity.class);
     activity.registerReceiver(new TestBroadcastReceiver(), new IntentFilter("Foo"));
 
-    assertThat(shadowOf(context).getRegisteredReceivers().size()).isAtLeast(1);
+    assertThat(shadowOf(context).getRegisteredReceivers()).isNotEmpty();
 
     shadowOf(context).clearRegisteredReceivers();
 
@@ -806,7 +806,7 @@ public class ShadowApplicationTest {
   public void bindServiceShouldAddServiceConnectionToListOfBoundServiceConnections() {
     final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
 
-    assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).hasSize(0);
+    assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).isEmpty();
     assertThat(
             context.bindService(
                 new Intent("connect").setPackage("dummy.package"), expectedServiceConnection, 0))
@@ -823,7 +823,7 @@ public class ShadowApplicationTest {
     final String unboundableAction = "refuse";
     final Intent serviceIntent = new Intent(unboundableAction).setPackage("dummy.package");
     Shadows.shadowOf(context).declareActionUnbindable(unboundableAction);
-    assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).hasSize(0);
+    assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).isEmpty();
     assertThat(context.bindService(serviceIntent, expectedServiceConnection, 0)).isFalse();
     assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).hasSize(1);
     assertThat(Shadows.shadowOf(context).getBoundServiceConnections().get(0))
@@ -839,9 +839,9 @@ public class ShadowApplicationTest {
                 new Intent("connect").setPackage("dummy.package"), expectedServiceConnection, 0))
         .isTrue();
     assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).hasSize(1);
-    assertThat(Shadows.shadowOf(context).getUnboundServiceConnections()).hasSize(0);
+    assertThat(Shadows.shadowOf(context).getUnboundServiceConnections()).isEmpty();
     context.unbindService(expectedServiceConnection);
-    assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).hasSize(0);
+    assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).isEmpty();
     assertThat(Shadows.shadowOf(context).getUnboundServiceConnections()).hasSize(1);
     assertThat(Shadows.shadowOf(context).getUnboundServiceConnections().get(0))
         .isSameInstanceAs(expectedServiceConnection);

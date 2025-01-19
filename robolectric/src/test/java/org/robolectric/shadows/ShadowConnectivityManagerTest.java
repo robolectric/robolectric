@@ -300,13 +300,13 @@ public class ShadowConnectivityManagerTest {
 
     Map<Network, Boolean> reportedNetworks =
         shadowOf(connectivityManager).getReportedNetworkConnectivity();
-    assertThat(reportedNetworks.size()).isEqualTo(1);
+    assertThat(reportedNetworks).hasSize(1);
     assertThat(reportedNetworks.get(wifiNetwork)).isTrue();
 
     // Update the status.
     connectivityManager.reportNetworkConnectivity(wifiNetwork, false);
     reportedNetworks = shadowOf(connectivityManager).getReportedNetworkConnectivity();
-    assertThat(reportedNetworks.size()).isEqualTo(1);
+    assertThat(reportedNetworks).hasSize(1);
     assertThat(reportedNetworks.get(wifiNetwork)).isFalse();
   }
 

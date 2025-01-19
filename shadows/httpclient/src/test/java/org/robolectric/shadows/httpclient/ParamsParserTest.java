@@ -46,7 +46,7 @@ public class ParamsParserTest {
   public void parseParams_shouldParseParamsFromGetRequests() {
     HttpGet httpGet = new HttpGet("http://example.com/path?foo=bar");
     Map<String, String> parsed = ParamsParser.parseParams(httpGet);
-    assertThat(parsed.size()).isEqualTo(1);
+    assertThat(parsed).hasSize(1);
     assertThat(parsed.get("foo")).isEqualTo("bar");
   }
 

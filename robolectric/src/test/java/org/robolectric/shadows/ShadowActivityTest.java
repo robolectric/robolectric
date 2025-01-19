@@ -1630,7 +1630,7 @@ public class ShadowActivityTest {
       TestActivity testActivity = controller.setup().get();
       Consumer<List<DirectAction>> testConsumer =
           (directActions) -> {
-            assertThat(directActions.size()).isEqualTo(1);
+            assertThat(directActions).hasSize(1);
             DirectAction action = directActions.get(0);
             assertThat(action.getId()).isEqualTo(testActivity.getDirectActionForTesting().getId());
             ComponentName componentName = action.getExtras().getParcelable("componentName");

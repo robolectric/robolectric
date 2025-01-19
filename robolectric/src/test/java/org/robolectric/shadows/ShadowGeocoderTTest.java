@@ -110,7 +110,7 @@ public class ShadowGeocoderTTest {
     Geocoder.GeocodeListener geocodeListener = addresses -> decodedAddresses = addresses;
     shadowGeocoder.getFromLocationName("test", 1, geocodeListener);
 
-    assertThat(decodedAddresses).hasSize(0);
+    assertThat(decodedAddresses).isEmpty();
   }
 
   @Test

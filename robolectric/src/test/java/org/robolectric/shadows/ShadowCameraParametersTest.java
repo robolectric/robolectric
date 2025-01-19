@@ -79,7 +79,7 @@ public class ShadowCameraParametersTest {
   public void testGetSupportedPreviewFormats() {
     List<Integer> supportedFormats = parameters.getSupportedPreviewFormats();
     assertThat(supportedFormats).isNotNull();
-    assertThat(supportedFormats.size()).isNotEqualTo(0);
+    assertThat(supportedFormats).isNotEmpty();
     assertThat(supportedFormats).contains(ImageFormat.NV21);
   }
 
@@ -87,7 +87,7 @@ public class ShadowCameraParametersTest {
   public void testGetSupportedPictureFormats() {
     List<Integer> supportedFormats = parameters.getSupportedPictureFormats();
     assertThat(supportedFormats).isNotNull();
-    assertThat(supportedFormats.size()).isEqualTo(2);
+    assertThat(supportedFormats).hasSize(2);
     assertThat(supportedFormats).contains(ImageFormat.NV21);
   }
 
@@ -95,7 +95,7 @@ public class ShadowCameraParametersTest {
   public void testGetSupportedPictureSizes() {
     List<Camera.Size> supportedSizes = parameters.getSupportedPictureSizes();
     assertThat(supportedSizes).isNotNull();
-    assertThat(supportedSizes.size()).isEqualTo(3);
+    assertThat(supportedSizes).hasSize(3);
     assertThat(supportedSizes.get(0).width).isEqualTo(320);
     assertThat(supportedSizes.get(0).height).isEqualTo(240);
   }
@@ -104,7 +104,7 @@ public class ShadowCameraParametersTest {
   public void testGetSupportedPreviewSizes() {
     List<Camera.Size> supportedSizes = parameters.getSupportedPreviewSizes();
     assertThat(supportedSizes).isNotNull();
-    assertThat(supportedSizes.size()).isEqualTo(2);
+    assertThat(supportedSizes).hasSize(2);
     assertThat(supportedSizes.get(0).width).isEqualTo(320);
     assertThat(supportedSizes.get(0).height).isEqualTo(240);
   }
@@ -130,7 +130,7 @@ public class ShadowCameraParametersTest {
   public void testGetSupportedPreviewFpsRange() {
     List<int[]> supportedRanges = parameters.getSupportedPreviewFpsRange();
     assertThat(supportedRanges).isNotNull();
-    assertThat(supportedRanges.size()).isEqualTo(2);
+    assertThat(supportedRanges).hasSize(2);
     assertThat(supportedRanges.get(0)[0]).isEqualTo(15000);
     assertThat(supportedRanges.get(0)[1]).isEqualTo(15000);
     assertThat(supportedRanges.get(1)[0]).isEqualTo(10000);
@@ -141,7 +141,7 @@ public class ShadowCameraParametersTest {
   public void testGetSupportedPreviewFrameRates() {
     List<Integer> supportedRates = parameters.getSupportedPreviewFrameRates();
     assertThat(supportedRates).isNotNull();
-    assertThat(supportedRates.size()).isEqualTo(3);
+    assertThat(supportedRates).hasSize(3);
     assertThat(supportedRates.get(0)).isEqualTo(10);
   }
 

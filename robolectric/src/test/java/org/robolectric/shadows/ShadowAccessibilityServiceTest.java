@@ -44,7 +44,7 @@ public class ShadowAccessibilityServiceTest {
   @Test
   public void shouldRecordPerformedAction() {
     service.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
-    assertThat(shadow.getGlobalActionsPerformed().size()).isEqualTo(1);
+    assertThat(shadow.getGlobalActionsPerformed()).hasSize(1);
     assertThat(shadow.getGlobalActionsPerformed().get(0)).isEqualTo(1);
   }
 

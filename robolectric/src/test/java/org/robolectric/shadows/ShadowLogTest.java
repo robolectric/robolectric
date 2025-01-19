@@ -225,7 +225,7 @@ public class ShadowLogTest {
     Log.d("throwable", "7", specificMethodName());
 
     List<LogItem> allItems = ShadowLog.getLogs();
-    assertThat(allItems.size()).isEqualTo(7);
+    assertThat(allItems).hasSize(7);
     int i = 1;
     for (LogItem item : allItems) {
       assertThat(item.msg).isEqualTo(Integer.toString(i));
@@ -240,7 +240,7 @@ public class ShadowLogTest {
 
   private static void assertUniformLogsForTag(String tag, int count) {
     List<LogItem> tag1Items = ShadowLog.getLogsForTag(tag);
-    assertThat(tag1Items.size()).isEqualTo(count);
+    assertThat(tag1Items).hasSize(count);
     int last = -1;
     for (LogItem item : tag1Items) {
       assertThat(item.tag).isEqualTo(tag);

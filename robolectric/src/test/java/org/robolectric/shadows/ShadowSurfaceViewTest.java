@@ -54,7 +54,7 @@ public class ShadowSurfaceViewTest {
     surfaceHolder.addCallback(callback1);
     surfaceHolder.addCallback(callback2);
 
-    assertThat(fakeSurfaceHolder.getCallbacks().size()).isEqualTo(2);
+    assertThat(fakeSurfaceHolder.getCallbacks()).hasSize(2);
 
     surfaceHolder.removeCallback(callback1);
 

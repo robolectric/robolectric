@@ -347,12 +347,12 @@ public class ShadowUserManagerTest {
   @Test
   @Config(minSdk = R)
   public void getUserHandles() {
-    assertThat(shadowOf(userManager).getUserHandles(/* excludeDying= */ true).size()).isEqualTo(1);
+    assertThat(shadowOf(userManager).getUserHandles(/* excludeDying= */ true)).hasSize(1);
     shadowOf(userManager).getUserHandles(/* excludeDying= */ true).get(0);
     assertThat(UserHandle.myUserId()).isEqualTo(UserHandle.USER_SYSTEM);
 
     UserHandle expectedUserHandle = shadowOf(userManager).addUser(10, "secondary_user", 0);
-    assertThat(shadowOf(userManager).getUserHandles(/* excludeDying= */ true).size()).isEqualTo(2);
+    assertThat(shadowOf(userManager).getUserHandles(/* excludeDying= */ true)).hasSize(2);
     assertThat(shadowOf(userManager).getUserHandles(/* excludeDying= */ true).get(1))
         .isEqualTo(expectedUserHandle);
   }
