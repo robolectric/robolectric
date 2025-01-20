@@ -366,7 +366,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void updateNetwork_shouldRejectNullandNewConfigs() {
+  public void updateNetwork_shouldRejectNullAndNewConfigs() {
     WifiConfiguration config = new WifiConfiguration();
     config.networkId = -1;
     assertThat(wifiManager.updateNetwork(config)).isEqualTo(-1);
@@ -407,7 +407,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldAcquireAndReleaseWifilockRefCounted() {
+  public void shouldAcquireAndReleaseWifiLockRefCounted() {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     lock.acquire();
     lock.acquire();
@@ -419,7 +419,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldAcquireAndReleaseWifilockNonRefCounted() {
+  public void shouldAcquireAndReleaseWifiLockNonRefCounted() {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     lock.setReferenceCounted(false);
     lock.acquire();
@@ -431,7 +431,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldThrowRuntimeExceptionIfWifiLockisUnderlocked() {
+  public void shouldThrowRuntimeExceptionIfWifiLockIsUnderlocked() {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     try {
       lock.release();
@@ -442,7 +442,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldThrowUnsupportedOperationIfWifiLockisOverlocked() {
+  public void shouldThrowUnsupportedOperationIfWifiLockIsOverlocked() {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     try {
       for (int i = 0; i < ShadowWifiManager.ShadowWifiLock.MAX_ACTIVE_LOCKS; i++) {
@@ -484,7 +484,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldThrowRuntimeExceptionIfMulticastLockisUnderlocked() {
+  public void shouldThrowRuntimeExceptionIfMulticastLockIsUnderlocked() {
     MulticastLock lock = wifiManager.createMulticastLock("TAG");
     try {
       lock.release();
@@ -494,7 +494,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldThrowUnsupportedOperationIfMulticastLockisOverlocked() {
+  public void shouldThrowUnsupportedOperationIfMulticastLockIsOverlocked() {
     MulticastLock lock = wifiManager.createMulticastLock("TAG");
     try {
       for (int i = 0; i < ShadowWifiManager.ShadowMulticastLock.MAX_ACTIVE_LOCKS; i++) {

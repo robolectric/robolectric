@@ -91,7 +91,7 @@ public @interface LooperMode {
      *   <li>{@link android.os.Looper} use the real {@link android.os.MessageQueue} to store their
      *       queue of pending tasks
      *   <li>There is only a single clock value, managed via {@link
-     *       org.robolectric.shadows.ShadowSystemClock}. This can be explictly incremented via
+     *       org.robolectric.shadows.ShadowSystemClock}. This can be explicitly incremented via
      *       {@link android.os.SystemClock#setCurrentTimeMillis(long)}, or {@link
      *       org.robolectric.shadows.ShadowLooper#idleFor(Duration)}.
      * </ul>

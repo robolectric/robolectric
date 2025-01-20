@@ -32,8 +32,8 @@ public class ShadowTimeManager {
   private static TimeZoneConfiguration timeZoneConfiguration;
 
   /**
-   * Capabilites are predefined and not controlled by user, so they can't be changed via TimeManager
-   * API.
+   * Capabilities are predefined and not controlled by user, so they can't be changed via
+   * TimeManager API.
    */
   public void setCapabilityState(String capability, @CapabilityState int value) {
     TimeZoneCapabilities.Builder builder = new TimeZoneCapabilities.Builder(timeZoneCapabilities);

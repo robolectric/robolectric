@@ -2012,7 +2012,7 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  public void setPersistentPreferrecActivity_exists() {
+  public void setPersistentPreferredActivity_exists() {
     ComponentName randomActivity = new ComponentName("random.package", "Activity");
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
 

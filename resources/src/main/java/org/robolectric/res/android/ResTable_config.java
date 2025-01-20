@@ -2138,7 +2138,7 @@ public class ResTable_config {
       //
       // The exception is that we consider no-language resources a better match
       // for US English and similar locales than locales that are a descendant
-      // of Internatinal English (en-001), since no-language resources are
+      // of International English (en-001), since no-language resources are
       // where the US English resource have traditionally lived for most apps.
       if (areIdentical(requested.language, kEnglish)) {
         if (areIdentical(requested.country, kUnitedStates)) {

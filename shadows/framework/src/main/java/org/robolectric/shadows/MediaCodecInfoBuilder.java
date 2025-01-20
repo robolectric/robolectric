@@ -72,7 +72,7 @@ public class MediaCodecInfoBuilder {
   }
 
   /**
-   * Sets whether the codec is softwrare only or not.
+   * Sets whether the codec is software only or not.
    *
    * @param isSoftwareOnly a boolean to indicate whether the codec is software only {@code true} or
    *     not {@code false}. Default value is {@code false}.
@@ -315,7 +315,7 @@ public class MediaCodecInfoBuilder {
         Preconditions.checkArgument(
             colorFormats == null || colorFormats.length == 0,
             "colorFormats should not be set for audio codec");
-        caps.colorFormats = new int[0]; // To prevet crash in CodecCapabilities.dup().
+        caps.colorFormats = new int[0]; // To prevent crash in CodecCapabilities.dup().
       }
 
       capsReflector.setMime(mime);

@@ -183,7 +183,7 @@ public class ShadowWindowManagerGlobal {
             .onBackInvokedCallbackInfo
             .getCallback()
             .onBackProgressed(
-                BackMotionEvents.newBackMotionEvent(edge, touchX, touchY, caclulateProgress()));
+                BackMotionEvents.newBackMotionEvent(edge, touchX, touchY, calculateProgress()));
         ShadowLooper.idleMainLooper();
       } catch (RemoteException e) {
         throw new RuntimeException(e);
@@ -232,7 +232,7 @@ public class ShadowWindowManagerGlobal {
       }
     }
 
-    private float caclulateProgress() {
+    private float calculateProgress() {
       // The real implementation anchors the progress on the start x and resets it each time the
       // threshold is lost, it also calculates a linear and non linear progress area. This
       // implementation is much simpler.

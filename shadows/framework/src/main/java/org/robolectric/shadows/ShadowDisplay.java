@@ -254,7 +254,7 @@ public class ShadowDisplay {
    * Set HDR capabilities to the display sourced with displayId. see {@link HdrCapabilities} for
    * supportedHdrTypes.
    *
-   * @throws UnsupportedOperationException if the method is called below Android vesrsion N.
+   * @throws UnsupportedOperationException if the method is called below Android version N.
    */
   public void setDisplayHdrCapabilities(
       int displayId,

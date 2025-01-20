@@ -113,7 +113,7 @@ public class ShadowSystemProperties {
     buildProperties.setProperty("ro.hardware", "robolectric");
     buildProperties.setProperty("ro.build.characteristics", "robolectric");
 
-    // for backwards-compatiblity reasons, set CPUS to unknown/ARM
+    // for backwards-compatibility reasons, set CPUS to unknown/ARM
     buildProperties.setProperty("ro.product.cpu.abi", "unknown");
     buildProperties.setProperty("ro.product.cpu.abi2", "unknown");
     buildProperties.setProperty("ro.product.cpu.abilist", "armeabi-v7a");

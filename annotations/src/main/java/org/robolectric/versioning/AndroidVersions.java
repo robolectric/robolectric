@@ -942,9 +942,9 @@ public final class AndroidVersions {
                 .append(activeCodenameLetter)
                 .append("\n");
           } else {
-            // attempt to find assume the fullname is the "shortCode", aka "Sv2", "OMR1".
+            // attempt to find assume the full name is the "shortCode", aka "Sv2", "OMR1".
             current = shortCodeToAllReleases.get(codename);
-            // else, assume the fullname is the first letter is correct.
+            // else, assume the full name is the first letter is correct.
             if (current == null) {
               current = shortCodeToAllReleases.get(foundCode);
             }
@@ -1062,9 +1062,9 @@ public final class AndroidVersions {
     int sdk = sdkVersionString == null ? 0 : Integer.parseInt(sdkVersionString);
     // "REL"
     String release = buildProps.getProperty("ro.build.version.release");
-    // "Tiramasu", "UpsideDownCake"
+    // "Tiramisu", "UpsideDownCake"
     String codename = buildProps.getProperty("ro.build.version.codename");
-    // "Tiramasu,UpsideDownCake", "UpsideDownCake", "REL"
+    // "Tiramisu,UpsideDownCake", "UpsideDownCake", "REL"
     String codenames = buildProps.getProperty("ro.build.version.all_codenames");
     String[] allCodeNames = codenames == null ? new String[0] : codenames.split(",");
     String[] activeCodeNames =

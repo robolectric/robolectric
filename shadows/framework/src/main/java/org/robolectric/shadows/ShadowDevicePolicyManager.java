@@ -1313,7 +1313,7 @@ public class ShadowDevicePolicyManager {
    */
   public boolean activateResetToken(ComponentName admin) {
     if (!passwordResetTokens.containsKey(admin)) {
-      throw new IllegalArgumentException("No token set for comopnent: " + admin);
+      throw new IllegalArgumentException("No token set for component: " + admin);
     }
     return componentsWithActivatedTokens.add(admin);
   }

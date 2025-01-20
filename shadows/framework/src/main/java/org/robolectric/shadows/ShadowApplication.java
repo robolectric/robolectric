@@ -375,7 +375,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   /**
    * @deprecated Do not depend on this method to override services as it will be removed in a future
-   *     update. The preferered method is use the shadow of the corresponding service.
+   *     update. The preferred method is use the shadow of the corresponding service.
    */
   @Deprecated
   public void setSystemService(String key, Object service) {

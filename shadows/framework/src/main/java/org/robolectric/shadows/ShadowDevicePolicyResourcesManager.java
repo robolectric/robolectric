@@ -28,7 +28,7 @@ public class ShadowDevicePolicyResourcesManager {
 
   /**
    * Override string returned by the resource identified by {@code stringId}. Reset the override by
-   * providing null as the {@code vaNlue}.
+   * providing null as the {@code value}.
    */
   public void setString(@Nonnull String stringId, String value) {
     stringMappings.put(stringId, value);
