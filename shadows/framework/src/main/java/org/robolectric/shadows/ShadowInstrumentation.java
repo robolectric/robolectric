@@ -317,7 +317,7 @@ public class ShadowInstrumentation {
     }
   }
 
-  /** Returns the BroadcaseReceivers wrappers, matching intent's action and permissions. */
+  /** Returns the BroadcastReceivers wrappers, matching intent's action and permissions. */
   private List<Wrapper> getAppropriateWrappers(
       Context context,
       @Nullable UserHandle userHandle,

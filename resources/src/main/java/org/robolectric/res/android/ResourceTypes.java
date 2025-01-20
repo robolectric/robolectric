@@ -1102,7 +1102,7 @@ public class ResourceTypes {
    * <p>If the flag FLAG_SPARSE is set in `flags`, then this struct is followed by an array of
    * ResTable_sparseTypeEntry defining only the entries that have values for this type. Each entry
    * is sorted by their entry ID such that a binary search can be performed over the entries. The ID
-   * and offset are encoded in a uint32_t. See ResTabe_sparseTypeEntry.
+   * and offset are encoded in a uint32_t. See ResTable_sparseTypeEntry.
    *
    * <p>There may be multiple of these chunks for a particular resource type, supply different
    * configuration variations for the resource values of that type.
@@ -1283,7 +1283,7 @@ public class ResourceTypes {
     // If set, this resource has been declared public, so libraries
     // are allowed to reference it.
     public static final int FLAG_PUBLIC = 0x0002;
-    // If set, this is a weak resource and may be overriden by strong
+    // If set, this is a weak resource and may be overridden by strong
     // resources of the same name/type. This is only useful during
     // linking with other resource tables.
     public static final int FLAG_WEAK = 0x0004;

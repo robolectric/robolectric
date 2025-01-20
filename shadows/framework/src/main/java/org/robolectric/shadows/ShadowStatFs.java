@@ -9,7 +9,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /**
- * Robolectic doesn't provide actual filesystem stats; rather, it provides the ability to specify
+ * Robolectric doesn't provide actual filesystem stats; rather, it provides the ability to specify
  * stats values in advance.
  *
  * @see #registerStats(File, int, int, int)

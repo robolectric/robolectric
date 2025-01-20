@@ -38,7 +38,7 @@ public @interface TextLayoutMode {
     /**
      * The new, more accurate layout mechanism.
      *
-     * @deprecated REALTISTIC is the default mode and does not need to be stated explicity.
+     * @deprecated REALISTIC is the default mode and does not need to be stated explicitly.
      */
     @Deprecated
     REALISTIC,

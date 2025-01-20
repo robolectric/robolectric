@@ -896,7 +896,7 @@ public class ShadowPackageManager {
    * <p>In order to create PackageInfo objects in a valid state please use {@link
    * androidx.test.core.content.pm.PackageInfoBuilder}.
    *
-   * <p>This method automatically simulates instalation of a package in the system, so it adds a
+   * <p>This method automatically simulates installation of a package in the system, so it adds a
    * flag {@link ApplicationInfo#FLAG_INSTALLED} to the application info and makes sure it exits. It
    * will update applicationInfo in package components as well.
    *

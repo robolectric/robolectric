@@ -9,7 +9,7 @@ import org.robolectric.annotation.Implements;
 @Implements(VideoView.class)
 @SuppressWarnings({"UnusedDeclaration"})
 public class ShadowVideoView extends ShadowSurfaceView {
-  private MediaPlayer.OnCompletionListener completionListner;
+  private MediaPlayer.OnCompletionListener completionListener;
   private MediaPlayer.OnErrorListener errorListener;
   private MediaPlayer.OnPreparedListener preparedListener;
 
@@ -39,7 +39,7 @@ public class ShadowVideoView extends ShadowSurfaceView {
 
   @Implementation
   protected void setOnCompletionListener(MediaPlayer.OnCompletionListener l) {
-    completionListner = l;
+    completionListener = l;
   }
 
   @Implementation
@@ -127,7 +127,7 @@ public class ShadowVideoView extends ShadowSurfaceView {
    * @return On completion listener.
    */
   public MediaPlayer.OnCompletionListener getOnCompletionListener() {
-    return completionListner;
+    return completionListener;
   }
 
   /**

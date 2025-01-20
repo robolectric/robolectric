@@ -385,8 +385,8 @@ public class ShadowBluetoothGatt {
   }
 
   /**
-   * Simulate a successful Gatt Client Conection with {@link BluetoothConnectionManager}. Performs a
-   * {@link BluetoothGattCallback#onConnectionStateChange} if available.
+   * Simulate a successful Gatt Client Connection with {@link BluetoothConnectionManager}. Performs
+   * a {@link BluetoothGattCallback#onConnectionStateChange} if available.
    *
    * @param remoteAddress address of Gatt client
    */

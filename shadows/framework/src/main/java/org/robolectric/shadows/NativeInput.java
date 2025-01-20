@@ -51,7 +51,7 @@ public class NativeInput {
   /*
    * Maximum number of pointers supported per motion event.
    * Smallest number of pointers is 1.
-   * (We want at least 10 but some touch controllers obstensibly configured for 10 pointers
+   * (We want at least 10 but some touch controllers ostensibly configured for 10 pointers
    * will occasionally emit 11.  There is not much harm making this ant bigger.)
    */
   private static final int MAX_POINTERS = 16;

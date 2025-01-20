@@ -55,7 +55,7 @@ public class SQLiteDatabaseTest {
   }
 
   /**
-   * If running on Robolectric, this test only works in RobolectriSQLite native mode. Attempt to
+   * If running on Robolectric, this test only works in RobolectricSQLite native mode. Attempt to
    * figure this out
    */
   private boolean isNativeSqliteMode() throws IllegalAccessException, NoSuchFieldException {

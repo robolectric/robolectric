@@ -53,7 +53,7 @@ public class ShadowUsbDeviceConnection {
   }
 
   /**
-   * No-op on Robolectrict. The real implementation would return false on Robolectric and make it
+   * No-op on Robolectric. The real implementation would return false on Robolectric and make it
    * impossible to test callers that expect a successful result. Always returns {@code true}.
    */
   @Implementation

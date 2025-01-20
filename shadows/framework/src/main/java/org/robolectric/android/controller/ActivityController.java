@@ -530,7 +530,7 @@ public class ActivityController<T extends Activity>
             _component_ = _recreatedActivity_;
 
             // TODO: Because robolectric is currently not creating unique context objects per
-            //  activity and that the app copmat framework uses weak maps to cache resources per
+            //  activity and that the app compat framework uses weak maps to cache resources per
             //  context the caches end up with stale objects between activity creations (which would
             //  typically be flushed by an onConfigurationChanged when running in real android). To
             //  workaround this we can invoke a gc after running the configuration change and
