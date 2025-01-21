@@ -283,6 +283,20 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   @Override
+  protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
+    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
+
+    SQLiteMode.Mode sqliteMode =
+        roboMethod.configuration == null
+            ? SQLiteMode.Mode.LEGACY
+            : roboMethod.configuration.get(SQLiteMode.Mode.class);
+
+    AndroidSandbox androidSandbox = (AndroidSandbox) sandbox;
+    androidSandbox.updateModes(sqliteMode);
+    super.configureSandbox(sandbox, method);
+  }
+
+  @Override
   protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod)
       throws Throwable {
     AndroidSandbox androidSandbox = (AndroidSandbox) sandbox;
