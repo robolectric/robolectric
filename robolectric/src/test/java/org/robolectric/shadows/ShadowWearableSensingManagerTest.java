@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.times;
@@ -27,9 +26,11 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.versioning.AndroidVersions.U;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Unit test for ShadowWearableSensingManager. */
-@Config(minSdk = UPSIDE_DOWN_CAKE)
+@Config(minSdk = U.SDK_INT)
 @RunWith(RobolectricTestRunner.class)
 public class ShadowWearableSensingManagerTest {
 
@@ -87,6 +88,31 @@ public class ShadowWearableSensingManagerTest {
   }
 
   @Test
+  @Config(minSdk = V.SDK_INT)
+  public void startHotwordRecognition() throws Exception {
+    WearableSensingManager wearableSensingManager =
+        (WearableSensingManager)
+            getApplicationContext().getSystemService(Context.WEARABLE_SENSING_SERVICE);
+
+    wearableSensingManager.startHotwordRecognition(null, MoreExecutors.directExecutor(), callback);
+
+    verify(callback).accept(WearableSensingManager.STATUS_SUCCESS);
+  }
+
+  @Test
+  @Config(minSdk = V.SDK_INT)
+  public void stopHotwordRecognition() throws Exception {
+    WearableSensingManager wearableSensingManager =
+        (WearableSensingManager)
+            getApplicationContext().getSystemService(Context.WEARABLE_SENSING_SERVICE);
+    wearableSensingManager.startHotwordRecognition(null, MoreExecutors.directExecutor(), callback);
+
+    wearableSensingManager.stopHotwordRecognition(MoreExecutors.directExecutor(), callback);
+
+    verify(callback, times(2)).accept(WearableSensingManager.STATUS_SUCCESS);
+  }
+
+  @Test
   public void getLastDataBundle_noDataProvided_doesNotThrow() throws Exception {
     WearableSensingManager wearableSensingManager =
         (WearableSensingManager)
@@ -106,6 +132,38 @@ public class ShadowWearableSensingManagerTest {
         Shadow.extract(wearableSensingManager);
 
     shadowWearableSensingManager.getLastSharedMemory();
+  }
+
+  @Test
+  @Config(minSdk = V.SDK_INT)
+  public void setStartHotwordRecognitionResult() throws Exception {
+    WearableSensingManager wearableSensingManager =
+        (WearableSensingManager)
+            getApplicationContext().getSystemService(Context.WEARABLE_SENSING_SERVICE);
+    ShadowWearableSensingManager shadowWearableSensingManager =
+        Shadow.extract(wearableSensingManager);
+    shadowWearableSensingManager.setStartHotwordRecognitionResult(
+        WearableSensingManager.STATUS_ACCESS_DENIED);
+
+    wearableSensingManager.startHotwordRecognition(null, MoreExecutors.directExecutor(), callback);
+
+    verify(callback).accept(WearableSensingManager.STATUS_ACCESS_DENIED);
+  }
+
+  @Test
+  @Config(minSdk = V.SDK_INT)
+  public void setStopHotwordRecognitionResult() throws Exception {
+    WearableSensingManager wearableSensingManager =
+        (WearableSensingManager)
+            getApplicationContext().getSystemService(Context.WEARABLE_SENSING_SERVICE);
+    ShadowWearableSensingManager shadowWearableSensingManager =
+        Shadow.extract(wearableSensingManager);
+    shadowWearableSensingManager.setStopHotwordRecognitionResult(
+        WearableSensingManager.STATUS_ACCESS_DENIED);
+
+    wearableSensingManager.stopHotwordRecognition(MoreExecutors.directExecutor(), callback);
+
+    verify(callback).accept(WearableSensingManager.STATUS_ACCESS_DENIED);
   }
 
   @Test

@@ -1,7 +1,10 @@
 package org.robolectric.shadows;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import android.app.wearable.WearableSensingManager;
 import android.app.wearable.WearableSensingManager.StatusCode;
+import android.content.ComponentName;
 import android.os.ParcelFileDescriptor;
 import android.os.PersistableBundle;
 import android.os.SharedMemory;
@@ -10,10 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.versioning.AndroidVersions.U;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for VirtualDeviceManager. */
 @Implements(
@@ -26,6 +32,10 @@ public class ShadowWearableSensingManager {
   private static @StatusCode Integer provideDataStreamResult =
       WearableSensingManager.STATUS_SUCCESS;
   private static @StatusCode Integer provideDataResult = WearableSensingManager.STATUS_SUCCESS;
+  private static @StatusCode Integer startHotwordRecognitionResult =
+      WearableSensingManager.STATUS_SUCCESS;
+  private static @StatusCode Integer stopHotwordRecognitionResult =
+      WearableSensingManager.STATUS_SUCCESS;
   private static final ArrayList<PersistableBundle> dataBundleList = new ArrayList<>();
   private static final ArrayList<SharedMemory> sharedMemoryList = new ArrayList<>();
   private static ParcelFileDescriptor lastParcelFileDescriptor;
@@ -50,12 +60,50 @@ public class ShadowWearableSensingManager {
     executor.execute(() -> statusConsumer.accept(provideDataResult));
   }
 
+  @Implementation(minSdk = V.SDK_INT)
+  protected void startHotwordRecognition(
+      @Nullable ComponentName targetVisComponentName,
+      @Nonnull Executor executor,
+      @Nonnull @StatusCode Consumer<Integer> statusConsumer) {
+    checkNotNull(executor);
+    checkNotNull(statusConsumer);
+    executor.execute(() -> statusConsumer.accept(startHotwordRecognitionResult));
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected void stopHotwordRecognition(
+      @Nonnull Executor executor, @Nonnull @StatusCode Consumer<Integer> statusConsumer) {
+    checkNotNull(executor);
+    checkNotNull(statusConsumer);
+    executor.execute(() -> statusConsumer.accept(stopHotwordRecognitionResult));
+  }
+
   public void setProvideDataStreamResult(@StatusCode Integer provideDataStreamResult) {
-    this.provideDataStreamResult = provideDataStreamResult;
+    ShadowWearableSensingManager.provideDataStreamResult = provideDataStreamResult;
   }
 
   public void setProvideDataResult(@StatusCode Integer provideDataResult) {
-    this.provideDataResult = provideDataResult;
+    ShadowWearableSensingManager.provideDataResult = provideDataResult;
+  }
+
+  /**
+   * Sets the status code that will be sent to the {@code @StatusCode Consumer<Integer>} when {@link
+   * #startHotwordRecognition} is called.
+   */
+  public void setStartHotwordRecognitionResult(
+      @Nonnull @StatusCode Integer startHotwordRecognitionResult) {
+    checkNotNull(startHotwordRecognitionResult);
+    ShadowWearableSensingManager.startHotwordRecognitionResult = startHotwordRecognitionResult;
+  }
+
+  /**
+   * Sets the status code that will be sent to the {@code @StatusCode Consumer<Integer>} when {@link
+   * #stopHotwordRecognition} is called.
+   */
+  public void setStopHotwordRecognitionResult(
+      @Nonnull @StatusCode Integer stopHotwordRecognitionResult) {
+    checkNotNull(stopHotwordRecognitionResult);
+    ShadowWearableSensingManager.stopHotwordRecognitionResult = stopHotwordRecognitionResult;
   }
 
   public ParcelFileDescriptor getLastParcelFileDescriptor() {
@@ -82,6 +130,8 @@ public class ShadowWearableSensingManager {
   public static void reset() {
     provideDataStreamResult = WearableSensingManager.STATUS_SUCCESS;
     provideDataResult = WearableSensingManager.STATUS_SUCCESS;
+    startHotwordRecognitionResult = WearableSensingManager.STATUS_SUCCESS;
+    stopHotwordRecognitionResult = WearableSensingManager.STATUS_SUCCESS;
     dataBundleList.clear();
     sharedMemoryList.clear();
     lastParcelFileDescriptor = null;
