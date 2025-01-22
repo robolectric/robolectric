@@ -135,15 +135,23 @@ public final class RobolectricTestParameterInjector extends RobolectricTestRunne
    * the SDK sandbox.
    */
   private static final class DelegateHelperTestRunner extends HelperTestRunner {
-    private final DelegateTestRunner testParameterInjector;
-    private final Map<Method, List<FrameworkMethod>> injectedMethods;
+    private DelegateTestRunner testParameterInjector;
+    private Map<Method, List<FrameworkMethod>> injectedMethods;
 
     public DelegateHelperTestRunner(Class<?> bootstrappedTestClass) throws InitializationError {
       super(bootstrappedTestClass);
-      testParameterInjector = createSandboxedDelegateTestParameterInjector(bootstrappedTestClass);
-      injectedMethods =
-          testParameterInjector.computeTestMethods().stream()
-              .collect(groupingBy(FrameworkMethod::getMethod));
+    }
+
+    // This is currently called from a single thread so no need to synchronize.
+    private DelegateTestRunner getTestParameterInjector() {
+      if (testParameterInjector == null) {
+        testParameterInjector =
+            createSandboxedDelegateTestParameterInjector(getTestClass().getJavaClass());
+        injectedMethods =
+            testParameterInjector.computeTestMethods().stream()
+                .collect(groupingBy(FrameworkMethod::getMethod));
+      }
+      return testParameterInjector;
     }
 
     @Override
@@ -161,14 +169,15 @@ public final class RobolectricTestParameterInjector extends RobolectricTestRunne
       RobolectricInjectedFrameworkMethod robolectricInjectedFrameworkMethod =
           (RobolectricInjectedFrameworkMethod) frameworkMethod;
       // Map the method to one that has been class loaded in ths SDK sandbox.
-      return testParameterInjector.methodBlock(
-          Objects.requireNonNull(injectedMethods.get(method.getMethod()))
-              .get(robolectricInjectedFrameworkMethod.getInjectedMethodIndex()));
+      return getTestParameterInjector()
+          .methodBlock(
+              Objects.requireNonNull(injectedMethods.get(method.getMethod()))
+                  .get(robolectricInjectedFrameworkMethod.getInjectedMethodIndex()));
     }
 
     @Override
     protected Statement methodInvoker(FrameworkMethod method, Object test) {
-      return testParameterInjector.methodInvoker(method, test);
+      return getTestParameterInjector().methodInvoker(method, test);
     }
 
     private static DelegateTestRunner createSandboxedDelegateTestParameterInjector(
