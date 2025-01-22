@@ -71,7 +71,6 @@ jacoco = "0.8.11"
 
 # https://github.com/javaee/javax.annotation/tags
 javax-annotation-api = "1.3.2"
-javax-annotation-jsr250-api = "1.0"
 javax-inject = "1"
 
 # https://junit.org/junit4/
@@ -172,7 +171,6 @@ icu4j = { module = "com.ibm.icu:icu4j", version.ref = "icu4j" }
 junit4 = { module = "junit:junit", version.ref = "junit4" }
 
 javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javax-annotation-api" }
-javax-annotation-jsr250-api = { module = "javax.annotation:jsr250-api", version.ref = "javax-annotation-jsr250-api" }
 javax-inject = { module = "javax.inject:javax.inject", version.ref = "javax-inject" }
 
 libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version.ref = "libphonenumber" }
