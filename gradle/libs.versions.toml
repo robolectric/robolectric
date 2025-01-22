@@ -67,7 +67,7 @@ truth = "1.4.4"
 icu4j = "76.1"
 
 # https://www.eclemma.org/jacoco/
-jacoco = "0.8.11"
+jacoco = "0.8.12"
 
 # https://github.com/javaee/javax.annotation/tags
 javax-annotation-api = "1.3.2"
@@ -242,6 +242,9 @@ play-services-basement-for-shadows = { module = "com.google.android.gms:play-ser
 play-services-basement = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-basement" }
 
 spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-gradle" }
+
+# Not used, but helps dependabot trigger updates for Jacoco
+jacoco-agent = { module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco" }
 
 [bundles]
 play-services-for-shadows = ["androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows"]
