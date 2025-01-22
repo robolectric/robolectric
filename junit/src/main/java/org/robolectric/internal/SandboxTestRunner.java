@@ -4,13 +4,16 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 
 import com.google.common.base.Splitter;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,8 +22,11 @@ import java.util.WeakHashMap;
 import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.internal.runners.statements.FailOnTimeout;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -69,6 +75,8 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   private final List<PerfStatsReporter> perfStatsReporters;
   private final HashMap<Class<?>, Sandbox> loadedTestClasses = new HashMap<>();
+  private final HashSet<Class<?>> invokedBeforeClasses = new HashSet<>();
+
   private final HashMap<Class<?>, HelperTestRunner> helperRunners = new HashMap<>();
   private final WeakHashMap<Sandbox, LinkageError> firstLinkageErrors = new WeakHashMap<>();
 
@@ -98,12 +106,29 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   @Override
   protected Statement classBlock(RunNotifier notifier) {
-    final Statement statement = childrenInvoker(notifier);
+    Statement statement = childrenInvoker(notifier);
+    statement = withAfterClassesInSandbox(statement);
+    if (hasClassRules(getTestClass().getJavaClass())) {
+      statement = withClassRulesInSandbox(statement);
+    }
+    return statement;
+  }
+
+  private static boolean hasClassRules(Class<?> testClass) {
+    for (Field field : testClass.getDeclaredFields()) {
+      if (Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(ClassRule.class)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private Statement withAfterClassesInSandbox(Statement base) {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
         try {
-          statement.evaluate();
+          base.evaluate();
           for (Map.Entry<Class<?>, Sandbox> entry : loadedTestClasses.entrySet()) {
             Sandbox sandbox = entry.getValue();
             sandbox.runOnMainThread(
@@ -128,9 +153,50 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     };
   }
 
-  private void invokeBeforeClass(final Class<?> clazz, final Sandbox sandbox) throws Throwable {
-    if (!loadedTestClasses.containsKey(clazz)) {
-      loadedTestClasses.put(clazz, sandbox);
+  private Statement withClassRulesInSandbox(Statement statement) {
+    for (FrameworkMethod frameworkMethod : getChildren()) {
+      Sandbox sandbox = getSandbox(frameworkMethod);
+      Class<?> bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
+
+      if (!loadedTestClasses.containsKey(bootstrappedTestClass)) {
+        loadedTestClasses.put(bootstrappedTestClass, sandbox);
+
+        // Configure sandbox *BEFORE* setting the ClassLoader. This is necessary because
+        // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
+        // not available once we install the Robolectric class loader.
+        configureSandbox(sandbox, frameworkMethod);
+
+        HelperTestRunner helperTestRunner = getCachedHelperTestRunner(bootstrappedTestClass);
+        List<TestRule> classRules = helperTestRunner.classRules();
+        for (TestRule classRule : classRules) {
+          statement = applyRunRulesInSandbox(classRule, sandbox, statement, getDescription());
+        }
+      }
+    }
+    return statement;
+  }
+
+  private Statement applyRunRulesInSandbox(
+      TestRule rule, Sandbox sandbox, Statement base, Description description) {
+    return new Statement() {
+      @Override
+      public void evaluate() throws Throwable {
+        ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
+        try {
+          rule.apply(base, description).evaluate();
+        } catch (Throwable throwable) {
+          throw Util.sneakyThrow(throwable);
+        } finally {
+          Thread.currentThread().setContextClassLoader(priorContextClassLoader);
+        }
+      }
+    };
+  }
+
+  private void invokeBeforeClass(final Class<?> clazz) throws Throwable {
+    if (!invokedBeforeClasses.contains(clazz)) {
+      invokedBeforeClasses.add(clazz);
 
       final TestClass testClass = new TestClass(clazz);
       final List<FrameworkMethod> befores = testClass.getAnnotatedMethods(BeforeClass.class);
@@ -274,7 +340,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
               try {
                 // Only invoke @BeforeClass once per class
-                invokeBeforeClass(bootstrappedTestClass, sandbox);
+                invokeBeforeClass(bootstrappedTestClass);
 
                 beforeTest(sandbox, method, bootstrappedMethod);
 
@@ -418,6 +484,12 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     @Override
     protected Statement methodBlock(FrameworkMethod method) {
       return super.methodBlock(method);
+    }
+
+    // for visibility from SandboxTestRunner.methodBlock()
+    @Override
+    public List<TestRule> classRules() {
+      return super.classRules();
     }
 
     /**
