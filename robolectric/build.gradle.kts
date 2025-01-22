@@ -34,7 +34,6 @@ dependencies {
   implementation(libs.snakeyaml)
 
   api(libs.bcprov.jdk18on)
-  compileOnly(libs.findbugs.jsr305)
 
   compileOnly(AndroidSdk.MAX_SDK.coordinates)
   compileOnly(libs.junit4)
