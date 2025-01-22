@@ -48,7 +48,7 @@ dependencies {
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
   testImplementation(libs.mockito)
-  testImplementation(libs.hamcrest.junit)
+  testImplementation(libs.hamcrest)
   testImplementation("androidx.test:core:$axtCoreVersion@aar")
   testImplementation("androidx.test.ext:junit:$axtJunitVersion@aar")
   testImplementation("androidx.test.ext:truth:$axtTruthVersion@aar")

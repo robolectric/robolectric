@@ -19,7 +19,7 @@ bouncycastle = "1.80"
 findbugs-jsr305 = "3.0.2"
 
 # https://github.com/hamcrest/JavaHamcrest/releases
-hamcrest = "2.0.0.0"
+hamcrest = "3.0"
 
 # https://github.com/google/error-prone/releases
 error-prone = "2.36.0"
@@ -165,7 +165,7 @@ findbugs-jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "f
 guava = { module = "com.google.guava:guava", version.ref = "guava-jre" }
 guava-testlib = { module = "com.google.guava:guava-testlib", version.ref = "guava-jre" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
-hamcrest-junit = { module = "org.hamcrest:hamcrest-junit", version.ref = "hamcrest" }
+hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
 
 icu4j = { module = "com.ibm.icu:icu4j", version.ref = "icu4j" }
 
