@@ -20,6 +20,7 @@ dependencies {
 
   testImplementation(libs.junit4)
   testImplementation(libs.mockito)
+  testImplementation(libs.mockito.subclass)
 }
 
 val instrumentAll by

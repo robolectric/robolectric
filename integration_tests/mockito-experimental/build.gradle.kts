@@ -8,5 +8,5 @@ dependencies {
   testRuntimeOnly(AndroidSdk.MAX_SDK.coordinates)
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
-  testImplementation(libs.mockito.inline)
+  testImplementation(libs.mockito)
 }

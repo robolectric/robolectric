@@ -24,4 +24,5 @@ dependencies {
   testImplementation(libs.truth)
   testImplementation(libs.kotlin.stdlib)
   testImplementation(libs.mockito)
+  testImplementation(libs.mockito.subclass)
 }

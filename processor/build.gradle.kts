@@ -56,6 +56,7 @@ dependencies {
   testImplementation(libs.javax.annotation.jsr250.api)
   testImplementation(libs.junit4)
   testImplementation(libs.mockito)
+  testImplementation(libs.mockito.subclass)
   testImplementation(libs.compile.testing)
   testImplementation(libs.truth)
 }
