@@ -81,7 +81,7 @@ junit4 = "4.13.2"
 libphonenumber = "8.13.53"
 
 # https://github.com/mockito/mockito/releases
-mockito = "4.11.0"
+mockito = "5.15.2"
 
 # https://github.com/mockk/mockk/releases
 mockk = "1.13.16"
@@ -198,7 +198,7 @@ sqlite4java-win32-x86 = { module = "com.almworks.sqlite4java:sqlite4java-win32-x
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
-mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockito" }
+mockito-subclass = { module = "org.mockito:mockito-subclass", version.ref = "mockito" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }

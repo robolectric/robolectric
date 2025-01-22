@@ -14,6 +14,7 @@ dependencies {
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
   testImplementation(libs.mockito)
+  testImplementation(libs.mockito.subclass)
 
   annotationProcessor(libs.auto.value)
 }
