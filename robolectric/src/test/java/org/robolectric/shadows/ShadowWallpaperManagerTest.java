@@ -393,6 +393,50 @@ public class ShadowWallpaperManagerTest {
 
   @Test
   @Config(minSdk = N)
+  public void getWallpaperId_lockScreenBitmapNotConfigured_shouldReturnNegativeNumber()
+      throws Exception {
+    manager.setBitmap(
+        TEST_IMAGE_1, null, false, WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK);
+
+    assertThat(manager.getWallpaperId(WallpaperManager.FLAG_LOCK)).isEqualTo(-1);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getWallpaperId_setHomeScreenAndLockScreenBimap_shouldReturnIncreasingId()
+      throws Exception {
+    manager.setBitmap(TEST_IMAGE_1, null, false, WallpaperManager.FLAG_SYSTEM);
+    manager.setBitmap(TEST_IMAGE_2, null, false, WallpaperManager.FLAG_LOCK);
+
+    assertThat(manager.getWallpaperId(WallpaperManager.FLAG_SYSTEM)).isEqualTo(1);
+    assertThat(manager.getWallpaperId(WallpaperManager.FLAG_LOCK)).isEqualTo(2);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getWallpaperId_lockScreenResourceNotConfigured_shouldReturnNegativeNumber()
+      throws Exception {
+    int resourceId = 12345;
+    manager.setResource(resourceId, WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK);
+
+    assertThat(manager.getWallpaperId(WallpaperManager.FLAG_LOCK)).isEqualTo(-1);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getWallpaperId_setHomeScreenAndLockScreenResource_shouldReturnIncreasingId()
+      throws Exception {
+    int resourceId1 = 5;
+    int resourceId2 = 6;
+    manager.setResource(resourceId1, WallpaperManager.FLAG_SYSTEM);
+    manager.setResource(resourceId2, WallpaperManager.FLAG_LOCK);
+
+    assertThat(manager.getWallpaperId(WallpaperManager.FLAG_SYSTEM)).isEqualTo(1);
+    assertThat(manager.getWallpaperId(WallpaperManager.FLAG_LOCK)).isEqualTo(2);
+  }
+
+  @Test
+  @Config(minSdk = N)
   public void isSetWallpaperAllowed_allowed_shouldReturnTrue() {
     shadowOf(manager).setIsSetWallpaperAllowed(true);
 
