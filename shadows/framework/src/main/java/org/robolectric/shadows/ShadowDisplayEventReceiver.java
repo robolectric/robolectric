@@ -11,7 +11,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.MessageQueue;
-import android.os.SystemClock;
 import android.view.Choreographer;
 import android.view.DisplayEventReceiver;
 import dalvik.system.CloseGuard;
@@ -173,11 +172,11 @@ public class ShadowDisplayEventReceiver {
 
     private void onClockAdvanced() {
       synchronized (this) {
-        long nextVsyncTime = ShadowChoreographer.getNextVsyncTime();
-        if (nextVsyncTime == 0 || ShadowPausedSystemClock.uptimeMillis() < nextVsyncTime) {
+        long nextVsyncTime = ShadowChoreographer.getNextVsyncTimeNanos();
+        if (nextVsyncTime == 0 || ShadowPausedSystemClock.uptimeNanos() < nextVsyncTime) {
           return;
         }
-        ShadowChoreographer.setNextVsyncTime(0);
+        ShadowChoreographer.setNextVsyncTimeNanos(0);
       }
 
       doVsync();
@@ -190,8 +189,9 @@ public class ShadowDisplayEventReceiver {
     public void scheduleVsync() {
       Duration frameDelay = ShadowChoreographer.getFrameDelay();
       if (ShadowChoreographer.isPaused()) {
-        if (ShadowChoreographer.getNextVsyncTime() < SystemClock.uptimeMillis()) {
-          ShadowChoreographer.setNextVsyncTime(SystemClock.uptimeMillis() + frameDelay.toMillis());
+        if (ShadowChoreographer.getNextVsyncTimeNanos() < ShadowPausedSystemClock.uptimeNanos()) {
+          ShadowChoreographer.setNextVsyncTimeNanos(
+              ShadowPausedSystemClock.uptimeNanos() + frameDelay.toNanos());
         }
       } else {
         // simulate an immediate callback

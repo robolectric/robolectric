@@ -62,6 +62,24 @@ public class ShadowChoreographerTest {
     assertThat(frameTimeNanos.get()).isEqualTo(startTime + Duration.ofMillis(15).toNanos());
   }
 
+  /** Verify Choreographer + SystemClock use nano precision */
+  @Test
+  public void setPaused_isPaused_runsWhenClockAdvanced_nanos() {
+    ShadowChoreographer.setPaused(true);
+    ShadowChoreographer.setFrameDelay(Duration.ofNanos(15_100_000));
+    long startTime = ShadowSystem.nanoTime();
+    AtomicLong frameTimeNanos = new AtomicLong(-1);
+
+    Choreographer.getInstance().postFrameCallback(frameTimeNanos::set);
+    ShadowSystemClock.advanceBy(Duration.ofMillis(15));
+    ShadowLooper.idleMainLooper();
+
+    assertThat(frameTimeNanos.get()).isEqualTo(-1);
+    ShadowSystemClock.advanceBy(Duration.ofNanos(100_000));
+    ShadowLooper.idleMainLooper();
+    assertThat(frameTimeNanos.get()).isEqualTo(startTime + 15_100_000);
+  }
+
   @Test
   public void setPaused_isNotPaused_advancesClockAndRuns() {
     ShadowChoreographer.setPaused(false);

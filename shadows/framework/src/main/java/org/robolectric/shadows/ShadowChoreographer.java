@@ -47,7 +47,7 @@ public abstract class ShadowChoreographer {
    * vsync time (with respect to the system clock). See the {@link #getNextVsyncTime()} javadoc for
    * more details.
    */
-  private static volatile long nextVsyncTime;
+  private static volatile long nextVsyncTimeNanos;
 
   public static class Picker extends LooperShadowPicker<ShadowChoreographer> {
 
@@ -97,18 +97,26 @@ public abstract class ShadowChoreographer {
   }
 
   /**
+   * @deprecated use {@link #getNextVsyncTimeNanos()} instead
+   */
+  @Deprecated
+  public static long getNextVsyncTime() {
+    return Duration.ofNanos(getNextVsyncTimeNanos()).toMillis();
+  }
+
+  /**
    * This field is only used when {@link ShadowChoreographer#isPaused()} is true. It represents the
    * next scheduled vsync time (with respect to the system clock). When the system clock is advanced
    * to or beyond this time, a Choreographer frame will be triggered. It may be useful for tests to
    * know when the next scheduled vsync time is in order to determine how long to idle the main
    * looper in order to trigger the next Choreographer callback.
    */
-  public static long getNextVsyncTime() {
-    return nextVsyncTime;
+  public static long getNextVsyncTimeNanos() {
+    return nextVsyncTimeNanos;
   }
 
-  static void setNextVsyncTime(long nextVsyncTime) {
-    ShadowChoreographer.nextVsyncTime = nextVsyncTime;
+  static void setNextVsyncTimeNanos(long nextVsyncTimeNanos) {
+    ShadowChoreographer.nextVsyncTimeNanos = nextVsyncTimeNanos;
   }
 
   /**
@@ -199,7 +207,7 @@ public abstract class ShadowChoreographer {
 
   @Resetter
   public static void reset() {
-    nextVsyncTime = 0;
+    nextVsyncTimeNanos = 0;
     isPaused = false;
     frameDelay = Duration.ofMillis(1);
     if (RuntimeEnvironment.getApiLevel() >= N) {
