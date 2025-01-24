@@ -41,17 +41,18 @@ public class ShadowConnectivityManager {
   private static int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
   private static final Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<>();
 
-  private static HashSet<ConnectivityManager.NetworkCallback> networkCallbacks = new HashSet<>();
+  private static final HashSet<ConnectivityManager.NetworkCallback> networkCallbacks =
+      new HashSet<>();
   private static final HashSet<PendingIntent> networkCallbackPendingIntents = new HashSet<>();
 
   private static final Map<Integer, Network> netIdToNetwork = new HashMap<>();
   private static final Map<Integer, NetworkInfo> netIdToNetworkInfo = new HashMap<>();
   private static Network processBoundNetwork;
   private static boolean defaultNetworkActive = true;
-  private static HashSet<ConnectivityManager.OnNetworkActiveListener> onNetworkActiveListeners =
-      new HashSet<>();
-  private static Map<Network, Boolean> reportedNetworkConnectivity = new HashMap<>();
-  private static Map<Network, NetworkCapabilities> networkCapabilitiesMap = new HashMap<>();
+  private static final HashSet<ConnectivityManager.OnNetworkActiveListener>
+      onNetworkActiveListeners = new HashSet<>();
+  private static final Map<Network, Boolean> reportedNetworkConnectivity = new HashMap<>();
+  private static final Map<Network, NetworkCapabilities> networkCapabilitiesMap = new HashMap<>();
   private static String captivePortalServerUrl = "http://10.0.0.2";
   private static final Map<Network, LinkProperties> linkPropertiesMap = new HashMap<>();
   private static final Map<Network, ProxyInfo> proxyInfoMap = new HashMap<>();

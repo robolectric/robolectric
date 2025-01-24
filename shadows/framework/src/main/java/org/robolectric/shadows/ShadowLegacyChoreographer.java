@@ -30,7 +30,7 @@ public class ShadowLegacyChoreographer extends ShadowChoreographer {
   private static long FRAME_INTERVAL = Duration.ofMillis(10).toNanos();
   private static final Thread MAIN_THREAD = Thread.currentThread();
   private static SoftThreadLocal<Choreographer> instance = makeThreadLocal();
-  private Handler handler = new Handler(Looper.myLooper());
+  private final Handler handler = new Handler(Looper.myLooper());
   private static volatile int postCallbackDelayMillis = 0;
   private static volatile int postFrameCallbackDelayMillis = 0;
 

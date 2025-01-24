@@ -28,9 +28,9 @@ public class ShadowTextView extends ShadowView {
   protected int selectionStart = -1;
   protected int selectionEnd = -1;
 
-  private List<TextWatcher> watchers = new ArrayList<>();
-  private List<Integer> previousKeyCodes = new ArrayList<>();
-  private List<KeyEvent> previousKeyEvents = new ArrayList<>();
+  private final List<TextWatcher> watchers = new ArrayList<>();
+  private final List<Integer> previousKeyCodes = new ArrayList<>();
+  private final List<KeyEvent> previousKeyEvents = new ArrayList<>();
   private int compoundDrawablesWithIntrinsicBoundsLeft;
   private int compoundDrawablesWithIntrinsicBoundsTop;
   private int compoundDrawablesWithIntrinsicBoundsRight;

@@ -33,7 +33,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 /** Shadow for {@link SensorManager}. */
 @Implements(value = SensorManager.class)
 public class ShadowSensorManager {
-  private static AtomicBoolean forceListenersToFail = new AtomicBoolean();
+  private static final AtomicBoolean forceListenersToFail = new AtomicBoolean();
   private static final Multimap<Integer, Sensor> sensorMap =
       Multimaps.synchronizedMultimap(HashMultimap.create());
   private static final Multimap<SensorEventListener, Sensor> listeners =

@@ -14,7 +14,8 @@ import org.robolectric.annotation.Implements;
 public class ShadowDateIntervalFormat {
 
   private static long address;
-  private static Map<Long, com.ibm.icu.text.DateIntervalFormat> INTERVAL_CACHE = new HashMap<>();
+  private static final Map<Long, com.ibm.icu.text.DateIntervalFormat> INTERVAL_CACHE =
+      new HashMap<>();
 
   @Implementation(maxSdk = LOLLIPOP_MR1)
   public static long createDateIntervalFormat(String skeleton, String localeName, String tzName) {

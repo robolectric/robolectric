@@ -9,7 +9,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 /** Bridge between shadows and {@link android.view.animation.Animation}. */
 @DoNotInstrument
 public class ShadowAnimationBridge {
-  private Animation realAnimation;
+  private final Animation realAnimation;
 
   public ShadowAnimationBridge(Animation realAnimation) {
     this.realAnimation = realAnimation;

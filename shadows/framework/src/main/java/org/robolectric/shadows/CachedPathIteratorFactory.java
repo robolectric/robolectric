@@ -279,7 +279,7 @@ public class CachedPathIteratorFactory {
      *
      * @see PathIterator
      */
-    private float[] mCurrentCoords = new float[6];
+    private final float[] mCurrentCoords = new float[6];
 
     private float mCurrentSegmentLength;
 
@@ -293,7 +293,7 @@ public class CachedPathIteratorFactory {
     private float mOffsetLength;
 
     /** Point where the current segment started */
-    private float[] mLastPoint = new float[2];
+    private final float[] mLastPoint = new float[2];
 
     private boolean isIteratorDone;
 

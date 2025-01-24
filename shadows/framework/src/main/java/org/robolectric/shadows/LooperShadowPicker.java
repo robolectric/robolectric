@@ -4,8 +4,8 @@ import org.robolectric.shadow.api.ShadowPicker;
 
 public class LooperShadowPicker<T> implements ShadowPicker<T> {
 
-  private Class<? extends T> legacyShadowClass;
-  private Class<? extends T> pausedShadowClass;
+  private final Class<? extends T> legacyShadowClass;
+  private final Class<? extends T> pausedShadowClass;
 
   public LooperShadowPicker(
       Class<? extends T> legacyShadowClass, Class<? extends T> pausedShadowClass) {

@@ -89,7 +89,7 @@ public class NativeInput {
     }
 
     // Values of axes that are stored in this structure
-    private float[] values = new float[MAX_AXES];
+    private final float[] values = new float[MAX_AXES];
 
     public void clear() {
       bits.clear();

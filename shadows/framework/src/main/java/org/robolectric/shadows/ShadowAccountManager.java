@@ -39,23 +39,23 @@ import org.robolectric.util.Scheduler.IdleState;
 @Implements(AccountManager.class)
 public class ShadowAccountManager {
 
-  private List<Account> accounts = new ArrayList<>();
-  private Map<Account, Map<String, String>> authTokens = new HashMap<>();
-  private Map<String, AuthenticatorDescription> authenticators = new LinkedHashMap<>();
+  private final List<Account> accounts = new ArrayList<>();
+  private final Map<Account, Map<String, String>> authTokens = new HashMap<>();
+  private final Map<String, AuthenticatorDescription> authenticators = new LinkedHashMap<>();
 
   /**
    * Maps listeners to a set of account types. If null, the listener should be notified for changes
    * to accounts of any type. Otherwise, the listener is only notified of changes to accounts of the
    * given type.
    */
-  private Map<OnAccountsUpdateListener, Set<String>> listeners = new LinkedHashMap<>();
+  private final Map<OnAccountsUpdateListener, Set<String>> listeners = new LinkedHashMap<>();
 
-  private Map<Account, Map<String, String>> userData = new HashMap<>();
-  private Map<Account, String> passwords = new HashMap<>();
-  private Map<Account, Set<String>> accountFeatures = new HashMap<>();
-  private Map<Account, Set<String>> packageVisibleAccounts = new HashMap<>();
+  private final Map<Account, Map<String, String>> userData = new HashMap<>();
+  private final Map<Account, String> passwords = new HashMap<>();
+  private final Map<Account, Set<String>> accountFeatures = new HashMap<>();
+  private final Map<Account, Set<String>> packageVisibleAccounts = new HashMap<>();
 
-  private List<Bundle> addAccountOptionsList = new ArrayList<>();
+  private final List<Bundle> addAccountOptionsList = new ArrayList<>();
   private static Handler mainHandler;
   private static RoboAccountManagerFuture pendingAddFuture;
   private static boolean authenticationErrorOnNextResponse = false;
@@ -608,7 +608,7 @@ public class ShadowAccountManager {
     addAuthenticator(AuthenticatorDescription.newKey(type));
   }
 
-  private Map<Account, String> previousNames = new HashMap<Account, String>();
+  private final Map<Account, String> previousNames = new HashMap<Account, String>();
 
   /**
    * Sets the previous name for an account, which will be returned by {@link

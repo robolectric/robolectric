@@ -29,7 +29,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 public class ShadowNativePaint {
 
   // nGetTextRunCursor methods are non-static
-  private PaintNatives paintNatives = new PaintNatives();
+  private final PaintNatives paintNatives = new PaintNatives();
 
   @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nGetNativeFinalizer() {

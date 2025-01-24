@@ -83,7 +83,7 @@ public class ShadowAudioManager {
   private int nextResponseValue = AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
   private AudioManager.OnAudioFocusChangeListener lastAbandonedAudioFocusListener;
   private android.media.AudioFocusRequest lastAbandonedAudioFocusRequest;
-  private HashMap<Integer, AudioStream> streamStatus = new HashMap<>();
+  private final HashMap<Integer, AudioStream> streamStatus = new HashMap<>();
   private List<AudioPlaybackConfiguration> activePlaybackConfigurations = Collections.emptyList();
   private List<AudioRecordingConfiguration> activeRecordingConfigurations = ImmutableList.of();
   private final HashSet<AudioManager.AudioRecordingCallback> audioRecordingCallbacks =

@@ -81,7 +81,7 @@ public class ShadowWifiManager {
   private boolean isWpa3SaeH2eSupported = false;
   private boolean isWpa3SaePublicKeySupported = false;
   private boolean isWpa3SuiteBSupported = false;
-  private AtomicInteger activeLockCount = new AtomicInteger(0);
+  private final AtomicInteger activeLockCount = new AtomicInteger(0);
   private final BitSet readOnlyNetworkIds = new BitSet();
   private final ConcurrentHashMap<WifiManager.OnWifiUsabilityStatsListener, Executor>
       wifiUsabilityStatsListeners = new ConcurrentHashMap<>();

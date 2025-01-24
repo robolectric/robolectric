@@ -64,7 +64,7 @@ import org.robolectric.util.reflector.Static;
 public final class ShadowPausedLooper extends ShadowLooper {
 
   // Keep reference to all created Loopers so they can be torn down after test
-  private static Set<Looper> loopingLoopers =
+  private static final Set<Looper> loopingLoopers =
       Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<Looper, Boolean>()));
 
   private static boolean ignoreUncaughtExceptions = false;

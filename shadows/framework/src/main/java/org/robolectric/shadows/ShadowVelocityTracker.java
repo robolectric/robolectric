@@ -18,8 +18,8 @@ public class ShadowVelocityTracker {
   private final Movement[] movements = new Movement[HISTORY_SIZE];
   private int curIndex = 0;
 
-  private SparseArray<Float> computedVelocityX = new SparseArray<>();
-  private SparseArray<Float> computedVelocityY = new SparseArray<>();
+  private final SparseArray<Float> computedVelocityX = new SparseArray<>();
+  private final SparseArray<Float> computedVelocityY = new SparseArray<>();
 
   private void maybeInitialize() {
     if (initialized) {

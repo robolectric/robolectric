@@ -91,7 +91,7 @@ public class ShadowBluetoothAdapter {
   private static final Map<String, BluetoothDevice> deviceCache = new HashMap<>();
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
   private List<BluetoothDevice> mostRecentlyConnectedDevices = new ArrayList<>();
-  private Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
+  private final Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
   private boolean isDiscovering;
   private String address;
   private int state;

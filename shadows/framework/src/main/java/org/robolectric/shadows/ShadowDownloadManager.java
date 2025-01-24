@@ -30,10 +30,10 @@ public class ShadowDownloadManager {
 
   private static long queueCounter =
       -1; // First request starts at 0 just like in the real DownloadManager
-  private static Map<Long, DownloadManager.Request> requestMap = new TreeMap<>();
+  private static final Map<Long, DownloadManager.Request> requestMap = new TreeMap<>();
 
   private static long completedCounter = -1;
-  private static Map<Long, CompletedDownload> completedDownloadsMap = new HashMap<>();
+  private static final Map<Long, CompletedDownload> completedDownloadsMap = new HashMap<>();
 
   @Resetter
   public static void reset() {

@@ -15,8 +15,8 @@ import org.robolectric.RuntimeEnvironment;
 
 /** Robolectric implementation of {@link android.view.Menu}. */
 public class RoboMenu implements Menu {
-  private List<MenuItem> menuItems = new ArrayList<>();
-  private Context context;
+  private final List<MenuItem> menuItems = new ArrayList<>();
+  private final Context context;
 
   public RoboMenu() {
     this(RuntimeEnvironment.getApplication());

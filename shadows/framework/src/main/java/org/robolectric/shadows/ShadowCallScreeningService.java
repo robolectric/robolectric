@@ -20,8 +20,8 @@ import org.robolectric.util.reflector.ForType;
 public final class ShadowCallScreeningService {
   /** Contains the parameters used to call {@link CallScreeningService#respondToCall}. */
   public static final class RespondToCallInput {
-    private Call.Details callDetails;
-    private CallResponse callResponse;
+    private final Call.Details callDetails;
+    private final CallResponse callResponse;
 
     public RespondToCallInput(Call.Details callDetails, CallResponse callResponse) {
       this.callDetails = callDetails;

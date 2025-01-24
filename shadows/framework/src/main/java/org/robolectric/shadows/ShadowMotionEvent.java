@@ -53,7 +53,7 @@ import org.robolectric.versioning.AndroidVersions.V;
 @Implements(value = MotionEvent.class)
 public class ShadowMotionEvent extends ShadowInputEvent {
 
-  private static NativeObjRegistry<NativeInput.MotionEvent> nativeMotionEventRegistry =
+  private static final NativeObjRegistry<NativeInput.MotionEvent> nativeMotionEventRegistry =
       new NativeObjRegistry<>(NativeInput.MotionEvent.class);
 
   private static final int HISTORY_CURRENT = -0x80000000;
