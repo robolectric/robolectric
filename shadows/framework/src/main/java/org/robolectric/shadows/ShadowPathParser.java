@@ -154,8 +154,8 @@ public class ShadowPathParser {
   }
 
   public static class PathDataNode {
-    private char mType;
-    private float[] mParams;
+    private final char mType;
+    private final float[] mParams;
 
     private PathDataNode(char type, float[] params) {
       mType = type;

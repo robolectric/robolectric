@@ -47,7 +47,7 @@ public class ShadowWallpaperManager {
   private static boolean isWallpaperSupported = true;
   private static WallpaperInfo wallpaperInfo = null;
   private static final List<WallpaperCommandRecord> wallpaperCommandRecords = new ArrayList<>();
-  private static AtomicInteger wallpaperId = new AtomicInteger(0);
+  private static final AtomicInteger wallpaperId = new AtomicInteger(0);
   private static int lockScreenId;
   private static int homeScreenId;
 

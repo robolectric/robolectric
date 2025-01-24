@@ -44,7 +44,7 @@ import org.robolectric.util.reflector.Static;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapFactory.class)
 public class ShadowBitmapFactory {
-  private static Map<String, Point> widthAndHeightMap = new HashMap<>();
+  private static final Map<String, Point> widthAndHeightMap = new HashMap<>();
 
   // Determines whether BitmapFactory.decode methods should allow invalid bitmap data and always
   // return a Bitmap object. Currently defaults to true to preserve legacy behavior. A

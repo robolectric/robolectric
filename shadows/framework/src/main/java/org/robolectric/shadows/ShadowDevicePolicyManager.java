@@ -233,8 +233,8 @@ public class ShadowDevicePolicyManager {
       this.permission = permission;
     }
 
-    private String packageName;
-    private String permission;
+    private final String packageName;
+    private final String permission;
 
     @Override
     public boolean equals(Object o) {

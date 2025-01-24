@@ -13,7 +13,7 @@ import org.robolectric.shadows.ShadowContentResolver;
 import org.robolectric.util.Logger;
 
 public class ContentProviderController<T extends ContentProvider> {
-  private T contentProvider;
+  private final T contentProvider;
 
   private ContentProviderController(T contentProvider) {
     this.contentProvider = contentProvider;

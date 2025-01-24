@@ -10,7 +10,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 /** Bridge between shadow and {@link android.os.Binder}. */
 @DoNotInstrument
 public class ShadowBinderBridge {
-  private Binder realBinder;
+  private final Binder realBinder;
 
   public ShadowBinderBridge(Binder realBinder) {
     this.realBinder = realBinder;

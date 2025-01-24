@@ -140,7 +140,7 @@ public class ShadowPowerManager {
     isPowerSaveMode = powerSaveMode;
   }
 
-  private Map<Integer, Boolean> supportedWakeLockLevels = new HashMap<>();
+  private final Map<Integer, Boolean> supportedWakeLockLevels = new HashMap<>();
 
   @Implementation
   protected boolean isWakeLockLevelSupported(int level) {

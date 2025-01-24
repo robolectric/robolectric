@@ -18,7 +18,7 @@ import java.util.Map;
  * @author Fr Jeremy Krieg
  */
 public class DataSource {
-  private String dataSource;
+  private final String dataSource;
 
   @SuppressWarnings("ObjectToString")
   private static final FileDescriptorTransform DEFAULT_FD_TRANSFORM =

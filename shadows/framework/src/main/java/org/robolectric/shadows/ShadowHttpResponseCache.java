@@ -25,7 +25,10 @@ public class ShadowHttpResponseCache {
   private File directory;
   private long maxSize;
   private int requestCount = 0;
+
+  @SuppressWarnings({"FieldMayBeFinal", "FieldCanBeLocal"})
   private int hitCount = 0;
+
   private int networkCount = 0;
 
   @Implementation

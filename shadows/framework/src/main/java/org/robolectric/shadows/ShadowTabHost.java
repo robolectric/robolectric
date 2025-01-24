@@ -19,7 +19,7 @@ import org.robolectric.shadow.api.Shadow;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TabHost.class)
 public class ShadowTabHost extends ShadowViewGroup {
-  private List<TabHost.TabSpec> tabSpecs = new ArrayList<>();
+  private final List<TabHost.TabSpec> tabSpecs = new ArrayList<>();
   private TabHost.OnTabChangeListener listener;
   private int currentTab = -1;
 

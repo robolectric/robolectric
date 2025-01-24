@@ -125,7 +125,7 @@ public class ShadowSubscriptionManager {
    * Cache of phone IDs used by {@link getPhoneId}. Managed by {@link putPhoneId} and {@link
    * removePhoneId}.
    */
-  private static Map<Integer, Integer> phoneIds = new HashMap<>();
+  private static final Map<Integer, Integer> phoneIds = new HashMap<>();
 
   /**
    * Cache of {@link SubscriptionInfo} used by {@link #getActiveSubscriptionInfoList}. Managed by
@@ -149,13 +149,13 @@ public class ShadowSubscriptionManager {
    * List of listeners to be notified if the list of {@link SubscriptionInfo} changes. Managed by
    * {@link #addOnSubscriptionsChangedListener} and {@link removeOnSubscriptionsChangedListener}.
    */
-  private List<OnSubscriptionsChangedListener> listeners = new ArrayList<>();
+  private final List<OnSubscriptionsChangedListener> listeners = new ArrayList<>();
 
   /**
    * Cache of subscription ids used by {@link #isNetworkRoaming}. Managed by {@link
    * #setNetworkRoamingStatus} and {@link #clearNetworkRoamingStatus}.
    */
-  private Set<Integer> roamingSimSubscriptionIds = new HashSet<>();
+  private final Set<Integer> roamingSimSubscriptionIds = new HashSet<>();
 
   /**
    * Returns the active list of {@link SubscriptionInfo} that were set via {@link

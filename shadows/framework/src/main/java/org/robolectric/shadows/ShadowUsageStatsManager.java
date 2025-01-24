@@ -69,7 +69,7 @@ public class ShadowUsageStatsManager {
    * Keys {@link UsageStats} objects by intervalType (e.g. {@link
    * UsageStatsManager#INTERVAL_WEEKLY}).
    */
-  private static SetMultimap<Integer, UsageStats> usageStatsByIntervalType =
+  private static final SetMultimap<Integer, UsageStats> usageStatsByIntervalType =
       Multimaps.synchronizedSetMultimap(HashMultimap.create());
 
   private static final Map<String, Integer> appStandbyBuckets = Maps.newConcurrentMap();
@@ -681,7 +681,7 @@ public class ShadowUsageStatsManager {
    * of the Android API.
    */
   public static class UsageStatsBuilder {
-    private UsageStats usageStats = new UsageStats();
+    private final UsageStats usageStats = new UsageStats();
 
     // Use {@link #newBuilder} to construct builders.
     private UsageStatsBuilder() {}
@@ -725,7 +725,7 @@ public class ShadowUsageStatsManager {
    * API.
    */
   public static class EventBuilder {
-    private Event event = new Event();
+    private final Event event = new Event();
 
     private EventBuilder() {}
 

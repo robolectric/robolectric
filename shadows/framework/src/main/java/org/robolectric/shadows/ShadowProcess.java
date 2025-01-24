@@ -19,7 +19,7 @@ public class ShadowProcess {
   private static int pid;
   private static final int UID = getRandomApplicationUid();
   private static Integer uidOverride;
-  private static int tid = getRandomApplicationUid();
+  private static final int tid = getRandomApplicationUid();
   private static final Object threadPrioritiesLock = new Object();
   private static final Object killedProcessesLock = new Object();
   // The range of thread priority values is specified by

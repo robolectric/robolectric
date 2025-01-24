@@ -11,7 +11,7 @@ import java.util.Objects;
 /** Robolectric implementation of {@link android.content.IntentSender}. */
 public class RoboIntentSender extends IntentSender {
   public Intent intent;
-  private PendingIntent pendingIntent;
+  private final PendingIntent pendingIntent;
 
   public RoboIntentSender(PendingIntent pendingIntent) {
     super((IIntentSender) null);

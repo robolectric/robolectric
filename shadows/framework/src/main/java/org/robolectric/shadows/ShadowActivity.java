@@ -93,11 +93,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Integer lastShownDialogId = null;
   private int pendingTransitionEnterAnimResId = -1;
   private int pendingTransitionExitAnimResId = -1;
-  private SparseArray<OverriddenActivityTransition> overriddenActivityTransitions =
+  private final SparseArray<OverriddenActivityTransition> overriddenActivityTransitions =
       new SparseArray<>();
   private Object lastNonConfigurationInstance;
-  private Map<Integer, Dialog> dialogForId = new HashMap<>();
-  private ArrayList<Cursor> managedCursors = new ArrayList<>();
+  private final Map<Integer, Dialog> dialogForId = new HashMap<>();
+  private final ArrayList<Cursor> managedCursors = new ArrayList<>();
   private int mDefaultKeyMode = Activity.DEFAULT_KEYS_DISABLE;
   private SpannableStringBuilder mDefaultKeySsb = null;
   private int streamType = -1;

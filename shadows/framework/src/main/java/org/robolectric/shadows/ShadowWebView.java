@@ -50,11 +50,11 @@ public class ShadowWebView extends ShadowViewGroup {
 
   private static PackageInfo packageInfo = null;
 
-  private List<RoboWebMessagePort[]> allCreatedPorts = new ArrayList<>();
+  private final List<RoboWebMessagePort[]> allCreatedPorts = new ArrayList<>();
   private String lastUrl;
   private Map<String, String> lastAdditionalHttpHeaders;
-  private HashMap<String, Object> javascriptInterfaces = new HashMap<>();
-  private WebSettings webSettings = new RoboWebSettings();
+  private final HashMap<String, Object> javascriptInterfaces = new HashMap<>();
+  private final WebSettings webSettings = new RoboWebSettings();
   private WebViewClient webViewClient = null;
   private boolean clearCacheCalled = false;
   private boolean clearCacheIncludeDiskFiles = false;

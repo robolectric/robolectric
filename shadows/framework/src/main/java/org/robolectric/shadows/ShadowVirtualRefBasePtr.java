@@ -37,7 +37,7 @@ public class ShadowVirtualRefBasePtr {
   }
 
   private static final class RefHolder<T> {
-    private T nativeThing;
+    private final T nativeThing;
     private int refCount;
 
     private RefHolder(T object) {

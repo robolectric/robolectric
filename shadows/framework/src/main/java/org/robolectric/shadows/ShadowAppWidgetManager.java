@@ -51,7 +51,7 @@ public class ShadowAppWidgetManager {
   private static boolean requestPinAppWidgetSupported = false;
   private static boolean validWidgetProviderComponentName = true;
   private final ArrayList<AppWidgetProviderInfo> installedProviders = new ArrayList<>();
-  private Multimap<UserHandle, AppWidgetProviderInfo> installedProvidersForProfile =
+  private final Multimap<UserHandle, AppWidgetProviderInfo> installedProvidersForProfile =
       HashMultimap.create();
   private Context context;
   private final Map<Integer, WidgetInfo> widgetInfos = new HashMap<>();

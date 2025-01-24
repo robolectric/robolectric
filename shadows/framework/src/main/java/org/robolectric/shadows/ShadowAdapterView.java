@@ -16,7 +16,7 @@ import org.robolectric.util.reflector.ForType;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)
 public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
-  private static int ignoreRowsAtEndOfList = 0;
+  private static final int ignoreRowsAtEndOfList = 0;
 
   @RealObject private AdapterView<T> realAdapterView;
 

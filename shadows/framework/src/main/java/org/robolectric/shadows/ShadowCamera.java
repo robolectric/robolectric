@@ -63,7 +63,7 @@ public class ShadowCamera {
   private boolean released;
   private Camera.Parameters parameters;
   private Camera.PreviewCallback previewCallback;
-  private List<byte[]> callbackBuffers = new ArrayList<>();
+  private final List<byte[]> callbackBuffers = new ArrayList<>();
   private SurfaceHolder surfaceHolder;
   private int displayOrientation;
   private Camera.AutoFocusCallback autoFocusCallback;

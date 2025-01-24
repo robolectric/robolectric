@@ -24,7 +24,7 @@ import org.robolectric.annotation.Resetter;
     // turn off shadowOf generation
     isInAndroidSdk = false)
 public class ShadowLegacySystemClock extends ShadowSystemClock {
-  private static long bootedAt = 0;
+  private static final long bootedAt = 0;
   private static long nanoTime = 0;
   private static final int MILLIS_PER_NANO = 1000000;
 

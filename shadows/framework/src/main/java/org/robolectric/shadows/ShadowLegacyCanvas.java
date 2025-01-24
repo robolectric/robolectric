@@ -46,13 +46,13 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
   @ReflectorObject protected CanvasReflector canvasReflector;
 
   private final List<RoundRectPaintHistoryEvent> roundRectPaintEvents = new ArrayList<>();
-  private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<>();
-  private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<>();
-  private List<ArcPaintHistoryEvent> arcPaintEvents = new ArrayList<>();
-  private List<RectPaintHistoryEvent> rectPaintEvents = new ArrayList<>();
-  private List<LinePaintHistoryEvent> linePaintEvents = new ArrayList<>();
-  private List<OvalPaintHistoryEvent> ovalPaintEvents = new ArrayList<>();
-  private List<TextHistoryEvent> drawnTextEventHistory = new ArrayList<>();
+  private final List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<>();
+  private final List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<>();
+  private final List<ArcPaintHistoryEvent> arcPaintEvents = new ArrayList<>();
+  private final List<RectPaintHistoryEvent> rectPaintEvents = new ArrayList<>();
+  private final List<LinePaintHistoryEvent> linePaintEvents = new ArrayList<>();
+  private final List<OvalPaintHistoryEvent> ovalPaintEvents = new ArrayList<>();
+  private final List<TextHistoryEvent> drawnTextEventHistory = new ArrayList<>();
   private Paint drawnPaint;
   private Bitmap targetBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
   private float translateX;

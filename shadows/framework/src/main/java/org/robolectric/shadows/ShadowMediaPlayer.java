@@ -492,8 +492,8 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
 
   /** Callback to use for scheduled errors. */
   private static class ErrorCallback implements MediaEvent {
-    private int what;
-    private int extra;
+    private final int what;
+    private final int extra;
 
     public ErrorCallback(int what, int extra) {
       this.what = what;
@@ -881,7 +881,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     return state == STARTED;
   }
 
-  private static EnumSet<State> preparableStates = EnumSet.of(INITIALIZED, STOPPED);
+  private static final EnumSet<State> preparableStates = EnumSet.of(INITIALIZED, STOPPED);
 
   /**
    * Simulates {@link MediaPlayer#prepareAsync()}. Sleeps for {@link MediaInfo#getPreparationDelay()
@@ -928,7 +928,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     }
   }
 
-  private static EnumSet<State> startableStates =
+  private static final EnumSet<State> startableStates =
       EnumSet.of(PREPARED, STARTED, PAUSED, PLAYBACK_COMPLETED);
 
   /**
@@ -1488,7 +1488,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     return true;
   }
 
-  private static EnumSet<State> preparedStates =
+  private static final EnumSet<State> preparedStates =
       EnumSet.of(PREPARED, STARTED, PAUSED, PLAYBACK_COMPLETED);
 
   /**

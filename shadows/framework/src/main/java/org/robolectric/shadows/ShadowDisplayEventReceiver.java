@@ -51,7 +51,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 @Implements(className = "android.view.DisplayEventReceiver", isInAndroidSdk = false)
 public class ShadowDisplayEventReceiver {
 
-  private static NativeObjRegistry<NativeDisplayEventReceiver> nativeObjRegistry =
+  private static final NativeObjRegistry<NativeDisplayEventReceiver> nativeObjRegistry =
       new NativeObjRegistry<>(NativeDisplayEventReceiver.class);
 
   @RealObject protected DisplayEventReceiver realReceiver;

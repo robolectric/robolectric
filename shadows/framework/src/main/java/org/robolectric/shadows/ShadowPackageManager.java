@@ -143,7 +143,7 @@ public class ShadowPackageManager {
   static final SortedMap<ComponentName, List<IntentFilter>> providerFilters = new TreeMap<>();
   static final SortedMap<ComponentName, List<IntentFilter>> receiverFilters = new TreeMap<>();
 
-  private static Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
+  private static final Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
   static final Map<String, PackageStats> packageStatsMap = new HashMap<>();
   static final Map<String, String> packageInstallerMap = new HashMap<>();
   static final Map<String, Object> packageInstallSourceInfoMap = new HashMap<>();

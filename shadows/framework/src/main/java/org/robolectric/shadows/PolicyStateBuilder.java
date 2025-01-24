@@ -13,13 +13,13 @@ import org.robolectric.util.reflector.ForType;
 
 /** Builder for {@link PolicyState} */
 public class PolicyStateBuilder {
-  private Map<EnforcingAdmin, PolicyValue<?>> policiesSetByAdmins =
+  private final Map<EnforcingAdmin, PolicyValue<?>> policiesSetByAdmins =
       new LinkedHashMap<EnforcingAdmin, PolicyValue<?>>();
   private PolicyValue<?> currentResolvedPolicy;
 
   private PolicyStateBuilder() {}
 
-  private PolicyState<?> policyState = reflector(PolicyStateReflector.class).newPolicyState();
+  private final PolicyState<?> policyState = reflector(PolicyStateReflector.class).newPolicyState();
 
   public static PolicyStateBuilder newBuilder() {
     return new PolicyStateBuilder();

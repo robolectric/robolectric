@@ -42,7 +42,7 @@ import org.robolectric.util.reflector.Reflector;
 public class ShadowApplication extends ShadowContextWrapper {
   @RealObject private Application realApplication;
 
-  private List<android.widget.Toast> shownToasts = new ArrayList<>();
+  private final List<android.widget.Toast> shownToasts = new ArrayList<>();
   private ShadowPopupMenu latestPopupMenu;
   private PopupWindow latestPopupWindow;
   private ListPopupWindow latestListPopupWindow;

@@ -142,7 +142,7 @@ public class ShadowTelephonyManager {
   private String voiceMailAlphaTag;
   private static volatile int phoneCount = 1;
   private static volatile int activeModemCount = 1;
-  private static volatile Map<Integer, TelephonyManager> subscriptionIdsToTelephonyManagers =
+  private static final Map<Integer, TelephonyManager> subscriptionIdsToTelephonyManagers =
       Collections.synchronizedMap(new LinkedHashMap<>());
   private PersistableBundle carrierConfig;
   private ServiceState serviceState;

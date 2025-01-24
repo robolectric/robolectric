@@ -88,7 +88,7 @@ public class ShadowBluetoothDevice {
   private boolean isInSilenceMode = false;
   private boolean isConnected = false;
   @Nullable private BluetoothGattConnectionInterceptor bluetoothGattConnectionInterceptor = null;
-  private Map<Integer, Integer> connectionHandlesByTransportType = new HashMap<>();
+  private final Map<Integer, Integer> connectionHandlesByTransportType = new HashMap<>();
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions

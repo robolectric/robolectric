@@ -25,7 +25,7 @@ public class ShadowRenderNodeAnimator {
   private static final int STATE_FINISHED = 3;
 
   @RealObject RenderNodeAnimator realObject;
-  private Choreographer choreographer = Choreographer.getInstance();
+  private final Choreographer choreographer = Choreographer.getInstance();
   private boolean scheduled = false;
   private long startTime = -1;
   private boolean isEnding = false;
