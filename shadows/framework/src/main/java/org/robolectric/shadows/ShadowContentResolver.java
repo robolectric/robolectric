@@ -1170,13 +1170,13 @@ public class ShadowContentResolver {
     }
 
     @Override
-    public int read(byte[] b) throws IOException {
+    public int read(@Nonnull byte[] b) throws IOException {
       throw new UnsupportedOperationException(
           "You must use ShadowContentResolver.registerInputStream() in order to call read()");
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(@Nonnull byte[] b, int off, int len) throws IOException {
       throw new UnsupportedOperationException(
           "You must use ShadowContentResolver.registerInputStream() in order to call read()");
     }

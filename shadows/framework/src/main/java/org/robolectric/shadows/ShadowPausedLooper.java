@@ -26,6 +26,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -707,7 +708,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     private final LinkedBlockingQueue<Runnable> executionQueue = new LinkedBlockingQueue<>();
 
     @Override
-    public void execute(Runnable runnable) {
+    public void execute(@Nonnull Runnable runnable) {
       shadowQueue().checkQueueState();
       executionQueue.add(runnable);
     }
@@ -760,7 +761,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     }
 
     @Override
-    public void execute(Runnable runnable) {
+    public void execute(@Nonnull Runnable runnable) {
       if (!handler.post(runnable)) {
         throw new IllegalStateException(
             String.format("post to %s failed. Is handler thread dead?", handler));

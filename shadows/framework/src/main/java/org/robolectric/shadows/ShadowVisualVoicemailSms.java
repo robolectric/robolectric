@@ -38,6 +38,7 @@ public class ShadowVisualVoicemailSms {
     return this;
   }
 
+  @Nullable
   @Implementation
   protected String getPrefix() {
     return prefix;
@@ -48,6 +49,7 @@ public class ShadowVisualVoicemailSms {
     return this;
   }
 
+  @Nullable
   @Implementation
   protected Bundle getFields() {
     return fields;

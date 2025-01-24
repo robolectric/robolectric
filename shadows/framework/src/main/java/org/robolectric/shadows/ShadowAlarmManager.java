@@ -23,6 +23,7 @@ import java.util.PriorityQueue;
 import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -651,7 +652,7 @@ public class ShadowAlarmManager {
     }
 
     @Override
-    public int compareTo(ScheduledAlarm scheduledAlarm) {
+    public int compareTo(@Nonnull ScheduledAlarm scheduledAlarm) {
       return Long.compare(triggerAtTime, scheduledAlarm.triggerAtTime);
     }
   }
@@ -762,7 +763,7 @@ public class ShadowAlarmManager {
     }
 
     @Override
-    public void execute(Runnable command) {
+    public void execute(@Nonnull Runnable command) {
       if (!handler.post(command)) {
         throw new RejectedExecutionException(handler + " is shutting down");
       }
