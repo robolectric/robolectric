@@ -13,8 +13,7 @@ import org.robolectric.util.reflector.ForType;
 
 /** Builder for {@link PolicyState} */
 public class PolicyStateBuilder {
-  private final Map<EnforcingAdmin, PolicyValue<?>> policiesSetByAdmins =
-      new LinkedHashMap<EnforcingAdmin, PolicyValue<?>>();
+  private final Map<EnforcingAdmin, PolicyValue<?>> policiesSetByAdmins = new LinkedHashMap<>();
   private PolicyValue<?> currentResolvedPolicy;
 
   private PolicyStateBuilder() {}

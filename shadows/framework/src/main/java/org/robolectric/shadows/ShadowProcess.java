@@ -28,7 +28,7 @@ public class ShadowProcess {
   private static final int THREAD_PRIORITY_LOWEST = 19;
 
   @GuardedBy("threadPrioritiesLock")
-  private static final Map<Integer, Integer> threadPriorities = new HashMap<Integer, Integer>();
+  private static final Map<Integer, Integer> threadPriorities = new HashMap<>();
 
   @GuardedBy("killedProcessesLock")
   private static final Set<Integer> killedProcesses = new HashSet<>();

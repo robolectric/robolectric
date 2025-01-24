@@ -1720,7 +1720,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       @PackageManager.PermissionFlags int flagValues,
       UserHandle user) {
     if (!permissionFlags.containsKey(packageName)) {
-      permissionFlags.put(packageName, new HashMap<String, Integer>());
+      permissionFlags.put(packageName, new HashMap<>());
     }
 
     int existingFlags =

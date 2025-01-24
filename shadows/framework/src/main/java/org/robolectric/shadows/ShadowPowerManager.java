@@ -87,7 +87,7 @@ public class ShadowPowerManager {
   private static boolean lowPowerStandbyEnabled = false;
   private static boolean lowPowerStandbySupported = false;
   private static boolean exemptFromLowPowerStandby = false;
-  private static final Set<String> allowedFeatures = new HashSet<String>();
+  private static final Set<String> allowedFeatures = new HashSet<>();
 
   @Implementation
   protected PowerManager.WakeLock newWakeLock(int flags, String tag) {

@@ -19,8 +19,8 @@ import org.robolectric.annotation.Resetter;
 public class ShadowKeyguardManager {
   // These have to be static because on Android L and below, a new instance of KeyguardManager is
   // created each time it is requested.
-  private static final Set<Integer> deviceLockedForUsers = new HashSet<Integer>();
-  private static final Set<Integer> deviceSecureForUsers = new HashSet<Integer>();
+  private static final Set<Integer> deviceLockedForUsers = new HashSet<>();
+  private static final Set<Integer> deviceSecureForUsers = new HashSet<>();
   private static boolean inRestrictedInputMode;
   private static boolean isKeyguardLocked;
   private static boolean isDeviceLocked;

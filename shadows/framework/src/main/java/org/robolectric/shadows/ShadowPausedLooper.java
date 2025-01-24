@@ -65,7 +65,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   // Keep reference to all created Loopers so they can be torn down after test
   private static final Set<Looper> loopingLoopers =
-      Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<Looper, Boolean>()));
+      Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
   private static boolean ignoreUncaughtExceptions = false;
 
