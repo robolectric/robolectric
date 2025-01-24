@@ -194,7 +194,7 @@ public class ShadowSpeechRecognizer {
     Preconditions.checkArgument(supportListener instanceof RecognitionSupportCallback);
 
     ShadowSpeechRecognizerState shadowState = getState();
-    shadowState.recognitionSupportExecutor = (Executor) executor;
+    shadowState.recognitionSupportExecutor = executor;
     shadowState.recognitionSupportCallback = supportListener;
   }
 

@@ -349,7 +349,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     if (config != null) {
       out_typed_value.density = config.density;
     }
-    return (int) (ApkAssetsCookieToJavaCookie(cookie));
+    return ApkAssetsCookieToJavaCookie(cookie);
   }
 
   //  @Override
@@ -874,12 +874,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
               final Ref<Integer> flags = new Ref<>(0);
               ApkAssetsCookie cookie =
                   assetmanager.GetResource(
-                      resid,
-                      false /*may_be_bag*/,
-                      (short) (density),
-                      value,
-                      selected_config,
-                      flags);
+                      resid, false /*may_be_bag*/, density, value, selected_config, flags);
               if (cookie.intValue() == kInvalidCookie) {
                 return ApkAssetsCookieToJavaCookie(K_INVALID_COOKIE);
               }
@@ -911,7 +906,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     ApkAssetsCookie cookie = K_INVALID_COOKIE;
     Res_value bag_value = null;
     for (ResolvedBag.Entry entry : bag.entries) {
-      if (entry.key == (int) (bag_entry_id)) {
+      if (entry.key == bag_entry_id) {
         cookie = entry.cookie;
         bag_value = entry.value;
 
@@ -1050,7 +1045,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
 
       int string_index = -1;
       if (value.get().dataType == Res_value.TYPE_STRING) {
-        string_index = (int) (value.get().data);
+        string_index = value.get().data;
       }
 
       buffer[i * 2] = ApkAssetsCookieToJavaCookie(cookie);
@@ -1095,7 +1090,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
 
       if (value.get().dataType >= Res_value.TYPE_FIRST_INT
           && value.get().dataType <= Res_value.TYPE_LAST_INT) {
-        buffer[i] = (int) (value.get().data);
+        buffer[i] = value.get().data;
       }
     }
     // env.ReleasePrimitiveArrayCritical(array, buffer, 0);
@@ -1111,7 +1106,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     if (bag == null) {
       return -1;
     }
-    return (int) (bag.entry_count);
+    return bag.entry_count;
   }
 
   // static jint NativeGetResourceArray(JNIEnv* env, jclass /*clazz*/, jlong ptr, jint resid,
@@ -1130,7 +1125,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     //   return -1;
     // }
 
-    if ((int) (bag.entry_count) > out_data_length * STYLE_NUM_ENTRIES) {
+    if (bag.entry_count > out_data_length * STYLE_NUM_ENTRIES) {
       throw new IllegalArgumentException("Input array is not large enough");
     }
 
@@ -1161,16 +1156,16 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       }
 
       int offset = i * STYLE_NUM_ENTRIES;
-      cursor[offset + STYLE_TYPE] = (int) (value.get().dataType);
-      cursor[offset + STYLE_DATA] = (int) (value.get().data);
+      cursor[offset + STYLE_TYPE] = value.get().dataType;
+      cursor[offset + STYLE_DATA] = value.get().data;
       cursor[offset + STYLE_ASSET_COOKIE] = ApkAssetsCookieToJavaCookie(cookie);
-      cursor[offset + STYLE_RESOURCE_ID] = (int) (ref.get());
-      cursor[offset + STYLE_CHANGING_CONFIGURATIONS] = (int) (flags.get());
-      cursor[offset + STYLE_DENSITY] = (int) (selected_config.get().density);
+      cursor[offset + STYLE_RESOURCE_ID] = ref.get();
+      cursor[offset + STYLE_CHANGING_CONFIGURATIONS] = flags.get();
+      cursor[offset + STYLE_DENSITY] = selected_config.get().density;
       // cursor += STYLE_NUM_ENTRIES;
     }
     // env.ReleasePrimitiveArrayCritical(out_data, buffer, 0);
-    return (int) (bag.entry_count);
+    return bag.entry_count;
   }
 
   // static jint NativeGetResourceIdentifier(JNIEnv* env, jclass /*clazz*/, jlong ptr, jstring name,
@@ -1198,7 +1193,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       package_ = package_utf8;
     }
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    return (int) (assetmanager.GetResourceId(name_utf8, type, package_));
+    return assetmanager.GetResourceId(name_utf8, type, package_);
   }
 
   // static jstring NativeGetResourceName(JNIEnv* env, jclass /*clazz*/, jlong ptr, jint resid) {
@@ -1424,8 +1419,8 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     ApplyStyle(
         theme,
         xml_parser,
-        (int) (def_style_attr),
-        (int) (def_style_resid),
+        def_style_attr,
+        def_style_resid,
         attrs,
         attrs_len,
         out_values,
@@ -1507,8 +1502,8 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     boolean result =
         ResolveAttrs(
             theme,
-            (int) (def_style_attr),
-            (int) (def_style_resid),
+            def_style_attr,
+            def_style_resid,
             values,
             values_len,
             attrs,
@@ -1718,7 +1713,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static @NativeConfig int nativeThemeGetChangingConfigurations(long theme_ptr) {
     Theme theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(theme_ptr);
-    return (int) (theme.GetChangingConfigurations());
+    return theme.GetChangingConfigurations();
   }
 
   // static void NativeAssetDestroy(JNIEnv* /*env*/, jclass /*clazz*/, jlong asset_ptr) {
@@ -1766,7 +1761,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     if (res < 0) {
       throw new IOException();
     }
-    return res > 0 ? (int) (res) : -1;
+    return res > 0 ? res : -1;
   }
 
   // static jlong NativeAssetSeek(JNIEnv* env, jclass /*clazz*/, jlong asset_ptr, jlong offset,

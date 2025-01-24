@@ -155,7 +155,7 @@ public class ShadowLegacyMessageQueue extends ShadowMessageQueue {
   }
 
   private static ShadowLegacyMessage shadowOf(Message actual) {
-    return (ShadowLegacyMessage) Shadow.extract(actual);
+    return Shadow.extract(actual);
   }
 
   /** Reflector interface for {@link MessageQueue}'s internals. */

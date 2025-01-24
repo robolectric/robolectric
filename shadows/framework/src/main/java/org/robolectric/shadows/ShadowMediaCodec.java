@@ -463,7 +463,7 @@ public class ShadowMediaCodec {
   protected void validateOutputByteBuffer(
       @Nullable ByteBuffer[] buffers, int index, @Nonnull BufferInfo info) {
     if (buffers != null && index >= 0 && index < buffers.length) {
-      Buffer buffer = (Buffer) buffers[index];
+      Buffer buffer = buffers[index];
       if (buffer != null) {
         buffer.limit(info.offset + info.size).position(info.offset);
       }

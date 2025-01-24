@@ -1223,7 +1223,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       String pkgName,
       int uid,
       final @ClassName("android.content.pm.IPackageStatsObserver") Object observer) {
-    final PackageStats packageStats = packageStatsMap.get((String) pkgName);
+    final PackageStats packageStats = packageStatsMap.get(pkgName);
     new Handler(Looper.getMainLooper())
         .post(
             () -> {

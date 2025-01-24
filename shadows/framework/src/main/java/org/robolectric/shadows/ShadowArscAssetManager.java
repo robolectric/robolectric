@@ -1139,7 +1139,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     final Ref<Res_value> valueRef = new Ref<>(null);
     final bag_entry[] bag = startOfBag.get();
     int strLen = 0;
-    for (int i = 0; ((int) i) < N; i++) {
+    for (int i = 0; i < N; i++) {
       valueRef.set(bag[i].map.value);
       String str = null;
 

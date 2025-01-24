@@ -196,7 +196,7 @@ public class ShadowNativeThreadedRenderer {
       surface.unlockCanvasAndPost(canvas);
       Image nativeImage = imageReader.acquireNextImage();
       Plane[] planes = nativeImage.getPlanes();
-      Bitmap destBitmap = Bitmap.createBitmap((int) width, (int) height, Config.ARGB_8888);
+      Bitmap destBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);
       destBitmap.copyPixelsFromBuffer(planes[0].getBuffer());
       surface.release();
       // Return an immutable copy of the Bitmap, which is what this API expects.

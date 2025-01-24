@@ -117,7 +117,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
   private ShadowAlertController getShadowAlertController() {
     AlertController alertController = ReflectionHelpers.getField(realAlertDialog, "mAlert");
-    return (ShadowAlertController) Shadow.extract(alertController);
+    return Shadow.extract(alertController);
   }
 
   @Implements(AlertDialog.Builder.class)

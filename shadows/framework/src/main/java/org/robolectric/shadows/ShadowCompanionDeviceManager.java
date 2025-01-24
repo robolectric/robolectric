@@ -283,7 +283,7 @@ public class ShadowCompanionDeviceManager {
         revoked,
         info.getTimeApprovedMs(),
         // return value of getLastTimeConnectedMs changed from a long to a Long
-        (long) ReflectionHelpers.callInstanceMethod(info, "getLastTimeConnectedMs"),
+        ReflectionHelpers.callInstanceMethod(info, "getLastTimeConnectedMs"),
         systemDataSyncFlags);
   }
 

@@ -391,14 +391,14 @@ public class ShadowBluetoothAdapter {
   @Implementation(maxSdk = Q)
   protected boolean setScanMode(int scanMode, int discoverableTimeout) {
     setDiscoverableTimeout(discoverableTimeout);
-    return (boolean) setScanMode(scanMode);
+    return setScanMode(scanMode);
   }
 
   @Implementation(minSdk = R, maxSdk = S_V2)
   protected boolean setScanMode(int scanMode, long durationMillis) {
     int durationSeconds = Math.toIntExact(durationMillis / 1000);
     setDiscoverableTimeout(durationSeconds);
-    return (boolean) setScanMode(scanMode);
+    return setScanMode(scanMode);
   }
 
   @Implementation

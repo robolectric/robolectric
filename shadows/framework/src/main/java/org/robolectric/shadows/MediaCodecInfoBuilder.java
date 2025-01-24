@@ -411,8 +411,8 @@ public class MediaCodecInfoBuilder {
       int flagsSupported = 0;
       Object[] validFeatures = ReflectionHelpers.callInstanceMethod(parent, "getValidFeatures");
       for (Object validFeature : validFeatures) {
-        String featureName = (String) ReflectionHelpers.getField(validFeature, "mName");
-        int featureValue = (int) ReflectionHelpers.getField(validFeature, "mValue");
+        String featureName = ReflectionHelpers.getField(validFeature, "mName");
+        int featureValue = ReflectionHelpers.getField(validFeature, "mValue");
         if (mediaFormat.containsFeature(featureName)
             && mediaFormat.getFeatureEnabled(featureName)) {
           flagsSupported |= featureValue;
@@ -430,8 +430,8 @@ public class MediaCodecInfoBuilder {
       Object[] validFeatures = ReflectionHelpers.callInstanceMethod(parent, "getValidFeatures");
       HashSet<String> requiredFeaturesSet = new HashSet<>(asList(requiredFeatures));
       for (Object validFeature : validFeatures) {
-        String featureName = (String) ReflectionHelpers.getField(validFeature, "mName");
-        int featureValue = (int) ReflectionHelpers.getField(validFeature, "mValue");
+        String featureName = ReflectionHelpers.getField(validFeature, "mName");
+        int featureValue = ReflectionHelpers.getField(validFeature, "mValue");
         if (requiredFeaturesSet.contains(featureName)) {
           flagsRequired |= featureValue;
         }
