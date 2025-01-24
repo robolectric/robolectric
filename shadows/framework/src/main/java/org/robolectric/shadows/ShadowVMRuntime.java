@@ -65,7 +65,9 @@ public class ShadowVMRuntime {
   @Implementation
   public Object newNonMovableArray(Class<?> type, int size) {
     Preconditions.checkArgument(
-        type == int.class || type == float.class, "unsupported type %s", type.getName());
+        type == int.class || type == float.class || type == byte.class,
+        "unsupported type %s",
+        type.getName());
     Object arrayInstance = Array.newInstance(type, size);
     if (type == float.class && size == 8) {
       // This is being called from android.graphics.PathIterator, so we need to allocate a real
