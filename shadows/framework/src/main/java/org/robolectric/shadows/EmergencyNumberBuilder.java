@@ -19,7 +19,7 @@ public class EmergencyNumberBuilder {
   private final String number;
   private final String countryIso;
   private final String mnc;
-  private final List<String> emergencyUrns = new ArrayList<String>();
+  private final List<String> emergencyUrns = new ArrayList<>();
   private int emergencyServiceCategories = EmergencyNumber.EMERGENCY_SERVICE_CATEGORY_UNSPECIFIED;
   private int emergencyNumberSources = EmergencyNumber.EMERGENCY_NUMBER_SOURCE_DEFAULT;
   private int emergencyCallRouting = EmergencyNumber.EMERGENCY_CALL_ROUTING_UNKNOWN;

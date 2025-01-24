@@ -11,7 +11,7 @@ public class ShadowVirtualRefBasePtr {
       new NativeObjRegistry<>(RefHolder.class);
 
   protected static synchronized <T> long put(T object) {
-    return NATIVE_REGISTRY.register(new RefHolder<T>(object));
+    return NATIVE_REGISTRY.register(new RefHolder<>(object));
   }
 
   protected static synchronized <T> T get(long nativePtr, Class<T> clazz) {

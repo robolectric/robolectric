@@ -34,7 +34,7 @@ public class ShadowPathParser {
     int start = 0;
     int end = 1;
 
-    ArrayList<PathDataNode> list = new ArrayList<PathDataNode>();
+    ArrayList<PathDataNode> list = new ArrayList<>();
     while (end < pathData.length()) {
       end = nextStart(pathData, end);
       String s = pathData.substring(start, end).trim();

@@ -178,7 +178,7 @@ public class ShadowLegacyCursorWindow extends ShadowCursorWindow {
 
     public Data(String name, int cursorWindowSize) {
       this.name = name;
-      this.rows = new ArrayList<Row>();
+      this.rows = new ArrayList<>();
     }
 
     public Value value(int rowN, int colN) {
@@ -255,7 +255,7 @@ public class ShadowLegacyCursorWindow extends ShadowCursorWindow {
     private final List<Value> values;
 
     public Row(int length) {
-      values = new ArrayList<Value>(length);
+      values = new ArrayList<>(length);
       for (int i = 0; i < length; i++) {
         values.add(new Value(null, Cursor.FIELD_TYPE_NULL));
       }

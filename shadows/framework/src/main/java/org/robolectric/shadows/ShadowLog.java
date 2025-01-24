@@ -36,10 +36,10 @@ public class ShadowLog {
   private static final int EXTRA_LOG_LENGTH = "l/: \n".length();
 
   private static final Map<String, Queue<LogItem>> logsByTag =
-      Collections.synchronizedMap(new HashMap<String, Queue<LogItem>>());
+      Collections.synchronizedMap(new HashMap<>());
   private static final Queue<LogItem> logs = new ConcurrentLinkedQueue<>();
   private static final Map<String, Integer> tagToLevel =
-      Collections.synchronizedMap(new HashMap<String, Integer>());
+      Collections.synchronizedMap(new HashMap<>());
 
   /**
    * Whether calling {@link Log#wtf} will throw {@link TerribleFailure}. This is analogous to

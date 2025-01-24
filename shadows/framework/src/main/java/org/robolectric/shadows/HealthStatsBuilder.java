@@ -72,7 +72,7 @@ final class HealthStatsBuilder {
    */
   @CanIgnoreReturnValue
   public HealthStatsBuilder addStats(int key, ArrayMap<String, HealthStats> value) {
-    statsMap.put(key, new ArrayMap<String, HealthStats>(value));
+    statsMap.put(key, new ArrayMap<>(value));
     return this;
   }
 
@@ -82,7 +82,7 @@ final class HealthStatsBuilder {
    */
   @CanIgnoreReturnValue
   public HealthStatsBuilder addTimers(int key, ArrayMap<String, TimerStat> value) {
-    timersMap.put(key, new ArrayMap<String, TimerStat>(value));
+    timersMap.put(key, new ArrayMap<>(value));
     return this;
   }
 
@@ -92,7 +92,7 @@ final class HealthStatsBuilder {
    */
   @CanIgnoreReturnValue
   public HealthStatsBuilder addMeasurements(int key, ArrayMap<String, Long> value) {
-    measurementsMap.put(key, new ArrayMap<String, Long>(value));
+    measurementsMap.put(key, new ArrayMap<>(value));
     return this;
   }
 

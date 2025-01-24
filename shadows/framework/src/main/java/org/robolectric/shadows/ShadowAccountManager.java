@@ -309,7 +309,7 @@ public class ShadowAccountManager {
     }
 
     if (!userData.containsKey(account)) {
-      userData.put(account, new HashMap<String, String>());
+      userData.put(account, new HashMap<>());
     }
 
     Map<String, String> userDataMap = userData.get(account);
@@ -608,7 +608,7 @@ public class ShadowAccountManager {
     addAuthenticator(AuthenticatorDescription.newKey(type));
   }
 
-  private final Map<Account, String> previousNames = new HashMap<Account, String>();
+  private final Map<Account, String> previousNames = new HashMap<>();
 
   /**
    * Sets the previous name for an account, which will be returned by {@link

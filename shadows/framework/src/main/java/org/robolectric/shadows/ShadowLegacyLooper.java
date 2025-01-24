@@ -44,7 +44,7 @@ public class ShadowLegacyLooper extends ShadowLooper {
   // Note that the main looper is handled differently and is not put in this hash, because we need
   // to be able to "switch" the thread that the main looper is associated with.
   private static final Map<Thread, Looper> loopingLoopers =
-      Collections.synchronizedMap(new WeakHashMap<Thread, Looper>());
+      Collections.synchronizedMap(new WeakHashMap<>());
 
   private static Looper mainLooper;
 

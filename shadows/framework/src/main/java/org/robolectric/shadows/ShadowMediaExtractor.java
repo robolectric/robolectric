@@ -69,7 +69,7 @@ public class ShadowMediaExtractor {
     TrackInfo trackInfo = new TrackInfo();
     trackInfo.format = format;
     trackInfo.sampleData = sampleData;
-    tracksMap.putIfAbsent(dataSource, new ArrayList<TrackInfo>());
+    tracksMap.putIfAbsent(dataSource, new ArrayList<>());
     List<TrackInfo> tracks = tracksMap.get(dataSource);
     tracks.add(trackInfo);
   }

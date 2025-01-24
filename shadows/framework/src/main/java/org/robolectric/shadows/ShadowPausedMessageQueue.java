@@ -42,7 +42,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   // just use this class as the native object
   private static final NativeObjRegistry<ShadowPausedMessageQueue> nativeQueueRegistry =
-      new NativeObjRegistry<ShadowPausedMessageQueue>(ShadowPausedMessageQueue.class);
+      new NativeObjRegistry<>(ShadowPausedMessageQueue.class);
   private boolean isPolling = false;
   private ShadowPausedSystemClock.Listener clockListener;
   private Exception uncaughtException = null;

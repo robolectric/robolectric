@@ -63,7 +63,7 @@ public class ConfigurationV25 {
 
   public static String resourceQualifierString(
       Configuration config, DisplayMetrics displayMetrics) {
-    ArrayList<String> parts = new ArrayList<String>();
+    ArrayList<String> parts = new ArrayList<>();
 
     if (config.mcc != 0) {
       parts.add("mcc" + config.mcc);

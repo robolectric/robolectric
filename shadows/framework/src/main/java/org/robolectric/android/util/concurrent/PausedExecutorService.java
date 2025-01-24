@@ -174,6 +174,6 @@ public class PausedExecutorService extends AbstractExecutorService {
 
   @Override
   protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
-    return new DeferredTask<T>(callable, realService);
+    return new DeferredTask<>(callable, realService);
   }
 }
