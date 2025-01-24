@@ -302,7 +302,7 @@ public class ShadowActivityManager {
   protected void addOnUidImportanceListener(
       @ClassName("android.app.ActivityManager$OnUidImportanceListener") Object listener,
       int importanceCutpoint) {
-    importanceListeners.add(new ImportanceListener(listener, (Integer) importanceCutpoint));
+    importanceListeners.add(new ImportanceListener(listener, importanceCutpoint));
   }
 
   @Implementation(minSdk = O)
@@ -388,10 +388,8 @@ public class ShadowActivityManager {
   protected List</*android.app.ApplicationExitInfo*/ ?> getHistoricalProcessExitReasons(
       String packageName, int pid, int maxNum) {
     return appExitInfoList.stream()
-        .filter(
-            appExitInfo ->
-                (int) pid == 0 || ((ApplicationExitInfo) appExitInfo).getPid() == (int) pid)
-        .limit((int) maxNum == 0 ? appExitInfoList.size() : (int) maxNum)
+        .filter(appExitInfo -> pid == 0 || ((ApplicationExitInfo) appExitInfo).getPid() == pid)
+        .limit(maxNum == 0 ? appExitInfoList.size() : maxNum)
         .collect(toCollection(ArrayList::new));
   }
 

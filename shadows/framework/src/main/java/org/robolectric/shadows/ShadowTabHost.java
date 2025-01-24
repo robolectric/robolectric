@@ -107,7 +107,7 @@ public class ShadowTabHost extends ShadowViewGroup {
   protected TabWidget getTabWidget() {
     Context context = realView.getContext();
     if (context instanceof Activity) {
-      return (TabWidget) ((Activity) context).findViewById(R.id.tabs);
+      return ((Activity) context).findViewById(R.id.tabs);
     } else {
       return null;
     }

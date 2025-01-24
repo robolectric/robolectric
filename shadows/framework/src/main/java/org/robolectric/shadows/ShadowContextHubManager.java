@@ -175,8 +175,8 @@ public class ShadowContextHubManager {
     ContextHubClient client =
         reflector(ContextHubClientReflector.class)
             .newContextHubClient((ContextHubInfo) contextHubInfo, false);
-    if (context != null && ((Context) context).getAttributionTag() != null) {
-      attributionTagToClientMap.put(((Context) context).getAttributionTag(), client);
+    if (context != null && context.getAttributionTag() != null) {
+      attributionTagToClientMap.put(context.getAttributionTag(), client);
     }
 
     if (callback != null) {

@@ -1140,7 +1140,7 @@ public class ShadowParcel {
     // Java version of FileDescriptor instead of the Android version.
     int fd = ReflectionHelpers.getField(val, "fd");
     NATIVE_BYTE_BUFFER_REGISTRY.getNativeObject(nativePtr).writeInt(fd);
-    return (long) nativeDataPosition(nativePtr);
+    return nativeDataPosition(nativePtr);
   }
 
   @Implementation(minSdk = M)

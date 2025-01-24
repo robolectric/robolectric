@@ -76,7 +76,7 @@ public class ShadowStaticLayout {
       float[] recycleDescents,
       int[] recycleFlags,
       float[] charWidths) {
-    reflector(LineBreaksReflector.class, recycle).setBreaks(new int[] {((char[]) text).length});
+    reflector(LineBreaksReflector.class, recycle).setBreaks(new int[] {text.length});
     return 1;
   }
 }

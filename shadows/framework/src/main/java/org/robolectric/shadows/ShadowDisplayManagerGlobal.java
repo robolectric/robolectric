@@ -365,7 +365,7 @@ public class ShadowDisplayManagerGlobal {
       int userId,
       String packageName) {
     BrightnessConfiguration config = (BrightnessConfiguration) configObject;
-    brightnessConfiguration.put((int) userId, config);
+    brightnessConfiguration.put(userId, config);
   }
 
   @Implementation(minSdk = P)

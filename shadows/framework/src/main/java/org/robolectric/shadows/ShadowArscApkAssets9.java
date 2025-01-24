@@ -219,7 +219,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       int propertyFlags,
       @ClassName("android.content.res.loader.AssetsProvider") Object assetsProvider)
       throws IOException {
-    CppApkAssets apkAssets = CppApkAssets.loadArscFromFd((FileDescriptor) fileDescriptor);
+    CppApkAssets apkAssets = CppApkAssets.loadArscFromFd(fileDescriptor);
     if (apkAssets == null) {
       String errorMessage =
           String.format("Failed to load from the file descriptor %s", fileDescriptor);

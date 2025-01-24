@@ -92,7 +92,7 @@ public class ShadowNotification {
       return realNotification.extras.getParcelable(Notification.EXTRA_PICTURE);
     } else {
       ImageView imageView =
-          (ImageView) applyBigContentView().findViewById(getInternalResourceId("big_picture"));
+          applyBigContentView().findViewById(getInternalResourceId("big_picture"));
       return imageView != null && imageView.getDrawable() != null
           ? ((BitmapDrawable) imageView.getDrawable()).getBitmap()
           : null;
