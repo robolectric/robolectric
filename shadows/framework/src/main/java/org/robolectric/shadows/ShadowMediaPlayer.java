@@ -564,7 +564,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   private Handler getHandler(Looper looper) {
     return new Handler(looper) {
       @Override
-      public void handleMessage(Message msg) {
+      public void handleMessage(@Nonnull Message msg) {
         switch (msg.what) {
           case MEDIA_EVENT:
             MediaEvent e = (MediaEvent) msg.obj;

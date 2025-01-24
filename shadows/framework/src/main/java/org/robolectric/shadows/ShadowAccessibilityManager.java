@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
@@ -270,7 +271,7 @@ public class ShadowAccessibilityManager {
     }
 
     @Override
-    public void handleMessage(Message message) {
+    public void handleMessage(@Nonnull Message message) {
       switch (message.what) {
         case DO_SET_STATE:
           ReflectionHelpers.callInstanceMethod(

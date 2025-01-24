@@ -136,7 +136,7 @@ public class ShadowVoiceInteractionSession {
    *     href="https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/app/Instrumentation.java;drc=5f8f8ab44b4ac659804a13fb75b6516f86f977e7;l=2225">Instrumentation.checkStartActivityResult</a>
    *     for possible runtime exceptions that can be thrown.
    */
-  public void setStartVoiceActivityException(RuntimeException exception) {
+  public void setStartVoiceActivityException(@Nullable RuntimeException exception) {
     startVoiceActivityException = exception;
   }
 
@@ -148,7 +148,7 @@ public class ShadowVoiceInteractionSession {
    *     href="https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/app/Instrumentation.java;drc=5f8f8ab44b4ac659804a13fb75b6516f86f977e7;l=2225">Instrumentation.checkStartActivityResult</a>
    *     for possible runtime exceptions that can be thrown.
    */
-  public void setStartAssistantActivityException(RuntimeException exception) {
+  public void setStartAssistantActivityException(@Nullable RuntimeException exception) {
     startAssistantActivityException = exception;
   }
 

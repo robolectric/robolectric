@@ -41,6 +41,7 @@ public class InlineExecutorService implements ExecutorService {
     delegateService.shutdown();
   }
 
+  @Nonnull
   @Override
   public List<Runnable> shutdownNow() {
     return delegateService.shutdownNow();
@@ -57,7 +58,7 @@ public class InlineExecutorService implements ExecutorService {
   }
 
   @Override
-  public boolean awaitTermination(long l, TimeUnit timeUnit) throws InterruptedException {
+  public boolean awaitTermination(long l, @Nonnull TimeUnit timeUnit) throws InterruptedException {
     // If not shut down first, timeout would occur with normal behavior.
     return delegateService.awaitTermination(l, timeUnit);
   }

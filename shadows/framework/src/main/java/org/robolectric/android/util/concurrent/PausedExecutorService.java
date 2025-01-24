@@ -134,6 +134,7 @@ public class PausedExecutorService extends AbstractExecutorService {
     deferredTasks.clear();
   }
 
+  @Nonnull
   @Override
   public List<Runnable> shutdownNow() {
     realService.shutdownNow();
@@ -153,7 +154,7 @@ public class PausedExecutorService extends AbstractExecutorService {
   }
 
   @Override
-  public boolean awaitTermination(long l, TimeUnit timeUnit) throws InterruptedException {
+  public boolean awaitTermination(long l, @Nonnull TimeUnit timeUnit) throws InterruptedException {
     // If not shut down first, timeout would occur with normal behavior.
     return realService.awaitTermination(l, timeUnit);
   }

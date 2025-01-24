@@ -24,7 +24,7 @@ public class ShadowTelephony {
      *
      * <p>This will be reset for the next test.
      */
-    public static void setDefaultSmsPackage(String defaultSmsPackage) {
+    public static void setDefaultSmsPackage(@Nullable String defaultSmsPackage) {
       ShadowSms.defaultSmsPackage = defaultSmsPackage;
     }
 
