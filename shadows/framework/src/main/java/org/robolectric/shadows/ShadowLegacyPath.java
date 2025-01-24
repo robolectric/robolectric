@@ -111,7 +111,7 @@ public class ShadowLegacyPath extends ShadowPath {
   protected float[] approximate(float acceptableError) {
     PathIterator iterator = mPath.getPathIterator(null, acceptableError);
 
-    float segment[] = new float[6];
+    float[] segment = new float[6];
     float totalLength = 0;
     ArrayList<Point2D.Float> points = new ArrayList<Point2D.Float>();
     Point2D.Float previousPoint = null;

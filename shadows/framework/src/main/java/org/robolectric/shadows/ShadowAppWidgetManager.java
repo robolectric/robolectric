@@ -128,7 +128,7 @@ public class ShadowAppWidgetManager {
         idList.add(id);
       }
     }
-    int ids[] = new int[idList.size()];
+    int[] ids = new int[idList.size()];
     for (int i = 0; i < idList.size(); i++) {
       ids[i] = idList.get(i);
     }
