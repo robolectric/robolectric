@@ -105,13 +105,7 @@ public class RobolectricTestRunnerTest {
                 .bind(org.robolectric.pluginapi.SdkPicker.class, AllEnabledSdkPicker.class)
                 .build());
     runner.run(notifier);
-    assertThat(events)
-        .containsExactly(
-            "started: oldSdkMethod",
-            "failure: API level 11 is not available",
-            "finished: oldSdkMethod",
-            "ignored: ignoredOldSdkMethod")
-        .inOrder();
+    assertThat(events).containsExactly("failure: API level 11 is not available").inOrder();
   }
 
   @Test
@@ -127,18 +121,9 @@ public class RobolectricTestRunnerTest {
                             TestUtil.getSdkCollection().getSdk(33), new StubSdk(34, false)))
                 .build());
     runner.run(notifier);
+    // method is null as it fails on class level during getSandbox(method).
     assertThat(events)
-        .containsExactly(
-            "started: first[33]",
-            "finished: first[33]",
-            "started: first",
-            "ignored: first: Failed to create a Robolectric sandbox: unsupported",
-            "finished: first",
-            "started: second[33]",
-            "finished: second[33]",
-            "started: second",
-            "ignored: second: Failed to create a Robolectric sandbox: unsupported",
-            "finished: second")
+        .containsExactly("ignored: null: Failed to create a Robolectric sandbox: unsupported")
         .inOrder();
   }
 
@@ -578,7 +563,7 @@ public class RobolectricTestRunnerTest {
     RobolectricTestRunner runner =
         new SingleSdkRobolectricTestRunner(TestWithBeforeClassThatThrowsRuntimeException.class);
     runner.run(notifier);
-    assertThat(events.get(1)).startsWith("failure: fail");
+    assertThat(events.get(0)).startsWith("failure: fail");
   }
 
   @Ignore
