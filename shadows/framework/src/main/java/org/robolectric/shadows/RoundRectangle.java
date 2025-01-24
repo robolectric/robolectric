@@ -322,7 +322,7 @@ public class RoundRectangle extends RectangularShape {
           throw new NoSuchElementException("roundrect iterator out of bounds");
         }
         int nc = 0;
-        double ctrls[] = ctrlpts[index];
+        double[] ctrls = ctrlpts[index];
         for (int i = 0; i < ctrls.length; i += 4) {
           coords[nc++] = (float) (x + ctrls[i] * width + ctrls[i + 1] / 2d);
           coords[nc++] = (float) (y + ctrls[i + 2] * height + ctrls[i + 3] / 2d);
@@ -339,7 +339,7 @@ public class RoundRectangle extends RectangularShape {
           throw new NoSuchElementException("roundrect iterator out of bounds");
         }
         int nc = 0;
-        double ctrls[] = ctrlpts[index];
+        double[] ctrls = ctrlpts[index];
         for (int i = 0; i < ctrls.length; i += 4) {
           coords[nc++] = x + ctrls[i] * width + ctrls[i + 1] / 2d;
           coords[nc++] = y + ctrls[i + 2] * height + ctrls[i + 3] / 2d;
