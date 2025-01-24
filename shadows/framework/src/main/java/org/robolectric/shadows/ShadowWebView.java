@@ -23,7 +23,6 @@ import android.webkit.WebViewClient;
 import android.webkit.WebViewFactoryProvider;
 import com.google.common.collect.ImmutableList;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -109,29 +108,19 @@ public class ShadowWebView extends ShadowViewGroup {
             Proxy.newProxyInstance(
                 classLoader,
                 new Class[] {webViewProviderClass},
-                new InvocationHandler() {
-                  @Override
-                  public Object invoke(Object proxy, Method method, Object[] args)
-                      throws Throwable {
-                    if (method.getName().equals("getViewDelegate")
-                        || method.getName().equals("getScrollDelegate")) {
-                      return Proxy.newProxyInstance(
-                          classLoader,
-                          new Class[] {
-                            getClassNamed("android.webkit.WebViewProvider$ViewDelegate"),
-                            getClassNamed("android.webkit.WebViewProvider$ScrollDelegate")
-                          },
-                          new InvocationHandler() {
-                            @Override
-                            public Object invoke(Object proxy, Method method, Object[] args)
-                                throws Throwable {
-                              return nullish(method);
-                            }
-                          });
-                    }
-
-                    return nullish(method);
+                (proxy, method, args) -> {
+                  if (method.getName().equals("getViewDelegate")
+                      || method.getName().equals("getScrollDelegate")) {
+                    return Proxy.newProxyInstance(
+                        classLoader,
+                        new Class[] {
+                          getClassNamed("android.webkit.WebViewProvider$ViewDelegate"),
+                          getClassNamed("android.webkit.WebViewProvider$ScrollDelegate")
+                        },
+                        (proxy1, method1, args1) -> nullish(method1));
                   }
+
+                  return nullish(method);
                 });
         mProvider.set(realView, provider);
       }

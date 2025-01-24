@@ -34,13 +34,7 @@ public class ShadowLegacyAsyncTaskLoader<D> extends ShadowAsyncTaskLoader {
               final D result = get();
               ShadowApplication.getInstance()
                   .getForegroundThreadScheduler()
-                  .post(
-                      new Runnable() {
-                        @Override
-                        public void run() {
-                          realObject.deliverResult(result);
-                        }
-                      });
+                  .post(() -> realObject.deliverResult(result));
             } catch (InterruptedException e) {
               // Ignore
             } catch (ExecutionException e) {

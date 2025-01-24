@@ -23,13 +23,10 @@ import android.content.pm.PackageManager.ComponentInfoFlags;
 import android.content.res.Configuration;
 import android.os.IBinder;
 import com.android.internal.content.ReferrerIntent;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
@@ -62,53 +59,49 @@ public class ShadowActivityThread {
     return Proxy.newProxyInstance(
         classLoader,
         new Class[] {iPackageManagerClass},
-        new InvocationHandler() {
-          @Override
-          public Object invoke(Object proxy, @Nonnull Method method, Object[] args)
-              throws Exception {
-            if (method.getName().equals("getApplicationInfo")) {
-              String packageName = (String) args[0];
-              int flags = ((Number) args[1]).intValue();
-              if (packageName.equals(ShadowActivityThread.applicationInfo.packageName)) {
-                return ShadowActivityThread.applicationInfo;
-              }
+        (proxy, method, args) -> {
+          if (method.getName().equals("getApplicationInfo")) {
+            String packageName = (String) args[0];
+            int flags = ((Number) args[1]).intValue();
+            if (packageName.equals(ShadowActivityThread.applicationInfo.packageName)) {
+              return ShadowActivityThread.applicationInfo;
+            }
 
-              try {
-                return RuntimeEnvironment.getApplication()
-                    .getPackageManager()
-                    .getApplicationInfo(packageName, flags);
-              } catch (PackageManager.NameNotFoundException e) {
-                return null;
-              }
-            } else if (method.getName().equals("notifyPackageUse")) {
-              return null;
-            } else if (method.getName().equals("getPackageInstaller")) {
-              try {
-                Class<?> iPackageInstallerClass =
-                    classLoader.loadClass("android.content.pm.IPackageInstaller");
-                return ReflectionHelpers.createNullProxy(iPackageInstallerClass);
-              } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-              }
-            } else if (method.getName().equals("hasSystemFeature")) {
-              String featureName = (String) args[0];
+            try {
               return RuntimeEnvironment.getApplication()
                   .getPackageManager()
-                  .hasSystemFeature(featureName);
-            } else if (method.getName().equals("getServiceInfo")) {
-              ComponentName componentName = (ComponentName) args[0];
-              if (args[1] instanceof ComponentInfoFlags) {
-                return RuntimeEnvironment.getApplication()
-                    .getPackageManager()
-                    .getServiceInfo(componentName, (ComponentInfoFlags) args[1]);
-              } else {
-                return RuntimeEnvironment.getApplication()
-                    .getPackageManager()
-                    .getServiceInfo(componentName, ((Number) args[1]).intValue());
-              }
+                  .getApplicationInfo(packageName, flags);
+            } catch (PackageManager.NameNotFoundException e) {
+              return null;
             }
-            throw new UnsupportedOperationException("sorry, not supporting " + method + " yet!");
+          } else if (method.getName().equals("notifyPackageUse")) {
+            return null;
+          } else if (method.getName().equals("getPackageInstaller")) {
+            try {
+              Class<?> iPackageInstallerClass =
+                  classLoader.loadClass("android.content.pm.IPackageInstaller");
+              return ReflectionHelpers.createNullProxy(iPackageInstallerClass);
+            } catch (ClassNotFoundException e) {
+              throw new RuntimeException(e);
+            }
+          } else if (method.getName().equals("hasSystemFeature")) {
+            String featureName = (String) args[0];
+            return RuntimeEnvironment.getApplication()
+                .getPackageManager()
+                .hasSystemFeature(featureName);
+          } else if (method.getName().equals("getServiceInfo")) {
+            ComponentName componentName = (ComponentName) args[0];
+            if (args[1] instanceof ComponentInfoFlags) {
+              return RuntimeEnvironment.getApplication()
+                  .getPackageManager()
+                  .getServiceInfo(componentName, (ComponentInfoFlags) args[1]);
+            } else {
+              return RuntimeEnvironment.getApplication()
+                  .getPackageManager()
+                  .getServiceInfo(componentName, ((Number) args[1]).intValue());
+            }
           }
+          throw new UnsupportedOperationException("sorry, not supporting " + method + " yet!");
         });
   }
 
@@ -146,15 +139,11 @@ public class ShadowActivityThread {
     return Proxy.newProxyInstance(
         classLoader,
         new Class<?>[] {iPermissionManagerClass},
-        new InvocationHandler() {
-          @Override
-          public Object invoke(Object proxy, @Nonnull Method method, Object[] args)
-              throws Exception {
-            if (method.getName().equals("getSplitPermissions")) {
-              return Collections.emptyList();
-            }
-            return method.getDefaultValue();
+        (proxy, method, args) -> {
+          if (method.getName().equals("getSplitPermissions")) {
+            return Collections.emptyList();
           }
+          return method.getDefaultValue();
         });
   }
 

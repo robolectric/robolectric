@@ -133,12 +133,7 @@ public class ShadowLegacyChoreographer extends ShadowChoreographer {
   @Implementation
   protected void postFrameCallbackDelayed(final FrameCallback callback, long delayMillis) {
     handler.postAtTime(
-        new Runnable() {
-          @Override
-          public void run() {
-            callback.doFrame(getFrameTimeNanos());
-          }
-        },
+        () -> callback.doFrame(getFrameTimeNanos()),
         callback,
         SystemClock.uptimeMillis() + delayMillis);
   }

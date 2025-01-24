@@ -39,12 +39,10 @@ import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Pair;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -409,13 +407,10 @@ public class ShadowInstrumentation {
     final ShadowBroadcastReceiver shReceiver = Shadow.extract(receiver);
     final Intent broadcastIntent = intent;
     scheduler.post(
-        new Runnable() {
-          @Override
-          public void run() {
-            receiver.setPendingResult(
-                ShadowBroadcastPendingResult.create(resultCode, null, null, false));
-            shReceiver.onReceive(context, broadcastIntent, abort);
-          }
+        () -> {
+          receiver.setPendingResult(
+              ShadowBroadcastPendingResult.create(resultCode, null, null, false));
+          shReceiver.onReceive(context, broadcastIntent, abort);
         });
   }
 
@@ -444,23 +439,16 @@ public class ShadowInstrumentation {
     }
     final ListenableFuture<?> finalFuture = future;
     future.addListener(
-        new Runnable() {
-          @Override
-          public void run() {
+        () ->
             getMainHandler(context)
                 .post(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        try {
-                          finalFuture.get();
-                        } catch (InterruptedException | ExecutionException e) {
-                          throw new RuntimeException(e);
-                        }
+                    () -> {
+                      try {
+                        finalFuture.get();
+                      } catch (InterruptedException | ExecutionException e) {
+                        throw new RuntimeException(e);
                       }
-                    });
-          }
-        },
+                    }),
         directExecutor());
   }
 
@@ -478,25 +466,21 @@ public class ShadowInstrumentation {
         (wrapper.scheduler != null) ? wrapper.scheduler : getMainHandler(context);
     return Futures.transformAsync(
         oldResult,
-        new AsyncFunction<BroadcastResultHolder, BroadcastResultHolder>() {
-          @Override
-          public ListenableFuture<BroadcastResultHolder> apply(
-              BroadcastResultHolder broadcastResultHolder) throws Exception {
-            final BroadcastReceiver.PendingResult result =
-                ShadowBroadcastPendingResult.create(
-                    broadcastResultHolder.resultCode,
-                    broadcastResultHolder.resultData,
-                    broadcastResultHolder.resultExtras,
-                    true /*ordered */);
-            wrapper.broadcastReceiver.setPendingResult(result);
-            scheduler.post(
-                () -> {
-                  ShadowBroadcastReceiver shadowBroadcastReceiver =
-                      Shadow.extract(wrapper.broadcastReceiver);
-                  shadowBroadcastReceiver.onReceive(context, intent, abort);
-                });
-            return BroadcastResultHolder.transform(result);
-          }
+        broadcastResultHolder -> {
+          final BroadcastReceiver.PendingResult result =
+              ShadowBroadcastPendingResult.create(
+                  broadcastResultHolder.resultCode,
+                  broadcastResultHolder.resultData,
+                  broadcastResultHolder.resultExtras,
+                  true /*ordered */);
+          wrapper.broadcastReceiver.setPendingResult(result);
+          scheduler.post(
+              () -> {
+                ShadowBroadcastReceiver shadowBroadcastReceiver =
+                    Shadow.extract(wrapper.broadcastReceiver);
+                shadowBroadcastReceiver.onReceive(context, intent, abort);
+              });
+          return BroadcastResultHolder.transform(result);
         },
         directExecutor());
   }
@@ -566,13 +550,9 @@ public class ShadowInstrumentation {
   private void sortByPriority(List<Wrapper> wrappers) {
     Collections.sort(
         wrappers,
-        new Comparator<Wrapper>() {
-          @Override
-          public int compare(Wrapper o1, Wrapper o2) {
-            return Integer.compare(
-                o2.getIntentFilter().getPriority(), o1.getIntentFilter().getPriority());
-          }
-        });
+        (o1, o2) ->
+            Integer.compare(
+                o2.getIntentFilter().getPriority(), o1.getIntentFilter().getPriority()));
   }
 
   List<Intent> getBroadcastIntents() {

@@ -286,14 +286,7 @@ public class ShadowLog {
         try {
           final PrintStream file = new PrintStream(new FileOutputStream(logging), true);
           stream = file;
-          Runtime.getRuntime()
-              .addShutdownHook(
-                  new Thread() {
-                    @Override
-                    public void run() {
-                      file.close();
-                    }
-                  });
+          Runtime.getRuntime().addShutdownHook(new Thread(file::close));
         } catch (IOException e) {
           e.printStackTrace();
         }
