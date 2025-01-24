@@ -805,13 +805,7 @@ public class ShadowAccountManager {
       }
 
       if (callback != null) {
-        handler.post(
-            new Runnable() {
-              @Override
-              public void run() {
-                callback.run(BaseRoboAccountManagerFuture.this);
-              }
-            });
+        handler.post(() -> callback.run(BaseRoboAccountManagerFuture.this));
       }
     }
 

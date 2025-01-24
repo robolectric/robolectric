@@ -309,17 +309,14 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
       synchronized (lock) {
         final SQLiteConnection dbConnection =
             execute(
-                new Callable<SQLiteConnection>() {
-                  @Override
-                  public SQLiteConnection call() throws Exception {
-                    SQLiteConnection connection =
-                        useInMemoryDatabase.get() || IN_MEMORY_PATH.equals(path)
-                            ? new SQLiteConnection()
-                            : new SQLiteConnection(new File(path));
+                () -> {
+                  SQLiteConnection connection =
+                      useInMemoryDatabase.get() || IN_MEMORY_PATH.equals(path)
+                          ? new SQLiteConnection()
+                          : new SQLiteConnection(new File(path));
 
-                    connection.open();
-                    return connection;
-                  }
+                  connection.open();
+                  return connection;
                 });
 
         final long connectionPtr = pointerCounter.incrementAndGet();
@@ -337,14 +334,7 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
 
       synchronized (lock) {
         final SQLiteConnection connection = getConnection(connectionPtr);
-        final SQLiteStatement statement =
-            execute(
-                new Callable<SQLiteStatement>() {
-                  @Override
-                  public SQLiteStatement call() throws Exception {
-                    return connection.prepare(sql);
-                  }
-                });
+        final SQLiteStatement statement = execute(() -> connection.prepare(sql));
 
         final long statementPtr = pointerCounter.incrementAndGet();
         statementsMap.put(statementPtr, statement);
@@ -427,13 +417,11 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
           final SQLiteStatement statement = statementsMap.get(statementPtr);
           if (statement != null) {
             execute(
-                new Callable<Void>() {
-                  @Override
-                  public Void call() throws Exception {
-                    statement.cancel();
-                    return null;
-                  }
-                });
+                (Callable<Void>)
+                    () -> {
+                      statement.cancel();
+                      return null;
+                    });
           }
         }
       }
@@ -445,14 +433,7 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
       }
 
       return executeStatementOperation(
-          connectionPtr,
-          statementPtr,
-          new StatementOperation<Integer>() {
-            @Override
-            public Integer call(final SQLiteStatement statement) throws Exception {
-              return statement.getBindParameterCount();
-            }
-          });
+          connectionPtr, statementPtr, SQLiteStatement::getBindParameterCount);
     }
 
     boolean isReadOnly(final long connectionPtr, final long statementPtr) {
@@ -460,30 +441,18 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
         return true;
       }
 
-      return executeStatementOperation(
-          connectionPtr,
-          statementPtr,
-          new StatementOperation<Boolean>() {
-            @Override
-            public Boolean call(final SQLiteStatement statement) throws Exception {
-              return statement.isReadOnly();
-            }
-          });
+      return executeStatementOperation(connectionPtr, statementPtr, SQLiteStatement::isReadOnly);
     }
 
     long executeForLong(final long connectionPtr, final long statementPtr) {
       return executeStatementOperation(
           connectionPtr,
           statementPtr,
-          new StatementOperation<Long>() {
-            @Override
-            public Long call(final SQLiteStatement statement) throws Exception {
-              if (!statement.step()) {
-                throw new SQLiteException(
-                    SQLiteConstants.SQLITE_DONE, "No rows returned from query");
-              }
-              return statement.columnLong(0);
+          statement -> {
+            if (!statement.step()) {
+              throw new SQLiteException(SQLiteConstants.SQLITE_DONE, "No rows returned from query");
             }
+            return statement.columnLong(0);
           });
     }
 
@@ -495,66 +464,43 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
       executeStatementOperation(
           connectionPtr,
           statementPtr,
-          new StatementOperation<Void>() {
-            @Override
-            public Void call(final SQLiteStatement statement) throws Exception {
-              statement.stepThrough();
-              return null;
-            }
-          });
+          (StatementOperation<Void>)
+              statement -> {
+                statement.stepThrough();
+                return null;
+              });
     }
 
     String executeForString(final long connectionPtr, final long statementPtr) {
       return executeStatementOperation(
           connectionPtr,
           statementPtr,
-          new StatementOperation<String>() {
-            @Override
-            public String call(final SQLiteStatement statement) throws Exception {
-              if (!statement.step()) {
-                throw new SQLiteException(
-                    SQLiteConstants.SQLITE_DONE, "No rows returned from query");
-              }
-              return statement.columnString(0);
+          statement -> {
+            if (!statement.step()) {
+              throw new SQLiteException(SQLiteConstants.SQLITE_DONE, "No rows returned from query");
             }
+            return statement.columnString(0);
           });
     }
 
     int getColumnCount(final long connectionPtr, final long statementPtr) {
-      return executeStatementOperation(
-          connectionPtr,
-          statementPtr,
-          new StatementOperation<Integer>() {
-            @Override
-            public Integer call(final SQLiteStatement statement) throws Exception {
-              return statement.columnCount();
-            }
-          });
+      return executeStatementOperation(connectionPtr, statementPtr, SQLiteStatement::columnCount);
     }
 
     String getColumnName(final long connectionPtr, final long statementPtr, final int index) {
       return executeStatementOperation(
-          connectionPtr,
-          statementPtr,
-          new StatementOperation<String>() {
-            @Override
-            public String call(final SQLiteStatement statement) throws Exception {
-              return statement.getColumnName(index);
-            }
-          });
+          connectionPtr, statementPtr, statement -> statement.getColumnName(index));
     }
 
     void bindNull(final long connectionPtr, final long statementPtr, final int index) {
       executeStatementOperation(
           connectionPtr,
           statementPtr,
-          new StatementOperation<Void>() {
-            @Override
-            public Void call(final SQLiteStatement statement) throws Exception {
-              statement.bindNull(index);
-              return null;
-            }
-          });
+          (StatementOperation<Void>)
+              statement -> {
+                statement.bindNull(index);
+                return null;
+              });
     }
 
     void bindLong(
@@ -562,13 +508,11 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
       executeStatementOperation(
           connectionPtr,
           statementPtr,
-          new StatementOperation<Void>() {
-            @Override
-            public Void call(final SQLiteStatement statement) throws Exception {
-              statement.bind(index, value);
-              return null;
-            }
-          });
+          (StatementOperation<Void>)
+              statement -> {
+                statement.bind(index, value);
+                return null;
+              });
     }
 
     void bindDouble(
@@ -576,13 +520,11 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
       executeStatementOperation(
           connectionPtr,
           statementPtr,
-          new StatementOperation<Void>() {
-            @Override
-            public Void call(final SQLiteStatement statement) throws Exception {
-              statement.bind(index, value);
-              return null;
-            }
-          });
+          (StatementOperation<Void>)
+              statement -> {
+                statement.bind(index, value);
+                return null;
+              });
     }
 
     void bindString(
@@ -590,13 +532,11 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
       executeStatementOperation(
           connectionPtr,
           statementPtr,
-          new StatementOperation<Void>() {
-            @Override
-            public Void call(final SQLiteStatement statement) throws Exception {
-              statement.bind(index, value);
-              return null;
-            }
-          });
+          (StatementOperation<Void>)
+              statement -> {
+                statement.bind(index, value);
+                return null;
+              });
     }
 
     void bindBlob(
@@ -604,13 +544,11 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
       executeStatementOperation(
           connectionPtr,
           statementPtr,
-          new StatementOperation<Void>() {
-            @Override
-            public Void call(final SQLiteStatement statement) throws Exception {
-              statement.bind(index, value);
-              return null;
-            }
-          });
+          (StatementOperation<Void>)
+              statement -> {
+                statement.bind(index, value);
+                return null;
+              });
     }
 
     int executeForChangedRowCount(final long connectionPtr, final long statementPtr) {
@@ -619,16 +557,13 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
         final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
 
         return execute(
-            new Callable<Integer>() {
-              @Override
-              public Integer call() throws Exception {
-                if (statement.step()) {
-                  throw new android.database.sqlite.SQLiteException(
-                      "Queries can be performed using SQLiteDatabase query or rawQuery methods"
-                          + " only.");
-                }
-                return connection.getChanges();
+            () -> {
+              if (statement.step()) {
+                throw new android.database.sqlite.SQLiteException(
+                    "Queries can be performed using SQLiteDatabase query or rawQuery methods"
+                        + " only.");
               }
+              return connection.getChanges();
             });
       }
     }
@@ -639,12 +574,9 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
         final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
 
         return execute(
-            new Callable<Long>() {
-              @Override
-              public Long call() throws Exception {
-                statement.stepThrough();
-                return connection.getChanges() > 0 ? connection.getLastInsertId() : -1L;
-              }
+            () -> {
+              statement.stepThrough();
+              return connection.getChanges() > 0 ? connection.getLastInsertId() : -1L;
             });
       }
     }
@@ -654,25 +586,19 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
       return executeStatementOperation(
           connectionPtr,
           statementPtr,
-          new StatementOperation<Integer>() {
-            @Override
-            public Integer call(final SQLiteStatement statement) throws Exception {
-              return ShadowLegacyCursorWindow.setData(windowPtr, statement);
-            }
-          });
+          (StatementOperation<Integer>)
+              statement -> ShadowLegacyCursorWindow.setData(windowPtr, statement));
     }
 
     void resetStatementAndClearBindings(final long connectionPtr, final long statementPtr) {
       executeStatementOperation(
           connectionPtr,
           statementPtr,
-          new StatementOperation<Void>() {
-            @Override
-            public Void call(final SQLiteStatement statement) throws Exception {
-              statement.reset(true);
-              return null;
-            }
-          });
+          (StatementOperation<Void>)
+              statement -> {
+                statement.reset(true);
+                return null;
+              });
     }
 
     interface StatementOperation<T> {

@@ -701,6 +701,7 @@ public class ShadowWifiManager {
     Set<Map.Entry<WifiManager.OnWifiUsabilityStatsListener, Executor>> toNotify = new ArraySet<>();
     toNotify.addAll(wifiUsabilityStatsListeners.entrySet());
     for (Map.Entry<WifiManager.OnWifiUsabilityStatsListener, Executor> entry : toNotify) {
+      //noinspection Convert2Lambda
       entry
           .getValue()
           .execute(

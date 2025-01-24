@@ -161,13 +161,7 @@ public class ShadowPackageInstaller {
     sessionInfo.appIcon = appIcon;
 
     for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
-      callbackInfo.handler.post(
-          new Runnable() {
-            @Override
-            public void run() {
-              callbackInfo.callback.onBadgingChanged(sessionId);
-            }
-          });
+      callbackInfo.handler.post(() -> callbackInfo.callback.onBadgingChanged(sessionId));
     }
   }
 
@@ -180,13 +174,7 @@ public class ShadowPackageInstaller {
     sessionInfo.appLabel = appLabel;
 
     for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
-      callbackInfo.handler.post(
-          new Runnable() {
-            @Override
-            public void run() {
-              callbackInfo.callback.onBadgingChanged(sessionId);
-            }
-          });
+      callbackInfo.handler.post(() -> callbackInfo.callback.onBadgingChanged(sessionId));
     }
   }
 

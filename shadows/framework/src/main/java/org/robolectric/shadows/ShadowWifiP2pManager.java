@@ -66,16 +66,13 @@ public class ShadowWifiP2pManager {
     }
 
     handler.post(
-        new Runnable() {
-          @Override
-          public void run() {
-            if (nextActionFailure == -1) {
-              al.onSuccess();
-            } else {
-              al.onFailure(nextActionFailure);
-            }
-            nextActionFailure = NO_FAILURE;
+        () -> {
+          if (nextActionFailure == -1) {
+            al.onSuccess();
+          } else {
+            al.onFailure(nextActionFailure);
           }
+          nextActionFailure = NO_FAILURE;
         });
   }
 
@@ -85,13 +82,7 @@ public class ShadowWifiP2pManager {
       return;
     }
 
-    handler.post(
-        new Runnable() {
-          @Override
-          public void run() {
-            gl.onGroupInfoAvailable(p2pGroupmap.get(c));
-          }
-        });
+    handler.post(() -> gl.onGroupInfoAvailable(p2pGroupmap.get(c)));
   }
 
   @Implementation

@@ -121,6 +121,7 @@ public class ShadowPixelCopy {
       Consumer</*android.view.PixelCopy$Result*/ ?> listener) {
     PixelCopy.Request request = (PixelCopy.Request) requestObject;
     RequestReflector requestReflector = reflector(RequestReflector.class, request);
+    //noinspection Convert2Lambda
     OnPixelCopyFinishedListener legacyListener =
         new OnPixelCopyFinishedListener() {
           @Override

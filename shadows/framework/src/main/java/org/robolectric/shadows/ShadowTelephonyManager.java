@@ -54,7 +54,6 @@ import android.telephony.emergency.EmergencyNumber;
 import android.text.TextUtils;
 import com.google.common.base.Ascii;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -940,12 +939,9 @@ public class ShadowTelephonyManager {
   protected Iterable<PhoneStateListener> getListenersForFlags(int flags) {
     return Iterables.filter(
         ImmutableSet.copyOf(phoneStateRegistrations.keySet()),
-        new Predicate<PhoneStateListener>() {
-          @Override
-          public boolean apply(PhoneStateListener input) {
-            // only select PhoneStateListeners with matching flags
-            return (phoneStateRegistrations.get(input) & flags) != 0;
-          }
+        input -> {
+          // only select PhoneStateListeners with matching flags
+          return (phoneStateRegistrations.get(input) & flags) != 0;
         });
   }
 

@@ -286,13 +286,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
      * @return A reference to the MediaEvent object that was created and scheduled.
      */
     public MediaEvent scheduleInfoAtOffset(int offset, final int what, final int extra) {
-      MediaEvent callback =
-          new MediaEvent() {
-            @Override
-            public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
-              smp.invokeInfoListener(what, extra);
-            }
-          };
+      MediaEvent callback = (mp, smp) -> smp.invokeInfoListener(what, extra);
       scheduleEventAtOffset(offset, callback);
       return callback;
     }
@@ -314,21 +308,15 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
      */
     public MediaEvent scheduleBufferUnderrunAtOffset(int offset, final int length) {
       final MediaEvent restart =
-          new MediaEvent() {
-            @Override
-            public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
-              smp.invokeInfoListener(MediaPlayer.MEDIA_INFO_BUFFERING_END, 0);
-              smp.doStart();
-            }
+          (mp, smp) -> {
+            smp.invokeInfoListener(MediaPlayer.MEDIA_INFO_BUFFERING_END, 0);
+            smp.doStart();
           };
       MediaEvent callback =
-          new MediaEvent() {
-            @Override
-            public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
-              smp.doStop();
-              smp.invokeInfoListener(MediaPlayer.MEDIA_INFO_BUFFERING_START, 0);
-              smp.postEventDelayed(restart, length);
-            }
+          (mp, smp) -> {
+            smp.doStop();
+            smp.invokeInfoListener(MediaPlayer.MEDIA_INFO_BUFFERING_START, 0);
+            smp.postEventDelayed(restart, length);
           };
       scheduleEventAtOffset(offset, callback);
       return callback;
@@ -453,34 +441,20 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   private Handler handler;
 
   private static final MediaEvent completionCallback =
-      new MediaEvent() {
-        @Override
-        public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
-          if (mp.isLooping()) {
-            smp.startOffset = 0;
-            smp.doStart();
-          } else {
-            smp.doStop();
-            smp.invokeCompletionListener();
-          }
+      (mp, smp) -> {
+        if (mp.isLooping()) {
+          smp.startOffset = 0;
+          smp.doStart();
+        } else {
+          smp.doStop();
+          smp.invokeCompletionListener();
         }
       };
 
-  private static final MediaEvent preparedCallback =
-      new MediaEvent() {
-        @Override
-        public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
-          smp.invokePreparedListener();
-        }
-      };
+  private static final MediaEvent preparedCallback = (mp, smp) -> smp.invokePreparedListener();
 
   private static final MediaEvent seekCompleteCallback =
-      new MediaEvent() {
-        @Override
-        public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
-          smp.invokeSeekCompleteListener();
-        }
-      };
+      (mp, smp) -> smp.invokeSeekCompleteListener();
 
   /**
    * Callback to use when a method is invoked from an invalid state. Has {@code what = -38} and

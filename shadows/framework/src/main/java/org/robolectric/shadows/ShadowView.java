@@ -546,14 +546,7 @@ public class ShadowView {
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       ShadowApplication.getInstance()
           .getForegroundThreadScheduler()
-          .postDelayed(
-              new Runnable() {
-                @Override
-                public void run() {
-                  realView.invalidate();
-                }
-              },
-              delayMilliseconds);
+          .postDelayed(() -> realView.invalidate(), delayMilliseconds);
     } else {
       reflector(_View_.class, realView).postInvalidateDelayed(delayMilliseconds);
     }
