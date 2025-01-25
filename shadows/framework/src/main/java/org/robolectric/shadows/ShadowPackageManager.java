@@ -933,7 +933,6 @@ public class ShadowPackageManager {
       for (ComponentInfo componentInfo : componentInfos) {
         if (componentInfo.name == null) {
           componentInfo.name = appInfo.packageName + ".DefaultName" + uniqueNameCounter++;
-          componentInfo.packageName = packageInfo.packageName;
         }
         componentInfo.applicationInfo = appInfo;
         componentInfo.packageName = appInfo.packageName;

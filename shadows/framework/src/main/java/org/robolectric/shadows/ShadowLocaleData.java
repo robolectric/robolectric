@@ -23,9 +23,6 @@ public class ShadowLocaleData {
   @Implementation
   public static LocaleData get(Locale locale) {
     LocaleData localeData = (LocaleData) Shadow.newInstanceOf(REAL_CLASS_NAME);
-    if (locale == null) {
-      locale = Locale.getDefault();
-    }
     setEnUsLocaleData(localeData);
     return localeData;
   }

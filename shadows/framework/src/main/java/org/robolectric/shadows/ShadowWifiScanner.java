@@ -56,7 +56,7 @@ public class ShadowWifiScanner {
     Map<WifiScanner.ActionListener, IWifiScannerListener.Stub> listenerMap =
         reflector(WifiScannerReflector.class, realWifiScanner).getListenerMap();
 
-    List<IWifiScannerListener.Stub> listeners = null;
+    List<IWifiScannerListener.Stub> listeners;
     synchronized (listenerMapLock) {
       listeners = new ArrayList<>(listenerMap.values());
     }
@@ -73,7 +73,7 @@ public class ShadowWifiScanner {
   private void notifyScanListeners() {
     Object listenerMapLock =
         reflector(WifiScannerReflector.class, realWifiScanner).getListenerMapLock();
-    SparseArray<Object> listenerMap = null;
+    SparseArray<Object> listenerMap;
     SparseArray<Executor> executorMap = null;
 
     synchronized (listenerMapLock) {

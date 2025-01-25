@@ -161,7 +161,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   private List<PackageInfo> getInstalledPackages(long flags) {
     List<PackageInfo> result = new ArrayList<>();
     synchronized (lock) {
-      Set<String> packageNames = null;
+      Set<String> packageNames;
       if ((flags & MATCH_UNINSTALLED_PACKAGES) == 0) {
         packageNames = packageInfos.keySet();
       } else {

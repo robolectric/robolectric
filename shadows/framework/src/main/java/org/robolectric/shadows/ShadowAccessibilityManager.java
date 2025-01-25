@@ -203,7 +203,7 @@ public class ShadowAccessibilityManager {
 
   public void setTouchExplorationEnabled(boolean touchExplorationEnabled) {
     this.touchExplorationEnabled = touchExplorationEnabled;
-    List<TouchExplorationStateChangeListener> listeners = new ArrayList<>();
+    List<TouchExplorationStateChangeListener> listeners;
     if (getApiLevel() >= O) {
       listeners =
           new ArrayList<>(
