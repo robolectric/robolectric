@@ -1650,7 +1650,7 @@ public class ShadowDevicePolicyManager {
     return userProvisioningStatesMap.getOrDefault(userId, DevicePolicyManager.STATE_USER_UNMANAGED);
   }
 
-  /** Return a stub value set by {@link #setDevicePolicyState(DevicePolicyState policyState)} */
+  /** Return a stub value set by {@link #setDevicePolicyState(DevicePolicyState)} */
   @Implementation(minSdk = U.SDK_INT)
   protected @ClassName("android.app.admin.DevicePolicyState") Object getDevicePolicyState() {
     return devicePolicyState;

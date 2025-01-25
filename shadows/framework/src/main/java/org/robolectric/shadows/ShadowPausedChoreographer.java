@@ -28,9 +28,9 @@ import org.robolectric.versioning.AndroidVersions.T;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /**
- * A {@link Choreographer} shadow for {@link LooperMode.Mode.PAUSED}.
+ * A {@link Choreographer} shadow for {@link LooperMode.Mode#PAUSED}.
  *
- * <p>This shadow is largely a no-op. In {@link LooperMode.Mode.PAUSED} mode, the shadowing is done
+ * <p>This shadow is largely a no-op. In {@link LooperMode.Mode#PAUSED} mode, the shadowing is done
  * at a lower level via {@link ShadowDisplayEventReceiver}.
  *
  * <p>This class should not be referenced directly - use {@link ShadowChoreographer} instead.

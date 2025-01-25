@@ -9,6 +9,7 @@ import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;

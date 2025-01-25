@@ -15,9 +15,9 @@ import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.ForType;
 
 /**
- * The shadow {@link Message} for {@link LooperMode.Mode.LEGACY}.
+ * The shadow {@link Message} for {@link LooperMode.Mode#LEGACY}.
  *
- * <p>In {@link LooperMode.Mode.LEGACY}, each Message is associated with a Runnable posted to the
+ * <p>In {@link LooperMode.Mode#LEGACY}, each Message is associated with a Runnable posted to the
  * {@link Scheduler}.
  *
  * @see ShadowLooper

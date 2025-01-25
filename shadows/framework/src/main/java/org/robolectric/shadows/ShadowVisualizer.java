@@ -131,7 +131,7 @@ public class ShadowVisualizer {
   /**
    * Sets the error code to override setter methods in this class.
    *
-   * <p>When the error code is set to anything other than {@link Visualizer.SUCCESS} setters in the
+   * <p>When the error code is set to anything other than {@link Visualizer#SUCCESS} setters in the
    * Visualizer will early-out and return that error code.
    */
   public void setErrorCode(int errorCode) {

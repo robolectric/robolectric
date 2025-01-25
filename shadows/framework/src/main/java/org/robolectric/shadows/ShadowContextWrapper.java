@@ -107,8 +107,8 @@ public class ShadowContextWrapper {
   }
 
   /**
-   * Returns all {@code Intent} started by {@link #startService(android.content.Intent)} without
-   * consuming them.
+   * Returns all {@code Intent} started by {@link Context#startService(Intent)} without consuming
+   * them.
    *
    * @return the list of {@code Intent}
    */

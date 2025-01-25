@@ -522,7 +522,7 @@ public class ShadowParcel {
    *
    * <ul>
    *   <li>Continuing to read past the end returns zeros/nulls.
-   *   <li>{@link setDataCapacity} never decreases buffer size.
+   *   <li>{@link Parcel#setDataCapacity} never decreases buffer size.
    *   <li>It is possible to partially or completely overwrite byte ranges in the buffer.
    *   <li>Zero bytes can be exchanged between primitive data types and empty array/string.
    * </ul>

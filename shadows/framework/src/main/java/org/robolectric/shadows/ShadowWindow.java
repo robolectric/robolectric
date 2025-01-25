@@ -117,16 +117,16 @@ public class ShadowWindow {
   }
 
   /**
-   * Calls {@link Window.OnFrameMetrisAvailableListener#onFrameMetricsAvailable()} on each current
-   * listener with 0 as the dropCountSinceLastInvocation.
+   * Calls {@link Window.OnFrameMetricsAvailableListener#onFrameMetricsAvailable(Window,
+   * FrameMetrics, int)} on each current listener with 0 as the dropCountSinceLastInvocation.
    */
   public void reportOnFrameMetricsAvailable(FrameMetrics frameMetrics) {
     reportOnFrameMetricsAvailable(frameMetrics, /* dropCountSinceLastInvocation= */ 0);
   }
 
   /**
-   * Calls {@link Window.OnFrameMetrisAvailableListener#onFrameMetricsAvailable()} on each current
-   * listener.
+   * Calls {@link Window.OnFrameMetricsAvailableListener#onFrameMetricsAvailable(Window,
+   * FrameMetrics, int)} on each current listener.
    *
    * @param frameMetrics the {@link FrameMetrics} instance passed to the listeners.
    * @param dropCountSinceLastInvocation the dropCountSinceLastInvocation passed to the listeners.

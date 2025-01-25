@@ -23,9 +23,9 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /**
- * The shadow {@link MessageQueue} for {@link LooperMode.Mode.LEGACY}.
+ * The shadow {@link MessageQueue} for {@link LooperMode.Mode#LEGACY}.
  *
- * <p>In {@link LooperMode.Mode.LEGACY} Robolectric puts {@link android.os.Message}s into the
+ * <p>In {@link LooperMode.Mode#LEGACY} Robolectric puts {@link android.os.Message}s into the
  * scheduler queue instead of sending them to be handled on a separate thread. {@link
  * android.os.Message}s that are scheduled to be dispatched can be triggered by calling {@link
  * ShadowLooper#idleMainLooper}.

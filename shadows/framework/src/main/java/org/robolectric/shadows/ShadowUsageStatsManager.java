@@ -114,7 +114,7 @@ public class ShadowUsageStatsManager {
 
   /**
    * Usage session observer registered via {@link
-   * UsageStatsManager#registerUsageSessionObserver(int, String[], long, TimeUnit, long, TimeUnit,
+   * UsageStatsManager#registerUsageSessionObserver(int, String[], Duration, Duration,
    * PendingIntent, PendingIntent)}.
    */
   @AutoValue
@@ -386,7 +386,7 @@ public class ShadowUsageStatsManager {
   /**
    * Returns the current standby bucket of the specified app that is set by {@code
    * setAppStandbyBucket}. If the standby bucket value has never been set, return {@link
-   * UsageStatsManager.STANDBY_BUCKET_ACTIVE}.
+   * UsageStatsManager#STANDBY_BUCKET_ACTIVE}.
    */
   @Implementation(minSdk = Build.VERSION_CODES.P)
   @HiddenApi
@@ -584,7 +584,7 @@ public class ShadowUsageStatsManager {
   /**
    * Returns the current app's standby bucket that is set by {@code setCurrentAppStandbyBucket}. If
    * the standby bucket value has never been set, return {@link
-   * UsageStatsManager.STANDBY_BUCKET_ACTIVE}.
+   * UsageStatsManager#STANDBY_BUCKET_ACTIVE}.
    */
   @Implementation(minSdk = Build.VERSION_CODES.P)
   @StandbyBuckets

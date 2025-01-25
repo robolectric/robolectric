@@ -1309,8 +1309,8 @@ public class ShadowLocationManager {
   }
 
   /**
-   * A convenience function equivalent to invoking {@link #simulateLocation(String, Location)} with
-   * the provider of the given location.
+   * A convenience function equivalent to invoking {@link #simulateLocation(Location)} with the
+   * provider of the given location.
    */
   public void simulateLocation(Location location) {
     simulateLocation(location.getProvider(), location);

@@ -227,7 +227,7 @@ public class ShadowWebView extends ShadowViewGroup {
 
   /**
    * Performs no callbacks on {@link WebViewClient} and {@link WebChromeClient} when any of {@link
-   * #loadUrl}, {@link loadData} or {@link #loadDataWithBaseURL} is called.
+   * #loadUrl}, {@link #loadData} or {@link #loadDataWithBaseURL} is called.
    */
   public void performNoPageLoadClientCallbacks() {
     this.pageLoadType = PageLoadType.UNDEFINED;
@@ -235,7 +235,7 @@ public class ShadowWebView extends ShadowViewGroup {
 
   /**
    * Performs callbacks on {@link WebViewClient} and {@link WebChromeClient} that simulates a
-   * successful page load when any of {@link #loadUrl}, {@link loadData} or {@link
+   * successful page load when any of {@link #loadUrl}, {@link #loadData} or {@link
    * #loadDataWithBaseURL} is called.
    */
   public void performSuccessfulPageLoadClientCallbacks() {
@@ -703,8 +703,8 @@ public class ShadowWebView extends ShadowViewGroup {
    * Defines a type of page load which is associated with a certain order of {@link WebViewClient}
    * and {@link WebChromeClient} callbacks.
    *
-   * <p>A page load is triggered either using {@link #loadUrl}, {@link loadData} or {@link
-   * loadDataWithBaseURL}.
+   * <p>A page load is triggered either using {@link #loadUrl}, {@link #loadData} or {@link
+   * #loadDataWithBaseURL}.
    */
   private enum PageLoadType {
     /** Default type, triggers no {@link WebViewClient} or {@link WebChromeClient} callbacks. */

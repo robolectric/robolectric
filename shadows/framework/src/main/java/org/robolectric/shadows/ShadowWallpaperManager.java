@@ -265,7 +265,7 @@ public class ShadowWallpaperManager {
 
   /**
    * Throws {@link SecurityException} if the caller doesn't have {@link
-   * permission.SET_WALLPAPER_COMPONENT}.
+   * permission#SET_WALLPAPER_COMPONENT}.
    */
   private static void enforceWallpaperComponentPermission() {
     // Robolectric doesn't stimulate IPC calls. When this code is executed, it will still be running

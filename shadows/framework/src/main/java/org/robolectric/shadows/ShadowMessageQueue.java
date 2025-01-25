@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.os.Message;
 import android.os.MessageQueue;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.util.Scheduler;
 
 /**
@@ -25,28 +26,28 @@ public abstract class ShadowMessageQueue {
   /**
    * Return this queue's Scheduler.
    *
-   * <p>Only supported in {@link LooperMode.Mode.LEGACY}.
+   * <p>Only supported in {@link LooperMode.Mode#LEGACY}.
    */
   public abstract Scheduler getScheduler();
 
   /**
    * Set this queue's Scheduler.
    *
-   * <p>Only supported in {@link LooperMode.Mode.LEGACY}.
+   * <p>Only supported in {@link LooperMode.Mode#LEGACY}.
    */
   public abstract void setScheduler(Scheduler scheduler);
 
   /**
    * Retrieves the current Message at the top of the queue.
    *
-   * <p>Only supported in {@link LooperMode.Mode.LEGACY}.
+   * <p>Only supported in {@link LooperMode.Mode#LEGACY}.
    */
   public abstract Message getHead();
 
   /**
    * Sets the current Message at the top of the queue.
    *
-   * <p>Only supported in {@link LooperMode.Mode.LEGACY}.
+   * <p>Only supported in {@link LooperMode.Mode#LEGACY}.
    */
   public abstract void setHead(Message msg);
 

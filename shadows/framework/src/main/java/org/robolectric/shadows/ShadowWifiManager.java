@@ -527,7 +527,7 @@ public class ShadowWifiManager {
   }
 
   /**
-   * Prevents a networkId from being updated using the {@link updateNetwork(WifiConfiguration)}
+   * Prevents a networkId from being updated using the {@link #updateNetwork(WifiConfiguration)}
    * method. This is to simulate the case where a separate application creates a network, and the
    * Android security model prevents your application from updating it.
    */

@@ -171,8 +171,8 @@ public class ShadowAudioEffect {
   /**
    * Sets the error code to override setter methods in this class.
    *
-   * <p>When the error code is set to anything other than {@link SUCCESS} setters in the AudioEffect
-   * will early-out and return that error code.
+   * <p>When the error code is set to anything other than {@link AudioEffect#SUCCESS} setters in the
+   * AudioEffect will early-out and return that error code.
    */
   public void setErrorCode(int errorCode) {
     this.errorCode = errorCode;

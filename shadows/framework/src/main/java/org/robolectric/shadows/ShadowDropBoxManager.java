@@ -31,7 +31,7 @@ public class ShadowDropBoxManager {
    * DropBoxManager.Entry#getText} can be used.
    *
    * @param tag can be any arbitrary string
-   * @param timestamp a unique timestamp for the entry, relative to {@link
+   * @param wallTimestamp a unique timestamp for the entry, relative to {@link
    *     System#currentTimeMillis()}
    * @param data must not be null
    */

@@ -133,7 +133,7 @@ public class ShadowBluetoothManager {
   }
 
   /**
-   * Overrides behavior of {@link openGattServer} and returns {@link ShadowBluetoothGattServer}
+   * Overrides behavior of {@link #openGattServer} and returns {@link ShadowBluetoothGattServer}
    * after creating and using a nullProxy for {@link IBluetoothGatt}.
    */
   @Implementation(minSdk = S)

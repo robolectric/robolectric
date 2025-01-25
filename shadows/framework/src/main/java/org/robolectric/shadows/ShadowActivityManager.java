@@ -233,9 +233,9 @@ public class ShadowActivityManager {
   }
 
   /**
-   * Sets the values to be returned by {@link #getRecentTasks()}.
+   * Sets the values to be returned by {@link #getRecentTasks(int, int)}.
    *
-   * @see #getRecentTasks()
+   * @see #getRecentTasks(int, int)
    * @param recentTasks List of recent tasks.
    */
   public void setRecentTasks(List<ActivityManager.RecentTaskInfo> recentTasks) {

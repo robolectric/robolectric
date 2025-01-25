@@ -12,6 +12,7 @@ import android.telephony.SubscriptionManager;
 import android.telephony.ims.ImsException;
 import android.telephony.ims.ImsMmTelManager;
 import android.telephony.ims.ImsMmTelManager.CapabilityCallback;
+import android.telephony.ims.ImsMmTelManager.RegistrationCallback;
 import android.telephony.ims.ImsReasonInfo;
 import android.telephony.ims.ImsRegistrationAttributes;
 import android.telephony.ims.RegistrationManager;

@@ -259,7 +259,7 @@ public class ShadowAppWidgetManager {
     }
   }
 
-  /** Returns true if {@link setSupportedToRequestPinAppWidget} is called with {@code true} */
+  /** Returns true if {@link #setRequestPinAppWidgetSupported} is called with {@code true} */
   @Implementation(minSdk = O)
   protected boolean isRequestPinAppWidgetSupported() {
     return requestPinAppWidgetSupported;

@@ -19,6 +19,7 @@ import android.telecom.InCallService;
 import android.telecom.ParcelableCall;
 import android.telecom.Phone;
 import com.android.internal.os.SomeArgs;
+import com.android.internal.telecom.IInCallAdapter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

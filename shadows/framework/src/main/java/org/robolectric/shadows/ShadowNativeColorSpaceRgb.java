@@ -43,7 +43,7 @@ public class ShadowNativeColorSpaceRgb {
     }
   }
 
-  /** Shadow for {@link ColorSpace$Rgb$Native} that contains native functions. */
+  /** Shadow for {@link ColorSpace.Rgb.Native} that contains native functions. */
   @Implements(
       className = "android.graphics.ColorSpace$Rgb$Native",
       isInAndroidSdk = false,

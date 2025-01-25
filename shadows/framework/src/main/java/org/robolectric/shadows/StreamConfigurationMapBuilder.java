@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import android.graphics.ImageFormat;
+import android.graphics.PixelFormat;
 import android.hardware.camera2.params.StreamConfiguration;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build.VERSION_CODES;
@@ -61,7 +63,7 @@ public final class StreamConfigurationMapBuilder {
   /**
    * Adds an output size to be returned by {@link StreamConfigurationMap#getOutputSizes}.
    *
-   * <p>Calling this method is equivalent to calling {@link addOutputSize(int, Size)} with format
+   * <p>Calling this method is equivalent to calling {@link #addOutputSize(int, Size)} with format
    * {@link ImageFormat#PRIVATE}.
    */
   public StreamConfigurationMapBuilder addOutputSize(Size outputSize) {

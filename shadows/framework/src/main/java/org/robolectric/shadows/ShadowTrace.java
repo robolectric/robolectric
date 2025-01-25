@@ -168,7 +168,7 @@ public class ShadowTrace {
    * Do not use this method unless absolutely necessary. Prefer fixing the tests instead.
    *
    * <p>Sets whether to crash on incorrect usage (e.g., calling {@link #endSection()} before {@link
-   * beginSection(String)}. Default value - {@code true}.
+   * #beginSection(String)}. Default value - {@code true}.
    */
   public static void doNotUseSetCrashOnIncorrectUsage(boolean crashOnIncorrectUsage) {
     ShadowTrace.crashOnIncorrectUsage = crashOnIncorrectUsage;

@@ -190,7 +190,7 @@ public class ShadowPowerManager {
 
   /**
    * Returns how location features should behave when battery saver is on. When battery saver is
-   * off, this will always return {@link #LOCATION_MODE_NO_CHANGE}.
+   * off, this will always return {@link PowerManager#LOCATION_MODE_NO_CHANGE}.
    */
   @Implementation(minSdk = P)
   @PowerManager.LocationPowerSaveMode

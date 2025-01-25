@@ -14,9 +14,9 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.SoftThreadLocal;
 
 /**
- * The {@link Choreographer} shadow for {@link LooperMode.Mode.PAUSED}.
+ * The {@link Choreographer} shadow for {@link LooperMode.Mode#PAUSED}.
  *
- * <p>In {@link LooperMode.Mode.PAUSED} mode, Robolectric maintains its own concept of the current
+ * <p>In {@link LooperMode.Mode#PAUSED} mode, Robolectric maintains its own concept of the current
  * time from the Choreographer's point of view, aimed at making animations work correctly. Time
  * starts out at 0 and advances by {@code frameInterval} every time {@link
  * Choreographer#getFrameTimeNanos()} is called.

@@ -58,7 +58,7 @@ public class UiccCardInfoBuilder {
   }
 
   /**
-   * @deprecated Use {@link setPhysicalSlotIndex} for Android T+ instead.
+   * @deprecated Use {@link #setPhysicalSlotIndex} for Android T+ instead.
    */
   @CanIgnoreReturnValue
   @Deprecated

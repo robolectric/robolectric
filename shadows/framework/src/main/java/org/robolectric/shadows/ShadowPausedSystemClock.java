@@ -12,6 +12,7 @@ import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.Resetter;
 
 /**
@@ -20,7 +21,7 @@ import org.robolectric.annotation.Resetter;
  * <p>In this variant, System times (both elapsed realtime and uptime) are controlled by this class.
  * The current times are fixed in place. You can manually advance both by calling {@link
  * SystemClock#setCurrentTimeMillis(long)} or just advance elapsed realtime only by calling {@link
- * deepSleep(long)}.
+ * #deepSleep(long)}.
  *
  * <p>{@link SystemClock#uptimeMillis()} and {@link SystemClock#currentThreadTimeMillis()} are
  * identical.

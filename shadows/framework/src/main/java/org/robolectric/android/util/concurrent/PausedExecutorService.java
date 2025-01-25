@@ -21,7 +21,7 @@ import org.robolectric.util.Logger;
 /**
  * Executor service that queues any posted tasks.
  *
- * <p>Users must explicitly call {@link runAll()} to execute all pending tasks.
+ * <p>Users must explicitly call {@link #runAll()} to execute all pending tasks.
  *
  * <p>Intended to be a replacement for {@link RoboExecutorService} when using {@link
  * LooperMode.Mode#PAUSED}. Unlike {@link RoboExecutorService}, will execute tasks on a background

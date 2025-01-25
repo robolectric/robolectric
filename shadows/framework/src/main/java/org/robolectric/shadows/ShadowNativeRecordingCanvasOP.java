@@ -9,8 +9,8 @@ import org.robolectric.nativeruntime.BaseRecordingCanvasNatives;
 import org.robolectric.shadows.ShadowNativeRecordingCanvasOP.Picker;
 
 /**
- * Shadow for android.view.RecordingCanvas. This class was renamed to {@link BaseRecordingCanvas} in
- * Q.
+ * Shadow for android.view.RecordingCanvas. This class was renamed to {@link
+ * android.graphics.BaseRecordingCanvas} in Q.
  */
 @Implements(
     className = "android.view.RecordingCanvas",

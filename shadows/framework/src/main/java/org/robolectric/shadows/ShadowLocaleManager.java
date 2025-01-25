@@ -59,7 +59,8 @@ public class ShadowLocaleManager {
    *
    * <p>Starting in Android U, this method just invokes the 3-arg version (below).
    *
-   * <p>Use this method in tests to substitute call for {@link LocaleManager#setApplicationLocales}.
+   * <p>Use this method in tests to substitute call for {@link
+   * LocaleManager#setApplicationLocales(LocaleList)}.
    */
   @Implementation(maxSdk = VERSION_CODES.TIRAMISU)
   protected void setApplicationLocales(String packageName, LocaleList locales) {
@@ -69,7 +70,8 @@ public class ShadowLocaleManager {
   /**
    * Stores the passed locales for the given package in-memory.
    *
-   * <p>Use this method in tests to substitute call for {@link LocaleManager#setApplicationLocales}.
+   * <p>Use this method in tests to substitute call for {@link
+   * LocaleManager#setApplicationLocales(LocaleList)}.
    */
   @Implementation(minSdk = U.SDK_INT)
   protected void setApplicationLocales(

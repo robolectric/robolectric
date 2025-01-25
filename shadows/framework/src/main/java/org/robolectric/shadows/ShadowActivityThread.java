@@ -248,7 +248,7 @@ public class ShadowActivityThread {
     @Accessor("mInitialApplication")
     void setInitialApplication(Application application);
 
-    /** internal use only. Tests should use {@link ActivityThread.getApplication} */
+    /** internal use only. Tests should use {@link ActivityThread#getApplication()} */
     @Accessor("mInitialApplication")
     Application getInitialApplication();
 

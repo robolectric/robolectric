@@ -400,8 +400,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Constructs a new Window (a {@link com.android.internal.policy.impl.PhoneWindow}) if no window
-   * has previously been set.
+   * Constructs a new Window (a {@link com.android.internal.policy.PhoneWindow}) if no window has
+   * previously been set.
    *
    * @return the window associated with this Activity
    */

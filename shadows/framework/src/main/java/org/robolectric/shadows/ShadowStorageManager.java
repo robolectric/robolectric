@@ -44,7 +44,7 @@ public class ShadowStorageManager {
   /**
    * Adds a {@link StorageVolume} to the list returned by {@link #getStorageVolumes()}.
    *
-   * @param StorageVolume to add to list
+   * @param storageVolume to add to list
    */
   public void addStorageVolume(StorageVolume storageVolume) {
     Preconditions.checkNotNull(storageVolume);
@@ -52,7 +52,7 @@ public class ShadowStorageManager {
   }
 
   /**
-   * Returns the storage volumes configured via {@link #addStorageVolume()}.
+   * Returns the storage volumes configured via {@link #addStorageVolume(StorageVolume)}.
    *
    * @return StorageVolume list
    */
@@ -70,7 +70,7 @@ public class ShadowStorageManager {
    * Checks whether File belongs to any {@link StorageVolume} in the list returned by {@link
    * #getStorageVolumes()}.
    *
-   * @param File to check
+   * @param file to check
    * @return StorageVolume for the file
    */
   @Implementation(minSdk = N)

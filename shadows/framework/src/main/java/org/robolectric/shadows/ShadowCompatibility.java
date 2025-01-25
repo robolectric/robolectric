@@ -15,7 +15,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
-/** Shadow for {@link Compatability}. */
+/** Shadow for {@link Compatibility}. */
 @Implements(value = Compatibility.class, isInAndroidSdk = false, minSdk = R)
 public class ShadowCompatibility {
 

@@ -1,5 +1,6 @@
 package org.robolectric.android.util.concurrent;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -11,16 +12,16 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.Scheduler;
 
 /**
  * Executor service that runs all operations on the background scheduler.
  *
- * @deprecated only works when used in conjunction with the deprecated {@link LooperMode.LEGACY}
- *     mode. Consider using guava's {@link MoreExecutors#directExecutor()} or {@link
- *     org.robolectric.android.util.concurrent.PausedExecutorService} or {@link
- *     org.robolectric.android.util.concurrent.InlineExecutorService}.
+ * @deprecated only works when used in conjunction with the deprecated {@link
+ *     LooperMode.Mode#LEGACY} mode. Consider using guava's {@link MoreExecutors#directExecutor()}
+ *     or {@link PausedExecutorService} or {@link InlineExecutorService}.
  */
 @Deprecated
 public class RoboExecutorService implements ExecutorService {

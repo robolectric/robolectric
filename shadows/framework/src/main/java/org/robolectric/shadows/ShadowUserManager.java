@@ -814,7 +814,7 @@ public class ShadowUserManager {
    * Sets this process running under a restricted profile; controls the return value of {@link
    * UserManager#isRestrictedProfile()}.
    *
-   * @deprecated use {@link ShadowUserManager#addUser()} instead
+   * @deprecated use {@link ShadowUserManager#addUser(int, String, int)} instead
    */
   @Deprecated
   public void setIsRestrictedProfile(boolean isRestrictedProfile) {
@@ -1032,7 +1032,7 @@ public class ShadowUserManager {
 
   /**
    * Sets whether switching users is allowed or not; controls the return value of {@link
-   * UserManager#canSwitchUser()}
+   * UserManager#canSwitchUsers()}
    *
    * @deprecated use {@link #setUserSwitchability} instead
    */
@@ -1123,7 +1123,7 @@ public class ShadowUserManager {
 
   /**
    * Sets whether multiple users are supported; controls the return value of {@link
-   * UserManager#supportsMultipleUser}.
+   * UserManager#supportsMultipleUsers()}.
    */
   public void setSupportsMultipleUsers(boolean isMultiUserSupported) {
     userManagerState.isMultiUserSupported = isMultiUserSupported;

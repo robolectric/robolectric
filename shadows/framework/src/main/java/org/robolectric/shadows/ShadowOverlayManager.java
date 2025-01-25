@@ -24,12 +24,12 @@ import org.robolectric.util.reflector.ForType;
  * <p>This shadow exists because the overlays managed by the OverlayManager require set up at the
  * Android base image level. This is not something that can exist for host level unit tests.
  *
- * <p>To simulate the image configuration, unit tests must call the {@link addOverlayInfo} function
+ * <p>To simulate the image configuration, unit tests must call the {@link #addOverlayInfo} function
  * to define the available overlays.
  *
- * <p>This basic shadow only implements the {@link getOverlayInfo} and {@link setEnabled} functions,
- * enabling a basic workflow for enabling or disabling Runtime Resource Overlays (RROs). It enforces
- * the android.permissions.CHANGE_OVERLAY_PACKAGES permission.
+ * <p>This basic shadow only implements the {@link #getOverlayInfo} and {@link #setEnabled}
+ * functions, enabling a basic workflow for enabling or disabling Runtime Resource Overlays (RROs).
+ * It enforces the android.permissions.CHANGE_OVERLAY_PACKAGES permission.
  *
  * <p>It does not validate the android.permission.INTERACT_ACROSS_USERS or
  * android.INTERACT_ACROSS_USERS_FULL permissions, which are necessary when changing packages owned

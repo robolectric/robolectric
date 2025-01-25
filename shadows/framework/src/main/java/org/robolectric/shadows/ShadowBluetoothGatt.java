@@ -177,7 +177,7 @@ public class ShadowBluetoothGatt {
 
   /**
    * Overrides {@link BluetoothGatt#requestMtu} to always fail before {@link
-   * ShadowBlueoothGatt.setGattCallback} is called, and always succeed after.
+   * ShadowBluetoothGatt#setGattCallback} is called, and always succeed after.
    */
   @Implementation(minSdk = O)
   protected boolean requestMtu(int mtu) {
@@ -225,7 +225,7 @@ public class ShadowBluetoothGatt {
   }
 
   /**
-   * Overrides {@link BluetoothGatt#getService} to return a service with given UUID.
+   * Overrides {@link BluetoothGatt#getService(UUID)} to return a service with given UUID.
    *
    * @return a service with given UUID that have been discovered through {@link
    *     ShadowBluetoothGatt#discoverServices}.

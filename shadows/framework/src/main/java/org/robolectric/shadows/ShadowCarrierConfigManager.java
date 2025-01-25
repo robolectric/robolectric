@@ -100,7 +100,7 @@ public class ShadowCarrierConfigManager {
 
   /**
    * Sets that the {@code config} PersistableBundle for a particular {@code subId}; controls the
-   * return value of {@link CarrierConfigManager#getConfigForSubId()}.
+   * return value of {@link CarrierConfigManager#getConfigForSubId(int, String...)}.
    */
   public void setConfigForSubId(int subId, PersistableBundle config) {
     bundles.put(subId, config);
