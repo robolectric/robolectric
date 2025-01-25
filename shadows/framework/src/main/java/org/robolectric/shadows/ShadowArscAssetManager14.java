@@ -10,9 +10,8 @@ import org.robolectric.annotation.InDevelopment;
 import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
-// TODO: update path to released version.
 // transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-10.0.0_rXX/core/jni/android_util_AssetManager.cpp
+// https://android.googlesource.com/platform/frameworks/base/+/android-10.0.0_r47/core/jni/android_util_AssetManager.cpp
 
 @Implements(
     value = AssetManager.class,

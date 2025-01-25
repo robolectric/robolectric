@@ -10,10 +10,9 @@ import org.robolectric.res.android.CppAssetManager2.ResolvedBag.Entry;
 import org.robolectric.res.android.CppAssetManager2.Theme;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
-// TODO: update paths to released version.
 // transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-10.0.0_rXX/libs/androidfw/AttributeResolution.cpp and
-// https://android.googlesource.com/platform/frameworks/base/+/android-10.0.0_rXX/libs/androidfw/include/androidfw/AttributeResolution.h
+// https://android.googlesource.com/platform/frameworks/base/+/android-10.0.0_r47/libs/androidfw/AttributeResolution.cpp and
+// https://android.googlesource.com/platform/frameworks/base/+/android-10.0.0_r47/libs/androidfw/include/androidfw/AttributeResolution.h
 
 public class AttributeResolution10 {
   public static final boolean kThrowOnBadId = false;
