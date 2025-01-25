@@ -223,8 +223,6 @@ public class ShadowActivityThread {
           configController,
           "setCompatConfiguration",
           from(Configuration.class, androidConfiguration));
-      androidConfiguration =
-          ReflectionHelpers.callInstanceMethod(configController, "getCompatConfiguration");
       ReflectionHelpers.setField(realActivityThread, "mConfigurationController", configController);
     } else {
       reflector(_ActivityThread_.class, realActivityThread)

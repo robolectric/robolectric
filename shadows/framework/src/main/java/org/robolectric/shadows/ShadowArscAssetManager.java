@@ -1141,7 +1141,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     int strLen = 0;
     for (int i = 0; i < N; i++) {
       valueRef.set(bag[i].map.value);
-      String str = null;
+      String str;
 
       // Take care of resolving the found resource to its final value.
       int block = res.resolveReference(valueRef, bag[i].stringBlock, null);
@@ -1206,11 +1206,10 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     bag_entry[] bag = startOfBag.get();
     for (int i = 0, j = 0; i < N; i++) {
       int stringIndex = -1;
-      int stringBlock = 0;
       value.set(bag[i].map.value);
 
       // Take care of resolving the found resource to its final value.
-      stringBlock = res.resolveReference(value, bag[i].stringBlock, null);
+      int stringBlock = res.resolveReference(value, bag[i].stringBlock, null);
       if (value.get().dataType == DataType.STRING.code()) {
         stringIndex = value.get().data;
       }

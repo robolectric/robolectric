@@ -95,7 +95,7 @@ public class ShadowPathParser {
       float[] results = new float[s.length()];
       int count = 0;
       int startPosition = 1;
-      int endPosition = 0;
+      int endPosition;
 
       ExtractFloatResult result = new ExtractFloatResult();
       int totalLength = s.length();

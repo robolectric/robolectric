@@ -969,7 +969,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
         CppApkAssets apk_assets = assetmanager.GetApkAssets().get(cookie.intValue());
         ResStringPool pool = apk_assets.GetLoadedArsc().GetStringPool();
 
-        String java_string = null;
+        String java_string;
         int str_len;
         String str_utf8 = pool.stringAt(value.get().data);
         if (str_utf8 != null) {

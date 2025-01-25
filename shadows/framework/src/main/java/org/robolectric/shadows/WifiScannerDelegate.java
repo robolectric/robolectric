@@ -24,7 +24,7 @@ class WifiScannerDelegate {
     Bundle bundle = new Bundle();
 
     // Mock available WiFi channels. See https://en.wikipedia.org/wiki/List_of_WLAN_channels
-    List<Integer> availableChannels = new ArrayList<>();
+    List<Integer> availableChannels;
 
     switch (band) {
       case WifiScanner.WIFI_BAND_24_GHZ:

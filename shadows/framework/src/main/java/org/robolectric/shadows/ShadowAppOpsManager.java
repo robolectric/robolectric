@@ -228,7 +228,7 @@ public class ShadowAppOpsManager {
   @SystemApi
   @Nonnull
   protected List<PackageOps> getPackagesForOps(@Nullable String[] ops) {
-    List<PackageOps> result = null;
+    List<PackageOps> result;
 
     if (ops == null) {
       int[] intOps = null;
