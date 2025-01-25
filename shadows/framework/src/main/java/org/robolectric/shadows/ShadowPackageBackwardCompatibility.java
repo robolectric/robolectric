@@ -9,8 +9,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /**
- * Shadow of {@link PackageBackwardCompatibility} to handle a scenario that can come up when
- * multiple Android versions end up on the classpath.
+ * Shadow of {@link android.content.pm.PackageBackwardCompatibility} to handle a scenario that can
+ * come up when multiple Android versions end up on the classpath.
  */
 @Implements(
     className = "android.content.pm.PackageBackwardCompatibility",

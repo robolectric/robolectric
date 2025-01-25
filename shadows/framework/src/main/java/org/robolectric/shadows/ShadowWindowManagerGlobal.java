@@ -143,7 +143,7 @@ public class ShadowWindowManagerGlobal {
    * ShadowWindowManagerGlobal#startPredictiveBackGesture}. One or more drag progress events can be
    * dispatched by calling {@link #moveBy}. The gesture must be ended by either calling {@link
    * #cancel()} or {@link #close()}, if {@link #cancel()} is called a subsequent call to {@link
-   * close()} will do nothing to allow using the gesture in a try with resources statement:
+   * #close()} will do nothing to allow using the gesture in a try with resources statement:
    *
    * <pre>
    * try (PredictiveBackGesture backGesture =

@@ -17,7 +17,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.ForType;
 
-/** A {@link AsyncTask} shadow for {@link LooperMode.Mode.LEGACY}. */
+/** A {@link AsyncTask} shadow for {@link LooperMode.Mode#LEGACY}. */
 @Implements(
     value = AsyncTask.class,
     shadowPicker = ShadowAsyncTask.Picker.class,

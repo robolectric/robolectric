@@ -10,7 +10,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 
 /**
- * The shadow {@link Message} for {@link LooperMode.Mode.PAUSED}.
+ * The shadow {@link Message} for {@link LooperMode.Mode#PAUSED}.
  *
  * <p>This class should not be referenced directly. Use {@link ShadowMessage} instead.
  */

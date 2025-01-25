@@ -352,7 +352,7 @@ public class ShadowDisplayManagerGlobal {
   }
 
   /**
-   * Returns the current display saturation level; {@link android.os.Build.VERSION_CODES.P} only.
+   * Returns the current display saturation level; {@link android.os.Build.VERSION_CODES#P} only.
    */
   float getSaturationLevel() {
     return saturationLevel;

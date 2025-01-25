@@ -190,15 +190,14 @@ public class MediaCodecInfoBuilder {
      * Sets media format.
      *
      * @param mediaFormat a {@link MediaFormat} supported by the codec. It is a requirement for
-     *     mediaFormat to have {@link MediaFormat.KEY_MIME} set. Other keys are optional. Setting
-     *     {@link MediaFormat.KEY_WIDTH}, {@link MediaFormat.KEY_MAX_WIDTH} and {@link
-     *     MediaFormat.KEY_HEIGHT}, {@link MediaFormat.KEY_MAX_HEIGHT} will set the minimum and
+     *     mediaFormat to have {@link MediaFormat#KEY_MIME} set. Other keys are optional. Setting
+     *     {@link MediaFormat#KEY_WIDTH}, {@link MediaFormat#KEY_MAX_WIDTH} and {@link
+     *     MediaFormat#KEY_HEIGHT}, {@link MediaFormat#KEY_MAX_HEIGHT} will set the minimum and
      *     maximum width, height respectively. For backwards compatibility, setting only {@link
-     *     MediaFormat.KEY_WIDTH}, {@link MediaFormat.KEY_HEIGHT} will only set the maximum width,
+     *     MediaFormat#KEY_WIDTH}, {@link MediaFormat#KEY_HEIGHT} will only set the maximum width,
      *     height respectively.
-     * @throws {@link NullPointerException} if mediaFormat is null.
-     * @throws {@link IllegalArgumentException} if mediaFormat does not have {@link
-     *     MediaFormat.KEY_MIME}.
+     * @throws NullPointerException if mediaFormat is null.
+     * @throws IllegalArgumentException if mediaFormat does not have {@link MediaFormat#KEY_MIME}.
      */
     public CodecCapabilitiesBuilder setMediaFormat(MediaFormat mediaFormat) {
       Preconditions.checkNotNull(mediaFormat);

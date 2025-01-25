@@ -16,7 +16,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
-/** Shadow for {@link ColorDisplayManager}. */
+/** Shadow for {@link android.hardware.display.ColorDisplayManager}. */
 @Implements(
     className = "android.hardware.display.ColorDisplayManager",
     isInAndroidSdk = false,

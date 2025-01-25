@@ -267,7 +267,7 @@ public class ShadowNativeMatrix extends ShadowMatrix {
     throw new UnsupportedOperationException("Legacy ShadowMatrix APIs are not supported");
   }
 
-  /** Shadow for {@link Matrix$ExtraNatives} that contains native functions. */
+  /** Shadow for {@link Matrix.ExtraNatives} that contains native functions. */
   @Implements(
       className = "android.graphics.Matrix$ExtraNatives",
       isInAndroidSdk = false,

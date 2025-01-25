@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 
 import android.media.AudioAttributes;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.vibrator.PrimitiveSegment;
 import android.util.SparseArray;

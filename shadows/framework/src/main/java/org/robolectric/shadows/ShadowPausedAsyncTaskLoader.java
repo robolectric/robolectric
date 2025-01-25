@@ -11,9 +11,9 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /**
- * The shadow {@link AsyncTaskLoader} for {@link LooperMode.Mode.PAUSED}.
+ * The shadow {@link AsyncTaskLoader} for {@link LooperMode.Mode#PAUSED}.
  *
- * <p>In {@link LooperMode.Mode.PAUSED} mode, Robolectric just uses the real AsyncTaskLoader for
+ * <p>In {@link LooperMode.Mode#PAUSED} mode, Robolectric just uses the real AsyncTaskLoader for
  * now.
  */
 @Implements(

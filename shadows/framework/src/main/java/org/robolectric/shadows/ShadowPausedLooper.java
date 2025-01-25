@@ -43,8 +43,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /**
- * The shadow Looper for {@link LooperMode.Mode.PAUSED and @link
- * LooperMode.Mode.INSTRUMENTATION_TEST}.
+ * The shadow Looper for {@link LooperMode.Mode#PAUSED and {@link LooperMode.Mode#INSTRUMENTATION_TEST}.
  *
  * <p>This shadow differs from the legacy {@link ShadowLegacyLooper} in the following ways:\ - Has
  * no connection to {@link org.robolectric.util.Scheduler}. Its APIs are standalone - The main

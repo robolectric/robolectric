@@ -368,8 +368,8 @@ public class ShadowAccountManager {
   /**
    * Returns a bundle that contains the account session bundle under {@link
    * AccountManager#KEY_ACCOUNT_SESSION_BUNDLE} to later be passed on to {@link
-   * AccountManager#finishSession(Bundle,Activity,AccountManagerCallback<Bundle>,Handler)}. The
-   * session bundle simply propagates the given {@code accountType} so as not to be empty and is not
+   * AccountManager#finishSession(Bundle, Activity, AccountManagerCallback, Handler)}. The session
+   * bundle simply propagates the given {@code accountType} so as not to be empty and is not
    * encrypted as it would be in the real implementation. If an activity isn't provided, resulting
    * bundle will only have a dummy {@link Intent} under {@link AccountManager#KEY_INTENT}.
    *

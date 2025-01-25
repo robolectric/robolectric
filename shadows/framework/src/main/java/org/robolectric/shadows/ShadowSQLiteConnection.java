@@ -89,7 +89,7 @@ public class ShadowSQLiteConnection {
    * order to improve SQLite performance. The Android default is <code>PERSIST</code> in SDKs <= 25
    * and <code>TRUNCATE</code> in SDKs > 25.
    *
-   * <p>Similarly to {@link setDefaultSyncMode}, if your test expects SQLite rollback journal to be
+   * <p>Similarly to {@link #setDefaultSyncMode}, if your test expects SQLite rollback journal to be
    * synced to disk, use <code>PERSIST</code> or <code>TRUNCATE</code>.
    */
   public static void setDefaultJournalMode(String value) {

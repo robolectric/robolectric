@@ -62,8 +62,9 @@ public class ShadowUwbManager {
   }
 
   /**
-   * Simply returns the bundle provided by {@link ShadowUwbManager#setSpecificationInfo()}, allowing
-   * the tester to dictate available features.
+   * Simply returns the bundle provided by {@link
+   * ShadowUwbManager#setSpecificationInfo(PersistableBundle)}, allowing the tester to dictate
+   * available features.
    */
   @Implementation
   protected PersistableBundle getSpecificationInfo() {
@@ -71,7 +72,8 @@ public class ShadowUwbManager {
   }
 
   /**
-   * Returns the adapter state provided by {@link ShadowUwbManager#simulateAdapterStateChange()}.
+   * Returns the adapter state provided by {@link ShadowUwbManager#simulateAdapterStateChange(int,
+   * int)}.
    */
   @Implementation
   @AdapterState
@@ -81,7 +83,8 @@ public class ShadowUwbManager {
 
   /**
    * Instantiates a {@link ShadowRangingSession} with the adapter provided by {@link
-   * ShadowUwbManager#setUwbAdapter()}, allowing the tester dictate the results of ranging attempts.
+   * ShadowUwbManager#setUwbAdapter(ShadowRangingSession.Adapter)}, allowing the tester dictate the
+   * results of ranging attempts.
    *
    * @throws IllegalArgumentException if UWB is disabled.
    */

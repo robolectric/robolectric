@@ -97,8 +97,8 @@ public class ShadowBiometricManager {
 
   /**
    * Sets the value {@code true} to allow {@link #canAuthenticate()} return {@link
-   * BIOMETRIC_SUCCESS} If sets the value to {@code false}, result will depend on {@link
-   * BiometricManager#hasBiometrics(Context context)}
+   * BiometricManager#BIOMETRIC_SUCCESS} If sets the value to {@code false}, result will depend on
+   * {@link BiometricManager#hasBiometrics(Context)}
    *
    * @param flag to set can authenticate or not
    */

@@ -67,8 +67,8 @@ public class ShadowSuspendDialogInfo {
   /**
    * Returns the action expected to happen on neutral button tap.
    *
-   * @return {@link SuspendDialogInfo.BUTTON_ACTION_MORE_DETAILS} or {@link
-   *     SuspendDialogInfo.BUTTON_ACTION_UNSUSPEND}
+   * @return {@link SuspendDialogInfo#BUTTON_ACTION_MORE_DETAILS} or {@link
+   *     SuspendDialogInfo#BUTTON_ACTION_UNSUSPEND}
    */
   @Implementation(minSdk = R)
   public int getNeutralButtonAction() {

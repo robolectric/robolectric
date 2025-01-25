@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.AsyncTaskLoader;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 
 /**
  * The shadow API for {@link AsyncTaskLoader}.

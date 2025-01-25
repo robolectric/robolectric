@@ -225,7 +225,7 @@ public class ShadowAudioManager {
             <= (int) ReflectionHelpers.getStaticField(AudioManager.class, "RINGER_MODE_MAX");
   }
 
-  /** Note that this method can silently fail. See {@link lockMode}. */
+  /** Note that this method can silently fail. See {@link #lockMode}. */
   @Implementation
   protected void setMode(int mode) {
     if (lockMode) {
@@ -262,7 +262,7 @@ public class ShadowAudioManager {
         .dispatchAudioModeChanged(newMode);
   }
 
-  /** Sets whether subsequent calls to {@link setMode} will succeed or not. */
+  /** Sets whether subsequent calls to {@link #setMode} will succeed or not. */
   public void lockMode(boolean lockMode) {
     this.lockMode = lockMode;
   }
@@ -448,7 +448,7 @@ public class ShadowAudioManager {
 
   /**
    * Registers callback that will receive changes made to the list of active playback configurations
-   * by {@link setActivePlaybackConfigurationsFor}.
+   * by {@link #setActivePlaybackConfigurationsFor)}.
    */
   @Implementation(minSdk = O)
   protected void registerAudioPlaybackCallback(
@@ -740,7 +740,7 @@ public class ShadowAudioManager {
     return outputDevices;
   }
 
-  /** Note that this method can silently fail. See {@link lockCommunicationDevice}. */
+  /** Note that this method can silently fail. See {@link #lockCommunicationDevice}. */
   @Implementation(minSdk = S)
   protected boolean setCommunicationDevice(AudioDeviceInfo communicationDevice) {
     if (!lockCommunicationDevice) {
@@ -749,7 +749,7 @@ public class ShadowAudioManager {
     return !lockCommunicationDevice;
   }
 
-  /** Sets whether subsequent calls to {@link setCommunicationDevice} will succeed. */
+  /** Sets whether subsequent calls to {@link #setCommunicationDevice} will succeed. */
   public void lockCommunicationDevice(boolean lockCommunicationDevice) {
     this.lockCommunicationDevice = lockCommunicationDevice;
   }
@@ -905,7 +905,7 @@ public class ShadowAudioManager {
 
   /**
    * Registers callback that will receive changes made to the list of active recording
-   * configurations by {@link setActiveRecordingConfigurations}.
+   * configurations by {@link #setActiveRecordingConfigurations}.
    */
   @Implementation(minSdk = N)
   protected void registerAudioRecordingCallback(
@@ -966,8 +966,8 @@ public class ShadowAudioManager {
    * <p>Note: this implementation does NOT ensure that we have the permissions necessary to register
    * the given {@link AudioPolicy}.
    *
-   * @return {@link AudioManager.ERROR} if the given policy has already been registered, and {@link
-   *     AudioManager.SUCCESS} otherwise.
+   * @return {@link AudioManager#ERROR} if the given policy has already been registered, and {@link
+   *     AudioManager#SUCCESS} otherwise.
    */
   @HiddenApi
   @Implementation(minSdk = P)

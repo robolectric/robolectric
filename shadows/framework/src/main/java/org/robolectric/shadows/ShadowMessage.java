@@ -40,14 +40,14 @@ public abstract class ShadowMessage {
    *
    * @param r the {@link Runnable} instance that is scheduled to trigger this message.
    *     <p>#if ($api >= 21) * @see #recycleUnchecked() #else * @see #recycle() #end
-   *     <p>Only supported in {@link LooperMode.Mode.LEGACY}.
+   *     <p>Only supported in {@link LooperMode.Mode#LEGACY}.
    */
   public abstract void setScheduledRunnable(Runnable r);
 
   /**
    * Convenience method to provide getter access to the private field {@code Message.next}.
    *
-   * <p>Only supported in {@link LooperMode.Mode.LEGACY}
+   * <p>Only supported in {@link LooperMode.Mode#LEGACY}
    *
    * @return The next message in the current message chain.
    * @see #setNext(Message)
@@ -57,7 +57,7 @@ public abstract class ShadowMessage {
   /**
    * Convenience method to provide setter access to the private field {@code Message.next}.
    *
-   * <p>Only supported in {@link LooperMode.Mode.LEGACY}
+   * <p>Only supported in {@link LooperMode.Mode#LEGACY}
    *
    * @param next the new next message for the current message.
    * @see #getNext()

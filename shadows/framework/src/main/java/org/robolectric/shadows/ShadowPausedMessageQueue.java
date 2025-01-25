@@ -30,7 +30,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /**
- * The shadow {@link} MessageQueue} for {@link LooperMode.Mode.PAUSED}
+ * The shadow {@link} MessageQueue} for {@link LooperMode.Mode#PAUSED}
  *
  * <p>This class should not be referenced directly. Use {@link ShadowMessageQueue} instead.
  */

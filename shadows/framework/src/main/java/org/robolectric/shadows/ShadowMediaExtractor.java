@@ -38,7 +38,7 @@ import org.robolectric.shadows.util.DataSource;
  *       last call to {@link #readSampleData(ByteBuffer, int)}).
  *   <li>{@link MediaExtractor#getSampleTime()} and {@link MediaExtractor#getSampleSize()} are
  *       unimplemented.
- *   <li>{@link MediaExtractor#seekTo()} is unimplemented.
+ *   <li>{@link MediaExtractor#seekTo(long, int)} is unimplemented.
  * </ul>
  */
 @Implements(MediaExtractor.class)

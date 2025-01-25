@@ -812,7 +812,7 @@ public class ShadowTelecomManager {
     protected boolean isRinging = true;
 
     /**
-     * @deprecated Use {@link extras} instead.
+     * @deprecated Use {@link #extras} instead.
      */
     @Deprecated public final Bundle bundle;
 
@@ -826,7 +826,7 @@ public class ShadowTelecomManager {
   }
 
   /**
-   * When set to false methods requiring {@link android.Manifest.permission.READ_PHONE_STATE}
+   * When set to false methods requiring {@link android.Manifest.permission#READ_PHONE_STATE}
    * permission will throw a {@link SecurityException}. By default it's set to true for backwards
    * compatibility.
    */
@@ -841,7 +841,7 @@ public class ShadowTelecomManager {
   }
 
   /**
-   * When set to false methods requiring {@link android.Manifest.permission.CALL_PHONE} permission
+   * When set to false methods requiring {@link android.Manifest.permission#CALL_PHONE} permission
    * will throw a {@link SecurityException}. By default it's set to true for backwards
    * compatibility.
    */

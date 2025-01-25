@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/** Legacy shadow for {@link CursowWindow}. */
+/** Legacy shadow for {@link CursorWindow}. */
 @Implements(value = CursorWindow.class, isInAndroidSdk = false)
 public class ShadowLegacyCursorWindow extends ShadowCursorWindow {
   private static final WindowData WINDOW_DATA = new WindowData();

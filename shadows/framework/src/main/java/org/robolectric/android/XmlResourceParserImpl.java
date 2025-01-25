@@ -21,6 +21,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
@@ -529,9 +530,9 @@ public class XmlResourceParserImpl implements XmlResourceParser {
    * parent.
    *
    * @param node the node which was just explored.
-   * @return {@link XmlPullParserException#START_TAG} if the given node has siblings, {@link
-   *     XmlPullParserException#END_TAG} if the node has no unexplored siblings or {@link
-   *     XmlPullParserException#END_DOCUMENT} if the explored was the root document.
+   * @return {@link XmlPullParser#START_TAG} if the given node has siblings, {@link
+   *     XmlPullParser#END_TAG} if the node has no unexplored siblings or {@link
+   *     XmlPullParser#END_DOCUMENT} if the explored was the root document.
    * @throws XmlPullParserException if the parser fails to parse the next node.
    */
   int navigateToNextNode(Node node) throws XmlPullParserException {

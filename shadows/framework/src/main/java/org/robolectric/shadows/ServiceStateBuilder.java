@@ -78,7 +78,7 @@ public class ServiceStateBuilder {
 
   /**
    * Use this method to control return value of {@link ServiceState#isUsingCarrierAggregation()} (up
-   * to P). On APIs > P, use {@link ServiceStateBuilder#setNetworkRegistrationInfoList()}.
+   * to P). On APIs > P, use {@link #setNetworkRegistrationInfoList(List)}.
    */
   public ServiceStateBuilder setIsUsingCarrierAggregation(boolean value) {
     assertIsAtLeast(P);

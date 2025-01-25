@@ -332,7 +332,7 @@ public class NativeAndroidInput {
    * relation to the maximum detectable size for the device. The value is normalized to a range from
    * 0 (smallest detectable size) to 1 (largest detectable size); although it is not a linear scale.
    * This value is of limited use. To obtain calibrated size information; see {@link
-   * AMOTION_EVENT_AXIS_TOUCH_MAJOR} or {@link AMOTION_EVENT_AXIS_TOOL_MAJOR}.
+   * #AMOTION_EVENT_AXIS_TOUCH_MAJOR} or {@link #AMOTION_EVENT_AXIS_TOOL_MAJOR}.
    */
   static final int AMOTION_EVENT_AXIS_SIZE = 3;
 
@@ -400,7 +400,7 @@ public class NativeAndroidInput {
    * a stylus; the orientation indicates the direction in which the stylus is pointing in relation
    * to the vertical axis of the current orientation of the screen. The range is from -PI radians to
    * PI radians; where 0 is pointing up; -PI/2 radians is pointing left; -PI or PI radians is
-   * pointing down; and PI/2 radians is pointing right. See also {@link AMOTION_EVENT_AXIS_TILT}.
+   * pointing down; and PI/2 radians is pointing right. See also {@link #AMOTION_EVENT_AXIS_TILT}.
    */
   static final int AMOTION_EVENT_AXIS_ORIENTATION = 8;
 
@@ -568,7 +568,7 @@ public class NativeAndroidInput {
   /**
    * Axis constant: The movement of y position of a motion event.
    *
-   * <p>Same as {@link RELATIVE_X}; but for y position.
+   * <p>Same as {@link #AMOTION_EVENT_AXIS_RELATIVE_X}; but for y position.
    */
   static final int AMOTION_EVENT_AXIS_RELATIVE_Y = 28;
 

@@ -26,7 +26,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 
 /**
- * The shadow Looper implementation for {@link LooperMode.Mode.LEGACY}.
+ * The shadow Looper implementation for {@link LooperMode.Mode#LEGACY}.
  *
  * <p>Robolectric enqueues posted {@link Runnable}s to be run (on this thread) later. {@code
  * Runnable}s that are scheduled to run immediately can be triggered by calling {@link #idle()}.

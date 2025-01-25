@@ -48,7 +48,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private ListPopupWindow latestListPopupWindow;
 
   /**
-   * @deprecated Use {@code shadowOf({@link ApplicationProvider#getApplicationContext()})} instead.
+   * @deprecated Use {@code shadowOf(ApplicationProvider#getApplicationContext())} instead.
    */
   @Deprecated
   public static ShadowApplication getInstance() {
@@ -197,7 +197,8 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * @deprecated Please use {@link Context#getSystemService(Context.APPWIDGET_SERVICE)} intstead.
+   * @deprecated Please use {@link Context#getSystemService(String)} with {@link
+   *     Context#APPWIDGET_SERVICE} instead.
    */
   @Deprecated
   public AppWidgetManager getAppWidgetManager() {

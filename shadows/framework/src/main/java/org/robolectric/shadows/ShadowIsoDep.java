@@ -16,8 +16,8 @@ import org.robolectric.shadow.api.Shadow;
  * but most hardware implementations will have a lower limit. If extended length apdus are not
  * supported, the theoretical max transceive length is 0x105 but, again, may be lower in practice.
  *
- * <p>Dictate the Apdu response returned in {@link transceive} via {@link #setTransceiveResponse} or
- * {@link #setNextTransceiveResponse}. The former will be returned with every call to transceive
+ * <p>Dictate the Apdu response returned in {@link #transceive} via {@link #setTransceiveResponse}
+ * or {@link #setNextTransceiveResponse}. The former will be returned with every call to transceive
  * while the later will be returned only once. If neither is set, transceive will throw an
  * IOException.
  */

@@ -774,7 +774,7 @@ public class ShadowTelephonyManager {
   }
 
   /**
-   * Sets the value to be returned by calls to {@link getVoiceNetworkType}. This <b>should</b>
+   * Sets the value to be returned by calls to {@link #getVoiceNetworkType}. This <b>should</b>
    * correspond to one of the {@code NETWORK_TYPE_*} constants defined on {@link TelephonyManager},
    * but this is not enforced.
    */
@@ -833,16 +833,16 @@ public class ShadowTelephonyManager {
   }
 
   /**
-   * Sets the value to be returned by calls to {@link requestCellInfoUpdate}. Note that it does not
-   * set the value to be returned by calls to {@link getAllCellInfo}; for that, see {@link
-   * setAllCellInfo}.
+   * Sets the value to be returned by calls to {@link #requestCellInfoUpdate}. Note that it does not
+   * set the value to be returned by calls to {@link #getAllCellInfo}; for that, see {@link
+   * #setAllCellInfo}.
    */
   public void setCallbackCellInfos(List<CellInfo> callbackCellInfos) {
     ShadowTelephonyManager.callbackCellInfos = callbackCellInfos;
   }
 
   /**
-   * Sets the values to be returned by a presumed error condition in {@link requestCellInfoUpdate}.
+   * Sets the values to be returned by a presumed error condition in {@link #requestCellInfoUpdate}.
    * These values will persist until cleared: to clear, set (0, null) using this method.
    */
   public void setRequestCellInfoUpdateErrorValues(int errorCode, Throwable detail) {

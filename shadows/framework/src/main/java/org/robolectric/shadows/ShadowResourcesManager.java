@@ -21,7 +21,10 @@ public class ShadowResourcesManager {
     reflector(_ResourcesManager_.class).setResourcesManager(null);
   }
 
-  /** Exposes {@link ResourcesManager#applyCompatConfigurationLocked(int, Configuration)}. */
+  /**
+   * Exposes {@link ResourcesManager#applyConfigurationToResources(Configuration,
+   * CompatibilityInfo)}.
+   */
   public boolean callApplyConfigurationToResourcesLocked(
       Configuration configuration, CompatibilityInfo compatibilityInfo) {
     return reflector(_ResourcesManager_.class, realResourcesManager)
