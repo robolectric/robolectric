@@ -1,12 +1,13 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityService.MagnificationController;
+import android.accessibilityservice.MagnificationConfig;
 import android.graphics.Region;
+import android.os.Build.VERSION_CODES;
 import android.os.Looper;
 import android.view.accessibility.AccessibilityEvent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -18,7 +19,7 @@ import org.robolectric.annotation.Config;
 
 /** Test for ShadowMagnificationController. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = N)
+@Config(minSdk = VERSION_CODES.N)
 public final class ShadowMagnificationControllerTest {
 
   private MagnificationController magnificationController;
@@ -27,6 +28,22 @@ public final class ShadowMagnificationControllerTest {
   public void setUp() {
     MyService myService = Robolectric.setupService(MyService.class);
     magnificationController = myService.getMagnificationController();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void getMagnificationConfig_setMagnificationConfig() {
+    MagnificationConfig config =
+        new MagnificationConfig.Builder()
+            .setMode(MagnificationConfig.MAGNIFICATION_MODE_FULLSCREEN)
+            .setScale(2)
+            .setCenterX(2)
+            .setCenterY(2)
+            .build();
+
+    magnificationController.setMagnificationConfig(config, false);
+
+    assertThat(magnificationController.getMagnificationConfig()).isEqualTo(config);
   }
 
   @Test

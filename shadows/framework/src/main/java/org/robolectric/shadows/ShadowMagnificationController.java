@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
-
 import android.accessibilityservice.AccessibilityService.MagnificationController;
+import android.accessibilityservice.MagnificationConfig;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.graphics.Region;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import java.util.HashMap;
@@ -12,7 +14,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
 /** Shadow of MagnificationController. */
-@Implements(value = MagnificationController.class, minSdk = N)
+@Implements(value = MagnificationController.class, minSdk = VERSION_CODES.N)
 public class ShadowMagnificationController {
 
   private static final float DEFAULT_CENTER_X = 0.0f;
@@ -25,6 +27,7 @@ public class ShadowMagnificationController {
       new HashMap<>();
 
   private final Region magnificationRegion = new Region();
+  private MagnificationConfig magnificationConfig = null;
   private float centerX = DEFAULT_CENTER_X;
   private float centerY = DEFAULT_CENTER_Y;
   private float scale = DEFAULT_SCALE;
@@ -38,6 +41,12 @@ public class ShadowMagnificationController {
   @Implementation
   protected void addListener(MagnificationController.OnMagnificationChangedListener listener) {
     addListener(listener, new Handler(Looper.getMainLooper()));
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  @Nullable
+  protected MagnificationConfig getMagnificationConfig() {
+    return magnificationConfig;
   }
 
   @Implementation
@@ -72,10 +81,17 @@ public class ShadowMagnificationController {
 
   @Implementation
   protected boolean reset(boolean animate) {
+    magnificationConfig = null;
     centerX = DEFAULT_CENTER_X;
     centerY = DEFAULT_CENTER_Y;
     scale = DEFAULT_SCALE;
     notifyListeners();
+    return true;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected boolean setMagnificationConfig(@NonNull MagnificationConfig config, boolean animate) {
+    magnificationConfig = config;
     return true;
   }
 
