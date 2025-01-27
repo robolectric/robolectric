@@ -1,12 +1,16 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
+import android.database.sqlite.SQLiteDatabase.OpenParams;
 import android.database.sqlite.SQLiteOpenHelper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -14,6 +18,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class SQLiteOpenHelperTest {
@@ -221,6 +226,49 @@ public class SQLiteOpenHelperTest {
     db1.close();
     db1 = helper.getWritableDatabase();
     assertThat(db1.isOpen()).isTrue();
+  }
+
+  @Test
+  public void testGetIdleConnectionTimeout() {
+    assertThat(shadowOf(helper).getIdleConnectionTimeout())
+        .isEqualTo(ShadowSQLiteOpenHelper.IDLE_CONNECTION_TIMEOUT_DISABLED);
+  }
+
+  @Test
+  @Config(minSdk = O_MR1)
+  public void testSetIdleConnectionTimeout() {
+    helper.setIdleConnectionTimeout(1000L);
+    assertThat(shadowOf(helper).getIdleConnectionTimeout()).isEqualTo(1000L);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void testGetOpenParams() {
+    OpenParams openParams = shadowOf(helper).getOpenParams();
+    assertThat(openParams).isNotNull();
+    assertThat(openParams.getOpenFlags() & SQLiteDatabase.CREATE_IF_NECESSARY)
+        .isEqualTo(SQLiteDatabase.CREATE_IF_NECESSARY);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void testGetOpenParams_setIdleConnectionTimeout() {
+    assertThat(shadowOf(helper).getOpenParams().getIdleConnectionTimeout())
+        .isEqualTo(ShadowSQLiteOpenHelper.IDLE_CONNECTION_TIMEOUT_DISABLED);
+    helper.setIdleConnectionTimeout(1000L);
+    assertThat(shadowOf(helper).getOpenParams().getIdleConnectionTimeout()).isEqualTo(1000L);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void testSetOpenParams() {
+    OpenParams newOpenParams = new OpenParams.Builder().setIdleConnectionTimeout(1000L).build();
+    helper.setOpenParams(newOpenParams);
+    OpenParams openParams = shadowOf(helper).getOpenParams();
+    assertThat(openParams).isNotNull();
+    assertThat(openParams.getOpenFlags() & SQLiteDatabase.CREATE_IF_NECESSARY)
+        .isEqualTo(SQLiteDatabase.CREATE_IF_NECESSARY);
+    assertThat(openParams.getIdleConnectionTimeout()).isEqualTo(1000L);
   }
 
   private static void assertInitialDB(SQLiteDatabase database, TestOpenHelper helper) {
