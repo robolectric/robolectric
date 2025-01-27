@@ -134,7 +134,7 @@ public class ShadowRemoteCallbackList<E extends IInterface> {
     broadcastCount = -1;
   }
 
-  @Implementation(minSdk = 17)
+  @Implementation
   protected int getRegisteredCallbackCount() {
     return callbacks.size();
   }

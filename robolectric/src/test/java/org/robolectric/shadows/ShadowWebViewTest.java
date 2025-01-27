@@ -453,7 +453,6 @@ public class ShadowWebViewTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  @Config(minSdk = 19)
   public void evaluateJavascript() {
     ValueCallback<String> callback = mock(ValueCallback.class);
     assertThat(shadowOf(webView).getLastEvaluatedJavascript()).isNull();
@@ -660,7 +659,6 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  @Config(minSdk = 19)
   public void canSetWebContentsDebuggingEnabled() {
     WebView.setWebContentsDebuggingEnabled(false);
     WebView.setWebContentsDebuggingEnabled(true);

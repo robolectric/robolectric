@@ -99,7 +99,7 @@ class NormalCompatibilityTest {
   }
 
   @Test
-  @Config(minSdk = 19, maxSdk = 27)
+  @Config(maxSdk = 27)
   fun `MainActivity created correctly using default constructor on api lower than 28`() {
     buildActivity(MainActivity::class.java).use { controller ->
       val activity = controller.setup().get()
