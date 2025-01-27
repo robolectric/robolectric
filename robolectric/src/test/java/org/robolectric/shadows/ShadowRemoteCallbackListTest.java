@@ -10,7 +10,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowRemoteCallbackListTest {
@@ -33,7 +32,6 @@ public class ShadowRemoteCallbackListTest {
   }
 
   @Test
-  @Config(minSdk = 17)
   public void getRegisteredCallbackCount_callbackRegistered_reflectsInReturnValue() {
     fooRemoteCallbackList.register(new Foo());
 

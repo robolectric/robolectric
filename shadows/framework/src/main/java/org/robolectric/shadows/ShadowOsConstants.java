@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** */
-@Implements(value = OsConstants.class, minSdk = 21)
+@Implements(value = OsConstants.class)
 public final class ShadowOsConstants {
   @Implementation
   protected static void initConstants() {

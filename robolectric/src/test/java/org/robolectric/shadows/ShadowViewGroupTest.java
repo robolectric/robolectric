@@ -36,7 +36,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
 
@@ -186,7 +185,6 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  @Config(minSdk = 17) // TODO: mysteriously fails on github CI on API 16
   public void hasFocus_shouldReturnTrueIfAnyChildHasFocus() {
     ContainerActivity containerActivity = Robolectric.setupActivity(ContainerActivity.class);
     makeFocusable(

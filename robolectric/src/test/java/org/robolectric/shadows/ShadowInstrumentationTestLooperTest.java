@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadow.api.Shadow;
@@ -28,7 +27,6 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowInstrumentationTestLooperTest {
 
   @Test
-  @Config(minSdk = 18)
   public void testThreadIsNotMainThread() {
     assertFalse(Looper.getMainLooper().isCurrentThread());
   }
