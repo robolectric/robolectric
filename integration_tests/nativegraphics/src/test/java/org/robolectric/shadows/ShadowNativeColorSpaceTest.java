@@ -19,6 +19,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -29,16 +30,22 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.graphics.ColorSpace;
+import android.hardware.DataSpace;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.versioning.AndroidVersions.V;
 
+// Copied from:
+// https://cs.android.com/android/platform/superproject/+/android15-release:cts/tests/tests/graphics/src/android/graphics/cts/ColorSpaceTest.java
+// With the following changes:
+// - Replaced `@Test(expected)` with `assertThrows`.
+// - Removed parameterized tests.
+// - Removed OkLab checks.
+// - Added SDK checks.
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = O)
 public class ShadowNativeColorSpaceTest {
@@ -62,8 +69,10 @@ public class ShadowNativeColorSpaceTest {
     0.1430804f, 0.0606169f, 0.7141733f
   };
 
-  private static final float[] rGBPRIMARIESXyY = {0.640f, 0.330f, 0.300f, 0.600f, 0.150f, 0.060f};
-  private static final float[] sRGBWHITEPOINTXyY = {0.3127f, 0.3290f};
+  private static final float[] SRGB_PRIMARIES_xyY = {
+    0.640f, 0.330f, 0.300f, 0.600f, 0.150f, 0.060f
+  };
+  private static final float[] SRGB_WHITE_POINT_xyY = {0.3127f, 0.3290f};
 
   private static final float[] SRGB_PRIMARIES_XYZ = {
     1.939394f, 1.000000f, 0.090909f,
@@ -72,25 +81,17 @@ public class ShadowNativeColorSpaceTest {
   };
   private static final float[] SRGB_WHITE_POINT_XYZ = {0.950456f, 1.000f, 1.089058f};
 
-  private static final DoubleUnaryOperator identity = DoubleUnaryOperator.identity();
+  private static final DoubleUnaryOperator sIdentity = DoubleUnaryOperator.identity();
 
   @Test
   public void testNamedColorSpaces() {
-    for (ColorSpace.Named named : ColorSpace.Named.values()) {
-      // OK_LAB is behind a feature flag that is not yet enabled by default on V.
-      if (Objects.equals(named.toString(), "OK_LAB")
-          && RuntimeEnvironment.getApiLevel() <= V.SDK_INT) {
-        continue;
-      }
-      // DISPLAY_BT2020 is behind a feature flag that is not yet enabled by default.
-      if (Objects.equals(named.toString(), "DISPLAY_BT2020")) {
-        continue;
-      }
-
+    ColorSpace.Named[] values = ColorSpace.Named.values();
+    for (int i = 0; i < values.length - 1; i++) {
+      ColorSpace.Named named = values[i];
       ColorSpace colorSpace = ColorSpace.get(named);
       assertNotNull(colorSpace.getName());
       assertNotNull(colorSpace);
-      assertEquals(named + " ordinal does not match", named.ordinal(), colorSpace.getId());
+      assertEquals(named.ordinal(), colorSpace.getId());
       assertTrue(colorSpace.getComponentCount() >= 1);
       assertTrue(colorSpace.getComponentCount() <= 4);
     }
@@ -100,20 +101,21 @@ public class ShadowNativeColorSpaceTest {
   public void testNullName() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new ColorSpace.Rgb(null, new float[6], new float[2], identity, identity, 0.0f, 1.0f));
+        () ->
+            new ColorSpace.Rgb(null, new float[6], new float[2], sIdentity, sIdentity, 0.0f, 1.0f));
   }
 
   @Test
   public void testEmptyName() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new ColorSpace.Rgb("", new float[6], new float[2], identity, identity, 0.0f, 1.0f));
+        () -> new ColorSpace.Rgb("", new float[6], new float[2], sIdentity, sIdentity, 0.0f, 1.0f));
   }
 
   @Test
   public void testName() {
     ColorSpace.Rgb cs =
-        new ColorSpace.Rgb("Test", new float[6], new float[2], identity, identity, 0.0f, 1.0f);
+        new ColorSpace.Rgb("Test", new float[6], new float[2], sIdentity, sIdentity, 0.0f, 1.0f);
     assertEquals("Test", cs.getName());
   }
 
@@ -122,7 +124,8 @@ public class ShadowNativeColorSpaceTest {
     assertThrows(
         IllegalArgumentException.class,
         () ->
-            new ColorSpace.Rgb("Test", new float[7], new float[2], identity, identity, 0.0f, 1.0f));
+            new ColorSpace.Rgb(
+                "Test", new float[7], new float[2], sIdentity, sIdentity, 0.0f, 1.0f));
   }
 
   @Test
@@ -130,21 +133,22 @@ public class ShadowNativeColorSpaceTest {
     assertThrows(
         IllegalArgumentException.class,
         () ->
-            new ColorSpace.Rgb("Test", new float[6], new float[1], identity, identity, 0.0f, 1.0f));
+            new ColorSpace.Rgb(
+                "Test", new float[6], new float[1], sIdentity, sIdentity, 0.0f, 1.0f));
   }
 
   @Test
   public void testNullOETF() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new ColorSpace.Rgb("Test", new float[6], new float[2], null, identity, 0.0f, 1.0f));
+        () -> new ColorSpace.Rgb("Test", new float[6], new float[2], null, sIdentity, 0.0f, 1.0f));
   }
 
   @Test
   public void testOETF() {
     DoubleUnaryOperator op = Math::sqrt;
     ColorSpace.Rgb cs =
-        new ColorSpace.Rgb("Test", new float[6], new float[2], op, identity, 0.0f, 1.0f);
+        new ColorSpace.Rgb("Test", new float[6], new float[2], op, sIdentity, 0.0f, 1.0f);
     assertEquals(0.5, cs.getOetf().applyAsDouble(0.25), 1e-5);
   }
 
@@ -152,14 +156,14 @@ public class ShadowNativeColorSpaceTest {
   public void testNullEOTF() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> new ColorSpace.Rgb("Test", new float[6], new float[2], identity, null, 0.0f, 1.0f));
+        () -> new ColorSpace.Rgb("Test", new float[6], new float[2], sIdentity, null, 0.0f, 1.0f));
   }
 
   @Test
   public void testEOTF() {
     DoubleUnaryOperator op = x -> x * x;
     ColorSpace.Rgb cs =
-        new ColorSpace.Rgb("Test", new float[6], new float[2], identity, op, 0.0f, 1.0f);
+        new ColorSpace.Rgb("Test", new float[6], new float[2], sIdentity, op, 0.0f, 1.0f);
     assertEquals(0.0625, cs.getEotf().applyAsDouble(0.25), 1e-5);
   }
 
@@ -168,7 +172,8 @@ public class ShadowNativeColorSpaceTest {
     assertThrows(
         IllegalArgumentException.class,
         () ->
-            new ColorSpace.Rgb("Test", new float[6], new float[2], identity, identity, 2.0f, 1.0f));
+            new ColorSpace.Rgb(
+                "Test", new float[6], new float[2], sIdentity, sIdentity, 2.0f, 1.0f));
   }
 
   @Test
@@ -187,9 +192,9 @@ public class ShadowNativeColorSpaceTest {
     m2 = cs.getMaxValue(1);
     m3 = cs.getMaxValue(2);
 
-    assertEquals(1.0f, m1, 0);
-    assertEquals(1.0f, m2, 0);
-    assertEquals(1.0f, m3, 0);
+    assertEquals(1.0f, m1, 1e-9f);
+    assertEquals(1.0f, m2, 1e-9f);
+    assertEquals(1.0f, m3, 1e-9f);
 
     cs = ColorSpace.get(ColorSpace.Named.CIE_LAB);
 
@@ -198,16 +203,16 @@ public class ShadowNativeColorSpaceTest {
     m3 = cs.getMinValue(2);
 
     assertEquals(0.0f, m1, 1e-9f);
-    assertEquals(-128.0f, m2, 0);
-    assertEquals(-128.0f, m3, 0);
+    assertEquals(-128.0f, m2, 1e-9f);
+    assertEquals(-128.0f, m3, 1e-9f);
 
     m1 = cs.getMaxValue(0);
     m2 = cs.getMaxValue(1);
     m3 = cs.getMaxValue(2);
 
-    assertEquals(100.0f, m1, 0);
-    assertEquals(128.0f, m2, 0);
-    assertEquals(128.0f, m3, 0);
+    assertEquals(100.0f, m1, 1e-9f);
+    assertEquals(128.0f, m2, 1e-9f);
+    assertEquals(128.0f, m3, 1e-9f);
 
     cs = ColorSpace.get(ColorSpace.Named.CIE_XYZ);
 
@@ -215,22 +220,22 @@ public class ShadowNativeColorSpaceTest {
     m2 = cs.getMinValue(1);
     m3 = cs.getMinValue(2);
 
-    assertEquals(-2.0f, m1, 0);
-    assertEquals(-2.0f, m2, 0);
-    assertEquals(-2.0f, m3, 0);
+    assertEquals(-2.0f, m1, 1e-9f);
+    assertEquals(-2.0f, m2, 1e-9f);
+    assertEquals(-2.0f, m3, 1e-9f);
 
     m1 = cs.getMaxValue(0);
     m2 = cs.getMaxValue(1);
     m3 = cs.getMaxValue(2);
 
-    assertEquals(2.0f, m1, 0);
-    assertEquals(2.0f, m2, 0);
-    assertEquals(2.0f, m3, 0);
+    assertEquals(2.0f, m1, 1e-9f);
+    assertEquals(2.0f, m2, 1e-9f);
+    assertEquals(2.0f, m3, 1e-9f);
   }
 
   @Test
   public void testMat3x3() {
-    ColorSpace.Rgb cs = new ColorSpace.Rgb("Test", SRGB_TO_XYZ, identity, identity);
+    ColorSpace.Rgb cs = new ColorSpace.Rgb("Test", SRGB_TO_XYZ, sIdentity, sIdentity);
 
     float[] rgbToXYZ = cs.getTransform();
     for (int i = 0; i < 9; i++) {
@@ -240,7 +245,7 @@ public class ShadowNativeColorSpaceTest {
 
   @Test
   public void testMat3x3Inverse() {
-    ColorSpace.Rgb cs = new ColorSpace.Rgb("Test", SRGB_TO_XYZ, identity, identity);
+    ColorSpace.Rgb cs = new ColorSpace.Rgb("Test", SRGB_TO_XYZ, sIdentity, sIdentity);
 
     float[] xyzToRGB = cs.getInverseTransform();
     for (int i = 0; i < 9; i++) {
@@ -250,39 +255,39 @@ public class ShadowNativeColorSpaceTest {
 
   @Test
   public void testMat3x3Primaries() {
-    ColorSpace.Rgb cs = new ColorSpace.Rgb("Test", SRGB_TO_XYZ, identity, identity);
+    ColorSpace.Rgb cs = new ColorSpace.Rgb("Test", SRGB_TO_XYZ, sIdentity, sIdentity);
 
     float[] primaries = cs.getPrimaries();
 
     assertNotNull(primaries);
     assertEquals(6, primaries.length);
 
-    assertEquals(rGBPRIMARIESXyY[0], primaries[0], 1e-5f);
-    assertEquals(rGBPRIMARIESXyY[1], primaries[1], 1e-5f);
-    assertEquals(rGBPRIMARIESXyY[2], primaries[2], 1e-5f);
-    assertEquals(rGBPRIMARIESXyY[3], primaries[3], 1e-5f);
-    assertEquals(rGBPRIMARIESXyY[4], primaries[4], 1e-5f);
-    assertEquals(rGBPRIMARIESXyY[5], primaries[5], 1e-5f);
+    assertEquals(SRGB_PRIMARIES_xyY[0], primaries[0], 1e-5f);
+    assertEquals(SRGB_PRIMARIES_xyY[1], primaries[1], 1e-5f);
+    assertEquals(SRGB_PRIMARIES_xyY[2], primaries[2], 1e-5f);
+    assertEquals(SRGB_PRIMARIES_xyY[3], primaries[3], 1e-5f);
+    assertEquals(SRGB_PRIMARIES_xyY[4], primaries[4], 1e-5f);
+    assertEquals(SRGB_PRIMARIES_xyY[5], primaries[5], 1e-5f);
   }
 
   @Test
   public void testMat3x3WhitePoint() {
-    ColorSpace.Rgb cs = new ColorSpace.Rgb("Test", SRGB_TO_XYZ, identity, identity);
+    ColorSpace.Rgb cs = new ColorSpace.Rgb("Test", SRGB_TO_XYZ, sIdentity, sIdentity);
 
     float[] whitePoint = cs.getWhitePoint();
 
     assertNotNull(whitePoint);
     assertEquals(2, whitePoint.length);
 
-    assertEquals(sRGBWHITEPOINTXyY[0], whitePoint[0], 1e-5f);
-    assertEquals(sRGBWHITEPOINTXyY[1], whitePoint[1], 1e-5f);
+    assertEquals(SRGB_WHITE_POINT_xyY[0], whitePoint[0], 1e-5f);
+    assertEquals(SRGB_WHITE_POINT_xyY[1], whitePoint[1], 1e-5f);
   }
 
   @Test
   public void testXYZFromPrimaries_xyY() {
     ColorSpace.Rgb cs =
         new ColorSpace.Rgb(
-            "Test", rGBPRIMARIESXyY, sRGBWHITEPOINTXyY, identity, identity, 0.0f, 1.0f);
+            "Test", SRGB_PRIMARIES_xyY, SRGB_WHITE_POINT_xyY, sIdentity, sIdentity, 0.0f, 1.0f);
 
     float[] rgbToXYZ = cs.getTransform();
     for (int i = 0; i < 9; i++) {
@@ -296,10 +301,10 @@ public class ShadowNativeColorSpaceTest {
   }
 
   @Test
-  public void testXYZFromPrimaries_xYZ() {
+  public void testXYZFromPrimaries_XYZ() {
     ColorSpace.Rgb cs =
         new ColorSpace.Rgb(
-            "Test", SRGB_PRIMARIES_XYZ, SRGB_WHITE_POINT_XYZ, identity, identity, 0.0f, 1.0f);
+            "Test", SRGB_PRIMARIES_XYZ, SRGB_WHITE_POINT_XYZ, sIdentity, sIdentity, 0.0f, 1.0f);
 
     float[] primaries = cs.getPrimaries();
 
@@ -307,12 +312,12 @@ public class ShadowNativeColorSpaceTest {
     assertEquals(6, primaries.length);
 
     // SRGB_PRIMARIES_xyY only has 1e-3 of precision, match it
-    assertEquals(rGBPRIMARIESXyY[0], primaries[0], 1e-3f);
-    assertEquals(rGBPRIMARIESXyY[1], primaries[1], 1e-3f);
-    assertEquals(rGBPRIMARIESXyY[2], primaries[2], 1e-3f);
-    assertEquals(rGBPRIMARIESXyY[3], primaries[3], 1e-3f);
-    assertEquals(rGBPRIMARIESXyY[4], primaries[4], 1e-3f);
-    assertEquals(rGBPRIMARIESXyY[5], primaries[5], 1e-3f);
+    assertEquals(SRGB_PRIMARIES_xyY[0], primaries[0], 1e-3f);
+    assertEquals(SRGB_PRIMARIES_xyY[1], primaries[1], 1e-3f);
+    assertEquals(SRGB_PRIMARIES_xyY[2], primaries[2], 1e-3f);
+    assertEquals(SRGB_PRIMARIES_xyY[3], primaries[3], 1e-3f);
+    assertEquals(SRGB_PRIMARIES_xyY[4], primaries[4], 1e-3f);
+    assertEquals(SRGB_PRIMARIES_xyY[5], primaries[5], 1e-3f);
 
     float[] whitePoint = cs.getWhitePoint();
 
@@ -320,8 +325,8 @@ public class ShadowNativeColorSpaceTest {
     assertEquals(2, whitePoint.length);
 
     // SRGB_WHITE_POINT_xyY only has 1e-3 of precision, match it
-    assertEquals(sRGBWHITEPOINTXyY[0], whitePoint[0], 1e-3f);
-    assertEquals(sRGBWHITEPOINTXyY[1], whitePoint[1], 1e-3f);
+    assertEquals(SRGB_WHITE_POINT_xyY[0], whitePoint[0], 1e-3f);
+    assertEquals(SRGB_WHITE_POINT_xyY[1], whitePoint[1], 1e-3f);
 
     float[] rgbToXYZ = cs.getTransform();
     for (int i = 0; i < 9; i++) {
@@ -348,22 +353,17 @@ public class ShadowNativeColorSpaceTest {
   @Test
   @Config(minSdk = Q)
   public void testIsSRGB() {
-    for (ColorSpace.Named named : ColorSpace.Named.values()) {
-      // OK_LAB is behind a feature flag that is not yet enabled by default on V.
-      if (Objects.equals(named.toString(), "OK_LAB")
-          && RuntimeEnvironment.getApiLevel() <= V.SDK_INT) {
-        continue;
-      }
-      // DISPLAY_BT2020 is behind a feature flag that is not yet enabled by default.
-      if (Objects.equals(named.toString(), "DISPLAY_BT2020")) {
-        continue;
-      }
-
-      ColorSpace colorSpace = ColorSpace.get(named);
-      if (named == ColorSpace.Named.SRGB) {
+    for (ColorSpace.Named e : ColorSpace.Named.values()) {
+      ColorSpace colorSpace = ColorSpace.get(e);
+      // ColorSpace.get is guaranteed to return non-null. So if this is queried with
+      // a ColorSpace that is flagged, this falls back to return SRGB as a default.
+      // The values method of an enum will always return the full set of enum values
+      // regardless if they are flagged out or not
+      boolean isSrgbFallback = colorSpace.getId() == 0;
+      if (e == ColorSpace.Named.SRGB || isSrgbFallback) {
         assertTrue(colorSpace.isSrgb());
       } else {
-        assertFalse("Incorrectly treating " + colorSpace + " as SRGB!", colorSpace.isSrgb());
+        assertFalse("Incorrectly treating " + e + " as SRGB!", colorSpace.isSrgb());
       }
     }
 
@@ -842,18 +842,19 @@ public class ShadowNativeColorSpaceTest {
             });
   }
 
-  // TODO: update test with latest
-  // cts/tests/tests/graphics/src/android/graphics/cts/ColorSpaceTest.java from U
   @Test
-  @Config(maxSdk = TIRAMISU)
   public void testMatch() {
     for (ColorSpace.Named named : ColorSpace.Named.values()) {
       ColorSpace cs = ColorSpace.get(named);
       if (cs.getModel() == ColorSpace.Model.RGB) {
         ColorSpace.Rgb rgb = (ColorSpace.Rgb) cs;
-        // match() cannot match extended sRGB
-        if (!rgb.equals(ColorSpace.get(ColorSpace.Named.EXTENDED_SRGB))
-            && !rgb.equals(ColorSpace.get(ColorSpace.Named.LINEAR_EXTENDED_SRGB))) {
+        // match() cannot match extended sRGB, BT2020_HLG, BT2020_PQ
+        if (rgb != ColorSpace.get(ColorSpace.Named.EXTENDED_SRGB)
+            && rgb != ColorSpace.get(ColorSpace.Named.LINEAR_EXTENDED_SRGB)
+            && (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE
+                && rgb != ColorSpace.get(ColorSpace.Named.BT2020_HLG))
+            && (RuntimeEnvironment.getApiLevel() >= TIRAMISU
+                && rgb != ColorSpace.get(ColorSpace.Named.BT2020_PQ))) {
 
           // match() uses CIE XYZ D50
           rgb = (ColorSpace.Rgb) ColorSpace.adapt(rgb, ColorSpace.ILLUMINANT_D50);
@@ -881,7 +882,7 @@ public class ShadowNativeColorSpaceTest {
     }
   }
 
-  private static final float[] identityMatrix =
+  private static final float[] sIdentityMatrix =
       new float[] {
         1.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f,
@@ -909,11 +910,32 @@ public class ShadowNativeColorSpaceTest {
           assertNotNull(result);
           assertEquals(9, result.length);
           if (Arrays.equals(srcWhitePoint, dstWhitePoint)) {
-            assertArrayEquals(identityMatrix, result, 0f);
+            assertArrayEquals(sIdentityMatrix, result, 0f);
           }
         }
       }
     }
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getDataSpaceFromColorSpace() {
+    ColorSpace cs = ColorSpace.get(ColorSpace.Named.BT709);
+    assertNotNull(cs);
+    assertEquals(DataSpace.DATASPACE_BT709, cs.getDataSpace());
+
+    cs = ColorSpace.get(ColorSpace.Named.ACES);
+    assertEquals(DataSpace.DATASPACE_UNKNOWN, cs.getDataSpace());
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getColorSpaceFromDataSpace() {
+    ColorSpace cs = ColorSpace.getFromDataSpace(DataSpace.DATASPACE_SRGB);
+    assertNotNull(cs);
+    assertEquals(DataSpace.DATASPACE_SRGB, cs.getDataSpace());
+
+    assertNull(ColorSpace.getFromDataSpace(DataSpace.DATASPACE_JFIF));
   }
 
   @SuppressWarnings("SameParameterValue")
