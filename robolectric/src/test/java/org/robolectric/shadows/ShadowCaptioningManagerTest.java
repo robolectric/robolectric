@@ -91,7 +91,7 @@ public final class ShadowCaptioningManagerTest {
   }
 
   @Test
-  public void setEnabled_true() {
+  public void isEnabled_enabledKeyTrue_returnsTrue() {
     Settings.Secure.putInt(
         context.getContentResolver(), Secure.ACCESSIBILITY_CAPTIONING_ENABLED, ENABLED);
 
@@ -99,7 +99,7 @@ public final class ShadowCaptioningManagerTest {
   }
 
   @Test
-  public void setEnabled_false() {
+  public void isEnabled_enabledKeyFalse_returnsFalse() {
     Settings.Secure.putInt(
         context.getContentResolver(), Secure.ACCESSIBILITY_CAPTIONING_ENABLED, DISABLED);
 
@@ -107,7 +107,21 @@ public final class ShadowCaptioningManagerTest {
   }
 
   @Test
-  public void setEnabled_callsCallback() {
+  public void isEnabled_afterSetEnabledFalse_returnsFalse() {
+    shadowOf(captioningManager).setEnabled(false);
+
+    assertThat(captioningManager.isEnabled()).isFalse();
+  }
+
+  @Test
+  public void isEnabled_afterSetEnabledTrue_returnsTrue() {
+    shadowOf(captioningManager).setEnabled(true);
+
+    assertThat(captioningManager.isEnabled()).isTrue();
+  }
+
+  @Test
+  public void addCaptioningChangeListener_enabledKeyValueChange_callsCallback() {
     captioningManager.addCaptioningChangeListener(captioningChangeListener);
     Settings.Secure.putInt(
         context.getContentResolver(), Secure.ACCESSIBILITY_CAPTIONING_ENABLED, ENABLED);
@@ -117,7 +131,16 @@ public final class ShadowCaptioningManagerTest {
   }
 
   @Test
-  public void setFontScale_updatesValue() {
+  public void addCaptioningChangeListener_setEnabledChange_callsCallback() {
+    captioningManager.addCaptioningChangeListener(captioningChangeListener);
+    shadowOf(captioningManager).setEnabled(true);
+
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(captioningChangeListener.isEnabled).isTrue();
+  }
+
+  @Test
+  public void getFontScale_returnFontScaleKeyValue() {
     Settings.Secure.putFloat(
         context.getContentResolver(), Secure.ACCESSIBILITY_CAPTIONING_FONT_SCALE, 2.0f);
 
@@ -125,7 +148,7 @@ public final class ShadowCaptioningManagerTest {
   }
 
   @Test
-  public void setFontScale_callsCallback() {
+  public void addCaptioningChangeListener_fontScaleKeyValueChange_callsCallback() {
     captioningManager.addCaptioningChangeListener(captioningChangeListener);
     Settings.Secure.putFloat(
         context.getContentResolver(), Secure.ACCESSIBILITY_CAPTIONING_FONT_SCALE, 3.0f);
@@ -135,7 +158,7 @@ public final class ShadowCaptioningManagerTest {
   }
 
   @Test
-  public void setLocale_updatesValue() {
+  public void getLocale_returnsLocaleKeyValue() {
     Settings.Secure.putString(
         context.getContentResolver(),
         Secure.ACCESSIBILITY_CAPTIONING_LOCALE,
@@ -145,12 +168,28 @@ public final class ShadowCaptioningManagerTest {
   }
 
   @Test
-  public void setLocale_callsCallback() {
+  public void getLocale_afterSetLocale_returnsLocale() {
+    shadowOf(captioningManager).setLocale(Locale.JAPANESE);
+
+    assertThat(captioningManager.getLocale()).isEqualTo(Locale.JAPANESE);
+  }
+
+  @Test
+  public void getLocale_localKeyValueChanged_callsCallback() {
     captioningManager.addCaptioningChangeListener(captioningChangeListener);
     Settings.Secure.putString(
         context.getContentResolver(),
         Secure.ACCESSIBILITY_CAPTIONING_LOCALE,
         Locale.FRENCH.toLanguageTag());
+
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(captioningChangeListener.locale).isEqualTo(Locale.FRENCH);
+  }
+
+  @Test
+  public void getLocale_setLocaleChange_callsCallback() {
+    captioningManager.addCaptioningChangeListener(captioningChangeListener);
+    shadowOf(captioningManager).setLocale(Locale.FRENCH);
 
     shadowOf(Looper.getMainLooper()).idle();
     assertThat(captioningChangeListener.locale).isEqualTo(Locale.FRENCH);
