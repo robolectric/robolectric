@@ -466,6 +466,9 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       if (USE_LEGACY_SANDBOX_FLOW) {
         // Only invoke @BeforeClass once per class
         invokeBeforeClass(bootstrappedTestClass);
+
+        // When there is no class rules in the test class, loadedTestClasses should be updated here.
+        loadedTestClasses.putIfAbsent(bootstrappedTestClass, sandbox);
       }
       beforeTest(sandbox, method, bootstrappedMethod);
 
