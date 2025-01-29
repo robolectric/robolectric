@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.fail;
 
 import android.app.Application;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
@@ -28,10 +30,9 @@ public class LegacyTestRunnerSequenceTest {
     public static List<String> transcript;
   }
 
-  private String priorResourcesMode;
-
   @Before
   public void setUp() throws Exception {
+    assume().that(Boolean.getBoolean("robolectric.useLegacySandboxFlow")).isTrue();
     StateHolder.transcript = new ArrayList<>();
   }
 
@@ -71,6 +72,7 @@ public class LegacyTestRunnerSequenceTest {
     StateHolder.transcript.clear();
   }
 
+  @Ignore
   @Config(application = LegacyTestRunnerSequenceTest.MyApplication.class)
   public static class SimpleTest {
     @Test

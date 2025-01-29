@@ -29,11 +29,13 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.AssumptionViolatedException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
@@ -51,6 +53,7 @@ import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
 import org.robolectric.internal.ShadowProvider;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
@@ -73,6 +76,8 @@ public class RobolectricTestRunnerTest {
   private String priorEnabledSdks;
   private String priorAlwaysInclude;
   private SdkCollection sdkCollection;
+
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   @Before
   public void setUp() throws Exception {
@@ -105,7 +110,16 @@ public class RobolectricTestRunnerTest {
                 .bind(org.robolectric.pluginapi.SdkPicker.class, AllEnabledSdkPicker.class)
                 .build());
     runner.run(notifier);
-    assertThat(events).containsExactly("failure: API level 11 is not available").inOrder();
+    if (Boolean.getBoolean("robolectric.useLegacySandboxFlow")) {
+      assertThat(events)
+          .containsExactly(
+              "started: oldSdkMethod",
+              "failure: API level 11 is not available",
+              "finished: oldSdkMethod",
+              "ignored: ignoredOldSdkMethod");
+    } else {
+      assertThat(events).containsExactly("failure: API level 11 is not available");
+    }
   }
 
   @Test
@@ -122,9 +136,25 @@ public class RobolectricTestRunnerTest {
                 .build());
     runner.run(notifier);
     // method is null as it fails on class level during getSandbox(method).
-    assertThat(events)
-        .containsExactly("ignored: null: Failed to create a Robolectric sandbox: unsupported")
-        .inOrder();
+
+    if (Boolean.getBoolean("robolectric.useLegacySandboxFlow")) {
+      assertThat(events)
+          .containsExactly(
+              "started: first[33]",
+              "finished: first[33]",
+              "started: first",
+              "ignored: first: Failed to create a Robolectric sandbox: unsupported",
+              "finished: first",
+              "started: second[33]",
+              "finished: second[33]",
+              "started: second",
+              "ignored: second: Failed to create a Robolectric sandbox: unsupported",
+              "finished: second")
+          .inOrder();
+    } else {
+      assertThat(events)
+          .containsExactly("ignored: null: Failed to create a Robolectric sandbox: unsupported");
+    }
   }
 
   @Test
@@ -563,7 +593,11 @@ public class RobolectricTestRunnerTest {
     RobolectricTestRunner runner =
         new SingleSdkRobolectricTestRunner(TestWithBeforeClassThatThrowsRuntimeException.class);
     runner.run(notifier);
-    assertThat(events.get(0)).startsWith("failure: fail");
+    if (Boolean.getBoolean("robolectric.useLegacySandboxFlow")) {
+      assertThat(events.get(1)).startsWith("failure: fail");
+    } else {
+      assertThat(events.get(0)).isEqualTo("failure: fail");
+    }
   }
 
   @Ignore
@@ -571,6 +605,27 @@ public class RobolectricTestRunnerTest {
     @BeforeClass
     public static void beforeClass() {
       throw new RuntimeException("fail");
+    }
+
+    @Test
+    public void test() {}
+  }
+
+  @Test
+  public void shouldInvokeAfterClass() throws Exception {
+    RobolectricTestRunner runner =
+        new SingleSdkRobolectricTestRunner(TestClassWithAfterClass.class);
+    setSystemPropertyRule.set("RobolectricTestRunnerTest.wasAfterClassCalled", "false");
+    runner.run(notifier);
+    assertThat(System.getProperty("RobolectricTestRunnerTest.wasAfterClassCalled"))
+        .isEqualTo("true");
+  }
+
+  @Ignore
+  public static class TestClassWithAfterClass {
+    @AfterClass
+    public static void afterClass() {
+      System.setProperty("RobolectricTestRunnerTest.wasAfterClassCalled", "true");
     }
 
     @Test
