@@ -136,6 +136,10 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       if (!isIgnored(method)) {
         Sandbox sandbox = getSandbox(method);
         methodsBySandbox.computeIfAbsent(sandbox, k -> new ArrayList<>()).add(method);
+      } else {
+        // send ignored tests to the notifier listeners
+        Description description = describeChild(method);
+        notifier.fireTestIgnored(description);
       }
     }
     return new Statement() {

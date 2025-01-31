@@ -631,4 +631,25 @@ public class RobolectricTestRunnerTest {
     @Test
     public void test() {}
   }
+
+  @Ignore
+  @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+  public static class TestWithIgnore {
+    @Test
+    public void test() {}
+
+    // to verify @Ignore behavior
+    @Ignore
+    @Test
+    public void ignoredTest() {}
+  }
+
+  @Test
+  public void shouldNotifyIgnoredTests() throws Exception {
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithIgnore.class);
+    runner.run(notifier);
+    assertThat(events)
+        .containsExactly("ignored: ignoredTest", "started: test", "finished: test")
+        .inOrder();
+  }
 }
