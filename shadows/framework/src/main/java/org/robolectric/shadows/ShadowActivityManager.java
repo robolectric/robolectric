@@ -217,8 +217,8 @@ public class ShadowActivityManager {
    * @param tasks List of running tasks.
    */
   public void setTasks(List<ActivityManager.RunningTaskInfo> tasks) {
-    this.tasks.clear();
-    this.tasks.addAll(tasks);
+    ShadowActivityManager.tasks.clear();
+    ShadowActivityManager.tasks.addAll(tasks);
   }
 
   /**
@@ -228,8 +228,8 @@ public class ShadowActivityManager {
    * @param appTasks List of app tasks.
    */
   public void setAppTasks(List<ActivityManager.AppTask> appTasks) {
-    this.appTasks.clear();
-    this.appTasks.addAll(appTasks);
+    ShadowActivityManager.appTasks.clear();
+    ShadowActivityManager.appTasks.addAll(appTasks);
   }
 
   /**
@@ -239,16 +239,16 @@ public class ShadowActivityManager {
    * @param recentTasks List of recent tasks.
    */
   public void setRecentTasks(List<ActivityManager.RecentTaskInfo> recentTasks) {
-    this.recentTasks.clear();
-    this.recentTasks.addAll(recentTasks);
+    ShadowActivityManager.recentTasks.clear();
+    ShadowActivityManager.recentTasks.addAll(recentTasks);
   }
 
   /**
    * @param services List of running services.
    */
   public void setServices(List<ActivityManager.RunningServiceInfo> services) {
-    this.services.clear();
-    this.services.addAll(services);
+    ShadowActivityManager.services.clear();
+    ShadowActivityManager.services.addAll(services);
   }
 
   /**
@@ -277,7 +277,7 @@ public class ShadowActivityManager {
    * @param memoryInfo Set the application's memory info.
    */
   public void setMemoryInfo(ActivityManager.MemoryInfo memoryInfo) {
-    this.memoryInfo = memoryInfo;
+    ShadowActivityManager.memoryInfo = memoryInfo;
   }
 
   @Implementation(minSdk = O)

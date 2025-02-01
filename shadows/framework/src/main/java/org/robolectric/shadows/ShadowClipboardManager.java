@@ -70,7 +70,7 @@ public class ShadowClipboardManager {
       }
     }
 
-    this.clip = clip;
+    ShadowClipboardManager.clip = clip;
 
     for (OnPrimaryClipChangedListener listener : listeners) {
       listener.onPrimaryClipChanged();

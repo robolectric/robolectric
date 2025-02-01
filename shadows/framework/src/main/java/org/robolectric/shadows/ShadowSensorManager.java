@@ -122,12 +122,12 @@ public class ShadowSensorManager {
   }
 
   public void setForceListenersToFail(boolean forceListenersToFail) {
-    this.forceListenersToFail.set(forceListenersToFail);
+    ShadowSensorManager.forceListenersToFail.set(forceListenersToFail);
   }
 
   @Implementation
   protected boolean registerListener(SensorEventListener listener, Sensor sensor, int rate) {
-    if (this.forceListenersToFail.get()) {
+    if (forceListenersToFail.get()) {
       return false;
     }
     listeners.put(listener, sensor);

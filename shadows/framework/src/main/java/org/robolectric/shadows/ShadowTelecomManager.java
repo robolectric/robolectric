@@ -134,7 +134,7 @@ public class ShadowTelecomManager {
   }
 
   public void setCallRequestMode(CallRequestMode callRequestMode) {
-    this.callRequestMode = callRequestMode;
+    ShadowTelecomManager.callRequestMode = callRequestMode;
   }
 
   /**
@@ -152,7 +152,7 @@ public class ShadowTelecomManager {
 
   /** Sets the result of {@link TelecomManager#isOutgoingCallPermitted(PhoneAccountHandle)}. */
   public void setIsOutgoingCallPermitted(boolean isOutgoingCallPermitted) {
-    this.isOutgoingCallPermitted = isOutgoingCallPermitted;
+    ShadowTelecomManager.isOutgoingCallPermitted = isOutgoingCallPermitted;
   }
 
   /**
@@ -352,13 +352,13 @@ public class ShadowTelecomManager {
   @Implementation(minSdk = M)
   @HiddenApi
   public boolean setDefaultDialer(String packageName) {
-    this.defaultDialerPackageName = packageName;
+    defaultDialerPackageName = packageName;
     return true;
   }
 
   /** Set returned value of {@link #getDefaultDialerPackage()}. */
   public void setDefaultDialerPackage(String packageName) {
-    this.defaultDialerPackageName = packageName;
+    defaultDialerPackageName = packageName;
   }
 
   @Implementation(minSdk = M)
@@ -369,7 +369,7 @@ public class ShadowTelecomManager {
 
   /** Set returned value of {@link #getSystemDialerPackage()}. */
   public void setSystemDialerPackage(String packageName) {
-    this.systemDefaultDialerPackageName = packageName;
+    systemDefaultDialerPackageName = packageName;
   }
 
   public void setVoicemailNumber(PhoneAccountHandle accountHandle, String number) {
@@ -398,7 +398,7 @@ public class ShadowTelecomManager {
 
   /** Sets the return value for {@link TelecomManager#isInCall}. */
   public void setIsInCall(boolean isInCall) {
-    this.isInCall = isInCall;
+    ShadowTelecomManager.isInCall = isInCall;
   }
 
   /**
@@ -418,8 +418,8 @@ public class ShadowTelecomManager {
    * TelecomManager#isInCall}.
    */
   public void setIsInEmergencyCall(boolean isInEmergencyCall) {
-    this.isInEmergencyCall = isInEmergencyCall;
-    this.isInCall = isInEmergencyCall;
+    ShadowTelecomManager.isInEmergencyCall = isInEmergencyCall;
+    isInCall = isInEmergencyCall;
   }
 
   /**
@@ -704,7 +704,7 @@ public class ShadowTelecomManager {
   }
 
   public void setHandleMmiValue(boolean handleMmiValue) {
-    this.handleMmiValue = handleMmiValue;
+    ShadowTelecomManager.handleMmiValue = handleMmiValue;
   }
 
   @Implementation
@@ -742,7 +742,7 @@ public class ShadowTelecomManager {
    */
   @Implementation(minSdk = N)
   protected Intent createManageBlockedNumbersIntent() {
-    return this.manageBlockNumbersIntent;
+    return manageBlockNumbersIntent;
   }
 
   /**
@@ -750,12 +750,12 @@ public class ShadowTelecomManager {
    * ShadowTelecomManager#createManageBlockedNumbersIntent()}
    */
   public void setManageBlockNumbersIntent(Intent intent) {
-    this.manageBlockNumbersIntent = intent;
+    manageBlockNumbersIntent = intent;
   }
 
   @Implementation(maxSdk = LOLLIPOP_MR1)
   public void setSimCallManager(PhoneAccountHandle simCallManager) {
-    this.simCallManager = simCallManager;
+    ShadowTelecomManager.simCallManager = simCallManager;
   }
 
   /**
@@ -796,7 +796,7 @@ public class ShadowTelecomManager {
 
   @Implementation(minSdk = O)
   protected boolean isOutgoingCallPermitted(PhoneAccountHandle phoneAccountHandle) {
-    return this.isOutgoingCallPermitted;
+    return isOutgoingCallPermitted;
   }
 
   /**
@@ -831,7 +831,7 @@ public class ShadowTelecomManager {
    * compatibility.
    */
   public void setReadPhoneStatePermission(boolean readPhoneStatePermission) {
-    this.readPhoneStatePermission = readPhoneStatePermission;
+    ShadowTelecomManager.readPhoneStatePermission = readPhoneStatePermission;
   }
 
   private void checkReadPhoneStatePermission() {
@@ -846,7 +846,7 @@ public class ShadowTelecomManager {
    * compatibility.
    */
   public void setCallPhonePermission(boolean callPhonePermission) {
-    this.callPhonePermission = callPhonePermission;
+    ShadowTelecomManager.callPhonePermission = callPhonePermission;
   }
 
   private void checkCallPhonePermission() {

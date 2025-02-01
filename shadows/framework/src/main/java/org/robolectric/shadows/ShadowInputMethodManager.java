@@ -144,8 +144,7 @@ public class ShadowInputMethodManager {
 
   public void setSoftInputVisibilityHandler(
       SoftInputVisibilityChangeHandler visibilityChangeHandler) {
-    this.visibilityChangeHandler =
-        Optional.<SoftInputVisibilityChangeHandler>of(visibilityChangeHandler);
+    ShadowInputMethodManager.visibilityChangeHandler = Optional.of(visibilityChangeHandler);
   }
 
   private void setSoftInputVisibility(boolean visible) {
@@ -181,7 +180,7 @@ public class ShadowInputMethodManager {
    * #getInputMethodList()}.
    */
   public void setInputMethodInfoList(List<InputMethodInfo> inputMethodInfoList) {
-    this.inputMethodInfoList = inputMethodInfoList;
+    ShadowInputMethodManager.inputMethodInfoList = inputMethodInfoList;
   }
 
   /**
@@ -200,7 +199,7 @@ public class ShadowInputMethodManager {
    * #getCurrentInputMethodSubtype()}.
    */
   public void setCurrentInputMethodSubtype(InputMethodSubtype inputMethodSubtype) {
-    this.inputMethodSubtype = Optional.of(inputMethodSubtype);
+    ShadowInputMethodManager.inputMethodSubtype = Optional.of(inputMethodSubtype);
   }
 
   /**
@@ -219,7 +218,7 @@ public class ShadowInputMethodManager {
    * #getEnabledInputMethodList()}.
    */
   public void setEnabledInputMethodInfoList(List<InputMethodInfo> inputMethodInfoList) {
-    this.enabledInputMethodInfoList = inputMethodInfoList;
+    enabledInputMethodInfoList = inputMethodInfoList;
   }
 
   @Implementation

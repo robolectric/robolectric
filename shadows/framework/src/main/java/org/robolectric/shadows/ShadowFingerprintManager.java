@@ -113,14 +113,14 @@ public class ShadowFingerprintManager {
       } else {
         cancel.setOnCancelListener(
             () -> {
-              this.pendingCallback = null;
-              this.pendingCryptoObject = null;
+              pendingCallback = null;
+              pendingCryptoObject = null;
             });
       }
     }
 
-    this.pendingCryptoObject = crypto;
-    this.pendingCallback = callback;
+    pendingCryptoObject = crypto;
+    pendingCallback = callback;
   }
 
   /**
@@ -180,12 +180,12 @@ public class ShadowFingerprintManager {
   }
 
   private void setEnrolledFingerprints(Fingerprint... fingerprints) {
-    this.fingerprints = Arrays.asList(fingerprints);
+    ShadowFingerprintManager.fingerprints = Arrays.asList(fingerprints);
   }
 
   /** Sets the return value of {@link FingerprintManager#isHardwareDetected()}. */
   public void setIsHardwareDetected(boolean isHardwareDetected) {
-    this.isHardwareDetected = isHardwareDetected;
+    ShadowFingerprintManager.isHardwareDetected = isHardwareDetected;
   }
 
   /**
@@ -193,7 +193,7 @@ public class ShadowFingerprintManager {
    */
   @Implementation(minSdk = M)
   protected boolean isHardwareDetected() {
-    return this.isHardwareDetected;
+    return isHardwareDetected;
   }
 
   @Implementation(minSdk = VERSION_CODES.S)

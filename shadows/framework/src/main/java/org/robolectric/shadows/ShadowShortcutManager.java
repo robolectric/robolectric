@@ -151,7 +151,7 @@ public class ShadowShortcutManager {
     for (ShortcutInfo shortcutInfo : manifestShortcuts) {
       shortcutInfo.addFlags(ShortcutInfo.FLAG_MANIFEST);
     }
-    this.manifestShortcuts = manifestShortcuts;
+    ShadowShortcutManager.manifestShortcuts = manifestShortcuts;
   }
 
   @Implementation
@@ -183,7 +183,7 @@ public class ShadowShortcutManager {
   }
 
   public void setIsRequestPinShortcutSupported(boolean isRequestPinShortcutSupported) {
-    this.isRequestPinShortcutSupported = isRequestPinShortcutSupported;
+    ShadowShortcutManager.isRequestPinShortcutSupported = isRequestPinShortcutSupported;
   }
 
   @Implementation

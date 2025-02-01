@@ -275,7 +275,7 @@ public class ShadowDevicePolicyManager {
 
   private void init(Context context) {
     this.context = context;
-    this.applicationPackageManager =
+    applicationPackageManager =
         (ApplicationPackageManager) context.getApplicationContext().getPackageManager();
     organizationColor = DEFAULT_ORGANIZATION_COLOR;
     storageEncryptionStatus = DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED;
@@ -769,7 +769,7 @@ public class ShadowDevicePolicyManager {
     if (isAutoTimeZoneEnabled) {
       return false;
     }
-    this.timeZone = timeZone;
+    ShadowDevicePolicyManager.timeZone = timeZone;
     return true;
   }
 
@@ -861,7 +861,7 @@ public class ShadowDevicePolicyManager {
   @Implementation
   protected int setStorageEncryption(ComponentName admin, boolean encrypt) {
     enforceActiveAdmin(admin);
-    this.storageEncryptionRequested = encrypt;
+    storageEncryptionRequested = encrypt;
     return storageEncryptionStatus;
   }
 
@@ -1238,7 +1238,7 @@ public class ShadowDevicePolicyManager {
 
   /** Sets the password complexity. */
   public void setPasswordComplexity(@PasswordComplexity int passwordComplexity) {
-    this.passwordComplexity = passwordComplexity;
+    ShadowDevicePolicyManager.passwordComplexity = passwordComplexity;
   }
 
   @PasswordComplexity
@@ -1472,7 +1472,7 @@ public class ShadowDevicePolicyManager {
 
   @Implementation(minSdk = M)
   protected void setSystemUpdatePolicy(ComponentName admin, SystemUpdatePolicy policy) {
-    this.policy = policy;
+    ShadowDevicePolicyManager.policy = policy;
   }
 
   /**
@@ -1638,7 +1638,7 @@ public class ShadowDevicePolicyManager {
 
   /** Sets the value returned by {@link #getPolicyManagedProfiles(UserHandle)}. */
   public void setPolicyManagedProfiles(List<UserHandle> policyManagedProfiles) {
-    this.policyManagedProfiles = policyManagedProfiles;
+    ShadowDevicePolicyManager.policyManagedProfiles = policyManagedProfiles;
   }
 
   /**

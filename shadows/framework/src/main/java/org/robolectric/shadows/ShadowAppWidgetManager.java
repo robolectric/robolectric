@@ -412,7 +412,7 @@ public class ShadowAppWidgetManager {
   }
 
   public void setValidWidgetProviderComponentName(boolean validWidgetProviderComponentName) {
-    this.validWidgetProviderComponentName = validWidgetProviderComponentName;
+    ShadowAppWidgetManager.validWidgetProviderComponentName = validWidgetProviderComponentName;
   }
 
   private static class WidgetInfo {

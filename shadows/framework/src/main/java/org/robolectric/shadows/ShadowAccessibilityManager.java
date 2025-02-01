@@ -140,7 +140,7 @@ public class ShadowAccessibilityManager {
 
   public void setAccessibilityServiceList(List<ServiceInfo> accessibilityServiceList) {
     Preconditions.checkNotNull(accessibilityServiceList);
-    this.accessibilityServiceList = new ArrayList<>(accessibilityServiceList);
+    ShadowAccessibilityManager.accessibilityServiceList = new ArrayList<>(accessibilityServiceList);
   }
 
   @Nullable
@@ -153,7 +153,8 @@ public class ShadowAccessibilityManager {
   public void setEnabledAccessibilityServiceList(
       List<AccessibilityServiceInfo> enabledAccessibilityServiceList) {
     Preconditions.checkNotNull(enabledAccessibilityServiceList);
-    this.enabledAccessibilityServiceList = new ArrayList<>(enabledAccessibilityServiceList);
+    ShadowAccessibilityManager.enabledAccessibilityServiceList =
+        new ArrayList<>(enabledAccessibilityServiceList);
   }
 
   @Implementation
@@ -164,7 +165,8 @@ public class ShadowAccessibilityManager {
   public void setInstalledAccessibilityServiceList(
       List<AccessibilityServiceInfo> installedAccessibilityServiceList) {
     Preconditions.checkNotNull(installedAccessibilityServiceList);
-    this.installedAccessibilityServiceList = new ArrayList<>(installedAccessibilityServiceList);
+    ShadowAccessibilityManager.installedAccessibilityServiceList =
+        new ArrayList<>(installedAccessibilityServiceList);
   }
 
   @Implementation
@@ -188,7 +190,7 @@ public class ShadowAccessibilityManager {
   }
 
   public void setEnabled(boolean enabled) {
-    this.enabled = enabled;
+    ShadowAccessibilityManager.enabled = enabled;
     ReflectionHelpers.setField(realAccessibilityManager, "mIsEnabled", enabled);
     for (AccessibilityStateChangeListener l : onAccessibilityStateChangeListeners.keySet()) {
       if (l != null) {
@@ -203,7 +205,7 @@ public class ShadowAccessibilityManager {
   }
 
   public void setTouchExplorationEnabled(boolean touchExplorationEnabled) {
-    this.touchExplorationEnabled = touchExplorationEnabled;
+    ShadowAccessibilityManager.touchExplorationEnabled = touchExplorationEnabled;
     List<TouchExplorationStateChangeListener> listeners;
     if (getApiLevel() >= O) {
       listeners =

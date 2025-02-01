@@ -46,7 +46,7 @@ public class ShadowTimeManager {
         throw new IllegalArgumentException("Unrecognized capability=" + capability);
     }
 
-    this.timeZoneCapabilities = builder.build();
+    timeZoneCapabilities = builder.build();
   }
 
   @Implementation
@@ -102,7 +102,7 @@ public class ShadowTimeManager {
   @Implementation
   @SystemApi
   protected boolean updateTimeZoneConfiguration(TimeZoneConfiguration configuration) {
-    this.timeZoneConfiguration = configuration;
+    timeZoneConfiguration = configuration;
     return true;
   }
 

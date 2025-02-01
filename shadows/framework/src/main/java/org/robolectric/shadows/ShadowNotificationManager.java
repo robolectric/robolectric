@@ -127,7 +127,7 @@ public class ShadowNotificationManager {
   }
 
   public void setImportance(int importance) {
-    this.importance = importance;
+    ShadowNotificationManager.importance = importance;
   }
 
   @Implementation(minSdk = M)
@@ -465,7 +465,7 @@ public class ShadowNotificationManager {
    * the default behavior.
    */
   public void setEnforceMaxNotificationLimit(boolean enforceMaxNotificationLimit) {
-    this.enforceMaxNotificationLimit = enforceMaxNotificationLimit;
+    ShadowNotificationManager.enforceMaxNotificationLimit = enforceMaxNotificationLimit;
   }
 
   /**

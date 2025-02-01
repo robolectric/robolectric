@@ -514,7 +514,7 @@ public class ShadowSubscriptionManager {
    * compatibility.
    */
   public void setReadPhoneStatePermission(boolean readPhoneStatePermission) {
-    this.readPhoneStatePermission = readPhoneStatePermission;
+    ShadowSubscriptionManager.readPhoneStatePermission = readPhoneStatePermission;
   }
 
   private void checkReadPhoneStatePermission() {
@@ -529,7 +529,7 @@ public class ShadowSubscriptionManager {
    * compatibility.
    */
   public void setReadPhoneNumbersPermission(boolean readPhoneNumbersPermission) {
-    this.readPhoneNumbersPermission = readPhoneNumbersPermission;
+    ShadowSubscriptionManager.readPhoneNumbersPermission = readPhoneNumbersPermission;
   }
 
   private void checkReadPhoneNumbersPermission() {

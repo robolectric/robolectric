@@ -63,6 +63,6 @@ public class ShadowBatteryManager {
     Preconditions.checkArgument(
         chargeTimeRemaining == -1 || chargeTimeRemaining >= 0,
         "chargeTimeRemaining must be -1 or non-negative.");
-    this.chargeTimeRemaining = chargeTimeRemaining;
+    ShadowBatteryManager.chargeTimeRemaining = chargeTimeRemaining;
   }
 }

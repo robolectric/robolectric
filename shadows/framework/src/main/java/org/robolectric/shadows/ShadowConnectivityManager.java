@@ -339,7 +339,7 @@ public class ShadowConnectivityManager {
    * @param captivePortalServerUrl the url of captive portal.
    */
   public void setCaptivePortalServerUrl(String captivePortalServerUrl) {
-    this.captivePortalServerUrl = captivePortalServerUrl;
+    ShadowConnectivityManager.captivePortalServerUrl = captivePortalServerUrl;
   }
 
   @HiddenApi
