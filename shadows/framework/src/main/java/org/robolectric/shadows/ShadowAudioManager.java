@@ -215,7 +215,7 @@ public class ShadowAudioManager {
     if (!AudioManager.isValidRingerMode(ringerMode)) {
       return;
     }
-    this.ringerMode = ringerMode;
+    ShadowAudioManager.ringerMode = ringerMode;
   }
 
   @Implementation
@@ -231,8 +231,8 @@ public class ShadowAudioManager {
     if (lockMode) {
       return;
     }
-    int previousMode = this.mode;
-    this.mode = mode;
+    int previousMode = ShadowAudioManager.mode;
+    ShadowAudioManager.mode = mode;
     if (RuntimeEnvironment.getApiLevel() >= S && mode != previousMode) {
       dispatchModeChangedListeners(mode);
     }
@@ -264,12 +264,12 @@ public class ShadowAudioManager {
 
   /** Sets whether subsequent calls to {@link #setMode} will succeed or not. */
   public void lockMode(boolean lockMode) {
-    this.lockMode = lockMode;
+    ShadowAudioManager.lockMode = lockMode;
   }
 
   @Implementation
   protected int getMode() {
-    return this.mode;
+    return mode;
   }
 
   @ForType(className = "android.media.AudioManager$ModeDispatcherStub")
@@ -335,7 +335,7 @@ public class ShadowAudioManager {
 
   @Implementation
   protected void setBluetoothScoOn(boolean isBluetoothScoOn) {
-    this.isBluetoothScoOn = isBluetoothScoOn;
+    ShadowAudioManager.isBluetoothScoOn = isBluetoothScoOn;
   }
 
   @Implementation
@@ -439,7 +439,7 @@ public class ShadowAudioManager {
   }
 
   public void setIsBluetoothScoAvailableOffCall(boolean isBluetoothScoAvailableOffCall) {
-    this.isBluetoothScoAvailableOffCall = isBluetoothScoAvailableOffCall;
+    ShadowAudioManager.isBluetoothScoAvailableOffCall = isBluetoothScoAvailableOffCall;
   }
 
   public void setIsStreamMute(int streamType, boolean isMuted) {
@@ -751,7 +751,7 @@ public class ShadowAudioManager {
 
   /** Sets whether subsequent calls to {@link #setCommunicationDevice} will succeed. */
   public void lockCommunicationDevice(boolean lockCommunicationDevice) {
-    this.lockCommunicationDevice = lockCommunicationDevice;
+    ShadowAudioManager.lockCommunicationDevice = lockCommunicationDevice;
   }
 
   @Implementation(minSdk = S)
@@ -875,7 +875,7 @@ public class ShadowAudioManager {
   }
 
   public void setIsMusicActive(boolean isMusicActive) {
-    this.isMusicActive = isMusicActive;
+    ShadowAudioManager.isMusicActive = isMusicActive;
   }
 
   public AudioFocusRequest getLastAudioFocusRequest() {

@@ -91,7 +91,7 @@ public class ShadowWallpaperManager {
    */
   @Implementation
   protected boolean hasResourceWallpaper(int resid) {
-    return resid == this.lockScreenId || resid == this.homeScreenId;
+    return resid == lockScreenId || resid == homeScreenId;
   }
 
   /**

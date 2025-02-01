@@ -95,7 +95,7 @@ public class ShadowCarrierConfigManager {
   }
 
   public void setReadPhoneStatePermission(boolean readPhoneStatePermission) {
-    this.readPhoneStatePermission = readPhoneStatePermission;
+    ShadowCarrierConfigManager.readPhoneStatePermission = readPhoneStatePermission;
   }
 
   /**

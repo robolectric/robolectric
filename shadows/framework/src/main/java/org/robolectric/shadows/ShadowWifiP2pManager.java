@@ -44,8 +44,8 @@ public class ShadowWifiP2pManager {
       Channel c, int listeningChannel, int operatingChannel, ActionListener al) {
     Preconditions.checkNotNull(c);
     Preconditions.checkNotNull(al);
-    this.listeningChannel = listeningChannel;
-    this.operatingChannel = operatingChannel;
+    ShadowWifiP2pManager.listeningChannel = listeningChannel;
+    ShadowWifiP2pManager.operatingChannel = operatingChannel;
   }
 
   @Implementation
@@ -91,7 +91,7 @@ public class ShadowWifiP2pManager {
   }
 
   public void setNextActionFailure(int nextActionFailure) {
-    this.nextActionFailure = nextActionFailure;
+    ShadowWifiP2pManager.nextActionFailure = nextActionFailure;
   }
 
   public void setGroupInfo(Channel channel, WifiP2pGroup wifiP2pGroup) {

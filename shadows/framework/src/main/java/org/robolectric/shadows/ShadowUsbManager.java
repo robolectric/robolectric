@@ -174,7 +174,7 @@ public class ShadowUsbManager {
 
   /** Sets the currently attached Usb accessory returned in #getAccessoryList. */
   public void setAttachedUsbAccessory(UsbAccessory usbAccessory) {
-    this.attachedUsbAccessory = usbAccessory;
+    attachedUsbAccessory = usbAccessory;
   }
 
   /**

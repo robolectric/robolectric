@@ -51,11 +51,11 @@ public class ShadowWearableSensingManager {
   }
 
   public void setProvideDataStreamResult(@StatusCode Integer provideDataStreamResult) {
-    this.provideDataStreamResult = provideDataStreamResult;
+    ShadowWearableSensingManager.provideDataStreamResult = provideDataStreamResult;
   }
 
   public void setProvideDataResult(@StatusCode Integer provideDataResult) {
-    this.provideDataResult = provideDataResult;
+    ShadowWearableSensingManager.provideDataResult = provideDataResult;
   }
 
   public ParcelFileDescriptor getLastParcelFileDescriptor() {

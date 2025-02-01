@@ -58,7 +58,7 @@ public class ShadowVirtualDeviceManager {
   @Implementation
   protected void __constructor__(IVirtualDeviceManager service, Context context) {
     this.context = context;
-    this.service = service;
+    ShadowVirtualDeviceManager.service = service;
   }
 
   @Implementation

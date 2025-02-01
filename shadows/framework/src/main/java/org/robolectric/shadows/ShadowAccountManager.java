@@ -766,7 +766,7 @@ public class ShadowAccountManager {
    *     response.
    */
   public void setAuthenticationErrorOnNextResponse(boolean authenticationErrorOnNextResponse) {
-    this.authenticationErrorOnNextResponse = authenticationErrorOnNextResponse;
+    ShadowAccountManager.authenticationErrorOnNextResponse = authenticationErrorOnNextResponse;
   }
 
   /**
@@ -775,7 +775,7 @@ public class ShadowAccountManager {
    * @param removeAccountIntent the intent to surface as {@link AccountManager#KEY_INTENT}.
    */
   public void setRemoveAccountIntent(Intent removeAccountIntent) {
-    this.removeAccountIntent = removeAccountIntent;
+    ShadowAccountManager.removeAccountIntent = removeAccountIntent;
   }
 
   public Map<OnAccountsUpdateListener, Set<String>> getListeners() {

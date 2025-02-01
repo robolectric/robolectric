@@ -52,6 +52,6 @@ public class ShadowEuiccManager {
 
   /** Set the value to be returned by {@link EuiccManager#getEid}. */
   public void setEid(String eid) {
-    this.eid = eid;
+    ShadowEuiccManager.eid = eid;
   }
 }

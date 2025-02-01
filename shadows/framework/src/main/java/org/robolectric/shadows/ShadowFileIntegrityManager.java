@@ -15,7 +15,7 @@ public class ShadowFileIntegrityManager {
 
   /** Sets the value of {@link #isApkVeritySupported}. */
   public void setIsApkVeritySupported(boolean isApkVeritySupported) {
-    this.isApkVeritySupported = isApkVeritySupported;
+    ShadowFileIntegrityManager.isApkVeritySupported = isApkVeritySupported;
   }
 
   /**

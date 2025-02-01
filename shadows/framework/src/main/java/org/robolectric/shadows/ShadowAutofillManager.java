@@ -56,7 +56,7 @@ public class ShadowAutofillManager {
    * AutofillManager#getAutofillServiceComponentName()}.
    */
   public void setAutofillServiceComponentName(@Nullable ComponentName componentName) {
-    this.autofillServiceComponentName = componentName;
+    autofillServiceComponentName = componentName;
   }
 
   /**
@@ -64,7 +64,7 @@ public class ShadowAutofillManager {
    * AutofillManager#isAutofillSupported()}.
    */
   public void setAutofillSupported(boolean supported) {
-    this.autofillSupported = supported;
+    autofillSupported = supported;
   }
 
   /**
@@ -72,6 +72,6 @@ public class ShadowAutofillManager {
    * AutofillManager#isEnabled()}.
    */
   public void setEnabled(boolean enabled) {
-    this.enabled = enabled;
+    ShadowAutofillManager.enabled = enabled;
   }
 }

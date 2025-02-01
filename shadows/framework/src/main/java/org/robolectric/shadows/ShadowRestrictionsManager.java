@@ -21,7 +21,7 @@ public class ShadowRestrictionsManager {
    * RestrictionsManager#getApplicationRestrictions()}.
    */
   public void setApplicationRestrictions(Bundle applicationRestrictions) {
-    this.applicationRestrictions = applicationRestrictions;
+    ShadowRestrictionsManager.applicationRestrictions = applicationRestrictions;
   }
 
   /**

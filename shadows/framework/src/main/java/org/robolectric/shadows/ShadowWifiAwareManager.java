@@ -84,31 +84,31 @@ public class ShadowWifiAwareManager {
 
   /** Sets the availability of the wifiAwareManager. */
   public void setAvailable(boolean available) {
-    this.available = available;
+    ShadowWifiAwareManager.available = available;
   }
 
   /** Sets parameter to pass to AttachCallback#onAttach(WifiAwareSession session) */
   public void setWifiAwareSession(WifiAwareSession session) {
-    this.session = session;
+    ShadowWifiAwareManager.session = session;
   }
 
   /** Sets the boolean value indicating if a wifiAwareSession has been detached. */
   public void setSessionDetached(boolean sessionDetached) {
-    this.sessionDetached = sessionDetached;
+    ShadowWifiAwareManager.sessionDetached = sessionDetached;
   }
 
   /**
    * Sets parameter to pass to DiscoverySessionCallback#onPublishStarted(PublishDiscoverySession)
    */
   public void setDiscoverySessionToPublish(PublishDiscoverySession publishDiscoverySession) {
-    this.discoverySessionToPublish = publishDiscoverySession;
+    discoverySessionToPublish = publishDiscoverySession;
   }
 
   /**
    * Sets param to pass to DiscoverySessionCallback#onSubscribeStarted(SubscribeDiscoverySession)
    */
   public void setDiscoverySessionToSubscribe(SubscribeDiscoverySession subscribeDiscoverySession) {
-    this.discoverySessionToSubscribe = subscribeDiscoverySession;
+    discoverySessionToSubscribe = subscribeDiscoverySession;
   }
 
   @Resetter

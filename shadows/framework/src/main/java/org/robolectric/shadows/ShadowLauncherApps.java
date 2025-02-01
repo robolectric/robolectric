@@ -379,9 +379,9 @@ public class ShadowLauncherApps {
 
   @Implementation
   protected void unregisterCallback(LauncherApps.Callback callback) {
-    int index = Iterables.indexOf(this.callbacks, pair -> pair.first == callback);
+    int index = Iterables.indexOf(callbacks, pair -> pair.first == callback);
     if (index != -1) {
-      this.callbacks.remove(index);
+      callbacks.remove(index);
     }
   }
 
