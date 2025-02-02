@@ -9,7 +9,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.getStaticField;
 
-import android.annotation.TargetApi;
+import android.annotation.RequiresApi;
 import android.content.Intent;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
@@ -246,7 +246,7 @@ public class ShadowUsbManager {
   }
 
   /** Adds a USB port with given ID and {@link UsbPortStatus} parameters to UsbManager for Q+. */
-  @TargetApi(Q)
+  @RequiresApi(Q)
   public void addPort(
       String portId,
       int statusCurrentMode,

@@ -16,9 +16,9 @@ import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.RequiresApi;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
@@ -590,7 +590,7 @@ public class ShadowPowerManager {
     return lowPowerStandbySupported;
   }
 
-  @TargetApi(TIRAMISU)
+  @RequiresApi(TIRAMISU)
   public void setLowPowerStandbySupported(boolean lowPowerStandbySupported) {
     ShadowPowerManager.lowPowerStandbySupported = lowPowerStandbySupported;
   }
@@ -613,7 +613,7 @@ public class ShadowPowerManager {
     return allowedFeatures.contains(feature);
   }
 
-  @TargetApi(UPSIDE_DOWN_CAKE)
+  @RequiresApi(UPSIDE_DOWN_CAKE)
   public void addAllowedInLowPowerStandby(String feature) {
     allowedFeatures.add(feature);
   }
@@ -626,7 +626,7 @@ public class ShadowPowerManager {
     return exemptFromLowPowerStandby;
   }
 
-  @TargetApi(UPSIDE_DOWN_CAKE)
+  @RequiresApi(UPSIDE_DOWN_CAKE)
   public void setExemptFromLowPowerStandby(boolean exemptFromLowPowerStandby) {
     ShadowPowerManager.exemptFromLowPowerStandby = exemptFromLowPowerStandby;
   }

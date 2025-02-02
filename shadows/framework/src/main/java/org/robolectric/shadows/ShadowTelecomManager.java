@@ -10,8 +10,8 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.base.Verify.verifyNotNull;
 
+import android.annotation.RequiresApi;
 import android.annotation.SystemApi;
-import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Context;
@@ -527,7 +527,7 @@ public class ShadowTelecomManager {
    * <p>Specifically, this method sets up the relevant {@link ConnectionService} and returns the
    * result of {@link ConnectionService#onCreateIncomingConnection}.
    */
-  @TargetApi(M)
+  @RequiresApi(M)
   @Nullable
   public Connection allowIncomingCall(IncomingCallRecord call) {
     if (call.isHandled) {
@@ -547,7 +547,7 @@ public class ShadowTelecomManager {
    * <p>Specifically, this method sets up the relevant {@link ConnectionService} and calls {@link
    * ConnectionService#onCreateIncomingConnectionFailed}.
    */
-  @TargetApi(O)
+  @RequiresApi(O)
   public void denyIncomingCall(IncomingCallRecord call) {
     if (call.isHandled) {
       throw new IllegalStateException("Call has already been allowed or denied.");
@@ -606,7 +606,7 @@ public class ShadowTelecomManager {
    * <p>Specifically, this method sets up the relevant {@link ConnectionService} and returns the
    * result of {@link ConnectionService#onCreateOutgoingConnection}.
    */
-  @TargetApi(M)
+  @RequiresApi(M)
   @Nullable
   public Connection allowOutgoingCall(OutgoingCallRecord call) {
     if (call.isHandled) {
@@ -626,7 +626,7 @@ public class ShadowTelecomManager {
    * <p>Specifically, this method sets up the relevant {@link ConnectionService} and calls {@link
    * ConnectionService#onCreateOutgoingConnectionFailed}.
    */
-  @TargetApi(O)
+  @RequiresApi(O)
   public void denyOutgoingCall(OutgoingCallRecord call) {
     if (call.isHandled) {
       throw new IllegalStateException("Call has already been allowed or denied.");

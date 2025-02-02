@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import android.annotation.TargetApi;
+import android.annotation.RequiresApi;
 import android.os.Build.VERSION_CODES;
 import android.telephony.data.NrQosSessionAttributes;
 import java.net.InetSocketAddress;
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Class to build {@link NrQosSessionAttributes}. */
-@TargetApi(VERSION_CODES.S)
+@RequiresApi(VERSION_CODES.S)
 public final class NrQosSessionAttributesBuilder {
 
   private int fiveQi;
