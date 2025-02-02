@@ -4,7 +4,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.TargetApi;
+import android.annotation.RequiresApi;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.app.usage.BroadcastResponseStats;
@@ -605,7 +605,7 @@ public class ShadowUsageStatsManager {
   }
 
   /** Sets what app usage observers will consider the source of usage for an activity. */
-  @TargetApi(Build.VERSION_CODES.Q)
+  @RequiresApi(Build.VERSION_CODES.Q)
   public void setUsageSource(@UsageSource int usageSource) {
     currentUsageSource = usageSource;
   }
@@ -652,7 +652,7 @@ public class ShadowUsageStatsManager {
     idToResponseStats.keySet().removeIf(id -> id == idToRemove || idToRemove == 0);
   }
 
-  @TargetApi(Build.VERSION_CODES.TIRAMISU)
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
   public void addBroadcastResponseStats(Object /*BroadcastResponseStats*/ statsObject) {
     BroadcastResponseStats stats = (BroadcastResponseStats) statsObject;
     Map<Long, Object /*BroadcastResponseStats*/> idToStats =
@@ -781,32 +781,32 @@ public class ShadowUsageStatsManager {
       return this;
     }
 
-    @TargetApi(Build.VERSION_CODES.Q)
+    @RequiresApi(Build.VERSION_CODES.Q)
     public EventBuilder setInstanceId(int instanceId) {
       event.mInstanceId = instanceId;
       return this;
     }
 
-    @TargetApi(Build.VERSION_CODES.Q)
+    @RequiresApi(Build.VERSION_CODES.Q)
     public EventBuilder setTaskRootPackage(String taskRootPackage) {
       event.mTaskRootPackage = taskRootPackage;
       return this;
     }
 
-    @TargetApi(Build.VERSION_CODES.Q)
+    @RequiresApi(Build.VERSION_CODES.Q)
     public EventBuilder setTaskRootClass(String taskRootClass) {
       event.mTaskRootClass = taskRootClass;
       return this;
     }
 
-    @TargetApi(Build.VERSION_CODES.P)
+    @RequiresApi(Build.VERSION_CODES.P)
     public EventBuilder setAppStandbyBucket(int bucket) {
       event.mBucketAndReason &= 0xFFFF;
       event.mBucketAndReason |= bucket << 16;
       return this;
     }
 
-    @TargetApi(V.SDK_INT)
+    @RequiresApi(V.SDK_INT)
     public EventBuilder setExtras(PersistableBundle extras) {
       EventReflector eventReflector = reflector(EventReflector.class, event);
       eventReflector.setExtras(extras);

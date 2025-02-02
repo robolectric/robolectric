@@ -7,7 +7,7 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.TargetApi;
+import android.annotation.RequiresApi;
 import android.bluetooth.BluetoothDevice;
 import android.os.Build.VERSION;
 import android.os.Bundle;
@@ -168,7 +168,7 @@ public class ShadowInCallService extends ShadowService {
   /**
    * @return the last value provided to {@code requestBluetoothAudio()}.
    */
-  @TargetApi(P)
+  @RequiresApi(P)
   public BluetoothDevice getBluetoothAudio() {
     return bluetoothDevice;
   }

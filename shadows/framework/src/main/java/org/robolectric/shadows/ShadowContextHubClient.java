@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.RequiresApi;
-import android.annotation.TargetApi;
 import android.hardware.location.ContextHubClient;
 import android.hardware.location.ContextHubInfo;
 import android.hardware.location.ContextHubTransaction;
@@ -60,7 +59,7 @@ public class ShadowContextHubClient {
   @ForType(ContextHubClient.class)
   interface ContextHubClientReflector {
     @Constructor
-    @TargetApi(VERSION_CODES.P)
+    @RequiresApi(VERSION_CODES.P)
     ContextHubClient newContextHubClient();
 
     @Constructor

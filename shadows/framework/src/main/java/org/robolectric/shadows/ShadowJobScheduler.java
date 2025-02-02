@@ -4,8 +4,8 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 
+import android.annotation.RequiresApi;
 import android.annotation.SystemApi;
-import android.annotation.TargetApi;
 import android.app.JobSchedulerImpl;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
@@ -126,7 +126,7 @@ public abstract class ShadowJobScheduler {
     }
 
     @Override
-    @TargetApi(S)
+    @RequiresApi(S)
     public void failExpeditedJob(boolean enabled) {
       failExpeditedJobEnabled = enabled;
     }

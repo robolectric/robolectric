@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 
-import android.annotation.TargetApi;
+import android.annotation.RequiresApi;
 import android.content.ComponentName;
 import android.os.ParcelFileDescriptor;
 import android.view.contentcapture.ContentCaptureCondition;
@@ -56,7 +56,7 @@ public class ShadowContentCaptureManager {
    * Configures {@link DataShareError} to be raised on calls to {@link #shareData(DataShareRequest,
    * Executor, DataShareWriteAdapter)}.
    */
-  @TargetApi(R)
+  @RequiresApi(R)
   public void setDataShareErrorCode(@DataShareError int dataShareErrorCode) {
     this.dataShareErrorCode = dataShareErrorCode;
   }
@@ -65,7 +65,7 @@ public class ShadowContentCaptureManager {
    * Configures whether or not to raise request rejection on calls to {@link
    * #shareData(DataShareRequest, Executor, DataShareWriteAdapter)}.
    */
-  @TargetApi(R)
+  @RequiresApi(R)
   public void setShouldRejectRequest(boolean shouldRejectRequest) {
     this.shouldRejectRequest = shouldRejectRequest;
   }
@@ -75,7 +75,7 @@ public class ShadowContentCaptureManager {
    * DataShareWriteAdapter#onWrite(ParcelFileDescriptor)} will receive on calls to {@link
    * #shareData(DataShareRequest, Executor, DataShareWriteAdapter)}.
    */
-  @TargetApi(R)
+  @RequiresApi(R)
   public void setShareDataParcelFileDescriptor(ParcelFileDescriptor parcelFileDescriptor) {
     this.parcelFileDescriptor = parcelFileDescriptor;
   }

@@ -12,8 +12,8 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.RequiresApi;
 import android.annotation.RequiresPermission;
-import android.annotation.TargetApi;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
@@ -599,7 +599,7 @@ public class ShadowAudioManager {
    * #addOutputDevice(AudioDeviceInfo, boolean)}, {@link #removeOutputDevice(AudioDeviceInfo,
    * boolean)}.
    */
-  @TargetApi(VERSION_CODES.S)
+  @RequiresApi(VERSION_CODES.S)
   public void setAvailableCommunicationDevices(
       List<AudioDeviceInfo> availableCommunicationDevices) {
     this.availableCommunicationDevices = new ArrayList<>(availableCommunicationDevices);
@@ -656,7 +656,7 @@ public class ShadowAudioManager {
    * AudioDeviceCallback} if the device was not present before and indicated by {@code
    * notifyAudioDeviceCallbacks}.
    */
-  @TargetApi(VERSION_CODES.S)
+  @RequiresApi(VERSION_CODES.S)
   public void addAvailableCommunicationDevice(
       AudioDeviceInfo communicationDevice, boolean notifyAudioDeviceCallbacks) {
     boolean changed =
@@ -672,7 +672,7 @@ public class ShadowAudioManager {
    * AudioDeviceCallback} if the device was present before and indicated by {@code
    * notifyAudioDeviceCallbacks}.
    */
-  @TargetApi(VERSION_CODES.S)
+  @RequiresApi(VERSION_CODES.S)
   public void removeAvailableCommunicationDevice(
       AudioDeviceInfo communicationDevice, boolean notifyAudioDeviceCallbacks) {
     boolean changed = this.availableCommunicationDevices.remove(communicationDevice);
@@ -804,7 +804,7 @@ public class ShadowAudioManager {
    * <p>Note that there is no public {@link AudioPlaybackConfiguration} constructor, so the
    * configurations returned are specified by their audio attributes only.
    */
-  @TargetApi(VERSION_CODES.O)
+  @RequiresApi(VERSION_CODES.O)
   public void setActivePlaybackConfigurationsFor(List<AudioAttributes> audioAttributes) {
     setActivePlaybackConfigurationsFor(audioAttributes, /* notifyCallbackListeners= */ false);
   }
@@ -813,7 +813,7 @@ public class ShadowAudioManager {
    * Same as {@link #setActivePlaybackConfigurationsFor(List)}, but also notifies callbacks if
    * notifyCallbackListeners is true.
    */
-  @TargetApi(VERSION_CODES.O)
+  @RequiresApi(VERSION_CODES.O)
   public void setActivePlaybackConfigurationsFor(
       List<AudioAttributes> audioAttributes, boolean notifyCallbackListeners) {
     if (RuntimeEnvironment.getApiLevel() < O) {
