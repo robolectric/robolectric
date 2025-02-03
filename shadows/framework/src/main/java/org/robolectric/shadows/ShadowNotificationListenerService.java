@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static java.util.stream.Collectors.toCollection;
-
 import android.app.Notification;
 import android.content.ComponentName;
 import android.os.Build.VERSION;
@@ -116,8 +114,7 @@ public class ShadowNotificationListenerService extends ShadowService {
     ImmutableSet<String> keySet = ImmutableSet.copyOf(keys);
     return activeNotifications.stream()
         .filter(notification -> keySet.contains(notification.getKey()))
-        .collect(toCollection(ArrayList::new))
-        .toArray(new StatusBarNotification[0]);
+        .toArray(StatusBarNotification[]::new);
   }
 
   @Implementation

@@ -7,7 +7,7 @@ import android.media.AudioAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.vibrator.PrimitiveSegment;
-import android.util.SparseArray;
+import android.util.SparseIntArray;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,7 +28,7 @@ public class ShadowVibrator {
   protected static final List<Object> vibrationEffectSegments = new ArrayList<>();
   protected static final List<PrimitiveEffect> primitiveEffects = new ArrayList<>();
   protected static final List<Integer> supportedPrimitives = new ArrayList<>();
-  protected static final SparseArray<Integer> primitiveidsToDurationMillis = new SparseArray<>();
+  protected static final SparseIntArray primitiveidsToDurationMillis = new SparseIntArray();
 
   @Nullable protected static Object vibrationAttributesFromLastVibration;
   @Nullable protected static AudioAttributes audioAttributesFromLastVibration;
@@ -108,8 +108,8 @@ public class ShadowVibrator {
 
   @Implementation(minSdk = R)
   protected boolean areAllPrimitivesSupported(int... primitiveIds) {
-    for (int i = 0; i < primitiveIds.length; i++) {
-      if (!supportedPrimitives.contains(primitiveIds[i])) {
+    for (int primitiveId : primitiveIds) {
+      if (!supportedPrimitives.contains(primitiveId)) {
         return false;
       }
     }

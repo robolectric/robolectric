@@ -749,7 +749,7 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
       fullMessage.append(" (code ");
       fullMessage.append(errorCode);
       String errorCodeMessage = ERROR_CODE_MAP.getOrDefault(errorCode, "");
-      if (MoreObjects.firstNonNull(errorCodeMessage, "").length() > 0) {
+      if (!MoreObjects.firstNonNull(errorCodeMessage, "").isEmpty()) {
         fullMessage.append(" ").append(errorCodeMessage);
       }
       fullMessage.append(")");

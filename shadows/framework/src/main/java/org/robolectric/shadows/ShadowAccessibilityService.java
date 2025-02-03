@@ -77,11 +77,7 @@ public class ShadowAccessibilityService extends ShadowService {
   @Implementation
   protected List<AccessibilityWindowInfo> getWindows() {
     List<AccessibilityWindowInfo> windowInfos = windows.get(Display.DEFAULT_DISPLAY);
-    if (windowInfos != null) {
-      return new ArrayList<>(windowInfos);
-    } else {
-      return new ArrayList<>();
-    }
+    return new ArrayList<>(windowInfos);
   }
 
   /**

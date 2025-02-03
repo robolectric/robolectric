@@ -227,7 +227,7 @@ public class ShadowLog {
       PrintStream ps, String timeString, int level, String tag, String msg, Throwable throwable) {
 
     String outputString;
-    if (timeString != null && timeString.length() > 0) {
+    if (timeString != null && !timeString.isEmpty()) {
       outputString = timeString + " " + levelToChar(level) + "/" + tag + ": " + msg;
     } else {
       outputString = levelToChar(level) + "/" + tag + ": " + msg;

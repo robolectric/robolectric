@@ -40,8 +40,8 @@ public class ShadowInputManagerGlobal {
       final int[] ids = realInputManager.getInputDeviceIds();
 
       SparseArray<InputDevice> inputDevices = new SparseArray<>();
-      for (int i = 0; i < ids.length; i++) {
-        inputDevices.put(ids[i], null);
+      for (int id : ids) {
+        inputDevices.put(id, null);
       }
       setInputDevices(inputDevices);
     }

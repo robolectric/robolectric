@@ -66,7 +66,7 @@ public class ShadowTabHost extends ShadowViewGroup {
 
   @Implementation
   protected int getCurrentTab() {
-    if (currentTab == -1 && tabSpecs.size() > 0) currentTab = 0;
+    if (currentTab == -1 && !tabSpecs.isEmpty()) currentTab = 0;
     return currentTab;
   }
 

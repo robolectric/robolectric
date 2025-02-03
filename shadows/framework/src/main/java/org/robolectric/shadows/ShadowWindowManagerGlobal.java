@@ -509,7 +509,7 @@ public class ShadowWindowManagerGlobal {
           if (windowInfo.hasInsetsControl) {
             populateInsetSourceControls(windowInfo, controls);
           } else {
-            Arrays.setAll(controls, i -> null);
+            Arrays.fill(controls, null);
           }
         }
         Rect[] rects = findAll(Rect.class, args);

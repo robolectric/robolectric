@@ -426,8 +426,7 @@ public class ShadowNativeBitmap extends ShadowBitmap {
         // spaces.
         Map<Integer, ColorSpace> namedColorSpaceMap =
             reflector(ColorSpaceReflector.class).getNamedColorSpaceMap();
-        namedColorSpaces =
-            namedColorSpaceMap.values().toArray(new ColorSpace[namedColorSpaceMap.size()]);
+        namedColorSpaces = namedColorSpaceMap.values().toArray(new ColorSpace[0]);
       } else {
         // Before V, we directly access the color space array.
         namedColorSpaces = reflector(ColorSpaceReflector.class).getNamedColorSpaces();

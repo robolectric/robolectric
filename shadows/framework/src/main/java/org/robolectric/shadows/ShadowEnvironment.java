@@ -309,7 +309,7 @@ public class ShadowEnvironment {
 
     @Implementation(minSdk = M)
     protected File[] getExternalDirs() {
-      return externalDirs.toArray(new File[externalDirs.size()]);
+      return externalDirs.toArray(new File[0]);
     }
   }
 

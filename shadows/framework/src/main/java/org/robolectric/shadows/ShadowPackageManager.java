@@ -1266,8 +1266,7 @@ public class ShadowPackageManager {
         }
       }
 
-      List<PackageInfo> packages = result;
-      for (PackageInfo aPackage : packages) {
+      for (PackageInfo aPackage : result) {
         ApplicationInfo appInfo = aPackage.applicationInfo;
         if (appInfo != null && archiveFilePath.equals(appInfo.sourceDir)) {
           return aPackage;

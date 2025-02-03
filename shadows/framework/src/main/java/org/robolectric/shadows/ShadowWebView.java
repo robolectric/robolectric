@@ -586,7 +586,7 @@ public class ShadowWebView extends ShadowViewGroup {
 
   @Implementation
   protected WebBackForwardList saveState(Bundle outState) {
-    if (history.size() > 0) {
+    if (!history.isEmpty()) {
       outState.putStringArrayList(HISTORY_KEY, history);
       outState.putInt(HISTORY_INDEX_KEY, historyIndex);
     }
@@ -603,7 +603,7 @@ public class ShadowWebView extends ShadowViewGroup {
       historyIndex = inState.getInt(HISTORY_INDEX_KEY);
     }
 
-    if (history.size() > 0) {
+    if (!history.isEmpty()) {
       originalUrl = history.get(historyIndex);
       lastUrl = history.get(historyIndex);
       return new BackForwardList(history, historyIndex);

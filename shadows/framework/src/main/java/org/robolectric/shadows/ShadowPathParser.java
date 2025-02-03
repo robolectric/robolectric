@@ -38,7 +38,7 @@ public class ShadowPathParser {
     while (end < pathData.length()) {
       end = nextStart(pathData, end);
       String s = pathData.substring(start, end).trim();
-      if (s.length() > 0) {
+      if (!s.isEmpty()) {
         float[] val = getFloats(s);
         addNode(list, s.charAt(0), val);
       }
@@ -49,7 +49,7 @@ public class ShadowPathParser {
     if ((end - start) == 1 && start < pathData.length()) {
       addNode(list, pathData.charAt(start), new float[0]);
     }
-    return list.toArray(new PathDataNode[list.size()]);
+    return list.toArray(new PathDataNode[0]);
   }
 
   @Implementation
@@ -171,9 +171,9 @@ public class ShadowPathParser {
     public static void nodesToPath(PathDataNode[] node, Path path) {
       float[] current = new float[4];
       char previousCommand = 'm';
-      for (int i = 0; i < node.length; i++) {
-        addCommand(path, current, previousCommand, node[i].mType, node[i].mParams);
-        previousCommand = node[i].mType;
+      for (PathDataNode pathDataNode : node) {
+        addCommand(path, current, previousCommand, pathDataNode.mType, pathDataNode.mParams);
+        previousCommand = pathDataNode.mType;
       }
     }
 

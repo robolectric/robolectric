@@ -211,6 +211,6 @@ public class ShadowToast {
   public static Toast getLatestToast() {
     ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     List<Toast> shownToasts = shadowApplication.getShownToasts();
-    return (shownToasts.size() == 0) ? null : shownToasts.get(shownToasts.size() - 1);
+    return shownToasts.isEmpty() ? null : shownToasts.get(shownToasts.size() - 1);
   }
 }

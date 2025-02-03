@@ -124,7 +124,7 @@ public final class ResourceHelper2 {
         return false;
       }
 
-      if (end.length() > 0 && end.charAt(0) != ' ') {
+      if (!end.isEmpty() && end.charAt(0) != ' ') {
         // Might be a unit...
         if (parseUnit(end, outValue, sFloatOut)) {
           computeTypedValue(outValue, f, sFloatOut[0], end);
@@ -136,7 +136,7 @@ public final class ResourceHelper2 {
       // make sure it's only spaces at the end.
       end = end.trim();
 
-      if (end.length() == 0) {
+      if (end.isEmpty()) {
         if (outValue != null) {
           outValue.assetCookie = 0;
           outValue.string = null;

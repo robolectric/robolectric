@@ -195,7 +195,7 @@ public class ShadowAudioEffect {
    */
   @Implementation
   protected static AudioEffect.Descriptor[] queryEffects() {
-    return descriptors.toArray(new AudioEffect.Descriptor[descriptors.size()]);
+    return descriptors.toArray(new AudioEffect.Descriptor[0]);
   }
 
   /** Returns all effects created with an {@code AudioEffect} constructor. */

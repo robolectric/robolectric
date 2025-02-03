@@ -49,7 +49,7 @@ public class ShadowViewGroup extends ShadowView {
       View child = realViewGroup.getChildAt(i);
       ShadowView shadowView = Shadow.extract(child);
       String childText = shadowView.innerText();
-      if (childText.length() > 0) {
+      if (!childText.isEmpty()) {
         innerText.append(delimiter);
         delimiter = " ";
       }
