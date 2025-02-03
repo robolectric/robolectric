@@ -188,8 +188,8 @@ public class NativeInput {
     public void copyFrom(PointerCoords other) {
       bits = new NativeBitSet64(other.bits);
       int count = bits.count();
-      for (int i = 0; i < count; i++) {
-        values[i] = other.values[i];
+      if (count >= 0) {
+        System.arraycopy(other.values, 0, values, 0, count);
       }
     }
 

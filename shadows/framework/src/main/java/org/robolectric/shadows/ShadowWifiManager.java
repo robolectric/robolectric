@@ -280,11 +280,7 @@ public class ShadowWifiManager {
 
   @Implementation
   protected List<WifiConfiguration> getConfiguredNetworks() {
-    final ArrayList<WifiConfiguration> wifiConfigurations = new ArrayList<>();
-    for (WifiConfiguration wifiConfiguration : networkIdToConfiguredNetworks.values()) {
-      wifiConfigurations.add(wifiConfiguration);
-    }
-    return wifiConfigurations;
+    return new ArrayList<>(networkIdToConfiguredNetworks.values());
   }
 
   @Implementation

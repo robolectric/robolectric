@@ -314,7 +314,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
     }
 
-    return results.isEmpty() ? null : results.toArray(new String[results.size()]);
+    return results.isEmpty() ? null : results.toArray(new String[0]);
   }
 
   @Implementation
@@ -1159,7 +1159,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected FeatureInfo[] getSystemAvailableFeatures() {
     return systemAvailableFeatures.isEmpty()
         ? null
-        : systemAvailableFeatures.toArray(new FeatureInfo[systemAvailableFeatures.size()]);
+        : systemAvailableFeatures.toArray(new FeatureInfo[0]);
   }
 
   @Implementation
@@ -1574,7 +1574,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    */
   @Implementation
   protected String[] getSystemSharedLibraryNames() {
-    return systemSharedLibraryNames.toArray(new String[systemSharedLibraryNames.size()]);
+    return systemSharedLibraryNames.toArray(new String[0]);
   }
 
   @Implementation(minSdk = N)

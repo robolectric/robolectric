@@ -88,7 +88,7 @@ public class ShadowAccountManager {
 
   @Implementation
   protected Account[] getAccounts() {
-    return accounts.toArray(new Account[accounts.size()]);
+    return accounts.toArray(new Account[0]);
   }
 
   @Implementation
@@ -104,7 +104,7 @@ public class ShadowAccountManager {
       }
     }
 
-    return accountsByType.toArray(new Account[accountsByType.size()]);
+    return accountsByType.toArray(new Account[0]);
   }
 
   @Implementation
@@ -244,7 +244,7 @@ public class ShadowAccountManager {
 
   @Implementation
   protected AuthenticatorDescription[] getAuthenticatorTypes() {
-    return authenticators.values().toArray(new AuthenticatorDescription[authenticators.size()]);
+    return authenticators.values().toArray(new AuthenticatorDescription[0]);
   }
 
   @Implementation
@@ -592,8 +592,7 @@ public class ShadowAccountManager {
   }
 
   public void setFeatures(Account account, String[] accountFeatures) {
-    HashSet<String> featureSet = new HashSet<>();
-    featureSet.addAll(Arrays.asList(accountFeatures));
+    HashSet<String> featureSet = new HashSet<>(Arrays.asList(accountFeatures));
     this.accountFeatures.put(account, featureSet);
   }
 
@@ -734,7 +733,7 @@ public class ShadowAccountManager {
                 result.add(account);
               }
             }
-            return result.toArray(new Account[result.size()]);
+            return result.toArray(new Account[0]);
           }
         });
   }
@@ -756,7 +755,7 @@ public class ShadowAccountManager {
       }
     }
 
-    return result.toArray(new Account[result.size()]);
+    return result.toArray(new Account[0]);
   }
 
   /**

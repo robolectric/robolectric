@@ -202,7 +202,7 @@ public class ShadowUsbManager {
   @Implementation(minSdk = M, maxSdk = P)
   @HiddenApi
   protected @ClassName("android.hardware.usb.UsbPort[]") Object getPorts() {
-    return usbPortStatuses.keySet().toArray(new UsbPort[usbPortStatuses.size()]);
+    return usbPortStatuses.keySet().toArray(new UsbPort[0]);
   }
 
   @Implementation(minSdk = Q, methodName = "getPorts")

@@ -102,9 +102,7 @@ public class ShadowNotificationManager {
   @Implementation
   protected void cancel(String tag, int id) {
     Key key = new Key(tag, id);
-    if (notifications.containsKey(key)) {
-      notifications.remove(key);
-    }
+    notifications.remove(key);
   }
 
   @Implementation

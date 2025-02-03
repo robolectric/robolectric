@@ -288,7 +288,7 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
   }
 
   private void separateLines() {
-    if (getDescription().length() != 0) {
+    if (!getDescription().isEmpty()) {
       appendDescription("\n");
     }
   }
@@ -315,7 +315,7 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
 
   @Override
   public boolean hasDrawnCircle() {
-    return circlePaintEvents.size() > 0;
+    return !circlePaintEvents.isEmpty();
   }
 
   @Override

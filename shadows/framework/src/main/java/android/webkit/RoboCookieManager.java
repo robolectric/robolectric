@@ -89,7 +89,7 @@ public class RoboCookieManager extends CookieManager {
   @Override
   public String getCookie(String url) {
     // Return null value for empty url
-    if (url == null || url.equals("")) {
+    if (url == null || url.isEmpty()) {
       return null;
     }
 

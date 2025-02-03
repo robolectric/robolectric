@@ -205,7 +205,7 @@ public class RoboCursor extends BaseCursor {
 
   @Override
   public String[] getColumnNames() {
-    return columnNames.toArray(new String[columnNames.size()]);
+    return columnNames.toArray(new String[0]);
   }
 
   @Override

@@ -214,9 +214,7 @@ public class ShadowConnectivityManager {
     if (networkCallback == null) {
       throw new IllegalArgumentException("Invalid NetworkCallback");
     }
-    if (networkCallbacks.contains(networkCallback)) {
-      networkCallbacks.remove(networkCallback);
-    }
+    networkCallbacks.remove(networkCallback);
   }
 
   @Implementation(minSdk = M)
@@ -224,9 +222,7 @@ public class ShadowConnectivityManager {
     if (pendingIntent == null) {
       throw new IllegalArgumentException("Invalid NetworkCallback");
     }
-    if (networkCallbackPendingIntents.contains(pendingIntent)) {
-      networkCallbackPendingIntents.remove(pendingIntent);
-    }
+    networkCallbackPendingIntents.remove(pendingIntent);
   }
 
   @Implementation
@@ -254,9 +250,7 @@ public class ShadowConnectivityManager {
   protected NetworkInfo[] getAllNetworkInfo() {
     // todo(xian): is `defaultNetworkActive` really relevant here?
     if (defaultNetworkActive) {
-      return networkTypeToNetworkInfo
-          .values()
-          .toArray(new NetworkInfo[networkTypeToNetworkInfo.size()]);
+      return networkTypeToNetworkInfo.values().toArray(new NetworkInfo[0]);
     }
     return null;
   }
@@ -277,7 +271,7 @@ public class ShadowConnectivityManager {
 
   @Implementation
   protected Network[] getAllNetworks() {
-    return netIdToNetwork.values().toArray(new Network[netIdToNetwork.size()]);
+    return netIdToNetwork.values().toArray(new Network[0]);
   }
 
   @Implementation
@@ -468,9 +462,7 @@ public class ShadowConnectivityManager {
     if (l == null) {
       throw new IllegalArgumentException("Invalid OnNetworkActiveListener");
     }
-    if (onNetworkActiveListeners.contains(l)) {
-      onNetworkActiveListeners.remove(l);
-    }
+    onNetworkActiveListeners.remove(l);
   }
 
   @Implementation(minSdk = M)
