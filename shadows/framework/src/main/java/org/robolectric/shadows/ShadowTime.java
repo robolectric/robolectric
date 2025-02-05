@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.annotation.SuppressLint;
 import android.text.format.Time;
 import android.util.TimeFormatException;
 import org.robolectric.annotation.Implementation;
@@ -27,13 +28,14 @@ public class ShadowTime {
     return -1;
   }
 
+  @SuppressLint("DefaultLocale")
   @Implementation
   protected void checkChar(String s, int spos, char expected) {
     char c = s.charAt(spos);
     if (c != expected) {
       throwTimeFormatException(
           String.format(
-              "Unexpected character 0x%02d at pos=%d.  Expected 0x%02d (\'%c\').",
+              "Unexpected character 0x%02d at pos=%d.  Expected 0x%02d ('%c').",
               (int) c, spos, (int) expected, expected));
     }
   }

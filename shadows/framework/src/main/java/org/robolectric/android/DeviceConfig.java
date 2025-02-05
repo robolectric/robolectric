@@ -201,7 +201,7 @@ public class DeviceConfig {
     configuration.uiMode = uiModeType | uiModeNight;
 
     if (resTab.density != ResTable_config.DENSITY_DEFAULT) {
-      setDensity(resTab.density, apiLevel, configuration, displayMetrics);
+      setDensity(resTab.density, configuration, displayMetrics);
     }
     setDimensions(apiLevel, configuration, displayMetrics);
 
@@ -237,7 +237,7 @@ public class DeviceConfig {
   }
 
   private static void setDensity(
-      int densityDpi, int apiLevel, Configuration configuration, DisplayMetrics displayMetrics) {
+      int densityDpi, Configuration configuration, DisplayMetrics displayMetrics) {
     configuration.densityDpi = densityDpi;
     displayMetrics.densityDpi = densityDpi;
     displayMetrics.density = displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
@@ -361,7 +361,7 @@ public class DeviceConfig {
         throw new IllegalArgumentException("'nodpi' isn't actually a dpi");
       case ResTable_config.DENSITY_DPI_UNDEFINED:
         // DisplayMetrics.DENSITY_DEFAULT is mdpi
-        setDensity(DEFAULT_DENSITY, apiLevel, configuration, displayMetrics);
+        setDensity(DEFAULT_DENSITY, configuration, displayMetrics);
     }
     setDimensions(apiLevel, configuration, displayMetrics);
 
@@ -438,11 +438,6 @@ public class DeviceConfig {
 
   private static int getScreenLayoutLayoutDir(Configuration configuration) {
     return configuration.screenLayout & Configuration.SCREENLAYOUT_LAYOUTDIR_MASK;
-  }
-
-  private static void setScreenLayoutLayoutDir(Configuration configuration, int value) {
-    configuration.screenLayout =
-        (configuration.screenLayout & ~Configuration.SCREENLAYOUT_LAYOUTDIR_MASK) | value;
   }
 
   private static int getScreenLayoutRound(Configuration configuration) {

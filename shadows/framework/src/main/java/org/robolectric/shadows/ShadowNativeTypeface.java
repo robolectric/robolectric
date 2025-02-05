@@ -90,7 +90,6 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return new File(fontDir);
   }
 
-  @SuppressWarnings("unchecked")
   @Implementation(minSdk = O, maxSdk = O_MR1)
   protected static @ClassName("android.graphics.FontFamily") Object makeFamilyFromParsed(
       @ClassName("android.text.FontConfig$Family") Object family,

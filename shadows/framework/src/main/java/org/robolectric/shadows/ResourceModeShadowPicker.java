@@ -59,7 +59,7 @@ public class ResourceModeShadowPicker<T> implements ShadowPicker<T> {
       return binary14ShadowClass;
     } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
       return binary10ShadowClass;
-    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
+    } else if (RuntimeEnvironment.getApiLevel() == Build.VERSION_CODES.P) {
       return binary9ShadowClass;
     } else {
       return binaryShadowClass;

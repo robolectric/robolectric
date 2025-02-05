@@ -262,7 +262,7 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
     shadowBitmap.appendDescription(shadowSrcBitmap.getDescription());
     shadowBitmap.appendDescription(" scaled to " + dstWidth + " x " + dstHeight);
     if (filter) {
-      shadowBitmap.appendDescription(" with filter " + filter);
+      shadowBitmap.appendDescription(" with filter true");
     }
 
     shadowBitmap.createdFromBitmap = src;

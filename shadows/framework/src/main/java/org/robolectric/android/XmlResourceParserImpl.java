@@ -191,7 +191,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   }
 
   /*package*/
-  public boolean isWhitespace(String text) throws XmlPullParserException {
+  public boolean isWhitespace(String text) {
     if (text == null) {
       return false;
     }
@@ -419,6 +419,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
           throw new IllegalArgumentException("END_DOCUMENT should not be found here.");
         }
       case (END_TAG):
+      case (TEXT):
         {
           return navigateToNextNode(currentNode);
         }
@@ -445,15 +446,11 @@ public class XmlResourceParserImpl implements XmlResourceParser {
             return END_TAG;
           }
         }
-      case (TEXT):
-        {
-          return navigateToNextNode(currentNode);
-        }
       default:
         {
           // This can only happen if mEventType is
           // assigned with an unmapped integer.
-          throw new RuntimeException("Robolectric-> Uknown XML event type: " + mEventType);
+          throw new RuntimeException("Robolectric-> Unknown XML event type: " + mEventType);
         }
     }
   }
@@ -465,9 +462,6 @@ public class XmlResourceParserImpl implements XmlResourceParser {
           throw new IllegalArgumentException("ATTRIBUTE_NODE");
         }
       case (Node.CDATA_SECTION_NODE):
-        {
-          return navigateToNextNode(node);
-        }
       case (Node.COMMENT_NODE):
         {
           return navigateToNextNode(node);
@@ -481,6 +475,8 @@ public class XmlResourceParserImpl implements XmlResourceParser {
           throw new IllegalArgumentException("DOCUMENT_NODE");
         }
       case (Node.DOCUMENT_TYPE_NODE):
+      case (Node.NOTATION_NODE):
+      case (Node.PROCESSING_INSTRUCTION_NODE):
         {
           throw new IllegalArgumentException("DOCUMENT_TYPE_NODE");
         }
@@ -496,14 +492,6 @@ public class XmlResourceParserImpl implements XmlResourceParser {
       case (Node.ENTITY_REFERENCE_NODE):
         {
           throw new IllegalArgumentException("ENTITY_REFERENCE_NODE");
-        }
-      case (Node.NOTATION_NODE):
-        {
-          throw new IllegalArgumentException("DOCUMENT_TYPE_NODE");
-        }
-      case (Node.PROCESSING_INSTRUCTION_NODE):
-        {
-          throw new IllegalArgumentException("DOCUMENT_TYPE_NODE");
         }
       case (Node.TEXT_NODE):
         {
@@ -713,9 +701,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   public int getAttributeIntValue(int idx, int defaultValue) {
     try {
       return Integer.parseInt(getAttributeValue(idx));
-    } catch (NumberFormatException ex) {
-      return defaultValue;
-    } catch (IndexOutOfBoundsException ex) {
+    } catch (IndexOutOfBoundsException | NumberFormatException ex) {
       return defaultValue;
     }
   }
@@ -733,9 +719,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   public float getAttributeFloatValue(int idx, float defaultValue) {
     try {
       return Float.parseFloat(getAttributeValue(idx));
-    } catch (NumberFormatException ex) {
-      return defaultValue;
-    } catch (IndexOutOfBoundsException ex) {
+    } catch (IndexOutOfBoundsException | NumberFormatException ex) {
       return defaultValue;
     }
   }

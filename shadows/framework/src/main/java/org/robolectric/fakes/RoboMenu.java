@@ -203,13 +203,7 @@ public class RoboMenu implements Menu {
 
     @Override
     public int compare(MenuItem a, MenuItem b) {
-      if (a.getOrder() == b.getOrder()) {
-        return 0;
-      } else if (a.getOrder() > b.getOrder()) {
-        return 1;
-      } else {
-        return -1;
-      }
+      return Integer.compare(a.getOrder(), b.getOrder());
     }
   }
 }

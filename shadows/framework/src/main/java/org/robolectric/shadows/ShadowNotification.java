@@ -155,8 +155,7 @@ public class ShadowNotification {
       ByteArrayOutputStream buf = new ByteArrayOutputStream();
       ShadowView shadowView = Shadow.extract(view);
       shadowView.dump(new PrintStream(buf), 4);
-      throw new IllegalArgumentException(
-          "no id." + resourceName + " found in view:\n" + buf.toString());
+      throw new IllegalArgumentException("no id." + resourceName + " found in view:\n" + buf);
     }
     return subView;
   }

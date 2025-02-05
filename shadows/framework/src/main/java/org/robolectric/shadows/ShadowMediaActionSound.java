@@ -31,7 +31,7 @@ public class ShadowMediaActionSound {
   @SuppressWarnings("NonFinalStaticField")
   private static boolean mustPlayShutterSoundInternal = false;
 
-  private static final HashMap<Integer, AtomicInteger> initializePlayCountMap() {
+  private static HashMap<Integer, AtomicInteger> initializePlayCountMap() {
     HashMap<Integer, AtomicInteger> playCount = new HashMap<>();
     for (int sound : ALL_SOUNDS) {
       playCount.put(sound, new AtomicInteger(0));
