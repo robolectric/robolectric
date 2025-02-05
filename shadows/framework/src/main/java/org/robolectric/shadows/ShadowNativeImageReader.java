@@ -70,8 +70,7 @@ public class ShadowNativeImageReader {
     // In T+, the hal format and data space are provided directly instead.
     // However the format values overlap and the conversion is merely a cast.
     // Reference: android12/.../frameworks/base/libs/hostgraphics/PublicFormat.cpp
-    int fmt = hardwareBufferFormat;
-    natives.nativeInit(weakSelf, w, h, fmt, maxImgs, consumerUsage);
+    natives.nativeInit(weakSelf, w, h, hardwareBufferFormat, maxImgs, consumerUsage);
     imageReaderReflector.setMemberNativeContext(natives.mNativeContext);
   }
 

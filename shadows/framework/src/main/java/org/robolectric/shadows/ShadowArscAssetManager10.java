@@ -604,9 +604,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     configuration.sdkVersion = (short) (major_version);
 
     if (locale != null) {
-      String locale_utf8 = locale;
-      CHECK(locale_utf8 != null);
-      configuration.setBcp47Locale(locale_utf8);
+      configuration.setBcp47Locale(locale);
     }
 
     // Constants duplicated from Java class android.content.res.Configuration.
@@ -660,16 +658,15 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static @Nullable String[] nativeList(long ptr, @Nonnull String path)
       throws IOException {
-    String path_utf8 = path;
-    if (path_utf8 == null) {
+    if (path == null) {
       // This will throw NPE.
       return null;
     }
 
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    AssetDir asset_dir = assetmanager.OpenDir(path_utf8);
+    AssetDir asset_dir = assetmanager.OpenDir(path);
     if (asset_dir == null) {
-      throw new FileNotFoundException(path_utf8);
+      throw new FileNotFoundException(path);
     }
 
     int file_count = asset_dir.getFileCount();
@@ -702,13 +699,12 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static long nativeOpenAsset(long ptr, @Nonnull String asset_path, int access_mode)
       throws FileNotFoundException {
-    String asset_path_utf8 = asset_path;
-    if (asset_path_utf8 == null) {
+    if (asset_path == null) {
       // This will throw NPE.
       return 0;
     }
 
-    ATRACE_NAME(String.format("AssetManager::OpenAsset(%s)", asset_path_utf8));
+    ATRACE_NAME(String.format("AssetManager::OpenAsset(%s)", asset_path));
 
     if (access_mode != Asset.AccessMode.ACCESS_UNKNOWN.mode()
         && access_mode != Asset.AccessMode.ACCESS_RANDOM.mode()
@@ -718,9 +714,9 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     }
 
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    Asset asset = assetmanager.Open(asset_path_utf8, Asset.AccessMode.fromInt(access_mode));
+    Asset asset = assetmanager.Open(asset_path, Asset.AccessMode.fromInt(access_mode));
     if (!isTruthy(asset)) {
-      throw new FileNotFoundException(asset_path_utf8);
+      throw new FileNotFoundException(asset_path);
     }
     return Registries.NATIVE_ASSET_REGISTRY.register(asset);
   }
@@ -730,18 +726,17 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static ParcelFileDescriptor nativeOpenAssetFd(
       long ptr, @Nonnull String asset_path, long[] out_offsets) throws IOException {
-    String asset_path_utf8 = asset_path;
-    if (asset_path_utf8 == null) {
+    if (asset_path == null) {
       // This will throw NPE.
       return null;
     }
 
-    ATRACE_NAME(String.format("AssetManager::OpenAssetFd(%s)", asset_path_utf8));
+    ATRACE_NAME(String.format("AssetManager::OpenAssetFd(%s)", asset_path));
 
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    Asset asset = assetmanager.Open(asset_path_utf8, Asset.AccessMode.ACCESS_RANDOM);
+    Asset asset = assetmanager.Open(asset_path, Asset.AccessMode.ACCESS_RANDOM);
     if (!isTruthy(asset)) {
-      throw new FileNotFoundException(asset_path_utf8);
+      throw new FileNotFoundException(asset_path);
     }
     return ReturnParcelFileDescriptor(asset, out_offsets);
   }
@@ -753,13 +748,12 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       long ptr, int jcookie, @Nonnull String asset_path, int access_mode)
       throws FileNotFoundException {
     ApkAssetsCookie cookie = JavaCookieToApkAssetsCookie(jcookie);
-    String asset_path_utf8 = asset_path;
-    if (asset_path_utf8 == null) {
+    if (asset_path == null) {
       // This will throw NPE.
       return 0;
     }
 
-    ATRACE_NAME(String.format("AssetManager::OpenNonAsset(%s)", asset_path_utf8));
+    ATRACE_NAME(String.format("AssetManager::OpenNonAsset(%s)", asset_path));
 
     if (access_mode != Asset.AccessMode.ACCESS_UNKNOWN.mode()
         && access_mode != Asset.AccessMode.ACCESS_RANDOM.mode()
@@ -771,14 +765,13 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
     Asset asset;
     if (cookie.intValue() != kInvalidCookie) {
-      asset =
-          assetmanager.OpenNonAsset(asset_path_utf8, cookie, Asset.AccessMode.fromInt(access_mode));
+      asset = assetmanager.OpenNonAsset(asset_path, cookie, Asset.AccessMode.fromInt(access_mode));
     } else {
-      asset = assetmanager.OpenNonAsset(asset_path_utf8, Asset.AccessMode.fromInt(access_mode));
+      asset = assetmanager.OpenNonAsset(asset_path, Asset.AccessMode.fromInt(access_mode));
     }
 
     if (!isTruthy(asset)) {
-      throw new FileNotFoundException(asset_path_utf8);
+      throw new FileNotFoundException(asset_path);
     }
     return Registries.NATIVE_ASSET_REGISTRY.register(asset);
   }
@@ -790,24 +783,23 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       long ptr, int jcookie, @Nonnull String asset_path, @Nonnull long[] out_offsets)
       throws IOException {
     ApkAssetsCookie cookie = JavaCookieToApkAssetsCookie(jcookie);
-    String asset_path_utf8 = asset_path;
-    if (asset_path_utf8 == null) {
+    if (asset_path == null) {
       // This will throw NPE.
       return null;
     }
 
-    ATRACE_NAME(String.format("AssetManager::OpenNonAssetFd(%s)", asset_path_utf8));
+    ATRACE_NAME(String.format("AssetManager::OpenNonAssetFd(%s)", asset_path));
 
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
     Asset asset;
     if (cookie.intValue() != kInvalidCookie) {
-      asset = assetmanager.OpenNonAsset(asset_path_utf8, cookie, Asset.AccessMode.ACCESS_RANDOM);
+      asset = assetmanager.OpenNonAsset(asset_path, cookie, Asset.AccessMode.ACCESS_RANDOM);
     } else {
-      asset = assetmanager.OpenNonAsset(asset_path_utf8, Asset.AccessMode.ACCESS_RANDOM);
+      asset = assetmanager.OpenNonAsset(asset_path, Asset.AccessMode.ACCESS_RANDOM);
     }
 
     if (!isTruthy(asset)) {
-      throw new FileNotFoundException(asset_path_utf8);
+      throw new FileNotFoundException(asset_path);
     }
     return ReturnParcelFileDescriptor(asset, out_offsets);
   }
@@ -818,26 +810,25 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   protected static long nativeOpenXmlAsset(long ptr, int jcookie, @Nonnull String asset_path)
       throws FileNotFoundException {
     ApkAssetsCookie cookie = JavaCookieToApkAssetsCookie(jcookie);
-    String asset_path_utf8 = asset_path;
-    if (asset_path_utf8 == null) {
+    if (asset_path == null) {
       // This will throw NPE.
       return 0;
     }
 
-    ATRACE_NAME(String.format("AssetManager::OpenXmlAsset(%s)", asset_path_utf8));
+    ATRACE_NAME(String.format("AssetManager::OpenXmlAsset(%s)", asset_path));
 
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
     Asset asset;
     if (cookie.intValue() != kInvalidCookie) {
-      asset = assetmanager.OpenNonAsset(asset_path_utf8, cookie, Asset.AccessMode.ACCESS_RANDOM);
+      asset = assetmanager.OpenNonAsset(asset_path, cookie, Asset.AccessMode.ACCESS_RANDOM);
     } else {
       Ref<ApkAssetsCookie> cookieRef = new Ref<>(cookie);
-      asset = assetmanager.OpenNonAsset(asset_path_utf8, Asset.AccessMode.ACCESS_RANDOM, cookieRef);
+      asset = assetmanager.OpenNonAsset(asset_path, Asset.AccessMode.ACCESS_RANDOM, cookieRef);
       cookie = cookieRef.get();
     }
 
     if (!isTruthy(asset)) {
-      throw new FileNotFoundException(asset_path_utf8);
+      throw new FileNotFoundException(asset_path);
     }
 
     // May be nullptr.
@@ -989,8 +980,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
         if (str_utf8 != null) {
           java_string = str_utf8;
         } else {
-          String str_utf16 = pool.stringAt(value.get().data);
-          java_string = str_utf16;
+          java_string = pool.stringAt(value.get().data);
         }
 
         // // Check for errors creating the strings (if malformed or no memory).
@@ -1134,7 +1124,6 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       return -1;
     }
 
-    int[] cursor = buffer;
     for (int i = 0; i < bag.entry_count; i++) {
       ResolvedBag.Entry entry = bag.entries[i];
       final Ref<Res_value> value = new Ref<>(entry.value);
@@ -1155,12 +1144,12 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       }
 
       int offset = i * STYLE_NUM_ENTRIES;
-      cursor[offset + STYLE_TYPE] = value.get().dataType;
-      cursor[offset + STYLE_DATA] = value.get().data;
-      cursor[offset + STYLE_ASSET_COOKIE] = ApkAssetsCookieToJavaCookie(cookie);
-      cursor[offset + STYLE_RESOURCE_ID] = ref.get();
-      cursor[offset + STYLE_CHANGING_CONFIGURATIONS] = flags.get();
-      cursor[offset + STYLE_DENSITY] = selected_config.get().density;
+      buffer[offset + STYLE_TYPE] = value.get().dataType;
+      buffer[offset + STYLE_DATA] = value.get().data;
+      buffer[offset + STYLE_ASSET_COOKIE] = ApkAssetsCookieToJavaCookie(cookie);
+      buffer[offset + STYLE_RESOURCE_ID] = ref.get();
+      buffer[offset + STYLE_CHANGING_CONFIGURATIONS] = flags.get();
+      buffer[offset + STYLE_DENSITY] = selected_config.get().density;
       // cursor += STYLE_NUM_ENTRIES;
     }
     // env.ReleasePrimitiveArrayCritical(out_data, buffer, 0);
@@ -1172,27 +1161,13 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static @AnyRes int nativeGetResourceIdentifier(
       long ptr, @Nonnull String name, @Nullable String def_type, @Nullable String def_package) {
-    String name_utf8 = name;
-    if (name_utf8 == null) {
+    if (name == null) {
       // This will throw NPE.
       return 0;
     }
 
-    String type = null;
-    if (def_type != null) {
-      String type_utf8 = def_type;
-      CHECK(type_utf8 != null);
-      type = type_utf8;
-    }
-
-    String package_ = null;
-    if (def_package != null) {
-      String package_utf8 = def_package;
-      CHECK(package_utf8 != null);
-      package_ = package_utf8;
-    }
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    return assetmanager.GetResourceId(name_utf8, type, package_);
+    return assetmanager.GetResourceId(name, def_type, def_package);
   }
 
   // static jstring NativeGetResourceName(JNIEnv* env, jclass /*clazz*/, jlong ptr, jint resid) {
@@ -1305,12 +1280,11 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
 
     int idx = 0;
     for (String locale : locales) {
-      String java_string = locale;
-      if (java_string == null) {
+      if (locale == null) {
         return null;
       }
       // env.SetObjectArrayElement(array, idx++, java_string);
-      array[idx++] = java_string;
+      array[idx++] = locale;
       // env.DeleteLocalRef(java_string);
     }
     return array;

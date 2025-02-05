@@ -653,23 +653,21 @@ public class NativeInput {
           resolveActionForSplitMotionEvent(
               getAction(), getFlags(), pp, splitPointerPropertiesArray);
 
-      android.view.MotionEvent newEvent =
-          android.view.MotionEvent.obtain(
-              getDownTime(),
-              getEventTime(),
-              splitAction,
-              splitPointerProperties.size(),
-              splitPointerPropertiesArray,
-              splitPointerCoordsArray,
-              getMetaState(),
-              getButtonState(),
-              getXPrecision(),
-              getYPrecision(),
-              getDeviceId(),
-              getEdgeFlags(),
-              getSource(),
-              getFlags());
-      return newEvent;
+      return android.view.MotionEvent.obtain(
+          getDownTime(),
+          getEventTime(),
+          splitAction,
+          splitPointerProperties.size(),
+          splitPointerPropertiesArray,
+          splitPointerCoordsArray,
+          getMetaState(),
+          getButtonState(),
+          getXPrecision(),
+          getYPrecision(),
+          getDeviceId(),
+          getEdgeFlags(),
+          getSource(),
+          getFlags());
     }
 
     public int findPointerIndex(int pointerId) {

@@ -196,8 +196,7 @@ public class ShadowGainmap {
         @Override
         public Gainmap createFromParcel(Parcel in) {
           in.setDataPosition(0);
-          Gainmap gm = new Gainmap(in.readTypedObject(Bitmap.CREATOR));
-          return gm;
+          return new Gainmap(in.readTypedObject(Bitmap.CREATOR));
         }
 
         @Override
