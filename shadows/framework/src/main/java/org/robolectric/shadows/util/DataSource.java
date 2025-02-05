@@ -99,17 +99,14 @@ public class DataSource {
     if (this == obj) {
       return true;
     }
-    if (obj == null || !(obj instanceof DataSource)) {
+    if (!(obj instanceof DataSource)) {
       return false;
     }
     final DataSource other = (DataSource) obj;
     if (dataSource == null) {
-      if (other.dataSource != null) {
-        return false;
-      }
-    } else if (!dataSource.equals(other.dataSource)) {
-      return false;
+      return other.dataSource == null;
+    } else {
+      return dataSource.equals(other.dataSource);
     }
-    return true;
   }
 }

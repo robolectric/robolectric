@@ -16,15 +16,15 @@ public class ShadowDeviceConfig {
     //noinspection SynchronizationOnLocalVariableOrMethodParameter
     synchronized (lock) {
       if (RuntimeEnvironment.getApiLevel() == Build.VERSION_CODES.Q) {
-        Map singleListeners =
+        Map<?, ?> singleListeners =
             ReflectionHelpers.getStaticField(DeviceConfig.class, "sSingleListeners");
         singleListeners.clear();
       }
 
-      Map listeners = ReflectionHelpers.getStaticField(DeviceConfig.class, "sListeners");
+      Map<?, ?> listeners = ReflectionHelpers.getStaticField(DeviceConfig.class, "sListeners");
       listeners.clear();
 
-      Map namespaces = ReflectionHelpers.getStaticField(DeviceConfig.class, "sNamespaces");
+      Map<?, ?> namespaces = ReflectionHelpers.getStaticField(DeviceConfig.class, "sNamespaces");
       namespaces.clear();
     }
   }

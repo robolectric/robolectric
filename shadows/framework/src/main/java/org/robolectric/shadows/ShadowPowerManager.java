@@ -311,11 +311,11 @@ public class ShadowPowerManager {
   @Implementation(minSdk = M)
   protected boolean isIgnoringBatteryOptimizations(String packageName) {
     Boolean result = ignoringBatteryOptimizations.get(packageName);
-    return result == null ? false : result;
+    return result != null && result;
   }
 
   public void setIgnoringBatteryOptimizations(String packageName, boolean value) {
-    ignoringBatteryOptimizations.put(packageName, Boolean.valueOf(value));
+    ignoringBatteryOptimizations.put(packageName, value);
   }
 
   /**
@@ -489,7 +489,7 @@ public class ShadowPowerManager {
 
     @Implementation
     protected synchronized void acquire(long timeout) {
-      Long timeoutMillis = timeout + SystemClock.elapsedRealtime();
+      long timeoutMillis = timeout + SystemClock.elapsedRealtime();
       if (timeoutMillis > 0) {
         acquireInternal(Optional.of(timeoutMillis));
       } else {

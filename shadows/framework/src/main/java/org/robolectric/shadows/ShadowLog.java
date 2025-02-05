@@ -14,6 +14,7 @@ import java.io.PrintStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Supplier;
@@ -330,10 +331,10 @@ public class ShadowLog {
 
       LogItem log = (LogItem) o;
       return type == log.type
-          && !(timeString != null ? !timeString.equals(log.timeString) : log.timeString != null)
-          && !(msg != null ? !msg.equals(log.msg) : log.msg != null)
-          && !(tag != null ? !tag.equals(log.tag) : log.tag != null)
-          && !(throwable != null ? !throwable.equals(log.throwable) : log.throwable != null);
+          && Objects.equals(timeString, log.timeString)
+          && Objects.equals(msg, log.msg)
+          && Objects.equals(tag, log.tag)
+          && Objects.equals(throwable, log.throwable);
     }
 
     @Override

@@ -26,9 +26,7 @@ public class ShadowViewGroup extends ShadowView {
   @Implementation
   protected void addView(final View child, final int index, final ViewGroup.LayoutParams params) {
     Runnable addViewRunnable =
-        () -> {
-          reflector(ViewGroupReflector.class, realViewGroup).addView(child, index, params);
-        };
+        () -> reflector(ViewGroupReflector.class, realViewGroup).addView(child, index, params);
     if (ShadowLooper.looperMode() == Mode.LEGACY) {
       shadowMainLooper().runPaused(addViewRunnable);
     } else {

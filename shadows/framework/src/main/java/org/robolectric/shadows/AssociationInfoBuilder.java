@@ -26,7 +26,6 @@ public class AssociationInfoBuilder {
   // We have two different constructors for AssociationInfo across
   // T branches. aosp has the constructor that takes a new "revoked" parameter.
   private boolean revoked;
-  private boolean pending;
   private long lastTimeConnectedMs;
   private int systemDataSyncFlags;
 

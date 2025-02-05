@@ -367,6 +367,6 @@ public class ShadowTextToSpeech {
   interface TextToSpeechReflector {
 
     @Direct
-    int speak(final String text, final int queueMode, final HashMap params);
+    int speak(final String text, final int queueMode, final HashMap<?, ?> params);
   }
 }

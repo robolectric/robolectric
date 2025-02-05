@@ -75,7 +75,7 @@ public final class FrameMetricsBuilder {
     timingData[getStartIndexForMetric(FrameMetrics.SYNC_DURATION)] =
         timingData[getEndIndexForMetric(FrameMetrics.DRAW_DURATION)] + syncDelayTimeNanos;
 
-    // Finally we calculate the remainder of the durations after enqueing the sync.
+    // Finally we calculate the remainder of the durations after enqueuing the sync.
     // Note that we don't directly compute the value for TOTAL_DURATION, as it's generated from the
     // start of UNKNOWN_DELAY_DURATION to the end of SWAP_BUFFERS_DURATION.
     for (@Metric int metric = FrameMetrics.SYNC_DURATION; metric < getMetricsCount(); metric++) {

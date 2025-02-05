@@ -273,11 +273,10 @@ public class ShadowDisplay {
 
     ShadowDisplayManager.changeDisplay(
         displayId,
-        displayConfig -> {
-          displayConfig.hdrCapabilities =
-              new HdrCapabilities(
-                  supportedHdrTypes, maxLuminance, maxAverageLuminance, minLuminance);
-        });
+        displayConfig ->
+            displayConfig.hdrCapabilities =
+                new HdrCapabilities(
+                    supportedHdrTypes, maxLuminance, maxAverageLuminance, minLuminance));
   }
 
   /**

@@ -251,11 +251,11 @@ public class ShadowPackageManager {
           permission.WRITE_CALENDAR,
           createPermissionInfo(
               permission.WRITE_CALENDAR,
-              "add or modify calendar events and send email to guests without owners\' knowledge",
+              "add or modify calendar events and send email to guests without owners' knowledge",
               "Allows the app to add, remove, change events that you can modify on your phone,"
                   + " including those of friends or co-workers. This may allow the app to send"
                   + " messages that appear to come from calendar owners, or modify events without"
-                  + " the owners\' knowledge.",
+                  + " the owners' knowledge.",
               PermissionInfo.PROTECTION_DANGEROUS,
               permission_group.CALENDAR),
           permission.GET_ACCOUNTS,
@@ -271,7 +271,7 @@ public class ShadowPackageManager {
               permission.READ_CONTACTS,
               "read your contacts",
               "Allows the app to read data about your contacts stored on your phone, including the"
-                  + " frequency with which you\'ve called, emailed, or communicated in other ways"
+                  + " frequency with which you've called, emailed, or communicated in other ways"
                   + " with specific individuals. This permission allows apps to save your contact"
                   + " data, and malicious apps may share contact data without your knowledge.",
               PermissionInfo.PROTECTION_DANGEROUS,
@@ -281,7 +281,7 @@ public class ShadowPackageManager {
               permission.WRITE_CONTACTS,
               "modify your contacts",
               "Allows the app to modify the data about your contacts stored on your phone,"
-                  + " including the frequency with which you\'ve called, emailed, or communicated"
+                  + " including the frequency with which you've called, emailed, or communicated"
                   + " in other ways with specific contacts. This permission allows apps to delete"
                   + " contact data.",
               PermissionInfo.PROTECTION_DANGEROUS,
@@ -817,8 +817,7 @@ public class ShadowPackageManager {
     } else if (resolveInfo.providerInfo != null) {
       return resolveInfo.providerInfo.packageName;
     }
-    throw new IllegalStateException(
-        "Could not find package name for ResolveInfo " + resolveInfo.toString());
+    throw new IllegalStateException("Could not find package name for ResolveInfo " + resolveInfo);
   }
 
   public void addActivityIcon(ComponentName component, Drawable drawable) {
@@ -1117,7 +1116,7 @@ public class ShadowPackageManager {
   }
 
   public void addDrawableResolution(String packageName, int resourceId, Drawable drawable) {
-    drawables.put(new Pair(packageName, resourceId), drawable);
+    drawables.put(new Pair<>(packageName, resourceId), drawable);
   }
 
   public void setNameForUid(int uid, String name) {

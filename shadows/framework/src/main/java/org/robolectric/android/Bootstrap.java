@@ -88,7 +88,7 @@ public class Bootstrap {
       }
     }
 
-    for (i = (i < 0) ? 0 : i; i < qualifiersParts.length; i++) {
+    for (i = Math.max(i, 0); i < qualifiersParts.length; i++) {
       String qualifiersStr = qualifiersParts[i];
       int platformVersion = Qualifiers.getPlatformVersion(qualifiersStr);
       if (platformVersion != -1 && platformVersion != apiLevel) {

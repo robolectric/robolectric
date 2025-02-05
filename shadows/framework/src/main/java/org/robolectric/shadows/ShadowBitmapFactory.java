@@ -129,7 +129,7 @@ public class ShadowBitmapFactory {
     // If a real FileDescriptor is used, attempt to get the image size.
     if (fd != null && fd.valid()) {
       try (FileInputStream fileInputStream = new FileInputStream(fd);
-          BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream); ) {
+          BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
         image = getImageFromStream(bufferedInputStream);
       } catch (IOException e) {
         Logger.warn("Error getting size of bitmap file", e);

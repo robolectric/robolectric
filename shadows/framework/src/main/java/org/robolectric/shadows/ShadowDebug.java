@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -69,7 +69,7 @@ public class ShadowDebug {
     }
 
     try {
-      Files.asCharSink(new File(tracingFilename), Charset.forName("UTF-8")).write("trace data");
+      Files.asCharSink(new File(tracingFilename), StandardCharsets.UTF_8).write("trace data");
     } catch (IOException e) {
       throw new RuntimeException("Writing trace file failed", e);
     }

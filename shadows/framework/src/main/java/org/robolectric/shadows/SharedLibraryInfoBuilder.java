@@ -87,7 +87,7 @@ public final class SharedLibraryInfoBuilder {
           ClassParameter.from(int.class, type),
           ClassParameter.from(VersionedPackage.class, declaringPackage),
           ClassParameter.from(List.class, dependentPackages));
-    } else if (apiLevel <= VERSION_CODES.P) {
+    } else if (apiLevel == VERSION_CODES.P) {
       return ReflectionHelpers.callConstructor(
           SharedLibraryInfo.class,
           ClassParameter.from(String.class, name),

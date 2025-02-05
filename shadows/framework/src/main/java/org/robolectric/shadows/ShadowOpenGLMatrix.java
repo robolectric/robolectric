@@ -112,11 +112,11 @@ public class ShadowOpenGLMatrix {
     if (rhsVecOffset + 4 > rhsVec.length) {
       throw new IllegalArgumentException("rhsVecOffset + 4 > rhsVec.length");
     }
-    final float x = rhsVec[rhsVecOffset + 0];
+    final float x = rhsVec[rhsVecOffset];
     final float y = rhsVec[rhsVecOffset + 1];
     final float z = rhsVec[rhsVecOffset + 2];
     final float w = rhsVec[rhsVecOffset + 3];
-    resultVec[resultVecOffset + 0] =
+    resultVec[resultVecOffset] =
         lhsMat[I(0, 0, lhsMatOffset)] * x
             + lhsMat[I(1, 0, lhsMatOffset)] * y
             + lhsMat[I(2, 0, lhsMatOffset)] * z

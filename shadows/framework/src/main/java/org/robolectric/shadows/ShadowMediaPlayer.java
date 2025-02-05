@@ -162,7 +162,6 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * Class for grouping events that are meant to fire at the same time. Also schedules the next
    * event to run.
    */
-  @SuppressWarnings("serial")
   private static class RunList extends ArrayList<MediaEvent> implements MediaEvent {
 
     public RunList() {
@@ -180,7 +179,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   public interface MediaEvent {
-    public void run(MediaPlayer mp, ShadowMediaPlayer smp);
+    void run(MediaPlayer mp, ShadowMediaPlayer smp);
   }
 
   /**
@@ -375,7 +374,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    *
    * @see #setCreateListener
    */
-  public static interface CreateListener {
+  public interface CreateListener {
     /**
      * Method that is invoked when a new {@link MediaPlayer} is created. This method is invoked at
      * the end of the constructor, after all of the default setup has been completed.
@@ -384,7 +383,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
      * @param shadow reference to the corresponding shadow object for the newly-created media player
      *     (provided for convenience).
      */
-    public void onCreate(MediaPlayer player, ShadowMediaPlayer shadow);
+    void onCreate(MediaPlayer player, ShadowMediaPlayer shadow);
   }
 
   /** Current state of the media player. */
@@ -1517,7 +1516,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   /** Allows test cases to simulate seek completion by invoking callback. */
   public void invokeSeekCompleteListener() {
     int duration = getMediaInfo().duration;
-    setCurrentPosition(pendingSeek > duration ? duration : pendingSeek < 0 ? 0 : pendingSeek);
+    setCurrentPosition(pendingSeek > duration ? duration : Math.max(pendingSeek, 0));
     pendingSeek = -1;
     if (state == STARTED) {
       doStart();

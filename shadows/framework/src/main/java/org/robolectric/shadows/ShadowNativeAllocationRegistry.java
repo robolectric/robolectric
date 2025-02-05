@@ -39,7 +39,7 @@ public class ShadowNativeAllocationRegistry {
   @Implementation(minSdk = Baklava.SDK_INT)
   protected void __constructor__(
       ClassLoader classLoader,
-      Class clazz,
+      Class<?> clazz,
       long freeFunction,
       long size,
       boolean mallocAllocation) {

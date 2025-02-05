@@ -721,7 +721,7 @@ public class ActivityController<T extends Activity>
     return changedConfig;
   }
 
-  /** Accessor interface for android.app.Activity.NonConfigurationInstances's internals. */
+  /** Accessor interface for android.app.Activity.NonConfigurationInstances' internals. */
   @ForType(className = "android.app.Activity$NonConfigurationInstances")
   interface _NonConfigurationInstances_ {
 

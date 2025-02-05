@@ -2,6 +2,7 @@ package android.content.res;
 
 import static androidx.test.InstrumentationRegistry.getTargetContext;
 import static com.google.common.truth.Truth.assertThat;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import android.content.Context;
 import android.os.ParcelFileDescriptor;
@@ -13,7 +14,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,8 +23,6 @@ import org.junit.runner.RunWith;
 public class AssetManagerTest {
 
   private AssetManager assetManager;
-
-  private static final Charset UTF_8 = Charset.forName("UTF-8");
 
   @Before
   public void setup() throws Exception {

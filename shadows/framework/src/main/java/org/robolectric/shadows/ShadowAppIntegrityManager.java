@@ -36,7 +36,7 @@ public class ShadowAppIntegrityManager {
    */
   @Implementation
   protected String getCurrentRuleSetVersion() {
-    return recordedRuleSet.isPresent() ? recordedRuleSet.get().getVersion() : "None";
+    return recordedRuleSet.map(RuleSet::getVersion).orElse("None");
   }
 
   /**

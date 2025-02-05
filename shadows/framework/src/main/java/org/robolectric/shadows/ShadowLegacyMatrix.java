@@ -198,7 +198,7 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
 
   @Implementation
   protected boolean preRotate(float degrees) {
-    preOps.addFirst(ROTATE + " " + Float.toString(degrees));
+    preOps.addFirst(ROTATE + " " + degrees);
     return preConcat(SimpleMatrix.rotate(degrees));
   }
 
@@ -246,7 +246,7 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
 
   @Implementation
   protected boolean postRotate(float degrees) {
-    postOps.addLast(ROTATE + " " + Float.toString(degrees));
+    postOps.addLast(ROTATE + " " + degrees);
     return postConcat(SimpleMatrix.rotate(degrees));
   }
 

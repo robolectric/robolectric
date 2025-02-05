@@ -702,7 +702,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         } catch (NameNotFoundException e) {
           Log.d(TAG, "ComponentInfo doesn't match flags:" + e.getMessage());
           iterator.remove();
-          continue;
         }
       }
       Collections.sort(result, new ResolveInfoComparator());
@@ -1011,7 +1010,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
     // Android don't override the enabled field of component with the actual value.
     boolean isEnabledForFiltering =
-        isComponentEnabled && (Build.VERSION.SDK_INT >= 24 ? isApplicationEnabled : true);
+        isComponentEnabled && (VERSION.SDK_INT < 24 || isApplicationEnabled);
     if ((flags & MATCH_DISABLED_COMPONENTS) == 0 && !isEnabledForFiltering) {
       throw new NameNotFoundException("Disabled component: " + componentInfo);
     }
