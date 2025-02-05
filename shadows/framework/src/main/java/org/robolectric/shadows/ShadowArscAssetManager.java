@@ -97,15 +97,14 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   protected String[] list(String path) throws IOException {
     CppAssetManager am = assetManagerForJavaObject();
 
-    String fileName8 = path;
-    if (fileName8 == null) {
+    if (path == null) {
       return null;
     }
 
-    AssetDir dir = am.openDir(fileName8);
+    AssetDir dir = am.openDir(path);
 
     if (dir == null) {
-      throw new FileNotFoundException(fileName8);
+      throw new FileNotFoundException(path);
     }
 
     int N = dir.getFileCount();
@@ -347,9 +346,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
       return 0;
     }
 
-    int ident = am.getResources().identifierForName(name, defType, defPackage);
-
-    return ident;
+    return am.getResources().identifierForName(name, defType, defPackage);
   }
 
   @HiddenApi
@@ -359,8 +356,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
     ALOGV("openAsset in %s", am);
 
-    String fileName8 = fileName;
-    if (fileName8 == null) {
+    if (fileName == null) {
       throw new IllegalArgumentException("Empty file name");
     }
 
@@ -371,10 +367,10 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
       throw new IllegalArgumentException("Bad access mode");
     }
 
-    Asset a = am.open(fileName8, AccessMode.fromInt(mode));
+    Asset a = am.open(fileName, AccessMode.fromInt(mode));
 
     if (a == null) {
-      throw new FileNotFoundException(fileName8);
+      throw new FileNotFoundException(fileName);
     }
 
     // printf("Created Asset Stream: %p\n", a);
@@ -390,15 +386,14 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
     ALOGV("openAssetFd in %s", am);
 
-    String fileName8 = fileName;
-    if (fileName8 == null) {
+    if (fileName == null) {
       return null;
     }
 
-    Asset a = am.open(fileName8, Asset.AccessMode.ACCESS_RANDOM);
+    Asset a = am.open(fileName, Asset.AccessMode.ACCESS_RANDOM);
 
     if (a == null) {
-      throw new FileNotFoundException(fileName8);
+      throw new FileNotFoundException(fileName);
     }
 
     return returnParcelFileDescriptor(a, outOffsets);
@@ -413,8 +408,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
       return 0;
     }
     ALOGV("openNonAssetNative in %s (Java object %s)\n", am, AssetManager.class);
-    String fileName8 = fileName;
-    if (fileName8 == null) {
+    if (fileName == null) {
       return -1;
     }
     AccessMode mode = AccessMode.fromInt(accessMode);
@@ -426,10 +420,10 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     }
     Asset a =
         isTruthy(cookie)
-            ? am.openNonAsset(cookie, fileName8, mode)
-            : am.openNonAsset(fileName8, mode, null);
+            ? am.openNonAsset(cookie, fileName, mode)
+            : am.openNonAsset(fileName, mode, null);
     if (a == null) {
-      throw new FileNotFoundException(fileName8);
+      throw new FileNotFoundException(fileName);
     }
     long assetId = Registries.NATIVE_ASSET_REGISTRY.register(a);
     // todo: something better than this [xw]
@@ -497,8 +491,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
       throw new IndexOutOfBoundsException();
     }
 
-    byte[] b = bArray;
-    int res = a.read(b, off, len);
+    int res = a.read(bArray, off, len);
 
     if (res > 0) return res;
 
@@ -783,14 +776,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     //      return JNI_FALSE;
     //    }
 
-    int[] srcValues = inValues;
-    final int NSV = srcValues == null ? 0 : inValues.length;
-
-    int[] baseDest = outValues;
-    int destOffset = 0;
-    if (baseDest == null) {
-      return false;
-    }
+    final int NSV = inValues == null ? 0 : inValues.length;
 
     int[] indices = null;
     if (outIndices != null) {
@@ -803,7 +789,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
     boolean result =
         AttributeResolution.ResolveAttrs(
-            theme, defStyleAttr, defStyleRes, srcValues, NSV, src, NI, baseDest, indices);
+            theme, defStyleAttr, defStyleRes, inValues, NSV, src, NI, outValues, indices);
 
     if (indices != null) {
       //      env.ReleasePrimitiveArrayCritical(outIndices, indices, 0);
@@ -1086,23 +1072,22 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
     ALOGV("openXmlAsset in %s (Java object %s)\n", am, ShadowArscAssetManager.class);
 
-    String fileName8 = fileName;
-    if (fileName8 == null) {
+    if (fileName == null) {
       return 0;
     }
 
     int assetCookie = cookie;
     Asset a;
     if (isTruthy(assetCookie)) {
-      a = am.openNonAsset(assetCookie, fileName8, AccessMode.ACCESS_BUFFER);
+      a = am.openNonAsset(assetCookie, fileName, AccessMode.ACCESS_BUFFER);
     } else {
       final Ref<Integer> assetCookieRef = new Ref<>(assetCookie);
-      a = am.openNonAsset(fileName8, AccessMode.ACCESS_BUFFER, assetCookieRef);
+      a = am.openNonAsset(fileName, AccessMode.ACCESS_BUFFER, assetCookieRef);
       assetCookie = assetCookieRef.get();
     }
 
     if (a == null) {
-      throw new FileNotFoundException(fileName8);
+      throw new FileNotFoundException(fileName);
     }
 
     final DynamicRefTable dynamicRefTable =
@@ -1365,14 +1350,13 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
           "This file can not be opened as a file descriptor; it is probably compressed");
     }
 
-    long[] offsets = outOffsets;
-    if (offsets == null) {
+    if (outOffsets == null) {
       // fd.close();
       return null;
     }
 
-    offsets[0] = startOffset.get();
-    offsets[1] = length.get();
+    outOffsets[0] = startOffset.get();
+    outOffsets[1] = length.get();
 
     // FileDescriptor fileDesc = jniCreateFileDescriptor(fd);
     // if (fileDesc == null) {

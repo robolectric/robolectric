@@ -377,8 +377,7 @@ public class ShadowCameraManager {
   public boolean getTorchMode(@Nonnull String cameraId) {
     Preconditions.checkNotNull(cameraId);
     Preconditions.checkArgument(cameraIdToCharacteristics.keySet().contains(cameraId));
-    Boolean torchState = cameraTorches.get(cameraId);
-    return torchState;
+    return cameraTorches.get(cameraId);
   }
 
   /**
