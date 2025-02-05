@@ -130,9 +130,9 @@ public class NetworkRegistrationInfoTestBuilder {
   private interface NetworkRegistrationInfoReflector {
 
     @Accessor("mDataSpecificInfo")
-    public void setDataSpecificInfo(DataSpecificRegistrationInfo value);
+    void setDataSpecificInfo(DataSpecificRegistrationInfo value);
 
     @Accessor("mVoiceSpecificInfo")
-    public void setVoiceSpecificInfo(VoiceSpecificRegistrationInfo value);
+    void setVoiceSpecificInfo(VoiceSpecificRegistrationInfo value);
   }
 }

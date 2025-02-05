@@ -201,7 +201,7 @@ final class HealthStatsBuilder {
   }
 
   @VisibleForTesting
-  static final int[] toSortedIntArray(Set<Integer> set) {
+  static int[] toSortedIntArray(Set<Integer> set) {
     int[] result = new int[set.size()];
     Object[] inputObjArray = set.toArray();
     for (int i = 0; i < inputObjArray.length; i++) {

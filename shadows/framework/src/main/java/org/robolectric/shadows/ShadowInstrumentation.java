@@ -1023,7 +1023,7 @@ public class ShadowInstrumentation {
       }
       return PERMISSION_DENIED;
     } else {
-      Set<String> grantedPermissionsForPidUid = grantedPermissionsMap.get(new Pair(pid, uid));
+      Set<String> grantedPermissionsForPidUid = grantedPermissionsMap.get(new Pair<>(pid, uid));
       return grantedPermissionsForPidUid != null && grantedPermissionsForPidUid.contains(permission)
           ? PERMISSION_GRANTED
           : PERMISSION_DENIED;

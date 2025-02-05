@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.graphics.Typeface;
+import java.util.Objects;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowTypeface.Picker;
 
@@ -39,13 +40,7 @@ public abstract class ShadowTypeface {
       if (style != fontDesc.style) {
         return false;
       }
-      if (familyName != null
-          ? !familyName.equals(fontDesc.familyName)
-          : fontDesc.familyName != null) {
-        return false;
-      }
-
-      return true;
+      return Objects.equals(familyName, fontDesc.familyName);
     }
 
     @Override

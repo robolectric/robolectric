@@ -48,15 +48,13 @@ public abstract class ShadowPath {
 
       if (Float.compare(point.x, x) != 0) return false;
       if (Float.compare(point.y, y) != 0) return false;
-      if (type != point.type) return false;
-
-      return true;
+      return type == point.type;
     }
 
     @Override
     public int hashCode() {
-      int result = (x != +0.0f ? Float.floatToIntBits(x) : 0);
-      result = 31 * result + (y != +0.0f ? Float.floatToIntBits(y) : 0);
+      int result = (x != 0.0f ? Float.floatToIntBits(x) : 0);
+      result = 31 * result + (y != 0.0f ? Float.floatToIntBits(y) : 0);
       result = 31 * result + (type != null ? type.hashCode() : 0);
       return result;
     }

@@ -274,13 +274,11 @@ public class ShadowAccessibilityManager {
 
     @Override
     public void handleMessage(@Nonnull Message message) {
-      switch (message.what) {
-        case DO_SET_STATE:
-          ReflectionHelpers.callInstanceMethod(
-              accessibilityManager, "setState", ClassParameter.from(int.class, message.arg1));
-          return;
-        default:
-          Log.w("AccessibilityManager", "Unknown message type: " + message.what);
+      if (message.what == DO_SET_STATE) {
+        ReflectionHelpers.callInstanceMethod(
+            accessibilityManager, "setState", ClassParameter.from(int.class, message.arg1));
+      } else {
+        Log.w("AccessibilityManager", "Unknown message type: " + message.what);
       }
     }
   }

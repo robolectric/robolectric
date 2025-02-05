@@ -408,7 +408,7 @@ public class ShadowMediaCodec {
 
     if (isAsync) {
       // Dequeue the buffer to signal its availability to the client.
-      outputBuffersPendingDequeue.remove(Integer.valueOf(index));
+      outputBuffersPendingDequeue.remove(index);
       // Signal output buffer availability.
       postFakeNativeEvent(EVENT_CALLBACK, CB_OUTPUT_AVAILABLE, index, outputBufferInfos[index]);
     }

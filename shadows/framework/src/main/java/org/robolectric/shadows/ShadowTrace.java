@@ -30,10 +30,10 @@ public class ShadowTrace {
   private static final String TAG = "ShadowTrace";
 
   private static final ThreadLocal<Deque<String>> currentSections =
-      ThreadLocal.withInitial(() -> new ArrayDeque<>());
+      ThreadLocal.withInitial(ArrayDeque::new);
 
   private static final ThreadLocal<Queue<String>> previousSections =
-      ThreadLocal.withInitial((Supplier<Deque<String>>) () -> new ArrayDeque<>());
+      ThreadLocal.withInitial((Supplier<Deque<String>>) ArrayDeque::new);
 
   private static final Set<AsyncTraceSection> currentAsyncSections = new HashSet<>();
 

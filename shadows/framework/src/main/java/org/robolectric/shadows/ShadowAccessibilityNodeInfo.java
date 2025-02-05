@@ -13,7 +13,6 @@ import android.view.accessibility.AccessibilityWindowInfo;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -554,9 +553,8 @@ public class ShadowAccessibilityNodeInfo {
 
     // Here we take the actions out of the pairs and stick them into a separate LinkedList to return
     List<Integer> actionsOnly = new ArrayList<>();
-    Iterator<Pair<Integer, Bundle>> iter = performedActionAndArgsList.iterator();
-    while (iter.hasNext()) {
-      actionsOnly.add(iter.next().first);
+    for (Pair<Integer, Bundle> integerBundlePair : performedActionAndArgsList) {
+      actionsOnly.add(integerBundlePair.first);
     }
 
     return Collections.unmodifiableList(actionsOnly);

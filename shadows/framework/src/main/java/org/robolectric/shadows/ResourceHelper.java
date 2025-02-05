@@ -48,7 +48,7 @@ public final class ResourceHelper {
    */
   public static int getColor(String value) {
     if (value != null) {
-      if (value.startsWith("#") == false) {
+      if (!value.startsWith("#")) {
         throw new NumberFormatException(String.format("Color value '%s' must start with #", value));
       }
 
@@ -182,13 +182,13 @@ public final class ResourceHelper {
    */
   public static boolean parseFloatAttribute(
       String attribute, String value, TypedValue outValue, boolean requireUnit) {
-    assert requireUnit == false || attribute != null;
+    assert !requireUnit || attribute != null;
 
     // remove the space before and after
     value = value.trim();
     int len = value.length();
 
-    if (len <= 0) {
+    if (len == 0) {
       return false;
     }
 
@@ -247,7 +247,7 @@ public final class ResourceHelper {
           outValue.assetCookie = 0;
           outValue.string = null;
 
-          if (requireUnit == false) {
+          if (!requireUnit) {
             outValue.type = TypedValue.TYPE_FLOAT;
             outValue.data = Float.floatToIntBits(f);
           } else {
@@ -255,9 +255,8 @@ public final class ResourceHelper {
             applyUnit(sUnitNames[1], outValue, sFloatOut);
             computeTypedValue(outValue, f, sFloatOut[0]);
 
-            System.out.println(
-                String.format(
-                    "Dimension \"%1$s\" in attribute \"%2$s\" is missing unit!", value, attribute));
+            System.out.printf(
+                "Dimension \"%1$s\" in attribute \"%2$s\" is missing unit!%n", value, attribute);
           }
           return true;
         }

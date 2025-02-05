@@ -180,7 +180,7 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
     }
 
     if (src != null) {
-      descriptionBuilder.append(" taken from ").append(src.toString());
+      descriptionBuilder.append(" taken from ").append(src);
     }
     appendDescription(descriptionBuilder.toString());
   }
@@ -203,7 +203,7 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
     }
 
     if (src != null) {
-      descriptionBuilder.append(" taken from ").append(src.toString());
+      descriptionBuilder.append(" taken from ").append(src);
     }
     appendDescription(descriptionBuilder.toString());
   }

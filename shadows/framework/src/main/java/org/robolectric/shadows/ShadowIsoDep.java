@@ -25,7 +25,6 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowIsoDep extends ShadowBasicTagTechnology {
 
   @SuppressLint("PrivateApi")
-  @SuppressWarnings("unchecked")
   public static IsoDep newInstance() {
     return Shadow.newInstance(IsoDep.class, new Class<?>[] {Tag.class}, new Object[] {null});
   }

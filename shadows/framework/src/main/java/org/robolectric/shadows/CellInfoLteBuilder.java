@@ -83,7 +83,7 @@ public class CellInfoLteBuilder {
       try {
         // This reflection is highly brittle but there is currently no choice as CellConfigLte is
         // entirely @hide.
-        Class cellConfigLteClass = Class.forName("android.telephony.CellConfigLte");
+        Class<?> cellConfigLteClass = Class.forName("android.telephony.CellConfigLte");
         return cellInfoLteReflector.newCellInfoLte(
             cellConnectionStatus,
             isRegistered,

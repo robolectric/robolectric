@@ -35,7 +35,6 @@ public class ShadowBiometricManager {
     authenticatorType = BiometricManager.Authenticators.EMPTY_SET;
   }
 
-  @SuppressWarnings("deprecation")
   @RequiresPermission(USE_BIOMETRIC)
   @Implementation
   protected int canAuthenticate() {

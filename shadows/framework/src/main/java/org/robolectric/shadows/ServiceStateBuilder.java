@@ -133,9 +133,9 @@ public class ServiceStateBuilder {
   private interface ServiceStateReflector {
 
     @Accessor("mIsUsingCarrierAggregation")
-    public void setIsUsingCarrierAggregation(boolean value);
+    void setIsUsingCarrierAggregation(boolean value);
 
     @Accessor("mNetworkRegistrationInfos")
-    public void setNetworkRegistrationInfos(List<NetworkRegistrationInfo> value);
+    void setNetworkRegistrationInfos(List<NetworkRegistrationInfo> value);
   }
 }

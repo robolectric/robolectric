@@ -71,8 +71,7 @@ public class ShadowAccessibilityService extends ShadowService {
 
   /**
    * Returns a representation of interactive windows shown on the device's default display. Mirrors
-   * the values provided to {@link #setWindows(List<AccessibilityWindowInfo>)}. Returns an empty
-   * list if not set.
+   * the values provided to {@link #setWindows(List)}. Returns an empty list if not set.
    */
   @Implementation
   protected List<AccessibilityWindowInfo> getWindows() {

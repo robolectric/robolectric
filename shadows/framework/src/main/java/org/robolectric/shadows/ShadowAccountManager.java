@@ -781,7 +781,7 @@ public class ShadowAccountManager {
     return listeners;
   }
 
-  private abstract class BaseRoboAccountManagerFuture<T> implements AccountManagerFuture<T> {
+  private abstract static class BaseRoboAccountManagerFuture<T> implements AccountManagerFuture<T> {
     protected final AccountManagerCallback<T> callback;
     private final Handler handler;
     protected T result;
