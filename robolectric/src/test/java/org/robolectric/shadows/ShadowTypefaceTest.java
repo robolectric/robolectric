@@ -166,8 +166,6 @@ public class ShadowTypefaceTest {
     FontFamily family = new FontFamily.Builder(font).build();
     // This invokes the Typeface static initializer, which creates some default typefaces.
     Typeface.create("roboto", Typeface.BOLD);
-    // Call the resetter to clear the FONTS map in Typeface
-    ShadowLegacyTypeface.reset();
     Typeface typeface =
         new Typeface.CustomFallbackBuilder(family).setStyle(font.getStyle()).build();
     assertThat(typeface).isNotNull();
