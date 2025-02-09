@@ -1,11 +1,13 @@
 package android.app;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
 
 import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.app.role.RoleManager;
@@ -19,10 +21,13 @@ import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.CrossProfileApps;
 import android.content.pm.LauncherApps;
 import android.hardware.Sensor;
@@ -1597,6 +1602,69 @@ public class ContextTest {
               e.printStackTrace();
             }
           });
+    }
+  }
+
+  @SuppressLint("UnspecifiedRegisterReceiverFlag")
+  @Test
+  @SdkSuppress(minSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void
+      registerReceiver_withoutAnyExportedFlagsAndTargetSdkGreaterThan33_throwsSecurityException() {
+    IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+
+    assertThrows(
+        SecurityException.class,
+        () -> application.registerReceiver(new TestBroadcastReceiver(), filter));
+  }
+
+  @Test
+  @SdkSuppress(minSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void registerReceiver_withReceiverExportedFlagAndTargetSdkGreaterThan33_succeed() {
+    IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+    application.registerReceiver(new TestBroadcastReceiver(), filter, Context.RECEIVER_EXPORTED);
+  }
+
+  @Test
+  @SdkSuppress(minSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void registerReceiver_withReceiverNotExportedFlagAndTargetSdkGreaterThan33_succeed() {
+    IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+    application.registerReceiver(
+        new TestBroadcastReceiver(), filter, Context.RECEIVER_NOT_EXPORTED);
+  }
+
+  @Test
+  @SdkSuppress(minSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void
+      registerReceiver_withBothExportedFlagsAndTargetSdkGreaterThan33_throwsIllegalArgumentException() {
+    IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            application.registerReceiver(
+                new TestBroadcastReceiver(),
+                filter,
+                Context.RECEIVER_EXPORTED | Context.RECEIVER_NOT_EXPORTED));
+  }
+
+  @SuppressLint("UnspecifiedRegisterReceiverFlag")
+  @Test
+  @SdkSuppress(maxSdkVersion = Build.VERSION_CODES.TIRAMISU)
+  public void
+      registerReceiver_withoutAnyExportedFlagsAndTargetLessThan34_doesntThrowSecurityException() {
+    IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+    application.registerReceiver(new TestBroadcastReceiver(), filter);
+  }
+
+  private static class TestBroadcastReceiver extends BroadcastReceiver {
+    public Context context;
+    public Intent intent;
+    public boolean isSticky;
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      this.context = context;
+      this.intent = intent;
+      this.isSticky = isInitialStickyBroadcast();
     }
   }
 
