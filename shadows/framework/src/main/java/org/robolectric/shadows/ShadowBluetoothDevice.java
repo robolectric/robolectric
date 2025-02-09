@@ -51,8 +51,8 @@ public class ShadowBluetoothDevice {
    * their ShadowBluetoothGatt's may inject an interceptor, which will be called with the newly
    * constructed BluetoothGatt before {@link ShadowBluetoothDevice#connectGatt} returns.
    */
-  public static interface BluetoothGattConnectionInterceptor {
-    public void onNewGattConnection(BluetoothGatt gatt);
+  public interface BluetoothGattConnectionInterceptor {
+    void onNewGattConnection(BluetoothGatt gatt);
   }
 
   @Deprecated // Prefer {@link android.bluetooth.BluetoothAdapter#getRemoteDevice}

@@ -67,7 +67,6 @@ public class ShadowArscResourcesImpl extends ShadowResourcesImpl {
   public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
     InputStream inputStream =
         reflector(ResourcesImplReflector.class, realResourcesImpl).openRawResource(id);
-    ;
     if (!(inputStream instanceof FileInputStream)) {
       // todo fixme
       return null;

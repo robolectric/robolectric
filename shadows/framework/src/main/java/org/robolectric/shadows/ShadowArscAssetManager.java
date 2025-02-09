@@ -1342,7 +1342,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
       throws FileNotFoundException {
     final Ref<Long> startOffset = new Ref<>(-1L);
     final Ref<Long> length = new Ref<>(-1L);
-    ;
     FileDescriptor fd = a.openFileDescriptor(startOffset, length);
 
     if (fd == null) {

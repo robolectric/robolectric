@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-public class ClassNameResolver<T> {
+public class ClassNameResolver {
 
   public static <T> Class<T> resolve(String packageName, String className)
       throws ClassNotFoundException {

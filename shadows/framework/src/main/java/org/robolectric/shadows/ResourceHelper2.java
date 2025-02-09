@@ -93,7 +93,7 @@ public final class ResourceHelper2 {
     value = value.trim();
     int len = value.length();
 
-    if (len <= 0) {
+    if (len == 0) {
       return false;
     }
 
@@ -141,7 +141,7 @@ public final class ResourceHelper2 {
           outValue.assetCookie = 0;
           outValue.string = null;
 
-          if (requireUnit == false) {
+          if (!requireUnit) {
             outValue.type = TypedValue.TYPE_FLOAT;
             outValue.data = Float.floatToIntBits(f);
           } else {
@@ -149,10 +149,9 @@ public final class ResourceHelper2 {
             applyUnit(sUnitNames[1], outValue, sFloatOut);
             computeTypedValue(outValue, f, sFloatOut[0], "dp");
 
-            System.out.println(
-                String.format(
-                    "Dimension \"%1$s\" in attribute \"%2$s\" is missing unit!",
-                    value, attribute == null ? "(unknown)" : attribute));
+            System.out.printf(
+                "Dimension \"%1$s\" in attribute \"%2$s\" is missing unit!%n",
+                value, attribute == null ? "(unknown)" : attribute);
           }
           return true;
         }

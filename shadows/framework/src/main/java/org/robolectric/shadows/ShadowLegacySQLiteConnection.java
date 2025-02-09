@@ -611,10 +611,7 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
         final StatementOperation<T> statementOperation) {
       synchronized (lock) {
         final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
-        return execute(
-            () -> {
-              return statementOperation.call(statement);
-            });
+        return execute(() -> statementOperation.call(statement));
       }
     }
 
@@ -744,7 +741,7 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
       final int baseErrorCode = errorCode & 0xff;
       // Remove redundant error code prefix from sqlite4java. The error code is added
       // as a suffix below.
-      String errorMessageWithoutCode = sqliteErrorMessage.replaceAll("^\\[\\d+\\] ?", "");
+      String errorMessageWithoutCode = sqliteErrorMessage.replaceAll("^\\[\\d+] ?", "");
       StringBuilder fullMessage = new StringBuilder(errorMessageWithoutCode);
       fullMessage.append(" (code ");
       fullMessage.append(errorCode);

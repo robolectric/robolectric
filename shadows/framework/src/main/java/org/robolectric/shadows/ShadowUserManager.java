@@ -745,7 +745,7 @@ public class ShadowUserManager {
    */
   @Implementation(minSdk = M)
   protected boolean isSystemUser() {
-    if (userManagerState.isSystemUser == false) {
+    if (!userManagerState.isSystemUser) {
       return false;
     } else {
       return reflector(UserManagerReflector.class, realObject).isSystemUser();

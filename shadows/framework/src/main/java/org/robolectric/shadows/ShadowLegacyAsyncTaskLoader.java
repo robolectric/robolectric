@@ -15,7 +15,7 @@ import org.robolectric.annotation.RealObject;
     value = AsyncTaskLoader.class,
     shadowPicker = ShadowAsyncTaskLoader.Picker.class,
     isInAndroidSdk = false)
-public class ShadowLegacyAsyncTaskLoader<D> extends ShadowAsyncTaskLoader {
+public class ShadowLegacyAsyncTaskLoader<D> extends ShadowAsyncTaskLoader<D> {
   @RealObject private AsyncTaskLoader<D> realObject;
   private BackgroundWorker worker;
 

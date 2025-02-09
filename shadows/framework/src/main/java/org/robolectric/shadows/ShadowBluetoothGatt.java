@@ -53,7 +53,6 @@ public class ShadowBluetoothGatt {
   @ReflectorObject protected BluetoothGattReflector bluetoothGattReflector;
 
   @SuppressLint("PrivateApi")
-  @SuppressWarnings("unchecked")
   public static BluetoothGatt newInstance(BluetoothDevice device) {
     try {
       Class<?> iBluetoothGattClass =
@@ -86,7 +85,7 @@ public class ShadowBluetoothGatt {
                   Integer.TYPE
                 },
                 new Object[] {null, device, 0, false, 0});
-      } else if (apiLevel >= O) {
+      } else if (apiLevel == O) {
         bluetoothGatt =
             Shadow.newInstance(
                 BluetoothGatt.class,

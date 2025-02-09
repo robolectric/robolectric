@@ -276,10 +276,7 @@ public class ShadowLocationManager {
       if (criteria.isBearingRequired() && !hasBearingSupport()) {
         return false;
       }
-      if (!criteria.isCostAllowed() && hasMonetaryCost) {
-        return false;
-      }
-      return true;
+      return criteria.isCostAllowed() || !hasMonetaryCost;
     }
   }
 

@@ -26,6 +26,7 @@ import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -364,7 +365,7 @@ public class ShadowNotificationManager {
   protected Map<String, AutomaticZenRule> getAutomaticZenRules() {
     enforcePolicyAccess();
 
-    ImmutableMap.Builder<String, AutomaticZenRule> rules = new ImmutableMap.Builder();
+    ImmutableMap.Builder<String, AutomaticZenRule> rules = new ImmutableMap.Builder<>();
     for (Map.Entry<String, AutomaticZenRule> entry : automaticZenRules.entrySet()) {
       rules.put(entry.getKey(), copyAutomaticZenRule(entry.getValue()));
     }
@@ -547,8 +548,7 @@ public class ShadowNotificationManager {
     public boolean equals(Object o) {
       if (!(o instanceof Key)) return false;
       Key other = (Key) o;
-      return (this.tag == null ? other.tag == null : this.tag.equals(other.tag))
-          && this.id == other.id;
+      return Objects.equals(this.tag, other.tag) && this.id == other.id;
     }
   }
 

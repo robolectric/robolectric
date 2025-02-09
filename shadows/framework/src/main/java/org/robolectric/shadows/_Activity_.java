@@ -255,7 +255,7 @@ public interface _Activity_ {
           null,
           null,
           null);
-    } else if (apiLevel > Build.VERSION_CODES.R) {
+    } else {
       attach(
           baseContext,
           activityThread,

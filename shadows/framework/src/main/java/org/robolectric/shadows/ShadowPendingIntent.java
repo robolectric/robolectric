@@ -418,7 +418,7 @@ public class ShadowPendingIntent {
   }
 
   /**
-   * @return {@true} iff this PendingIntent has been canceled
+   * @return {@code true} iff this PendingIntent has been canceled
    */
   public boolean isCanceled() {
     return canceled;
@@ -514,10 +514,7 @@ public class ShadowPendingIntent {
       }
     }
 
-    if (this.requestCode != that.requestCode) {
-      return false;
-    }
-    return true;
+    return this.requestCode == that.requestCode;
   }
 
   @Override
