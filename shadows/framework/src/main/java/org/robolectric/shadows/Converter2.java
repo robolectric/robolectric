@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.util.TypedValue;
 import org.robolectric.res.AttrData;
-import org.robolectric.util.Util;
 
 public class Converter2<T> {
   private static int nextStringCookie = 0xbaaa5;
@@ -207,7 +206,7 @@ public class Converter2<T> {
           throw new RuntimeException("no value found for " + key);
         }
       }
-      return Util.parseInt(valueFor);
+      return Integer.decode(valueFor);
     }
   }
 }
