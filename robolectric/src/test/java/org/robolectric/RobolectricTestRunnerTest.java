@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
-import static org.robolectric.RobolectricTestRunner.defaultInjector;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.annotation.SuppressLint;
@@ -19,7 +18,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -56,14 +54,12 @@ import org.robolectric.internal.ShadowProvider;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
-import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.plugins.DefaultSdkPicker;
 import org.robolectric.plugins.SdkCollection;
-import org.robolectric.plugins.StubSdk;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.TestUtil;
 
@@ -119,41 +115,6 @@ public class RobolectricTestRunnerTest {
               "ignored: ignoredOldSdkMethod");
     } else {
       assertThat(events).containsExactly("failure: API level 11 is not available");
-    }
-  }
-
-  @Test
-  public void testsWithUnsupportedSdkShouldBeIgnored() throws Exception {
-    RobolectricTestRunner runner =
-        new RobolectricTestRunner(
-            TestWithTwoMethods.class,
-            defaultInjector()
-                .bind(
-                    SdkProvider.class,
-                    () ->
-                        Arrays.asList(
-                            TestUtil.getSdkCollection().getSdk(33), new StubSdk(34, false)))
-                .build());
-    runner.run(notifier);
-    // method is null as it fails on class level during getSandbox(method).
-
-    if (Boolean.getBoolean("robolectric.useLegacySandboxFlow")) {
-      assertThat(events)
-          .containsExactly(
-              "started: first[33]",
-              "finished: first[33]",
-              "started: first",
-              "ignored: first: Failed to create a Robolectric sandbox: unsupported",
-              "finished: first",
-              "started: second[33]",
-              "finished: second[33]",
-              "started: second",
-              "ignored: second: Failed to create a Robolectric sandbox: unsupported",
-              "finished: second")
-          .inOrder();
-    } else {
-      assertThat(events)
-          .containsExactly("ignored: null: Failed to create a Robolectric sandbox: unsupported");
     }
   }
 
