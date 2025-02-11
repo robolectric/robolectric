@@ -40,7 +40,8 @@ public abstract class ShadowChoreographer {
   private ChoreographerReflector reflector;
 
   private static volatile boolean isPaused = false;
-  private static volatile Duration frameDelay = Duration.ofMillis(1);
+
+  private static volatile Duration frameDelay = getDefaultFrameDelay();
 
   /**
    * This field is only used when {@link #isPaused()} is true. It represents the next scheduled
@@ -209,10 +210,15 @@ public abstract class ShadowChoreographer {
   public static void reset() {
     nextVsyncTimeNanos = 0;
     isPaused = false;
-    frameDelay = Duration.ofMillis(1);
+    frameDelay = getDefaultFrameDelay();
     if (RuntimeEnvironment.getApiLevel() >= N) {
       ShadowBackdropFrameRenderer.reset();
     }
+  }
+
+  private static Duration getDefaultFrameDelay() {
+    // TODO: change this to approximate 60fps.
+    return Duration.ofMillis(Integer.getInteger("robolectric.defaultFrameDelayMs", 1));
   }
 
   /** Accessor interface for {@link Choreographer}'s internals */
