@@ -87,6 +87,7 @@ import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,6 +104,7 @@ public class ShadowTelephonyManagerTest {
   private TelephonyManager telephonyManager;
   private ShadowTelephonyManager shadowTelephonyManager;
   private TelephonyManager tmForSub5;
+  private String defaultNetworkCountryIso;
 
   @Before
   public void setUp() throws Exception {
@@ -111,6 +113,12 @@ public class ShadowTelephonyManagerTest {
     shadowOf((Application) ApplicationProvider.getApplicationContext())
         .grantPermissions(permission.READ_PRIVILEGED_PHONE_STATE);
     tmForSub5 = newTelephonyManager(5);
+    defaultNetworkCountryIso = shadowOf(telephonyManager).getNetworkCountryIso();
+  }
+
+  @After
+  public void tearDown() {
+    shadowOf(telephonyManager).setNetworkCountryIso(defaultNetworkCountryIso);
   }
 
   private TelephonyManager newTelephonyManager(Integer subId) {
@@ -352,6 +360,11 @@ public class ShadowTelephonyManagerTest {
   public void shouldGiveNetworkCountryIsoInLowercase() {
     shadowOf(telephonyManager).setNetworkCountryIso("SomeIso");
     assertEquals("someiso", telephonyManager.getNetworkCountryIso());
+  }
+
+  @Test
+  public void shouldGiveEmptyStringForNetworkCountryIsoWhenNotSet() {
+    assertThat(telephonyManager.getNetworkCountryIso()).isEmpty();
   }
 
   @Test

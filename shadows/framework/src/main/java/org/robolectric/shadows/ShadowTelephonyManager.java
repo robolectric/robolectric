@@ -116,7 +116,7 @@ public class ShadowTelephonyManager {
   private String meid;
   private String groupIdLevel1;
   private String networkOperatorName = "";
-  private String networkCountryIso;
+  private String networkCountryIso = "";
   private String networkOperator = "";
   private String networkSpecifier = "";
   private Locale simLocale;
