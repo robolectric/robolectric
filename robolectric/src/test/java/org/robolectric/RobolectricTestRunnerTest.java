@@ -106,16 +106,12 @@ public class RobolectricTestRunnerTest {
                 .bind(org.robolectric.pluginapi.SdkPicker.class, AllEnabledSdkPicker.class)
                 .build());
     runner.run(notifier);
-    if (Boolean.getBoolean("robolectric.useLegacySandboxFlow")) {
-      assertThat(events)
-          .containsExactly(
-              "started: oldSdkMethod",
-              "failure: API level 11 is not available",
-              "finished: oldSdkMethod",
-              "ignored: ignoredOldSdkMethod");
-    } else {
-      assertThat(events).containsExactly("failure: API level 11 is not available");
-    }
+    assertThat(events)
+        .containsExactly(
+            "started: oldSdkMethod",
+            "failure: API level 11 is not available",
+            "finished: oldSdkMethod",
+            "ignored: ignoredOldSdkMethod");
   }
 
   @Test
