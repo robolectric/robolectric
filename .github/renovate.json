@@ -1,0 +1,42 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":disableDependencyDashboard",
+    "schedule:weekly"
+  ],
+  "ignoreDeps": [
+    "org.robolectric:nativeruntime-dist-compat"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "packageRules": [
+    {
+      "groupName": "GitHub Actions",
+      "matchManagers": "github-actions"
+    },
+    {
+      "groupName": "Android Gradle Plugin",
+      "matchManagers": "gradle",
+      "matchPackageNames": [
+        "com.android.tools:common",
+        "com.android.tools.build:gradle*"
+      ]
+    },
+    {
+      "groupName": "AndroidX Test",
+      "matchManagers": "gradle",
+      "matchPackageNames": [
+        "androidx.test*"
+      ]
+    },
+    {
+      "groupName": "AndroidX",
+      "matchManagers": "gradle",
+      "matchPackageNames": [
+        "androidx.*"
+      ]
+    }
+  ]
+}
