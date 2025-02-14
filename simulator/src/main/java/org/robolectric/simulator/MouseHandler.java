@@ -4,12 +4,17 @@ import android.app.UiAutomation;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import androidx.test.platform.app.InstrumentationRegistry;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.Duration;
 import java.time.Instant;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import org.robolectric.shadows.ShadowUiAutomation;
 
 /** A {@link MouseHandler} that posts triggers {@link MotionEvent}. */
 public class MouseHandler extends MouseAdapter {
@@ -21,6 +26,40 @@ public class MouseHandler extends MouseAdapter {
   private Instant downTime;
 
   private final Handler handler = new Handler(Looper.getMainLooper());
+
+  private final JPopupMenu rightClickMenu;
+
+  public MouseHandler() {
+    rightClickMenu = new JPopupMenu();
+    JMenuItem sendBackEvent = new JMenuItem("Press back");
+    sendBackEvent.addActionListener(
+        e -> {
+          handler.post(
+              () -> {
+                long eventTime = SystemClock.uptimeMillis();
+                KeyEvent backKeyDown =
+                    new KeyEvent(
+                        eventTime,
+                        eventTime,
+                        KeyEvent.ACTION_DOWN,
+                        KeyEvent.KEYCODE_BACK,
+                        /* repeat= */ 0,
+                        0);
+                ShadowUiAutomation.injectInputEvent(backKeyDown);
+
+                KeyEvent backKeyUp =
+                    new KeyEvent(
+                        eventTime,
+                        eventTime,
+                        KeyEvent.ACTION_UP,
+                        KeyEvent.KEYCODE_BACK,
+                        /* repeat= */ 0,
+                        0);
+                ShadowUiAutomation.injectInputEvent(backKeyUp);
+              });
+        });
+    rightClickMenu.add(sendBackEvent);
+  }
 
   @Override
   public void mousePressed(MouseEvent mouseEvent) {
@@ -45,11 +84,13 @@ public class MouseHandler extends MouseAdapter {
     if (shouldHandle(mouseEvent)) {
       isPressed = false;
       postMotionEvent(mouseEvent, MotionEvent.ACTION_UP);
+    } else if (SwingUtilities.isRightMouseButton(mouseEvent)) {
+      rightClickMenu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
     }
   }
 
   private boolean shouldHandle(MouseEvent mouseEvent) {
-    return !mouseEvent.isPopupTrigger() && mouseEvent.getButton() == MouseEvent.BUTTON1;
+    return !mouseEvent.isPopupTrigger() && SwingUtilities.isLeftMouseButton(mouseEvent);
   }
 
   private void postMotionEvent(MouseEvent mouseEvent, int action) {
