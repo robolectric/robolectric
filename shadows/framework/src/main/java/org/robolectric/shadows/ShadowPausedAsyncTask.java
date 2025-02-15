@@ -25,7 +25,8 @@ import org.robolectric.util.reflector.ForType;
     // TODO: turn off shadowOf generation. Figure out why this is needed
     isInAndroidSdk = false)
 @Beta
-public class ShadowPausedAsyncTask<Params, Progress, Result> extends ShadowAsyncTask {
+public class ShadowPausedAsyncTask<Params, Progress, Result>
+    extends ShadowAsyncTask<Params, Progress, Result> {
 
   private static Executor executorOverride = null;
 
