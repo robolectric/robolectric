@@ -9,9 +9,11 @@ import org.robolectric.annotation.LooperMode;
  *
  * <p>Different shadow implementations will be used based on the current {@link LooperMode.Mode}.
  *
+ * @deprecated {@link AsyncTaskLoader} is deprecated in the Android SDK.
  * @see ShadowLegacyAsyncTaskLoader
  * @see ShadowPausedAsyncTaskLoader
  */
+@Deprecated
 @Implements(value = AsyncTaskLoader.class, shadowPicker = ShadowAsyncTaskLoader.Picker.class)
 public abstract class ShadowAsyncTaskLoader<D> {
 

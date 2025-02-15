@@ -17,8 +17,9 @@ import org.robolectric.util.reflector.ForType;
 /**
  * A {@link AsyncTask} shadow for {@link LooperMode.Mode#PAUSED}
  *
- * <p>This is beta API, and will likely be renamed/removed in a future Robolectric release.
+ * @deprecated {@link AsyncTask} is deprecated in the Android SDK.
  */
+@Deprecated
 @Implements(
     value = AsyncTask.class,
     shadowPicker = ShadowAsyncTask.Picker.class,
