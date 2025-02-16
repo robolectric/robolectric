@@ -172,7 +172,7 @@ jobs:
       SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
     needs: unit-tests
-    if: github.ref == 'refs/heads/master'
+    if: github.repository == 'robolectric/robolectric' && github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v4
 
