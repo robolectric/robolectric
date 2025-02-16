@@ -551,26 +551,24 @@ public class ShadowContentResolverTest {
               streamCreateCount.incrementAndGet();
               AtomicBoolean isClosed = new AtomicBoolean();
               isClosed.set(false);
-              OutputStream outputStream =
-                  new OutputStream() {
-                    @Override
-                    public void close() {
-                      isClosed.set(true);
-                    }
+              return new OutputStream() {
+                @Override
+                public void close() {
+                  isClosed.set(true);
+                }
 
-                    @Override
-                    public void write(int arg0) throws IOException {
-                      if (isClosed.get()) {
-                        throw new IOException();
-                      }
-                    }
+                @Override
+                public void write(int arg0) throws IOException {
+                  if (isClosed.get()) {
+                    throw new IOException();
+                  }
+                }
 
-                    @Override
-                    public String toString() {
-                      return "outputstream for " + uri;
-                    }
-                  };
-              return outputStream;
+                @Override
+                public String toString() {
+                  return "outputStream for " + uri;
+                }
+              };
             });
 
     assertThat(streamCreateCount.get()).isEqualTo(0);
@@ -643,26 +641,24 @@ public class ShadowContentResolverTest {
               streamCreateCount.incrementAndGet();
               AtomicBoolean isClosed = new AtomicBoolean();
               isClosed.set(false);
-              OutputStream outputStream =
-                  new OutputStream() {
-                    @Override
-                    public void close() {
-                      isClosed.set(true);
-                    }
+              return new OutputStream() {
+                @Override
+                public void close() {
+                  isClosed.set(true);
+                }
 
-                    @Override
-                    public void write(int arg0) throws IOException {
-                      if (isClosed.get()) {
-                        throw new IOException();
-                      }
-                    }
+                @Override
+                public void write(int arg0) throws IOException {
+                  if (isClosed.get()) {
+                    throw new IOException();
+                  }
+                }
 
-                    @Override
-                    public String toString() {
-                      return "outputstream for " + uri;
-                    }
-                  };
-              return outputStream;
+                @Override
+                public String toString() {
+                  return "outputStream for " + uri;
+                }
+              };
             });
 
     assertThat(streamCreateCount.get()).isEqualTo(0);
