@@ -241,7 +241,7 @@ play-services-basement = { module = "com.google.android.gms:play-services-baseme
 
 spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-gradle" }
 
-# Not used, but helps dependabot trigger updates for Jacoco
+# Not used, but helps Renovate trigger updates for Jacoco
 jacoco-agent = { module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco" }
 
 [bundles]
