@@ -2,6 +2,7 @@ package org.robolectric.android.internal;
 
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -19,6 +20,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Package;
 import android.content.res.Resources;
+import android.content.type.DefaultMimeMapFactory;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
@@ -216,6 +218,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
     Bootstrap.setDisplayConfiguration(androidConfiguration, displayMetrics);
+
+    // mime resources only available on S and above
+    if (RuntimeEnvironment.getApiLevel() >= S) {
+      libcore.content.type.MimeMap.setDefaultSupplier(DefaultMimeMapFactory::create);
+    }
 
     Instrumentation instrumentation = createInstrumentation();
     InstrumentationRegistry.registerInstance(instrumentation, new Bundle());

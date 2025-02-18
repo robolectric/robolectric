@@ -1,19 +1,21 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.R;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.webkit.MimeTypeMap;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
+@Config(maxSdk = R)
 public class ShadowMimeTypeMapTest {
 
   private static final String IMAGE_EXTENSION = "jpg";
@@ -22,31 +24,11 @@ public class ShadowMimeTypeMapTest {
   private static final String IMAGE_MIMETYPE = "image/jpeg";
 
   @Test
-  public void shouldResetStaticStateBetweenTests() {
-    assertFalse(MimeTypeMap.getSingleton().hasExtension(VIDEO_EXTENSION));
-    shadowOf(MimeTypeMap.getSingleton())
-        .addExtensionMimeTypeMapping(VIDEO_EXTENSION, VIDEO_MIMETYPE);
-  }
-
-  @Test
-  public void shouldResetStaticStateBetweenTests_anotherTime() {
-    assertFalse(MimeTypeMap.getSingleton().hasExtension(VIDEO_EXTENSION));
-    shadowOf(MimeTypeMap.getSingleton())
-        .addExtensionMimeTypeMapping(VIDEO_EXTENSION, VIDEO_MIMETYPE);
-  }
-
-  @Test
   public void getSingletonShouldAlwaysReturnSameInstance() {
     MimeTypeMap firstInstance = MimeTypeMap.getSingleton();
     MimeTypeMap secondInstance = MimeTypeMap.getSingleton();
 
     assertSame(firstInstance, secondInstance);
-  }
-
-  @Test
-  public void byDefaultThereShouldBeNoMapping() {
-    assertFalse(MimeTypeMap.getSingleton().hasExtension(VIDEO_EXTENSION));
-    assertFalse(MimeTypeMap.getSingleton().hasExtension(IMAGE_EXTENSION));
   }
 
   @Test
