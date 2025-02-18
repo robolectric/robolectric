@@ -4,7 +4,6 @@ plugins {
 }
 
 dependencies {
-  compileOnly(libs.findbugs.jsr305)
   api(project(":annotations"))
   api(libs.guava)
 
