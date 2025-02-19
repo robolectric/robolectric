@@ -6,6 +6,9 @@
     "schedule:weekly"
   ],
   "ignoreDeps": [
+    "com.google.android.gms:play-services-auth",
+    "com.google.android.gms:play-services-base",
+    "com.google.android.gms:play-services-basement",
     "org.robolectric:nativeruntime-dist-compat"
   ],
   "labels": [
