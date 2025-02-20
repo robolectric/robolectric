@@ -8,15 +8,18 @@ import android.content.om.OverlayInfo;
 import android.content.om.OverlayManager;
 import android.content.pm.PackageManager;
 import android.os.UserHandle;
+import com.android.internal.content.om.OverlayManagerImpl;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions;
 
 /**
  * Basic shadow implementation for the {@link OverlayManager}.
@@ -88,10 +91,26 @@ public final class ShadowOverlayManager {
   interface OverlayManagerReflector {
     @Accessor("mContext")
     Context getContext();
+
+    @Accessor("mOverlayManagerImpl")
+    OverlayManagerImpl getOverlayManagerImpl();
+  }
+
+  @ForType(OverlayManagerImpl.class)
+  interface OverlayManagerImplReflector {
+    @Accessor("mContext")
+    Context getContext();
   }
 
   private void checkPermission() {
-    Context context = reflector(OverlayManagerReflector.class, realOverlayManager).getContext();
+    Context context = null;
+    if (RuntimeEnvironment.getApiLevel() >= AndroidVersions.Baklava.SDK_INT) {
+      OverlayManagerImpl overlayManagerImpl =
+          reflector(OverlayManagerReflector.class, realOverlayManager).getOverlayManagerImpl();
+      context = reflector(OverlayManagerImplReflector.class, overlayManagerImpl).getContext();
+    } else {
+      context = reflector(OverlayManagerReflector.class, realOverlayManager).getContext();
+    }
     if (context.checkSelfPermission(android.Manifest.permission.CHANGE_OVERLAY_PACKAGES)
         != PackageManager.PERMISSION_GRANTED) {
       throw new SecurityException(

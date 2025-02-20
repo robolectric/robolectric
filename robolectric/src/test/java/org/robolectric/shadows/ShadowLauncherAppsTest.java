@@ -54,6 +54,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions;
 
 /** Robolectric test for {@link ShadowLauncherApps}. */
 @RunWith(AndroidJUnit4.class)
@@ -435,6 +436,29 @@ public class ShadowLauncherAppsTest {
           LauncherActivityInfo.class,
           ClassParameter.from(Context.class, ApplicationProvider.getApplicationContext()),
           ClassParameter.from(UserHandle.class, userHandle),
+          ClassParameter.from(LauncherActivityInfoInternal.class, launcherActivityInfoInternal));
+    } else if (RuntimeEnvironment.getApiLevel() >= AndroidVersions.Baklava.SDK_INT) {
+      boolean supportsMultiInstanceSystemUi = false;
+      try {
+        supportsMultiInstanceSystemUi =
+            RuntimeEnvironment.getApplication()
+                .getPackageManager()
+                .getProperty(
+                    "android.window.PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI", packageName)
+                .getBoolean();
+      } catch (NameNotFoundException e) {
+        supportsMultiInstanceSystemUi = false;
+      }
+      LauncherActivityInfoInternal launcherActivityInfoInternal =
+          ReflectionHelpers.callConstructor(
+              LauncherActivityInfoInternal.class,
+              ClassParameter.from(ActivityInfo.class, info),
+              ClassParameter.from(IncrementalStatesInfo.class, null),
+              ClassParameter.from(UserHandle.class, userHandle),
+              ClassParameter.from(boolean.class, supportsMultiInstanceSystemUi));
+      return ReflectionHelpers.callConstructor(
+          LauncherActivityInfo.class,
+          ClassParameter.from(Context.class, ApplicationProvider.getApplicationContext()),
           ClassParameter.from(LauncherActivityInfoInternal.class, launcherActivityInfoInternal));
     } else {
 
