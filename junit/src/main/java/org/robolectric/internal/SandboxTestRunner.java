@@ -155,6 +155,12 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         // generating nested statement for all the tests in each sandboxes
         for (Map.Entry<Sandbox, List<FrameworkMethod>> entry : methodsBySandbox.entrySet()) {
           Sandbox sandbox = entry.getKey();
+          FrameworkMethod firstMethod = entry.getValue().get(0);
+
+          // Recreate the sandbox if the stored sandbox is removed from the cache
+          if (sandbox.isShutdown()) {
+            sandbox = getSandbox(firstMethod);
+          }
           Statement statement = childrenInvoker(entry.getValue(), notifier);
 
           Class<?> bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
@@ -166,7 +172,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
           statement = withClassRules(statement, bootstrappedTestClass);
 
           // Use the first method to setup a sandbox and invoke everything in that sandbox
-          FrameworkMethod firstMethod = entry.getValue().get(0);
           Statement statementsOfTestGroup = inSandboxThread(sandbox, firstMethod, statement);
           statementsOfTestGroup.evaluate();
         }
