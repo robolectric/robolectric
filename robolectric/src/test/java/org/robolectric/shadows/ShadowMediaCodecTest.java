@@ -7,9 +7,11 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.verification.VerificationMode;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowMediaCodec.CodecConfig;
 import org.robolectric.shadows.ShadowMediaCodec.CodecConfig.Codec;
 
@@ -256,6 +259,33 @@ public final class ShadowMediaCodecTest {
         /* flags= */ 0);
 
     asyncVerify(callback).onOutputBufferAvailable(same(codec), anyInt(), any());
+  }
+
+  @Config(minSdk = 34)
+  @Test
+  public void presentsInputBufferAfterQueuingInputBufferWithDecodeOnlyFlag() throws IOException {
+    MediaCodec codec = createAsyncEncoder();
+    ArgumentCaptor<Integer> indexCaptor = ArgumentCaptor.forClass(Integer.class);
+    verify(callback).onInputBufferAvailable(same(codec), indexCaptor.capture());
+
+    int inputBufferIndex = indexCaptor.getValue();
+    ByteBuffer buffer = codec.getInputBuffer(inputBufferIndex);
+
+    int start = buffer.position();
+    // "Write" to the buffer.
+    buffer.position(buffer.limit());
+
+    codec.queueInputBuffer(
+        inputBufferIndex,
+        /* offset= */ start,
+        /* size= */ buffer.position() - start,
+        /* presentationTimeUs= */ 0,
+        /* flags= */ MediaCodec.BUFFER_FLAG_DECODE_ONLY);
+
+    shadowMainLooper().idle();
+
+    verify(callback, never()).onOutputBufferAvailable(any(), anyInt(), any());
+    verify(callback, times(2)).onInputBufferAvailable(same(codec), eq(inputBufferIndex));
   }
 
   @Test

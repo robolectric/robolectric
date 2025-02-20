@@ -16,6 +16,7 @@ import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
+import android.os.Build.VERSION;
 import android.os.IBinder;
 import android.view.Surface;
 import com.google.common.annotations.VisibleForTesting;
@@ -313,11 +314,16 @@ public class ShadowMediaCodec {
           /* errorCode= */ 0, /* actionCode= */ 0, "Input buffer not owned by client: " + index);
     }
 
-    BufferInfo info = new BufferInfo();
-    info.set(offset, size, presentationTimeUs, flags);
+    if (VERSION.SDK_INT >= 34 && (flags & MediaCodec.BUFFER_FLAG_DECODE_ONLY) != 0) {
+      inputBuffersPendingQueuing.remove(Integer.valueOf(index));
+      makeInputBufferAvailable(index);
+    } else {
+      BufferInfo info = new BufferInfo();
+      info.set(offset, size, presentationTimeUs, flags);
 
-    makeOutputBufferAvailable(index, info);
-    inputBuffersPendingQueuing.remove(Integer.valueOf(index));
+      makeOutputBufferAvailable(index, info);
+      inputBuffersPendingQueuing.remove(Integer.valueOf(index));
+    }
   }
 
   @Implementation
@@ -376,6 +382,9 @@ public class ShadowMediaCodec {
     ((Buffer) inputBuffers[index]).clear();
 
     if (isAsync) {
+      if (canQueueInputBuffer(index)) {
+        throw new IllegalStateException("Input buffer is already available for queuing.");
+      }
       inputBuffersPendingQueuing.add(index);
       // Signal input buffer availability.
       postFakeNativeEvent(EVENT_CALLBACK, CB_INPUT_AVAILABLE, index, null);
