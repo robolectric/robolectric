@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -625,6 +626,11 @@ public class ShadowTelephonyManager {
 
   @Implementation(minSdk = O)
   protected int getSimState(int slotIndex) {
+    return simStates.getOrDefault(slotIndex, TelephonyManager.SIM_STATE_UNKNOWN);
+  }
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected static int getSimStateForSlotIndex(int slotIndex) {
     return simStates.getOrDefault(slotIndex, TelephonyManager.SIM_STATE_UNKNOWN);
   }
 

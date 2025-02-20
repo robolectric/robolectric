@@ -3,12 +3,14 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.telephony.SubscriptionManager.INVALID_SIM_SLOT_INDEX;
 
 import android.os.Build.VERSION;
 import android.telephony.SubscriptionInfo;
@@ -506,6 +508,18 @@ public class ShadowSubscriptionManager {
       }
     }
     return SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+  }
+
+  @Implementation(minSdk = O)
+  protected static int getSlotIndex(int subscriptionId) {
+    if (subscriptionList != null) {
+      for (SubscriptionInfo info : subscriptionList) {
+        if (info.getSubscriptionId() == subscriptionId) {
+          return info.getSimSlotIndex();
+        }
+      }
+    }
+    return INVALID_SIM_SLOT_INDEX;
   }
 
   /**
