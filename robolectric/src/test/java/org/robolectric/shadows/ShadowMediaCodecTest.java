@@ -261,6 +261,20 @@ public final class ShadowMediaCodecTest {
     asyncVerify(callback).onOutputBufferAvailable(same(codec), anyInt(), any());
   }
 
+  @Test
+  public void presentsInputBufferAfterFlushingThenStarting() throws IOException {
+    MediaCodec codec = createAsyncEncoder();
+    ArgumentCaptor<Integer> indexCaptor = ArgumentCaptor.forClass(Integer.class);
+    verify(callback).onInputBufferAvailable(same(codec), indexCaptor.capture());
+
+    codec.flush();
+    codec.start();
+
+    shadowMainLooper().idle();
+
+    verify(callback, times(2)).onInputBufferAvailable(same(codec), eq(indexCaptor.getValue()));
+  }
+
   @Config(minSdk = 34)
   @Test
   public void presentsInputBufferAfterQueuingInputBufferWithDecodeOnlyFlag() throws IOException {

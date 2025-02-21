@@ -213,6 +213,7 @@ public class ShadowMediaCodec {
     // Reset state
     inputBuffersPendingDequeue.clear();
     outputBuffersPendingDequeue.clear();
+    inputBuffersPendingQueuing.clear();
     for (int i = 0; i < BUFFER_COUNT; i++) {
       inputBuffersPendingDequeue.add(i);
     }
