@@ -734,7 +734,7 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
             .put(264, "SQLITE_READONLY_RECOVERY")
             .put(776, "SQLITE_READONLY_ROLLBACK")
             .put(284, "SQLITE_WARNING_AUTOINDEX")
-            .build();
+            .buildOrThrow();
 
     private static RuntimeException getSqliteException(
         final String sqliteErrorMessage, final int errorCode) {

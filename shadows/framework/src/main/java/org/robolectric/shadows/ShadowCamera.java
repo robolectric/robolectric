@@ -53,7 +53,7 @@ public class ShadowCamera {
           .put("flash-mode", Camera.Parameters.FLASH_MODE_AUTO)
           .put("max-num-focus-areas", "1")
           .put("max-num-metering-areas", "1")
-          .build();
+          .buildOrThrow();
 
   private static int lastOpenedCameraId;
 

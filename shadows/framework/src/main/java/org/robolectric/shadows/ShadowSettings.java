@@ -43,7 +43,7 @@ public class ShadowSettings {
     private static final ImmutableMap<String, Optional<Object>> DEFAULTS =
         ImmutableMap.<String, Optional<Object>>builder()
             .put(Settings.System.ANIMATOR_DURATION_SCALE, Optional.of(1))
-            .build();
+            .buildOrThrow();
     private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>(DEFAULTS);
 
     @Implementation
@@ -346,7 +346,7 @@ public class ShadowSettings {
     private static final ImmutableMap<String, Optional<Object>> DEFAULTS =
         ImmutableMap.<String, Optional<Object>>builder()
             .put(Settings.Global.ANIMATOR_DURATION_SCALE, Optional.of(1))
-            .build();
+            .buildOrThrow();
     private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>(DEFAULTS);
 
     @Implementation

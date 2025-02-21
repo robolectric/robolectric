@@ -19,7 +19,7 @@ public class Utils {
           .put(PACKAGE_OPT, "org.robolectric")
           .put(JSON_DOCS_DIR, Files.createTempDir().toString())
           .put(SDK_CHECK_MODE, "OFF")
-          .build();
+          .buildOrThrow();
 
   public static final JavaFileObject SHADOW_PROVIDER_SOURCE =
       forResource("mock-source/org/robolectric/internal/ShadowProvider.java");
