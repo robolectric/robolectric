@@ -183,6 +183,7 @@ public class ShadowTelephonyManager {
   private static volatile boolean isDataRoamingEnabled;
   private /*CarrierRestrictionRules*/ Object carrierRestrictionRules;
   private final AtomicInteger modemRebootCount = new AtomicInteger();
+  private String iccAuthentication;
 
   /**
    * Should be {@link TelephonyManager.BootstrapAuthenticationCallback} but this object was
@@ -1701,5 +1702,14 @@ public class ShadowTelephonyManager {
 
   public int getModemRebootCount() {
     return modemRebootCount.get();
+  }
+
+  @Implementation(minSdk = N)
+  public String getIccAuthentication(int appType, int authType, String data) {
+    return iccAuthentication;
+  }
+
+  public void setIccAuthentication(String iccAuthentication) {
+    this.iccAuthentication = iccAuthentication;
   }
 }

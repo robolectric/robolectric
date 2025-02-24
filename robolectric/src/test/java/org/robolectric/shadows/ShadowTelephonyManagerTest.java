@@ -1558,4 +1558,15 @@ public class ShadowTelephonyManagerTest {
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
+
+  @Test
+  @Config(minSdk = N)
+  public void shouldGetIccAuthentication() {
+    shadowOf(telephonyManager).setIccAuthentication("iccAuth");
+
+    assertThat(
+            telephonyManager.getIccAuthentication(
+                /* appType= */ 1, /* authType= */ 1, /* data= */ "data"))
+        .isEqualTo("iccAuth");
+  }
 }
