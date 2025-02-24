@@ -40,7 +40,7 @@ spotless-gradle = "7.0.2"
 detekt-gradle = "1.23.8"
 
 # https://hc.apache.org/news.html
-apache-http-core = "4.0.1"
+apache-http-core = "4.4.16"
 apache-http-client = "4.0.3"
 
 # https://asm.ow2.io/versions.html
