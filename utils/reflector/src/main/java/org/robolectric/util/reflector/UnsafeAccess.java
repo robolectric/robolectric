@@ -68,7 +68,6 @@ public class UnsafeAccess {
     }
   }
 
-  @SuppressWarnings("RethrowReflectiveOperationExceptionAsLinkageError")
   private static class Danger11Plus implements Danger {
     private final Method privateLookupInMethod;
     private final Method defineClassMethod;
@@ -80,7 +79,7 @@ public class UnsafeAccess {
                 "privateLookupIn", Class.class, MethodHandles.Lookup.class);
         defineClassMethod = MethodHandles.Lookup.class.getMethod("defineClass", byte[].class);
       } catch (NoSuchMethodException e) {
-        throw new AssertionError(e);
+        throw new LinkageError("Failed to find defineClass method", e);
       }
     }
 
@@ -89,11 +88,8 @@ public class UnsafeAccess {
       MethodHandles.Lookup lookup = MethodHandles.lookup();
 
       try {
-        // MethodHandles.Lookup privateLookup = MethodHandles.privateLookupIn(iClass, lookup);
         MethodHandles.Lookup privateLookup =
             (Lookup) privateLookupInMethod.invoke(lookup, iClass, lookup);
-
-        // return privateLookup.defineClass(bytecode);
         return (Class<?>) defineClassMethod.invoke(privateLookup, bytecode);
       } catch (IllegalAccessException | InvocationTargetException e) {
         throw new AssertionError(e);

@@ -129,33 +129,12 @@ public class Reflector {
 
     final Class<?> proxyClass;
     proxyClass = defineViaUnsafe(iClass, reflectorClassName, bytecode);
-    // proxyClass = defineViaNewClassLoader(iClass, reflectorClassName, bytecode);
-
     return proxyClass.asSubclass(iClass);
   }
 
   private static <T> Class<?> defineViaUnsafe(
       Class<T> iClass, String reflectorClassName, byte[] bytecode) {
     return UnsafeAccess.defineClass(iClass, reflectorClassName, bytecode);
-  }
-
-  @SuppressWarnings("unused")
-  private static <T> Class<?> defineViaNewClassLoader(
-      Class<T> iClass, String reflectorClassName, byte[] bytecode) {
-    Class<?> proxyClass;
-    ClassLoader classLoader =
-        new ClassLoader(iClass.getClassLoader()) {
-          @Override
-          protected Class<?> findClass(String name) throws ClassNotFoundException {
-            return defineClass(name, bytecode, 0, bytecode.length);
-          }
-        };
-    try {
-      proxyClass = classLoader.loadClass(reflectorClassName);
-    } catch (ClassNotFoundException e) {
-      throw new AssertionError(e);
-    }
-    return proxyClass;
   }
 
   private static <T> byte[] getBytecode(
