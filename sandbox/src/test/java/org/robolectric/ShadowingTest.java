@@ -20,6 +20,7 @@ import org.robolectric.internal.bytecode.ShadowConstants;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.testing.AnUninstrumentedClass;
 import org.robolectric.testing.Pony;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(SandboxTestRunner.class)
 public class ShadowingTest {
@@ -133,7 +134,9 @@ public class ShadowingTest {
     Pony pony = new Pony();
 
     assertEquals("Fake whinny! You're on my neck!", pony.ride("neck"));
-    assertEquals("Whinny! You're on my neck!", Shadow.directlyOn(pony, Pony.class).ride("neck"));
+    assertEquals(
+        "Whinny! You're on my neck!",
+        Shadow.directlyOn(pony, Pony.class, "ride", ClassParameter.from(String.class, "neck")));
 
     assertEquals("Fake whinny! You're on my haunches!", pony.ride("haunches"));
   }

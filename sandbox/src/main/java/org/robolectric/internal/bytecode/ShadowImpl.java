@@ -6,8 +6,6 @@ import org.robolectric.util.ReflectionHelpers;
 
 public class ShadowImpl implements IShadow {
 
-  private final ProxyMaker proxyMaker = new ProxyMaker(this::directMethodName);
-
   @Override
   @SuppressWarnings("TypeParameterUnusedInFormals")
   public <T> T extract(Object instance) {
@@ -23,20 +21,6 @@ public class ShadowImpl implements IShadow {
   public <T> T newInstance(Class<T> clazz, Class<?>[] parameterTypes, Object[] params) {
     return ReflectionHelpers.callConstructor(
         clazz, ReflectionHelpers.ClassParameter.fromComponentLists(parameterTypes, params));
-  }
-
-  /**
-   * Returns a proxy object that invokes the original $$robo$$-prefixed methods for {@code
-   * shadowedObject}.
-   *
-   * @deprecated This is incompatible with JDK17+. Use a {@link
-   *     org.robolectric.util.reflector.Reflector} interface with {@link
-   *     org.robolectric.util.reflector.Direct}.
-   */
-  @Deprecated
-  @Override
-  public <T> T directlyOn(T shadowedObject, Class<T> clazz) {
-    return createProxy(shadowedObject, clazz);
   }
 
   @Override
@@ -73,10 +57,6 @@ public class ShadowImpl implements IShadow {
       Class<T> clazz, String methodName, ReflectionHelpers.ClassParameter<?>... paramValues) {
     String directMethodName = directMethodName(clazz.getName(), methodName);
     return (R) ReflectionHelpers.callStaticMethod(clazz, directMethodName, paramValues);
-  }
-
-  private <T> T createProxy(T shadowedObject, Class<T> clazz) {
-    return proxyMaker.createProxy(clazz, shadowedObject);
   }
 
   @Override
