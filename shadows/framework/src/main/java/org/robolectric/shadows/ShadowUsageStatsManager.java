@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -240,7 +241,9 @@ public class ShadowUsageStatsManager {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.VANILLA_ICE_CREAM)
-  protected UsageEvents queryEvents(UsageEventsQuery query) {
+  protected UsageEvents queryEvents(
+      @ClassName("android.app.usage.UsageEventsQuery") Object queryObject) {
+    UsageEventsQuery query = (UsageEventsQuery) queryObject;
     long beginTime = query.getBeginTimeMillis();
     long endTime = query.getEndTimeMillis();
     int[] eventTypes = query.getEventTypes();
