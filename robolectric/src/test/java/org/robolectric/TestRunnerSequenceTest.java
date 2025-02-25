@@ -37,29 +37,12 @@ public class TestRunnerSequenceTest {
 
   public static class StateHolder {
     public static final List<String> transcript = new ArrayList<>();
-    public static int nestLevel = 0;
-
-    public static void nest(String s) {
-      add(s);
-      nestLevel++;
-    }
 
     public static void add(String s) {
-      StringBuilder buf = new StringBuilder();
-      for (int i = 0; i < nestLevel; i++) {
-        buf.append("| ");
-      }
-      buf.append(s);
-      transcript.add(buf.toString());
-    }
-
-    public static void unnest(String s) {
-      nestLevel--;
-      add(s);
+      transcript.add(s);
     }
 
     public static void reset() {
-      nestLevel = 0;
       transcript.clear();
     }
   }
@@ -77,25 +60,25 @@ public class TestRunnerSequenceTest {
             "configureSandbox",
             "@ClassRule apply",
             "@ClassRule before",
-            "| @BeforeClass",
-            "| | configureSandbox",
-            "| | Android environment set up",
-            "| | | application.onCreate()",
-            "| | | | TestLifecycle.beforeTest()",
-            "| | | | | application.beforeTest()",
-            "| | | | | | TestLifecycle.prepareTest()",
-            "| | | | | | application.prepareTest()",
-            "| | | | | | @Rule apply",
-            "| | | | | | @Rule before",
-            "| | | | | | | @Before",
-            "| | | | | | | | TEST!",
-            "| | | | | | | @After",
-            "| | | | | | @Rule after",
-            "| | | | | application.onTerminate()",
-            "| | | | TestLifecycle.afterTest()",
-            "| | | application.afterTest()",
-            "| | Android environment resetState",
-            "| @AfterClass",
+            "@BeforeClass",
+            "configureSandbox",
+            "Android environment set up",
+            "application.onCreate()",
+            "TestLifecycle.beforeTest()",
+            "application.beforeTest()",
+            "TestLifecycle.prepareTest()",
+            "application.prepareTest()",
+            "@Rule apply",
+            "@Rule before",
+            "@Before",
+            "TEST!",
+            "@After",
+            "@Rule after",
+            "application.onTerminate()",
+            "TestLifecycle.afterTest()",
+            "application.afterTest()",
+            "Android environment resetState",
+            "@AfterClass",
             "@ClassRule after");
   }
 
@@ -104,75 +87,73 @@ public class TestRunnerSequenceTest {
     assertNoFailures(run(new Runner(MultiConfigTest.class)));
     // As the order is not deterministic, we just check that the expected sequence is a substring
     // of the actual one.
-    // Default SDK = 30 Sandbox
     assertThat(StateHolder.transcript)
         // using containsAtLeast due to the test order being non-deterministic
         .containsAtLeast(
             "configureSandbox",
             "@ClassRule apply",
             "@ClassRule before",
-            "| @BeforeClass",
-            "| | configureSandbox",
-            "| | Android environment set up",
-            "| | | application.onCreate()",
-            "| | | | TestLifecycle.beforeTest()",
-            "| | | | | application.beforeTest()",
-            "| | | | | | TestLifecycle.prepareTest()",
-            "| | | | | | application.prepareTest()",
-            "| | | | | | @Rule apply",
-            "| | | | | | @Rule before",
-            "| | | | | | | @Before",
-            "| | | | | | | | TEST!",
-            "| | | | | | | @After",
-            "| | | | | | @Rule after",
-            "| | | | | application.onTerminate()",
-            "| | | | TestLifecycle.afterTest()",
-            "| | | application.afterTest()",
-            "| | Android environment resetState",
-            "| | Android environment set up",
-            "| | | application.onCreate()",
-            "| | | | TestLifecycle.beforeTest()",
-            "| | | | | application.beforeTest()",
-            "| | | | | | TestLifecycle.prepareTest()",
-            "| | | | | | application.prepareTest()",
-            "| | | | | | @Rule apply",
-            "| | | | | | @Rule before",
-            "| | | | | | | @Before",
-            "| | | | | | | | TEST!",
-            "| | | | | | | @After",
-            "| | | | | | @Rule after",
-            "| | | | | application.onTerminate()",
-            "| | | | TestLifecycle.afterTest()",
-            "| | | application.afterTest()",
-            "| | Android environment resetState",
-            "| @AfterClass",
+            "@BeforeClass",
+            "configureSandbox",
+            "Android environment set up",
+            "application.onCreate()",
+            "TestLifecycle.beforeTest()",
+            "application.beforeTest()",
+            "TestLifecycle.prepareTest()",
+            "application.prepareTest()",
+            "@Rule apply",
+            "@Rule before",
+            "@Before",
+            "TEST!",
+            "@After",
+            "@Rule after",
+            "application.onTerminate()",
+            "TestLifecycle.afterTest()",
+            "application.afterTest()",
+            "Android environment resetState",
+            "Android environment set up",
+            "application.onCreate()",
+            "TestLifecycle.beforeTest()",
+            "application.beforeTest()",
+            "TestLifecycle.prepareTest()",
+            "application.prepareTest()",
+            "@Rule apply",
+            "@Rule before",
+            "@Before",
+            "TEST!",
+            "@After",
+            "@Rule after",
+            "application.onTerminate()",
+            "TestLifecycle.afterTest()",
+            "application.afterTest()",
+            "Android environment resetState",
+            "@AfterClass",
             "@ClassRule after");
-    // sandbox with sdk = 34
     assertThat(StateHolder.transcript)
         // using containsAtLeast due to the test order being non-deterministic
         .containsAtLeast(
             "configureSandbox",
             "@ClassRule apply",
             "@ClassRule before",
-            "| @BeforeClass",
-            "| | configureSandbox",
-            "| | Android environment set up",
-            "| | | application.onCreate()",
-            "| | | | TestLifecycle.beforeTest()",
-            "| | | | | application.beforeTest()",
-            "| | | | | | TestLifecycle.prepareTest()",
-            "| | | | | | application.prepareTest()",
-            "| | | | | | @Rule apply",
-            "| | | | | | @Rule before",
-            "| | | | | | | @Before",
-            "| | | | | | | | TEST!",
-            "| | | | | | | @After",
-            "| | | | | | @Rule after",
-            "| | | | | application.onTerminate()",
-            "| | | | TestLifecycle.afterTest()",
-            "| | | application.afterTest()",
-            "| | Android environment resetState",
-            "| @AfterClass",
+            "@BeforeClass",
+            "configureSandbox",
+            "Android environment set up",
+            "application.onCreate()",
+            "TestLifecycle.beforeTest()",
+            "application.beforeTest()",
+            "TestLifecycle.prepareTest()",
+            "application.prepareTest()",
+            "@Rule apply",
+            "@Rule before",
+            "@Before",
+            "TEST!",
+            "@After",
+            "@Rule after",
+            "application.onTerminate()",
+            "TestLifecycle.afterTest()",
+            "application.afterTest()",
+            "Android environment resetState",
+            "@AfterClass",
             "@ClassRule after");
   }
 
@@ -186,75 +167,74 @@ public class TestRunnerSequenceTest {
             "configureSandbox",
             "@ClassRule apply",
             "@ClassRule before",
-            "| @BeforeClass",
-            "| | configureSandbox",
-            "| | Android environment set up",
-            "| | | application.onCreate()",
-            "| | | | TestLifecycle.beforeTest()",
-            "| | | | | application.beforeTest()",
-            "| | | | | | TestLifecycle.prepareTest()",
-            "| | | | | | application.prepareTest()",
-            "| | | | | | @Rule apply",
-            "| | | | | | @Rule before",
-            "| | | | | | | @Before",
-            "| | | | | | | | TEST!",
-            "| | | | | | | @After",
-            "| | | | | | @Rule after",
-            "| | | | | application.onTerminate()",
-            "| | | | TestLifecycle.afterTest()",
-            "| | | application.afterTest()",
-            "| | Android environment resetState",
-            "| | configureSandbox",
-            "| | Android environment set up",
-            "| | | application.onCreate()",
-            "| | | | TestLifecycle.beforeTest()",
-            "| | | | | application.beforeTest()",
-            "| | | | | | TestLifecycle.prepareTest()",
-            "| | | | | | application.prepareTest()",
-            "| | | | | | @Rule apply",
-            "| | | | | | @Rule before",
-            "| | | | | | | @Before",
-            "| | | | | | | | TEST!",
-            "| | | | | | | @After",
-            "| | | | | | @Rule after",
-            "| | | | | application.onTerminate()",
-            "| | | | TestLifecycle.afterTest()",
-            "| | | application.afterTest()",
-            "| | Android environment resetState",
-            "| @AfterClass",
+            "@BeforeClass",
+            "configureSandbox",
+            "Android environment set up",
+            "application.onCreate()",
+            "TestLifecycle.beforeTest()",
+            "application.beforeTest()",
+            "TestLifecycle.prepareTest()",
+            "application.prepareTest()",
+            "@Rule apply",
+            "@Rule before",
+            "@Before",
+            "TEST!",
+            "@After",
+            "@Rule after",
+            "application.onTerminate()",
+            "TestLifecycle.afterTest()",
+            "application.afterTest()",
+            "Android environment resetState",
+            "configureSandbox",
+            "Android environment set up",
+            "application.onCreate()",
+            "TestLifecycle.beforeTest()",
+            "application.beforeTest()",
+            "TestLifecycle.prepareTest()",
+            "application.prepareTest()",
+            "@Rule apply",
+            "@Rule before",
+            "@Before",
+            "TEST!",
+            "@After",
+            "@Rule after",
+            "application.onTerminate()",
+            "TestLifecycle.afterTest()",
+            "application.afterTest()",
+            "Android environment resetState",
+            "@AfterClass",
             "@ClassRule after");
 
-    // sandbox with sdk = 34
     assertThat(StateHolder.transcript)
         // using containsAtLeast due to the test order being non-deterministic
         .containsAtLeast(
             "configureSandbox",
             "@ClassRule apply",
             "@ClassRule before",
-            "| @BeforeClass",
-            "| | configureSandbox",
-            "| | Android environment set up",
-            "| | | application.onCreate()",
-            "| | | | TestLifecycle.beforeTest()",
-            "| | | | | application.beforeTest()",
-            "| | | | | | TestLifecycle.prepareTest()",
-            "| | | | | | application.prepareTest()",
-            "| | | | | | @Rule apply",
-            "| | | | | | @Rule before",
-            "| | | | | | | @Before",
-            "| | | | | | | | TEST!",
-            "| | | | | | | @After",
-            "| | | | | | @Rule after",
-            "| | | | | application.onTerminate()",
-            "| | | | TestLifecycle.afterTest()",
-            "| | | application.afterTest()",
-            "| | Android environment resetState",
-            "| @AfterClass",
+            "@BeforeClass",
+            "configureSandbox",
+            "Android environment set up",
+            "application.onCreate()",
+            "TestLifecycle.beforeTest()",
+            "application.beforeTest()",
+            "TestLifecycle.prepareTest()",
+            "application.prepareTest()",
+            "@Rule apply",
+            "@Rule before",
+            "@Before",
+            "TEST!",
+            "@After",
+            "@Rule after",
+            "application.onTerminate()",
+            "TestLifecycle.afterTest()",
+            "application.afterTest()",
+            "Android environment resetState",
+            "@AfterClass",
             "@ClassRule after");
   }
 
   @RunWith(Runner.class)
-  @Config(sdk = 30, application = TestRunnerSequenceTest.MyApplication.class)
+  @Config(application = TestRunnerSequenceTest.MyApplication.class)
   @LazyApplication(LazyLoad.OFF)
   public static class SimpleTest {
     @ClassRule
@@ -267,10 +247,10 @@ public class TestRunnerSequenceTest {
               @Override
               public void evaluate() throws Throwable {
                 try {
-                  nest("@ClassRule before");
+                  add("@ClassRule before");
                   base.evaluate();
                 } finally {
-                  unnest("@ClassRule after");
+                  add("@ClassRule after");
                 }
               }
             };
@@ -286,9 +266,9 @@ public class TestRunnerSequenceTest {
             return new Statement() {
               @Override
               public void evaluate() throws Throwable {
-                nest("@Rule before");
+                add("@Rule before");
                 base.evaluate();
-                unnest("@Rule after");
+                add("@Rule after");
               }
             };
           }
@@ -296,12 +276,12 @@ public class TestRunnerSequenceTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-      nest("@BeforeClass");
+      add("@BeforeClass");
     }
 
     @Before
     public void setUp() throws Exception {
-      nest("@Before");
+      add("@Before");
     }
 
     @Test
@@ -311,24 +291,16 @@ public class TestRunnerSequenceTest {
 
     @After
     public void tearDown() throws Exception {
-      unnest("@After");
+      add("@After");
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
-      unnest("@AfterClass");
-    }
-
-    private static void nest(String s) {
-      StateHolder.nest(s + extraInfo());
+      add("@AfterClass");
     }
 
     private static void add(String s) {
       StateHolder.add(s + extraInfo());
-    }
-
-    private static void unnest(String s) {
-      StateHolder.unnest(s + extraInfo());
     }
 
     private static String extraInfo() {
@@ -336,7 +308,7 @@ public class TestRunnerSequenceTest {
     }
   }
 
-  @Config(sdk = 30, application = TestRunnerSequenceTest.MyApplication.class)
+  @Config(application = TestRunnerSequenceTest.MyApplication.class)
   @LazyApplication(LazyLoad.OFF)
   public static class MultiConfigTest extends SimpleTest {
     @Test
@@ -344,7 +316,7 @@ public class TestRunnerSequenceTest {
       StateHolder.add("TEST!");
     }
 
-    @Config(sdk = 34)
+    @Config(instrumentedPackages = "some.package.b" /* creates a new sandbox */)
     @Test
     public void shouldDoEvenLess() throws Exception {
       StateHolder.add("TEST!");
@@ -364,7 +336,7 @@ public class TestRunnerSequenceTest {
     }
   }
 
-  public static class Runner extends RobolectricTestRunner {
+  public static class Runner extends SingleSdkRobolectricTestRunner {
     public Runner(Class<?> testClass) throws InitializationError {
       super(testClass);
     }
@@ -372,13 +344,13 @@ public class TestRunnerSequenceTest {
     @Override
     protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod)
         throws Throwable {
-      StateHolder.nest("Android environment set up" + extraInfo());
+      StateHolder.add("Android environment set up" + extraInfo());
       super.beforeTest(sandbox, method, bootstrappedMethod);
     }
 
     @Override
     protected void finallyAfterTest(FrameworkMethod method) {
-      StateHolder.unnest("Android environment resetState" + extraInfo());
+      StateHolder.add("Android environment resetState" + extraInfo());
       super.finallyAfterTest(method);
     }
 
@@ -411,7 +383,7 @@ public class TestRunnerSequenceTest {
 
     @Override
     public void beforeTest(Method method) {
-      StateHolder.nest("TestLifecycle.beforeTest()");
+      StateHolder.add("TestLifecycle.beforeTest()");
       super.beforeTest(method);
     }
 
@@ -423,7 +395,7 @@ public class TestRunnerSequenceTest {
 
     @Override
     public void afterTest(Method method) {
-      StateHolder.unnest("TestLifecycle.afterTest()");
+      StateHolder.add("TestLifecycle.afterTest()");
       super.afterTest(method);
     }
   }
@@ -431,12 +403,12 @@ public class TestRunnerSequenceTest {
   public static class MyApplication extends Application implements TestLifecycleApplication {
     @Override
     public void onCreate() {
-      StateHolder.nest("application.onCreate()");
+      StateHolder.add("application.onCreate()");
     }
 
     @Override
     public void beforeTest(Method method) {
-      StateHolder.nest("application.beforeTest()");
+      StateHolder.add("application.beforeTest()");
     }
 
     @Override
@@ -446,12 +418,12 @@ public class TestRunnerSequenceTest {
 
     @Override
     public void afterTest(Method method) {
-      StateHolder.unnest("application.afterTest()");
+      StateHolder.add("application.afterTest()");
     }
 
     @Override
     public void onTerminate() {
-      StateHolder.unnest("application.onTerminate()");
+      StateHolder.add("application.onTerminate()");
     }
   }
 }
