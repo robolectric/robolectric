@@ -16,7 +16,6 @@ import org.junit.runner.notification.Failure;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
@@ -87,7 +86,6 @@ public final class BeforeAfterClassInvocationTest {
   // This is a test that only has @BeforeClass and @AfterClass to avoid any tanglement with
   // @ClassRule
   @LazyApplication(LazyLoad.OFF)
-  @Config(sdk = Config.NEWEST_SDK)
   public static class SimpleTest {
     @BeforeClass
     public static void beforeClass() {
@@ -112,7 +110,7 @@ public final class BeforeAfterClassInvocationTest {
     }
   }
 
-  public static class Runner extends RobolectricTestRunner {
+  public static class Runner extends SingleSdkRobolectricTestRunner {
     public Runner(Class<?> testClass) throws InitializationError {
       super(testClass);
     }
