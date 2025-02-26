@@ -41,7 +41,7 @@ detekt-gradle = "1.23.8"
 
 # https://hc.apache.org/news.html
 apache-http-core = "4.0.1"
-apache-http-client = "4.0.3"
+apache-http-client = "4.5.14"
 
 # https://asm.ow2.io/versions.html
 asm = "9.7.1"
