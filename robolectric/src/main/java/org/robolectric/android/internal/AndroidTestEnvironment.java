@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.FontsContract;
+import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.annotations.VisibleForTesting;
@@ -50,6 +51,7 @@ import javax.net.ssl.SSLSession;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.conscrypt.OkHostnameVerifier;
 import org.conscrypt.OpenSSLProvider;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Config;
@@ -59,6 +61,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
+import org.robolectric.fakes.FakeMediaProvider;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.TestEnvironment;
 import org.robolectric.manifest.AndroidManifest;
@@ -384,6 +387,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
         // Invoke the previous version.
         ReflectionHelpers.callStaticMethod(
             AppCompatCallbacks.class, "install", ClassParameter.from(long[].class, new long[0]));
+      }
+
+      if (RuntimeEnvironment.getApiLevel() >= Q
+          && Boolean.parseBoolean(
+              System.getProperty("robolectric.installFakeMediaProvider", "true"))) {
+        Robolectric.setupContentProvider(FakeMediaProvider.class, MediaStore.AUTHORITY);
       }
 
       PerfStatsCollector.getInstance()
