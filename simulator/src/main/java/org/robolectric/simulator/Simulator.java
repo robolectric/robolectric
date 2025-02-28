@@ -4,11 +4,12 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 import android.app.Application;
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.hardware.display.DisplayManager;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.view.Display;
-import android.view.WindowManager;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
@@ -61,8 +62,9 @@ public final class Simulator {
 
   private void startUi() {
     Application application = RuntimeEnvironment.getApplication();
-    WindowManager windowManager = application.getSystemService(WindowManager.class);
-    Display display = windowManager.getDefaultDisplay();
+    DisplayManager displayManager =
+        (DisplayManager) application.getSystemService(Context.DISPLAY_SERVICE);
+    Display display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
 
     try {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

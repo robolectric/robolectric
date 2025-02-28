@@ -3,13 +3,13 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
+import android.hardware.display.DisplayManager;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Display.HdrCapabilities;
 import android.view.Surface;
-import android.view.WindowManager;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -33,10 +33,10 @@ public class ShadowDisplay {
    * @return the default display
    */
   public static Display getDefaultDisplay() {
-    WindowManager windowManager =
-        (WindowManager)
-            RuntimeEnvironment.getApplication().getSystemService(Context.WINDOW_SERVICE);
-    return windowManager.getDefaultDisplay();
+    DisplayManager displayManager =
+        (DisplayManager)
+            RuntimeEnvironment.getApplication().getSystemService(Context.DISPLAY_SERVICE);
+    return displayManager.getDisplay(Display.DEFAULT_DISPLAY);
   }
 
   @RealObject Display realObject;
