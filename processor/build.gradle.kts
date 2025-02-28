@@ -41,7 +41,6 @@ dependencies {
   api(project(":annotations"))
   api(project(":shadowapi"))
 
-  compileOnly(libs.findbugs.jsr305)
   api(libs.asm)
   api(libs.asm.util)
   api(libs.guava)

@@ -54,7 +54,6 @@ dependencies {
   api("androidx.test:monitor:$axtMonitorVersion@aar")
 
   implementation(libs.error.prone.annotations)
-  compileOnly(libs.findbugs.jsr305)
   api(libs.sqlite4java)
   compileOnly(AndroidSdk.MAX_SDK.coordinates)
   api(libs.icu4j)
