@@ -9,6 +9,8 @@
     "com.google.android.gms:play-services-auth",
     "com.google.android.gms:play-services-base",
     "com.google.android.gms:play-services-basement",
+    "org.apache.httpcomponents:httpclient",
+    "org.apache.httpcomponents:httpcore",
     "org.robolectric:nativeruntime-dist-compat"
   ],
   "labels": [
