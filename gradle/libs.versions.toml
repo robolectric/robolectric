@@ -121,7 +121,7 @@ androidx-test-services = "1.5.0"
 androidx-compose-bom = "2025.02.00"
 
 # for shadows/playservices/build.gradle
-androidx-fragment-for-shadows = "1.8.6"
+androidx-fragment-for-shadows = "1.2.0"
 play-services-for-shadows = "17.0.0"
 
 # https://developers.google.com/android/guides/releases
