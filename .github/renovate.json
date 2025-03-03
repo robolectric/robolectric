@@ -42,6 +42,14 @@
       "matchPackageNames": [
         "androidx.*"
       ]
+    },
+    {
+      "enabled": false,
+      "matchCurrentVersion": "1.2.0",
+      "matchManagers": "gradle",
+      "matchPackageNames": [
+        "androidx.fragment:fragment"
+      ]
     }
   ]
 }
