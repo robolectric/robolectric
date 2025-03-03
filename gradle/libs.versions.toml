@@ -102,7 +102,7 @@ sqlite4java = "1.0.392"
 androidx-annotation = "1.9.1"
 androidx-appcompat = "1.7.0"
 androidx-biometric = "1.1.0"
-androidx-constraintlayout = "2.2.0"
+androidx-constraintlayout = "2.2.1"
 androidx-core = "1.15.0"
 androidx-fragment = "1.8.6"
 androidx-window = "1.3.0"
@@ -121,7 +121,7 @@ androidx-test-services = "1.5.0"
 androidx-compose-bom = "2025.02.00"
 
 # for shadows/playservices/build.gradle
-androidx-fragment-for-shadows = "1.2.0"
+androidx-fragment-for-shadows = "1.8.6"
 play-services-for-shadows = "17.0.0"
 
 # https://developers.google.com/android/guides/releases
