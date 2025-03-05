@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.media.AudioAttributes.USAGE_MEDIA;
 import static android.media.AudioTrack.ERROR_BAD_VALUE;
 import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.media.AudioTrack.WRITE_NON_BLOCKING;
@@ -697,6 +698,89 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
 
     assertThat((Integer) ReflectionHelpers.callInstanceMethod(audioTrack, "getLatency"))
         .isEqualTo(200);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getBufferSizeInFrames_withPcm_returnsBufferSizeInFrames() throws Exception {
+    AudioTrack audioTrack = getSampleAudioTrack();
+
+    assertThat(audioTrack.getBufferSizeInFrames()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = Q, maxSdk = R)
+  public void getBufferSizeInFrames_withOffloadUntilApi30_returnsBufferSizeInBytes()
+      throws Exception {
+    AudioFormat audioFormat =
+        new AudioFormat.Builder()
+            .setEncoding(AudioFormat.ENCODING_AC3)
+            .setSampleRate(48000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_5POINT1)
+            .build();
+    AudioAttributes attributes = new AudioAttributes.Builder().setUsage(USAGE_MEDIA).build();
+    ShadowAudioSystem.setOffloadSupported(audioFormat, attributes, /* supported= */ true);
+
+    AudioTrack audioTrack =
+        new AudioTrack.Builder()
+            .setAudioFormat(audioFormat)
+            .setAudioAttributes(attributes)
+            .setBufferSizeInBytes(65536)
+            .setOffloadedPlayback(true)
+            .build();
+
+    assertThat(audioTrack.getBufferSizeInFrames()).isEqualTo(65536);
+  }
+
+  @Test
+  @Config(sdk = S)
+  public void getBufferSizeInFrames_withOffloadApi31_returnsBufferSizeInBytes() throws Exception {
+    ShadowAudioTrack.addAllowedNonPcmEncoding(AudioFormat.ENCODING_AC3);
+    AudioFormat audioFormat =
+        new AudioFormat.Builder()
+            .setEncoding(AudioFormat.ENCODING_AC3)
+            .setSampleRate(48000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_5POINT1)
+            .build();
+    AudioAttributes attributes = new AudioAttributes.Builder().build();
+    ShadowAudioSystem.setOffloadPlaybackSupport(
+        audioFormat, attributes, AudioSystem.OFFLOAD_SUPPORTED);
+
+    AudioTrack audioTrack =
+        new AudioTrack.Builder()
+            .setAudioFormat(audioFormat)
+            .setAudioAttributes(attributes)
+            .setBufferSizeInBytes(65536)
+            .setOffloadedPlayback(true)
+            .build();
+
+    assertThat(audioTrack.getBufferSizeInFrames()).isEqualTo(65536);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getBufferSizeInFrames_withOffloadPostApi31_returnsBufferSizeInBytes()
+      throws Exception {
+    ShadowAudioTrack.addAllowedNonPcmEncoding(AudioFormat.ENCODING_AC3);
+    AudioFormat audioFormat =
+        new AudioFormat.Builder()
+            .setEncoding(AudioFormat.ENCODING_AC3)
+            .setSampleRate(48000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_5POINT1)
+            .build();
+    AudioAttributes attributes = new AudioAttributes.Builder().build();
+    ShadowAudioSystem.setDirectPlaybackSupport(
+        audioFormat, attributes, AudioSystem.OFFLOAD_SUPPORTED);
+
+    AudioTrack audioTrack =
+        new AudioTrack.Builder()
+            .setAudioFormat(audioFormat)
+            .setAudioAttributes(attributes)
+            .setBufferSizeInBytes(65536)
+            .setOffloadedPlayback(true)
+            .build();
+
+    assertThat(audioTrack.getBufferSizeInFrames()).isEqualTo(65536);
   }
 
   @Override

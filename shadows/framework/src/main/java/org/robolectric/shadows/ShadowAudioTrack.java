@@ -4,6 +4,7 @@ import static android.media.AudioTrack.ERROR_DEAD_OBJECT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -100,6 +101,9 @@ public class ShadowAudioTrack {
   private PlaybackParams playbackParams;
   private int latencyMs;
   @RealObject AudioTrack audioTrack;
+
+  /** The buffer size to be returned by {@link AudioTrack#getBufferSizeInFrames()}. */
+  private int bufferSizeInFrames;
 
   /**
    * In the real class, the minimum buffer size is estimated from audio sample rate and other
@@ -213,6 +217,54 @@ public class ShadowAudioTrack {
     return minBufferSize;
   }
 
+  @Implementation(minSdk = M, maxSdk = M)
+  protected int native_get_native_frame_count() {
+    return bufferSizeInFrames;
+  }
+
+  @Implementation(minSdk = N)
+  protected int native_get_buffer_size_frames() {
+    return bufferSizeInFrames;
+  }
+
+  private void setBufferSizeInFrames(int buffSizeInBytes) {
+    bufferSizeInFrames =
+        isPcm(audioTrack.getAudioFormat())
+            ? buffSizeInBytes / getFrameSizeInBytes()
+            : buffSizeInBytes;
+  }
+
+  @Implementation(minSdk = M, maxSdk = M)
+  protected int native_setup(
+      Object /*WeakReference<AudioTrack>*/ audioTrack,
+      Object /*AudioAttributes*/ attributes,
+      int sampleRate,
+      int channelMask,
+      int channelIndexMask,
+      int audioFormat,
+      int buffSizeInBytes,
+      int mode,
+      int[] sessionId) {
+    setBufferSizeInFrames(buffSizeInBytes);
+    return AudioTrack.SUCCESS;
+  }
+
+  @Implementation(minSdk = N, maxSdk = O_MR1)
+  protected int native_setup(
+      Object /*WeakReference<AudioTrack>*/ audioTrack,
+      Object /*AudioAttributes*/ attributes,
+      int[] sampleRate,
+      int channelMask,
+      int channelIndexMask,
+      int audioFormat,
+      int buffSizeInBytes,
+      int mode,
+      int[] sessionId,
+      long nativeAudioTrack) {
+    setBufferSizeInFrames(buffSizeInBytes);
+    return AudioTrack.SUCCESS;
+  }
+
   @Implementation(minSdk = P, maxSdk = Q)
   protected int native_setup(
       Object /*WeakReference<AudioTrack>*/ audioTrack,
@@ -230,6 +282,7 @@ public class ShadowAudioTrack {
     if (!offload && !isPcm(audioFormat) && !allowedNonPcmEncodings.contains(audioFormat)) {
       return AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED;
     }
+    setBufferSizeInFrames(buffSizeInBytes);
     return AudioTrack.SUCCESS;
   }
 
@@ -252,6 +305,7 @@ public class ShadowAudioTrack {
     if (!offload && !isPcm(audioFormat) && !allowedNonPcmEncodings.contains(audioFormat)) {
       return AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED;
     }
+    setBufferSizeInFrames(buffSizeInBytes);
     return AudioTrack.SUCCESS;
   }
 
@@ -275,6 +329,7 @@ public class ShadowAudioTrack {
     if (!offload && !isPcm(audioFormat) && !allowedNonPcmEncodings.contains(audioFormat)) {
       return AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED;
     }
+    setBufferSizeInFrames(buffSizeInBytes);
     return AudioTrack.SUCCESS;
   }
 
@@ -299,6 +354,7 @@ public class ShadowAudioTrack {
     if (!offload && !isPcm(audioFormat) && !allowedNonPcmEncodings.contains(audioFormat)) {
       return AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED;
     }
+    setBufferSizeInFrames(buffSizeInBytes);
     return AudioTrack.SUCCESS;
   }
 
