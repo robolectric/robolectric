@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.Application;
@@ -12,6 +11,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.cardemulation.CardEmulation;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +29,7 @@ public final class ShadowCardEmulationTest {
   private Activity activity;
   private CardEmulation cardEmulation;
   private ComponentName service;
+  private ShadowCardEmulation shadowCardEmulation;
 
   @Before
   public void setUp() throws Exception {
@@ -41,6 +42,7 @@ public final class ShadowCardEmulationTest {
     cardEmulation = CardEmulation.getInstance(adapter);
     service = new ComponentName(context, "my_service");
     activity = Robolectric.buildActivity(Activity.class).setup().get();
+    shadowCardEmulation = shadowOf(cardEmulation);
   }
 
   @Test
@@ -75,16 +77,96 @@ public final class ShadowCardEmulationTest {
 
   @Test
   @Config(minSdk = V.SDK_INT)
-  public void getShouldDefaultToObserveModeForService_shouldReturnDefaultToObserveMode() {
-    final CardEmulationVReflector cardEmulationVReflector =
-        reflector(CardEmulationVReflector.class, cardEmulation);
-    assertThat(ShadowCardEmulation.getShouldDefaultToObserveModeForService(service)).isFalse();
+  public void registerPollingLoopPatternFilterForService_shouldRegisterPollingLoopFilter() {
+    String pollingLoopFilter = "6A02..01.*";
+    shadowCardEmulation.registerPollingLoopPatternFilterForService(
+        service, pollingLoopFilter, true);
 
-    cardEmulationVReflector.setShouldDefaultToObserveModeForService(service, true);
-    assertThat(ShadowCardEmulation.getShouldDefaultToObserveModeForService(service)).isTrue();
+    Map<String, Boolean> result =
+        ShadowCardEmulation.getRegisteredPollingLoopPatternFiltersForService(service);
+    assertThat(result.keySet().size()).isEqualTo(1);
+    assertThat(result.containsKey(pollingLoopFilter)).isTrue();
+    assertThat(result.get(pollingLoopFilter)).isTrue();
+  }
 
-    cardEmulationVReflector.setShouldDefaultToObserveModeForService(service, false);
-    assertThat(ShadowCardEmulation.getShouldDefaultToObserveModeForService(service)).isFalse();
+  @Test
+  @Config(minSdk = V.SDK_INT)
+  public void registerPollingLoopPatternFilterForService_shouldOverrideSamePollingLoopFilter() {
+    // Register a polling loop filter with auto-transact enabled.
+    String pollingLoopFilter = "6A02..01.*";
+    cardEmulation.registerPollingLoopPatternFilterForService(service, pollingLoopFilter, true);
+
+    Map<String, Boolean> result =
+        ShadowCardEmulation.getRegisteredPollingLoopPatternFiltersForService(service);
+    assertThat(result.keySet().size()).isEqualTo(1);
+    assertThat(result.containsKey(pollingLoopFilter)).isTrue();
+    assertThat(result.get(pollingLoopFilter)).isTrue();
+
+    // Register the same polling loop filter with auto-transact disabled.
+    cardEmulation.registerPollingLoopPatternFilterForService(service, pollingLoopFilter, false);
+    result = ShadowCardEmulation.getRegisteredPollingLoopPatternFiltersForService(service);
+    assertThat(result.keySet().size()).isEqualTo(1);
+    assertThat(result.containsKey(pollingLoopFilter)).isTrue();
+    assertThat(result.get(pollingLoopFilter)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = V.SDK_INT)
+  public void
+      registerPollingLoopPatternFilterForService_shouldRegisterMultiplePollingLoopFilters() {
+    // Register multiple polling loop filter with auto-transact enabled.
+    String pollingLoopFilter1 = "6A02..01.*";
+    String pollingLoopFilter2 = "6A03..02.*";
+    cardEmulation.registerPollingLoopPatternFilterForService(service, pollingLoopFilter1, true);
+    cardEmulation.registerPollingLoopPatternFilterForService(service, pollingLoopFilter2, false);
+
+    Map<String, Boolean> result =
+        ShadowCardEmulation.getRegisteredPollingLoopPatternFiltersForService(service);
+    assertThat(result.keySet().size()).isEqualTo(2);
+    assertThat(result.containsKey(pollingLoopFilter1)).isTrue();
+    assertThat(result.containsKey(pollingLoopFilter2)).isTrue();
+    assertThat(result.get(pollingLoopFilter1)).isTrue();
+    assertThat(result.get(pollingLoopFilter2)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = V.SDK_INT)
+  public void registerPollingLoopPatternFilterForService_returnsFalseForInvalidPollingLoopFilter() {
+    String invalidPollingLoopFilter = "6Z02!.01.*";
+    assertThat(
+            cardEmulation.registerPollingLoopPatternFilterForService(
+                service, invalidPollingLoopFilter, true))
+        .isFalse();
+
+    assertThat(ShadowCardEmulation.getRegisteredPollingLoopPatternFiltersForService(service))
+        .isNull();
+  }
+
+  @Test
+  @Config(minSdk = V.SDK_INT)
+  public void removePollingLoopPatternFilterForService_shouldRemovePollingLoopFilter() {
+    String pollingLoopFilter = "6A02..01.*";
+    cardEmulation.registerPollingLoopPatternFilterForService(service, pollingLoopFilter, true);
+    Map<String, Boolean> result =
+        ShadowCardEmulation.getRegisteredPollingLoopPatternFiltersForService(service);
+    assertThat(result.keySet().size()).isEqualTo(1);
+    assertThat(result.containsKey(pollingLoopFilter)).isTrue();
+    assertThat(result.get(pollingLoopFilter)).isTrue();
+
+    cardEmulation.removePollingLoopPatternFilterForService(service, pollingLoopFilter);
+    assertThat(ShadowCardEmulation.getRegisteredPollingLoopPatternFiltersForService(service))
+        .isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = V.SDK_INT)
+  public void removePollingLoopPatternFilterForService_returnsFalseForInvalidPollingLoopFilter() {
+    String invalidPollingLoopFilter = "6Z02!.01.*";
+
+    assertThat(
+            cardEmulation.removePollingLoopPatternFilterForService(
+                service, invalidPollingLoopFilter))
+        .isFalse();
   }
 
   // TODO: delete when this test compiles against V sdk

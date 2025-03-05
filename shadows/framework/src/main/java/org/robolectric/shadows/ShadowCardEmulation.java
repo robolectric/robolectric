@@ -30,6 +30,9 @@ public class ShadowCardEmulation {
   private static final Set<ComponentName> defaultObserveModeEnabledServices = new HashSet<>();
   private static Map<String, ComponentName> defaultServiceForCategoryMap = new HashMap<>();
   private static ComponentName preferredService = null;
+  private static Map<ComponentName, Map<String, Boolean>> pollingLoopPatternFiltersForService =
+      new HashMap<>();
+  private static String pollingLoopFilterAllowedCharactersRegex = "[a-fA-F0-9\\?\\.\\*]+";
 
   @RealObject CardEmulation cardEmulation;
 
@@ -57,6 +60,40 @@ public class ShadowCardEmulation {
       defaultObserveModeEnabledServices.add(service);
     } else {
       defaultObserveModeEnabledServices.remove(service);
+    }
+    return true;
+  }
+
+  /** Registers a polling loop filter for a service and stores if auto transact is enabled. */
+  @Implementation(minSdk = V.SDK_INT)
+  protected boolean registerPollingLoopPatternFilterForService(
+      ComponentName service, String pollingLoopFilter, boolean autoTransact) {
+    if (pollingLoopFilter.isEmpty()
+        || !pollingLoopFilter.matches(pollingLoopFilterAllowedCharactersRegex)) {
+      return false;
+    }
+
+    if (pollingLoopPatternFiltersForService.containsKey(service)) {
+      pollingLoopPatternFiltersForService.get(service).put(pollingLoopFilter, autoTransact);
+    } else {
+      Map<String, Boolean> pollingLoopFilters = new HashMap<>();
+      pollingLoopFilters.put(pollingLoopFilter, autoTransact);
+      pollingLoopPatternFiltersForService.put(service, pollingLoopFilters);
+    }
+    return true;
+  }
+
+  /** Registers a polling loop filter for a service and stores if auto transact is enabled. */
+  @Implementation(minSdk = V.SDK_INT)
+  protected boolean removePollingLoopPatternFilterForService(
+      ComponentName service, String pollingLoopFilter) {
+    if (pollingLoopFilter.isEmpty()
+        || !pollingLoopFilter.matches(pollingLoopFilterAllowedCharactersRegex)) {
+      return false;
+    }
+
+    if (pollingLoopPatternFiltersForService.containsKey(service)) {
+      pollingLoopPatternFiltersForService.get(service).remove(pollingLoopFilter);
     }
     return true;
   }
@@ -96,10 +133,21 @@ public class ShadowCardEmulation {
     return defaultObserveModeEnabledServices.contains(service);
   }
 
+  /**
+   * Utility function that returns the list of polling loop filters and their auto transact status
+   * for a given service.
+   */
+  @Nullable
+  public static Map<String, Boolean> getRegisteredPollingLoopPatternFiltersForService(
+      ComponentName service) {
+    return pollingLoopPatternFiltersForService.get(service);
+  }
+
   @Resetter
   public static void reset() {
     defaultServiceForCategoryMap = new HashMap<>();
     preferredService = null;
+    pollingLoopPatternFiltersForService = new HashMap<>();
     CardEmulationReflector reflector = reflector(CardEmulationReflector.class);
     reflector.setIsInitialized(false);
     reflector.setService(null);
