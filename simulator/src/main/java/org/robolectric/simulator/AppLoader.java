@@ -37,6 +37,8 @@ public class AppLoader implements Runnable {
 
   @Override
   public void run() {
+    Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
+
     AndroidManifest manifest = new AndroidManifest(null, null, null, null, "", this.apkPath);
 
     this.sandbox
@@ -54,7 +56,6 @@ public class AppLoader implements Runnable {
         application.getPackageManager().queryIntentActivities(intent, 0);
 
     Preconditions.checkArgument(!resolveInfoList.isEmpty());
-    // Start the first Activity
 
     ResolveInfo resolveInfo = resolveInfoList.get(0);
     ActivityInfo activityInfo = resolveInfo.activityInfo;
