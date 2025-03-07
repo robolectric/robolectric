@@ -41,6 +41,7 @@ public class InstrumentationConfiguration {
           "org.robolectric.annotation.",
           "org.robolectric.internal.",
           "org.robolectric.pluginapi.",
+          "org.robolectric.simulator.pluginapi.",
           "org.robolectric.util.",
           "sun.");
 

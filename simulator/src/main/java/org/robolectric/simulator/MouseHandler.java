@@ -15,8 +15,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import org.robolectric.shadows.ShadowUiAutomation;
+import org.robolectric.simulator.pluginapi.MenuCustomizer;
+import org.robolectric.util.inject.Injector;
 
-/** A {@link MouseHandler} that posts triggers {@link MotionEvent}. */
+/** A {@link MouseAdapter} that triggers Android {@link MotionEvent}s when the mouse is pressed. */
 public class MouseHandler extends MouseAdapter {
   private final UiAutomation uiAutomation =
       InstrumentationRegistry.getInstrumentation().getUiAutomation();
@@ -31,8 +33,17 @@ public class MouseHandler extends MouseAdapter {
 
   public MouseHandler() {
     rightClickMenu = new JPopupMenu();
-    JMenuItem sendBackEvent = new JMenuItem("Press back");
-    sendBackEvent.addActionListener(
+    rightClickMenu.add(getBackMenuItem());
+
+    // Allow plugins to customize the right click menu.
+    Injector injector = new Injector.Builder(Looper.class.getClassLoader()).build();
+    MenuCustomizer menuCustomizer = injector.getInstance(MenuCustomizer.class);
+    menuCustomizer.customizePopupMenu(rightClickMenu);
+  }
+
+  private JMenuItem getBackMenuItem() {
+    JMenuItem sendBackMenuItem = new JMenuItem("Press back");
+    sendBackMenuItem.addActionListener(
         e -> {
           handler.post(
               () -> {
@@ -58,7 +69,8 @@ public class MouseHandler extends MouseAdapter {
                 ShadowUiAutomation.injectInputEvent(backKeyUp);
               });
         });
-    rightClickMenu.add(sendBackEvent);
+
+    return sendBackMenuItem;
   }
 
   @Override
