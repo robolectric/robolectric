@@ -840,21 +840,4 @@ public class AndroidManifest implements UsesSdk {
   public Path getApkFile() {
     return apkFile;
   }
-
-  /**
-   * @deprecated Do not use.
-   */
-  @Deprecated
-  @SuppressWarnings("InlineMeSuggester")
-  public final boolean supportsLegacyResourcesMode() {
-    return true;
-  }
-
-  /**
-   * @deprecated Do not use.
-   */
-  @Deprecated
-  public synchronized boolean supportsBinaryResourcesMode() {
-    return true;
-  }
 }
