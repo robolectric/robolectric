@@ -95,11 +95,6 @@ public class LegacyDependencyResolver implements DependencyResolver {
     return delegate.getLocalArtifactUrl(dependency);
   }
 
-  @Override
-  public URL[] getLocalArtifactUrls(DependencyJar dependency) {
-    return delegate.getLocalArtifactUrls(dependency);
-  }
-
   interface DefinitelyNotAClassLoader {
 
     URL getResource(String name);
