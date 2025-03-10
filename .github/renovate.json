@@ -25,6 +25,7 @@
       "groupName": "Android Gradle Plugin",
       "matchManagers": "gradle",
       "matchPackageNames": [
+        "com.android.library",
         "com.android.tools:common",
         "com.android.tools.build:gradle*"
       ]
