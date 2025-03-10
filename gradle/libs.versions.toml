@@ -80,7 +80,7 @@ junit4 = "4.13.2"
 libphonenumber = "9.0.0"
 
 # https://github.com/mockito/mockito/releases
-mockito = "5.15.2"
+mockito = "5.16.0"
 
 # https://github.com/mockk/mockk/releases
 mockk = "1.13.17"
