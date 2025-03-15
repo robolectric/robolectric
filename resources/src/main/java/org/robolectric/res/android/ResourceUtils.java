@@ -28,7 +28,7 @@ class ResourceUtils {
 
   static int get_entry_id(int resid) {
     //    return static_cast<uint16_t>(resid & 0x0000ffff);
-    return (short) (resid & 0x0000FFFF);
+    return resid & 0x0000FFFF;
   }
 
   static boolean is_internal_resid(int resid) {
