@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import com.google.errorprone.annotations.InlineMe;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -33,24 +32,6 @@ public abstract class Fs {
 
   @GuardedBy("ZIP_FILESYSTEMS")
   private static final Map<Path, FsWrapper> ZIP_FILESYSTEMS = new HashMap<>();
-
-  /**
-   * @deprecated Use {@link File#toPath()} instead.
-   */
-  @Deprecated
-  @InlineMe(replacement = "file.toPath()")
-  public static Path newFile(File file) {
-    return file.toPath();
-  }
-
-  /**
-   * @deprecated Use {@link #fromUrl(String)} instead.
-   */
-  @Deprecated
-  @InlineMe(replacement = "Fs.fromUrl(path)", imports = "org.robolectric.res.Fs")
-  public static Path fileFromPath(String path) {
-    return Fs.fromUrl(path);
-  }
 
   public static FileSystem forJar(URL url) {
     return forJar(Paths.get(toUri(url)));
