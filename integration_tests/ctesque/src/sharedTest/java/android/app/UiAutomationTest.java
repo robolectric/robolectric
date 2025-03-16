@@ -38,7 +38,7 @@ public class UiAutomationTest {
 
       scenario.onActivity(
           activity -> {
-            waitDisplayRotation(activity, Surface.ROTATION_90);
+            waitDisplayRotation(activity, Surface.ROTATION_90, Configuration.ORIENTATION_LANDSCAPE);
             Display display = activity.getWindowManager().getDefaultDisplay();
             Configuration configuration = activity.getResources().getConfiguration();
             assertThat(display.getRotation()).isEqualTo(Surface.ROTATION_90);
@@ -56,7 +56,7 @@ public class UiAutomationTest {
         ActivityScenario.launch(TestActivity.class)) {
       scenario.onActivity(
           activity -> {
-            waitDisplayRotation(activity, Surface.ROTATION_180);
+            waitDisplayRotation(activity, Surface.ROTATION_180, Configuration.ORIENTATION_PORTRAIT);
             Display display = activity.getWindowManager().getDefaultDisplay();
             Configuration configuration = activity.getResources().getConfiguration();
             assertThat(display.getRotation()).isEqualTo(Surface.ROTATION_180);
@@ -67,11 +67,15 @@ public class UiAutomationTest {
     }
   }
 
-  private static void waitDisplayRotation(Activity activity, int expectedRotation) {
+  private static void waitDisplayRotation(
+      Activity activity, int expectedRotation, int expectedOrientation) {
     long startMs = SystemClock.uptimeMillis();
     Display display = activity.getWindowManager().getDefaultDisplay();
     do {
-      if (display.getRotation() == expectedRotation) {
+      // Looks like Activity orientation will change later than display rotation, and hope the extra
+      // waiting can help reduce the flaky.
+      if (display.getRotation() == expectedRotation
+          && activity.getResources().getConfiguration().orientation == expectedOrientation) {
         break;
       }
       try {
