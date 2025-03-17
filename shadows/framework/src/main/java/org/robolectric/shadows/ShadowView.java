@@ -667,17 +667,6 @@ public class ShadowView {
     }
   }
 
-  @Implementation
-  protected boolean initialAwakenScrollBars() {
-    // Temporarily allow disabling initial awaken of scroll bars to aid in migration of tests to
-    // default to window's being marked visible, this will be removed once migration is complete.
-    if (Boolean.getBoolean("robolectric.disableInitialAwakenScrollBars")) {
-      return false;
-    } else {
-      return viewReflector.initialAwakenScrollBars();
-    }
-  }
-
   private class AnimationRunner implements Runnable {
     private final Animation animation;
     private final Transformation transformation = new Transformation();
@@ -864,9 +853,6 @@ public class ShadowView {
     @Direct
     int getSourceLayoutResId();
 
-    @Direct
-    boolean initialAwakenScrollBars();
-
     @Accessor("mScrollX")
     void setMemberScrollX(int value);
 
@@ -890,9 +876,6 @@ public class ShadowView {
 
     @Direct
     void setScrollY(int value);
-
-    @Direct
-    void __constructor__(Context context, AttributeSet attributeSet, int defStyle);
 
     @Direct
     void __constructor__(
