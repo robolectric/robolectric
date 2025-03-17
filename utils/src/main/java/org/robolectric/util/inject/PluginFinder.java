@@ -145,8 +145,15 @@ class PluginFinder {
                             new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
                     while (reader.ready()) {
                       String s = reader.readLine();
-                      result.add(
-                          Class.forName(s, false, serviceClassLoader).asSubclass(pluginType));
+                      int startPositionOfComment = s.indexOf('#');
+                      if (startPositionOfComment != -1) {
+                        s = s.substring(0, startPositionOfComment);
+                      }
+                      s = s.trim();
+                      if (!s.isBlank()) {
+                        result.add(
+                            Class.forName(s, false, serviceClassLoader).asSubclass(pluginType));
+                      }
                     }
                     reader.close();
                   }
