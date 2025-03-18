@@ -901,8 +901,7 @@ public class ShadowWindowManagerGlobal {
         long frameTime,
         float progress,
         boolean triggerBack,
-        int swipeEdge,
-        RemoteAnimationTarget departingAnimationTarget);
+        int swipeEdge);
   }
 
   @ForType(className = "android.view.InsetsVisibilities")
@@ -946,8 +945,7 @@ public class ShadowWindowManagerGlobal {
                 SystemClock.uptimeMillis(), /* frameTime */
                 progress,
                 Boolean.FALSE, // trigger back
-                edge, // swipe edge
-                null);
+                edge); // swipe edge
       } else {
         throw new IllegalStateException("Could not find a BackMotionEvent constructor to call");
       }
