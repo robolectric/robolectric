@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.P;
 
 import android.app.backup.BackupManager;
 import android.app.backup.BackupTransport;
@@ -14,6 +15,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import java.util.ArrayList;
@@ -86,6 +88,17 @@ public class ShadowBackupManager {
   protected boolean isBackupEnabled() {
     enforceBackupPermission("isBackupEnabled");
     return serviceState.backupEnabled;
+  }
+
+  @Implementation(minSdk = P)
+  @HiddenApi // SystemApi
+  protected boolean isBackupServiceActive(UserHandle user) {
+    enforceBackupPermission("isBackupServiceActive");
+    return serviceState.backupServiceActive;
+  }
+
+  public void setBackupServiceActive(UserHandle user, boolean makeActive) {
+    serviceState.backupServiceActive = makeActive;
   }
 
   @Implementation
@@ -263,6 +276,7 @@ public class ShadowBackupManager {
   }
 
   private static class BackupManagerServiceState {
+    boolean backupServiceActive = true;
     boolean backupEnabled = true;
     boolean nullRestoreData;
     long lastRestoreToken = 0L;

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -13,6 +14,7 @@ import android.app.backup.BackupTransport;
 import android.app.backup.RestoreObserver;
 import android.app.backup.RestoreSession;
 import android.app.backup.RestoreSet;
+import android.os.UserHandle;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
@@ -91,6 +93,13 @@ public class ShadowBackupManagerTest {
         .denyPermissions(android.Manifest.permission.BACKUP);
 
     assertThrows(SecurityException.class, () -> backupManager.isBackupEnabled());
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void setBackupS_setToFalse_shouldDisableBackup() {
+    shadowOf(backupManager).setBackupServiceActive(UserHandle.of(0), false);
+    assertThat(backupManager.isBackupServiceActive(UserHandle.of(0))).isFalse();
   }
 
   @Test
