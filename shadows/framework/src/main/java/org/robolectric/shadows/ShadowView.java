@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowView.useRealViewAnimations;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -39,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
@@ -85,6 +87,7 @@ public class ShadowView {
   private int layerType;
   private final ArrayList<Animation> animations = new ArrayList<>();
   private AnimationRunner animationRunner;
+  private static final AtomicBoolean useRealViewAnimations = new AtomicBoolean(false);
 
   /**
    * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are
@@ -646,14 +649,15 @@ public class ShadowView {
   @Implementation
   protected void setAnimation(final Animation animation) {
     reflector(_View_.class, realView).setAnimation(animation);
-
-    if (animation != null) {
-      animations.add(animation);
-      if (animationRunner != null) {
-        animationRunner.cancel();
+    if (!useRealViewAnimations()) {
+      if (animation != null) {
+        animations.add(animation);
+        if (animationRunner != null) {
+          animationRunner.cancel();
+        }
+        animationRunner = new AnimationRunner(animation);
+        animationRunner.start();
       }
-      animationRunner = new AnimationRunner(animation);
-      animationRunner.start();
     }
   }
 
@@ -661,9 +665,11 @@ public class ShadowView {
   protected void clearAnimation() {
     reflector(_View_.class, realView).clearAnimation();
 
-    if (animationRunner != null) {
-      animationRunner.cancel();
-      animationRunner = null;
+    if (!useRealViewAnimations()) {
+      if (animationRunner != null) {
+        animationRunner.cancel();
+        animationRunner = null;
+      }
     }
   }
 
@@ -748,6 +754,17 @@ public class ShadowView {
 
   private Object getAttachInfo() {
     return reflector(_View_.class, realView).getAttachInfo();
+  }
+
+  /**
+   * Sets the drawing time of the view. This is used in the `draw` methods when rendering
+   * animations.
+   */
+  void setDrawingTime(long drawingTime) {
+    Object attachInfo = getAttachInfo();
+    if (attachInfo != null) {
+      reflector(_AttachInfo_.class, attachInfo).setDrawingTime(drawingTime);
+    }
   }
 
   /** Reflector interface for {@link View}'s internals. */
@@ -1006,6 +1023,9 @@ public class ShadowView {
 
     @Accessor("mWindowId")
     void setWindowId(WindowId windowId);
+
+    @Accessor("mDrawingTime")
+    void setDrawingTime(long drawingTime);
   }
 
   /**
@@ -1030,5 +1050,30 @@ public class ShadowView {
   static boolean useRealScrolling() {
     return useRealGraphics()
         || Boolean.parseBoolean(System.getProperty("robolectric.useRealScrolling", "true"));
+  }
+
+  /**
+   * This method allows tests to opt-in to use the real View animation code.
+   *
+   * <p>This option is primarily intended for use with the Robolectric {@link
+   * org.robolectric.simulator.Simulator}}.
+   *
+   * <p>Robolectric by default has a low-quality simulation of View animations (i.e. {@link
+   * View#startAnimation(Animation)}). This uses {@link AnimationRunner}. In real Android, View
+   * animations are interpolated during the View's draw method, which is triggered by Choreographer
+   * callbacks in ViewRootImpl objects. However, in Robolectric, Views are not being continually
+   * drawn, which is the reason that {@link AnimationRunner} exists.
+   *
+   * <p>Ths method allows disabling this {@link AnimationRunner} mechanism and instead uses the real
+   * Android code for View animations. Note that to make this work, it requires frame-by-frame
+   * rendering to occur (which happens in the Robolectric simulator).
+   */
+  public static void setUseRealViewAnimations(boolean value) {
+    useRealViewAnimations.set(value);
+  }
+
+  /** Returns whether real Android View animation logic is being used. */
+  static boolean useRealViewAnimations() {
+    return useRealViewAnimations.get();
   }
 }
