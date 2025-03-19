@@ -135,6 +135,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GetInstallerPackageNameMode;
 import org.robolectric.annotation.GetInstallerPackageNameMode.Mode;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowPackageManager.PackageSetting;
 import org.robolectric.shadows.ShadowPackageManager.ResolveInfoComparator;
@@ -162,6 +163,7 @@ public class ShadowPackageManagerTest {
   public static final String ORIGINATING_PACKAGE_NAME = "originating.package";
   public static final String UPDATE_OWNER_PACKAGE_NAME = "update.owner.package";
 
+  @Rule public final SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private Context context;
   private PackageManager packageManager;
@@ -2196,6 +2198,23 @@ public class ShadowPackageManagerTest {
     applicationInfo.packageName = TEST_PACKAGE_NAME;
 
     assertThat(packageManager.getApplicationIcon(applicationInfo)).isSameInstanceAs(d);
+  }
+
+  @Test
+  public void getApplicationIcon_fromInfoNoShadow_returnsDrawable() {
+    setSystemPropertyRule.set("robolectric.useValidGetApplicationIcon", "true");
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = TEST_PACKAGE_NAME;
+
+    Drawable d = packageManager.getApplicationIcon(applicationInfo);
+    assertThat(d).isNotNull();
+  }
+
+  @Test
+  public void getApplicationIcon_fromPackageNoShadow_throws() {
+    setSystemPropertyRule.set("robolectric.useValidGetApplicationIcon", "true");
+    assertThrows(
+        NameNotFoundException.class, () -> packageManager.getApplicationIcon(TEST_PACKAGE_NAME));
   }
 
   @Test

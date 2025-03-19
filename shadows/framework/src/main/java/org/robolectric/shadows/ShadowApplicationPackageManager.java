@@ -1285,12 +1285,26 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected Drawable getApplicationIcon(String packageName) throws NameNotFoundException {
-    return applicationIcons.get(packageName);
+    Drawable result = applicationIcons.get(packageName);
+    if (useValidGetApplicationIcon() && result == null) {
+      throw new NameNotFoundException(packageName);
+    }
+    return result;
+  }
+
+  private static boolean useValidGetApplicationIcon() {
+    return Boolean.parseBoolean(
+        System.getProperty("robolectric.useValidGetApplicationIcon", "false"));
   }
 
   @Implementation
   protected Drawable getApplicationIcon(ApplicationInfo info) throws NameNotFoundException {
-    return getApplicationIcon(info.packageName);
+    try {
+      return getApplicationIcon(info.packageName);
+    } catch (NameNotFoundException e) {
+      // This method should not return null. Return a default icon instead.
+      return getDefaultActivityIcon();
+    }
   }
 
   @Implementation
