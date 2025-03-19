@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Xml;
 import android.view.View;
 import java.lang.reflect.Modifier;
 import javax.annotation.Nullable;
@@ -34,6 +35,7 @@ import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
+import org.xmlpull.v1.XmlPullParser;
 
 public class Robolectric {
 
@@ -327,7 +329,7 @@ public class Robolectric {
   /**
    * Builder of {@link AttributeSet}s.
    *
-   * @deprecated Use {@link org.robolectric.android.AttributeSetBuilder} instead.
+   * @deprecated Use {@link Xml#asAttributeSet(XmlPullParser)} instead.
    */
   @Deprecated
   public interface AttributeSetBuilder {

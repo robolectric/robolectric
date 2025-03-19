@@ -2,12 +2,14 @@ package org.robolectric.android;
 
 import android.annotation.IdRes;
 import android.util.AttributeSet;
+import android.util.Xml;
 import org.robolectric.Robolectric;
+import org.xmlpull.v1.XmlPullParser;
 
 /**
  * Builder of {@link AttributeSet}s.
  *
- * @deprecated use Xml.asAttributeSet instead. Not supported in {@link
+ * @deprecated use {@link Xml#asAttributeSet(XmlPullParser)} instead. Not supported in {@link
  *     org.robolectric.annotation.ResourcesMode.Mode#NATIVE}
  */
 @Deprecated
