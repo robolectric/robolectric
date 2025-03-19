@@ -75,7 +75,10 @@ public class AndroidConfigurer {
         .addClassNameTranslation("java.nio.charset.Charsets", StandardCharsets.class.getName())
         .addClassNameTranslation("java.lang.UnsafeByteSequence", Object.class.getName())
         .addClassNameTranslation("java.util.jar.StrictJarFile", Object.class.getName())
-        .addClassNameTranslation("sun.misc.Cleaner", "java.lang.ref.Cleaner$Cleanable");
+        .addClassNameTranslation("sun.misc.Cleaner", "java.lang.ref.Cleaner$Cleanable")
+        .addClassNameTranslation(
+            "android.app.sdksandbox.sandboxactivity.SdkSandboxActivityAuthority",
+            "org.robolectric.fakes.RoboSdkSandboxActivityAuthority");
 
     // Don't acquire legacy support packages.
     builder
