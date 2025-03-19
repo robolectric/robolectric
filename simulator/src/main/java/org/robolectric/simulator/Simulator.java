@@ -4,12 +4,15 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 import android.app.Application;
+import android.app.UiAutomation;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.hardware.display.DisplayManager;
+import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.view.Display;
+import android.view.MotionEvent;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
@@ -30,6 +33,8 @@ import org.robolectric.shadows.ShadowView;
 public final class Simulator {
 
   private SimulatorFrame simulatorFrame;
+  private float displayWidth;
+  private float displayHeight;
 
   public void start() {
     Preconditions.checkState(ShadowView.useRealGraphics());
@@ -46,6 +51,8 @@ public final class Simulator {
     ShadowChoreographer.setPaused(true);
     ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
     shadowLooper.idle();
+    // Inject an off-screen motion event to avoid a blank screen when the simulator first starts.
+    postMotionEvent();
     while (true) {
       long currentSystemTime = System.nanoTime();
       long nextTaskTime = shadowLooper.getNextScheduledTaskTime().toMillis();
@@ -66,6 +73,8 @@ public final class Simulator {
     DisplayManager displayManager =
         (DisplayManager) application.getSystemService(Context.DISPLAY_SERVICE);
     Display display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
+    this.displayWidth = display.getWidth();
+    this.displayHeight = display.getHeight();
 
     try {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -75,7 +84,8 @@ public final class Simulator {
     SwingUtilities.invokeLater(
         (Runnable)
             () -> {
-              simulatorFrame = new SimulatorFrame(display.getWidth(), display.getHeight());
+              simulatorFrame =
+                  new SimulatorFrame((int) this.displayWidth, (int) this.displayHeight);
               simulatorFrame.setVisible(true);
               simulatorFrame.toFront();
             });
@@ -85,5 +95,20 @@ public final class Simulator {
     final Bitmap bitmap =
         InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
     SwingUtilities.invokeLater((Runnable) () -> simulatorFrame.getCanvas().drawBitmap(bitmap));
+  }
+
+  private void postMotionEvent() {
+    UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    MotionEvent androidEvent =
+        MotionEvent.obtain(
+            /* downTime= */ 0,
+            /* eventTime= */ SystemClock.uptimeMillis(),
+            /* action= */ MotionEvent.ACTION_MOVE,
+            /* x= */ this.displayWidth,
+            /* y= */ this.displayHeight,
+            /* metaState= */ 0);
+
+    new Handler(Looper.getMainLooper())
+        .post(() -> uiAutomation.injectInputEvent(androidEvent, true));
   }
 }
