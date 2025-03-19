@@ -35,6 +35,7 @@ public final class Simulator {
     Preconditions.checkState(ShadowView.useRealGraphics());
     Preconditions.checkState(ShadowLooper.looperMode() != Mode.LEGACY);
     System.setProperty("java.awt.headless", "false");
+    ShadowView.setUseRealViewAnimations(true);
     startUi();
     captureScreen();
     loop();

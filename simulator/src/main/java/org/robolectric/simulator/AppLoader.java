@@ -22,6 +22,7 @@ import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.config.ConfigurationStrategy;
+import org.robolectric.shadows.ShadowView;
 
 /** Loads an apk into the simulator */
 public class AppLoader implements Runnable {
@@ -44,6 +45,7 @@ public class AppLoader implements Runnable {
     this.sandbox
         .getTestEnvironment()
         .setUpApplicationState("simulator", new FixedConfiguration(), manifest);
+    ShadowView.setUseRealViewAnimations(true);
 
     Application application = RuntimeEnvironment.getApplication();
 
