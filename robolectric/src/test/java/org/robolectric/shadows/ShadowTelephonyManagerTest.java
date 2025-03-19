@@ -1152,6 +1152,37 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = P)
+  public void shouldGiveVoiceActivationState() {
+    shadowOf(telephonyManager)
+        .setVoiceActivationState(TelephonyManager.SIM_ACTIVATION_STATE_ACTIVATED);
+    assertThat(telephonyManager.getVoiceActivationState())
+        .isEqualTo(TelephonyManager.SIM_ACTIVATION_STATE_ACTIVATED);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void shouldGiveDataActivationState() {
+    shadowOf(telephonyManager).setDataActivationState(TelephonyManager.DATA_ACTIVITY_INOUT);
+    assertThat(telephonyManager.getDataActivationState())
+        .isEqualTo(TelephonyManager.DATA_ACTIVITY_INOUT);
+  }
+
+  @Test
+  @Config(sdk = Config.NEWEST_SDK)
+  public void shouldGiveDeviceVoiceCapableTrue() {
+    shadowOf(telephonyManager).setDeviceVoiceCapable(true);
+    assertThat(telephonyManager.isDeviceVoiceCapable()).isTrue();
+  }
+
+  @Test
+  @Config(sdk = Config.NEWEST_SDK)
+  public void shouldGiveDeviceVoiceCapableFalse() {
+    shadowOf(telephonyManager).setDeviceVoiceCapable(false);
+    assertThat(telephonyManager.isDeviceVoiceCapable()).isFalse();
+  }
+
+  @Test
   @Config(minSdk = S)
   public void shouldGiveSignalStrength_toCallback() {
     TelephonyCallback callback =
