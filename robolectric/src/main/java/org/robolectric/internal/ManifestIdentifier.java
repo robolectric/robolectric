@@ -1,12 +1,10 @@
 package org.robolectric.internal;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import org.robolectric.annotation.Config;
 
 @SuppressWarnings("NewApi")
 public class ManifestIdentifier {
@@ -39,33 +37,6 @@ public class ManifestIdentifier {
     this.packageName = packageName;
     this.libraries = libraries == null ? Collections.emptyList() : libraries;
     this.apkFile = apkFile;
-  }
-
-  /**
-   * @deprecated Use {@link #ManifestIdentifier(String, Path, Path, Path, List)} instead.
-   */
-  @Deprecated
-  public ManifestIdentifier(
-      Path manifestFile, Path resDir, Path assetDir, String packageName, List<Path> libraryDirs) {
-    this.manifestFile = manifestFile;
-    this.resDir = resDir;
-    this.assetDir = assetDir;
-    this.packageName = packageName;
-
-    List<ManifestIdentifier> libraries = new ArrayList<>();
-    if (libraryDirs != null) {
-      for (Path libraryDir : libraryDirs) {
-        libraries.add(
-            new ManifestIdentifier(
-                null,
-                libraryDir.resolve(Config.DEFAULT_MANIFEST_NAME),
-                libraryDir.resolve(Config.DEFAULT_RES_FOLDER),
-                libraryDir.resolve(Config.DEFAULT_ASSET_FOLDER),
-                null));
-      }
-    }
-    this.libraries = Collections.unmodifiableList(libraries);
-    this.apkFile = null;
   }
 
   public Path getManifestFile() {
