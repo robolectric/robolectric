@@ -22,7 +22,10 @@ import org.robolectric.annotation.Resetter;
  * #provideImpl(GooglePlayServicesUtilImpl)} to set the implementation instance. By default, a
  * {@link GooglePlayServicesUtilImpl} is used in call redirection. Use mocks or subclassing {@link
  * GooglePlayServicesUtilImpl} to achieve desired behaviors.
+ *
+ * @deprecated This package is no longer maintained and will be removed in Robolectric 4.16.
  */
+@Deprecated
 @Implements(GooglePlayServicesUtil.class)
 public class ShadowGooglePlayServicesUtil {
   private static GooglePlayServicesUtilImpl googlePlayServicesUtilImpl =
