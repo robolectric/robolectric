@@ -23,7 +23,10 @@ import org.robolectric.annotation.Resetter;
  * GoogleAuthUtilImpl} implementation. Use {@link #provideImpl(GoogleAuthUtilImpl)} to set the
  * implementation instance. By default, a {@link GoogleAuthUtilImpl} is used in call redirection.
  * Use mocks or subclassing {@link GoogleAuthUtilImpl} to achieve desired behaviors.
+ *
+ * @deprecated This package is no longer maintained and will be removed in Robolectric 4.16.
  */
+@Deprecated
 @Implements(GoogleAuthUtil.class)
 public class ShadowGoogleAuthUtil {
 

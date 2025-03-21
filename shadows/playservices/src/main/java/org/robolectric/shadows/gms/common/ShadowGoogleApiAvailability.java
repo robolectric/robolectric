@@ -10,6 +10,10 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
+/**
+ * @deprecated This package is no longer maintained and will be removed in Robolectric 4.16.
+ */
+@Deprecated
 @Implements(GoogleApiAvailability.class)
 public class ShadowGoogleApiAvailability {
   private int availabilityCode = ConnectionResult.SERVICE_MISSING;
