@@ -28,7 +28,7 @@ dependencies {
   testCompileOnly(libs.auto.service.annotations)
   testAnnotationProcessor(libs.auto.service)
   testAnnotationProcessor(libs.error.prone.core)
-
+  testImplementation(libs.findbugs.jsr305)
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
   testImplementation(libs.kotlin.stdlib)

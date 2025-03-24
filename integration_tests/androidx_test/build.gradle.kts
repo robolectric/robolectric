@@ -59,6 +59,7 @@ dependencies {
   testImplementation(libs.androidx.fragment)
   testImplementation(libs.androidx.fragment.testing)
   testImplementation(libs.androidx.test.ext.junit)
+  testImplementation(libs.findbugs.jsr305)
   testImplementation(libs.truth)
 
   androidTestImplementation(project(":annotations"))
