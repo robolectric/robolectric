@@ -1,14 +1,12 @@
 # Modified from https://github.com/iwahjoedi/android-devcontainer/blob/main/Image/Dockerfile
-ARG VARIENT="ubuntu-22.04"
-FROM mcr.microsoft.com/vscode/devcontainers/base:0-${VARIENT}
+# Docker image version history: https://github.com/devcontainers/images/tree/main/src/base-ubuntu/history
+FROM mcr.microsoft.com/devcontainers/base:1-ubuntu-24.04
 
 ENV DEVCONTAINER="true"
 
 RUN apt clean && apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y upgrade \
-    && apt-get -y install git \
     && apt-get -y install clang cmake ninja-build pkg-config \
-    && apt-get -y install wget unzip \
     && apt-get -y install openjdk-17-jdk \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
@@ -55,4 +53,6 @@ RUN yes | sdkmanager --install "platforms;android-31"
 RUN yes | sdkmanager --install "platforms;android-32"
 RUN yes | sdkmanager --install "platforms;android-33"
 RUN yes | sdkmanager --install "platforms;android-34"
-RUN yes | sdkmanager --install "platform-tools" "cmdline-tools;latest"
+RUN yes | sdkmanager --install "platforms;android-35"
+RUN yes | sdkmanager --install "cmdline-tools;latest"
+RUN yes | sdkmanager --install "platform-tools"
