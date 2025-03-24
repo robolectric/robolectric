@@ -24,6 +24,7 @@ public class ShadowService extends ShadowContextWrapper {
   private boolean selfStopped = false;
   private boolean foregroundStopped;
   private boolean notificationShouldRemoved;
+  private Exception exceptionForStartForeground = null;
   private int stopSelfId;
   private int stopSelfResultId;
   private int foregroundServiceType;
@@ -55,7 +56,10 @@ public class ShadowService extends ShadowContextWrapper {
   }
 
   @Implementation
-  protected void startForeground(int id, Notification notification) {
+  protected void startForeground(int id, Notification notification) throws Exception {
+    if (exceptionForStartForeground != null) {
+      throw exceptionForStartForeground;
+    }
     foregroundStopped = false;
     lastForegroundNotificationId = id;
     lastForegroundNotification = notification;
@@ -70,7 +74,8 @@ public class ShadowService extends ShadowContextWrapper {
 
   @Implementation(minSdk = Q)
   protected void startForeground(
-      int id, Notification notification, @ForegroundServiceType int foregroundServiceType) {
+      int id, Notification notification, @ForegroundServiceType int foregroundServiceType)
+      throws Exception {
     startForeground(id, notification);
     this.foregroundServiceType = foregroundServiceType;
   }
@@ -152,5 +157,23 @@ public class ShadowService extends ShadowContextWrapper {
    */
   public int getStopSelfResultId() {
     return stopSelfResultId;
+  }
+
+  /**
+   * Configures the ShadowService so that calls to startForeground() will throw the given Exception.
+   * It can throw: {@link android.app.ForegroundServiceStartNotAllowedException}:
+   * https://developer.android.com/reference/android/app/ForegroundServiceStartNotAllowedException
+   * Or {@link android.app.InvalidForegroundServiceTypeException}:
+   * https://developer.android.com/reference/android/app/InvalidForegroundServiceTypeException Or
+   * {@link android.app.MissingForegroundServiceTypeException}:
+   * https://developer.android.com/reference/android/app/MissingForegroundServiceTypeException Or
+   * {@link java.lang.SecurityException}:
+   * https://developer.android.com/reference/java/lang/SecurityException
+   *
+   * <p>Details in:
+   * https://developer.android.com/reference/android/app/Service#startForeground(int,%20android.app.Notification)
+   */
+  public void setThrowInStartForeground(Exception e) {
+    exceptionForStartForeground = e;
   }
 }
