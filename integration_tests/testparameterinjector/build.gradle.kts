@@ -24,6 +24,7 @@ dependencies {
   // Testing dependencies
   testImplementation(project(":robolectric"))
   testImplementation("com.google.testparameterinjector:test-parameter-injector:1.18@jar")
+  testImplementation(libs.findbugs.jsr305)
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
 }

@@ -8,6 +8,7 @@ dependencies {
 
   api(project(":annotations"))
   api(project(":utils"))
+  testImplementation(libs.findbugs.jsr305)
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
 }
