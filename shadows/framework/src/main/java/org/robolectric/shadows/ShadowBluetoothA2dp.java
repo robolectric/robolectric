@@ -15,6 +15,8 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.util.Log;
 import com.google.common.collect.ImmutableList;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,11 +28,13 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions;
 
 /** Shadow of {@link BluetoothA2dp}. */
 @Implements(BluetoothA2dp.class)
 public class ShadowBluetoothA2dp {
   private static final String TAG = "BluetoothA2dp";
+  private static final boolean VERIFY_DEVICE_NOT_NULL_IS_STATIC = verifyDeviceNotNullIsStatic();
 
   @RealObject protected BluetoothA2dp realObject;
 
@@ -198,8 +202,27 @@ public class ShadowBluetoothA2dp {
     void verifyDeviceNotNull(BluetoothDevice device, String methodName);
   }
 
+  private static boolean verifyDeviceNotNullIsStatic() {
+    Method m = null;
+    try {
+      m =
+          BluetoothA2dp.class.getDeclaredMethod(
+              "verifyDeviceNotNull", BluetoothDevice.class, String.class);
+      return Modifier.isStatic(m.getModifiers());
+    } catch (NoSuchMethodException e) {
+      if (AndroidVersions.CURRENT.getSdkInt() >= AndroidVersions.R.SDK_INT) {
+        throw new RuntimeException("Method verifyDeviceNotNull not found in BluetoothA2dp", e);
+      }
+    }
+    return false; // never used since less than minSdk of R.
+  }
+
   @Implementation(minSdk = R)
   protected void verifyDeviceNotNull(BluetoothDevice device, String methodName) {
-    reflector(BluetoothA2dpReflector.class, realObject).verifyDeviceNotNull(device, methodName);
+    if (VERIFY_DEVICE_NOT_NULL_IS_STATIC) {
+      reflector(BluetoothA2dpReflector.class).verifyDeviceNotNull(device, methodName);
+    } else {
+      reflector(BluetoothA2dpReflector.class, realObject).verifyDeviceNotNull(device, methodName);
+    }
   }
 }
