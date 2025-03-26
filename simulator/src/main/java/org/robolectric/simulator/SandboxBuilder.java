@@ -41,13 +41,7 @@ public final class SandboxBuilder {
   }
 
   @CanIgnoreReturnValue
-  public SandboxBuilder addExtraJar(Path jarPath) {
-    extraJars.add(jarPath);
-    return this;
-  }
-
-  @CanIgnoreReturnValue
-  public SandboxBuilder addExtraJars(Collection<Path> jarPaths) {
+  public SandboxBuilder addClasspathEntries(Collection<Path> jarPaths) {
     extraJars.addAll(jarPaths);
     return this;
   }
