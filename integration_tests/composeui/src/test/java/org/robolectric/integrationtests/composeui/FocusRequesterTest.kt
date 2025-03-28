@@ -1,6 +1,8 @@
 package org.robolectric.integrationtests.composeui
 
-import androidx.compose.material3.TextField
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -17,13 +19,24 @@ import org.robolectric.RobolectricTestRunner
 class FocusRequesterTest {
   @get:Rule val composeTestRule = createComposeRule()
 
-  /** Test for https://github.com/robolectric/robolectric/issues/9703 */
+  /**
+   * Test to ensure that `FocusRequester` can be used within a `Scaffold`.
+   *
+   * Originally reported in
+   * [robolectric/robolectric#9703](https://github.com/robolectric/robolectric/issues/9703).
+   * Solution coming from [b/206249038](https://issuetracker.google.com/issues/206249038).
+   */
   @Test
   fun `check FocusRequester is initialized`() {
     composeTestRule.setContent {
-      val focusRequester = rememberFocusRequester()
+      Scaffold { contentPadding ->
+        val focusRequester = rememberFocusRequester()
 
-      TextField(value = "", onValueChange = {}, modifier = Modifier.focusRequester(focusRequester))
+        Text(
+          text = "Robolectric",
+          modifier = Modifier.padding(contentPadding).focusRequester(focusRequester),
+        )
+      }
     }
   }
 
