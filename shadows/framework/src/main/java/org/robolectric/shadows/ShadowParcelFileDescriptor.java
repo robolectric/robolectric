@@ -48,6 +48,8 @@ public class ShadowParcelFileDescriptor {
   private static final AtomicInteger NEXT_FILE_ID = new AtomicInteger();
 
   private RandomAccessFile file;
+  private File origFile;
+  private int origMode;
   private int fileIdPledgedOnClose; // != 0 if 'file' was written to a Parcel.
   private int lazyFileId; // != 0 if we were created from a Parcel but don't own a 'file' yet.
   private boolean closed;
@@ -120,6 +122,8 @@ public class ShadowParcelFileDescriptor {
   protected static ParcelFileDescriptor open(File file, int mode) throws FileNotFoundException {
     ParcelFileDescriptor pfd = newParcelFileDescriptor();
     ShadowParcelFileDescriptor shadowParcelFileDescriptor = Shadow.extract(pfd);
+    shadowParcelFileDescriptor.origMode = mode;
+    shadowParcelFileDescriptor.origFile = file;
     shadowParcelFileDescriptor.file = new RandomAccessFile(file, getFileMode(mode));
     if ((mode & ParcelFileDescriptor.MODE_TRUNCATE) != 0) {
       try {
@@ -271,6 +275,9 @@ public class ShadowParcelFileDescriptor {
 
   @Implementation
   protected ParcelFileDescriptor dup() throws IOException {
+    if (origFile != null) {
+      return open(origFile, origMode);
+    }
     return new ParcelFileDescriptor(realParcelFd);
   }
 

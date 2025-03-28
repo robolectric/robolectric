@@ -418,11 +418,52 @@ public class ShadowParcelFileDescriptorTest {
   public void testDup_retainsFd() throws Exception {
     ParcelFileDescriptor fd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     ParcelFileDescriptor dupFd = fd.dup();
-    FileDescriptor file = fd.getFileDescriptor();
-    FileDescriptor dupFile = dupFd.getFileDescriptor();
-    assertThat(file).isEqualTo(dupFile);
-    assertThat(file.valid()).isTrue();
-    assertThat(dupFile.valid()).isTrue();
+    FileDescriptor fileDescriptor = fd.getFileDescriptor();
+    FileDescriptor dupFileDescriptor = dupFd.getFileDescriptor();
+
+    // The file descriptors should be valid, but they may not be the same.
+    assertThat(fileDescriptor.valid()).isTrue();
+    assertThat(dupFileDescriptor.valid()).isTrue();
+  }
+
+  @Test
+  public void testDup_sameContents() throws Exception {
+    Files.asCharSink(file, defaultCharset()).write("foo");
+    ParcelFileDescriptor fd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    ParcelFileDescriptor dupFd = fd.dup();
+
+    // Duplicated file descriptor should have the same contents.
+    assertThat(readLine(fd.getFileDescriptor())).isEqualTo("foo");
+    assertThat(readLine(dupFd.getFileDescriptor())).isEqualTo("foo");
+  }
+
+  @Test
+  public void testDup_createPipe_independentClose() throws Exception {
+    ParcelFileDescriptor[] pipe = ParcelFileDescriptor.createPipe();
+
+    // Write to the write side.
+    ParcelFileDescriptor writeSide = pipe[1];
+    byte[] dataToWrite = new byte[] {0, 1, 2, 3, 4};
+    ParcelFileDescriptor.AutoCloseOutputStream outputStream =
+        new ParcelFileDescriptor.AutoCloseOutputStream(writeSide);
+    outputStream.write(dataToWrite);
+    outputStream.close();
+
+    // Prepare a dup of the read side.
+    ParcelFileDescriptor readSide = pipe[0];
+    ParcelFileDescriptor readSideDup = readSide.dup();
+
+    // Close the read side.
+    readSide.close();
+
+    // The read side's dup is still open and can read.
+    ParcelFileDescriptor.AutoCloseInputStream inputStream =
+        new ParcelFileDescriptor.AutoCloseInputStream(readSideDup);
+    byte[] read = new byte[dataToWrite.length];
+    int byteCount = inputStream.read(read);
+    inputStream.close();
+    assertThat(byteCount).isEqualTo(dataToWrite.length);
+    assertThat(read).isEqualTo(dataToWrite);
   }
 
   @Test
