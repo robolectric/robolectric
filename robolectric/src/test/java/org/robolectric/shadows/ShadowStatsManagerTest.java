@@ -188,4 +188,16 @@ public final class ShadowStatsManagerTest {
         ShadowStatsManager.BroadcastSubscriberKey.create(configId, subscriberId);
     assertThat(ShadowStatsManager.getBroadcastSubscriberMap().get(key)).isNull();
   }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testGetRegisteredExperimentIds_returnsRegisteredExperimentIds() throws Exception {
+    StatsManager statsManager =
+        ApplicationProvider.getApplicationContext().getSystemService(StatsManager.class);
+    long[] experimentIds = new long[] {1L, 2L, 3L};
+
+    ShadowStatsManager.setRegisteredExperimentIds(experimentIds);
+
+    assertThat(statsManager.getRegisteredExperimentIds()).isEqualTo(experimentIds);
+  }
 }

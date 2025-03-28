@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.app.PendingIntent;
 import android.app.StatsManager;
@@ -24,6 +25,9 @@ public class ShadowStatsManager {
   private static final Map<BroadcastSubscriberKey, PendingIntent> broadcastSubscriberMap =
       new HashMap<>();
 
+  @SuppressWarnings("NonFinalStaticField")
+  private static long[] registeredExperimentIds = new long[] {};
+
   @Resetter
   public static void reset() {
     reportDataMap.clear();
@@ -43,6 +47,14 @@ public class ShadowStatsManager {
    */
   public static void setStatsMetadata(byte[] metadata) {
     statsMetadata = metadata;
+  }
+
+  /**
+   * Sets the registered experiment ids that the shadow should return from {@link
+   * StatsManager#getRegisteredExperimentIds()}.
+   */
+  public static void setRegisteredExperimentIds(long[] experimentIds) {
+    registeredExperimentIds = experimentIds;
   }
 
   /**
@@ -95,6 +107,11 @@ public class ShadowStatsManager {
     } else {
       broadcastSubscriberMap.remove(key);
     }
+  }
+
+  @Implementation(minSdk = Q)
+  protected long[] getRegisteredExperimentIds() {
+    return registeredExperimentIds;
   }
 
   /** A key used to store the configKey and subscriberId in the broadcastSubscriberMap. */
