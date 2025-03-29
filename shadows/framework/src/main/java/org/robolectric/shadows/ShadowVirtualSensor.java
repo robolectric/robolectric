@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtual.sensor.VirtualSensorEvent;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.annotation.Implementation;
@@ -9,11 +10,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for VirtualSensor. */
-@Implements(
-    value = VirtualSensor.class,
-    minSdk = U.SDK_INT,
-    // TODO: remove when minimum supported compileSdk is >= 34
-    isInAndroidSdk = false)
+@Implements(value = VirtualSensor.class, minSdk = U.SDK_INT)
 public class ShadowVirtualSensor {
 
   private int deviceId = 0;
@@ -30,7 +27,11 @@ public class ShadowVirtualSensor {
   }
 
   public List<VirtualSensorEvent> getSentEvents() {
-    return sentEvents;
+    return ImmutableList.copyOf(sentEvents);
+  }
+
+  public void clearSentEvents() {
+    sentEvents.clear();
   }
 
   void setDeviceId(int deviceId) {
