@@ -3,6 +3,7 @@ package org.robolectric.shadows.gms;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -13,9 +14,7 @@ import com.google.android.gms.auth.GoogleAuthUtil;
 import java.util.List;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -35,8 +34,6 @@ public class ShadowGoogleAuthUtilTest {
 
   @Mock private GoogleAuthUtilImpl mockGoogleAuthUtil;
 
-  @Rule public ExpectedException thrown = ExpectedException.none();
-
   @Before
   public void setup() {
     mock = MockitoAnnotations.openMocks(this);
@@ -55,12 +52,11 @@ public class ShadowGoogleAuthUtilTest {
 
   @Test
   public void provideImplementation_nullValueNotAllowed() {
-    thrown.expect(NullPointerException.class);
-    ShadowGoogleAuthUtil.provideImpl(null);
+    assertThrows(NullPointerException.class, () -> ShadowGoogleAuthUtil.provideImpl(null));
   }
 
   @Test
-  public void getImplementation_shouldGetSetted() {
+  public void getImplementation_shouldGetSet() {
     ShadowGoogleAuthUtil.provideImpl(mockGoogleAuthUtil);
     GoogleAuthUtilImpl googleAuthUtil = ShadowGoogleAuthUtil.getImpl();
     assertSame(googleAuthUtil, mockGoogleAuthUtil);
@@ -127,19 +123,20 @@ public class ShadowGoogleAuthUtilTest {
   }
 
   @Test
-  public void getTokenWithNotification_nullCallBackThrowIllegalArgumentException()
-      throws Exception {
-    thrown.expect(IllegalArgumentException.class);
-    GoogleAuthUtil.getTokenWithNotification(
-        RuntimeEnvironment.getApplication(), "name", "scope", null, null);
+  public void getTokenWithNotification_nullCallBackThrowIllegalArgumentException() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            GoogleAuthUtil.getTokenWithNotification(
+                RuntimeEnvironment.getApplication(), "name", "scope", null, null));
   }
 
   @Test
-  public void getTokenWithNotification_nullAuthorityThrowIllegalArgumentException()
-      throws Exception {
-    thrown.expect(IllegalArgumentException.class);
-    assertNotNull(
-        GoogleAuthUtil.getTokenWithNotification(
-            RuntimeEnvironment.getApplication(), "name", "scope", null, null, null));
+  public void getTokenWithNotification_nullAuthorityThrowIllegalArgumentException() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            GoogleAuthUtil.getTokenWithNotification(
+                RuntimeEnvironment.getApplication(), "name", "scope", null, null, null));
   }
 }
