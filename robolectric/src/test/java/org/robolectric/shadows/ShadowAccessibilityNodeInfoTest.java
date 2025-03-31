@@ -15,6 +15,7 @@ import android.os.Parcel;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
+import android.view.accessibility.AccessibilityNodeInfo.CollectionInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -314,5 +315,30 @@ public class ShadowAccessibilityNodeInfoTest {
     assertThat(node.isSealed()).isTrue();
     AccessibilityNodeInfo node2 = AccessibilityNodeInfo.obtain(node);
     assertThat(node2.isSealed()).isTrue();
+  }
+
+  @Test
+  public void obtainCollectionInfo_doesNotCrash() {
+    // See https://github.com/robolectric/robolectric/issues/3384
+    CollectionInfo collectionInfo = CollectionInfo.obtain(12, 0, false);
+
+    assertThat(collectionInfo).isNotNull();
+    assertThat(collectionInfo.getSelectionMode()).isEqualTo(CollectionInfo.SELECTION_MODE_NONE);
+    assertThat(collectionInfo.getRowCount()).isEqualTo(12);
+    assertThat(collectionInfo.getColumnCount()).isEqualTo(0);
+    assertThat(collectionInfo.isHierarchical()).isFalse();
+  }
+
+  @Test
+  public void obtainCollectionInfo_withSelectionMode_doesNotCrash() {
+    // See https://github.com/robolectric/robolectric/issues/3384
+    CollectionInfo collectionInfo =
+        CollectionInfo.obtain(12, 0, false, CollectionInfo.SELECTION_MODE_MULTIPLE);
+
+    assertThat(collectionInfo).isNotNull();
+    assertThat(collectionInfo.getSelectionMode()).isEqualTo(CollectionInfo.SELECTION_MODE_MULTIPLE);
+    assertThat(collectionInfo.getRowCount()).isEqualTo(12);
+    assertThat(collectionInfo.getColumnCount()).isEqualTo(0);
+    assertThat(collectionInfo.isHierarchical()).isFalse();
   }
 }
