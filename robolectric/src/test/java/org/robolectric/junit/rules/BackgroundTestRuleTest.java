@@ -1,24 +1,18 @@
 package org.robolectric.junit.rules;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.hamcrest.Matchers.is;
 
 import android.os.Looper;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 /** Tests for {@link BackgroundTestRule}. */
 @RunWith(AndroidJUnit4.class)
 public final class BackgroundTestRuleTest {
 
-  private final BackgroundTestRule rule = new BackgroundTestRule();
-  private final ExpectedException expectedException = ExpectedException.none();
-
-  @Rule public RuleChain chain = RuleChain.outerRule(expectedException).around(rule);
+  @Rule public final BackgroundTestRule rule = new BackgroundTestRule();
 
   @Test
   @BackgroundTestRule.BackgroundTest
@@ -31,11 +25,9 @@ public final class BackgroundTestRuleTest {
     assertThat(Looper.myLooper()).isEqualTo(Looper.getMainLooper());
   }
 
-  @Test
+  @Test(expected = Exception.class)
   @BackgroundTestRule.BackgroundTest
   public void testFailInBackground() throws Exception {
-    Exception exception = new Exception("Fail!");
-    expectedException.expect(is(exception));
-    throw exception;
+    throw new Exception("Fail!");
   }
 }
