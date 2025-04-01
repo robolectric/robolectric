@@ -73,6 +73,7 @@ import android.net.wifi.rtt.IWifiRttManager;
 import android.nfc.INfcAdapter;
 import android.os.BatteryStats;
 import android.os.Binder;
+import android.os.BluetoothServiceManager;
 import android.os.IBatteryPropertiesRegistrar;
 import android.os.IBinder;
 import android.os.IDumpstate;
@@ -196,6 +197,22 @@ public class ShadowServiceManager {
     }
   }
 
+  private static String findBlueToothServiceManagerName() {
+    final String bluetoothServiceManager;
+    if (ReflectionHelpers.hasField(BluetoothAdapter.class, "BLUETOOTH_MANAGER_SERVICE")) {
+      bluetoothServiceManager =
+          ReflectionHelpers.getStaticField(BluetoothAdapter.class, "BLUETOOTH_MANAGER_SERVICE");
+    } else {
+      bluetoothServiceManager = BluetoothServiceManager.BLUETOOTH_MANAGER_SERVICE;
+    }
+    if (bluetoothServiceManager == null) {
+      throw new RuntimeException(
+          "The storage location of the name of the BLUETOOTH_MANAGER_SERVICE"
+              + "has changed in framework code, time to update ShadowServiceManager");
+    }
+    return bluetoothServiceManager;
+  }
+
   private static Map<String, BinderService> buildBinderServicesMap() {
     Map<String, BinderService> binderServices = new HashMap<>();
     addBinderService(binderServices, Context.CLIPBOARD_SERVICE, IClipboard.class);
@@ -226,9 +243,10 @@ public class ShadowServiceManager {
     addBinderService(binderServices, Context.WINDOW_SERVICE, IWindowManager.class);
     addBinderService(binderServices, Context.NFC_SERVICE, INfcAdapter.class, BinderType.DEEP_PROXY);
     addBinderService(binderServices, Context.USER_SERVICE, IUserManager.class);
+
     addBinderService(
         binderServices,
-        BluetoothAdapter.BLUETOOTH_MANAGER_SERVICE,
+        findBlueToothServiceManagerName(),
         IBluetoothManager.class,
         BinderType.DELEGATING_PROXY,
         IBluetoothManagerDelegates.createDelegate());
