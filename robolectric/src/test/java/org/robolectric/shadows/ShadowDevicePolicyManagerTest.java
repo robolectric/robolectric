@@ -28,6 +28,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
@@ -2605,6 +2606,14 @@ public final class ShadowDevicePolicyManagerTest {
     assertThat(devicePolicyManager.isUsbDataSignalingEnabled()).isTrue();
     shadowOf(devicePolicyManager).setIsUsbDataSignalingEnabled(false);
     assertThat(devicePolicyManager.isUsbDataSignalingEnabled()).isFalse();
+  }
+
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  @Test
+  public void isMtePolicyEnforced_shouldReturnSetValue() {
+    assertThat(DevicePolicyManager.isMtePolicyEnforced()).isFalse();
+    ShadowDevicePolicyManager.setIsMtePolicyEnforced(true);
+    assertThat(DevicePolicyManager.isMtePolicyEnforced()).isTrue();
   }
 
   @Config(minSdk = TIRAMISU)
