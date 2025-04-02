@@ -15,7 +15,6 @@ import java.util.Properties;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.Join;
 
 /**
  * Computes the effective Robolectric configuration for a given test method.
@@ -96,7 +95,7 @@ public class ConfigMerger {
   protected Properties getConfigProperties(String packageName) {
     List<String> packageParts = new ArrayList<>(Arrays.asList(packageName.split("\\.")));
     packageParts.add(RobolectricTestRunner.CONFIG_PROPERTIES);
-    final String resourceName = Join.join("/", packageParts);
+    final String resourceName = String.join("/", packageParts);
     try (InputStream resourceAsStream = getResourceAsStream(resourceName)) {
       if (resourceAsStream == null) return null;
       Properties properties = new Properties();

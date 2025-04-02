@@ -946,8 +946,8 @@ public class ShadowWindowManagerGlobal {
                 SystemClock.uptimeMillis(), /* frameTime */
                 progress,
                 Boolean.FALSE, // trigger back
-                edge, // swipe edge
-                null);
+                edge,
+                null); // swipe edge
       } else {
         throw new IllegalStateException("Could not find a BackMotionEvent constructor to call");
       }

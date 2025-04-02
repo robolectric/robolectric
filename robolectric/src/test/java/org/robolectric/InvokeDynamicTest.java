@@ -11,6 +11,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(AndroidJUnit4.class)
 @Config(sdk = Config.NEWEST_SDK)
@@ -35,7 +36,7 @@ public class InvokeDynamicTest {
     assertThat(real.x).isEqualTo(-5);
     assertThat(shadow.x).isEqualTo(5);
 
-    Shadow.directlyOn(real, Real.class).setX(42);
+    Shadow.directlyOn(real, Real.class, "setX", ClassParameter.from(int.class, 42));
     assertThat(real.x).isEqualTo(42);
     assertThat(shadow.x).isEqualTo(5);
   }

@@ -11,7 +11,14 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
-/** Implement {@link TextUtils#ellipsize} by truncating the text. */
+/**
+ * Implement {@link TextUtils#ellipsize} by truncating the text.
+ *
+ * <p>Ideally this would use {@link GraphicsShadowPicker} to get disabled when native graphics are
+ * enabled, but TextUtils is used by {@link android.os.Build}, which is often referenced in static
+ * initializers, and shadow pickers referencing {@link org.robolectric.config.ConfigurationRegistry}
+ * are not supported in static initializers.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TextUtils.class)
 public class ShadowTextUtils {
@@ -19,7 +26,7 @@ public class ShadowTextUtils {
   @Implementation
   protected static CharSequence ellipsize(
       CharSequence text, TextPaint p, float avail, TruncateAt where) {
-    if (useRealEllipsize()) {
+    if (ShadowView.useRealGraphics()) {
       return reflector(TextUtilsReflector.class).ellipsize(text, p, avail, where);
     }
     // This shadow follows the convention of ShadowPaint#measureText where each
@@ -31,11 +38,6 @@ public class ShadowTextUtils {
     } else {
       return text.subSequence(0, (int) avail);
     }
-  }
-
-  private static boolean useRealEllipsize() {
-    return ShadowView.useRealGraphics()
-        && Boolean.parseBoolean(System.getProperty("robolectric.useRealEllipsize", "false"));
   }
 
   @ForType(TextUtils.class)

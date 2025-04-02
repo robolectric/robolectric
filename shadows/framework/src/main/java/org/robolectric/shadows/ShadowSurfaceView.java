@@ -48,6 +48,10 @@ public class ShadowSurfaceView extends ShadowView {
       callbacks.remove(callback);
     }
 
+    public void emitSurfaceChanged(int format, int width, int height) {
+      callbacks.forEach(callback -> callback.surfaceChanged(this, format, width, height));
+    }
+
     @Override
     public boolean isCreating() {
       return false;

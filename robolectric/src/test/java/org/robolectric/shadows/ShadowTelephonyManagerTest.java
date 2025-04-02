@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -88,6 +89,7 @@ import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -95,6 +97,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowSubscriptionManager.SubscriptionInfoBuilder;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -104,6 +107,7 @@ public class ShadowTelephonyManagerTest {
   private TelephonyManager telephonyManager;
   private ShadowTelephonyManager shadowTelephonyManager;
   private TelephonyManager tmForSub5;
+  private String defaultNetworkCountryIso;
 
   @Before
   public void setUp() throws Exception {
@@ -112,6 +116,12 @@ public class ShadowTelephonyManagerTest {
     shadowOf((Application) ApplicationProvider.getApplicationContext())
         .grantPermissions(permission.READ_PRIVILEGED_PHONE_STATE);
     tmForSub5 = newTelephonyManager(5);
+    defaultNetworkCountryIso = shadowOf(telephonyManager).getNetworkCountryIso();
+  }
+
+  @After
+  public void tearDown() {
+    shadowOf(telephonyManager).setNetworkCountryIso(defaultNetworkCountryIso);
   }
 
   private TelephonyManager newTelephonyManager(Integer subId) {
@@ -347,6 +357,11 @@ public class ShadowTelephonyManagerTest {
   public void shouldGiveNetworkCountryIsoInLowercase() {
     shadowOf(telephonyManager).setNetworkCountryIso("SomeIso");
     assertEquals("someiso", telephonyManager.getNetworkCountryIso());
+  }
+
+  @Test
+  public void shouldGiveEmptyStringForNetworkCountryIsoWhenNotSet() {
+    assertThat(telephonyManager.getNetworkCountryIso()).isEmpty();
   }
 
   @Test
@@ -801,6 +816,68 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setSimState(slotNumber, expectedSimState);
 
     assertThat(telephonyManager.getSimState()).isEqualTo(TelephonyManager.SIM_STATE_READY);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getSimApplicationState_defaultUnknown() {
+    assertThat(telephonyManager.getSimApplicationState())
+        .isEqualTo(TelephonyManager.SIM_STATE_UNKNOWN);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getSimApplicationState_simStateAbsent_simApplicationStateUnknown() {
+    ShadowSubscriptionManager.setDefaultSubscriptionId(0);
+    // Don't use slot index 0 to ensure the value is remapped instead of getting default
+    // SIM_STATE_UNKNOWN from an unknown slot index.
+    new ShadowSubscriptionManager()
+        .setActiveSubscriptionInfos(
+            SubscriptionInfoBuilder.newBuilder()
+                .setId(0)
+                .setSimSlotIndex(3)
+                .buildSubscriptionInfo());
+
+    shadowOf(telephonyManager).setSimState(/* slotIndex= */ 3, TelephonyManager.SIM_STATE_ABSENT);
+
+    assertThat(telephonyManager.getSimApplicationState())
+        .isEqualTo(TelephonyManager.SIM_STATE_UNKNOWN);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getSimApplicationState_simStateReady_returnsSimApplicationStateNotReady() {
+    // TODO: make this the default configuration
+    ShadowSubscriptionManager.setDefaultSubscriptionId(0);
+    new ShadowSubscriptionManager()
+        .setActiveSubscriptionInfos(
+            SubscriptionInfoBuilder.newBuilder()
+                .setId(0)
+                .setSimSlotIndex(0)
+                .buildSubscriptionInfo());
+
+    shadowOf(telephonyManager).setSimState(/* slotIndex= */ 0, TelephonyManager.SIM_STATE_READY);
+
+    assertThat(telephonyManager.getSimApplicationState())
+        .isEqualTo(TelephonyManager.SIM_STATE_NOT_READY);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getSimApplicationState_simStateLoaded_returnsSimApplicationStateLoaded() {
+    // TODO: make this the default configuration
+    ShadowSubscriptionManager.setDefaultSubscriptionId(0);
+    new ShadowSubscriptionManager()
+        .setActiveSubscriptionInfos(
+            SubscriptionInfoBuilder.newBuilder()
+                .setId(0)
+                .setSimSlotIndex(0)
+                .buildSubscriptionInfo());
+
+    shadowOf(telephonyManager).setSimState(/* slotIndex= */ 0, TelephonyManager.SIM_STATE_LOADED);
+
+    assertThat(telephonyManager.getSimApplicationState())
+        .isEqualTo(TelephonyManager.SIM_STATE_LOADED);
   }
 
   @Test

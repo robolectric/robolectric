@@ -8,18 +8,18 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.SuppressLint;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
+import android.graphics.fonts.FontStyle;
 import android.util.ArrayMap;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -28,42 +28,23 @@ import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Resetter;
 import org.robolectric.res.Fs;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.versioning.AndroidVersions.Baklava;
-import org.robolectric.versioning.AndroidVersions.T;
-import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link Typeface}. */
 @Implements(value = Typeface.class, isInAndroidSdk = false)
 @SuppressLint("NewApi")
 public class ShadowLegacyTypeface extends ShadowTypeface {
-  private static final Map<Long, FontDesc> FONTS = Collections.synchronizedMap(new HashMap<>());
   private static final AtomicLong nextFontId = new AtomicLong(1);
   private FontDesc description;
 
-  /** Starting in U, this constructor calls {@link #__constructor__(long, String )} below. */
-  @Implementation(maxSdk = T.SDK_INT)
-  protected void __constructor__(long fontId) {
-    description = findById(fontId);
-  }
-
-  @Implementation(minSdk = U.SDK_INT, maxSdk = V.SDK_INT)
-  protected void __constructor__(long fontId, String familyName) {
-    description = findById(fontId);
-  }
-
-  @Implementation(minSdk = Baklava.SDK_INT)
-  @InDevelopment
-  protected void __constructor__(long fontId, String familyName, Typeface derivedFrom) {
-    description = findById(fontId);
-  }
+  @RealObject Typeface realTypeface;
 
   @Implementation
   protected static void __staticInitializer__() {
@@ -217,31 +198,20 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
       Map<String, /*android.graphics.FontFamily[]*/ ?> fallbacks,
       @ClassName("[Landroid.text.FontConfig$Alias;") Object aliases) {}
 
-  @Resetter
-  public static synchronized void reset() {
-    FONTS.clear();
-  }
-
   protected static Typeface createUnderlyingTypeface(String familyName, int style) {
     long thisFontId = nextFontId.getAndIncrement();
-    FONTS.put(thisFontId, new FontDesc(familyName, style));
-    return ReflectionHelpers.callConstructor(
-        Typeface.class, ClassParameter.from(long.class, thisFontId));
+    Typeface result =
+        ReflectionHelpers.callConstructor(
+            Typeface.class, ClassParameter.from(long.class, thisFontId));
+    ((ShadowLegacyTypeface) Shadow.extract(result)).description = new FontDesc(familyName, style);
+    return result;
   }
 
-  private static synchronized FontDesc findById(long fontId) {
-    if (FONTS.containsKey(fontId)) {
-      return FONTS.get(fontId);
-    }
-    throw new RuntimeException("Unknown font id: " + fontId);
-  }
 
   @Implementation(minSdk = O, maxSdk = R)
   protected static long nativeCreateFromArray(long[] familyArray, int weight, int italic) {
     // TODO: implement this properly
-    long thisFontId = nextFontId.getAndIncrement();
-    FONTS.put(thisFontId, new FontDesc(null, weight));
-    return thisFontId;
+    return nextFontId.incrementAndGet();
   }
 
   /**
@@ -275,5 +245,39 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
       String path = ReflectionHelpers.getField(realBuilder, "mPath");
       return createUnderlyingTypeface(path, Typeface.NORMAL);
     }
+  }
+
+  /** Shadow for {@link Typeface.CustomFallbackBuilder} that populates {@link #description} */
+  @Implements(
+      value = Typeface.CustomFallbackBuilder.class,
+      minSdk = Q,
+      shadowPicker = CustomFallbackBuilderPicker.class)
+  public static class ShadowCustomFallbackBuilder {
+    @RealObject Typeface.CustomFallbackBuilder realBuilder;
+
+    @Implementation
+    protected Typeface build() {
+      Typeface result = reflector(CustomFallbackBuilderReflector.class, realBuilder).build();
+      FontStyle style = reflector(CustomFallbackBuilderReflector.class, realBuilder).getStyle();
+      ((ShadowLegacyTypeface) Shadow.extract(result)).description =
+          new FontDesc(null, style.getWeight());
+      return result;
+    }
+  }
+
+  /** Shadow picker for {@link Typeface.CustomFallbackBuilder}. */
+  public static final class CustomFallbackBuilderPicker extends GraphicsShadowPicker<Object> {
+    public CustomFallbackBuilderPicker() {
+      super(ShadowLegacyTypeface.ShadowCustomFallbackBuilder.class, null);
+    }
+  }
+
+  @ForType(Typeface.CustomFallbackBuilder.class)
+  interface CustomFallbackBuilderReflector {
+    @Direct
+    Typeface build();
+
+    @Accessor("mStyle")
+    FontStyle getStyle();
   }
 }

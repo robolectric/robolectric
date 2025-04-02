@@ -1,16 +1,16 @@
 package org.robolectric.nativeruntime;
 
-import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.base.StandardSystemProperty.OS_ARCH;
 import static com.google.common.base.StandardSystemProperty.OS_NAME;
 
 import android.database.CursorWindow;
 import android.graphics.Typeface;
-import android.os.Build;
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import java.io.File;
@@ -22,20 +22,27 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.stream.Stream;
 import javax.annotation.Priority;
 import org.robolectric.pluginapi.NativeRuntimeLoader;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.Logger;
 import org.robolectric.util.OsUtil;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.inject.Injector;
+import org.robolectric.versioning.AndroidVersions;
 
 /** Loads the Robolectric native runtime. */
 @AutoService(NativeRuntimeLoader.class)
@@ -145,6 +152,26 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
     nativeRuntimeLoader.get().ensureLoaded();
   }
 
+  /** Overridable in Android, due to private resources. */
+  protected void maybeCopyExtraResources(TempDirectory dir) {
+    // default to no-op
+  }
+
+  /** Overridable in Android, due to changing shadows in private branches. */
+  protected List<String> getCoreClassNatives() {
+    return CORE_CLASS_NATIVES;
+  }
+
+  /** Overridable in Android, due to changing shadows in private branches. */
+  protected List<String> getDeferredStaticInitializers() {
+    return DEFERRED_STATIC_INITIALIZERS;
+  }
+
+  /** Overridable in Android, due to changing shadows in private branches. */
+  protected List<String> getGraphicsNatives() {
+    return GRAPHICS_CLASS_NATIVES;
+  }
+
   @Override
   public synchronized void ensureLoaded() {
     if (loaded.get()) {
@@ -166,15 +193,17 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
               "loadNativeRuntime",
               () -> {
                 extractDirectory = new TempDirectory("nativeruntime");
-                if (Build.VERSION.SDK_INT >= O) {
+                if (AndroidVersions.CURRENT.getSdkInt() >= AndroidVersions.O.SDK_INT) {
                   // Only copy fonts if graphics is supported, not just SQLite.
                   maybeCopyFonts(extractDirectory);
                 }
                 maybeCopyIcuData(extractDirectory);
+                maybeCopyExtraResources(extractDirectory);
                 if (isAndroidVOrGreater()) {
-                  System.setProperty("core_native_classes", String.join(",", CORE_CLASS_NATIVES));
                   System.setProperty(
-                      "graphics_native_classes", String.join(",", GRAPHICS_CLASS_NATIVES));
+                      "core_native_classes", String.join(",", getCoreClassNatives()));
+                  System.setProperty(
+                      "graphics_native_classes", String.join(",", getGraphicsNatives()));
                   System.setProperty("method_binding_format", METHOD_BINDING_FORMAT);
                 }
                 loadLibrary(extractDirectory);
@@ -188,17 +217,54 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
     }
   }
 
+  private static List<String> getResourcesInAndroidAll(String prefix) throws IOException {
+    try {
+      String jarPath =
+          Iterables.get(
+                  Splitter.on('!').split(Resources.getResource("build.prop").toURI().toString()), 0)
+              .substring("jar:file:".length());
+      List<String> resources = new ArrayList<>();
+      try (JarFile jarFile = new JarFile(jarPath)) {
+        Enumeration<JarEntry> entries = jarFile.entries();
+        while (entries.hasMoreElements()) {
+          JarEntry entry = entries.nextElement();
+          if (entry.getName().startsWith(prefix) && !entry.isDirectory()) {
+            resources.add(entry.getName());
+          }
+        }
+      }
+      return resources;
+    } catch (URISyntaxException syntaxException) {
+      throw new IOException(syntaxException);
+    }
+  }
+
   /** Attempts to load the ICU dat file. This is only relevant for native graphics. */
   private void maybeCopyIcuData(TempDirectory tempDirectory) throws IOException {
     URL icuDatUrl;
     try {
-      icuDatUrl =
-          Resources.getResource(isAndroidVOrGreater() ? "icu/icudt75l.dat" : "icu/icudt68l.dat");
+      if (AndroidVersions.CURRENT.getSdkInt() <= AndroidVersions.U.SDK_INT) {
+        icuDatUrl = Resources.getResource("icu/icudt68l.dat");
+      } else {
+        List<String> resources = getResourcesInAndroidAll("icu/icudt");
+        if (resources.size() != 1) {
+          throw new RuntimeException("More than one icudt file in android-all jar: " + resources);
+        } else {
+          icuDatUrl = Resources.getResource(resources.get(0));
+        }
+      }
     } catch (IllegalArgumentException e) {
-      return;
+      System.out.println("Could not load icu data file ");
+      throw new RuntimeException(e);
     }
     Path icuPath = tempDirectory.create("icu");
-    Path icuDatPath = icuPath.resolve(isAndroidVOrGreater() ? "icudt75l.dat" : "icudt68l.dat");
+    Path icuDatPath;
+    if (AndroidVersions.CURRENT.getSdkInt() <= AndroidVersions.U.SDK_INT) {
+      icuDatPath = icuPath.resolve("icudt68l.dat");
+    } else {
+      List<String> parts = Splitter.on('/').splitToList(icuDatUrl.toString());
+      icuDatPath = icuPath.resolve(Iterables.getLast(parts));
+    }
     Resources.asByteSource(icuDatUrl).copyTo(Files.asByteSink(icuDatPath.toFile()));
     System.setProperty("icu.data.path", icuDatPath.toAbsolutePath().toString());
     System.setProperty("icu.locale.default", Locale.getDefault().toLanguageTag());
@@ -251,6 +317,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   private void loadLibrary(TempDirectory tempDirectory) throws IOException {
     Path libraryPath = tempDirectory.getBasePath().resolve(libraryName());
     URL libraryResource = Resources.getResource(nativeLibraryPath());
+    Logger.info("Loading android native library from: " + libraryResource);
     Resources.asByteSource(libraryResource).copyTo(Files.asByteSink(libraryPath.toFile()));
     System.load(libraryPath.toAbsolutePath().toString());
   }
@@ -318,6 +385,6 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   }
 
   private static boolean isAndroidVOrGreater() {
-    return Build.VERSION.SDK_INT >= /* VANILLA_ICE_CREAM */ 35;
+    return AndroidVersions.CURRENT.getSdkInt() >= AndroidVersions.V.SDK_INT;
   }
 }

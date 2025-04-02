@@ -1,7 +1,6 @@
 package org.robolectric.internal.bytecode;
 
 import org.objectweb.asm.Type;
-import org.robolectric.util.Join;
 
 public class MethodSignature {
   public final String className;
@@ -34,7 +33,7 @@ public class MethodSignature {
 
   @Override
   public String toString() {
-    return className + "." + methodName + "(" + Join.join(", ", (Object[]) paramTypes) + ")";
+    return className + "." + methodName + "(" + String.join(", ", paramTypes) + ")";
   }
 
   boolean matches(String className, String methodName) {

@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.GraphicsMode;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowTextUtilsTest {
@@ -80,6 +81,7 @@ public class ShadowTextUtilsTest {
     assertThat(TextUtils.equals("ab", "a")).isFalse();
   }
 
+  @GraphicsMode(GraphicsMode.Mode.LEGACY)
   @Test
   public void testEllipsize() {
     TextPaint p = new TextPaint();

@@ -21,7 +21,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.android.util.concurrent.PausedExecutorService;
-import org.robolectric.util.Join;
 
 /** Unit tests for {@link ShadowPausedAsyncTask}. */
 @RunWith(AndroidJUnit4.class)
@@ -215,13 +214,13 @@ public class ShadowPausedAsyncTaskTest {
 
     @Override
     protected String doInBackground(String... strings) {
-      transcript.add("doInBackground " + Join.join(", ", (Object[]) strings));
+      transcript.add("doInBackground " + String.join(", ", strings));
       return "c";
     }
 
     @Override
     protected void onProgressUpdate(String... values) {
-      transcript.add("onProgressUpdate " + Join.join(", ", (Object[]) values));
+      transcript.add("onProgressUpdate " + String.join(", ", values));
     }
 
     @Override

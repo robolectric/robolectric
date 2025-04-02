@@ -26,10 +26,12 @@ import java.io.FileDescriptor;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
 import org.robolectric.shadows.ShadowNativeHardwareRenderer.Picker;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link HardwareRenderer} that is backed by native code */
@@ -47,6 +49,12 @@ public class ShadowNativeHardwareRenderer {
   @Implementation(maxSdk = U.SDK_INT)
   protected static void preload() {
     HardwareRendererNatives.preload();
+  }
+
+  @InDevelopment
+  @Implementation(minSdk = Baklava.SDK_INT)
+  protected static void preInitBufferAllocator() {
+    // no-op, this method isn't bound on host platforms.
   }
 
   @Implementation(minSdk = S, maxSdk = U.SDK_INT)

@@ -38,6 +38,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewConfiguration.class)
@@ -189,8 +190,10 @@ public class ShadowViewConfiguration {
 
   @Resetter
   public static void reset() {
-    SparseArray<ViewConfiguration> configurations =
-        reflector(ViewConfigurationReflector.class).getStaticCache();
-    configurations.clear();
+    if (AndroidVersions.CURRENT.getSdkInt() >= AndroidVersions.V.SDK_INT) {
+      ViewConfiguration.resetCacheForTesting();
+    } else {
+      reflector(ViewConfigurationReflector.class).getStaticCache().clear();
+    }
   }
 }

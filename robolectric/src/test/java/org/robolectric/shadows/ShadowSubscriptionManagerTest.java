@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.telephony.SubscriptionManager.INVALID_SIM_SLOT_INDEX;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -588,6 +589,40 @@ public class ShadowSubscriptionManagerTest {
                 .buildSubscriptionInfo()
                 .isOpportunistic())
         .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getSlotIndex_nullSubscriptionList_returnsInvalidSlotIndex() {
+    assertThat(SubscriptionManager.getSlotIndex(/* subscriptionId= */ 2))
+        .isEqualTo(INVALID_SIM_SLOT_INDEX);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getSlotIndex_unknownSubscriptionId_returnsInvalidSlotIndex() {
+    new ShadowSubscriptionManager()
+        .setActiveSubscriptionInfos(
+            SubscriptionInfoBuilder.newBuilder()
+                .setId(2)
+                .setSimSlotIndex(0)
+                .buildSubscriptionInfo());
+
+    assertThat(SubscriptionManager.getSlotIndex(/* subscriptionId= */ 3))
+        .isEqualTo(INVALID_SIM_SLOT_INDEX);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getSlotIndex_knownSubscriptionId_returnsMatchingSlotIndex() {
+    new ShadowSubscriptionManager()
+        .setActiveSubscriptionInfos(
+            SubscriptionInfoBuilder.newBuilder()
+                .setId(2)
+                .setSimSlotIndex(1)
+                .buildSubscriptionInfo());
+
+    assertThat(SubscriptionManager.getSlotIndex(/* subscriptionId= */ 2)).isEqualTo(1);
   }
 
   private static class DummySubscriptionsChangedListener

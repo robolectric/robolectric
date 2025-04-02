@@ -45,7 +45,11 @@ import org.robolectric.util.reflector.ForType;
 /** Shadow for {@link DisplayManagerGlobal}. */
 @Implements(value = DisplayManagerGlobal.class, isInAndroidSdk = false)
 public class ShadowDisplayManagerGlobal {
+  private static final String TOPOLOGY_LISTENERS_FIELD_NAME = "mTopologyListeners";
   private static DisplayManagerGlobal instance;
+
+  // TODO: remove and use DisplayManagerGlobal directly when compiling against Baklava
+  private static final int EVENT_DISPLAY_BASIC_CHANGED = 2;
 
   private float saturationLevel = 1f;
   private final SparseArray<BrightnessConfiguration> brightnessConfiguration = new SparseArray<>();
@@ -91,6 +95,9 @@ public class ShadowDisplayManagerGlobal {
     List<Handler> displayListeners = createDisplayListeners();
     displayManagerGlobal.setDisplayListeners(displayListeners);
     displayManagerGlobal.setDisplayInfoCache(new SparseArray<>());
+    if (ReflectionHelpers.hasField(DisplayManagerGlobal.class, TOPOLOGY_LISTENERS_FIELD_NAME)) {
+      displayManagerGlobal.setTopologyListeners(new CopyOnWriteArrayList<>());
+    }
     return instance;
   }
 
@@ -319,7 +326,7 @@ public class ShadowDisplayManagerGlobal {
       }
 
       displayInfos.put(displayId, displayInfo);
-      notifyListeners(displayId, DisplayManagerGlobal.EVENT_DISPLAY_CHANGED);
+      notifyListeners(displayId, EVENT_DISPLAY_BASIC_CHANGED);
     }
 
     private synchronized void removeDisplay(int displayId) {
@@ -416,5 +423,8 @@ public class ShadowDisplayManagerGlobal {
 
     @Accessor("mDisplayInfoCache")
     void setDisplayInfoCache(SparseArray<DisplayInfo> displayInfoCache);
+
+    @Accessor("mTopologyListeners")
+    void setTopologyListeners(CopyOnWriteArrayList<?> listeners);
   }
 }

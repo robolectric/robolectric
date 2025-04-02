@@ -161,14 +161,14 @@ class BluetoothGattProxyDelegate {
   }
 
   @ForType(IAdvertisingSetCallback.class)
-  private interface IAdvertisingSetCallbackReflectorV {
+  interface IAdvertisingSetCallbackReflectorV {
     // for android V
     void onAdvertisingSetStarted(IBinder binder, int advertiserId, int txPower, int status);
   }
 
   @ForType(
       className = "com.android.bluetooth.x.com.android.modules.utils.SynchronousResultReceiver")
-  private interface SynchronousResultReceiverReflector {
+  interface SynchronousResultReceiverReflector {
     void send(Object value);
   }
 }

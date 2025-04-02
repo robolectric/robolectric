@@ -87,7 +87,23 @@ public class ShadowSurfaceViewTest {
     assertThat(fakeSurfaceHolder.getRequestedFormat()).isEqualTo(PixelFormat.RGB_565);
   }
 
+  @Test
+  public void emitSurfaceChanged_invokesCallback() {
+    TestCallback testCallback = new TestCallback();
+    surfaceHolder.addCallback(testCallback);
+
+    fakeSurfaceHolder.emitSurfaceChanged(/* format= */ 1, /* width= */ 2, /* height= */ 3);
+
+    assertThat(testCallback.updatedFormat).isEqualTo(1);
+    assertThat(testCallback.updatedWidth).isEqualTo(2);
+    assertThat(testCallback.updatedHeight).isEqualTo(3);
+  }
+
   private static class TestCallback implements SurfaceHolder.Callback {
+    int updatedFormat;
+    int updatedWidth;
+    int updatedHeight;
+
     @Override
     public void surfaceCreated(@Nonnull SurfaceHolder holder) {}
 
@@ -95,7 +111,11 @@ public class ShadowSurfaceViewTest {
     public void surfaceDestroyed(@Nonnull SurfaceHolder holder) {}
 
     @Override
-    public void surfaceChanged(@Nonnull SurfaceHolder holder, int format, int w, int h) {}
+    public void surfaceChanged(@Nonnull SurfaceHolder holder, int format, int w, int h) {
+      updatedFormat = format;
+      updatedWidth = w;
+      updatedHeight = h;
+    }
   }
 
   private static class TestActivity extends Activity {

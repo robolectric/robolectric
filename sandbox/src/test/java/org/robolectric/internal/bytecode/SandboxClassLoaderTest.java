@@ -481,6 +481,7 @@ public class SandboxClassLoaderTest {
             "aMethod", int.class, loadClass(AClassToRemember.class), String.class));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void shouldInterceptFilteredMethodInvocations() throws Exception {
     setClassLoader(
@@ -492,12 +493,11 @@ public class SandboxClassLoaderTest {
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
     Object instance = theClass.getDeclaredConstructor().newInstance();
     Object output =
-        theClass
-            .getMethod("interactWithForgettableClass")
-            .invoke(shadow.directlyOn(instance, (Class<Object>) theClass));
+        shadow.directlyOn(instance, (Class<Object>) theClass, "interactWithForgettableClass");
     assertEquals("null, get this!", output);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void shouldInterceptFilteredStaticMethodInvocations() throws Exception {
     setClassLoader(
@@ -510,9 +510,9 @@ public class SandboxClassLoaderTest {
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
     Object instance = theClass.getDeclaredConstructor().newInstance();
     Object output =
-        theClass
-            .getMethod("interactWithForgettableStaticMethod")
-            .invoke(shadow.directlyOn(instance, (Class<Object>) theClass));
+        shadow.directlyOn(
+            instance, (Class<Object>) theClass, "interactWithForgettableStaticMethod");
+
     assertEquals("yess? forget this: null", output);
   }
 
@@ -521,6 +521,7 @@ public class SandboxClassLoaderTest {
     return InstrumentationConfiguration.newBuilder();
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void shouldRemapClassesWhileInterceptingMethods() throws Exception {
     InstrumentationConfiguration config =
@@ -534,11 +535,10 @@ public class SandboxClassLoaderTest {
 
     setClassLoader(new SandboxClassLoader(config));
     Class<?> theClass = loadClass(AClassThatCallsAMethodReturningAForgettableClass.class);
-    theClass
-        .getMethod("callSomeMethod")
-        .invoke(
-            shadow.directlyOn(
-                theClass.getDeclaredConstructor().newInstance(), (Class<Object>) theClass));
+    shadow.directlyOn(
+        theClass.getDeclaredConstructor().newInstance(),
+        (Class<Object>) theClass,
+        "callSomeMethod");
   }
 
   @Test

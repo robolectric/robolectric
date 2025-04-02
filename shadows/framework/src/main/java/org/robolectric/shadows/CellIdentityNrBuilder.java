@@ -24,7 +24,7 @@ public class CellIdentityNrBuilder {
   private int[] bands = new int[0];
   @Nullable private String mcc = null;
   @Nullable private String mnc = null;
-  private long nci = CellInfo.UNAVAILABLE;
+  private long nci = CellInfo.UNAVAILABLE_LONG;
   @Nullable private String alphal = null;
   @Nullable private String alphas = null;
   private List<String> additionalPlmns = new ArrayList<>();

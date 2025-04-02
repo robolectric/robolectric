@@ -22,6 +22,8 @@ import android.app.ApplicationExitInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
+import android.os.Build.VERSION_CODES;
+import android.os.LocaleList;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -31,6 +33,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.android.collect.Lists;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -224,7 +227,7 @@ public class ShadowActivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  @Config(minSdk = VERSION_CODES.Q)
   public void switchUser_withUserHandle_shouldAbleToSwitchUser() {
     UserHandle userHandle = shadowOf(userManager).addUser(10, "secondary_user", 0);
     activityManager.switchUser(userHandle);
@@ -448,6 +451,20 @@ public class ShadowActivityManagerTest {
   public void isApplicationUserDataCleared_returnsTrue() {
     activityManager.clearApplicationUserData();
     assertThat(shadowActivityManager.isApplicationUserDataCleared()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void testSetDeviceLocales() {
+    assertThat(shadowActivityManager.getDeviceLocales()).isNull();
+
+    shadowActivityManager.setDeviceLocales(null);
+    assertThat(shadowActivityManager.getDeviceLocales().get(0)).isEqualTo(Locale.ENGLISH);
+
+    shadowActivityManager.setDeviceLocales(
+        LocaleList.forLanguageTags(Locale.CANADA.toLanguageTag()));
+
+    assertThat(shadowActivityManager.getDeviceLocales().get(0)).isEqualTo(Locale.CANADA);
   }
 
   private void addApplicationExitInfo(int pid) {

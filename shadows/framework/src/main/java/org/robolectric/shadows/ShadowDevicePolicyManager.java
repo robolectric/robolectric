@@ -14,6 +14,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -25,12 +26,10 @@ import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.app.ApplicationPackageManager;
 import android.app.KeyguardManager;
-import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManager.NearbyStreamingPolicy;
 import android.app.admin.DevicePolicyManager.PasswordComplexity;
 import android.app.admin.DevicePolicyManager.UserProvisioningState;
-import android.app.admin.DevicePolicyState;
 import android.app.admin.IDevicePolicyManager;
 import android.app.admin.SystemUpdateInfo;
 import android.app.admin.SystemUpdatePolicy;
@@ -53,6 +52,7 @@ import android.text.TextUtils;
 import com.android.internal.util.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -115,6 +115,8 @@ public class ShadowDevicePolicyManager {
   private static final Map<UserHandle, Account> finalizedWorkProfileProvisioningMap =
       new HashMap<>();
   private static final Map<Integer, Integer> userProvisioningStatesMap = new HashMap<>();
+  private static final Object lock = new Object();
+
   private static ComponentName deviceOwner;
   private static ComponentName profileOwner;
   private static CharSequence organizationName;
@@ -157,6 +159,10 @@ public class ShadowDevicePolicyManager {
   private static int nearbyAppStreamingPolicy =
       DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
   private static boolean isUsbDataSignalingEnabled = true;
+
+  @GuardedBy("ShadowDevicePolicyManager.lock")
+  private static boolean isMtePolicyEnforced = false;
+
   @Nullable private static String devicePolicyManagementRoleHolderPackage;
   private static List<UserHandle> policyManagedProfiles = new ArrayList<>();
   @Nullable private static PersistableBundle lastTransferOwnershipBundle;
@@ -219,6 +225,9 @@ public class ShadowDevicePolicyManager {
         DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
     nearbyAppStreamingPolicy = DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
     isUsbDataSignalingEnabled = true;
+    synchronized (ShadowDevicePolicyManager.lock) {
+      isMtePolicyEnforced = false;
+    }
     devicePolicyManagementRoleHolderPackage = null;
     finalizedWorkProfileProvisioningMap.clear();
     policyManagedProfiles = new ArrayList<>();
@@ -412,6 +421,20 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = S)
   protected boolean isUsbDataSignalingEnabled() {
     return isUsbDataSignalingEnabled;
+  }
+
+  /** Sets {@link DevicePolicyManager#isMtePolicyEnforced}. */
+  public static void setIsMtePolicyEnforced(boolean isEnabled) {
+    synchronized (ShadowDevicePolicyManager.lock) {
+      isMtePolicyEnforced = isEnabled;
+    }
+  }
+
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
+  protected static boolean isMtePolicyEnforced() {
+    synchronized (ShadowDevicePolicyManager.lock) {
+      return isMtePolicyEnforced;
+    }
   }
 
   /**

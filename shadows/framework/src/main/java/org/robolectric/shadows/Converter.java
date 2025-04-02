@@ -8,7 +8,6 @@ import java.util.List;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.ResType;
 import org.robolectric.res.TypedResource;
-import org.robolectric.util.Util;
 
 @SuppressWarnings("NewApi")
 public class Converter<T> {
@@ -177,12 +176,7 @@ public class Converter<T> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       try {
-        if (data.startsWith("0x")) {
-          typedValue.type =
-              data.startsWith("0x") ? TypedValue.TYPE_INT_HEX : TypedValue.TYPE_INT_DEC;
-        } else {
-          typedValue.type = TypedValue.TYPE_INT_DEC;
-        }
+        typedValue.type = data.startsWith("0x") ? TypedValue.TYPE_INT_HEX : TypedValue.TYPE_INT_DEC;
         typedValue.data = convertInt(data);
         typedValue.assetCookie = 0;
         typedValue.string = null;
@@ -333,7 +327,7 @@ public class Converter<T> {
           throw new Resources.NotFoundException("no value found for " + key);
         }
       }
-      return Util.parseInt(valueFor);
+      return Integer.decode(valueFor);
     }
   }
 }

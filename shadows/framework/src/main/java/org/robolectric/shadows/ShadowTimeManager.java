@@ -122,6 +122,16 @@ public class ShadowTimeManager {
             .setConfigureAutoDetectionEnabledCapability(Capabilities.CAPABILITY_POSSESSED)
             .setConfigureGeoDetectionEnabledCapability(Capabilities.CAPABILITY_POSSESSED);
 
+    if (ReflectionHelpers.hasMethod(
+        TimeZoneCapabilities.Builder.class,
+        "setConfigureNotificationsEnabledCapability",
+        int.class)) {
+      ReflectionHelpers.callInstanceMethod(
+          timeZoneCapabilitiesBuilder,
+          "setConfigureNotificationsEnabledCapability",
+          ClassParameter.from(int.class, Capabilities.CAPABILITY_POSSESSED));
+    }
+
     if (RuntimeEnvironment.getApiLevel() >= U.SDK_INT) {
       ReflectionHelpers.callInstanceMethod(
           timeZoneCapabilitiesBuilder,

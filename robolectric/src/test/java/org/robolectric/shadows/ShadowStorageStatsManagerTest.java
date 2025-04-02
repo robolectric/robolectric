@@ -20,6 +20,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowStorageStatsManager}. */
@@ -155,10 +156,11 @@ public final class ShadowStorageStatsManagerTest {
   @Test
   public void queryPackageWithCorrectArguments_shouldReturnSetupValue() throws Exception {
     // Arrange
-    StorageStats expected = buildStorageStats();
     UUID uuid = UUID.randomUUID();
     String packageName = "somePackageName";
     UserHandle userHandle = Process.myUserHandle();
+    StorageStats expected =
+        buildStorageStats(packageName, uuid.hashCode(), userHandle.getIdentifier());
     shadowOf(storageStatsManager).addStorageStats(uuid, packageName, userHandle, expected);
 
     // Act
@@ -172,10 +174,11 @@ public final class ShadowStorageStatsManagerTest {
   @Test
   public void queryUserWithCorrectArguments_shouldReturnSetupValue() throws Exception {
     // Arrange
-    StorageStats expected = buildStorageStats();
     UUID uuid = UUID.randomUUID();
     String packageName = "somePackageName";
     UserHandle userHandle = Process.myUserHandle();
+    StorageStats expected =
+        buildStorageStats(packageName, uuid.hashCode(), userHandle.getIdentifier());
     shadowOf(storageStatsManager).addStorageStats(uuid, packageName, userHandle, expected);
 
     // Act
@@ -188,18 +191,27 @@ public final class ShadowStorageStatsManagerTest {
   @Test
   public void queryUser_shouldReturnAccumulatedStats() throws Exception {
     // Arrange
-    StorageStats storageStats = buildStorageStats();
     UUID uuid1 = UUID.randomUUID();
     UUID uuid2 = UUID.randomUUID();
     String packageName1 = "somePackageName1";
     String packageName2 = "somePackageName2";
     String packageName3 = "somePackageName3";
     UserHandle userHandle = Process.myUserHandle();
-    shadowOf(storageStatsManager).addStorageStats(uuid1, packageName1, userHandle, storageStats);
-    shadowOf(storageStatsManager).addStorageStats(uuid1, packageName2, userHandle, storageStats);
-    shadowOf(storageStatsManager).addStorageStats(uuid1, packageName3, userHandle, storageStats);
-    shadowOf(storageStatsManager).addStorageStats(uuid2, packageName1, userHandle, storageStats);
-    shadowOf(storageStatsManager).addStorageStats(uuid2, packageName2, userHandle, storageStats);
+    StorageStats storageStats11 =
+        buildStorageStats(packageName1, uuid1.hashCode(), userHandle.getIdentifier());
+    StorageStats storageStats12 =
+        buildStorageStats(packageName2, uuid1.hashCode(), userHandle.getIdentifier());
+    StorageStats storageStats13 =
+        buildStorageStats(packageName3, uuid1.hashCode(), userHandle.getIdentifier());
+    StorageStats storageStats21 =
+        buildStorageStats(packageName1, uuid2.hashCode(), userHandle.getIdentifier());
+    StorageStats storageStats22 =
+        buildStorageStats(packageName2, uuid2.hashCode(), userHandle.getIdentifier());
+    shadowOf(storageStatsManager).addStorageStats(uuid1, packageName1, userHandle, storageStats11);
+    shadowOf(storageStatsManager).addStorageStats(uuid1, packageName2, userHandle, storageStats12);
+    shadowOf(storageStatsManager).addStorageStats(uuid1, packageName3, userHandle, storageStats13);
+    shadowOf(storageStatsManager).addStorageStats(uuid2, packageName1, userHandle, storageStats21);
+    shadowOf(storageStatsManager).addStorageStats(uuid2, packageName2, userHandle, storageStats22);
 
     // Act
     StorageStats actual1 = shadowOf(storageStatsManager).queryStatsForUser(uuid1, userHandle);
@@ -222,16 +234,29 @@ public final class ShadowStorageStatsManagerTest {
     String packageName2 = "somePackageName2";
     UserHandle userHandle = Process.myUserHandle();
     shadowOf(storageStatsManager)
-        .addStorageStats(uuid, packageName1, userHandle, buildStorageStats());
+        .addStorageStats(
+            uuid,
+            packageName1,
+            userHandle,
+            buildStorageStats(packageName1, uuid.hashCode(), userHandle.getIdentifier()));
     shadowOf(storageStatsManager)
-        .addStorageStats(uuid, packageName2, userHandle, buildStorageStats());
+        .addStorageStats(
+            uuid,
+            packageName2,
+            userHandle,
+            buildStorageStats(packageName2, uuid.hashCode(), userHandle.getIdentifier()));
     shadowOf(storageStatsManager)
         .addStorageStats(
             uuid,
             packageName2,
             userHandle,
             buildStorageStats(
-                /* codeSize= */ 2000L, /* dataSize= */ 1000L, /* cacheSize= */ 3000L));
+                packageName1,
+                uuid.hashCode(),
+                userHandle.getIdentifier(),
+                /* codeSize= */ 2000L,
+                /* dataSize= */ 1000L,
+                /* cacheSize= */ 3000L));
 
     // Act
     StorageStats actual = shadowOf(storageStatsManager).queryStatsForUser(uuid, userHandle);
@@ -249,14 +274,23 @@ public final class ShadowStorageStatsManagerTest {
     String packageName = "somePackageName1";
     UserHandle userHandle = Process.myUserHandle();
     shadowOf(storageStatsManager)
-        .addStorageStats(uuid, packageName, userHandle, buildStorageStats());
+        .addStorageStats(
+            uuid,
+            packageName,
+            userHandle,
+            buildStorageStats(packageName, uuid.hashCode(), userHandle.getIdentifier()));
     shadowOf(storageStatsManager)
         .addStorageStats(
             uuid,
             packageName,
             userHandle,
             buildStorageStats(
-                /* codeSize= */ 2000L, /* dataSize= */ 1000L, /* cacheSize= */ 3000L));
+                packageName,
+                uuid.hashCode(),
+                userHandle.getIdentifier(),
+                /* codeSize= */ 2000L,
+                /* dataSize= */ 1000L,
+                /* cacheSize= */ 3000L));
 
     // Act
     StorageStats actual = shadowOf(storageStatsManager).queryStatsForUser(uuid, userHandle);
@@ -270,7 +304,6 @@ public final class ShadowStorageStatsManagerTest {
   @Test
   public void queryPackageWithWrongArguments_shouldFail() {
     // Arrange
-    StorageStats expected = buildStorageStats();
     UUID uuid = UUID.randomUUID();
     UUID differentUUID = UUID.randomUUID();
     String packageName = "somePackageName";
@@ -278,6 +311,8 @@ public final class ShadowStorageStatsManagerTest {
     // getUserHandleForUid will divide uid by 100000. Pass in some arbitrary number > 100000 to be
     // different from system uid 0.
     UserHandle differentUserHandle = UserHandle.getUserHandleForUid(1200000);
+    StorageStats expected =
+        buildStorageStats(packageName, uuid.hashCode(), userHandle.getIdentifier());
 
     assertThat(uuid).isNotEqualTo(differentUUID);
     assertThat(userHandle).isNotEqualTo(differentUserHandle);
@@ -308,20 +343,21 @@ public final class ShadowStorageStatsManagerTest {
   @Test
   public void queryUserWithWrongArguments_shouldFail() {
     // Arrange
-    StorageStats expected = buildStorageStats();
     UUID uuid = UUID.randomUUID();
     UUID differentUUID = UUID.randomUUID();
     UserHandle userHandle = UserHandle.getUserHandleForUid(0);
+    String packageName = "somePackageName";
     // getUserHandleForUid will divide uid by 100000. Pass in some arbitrary number > 100000 to be
     // different from system uid 0.
     UserHandle differentUserHandle = UserHandle.getUserHandleForUid(1200000);
+    StorageStats expected =
+        buildStorageStats(packageName, uuid.hashCode(), userHandle.getIdentifier());
 
     assertThat(uuid).isNotEqualTo(differentUUID);
     assertThat(userHandle).isNotEqualTo(differentUserHandle);
 
     // Act
-    shadowOf(storageStatsManager)
-        .addStorageStats(uuid, /* packageName= */ "somePackageName", userHandle, expected);
+    shadowOf(storageStatsManager).addStorageStats(uuid, packageName, userHandle, expected);
 
     // Assert
     assertThrows(
@@ -336,10 +372,11 @@ public final class ShadowStorageStatsManagerTest {
   @Test
   public void queryPackageAfterClearSetup_shouldFail() {
     // Arrange
-    StorageStats expected = buildStorageStats();
     UUID uuid = UUID.randomUUID();
     String packageName = "somePackageName";
     UserHandle userHandle = Process.myUserHandle();
+    StorageStats expected =
+        buildStorageStats(packageName, uuid.hashCode(), userHandle.getIdentifier());
     shadowOf(storageStatsManager).addStorageStats(uuid, packageName, userHandle, expected);
 
     // Act
@@ -354,10 +391,11 @@ public final class ShadowStorageStatsManagerTest {
   @Test
   public void queryUserAfterClearSetup_shouldFail() {
     // Arrange
-    StorageStats expected = buildStorageStats();
     UUID uuid = UUID.randomUUID();
     String packageName = "somePackageName";
     UserHandle userHandle = Process.myUserHandle();
+    StorageStats expected =
+        buildStorageStats(packageName, uuid.hashCode(), userHandle.getIdentifier());
     shadowOf(storageStatsManager).addStorageStats(uuid, packageName, userHandle, expected);
 
     // Act
@@ -369,12 +407,24 @@ public final class ShadowStorageStatsManagerTest {
         () -> shadowOf(storageStatsManager).queryStatsForUser(uuid, userHandle));
   }
 
-  private static StorageStats buildStorageStats() {
-    return buildStorageStats(/* codeSize= */ 3000L, /* dataSize= */ 2000L, /* cacheSize= */ 1000L);
+  private static StorageStats buildStorageStats(String packageName, int uid, int userId) {
+    return buildStorageStats(
+        packageName,
+        /* uid= */ uid,
+        /* userId= */ userId,
+        /* codeSize= */ 3000L,
+        /* dataSize= */ 2000L,
+        /* cacheSize= */ 1000L);
   }
 
-  private static StorageStats buildStorageStats(long codeSize, long dataSize, long cacheSize) {
+  private static StorageStats buildStorageStats(
+      String packageName, int uid, int userId, long codeSize, long dataSize, long cacheSize) {
     Parcel parcel = Parcel.obtain();
+    if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+      parcel.writeString(packageName);
+      parcel.writeInt(userId);
+      parcel.writeInt(uid);
+    }
     parcel.writeLong(codeSize);
     parcel.writeLong(dataSize);
     parcel.writeLong(cacheSize);

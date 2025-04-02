@@ -6,6 +6,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.content.ContentResolver;
 import android.provider.Settings;
 import android.view.accessibility.CaptioningManager;
+import java.util.Locale;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -34,6 +35,24 @@ public class ShadowCaptioningManager {
     return Settings.Secure.getInt(
             getContentResolver(), Settings.Secure.ODI_CAPTIONS_VOLUME_UI_ENABLED, 1)
         == 1;
+  }
+
+  /** Sets the enabled state of the captioning manager. */
+  public void setEnabled(boolean enabled) {
+    Settings.Secure.putInt(
+        getContentResolver(), Settings.Secure.ACCESSIBILITY_CAPTIONING_ENABLED, enabled ? 1 : 0);
+  }
+
+  /**
+   * Sets the preferred locale of the captioning manager.
+   *
+   * @param locale The {@link Locale}.
+   */
+  public void setLocale(Locale locale) {
+    Settings.Secure.putString(
+        getContentResolver(),
+        Settings.Secure.ACCESSIBILITY_CAPTIONING_LOCALE,
+        locale.toLanguageTag());
   }
 
   private ContentResolver getContentResolver() {

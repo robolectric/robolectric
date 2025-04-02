@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 import android.content.Context;
@@ -65,6 +66,12 @@ public class ShadowMediaMetadataRetriever {
       return metadata.get(dataSource).get(keyCode);
     }
     return null;
+  }
+
+  @Implementation(minSdk = R)
+  protected Bitmap getFrameAtTime(
+      long timeUs, int option, MediaMetadataRetriever.BitmapParams params) {
+    return getFrameAtTime(timeUs, option);
   }
 
   @Implementation

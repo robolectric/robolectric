@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -93,6 +94,14 @@ public class ShadowServiceTest {
     assertThat(shadowOf(nm2).getNotification(23)).isSameInstanceAs(n);
     assertThat(n.flags & Notification.FLAG_FOREGROUND_SERVICE).isNotEqualTo(0);
     assertThat(service.getForegroundServiceType()).isEqualTo(64);
+  }
+
+  @Test
+  public void startForegroundWithException() {
+    shadowOf(service).setThrowInStartForeground(new RuntimeException("test"));
+    Notification n = notBuilder.build();
+    RuntimeException e = assertThrows(RuntimeException.class, () -> service.startForeground(23, n));
+    assertThat(e).hasMessageThat().isEqualTo("test");
   }
 
   @Test

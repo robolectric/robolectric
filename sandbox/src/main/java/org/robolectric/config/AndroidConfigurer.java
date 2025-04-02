@@ -74,17 +74,16 @@ public class AndroidConfigurer {
         // Needed for android.net.Uri in older SDK versions
         .addClassNameTranslation("java.nio.charset.Charsets", StandardCharsets.class.getName())
         .addClassNameTranslation("java.lang.UnsafeByteSequence", Object.class.getName())
-        .addClassNameTranslation("java.util.jar.StrictJarFile", Object.class.getName());
-
-    builder.addClassNameTranslation("sun.misc.Cleaner", "java.lang.ref.Cleaner$Cleanable");
+        .addClassNameTranslation("java.util.jar.StrictJarFile", Object.class.getName())
+        .addClassNameTranslation("sun.misc.Cleaner", "java.lang.ref.Cleaner$Cleanable");
 
     // Don't acquire legacy support packages.
     builder
         .doNotInstrumentPackage("android.support.constraint.")
-        .doNotInstrumentPackage("android.support.v7.view.");
-
-    // Instrumenting these classes causes a weird failure.
-    builder.doNotInstrumentClass("android.R").doNotInstrumentClass("android.R$styleable");
+        .doNotInstrumentPackage("android.support.v7.view.")
+        .doNotInstrumentPackage("android.arch")
+        .doNotInstrumentPackage("android.support.test")
+        .doNotInstrumentPackage("android.R"); // android.R* are pure data classes.
 
     // Instrumenting this Exceptions causes "java.lang.NegativeArraySizeException: -2" and
     // leads to java.lang.NoClassDefFoundError.
@@ -95,12 +94,9 @@ public class AndroidConfigurer {
         .addInstrumentedPackage("libcore.")
         .addInstrumentedPackage("android.")
         .addInstrumentedPackage("com.android.internal.")
-        .addInstrumentedPackage("org.apache.http.")
-        .addInstrumentedPackage("org.ccil.cowan.tagsoup")
-        .addInstrumentedPackage("org.kxml2.");
-
-    builder.doNotInstrumentPackage("android.arch");
-    builder.doNotInstrumentPackage("android.support.test");
+        .addInstrumentedPackage("org.apache.http.") // For httpclient shadows.
+        .addInstrumentedPackage("org.ccil.cowan.tagsoup.") // For the System.arraycopy interceptor.
+        .addInstrumentedPackage("org.kxml2."); // For the System.arraycopy interceptor.
 
     // Mockito's MockMethodDispatcher must only exist in the Bootstrap class loader.
     builder.doNotAcquireClass(

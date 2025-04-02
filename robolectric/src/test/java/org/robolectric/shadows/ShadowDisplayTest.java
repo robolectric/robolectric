@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
@@ -14,6 +15,8 @@ import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManagerGlobal;
+import android.os.StrictMode;
+import android.os.StrictMode.VmPolicy;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Display.HdrCapabilities;
@@ -272,5 +275,19 @@ public class ShadowDisplayTest {
     shadow.setDisplayCutout(cutout);
 
     assertEquals(cutout, display.getCutout());
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void getDefaultDisplay_strictModeEnabled_doesNotThrow() {
+    VmPolicy oldPolicy = StrictMode.getVmPolicy();
+    try {
+      ShadowLog.clear();
+      StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
+      assertThat(ShadowDisplay.getDefaultDisplay()).isNotNull();
+      assertThat(ShadowLog.getLogsForTag("StrictMode")).isEmpty();
+    } finally {
+      StrictMode.setVmPolicy(oldPolicy);
+    }
   }
 }

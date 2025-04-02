@@ -472,6 +472,7 @@ public class ShadowPowerManager {
     private void acquireInternal(Optional<Long> timeoutOptional) {
       ++timesHeld;
       timeoutTimestampList.add(timeoutOptional);
+      reflector(WakeLockReflector.class, realWakeLock).setHeld(true);
     }
 
     /** Iterate all the wake lock and remove those timeouted ones. */
@@ -531,6 +532,7 @@ public class ShadowPowerManager {
         // the effect of all previous calls to acquire().
         timeoutTimestampList = new ArrayList<>();
       }
+      reflector(WakeLockReflector.class, realWakeLock).setHeld(false);
     }
 
     @Implementation
@@ -578,6 +580,9 @@ public class ShadowPowerManager {
     private interface WakeLockReflector {
       @Accessor("mTag")
       String getTag();
+
+      @Accessor("mHeld")
+      void setHeld(boolean held);
     }
   }
 

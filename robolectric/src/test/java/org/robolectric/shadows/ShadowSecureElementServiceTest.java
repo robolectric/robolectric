@@ -111,4 +111,45 @@ public final class ShadowSecureElementServiceTest {
     assertThat(barChannel).isNotNull();
     assertThat(barSession.openBasicChannel("foo".getBytes(UTF_8))).isNull();
   }
+
+  @Test
+  @Config(minSdk = R)
+  public void closeChannel_thenTransmit_throws() throws Exception {
+    MockApplet mockApplet = new MockApplet("eSE", "aid".getBytes(UTF_8));
+    mockApplet.setSelectResponse("selected".getBytes(UTF_8));
+    mockApplet.addApduResponse("firstResponse".getBytes(UTF_8));
+    mockApplet.addApduResponse("secondResponse".getBytes(UTF_8));
+    ShadowSecureElementService.addMockApplet(mockApplet);
+
+    Reader[] readers = seService.getReaders();
+    assertThat(readers).hasLength(1);
+    assertThrows(IllegalArgumentException.class, () -> seService.getUiccReader(1));
+
+    Reader reader = readers[0];
+    assertThat(reader.getName()).isEqualTo("eSE");
+    assertThat(reader.getSEService()).isEqualTo(seService);
+    assertThat(reader.isSecureElementPresent()).isTrue();
+
+    Session session = reader.openSession();
+    assertThat(session).isNotNull();
+    assertThat(session.isClosed()).isFalse();
+
+    Channel channel = session.openLogicalChannel("aid".getBytes(UTF_8));
+    assertThat(channel).isNotNull();
+
+    assertThat(channel.getSelectResponse()).isEqualTo("selected".getBytes(UTF_8));
+    assertThat(channel.isBasicChannel()).isFalse();
+    assertThat(channel.isOpen()).isTrue();
+    assertThat(channel.getSession()).isEqualTo(session);
+
+    channel.close();
+    assertThat(channel.isOpen()).isFalse();
+
+    assertThrows(
+        IllegalStateException.class, () -> channel.transmit("illegalCommand".getBytes(UTF_8)));
+
+    seService.shutdown();
+    assertThat(seService.isConnected()).isFalse();
+    assertThat(session.isClosed()).isTrue();
+  }
 }

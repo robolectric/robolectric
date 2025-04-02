@@ -76,6 +76,10 @@ public final class ExpectedLogMessagesRule implements TestRule {
       ImmutableSet.of(
           "Typeface",
           "RingtoneManager",
+          // When Robolectric's shadow of PowerManager.WakeLock.acquire() was updated to set some
+          // bits on the underlying WakeLock object, it started logging a wtf when a WakeLock was
+          // still held when it was finalized.
+          "PowerManager",
           // Fails when attempting to preload classes by name
           "PhonePolicy",
           // Ignore MultiDex log messages
@@ -83,7 +87,10 @@ public final class ExpectedLogMessagesRule implements TestRule {
           // Logged starting with Android 33 as:
           // E/RippleDrawable: The RippleDrawable.STYLE_PATTERNED animation is not supported for a
           // non-hardware accelerated Canvas. Skipping animation.
-          "RippleDrawable");
+          "RippleDrawable",
+          // Logged in in-development versions of android with AconfigStorageException
+          "FeatureFlagsImpl",
+          "FeatureFlagsImplExport");
 
   private final Set<ExpectedLogItem> expectedLogs = new HashSet<>();
   private final Set<LogItem> observedLogs = new HashSet<>();

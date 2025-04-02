@@ -226,7 +226,6 @@ public class ShadowSecureElementService {
     @Override
     public void close() {
       isClosed = true;
-      throw new RuntimeException();
     }
 
     @Override
@@ -246,6 +245,9 @@ public class ShadowSecureElementService {
 
     @Override
     public byte[] transmit(byte[] command) {
+      if (isClosed) {
+        throw new IllegalStateException("Channel is closed");
+      }
       return mockApplet.processRequestApdu(command);
     }
 

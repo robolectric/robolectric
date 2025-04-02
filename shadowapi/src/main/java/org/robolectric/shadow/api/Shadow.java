@@ -46,20 +46,6 @@ public class Shadow {
     return SHADOW_IMPL.newInstance(clazz, parameterTypes, params);
   }
 
-  /**
-   * Returns a proxy object that invokes the original $$robo$$-prefixed methods whenever a method on
-   * the proxy is invoked. This is primarily used to invoke original methods in shadow
-   * implementations.
-   *
-   * @deprecated This is incompatible with JDK17+. Use a {@link
-   *     org.robolectric.util.reflector.Reflector} interface with {@link
-   *     org.robolectric.util.reflector.Direct}.
-   */
-  @Deprecated
-  public static <T> T directlyOn(T shadowedObject, Class<T> clazz) {
-    return SHADOW_IMPL.directlyOn(shadowedObject, clazz);
-  }
-
   @SuppressWarnings("TypeParameterUnusedInFormals")
   public static <R> R directlyOn(
       Object shadowedObject,

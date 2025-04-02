@@ -2,6 +2,7 @@ package org.robolectric.android.internal;
 
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -19,6 +20,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Package;
 import android.content.res.Resources;
+import android.content.type.DefaultMimeMapFactory;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
@@ -26,6 +28,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.FontsContract;
+import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.annotations.VisibleForTesting;
@@ -48,6 +51,7 @@ import javax.net.ssl.SSLSession;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.conscrypt.OkHostnameVerifier;
 import org.conscrypt.OpenSSLProvider;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Config;
@@ -57,6 +61,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
+import org.robolectric.fakes.FakeMediaProvider;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.TestEnvironment;
 import org.robolectric.manifest.AndroidManifest;
@@ -217,6 +222,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
     RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
     Bootstrap.setDisplayConfiguration(androidConfiguration, displayMetrics);
 
+    // mime resources only available on S and above
+    if (RuntimeEnvironment.getApiLevel() >= S) {
+      libcore.content.type.MimeMap.setDefaultSupplier(DefaultMimeMapFactory::create);
+    }
+
     Instrumentation instrumentation = createInstrumentation();
     InstrumentationRegistry.registerInstance(instrumentation, new Bundle());
     Supplier<Application> applicationSupplier = createApplicationSupplier(appManifest, config);
@@ -375,6 +385,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
       // Invoke the previous version.
       ReflectionHelpers.callStaticMethod(
           AppCompatCallbacks.class, "install", ClassParameter.from(long[].class, new long[0]));
+    }
+
+    if (RuntimeEnvironment.getApiLevel() >= Q
+        && Boolean.parseBoolean(
+            System.getProperty("robolectric.installFakeMediaProvider", "true"))) {
+      Robolectric.setupContentProvider(FakeMediaProvider.class, MediaStore.AUTHORITY);
     }
 
     PerfStatsCollector.getInstance()

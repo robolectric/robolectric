@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -21,6 +20,9 @@ import org.robolectric.fakes.RoboCursor;
 @RunWith(AndroidJUnit4.class)
 public final class ShadowAsyncQueryHandlerTest {
 
+  private static final Uri FAKE_URI =
+      Uri.parse("content://robolectric").buildUpon().appendPath("fakepath").build();
+
   private static final int TOKEN = 22;
   private static final Object COOKIE = new Object();
   private static final RoboCursor CURSOR = new RoboCursor();
@@ -35,12 +37,12 @@ public final class ShadowAsyncQueryHandlerTest {
   @Test
   public void startQuery_callbackIsCalled() {
     FakeAsyncQueryHandler asyncQueryHandler = new FakeAsyncQueryHandler(contentResolver);
-    shadowOf(contentResolver).setCursor(EXTERNAL_CONTENT_URI, CURSOR);
+    shadowOf(contentResolver).setCursor(FAKE_URI, CURSOR);
 
     asyncQueryHandler.startQuery(
         TOKEN,
         COOKIE,
-        EXTERNAL_CONTENT_URI,
+        FAKE_URI,
         null /* projection */,
         null /* selection */,
         null /* selectionArgs */,
@@ -55,26 +57,20 @@ public final class ShadowAsyncQueryHandlerTest {
   public void startInsert_callbackIsCalled() {
     FakeAsyncQueryHandler asyncQueryHandler = new FakeAsyncQueryHandler(contentResolver);
 
-    asyncQueryHandler.startInsert(TOKEN, COOKIE, EXTERNAL_CONTENT_URI, null /* initialValues */);
+    asyncQueryHandler.startInsert(TOKEN, COOKIE, FAKE_URI, null /* initialValues */);
 
     assertThat(asyncQueryHandler.token).isEqualTo(TOKEN);
     assertThat(asyncQueryHandler.cookie).isEqualTo(COOKIE);
-    assertThat(asyncQueryHandler.uri)
-        .isEqualTo(ContentUris.withAppendedId(EXTERNAL_CONTENT_URI, 1));
+    assertThat(asyncQueryHandler.uri).isEqualTo(ContentUris.withAppendedId(FAKE_URI, 1));
   }
 
   @Test
   public void startUpdate_callbackIsCalled() {
     FakeAsyncQueryHandler asyncQueryHandler = new FakeAsyncQueryHandler(contentResolver);
-    contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues());
+    contentResolver.insert(FAKE_URI, new ContentValues());
 
     asyncQueryHandler.startUpdate(
-        TOKEN,
-        COOKIE,
-        EXTERNAL_CONTENT_URI,
-        null /* values */,
-        null /* selection */,
-        null /* selectionArgs */);
+        TOKEN, COOKIE, FAKE_URI, null /* values */, null /* selection */, null /* selectionArgs */);
 
     assertThat(asyncQueryHandler.token).isEqualTo(TOKEN);
     assertThat(asyncQueryHandler.cookie).isEqualTo(COOKIE);
@@ -84,10 +80,10 @@ public final class ShadowAsyncQueryHandlerTest {
   @Test
   public void startDelete_callbackIsCalled() {
     FakeAsyncQueryHandler asyncQueryHandler = new FakeAsyncQueryHandler(contentResolver);
-    contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues());
+    contentResolver.insert(FAKE_URI, new ContentValues());
 
     asyncQueryHandler.startDelete(
-        TOKEN, COOKIE, EXTERNAL_CONTENT_URI, null /* selection */, null /* selectionArgs */);
+        TOKEN, COOKIE, FAKE_URI, null /* selection */, null /* selectionArgs */);
 
     assertThat(asyncQueryHandler.token).isEqualTo(TOKEN);
     assertThat(asyncQueryHandler.cookie).isEqualTo(COOKIE);

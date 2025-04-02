@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -162,14 +163,18 @@ public class ShadowTextToSpeech {
   @Implementation
   protected int isLanguageAvailable(Locale lang) {
     for (Locale locale : languageAvailabilities) {
-      if (locale.getISO3Language().equals(lang.getISO3Language())) {
-        if (locale.getISO3Country().equals(lang.getISO3Country())) {
-          if (locale.getVariant().equals(lang.getVariant())) {
-            return TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE;
+      try {
+        if (locale.getISO3Language().equals(lang.getISO3Language())) {
+          if (locale.getISO3Country().equals(lang.getISO3Country())) {
+            if (locale.getVariant().equals(lang.getVariant())) {
+              return TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE;
+            }
+            return TextToSpeech.LANG_COUNTRY_AVAILABLE;
           }
-          return TextToSpeech.LANG_COUNTRY_AVAILABLE;
+          return TextToSpeech.LANG_AVAILABLE;
         }
-        return TextToSpeech.LANG_AVAILABLE;
+      } catch (MissingResourceException e) {
+        // Couldn't retrieve ISO 639-2/T language code or ISO 3166 country code for the locale"
       }
     }
     return TextToSpeech.LANG_NOT_SUPPORTED;

@@ -24,6 +24,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.view.Display;
 import android.view.InputEvent;
@@ -47,6 +48,7 @@ import java.util.function.Predicate;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow for {@link UiAutomation}. */
@@ -123,8 +125,12 @@ public class ShadowUiAutomation {
                   Bitmap.createBitmap(displaySize.x, displaySize.y, Bitmap.Config.ARGB_8888);
               Canvas screenshotCanvas = new Canvas(screenshot);
               Paint paint = new Paint();
+              long drawingTime = SystemClock.uptimeMillis();
               for (Root root : getViewRoots().reverse()) {
                 View rootView = root.getRootView();
+                if (ShadowView.useRealViewAnimations()) {
+                  ((ShadowView) Shadow.extract(rootView)).setDrawingTime(drawingTime);
+                }
                 if (rootView.getWidth() <= 0 || rootView.getHeight() <= 0) {
                   continue;
                 }

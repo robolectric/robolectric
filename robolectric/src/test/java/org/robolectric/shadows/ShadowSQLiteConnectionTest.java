@@ -123,7 +123,7 @@ public class ShadowSQLiteConnectionTest {
   @Test
   public void nativeClose_closesConnection() {
     assume().that(SQLiteLibraryLoader.isOsSupported()).isTrue();
-    ShadowLegacySQLiteConnection.nativeClose(ptr);
+    ShadowLegacySQLiteConnection.nativeClose(ptr, false);
     assertWithMessage("open").that(conn.isOpen()).isFalse();
   }
 

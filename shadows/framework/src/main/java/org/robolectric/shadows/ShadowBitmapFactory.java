@@ -33,7 +33,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ImageUtil.RobolectricBufferedImage;
-import org.robolectric.util.Join;
 import org.robolectric.util.Logger;
 import org.robolectric.util.NamedStream;
 import org.robolectric.util.ReflectionHelpers;
@@ -347,7 +346,7 @@ public class ShadowBitmapFactory {
     if (options.inJustDecodeBounds) opts.add("inJustDecodeBounds");
     if (options.inSampleSize > 1) opts.add("inSampleSize=" + options.inSampleSize);
 
-    return Join.join(", ", opts);
+    return String.join(", ", opts);
   }
 
   @Resetter

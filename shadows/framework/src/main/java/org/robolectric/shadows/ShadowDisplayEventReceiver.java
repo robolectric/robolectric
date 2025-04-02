@@ -11,7 +11,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.MessageQueue;
-import android.os.SystemClock;
 import android.view.Choreographer;
 import android.view.DisplayEventReceiver;
 import dalvik.system.CloseGuard;
@@ -108,6 +107,12 @@ public class ShadowDisplayEventReceiver {
     nativeObjRegistry.getNativeObject(receiverPtr).scheduleVsync();
   }
 
+  @Implementation(minSdk = TIRAMISU)
+  protected static @ClassName("android.view.DisplayEventReceiver$VsyncEventData") Object
+      nativeGetLatestVsyncEventData(long receiverPtr) {
+    return nativeObjRegistry.getNativeObject(receiverPtr).getLatestVsyncEventData();
+  }
+
   @Implementation(maxSdk = R)
   protected void dispose(boolean finalized) {
     CloseGuard closeGuard = displayEventReceiverReflector.getCloseGuard();
@@ -118,19 +123,19 @@ public class ShadowDisplayEventReceiver {
     displayEventReceiverReflector.dispose(finalized);
   }
 
-  protected void onVsync() {
+  protected void onVsync(long frameTimeNanos, int frame, Object vsyncEventData) {
     if (RuntimeEnvironment.getApiLevel() < Q) {
       displayEventReceiverReflector.onVsync(
-          ShadowSystem.nanoTime(), 0, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
+          frameTimeNanos, 0 /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */, frame);
     } else if (RuntimeEnvironment.getApiLevel() < S) {
       displayEventReceiverReflector.onVsync(
-          ShadowSystem.nanoTime(), 0L, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
+          ShadowSystem.nanoTime(), 0L /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */, frame);
     } else {
       displayEventReceiverReflector.onVsync(
           ShadowSystem.nanoTime(),
-          0L, /* physicalDisplayId currently ignored */
-          1, /* frame */
-          newVsyncEventData() /* VsyncEventData */);
+          0L /* physicalDisplayId currently ignored */,
+          frame,
+          vsyncEventData);
     }
   }
 
@@ -142,6 +147,9 @@ public class ShadowDisplayEventReceiver {
       frameReflector.setHavePendingVsync(false);
       frameReflector.setTimestampNanos(0);
     }
+    long nativeReceiverPtr =
+        reflector(DisplayEventReceiverReflector.class, realReceiver).getReceiverPtr();
+    nativeObjRegistry.getNativeObject(nativeReceiverPtr).resetState();
   }
 
   /**
@@ -164,6 +172,8 @@ public class ShadowDisplayEventReceiver {
 
     private final WeakReference<DisplayEventReceiver> receiverRef;
     private final ShadowPausedSystemClock.Listener clockListener = this::onClockAdvanced;
+    private int frame = 0;
+    private Object /* VsyncEventData */ latestVsyncEventData = null;
 
     public NativeDisplayEventReceiver(WeakReference<DisplayEventReceiver> receiverRef) {
       this.receiverRef = receiverRef;
@@ -173,11 +183,11 @@ public class ShadowDisplayEventReceiver {
 
     private void onClockAdvanced() {
       synchronized (this) {
-        long nextVsyncTime = ShadowChoreographer.getNextVsyncTime();
-        if (nextVsyncTime == 0 || ShadowPausedSystemClock.uptimeMillis() < nextVsyncTime) {
+        long nextVsyncTime = ShadowChoreographer.getNextVsyncTimeNanos();
+        if (nextVsyncTime == 0 || ShadowPausedSystemClock.uptimeNanos() < nextVsyncTime) {
           return;
         }
-        ShadowChoreographer.setNextVsyncTime(0);
+        ShadowChoreographer.setNextVsyncTimeNanos(0);
       }
 
       doVsync();
@@ -190,8 +200,9 @@ public class ShadowDisplayEventReceiver {
     public void scheduleVsync() {
       Duration frameDelay = ShadowChoreographer.getFrameDelay();
       if (ShadowChoreographer.isPaused()) {
-        if (ShadowChoreographer.getNextVsyncTime() < SystemClock.uptimeMillis()) {
-          ShadowChoreographer.setNextVsyncTime(SystemClock.uptimeMillis() + frameDelay.toMillis());
+        if (ShadowChoreographer.getNextVsyncTimeNanos() < ShadowPausedSystemClock.uptimeNanos()) {
+          ShadowChoreographer.setNextVsyncTimeNanos(
+              ShadowPausedSystemClock.uptimeNanos() + frameDelay.toNanos());
         }
       } else {
         // simulate an immediate callback
@@ -204,64 +215,72 @@ public class ShadowDisplayEventReceiver {
       DisplayEventReceiver receiver = receiverRef.get();
       if (receiver != null) {
         ShadowDisplayEventReceiver shadowReceiver = Shadow.extract(receiver);
-        shadowReceiver.onVsync();
-      }
-    }
-  }
-
-  @Implementation(minSdk = TIRAMISU)
-  protected @ClassName("android.view.DisplayEventReceiver$VsyncEventData") Object
-      getLatestVsyncEventData() {
-    return newVsyncEventData();
-  }
-
-  private static Object /* VsyncEventData */ newVsyncEventData() {
-    VsyncEventDataReflector vsyncEventDataReflector = reflector(VsyncEventDataReflector.class);
-    if (RuntimeEnvironment.getApiLevel() < TIRAMISU) {
-      return vsyncEventDataReflector.newVsyncEventData(
-          /* id= */ 1, /* frameDeadline= */ 10, /* frameInterval= */ 1);
-    }
-    try {
-      // onVsync on T takes a package-private VsyncEventData class, which is itself composed of a
-      // package private VsyncEventData.FrameTimeline  class. So use reflection to build these up
-      Class<?> frameTimelineClass =
-          Class.forName("android.view.DisplayEventReceiver$VsyncEventData$FrameTimeline");
-
-      int timelineArrayLength = RuntimeEnvironment.getApiLevel() == TIRAMISU ? 1 : 7;
-      FrameTimelineReflector frameTimelineReflector = reflector(FrameTimelineReflector.class);
-      Object timelineArray = Array.newInstance(frameTimelineClass, timelineArrayLength);
-      for (int i = 0; i < timelineArrayLength; i++) {
-        Array.set(timelineArray, i, frameTimelineReflector.newFrameTimeline(1, 1, 10));
-      }
-      if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
-        return vsyncEventDataReflector.newVsyncEventData(
-            timelineArray, /* preferredFrameTimelineIndex= */ 0, /* frameInterval= */ 1);
-      } else {
-        boolean baklavaConstructor =
-            ReflectionHelpers.hasConstructor(
-                DisplayEventReceiver.VsyncEventData.class,
-                DisplayEventReceiver.VsyncEventData.FrameTimeline[].class,
-                int.class,
-                int.class,
-                long.class,
-                int.class);
-        if (RuntimeEnvironment.getApiLevel() < Baklava.SDK_INT || !baklavaConstructor) {
-          return vsyncEventDataReflector.newVsyncEventData(
-              timelineArray,
-              /* preferredFrameTimelineIndex= */ 0,
-              timelineArrayLength,
-              /* frameInterval= */ 1);
-        } else {
-          return vsyncEventDataReflector.newVsyncEventData(
-              timelineArray,
-              /* preferredFrameTimelineIndex= */ 0,
-              timelineArrayLength,
-              /* frameInterval= */ 1,
-              /* numberQueuedBuffers= */ 0);
+        if (RuntimeEnvironment.getApiLevel() >= S) {
+          latestVsyncEventData = newVsyncEventData(ShadowChoreographer.getFrameDelay().toNanos());
         }
+        shadowReceiver.onVsync(ShadowSystem.nanoTime(), frame, latestVsyncEventData);
+        frame++;
       }
-    } catch (ClassNotFoundException e) {
-      throw new LinkageError("Unable to construct VsyncEventData", e);
+    }
+
+    private static Object /* VsyncEventData */ newVsyncEventData(long frameIntervalNanos) {
+      VsyncEventDataReflector vsyncEventDataReflector = reflector(VsyncEventDataReflector.class);
+      if (RuntimeEnvironment.getApiLevel() < TIRAMISU) {
+        return vsyncEventDataReflector.newVsyncEventData(
+            /* id= */ 1, /* frameDeadline= */ 10, frameIntervalNanos);
+      }
+      try {
+        // onVsync on T takes a package-private VsyncEventData class, which is itself composed of a
+        // package private VsyncEventData.FrameTimeline  class. So use reflection to build these up
+        Class<?> frameTimelineClass =
+            Class.forName("android.view.DisplayEventReceiver$VsyncEventData$FrameTimeline");
+
+        int timelineArrayLength = RuntimeEnvironment.getApiLevel() == TIRAMISU ? 1 : 7;
+        FrameTimelineReflector frameTimelineReflector = reflector(FrameTimelineReflector.class);
+        Object timelineArray = Array.newInstance(frameTimelineClass, timelineArrayLength);
+        for (int i = 0; i < timelineArrayLength; i++) {
+          Array.set(timelineArray, i, frameTimelineReflector.newFrameTimeline(1, 1, 10));
+        }
+        if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
+          return vsyncEventDataReflector.newVsyncEventData(
+              timelineArray, /* preferredFrameTimelineIndex= */ 0, frameIntervalNanos);
+        } else {
+          boolean baklavaConstructor =
+              ReflectionHelpers.hasConstructor(
+                  DisplayEventReceiver.VsyncEventData.class,
+                  DisplayEventReceiver.VsyncEventData.FrameTimeline[].class,
+                  int.class,
+                  int.class,
+                  long.class,
+                  int.class);
+          if (RuntimeEnvironment.getApiLevel() < Baklava.SDK_INT || !baklavaConstructor) {
+            return vsyncEventDataReflector.newVsyncEventData(
+                timelineArray,
+                /* preferredFrameTimelineIndex= */ 0,
+                timelineArrayLength,
+                frameIntervalNanos);
+          } else {
+            return vsyncEventDataReflector.newVsyncEventData(
+                timelineArray,
+                /* preferredFrameTimelineIndex= */ 0,
+                timelineArrayLength,
+                frameIntervalNanos,
+                /* numberQueuedBuffers= */ 0);
+          }
+        }
+      } catch (ClassNotFoundException e) {
+        throw new LinkageError("Unable to construct VsyncEventData", e);
+      }
+    }
+
+    public @ClassName("android.view.DisplayEventReceiver$VsyncEventData") Object
+        getLatestVsyncEventData() {
+      return latestVsyncEventData;
+    }
+
+    public void resetState() {
+      frame = 0;
+      latestVsyncEventData = null;
     }
   }
 

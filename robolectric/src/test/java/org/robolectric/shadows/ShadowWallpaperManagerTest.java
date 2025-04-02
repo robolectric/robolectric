@@ -15,6 +15,7 @@ import android.app.WallpaperManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -48,6 +49,10 @@ public class ShadowWallpaperManagerTest {
   private static final Bitmap TEST_IMAGE_2 = Bitmap.createBitmap(3, 2, Bitmap.Config.ARGB_8888);
 
   private static final Bitmap TEST_IMAGE_3 = Bitmap.createBitmap(1, 5, Bitmap.Config.ARGB_8888);
+
+  private static final Rect TEST_VISIBLE_CROP_HINT_1 = new Rect(1, 2, 3, 4);
+
+  private static final Rect TEST_VISIBLE_CROP_HINT_2 = new Rect(5, 6, 7, 8);
 
   private static final int UNSUPPORTED_FLAG = 0x100; // neither FLAG_SYSTEM nor FLAG_LOCK
 
@@ -284,6 +289,58 @@ public class ShadowWallpaperManagerTest {
 
   @Test
   @Config(minSdk = N)
+  public void setBitmap_flagLock_shouldCacheVisibleCropHintInMemory() throws Exception {
+    int returnCode =
+        manager.setBitmap(
+            TEST_IMAGE_2,
+            /* visibleCropHint= */ TEST_VISIBLE_CROP_HINT_1,
+            /* allowBackup= */ false,
+            WallpaperManager.FLAG_LOCK);
+
+    assertThat(returnCode).isEqualTo(1);
+    assertThat(shadowOf(manager).getVisibleCropHint(WallpaperManager.FLAG_LOCK))
+        .isEqualTo(TEST_VISIBLE_CROP_HINT_1);
+    assertThat(shadowOf(manager).getVisibleCropHint(WallpaperManager.FLAG_SYSTEM)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setBitmap_flagSystem_shouldCacheVisibleCropHintInMemory() throws Exception {
+    int returnCode =
+        manager.setBitmap(
+            TEST_IMAGE_2,
+            /* visibleCropHint= */ TEST_VISIBLE_CROP_HINT_2,
+            /* allowBackup= */ false,
+            WallpaperManager.FLAG_SYSTEM);
+
+    assertThat(returnCode).isEqualTo(1);
+    assertThat(shadowOf(manager).getVisibleCropHint(WallpaperManager.FLAG_SYSTEM))
+        .isEqualTo(TEST_VISIBLE_CROP_HINT_2);
+    assertThat(shadowOf(manager).getVisibleCropHint(WallpaperManager.FLAG_LOCK)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setBitmap_multipleCallsWithFlagLock_shouldCacheLastVisibleCropHintInMemory()
+      throws Exception {
+    manager.setBitmap(
+        TEST_IMAGE_1,
+        /* visibleCropHint= */ TEST_VISIBLE_CROP_HINT_1,
+        /* allowBackup= */ false,
+        WallpaperManager.FLAG_LOCK);
+    manager.setBitmap(
+        TEST_IMAGE_2,
+        /* visibleCropHint= */ TEST_VISIBLE_CROP_HINT_2,
+        /* allowBackup= */ false,
+        WallpaperManager.FLAG_LOCK);
+
+    assertThat(shadowOf(manager).getVisibleCropHint(WallpaperManager.FLAG_LOCK))
+        .isEqualTo(TEST_VISIBLE_CROP_HINT_2);
+    assertThat(shadowOf(manager).getVisibleCropHint(WallpaperManager.FLAG_SYSTEM)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = N)
   public void getWallpaperFile_flagSystem_nothingCached_shouldReturnNull() {
     assertThat(manager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM)).isNull();
   }
@@ -332,6 +389,50 @@ public class ShadowWallpaperManagerTest {
   @Config(minSdk = N)
   public void getWallpaperFile_unsupportedFlag_shouldReturnNull() {
     assertThat(manager.getWallpaperFile(UNSUPPORTED_FLAG)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getWallpaperId_lockScreenBitmapNotConfigured_shouldReturnNegativeNumber()
+      throws Exception {
+    manager.setBitmap(
+        TEST_IMAGE_1, null, false, WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK);
+
+    assertThat(manager.getWallpaperId(WallpaperManager.FLAG_LOCK)).isEqualTo(-1);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getWallpaperId_setHomeScreenAndLockScreenBimap_shouldReturnIncreasingId()
+      throws Exception {
+    manager.setBitmap(TEST_IMAGE_1, null, false, WallpaperManager.FLAG_SYSTEM);
+    manager.setBitmap(TEST_IMAGE_2, null, false, WallpaperManager.FLAG_LOCK);
+
+    assertThat(manager.getWallpaperId(WallpaperManager.FLAG_SYSTEM)).isEqualTo(1);
+    assertThat(manager.getWallpaperId(WallpaperManager.FLAG_LOCK)).isEqualTo(2);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getWallpaperId_lockScreenResourceNotConfigured_shouldReturnNegativeNumber()
+      throws Exception {
+    int resourceId = 12345;
+    manager.setResource(resourceId, WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK);
+
+    assertThat(manager.getWallpaperId(WallpaperManager.FLAG_LOCK)).isEqualTo(-1);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getWallpaperId_setHomeScreenAndLockScreenResource_shouldReturnIncreasingId()
+      throws Exception {
+    int resourceId1 = 5;
+    int resourceId2 = 6;
+    manager.setResource(resourceId1, WallpaperManager.FLAG_SYSTEM);
+    manager.setResource(resourceId2, WallpaperManager.FLAG_LOCK);
+
+    assertThat(manager.getWallpaperId(WallpaperManager.FLAG_SYSTEM)).isEqualTo(1);
+    assertThat(manager.getWallpaperId(WallpaperManager.FLAG_LOCK)).isEqualTo(2);
   }
 
   @Test

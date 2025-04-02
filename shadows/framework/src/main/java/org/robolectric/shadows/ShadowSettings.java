@@ -334,6 +334,10 @@ public class ShadowSettings {
       return dataMap.getOrDefault(name, Optional.empty()).filter(type::isInstance).map(type::cast);
     }
 
+    public static void remove(String name) {
+      dataMap.remove(name);
+    }
+
     @Resetter
     public static void reset() {
       dataMap.clear();

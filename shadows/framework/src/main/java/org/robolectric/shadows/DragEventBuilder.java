@@ -105,6 +105,38 @@ public class DragEventBuilder {
           ClassParameter.from(SurfaceControl.class, null),
           ClassParameter.from(IDragAndDropPermissions.class, null),
           ClassParameter.from(boolean.class, result));
+    } else if (ReflectionHelpers.hasMethod(
+        DragEvent.class,
+        "obtain",
+        int.class,
+        float.class,
+        float.class,
+        float.class,
+        float.class,
+        int.class,
+        int.class,
+        Object.class,
+        ClipDescription.class,
+        ClipData.class,
+        SurfaceControl.class,
+        IDragAndDropPermissions.class,
+        boolean.class)) {
+      return ReflectionHelpers.callStaticMethod(
+          DragEvent.class,
+          "obtain",
+          ClassParameter.from(int.class, action),
+          ClassParameter.from(float.class, x),
+          ClassParameter.from(float.class, y),
+          ClassParameter.from(float.class, 0),
+          ClassParameter.from(float.class, 0),
+          ClassParameter.from(int.class, ShadowDisplay.getDefaultDisplay().getDisplayId()),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(Object.class, localState),
+          ClassParameter.from(ClipDescription.class, clipDescription),
+          ClassParameter.from(ClipData.class, clipData),
+          ClassParameter.from(SurfaceControl.class, null),
+          ClassParameter.from(IDragAndDropPermissions.class, null),
+          ClassParameter.from(boolean.class, result));
     } else {
       return ReflectionHelpers.callStaticMethod(
           DragEvent.class,

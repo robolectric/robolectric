@@ -2,6 +2,7 @@ package org.robolectric;
 
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,6 +68,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private static final int MAX_DATA_DIR_NAME_LENGTH = 120;
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
+  private static final ImmutableList<RunListener> RUN_LISTENERS = loadRunListeners();
 
   static {
     // This starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric
@@ -78,6 +80,22 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     // validation introduced in Bouncy Castle 1.71.
     // https://github.com/bcgit/bc-java/issues/1144
     System.setProperty("org.bouncycastle.rsa.max_mr_tests", "0");
+  }
+
+  protected static ImmutableList<RunListener> loadRunListeners() {
+    ServiceLoader<RunListener> sl =
+        ServiceLoader.load(RunListener.class, Thread.currentThread().getContextClassLoader());
+    List<RunListener> runListeners = sl.stream().map(ServiceLoader.Provider::get).toList();
+    for (RunListener listener : runListeners) {
+      if (!listener.getClass().getPackageName().startsWith("org.robolectric")) {
+        Logger.warn(
+            "Adding a non-robolectric maintained RunListener"
+                + " (via Plugins/ServiceLoader) can lead to instability, use at your own risk.\n"
+                + "Listener is question : "
+                + listener.getClass().getName());
+      }
+    }
+    return ImmutableList.copyOf(runListeners);
   }
 
   protected static Injector.Builder defaultInjector() {
@@ -119,16 +137,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   @Override
   public void run(RunNotifier notifier) {
-    ServiceLoader<RunListener> sl =
-        ServiceLoader.load(RunListener.class, Thread.currentThread().getContextClassLoader());
-    for (RunListener listener : sl) {
-      if (!listener.getClass().getPackageName().startsWith("org.robolectric")) {
-        Logger.warn(
-            "Adding a non-robolectric maintained RunListener"
-                + " (via Plugins/ServiceLoader) can lead to instability, use at your own risk.\n"
-                + "Listener in question : "
-                + listener.getClass().getName());
-      }
+    for (RunListener listener : RobolectricTestRunner.RUN_LISTENERS) {
       notifier.addListener(listener);
     }
     super.run(notifier);
@@ -254,6 +263,20 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     sdk.verifySupportedSdk(method.getDeclaringClass().getName());
     return sandboxManager.getAndroidSandbox(
         classLoaderConfig, sdk, resourcesMode, looperMode, sqliteMode, graphicsMode);
+  }
+
+  @Override
+  protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
+    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
+
+    SQLiteMode.Mode sqliteMode =
+        roboMethod.configuration == null
+            ? SQLiteMode.Mode.LEGACY
+            : roboMethod.configuration.get(SQLiteMode.Mode.class);
+
+    AndroidSandbox androidSandbox = (AndroidSandbox) sandbox;
+    androidSandbox.updateModes(sqliteMode);
+    super.configureSandbox(sandbox, method);
   }
 
   @Override

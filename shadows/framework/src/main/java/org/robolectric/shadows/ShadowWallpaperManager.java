@@ -43,6 +43,8 @@ public class ShadowWallpaperManager {
   private static final String TAG = "ShadowWallpaperManager";
   private static Bitmap lockScreenImage = null;
   private static Bitmap homeScreenImage = null;
+  private static Rect lockScreenVisibleCropHint = null;
+  private static Rect homeScreenVisibleCropHint = null;
   private static boolean isWallpaperAllowed = true;
   private static boolean isWallpaperSupported = true;
   private static WallpaperInfo wallpaperInfo = null;
@@ -50,6 +52,8 @@ public class ShadowWallpaperManager {
   private static final AtomicInteger wallpaperId = new AtomicInteger(0);
   private static int lockScreenId;
   private static int homeScreenId;
+  private static int lockScreenResId;
+  private static int homeScreenResId;
 
   private static float wallpaperDimAmount = 0.0f;
   private static final ArrayList<Float> allWallpaperDimAmounts = new ArrayList<>();
@@ -77,12 +81,19 @@ public class ShadowWallpaperManager {
       return 0;
     }
     if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
-      homeScreenId = resid;
+      homeScreenResId = resid;
+      homeScreenId = wallpaperId.incrementAndGet();
     }
     if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
-      lockScreenId = resid;
+      lockScreenResId = resid;
+      lockScreenId =
+          ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM)
+              ? -1
+              : wallpaperId.incrementAndGet();
     }
-    return wallpaperId.incrementAndGet();
+    return ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM)
+        ? homeScreenId
+        : lockScreenId;
   }
 
   /**
@@ -91,7 +102,7 @@ public class ShadowWallpaperManager {
    */
   @Implementation
   protected boolean hasResourceWallpaper(int resid) {
-    return resid == lockScreenId || resid == homeScreenId;
+    return resid == lockScreenResId || resid == homeScreenResId;
   }
 
   /**
@@ -100,7 +111,7 @@ public class ShadowWallpaperManager {
    * <p>After a success call, any previously set live wallpaper is removed,
    *
    * @param fullImage the bitmap image to be cached in the memory
-   * @param visibleCropHint not used
+   * @param visibleCropHint the visible crop hint to be cached in the memory
    * @param allowBackup not used
    * @param which either {@link WallpaperManager#FLAG_LOCK} or {WallpaperManager#FLAG_SYSTEM}
    * @return 0 if fails to cache. Otherwise, 1.
@@ -112,11 +123,18 @@ public class ShadowWallpaperManager {
     }
     if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
       lockScreenImage = fullImage;
+      lockScreenVisibleCropHint = visibleCropHint;
+      lockScreenId =
+          ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM)
+              ? -1
+              : wallpaperId.incrementAndGet();
       wallpaperInfo = null;
     }
 
     if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
       homeScreenImage = fullImage;
+      homeScreenVisibleCropHint = visibleCropHint;
+      homeScreenId = wallpaperId.incrementAndGet();
       wallpaperInfo = null;
     }
     return 1;
@@ -140,6 +158,20 @@ public class ShadowWallpaperManager {
   }
 
   /**
+   * Returns the last visibleCropHint {@link Rect} provided to {@link WallpaperManager#setBitmap}
+   * associated with {@code which}.
+   */
+  @Nullable
+  public Rect getVisibleCropHint(int which) {
+    if (which == WallpaperManager.FLAG_LOCK) {
+      return lockScreenVisibleCropHint;
+    } else if (which == WallpaperManager.FLAG_SYSTEM) {
+      return homeScreenVisibleCropHint;
+    }
+    return null;
+  }
+
+  /**
    * Gets a wallpaper file associated with {@code which}.
    *
    * @param which either {@link WallpaperManager#FLAG_LOCK} or {WallpaperManager#FLAG_SYSTEM}
@@ -155,6 +187,20 @@ public class ShadowWallpaperManager {
       return createParcelFileDescriptorFromBitmap(lockScreenImage, "lock_screen_wallpaper");
     }
     return null;
+  }
+
+  /**
+   * Returns the id of the current wallpaper associated with {@code which}. If there is no such
+   * wallpaper configured, returns a negative number.
+   */
+  @Implementation(minSdk = N)
+  protected int getWallpaperId(int which) {
+    if (which == WallpaperManager.FLAG_LOCK) {
+      return lockScreenId;
+    } else if (which == WallpaperManager.FLAG_SYSTEM) {
+      return homeScreenId;
+    }
+    return -1;
   }
 
   @Implementation(minSdk = N)
@@ -192,10 +238,12 @@ public class ShadowWallpaperManager {
     }
     if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
       lockScreenImage = BitmapFactory.decodeStream(bitmapData);
+      lockScreenVisibleCropHint = visibleCropHint;
     }
 
     if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
       homeScreenImage = BitmapFactory.decodeStream(bitmapData);
+      homeScreenVisibleCropHint = visibleCropHint;
     }
     return 1;
   }
@@ -327,6 +375,8 @@ public class ShadowWallpaperManager {
   public static void reset() {
     lockScreenImage = null;
     homeScreenImage = null;
+    lockScreenVisibleCropHint = null;
+    homeScreenVisibleCropHint = null;
     isWallpaperAllowed = true;
     isWallpaperSupported = true;
     wallpaperInfo = null;
@@ -334,6 +384,8 @@ public class ShadowWallpaperManager {
     wallpaperId.set(0);
     lockScreenId = 0;
     homeScreenId = 0;
+    lockScreenResId = 0;
+    homeScreenResId = 0;
     wallpaperDimAmount = 0.0f;
     allWallpaperDimAmounts.clear();
   }

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -88,6 +89,11 @@ public class ShadowStorageStatsManager {
         moreCacheBytes -= storageStatsForPackage.getCacheBytes();
       }
       Parcel parcel = Parcel.obtain();
+      if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+        parcel.writeString(packageName);
+        parcel.writeInt(userHandle.getIdentifier());
+        parcel.writeInt(storageUuid.hashCode());
+      }
       parcel.writeLong(storageStatsForUser.getAppBytes() + moreAppBytes);
       parcel.writeLong(storageStatsForUser.getDataBytes() + moreDataBytes);
       parcel.writeLong(storageStatsForUser.getCacheBytes() + moreCacheBytes);

@@ -5,7 +5,6 @@ import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS;
 import static android.content.ContentResolver.QUERY_ARG_SQL_SORT_ORDER;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
-import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertThrows;
@@ -79,6 +78,9 @@ import org.robolectric.util.NamedStream;
 public class ShadowContentResolverTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+  private static final Uri FAKE_URI =
+      Uri.parse("content://robolectric").buildUpon().appendPath("fakepath").build();
+
   private static final String AUTHORITY = "org.robolectric";
 
   private ContentResolver contentResolver;
@@ -91,8 +93,8 @@ public class ShadowContentResolverTest {
   public void setUp() {
     contentResolver = ApplicationProvider.getApplicationContext().getContentResolver();
     shadowContentResolver = shadowOf(contentResolver);
-    uri21 = Uri.parse(EXTERNAL_CONTENT_URI + "/21");
-    uri22 = Uri.parse(EXTERNAL_CONTENT_URI + "/22");
+    uri21 = Uri.parse(FAKE_URI + "/21");
+    uri22 = Uri.parse(FAKE_URI + "/22");
 
     a = new Account("a", "type");
     b = new Account("b", "type");
@@ -102,8 +104,8 @@ public class ShadowContentResolverTest {
   public void insert_shouldReturnIncreasingUris() {
     shadowContentResolver.setNextDatabaseIdForInserts(20);
 
-    assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues())).isEqualTo(uri21);
-    assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues())).isEqualTo(uri22);
+    assertThat(contentResolver.insert(FAKE_URI, new ContentValues())).isEqualTo(uri21);
+    assertThat(contentResolver.insert(FAKE_URI, new ContentValues())).isEqualTo(uri22);
   }
 
   @Test
@@ -160,10 +162,9 @@ public class ShadowContentResolverTest {
   public void insert_shouldTrackInsertStatements() {
     ContentValues contentValues = new ContentValues();
     contentValues.put("foo", "bar");
-    contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
+    contentResolver.insert(FAKE_URI, contentValues);
     assertThat(shadowContentResolver.getInsertStatements()).hasSize(1);
-    assertThat(shadowContentResolver.getInsertStatements().get(0).getUri())
-        .isEqualTo(EXTERNAL_CONTENT_URI);
+    assertThat(shadowContentResolver.getInsertStatements().get(0).getUri()).isEqualTo(FAKE_URI);
     assertThat(
             shadowContentResolver
                 .getInsertStatements()
@@ -174,7 +175,7 @@ public class ShadowContentResolverTest {
 
     contentValues = new ContentValues();
     contentValues.put("hello", "world");
-    contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
+    contentResolver.insert(FAKE_URI, contentValues);
     assertThat(shadowContentResolver.getInsertStatements()).hasSize(2);
     assertThat(
             shadowContentResolver
@@ -189,11 +190,9 @@ public class ShadowContentResolverTest {
   public void insert_shouldTrackUpdateStatements() {
     ContentValues contentValues = new ContentValues();
     contentValues.put("foo", "bar");
-    contentResolver.update(
-        EXTERNAL_CONTENT_URI, contentValues, "robolectric", new String[] {"awesome"});
+    contentResolver.update(FAKE_URI, contentValues, "robolectric", new String[] {"awesome"});
     assertThat(shadowContentResolver.getUpdateStatements()).hasSize(1);
-    assertThat(shadowContentResolver.getUpdateStatements().get(0).getUri())
-        .isEqualTo(EXTERNAL_CONTENT_URI);
+    assertThat(shadowContentResolver.getUpdateStatements().get(0).getUri()).isEqualTo(FAKE_URI);
     assertThat(
             shadowContentResolver
                 .getUpdateStatements()
@@ -208,10 +207,9 @@ public class ShadowContentResolverTest {
 
     contentValues = new ContentValues();
     contentValues.put("hello", "world");
-    contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, null, null);
+    contentResolver.update(FAKE_URI, contentValues, null, null);
     assertThat(shadowContentResolver.getUpdateStatements()).hasSize(2);
-    assertThat(shadowContentResolver.getUpdateStatements().get(1).getUri())
-        .isEqualTo(EXTERNAL_CONTENT_URI);
+    assertThat(shadowContentResolver.getUpdateStatements().get(1).getUri()).isEqualTo(FAKE_URI);
     assertThat(
             shadowContentResolver
                 .getUpdateStatements()
@@ -225,13 +223,13 @@ public class ShadowContentResolverTest {
 
   @Test
   public void insert_supportsNullContentValues() {
-    contentResolver.insert(EXTERNAL_CONTENT_URI, null);
+    contentResolver.insert(FAKE_URI, null);
     assertThat(shadowContentResolver.getInsertStatements().get(0).getContentValues()).isNull();
   }
 
   @Test
   public void update_supportsNullContentValues() {
-    contentResolver.update(EXTERNAL_CONTENT_URI, null, null, null);
+    contentResolver.update(FAKE_URI, null, null, null);
     assertThat(shadowContentResolver.getUpdateStatements().get(0).getContentValues()).isNull();
   }
 
@@ -1089,10 +1087,9 @@ public class ShadowContentResolverTest {
   @Test
   public void shouldThrowConfiguredExceptionWhenRegisteringContentObservers() {
     ShadowContentResolver scr = shadowOf(contentResolver);
-    scr.setRegisterContentProviderException(EXTERNAL_CONTENT_URI, new SecurityException());
+    scr.setRegisterContentProviderException(FAKE_URI, new SecurityException());
     try {
-      contentResolver.registerContentObserver(
-          EXTERNAL_CONTENT_URI, true, new TestContentObserver(null));
+      contentResolver.registerContentObserver(FAKE_URI, true, new TestContentObserver(null));
       fail();
     } catch (SecurityException expected) {
     }
@@ -1101,11 +1098,10 @@ public class ShadowContentResolverTest {
   @Test
   public void shouldClearConfiguredExceptionForRegisteringContentObservers() {
     ShadowContentResolver scr = shadowOf(contentResolver);
-    scr.setRegisterContentProviderException(EXTERNAL_CONTENT_URI, new SecurityException());
-    scr.clearRegisterContentProviderException(EXTERNAL_CONTENT_URI);
+    scr.setRegisterContentProviderException(FAKE_URI, new SecurityException());
+    scr.clearRegisterContentProviderException(FAKE_URI);
     // Should not throw the SecurityException.
-    contentResolver.registerContentObserver(
-        EXTERNAL_CONTENT_URI, true, new TestContentObserver(null));
+    contentResolver.registerContentObserver(FAKE_URI, true, new TestContentObserver(null));
   }
 
   @Test
@@ -1113,32 +1109,32 @@ public class ShadowContentResolverTest {
     TestContentObserver co = new TestContentObserver(null);
     ShadowContentResolver scr = shadowOf(contentResolver);
 
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
+    assertThat(scr.getContentObservers(FAKE_URI)).isEmpty();
 
-    contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
+    contentResolver.registerContentObserver(FAKE_URI, true, co);
 
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).containsExactly(co);
+    assertThat(scr.getContentObservers(FAKE_URI)).containsExactly((ContentObserver) co);
 
     assertThat(co.changed).isFalse();
-    contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
+    contentResolver.notifyChange(FAKE_URI, null);
     assertThat(co.changed).isTrue();
 
     contentResolver.unregisterContentObserver(co);
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
+    assertThat(scr.getContentObservers(FAKE_URI)).isEmpty();
   }
 
   @Test
   public void shouldUnregisterContentObservers() {
     TestContentObserver co = new TestContentObserver(null);
     ShadowContentResolver scr = shadowOf(contentResolver);
-    contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).contains(co);
+    contentResolver.registerContentObserver(FAKE_URI, true, co);
+    assertThat(scr.getContentObservers(FAKE_URI)).contains(co);
 
     contentResolver.unregisterContentObserver(co);
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
+    assertThat(scr.getContentObservers(FAKE_URI)).isEmpty();
 
     assertThat(co.changed).isFalse();
-    contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
+    contentResolver.notifyChange(FAKE_URI, null);
     assertThat(co.changed).isFalse();
   }
 
@@ -1147,9 +1143,9 @@ public class ShadowContentResolverTest {
     TestContentObserver co1 = new TestContentObserver(null);
     TestContentObserver co2 = new TestContentObserver(null);
 
-    Uri childUri = EXTERNAL_CONTENT_URI.buildUpon().appendPath("path").build();
+    Uri childUri = FAKE_URI.buildUpon().appendPath("path").build();
 
-    contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co1);
+    contentResolver.registerContentObserver(FAKE_URI, true, co1);
     contentResolver.registerContentObserver(childUri, false, co2);
 
     co1.changed = co2.changed = false;
@@ -1158,7 +1154,7 @@ public class ShadowContentResolverTest {
     assertThat(co2.changed).isTrue();
 
     co1.changed = co2.changed = false;
-    contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
+    contentResolver.notifyChange(FAKE_URI, null);
     assertThat(co1.changed).isTrue();
     assertThat(co2.changed).isFalse();
 

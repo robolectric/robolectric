@@ -1,6 +1,5 @@
 package org.robolectric.util;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -69,37 +68,12 @@ public class Util {
     return array;
   }
 
-  public static File file(String... pathParts) {
-    return file(new File("."), pathParts);
-  }
-
-  public static File file(File f, String... pathParts) {
-    for (String pathPart : pathParts) {
-      f = new File(f, pathPart);
-    }
-
-    String dotSlash = "." + File.separator;
-    if (f.getPath().startsWith(dotSlash)) {
-      f = new File(f.getPath().substring(dotSlash.length()));
-    }
-
-    return f;
-  }
-
   @SuppressWarnings("NewApi")
   public static Path pathFrom(URL localArtifactUrl) {
     try {
       return Paths.get(localArtifactUrl.toURI());
     } catch (URISyntaxException e) {
       throw new RuntimeException("huh? " + localArtifactUrl, e);
-    }
-  }
-
-  public static int parseInt(String valueFor) {
-    if (valueFor.startsWith("0x")) {
-      return Integer.parseInt(valueFor.substring(2), 16);
-    } else {
-      return Integer.parseInt(valueFor, 10);
     }
   }
 

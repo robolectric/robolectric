@@ -41,6 +41,7 @@ import org.robolectric.util.ReflectionHelpers;
  */
 @RunWith(AndroidJUnit4.class)
 public class AccessibilityNodeInfoTest {
+
   @Test
   @Config(minSdk = Build.VERSION_CODES.R)
   @SdkSuppress(minSdkVersion = Build.VERSION_CODES.R)
@@ -94,6 +95,17 @@ public class AccessibilityNodeInfoTest {
     assertThat(node.getText().toString()).isEqualTo(node2.getText().toString());
     assertThat(node.getContentDescription().toString())
         .isEqualTo(node2.getContentDescription().toString());
+  }
+
+  @Test
+  public void obtain_equalsTo() {
+    String originalProperty = System.getProperty("robolectric.useRealAni", "");
+    try {
+      System.setProperty("robolectric.useRealAni", "true");
+      assertThat(AccessibilityNodeInfo.obtain()).isEqualTo(AccessibilityNodeInfo.obtain());
+    } finally {
+      System.setProperty("robolectric.useRealAni", originalProperty);
+    }
   }
 
   @Test

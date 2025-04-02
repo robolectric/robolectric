@@ -68,7 +68,6 @@ public class SandboxManager {
           sandboxBuilder.build(instrumentationConfig, sdk, compileSdk, resourcesMode, sqliteMode);
       sandboxesByKey.put(key, androidSandbox);
     }
-    androidSandbox.updateModes(sqliteMode);
     return androidSandbox;
   }
 

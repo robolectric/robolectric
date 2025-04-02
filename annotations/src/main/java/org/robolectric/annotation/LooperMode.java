@@ -5,6 +5,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.time.Duration;
 
 /**
  * A {@link org.robolectric.pluginapi.config.Configurer} annotation for controlling Robolectric's
@@ -91,8 +92,8 @@ public @interface LooperMode {
      *   <li>{@link android.os.Looper} use the real {@link android.os.MessageQueue} to store their
      *       queue of pending tasks
      *   <li>There is only a single clock value, managed via {@link
-     *       org.robolectric.shadows.ShadowSystemClock}. This can be explicitly incremented via
-     *       {@link android.os.SystemClock#setCurrentTimeMillis(long)}, or {@link
+     *       org.robolectric.shadows.ShadowSystemClock}. This can be explictly incremented via
+     *       {@link org.robolectric.shadows.ShadowSystemClock#advanceBy(Duration)}, or {@link
      *       org.robolectric.shadows.ShadowLooper#idleFor(Duration)}.
      * </ul>
      *

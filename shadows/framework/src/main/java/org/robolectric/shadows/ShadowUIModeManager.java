@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.SystemApi;
+import android.app.IUiModeManager;
 import android.app.UiModeManager;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -11,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
+import android.os.IBinder;
 import android.provider.Settings;
 import com.android.internal.annotations.GuardedBy;
 import com.google.common.collect.ImmutableSet;
@@ -23,12 +26,19 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
+import org.robolectric.util.reflector.WithType;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link UiModeManager}. */
 @Implements(UiModeManager.class)
 public class ShadowUIModeManager {
+  private static final int DEFAULT_PRIORITY = 0;
+
   public int currentModeType = Configuration.UI_MODE_TYPE_UNDEFINED;
   public int currentNightMode = UiModeManager.MODE_NIGHT_AUTO;
   public int lastFlags;
@@ -36,13 +46,6 @@ public class ShadowUIModeManager {
   private int currentApplicationNightMode = 0;
   private final Map<Integer, Set<String>> activeProjectionTypes = new HashMap<>();
   private boolean failOnProjectionToggle;
-
-  private static final ImmutableSet<Integer> VALID_NIGHT_MODES =
-      ImmutableSet.of(
-          UiModeManager.MODE_NIGHT_AUTO, UiModeManager.MODE_NIGHT_NO, UiModeManager.MODE_NIGHT_YES);
-
-  private static final int DEFAULT_PRIORITY = 0;
-
   private final Object lock = new Object();
 
   @GuardedBy("lock")
@@ -246,10 +249,67 @@ public class ShadowUIModeManager {
     }
   }
 
+  /**
+   * Sets the contrast value.
+   *
+   * <p>The default value for contrast is 0.0f. The permitted values are between -1.0f and 1.0f
+   * inclusive.
+   */
+  public void setContrast(float contrast) {
+    checkArgument(
+        contrast >= -1.0f && contrast <= 1.0f,
+        "Contrast value must be between -1.0f and 1.0f inclusive. Provided value: %s",
+        contrast);
+
+    if (RuntimeEnvironment.getApiLevel() == VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      reflector(UiModeManagerReflector.class, realUiModeManager).setContrast(contrast);
+    } else {
+      Object globals = reflector(UiModeManagerReflector.class, realUiModeManager).getGlobals();
+      reflector(UiModeManagerGlobalsReflector.class, globals).setContrast(contrast);
+    }
+  }
+
+  @Resetter
+  public static void reset() {
+    if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
+      IUiModeManager service =
+          IUiModeManager.Stub.asInterface(
+              reflector(ServiceManagerReflector.class).getServiceOrThrow(Context.UI_MODE_SERVICE));
+      reflector(UiModeManagerReflector.class)
+          .setGlobals(reflector(UiModeManagerGlobalsReflector.class).newGlobals(service));
+    }
+  }
+
+  @ForType(className = "android.os.ServiceManager")
+  interface ServiceManagerReflector {
+    @Static
+    IBinder getServiceOrThrow(String name);
+  }
+
   @ForType(UiModeManager.class)
   interface UiModeManagerReflector {
     @Accessor("mContext")
     Context getContext();
+
+    @Accessor("mContrast")
+    void setContrast(float value); // Stores the contrast value for Android U.
+
+    @Accessor("sGlobals")
+    @Static
+    Object getGlobals(); // Stores the contrast value for Android V and above.
+
+    @Accessor("sGlobals")
+    @Static
+    void setGlobals(@WithType("android.app.UiModeManager$Globals") Object value);
+  }
+
+  @ForType(className = "android.app.UiModeManager$Globals")
+  interface UiModeManagerGlobalsReflector {
+    @Accessor("mContrast")
+    void setContrast(float contrast);
+
+    @Constructor
+    Object newGlobals(IUiModeManager iUiModeManager);
   }
 
   private void assertHasPermission(String... permissions) {
