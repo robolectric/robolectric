@@ -23,7 +23,12 @@ dependencies {
   testImplementation(libs.findbugs.jsr305)
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
-  testImplementation(libs.mockito)
-  testImplementation(libs.mockito.subclass)
+
+  // ShadowingTest.testStaticMethodsAreDelegated fails with a combination of Mockito 5.x and the
+  // sandbox grouping commit (234dc80c2df61c15504c288cd62acdec8e3dca5c).
+  //
+  // TODO(hoisie): figure out why this is happening and upgrade to Mockito 5.x.
+  testImplementation("org.mockito:mockito-core:4.11.0")
+
   testImplementation(project(":junit"))
 }
