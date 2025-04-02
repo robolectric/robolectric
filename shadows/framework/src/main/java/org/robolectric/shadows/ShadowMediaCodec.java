@@ -315,15 +315,15 @@ public class ShadowMediaCodec {
           /* errorCode= */ 0, /* actionCode= */ 0, "Input buffer not owned by client: " + index);
     }
 
+    inputBuffersPendingQueuing.remove(Integer.valueOf(index));
+
     if (VERSION.SDK_INT >= 34 && (flags & MediaCodec.BUFFER_FLAG_DECODE_ONLY) != 0) {
-      inputBuffersPendingQueuing.remove(Integer.valueOf(index));
       makeInputBufferAvailable(index);
     } else {
       BufferInfo info = new BufferInfo();
       info.set(offset, size, presentationTimeUs, flags);
 
       makeOutputBufferAvailable(index, info);
-      inputBuffersPendingQueuing.remove(Integer.valueOf(index));
     }
   }
 
