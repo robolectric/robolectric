@@ -3,6 +3,7 @@ package org.robolectric.simulator;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
+import android.app.Activity;
 import android.app.Application;
 import android.app.UiAutomation;
 import android.content.Context;
@@ -19,6 +20,7 @@ import com.google.common.base.Preconditions;
 import java.time.Duration;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadow.api.Shadow;
@@ -36,11 +38,31 @@ public final class Simulator {
   private float displayWidth;
   private float displayHeight;
 
+  private final Class<? extends Activity> activityClassToLaunch;
+
+  public Simulator() {
+    activityClassToLaunch = null;
+  }
+
+  public Simulator(Class<? extends Activity> activityClassToLaunch) {
+    this.activityClassToLaunch = activityClassToLaunch;
+  }
+
   public void start() {
     Preconditions.checkState(ShadowView.useRealGraphics());
     Preconditions.checkState(ShadowLooper.looperMode() != Mode.LEGACY);
     System.setProperty("java.awt.headless", "false");
     ShadowView.setUseRealViewAnimations(true);
+    ShadowChoreographer.setPaused(true);
+    ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
+
+    if (this.activityClassToLaunch != null) {
+      System.err.println("Launching " + this.activityClassToLaunch.getName());
+      Robolectric.setupActivity(this.activityClassToLaunch);
+    }
+    // Inject an off-screen motion event to avoid a blank screen when the simulator first starts.
+    postMotionEvent();
+
     startUi();
     captureScreen();
     loop();
@@ -48,11 +70,7 @@ public final class Simulator {
 
   private void loop() {
     ShadowPausedLooper shadowLooper = Shadow.extract(Looper.myLooper());
-    ShadowChoreographer.setPaused(true);
-    ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
     shadowLooper.idle();
-    // Inject an off-screen motion event to avoid a blank screen when the simulator first starts.
-    postMotionEvent();
     while (true) {
       long currentSystemTime = System.nanoTime();
       long nextTaskTime = shadowLooper.getNextScheduledTaskTime().toMillis();

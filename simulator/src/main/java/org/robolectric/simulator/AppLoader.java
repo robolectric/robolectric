@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ConscryptMode;
@@ -22,7 +21,6 @@ import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.config.ConfigurationStrategy;
-import org.robolectric.shadows.ShadowView;
 
 /** Loads an apk into the simulator */
 public class AppLoader implements Runnable {
@@ -45,7 +43,6 @@ public class AppLoader implements Runnable {
     this.sandbox
         .getTestEnvironment()
         .setUpApplicationState("simulator", new FixedConfiguration(), manifest);
-    ShadowView.setUseRealViewAnimations(true);
 
     Application application = RuntimeEnvironment.getApplication();
 
@@ -68,12 +65,10 @@ public class AppLoader implements Runnable {
     try {
       Class<? extends Activity> activityClass =
           Class.forName(activityInfo.name).asSubclass(Activity.class);
-      System.err.println("Launching " + activityClass.getName());
-      Robolectric.setupActivity(activityClass);
+      new Simulator(activityClass).start();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    new Simulator().start();
   }
 
   /**
