@@ -165,17 +165,19 @@ public class ShadowProviderGenerator extends Generator {
       int minSdk = resetterInfo.getMinSdk();
       int maxSdk = resetterInfo.getMaxSdk();
       String ifClause;
+      // The fully-qualiied name 'org.robolectric.RuntimeEnvironment' is required because shadow
+      // packages may not be in the 'org.robolectric' package.
       if (minSdk != -1 && maxSdk != -1) {
         ifClause =
-            "if (RuntimeEnvironment.getApiLevel() >= "
+            "if (org.robolectric.RuntimeEnvironment.getApiLevel() >= "
                 + minSdk
-                + " && RuntimeEnvironment.getApiLevel() <= "
+                + " && org.robolectric.RuntimeEnvironment.getApiLevel() <= "
                 + maxSdk
                 + ") ";
       } else if (maxSdk != -1) {
-        ifClause = "if (RuntimeEnvironment.getApiLevel() <= " + maxSdk + ") ";
+        ifClause = "if (org.robolectric.RuntimeEnvironment.getApiLevel() <= " + maxSdk + ") ";
       } else if (minSdk != -1) {
-        ifClause = "if (RuntimeEnvironment.getApiLevel() >= " + minSdk + ") ";
+        ifClause = "if (org.robolectric.RuntimeEnvironment.getApiLevel() >= " + minSdk + ") ";
       } else {
         ifClause = "";
       }
