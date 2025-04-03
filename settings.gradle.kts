@@ -43,6 +43,7 @@ include(
   ":integration_tests:sparsearray",
   ":integration_tests:testparameterinjector",
   ":integration_tests:versioning",
+  ":integration_tests:rap",
   ":junit",
   ":nativeruntime",
   ":pluginapi",
