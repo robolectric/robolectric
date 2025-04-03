@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.media.AudioTrack.ERROR_DEAD_OBJECT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -446,13 +445,12 @@ public class ShadowAudioTrack {
    * Sets the estimated latency of this {@link AudioTrack} that will be returned by {@code
    * AudioTrack.getLatency()}, in milliseconds.
    */
-  @RequiresApi(LOLLIPOP)
   public void setLatency(int latencyMs) {
     this.latencyMs = latencyMs;
   }
 
   /** Returns the estimated latency of this {@link AudioTrack}, in milliseconds. */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected int native_get_latency() {
     return latencyMs;
   }

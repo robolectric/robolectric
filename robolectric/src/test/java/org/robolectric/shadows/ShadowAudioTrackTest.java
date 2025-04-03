@@ -4,7 +4,6 @@ import static android.media.AudioAttributes.USAGE_MEDIA;
 import static android.media.AudioTrack.ERROR_BAD_VALUE;
 import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.media.AudioTrack.WRITE_NON_BLOCKING;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
@@ -682,8 +681,8 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
-  public void getLatency_withoutSetLatencyMs_returnsZero() throws Exception {
+  @Config
+  public void getLatency_withoutSetLatencyMs_returnsZero() {
     AudioTrack audioTrack = getSampleAudioTrack();
 
     assertThat((Integer) ReflectionHelpers.callInstanceMethod(audioTrack, "getLatency"))
@@ -691,8 +690,8 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
-  public void getLatency_afterSetLatencyMs_returnsSetLatency() throws Exception {
+  @Config
+  public void getLatency_afterSetLatencyMs_returnsSetLatency() {
     AudioTrack audioTrack = getSampleAudioTrack();
     shadowOf(audioTrack).setLatency(200);
 
@@ -702,7 +701,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
 
   @Test
   @Config(minSdk = M)
-  public void getBufferSizeInFrames_withPcm_returnsBufferSizeInFrames() throws Exception {
+  public void getBufferSizeInFrames_withPcm_returnsBufferSizeInFrames() {
     AudioTrack audioTrack = getSampleAudioTrack();
 
     assertThat(audioTrack.getBufferSizeInFrames()).isEqualTo(1);
@@ -710,8 +709,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
 
   @Test
   @Config(minSdk = Q, maxSdk = R)
-  public void getBufferSizeInFrames_withOffloadUntilApi30_returnsBufferSizeInBytes()
-      throws Exception {
+  public void getBufferSizeInFrames_withOffloadUntilApi30_returnsBufferSizeInBytes() {
     AudioFormat audioFormat =
         new AudioFormat.Builder()
             .setEncoding(AudioFormat.ENCODING_AC3)
@@ -734,7 +732,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
 
   @Test
   @Config(sdk = S)
-  public void getBufferSizeInFrames_withOffloadApi31_returnsBufferSizeInBytes() throws Exception {
+  public void getBufferSizeInFrames_withOffloadApi31_returnsBufferSizeInBytes() {
     ShadowAudioTrack.addAllowedNonPcmEncoding(AudioFormat.ENCODING_AC3);
     AudioFormat audioFormat =
         new AudioFormat.Builder()
@@ -759,8 +757,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
 
   @Test
   @Config(minSdk = TIRAMISU)
-  public void getBufferSizeInFrames_withOffloadPostApi31_returnsBufferSizeInBytes()
-      throws Exception {
+  public void getBufferSizeInFrames_withOffloadPostApi31_returnsBufferSizeInBytes() {
     ShadowAudioTrack.addAllowedNonPcmEncoding(AudioFormat.ENCODING_AC3);
     AudioFormat audioFormat =
         new AudioFormat.Builder()
