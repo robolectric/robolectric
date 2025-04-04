@@ -53,6 +53,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -60,11 +61,14 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.testing.TestActivity;
 import org.robolectric.util.Scheduler;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowApplicationTest {
+
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private Application context;
 
@@ -780,6 +784,8 @@ public class ShadowApplicationTest {
       minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   public void
       registerReceiver_withoutAnyExportedFlagsAndTargetSdk34OnAndroidFromU_throwsSecurityException() {
+    setSystemPropertyRule.set("robolectric.validateReceiverExportFlags", "true");
+
     IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
 
     assertThrows(
@@ -792,6 +798,7 @@ public class ShadowApplicationTest {
       manifest = "TestAndroidManifestWithTargetSdk34.xml",
       minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   public void registerReceiver_withReceiverExportedFlagAndTargetSdk34OnAndroidFromU_succeed() {
+    setSystemPropertyRule.set("robolectric.validateReceiverExportFlags", "true");
     IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
     context.registerReceiver(new TestBroadcastReceiver(), filter, Context.RECEIVER_EXPORTED);
   }
@@ -801,6 +808,7 @@ public class ShadowApplicationTest {
       manifest = "TestAndroidManifestWithTargetSdk34.xml",
       minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   public void registerReceiver_withReceiverNotExportedFlagAndTargetSdk34OnAndroidFromU_succeed() {
+    setSystemPropertyRule.set("robolectric.validateReceiverExportFlags", "true");
     IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
     context.registerReceiver(new TestBroadcastReceiver(), filter, Context.RECEIVER_NOT_EXPORTED);
   }
@@ -809,6 +817,7 @@ public class ShadowApplicationTest {
   @Config(manifest = "TestAndroidManifest.xml", minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   public void
       registerReceiver_withoutAnyExportedFlagsAndTargetSdk23OnAndroidFromU_notThrowsSecurityException() {
+    setSystemPropertyRule.set("robolectric.validateReceiverExportFlags", "true");
     IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
     context.registerReceiver(new TestBroadcastReceiver(), filter);
   }
@@ -819,6 +828,7 @@ public class ShadowApplicationTest {
       minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   public void
       registerReceiver_withBothExportedFlagsAndTargetSdk34OnAndroidFromU_throwsIllegalArgumentException() {
+    setSystemPropertyRule.set("robolectric.validateReceiverExportFlags", "true");
     IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
     assertThrows(
         IllegalArgumentException.class,
@@ -833,6 +843,7 @@ public class ShadowApplicationTest {
   @Config(manifest = "TestAndroidManifest.xml", minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   public void
       registerReceiver_withBothExportedFlagsAndTargetSdk23OnAndroidFromU_throwsIllegalArgumentException() {
+    setSystemPropertyRule.set("robolectric.validateReceiverExportFlags", "true");
     IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
     assertThrows(
         IllegalArgumentException.class,

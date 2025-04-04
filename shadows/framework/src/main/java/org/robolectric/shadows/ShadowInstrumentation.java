@@ -885,6 +885,10 @@ public class ShadowInstrumentation {
         receiver, filter, broadcastPermission, scheduler, flags, context);
   }
 
+  private static boolean validateReceiverExportFlags() {
+    return Boolean.getBoolean("robolectric.validateReceiverExportFlags");
+  }
+
   Intent registerReceiverWithContext(
       BroadcastReceiver receiver,
       IntentFilter filter,
@@ -893,7 +897,8 @@ public class ShadowInstrumentation {
       int flags,
       Context context) {
     // See ActivityManagerService#registerReceiverWithFeature.
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+    if (validateReceiverExportFlags()
+        && RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
       final boolean explicitExportStateDefined =
           (flags & (Context.RECEIVER_EXPORTED | Context.RECEIVER_NOT_EXPORTED)) != 0;
       if (((flags & Context.RECEIVER_EXPORTED) != 0)
