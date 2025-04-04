@@ -161,7 +161,15 @@ public class ShadowAlwaysOnHotwordDetector {
     }
   }
 
-  private abstract static class BaseShadowRefreshAvailabilityTask<Params, Progress, Result>
+  /**
+   * Shadow for AsyncTask kicked off in the constructor of AlwaysOnHotwordDetector for T and below.
+   */
+  @Implements(
+      className = "android.service.voice.AlwaysOnHotwordDetector$RefreshAvailabiltyTask",
+      maxSdk = TIRAMISU,
+      isInAndroidSdk = false)
+  @SuppressWarnings("robolectric.mismatchedTypes")
+  public static class ShadowRefreshAvailabilityTaskPreU<Params, Progress, Result>
       extends ShadowPausedAsyncTask<Params, Progress, Result> {
     @Implementation
     protected int internalGetInitialAvailability() {
@@ -179,23 +187,23 @@ public class ShadowAlwaysOnHotwordDetector {
     }
   }
 
-  /** Shadow for AsyncTask kicked off in the constructor of AlwaysOnHotwordDetector. */
-  @Implements(
-      className = "android.service.voice.AlwaysOnHotwordDetector$RefreshAvailabiltyTask",
-      maxSdk = TIRAMISU,
-      isInAndroidSdk = false)
-  @SuppressWarnings("robolectric.mismatchedTypes")
-  public static class ShadowRefreshAvailabilityTaskPreU<Params, Progress, Result>
-      extends BaseShadowRefreshAvailabilityTask<Params, Progress, Result> {}
-
-  /** Shadow for AsyncTask kicked off in the constructor of AlwaysOnHotwordDetector. */
+  /** Shadow for AsyncTask kicked off in the constructor of AlwaysOnHotwordDetector for U+. */
   @Implements(
       className = "android.service.voice.AlwaysOnHotwordDetector$RefreshAvailabilityTask",
       minSdk = UPSIDE_DOWN_CAKE,
       isInAndroidSdk = false)
   @SuppressWarnings("robolectric.mismatchedTypes")
-  public static class ShadowRefreshAvailabilityTask<Params, Progress, Result>
-      extends BaseShadowRefreshAvailabilityTask<Params, Progress, Result> {}
+  public static class ShadowRefreshAvailabilityTask<Params, Progress, Result> {
+    @Implementation
+    protected int internalGetInitialAvailability() {
+      return STATE_KEYPHRASE_ENROLLED;
+    }
+
+    @Implementation(minSdk = R)
+    protected void internalUpdateEnrolledKeyphraseMetadata() {
+      // No-op, we already set this field in #setEnrollmentFields()
+    }
+  }
 
   /** Invokes the normally hidden EventPayload constructor for passing to Callback#onDetected(). */
   public static EventPayload createEventPayload(
