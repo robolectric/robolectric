@@ -17,8 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
@@ -28,6 +28,7 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.plugins.DefaultSdkPicker;
@@ -46,13 +47,13 @@ public class RobolectricTestRunnerMultiApiTest {
           .bind(SdkPicker.class, (config, usesSdk) -> delegateSdkPicker.selectSdks(config, usesSdk))
           .build();
 
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private RobolectricTestRunner runner;
   private RunNotifier runNotifier;
   private MyRunListener runListener;
 
   private int numSupportedApis;
-  private String priorResourcesMode;
-  private String priorAlwaysInclude;
 
   private SdkCollection sdkCollection;
 
@@ -66,16 +67,7 @@ public class RobolectricTestRunnerMultiApiTest {
     sdkCollection = new SdkCollection(() -> map(APIS_FOR_TEST));
     delegateSdkPicker = new DefaultSdkPicker(sdkCollection, null);
 
-    priorResourcesMode = System.getProperty("robolectric.resourcesMode");
-
-    priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
-    System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    TestUtil.resetSystemProperty(
-        "robolectric.alwaysIncludeVariantMarkersInTestName", priorAlwaysInclude);
+    setSystemPropertyRule.clear("robolectric.alwaysIncludeVariantMarkersInTestName");
   }
 
   @Test

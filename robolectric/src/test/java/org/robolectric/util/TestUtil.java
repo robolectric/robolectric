@@ -73,14 +73,6 @@ public abstract class TestUtil {
     return sdkCollection;
   }
 
-  public static void resetSystemProperty(String name, String value) {
-    if (value == null) {
-      System.clearProperty(name);
-    } else {
-      System.setProperty(name, value);
-    }
-  }
-
   private static <T> T getInjectedInstance(Class<T> clazz) {
     return injector.getInstance(clazz);
   }

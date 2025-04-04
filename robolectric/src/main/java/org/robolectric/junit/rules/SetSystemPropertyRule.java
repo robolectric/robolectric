@@ -25,6 +25,14 @@ public class SetSystemPropertyRule implements TestRule {
     System.setProperty(key, value);
   }
 
+  public void clear(String key) {
+    Preconditions.checkNotNull(key);
+    if (!originalProperties.containsKey(key)) {
+      originalProperties.put(key, System.getProperty(key));
+    }
+    System.clearProperty(key);
+  }
+
   @Override
   public Statement apply(Statement base, Description description) {
     return new Statement() {
