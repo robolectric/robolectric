@@ -26,7 +26,6 @@ import java.util.jar.JarOutputStream;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.AssumptionViolatedException;
 import org.junit.Before;
@@ -69,8 +68,6 @@ public class RobolectricTestRunnerTest {
 
   private RunNotifier notifier;
   private List<String> events;
-  private String priorEnabledSdks;
-  private String priorAlwaysInclude;
   private SdkCollection sdkCollection;
 
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
@@ -80,21 +77,9 @@ public class RobolectricTestRunnerTest {
     notifier = new RunNotifier();
     events = new ArrayList<>();
     notifier.addListener(new MyRunListener());
-
-    priorEnabledSdks = System.getProperty("robolectric.enabledSdks");
-    System.clearProperty("robolectric.enabledSdks");
-
-    priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
-    System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
-
+    setSystemPropertyRule.clear("robolectric.enabledSdks");
+    setSystemPropertyRule.clear("robolectric.alwaysIncludeVariantMarkersInTestName");
     sdkCollection = TestUtil.getSdkCollection();
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    TestUtil.resetSystemProperty(
-        "robolectric.alwaysIncludeVariantMarkersInTestName", priorAlwaysInclude);
-    TestUtil.resetSystemProperty("robolectric.enabledSdks", priorEnabledSdks);
   }
 
   @Test
