@@ -1711,7 +1711,7 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation(minSdk = N)
-  public String getIccAuthentication(int appType, int authType, String data) {
+  protected String getIccAuthentication(int appType, int authType, String data) {
     return iccAuthentication;
   }
 
