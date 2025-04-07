@@ -107,7 +107,7 @@ public class RobolectricTestRunnerMultiApiTest {
     assertThat(runner.getChildren().get(0).getName()).isEqualTo("testSomeApiLevel[21]");
     assertThat(runner.getChildren().get(1).getName()).isEqualTo("testSomeApiLevel[22]");
     assertThat(runner.getChildren().get(2).getName()).isEqualTo("testSomeApiLevel[23]");
-    assertThat(runner.getChildren().get(3).getName()).isEqualTo("testSomeApiLevel");
+    assertThat(runner.getChildren().get(3).getName()).isEqualTo("testSomeApiLevel[24]");
   }
 
   @Test
