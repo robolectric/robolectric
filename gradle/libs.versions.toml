@@ -107,7 +107,7 @@ androidx-core = "1.15.0"
 androidx-fragment = "1.8.6"
 androidx-window = "1.3.0"
 androidx-room = "2.6.1"
-androidx-recyclerview = "1.3.2"
+androidx-recyclerview = "1.4.0"
 
 # https://github.com/android/android-test/tags
 androidx-test-core = "1.6.1"
