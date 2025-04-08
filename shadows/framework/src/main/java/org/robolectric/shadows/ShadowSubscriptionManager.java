@@ -136,12 +136,6 @@ public class ShadowSubscriptionManager {
   private static List<SubscriptionInfo> subscriptionList = new ArrayList<>();
 
   /**
-   * Cache of {@link SubscriptionInfo} used by {@link #getAllSubscriptionInfoList}. Managed by
-   * {@link #setAllSubscriptionInfoList}. May be {@code null}.
-   */
-  private static List<SubscriptionInfo> allSubscriptionList = new ArrayList<>();
-
-  /**
    * Cache of {@link SubscriptionInfo} used by {@link #getAccessibleSubscriptionInfoList}. Managed
    * by {@link #setAccessibleSubscriptionInfos}. May be {@code null}.
    */
@@ -173,16 +167,6 @@ public class ShadowSubscriptionManager {
   protected List<SubscriptionInfo> getActiveSubscriptionInfoList() {
     checkReadPhoneStatePermission();
     return subscriptionList;
-  }
-
-  /**
-   * Returns the all list of {@link SubscriptionInfo} that were set via {@link
-   * #setAllSubscriptionInfoList}.
-   */
-  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
-  protected List<SubscriptionInfo> getAllSubscriptionInfoList() {
-    checkReadPhoneStatePermission();
-    return allSubscriptionList;
   }
 
   /**
@@ -285,15 +269,6 @@ public class ShadowSubscriptionManager {
   }
 
   /**
-   * Sets the all list of {@link SubscriptionInfo}. This call internally triggers {@link
-   * OnSubscriptionsChangedListener#onSubscriptionsChanged()} to all the listeners.
-   */
-  public void setAllSubscriptionInfoList(List<SubscriptionInfo> list) {
-    allSubscriptionList = list;
-    dispatchOnSubscriptionsChanged();
-  }
-
-  /**
    * Sets the accessible list of {@link SubscriptionInfo}. This call internally triggers {@link
    * OnSubscriptionsChangedListener#onSubscriptionsChanged()} to all the listeners.
    *
@@ -362,18 +337,6 @@ public class ShadowSubscriptionManager {
       setAvailableSubscriptionInfoList(ImmutableList.of());
     } else {
       setAvailableSubscriptionInfoList(Arrays.asList(infos));
-    }
-  }
-
-  /**
-   * Sets the all list of {@link SubscriptionInfo}. This call internally triggers {@link
-   * OnSubscriptionsChangedListener#onSubscriptionsChanged()} to all the listeners.
-   */
-  public void setAllSubscriptionInfos(SubscriptionInfo... infos) {
-    if (infos == null) {
-      setAllSubscriptionInfoList(ImmutableList.of());
-    } else {
-      setAllSubscriptionInfoList(Arrays.asList(infos));
     }
   }
 
@@ -627,7 +590,6 @@ public class ShadowSubscriptionManager {
     defaultVoiceSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     defaultSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     subscriptionList = new ArrayList<>();
-    allSubscriptionList = new ArrayList<>();
     phoneIds.clear();
     phoneNumberMap.clear();
     readPhoneStatePermission = true;

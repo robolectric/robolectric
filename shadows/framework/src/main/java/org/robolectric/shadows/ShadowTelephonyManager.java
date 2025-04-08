@@ -11,7 +11,6 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -141,9 +140,6 @@ public class ShadowTelephonyManager {
   private static volatile boolean isSmsCapable = true;
   private static volatile boolean voiceCapable = true;
   private String voiceMailNumber;
-  private static volatile boolean deviceVoiceCapable = true;
-  private static volatile int voiceActivationState = TelephonyManager.SIM_ACTIVATION_STATE_UNKNOWN;
-  private static volatile int dataActivationState = TelephonyManager.DATA_ACTIVITY_NONE;
   private String voiceMailAlphaTag;
   private static volatile int phoneCount = 1;
   private static volatile int activeModemCount = 1;
@@ -233,9 +229,6 @@ public class ShadowTelephonyManager {
     readPhoneStatePermission = true;
     isSmsCapable = true;
     voiceCapable = true;
-    deviceVoiceCapable = true;
-    voiceActivationState = TelephonyManager.SIM_ACTIVATION_STATE_UNKNOWN;
-    dataActivationState = TelephonyManager.DATA_ACTIVITY_NONE;
     phoneCount = 1;
     activeModemCount = 1;
     sentDialerSpecialCodes.clear();
@@ -1080,52 +1073,6 @@ public class ShadowTelephonyManager {
   /** Sets the value returned by {@link #isVoiceCapable()}. */
   public void setVoiceCapable(boolean voiceCapable) {
     ShadowTelephonyManager.voiceCapable = voiceCapable;
-  }
-
-  /**
-   * Returns {@code true} by default or the value specified via {@link
-   * #setDeviceVoiceCapable(boolean)}.
-   */
-  @Implementation(minSdk = VANILLA_ICE_CREAM)
-  protected boolean isDeviceVoiceCapable() {
-    return deviceVoiceCapable;
-  }
-
-  /** Sets the value returned by {@link #isDeviceVoiceCapable()}. */
-  public void setDeviceVoiceCapable(boolean deviceVoiceCapable) {
-    ShadowTelephonyManager.deviceVoiceCapable = deviceVoiceCapable;
-  }
-
-  /**
-   * Returns {@code TelephonyManager.VOICE_ACTIVATION_STATE_ACTIVATED} by default or the value
-   * specified via {@link #setVoiceActivationState(int)}.
-   */
-  @Implementation(minSdk = P)
-  protected int getVoiceActivationState() {
-    return voiceActivationState;
-  }
-
-  /** Sets the value returned by {@link #getVoiceActivationState()}. */
-  @SuppressWarnings("ProtectedImplementationLintCheck")
-  @Implementation(minSdk = P)
-  public void setVoiceActivationState(int voiceActivationState) {
-    ShadowTelephonyManager.voiceActivationState = voiceActivationState;
-  }
-
-  /**
-   * Returns {@code TelephonyManager.DATA_ACTIVITY_NONE} by default or the value specified via
-   * {@link #setDataActivationState(int)}.
-   */
-  @Implementation(minSdk = P)
-  protected int getDataActivationState() {
-    return dataActivationState;
-  }
-
-  /** Sets the value returned by {@link #getDataActivationState()}. */
-  @SuppressWarnings("ProtectedImplementationLintCheck")
-  @Implementation(minSdk = P)
-  public void setDataActivationState(int dataActivationState) {
-    ShadowTelephonyManager.dataActivationState = dataActivationState;
   }
 
   /**

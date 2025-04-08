@@ -10,7 +10,6 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -1150,51 +1149,6 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setSignalStrength(ss);
 
     verify(listener).onSignalStrengthsChanged(ss);
-  }
-
-  @Test
-  @Config(minSdk = P)
-  public void shouldGiveVoiceActivationState() {
-    shadowOf(telephonyManager)
-        .setVoiceActivationState(TelephonyManager.SIM_ACTIVATION_STATE_ACTIVATED);
-    assertThat(telephonyManager.getVoiceActivationState())
-        .isEqualTo(TelephonyManager.SIM_ACTIVATION_STATE_ACTIVATED);
-  }
-
-  @Test
-  @Config(minSdk = P)
-  public void shouldGiveVoiceActivationState_unknownByDefault() {
-    assertThat(telephonyManager.getVoiceActivationState())
-        .isEqualTo(TelephonyManager.SIM_ACTIVATION_STATE_UNKNOWN);
-  }
-
-  @Test
-  @Config(minSdk = P)
-  public void shouldGiveDataActivationState() {
-    shadowOf(telephonyManager).setDataActivationState(TelephonyManager.DATA_ACTIVITY_INOUT);
-    assertThat(telephonyManager.getDataActivationState())
-        .isEqualTo(TelephonyManager.DATA_ACTIVITY_INOUT);
-  }
-
-  @Test
-  @Config(minSdk = P)
-  public void shouldGiveDataActivationState_noneByDefault() {
-    assertThat(telephonyManager.getDataActivationState())
-        .isEqualTo(TelephonyManager.DATA_ACTIVITY_NONE);
-  }
-
-  @Test
-  @Config(sdk = VANILLA_ICE_CREAM)
-  public void shouldGiveDeviceVoiceCapableTrue() {
-    shadowOf(telephonyManager).setDeviceVoiceCapable(true);
-    assertThat(telephonyManager.isDeviceVoiceCapable()).isTrue();
-  }
-
-  @Test
-  @Config(sdk = VANILLA_ICE_CREAM)
-  public void shouldGiveDeviceVoiceCapableFalse() {
-    shadowOf(telephonyManager).setDeviceVoiceCapable(false);
-    assertThat(telephonyManager.isDeviceVoiceCapable()).isFalse();
   }
 
   @Test
