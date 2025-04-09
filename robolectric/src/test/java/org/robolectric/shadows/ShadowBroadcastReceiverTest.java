@@ -41,6 +41,19 @@ public class ShadowBroadcastReceiverTest {
     assertThat(shadowOf(receiver).getOriginalPendingResult()).isSameInstanceAs(pendingResult);
   }
 
+  @Test
+  public void testAbortBroadcast() {
+    receiver = new MyBroadcastReceiver();
+    receiver.abortBroadcast();
+    assertThat(shadowOf(receiver).isBroadcastAborted()).isTrue();
+  }
+
+  @Test
+  public void testDefaultBroadcast() {
+    receiver = new MyBroadcastReceiver();
+    assertThat(shadowOf(receiver).isBroadcastAborted()).isFalse();
+  }
+
   private static class MyBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {}
