@@ -31,6 +31,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow class for {@link CameraDeviceImpl} */
@@ -75,8 +76,7 @@ public class ShadowCameraDeviceImpl {
         .setDeviceExecutor(MoreExecutors.directExecutor());
   }
 
-  // TODO(congxiliu) Change minsdk to Baklava once Baklava is fully released in AOSP
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = Baklava.SDK_INT)
   @InDevelopment
   protected void __constructor__(
       String cameraId,
