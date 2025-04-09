@@ -4,7 +4,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
@@ -96,8 +96,8 @@ public class ShadowAudioSystem {
    */
   public static void setDirectPlaybackSupport(
       @Nonnull AudioFormat format, @Nonnull AudioAttributes attr, int directPlaybackSupport) {
-    checkNotNull(format, "Illegal null AudioFormat");
-    checkNotNull(attr, "Illegal null AudioAttributes");
+    requireNonNull(format, "Illegal null AudioFormat");
+    requireNonNull(attr, "Illegal null AudioAttributes");
     directPlaybackSupportTable.put(format, attr.getUsage(), directPlaybackSupport);
   }
 
@@ -130,8 +130,8 @@ public class ShadowAudioSystem {
    */
   public static void setOffloadPlaybackSupport(
       @Nonnull AudioFormat format, @Nonnull AudioAttributes attr, int offloadSupport) {
-    checkNotNull(format, "Illegal null AudioFormat");
-    checkNotNull(attr, "Illegal null AudioAttributes");
+    requireNonNull(format, "Illegal null AudioFormat");
+    requireNonNull(attr, "Illegal null AudioAttributes");
     offloadPlaybackSupportTable.put(
         new OffloadSupportFormat(
             format.getEncoding(),

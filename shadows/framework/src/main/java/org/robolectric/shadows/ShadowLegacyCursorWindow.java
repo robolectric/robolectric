@@ -7,11 +7,11 @@ import android.database.CursorWindow;
 import com.almworks.sqlite4java.SQLiteConstants;
 import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteStatement;
-import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import org.robolectric.annotation.Implementation;
@@ -92,7 +92,7 @@ public class ShadowLegacyCursorWindow extends ShadowCursorWindow {
   @Implementation
   protected static boolean nativePutBlob(long windowPtr, byte[] value, int row, int column) {
     // Real Android will crash in native code if putString is called with a null value.
-    Preconditions.checkNotNull(value);
+    Objects.requireNonNull(value);
     return WINDOW_DATA
         .get(windowPtr)
         .putValue(new Value(value, Cursor.FIELD_TYPE_BLOB), row, column);
@@ -101,7 +101,7 @@ public class ShadowLegacyCursorWindow extends ShadowCursorWindow {
   @Implementation
   protected static boolean nativePutString(long windowPtr, String value, int row, int column) {
     // Real Android will crash in native code if putString is called with a null value.
-    Preconditions.checkNotNull(value);
+    Objects.requireNonNull(value);
     return WINDOW_DATA
         .get(windowPtr)
         .putValue(new Value(value, Cursor.FIELD_TYPE_STRING), row, column);

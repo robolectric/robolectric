@@ -9,9 +9,9 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
+import static java.util.Objects.requireNonNull;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
@@ -635,11 +635,10 @@ public class ShadowInstrumentation {
   }
 
   TargetAndRequestCode getTargetAndRequestCodeForIntent(Intent requestIntent) {
-    return checkNotNull(
+    return requireNonNull(
         intentRequestCodeMap.get(new Intent.FilterComparison(requestIntent)),
-        "No intent matches %s among %s",
-        requestIntent,
-        intentRequestCodeMap.keySet());
+        String.format(
+            "No intent matches %s among %s", requestIntent, intentRequestCodeMap.keySet()));
   }
 
   protected ComponentName startService(Intent intent) {
@@ -788,7 +787,7 @@ public class ShadowInstrumentation {
   }
 
   void declareComponentUnbindable(ComponentName component) {
-    checkNotNull(component);
+    requireNonNull(component);
     unbindableComponents.add(component);
   }
 
@@ -1194,7 +1193,7 @@ public class ShadowInstrumentation {
   public static void runOnMainSyncNoIdle(Runnable runnable) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.INSTRUMENTATION_TEST
         && Looper.myLooper() != Looper.getMainLooper()) {
-      checkNotNull(getInstrumentation()).runOnMainSync(runnable);
+      requireNonNull(getInstrumentation()).runOnMainSync(runnable);
     } else {
       runnable.run();
     }

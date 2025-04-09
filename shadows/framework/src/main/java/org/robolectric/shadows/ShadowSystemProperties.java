@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
 import android.os.SystemProperties;
-import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Properties;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -93,7 +93,7 @@ public class ShadowSystemProperties {
       // load the prop from classpath
       ClassLoader cl = SystemProperties.class.getClassLoader();
       try (InputStream is = cl.getResourceAsStream("build.prop")) {
-        Preconditions.checkNotNull(is, "could not find build.prop");
+        Objects.requireNonNull(is, "could not find build.prop");
         buildProperties = new Properties();
         buildProperties.load(is);
         setDefaults(buildProperties);

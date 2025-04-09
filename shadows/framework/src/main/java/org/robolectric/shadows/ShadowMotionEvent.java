@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_ORIENTATION;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_PRESSURE;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_SIZE;
@@ -77,7 +77,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
 
   private static void validatePointerPropertiesArray(
       PointerProperties[] pointerPropertiesObjArray, int pointerCount) {
-    checkNotNull(pointerPropertiesObjArray, "pointerProperties array must not be null");
+    requireNonNull(pointerPropertiesObjArray, "pointerProperties array must not be null");
     checkState(
         pointerPropertiesObjArray.length >= pointerCount,
         "pointerProperties array must be large enough to hold all pointers");
@@ -85,7 +85,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
 
   private static void validatePointerCoordsObjArray(
       PointerCoords[] pointerCoordsObjArray, int pointerCount) {
-    checkNotNull(pointerCoordsObjArray, "pointerCoords array must not be null");
+    requireNonNull(pointerCoordsObjArray, "pointerCoords array must not be null");
     checkState(
         pointerCoordsObjArray.length >= pointerCount,
         "pointerCoords array must be large enough to hold all pointers");
@@ -100,11 +100,11 @@ public class ShadowMotionEvent extends ShadowInputEvent {
   }
 
   private static void validatePointerCoords(PointerCoords pointerCoordsObj) {
-    checkNotNull(pointerCoordsObj, "pointerCoords must not be null");
+    requireNonNull(pointerCoordsObj, "pointerCoords must not be null");
   }
 
   private static void validatePointerProperties(PointerProperties pointerPropertiesObj) {
-    checkNotNull(pointerPropertiesObj, "pointerProperties must not be null");
+    requireNonNull(pointerPropertiesObj, "pointerProperties must not be null");
   }
 
   private static NativeInput.PointerCoords pointerCoordsToNative(
@@ -228,7 +228,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     NativeInput.PointerCoords[] rawPointerCoords = new NativeInput.PointerCoords[pointerCount];
     for (int i = 0; i < pointerCount; i++) {
       PointerCoords pointerCoordsObj = pointerCoordsObjArray[i];
-      checkNotNull(pointerCoordsObj);
+      requireNonNull(pointerCoordsObj);
       rawPointerCoords[i] = pointerCoordsToNative(pointerCoordsObj, xOffset, yOffset);
     }
 
@@ -312,7 +312,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     NativeInput.PointerCoords[] rawPointerCoords = new NativeInput.PointerCoords[pointerCount];
     for (int i = 0; i < pointerCount; i++) {
       PointerCoords pointerCoordsObj = pointerCoordsObjArray[i];
-      checkNotNull(pointerCoordsObj);
+      requireNonNull(pointerCoordsObj);
       rawPointerCoords[i] =
           pointerCoordsToNative(pointerCoordsObj, event.getXOffset(), event.getYOffset());
     }
@@ -715,7 +715,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
 
   @Implementation
   protected void transform(Matrix matrix) {
-    checkNotNull(matrix);
+    requireNonNull(matrix);
     NativeInput.MotionEvent event = getNativeMotionEvent();
 
     float[] m = new float[9];

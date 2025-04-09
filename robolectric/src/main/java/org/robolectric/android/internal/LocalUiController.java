@@ -1,7 +1,7 @@
 package org.robolectric.android.internal;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
@@ -80,7 +80,7 @@ public class LocalUiController implements UiController {
   // location
   @Override
   public boolean injectString(String str) throws InjectEventSecurityException {
-    checkNotNull(str);
+    requireNonNull(str);
     checkState(Looper.myLooper() == Looper.getMainLooper(), "Expecting to be on main thread!");
 
     // No-op if string is empty.
@@ -108,7 +108,7 @@ public class LocalUiController implements UiController {
     Log.d(TAG, String.format("Injecting string: \"%s\"", str));
 
     for (KeyEvent event : events) {
-      checkNotNull(
+      requireNonNull(
           event,
           String.format(
               "Failed to get event for character (%c) with key code (%s)",

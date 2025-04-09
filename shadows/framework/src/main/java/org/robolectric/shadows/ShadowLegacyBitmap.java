@@ -5,9 +5,9 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
+import static java.util.Objects.requireNonNull;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Bitmap;
@@ -95,7 +95,7 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
     if (width <= 0 || height <= 0) {
       throw new IllegalArgumentException("width and height must be > 0");
     }
-    checkNotNull(config);
+    requireNonNull(config);
     Bitmap scaledBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
     ShadowLegacyBitmap shadowBitmap = Shadow.extract(scaledBitmap);
     shadowBitmap.setDescription("Bitmap (" + width + " x " + height + ")");
@@ -213,7 +213,7 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
     if (Math.abs(stride) < width) {
       throw new IllegalArgumentException("abs(stride) must be >= width");
     }
-    checkNotNull(config);
+    requireNonNull(config);
     int lastScanline = offset + (height - 1) * stride;
     int length = colors.length;
     if (offset < 0
@@ -790,7 +790,7 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
 
   @Implementation(minSdk = Q)
   protected void setColorSpace(ColorSpace colorSpace) {
-    this.colorSpace = checkNotNull(colorSpace);
+    this.colorSpace = requireNonNull(colorSpace);
   }
 
   @Implementation

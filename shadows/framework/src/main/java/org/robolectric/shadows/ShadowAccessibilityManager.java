@@ -21,12 +21,12 @@ import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeL
 import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
 import android.view.accessibility.IAccessibilityManager;
 import android.view.accessibility.IAccessibilityManager.WindowTransformationSpec;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -139,7 +139,7 @@ public class ShadowAccessibilityManager {
   }
 
   public void setAccessibilityServiceList(List<ServiceInfo> accessibilityServiceList) {
-    Preconditions.checkNotNull(accessibilityServiceList);
+    Objects.requireNonNull(accessibilityServiceList);
     ShadowAccessibilityManager.accessibilityServiceList = new ArrayList<>(accessibilityServiceList);
   }
 
@@ -152,7 +152,7 @@ public class ShadowAccessibilityManager {
 
   public void setEnabledAccessibilityServiceList(
       List<AccessibilityServiceInfo> enabledAccessibilityServiceList) {
-    Preconditions.checkNotNull(enabledAccessibilityServiceList);
+    Objects.requireNonNull(enabledAccessibilityServiceList);
     ShadowAccessibilityManager.enabledAccessibilityServiceList =
         new ArrayList<>(enabledAccessibilityServiceList);
   }
@@ -164,7 +164,7 @@ public class ShadowAccessibilityManager {
 
   public void setInstalledAccessibilityServiceList(
       List<AccessibilityServiceInfo> installedAccessibilityServiceList) {
-    Preconditions.checkNotNull(installedAccessibilityServiceList);
+    Objects.requireNonNull(installedAccessibilityServiceList);
     ShadowAccessibilityManager.installedAccessibilityServiceList =
         new ArrayList<>(installedAccessibilityServiceList);
   }

@@ -31,7 +31,6 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.ArraySet;
 import android.util.Pair;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -42,6 +41,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -119,7 +119,7 @@ public class ShadowWifiManager {
 
   @Implementation(minSdk = Q)
   protected int addNetworkSuggestions(List<WifiNetworkSuggestion> networkSuggestions) {
-    Preconditions.checkNotNull(networkSuggestions);
+    Objects.requireNonNull(networkSuggestions);
     if (addNetworkSuggestionsResult == WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
       lastAddedSuggestions = ImmutableList.copyOf(networkSuggestions);
     }

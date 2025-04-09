@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
 import static android.os.Looper.getMainLooper;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.Objects.requireNonNull;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.os.Handler;
@@ -52,7 +52,7 @@ public class ShadowLooperResetterTest {
   public static class BasicLooperTest {
 
     private void doPostToLooperTest() {
-      checkNotNull(getMainLooper());
+      requireNonNull(getMainLooper());
 
       AtomicBoolean didRun = new AtomicBoolean(false);
       new Handler(getMainLooper()).post(() -> didRun.set(true));
@@ -167,7 +167,7 @@ public class ShadowLooperResetterTest {
     }
 
     private void doDelayedPostToLooperTest() {
-      checkNotNull(handlerThread.getLooper());
+      requireNonNull(handlerThread.getLooper());
 
       AtomicBoolean didRun = new AtomicBoolean(false);
       new Handler(handlerThread.getLooper()).postDelayed(() -> didRun.set(true), 100);
@@ -217,7 +217,7 @@ public class ShadowLooperResetterTest {
     }
 
     private void doPostToChoreographerTest() {
-      checkNotNull(handlerThread.getLooper());
+      requireNonNull(handlerThread.getLooper());
       Handler handler = new Handler(handlerThread.getLooper());
 
       AtomicLong frameTimeNanosResult = new AtomicLong(-1);
@@ -282,7 +282,7 @@ public class ShadowLooperResetterTest {
     }
 
     private void doPostToChoreographerTest() {
-      checkNotNull(handlerThread.getLooper());
+      requireNonNull(handlerThread.getLooper());
       Handler handler = new Handler(handlerThread.getLooper());
 
       AtomicLong frameTimeNanosResult = new AtomicLong(-1);
@@ -364,7 +364,7 @@ public class ShadowLooperResetterTest {
     }
 
     private void doPostToChoreographerTest() {
-      checkNotNull(handlerThread.getLooper());
+      requireNonNull(handlerThread.getLooper());
       Handler handler = new Handler(handlerThread.getLooper());
 
       AtomicLong frameTimeNanosResult = new AtomicLong(-1);

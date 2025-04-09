@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
@@ -98,7 +99,7 @@ public class ShadowCameraManager {
   @Implementation
   @Nonnull
   protected CameraCharacteristics getCameraCharacteristics(@Nonnull String cameraId) {
-    Preconditions.checkNotNull(cameraId);
+    Objects.requireNonNull(cameraId);
     CameraCharacteristics characteristics = cameraIdToCharacteristics.get(cameraId);
     Preconditions.checkArgument(characteristics != null);
     return characteristics;
@@ -106,7 +107,7 @@ public class ShadowCameraManager {
 
   @Implementation(minSdk = VERSION_CODES.M)
   protected void setTorchMode(@Nonnull String cameraId, boolean enabled) {
-    Preconditions.checkNotNull(cameraId);
+    Objects.requireNonNull(cameraId);
     Preconditions.checkArgument(cameraIdToCharacteristics.keySet().contains(cameraId));
     cameraTorches.put(cameraId, enabled);
     for (Object callback : torchCallbacks) {
@@ -258,25 +259,25 @@ public class ShadowCameraManager {
   @Implementation
   protected void registerAvailabilityCallback(
       CameraManager.AvailabilityCallback callback, Handler handler) {
-    Preconditions.checkNotNull(callback);
+    Objects.requireNonNull(callback);
     registeredCallbacks.add(callback);
   }
 
   @Implementation
   protected void unregisterAvailabilityCallback(CameraManager.AvailabilityCallback callback) {
-    Preconditions.checkNotNull(callback);
+    Objects.requireNonNull(callback);
     registeredCallbacks.remove(callback);
   }
 
   @Implementation(minSdk = VERSION_CODES.M)
   protected void registerTorchCallback(CameraManager.TorchCallback callback, Handler handler) {
-    Preconditions.checkNotNull(callback);
+    Objects.requireNonNull(callback);
     torchCallbacks.add(callback);
   }
 
   @Implementation(minSdk = VERSION_CODES.M)
   protected void unregisterTorchCallback(CameraManager.TorchCallback callback) {
-    Preconditions.checkNotNull(callback);
+    Objects.requireNonNull(callback);
     torchCallbacks.remove(callback);
   }
 
@@ -329,7 +330,7 @@ public class ShadowCameraManager {
    * registered.
    */
   private void triggerOnCameraAvailable(@Nonnull String cameraId) {
-    Preconditions.checkNotNull(cameraId);
+    Objects.requireNonNull(cameraId);
     for (CameraManager.AvailabilityCallback callback : registeredCallbacks) {
       callback.onCameraAvailable(cameraId);
     }
@@ -340,7 +341,7 @@ public class ShadowCameraManager {
    * are registered.
    */
   private void triggerOnCameraUnavailable(@Nonnull String cameraId) {
-    Preconditions.checkNotNull(cameraId);
+    Objects.requireNonNull(cameraId);
     for (CameraManager.AvailabilityCallback callback : registeredCallbacks) {
       callback.onCameraUnavailable(cameraId);
     }
@@ -354,8 +355,8 @@ public class ShadowCameraManager {
    * @throws IllegalArgumentException if there's already an existing camera with the given id.
    */
   public void addCamera(@Nonnull String cameraId, @Nonnull CameraCharacteristics characteristics) {
-    Preconditions.checkNotNull(cameraId);
-    Preconditions.checkNotNull(characteristics);
+    Objects.requireNonNull(cameraId);
+    Objects.requireNonNull(characteristics);
     Preconditions.checkArgument(!cameraIdToCharacteristics.containsKey(cameraId));
 
     cameraIdToCharacteristics.put(cameraId, characteristics);
@@ -368,7 +369,7 @@ public class ShadowCameraManager {
    * @throws IllegalArgumentException if there is not an existing camera with the given id.
    */
   public void removeCamera(@Nonnull String cameraId) {
-    Preconditions.checkNotNull(cameraId);
+    Objects.requireNonNull(cameraId);
     Preconditions.checkArgument(cameraIdToCharacteristics.containsKey(cameraId));
 
     cameraIdToCharacteristics.remove(cameraId);
@@ -377,7 +378,7 @@ public class ShadowCameraManager {
 
   /** Returns what the supplied camera's torch is set to. */
   public boolean getTorchMode(@Nonnull String cameraId) {
-    Preconditions.checkNotNull(cameraId);
+    Objects.requireNonNull(cameraId);
     Preconditions.checkArgument(cameraIdToCharacteristics.keySet().contains(cameraId));
     return cameraTorches.get(cameraId);
   }

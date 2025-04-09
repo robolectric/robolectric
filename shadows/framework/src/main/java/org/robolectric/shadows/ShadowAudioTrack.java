@@ -10,7 +10,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.RequiresApi;
@@ -131,8 +131,8 @@ public class ShadowAudioTrack {
    */
   public static void addDirectPlaybackSupport(
       @Nonnull AudioFormat format, @Nonnull AudioAttributes attr) {
-    checkNotNull(format);
-    checkNotNull(attr);
+    requireNonNull(format);
+    requireNonNull(attr);
     checkArgument(!isPcm(format.getEncoding()));
 
     directSupportedFormats.put(
@@ -438,7 +438,7 @@ public class ShadowAudioTrack {
 
   @Implementation(minSdk = M)
   public void setPlaybackParams(@Nonnull PlaybackParams params) {
-    playbackParams = checkNotNull(params, "Illegal null params");
+    playbackParams = requireNonNull(params, "Illegal null params");
   }
 
   /**

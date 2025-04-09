@@ -13,12 +13,12 @@ import android.graphics.RectF;
 import android.graphics.fonts.Font;
 import android.util.TypedValue;
 import com.google.common.base.Ascii;
-import com.google.common.base.Preconditions;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -263,8 +263,8 @@ public class ShadowNativeFont {
 
   static ByteBuffer assetToBuffer(AssetManager am, String path, boolean isAsset, int cookie)
       throws IOException {
-    Preconditions.checkNotNull(am, "assetManager can not be null");
-    Preconditions.checkNotNull(path, "path can not be null");
+    Objects.requireNonNull(am, "assetManager can not be null");
+    Objects.requireNonNull(path, "path can not be null");
     try (InputStream assetStream =
         isAsset
             ? am.open(path, AssetManager.ACCESS_BUFFER)

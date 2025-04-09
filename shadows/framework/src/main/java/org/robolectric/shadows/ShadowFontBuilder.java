@@ -8,13 +8,13 @@ import android.annotation.RequiresApi;
 import android.content.res.AssetManager;
 import android.graphics.fonts.Font;
 import android.graphics.fonts.FontStyle;
-import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -71,9 +71,9 @@ public class ShadowFontBuilder {
   protected static long nGetNativeAsset(
       AssetManager assetMgr, String path, boolean isAsset, int cookie) {
     // NPE_CHECK_RETURN_ZERO(env, assetMgr);
-    Preconditions.checkNotNull(assetMgr);
+    Objects.requireNonNull(assetMgr);
     // NPE_CHECK_RETURN_ZERO(env, path);
-    Preconditions.checkNotNull(path);
+    Objects.requireNonNull(path);
 
     // Guarded<AssetManager2>* mgr = AssetManagerForJavaObject(env, assetMgr);
     CppAssetManager2 mgr = ShadowArscAssetManager10.AssetManagerForJavaObject(assetMgr);
@@ -130,8 +130,8 @@ public class ShadowFontBuilder {
   @Implementation(minSdk = R)
   protected static ByteBuffer createBuffer(
       AssetManager am, String path, boolean isAsset, int cookie) throws IOException {
-    Preconditions.checkNotNull(am, "assetManager can not be null");
-    Preconditions.checkNotNull(path, "path can not be null");
+    Objects.requireNonNull(am, "assetManager can not be null");
+    Objects.requireNonNull(path, "path can not be null");
 
     try (InputStream assetStream =
         isAsset
@@ -160,9 +160,9 @@ public class ShadowFontBuilder {
       int weight,
       boolean italic,
       int ttcIndex) {
-    Preconditions.checkNotNull(buffer);
-    Preconditions.checkNotNull(filePath);
-    Preconditions.checkNotNull(localeList);
+    Objects.requireNonNull(buffer);
+    Objects.requireNonNull(filePath);
+    Objects.requireNonNull(localeList);
 
     buffer.rewind();
     // If users use one ttf file for different style, for example one ttf for bold and normal,

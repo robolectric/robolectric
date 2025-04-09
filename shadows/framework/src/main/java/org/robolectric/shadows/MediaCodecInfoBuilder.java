@@ -13,6 +13,7 @@ import android.media.MediaFormat;
 import android.util.Range;
 import com.google.common.base.Preconditions;
 import java.util.HashSet;
+import java.util.Objects;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -45,7 +46,7 @@ public class MediaCodecInfoBuilder {
    * @throws NullPointerException if name is null.
    */
   public MediaCodecInfoBuilder setName(String name) {
-    this.name = Preconditions.checkNotNull(name);
+    this.name = Objects.requireNonNull(name);
     return this;
   }
 
@@ -108,7 +109,7 @@ public class MediaCodecInfoBuilder {
   }
 
   public MediaCodecInfo build() {
-    Preconditions.checkNotNull(name, "Codec name is not set.");
+    Objects.requireNonNull(name, "Codec name is not set.");
 
     if (RuntimeEnvironment.getApiLevel() >= Q) {
       int flags = getCodecFlags();
@@ -200,7 +201,7 @@ public class MediaCodecInfoBuilder {
      * @throws IllegalArgumentException if mediaFormat does not have {@link MediaFormat#KEY_MIME}.
      */
     public CodecCapabilitiesBuilder setMediaFormat(MediaFormat mediaFormat) {
-      Preconditions.checkNotNull(mediaFormat);
+      Objects.requireNonNull(mediaFormat);
       Preconditions.checkArgument(
           mediaFormat.getString(MediaFormat.KEY_MIME) != null,
           "MIME type of the format is not set.");
@@ -237,7 +238,7 @@ public class MediaCodecInfoBuilder {
      * @throws NullPointerException if profileLevels is null.
      */
     public CodecCapabilitiesBuilder setProfileLevels(CodecProfileLevel[] profileLevels) {
-      this.profileLevels = Preconditions.checkNotNull(profileLevels);
+      this.profileLevels = Objects.requireNonNull(profileLevels);
       return this;
     }
 
@@ -296,8 +297,8 @@ public class MediaCodecInfoBuilder {
     }
 
     public CodecCapabilities build() {
-      Preconditions.checkNotNull(mediaFormat, "mediaFormat is not set.");
-      Preconditions.checkNotNull(profileLevels, "profileLevels is not set.");
+      Objects.requireNonNull(mediaFormat, "mediaFormat is not set.");
+      Objects.requireNonNull(profileLevels, "profileLevels is not set.");
 
       final String mime = mediaFormat.getString(MediaFormat.KEY_MIME);
       final boolean isVideoCodec = mime.startsWith("video/");
@@ -308,7 +309,7 @@ public class MediaCodecInfoBuilder {
 
       caps.profileLevels = profileLevels;
       if (isVideoCodec) {
-        Preconditions.checkNotNull(colorFormats, "colorFormats should not be null for video codec");
+        Objects.requireNonNull(colorFormats, "colorFormats should not be null for video codec");
         caps.colorFormats = colorFormats;
       } else {
         Preconditions.checkArgument(

@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
@@ -51,7 +52,7 @@ public class ShadowNativeSystemFonts {
       long lastModifiedDate,
       int configVersion) {
     String fontDir = System.getProperty("robolectric.nativeruntime.fontdir");
-    Preconditions.checkNotNull(fontDir);
+    Objects.requireNonNull(fontDir);
     Preconditions.checkState(new File(fontDir).isDirectory(), "Missing fonts directory");
     Preconditions.checkState(
         fontDir.endsWith(File.separator), "Fonts directory must end with a slash");
@@ -77,7 +78,7 @@ public class ShadowNativeSystemFonts {
     // loaded, so we must ensure it is loaded for `robolectric.nativeruntime.fontdir` to be defined.
     DefaultNativeRuntimeLoader.injectAndLoad();
     String fontDir = System.getProperty("robolectric.nativeruntime.fontdir");
-    Preconditions.checkNotNull(fontDir);
+    Objects.requireNonNull(fontDir);
     Preconditions.checkState(new File(fontDir).isDirectory(), "Missing fonts directory");
     Preconditions.checkState(
         fontDir.endsWith(File.separator), "Fonts directory must end with a slash");

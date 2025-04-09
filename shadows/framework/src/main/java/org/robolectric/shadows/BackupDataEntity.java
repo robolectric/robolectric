@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 
 import com.google.auto.value.AutoValue;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +28,7 @@ public abstract class BackupDataEntity {
    */
   public static BackupDataEntity createDeletedEntity(String key) {
     return new AutoValue_BackupDataEntity(
-        checkNotNull(key), /* dataSize= */ -1, /* data= */ new byte[0]);
+        requireNonNull(key), /* dataSize= */ -1, /* data= */ new byte[0]);
   }
 
   /**
@@ -53,6 +53,6 @@ public abstract class BackupDataEntity {
    */
   public static BackupDataEntity create(String key, byte[] data, int dataSize) {
     return new AutoValue_BackupDataEntity(
-        checkNotNull(key), dataSize, Arrays.copyOf(data, dataSize));
+        requireNonNull(key), dataSize, Arrays.copyOf(data, dataSize));
   }
 }
