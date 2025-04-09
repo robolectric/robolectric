@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 
 import android.content.pm.VersionedPackage;
 import android.content.rollback.PackageRollbackInfo;
@@ -93,7 +93,7 @@ public final class PackageRollbackInfoBuilder {
 
   /** Sets ce snapshot inodes. */
   public PackageRollbackInfoBuilder setCeSnapshotInodes(SparseLongArray ceSnapshotInodes) {
-    checkNotNull(ceSnapshotInodes, "Field 'packageRolledBackFrom' not allowed to be null.");
+    requireNonNull(ceSnapshotInodes, "Field 'packageRolledBackFrom' not allowed to be null.");
     this.ceSnapshotInodes = ceSnapshotInodes;
     return this;
   }
@@ -117,8 +117,8 @@ public final class PackageRollbackInfoBuilder {
   /** Returns a {@link PackageRollbackInfo} with the data that was given. */
   public PackageRollbackInfo build() {
     // Check mandatory fields.
-    checkNotNull(packageRolledBackFrom, "Mandatory field 'packageRolledBackFrom' missing.");
-    checkNotNull(packageRolledBackTo, "Mandatory field 'packageRolledBackTo' missing.");
+    requireNonNull(packageRolledBackFrom, "Mandatory field 'packageRolledBackFrom' missing.");
+    requireNonNull(packageRolledBackTo, "Mandatory field 'packageRolledBackTo' missing.");
     checkState(RuntimeEnvironment.getApiLevel() >= VERSION_CODES.Q);
 
     int apiLevel = RuntimeEnvironment.getApiLevel();

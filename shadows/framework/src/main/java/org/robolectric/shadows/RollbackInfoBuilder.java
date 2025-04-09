@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 
 import android.content.pm.VersionedPackage;
 import android.content.rollback.PackageRollbackInfo;
@@ -42,7 +42,7 @@ public final class RollbackInfoBuilder {
 
   /** Sets the packages of the rollback. */
   public RollbackInfoBuilder setPackages(List<PackageRollbackInfo> packages) {
-    checkNotNull(packages, "Field 'packages' not allowed to be null.");
+    requireNonNull(packages, "Field 'packages' not allowed to be null.");
     this.packages = packages;
     return this;
   }
@@ -55,7 +55,7 @@ public final class RollbackInfoBuilder {
 
   /** Sets the cause packages of the rollback. */
   public RollbackInfoBuilder setCausePackages(List<VersionedPackage> causePackages) {
-    checkNotNull(causePackages, "Field 'causePackages' not allowed to be null.");
+    requireNonNull(causePackages, "Field 'causePackages' not allowed to be null.");
     this.causePackages = causePackages;
     return this;
   }

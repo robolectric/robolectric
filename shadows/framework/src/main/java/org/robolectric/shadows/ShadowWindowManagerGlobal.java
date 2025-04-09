@@ -17,11 +17,11 @@ import static android.view.WindowInsets.Type.navigationBars;
 import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowInsets.Type.systemBars;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Math.max;
 import static java.lang.Math.round;
 import static java.util.Arrays.stream;
+import static java.util.Objects.requireNonNull;
 import static org.robolectric.shadows.ShadowView.useRealGraphics;
 import static org.robolectric.shadows.SystemUi.systemUiForDisplay;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
@@ -515,7 +515,7 @@ public class ShadowWindowManagerGlobal {
         Rect[] rects = findAll(Rect.class, args);
         int requestedSizeIdx = sdk < S ? 3 : 2;
         configureWindowFrames(
-            checkNotNull(windowInfo),
+            requireNonNull(windowInfo),
             /* inAttrs= */ (WindowManager.LayoutParams) args[sdk <= R ? 2 : 1],
             /* requestedSize= */ new Point(
                 (int) args[requestedSizeIdx], (int) args[requestedSizeIdx + 1]),
@@ -668,7 +668,7 @@ public class ShadowWindowManagerGlobal {
     void sendInsetsControlChanged(
         IWindow window, @Nullable Integer type, boolean hasControlsChanged) {
       int sdk = RuntimeEnvironment.getApiLevel();
-      WindowInfo windowInfo = checkNotNull(windows.get(window));
+      WindowInfo windowInfo = requireNonNull(windows.get(window));
       InsetsState insetsState = new InsetsState(windowInfo.insetsState);
       // On R if we don't remove the sources that aren't changing we'll infinite loop when toggling
       // visibility of multiple bars.
@@ -702,7 +702,7 @@ public class ShadowWindowManagerGlobal {
 
     void sendResize(IWindow window) {
       int sdk = RuntimeEnvironment.getApiLevel();
-      WindowInfo windowInfo = checkNotNull(windows.get(window));
+      WindowInfo windowInfo = requireNonNull(windows.get(window));
       configureWindowFrames(
           windowInfo,
           windowInfo.attrs,

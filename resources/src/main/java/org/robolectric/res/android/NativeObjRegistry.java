@@ -1,6 +1,6 @@
 package org.robolectric.res.android;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -50,7 +50,7 @@ public class NativeObjRegistry<T> {
    */
   @Deprecated
   public synchronized long getNativeObjectId(T o) {
-    checkNotNull(o);
+    requireNonNull(o);
     Long nativeId = nativeObjToIdMap.inverse().get(o);
     if (nativeId == null) {
       nativeId = nextId;
@@ -69,7 +69,7 @@ public class NativeObjRegistry<T> {
    * @throws IllegalStateException if the object was previously registered
    */
   public synchronized long register(T o) {
-    checkNotNull(o);
+    requireNonNull(o);
     Long nativeId = nativeObjToIdMap.inverse().get(o);
     if (nativeId != null) {
       if (debug) {

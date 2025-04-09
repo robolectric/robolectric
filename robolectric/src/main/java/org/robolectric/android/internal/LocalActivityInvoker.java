@@ -1,7 +1,7 @@
 package org.robolectric.android.internal;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 
 import android.app.Activity;
 import android.app.Instrumentation.ActivityResult;
@@ -62,7 +62,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
           "You must start Activity first. Make sure you are using launchActivityForResult() to"
               + " launch an Activity.");
     }
-    checkNotNull(controller);
+    requireNonNull(controller);
     checkState(controller.get().isFinishing(), "You must finish your Activity first");
     ShadowActivity shadowActivity = Shadow.extract(controller.get());
     return new ActivityResult(shadowActivity.getResultCode(), shadowActivity.getResultIntent());
@@ -70,7 +70,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Override
   public void resumeActivity(Activity activity) {
-    checkNotNull(controller);
+    requireNonNull(controller);
     checkState(controller.get() == activity);
     ShadowInstrumentation.runOnMainSyncNoIdle(
         () -> {
@@ -95,7 +95,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Override
   public void pauseActivity(Activity activity) {
-    checkNotNull(controller);
+    requireNonNull(controller);
     checkState(controller.get() == activity);
     ShadowInstrumentation.runOnMainSyncNoIdle(
         () -> {
@@ -116,7 +116,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Override
   public void stopActivity(Activity activity) {
-    checkNotNull(controller);
+    requireNonNull(controller);
     checkState(controller.get() == activity);
     ShadowInstrumentation.runOnMainSyncNoIdle(
         () -> {
@@ -141,14 +141,14 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Override
   public void recreateActivity(Activity activity) {
-    checkNotNull(controller);
+    requireNonNull(controller);
     checkState(controller.get() == activity);
     ShadowInstrumentation.runOnMainSyncNoIdle(() -> controller.recreate());
   }
 
   @Override
   public void finishActivity(Activity activity) {
-    checkNotNull(controller);
+    requireNonNull(controller);
     checkState(controller.get() == activity);
     ShadowInstrumentation.runOnMainSyncNoIdle(
         () -> {

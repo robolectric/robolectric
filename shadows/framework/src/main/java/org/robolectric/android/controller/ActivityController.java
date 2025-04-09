@@ -6,7 +6,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -253,7 +253,7 @@ public class ActivityController<T extends Activity>
       // root can be null if looper was paused during visible. Flush the looper and try again
       shadowMainLooper.idle();
 
-      root = checkNotNull(getViewRoot());
+      root = requireNonNull(getViewRoot());
       callDispatchResized(root);
     }
 

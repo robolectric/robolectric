@@ -12,7 +12,6 @@ import static org.robolectric.res.android.Util.LOG_FATAL_IF;
 import static org.robolectric.res.android.Util.isTruthy;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -1013,7 +1012,7 @@ public class CppAssetManager {
       final Ref<SortedVector<AssetDir.FileInfo>> pMergedInfo;
 
       LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
-      Preconditions.checkNotNull(dirName);
+      Objects.requireNonNull(dirName);
 
       // printf("+++ openDir(%s) in '%s'\n", dirName, (final char*) mAssetBase);
 
