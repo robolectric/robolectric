@@ -19,6 +19,7 @@ dependencies {
   api(libs.asm.commons)
   api(libs.guava)
   compileOnly(libs.findbugs.jsr305)
+  compileOnly("com.google.android:android:4.1.1.4")
 
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
