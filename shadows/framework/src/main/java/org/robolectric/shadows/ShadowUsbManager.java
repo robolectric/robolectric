@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
@@ -182,8 +183,8 @@ public class ShadowUsbManager {
    * already exists, updates the USB device with new permission value.
    */
   public void addOrUpdateUsbDevice(UsbDevice usbDevice, boolean hasPermission) {
-    Preconditions.checkNotNull(usbDevice);
-    Preconditions.checkNotNull(usbDevice.getDeviceName());
+    Objects.requireNonNull(usbDevice);
+    Objects.requireNonNull(usbDevice.getDeviceName());
     usbDevices.put(usbDevice.getDeviceName(), usbDevice);
     if (hasPermission) {
       grantPermission(usbDevice);
@@ -194,7 +195,7 @@ public class ShadowUsbManager {
 
   /** Removes a USB device from available USB devices map. */
   public void removeUsbDevice(UsbDevice usbDevice) {
-    Preconditions.checkNotNull(usbDevice);
+    Objects.requireNonNull(usbDevice);
     usbDevices.remove(usbDevice.getDeviceName());
     revokePermission(usbDevice, RuntimeEnvironment.getApplication().getPackageName());
   }

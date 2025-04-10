@@ -1,7 +1,7 @@
 package org.robolectric.fakes;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 import static org.robolectric.fakes.MediaUriMatcher.AUDIO_ALBUMART;
 import static org.robolectric.fakes.MediaUriMatcher.AUDIO_ALBUMART_FILE_ID;
 import static org.robolectric.fakes.MediaUriMatcher.AUDIO_ALBUMART_ID;
@@ -122,7 +122,7 @@ public final class FakeMediaProvider extends ContentProvider {
       String[] selectionArgs,
       String sortOrder,
       CancellationSignal cancellationSignal) {
-    checkNotNull(uri);
+    requireNonNull(uri);
     final SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
 
     qb.setTables(TABLE_NAME);
@@ -227,7 +227,7 @@ public final class FakeMediaProvider extends ContentProvider {
 
   @Override
   public Uri insert(Uri uri, ContentValues originalValues) {
-    ContentValues values = new ContentValues(checkNotNull(originalValues));
+    ContentValues values = new ContentValues(requireNonNull(originalValues));
 
     final int match = uriMatcher.matchUri(uri);
     checkState(match != UriMatcher.NO_MATCH, "Unrecognized uri " + uri.toString());

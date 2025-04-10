@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.requireNonNull;
 
 import android.app.PendingIntent;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -72,7 +72,7 @@ public class ShadowBluetoothLeScanner {
    */
   @Implementation
   protected void startScan(List<ScanFilter> filters, ScanSettings settings, ScanCallback callback) {
-    checkNotNull(callback);
+    requireNonNull(callback);
 
     if (filters != null) {
       filters = unmodifiableList(filters);
@@ -135,7 +135,7 @@ public class ShadowBluetoothLeScanner {
   }
 
   public void addScanResult(ScanResult scanResult) {
-    checkNotNull(scanResult);
+    requireNonNull(scanResult);
     this.scanResults.add(scanResult);
   }
 }

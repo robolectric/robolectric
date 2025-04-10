@@ -11,8 +11,8 @@ import static org.robolectric.Shadows.shadowOf;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-import com.google.common.base.Preconditions;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
@@ -125,7 +125,7 @@ public class ShadowInstrumentationTestLooperTest {
     } catch (RuntimeException e) {
       exception = e;
     }
-    Preconditions.checkNotNull(exception);
+    Objects.requireNonNull(exception);
     ShadowPausedLooper.resetLoopers();
     handler.post(() -> didRun.set(true));
     shadowLooper.idle();

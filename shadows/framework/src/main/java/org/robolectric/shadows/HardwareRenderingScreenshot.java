@@ -19,7 +19,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewRootImpl;
 import com.android.internal.R;
-import com.google.common.base.Preconditions;
+import java.util.Objects;
 import java.util.WeakHashMap;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.GraphicsMode;
@@ -65,7 +65,7 @@ public final class HardwareRenderingScreenshot {
     try (ImageReader imageReader =
         ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 1)) {
       ViewRootImpl viewRootImpl = view.getViewRootImpl();
-      Preconditions.checkNotNull(viewRootImpl, "View not attached");
+      Objects.requireNonNull(viewRootImpl, "View not attached");
       Surface surface = imageReader.getSurface();
 
       if (RuntimeEnvironment.getApiLevel() >= Q) {

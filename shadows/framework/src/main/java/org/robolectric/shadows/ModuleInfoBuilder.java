@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import android.content.pm.ModuleInfo;
 import javax.annotation.Nullable;
@@ -50,8 +50,8 @@ public final class ModuleInfoBuilder {
    */
   public ModuleInfo build() {
     // Check mandatory fields.
-    checkNotNull(name, "Mandatory field 'name' missing.");
-    checkNotNull(packageName, "Mandatory field 'packageName' missing.");
+    requireNonNull(name, "Mandatory field 'name' missing.");
+    requireNonNull(packageName, "Mandatory field 'packageName' missing.");
 
     ModuleInfo moduleInfo = new ModuleInfo();
     moduleInfo.setName(name);

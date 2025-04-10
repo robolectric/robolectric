@@ -1,13 +1,13 @@
 package org.robolectric.plugins;
 
 import com.google.auto.service.AutoService;
-import com.google.common.base.Preconditions;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Priority;
@@ -54,7 +54,7 @@ public class DefaultSdkProvider implements SdkProvider {
 
   @Inject
   public DefaultSdkProvider(DependencyResolver dependencyResolver) {
-    this.dependencyResolver = Preconditions.checkNotNull(dependencyResolver);
+    this.dependencyResolver = Objects.requireNonNull(dependencyResolver);
     TreeMap<Integer, Sdk> tmpKnownSdks = new TreeMap<>();
     populateSdks(tmpKnownSdks);
 
@@ -104,7 +104,7 @@ public class DefaultSdkProvider implements SdkProvider {
       this.robolectricVersion = robolectricVersion;
       this.codeName = codeName;
       this.requiredJavaVersion = requiredJavaVersion;
-      Preconditions.checkNotNull(dependencyResolver);
+      Objects.requireNonNull(dependencyResolver);
     }
 
     @Override

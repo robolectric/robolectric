@@ -8,10 +8,10 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import android.os.UserManager;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
-import com.google.common.base.Preconditions;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -47,7 +47,7 @@ public class ShadowStorageManager {
    * @param storageVolume to add to list
    */
   public void addStorageVolume(StorageVolume storageVolume) {
-    Preconditions.checkNotNull(storageVolume);
+    Objects.requireNonNull(storageVolume);
     storageVolumeList.add(storageVolume);
   }
 

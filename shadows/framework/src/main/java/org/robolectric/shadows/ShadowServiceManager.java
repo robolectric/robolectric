@@ -10,7 +10,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
@@ -169,7 +169,7 @@ public class ShadowServiceManager {
       this.binderType = binderType;
       this.delegate = delegate;
       if (binderType == BinderType.DELEGATING_PROXY || binderType == BinderType.CONCRETE) {
-        checkNotNull(delegate);
+        requireNonNull(delegate);
       }
     }
 

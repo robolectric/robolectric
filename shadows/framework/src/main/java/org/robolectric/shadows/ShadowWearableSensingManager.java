@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import android.app.wearable.WearableSensingManager;
 import android.app.wearable.WearableSensingManager.StatusCode;
@@ -65,16 +65,16 @@ public class ShadowWearableSensingManager {
       @Nullable ComponentName targetVisComponentName,
       @Nonnull Executor executor,
       @Nonnull @StatusCode Consumer<Integer> statusConsumer) {
-    checkNotNull(executor);
-    checkNotNull(statusConsumer);
+    requireNonNull(executor);
+    requireNonNull(statusConsumer);
     executor.execute(() -> statusConsumer.accept(startHotwordRecognitionResult));
   }
 
   @Implementation(minSdk = V.SDK_INT)
   protected void stopHotwordRecognition(
       @Nonnull Executor executor, @Nonnull @StatusCode Consumer<Integer> statusConsumer) {
-    checkNotNull(executor);
-    checkNotNull(statusConsumer);
+    requireNonNull(executor);
+    requireNonNull(statusConsumer);
     executor.execute(() -> statusConsumer.accept(stopHotwordRecognitionResult));
   }
 
@@ -92,7 +92,7 @@ public class ShadowWearableSensingManager {
    */
   public void setStartHotwordRecognitionResult(
       @Nonnull @StatusCode Integer startHotwordRecognitionResult) {
-    checkNotNull(startHotwordRecognitionResult);
+    requireNonNull(startHotwordRecognitionResult);
     ShadowWearableSensingManager.startHotwordRecognitionResult = startHotwordRecognitionResult;
   }
 
@@ -102,7 +102,7 @@ public class ShadowWearableSensingManager {
    */
   public void setStopHotwordRecognitionResult(
       @Nonnull @StatusCode Integer stopHotwordRecognitionResult) {
-    checkNotNull(stopHotwordRecognitionResult);
+    requireNonNull(stopHotwordRecognitionResult);
     ShadowWearableSensingManager.stopHotwordRecognitionResult = stopHotwordRecognitionResult;
   }
 

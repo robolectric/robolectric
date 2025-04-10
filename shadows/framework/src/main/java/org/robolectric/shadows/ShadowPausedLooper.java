@@ -14,12 +14,12 @@ import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
 import android.util.Log;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -472,7 +472,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     try {
       reflector(LooperReflector.class).loop();
     } catch (Exception e) {
-      Looper realLooper = Preconditions.checkNotNull(Looper.myLooper());
+      Looper realLooper = Objects.requireNonNull(Looper.myLooper());
       ShadowPausedMessageQueue shadowQueue = Shadow.extract(realLooper.getQueue());
 
       if (ignoreUncaughtExceptions) {

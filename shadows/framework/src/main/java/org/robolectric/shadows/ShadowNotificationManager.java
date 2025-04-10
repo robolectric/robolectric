@@ -355,7 +355,7 @@ public class ShadowNotificationManager {
 
   @Implementation(minSdk = N)
   protected AutomaticZenRule getAutomaticZenRule(String id) {
-    Preconditions.checkNotNull(id);
+    Objects.requireNonNull(id);
     enforcePolicyAccess();
 
     return automaticZenRules.get(id);
@@ -374,13 +374,13 @@ public class ShadowNotificationManager {
 
   @Implementation(minSdk = N)
   protected String addAutomaticZenRule(AutomaticZenRule automaticZenRule) {
-    Preconditions.checkNotNull(automaticZenRule);
-    Preconditions.checkNotNull(automaticZenRule.getName());
+    Objects.requireNonNull(automaticZenRule);
+    Objects.requireNonNull(automaticZenRule.getName());
     Preconditions.checkState(
         automaticZenRule.getOwner() != null || automaticZenRule.getConfigurationActivity() != null,
         "owner/configurationActivity cannot be null at the same time");
 
-    Preconditions.checkNotNull(automaticZenRule.getConditionId());
+    Objects.requireNonNull(automaticZenRule.getConditionId());
     enforcePolicyAccess();
 
     String id = UUID.randomUUID().toString().replace("-", "");
@@ -391,12 +391,12 @@ public class ShadowNotificationManager {
   @Implementation(minSdk = N)
   protected boolean updateAutomaticZenRule(String id, AutomaticZenRule automaticZenRule) {
     // NotificationManagerService doesn't check that id is non-null.
-    Preconditions.checkNotNull(automaticZenRule);
-    Preconditions.checkNotNull(automaticZenRule.getName());
+    Objects.requireNonNull(automaticZenRule);
+    Objects.requireNonNull(automaticZenRule.getName());
     Preconditions.checkState(
         automaticZenRule.getOwner() != null || automaticZenRule.getConfigurationActivity() != null,
         "owner/configurationActivity cannot be null at the same time");
-    Preconditions.checkNotNull(automaticZenRule.getConditionId());
+    Objects.requireNonNull(automaticZenRule.getConditionId());
     enforcePolicyAccess();
 
     // ZenModeHelper throws slightly cryptic exceptions.
@@ -412,7 +412,7 @@ public class ShadowNotificationManager {
 
   @Implementation(minSdk = N)
   protected boolean removeAutomaticZenRule(String id) {
-    Preconditions.checkNotNull(id);
+    Objects.requireNonNull(id);
     enforcePolicyAccess();
     return automaticZenRules.remove(id) != null;
   }

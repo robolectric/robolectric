@@ -10,7 +10,7 @@ import android.content.res.Resources;
 import androidx.fragment.app.Fragment;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.common.base.Preconditions;
+import java.util.Objects;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -36,7 +36,7 @@ public class ShadowGooglePlayServicesUtil {
   }
 
   public static synchronized void provideImpl(GooglePlayServicesUtilImpl impl) {
-    googlePlayServicesUtilImpl = Preconditions.checkNotNull(impl);
+    googlePlayServicesUtilImpl = Objects.requireNonNull(impl);
   }
 
   @Resetter

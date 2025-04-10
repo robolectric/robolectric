@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import android.annotation.RequiresApi;
 import android.app.PendingIntent;
@@ -173,9 +173,9 @@ public class ShadowUsageStatsManager {
         @Nonnull PendingIntent callbackIntent) {
       this.observerId = observerId;
       this.packageNames = ImmutableList.copyOf(packageNames);
-      this.timeLimit = checkNotNull(timeLimit);
-      this.timeUsed = checkNotNull(timeUsed);
-      this.callbackIntent = checkNotNull(callbackIntent);
+      this.timeLimit = requireNonNull(timeLimit);
+      this.timeUsed = requireNonNull(timeUsed);
+      this.callbackIntent = requireNonNull(callbackIntent);
     }
 
     public int getObserverId() {

@@ -97,6 +97,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -777,7 +778,7 @@ public class ShadowPackageManager {
    */
   @Deprecated
   public void addResolveInfoForIntentNoDefaults(Intent intent, ResolveInfo info) {
-    Preconditions.checkNotNull(info);
+    Objects.requireNonNull(info);
     List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
     if (infoList == null) {
       infoList = new ArrayList<>();

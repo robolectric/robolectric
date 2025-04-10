@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothProfile;
@@ -47,8 +47,8 @@ class IBluetoothManagerDelegates {
   private static class IBluetoothManagerDelegateS extends IBluetoothManagerDelegateBase {
 
     public IBluetooth registerAdapter(IBluetoothManagerCallback callback) {
-      IBinder btBinder = checkNotNull(ServiceManager.getService(Context.BLUETOOTH_SERVICE));
-      IBluetooth btService = checkNotNull(IBluetooth.Stub.asInterface(btBinder));
+      IBinder btBinder = requireNonNull(ServiceManager.getService(Context.BLUETOOTH_SERVICE));
+      IBluetooth btService = requireNonNull(IBluetooth.Stub.asInterface(btBinder));
       Reflector.reflector(IBluetoothManagerCallbackReflectorS.class, callback)
           .onBluetoothServiceUp(btService);
       return btService;

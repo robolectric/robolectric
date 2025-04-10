@@ -7,9 +7,9 @@ import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.os.Handler;
 import android.os.Looper;
-import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -42,8 +42,8 @@ public class ShadowWifiP2pManager {
   @Implementation
   protected void setWifiP2pChannels(
       Channel c, int listeningChannel, int operatingChannel, ActionListener al) {
-    Preconditions.checkNotNull(c);
-    Preconditions.checkNotNull(al);
+    Objects.requireNonNull(c);
+    Objects.requireNonNull(al);
     ShadowWifiP2pManager.listeningChannel = listeningChannel;
     ShadowWifiP2pManager.operatingChannel = operatingChannel;
   }

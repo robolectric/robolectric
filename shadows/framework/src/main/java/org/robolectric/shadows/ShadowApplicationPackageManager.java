@@ -32,7 +32,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 import static org.robolectric.annotation.GetInstallerPackageNameMode.Mode.REALISTIC;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -2413,7 +2413,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = Q)
   @RequiresPermission(permission.SUSPEND_APPS)
   protected String[] getUnsuspendablePackages(String[] packageNames) {
-    checkNotNull(packageNames, "packageNames cannot be null");
+    requireNonNull(packageNames, "packageNames cannot be null");
     if (getContext().checkSelfPermission(permission.SUSPEND_APPS)
         != PackageManager.PERMISSION_GRANTED) {
       throw new SecurityException("Current process does not have " + permission.SUSPEND_APPS);

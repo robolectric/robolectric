@@ -10,10 +10,10 @@ import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.auth.UserRecoverableNotifiedException;
-import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -37,7 +37,7 @@ public class ShadowGoogleAuthUtil {
   }
 
   public static synchronized void provideImpl(GoogleAuthUtilImpl impl) {
-    googleAuthUtilImpl = Preconditions.checkNotNull(impl);
+    googleAuthUtilImpl = Objects.requireNonNull(impl);
   }
 
   @Resetter

@@ -5,7 +5,7 @@ import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest.permission;
@@ -453,8 +453,8 @@ public class ShadowCrossProfileApps {
     private final UserHandle userHandle;
 
     public StartedMainActivity(ComponentName componentName, UserHandle userHandle) {
-      this.componentName = checkNotNull(componentName);
-      this.userHandle = checkNotNull(userHandle);
+      this.componentName = requireNonNull(componentName);
+      this.userHandle = requireNonNull(userHandle);
     }
 
     public ComponentName getComponentName() {
@@ -512,8 +512,8 @@ public class ShadowCrossProfileApps {
         @Nullable Intent intent,
         @Nullable Activity activity,
         @Nullable Bundle options) {
-      this.componentName = checkNotNull(componentName);
-      this.userHandle = checkNotNull(userHandle);
+      this.componentName = requireNonNull(componentName);
+      this.userHandle = requireNonNull(userHandle);
       this.intent = intent;
       this.activity = activity;
       this.options = options;

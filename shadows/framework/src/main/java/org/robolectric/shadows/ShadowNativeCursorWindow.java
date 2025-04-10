@@ -4,7 +4,7 @@ import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.database.CharArrayBuffer;
 import android.database.CursorWindow;
-import com.google.common.base.Preconditions;
+import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.CursorWindowNatives;
@@ -53,7 +53,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
   @Implementation
   protected static boolean nativePutBlob(long windowPtr, byte[] value, int row, int column) {
     // Real Android will crash in native code if putBlob is called with a null value.
-    Preconditions.checkNotNull(value);
+    Objects.requireNonNull(value);
     if (getApiLevel() <= U.SDK_INT) {
       return CursorWindowNatives.nativePutBlob(windowPtr, value, row, column);
     } else {
@@ -71,7 +71,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
   @Implementation
   protected static boolean nativePutString(long windowPtr, String value, int row, int column) {
     // Real Android will crash in native code if putString is called with a null value.
-    Preconditions.checkNotNull(value);
+    Objects.requireNonNull(value);
     if (getApiLevel() <= U.SDK_INT) {
       return CursorWindowNatives.nativePutString(windowPtr, value, row, column);
     } else {

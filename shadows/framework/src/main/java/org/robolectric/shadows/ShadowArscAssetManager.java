@@ -20,7 +20,6 @@ import android.os.ParcelFileDescriptor;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import dalvik.system.VMRuntime;
 import java.io.FileDescriptor;
@@ -33,6 +32,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -1038,7 +1038,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   protected static int loadThemeAttributeValue(
       long themeHandle, int ident, TypedValue outValue, boolean resolve) {
     ResTableTheme theme =
-        Preconditions.checkNotNull(Registries.NATIVE_THEME_REGISTRY.getNativeObject(themeHandle));
+        Objects.requireNonNull(Registries.NATIVE_THEME_REGISTRY.getNativeObject(themeHandle));
     ResTable res = theme.getResTable();
 
     final Ref<Res_value> value = new Ref<>(null);
@@ -1276,7 +1276,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     //  }
 
     Path androidFrameworkJarPath = RuntimeEnvironment.getAndroidFrameworkJarPath();
-    Preconditions.checkNotNull(androidFrameworkJarPath);
+    Objects.requireNonNull(androidFrameworkJarPath);
 
     if (isSystem) {
       synchronized (ShadowArscAssetManager.class) {

@@ -17,9 +17,9 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -384,7 +384,7 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
 
   @Implementation
   protected boolean getClipBounds(Rect bounds) {
-    Preconditions.checkNotNull(bounds);
+    Objects.requireNonNull(bounds);
     if (targetBitmap == null) {
       return false;
     }
