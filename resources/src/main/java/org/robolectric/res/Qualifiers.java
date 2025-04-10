@@ -14,13 +14,6 @@ import org.robolectric.res.android.ResTable_config;
 public class Qualifiers {
   private static final Pattern DIR_QUALIFIER_PATTERN = Pattern.compile("^[^-]+(?:-([^/]*))?/?$");
 
-  // Matches a version qualifier like "v14". Parentheses capture the numeric
-  // part for easy retrieval with Matcher.group(2).
-  private static final Pattern SCREEN_WIDTH_PATTERN = Pattern.compile("^w([0-9]+)dp");
-  private static final Pattern SMALLEST_SCREEN_WIDTH_PATTERN = Pattern.compile("^sw([0-9]+)dp");
-  private static final Pattern VERSION_QUALIFIER_PATTERN = Pattern.compile("(v)([0-9]+)$");
-  private static final Pattern ORIENTATION_QUALIFIER_PATTERN = Pattern.compile("(land|port)");
-
   private final String qualifiers;
   private final ResTable_config config;
 
@@ -69,94 +62,5 @@ public class Qualifiers {
       String qualifiers = matcher.group(1);
       return parse(qualifiers != null ? qualifiers : "");
     }
-  }
-
-  /**
-   * @deprecated Use {@link android.os.Build.VERSION#SDK_INT} instead.
-   */
-  @Deprecated
-  public static int getPlatformVersion(String qualifiers) {
-    Matcher m = VERSION_QUALIFIER_PATTERN.matcher(qualifiers);
-    if (m.find()) {
-      return Integer.parseInt(m.group(2));
-    }
-    return -1;
-  }
-
-  /**
-   * @deprecated Use {@link android.content.res.Configuration#smallestScreenWidthDp} instead.
-   */
-  @Deprecated
-  public static int getSmallestScreenWidth(String qualifiers) {
-    for (String qualifier : qualifiers.split("-", 0)) {
-      Matcher matcher = SMALLEST_SCREEN_WIDTH_PATTERN.matcher(qualifier);
-      if (matcher.find()) {
-        return Integer.parseInt(matcher.group(1));
-      }
-    }
-
-    return -1;
-  }
-
-  /**
-   * If the Config already has a {@code sw} qualifier, do nothing. Otherwise, add a {@code sw}
-   * qualifier for the given width.
-   *
-   * @deprecated Use {@link android.content.res.Configuration#smallestScreenWidthDp} instead.
-   */
-  @Deprecated
-  public static String addSmallestScreenWidth(String qualifiers, int smallestScreenWidth) {
-    int qualifiersSmallestScreenWidth = Qualifiers.getSmallestScreenWidth(qualifiers);
-    if (qualifiersSmallestScreenWidth == -1) {
-      if (!qualifiers.isEmpty()) {
-        qualifiers += "-";
-      }
-      qualifiers += "sw" + smallestScreenWidth + "dp";
-    }
-    return qualifiers;
-  }
-
-  /**
-   * @deprecated Use {@link android.content.res.Configuration#screenWidthDp} instead.
-   */
-  @Deprecated
-  public static int getScreenWidth(String qualifiers) {
-    for (String qualifier : qualifiers.split("-", 0)) {
-      Matcher matcher = SCREEN_WIDTH_PATTERN.matcher(qualifier);
-      if (matcher.find()) {
-        return Integer.parseInt(matcher.group(1));
-      }
-    }
-
-    return -1;
-  }
-
-  /**
-   * @deprecated Use {@link android.content.res.Configuration#screenWidthDp} instead.
-   */
-  @Deprecated
-  public static String addScreenWidth(String qualifiers, int screenWidth) {
-    int qualifiersScreenWidth = Qualifiers.getScreenWidth(qualifiers);
-    if (qualifiersScreenWidth == -1) {
-      if (!qualifiers.isEmpty()) {
-        qualifiers += "-";
-      }
-      qualifiers += "w" + screenWidth + "dp";
-    }
-    return qualifiers;
-  }
-
-  /**
-   * @deprecated Use {@link android.content.res.Configuration#orientation} instead.
-   */
-  @Deprecated
-  public static String getOrientation(String qualifiers) {
-    for (String qualifier : qualifiers.split("-", 0)) {
-      Matcher matcher = ORIENTATION_QUALIFIER_PATTERN.matcher(qualifier);
-      if (matcher.find()) {
-        return matcher.group(1);
-      }
-    }
-    return null;
   }
 }

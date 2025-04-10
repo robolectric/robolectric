@@ -4,12 +4,15 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.shadows.ShadowDateUtils;
 import org.robolectric.shadows.ShadowDisplayManager;
 import org.robolectric.shadows.ShadowDisplayManagerGlobal;
 
 public class Bootstrap {
+  private static final Pattern VERSION_QUALIFIER_PATTERN = Pattern.compile("(v)([0-9]+)$");
 
   private static Configuration configuration = new Configuration();
   private static DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -90,7 +93,7 @@ public class Bootstrap {
 
     for (i = Math.max(i, 0); i < qualifiersParts.length; i++) {
       String qualifiersStr = qualifiersParts[i];
-      int platformVersion = Qualifiers.getPlatformVersion(qualifiersStr);
+      int platformVersion = getPlatformVersion(qualifiersStr);
       if (platformVersion != -1 && platformVersion != apiLevel) {
         throw new IllegalArgumentException(
             "Cannot specify conflicting platform version in qualifiers: \"" + qualifiersStr + "\"");
@@ -105,5 +108,13 @@ public class Bootstrap {
 
     // DateUtils has a static cache of the last Configuration, so it may need to be reset.
     ShadowDateUtils.resetLastConfig();
+  }
+
+  private static int getPlatformVersion(String qualifiers) {
+    Matcher m = VERSION_QUALIFIER_PATTERN.matcher(qualifiers);
+    if (m.find()) {
+      return Integer.parseInt(m.group(2));
+    }
+    return -1;
   }
 }
