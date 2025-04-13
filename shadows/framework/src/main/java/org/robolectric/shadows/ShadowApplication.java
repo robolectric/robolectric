@@ -7,7 +7,6 @@ import android.app.ActivityThread;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
-import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -193,15 +192,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   /** Clears the list of {@link Wrapper}s for registered receivers */
   public void clearRegisteredReceivers() {
     getShadowInstrumentation().clearRegisteredReceivers();
-  }
-
-  /**
-   * @deprecated Please use {@link Context#getSystemService(String)} with {@link
-   *     Context#APPWIDGET_SERVICE} instead.
-   */
-  @Deprecated
-  public AppWidgetManager getAppWidgetManager() {
-    return (AppWidgetManager) realApplication.getSystemService(Context.APPWIDGET_SERVICE);
   }
 
   /**
