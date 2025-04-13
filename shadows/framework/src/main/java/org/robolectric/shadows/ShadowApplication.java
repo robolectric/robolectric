@@ -19,7 +19,6 @@ import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
@@ -241,30 +240,6 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   public void declareComponentUnbindable(ComponentName component) {
     getShadowInstrumentation().declareComponentUnbindable(component);
-  }
-
-  /**
-   * @deprecated use ShadowPowerManager.getLatestWakeLock
-   */
-  @Deprecated
-  public PowerManager.WakeLock getLatestWakeLock() {
-    return ShadowPowerManager.getLatestWakeLock();
-  }
-
-  /**
-   * @deprecated use PowerManager APIs instead
-   */
-  @Deprecated
-  public void addWakeLock(PowerManager.WakeLock wl) {
-    ShadowPowerManager.addWakeLock(wl);
-  }
-
-  /**
-   * @deprecated use ShadowPowerManager.clearWakeLocks
-   */
-  @Deprecated
-  public void clearWakeLocks() {
-    ShadowPowerManager.clearWakeLocks();
   }
 
   private final Map<String, Object> singletons = new HashMap<>();
