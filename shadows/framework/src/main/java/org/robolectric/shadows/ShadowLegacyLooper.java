@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
-import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -89,9 +88,7 @@ public class ShadowLegacyLooper extends ShadowLooper {
   /** Internal API to initialize background thread scheduler from AndroidTestEnvironment. */
   public static void internalInitializeBackgroundThreadScheduler() {
     backgroundScheduler =
-        RoboSettings.isUseGlobalScheduler()
-            ? RuntimeEnvironment.getMasterScheduler()
-            : new Scheduler();
+        useGlobalScheduler() ? RuntimeEnvironment.getMasterScheduler() : new Scheduler();
   }
 
   @Implementation
@@ -292,7 +289,7 @@ public class ShadowLegacyLooper extends ShadowLooper {
   @Override
   public void resetScheduler() {
     ShadowMessageQueue shadowMessageQueue = shadowOf(realObject.getQueue());
-    if (realObject == Looper.getMainLooper() || RoboSettings.isUseGlobalScheduler()) {
+    if (realObject == Looper.getMainLooper() || useGlobalScheduler()) {
       shadowMessageQueue.setScheduler(RuntimeEnvironment.getMasterScheduler());
     } else {
       shadowMessageQueue.setScheduler(new Scheduler());
@@ -336,5 +333,9 @@ public class ShadowLegacyLooper extends ShadowLooper {
 
   private static ShadowMessageQueue shadowOf(MessageQueue mq) {
     return Shadow.extract(mq);
+  }
+
+  private static boolean useGlobalScheduler() {
+    return Boolean.getBoolean("robolectric.scheduling.global");
   }
 }
