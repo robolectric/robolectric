@@ -59,8 +59,8 @@ public class AppLoader implements Runnable {
     ResolveInfo resolveInfo = resolveInfoList.get(0);
     ActivityInfo activityInfo = resolveInfo.activityInfo;
 
-    Preconditions.checkNotNull(activityInfo);
-    Preconditions.checkNotNull(activityInfo.name);
+    Objects.requireNonNull(activityInfo);
+    Objects.requireNonNull(activityInfo.name);
     // Start the main Activity
     try {
       Class<? extends Activity> activityClass =

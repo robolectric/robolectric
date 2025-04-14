@@ -29,7 +29,6 @@ import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Parcel;
 import android.view.KeyEvent;
-import com.android.internal.util.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
@@ -974,7 +973,7 @@ public class ShadowAudioManager {
   @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING)
   protected int registerAudioPolicy(
       @Nonnull @ClassName("android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
-    Preconditions.checkNotNull(audioPolicy, "Illegal null AudioPolicy argument");
+    Objects.requireNonNull(audioPolicy, "Illegal null AudioPolicy argument");
     AudioPolicy policy = (AudioPolicy) audioPolicy;
     String id = getIdForAudioPolicy(audioPolicy);
     if (registeredAudioPolicies.containsKey(id)) {
@@ -989,7 +988,7 @@ public class ShadowAudioManager {
   @Implementation(minSdk = Q)
   protected void unregisterAudioPolicy(
       @Nonnull @ClassName("android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
-    Preconditions.checkNotNull(audioPolicy, "Illegal null AudioPolicy argument");
+    Objects.requireNonNull(audioPolicy, "Illegal null AudioPolicy argument");
     AudioPolicy policy = (AudioPolicy) audioPolicy;
     registeredAudioPolicies.remove(getIdForAudioPolicy(policy));
     policy.setRegistration(null);
