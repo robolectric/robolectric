@@ -206,6 +206,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     idleMainLooper();
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisementRequestCount()).isEqualTo(1);
     assertThat(result).isEqualTo(CALLBACK1_SUCCESS_RESULT);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(advertiseData1);
   }
 
   @Test
@@ -227,6 +228,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisementRequestCount()).isEqualTo(2);
     assertThat(result).isEqualTo(CALLBACK2_SUCCESS_RESULT);
     assertThat(settings).isEqualTo(advertiseSettings2);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(advertiseData2);
   }
 
   @Test
@@ -237,6 +239,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     idleMainLooper();
     assertThat(error).isEqualTo(AdvertiseCallback.ADVERTISE_FAILED_ALREADY_STARTED);
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisementRequestCount()).isEqualTo(1);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(advertiseData2);
   }
 
   @Test
@@ -254,6 +257,7 @@ public class ShadowBluetoothLeAdvertiserTest {
         advertiseSettings1, oversizedData, null, advertiseCallback1);
     idleMainLooper();
     assertThat(error).isEqualTo(AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(null);
   }
 
   @Test
@@ -281,6 +285,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     idleMainLooper();
     assertThat(result).isEqualTo(CALLBACK1_SUCCESS_RESULT);
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisementRequestCount()).isEqualTo(1);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(data);
   }
 
   @Test
@@ -301,6 +306,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     idleMainLooper();
     assertThat(result).isEqualTo(CALLBACK1_SUCCESS_RESULT);
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisementRequestCount()).isEqualTo(1);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(data);
   }
 
   @Test
@@ -313,6 +319,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     idleMainLooper();
     assertThat(result).isEqualTo(CALLBACK1_SUCCESS_RESULT);
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisementRequestCount()).isEqualTo(1);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(data);
   }
 
   @Test
@@ -341,6 +348,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     idleMainLooper();
     assertThat(error).isEqualTo(AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE);
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisementRequestCount()).isEqualTo(0);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(oversizedData);
   }
 
   @Test
@@ -362,6 +370,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     idleMainLooper();
     assertThat(error).isEqualTo(AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE);
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisementRequestCount()).isEqualTo(0);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(oversizedData);
   }
 
   @Test
@@ -382,6 +391,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     idleMainLooper();
     assertThat(error).isEqualTo(AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE);
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisementRequestCount()).isEqualTo(0);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(data);
   }
 
   @Test
@@ -395,6 +405,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     idleMainLooper();
     assertThat(error).isEqualTo(AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE);
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisementRequestCount()).isEqualTo(0);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(oversizedData);
   }
 
   @Test
@@ -422,6 +433,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     idleMainLooper();
     assertThat(error).isEqualTo(AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE);
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisementRequestCount()).isEqualTo(0);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(data);
   }
 
   @Test
@@ -436,6 +448,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     idleMainLooper();
     assertThat(result).isEqualTo(CALLBACK1_SUCCESS_RESULT);
     assertThat(shadowOf(bluetoothLeAdvertiserNameSet).getAdvertisementRequestCount()).isEqualTo(1);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(data);
   }
 
   @Test
@@ -456,6 +469,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     idleMainLooper();
     assertThat(shadowOf(bluetoothLeAdvertiserNameSet).getAdvertisementRequestCount()).isEqualTo(0);
     assertThat(error).isEqualTo(AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(data);
   }
 
   @Test
@@ -477,6 +491,7 @@ public class ShadowBluetoothLeAdvertiserTest {
     idleMainLooper();
     assertThat(shadowOf(bluetoothLeAdvertiserNameSet).getAdvertisementRequestCount()).isEqualTo(0);
     assertThat(error).isEqualTo(AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(data);
   }
 
   @Test
@@ -843,6 +858,49 @@ public class ShadowBluetoothLeAdvertiserTest {
                 mainLooperHandler));
     idleMainLooper();
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void startAdvertisingSet_oneAdvertisement_withNoScanResponse() {
+    bluetoothLeAdvertiser.startAdvertisingSet(
+        buildAdvertisingSetParams(
+            true, true, true, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+        advertiseData1,
+        null,
+        null,
+        null,
+        advertisingSetCallback);
+    idleMainLooper();
+    assertThat(advertisingSetStartStatusOptional.get())
+        .isEqualTo(AdvertisingSetCallback.ADVERTISE_SUCCESS);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(1);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(advertiseData1);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void startAdvertisingSet_oversizedAdvertisement_advertisementFails() {
+    AdvertiseData oversizedData =
+        new AdvertiseData.Builder()
+            .addServiceUuid(ParcelUuid.fromString("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"))
+            .addServiceUuid(ParcelUuid.fromString("EEEEEEEE-FFFF-FFFF-FFFF-FFFFFFFFFFFF"))
+            .build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            bluetoothLeAdvertiser.startAdvertisingSet(
+                buildAdvertisingSetParams(
+                    true, true, true, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+                oversizedData,
+                null,
+                null,
+                null,
+                advertisingSetCallback));
+
+    idleMainLooper();
+    assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisingSetRequestCount()).isEqualTo(0);
+    assertThat(shadowOf(bluetoothLeAdvertiser).getLastAdvertisingData()).isEqualTo(null);
   }
 
   @Test
