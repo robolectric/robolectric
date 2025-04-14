@@ -29,12 +29,12 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.crypto.Cipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapperI;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.RoboInject;
-import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
@@ -44,6 +44,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.internal.ShadowProvider;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
@@ -57,6 +58,8 @@ import org.robolectric.shadows.ShadowLooper;
 @RunWith(BootstrapDeferringRobolectricTestRunner.class)
 @LooperMode(LEGACY)
 public class AndroidTestEnvironmentTest {
+
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   @RoboInject BootstrapWrapperI bootstrapWrapper;
 
@@ -73,18 +76,15 @@ public class AndroidTestEnvironmentTest {
   @Test
   public void
       setUpApplicationState_setsBackgroundScheduler_toBeSameAsForeground_whenAdvancedScheduling() {
-    RoboSettings.setUseGlobalScheduler(true);
-    try {
-      bootstrapWrapper.callSetUpApplicationState();
-      final ShadowApplication shadowApplication =
-          Shadow.extract(ApplicationProvider.getApplicationContext());
-      assertThat(shadowApplication.getBackgroundThreadScheduler())
-          .isSameInstanceAs(shadowApplication.getForegroundThreadScheduler());
-      assertThat(RuntimeEnvironment.getMasterScheduler())
-          .isSameInstanceAs(RuntimeEnvironment.getMasterScheduler());
-    } finally {
-      RoboSettings.setUseGlobalScheduler(false);
-    }
+    setSystemPropertyRule.set("robolectric.scheduling.global", "true");
+
+    bootstrapWrapper.callSetUpApplicationState();
+    final ShadowApplication shadowApplication =
+        Shadow.extract(ApplicationProvider.getApplicationContext());
+    assertThat(shadowApplication.getBackgroundThreadScheduler())
+        .isSameInstanceAs(shadowApplication.getForegroundThreadScheduler());
+    assertThat(RuntimeEnvironment.getMasterScheduler())
+        .isSameInstanceAs(RuntimeEnvironment.getMasterScheduler());
   }
 
   @Test

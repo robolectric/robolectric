@@ -22,15 +22,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
-import org.robolectric.RoboSettings;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -38,6 +37,8 @@ import org.robolectric.util.Scheduler;
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LEGACY)
 public class ShadowLegacyLooperTest {
+
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   // testName is used when creating background threads. Makes it
   // easier to debug exceptions on background threads when you
@@ -283,7 +284,7 @@ public class ShadowLegacyLooperTest {
   }
 
   private void setAdvancedScheduling() {
-    RoboSettings.setUseGlobalScheduler(true);
+    setSystemPropertyRule.set("robolectric.scheduling.global", "true");
   }
 
   @Test
@@ -484,10 +485,5 @@ public class ShadowLegacyLooperTest {
     assertThat(ran.get()).isFalse();
     Robolectric.flushBackgroundThreadScheduler();
     assertThat(ran.get()).isTrue();
-  }
-
-  @After
-  public void tearDown() {
-    RoboSettings.setUseGlobalScheduler(false);
   }
 }
