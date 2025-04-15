@@ -170,7 +170,7 @@ public class ShadowDisplayManagerGlobal {
     private final TreeMap<Integer, DisplayInfo> displayInfos = new TreeMap<>();
     private final Map<Integer, SystemUi> systemUis = new HashMap<>();
     private int nextDisplayId = 0;
-    private final List<IDisplayManagerCallback> callbacks = new ArrayList<>();
+    private final List<IDisplayManagerCallback> callbacks = new CopyOnWriteArrayList<>();
     private final Map<IVirtualDisplayCallback, Integer> virtualDisplayIds = new HashMap<>();
 
     // @Override
