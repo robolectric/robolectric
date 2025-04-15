@@ -126,21 +126,20 @@ public class AndroidManifestTest {
     AndroidManifest config = newConfig("TestAndroidManifestWithServices.xml");
     assertThat(config.getServices()).hasSize(2);
 
-    assertThat(config.getServices().get(0).getClassName()).isEqualTo("com.foo.Service");
+    assertThat(config.getServices().get(0).getName()).isEqualTo("com.foo.Service");
     assertThat(config.getServices().get(0).getActions())
         .contains("org.robolectric.ACTION_DIFFERENT_PACKAGE");
     assertThat(config.getServices().get(0).getIntentFilters()).isNotEmpty();
     assertThat(config.getServices().get(0).getIntentFilters().get(0).getMimeTypes())
         .containsExactly("image/jpeg");
 
-    assertThat(config.getServices().get(1).getClassName())
+    assertThat(config.getServices().get(1).getName())
         .isEqualTo("com.bar.ServiceWithoutIntentFilter");
     assertThat(config.getServices().get(1).getActions()).isEmpty();
     assertThat(config.getServices().get(1).getIntentFilters()).isEmpty();
 
-    assertThat(config.getServiceData("com.foo.Service").getClassName())
-        .isEqualTo("com.foo.Service");
-    assertThat(config.getServiceData("com.bar.ServiceWithoutIntentFilter").getClassName())
+    assertThat(config.getServiceData("com.foo.Service").getName()).isEqualTo("com.foo.Service");
+    assertThat(config.getServiceData("com.bar.ServiceWithoutIntentFilter").getName())
         .isEqualTo("com.bar.ServiceWithoutIntentFilter");
     assertThat(config.getServiceData("com.foo.Service").getPermission())
         .isEqualTo("com.foo.Permission");
