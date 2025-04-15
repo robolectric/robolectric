@@ -340,16 +340,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * @deprecated Do not depend on this method to override services as it will be removed in a future
-   *     update. The preferred method is use the shadow of the corresponding service.
-   */
-  @Deprecated
-  public void setSystemService(String key, Object service) {
-    ShadowContextImpl shadowContext = Shadow.extract(realApplication.getBaseContext());
-    shadowContext.setSystemService(key, service);
-  }
-
-  /**
    * Enables or disables predictive back for the current application.
    *
    * <p>This is the equivalent of specifying {code android:enableOnBackInvokedCallback} on the

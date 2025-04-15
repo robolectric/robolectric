@@ -220,7 +220,6 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void switchUser() {
-    shadowOf(application).setSystemService(Context.USER_SERVICE, userManager);
     shadowOf(userManager).addUser(10, "secondary_user", 0);
     activityManager.switchUser(10);
     assertThat(UserHandle.myUserId()).isEqualTo(10);
@@ -241,7 +240,6 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getCurrentUser_nonDefault_returnValueSet() {
-    shadowOf(application).setSystemService(Context.USER_SERVICE, userManager);
     shadowOf(userManager).addUser(10, "secondary_user", 0);
     activityManager.switchUser(10);
 
