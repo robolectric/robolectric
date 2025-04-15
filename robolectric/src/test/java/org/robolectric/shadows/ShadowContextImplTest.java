@@ -116,6 +116,26 @@ public class ShadowContextImplTest {
   }
 
   @Test
+  public void setSystemService_getSystemServiceReturnsCustomService() {
+    String serviceKey = "custom_service";
+    assertThat(context.getSystemService(serviceKey)).isNull();
+
+    TestCustomService customService = new TestCustomService();
+    shadowContext.setSystemService(serviceKey, customService);
+    assertThat(context.getSystemService(serviceKey)).isSameInstanceAs(customService);
+  }
+
+  @Test
+  public void setSystemService_getSystemServiceReturnsOverriddenSystemService() {
+    String serviceKey = Context.WALLPAPER_SERVICE;
+    assertThat(context.getSystemService(serviceKey)).isInstanceOf(WallpaperManager.class);
+
+    TestCustomService customService = new TestCustomService();
+    shadowContext.setSystemService(serviceKey, customService);
+    assertThat(context.getSystemService(serviceKey)).isSameInstanceAs(customService);
+  }
+
+  @Test
   public void removeSystemService_getSystemServiceReturnsNull() {
     shadowContext.removeSystemService(Context.WALLPAPER_SERVICE);
     assertThat(context.getSystemService(Context.WALLPAPER_SERVICE)).isNull();
@@ -379,4 +399,6 @@ public class ShadowContextImplTest {
       isConnected = false;
     }
   }
+
+  private static class TestCustomService {}
 }
