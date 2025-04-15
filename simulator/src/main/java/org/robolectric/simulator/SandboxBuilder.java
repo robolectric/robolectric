@@ -33,6 +33,7 @@ import org.robolectric.util.inject.Injector;
 public final class SandboxBuilder {
 
   private final List<Path> extraJars = new ArrayList<>();
+  private int sdkVersion = -1;
 
   private SandboxBuilder() {}
 
@@ -43,6 +44,12 @@ public final class SandboxBuilder {
   @CanIgnoreReturnValue
   public SandboxBuilder addClasspathEntries(Collection<Path> jarPaths) {
     extraJars.addAll(jarPaths);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public SandboxBuilder setSdkVersion(int sdkVersion) {
+    this.sdkVersion = sdkVersion;
     return this;
   }
 
@@ -57,7 +64,14 @@ public final class SandboxBuilder {
 
     ArrayList<Sdk> sdks = new ArrayList<>(sdkProvider.getSdks());
 
-    Sdk latestSdk = Iterables.getLast(sdks);
+    Sdk chosenSdk = Iterables.getLast(sdks);
+    if (sdkVersion != -1) {
+      for (Sdk sdk : sdks) {
+        if (sdk.getApiLevel() == sdkVersion) {
+          chosenSdk = sdk;
+        }
+      }
+    }
 
     Interceptors interceptors = new Interceptors(AndroidInterceptors.all());
 
@@ -70,8 +84,8 @@ public final class SandboxBuilder {
     AndroidSandbox androidSandbox =
         sandboxBuilder.build(
             instrumentationConfiguration,
-            latestSdk,
-            latestSdk,
+            chosenSdk,
+            chosenSdk,
             ResourcesMode.Mode.BINARY,
             SQLiteMode.Mode.NATIVE);
 
@@ -83,7 +97,7 @@ public final class SandboxBuilder {
     ShadowMap shadowMap = smBuilder.build();
     androidSandbox.replaceShadowMap(shadowMap);
 
-    AndroidSdkShadowMatcher shadowMatcher = new AndroidSdkShadowMatcher(latestSdk.getApiLevel());
+    AndroidSdkShadowMatcher shadowMatcher = new AndroidSdkShadowMatcher(chosenSdk.getApiLevel());
 
     ClassHandler classHandler = classHandlerBuilder.build(shadowMap, shadowMatcher, interceptors);
 

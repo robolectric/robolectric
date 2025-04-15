@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.versioning.AndroidVersions;
 
 final class SystemFeatureListInitializer {
 
@@ -45,6 +46,9 @@ final class SystemFeatureListInitializer {
       features.put(PackageManager.FEATURE_TELEPHONY_EUICC, true);
       features.put(PackageManager.FEATURE_TELEPHONY_EUICC_MEP, true);
       features.put(PackageManager.FEATURE_TELEPHONY_IMS, true);
+      if (apiLevel >= AndroidVersions.Baklava.SDK_INT) {
+        features.put(PackageManager.FEATURE_TELEPHONY_SATELLITE, true);
+      }
     }
 
     return ImmutableMap.copyOf(features);

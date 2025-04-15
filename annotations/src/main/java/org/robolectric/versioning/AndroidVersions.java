@@ -731,17 +731,46 @@ public final class AndroidVersions {
   }
 
   /**
-   * Baklava is an InDevelopment SDK after V, the name scheme has wrapped the alphabet.
+   * Baklava is an SDK after V, the name scheme has wrapped the alphabet.
    *
    * <p>All values here subject to change.
    */
-  public static final class Baklava extends AndroidUnreleased {
+  public static final class Baklava extends AndroidReleased {
 
     public static final int SDK_INT = 36;
 
     public static final String SHORT_CODE = "Baklava";
 
     public static final String VERSION = "16";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
+  }
+
+  /**
+   * Placeholder for the next InDevelopment release after Baklava.
+   *
+   * <p>All values here subject to change.
+   */
+  public static final class PostBaklava extends AndroidUnreleased {
+
+    public static final int SDK_INT = 37;
+
+    public static final String SHORT_CODE = "PostBaklava";
+
+    public static final String VERSION = "17";
 
     @Override
     public int getSdkInt() {

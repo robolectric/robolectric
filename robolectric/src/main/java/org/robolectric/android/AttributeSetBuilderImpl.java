@@ -11,6 +11,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
@@ -86,7 +87,9 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
         this.resTable = ((ShadowAssetManager.ArscBase) shadowAssetManager).getCompileTimeResTable();
       } else {
         throw new IllegalStateException(
-            "AttributeSetBuilder is only supported in BINARY resources mode");
+            "AttributeSetBuilder is only supported in BINARY resources mode BINARY resources "
+                + "mode is only supported for Android V (35) or earlier. SDK was "
+                + Build.VERSION.SDK_INT);
       }
     }
 

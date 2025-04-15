@@ -20,7 +20,6 @@ import static android.util.TypedValue.applyDimension;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 import static org.robolectric.testapp.R.color.test_ARGB8;
 import static org.robolectric.testapp.R.color.test_RGB8;
 
@@ -46,7 +45,6 @@ import androidx.test.filters.SdkSuppress;
 import com.google.common.collect.Range;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -354,9 +352,6 @@ public class ResourcesTest {
 
   @Test
   public void getQuantityText() {
-    // Feature not supported in legacy (raw) resource mode.
-    assumeFalse(isRobolectricLegacyMode());
-
     assertThat(resources.getQuantityText(R.plurals.beer, 1)).isEqualTo("a beer");
     assertThat(resources.getQuantityText(R.plurals.beer, 2)).isEqualTo("some beers");
     assertThat(resources.getQuantityText(R.plurals.beer, 3)).isEqualTo("some beers");
@@ -1125,9 +1120,6 @@ public class ResourcesTest {
   @SdkSuppress(minSdkVersion = O)
   @Config(minSdk = O)
   public void getFont() {
-    // Feature not supported in legacy (raw) resource mode.
-    assumeFalse(isRobolectricLegacyMode());
-
     Typeface typeface = resources.getFont(R.font.vt323_regular);
     assertThat(typeface).isNotNull();
   }
@@ -1136,9 +1128,6 @@ public class ResourcesTest {
   @SdkSuppress(minSdkVersion = O)
   @Config(minSdk = O)
   public void getFontFamily() {
-    // Feature not supported in legacy (raw) resource mode.
-    assumeFalse(isRobolectricLegacyMode());
-
     Typeface typeface = resources.getFont(R.font.vt323);
     assertThat(typeface).isNotNull();
   }
@@ -1147,9 +1136,6 @@ public class ResourcesTest {
   @SdkSuppress(minSdkVersion = O)
   @Config(minSdk = O)
   public void getFontFamily_downloadable() {
-    // Feature not supported in legacy (raw) resource mode.
-    assumeFalse(isRobolectricLegacyMode());
-
     Typeface typeface = resources.getFont(R.font.downloadable);
     assertThat(typeface).isNotNull();
   }
@@ -1193,17 +1179,6 @@ public class ResourcesTest {
   private static class SubClassResources extends Resources {
     public SubClassResources(Resources res) {
       super(res.getAssets(), res.getDisplayMetrics(), res.getConfiguration());
-    }
-  }
-
-  private static boolean isRobolectricLegacyMode() {
-    try {
-      Class<?> runtimeEnvironmentClass = Class.forName("org.robolectric.RuntimeEnvironment");
-      Method useLegacyResourcesMethod =
-          runtimeEnvironmentClass.getDeclaredMethod("useLegacyResources");
-      return (boolean) useLegacyResourcesMethod.invoke(null);
-    } catch (Exception e) {
-      return false;
     }
   }
 }

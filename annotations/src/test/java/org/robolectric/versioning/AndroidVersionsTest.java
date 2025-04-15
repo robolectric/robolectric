@@ -22,12 +22,12 @@ public final class AndroidVersionsTest {
                 .map(AndroidRelease::getSdkInt)
                 .collect(Collectors.toList()))
         .containsExactly(
-            16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35);
+            16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36);
     assertThat(
             AndroidVersions.getUnreleased().stream()
                 .map(AndroidRelease::getSdkInt)
                 .collect(Collectors.toList()))
-        .containsExactly(36);
+        .containsExactly(37);
   }
 
   @Test
@@ -38,7 +38,7 @@ public final class AndroidVersionsTest {
     assertThat(new AndroidVersions.Baklava().getSdkInt()).isEqualTo(36);
     assertThat(new AndroidVersions.Baklava().getShortCode()).isEqualTo("Baklava");
     assertThat(new AndroidVersions.Baklava().getVersion()).isEqualTo("16");
-    assertThat(new AndroidVersions.Baklava().isReleased()).isFalse();
+    assertThat(new AndroidVersions.Baklava().isReleased()).isTrue();
   }
 
   @Test

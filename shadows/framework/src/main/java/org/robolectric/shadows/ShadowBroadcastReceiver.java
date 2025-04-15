@@ -58,6 +58,10 @@ public class ShadowBroadcastReceiver {
     return wentAsync;
   }
 
+  public boolean isBroadcastAborted() {
+    return abort.get();
+  }
+
   public PendingResult getOriginalPendingResult() {
     if (wentAsync) {
       return originalPendingResult;

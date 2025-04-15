@@ -3,17 +3,22 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
 import android.content.Context;
 import android.os.Build;
+import android.os.UserHandle;
 import androidx.test.core.content.pm.PackageInfoBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -24,12 +29,8 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = Build.VERSION_CODES.Q)
 public final class ShadowRoleManagerTest {
-  private RoleManager roleManager;
 
-  @Before
-  public void setUp() {
-    roleManager = (RoleManager) getApplication().getSystemService(Context.ROLE_SERVICE);
-  }
+  private final RoleManager roleManager = getApplication().getSystemService(RoleManager.class);
 
   @Test
   public void isRoleHeld_shouldThrowWithNullArgument() {
@@ -144,5 +145,114 @@ public final class ShadowRoleManagerTest {
     } finally {
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
+  }
+
+  @Test
+  public void addRoleHolder_whenListened_notifysListeners() {
+    UserHandle user = UserHandle.of(10);
+    OnRoleHoldersChangedListener listener = mock(OnRoleHoldersChangedListener.class);
+    roleManager.addOnRoleHoldersChangedListenerAsUser(directExecutor(), listener, user);
+
+    ShadowRoleManager.addRoleHolder(RoleManager.ROLE_SMS, "test.app", user);
+
+    verify(listener).onRoleHoldersChanged(RoleManager.ROLE_SMS, user);
+    assertThat(roleManager.getRoleHoldersAsUser(RoleManager.ROLE_SMS, user))
+        .containsExactly("test.app");
+  }
+
+  @Test
+  public void addRoleHolder_whenListenedOnAllUser_notifysListeners() {
+    UserHandle user = UserHandle.of(10);
+    OnRoleHoldersChangedListener listener = mock(OnRoleHoldersChangedListener.class);
+    roleManager.addOnRoleHoldersChangedListenerAsUser(directExecutor(), listener, UserHandle.ALL);
+
+    ShadowRoleManager.addRoleHolder(RoleManager.ROLE_SMS, "test.app", user);
+
+    verify(listener).onRoleHoldersChanged(RoleManager.ROLE_SMS, user);
+  }
+
+  @Test
+  public void removeRoleHolder_whenListened_notifysListeners() {
+    UserHandle user = UserHandle.of(10);
+    OnRoleHoldersChangedListener listener = mock(OnRoleHoldersChangedListener.class);
+    ShadowRoleManager.addRoleHolder(RoleManager.ROLE_SMS, "test.app", user);
+    roleManager.addOnRoleHoldersChangedListenerAsUser(directExecutor(), listener, user);
+
+    ShadowRoleManager.removeRoleHolder(RoleManager.ROLE_SMS, "test.app", user);
+
+    verify(listener).onRoleHoldersChanged(RoleManager.ROLE_SMS, user);
+    assertThat(roleManager.getRoleHoldersAsUser(RoleManager.ROLE_SMS, user)).isEmpty();
+  }
+
+  @Test
+  public void addRoleHolder_whenNoLongerListened_dontNotifysListeners() {
+    UserHandle user = UserHandle.of(10);
+    OnRoleHoldersChangedListener listener = mock(OnRoleHoldersChangedListener.class);
+    roleManager.addOnRoleHoldersChangedListenerAsUser(directExecutor(), listener, user);
+    roleManager.removeOnRoleHoldersChangedListenerAsUser(listener, user);
+
+    ShadowRoleManager.addRoleHolder(RoleManager.ROLE_SMS, "test.app", user);
+
+    verify(listener, never()).onRoleHoldersChanged(any(), any());
+  }
+
+  @Test
+  public void addRoleHolder_whenNoLongerListenedOnAllUser_dontNotifysListeners() {
+    UserHandle user = UserHandle.of(10);
+    OnRoleHoldersChangedListener listener = mock(OnRoleHoldersChangedListener.class);
+    roleManager.addOnRoleHoldersChangedListenerAsUser(directExecutor(), listener, UserHandle.ALL);
+    roleManager.removeOnRoleHoldersChangedListenerAsUser(listener, UserHandle.ALL);
+
+    ShadowRoleManager.addRoleHolder(RoleManager.ROLE_SMS, "test.app", user);
+
+    verify(listener, never()).onRoleHoldersChanged(any(), any());
+  }
+
+  @Test
+  public void getRoleHoldersAsUser_noHolders_returnEmpty() {
+    UserHandle user = UserHandle.of(10);
+
+    assertThat(roleManager.getRoleHoldersAsUser(RoleManager.ROLE_SMS, user)).isEmpty();
+  }
+
+  @Test
+  public void getRoleHolders_noHolders_returnEmpty() {
+    assertThat(roleManager.getRoleHolders(RoleManager.ROLE_SMS)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R) // createContextAsUser is only available on R+
+  public void getRoleHolders_holdersSet_returnRoleHolders() {
+    UserHandle user = UserHandle.of(10);
+    String roleHolder = "test.app";
+    ShadowRoleManager.addRoleHolder(RoleManager.ROLE_SMS, roleHolder, user);
+    RoleManager userRoleManager =
+        getApplication()
+            .createContextAsUser(user, /* flags= */ 0)
+            .getSystemService(RoleManager.class);
+    assertThat(userRoleManager.getRoleHolders(RoleManager.ROLE_SMS)).containsExactly(roleHolder);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R) // createContextAsUser is only available on R+
+  public void getRoleHolders_holdersSetOnAnotherUser_returnEmpty() {
+    UserHandle user = UserHandle.of(10);
+    UserHandle anotherUser = UserHandle.of(11);
+    String roleHolder = "test.app";
+    ShadowRoleManager.addRoleHolder(RoleManager.ROLE_SMS, roleHolder, anotherUser);
+    RoleManager userRoleManager =
+        getApplication()
+            .createContextAsUser(user, /* flags= */ 0)
+            .getSystemService(RoleManager.class);
+    assertThat(userRoleManager.getRoleHolders(RoleManager.ROLE_SMS)).isEmpty();
+  }
+
+  @Test
+  public void getRoleHoldersAsUser_holdersSet_returnRoleHolders() {
+    UserHandle user = UserHandle.of(10);
+    String roleHolder = "test.app";
+    ShadowRoleManager.addRoleHolder(RoleManager.ROLE_SMS, roleHolder, user);
+    assertThat(roleManager.getRoleHoldersAsUser(RoleManager.ROLE_SMS, user))
+        .containsExactly(roleHolder);
   }
 }
