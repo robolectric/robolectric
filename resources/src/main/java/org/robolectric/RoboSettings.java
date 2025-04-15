@@ -1,5 +1,7 @@
 package org.robolectric;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Class that encapsulates reading global configuration options from the Java system properties
  * file.
@@ -9,18 +11,14 @@ package org.robolectric;
 @Deprecated
 public class RoboSettings {
 
-  private static boolean useGlobalScheduler;
-
-  static {
-    useGlobalScheduler = Boolean.getBoolean("robolectric.scheduling.global");
-  }
+  private static final AtomicBoolean useGlobalScheduler = new AtomicBoolean(false);
 
   /**
    * @deprecated Use PAUSED looper mode.
    */
   @Deprecated
   public static boolean isUseGlobalScheduler() {
-    return useGlobalScheduler;
+    return Boolean.getBoolean("robolectric.scheduling.global") || useGlobalScheduler.get();
   }
 
   /**
@@ -28,6 +26,6 @@ public class RoboSettings {
    */
   @Deprecated
   public static void setUseGlobalScheduler(boolean useGlobalScheduler) {
-    RoboSettings.useGlobalScheduler = useGlobalScheduler;
+    RoboSettings.useGlobalScheduler.set(useGlobalScheduler);
   }
 }
