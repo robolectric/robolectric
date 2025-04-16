@@ -63,8 +63,6 @@ import org.robolectric.util.inject.Injector;
  */
 @SuppressWarnings("NewApi")
 public class RobolectricTestRunner extends SandboxTestRunner {
-
-  public static final String CONFIG_PROPERTIES = "robolectric.properties";
   private static final int MAX_DATA_DIR_NAME_LENGTH = 120;
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
