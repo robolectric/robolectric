@@ -674,7 +674,7 @@ public final class AndroidVersions {
    * Version: 14 <br>
    * ShortCode: U <br>
    * SDK API Level: 34 <br>
-   * release: false <br>
+   * release: true <br>
    */
   public static final class U extends AndroidReleased {
 
