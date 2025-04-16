@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -267,6 +268,34 @@ public class ShadowUserManagerTest {
 
     setUserIdInContext(profileHandle.getIdentifier());
     assertThat(userManager.isProfile()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void isAdminUser_nonAdminUser_returnsFalse() {
+    UserHandle nonAdminHandle =
+        shadowOf(userManager).addUser(TEST_USER_HANDLE, "", ShadowUserManager.FLAG_FULL);
+
+    setUserIdInContext(nonAdminHandle.getIdentifier());
+    assertThat(userManager.isAdminUser()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void isAdminUser_firstUser_returnsTrue() {
+    assertThat(userManager.isAdminUser()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void isAdminUser_secondaryAdminUser_returnsTrue() {
+    UserHandle secondaryAdminHandle =
+        shadowOf(userManager)
+            .addUser(
+                TEST_USER_HANDLE, "", ShadowUserManager.FLAG_ADMIN | ShadowUserManager.FLAG_FULL);
+
+    setUserIdInContext(secondaryAdminHandle.getIdentifier());
+    assertThat(userManager.isAdminUser()).isTrue();
   }
 
   @Test

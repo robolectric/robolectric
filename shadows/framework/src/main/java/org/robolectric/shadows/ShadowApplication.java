@@ -22,9 +22,7 @@ import android.widget.PopupWindow;
 import android.widget.Toast;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -221,19 +219,6 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   public void declareComponentUnbindable(ComponentName component) {
     getShadowInstrumentation().declareComponentUnbindable(component);
-  }
-
-  private final Map<String, Object> singletons = new HashMap<>();
-
-  public <T> T getSingleton(Class<T> clazz, Provider<T> provider) {
-    synchronized (singletons) {
-      //noinspection unchecked
-      T item = (T) singletons.get(clazz.getName());
-      if (item == null) {
-        singletons.put(clazz.getName(), item = provider.get());
-      }
-      return item;
-    }
   }
 
   /**

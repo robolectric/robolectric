@@ -26,9 +26,11 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.util.Pair;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,9 +54,9 @@ public class ShadowLauncherApps {
   private static final Multimap<UserHandle, ComponentName> enabledActivities =
       HashMultimap.create();
   private static final Multimap<UserHandle, LauncherActivityInfo> shortcutActivityList =
-      HashMultimap.create();
+      Multimaps.synchronizedMultimap(HashMultimap.create());
   private static final Multimap<UserHandle, LauncherActivityInfo> activityList =
-      HashMultimap.create();
+      Multimaps.synchronizedMultimap(HashMultimap.create());
   private static final Map<UserHandle, Map<String, ApplicationInfo>> applicationInfoList =
       new HashMap<>();
   private static final Map<UserHandle, Map<String, Bundle>> suspendedPackageLauncherExtras =
@@ -197,7 +199,10 @@ public class ShadowLauncherApps {
   @Implementation(minSdk = O)
   protected List<LauncherActivityInfo> getShortcutConfigActivityList(
       @Nullable String packageName, @Nonnull UserHandle user) {
-    return shortcutActivityList.get(user).stream()
+    // Take a snapshot to avoid concurrent modification exceptions.
+    ImmutableSet<LauncherActivityInfo> activityInfosSnapshot =
+        ImmutableSet.copyOf(shortcutActivityList.get(user));
+    return activityInfosSnapshot.stream()
         .filter(matchesPackage(packageName))
         .collect(Collectors.toList());
   }
@@ -216,7 +221,10 @@ public class ShadowLauncherApps {
 
   @Implementation(minSdk = L)
   protected List<LauncherActivityInfo> getActivityList(String packageName, UserHandle user) {
-    return activityList.get(user).stream()
+    // Take a snapshot to avoid concurrent modification exceptions.
+    ImmutableSet<LauncherActivityInfo> activityInfosSnapshot =
+        ImmutableSet.copyOf(activityList.get(user));
+    return activityInfosSnapshot.stream()
         .filter(matchesPackage(packageName))
         .collect(Collectors.toList());
   }
