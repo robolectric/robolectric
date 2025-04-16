@@ -64,6 +64,7 @@ public class RobolectricTestRunnerMultiApiTest {
     runNotifier.addListener(runListener);
     SdkCollection sdkCollection = new SdkCollection(() -> map(APIS_FOR_TEST));
     delegateSdkPicker = new DefaultSdkPicker(sdkCollection, null);
+    setSystemPropertyRule.clear("robolectric.alwaysIncludeVariantMarkersInTestName");
   }
 
   @Test
@@ -107,7 +108,7 @@ public class RobolectricTestRunnerMultiApiTest {
     assertThat(runner.getChildren().get(0).getName()).isEqualTo("testSomeApiLevel[21]");
     assertThat(runner.getChildren().get(1).getName()).isEqualTo("testSomeApiLevel[22]");
     assertThat(runner.getChildren().get(2).getName()).isEqualTo("testSomeApiLevel[23]");
-    assertThat(runner.getChildren().get(3).getName()).isEqualTo("testSomeApiLevel[24]");
+    assertThat(runner.getChildren().get(3).getName()).isEqualTo("testSomeApiLevel");
   }
 
   @Test
