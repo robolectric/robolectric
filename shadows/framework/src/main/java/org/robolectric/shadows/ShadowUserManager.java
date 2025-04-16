@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.UserManager.RESTRICTION_SOURCE_SYSTEM;
 import static android.os.UserManager.USER_TYPE_FULL_GUEST;
 import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
@@ -462,6 +463,16 @@ public class ShadowUserManager {
     }
 
     return getUserInfo(getContext().getUserId()).isProfile();
+  }
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected boolean isAdminUser() {
+    if (userManagerState.enforcePermissions && !hasManageUsersPermission()) {
+      throw new SecurityException(
+          "You need INTERACT_ACROSS_USERS or MANAGE_USERS permission to: check isAdminUser");
+    }
+
+    return getUserInfo(getContext().getUserId()).isAdmin();
   }
 
   @Implementation(minSdk = R)
