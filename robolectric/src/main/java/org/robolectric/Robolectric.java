@@ -8,7 +8,6 @@ import android.annotation.RequiresApi;
 import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.AppComponentFactory;
-import android.app.Fragment;
 import android.app.IntentService;
 import android.app.LoadedApk;
 import android.app.Service;
@@ -28,7 +27,6 @@ import org.robolectric.android.AttributeSetBuilderImpl.ArscResourceResolver;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
 import org.robolectric.android.controller.ContentProviderController;
-import org.robolectric.android.controller.FragmentController;
 import org.robolectric.android.controller.IntentServiceController;
 import org.robolectric.android.controller.ServiceController;
 import org.robolectric.shadows.ShadowApplication;
@@ -141,169 +139,6 @@ public class Robolectric {
   @SuppressWarnings("InlineMeSuggester")
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {
     return buildActivity(activityClass).setup().get();
-  }
-
-  /**
-   * Creates a FragmentController for the given fragment class.
-   *
-   * <p>FragmentController provides low-level APIs to control its lifecycle. Please consider using
-   * {@link androidx.fragment.app.testing.FragmentScenario} instead, which provides higher level
-   * APIs and works with instrumentation tests too.
-   *
-   * @deprecated Native Fragments have been deprecated in Android P. Android encourages developers
-   *     to use androidx fragments, to test these use FragmentScenario.
-   */
-  @Deprecated
-  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass) {
-    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass));
-  }
-
-  /**
-   * Creates a FragmentController for the given fragment class with the arguments.
-   *
-   * <p>FragmentController provides low-level APIs to control its lifecycle. Please consider using
-   * {@link androidx.fragment.app.testing.FragmentScenario} instead, which provides higher level
-   * APIs and works with instrumentation tests too.
-   *
-   * @deprecated Native Fragments have been deprecated in Android P. Android encourages developers
-   *     to use androidx fragments, to test these use FragmentScenario.
-   */
-  @Deprecated
-  public static <T extends Fragment> FragmentController<T> buildFragment(
-      Class<T> fragmentClass, Bundle arguments) {
-    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), arguments);
-  }
-
-  /**
-   * Creates a FragmentController for the given fragment class in the specified host activity.
-   *
-   * <p>In general, it's a bad practice to design a fragment having dependency to a specific
-   * activity. Consider removing the dependency and use other {@link #buildFragment} method or
-   * {@link androidx.fragment.app.testing.FragmentScenario}.
-   *
-   * <p>FragmentController provides low-level APIs to control its lifecycle. Please consider using
-   * {@link androidx.fragment.app.testing.FragmentScenario} instead, which provides higher level
-   * APIs and works with instrumentation tests too.
-   *
-   * @deprecated Native Fragments have been deprecated in Android P. Android encourages developers
-   *     to use androidx fragments, to test these use FragmentScenario.
-   */
-  @Deprecated
-  public static <T extends Fragment> FragmentController<T> buildFragment(
-      Class<T> fragmentClass, Class<? extends Activity> activityClass) {
-    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass);
-  }
-
-  /**
-   * Creates a FragmentController for the given fragment class. The given intent is set to the host
-   * activity.
-   *
-   * <p>Note: the host activity class is not determined by the intent.
-   *
-   * <p>FragmentController provides low-level APIs to control its lifecycle. Please consider using
-   * {@link androidx.fragment.app.testing.FragmentScenario} instead, which provides higher level
-   * APIs and works with instrumentation tests too.
-   *
-   * @deprecated Native Fragments have been deprecated in Android P. Android encourages developers
-   *     to use androidx fragments, to test these use FragmentScenario.
-   */
-  @Deprecated
-  public static <T extends Fragment> FragmentController<T> buildFragment(
-      Class<T> fragmentClass, Intent intent) {
-    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), intent);
-  }
-
-  /**
-   * Creates a FragmentController for the given fragment class with the arguments. The given intent
-   * is set to the host activity.
-   *
-   * <p>Note: the host activity class is not determined by the intent.
-   *
-   * <p>FragmentController provides low-level APIs to control its lifecycle. Please consider using
-   * {@link androidx.fragment.app.testing.FragmentScenario} instead, which provides higher level
-   * APIs and works with instrumentation tests too.
-   *
-   * @deprecated Native Fragments have been deprecated in Android P. Android encourages developers
-   *     to use androidx fragments, to test these use FragmentScenario.
-   */
-  @Deprecated
-  public static <T extends Fragment> FragmentController<T> buildFragment(
-      Class<T> fragmentClass, Intent intent, Bundle arguments) {
-    return FragmentController.of(
-        ReflectionHelpers.callConstructor(fragmentClass), intent, arguments);
-  }
-
-  /**
-   * Creates a FragmentController for the given fragment class in the specified host activity. The
-   * given intent is set to the host activity.
-   *
-   * <p>Note: the host activity class is not determined by the intent.
-   *
-   * <p>In general, it's a bad practice to design a fragment having dependency to a specific
-   * activity. Consider removing the dependency and use other {@link #buildFragment} method or
-   * {@link androidx.fragment.app.testing.FragmentScenario}.
-   *
-   * <p>FragmentController provides low-level APIs to control its lifecycle. Please consider using
-   * {@link androidx.fragment.app.testing.FragmentScenario} instead, which provides higher level
-   * APIs and works with instrumentation tests too.
-   *
-   * @deprecated Native Fragments have been deprecated in Android P. Android encourages developers
-   *     to use androidx fragments, to test these use FragmentScenario.
-   */
-  @Deprecated
-  public static <T extends Fragment> FragmentController<T> buildFragment(
-      Class<T> fragmentClass, Class<? extends Activity> activityClass, Intent intent) {
-    return FragmentController.of(
-        ReflectionHelpers.callConstructor(fragmentClass), activityClass, intent);
-  }
-
-  /**
-   * Creates a FragmentController for the given fragment class in the specified host activity with
-   * the arguments.
-   *
-   * <p>In general, it's a bad practice to design a fragment having dependency to a specific
-   * activity. Consider removing the dependency and use other {@link #buildFragment} method or
-   * {@link androidx.fragment.app.testing.FragmentScenario}.
-   *
-   * <p>FragmentController provides low-level APIs to control its lifecycle. Please consider using
-   * {@link androidx.fragment.app.testing.FragmentScenario} instead, which provides higher level
-   * APIs and works with instrumentation tests too.
-   *
-   * @deprecated Native Fragments have been deprecated in Android P. Android encourages developers
-   *     to use androidx fragments, to test these use FragmentScenario.
-   */
-  @Deprecated
-  public static <T extends Fragment> FragmentController<T> buildFragment(
-      Class<T> fragmentClass, Class<? extends Activity> activityClass, Bundle arguments) {
-    return FragmentController.of(
-        ReflectionHelpers.callConstructor(fragmentClass), activityClass, arguments);
-  }
-
-  /**
-   * Creates a FragmentController for the given fragment class in the specified host activity with
-   * the arguments. The given intent is set to the host activity.
-   *
-   * <p>Note: the host activity class is not determined by the intent.
-   *
-   * <p>In general, it's a bad practice to design a fragment having dependency to a specific
-   * activity. Consider removing the dependency and use other {@link #buildFragment} method or
-   * {@link androidx.fragment.app.testing.FragmentScenario}.
-   *
-   * <p>FragmentController provides low-level APIs to control its lifecycle. Please consider using
-   * {@link androidx.fragment.app.testing.FragmentScenario} instead, which provides higher level
-   * APIs and works with instrumentation tests too.
-   *
-   * @deprecated Native Fragments have been deprecated in Android P. Android encourages developers
-   *     to use androidx fragments, to test these use FragmentScenario.
-   */
-  @Deprecated
-  public static <T extends Fragment> FragmentController<T> buildFragment(
-      Class<T> fragmentClass,
-      Class<? extends Activity> activityClass,
-      Intent intent,
-      Bundle arguments) {
-    return FragmentController.of(
-        ReflectionHelpers.callConstructor(fragmentClass), activityClass, intent, arguments);
   }
 
   public static <T extends BackupAgent> BackupAgentController<T> buildBackupAgent(
