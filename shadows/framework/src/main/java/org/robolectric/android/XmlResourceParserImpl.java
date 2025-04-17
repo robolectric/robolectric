@@ -307,7 +307,11 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   // for testing only...
   public String qualify(String value) {
     if (value == null) return null;
-    if (AttributeResource.isResourceReference(value)) {
+    if (AttributeResource.isNull(value)) {
+      return AttributeResource.NULL_VALUE;
+    } else if (AttributeResource.isEmpty(value)) {
+      return AttributeResource.EMPTY_VALUE;
+    } else if (AttributeResource.isResourceReference(value)) {
       return "@"
           + ResName.qualifyResourceName(
               value.trim().substring(1).replace("+", ""), packageName, "attr");
@@ -613,7 +617,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   @Override
   public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
     String attr = getAttribute(namespace, attribute);
-    if (attr != null && attr.startsWith("@") && !AttributeResource.isNull(attr)) {
+    if (attr != null && AttributeResource.isResourceReference(attr)) {
       return getResourceId(attr, packageName, null);
     }
     return defaultValue;
@@ -673,11 +677,13 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   @Override
   public int getAttributeResourceValue(int idx, int defaultValue) {
     String attributeValue = getAttributeValue(idx);
-    if (attributeValue != null && attributeValue.startsWith("@")) {
+    if (attributeValue != null && AttributeResource.isResourceReference(attributeValue)) {
       int resourceId = getResourceId(attributeValue.substring(1), packageName, null);
       if (resourceId != 0) {
         return resourceId;
       }
+    } else if (AttributeResource.isNull(attributeValue)) {
+      return 0;
     }
     return defaultValue;
   }
