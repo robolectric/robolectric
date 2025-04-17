@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.AnimRes;
@@ -1070,10 +1071,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
         }
       }
     }
-  }
-
-  private ShadowPackageManager shadowOf(PackageManager packageManager) {
-    return Shadow.extract(packageManager);
   }
 
   @ForType(value = Activity.class, direct = true)

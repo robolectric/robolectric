@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.view.WindowManager;
 import android.widget.PopupWindow;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -17,7 +19,7 @@ public class ShadowPopupWindow {
 
   @Implementation
   protected void invokePopup(WindowManager.LayoutParams p) {
-    ShadowApplication.getInstance().setLatestPopupWindow(realPopupWindow);
+    shadowOf(RuntimeEnvironment.getApplication()).setLatestPopupWindow(realPopupWindow);
     reflector(PopupWindowReflector.class, realPopupWindow).invokePopup(p);
   }
 
