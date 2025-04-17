@@ -57,6 +57,7 @@ include(
   ":shadows:framework",
   ":shadows:httpclient",
   ":shadows:playservices",
+  ":simulator",
   ":testapp",
   ":utils",
   ":utils:reflector",
