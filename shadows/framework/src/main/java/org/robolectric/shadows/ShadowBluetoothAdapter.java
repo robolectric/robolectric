@@ -499,10 +499,7 @@ public class ShadowBluetoothAdapter {
     this.state = state;
   }
 
-  /**
-   * @deprecated Use {@link BluetoothAdapter#enable()} or {@link BluetoothAdapter#disable()}.
-   */
-  @Deprecated
+  /** Sets the enabled state of the adapter. */
   public void setEnabled(boolean enabled) {
     if (enabled) {
       enable();
