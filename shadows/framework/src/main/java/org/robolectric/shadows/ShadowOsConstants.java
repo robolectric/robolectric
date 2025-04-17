@@ -5,12 +5,20 @@ import java.io.File;
 import java.lang.reflect.Field;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 /** */
 @Implements(value = OsConstants.class)
 public final class ShadowOsConstants {
+
   @Implementation
-  protected static void initConstants() {
+  protected static void __staticInitializer__() {
+    // Invoking original static initializer just in case: there might more than static fields.
+    Shadow.directInitialize(OsConstants.class);
+    shadowInitConstants();
+  }
+
+  private static void shadowInitConstants() {
 
     // In real android these constants are populated via reflection in native linux-only code.
     // This shadow performs similar logic here , using the values obtained from
