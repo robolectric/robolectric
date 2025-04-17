@@ -124,7 +124,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     super(testClass, injector);
 
     if (DeprecatedTestRunnerDefaultConfigProvider.globalConfig == null) {
-      DeprecatedTestRunnerDefaultConfigProvider.globalConfig = buildGlobalConfig();
+      DeprecatedTestRunnerDefaultConfigProvider.globalConfig = new Config.Builder().build();
     }
 
     this.sandboxManager = injector.getInstance(SandboxManager.class);
@@ -445,30 +445,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /** Calculate the configuration for a given test method. */
   private Configuration getConfiguration(Method method) {
     return configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
-  }
-
-  /**
-   * Provides the base Robolectric configuration {@link Config} used for all tests.
-   *
-   * <p>Configuration provided for specific packages, test classes, and test method configurations
-   * will override values provided here.
-   *
-   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
-   * configuration. Consider using a {@link Config.Builder}.
-   *
-   * <p>The default implementation has appropriate values for most use cases.
-   *
-   * @return global {@link Config} object
-   * @deprecated Provide a service implementation of {@link GlobalConfigProvider} instead. This
-   *     method will be removed in Robolectric 4.3.
-   * @since 3.1.3
-   * @see <a href="http://robolectric.org/migrating/#migrating-to-40">Migration Notes</a> for more
-   *     details.
-   */
-  @Deprecated
-  @SuppressWarnings("InlineMeSuggester")
-  protected Config buildGlobalConfig() {
-    return new Config.Builder().build();
   }
 
   @AutoService(GlobalConfigProvider.class)
