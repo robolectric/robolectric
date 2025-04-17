@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.content.Intent;
@@ -22,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.ResourcesMode.Mode;
@@ -46,7 +48,8 @@ public class ShadowContextTest {
   public void startForegroundService() {
     Intent intent = new Intent().setPackage("dummy.package");
     context.startForegroundService(intent);
-    assertThat(ShadowApplication.getInstance().getNextStartedService()).isEqualTo(intent);
+    assertThat(shadowOf(RuntimeEnvironment.getApplication()).getNextStartedService())
+        .isEqualTo(intent);
   }
 
   @Test

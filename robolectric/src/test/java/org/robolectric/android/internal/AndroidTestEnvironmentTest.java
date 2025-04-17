@@ -3,6 +3,7 @@ package org.robolectric.android.internal;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.ConscryptMode.Mode.OFF;
 import static org.robolectric.annotation.ConscryptMode.Mode.ON;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
@@ -70,7 +71,8 @@ public class AndroidTestEnvironmentTest {
     assertThat(RuntimeEnvironment.getMasterScheduler())
         .isSameInstanceAs(ShadowLooper.getShadowMainLooper().getScheduler());
     assertThat(RuntimeEnvironment.getMasterScheduler())
-        .isSameInstanceAs(ShadowApplication.getInstance().getForegroundThreadScheduler());
+        .isSameInstanceAs(
+            shadowOf(RuntimeEnvironment.getApplication()).getForegroundThreadScheduler());
   }
 
   @Test

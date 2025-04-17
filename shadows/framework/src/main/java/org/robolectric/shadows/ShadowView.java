@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.shadows.ShadowView.useRealViewAnimations;
 import static org.robolectric.util.ReflectionHelpers.getField;
@@ -525,7 +526,7 @@ public class ShadowView {
   @Implementation
   protected boolean post(Runnable action) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
-      ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
+      shadowOf(RuntimeEnvironment.getApplication()).getForegroundThreadScheduler().post(action);
       return true;
     } else {
       return reflector(_View_.class, realView).post(action);
@@ -535,7 +536,7 @@ public class ShadowView {
   @Implementation
   protected boolean postDelayed(Runnable action, long delayMills) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
-      ShadowApplication.getInstance()
+      shadowOf(RuntimeEnvironment.getApplication())
           .getForegroundThreadScheduler()
           .postDelayed(action, delayMills);
       return true;
@@ -547,7 +548,7 @@ public class ShadowView {
   @Implementation
   protected void postInvalidateDelayed(long delayMilliseconds) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
-      ShadowApplication.getInstance()
+      shadowOf(RuntimeEnvironment.getApplication())
           .getForegroundThreadScheduler()
           .postDelayed(() -> realView.invalidate(), delayMilliseconds);
     } else {

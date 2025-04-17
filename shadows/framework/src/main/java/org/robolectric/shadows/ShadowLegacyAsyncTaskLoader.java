@@ -1,10 +1,13 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -37,7 +40,7 @@ public class ShadowLegacyAsyncTaskLoader<D> extends ShadowAsyncTaskLoader<D> {
           protected void done() {
             try {
               final D result = get();
-              ShadowApplication.getInstance()
+              shadowOf(RuntimeEnvironment.getApplication())
                   .getForegroundThreadScheduler()
                   .post(() -> realObject.deliverResult(result));
             } catch (InterruptedException e) {
@@ -48,7 +51,7 @@ public class ShadowLegacyAsyncTaskLoader<D> extends ShadowAsyncTaskLoader<D> {
           }
         };
 
-    ShadowApplication.getInstance().getBackgroundThreadScheduler().post(future);
+    shadowOf(RuntimeEnvironment.getApplication()).getBackgroundThreadScheduler().post(future);
   }
 
   private final class BackgroundWorker implements Callable<D> {
