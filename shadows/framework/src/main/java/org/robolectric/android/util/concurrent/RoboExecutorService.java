@@ -1,5 +1,7 @@
 package org.robolectric.android.util.concurrent;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,8 +15,8 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.annotation.Nonnull;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode;
-import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.Scheduler;
 
 /**
@@ -53,7 +55,7 @@ public class RoboExecutorService implements ExecutorService {
   }
 
   public RoboExecutorService() {
-    this.scheduler = ShadowApplication.getInstance().getBackgroundThreadScheduler();
+    this.scheduler = shadowOf(RuntimeEnvironment.getApplication()).getBackgroundThreadScheduler();
   }
 
   @Override

@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 import java.util.concurrent.Callable;
@@ -47,7 +49,7 @@ public class ShadowLegacyAsyncTaskLoader<D> extends ShadowAsyncTaskLoader<D> {
           }
         };
 
-    ShadowApplication.getInstance().getBackgroundThreadScheduler().post(future);
+    shadowOf(RuntimeEnvironment.getApplication()).getBackgroundThreadScheduler().post(future);
   }
 
   private final class BackgroundWorker implements Callable<D> {

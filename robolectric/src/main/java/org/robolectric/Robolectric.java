@@ -2,6 +2,7 @@ package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkState;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.IdRes;
 import android.annotation.RequiresApi;
@@ -31,7 +32,6 @@ import org.robolectric.android.controller.ContentProviderController;
 import org.robolectric.android.controller.FragmentController;
 import org.robolectric.android.controller.IntentServiceController;
 import org.robolectric.android.controller.ServiceController;
-import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -382,7 +382,7 @@ public class Robolectric {
    * @return Background scheduler.
    */
   public static Scheduler getBackgroundThreadScheduler() {
-    return ShadowApplication.getInstance().getBackgroundThreadScheduler();
+    return shadowOf(RuntimeEnvironment.getApplication()).getBackgroundThreadScheduler();
   }
 
   /** Execute all runnables that have been enqueued on the background scheduler. */

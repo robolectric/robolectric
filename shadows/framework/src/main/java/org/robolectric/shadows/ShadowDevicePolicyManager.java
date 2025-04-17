@@ -26,10 +26,12 @@ import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.app.ApplicationPackageManager;
 import android.app.KeyguardManager;
+import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManager.NearbyStreamingPolicy;
 import android.app.admin.DevicePolicyManager.PasswordComplexity;
 import android.app.admin.DevicePolicyManager.UserProvisioningState;
+import android.app.admin.DevicePolicyState;
 import android.app.admin.IDevicePolicyManager;
 import android.app.admin.SystemUpdateInfo;
 import android.app.admin.SystemUpdatePolicy;
@@ -927,10 +929,10 @@ public class ShadowDevicePolicyManager {
       }
       if (Arrays.asList(packageInfo.requestedPermissions).contains(permission)) {
         if (grantState == DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED) {
-          ShadowApplication.getInstance().grantPermissions(permission);
+          shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(permission);
         }
         if (grantState == DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED) {
-          ShadowApplication.getInstance().denyPermissions(permission);
+          shadowOf(RuntimeEnvironment.getApplication()).denyPermissions(permission);
         }
       } else {
         // the app does not require this permission
