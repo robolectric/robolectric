@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -13,7 +14,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.RuntimeEnvironment;
 
 @RunWith(AndroidJUnit4.class)
 public class RoboMenuTest {
@@ -60,7 +61,7 @@ public class RoboMenuTest {
 
     assertNotNull(item);
 
-    Intent startedIntent = ShadowApplication.getInstance().getNextStartedActivity();
+    Intent startedIntent = shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity();
     assertNotNull(startedIntent);
   }
 

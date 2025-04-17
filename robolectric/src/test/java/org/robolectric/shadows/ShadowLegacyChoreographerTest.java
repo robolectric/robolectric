@@ -5,12 +5,14 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.view.Choreographer;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.Duration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 
@@ -37,7 +39,9 @@ public class ShadowLegacyChoreographerTest {
     Choreographer.FrameCallback callback = mock(Choreographer.FrameCallback.class);
     instance.postFrameCallbackDelayed(callback, 1000);
     instance.removeFrameCallback(callback);
-    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceToLastPostedRunnable();
+    shadowOf(RuntimeEnvironment.getApplication())
+        .getForegroundThreadScheduler()
+        .advanceToLastPostedRunnable();
     verify(callback, never()).doFrame(anyLong());
   }
 

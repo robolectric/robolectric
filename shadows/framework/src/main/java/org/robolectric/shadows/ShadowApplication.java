@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
 
@@ -43,20 +44,12 @@ public class ShadowApplication extends ShadowContextWrapper {
   private ListPopupWindow latestListPopupWindow;
 
   /**
-   * @deprecated Use {@code shadowOf(ApplicationProvider#getApplicationContext())} instead.
-   */
-  @Deprecated
-  public static ShadowApplication getInstance() {
-    return Shadow.extract(RuntimeEnvironment.getApplication());
-  }
-
-  /**
    * Runs any background tasks previously queued by {@link android.os.AsyncTask#execute(Object[])}.
    *
    * <p>Note: calling this method does not pause or un-pause the scheduler.
    */
   public static void runBackgroundTasks() {
-    getInstance().getBackgroundThreadScheduler().advanceBy(0);
+    shadowOf(RuntimeEnvironment.getApplication()).getBackgroundThreadScheduler().advanceBy(0);
   }
 
   /** Configures the value to be returned by {@link Application#getProcessName()}. */
