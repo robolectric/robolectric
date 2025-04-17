@@ -100,19 +100,17 @@ public final class Simulator {
       throw new RuntimeException(e);
     }
     SwingUtilities.invokeLater(
-        (Runnable)
-            () -> {
-              simulatorFrame =
-                  new SimulatorFrame((int) this.displayWidth, (int) this.displayHeight);
-              simulatorFrame.setVisible(true);
-              simulatorFrame.toFront();
-            });
+        () -> {
+          simulatorFrame = new SimulatorFrame((int) this.displayWidth, (int) this.displayHeight);
+          simulatorFrame.setVisible(true);
+          simulatorFrame.toFront();
+        });
   }
 
   private void captureScreen() {
     final Bitmap bitmap =
         InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
-    SwingUtilities.invokeLater((Runnable) () -> simulatorFrame.getCanvas().drawBitmap(bitmap));
+    SwingUtilities.invokeLater(() -> simulatorFrame.getCanvas().drawBitmap(bitmap));
   }
 
   private void postMotionEvent() {

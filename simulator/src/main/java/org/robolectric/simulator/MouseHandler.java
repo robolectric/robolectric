@@ -44,31 +44,30 @@ public class MouseHandler extends MouseAdapter {
   private JMenuItem getBackMenuItem() {
     JMenuItem sendBackMenuItem = new JMenuItem("Press back");
     sendBackMenuItem.addActionListener(
-        e -> {
-          handler.post(
-              () -> {
-                long eventTime = SystemClock.uptimeMillis();
-                KeyEvent backKeyDown =
-                    new KeyEvent(
-                        eventTime,
-                        eventTime,
-                        KeyEvent.ACTION_DOWN,
-                        KeyEvent.KEYCODE_BACK,
-                        /* repeat= */ 0,
-                        0);
-                ShadowUiAutomation.injectInputEvent(backKeyDown);
+        e ->
+            handler.post(
+                () -> {
+                  long eventTime = SystemClock.uptimeMillis();
+                  KeyEvent backKeyDown =
+                      new KeyEvent(
+                          eventTime,
+                          eventTime,
+                          KeyEvent.ACTION_DOWN,
+                          KeyEvent.KEYCODE_BACK,
+                          /* repeat= */ 0,
+                          0);
+                  ShadowUiAutomation.injectInputEvent(backKeyDown);
 
-                KeyEvent backKeyUp =
-                    new KeyEvent(
-                        eventTime,
-                        eventTime,
-                        KeyEvent.ACTION_UP,
-                        KeyEvent.KEYCODE_BACK,
-                        /* repeat= */ 0,
-                        0);
-                ShadowUiAutomation.injectInputEvent(backKeyUp);
-              });
-        });
+                  KeyEvent backKeyUp =
+                      new KeyEvent(
+                          eventTime,
+                          eventTime,
+                          KeyEvent.ACTION_UP,
+                          KeyEvent.KEYCODE_BACK,
+                          /* repeat= */ 0,
+                          0);
+                  ShadowUiAutomation.injectInputEvent(backKeyUp);
+                }));
 
     return sendBackMenuItem;
   }
