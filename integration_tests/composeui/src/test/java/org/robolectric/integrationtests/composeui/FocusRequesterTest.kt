@@ -24,7 +24,7 @@ class FocusRequesterTest {
    *
    * Originally reported in
    * [robolectric/robolectric#9703](https://github.com/robolectric/robolectric/issues/9703).
-   * Solution coming from [b/206249038](https://issuetracker.google.com/issues/206249038).
+   * Solution coming from https://issuetracker.google.com/issues/206249038.
    */
   @Test
   fun `check FocusRequester is initialized`() {
