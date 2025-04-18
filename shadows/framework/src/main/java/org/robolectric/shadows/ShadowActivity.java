@@ -439,7 +439,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   protected void runOnUiThread(Runnable action) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
-      ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
+      RuntimeEnvironment.getMasterScheduler().post(action);
     } else {
       reflector(DirectActivityReflector.class, realActivity).runOnUiThread(action);
     }

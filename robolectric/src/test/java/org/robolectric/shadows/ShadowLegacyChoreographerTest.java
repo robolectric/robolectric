@@ -11,6 +11,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.Duration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 
@@ -37,7 +38,7 @@ public class ShadowLegacyChoreographerTest {
     Choreographer.FrameCallback callback = mock(Choreographer.FrameCallback.class);
     instance.postFrameCallbackDelayed(callback, 1000);
     instance.removeFrameCallback(callback);
-    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceToLastPostedRunnable();
+    Robolectric.getForegroundThreadScheduler().advanceToLastPostedRunnable();
     verify(callback, never()).doFrame(anyLong());
   }
 

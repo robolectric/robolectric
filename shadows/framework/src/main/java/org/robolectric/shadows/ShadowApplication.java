@@ -87,17 +87,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * Return the foreground scheduler.
-   *
-   * @return Foreground scheduler.
-   * @deprecated use {@link org.robolectric.Robolectric#getForegroundThreadScheduler()}
-   */
-  @Deprecated
-  public Scheduler getForegroundThreadScheduler() {
-    return RuntimeEnvironment.getMasterScheduler();
-  }
-
-  /**
    * Return the background scheduler.
    *
    * @return Background scheduler.
