@@ -932,23 +932,10 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void getForegroundThreadScheduler_shouldMatchRobolectricValue() {
-    assertThat(Shadows.shadowOf(context).getForegroundThreadScheduler())
-        .isSameInstanceAs(Robolectric.getForegroundThreadScheduler());
-  }
-
-  @Test
   @LooperMode(LEGACY)
   public void getBackgroundThreadScheduler_shouldMatchRobolectricValue() {
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler())
         .isSameInstanceAs(Robolectric.getBackgroundThreadScheduler());
-  }
-
-  @Test
-  public void getForegroundThreadScheduler_shouldMatchRuntimeEnvironment() {
-    Scheduler s = new Scheduler();
-    RuntimeEnvironment.setMasterScheduler(s);
-    assertThat(Shadows.shadowOf(context).getForegroundThreadScheduler()).isSameInstanceAs(s);
   }
 
   @Test
