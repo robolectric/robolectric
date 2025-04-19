@@ -56,16 +56,6 @@ class SchedulerTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation")
-  fun idleConstantly_setsIdleState() {
-    scheduler.idleState = UNPAUSED
-    scheduler.idleConstantly(true)
-    assertThat(scheduler.idleState).isSameInstanceAs(CONSTANT_IDLE)
-    scheduler.idleConstantly(false)
-    assertThat(scheduler.idleState).isSameInstanceAs(UNPAUSED)
-  }
-
-  @Test
   fun unPause_setsIdleState() {
     scheduler.idleState = PAUSED
     scheduler.unPause()
@@ -106,19 +96,6 @@ class SchedulerTest {
     scheduler.unPause()
     assertThat(transcript).containsExactly("one", "two")
     assertWithMessage("time").that(scheduler.currentTime).isEqualTo(time)
-  }
-
-  @Test
-  @SuppressWarnings("deprecation")
-  fun idleConstantlyTrue_shouldRunAllTasks() {
-    scheduler.postDelayed(AddToTranscript("one"), 0)
-    scheduler.postDelayed(AddToTranscript("two"), 0)
-    scheduler.postDelayed(AddToTranscript("three"), 1000)
-    assertThat(transcript).isEmpty()
-    val time = scheduler.currentTime
-    scheduler.idleConstantly(true)
-    assertThat(transcript).containsExactly("one", "two", "three")
-    assertWithMessage("time").that(scheduler.currentTime).isEqualTo(time + 1000)
   }
 
   @Test

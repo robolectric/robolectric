@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import static org.robolectric.RuntimeEnvironment.isMainThread;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static org.robolectric.util.Scheduler.IdleState.CONSTANT_IDLE;
+import static org.robolectric.util.Scheduler.IdleState.UNPAUSED;
 
 import android.os.Looper;
 import android.os.MessageQueue;
@@ -193,7 +195,7 @@ public class ShadowLegacyLooper extends ShadowLooper {
 
   @Override
   public void idleConstantly(boolean shouldIdleConstantly) {
-    getScheduler().idleConstantly(shouldIdleConstantly);
+    getScheduler().setIdleState(shouldIdleConstantly ? CONSTANT_IDLE : UNPAUSED);
   }
 
   @Override
