@@ -26,9 +26,9 @@ import javax.annotation.Nonnull;
  *       Scheduler will automatically run any {@link Runnable}s that are scheduled to run at or
  *       before the Scheduler's current time, but it won't automatically run any future events. To
  *       run future events the Scheduler needs to have its clock advanced.
- *   <li>idling constantly: if {@link #idleConstantly(boolean)} is called with true, then the
- *       Scheduler will continue looping through posted events (including future events), advancing
- *       its clock as it goes.
+ *   <li>idling constantly: if {@link #setIdleState(IdleState)} is called with `CONSTANT_IDLE`, then
+ *       the Scheduler will continue looping through posted events (including future events),
+ *       advancing its clock as it goes.
  * </ul>
  *
  * @deprecated Scheduler APIs only function when using LooperMode.LEGACY. Switch to
@@ -333,21 +333,6 @@ public class Scheduler {
       }
     }
     return Duration.ofMillis(currentMaxTime);
-  }
-
-  /**
-   * Set the idle state of the Scheduler. If necessary, the clock will be advanced and runnables
-   * executed as required by the newly-set state.
-   *
-   * @param shouldIdleConstantly If true the idle state will be set to {@link
-   *     IdleState#CONSTANT_IDLE}, otherwise it will be set to {@link IdleState#UNPAUSED}.
-   * @deprecated This method is ambiguous in how it should behave when turning off constant idle.
-   *     Use {@link #setIdleState(IdleState)} instead to explicitly set the state.
-   */
-  @Deprecated
-  @SuppressWarnings("InlineMeSuggester")
-  public void idleConstantly(boolean shouldIdleConstantly) {
-    setIdleState(shouldIdleConstantly ? CONSTANT_IDLE : UNPAUSED);
   }
 
   private boolean nextTaskIsScheduledBefore(long endingTime) {
