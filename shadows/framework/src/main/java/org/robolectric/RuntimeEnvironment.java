@@ -266,7 +266,10 @@ public class RuntimeEnvironment {
    * @see #setMasterScheduler(Scheduler) see
    *     org.robolectric.Robolectric#getForegroundThreadScheduler() see
    *     org.robolectric.Robolectric#getBackgroundThreadScheduler()
+   * @deprecated The {@link Scheduler} APIs are designed for LEGACY Looper mode. Prefer to migrate
+   *     tests to PAUSED Looper mode to avoid the need for this API.
    */
+  @Deprecated
   public static Scheduler getMasterScheduler() {
     return masterScheduler;
   }
@@ -279,7 +282,10 @@ public class RuntimeEnvironment {
    * @param masterScheduler the new master scheduler.
    * @see #getMasterScheduler() see org.robolectric.Robolectric#getForegroundThreadScheduler() see
    *     org.robolectric.Robolectric#getBackgroundThreadScheduler()
+   * @deprecated The {@link Scheduler} APIs are designed for LEGACY Looper mode. Prefer to migrate
+   *     tests to PAUSED Looper mode to avoid the need for this API.
    */
+  @Deprecated
   public static void setMasterScheduler(Scheduler masterScheduler) {
     RuntimeEnvironment.masterScheduler = masterScheduler;
   }
