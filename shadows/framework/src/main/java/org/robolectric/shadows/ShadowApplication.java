@@ -54,7 +54,10 @@ public class ShadowApplication extends ShadowContextWrapper {
    * Runs any background tasks previously queued by {@link android.os.AsyncTask#execute(Object[])}.
    *
    * <p>Note: calling this method does not pause or un-pause the scheduler.
+   *
+   * @deprecated This is only for LEGACY Looper mode. Use PAUSED Looper mode instead.
    */
+  @Deprecated
   public static void runBackgroundTasks() {
     getInstance().getBackgroundThreadScheduler().advanceBy(0);
   }
