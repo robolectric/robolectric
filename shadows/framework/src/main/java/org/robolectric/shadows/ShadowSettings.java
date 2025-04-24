@@ -41,9 +41,7 @@ public class ShadowSettings {
   @Implements(value = Settings.System.class)
   public static class ShadowSystem {
     private static final ImmutableMap<String, Optional<Object>> DEFAULTS =
-        ImmutableMap.<String, Optional<Object>>builder()
-            .put(Settings.System.ANIMATOR_DURATION_SCALE, Optional.of(1))
-            .buildOrThrow();
+        ImmutableMap.of(Settings.System.ANIMATOR_DURATION_SCALE, Optional.of(1));
     private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>(DEFAULTS);
 
     @Implementation
@@ -350,7 +348,7 @@ public class ShadowSettings {
     private static final ImmutableMap<String, Optional<Object>> DEFAULTS =
         ImmutableMap.<String, Optional<Object>>builder()
             .put(Settings.Global.ANIMATOR_DURATION_SCALE, Optional.of(1))
-            .buildOrThrow();
+            .build();
     private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>(DEFAULTS);
 
     @Implementation

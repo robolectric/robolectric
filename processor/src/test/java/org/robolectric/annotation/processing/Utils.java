@@ -15,11 +15,10 @@ import javax.tools.JavaFileObject;
 public class Utils {
 
   public static final ImmutableMap<String, String> DEFAULT_OPTS =
-      ImmutableMap.<String, String>builder()
-          .put(PACKAGE_OPT, "org.robolectric")
-          .put(JSON_DOCS_DIR, Files.createTempDir().toString())
-          .put(SDK_CHECK_MODE, "OFF")
-          .buildOrThrow();
+      ImmutableMap.of(
+          PACKAGE_OPT, "org.robolectric",
+          JSON_DOCS_DIR, Files.createTempDir().toString(),
+          SDK_CHECK_MODE, "OFF");
 
   public static final JavaFileObject SHADOW_PROVIDER_SOURCE =
       forResource("mock-source/org/robolectric/internal/ShadowProvider.java");

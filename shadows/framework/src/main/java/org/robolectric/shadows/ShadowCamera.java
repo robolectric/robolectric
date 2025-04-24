@@ -24,36 +24,39 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowCamera {
   // These are completely arbitrary and likely outdated default parameters that have been added long
   // ago.
-  private static final ImmutableMap<String, String> DEFAULT_PARAMS =
-      ImmutableMap.<String, String>builder()
-          .put("picture-size", "1280x960")
-          .put("preview-size", "640x480")
-          .put("preview-fps-range", "10,30")
-          .put("preview-frame-rate", "30")
-          .put("preview-format", "yuv420sp")
-          .put("picture-format-values", "yuv420sp,jpeg")
-          .put("preview-format-values", "yuv420sp,jpeg")
-          .put("picture-size-values", "320x240,640x480,800x600")
-          .put("preview-size-values", "320x240,640x480")
-          .put("preview-fps-range-values", "(15000,15000),(10000,30000)")
-          .put("preview-frame-rate-values", "10,15,30")
-          .put("exposure-compensation", "0")
-          .put("exposure-compensation-step", "0.5")
-          .put("min-exposure-compensation", "-6")
-          .put("max-exposure-compensation", "6")
-          .put("focus-mode-values", Camera.Parameters.FOCUS_MODE_AUTO)
-          .put("focus-mode", Camera.Parameters.FOCUS_MODE_AUTO)
-          .put(
-              "flash-mode-values",
-              Camera.Parameters.FLASH_MODE_AUTO
-                  + ","
-                  + Camera.Parameters.FLASH_MODE_ON
-                  + ","
-                  + Camera.Parameters.FLASH_MODE_OFF)
-          .put("flash-mode", Camera.Parameters.FLASH_MODE_AUTO)
-          .put("max-num-focus-areas", "1")
-          .put("max-num-metering-areas", "1")
-          .buildOrThrow();
+  private static final ImmutableMap<String, String> DEFAULT_PARAMS;
+
+  static {
+    Map<String, String> defaultParams = new HashMap<>();
+    defaultParams.put("picture-size", "1280x960");
+    defaultParams.put("preview-size", "640x480");
+    defaultParams.put("preview-fps-range", "10,30");
+    defaultParams.put("preview-frame-rate", "30");
+    defaultParams.put("preview-format", "yuv420sp");
+    defaultParams.put("picture-format-values", "yuv420sp,jpeg");
+    defaultParams.put("preview-format-values", "yuv420sp,jpeg");
+    defaultParams.put("picture-size-values", "320x240,640x480,800x600");
+    defaultParams.put("preview-size-values", "320x240,640x480");
+    defaultParams.put("preview-fps-range-values", "(15000,15000),(10000,30000)");
+    defaultParams.put("preview-frame-rate-values", "10,15,30");
+    defaultParams.put("exposure-compensation", "0");
+    defaultParams.put("exposure-compensation-step", "0.5");
+    defaultParams.put("min-exposure-compensation", "-6");
+    defaultParams.put("max-exposure-compensation", "6");
+    defaultParams.put("focus-mode-values", Camera.Parameters.FOCUS_MODE_AUTO);
+    defaultParams.put("focus-mode", Camera.Parameters.FOCUS_MODE_AUTO);
+    defaultParams.put(
+        "flash-mode-values",
+        Camera.Parameters.FLASH_MODE_AUTO
+            + ","
+            + Camera.Parameters.FLASH_MODE_ON
+            + ","
+            + Camera.Parameters.FLASH_MODE_OFF);
+    defaultParams.put("flash-mode", Camera.Parameters.FLASH_MODE_AUTO);
+    defaultParams.put("max-num-focus-areas", "1");
+    defaultParams.put("max-num-metering-areas", "1");
+    DEFAULT_PARAMS = ImmutableMap.copyOf(defaultParams);
+  }
 
   private static int lastOpenedCameraId;
 

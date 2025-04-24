@@ -656,94 +656,98 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
     }
 
     // These are from android_database_SQLiteCommon.cpp
-    private static final ImmutableMap<Integer, String> ERROR_CODE_MAP =
-        new ImmutableMap.Builder<Integer, String>()
-            .put(4, "SQLITE_ABORT")
-            .put(23, "SQLITE_AUTH")
-            .put(5, "SQLITE_BUSY")
-            .put(14, "SQLITE_CANTOPEN")
-            .put(19, "SQLITE_CONSTRAINT")
-            .put(11, "SQLITE_CORRUPT")
-            .put(101, "SQLITE_DONE")
-            .put(16, "SQLITE_EMPTY")
-            .put(1, "SQLITE_ERROR")
-            .put(24, "SQLITE_FORMAT")
-            .put(13, "SQLITE_FULL")
-            .put(2, "SQLITE_INTERNAL")
-            .put(9, "SQLITE_INTERRUPT")
-            .put(10, "SQLITE_IOERR")
-            .put(6, "SQLITE_LOCKED")
-            .put(20, "SQLITE_MISMATCH")
-            .put(21, "SQLITE_MISUSE")
-            .put(22, "SQLITE_NOLFS")
-            .put(7, "SQLITE_NOMEM")
-            .put(26, "SQLITE_NOTADB")
-            .put(12, "SQLITE_NOTFOUND")
-            .put(27, "SQLITE_NOTICE")
-            .put(0, "SQLITE_OK")
-            .put(3, "SQLITE_PERM")
-            .put(15, "SQLITE_PROTOCOL")
-            .put(25, "SQLITE_RANGE")
-            .put(8, "SQLITE_READONLY")
-            .put(100, "SQLITE_ROW")
-            .put(17, "SQLITE_SCHEMA")
-            .put(18, "SQLITE_TOOBIG")
-            .put(28, "SQLITE_WARNING")
-            // Extended Result Code List
-            .put(516, "SQLITE_ABORT_ROLLBACK")
-            .put(261, "SQLITE_BUSY_RECOVERY")
-            .put(517, "SQLITE_BUSY_SNAPSHOT")
-            .put(1038, "SQLITE_CANTOPEN_CONVPATH")
-            .put(782, "SQLITE_CANTOPEN_FULLPATH")
-            .put(526, "SQLITE_CANTOPEN_ISDIR")
-            .put(270, "SQLITE_CANTOPEN_NOTEMPDIR")
-            .put(275, "SQLITE_CONSTRAINT_CHECK")
-            .put(531, "SQLITE_CONSTRAINT_COMMITHOOK")
-            .put(787, "SQLITE_CONSTRAINT_FOREIGNKEY")
-            .put(1043, "SQLITE_CONSTRAINT_FUNCTION")
-            .put(1299, "SQLITE_CONSTRAINT_NOTNULL")
-            .put(1555, "SQLITE_CONSTRAINT_PRIMARYKEY")
-            .put(2579, "SQLITE_CONSTRAINT_ROWID")
-            .put(1811, "SQLITE_CONSTRAINT_TRIGGER")
-            .put(2067, "SQLITE_CONSTRAINT_UNIQUE")
-            .put(2323, "SQLITE_CONSTRAINT_VTAB")
-            .put(267, "SQLITE_CORRUPT_VTAB")
-            .put(3338, "SQLITE_IOERR_ACCESS")
-            .put(2826, "SQLITE_IOERR_BLOCKED")
-            .put(3594, "SQLITE_IOERR_CHECKRESERVEDLOCK")
-            .put(4106, "SQLITE_IOERR_CLOSE")
-            .put(6666, "SQLITE_IOERR_CONVPATH")
-            .put(2570, "SQLITE_IOERR_DELETE")
-            .put(5898, "SQLITE_IOERR_DELETE_NOENT")
-            .put(4362, "SQLITE_IOERR_DIR_CLOSE")
-            .put(1290, "SQLITE_IOERR_DIR_FSYNC")
-            .put(1802, "SQLITE_IOERR_FSTAT")
-            .put(1034, "SQLITE_IOERR_FSYNC")
-            .put(6410, "SQLITE_IOERR_GETTEMPPATH")
-            .put(3850, "SQLITE_IOERR_LOCK")
-            .put(6154, "SQLITE_IOERR_MMAP")
-            .put(3082, "SQLITE_IOERR_NOMEM")
-            .put(2314, "SQLITE_IOERR_RDLOCK")
-            .put(266, "SQLITE_IOERR_READ")
-            .put(5642, "SQLITE_IOERR_SEEK")
-            .put(5130, "SQLITE_IOERR_SHMLOCK")
-            .put(5386, "SQLITE_IOERR_SHMMAP")
-            .put(4618, "SQLITE_IOERR_SHMOPEN")
-            .put(4874, "SQLITE_IOERR_SHMSIZE")
-            .put(522, "SQLITE_IOERR_SHORT_READ")
-            .put(1546, "SQLITE_IOERR_TRUNCATE")
-            .put(2058, "SQLITE_IOERR_UNLOCK")
-            .put(778, "SQLITE_IOERR_WRITE")
-            .put(262, "SQLITE_LOCKED_SHAREDCACHE")
-            .put(539, "SQLITE_NOTICE_RECOVER_ROLLBACK")
-            .put(283, "SQLITE_NOTICE_RECOVER_WAL")
-            .put(256, "SQLITE_OK_LOAD_PERMANENTLY")
-            .put(520, "SQLITE_READONLY_CANTLOCK")
-            .put(1032, "SQLITE_READONLY_DBMOVED")
-            .put(264, "SQLITE_READONLY_RECOVERY")
-            .put(776, "SQLITE_READONLY_ROLLBACK")
-            .put(284, "SQLITE_WARNING_AUTOINDEX")
-            .buildOrThrow();
+    private static final ImmutableMap<Integer, String> ERROR_CODE_MAP;
+
+    static {
+      Map<Integer, String> errorCodeMap = new HashMap<>();
+      errorCodeMap.put(4, "SQLITE_ABORT");
+      errorCodeMap.put(23, "SQLITE_AUTH");
+      errorCodeMap.put(5, "SQLITE_BUSY");
+      errorCodeMap.put(14, "SQLITE_CANTOPEN");
+      errorCodeMap.put(19, "SQLITE_CONSTRAINT");
+      errorCodeMap.put(11, "SQLITE_CORRUPT");
+      errorCodeMap.put(101, "SQLITE_DONE");
+      errorCodeMap.put(16, "SQLITE_EMPTY");
+      errorCodeMap.put(1, "SQLITE_ERROR");
+      errorCodeMap.put(24, "SQLITE_FORMAT");
+      errorCodeMap.put(13, "SQLITE_FULL");
+      errorCodeMap.put(2, "SQLITE_INTERNAL");
+      errorCodeMap.put(9, "SQLITE_INTERRUPT");
+      errorCodeMap.put(10, "SQLITE_IOERR");
+      errorCodeMap.put(6, "SQLITE_LOCKED");
+      errorCodeMap.put(20, "SQLITE_MISMATCH");
+      errorCodeMap.put(21, "SQLITE_MISUSE");
+      errorCodeMap.put(22, "SQLITE_NOLFS");
+      errorCodeMap.put(7, "SQLITE_NOMEM");
+      errorCodeMap.put(26, "SQLITE_NOTADB");
+      errorCodeMap.put(12, "SQLITE_NOTFOUND");
+      errorCodeMap.put(27, "SQLITE_NOTICE");
+      errorCodeMap.put(0, "SQLITE_OK");
+      errorCodeMap.put(3, "SQLITE_PERM");
+      errorCodeMap.put(15, "SQLITE_PROTOCOL");
+      errorCodeMap.put(25, "SQLITE_RANGE");
+      errorCodeMap.put(8, "SQLITE_READONLY");
+      errorCodeMap.put(100, "SQLITE_ROW");
+      errorCodeMap.put(17, "SQLITE_SCHEMA");
+      errorCodeMap.put(18, "SQLITE_TOOBIG");
+      errorCodeMap.put(28, "SQLITE_WARNING");
+      // Extended Result Code List
+      errorCodeMap.put(516, "SQLITE_ABORT_ROLLBACK");
+      errorCodeMap.put(261, "SQLITE_BUSY_RECOVERY");
+      errorCodeMap.put(517, "SQLITE_BUSY_SNAPSHOT");
+      errorCodeMap.put(1038, "SQLITE_CANTOPEN_CONVPATH");
+      errorCodeMap.put(782, "SQLITE_CANTOPEN_FULLPATH");
+      errorCodeMap.put(526, "SQLITE_CANTOPEN_ISDIR");
+      errorCodeMap.put(270, "SQLITE_CANTOPEN_NOTEMPDIR");
+      errorCodeMap.put(275, "SQLITE_CONSTRAINT_CHECK");
+      errorCodeMap.put(531, "SQLITE_CONSTRAINT_COMMITHOOK");
+      errorCodeMap.put(787, "SQLITE_CONSTRAINT_FOREIGNKEY");
+      errorCodeMap.put(1043, "SQLITE_CONSTRAINT_FUNCTION");
+      errorCodeMap.put(1299, "SQLITE_CONSTRAINT_NOTNULL");
+      errorCodeMap.put(1555, "SQLITE_CONSTRAINT_PRIMARYKEY");
+      errorCodeMap.put(2579, "SQLITE_CONSTRAINT_ROWID");
+      errorCodeMap.put(1811, "SQLITE_CONSTRAINT_TRIGGER");
+      errorCodeMap.put(2067, "SQLITE_CONSTRAINT_UNIQUE");
+      errorCodeMap.put(2323, "SQLITE_CONSTRAINT_VTAB");
+      errorCodeMap.put(267, "SQLITE_CORRUPT_VTAB");
+      errorCodeMap.put(3338, "SQLITE_IOERR_ACCESS");
+      errorCodeMap.put(2826, "SQLITE_IOERR_BLOCKED");
+      errorCodeMap.put(3594, "SQLITE_IOERR_CHECKRESERVEDLOCK");
+      errorCodeMap.put(4106, "SQLITE_IOERR_CLOSE");
+      errorCodeMap.put(6666, "SQLITE_IOERR_CONVPATH");
+      errorCodeMap.put(2570, "SQLITE_IOERR_DELETE");
+      errorCodeMap.put(5898, "SQLITE_IOERR_DELETE_NOENT");
+      errorCodeMap.put(4362, "SQLITE_IOERR_DIR_CLOSE");
+      errorCodeMap.put(1290, "SQLITE_IOERR_DIR_FSYNC");
+      errorCodeMap.put(1802, "SQLITE_IOERR_FSTAT");
+      errorCodeMap.put(1034, "SQLITE_IOERR_FSYNC");
+      errorCodeMap.put(6410, "SQLITE_IOERR_GETTEMPPATH");
+      errorCodeMap.put(3850, "SQLITE_IOERR_LOCK");
+      errorCodeMap.put(6154, "SQLITE_IOERR_MMAP");
+      errorCodeMap.put(3082, "SQLITE_IOERR_NOMEM");
+      errorCodeMap.put(2314, "SQLITE_IOERR_RDLOCK");
+      errorCodeMap.put(266, "SQLITE_IOERR_READ");
+      errorCodeMap.put(5642, "SQLITE_IOERR_SEEK");
+      errorCodeMap.put(5130, "SQLITE_IOERR_SHMLOCK");
+      errorCodeMap.put(5386, "SQLITE_IOERR_SHMMAP");
+      errorCodeMap.put(4618, "SQLITE_IOERR_SHMOPEN");
+      errorCodeMap.put(4874, "SQLITE_IOERR_SHMSIZE");
+      errorCodeMap.put(522, "SQLITE_IOERR_SHORT_READ");
+      errorCodeMap.put(1546, "SQLITE_IOERR_TRUNCATE");
+      errorCodeMap.put(2058, "SQLITE_IOERR_UNLOCK");
+      errorCodeMap.put(778, "SQLITE_IOERR_WRITE");
+      errorCodeMap.put(262, "SQLITE_LOCKED_SHAREDCACHE");
+      errorCodeMap.put(539, "SQLITE_NOTICE_RECOVER_ROLLBACK");
+      errorCodeMap.put(283, "SQLITE_NOTICE_RECOVER_WAL");
+      errorCodeMap.put(256, "SQLITE_OK_LOAD_PERMANENTLY");
+      errorCodeMap.put(520, "SQLITE_READONLY_CANTLOCK");
+      errorCodeMap.put(1032, "SQLITE_READONLY_DBMOVED");
+      errorCodeMap.put(264, "SQLITE_READONLY_RECOVERY");
+      errorCodeMap.put(776, "SQLITE_READONLY_ROLLBACK");
+      errorCodeMap.put(284, "SQLITE_WARNING_AUTOINDEX");
+
+      ERROR_CODE_MAP = ImmutableMap.copyOf(errorCodeMap);
+    }
 
     private static RuntimeException getSqliteException(
         final String sqliteErrorMessage, final int errorCode) {
