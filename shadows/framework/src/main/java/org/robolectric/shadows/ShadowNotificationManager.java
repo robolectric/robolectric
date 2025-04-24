@@ -365,11 +365,7 @@ public class ShadowNotificationManager {
   protected Map<String, AutomaticZenRule> getAutomaticZenRules() {
     enforcePolicyAccess();
 
-    ImmutableMap.Builder<String, AutomaticZenRule> rules = new ImmutableMap.Builder<>();
-    for (Map.Entry<String, AutomaticZenRule> entry : automaticZenRules.entrySet()) {
-      rules.put(entry.getKey(), copyAutomaticZenRule(entry.getValue()));
-    }
-    return rules.buildOrThrow();
+    return ImmutableMap.copyOf(automaticZenRules);
   }
 
   @Implementation(minSdk = N)
