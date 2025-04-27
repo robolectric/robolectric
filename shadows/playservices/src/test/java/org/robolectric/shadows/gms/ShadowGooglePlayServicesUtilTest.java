@@ -24,9 +24,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.gms.ShadowGooglePlayServicesUtil.GooglePlayServicesUtilImpl;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(
-    manifest = Config.NONE,
-    shadows = {ShadowGooglePlayServicesUtil.class})
+@Config(shadows = {ShadowGooglePlayServicesUtil.class})
 public class ShadowGooglePlayServicesUtilTest {
 
   @Mock private GooglePlayServicesUtilImpl mockGooglePlayServicesUtil;
