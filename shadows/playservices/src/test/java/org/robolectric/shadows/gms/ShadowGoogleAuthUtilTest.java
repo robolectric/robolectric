@@ -25,9 +25,7 @@ import org.robolectric.shadows.gms.ShadowGoogleAuthUtil.GoogleAuthUtilImpl;
 
 /** Unit test for {@link ShadowGoogleAuthUtil}. */
 @RunWith(RobolectricTestRunner.class)
-@Config(
-    manifest = Config.NONE,
-    shadows = {ShadowGoogleAuthUtil.class})
+@Config(shadows = {ShadowGoogleAuthUtil.class})
 public class ShadowGoogleAuthUtilTest {
 
   private AutoCloseable mock;

@@ -20,9 +20,7 @@ import org.robolectric.shadows.gms.Shadows;
 
 /** Created by diegotori on 2/14/16. */
 @RunWith(RobolectricTestRunner.class)
-@Config(
-    manifest = Config.NONE,
-    shadows = {ShadowGoogleApiAvailability.class})
+@Config(shadows = {ShadowGoogleApiAvailability.class})
 public class ShadowGoogleApiAvailabilityTest {
 
   private Context roboContext;
