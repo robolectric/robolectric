@@ -20,6 +20,7 @@ import org.robolectric.res.Fs;
 @Deprecated
 @SuppressWarnings("NewApi")
 public class MavenManifestFactory implements ManifestFactory {
+  private static final String RES_FOLDER = "res";
 
   @Override
   public ManifestIdentifier identify(Config config) {
@@ -43,7 +44,7 @@ public class MavenManifestFactory implements ManifestFactory {
 
     final String packageName = "org.robolectric.default";
     final Path baseDir = manifestFile.getParent();
-    final Path resDir = baseDir.resolve(config.resourceDir());
+    final Path resDir = baseDir.resolve(RES_FOLDER);
     final Path assetDir = baseDir.resolve(config.assetDir());
 
     List<ManifestIdentifier> libraries;
@@ -62,7 +63,7 @@ public class MavenManifestFactory implements ManifestFactory {
             new ManifestIdentifier(
                 null,
                 libDir.resolve(Config.DEFAULT_MANIFEST_NAME),
-                libDir.resolve(Config.DEFAULT_RES_FOLDER),
+                libDir.resolve(RES_FOLDER),
                 libDir.resolve(Config.DEFAULT_ASSET_FOLDER),
                 null));
       }
@@ -121,13 +122,12 @@ public class MavenManifestFactory implements ManifestFactory {
           // Ignore directories without any files
           Path[] libraryBaseDirFiles = Fs.listFiles(libraryDir);
           if (libraryBaseDirFiles.length > 0) {
-            List<ManifestIdentifier> libraries =
-                findLibraries(libraryDir.resolve(Config.DEFAULT_RES_FOLDER));
+            List<ManifestIdentifier> libraries = findLibraries(libraryDir.resolve(RES_FOLDER));
             libraryBaseDirs.add(
                 new ManifestIdentifier(
                     null,
                     libraryDir.resolve(Config.DEFAULT_MANIFEST_NAME),
-                    libraryDir.resolve(Config.DEFAULT_RES_FOLDER),
+                    libraryDir.resolve(RES_FOLDER),
                     libraryDir.resolve(Config.DEFAULT_ASSET_FOLDER),
                     libraries));
           }
