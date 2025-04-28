@@ -38,7 +38,6 @@ public @interface Config {
   String DEFAULT_MANIFEST_NAME = "AndroidManifest.xml";
   Class<? extends Application> DEFAULT_APPLICATION = DefaultApplication.class;
   String DEFAULT_QUALIFIERS = "";
-  String DEFAULT_RES_FOLDER = "res";
   String DEFAULT_ASSET_FOLDER = "assets";
 
   int ALL_SDKS = -2;
@@ -100,19 +99,6 @@ public @interface Config {
   String qualifiers() default DEFAULT_QUALIFIERS;
 
   /**
-   * The directory from which to load resources. This should be relative to the directory containing
-   * AndroidManifest.xml.
-   *
-   * <p>If not specified, Robolectric defaults to {@code res}.
-   *
-   * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
-   *     please migrate to the preferred way to configure
-   * @return Android resource directory.
-   */
-  @Deprecated
-  String resourceDir() default DEFAULT_RES_FOLDER;
-
-  /**
    * The directory from which to load assets. This should be relative to the directory containing
    * AndroidManifest.xml.
    *
@@ -156,7 +142,6 @@ public @interface Config {
     private final float fontScale;
     private final String manifest;
     private final String qualifiers;
-    private final String resourceDir;
     private final String assetDir;
     private final Class<?>[] shadows;
     private final String[] instrumentedPackages;
@@ -172,7 +157,6 @@ public @interface Config {
           properties.getProperty("manifest", DEFAULT_VALUE_STRING),
           properties.getProperty("qualifiers", DEFAULT_QUALIFIERS),
           Float.parseFloat(properties.getProperty("fontScale", "1.0f")),
-          properties.getProperty("resourceDir", DEFAULT_RES_FOLDER),
           properties.getProperty("assetDir", DEFAULT_ASSET_FOLDER),
           parseClasses(properties.getProperty("shadows", "")),
           parseStringArrayProperty(properties.getProperty("instrumentedPackages", "")),
@@ -272,7 +256,6 @@ public @interface Config {
         String manifest,
         String qualifiers,
         float fontScale,
-        String resourceDir,
         String assetDir,
         Class<?>[] shadows,
         String[] instrumentedPackages,
@@ -284,7 +267,6 @@ public @interface Config {
       this.manifest = manifest;
       this.qualifiers = qualifiers;
       this.fontScale = fontScale;
-      this.resourceDir = resourceDir;
       this.assetDir = assetDir;
       this.shadows = shadows;
       this.instrumentedPackages = instrumentedPackages;
@@ -330,11 +312,6 @@ public @interface Config {
     }
 
     @Override
-    public String resourceDir() {
-      return resourceDir;
-    }
-
-    @Override
     public String assetDir() {
       return assetDir;
     }
@@ -375,9 +352,6 @@ public @interface Config {
           + ", qualifiers='"
           + qualifiers
           + '\''
-          + ", resourceDir='"
-          + resourceDir
-          + '\''
           + ", assetDir='"
           + assetDir
           + '\''
@@ -400,7 +374,6 @@ public @interface Config {
     protected float fontScale = 1.0f;
     protected String manifest = Config.DEFAULT_VALUE_STRING;
     protected String qualifiers = Config.DEFAULT_QUALIFIERS;
-    protected String resourceDir = Config.DEFAULT_RES_FOLDER;
     protected String assetDir = Config.DEFAULT_ASSET_FOLDER;
     protected Class<?>[] shadows = new Class[0];
     protected String[] instrumentedPackages = new String[0];
@@ -416,7 +389,6 @@ public @interface Config {
       manifest = config.manifest();
       qualifiers = config.qualifiers();
       fontScale = config.fontScale();
-      resourceDir = config.resourceDir();
       assetDir = config.assetDir();
       shadows = config.shadows();
       instrumentedPackages = config.instrumentedPackages();
@@ -446,11 +418,6 @@ public @interface Config {
 
     public Builder setQualifiers(String qualifiers) {
       this.qualifiers = qualifiers;
-      return this;
-    }
-
-    public Builder setResourceDir(String resourceDir) {
-      this.resourceDir = resourceDir;
       return this;
     }
 
@@ -489,10 +456,7 @@ public @interface Config {
      * values, rather than markers like {@code -1} or {@code --default}.
      */
     public static Builder defaults() {
-      return new Builder()
-          .setManifest(DEFAULT_MANIFEST_NAME)
-          .setResourceDir(DEFAULT_RES_FOLDER)
-          .setAssetDir(DEFAULT_ASSET_FOLDER);
+      return new Builder().setManifest(DEFAULT_MANIFEST_NAME).setAssetDir(DEFAULT_ASSET_FOLDER);
     }
 
     public Builder overlay(Config overlayConfig) {
@@ -528,8 +492,6 @@ public @interface Config {
         }
       }
 
-      this.resourceDir =
-          pick(this.resourceDir, overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
       this.assetDir = pick(this.assetDir, overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
 
       List<Class<?>> shadows = new ArrayList<>(Arrays.asList(this.shadows));
@@ -568,7 +530,6 @@ public @interface Config {
           manifest,
           qualifiers,
           fontScale,
-          resourceDir,
           assetDir,
           shadows,
           instrumentedPackages,
