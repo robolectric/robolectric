@@ -91,14 +91,13 @@ public class DefaultManifestFactoryTest {
     properties.put("android_merged_resources", "gradle/res");
     properties.put("android_merged_assets", "gradle/assets");
     DefaultManifestFactory factory = new DefaultManifestFactory(properties);
-    ManifestIdentifier identifier =
-        factory.identify(Config.Builder.defaults().setPackageName("overridden.package").build());
+    ManifestIdentifier identifier = factory.identify(Config.Builder.defaults().build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
 
     assertThat(manifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
     assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
     assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
-    assertThat(manifest.getRClassName()).isEqualTo("overridden.package.R");
+    assertThat(manifest.getRClassName()).isEqualTo("org.robolectric.default.R");
   }
 }

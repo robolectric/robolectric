@@ -41,6 +41,7 @@ public class MavenManifestFactory implements ManifestFactory {
       manifestFile = getBaseDir().resolve(manifestPath);
     }
 
+    final String packageName = "org.robolectric.default";
     final Path baseDir = manifestFile.getParent();
     final Path resDir = baseDir.resolve(config.resourceDir());
     final Path assetDir = baseDir.resolve(config.assetDir());
@@ -67,7 +68,7 @@ public class MavenManifestFactory implements ManifestFactory {
       }
     }
 
-    return new ManifestIdentifier(config.packageName(), manifestFile, resDir, assetDir, libraries);
+    return new ManifestIdentifier(packageName, manifestFile, resDir, assetDir, libraries);
   }
 
   Path getBaseDir() {

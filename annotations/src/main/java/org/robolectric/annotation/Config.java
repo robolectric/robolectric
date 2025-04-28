@@ -37,7 +37,6 @@ public @interface Config {
 
   String DEFAULT_MANIFEST_NAME = "AndroidManifest.xml";
   Class<? extends Application> DEFAULT_APPLICATION = DefaultApplication.class;
-  String DEFAULT_PACKAGE_NAME = "";
   String DEFAULT_QUALIFIERS = "";
   String DEFAULT_RES_FOLDER = "res";
   String DEFAULT_ASSET_FOLDER = "assets";
@@ -87,26 +86,6 @@ public @interface Config {
    */
   Class<? extends Application> application() default
       DefaultApplication.class; // DEFAULT_APPLICATION
-
-  /**
-   * Java package name where the "R.class" file is located. This only needs to be specified if you
-   * define an {@code applicationId} associated with {@code productFlavors} or specify {@code
-   * applicationIdSuffix} in your build.gradle.
-   *
-   * <p>If not specified, Robolectric defaults to the {@code applicationId}.
-   *
-   * @return The java package name for R.class.
-   * @deprecated To change your package name please override the applicationId in your build system.
-   *     Changing package name here is broken as the package name will no longer match the package
-   *     name encoded in the arsc resources file. If you are looking to simulate another application
-   *     you can create another applications Context using {@link
-   *     android.content.Context#createPackageContext(String, int)}. Note that you must add this
-   *     package to {@link
-   *     org.robolectric.shadows.ShadowPackageManager#addPackage(android.content.pm.PackageInfo)}
-   *     first.
-   */
-  @Deprecated
-  String packageName() default DEFAULT_PACKAGE_NAME;
 
   /**
    * Qualifiers specifying device configuration for this test, such as "fr-normal-port-hdpi".
@@ -179,7 +158,6 @@ public @interface Config {
     private final String qualifiers;
     private final String resourceDir;
     private final String assetDir;
-    private final String packageName;
     private final Class<?>[] shadows;
     private final String[] instrumentedPackages;
     private final Class<? extends Application> application;
@@ -194,7 +172,6 @@ public @interface Config {
           properties.getProperty("manifest", DEFAULT_VALUE_STRING),
           properties.getProperty("qualifiers", DEFAULT_QUALIFIERS),
           Float.parseFloat(properties.getProperty("fontScale", "1.0f")),
-          properties.getProperty("packageName", DEFAULT_PACKAGE_NAME),
           properties.getProperty("resourceDir", DEFAULT_RES_FOLDER),
           properties.getProperty("assetDir", DEFAULT_ASSET_FOLDER),
           parseClasses(properties.getProperty("shadows", "")),
@@ -295,7 +272,6 @@ public @interface Config {
         String manifest,
         String qualifiers,
         float fontScale,
-        String packageName,
         String resourceDir,
         String assetDir,
         Class<?>[] shadows,
@@ -308,7 +284,6 @@ public @interface Config {
       this.manifest = manifest;
       this.qualifiers = qualifiers;
       this.fontScale = fontScale;
-      this.packageName = packageName;
       this.resourceDir = resourceDir;
       this.assetDir = assetDir;
       this.shadows = shadows;
@@ -352,11 +327,6 @@ public @interface Config {
     @Override
     public String qualifiers() {
       return qualifiers;
-    }
-
-    @Override
-    public String packageName() {
-      return packageName;
     }
 
     @Override
@@ -411,9 +381,6 @@ public @interface Config {
           + ", assetDir='"
           + assetDir
           + '\''
-          + ", packageName='"
-          + packageName
-          + '\''
           + ", shadows="
           + Arrays.toString(shadows)
           + ", instrumentedPackages="
@@ -433,7 +400,6 @@ public @interface Config {
     protected float fontScale = 1.0f;
     protected String manifest = Config.DEFAULT_VALUE_STRING;
     protected String qualifiers = Config.DEFAULT_QUALIFIERS;
-    protected String packageName = Config.DEFAULT_PACKAGE_NAME;
     protected String resourceDir = Config.DEFAULT_RES_FOLDER;
     protected String assetDir = Config.DEFAULT_ASSET_FOLDER;
     protected Class<?>[] shadows = new Class[0];
@@ -450,7 +416,6 @@ public @interface Config {
       manifest = config.manifest();
       qualifiers = config.qualifiers();
       fontScale = config.fontScale();
-      packageName = config.packageName();
       resourceDir = config.resourceDir();
       assetDir = config.assetDir();
       shadows = config.shadows();
@@ -481,11 +446,6 @@ public @interface Config {
 
     public Builder setQualifiers(String qualifiers) {
       this.qualifiers = qualifiers;
-      return this;
-    }
-
-    public Builder setPackageName(String packageName) {
-      this.packageName = packageName;
       return this;
     }
 
@@ -568,7 +528,6 @@ public @interface Config {
         }
       }
 
-      this.packageName = pick(this.packageName, overlayConfig.packageName(), "");
       this.resourceDir =
           pick(this.resourceDir, overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
       this.assetDir = pick(this.assetDir, overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
@@ -609,7 +568,6 @@ public @interface Config {
           manifest,
           qualifiers,
           fontScale,
-          packageName,
           resourceDir,
           assetDir,
           shadows,

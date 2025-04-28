@@ -42,10 +42,6 @@ public class DefaultManifestFactory implements ManifestFactory {
       assetsDir = getResource(config.assetDir());
     }
 
-    if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
-      packageName = config.packageName();
-    }
-
     List<ManifestIdentifier> libraryDirs = emptyList();
     if (config.libraries().length > 0) {
       Logger.info("@Config(libraries) specified while using Build System API, ignoring");
