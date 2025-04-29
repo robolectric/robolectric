@@ -46,12 +46,9 @@ import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 import org.robolectric.plugins.StubSdk;
-import org.robolectric.res.ResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
@@ -230,24 +227,6 @@ public class AndroidTestEnvironmentTest {
         };
     bootstrapWrapper.tearDownApplication();
     assertThat(events).containsExactly("terminated");
-  }
-
-  /** Can't use Mockito for classloader issues */
-  static class ThrowingManifest extends AndroidManifest {
-    public ThrowingManifest(AndroidManifest androidManifest) {
-      super(
-          androidManifest.getAndroidManifestFile(),
-          androidManifest.getResDirectory(),
-          androidManifest.getAssetsDirectory(),
-          androidManifest.getLibraryManifests(),
-          null,
-          androidManifest.getApkFile());
-    }
-
-    @Override
-    public void initMetaData(ResourceTable resourceTable) throws RoboNotFoundException {
-      throw new RoboNotFoundException("This is just a test");
-    }
   }
 
   @Test
