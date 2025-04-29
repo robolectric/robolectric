@@ -14,7 +14,6 @@ import android.accessibilityservice.GestureDescription;
 import android.accessibilityservice.GestureDescription.StrokeDescription;
 import android.graphics.Path;
 import android.view.Display;
-import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -28,15 +27,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestAccessibilityService;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAccessibilityServiceTest {
-  private MyService service;
+  private TestAccessibilityService service;
   private ShadowAccessibilityService shadow;
 
   @Before
   public void setUp() {
-    service = Robolectric.setupService(MyService.class);
+    service = Robolectric.setupService(TestAccessibilityService.class);
     shadow = shadowOf(service);
   }
 
@@ -347,22 +347,5 @@ public class ShadowAccessibilityServiceTest {
       @Override
       public void onCancelled(GestureDescription description) {}
     };
-  }
-
-  public static class MyService extends AccessibilityService {
-    @Override
-    public void onDestroy() {
-      super.onDestroy();
-    }
-
-    @Override
-    public void onAccessibilityEvent(AccessibilityEvent arg0) {
-      // Do nothing
-    }
-
-    @Override
-    public void onInterrupt() {
-      // Do nothing
-    }
   }
 }

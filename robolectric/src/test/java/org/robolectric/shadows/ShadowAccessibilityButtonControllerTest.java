@@ -5,14 +5,13 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accessibilityservice.AccessibilityButtonController;
-import android.accessibilityservice.AccessibilityService;
-import android.view.accessibility.AccessibilityEvent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestAccessibilityService;
 
 /** Unit tests for {@link ShadowAccessibilityButtonController}. */
 @RunWith(AndroidJUnit4.class)
@@ -25,7 +24,7 @@ public class ShadowAccessibilityButtonControllerTest {
 
   @Before
   public void setUp() {
-    MyService service = Robolectric.setupService(MyService.class);
+    TestAccessibilityService service = Robolectric.setupService(TestAccessibilityService.class);
     accessibilityButtonController = service.getAccessibilityButtonController();
   }
 
@@ -46,23 +45,5 @@ public class ShadowAccessibilityButtonControllerTest {
           }
         };
     accessibilityButtonController.registerAccessibilityButtonCallback(accessibilityButtonCallback);
-  }
-
-  /** AccessibilityService for {@link ShadowAccessibilityButtonControllerTest} */
-  public static class MyService extends AccessibilityService {
-    @Override
-    public void onDestroy() {
-      super.onDestroy();
-    }
-
-    @Override
-    public void onAccessibilityEvent(AccessibilityEvent arg0) {
-      // Do nothing
-    }
-
-    @Override
-    public void onInterrupt() {
-      // Do nothing
-    }
   }
 }
