@@ -21,6 +21,7 @@ import org.robolectric.res.Fs;
 @SuppressWarnings("NewApi")
 public class MavenManifestFactory implements ManifestFactory {
   private static final String RES_FOLDER = "res";
+  private static final String ASSETS_FOLDER = "assets";
 
   @Override
   public ManifestIdentifier identify(Config config) {
@@ -45,7 +46,7 @@ public class MavenManifestFactory implements ManifestFactory {
     final String packageName = "org.robolectric.default";
     final Path baseDir = manifestFile.getParent();
     final Path resDir = baseDir.resolve(RES_FOLDER);
-    final Path assetDir = baseDir.resolve(config.assetDir());
+    final Path assetDir = baseDir.resolve(ASSETS_FOLDER);
 
     List<ManifestIdentifier> libraries;
     try {
@@ -113,7 +114,7 @@ public class MavenManifestFactory implements ManifestFactory {
                     null,
                     libraryDir.resolve(Config.DEFAULT_MANIFEST_NAME),
                     libraryDir.resolve(RES_FOLDER),
-                    libraryDir.resolve(Config.DEFAULT_ASSET_FOLDER),
+                    libraryDir.resolve(ASSETS_FOLDER),
                     libraries));
           }
         }
