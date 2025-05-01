@@ -26,7 +26,7 @@ public class MavenManifestFactory implements ManifestFactory {
   public ManifestIdentifier identify(Config config) {
     final String manifestPath = config.manifest();
     if (manifestPath.equals(Config.NONE)) {
-      return new ManifestIdentifier((String) null, null, null, null, null);
+      return new ManifestIdentifier(null, null, null, null, null);
     }
 
     // Try to locate the manifest file as a classpath resource; fallback to using the base dir.
@@ -48,25 +48,10 @@ public class MavenManifestFactory implements ManifestFactory {
     final Path assetDir = baseDir.resolve(config.assetDir());
 
     List<ManifestIdentifier> libraries;
-    if (config.libraries().length == 0) {
-      // If there is no library override, look through subdirectories.
-      try {
-        libraries = findLibraries(resDir);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    } else {
-      libraries = new ArrayList<>();
-      for (String libraryDirName : config.libraries()) {
-        Path libDir = baseDir.resolve(libraryDirName);
-        libraries.add(
-            new ManifestIdentifier(
-                null,
-                libDir.resolve(Config.DEFAULT_MANIFEST_NAME),
-                libDir.resolve(RES_FOLDER),
-                libDir.resolve(Config.DEFAULT_ASSET_FOLDER),
-                null));
-      }
+    try {
+      libraries = findLibraries(resDir);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
 
     return new ManifestIdentifier(packageName, manifestFile, resDir, assetDir, libraries);

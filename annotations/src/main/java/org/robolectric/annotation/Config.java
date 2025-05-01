@@ -125,16 +125,6 @@ public @interface Config {
    */
   String[] instrumentedPackages() default {}; // DEFAULT_INSTRUMENTED_PACKAGES
 
-  /**
-   * A list of folders containing Android Libraries on which this project depends.
-   *
-   * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
-   *     please migrate to the preferred way to configure
-   * @return A list of Android Libraries.
-   */
-  @Deprecated
-  String[] libraries() default {}; // DEFAULT_LIBRARIES;
-
   class Implementation implements Config {
     private final int[] sdk;
     private final int minSdk;
@@ -146,7 +136,6 @@ public @interface Config {
     private final Class<?>[] shadows;
     private final String[] instrumentedPackages;
     private final Class<? extends Application> application;
-    private final String[] libraries;
 
     public static Config fromProperties(Properties properties) {
       if (properties == null || properties.isEmpty()) return null;
@@ -161,8 +150,7 @@ public @interface Config {
           parseClasses(properties.getProperty("shadows", "")),
           parseStringArrayProperty(properties.getProperty("instrumentedPackages", "")),
           parseApplication(
-              properties.getProperty("application", DEFAULT_APPLICATION.getCanonicalName())),
-          parseStringArrayProperty(properties.getProperty("libraries", "")));
+              properties.getProperty("application", DEFAULT_APPLICATION.getCanonicalName())));
     }
 
     private static Class<?> parseClass(String className) {
@@ -259,8 +247,7 @@ public @interface Config {
         String assetDir,
         Class<?>[] shadows,
         String[] instrumentedPackages,
-        Class<? extends Application> application,
-        String[] libraries) {
+        Class<? extends Application> application) {
       this.sdk = sdk;
       this.minSdk = minSdk;
       this.maxSdk = maxSdk;
@@ -271,7 +258,6 @@ public @interface Config {
       this.shadows = shadows;
       this.instrumentedPackages = instrumentedPackages;
       this.application = application;
-      this.libraries = libraries;
 
       validate(this);
     }
@@ -326,11 +312,6 @@ public @interface Config {
       return instrumentedPackages;
     }
 
-    @Override
-    public String[] libraries() {
-      return libraries;
-    }
-
     @Nonnull
     @Override
     public Class<? extends Annotation> annotationType() {
@@ -361,8 +342,6 @@ public @interface Config {
           + Arrays.toString(instrumentedPackages)
           + ", application="
           + application
-          + ", libraries="
-          + Arrays.toString(libraries)
           + '}';
     }
   }
@@ -378,7 +357,6 @@ public @interface Config {
     protected Class<?>[] shadows = new Class[0];
     protected String[] instrumentedPackages = new String[0];
     protected Class<? extends Application> application = DEFAULT_APPLICATION;
-    protected String[] libraries = new String[0];
 
     public Builder() {}
 
@@ -393,7 +371,6 @@ public @interface Config {
       shadows = config.shadows();
       instrumentedPackages = config.instrumentedPackages();
       application = config.application();
-      libraries = config.libraries();
     }
 
     public Builder setSdk(int... sdk) {
@@ -443,11 +420,6 @@ public @interface Config {
 
     public Builder setApplication(Class<? extends Application> application) {
       this.application = application;
-      return this;
-    }
-
-    public Builder setLibraries(String... libraries) {
-      this.libraries = libraries;
       return this;
     }
 
@@ -504,11 +476,6 @@ public @interface Config {
       this.instrumentedPackages = instrumentedPackages.toArray(new String[0]);
       this.application = pick(this.application, overlayConfig.application(), DEFAULT_APPLICATION);
 
-      Set<String> libraries = new HashSet<>();
-      libraries.addAll(Arrays.asList(this.libraries));
-      libraries.addAll(Arrays.asList(overlayConfig.libraries()));
-      this.libraries = libraries.toArray(new String[0]);
-
       return this;
     }
 
@@ -533,8 +500,7 @@ public @interface Config {
           assetDir,
           shadows,
           instrumentedPackages,
-          application,
-          libraries);
+          application);
     }
 
     public static boolean isDefaultApplication(Class<? extends Application> clazz) {
