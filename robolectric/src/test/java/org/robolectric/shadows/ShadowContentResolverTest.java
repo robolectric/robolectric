@@ -72,11 +72,13 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.BaseCursor;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.util.NamedStream;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowContentResolverTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  @Rule public final SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private static final Uri FAKE_URI =
       Uri.parse("content://robolectric").buildUpon().appendPath("fakepath").build();
@@ -488,8 +490,26 @@ public class ShadowContentResolverTest {
 
   @Test
   public void openOutputStream_withNoRealOrRegisteredProvider_doesNotThrow() throws Exception {
+    setSystemPropertyRule.set("robolectric.useLegacyContentProviderOpenOutputStream", "true");
     Uri uri = Uri.parse("content://invalidauthority/test/1");
     assertThat(contentResolver.openOutputStream(uri)).isNotNull();
+  }
+
+  @Test
+  public void openOutputStream_noRegisteredContentProvider_canThrowOnSupply() {
+    final Uri uri = Uri.parse("content://unregisteredProvider/path");
+
+    assertThrows(FileNotFoundException.class, () -> contentResolver.openOutputStream(uri));
+  }
+
+  @Test
+  public void openOutputStream_withRealContentProvider_canThrowFileNotFoundException()
+      throws Exception {
+    File file = temporaryFolder.newFile();
+    file.setWritable(false);
+
+    Uri uri = Uri.fromFile(file);
+    assertThrows(FileNotFoundException.class, () -> contentResolver.openOutputStream(uri));
   }
 
   @Test
@@ -533,7 +553,35 @@ public class ShadowContentResolverTest {
     contentResolver.openOutputStream(uri).write(5);
     assertThat(callCount.get()).isEqualTo(1);
 
-    contentResolver.openOutputStream(uri21).write(5);
+    // Write to a different uri should not increment the call count.
+    contentResolver.openOutputStream(Uri.fromFile(temporaryFolder.newFile())).write(5);
+    assertThat(callCount.get()).isEqualTo(1);
+  }
+
+  @Test
+  public void openOutputStream_withRegisteredContentProvider_canThrowFileNotFoundException() {
+    final Uri uri = Uri.parse("content://registeredProvider/path");
+
+    AtomicInteger callCount = new AtomicInteger();
+    OutputStream outputStream =
+        new OutputStream() {
+
+          @Override
+          public void write(int arg0) throws IOException {
+            callCount.incrementAndGet();
+            throw new FileNotFoundException();
+          }
+
+          @Override
+          public String toString() {
+            return "outputstream for " + uri;
+          }
+        };
+
+    shadowOf(contentResolver).registerOutputStream(uri, outputStream);
+
+    assertThat(callCount.get()).isEqualTo(0);
+    assertThrows(FileNotFoundException.class, () -> contentResolver.openOutputStream(uri).write(5));
     assertThat(callCount.get()).isEqualTo(1);
   }
 
