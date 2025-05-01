@@ -57,8 +57,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-test",
         "test/assets",
         new Class<?>[] {Test1.class},
-        new String[] {"com.example.test1"},
-        new String[] {"libs/test"});
+        new String[] {"com.example.test1"});
 
     assertConfig(
         configFor(Test1.class, "withDefaultsAnnotation"),
@@ -68,8 +67,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-test",
         "test/assets",
         new Class<?>[] {Test1.class},
-        new String[] {"com.example.test1"},
-        new String[] {"libs/test"});
+        new String[] {"com.example.test1"});
 
     assertConfig(
         configFor(Test1.class, "withOverrideAnnotation"),
@@ -79,8 +77,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method",
         "method/assets",
         new Class<?>[] {Test1.class, Test2.class},
-        new String[] {"com.example.test1", "com.example.method1"},
-        new String[] {"libs/method", "libs/test"});
+        new String[] {"com.example.test1", "com.example.method1"});
   }
 
   @Test
@@ -93,7 +90,6 @@ public class HierarchicalConfigurationStrategyTest {
         "",
         "assets",
         new Class<?>[] {},
-        new String[] {},
         new String[] {});
 
     assertConfig(
@@ -104,7 +100,6 @@ public class HierarchicalConfigurationStrategyTest {
         "",
         "assets",
         new Class<?>[] {},
-        new String[] {},
         new String[] {});
 
     assertConfig(
@@ -115,8 +110,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method",
         "method/assets",
         new Class<?>[] {Test1.class},
-        new String[] {"com.example.method2"},
-        new String[] {"libs/method"});
+        new String[] {"com.example.method2"});
   }
 
   @Test
@@ -130,8 +124,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-test",
         "test/assets",
         new Class<?>[] {Test1.class, Test1.class},
-        new String[] {"com.example.test1"},
-        new String[] {"libs/test"});
+        new String[] {"com.example.test1"});
 
     assertConfig(
         configFor(Test1B.class, "withDefaultsAnnotation"),
@@ -141,8 +134,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-test",
         "test/assets",
         new Class<?>[] {Test1.class, Test1.class},
-        new String[] {"com.example.test1"},
-        new String[] {"libs/test"});
+        new String[] {"com.example.test1"});
 
     assertConfig(
         configFor(Test1B.class, "withOverrideAnnotation"),
@@ -152,8 +144,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method5",
         "method5/assets",
         new Class<?>[] {Test1.class, Test1.class, Test1B.class},
-        new String[] {"com.example.test1", "com.example.method5"},
-        new String[] {"libs/test"});
+        new String[] {"com.example.test1", "com.example.method5"});
   }
 
   @Test
@@ -167,8 +158,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-class6",
         "test/assets",
         new Class<?>[] {Test1.class, Test1.class, Test1C.class},
-        new String[] {"com.example.test1", "com.example.test6"},
-        new String[] {"libs/test"});
+        new String[] {"com.example.test1", "com.example.test6"});
 
     assertConfig(
         configFor(Test1C.class, "withDefaultsAnnotation"),
@@ -178,8 +168,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-class6",
         "test/assets",
         new Class<?>[] {Test1.class, Test1.class, Test1C.class},
-        new String[] {"com.example.test1", "com.example.test6"},
-        new String[] {"libs/test"});
+        new String[] {"com.example.test1", "com.example.test6"});
 
     assertConfig(
         configFor(Test1C.class, "withOverrideAnnotation"),
@@ -189,8 +178,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method5",
         "method5/assets",
         new Class<?>[] {Test1.class, Test1.class, Test1C.class, Test1B.class},
-        new String[] {"com.example.test1", "com.example.method5", "com.example.test6"},
-        new String[] {"libs/test"});
+        new String[] {"com.example.test1", "com.example.method5", "com.example.test6"});
   }
 
   @Test
@@ -204,8 +192,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-subclass",
         "test/assets",
         new Class<?>[] {Test1.class},
-        new String[] {"com.example.test1"},
-        new String[] {"libs/test"});
+        new String[] {"com.example.test1"});
 
     assertConfig(
         configFor(Test1A.class, "withDefaultsAnnotation"),
@@ -215,8 +202,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-subclass",
         "test/assets",
         new Class<?>[] {Test1.class},
-        new String[] {"com.example.test1"},
-        new String[] {"libs/test"});
+        new String[] {"com.example.test1"});
 
     assertConfig(
         configFor(Test1A.class, "withOverrideAnnotation"),
@@ -226,8 +212,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method",
         "method/assets",
         new Class<?>[] {Test1.class, Test2.class},
-        new String[] {"com.example.test1", "com.example.method1"},
-        new String[] {"libs/method", "libs/test"});
+        new String[] {"com.example.test1", "com.example.method1"});
   }
 
   @Test
@@ -241,7 +226,6 @@ public class HierarchicalConfigurationStrategyTest {
         "from-subclass",
         "assets",
         new Class<?>[] {},
-        new String[] {},
         new String[] {});
 
     assertConfig(
@@ -252,7 +236,6 @@ public class HierarchicalConfigurationStrategyTest {
         "from-subclass",
         "assets",
         new Class<?>[] {},
-        new String[] {},
         new String[] {});
 
     assertConfig(
@@ -263,8 +246,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method",
         "method/assets",
         new Class<?>[] {Test1.class},
-        new String[] {"com.example.method2"},
-        new String[] {"libs/method"});
+        new String[] {"com.example.method2"});
   }
 
   @Test
@@ -293,8 +275,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-properties-file",
         "from/properties/file/assets",
         new Class<?>[] {ShadowView.class, ShadowViewGroup.class},
-        new String[] {"com.example.test1", "com.example.test2"},
-        new String[] {"libs/test", "libs/test2"});
+        new String[] {"com.example.test1", "com.example.test2"});
   }
 
   @Test
@@ -310,7 +291,6 @@ public class HierarchicalConfigurationStrategyTest {
         "",
         "assets",
         new Class<?>[] {},
-        new String[] {},
         new String[] {});
   }
 
@@ -333,8 +313,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-org-robolectric",
         "assets",
         new Class<?>[] {},
-        new String[] {},
-        new String[] {"FromOrgRobolectric", "FromOrg", "FromTopLevel"});
+        new String[] {});
   }
 
   @Test
@@ -350,7 +329,6 @@ public class HierarchicalConfigurationStrategyTest {
         "",
         "assets",
         new Class<?>[] {},
-        new String[] {},
         new String[] {});
   }
 
@@ -491,8 +469,7 @@ public class HierarchicalConfigurationStrategyTest {
       String qualifiers,
       String assetsDir,
       Class<?>[] shadows,
-      String[] instrumentedPackages,
-      String[] libraries) {
+      String[] instrumentedPackages) {
     assertThat(config.sdk()).isEqualTo(sdk);
     assertThat(config.manifest()).isEqualTo(manifest);
     assertThat(config.application()).isEqualTo(application);
@@ -502,7 +479,6 @@ public class HierarchicalConfigurationStrategyTest {
     assertThat(config.instrumentedPackages())
         .asList()
         .containsAtLeastElementsIn(instrumentedPackages);
-    assertThat(config.libraries()).asList().containsAtLeastElementsIn(libraries);
   }
 
   @Ignore
@@ -512,7 +488,6 @@ public class HierarchicalConfigurationStrategyTest {
       application = TestFakeApp.class,
       shadows = Test1.class,
       instrumentedPackages = "com.example.test1",
-      libraries = "libs/test",
       qualifiers = "from-test",
       assetDir = "test/assets")
   public static class Test1 {
@@ -530,7 +505,6 @@ public class HierarchicalConfigurationStrategyTest {
         application = TestApplication.class,
         shadows = Test2.class,
         instrumentedPackages = "com.example.method1",
-        libraries = "libs/method",
         qualifiers = "from-method",
         assetDir = "method/assets")
     public void withOverrideAnnotation() {}
@@ -552,7 +526,6 @@ public class HierarchicalConfigurationStrategyTest {
         application = TestFakeApp.class,
         shadows = Test1.class,
         instrumentedPackages = "com.example.method2",
-        libraries = "libs/method",
         qualifiers = "from-method",
         assetDir = "method/assets")
     public void withOverrideAnnotation() {}
