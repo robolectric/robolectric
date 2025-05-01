@@ -42,9 +42,10 @@ public class ShadowAudioEffectTest {
   public void getAudioEffects_newAudioEffect_returnsAudioEffect() {
     int priority = 100;
     int audioSession = 500;
-    new AudioEffect(
-        AudioEffect.EFFECT_TYPE_AEC, /* uuid= */ EFFECT_TYPE_NULL, priority, audioSession);
-
+    assertThat(
+            new AudioEffect(
+                AudioEffect.EFFECT_TYPE_AEC, /* uuid= */ EFFECT_TYPE_NULL, priority, audioSession))
+        .isNotNull();
     ImmutableList<AudioEffect> actualEffects = ShadowAudioEffect.getAudioEffects();
 
     assertThat(actualEffects).hasSize(1);
