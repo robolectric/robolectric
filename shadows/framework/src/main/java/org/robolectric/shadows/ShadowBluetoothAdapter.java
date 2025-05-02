@@ -371,25 +371,26 @@ public class ShadowBluetoothAdapter {
     return true;
   }
 
+  @Implementation(minSdk = TIRAMISU, methodName = "setScanMode")
+  protected int setScanModeFromT(int scanMode) {
+    return setScanMode(scanMode)
+        ? BluetoothStatusCodes.SUCCESS
+        : BluetoothStatusCodes.ERROR_UNKNOWN;
+  }
+
   /**
    * Needs looseSignatures because in Android T the return value of this method was changed from
    * bool to int.
    */
+  @SuppressWarnings("ProtectedImplementationLintCheck")
   @Implementation(maxSdk = S_V2)
-  protected boolean setScanMode(int scanMode) {
+  public boolean setScanMode(int scanMode) {
     boolean result =
         scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE
             || scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE
             || scanMode == BluetoothAdapter.SCAN_MODE_NONE;
     this.scanMode = scanMode;
     return result;
-  }
-
-  @Implementation(minSdk = TIRAMISU, methodName = "setScanMode")
-  protected int setScanModeFromT(int scanMode) {
-    return setScanMode(scanMode)
-        ? BluetoothStatusCodes.SUCCESS
-        : BluetoothStatusCodes.ERROR_UNKNOWN;
   }
 
   @Implementation(maxSdk = Q)
