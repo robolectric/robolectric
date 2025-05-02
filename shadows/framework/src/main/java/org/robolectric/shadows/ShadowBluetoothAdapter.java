@@ -371,39 +371,34 @@ public class ShadowBluetoothAdapter {
     return true;
   }
 
-  @Implementation(minSdk = TIRAMISU, methodName = "setScanMode")
-  protected int setScanModeFromT(int scanMode) {
-    return setScanMode(scanMode)
+  @SuppressWarnings("ProtectedImplementationLintCheck")
+  @Implementation(minSdk = TIRAMISU)
+  public int setScanMode(int scanMode) {
+    this.scanMode = scanMode;
+    return (scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE
+            || scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE
+            || scanMode == BluetoothAdapter.SCAN_MODE_NONE)
         ? BluetoothStatusCodes.SUCCESS
         : BluetoothStatusCodes.ERROR_UNKNOWN;
   }
 
-  /**
-   * Needs looseSignatures because in Android T the return value of this method was changed from
-   * bool to int.
-   */
-  @SuppressWarnings("ProtectedImplementationLintCheck")
-  @Implementation(maxSdk = S_V2)
-  public boolean setScanMode(int scanMode) {
-    boolean result =
-        scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE
-            || scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE
-            || scanMode == BluetoothAdapter.SCAN_MODE_NONE;
-    this.scanMode = scanMode;
-    return result;
+  /** Needs `methodName` because in Android T the return value was changed from bool to int. */
+  @Implementation(maxSdk = S_V2, methodName = "setScanMode")
+  protected boolean setScanModeSV2(int scanMode) {
+    return setScanMode(scanMode) == BluetoothStatusCodes.SUCCESS;
   }
 
   @Implementation(maxSdk = Q)
   protected boolean setScanMode(int scanMode, int discoverableTimeout) {
     setDiscoverableTimeout(discoverableTimeout);
-    return setScanMode(scanMode);
+    return setScanMode(scanMode) == BluetoothStatusCodes.SUCCESS;
   }
 
   @Implementation(minSdk = R, maxSdk = S_V2)
   protected boolean setScanMode(int scanMode, long durationMillis) {
-    int durationSeconds = Math.toIntExact(durationMillis / 1000);
+    int durationSeconds = (int) Duration.ofMillis(durationMillis).toSeconds();
     setDiscoverableTimeout(durationSeconds);
-    return setScanMode(scanMode);
+    return setScanMode(scanMode) == BluetoothStatusCodes.SUCCESS;
   }
 
   @Implementation
