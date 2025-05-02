@@ -35,7 +35,6 @@ import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.DefaultManifestFactory;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
-import org.robolectric.internal.MavenManifestFactory;
 import org.robolectric.internal.SandboxManager;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.TestEnvironment;
@@ -369,12 +368,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @param config Specification of the SDK version, manifest file, package name, etc.
    */
   protected ManifestFactory getManifestFactory(Config config) {
-    Properties buildSystemApiProperties = getBuildSystemApiProperties();
-    if (buildSystemApiProperties != null) {
-      return new DefaultManifestFactory(buildSystemApiProperties);
+    Properties properties = getBuildSystemApiProperties();
+    if (properties == null) {
+      properties = new Properties();
     }
 
-    return new MavenManifestFactory();
+    return new DefaultManifestFactory(properties);
   }
 
   protected Properties getBuildSystemApiProperties() {
