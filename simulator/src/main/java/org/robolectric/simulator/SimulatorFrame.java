@@ -7,8 +7,8 @@ public class SimulatorFrame extends JFrame {
 
   private final SimulatorCanvas simulatorCanvas;
 
-  public SimulatorFrame(int displayWidth, int displayHeight) {
-    setTitle("Robolectric Simulator");
+  public SimulatorFrame(int displayWidth, int displayHeight, int sdkLevel) {
+    setTitle("Robolectric SDK " + sdkLevel + " Simulator");
 
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setLocationByPlatform(true);
