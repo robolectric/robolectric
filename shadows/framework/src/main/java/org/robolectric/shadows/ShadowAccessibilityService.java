@@ -8,8 +8,8 @@ import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityService.GestureResultCallback;
 import android.accessibilityservice.AccessibilityService.ScreenshotErrorCode;
 import android.accessibilityservice.AccessibilityService.ScreenshotResult;
-import android.accessibilityservice.AccessibilityService.TakeScreenshotCallback;
 import android.accessibilityservice.GestureDescription;
+import android.accessibilityservice.InputMethod;
 import android.graphics.ColorSpace;
 import android.graphics.ColorSpace.Named;
 import android.hardware.HardwareBuffer;
@@ -19,6 +19,7 @@ import android.util.SparseArray;
 import android.view.Display;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
+import android.view.inputmethod.EditorInfo;
 import com.google.common.collect.ArrayListMultimap;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,8 @@ import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -35,6 +38,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
  */
 @Implements(AccessibilityService.class)
 public class ShadowAccessibilityService extends ShadowService {
+  @RealObject private AccessibilityService realObject;
 
   private final List<Integer> globalActionsPerformed = new ArrayList<>();
   private List<AccessibilityNodeInfo.AccessibilityAction> systemActions;
@@ -193,6 +197,15 @@ public class ShadowAccessibilityService extends ShadowService {
    */
   public void setCanDispatchGestures(boolean canDispatchGestures) {
     this.canDispatchGestures = canDispatchGestures;
+  }
+
+  public void startInput(EditorInfo editorInfo) {
+    InputMethod inputMethod = realObject.getInputMethod();
+    if (inputMethod == null) {
+      return;
+    }
+    ShadowAccessibilityInputMethod shadowInputMethod = Shadow.extract(inputMethod);
+    shadowInputMethod.startInput(editorInfo);
   }
 
   /**
