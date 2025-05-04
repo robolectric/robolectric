@@ -1,6 +1,5 @@
 package org.robolectric.gradle
 
-import java.net.URI
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.BasePluginExtension
@@ -78,61 +77,11 @@ class DeployedRoboJavaModulePlugin : Plugin<Project> {
 
             artifactId = mavenArtifactName
 
-            pom {
-              name.set(project.name)
-              description.set("An alternative Android testing framework.")
-              url.set("http://robolectric.org")
-
-              licenses {
-                license {
-                  name.set("The MIT License")
-                  url.set("https://opensource.org/licenses/MIT")
-                }
-              }
-
-              scm {
-                url.set("git@github.com:robolectric/robolectric.git")
-                connection.set("scm:git:git://github.com/robolectric/robolectric.git")
-                developerConnection.set("scm:git:https://github.com/robolectric/robolectric.git")
-              }
-
-              developers {
-                developer {
-                  name.set("Brett Chabot")
-                  email.set("brettchabot@google.com")
-                  organization.set("Google Inc.")
-                  organizationUrl.set("http://google.com")
-                }
-
-                developer {
-                  name.set("Michael Hoisie")
-                  email.set("hoisie@google.com")
-                  organization.set("Google Inc.")
-                  organizationUrl.set("http://google.com")
-                }
-
-                developer {
-                  name.set("Christian Williams")
-                  email.set("antixian666@gmail.com")
-                }
-              }
-            }
+            applyPomMetadata(project)
           }
         }
 
-        repositories {
-          maven {
-            val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-            val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
-
-            url = if (isSnapshotVersion) URI(snapshotsRepoUrl) else URI(releasesRepoUrl)
-
-            credentials {
-              username = System.getProperty("sonatype-login", System.getenv("SONATYPE_LOGIN"))
-              password = System.getProperty("sonatype-password", System.getenv("SONATYPE_PASSWORD"))
-            }
-          }
-        }
+        sonatypeRepositories(isSnapshotVersion)
 
         project.extensions.configure<SigningExtension> {
           setRequired { !isSnapshotVersion && project.gradle.taskGraph.hasTask("uploadArchives") }
