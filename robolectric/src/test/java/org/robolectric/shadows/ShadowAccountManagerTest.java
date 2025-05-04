@@ -25,14 +25,18 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import java.util.Arrays;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAccountManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private AccountManager am;
   private Activity activity;
   private Context appContext;
@@ -1138,8 +1142,8 @@ public class ShadowAccountManagerTest {
   @Test
   @Config(minSdk = O)
   public void accountManager_activityContextEnabled_differentInstancesRetrieveAccounts() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       AccountManager applicationAccountManager = appContext.getSystemService(AccountManager.class);
@@ -1154,8 +1158,6 @@ public class ShadowAccountManagerTest {
           activityAccountManager.getAccountsByType("com.example.account_type");
 
       assertThat(activityAccounts).isEqualTo(applicationAccounts);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

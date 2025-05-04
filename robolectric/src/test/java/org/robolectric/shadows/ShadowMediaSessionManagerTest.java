@@ -13,6 +13,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -20,10 +21,12 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /** Tests for {@link ShadowMediaSessionManager} */
 @RunWith(AndroidJUnit4.class)
 public class ShadowMediaSessionManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private MediaSessionManager mediaSessionManager;
   private final Context context = ApplicationProvider.getApplicationContext();
@@ -68,8 +71,8 @@ public class ShadowMediaSessionManagerTest {
   @Test
   @Config(minSdk = O)
   public void mediaSessionManager_activityContextEnabled_differentInstancesRetrieveSessions() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       MediaSessionManager applicationMediaSessionManager =
@@ -86,8 +89,6 @@ public class ShadowMediaSessionManagerTest {
           activityMediaSessionManager.getActiveSessions(null);
 
       assertThat(activityControllers).isEqualTo(applicationControllers);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

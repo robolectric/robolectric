@@ -20,6 +20,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
@@ -27,11 +28,13 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /** Tests for the ShadowCaptioningManager. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = KITKAT)
 public final class ShadowCaptioningManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private final TestCaptioningChangeListener captioningChangeListener =
       new TestCaptioningChangeListener();
@@ -239,8 +242,8 @@ public final class ShadowCaptioningManagerTest {
   @Test
   @Config(minSdk = TIRAMISU)
   public void captioningManager_activityContextEnabled_differentInstancesRetrieveValues() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       CaptioningManager applicationCaptioningManager =
@@ -263,8 +266,6 @@ public final class ShadowCaptioningManagerTest {
 
       assertThat(applicationCaptioningEnabled).isEqualTo(activityCaptioningEnabled);
       assertThat(applicationCaptioningUiEnabled).isEqualTo(activityCaptioningUiEnabled);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

@@ -5,14 +5,17 @@ import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertThrows;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.util.SQLiteLibraryLoader;
 
 @RunWith(AndroidJUnit4.class)
 public class SQLiteLibraryLoaderTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private static final SQLiteLibraryLoader.LibraryNameMapper LINUX =
       new LibraryMapperTest("lib", "so");
   private static final SQLiteLibraryLoader.LibraryNameMapper WINDOWS =
@@ -32,26 +35,11 @@ public class SQLiteLibraryLoaderTest {
   private static final String SYSTEM_PROPERTY_OS_NAME = "os.name";
   private static final String SYSTEM_PROPERTY_OS_ARCH = "os.arch";
 
-  /** Saved system properties. */
-  private String savedOs, savedArch;
-
   private SQLiteLibraryLoader loader;
 
   @Before
   public void setUp() {
     loader = new SQLiteLibraryLoader();
-  }
-
-  @Before
-  public void saveSystemProperties() {
-    savedOs = System.getProperty(SYSTEM_PROPERTY_OS_NAME);
-    savedArch = System.getProperty(SYSTEM_PROPERTY_OS_ARCH);
-  }
-
-  @After
-  public void restoreSystemProperties() {
-    System.setProperty(SYSTEM_PROPERTY_OS_NAME, savedOs);
-    System.setProperty(SYSTEM_PROPERTY_OS_ARCH, savedArch);
   }
 
   @Test
@@ -234,8 +222,8 @@ public class SQLiteLibraryLoaderTest {
     }
   }
 
-  private static void setNameAndArch(String name, String arch) {
-    System.setProperty(SYSTEM_PROPERTY_OS_NAME, name);
-    System.setProperty(SYSTEM_PROPERTY_OS_ARCH, arch);
+  private void setNameAndArch(String name, String arch) {
+    setSystemPropertyRule.set(SYSTEM_PROPERTY_OS_NAME, name);
+    setSystemPropertyRule.set(SYSTEM_PROPERTY_OS_ARCH, arch);
   }
 }

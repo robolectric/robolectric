@@ -7,12 +7,13 @@ import static com.google.common.truth.Truth.assertThat;
 import android.app.Application;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /**
  * Tests {@link androidx.test.core.app.ActivityScenario} with realistic Activity Contexts. Note that
@@ -20,18 +21,11 @@ import org.robolectric.annotation.Config;
  */
 @RunWith(AndroidJUnit4.class)
 public class ActivityScenarioActivityContextTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
-  private static String originalProperty;
-
-  @BeforeClass
-  public static void beforeClass() {
-    originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
-  }
-
-  @AfterClass
-  public static void afterClass() {
-    System.setProperty("robolectric.createActivityContexts", originalProperty);
+  @Before
+  public void setup() {
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
   }
 
   /**

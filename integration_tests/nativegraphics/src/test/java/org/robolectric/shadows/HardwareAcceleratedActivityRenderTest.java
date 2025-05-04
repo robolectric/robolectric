@@ -16,15 +16,19 @@ import android.view.Window;
 import android.widget.FrameLayout;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = Q)
 public class HardwareAcceleratedActivityRenderTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   @Test
   public void hardwareAcceleratedActivity_setup() {
     // Setting up an Activity is a smoke test that exercises much of the HardwareRenderer /
@@ -34,22 +38,19 @@ public class HardwareAcceleratedActivityRenderTest {
 
   @Test
   public void hardwareAcceleratedActivity_pixelCopy() throws Exception {
-    System.setProperty("robolectric.pixelCopyRenderMode", "hardware");
-    try {
-      HardwareAcceleratedActivity activity =
-          Robolectric.setupActivity(HardwareAcceleratedActivity.class);
-      Window window = activity.getWindow();
-      View decorView = window.getDecorView();
-      Bitmap bitmap =
-          Bitmap.createBitmap(decorView.getWidth(), decorView.getHeight(), Bitmap.Config.ARGB_8888);
-      CountDownLatch latch = new CountDownLatch(1);
-      PixelCopy.request(
-          window, bitmap, copyResult -> latch.countDown(), new Handler(Looper.getMainLooper()));
-      latch.await(1, TimeUnit.SECONDS);
-      assertThat(bitmap.getPixel(100, 100)).isEqualTo(Color.RED);
-    } finally {
-      System.clearProperty("robolectric.pixelCopyRenderMode");
-    }
+    setSystemPropertyRule.set("robolectric.pixelCopyRenderMode", "hardware");
+
+    HardwareAcceleratedActivity activity =
+        Robolectric.setupActivity(HardwareAcceleratedActivity.class);
+    Window window = activity.getWindow();
+    View decorView = window.getDecorView();
+    Bitmap bitmap =
+        Bitmap.createBitmap(decorView.getWidth(), decorView.getHeight(), Bitmap.Config.ARGB_8888);
+    CountDownLatch latch = new CountDownLatch(1);
+    PixelCopy.request(
+        window, bitmap, copyResult -> latch.countDown(), new Handler(Looper.getMainLooper()));
+    latch.await(1, TimeUnit.SECONDS);
+    assertThat(bitmap.getPixel(100, 100)).isEqualTo(Color.RED);
   }
 
   static class HardwareAcceleratedActivity extends Activity {

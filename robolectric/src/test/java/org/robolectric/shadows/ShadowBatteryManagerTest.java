@@ -12,14 +12,18 @@ import android.os.BatteryManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowBatteryManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private static final int TEST_ID = 123;
   private BatteryManager batteryManager;
   private ShadowBatteryManager shadowBatteryManager;
@@ -99,8 +103,8 @@ public class ShadowBatteryManagerTest {
   @Test
   @Config(minSdk = P)
   public void batteryManager_activityContextEnabled_sharedState() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       Context context = ApplicationProvider.getApplicationContext();
@@ -114,8 +118,6 @@ public class ShadowBatteryManagerTest {
       shadowApplicationBatteryManager.setIsCharging(true);
 
       assertThat(activityBatteryManager.isCharging()).isTrue();
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

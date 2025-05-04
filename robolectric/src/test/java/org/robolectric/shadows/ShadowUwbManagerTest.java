@@ -21,6 +21,7 @@ import android.uwb.UwbManager.AdapterStateCallback;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
@@ -29,12 +30,15 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
 /** Unit tests for {@link ShadowUwbManager}. */
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = S)
 public class ShadowUwbManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private /* RangingSession.Callback */ Object callbackObject;
   private /* AdapterStateCallback */ Object adapterStateCallbackObject;
   private /* UwbManager */ Object uwbManagerObject;
@@ -224,8 +228,8 @@ public class ShadowUwbManagerTest {
 
   @Test
   public void uwbManager_activityContextEnabled_differentInstancesRetrieveSpecificationInfo() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       UwbManager applicationUwbManager =
@@ -239,8 +243,6 @@ public class ShadowUwbManagerTest {
       PersistableBundle activitySpecificationInfo = activityUwbManager.getSpecificationInfo();
 
       assertThat(activitySpecificationInfo).isEqualTo(applicationSpecificationInfo);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

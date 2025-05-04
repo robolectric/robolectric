@@ -23,18 +23,21 @@ import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.ShadowSubscriptionManager.SubscriptionInfoBuilder;
 
 /** Test for {@link ShadowSubscriptionManager}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = N)
 public class ShadowSubscriptionManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private SubscriptionManager subscriptionManager;
 
@@ -660,8 +663,8 @@ public class ShadowSubscriptionManagerTest {
   @Config(minSdk = O)
   public void
       subscriptionManager_activityContextEnabled_differentInstancesRetrieveDefaultSubscriptionInfo() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       SubscriptionManager applicationSubscriptionManager =
@@ -681,8 +684,6 @@ public class ShadowSubscriptionManagerTest {
           activitySubscriptionManager.getActiveSubscriptionInfo(defaultSubscriptionId);
 
       assertThat(applicationDefaultSubscriptionInfo).isEqualTo(activityDefaultSubscriptionInfo);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

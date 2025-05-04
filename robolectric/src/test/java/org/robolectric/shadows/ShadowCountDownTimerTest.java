@@ -5,15 +5,18 @@ import static org.robolectric.shadows.ShadowCountDownTimer.PROPERTY_USE_REAL_IMP
 
 import android.os.CountDownTimer;
 import java.util.Arrays;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.ParameterizedRobolectricTestRunner;
 import org.robolectric.Shadows;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(ParameterizedRobolectricTestRunner.class)
 public class ShadowCountDownTimerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private static final String MESSAGE_TICK = "onTick() is called";
   private static final String MESSAGE_FINISH = "onFinish() is called";
 
@@ -22,7 +25,6 @@ public class ShadowCountDownTimerTest {
   private final long countDownInterval = 1000;
   private final boolean useRealCountDownTimer;
   private String message;
-  private String originalUseRealCountDownTimer;
 
   public ShadowCountDownTimerTest(boolean useRealCountDownTimer) {
     this.useRealCountDownTimer = useRealCountDownTimer;
@@ -30,9 +32,7 @@ public class ShadowCountDownTimerTest {
 
   @Before
   public void setUp() throws Exception {
-    originalUseRealCountDownTimer = System.getProperty(PROPERTY_USE_REAL_IMPL);
-
-    System.setProperty(PROPERTY_USE_REAL_IMPL, Boolean.toString(useRealCountDownTimer));
+    setSystemPropertyRule.set(PROPERTY_USE_REAL_IMPL, Boolean.toString(useRealCountDownTimer));
 
     CountDownTimer countDownTimer =
         new CountDownTimer(millisInFuture, countDownInterval) {
@@ -48,15 +48,6 @@ public class ShadowCountDownTimerTest {
           }
         };
     shadowCountDownTimer = Shadows.shadowOf(countDownTimer);
-  }
-
-  @After
-  public void tearDown() {
-    if (originalUseRealCountDownTimer != null) {
-      System.setProperty(PROPERTY_USE_REAL_IMPL, originalUseRealCountDownTimer);
-    } else {
-      System.clearProperty(PROPERTY_USE_REAL_IMPL);
-    }
   }
 
   @Test

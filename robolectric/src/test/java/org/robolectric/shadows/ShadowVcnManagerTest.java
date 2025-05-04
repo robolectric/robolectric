@@ -25,11 +25,13 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /** Test for {@link ShadowVcnManager}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = S)
 public final class ShadowVcnManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   @Rule public final MockitoRule mockito = MockitoJUnit.rule();
   private ShadowVcnManager instance;
@@ -96,8 +98,8 @@ public final class ShadowVcnManagerTest {
 
   @Test
   public void vcnManager_activityContextEnabled_differentInstancesRetrieveSubscriptionGroups() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       VcnManager applicationVcnManager =
@@ -116,8 +118,6 @@ public final class ShadowVcnManagerTest {
       assertThat(activityConfiguredSubscriptionGroups).isNotNull();
       assertThat(activityConfiguredSubscriptionGroups)
           .isEqualTo(applicationConfiguredSubscriptionGroups);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

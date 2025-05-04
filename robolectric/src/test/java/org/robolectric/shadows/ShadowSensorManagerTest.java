@@ -26,14 +26,17 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowSensorManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private SensorManager sensorManager;
   private ShadowSensorManager shadow;
@@ -345,8 +348,8 @@ public class ShadowSensorManagerTest {
   @Test
   @Config(minSdk = O)
   public void sensorManager_activityContextEnabled_retrievesSameSensors() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       SensorManager applicationSensorManager =
@@ -374,8 +377,6 @@ public class ShadowSensorManagerTest {
         assertThat(appSensor.getPower()).isEqualTo(actSensor.getPower());
         assertThat(appSensor.getMinDelay()).isEqualTo(actSensor.getMinDelay());
       }
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

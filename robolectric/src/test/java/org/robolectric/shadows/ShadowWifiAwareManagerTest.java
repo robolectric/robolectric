@@ -23,16 +23,20 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /** Test for {@link ShadowWifiAwareManager} */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = P)
 public final class ShadowWifiAwareManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private WifiAwareManager wifiAwareManager;
   private Binder binder;
   private Handler handler;
@@ -200,8 +204,8 @@ public final class ShadowWifiAwareManagerTest {
 
   @Test
   public void wifiAwareManager_activityContextEnabled_differentInstancesIsAvailable() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       WifiAwareManager applicationWifiAwareManager =
@@ -218,8 +222,6 @@ public final class ShadowWifiAwareManagerTest {
       boolean activityIsAvailable = activityWifiAwareManager.isAvailable();
 
       assertThat(activityIsAvailable).isEqualTo(applicationIsAvailable);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

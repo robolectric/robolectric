@@ -67,16 +67,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
 /** Unit tests for {@link ShadowDevicePolicyManager}. */
 @RunWith(AndroidJUnit4.class)
 public final class ShadowDevicePolicyManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private static final byte[] PASSWORD_TOKEN = new byte[32];
 
@@ -2751,8 +2754,8 @@ public final class ShadowDevicePolicyManagerTest {
   @Test
   @Config(minSdk = O)
   public void devicePolicyManager_instance_retrievesSameAdminStatus() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       DevicePolicyManager applicationDpm =
@@ -2772,8 +2775,6 @@ public final class ShadowDevicePolicyManagerTest {
       boolean activityAdminActive = activityDpm.isAdminActive(testAdminComponent);
 
       assertThat(activityAdminActive).isEqualTo(applicationAdminActive);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 

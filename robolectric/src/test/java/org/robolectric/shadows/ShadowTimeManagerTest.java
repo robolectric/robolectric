@@ -9,17 +9,20 @@ import android.app.time.TimeZoneConfiguration;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import org.junit.Assume;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /** Tests for {@link ShadowTimeManager} */
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = Build.VERSION_CODES.S)
 public final class ShadowTimeManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   @Test
   public void registeredAsSystemService() {
@@ -63,8 +66,8 @@ public final class ShadowTimeManagerTest {
   @Test
   @Config(minSdk = Build.VERSION_CODES.S)
   public void timeManager_activityContextEnabled_differentInstancesRetrieveTimeZoneCapabilities() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       TimeManager applicationTimeManager =
@@ -83,8 +86,6 @@ public final class ShadowTimeManagerTest {
           activityTimeManager.getTimeZoneCapabilitiesAndConfig();
 
       assertThat(activityCapabilities).isEqualTo(applicationCapabilities);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

@@ -19,17 +19,20 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import java.util.List;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Unit tests for {@link ShadowStorageManager}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowStorageManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private final String internalStorage = "/storage/internal";
   private final String sdcardStorage = "/storage/sdcard";
@@ -142,8 +145,8 @@ public class ShadowStorageManagerTest {
   @Test
   @Config(minSdk = O)
   public void storageManager_activityContextEnabled_differentInstancesRetrieveVolumes() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       StorageManager applicationStorageManager =
@@ -158,8 +161,6 @@ public class ShadowStorageManagerTest {
       List<StorageVolume> activityVolumes = activityStorageManager.getStorageVolumes();
 
       assertThat(activityVolumes).isEqualTo(applicationVolumes);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

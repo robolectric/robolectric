@@ -207,7 +207,6 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
     return result;
   }
 
-
   @Implementation(minSdk = O, maxSdk = R)
   protected static long nativeCreateFromArray(long[] familyArray, int weight, int italic) {
     // TODO: implement this properly

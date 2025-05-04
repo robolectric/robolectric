@@ -20,15 +20,18 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowInputMethodManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private InputMethodManager manager;
   private ShadowInputMethodManager shadow;
@@ -157,8 +160,8 @@ public class ShadowInputMethodManagerTest {
   @Config(minSdk = O)
   public void
       inputMethodManager_activityContextEnabled_differentInstancesRetrieveInputMethodList() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       InputMethodManager applicationInputMethodManager =
@@ -175,9 +178,6 @@ public class ShadowInputMethodManagerTest {
       boolean activityIsAcceptingText = activityInputMethodManager.isAcceptingText();
 
       assertThat(activityIsAcceptingText).isEqualTo(applicationIsAcceptingText);
-
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 

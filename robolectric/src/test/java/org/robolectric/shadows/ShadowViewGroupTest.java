@@ -30,19 +30,21 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 @GraphicsMode(Mode.LEGACY)
 public class ShadowViewGroupTest {
-  private String defaultLineSeparator;
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private ViewGroup root;
   private View child1;
   private View child2;
@@ -70,13 +72,7 @@ public class ShadowViewGroupTest {
     child3.addView(child3a);
     child3.addView(child3b);
 
-    defaultLineSeparator = System.lineSeparator();
-    System.setProperty("line.separator", "\n");
-  }
-
-  @After
-  public void tearDown() {
-    System.setProperty("line.separator", defaultLineSeparator);
+    setSystemPropertyRule.set("line.separator", "\n");
   }
 
   @Test

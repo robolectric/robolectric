@@ -11,17 +11,21 @@ import android.os.Build.VERSION_CODES;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = VERSION_CODES.R)
 public class ShadowVpnManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private VpnManager vpnManager;
   private ShadowVpnManager shadowVpnManager;
 
@@ -99,8 +103,8 @@ public class ShadowVpnManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
   public void vpnManager_activityContextEnabled_differentInstancesInteract() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       VpnManager applicationVpnManager =
@@ -115,8 +119,6 @@ public class ShadowVpnManagerTest {
       VpnProfileState activityProfileState = activityVpnManager.getProvisionedVpnProfileState();
 
       assertThat(activityProfileState).isEqualTo(applicationProfileState);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

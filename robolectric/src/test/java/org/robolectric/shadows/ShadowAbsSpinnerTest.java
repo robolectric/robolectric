@@ -18,12 +18,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAbsSpinnerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private Spinner spinner;
   private ShadowAbsSpinner shadowSpinner;
   private ArrayAdapter<String> arrayAdapter;
@@ -74,53 +78,47 @@ public class ShadowAbsSpinnerTest {
 
   @Test
   public void useRealSelection_doesNotCauseInfiniteLoop() {
-    try {
-      System.setProperty("robolectric.useRealSpinnerSelection", "true");
-      final AtomicBoolean itemSelected = new AtomicBoolean(false);
-      spinner.setOnItemSelectedListener(
-          new OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-              itemSelected.set(true);
-              // This will result in an stack overflow if the fake selection ShadowAbsSpinner
-              // selection logic is used.
-              spinner.setSelection(0);
-            }
+    setSystemPropertyRule.set("robolectric.useRealSpinnerSelection", "true");
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-          });
-      spinner.setAdapter(arrayAdapter);
-      spinner.setSelection(1);
-      shadowOf(Looper.getMainLooper()).idle();
-      assertThat(itemSelected.get()).isTrue();
-    } finally {
-      System.clearProperty("robolectric.useRealSpinnerSelection");
-    }
+    final AtomicBoolean itemSelected = new AtomicBoolean(false);
+    spinner.setOnItemSelectedListener(
+        new OnItemSelectedListener() {
+          @Override
+          public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            itemSelected.set(true);
+            // This will result in an stack overflow if the fake selection ShadowAbsSpinner
+            // selection logic is used.
+            spinner.setSelection(0);
+          }
+
+          @Override
+          public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    spinner.setAdapter(arrayAdapter);
+    spinner.setSelection(1);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(itemSelected.get()).isTrue();
   }
 
   @Test
   public void useRealSelection_callbackCalledOnce() {
-    try {
-      System.setProperty("robolectric.useRealSpinnerSelection", "true");
-      final AtomicInteger invocations = new AtomicInteger(0);
-      spinner.setOnItemSelectedListener(
-          new OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-              invocations.incrementAndGet();
-            }
+    setSystemPropertyRule.set("robolectric.useRealSpinnerSelection", "true");
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-          });
-      spinner.setAdapter(arrayAdapter);
-      spinner.setSelection(1);
-      shadowOf(Looper.getMainLooper()).idle();
-      assertThat(invocations.get()).isEqualTo(1);
-    } finally {
-      System.clearProperty("robolectric.useRealSpinnerSelection");
-    }
+    final AtomicInteger invocations = new AtomicInteger(0);
+    spinner.setOnItemSelectedListener(
+        new OnItemSelectedListener() {
+          @Override
+          public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            invocations.incrementAndGet();
+          }
+
+          @Override
+          public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    spinner.setAdapter(arrayAdapter);
+    spinner.setSelection(1);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(invocations.get()).isEqualTo(1);
   }
 
   private static class MyArrayAdapter extends ArrayAdapter<String> {

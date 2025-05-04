@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -25,9 +26,11 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowWifiP2pManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private Context context;
   private WifiP2pManager manager;
@@ -179,8 +182,7 @@ public class ShadowWifiP2pManagerTest {
   @Test
   @Config(minSdk = O)
   public void wifiP2pManager_activityContextEnabled_retrievesSameGroupInfo() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
 
     WifiP2pManager.Channel applicationChannel =
         manager.initialize(context, Looper.getMainLooper(), null);
@@ -227,8 +229,6 @@ public class ShadowWifiP2pManagerTest {
       assertThat(applicationGroupNameHolder[0]).isEqualTo(activityGroupNameHolder[0]);
     } catch (InterruptedException e) {
       throw new AssertionError("Failed because of latch interrupt", e);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }
