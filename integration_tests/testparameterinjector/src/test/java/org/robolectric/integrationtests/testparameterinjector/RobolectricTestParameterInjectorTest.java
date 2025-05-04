@@ -8,9 +8,9 @@ import android.os.Build.VERSION;
 import com.google.testing.junit.testparameterinjector.TestParameter;
 import java.util.ArrayList;
 import javax.annotation.Nonnull;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
@@ -21,6 +21,7 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.robolectric.RobolectricTestParameterInjector;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @SuppressWarnings({
   "IgnoreWithoutReason",
@@ -30,17 +31,14 @@ import org.robolectric.annotation.Config;
 })
 @RunWith(JUnit4.class)
 public class RobolectricTestParameterInjectorTest {
-  private String priorAlwaysInclude;
-  private String priorEnabledSdks;
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private RunNotifier runNotifier;
 
   @Before
   public void setup() {
-    priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
-    System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
-
-    priorEnabledSdks = System.getProperty("robolectric.enabledSdks");
-    System.clearProperty("robolectric.enabledSdks");
+    setSystemPropertyRule.clear("robolectric.alwaysIncludeVariantMarkersInTestName");
+    setSystemPropertyRule.clear("robolectric.enabledSdks");
 
     runNotifier = new RunNotifier();
     runNotifier.addListener(
@@ -50,17 +48,6 @@ public class RobolectricTestParameterInjectorTest {
             throw new AssertionError("Unexpected test failure: " + failure, failure.getException());
           }
         });
-  }
-
-  @After
-  public void tearDown() {
-    if (priorAlwaysInclude != null) {
-      System.setProperty("robolectric.alwaysIncludeVariantMarkersInTestName", priorAlwaysInclude);
-    }
-
-    if (priorEnabledSdks != null) {
-      System.setProperty("robolectric.enabledSdks", priorEnabledSdks);
-    }
   }
 
   @Ignore

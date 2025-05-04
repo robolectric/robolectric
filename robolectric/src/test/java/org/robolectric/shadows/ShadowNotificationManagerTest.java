@@ -31,14 +31,18 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowNotificationManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private NotificationManager notificationManager;
   private final Notification notification1 = new Notification();
   private final Notification notification2 = new Notification();
@@ -823,8 +827,8 @@ public class ShadowNotificationManagerTest {
   @Test
   @Config(minSdk = O)
   public void notificationManager_activityContext_enabled_differentInstancesRetrieveChannels() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       NotificationManager applicationNotificationManager =
@@ -847,8 +851,6 @@ public class ShadowNotificationManagerTest {
           activityNotificationManager.getNotificationChannel("test_channel_id");
 
       assertThat(activityChannel).isEqualTo(applicationChannel);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

@@ -40,6 +40,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -48,16 +49,18 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.SystemUi.NavigationBar;
 import org.robolectric.shadows.SystemUi.StatusBar;
 
 @RunWith(AndroidJUnit4.class)
 @GraphicsMode(Mode.LEGACY)
 public class ShadowWindowManagerGlobalTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   @Before
   public void setup() {
-    System.setProperty("robolectric.areWindowsMarkedVisible", "true");
+    setSystemPropertyRule.set("robolectric.areWindowsMarkedVisible", "true");
   }
 
   @Test

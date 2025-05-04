@@ -16,17 +16,20 @@ import android.os.Environment;
 import android.util.Pair;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.ShadowDownloadManager.CompletedDownload;
 import org.robolectric.shadows.ShadowDownloadManager.ShadowRequest;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDownloadManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private final Uri uri = Uri.parse("http://example.com/foo.mp4");
   private final Uri destination = Uri.parse("file:///storage/foo.mp4");
@@ -422,8 +425,8 @@ public class ShadowDownloadManagerTest {
   @Test
   @Config(minSdk = Build.VERSION_CODES.O)
   public void downloadManager_activityContextEnabled_retrievesSameMimeTypeForDownloadedFile() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       DownloadManager applicationDownloadManager =
@@ -441,8 +444,6 @@ public class ShadowDownloadManagerTest {
       String activityMimeType = activityDownloadManager.getMimeTypeForDownloadedFile(testId);
 
       assertThat(activityMimeType).isEqualTo(applicationMimeType);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

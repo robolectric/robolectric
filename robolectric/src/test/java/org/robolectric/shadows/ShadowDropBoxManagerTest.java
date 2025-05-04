@@ -16,15 +16,18 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /** Unit tests for {@see ShadowDropboxManager}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowDropBoxManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private static final String TAG = "TAG";
   private static final String ANOTHER_TAG = "ANOTHER_TAG";
@@ -125,8 +128,8 @@ public class ShadowDropBoxManagerTest {
   @Test
   @Config(minSdk = O)
   public void dropBoxManager_activityContextEnabled_differentInstancesVerifyTagEnabled() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       DropBoxManager applicationDropBoxManager =
@@ -145,8 +148,6 @@ public class ShadowDropBoxManagerTest {
       boolean activityTagEnabled = activityDropBoxManager.isTagEnabled(tag);
 
       assertThat(activityTagEnabled).isEqualTo(applicationTagEnabled);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

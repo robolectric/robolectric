@@ -13,16 +13,20 @@ import android.content.Context;
 import android.view.autofill.AutofillManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /** Unit test for {@link ShadowAutofillManager}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = O)
 public class ShadowAutofillManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private final Context context = ApplicationProvider.getApplicationContext();
   private final AutofillManager autofillManager = context.getSystemService(AutofillManager.class);
 
@@ -64,8 +68,8 @@ public class ShadowAutofillManagerTest {
   @Test
   @Config(minSdk = O)
   public void autofillManager_activityContextEnabled_differentInstancesRetrieveSameInfo() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       AutofillManager applicationAutofillManager = context.getSystemService(AutofillManager.class);
@@ -79,9 +83,6 @@ public class ShadowAutofillManagerTest {
           applicationAutofillManager.isAutofillSupported(),
           activityAutofillManager.isAutofillSupported());
       assertEquals(applicationAutofillManager.isEnabled(), activityAutofillManager.isEnabled());
-
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

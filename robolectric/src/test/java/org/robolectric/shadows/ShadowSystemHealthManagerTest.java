@@ -12,16 +12,19 @@ import android.os.health.SystemHealthManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = N)
 public final class ShadowSystemHealthManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private static final int MY_UID = Process.myUid();
   private static final int OTHER_UID_1 = MY_UID + 1;
@@ -80,8 +83,8 @@ public final class ShadowSystemHealthManagerTest {
   @Config(minSdk = O)
   public void
       systemHealthManager_activityContextEnabled_differentInstancesRetrieveSameUidSnapshot() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       SystemHealthManager applicationSystemHealthManager =
@@ -96,8 +99,6 @@ public final class ShadowSystemHealthManagerTest {
       HealthStats activityHealthStats = activitySystemHealthManager.takeMyUidSnapshot();
 
       assertThat(activityHealthStats).isEqualTo(applicationHealthStats);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

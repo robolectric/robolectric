@@ -10,13 +10,16 @@ import android.view.ViewConfiguration;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowViewConfigurationTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private Application context;
   private ViewConfiguration viewConfiguration;
@@ -124,13 +127,9 @@ public class ShadowViewConfigurationTest {
   @Config(minSdk = Q)
   @Test
   public void getScaledMinimumScalingSpan_usePreviousBug() {
-    System.setProperty("robolectric.useRealMinScalingSpan", "false");
+    setSystemPropertyRule.set("robolectric.useRealMinScalingSpan", "false");
     ShadowViewConfiguration.reset(); // clear the static cache
-    try {
-      ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
-      assertThat(viewConfiguration.getScaledMinimumScalingSpan()).isEqualTo(0);
-    } finally {
-      System.clearProperty("robolectric.useRealMinScalingSpan");
-    }
+    ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
+    assertThat(viewConfiguration.getScaledMinimumScalingSpan()).isEqualTo(0);
   }
 }

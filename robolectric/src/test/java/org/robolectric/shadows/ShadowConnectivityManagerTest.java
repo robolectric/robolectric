@@ -37,16 +37,20 @@ import java.util.Arrays;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowConnectivityManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private ConnectivityManager connectivityManager;
   private ShadowNetworkInfo shadowOfActiveNetworkInfo;
 
@@ -736,8 +740,8 @@ public class ShadowConnectivityManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.O)
   public void connectivityManager_instanceBasedOnSdkVersion() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       Activity activity = controller.get();
@@ -753,8 +757,6 @@ public class ShadowConnectivityManagerTest {
       Network activityActiveNetwork = activityConnectivityManager.getActiveNetwork();
 
       assertThat(activityActiveNetwork).isEqualTo(applicationActiveNetwork);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 

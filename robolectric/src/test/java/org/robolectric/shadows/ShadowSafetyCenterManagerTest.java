@@ -12,6 +12,7 @@ import android.safetycenter.SafetyEvent;
 import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceErrorDetails;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
 import org.junit.runner.RunWith;
@@ -20,11 +21,13 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = VERSION_CODES.TIRAMISU)
 public final class ShadowSafetyCenterManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   @Before
   public void setUp() {
@@ -499,8 +502,8 @@ public final class ShadowSafetyCenterManagerTest {
 
   @Test
   public void safetyCenterManager_activityContextEnabled_differentInstancesCheckEnabled() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       SafetyCenterManager applicationSafetyCenterManager =
@@ -516,8 +519,6 @@ public final class ShadowSafetyCenterManagerTest {
       boolean activityEnabled = activitySafetyCenterManager.isSafetyCenterEnabled();
 
       assertThat(activityEnabled).isEqualTo(applicationEnabled);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

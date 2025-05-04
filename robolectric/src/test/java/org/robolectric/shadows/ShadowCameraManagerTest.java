@@ -19,16 +19,19 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /** Tests for {@link ShadowCameraManager}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowCameraManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private static final String CAMERA_ID_0 = "cameraId0";
   private static final String CAMERA_ID_1 = "cameraId1";
@@ -414,8 +417,8 @@ public class ShadowCameraManagerTest {
   @Config(minSdk = VERSION_CODES.O)
   public void cameraManager_activityContextEnabled_differentInstancesRetrieveCameraIdList()
       throws Exception {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       CameraManager applicationCameraManager =
@@ -440,8 +443,6 @@ public class ShadowCameraManagerTest {
       assertThat(activityCameraIdList[1]).isEqualTo(CAMERA_ID_1);
 
       assertThat(activityCameraIdList).isEqualTo(applicationCameraIdList);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

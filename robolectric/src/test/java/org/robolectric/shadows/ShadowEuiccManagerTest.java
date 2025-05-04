@@ -12,16 +12,20 @@ import android.telephony.euicc.EuiccManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /** Junit test for {@link ShadowEuiccManager}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = P)
 public class ShadowEuiccManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private EuiccManager euiccManager;
 
   @Before
@@ -64,8 +68,8 @@ public class ShadowEuiccManagerTest {
 
   @Test
   public void euiccManager_activityContextEnabled_differentInstancesRetrieveEids() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       EuiccManager applicationEuiccManager =
@@ -81,8 +85,6 @@ public class ShadowEuiccManagerTest {
       String activityEid = activityEuiccManager.getEid();
 
       assertThat(activityEid).isEqualTo(applicationEid);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }
