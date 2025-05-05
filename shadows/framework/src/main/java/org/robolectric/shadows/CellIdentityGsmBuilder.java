@@ -87,8 +87,17 @@ public class CellIdentityGsmBuilder {
 
   public CellIdentityGsm build() {
     CellIdentityGsmReflector cellIdentityReflector = reflector(CellIdentityGsmReflector.class);
-    if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.Q) {
-      throw new UnsupportedOperationException("Not supported on API level < Q");
+
+    if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.N) {
+      int mcc = parseInt(mccStr, Integer.MAX_VALUE);
+      int mnc = parseInt(mncStr, Integer.MAX_VALUE);
+
+      return cellIdentityReflector.newCellIdentityGsm(mcc, mnc, lac, cid);
+    } else if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.P) {
+      int mcc = parseInt(mccStr, Integer.MAX_VALUE);
+      int mnc = parseInt(mncStr, Integer.MAX_VALUE);
+
+      return cellIdentityReflector.newCellIdentityGsm(mcc, mnc, lac, cid, arfcn, bsic);
     } else if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.R) {
       return cellIdentityReflector.newCellIdentityGsm(
           lac, cid, arfcn, bsic, mccStr, mncStr, alphal, alphas);
@@ -99,11 +108,33 @@ public class CellIdentityGsmBuilder {
     }
   }
 
+  /**
+   * Parses a string to an integer. Throws an {@link IllegalArgumentException} if the string cannot
+   * be parsed as an integer. This returns {@code defaultValue} if the string is null.
+   */
+  private static int parseInt(String str, int defaultValue) {
+    if (str == null) {
+      return defaultValue;
+    }
+
+    try {
+      return Integer.parseInt(str);
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Failed to parse integer from string: " + str, e);
+    }
+  }
+
   @ForType(CellIdentityGsm.class)
   private interface CellIdentityGsmReflector {
 
     @Constructor
     CellIdentityGsm newCellIdentityGsm();
+
+    @Constructor
+    CellIdentityGsm newCellIdentityGsm(int mcc, int mnc, int lac, int cid);
+
+    @Constructor
+    CellIdentityGsm newCellIdentityGsm(int mcc, int mnc, int lac, int cid, int arfcn, int bsic);
 
     @Constructor
     CellIdentityGsm newCellIdentityGsm(
