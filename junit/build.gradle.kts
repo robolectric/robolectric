@@ -4,9 +4,18 @@ plugins {
 }
 
 dependencies {
+  implementation(project(":pluginapi"))
   api(project(":sandbox"))
-  api(project(":pluginapi"))
+  implementation(project(":shadows:framework"))
 
+  compileOnly(AndroidSdk.MAX_SDK.coordinates)
   compileOnly(libs.findbugs.jsr305)
   compileOnly(libs.junit4)
+
+  testCompileOnly(AndroidSdk.MAX_SDK.coordinates)
+  testImplementation(variantOf(libs.androidx.test.ext.junit) { artifactType("aar") })
+  testImplementation(variantOf(libs.androidx.test.runner) { artifactType("aar") })
+  testImplementation(libs.hamcrest)
+  testImplementation(libs.junit4)
+  testImplementation(libs.truth)
 }
