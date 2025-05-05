@@ -240,6 +240,35 @@ public class AndroidManifestTest {
   }
 
   @Test
+  public void shouldReadUnfinlizedSdkVersionFromAndroidManifest() throws Exception {
+    assertThat(
+            newConfigWith("minSdkBaklavaShortNameSdk.xml", "android:minSdkVersion=\"Baklava\"")
+                .getMinSdkVersion())
+        .isEqualTo(36);
+    assertThat(
+            newConfigWith(
+                    "targetSdkBaklavaShortNameSdk.xml", "android:targetSdkVersion=\"Baklava\"")
+                .getTargetSdkVersion())
+        .isEqualTo(36);
+    assertThat(
+            newConfigWith("maxSdkBaklavaShortNameSdk.xml", "android:maxSdkVersion=\"Baklava\"")
+                .getMaxSdkVersion())
+        .isEqualTo(36);
+  }
+
+  @Test
+  public void shouldReadUnknownSdkVersionFromAndroidManifestDefaultToLollipop() throws Exception {
+    assertThat(
+            newConfigWith("UnknownStringMinSdk.xml", "android:minSdkVersion=\"Unknown\"")
+                .getMinSdkVersion())
+        .isEqualTo(VERSION_CODES.LOLLIPOP);
+    assertThat(
+            newConfigWith("UnknownStringTargetSdk.xml", "android:targetSdkVersion=\"Unknown\"")
+                .getTargetSdkVersion())
+        .isEqualTo(VERSION_CODES.LOLLIPOP);
+  }
+
+  @Test
   public void shouldReadProcessFromAndroidManifest() {
     assertThat(newConfig("TestAndroidManifestWithProcess.xml").getProcessName())
         .isEqualTo("robolectricprocess");

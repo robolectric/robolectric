@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -207,7 +208,7 @@ public class FileMap {
   }
 
   static ImmutableMap<String, Long> guessDataOffsets(File zipFile, int length) {
-    ImmutableMap.Builder<String, Long> result = ImmutableMap.builder();
+    HashMap<String, Long> result = new HashMap<>();
 
     // Parse the zip file entry offsets from the central directory section.
     // See https://en.wikipedia.org/wiki/Zip_(file_format)
@@ -274,7 +275,7 @@ public class FileMap {
         offset += 46 + fileNameLength + extraLength + fieldCommentLength;
       }
 
-      return result.buildOrThrow();
+      return ImmutableMap.copyOf(result);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

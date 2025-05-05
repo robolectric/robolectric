@@ -178,6 +178,13 @@ public class ShadowBuildTest {
     assertThat(Build.ODM_SKU).isEqualTo("odm_sku");
   }
 
+  @Test
+  @Config(minSdk = S)
+  public void setSku() {
+    ShadowBuild.setSku("sku");
+    assertThat(Build.SKU).isEqualTo("sku");
+  }
+
   /** Verifies that each test gets a fresh set of Build values. */
   private void checkValues() {
     assertThat(Build.FINGERPRINT).isEqualTo("robolectric");

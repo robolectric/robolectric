@@ -371,38 +371,34 @@ public class ShadowBluetoothAdapter {
     return true;
   }
 
-  /**
-   * Needs looseSignatures because in Android T the return value of this method was changed from
-   * bool to int.
-   */
-  @Implementation(maxSdk = S_V2)
-  protected boolean setScanMode(int scanMode) {
-    boolean result =
-        scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE
-            || scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE
-            || scanMode == BluetoothAdapter.SCAN_MODE_NONE;
+  @SuppressWarnings("ProtectedImplementationLintCheck")
+  @Implementation(minSdk = TIRAMISU)
+  public int setScanMode(int scanMode) {
     this.scanMode = scanMode;
-    return result;
-  }
-
-  @Implementation(minSdk = TIRAMISU, methodName = "setScanMode")
-  protected int setScanModeFromT(int scanMode) {
-    return setScanMode(scanMode)
+    return (scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE
+            || scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE
+            || scanMode == BluetoothAdapter.SCAN_MODE_NONE)
         ? BluetoothStatusCodes.SUCCESS
         : BluetoothStatusCodes.ERROR_UNKNOWN;
+  }
+
+  /** Needs `methodName` because in Android T the return value was changed from bool to int. */
+  @Implementation(maxSdk = S_V2, methodName = "setScanMode")
+  protected boolean setScanModeSV2(int scanMode) {
+    return setScanMode(scanMode) == BluetoothStatusCodes.SUCCESS;
   }
 
   @Implementation(maxSdk = Q)
   protected boolean setScanMode(int scanMode, int discoverableTimeout) {
     setDiscoverableTimeout(discoverableTimeout);
-    return setScanMode(scanMode);
+    return setScanMode(scanMode) == BluetoothStatusCodes.SUCCESS;
   }
 
   @Implementation(minSdk = R, maxSdk = S_V2)
   protected boolean setScanMode(int scanMode, long durationMillis) {
-    int durationSeconds = Math.toIntExact(durationMillis / 1000);
+    int durationSeconds = (int) Duration.ofMillis(durationMillis).toSeconds();
     setDiscoverableTimeout(durationSeconds);
-    return setScanMode(scanMode);
+    return setScanMode(scanMode) == BluetoothStatusCodes.SUCCESS;
   }
 
   @Implementation
@@ -499,10 +495,7 @@ public class ShadowBluetoothAdapter {
     this.state = state;
   }
 
-  /**
-   * @deprecated Use {@link BluetoothAdapter#enable()} or {@link BluetoothAdapter#disable()}.
-   */
-  @Deprecated
+  /** Sets the enabled state of the adapter. */
   public void setEnabled(boolean enabled) {
     if (enabled) {
       enable();

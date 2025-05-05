@@ -1293,7 +1293,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   private static boolean useValidGetApplicationIcon() {
     return Boolean.parseBoolean(
-        System.getProperty("robolectric.useValidGetApplicationIcon", "false"));
+        System.getProperty("robolectric.useValidGetApplicationIcon", "true"));
   }
 
   @Implementation

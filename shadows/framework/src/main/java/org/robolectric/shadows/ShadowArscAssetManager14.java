@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.InDevelopment;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
@@ -127,6 +128,59 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
         colorMode,
         grammaticalGender,
         majorVersion);
+  }
+
+  @Implementation(minSdk = Baklava.SDK_INT)
+  @InDevelopment
+  protected static void nativeSetConfiguration(
+      long ptr,
+      int mcc,
+      int mnc,
+      /* Used only when locales is null or empty. */
+      @Nullable String defaultLocale,
+      /* At this moment, only the first element in locales is used and others are ignored. */
+      @Nonnull String[] locales,
+      int orientation,
+      int touchscreen,
+      int density,
+      int keyboard,
+      int keyboardHidden,
+      int navigation,
+      int screenWidth,
+      int screenHeight,
+      int smallestScreenWidthDp,
+      int screenWidthDp,
+      int screenHeightDp,
+      int screenLayout,
+      int uiMode,
+      int colorMode,
+      int grammaticalGender,
+      int majorVersion,
+      int minorVersion, // ignore for now
+      boolean forceRefresh) {
+    nativeSetConfiguration(
+        ptr,
+        mcc,
+        mnc,
+        defaultLocale,
+        locales,
+        orientation,
+        touchscreen,
+        density,
+        keyboard,
+        keyboardHidden,
+        navigation,
+        screenWidth,
+        screenHeight,
+        smallestScreenWidthDp,
+        screenWidthDp,
+        screenHeightDp,
+        screenLayout,
+        uiMode,
+        colorMode,
+        grammaticalGender,
+        majorVersion,
+        forceRefresh);
   }
 
   @Implementation(minSdk = V.SDK_INT)

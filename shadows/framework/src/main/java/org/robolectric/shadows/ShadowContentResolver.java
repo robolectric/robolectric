@@ -202,19 +202,27 @@ public class ShadowContentResolver {
 
   @Implementation
   protected OutputStream openOutputStream(final Uri uri) throws FileNotFoundException {
+
+    boolean swallowException =
+        Boolean.parseBoolean(
+            System.getProperty("robolectric.useLegacyContentProviderOpenOutputStream", "false"));
     try {
       return openOutputStream(uri, "w");
     } catch (SecurityException | FileNotFoundException e) {
-      // This is legacy behavior is only supported because existing users require it.
-      return new OutputStream() {
-        @Override
-        public void write(int arg0) throws IOException {}
+      if (swallowException) {
+        // This is legacy behavior is only supported because existing users require it.
+        return new OutputStream() {
+          @Override
+          public void write(int arg0) throws IOException {}
 
-        @Override
-        public String toString() {
-          return "outputstream for " + uri;
-        }
-      };
+          @Override
+          public String toString() {
+            return "outputstream for " + uri;
+          }
+        };
+      } else {
+        throw e;
+      }
     }
   }
 

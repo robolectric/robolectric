@@ -3,13 +3,11 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityService.MagnificationController;
 import android.accessibilityservice.MagnificationConfig;
 import android.graphics.Region;
 import android.os.Build.VERSION_CODES;
 import android.os.Looper;
-import android.view.accessibility.AccessibilityEvent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import javax.annotation.Nonnull;
 import org.junit.Before;
@@ -17,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestAccessibilityService;
 
 /** Test for ShadowMagnificationController. */
 @RunWith(AndroidJUnit4.class)
@@ -27,7 +26,7 @@ public final class ShadowMagnificationControllerTest {
 
   @Before
   public void setUp() {
-    MyService myService = Robolectric.setupService(MyService.class);
+    TestAccessibilityService myService = Robolectric.setupService(TestAccessibilityService.class);
     magnificationController = myService.getMagnificationController();
   }
 
@@ -196,20 +195,6 @@ public final class ShadowMagnificationControllerTest {
       this.scale = scale;
       this.centerX = centerX;
       this.centerY = centerY;
-    }
-  }
-
-  /** Empty implementation of AccessibilityService, for test purposes. */
-  private static class MyService extends AccessibilityService {
-
-    @Override
-    public void onAccessibilityEvent(AccessibilityEvent arg0) {
-      // Do nothing
-    }
-
-    @Override
-    public void onInterrupt() {
-      // Do nothing
     }
   }
 }

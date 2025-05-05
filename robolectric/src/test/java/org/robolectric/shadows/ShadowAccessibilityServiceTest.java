@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -10,13 +11,14 @@ import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityService.GestureResultCallback;
 import android.accessibilityservice.AccessibilityService.ScreenshotResult;
 import android.accessibilityservice.AccessibilityService.TakeScreenshotCallback;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.GestureDescription;
 import android.accessibilityservice.GestureDescription.StrokeDescription;
 import android.graphics.Path;
 import android.view.Display;
-import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
+import android.view.inputmethod.EditorInfo;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -28,15 +30,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestAccessibilityService;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAccessibilityServiceTest {
-  private MyService service;
+  private TestAccessibilityService service;
   private ShadowAccessibilityService shadow;
 
   @Before
   public void setUp() {
-    service = Robolectric.setupService(MyService.class);
+    service = Robolectric.setupService(TestAccessibilityService.class);
     shadow = shadowOf(service);
   }
 
@@ -130,6 +133,29 @@ public class ShadowAccessibilityServiceTest {
     assertThat(
             service.dispatchGesture(gestureDescription, gestureResultCallback, /* handler= */ null))
         .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void startInput_startsInputMethod() {
+    assertThat(service.getInputMethod()).isNull();
+
+    // Set flags to get an InputMethod.
+    AccessibilityServiceInfo serviceInfo = new AccessibilityServiceInfo();
+    serviceInfo.flags |= AccessibilityServiceInfo.FLAG_INPUT_METHOD_EDITOR;
+    service.setServiceInfo(serviceInfo);
+    assertThat(service.getInputMethod()).isNotNull();
+    assertThat(service.getInputMethod().getCurrentInputStarted()).isFalse();
+    assertThat(service.getInputMethod().getCurrentInputConnection()).isNull();
+
+    // Start input.
+    EditorInfo editorInfo = new EditorInfo();
+    editorInfo.hintText = "Watermelon";
+    shadow.startInput(editorInfo);
+    assertThat(service.getInputMethod()).isNotNull();
+    assertThat(service.getInputMethod().getCurrentInputStarted()).isTrue();
+    assertThat(service.getInputMethod().getCurrentInputConnection()).isNotNull();
+    assertThat(service.getInputMethod().getCurrentInputEditorInfo()).isEqualTo(editorInfo);
   }
 
   @Test
@@ -347,22 +373,5 @@ public class ShadowAccessibilityServiceTest {
       @Override
       public void onCancelled(GestureDescription description) {}
     };
-  }
-
-  public static class MyService extends AccessibilityService {
-    @Override
-    public void onDestroy() {
-      super.onDestroy();
-    }
-
-    @Override
-    public void onAccessibilityEvent(AccessibilityEvent arg0) {
-      // Do nothing
-    }
-
-    @Override
-    public void onInterrupt() {
-      // Do nothing
-    }
   }
 }

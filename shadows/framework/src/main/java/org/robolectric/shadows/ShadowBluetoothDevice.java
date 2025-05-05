@@ -281,6 +281,13 @@ public class ShadowBluetoothDevice {
     return createdBond;
   }
 
+  /** Returns whether this device has been bonded with. */
+  @Implementation
+  protected boolean createBond(int transport) {
+    checkForBluetoothConnectPermission();
+    return createdBond;
+  }
+
   @Implementation(minSdk = Q)
   protected BluetoothSocket createInsecureL2capChannel(int psm) throws IOException {
     checkForBluetoothConnectPermission();

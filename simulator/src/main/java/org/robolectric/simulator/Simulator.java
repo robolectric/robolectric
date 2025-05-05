@@ -93,15 +93,16 @@ public final class Simulator {
     Display display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
     this.displayWidth = display.getWidth();
     this.displayHeight = display.getHeight();
-
     try {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+    final int apiLevel = RuntimeEnvironment.getApiLevel();
     SwingUtilities.invokeLater(
         () -> {
-          simulatorFrame = new SimulatorFrame((int) this.displayWidth, (int) this.displayHeight);
+          simulatorFrame =
+              new SimulatorFrame((int) this.displayWidth, (int) this.displayHeight, apiLevel);
           simulatorFrame.setVisible(true);
           simulatorFrame.toFront();
         });

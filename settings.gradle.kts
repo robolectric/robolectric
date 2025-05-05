@@ -58,6 +58,7 @@ include(
   ":shadows:httpclient",
   ":shadows:playservices",
   ":simulator",
+  ":simulator-gradle-plugin",
   ":testapp",
   ":utils",
   ":utils:reflector",

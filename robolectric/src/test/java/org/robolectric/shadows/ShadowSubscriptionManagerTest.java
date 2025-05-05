@@ -351,6 +351,27 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
+  public void getAllSubscriptionInfoList_default_isEmpty() {
+    assertThat(shadowOf(subscriptionManager).getAllSubscriptionInfoList()).isEmpty();
+  }
+
+  @Test
+  public void getAllSubscriptionInfoList_nullCondition_isEmpty() {
+    shadowOf(subscriptionManager).setAllSubscriptionInfos();
+    assertThat(shadowOf(subscriptionManager).getAllSubscriptionInfoList()).isEmpty();
+  }
+
+  @Test
+  public void getAllSubscriptionInfoList_setSpecificSubscription_returnsList() {
+    SubscriptionInfo expectedSubscriptionInfo =
+        SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo();
+    shadowOf(subscriptionManager).setAllSubscriptionInfos(expectedSubscriptionInfo);
+    assertThat(shadowOf(subscriptionManager).getAllSubscriptionInfoList()).hasSize(1);
+    assertThat(shadowOf(subscriptionManager).getAllSubscriptionInfoList().get(0))
+        .isSameInstanceAs(expectedSubscriptionInfo);
+  }
+
+  @Test
   public void setAvailableSubscriptionInfoList_triggersSubscriptionsChanged() {
     DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
     subscriptionManager.addOnSubscriptionsChangedListener(listener);

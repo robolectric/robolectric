@@ -7,7 +7,6 @@ import static org.robolectric.Shadows.shadowOf;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityService.SoftKeyboardController;
 import android.os.Looper;
-import android.view.accessibility.AccessibilityEvent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import javax.annotation.Nonnull;
 import org.junit.Before;
@@ -15,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestAccessibilityService;
 
 /** Test for ShadowSoftKeyboardController. */
 @RunWith(AndroidJUnit4.class)
@@ -25,7 +25,7 @@ public final class ShadowSoftKeyboardControllerTest {
 
   @Before
   public void setUp() {
-    MyService myService = Robolectric.setupService(MyService.class);
+    TestAccessibilityService myService = Robolectric.setupService(TestAccessibilityService.class);
     softKeyboardController = myService.getSoftKeyboardController();
   }
 
@@ -95,20 +95,6 @@ public final class ShadowSoftKeyboardControllerTest {
     public void onShowModeChanged(@Nonnull SoftKeyboardController controller, int showMode) {
       this.invoked = true;
       this.showMode = showMode;
-    }
-  }
-
-  /** Empty implementation of AccessibilityService, for test purposes. */
-  private static class MyService extends AccessibilityService {
-
-    @Override
-    public void onAccessibilityEvent(AccessibilityEvent arg0) {
-      // Do nothing
-    }
-
-    @Override
-    public void onInterrupt() {
-      // Do nothing
     }
   }
 }
