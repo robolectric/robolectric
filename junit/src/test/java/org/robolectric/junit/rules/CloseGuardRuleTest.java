@@ -2,16 +2,16 @@ package org.robolectric.junit.rules;
 
 import static org.junit.Assert.assertThrows;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import dalvik.system.CloseGuard;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
-import org.robolectric.RobolectricTestRunner;
 
 /** Tests for {@link CloseGuardRule}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public final class CloseGuardRuleTest {
 
   @Test
