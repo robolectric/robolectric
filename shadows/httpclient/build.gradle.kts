@@ -10,7 +10,6 @@ shadows {
 }
 
 val earlyRuntime = configurations.create("earlyRuntime")
-val axtJunitVersion: String by rootProject.extra
 
 dependencies {
   api(project(":annotations"))
@@ -25,7 +24,7 @@ dependencies {
   testImplementation(project(":robolectric"))
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
-  testImplementation("androidx.test.ext:junit:$axtJunitVersion@aar")
+  testImplementation(variantOf(libs.androidx.test.ext.junit) { artifactType("aar") })
 
   testCompileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates)
   testRuntimeOnly(AndroidSdk.S.coordinates)

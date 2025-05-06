@@ -2,14 +2,6 @@ import groovy.util.Node
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.robolectric.gradle.ShadowsPlugin.ShadowsPluginExtension
 
-// https://github.com/gradle/gradle/issues/21267
-val axtCoreVersion by project.extra { libs.versions.androidx.test.core.get() }
-val axtJunitVersion by project.extra { libs.versions.androidx.test.ext.junit.get() }
-val axtMonitorVersion by project.extra { libs.versions.androidx.test.monitor.get() }
-val axtRunnerVersion by project.extra { libs.versions.androidx.test.runner.get() }
-val axtTruthVersion by project.extra { libs.versions.androidx.test.ext.truth.get() }
-val espressoVersion by project.extra { libs.versions.androidx.test.espresso.get() }
-
 // For use of external initialization scripts...
 val allSdks by project.extra(AndroidSdk.ALL_SDKS)
 val configAnnotationProcessing by project.extra(emptyList<Project>())
