@@ -55,6 +55,7 @@ import android.webkit.MimeTypeMap;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -62,7 +63,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.RuntimeEnvironment;
 
@@ -256,7 +256,7 @@ public final class FakeMediaProvider extends ContentProvider {
       // Real media provider uses System.currentTimeMillis() as default name
       // This could be problematic for Robolectric where clock is fixed, so just use
       // a random number.
-      displayName = String.valueOf(Math.abs(displayNameRandom.nextInt()));
+      displayName = String.valueOf(displayNameRandom.nextInt());
       values.put(MediaColumns.DISPLAY_NAME, displayName);
     }
     if (TextUtils.isEmpty(mimeType)) {
@@ -331,7 +331,7 @@ public final class FakeMediaProvider extends ContentProvider {
   // guard against two entries with same displayname and relative path being inserted by adding a
   // random number to each entry
   private String makeUniqueFileName(String baseName, String ext) {
-    return String.format("%s-%d.%s", baseName, Math.abs(displayNameRandom.nextInt()), ext);
+    return String.format("%s-%d.%s", baseName, displayNameRandom.nextInt(), ext);
   }
 
   private String getDefaultRelativePath(int match) {
@@ -399,7 +399,7 @@ public final class FakeMediaProvider extends ContentProvider {
   private void validateRelativePath(String mimeType, String relativePath) {
     if (mimeType.startsWith("video")) {
       String primaryDir = relativePath.split("/")[0];
-      Set<String> allowedPaths = Set.of("DCIM", "Movies", "Pictures");
+      ImmutableSet<String> allowedPaths = ImmutableSet.of("DCIM", "Movies", "Pictures");
       if (!allowedPaths.contains(primaryDir)) {
         throw new IllegalArgumentException(
             String.format(
@@ -561,32 +561,6 @@ public final class FakeMediaProvider extends ContentProvider {
         + ")";
   }
 
-  private static String extractFileName(String data) {
-    if (data == null) {
-      return null;
-    }
-    data = extractDisplayName(data);
-
-    final int lastDot = data.lastIndexOf('.');
-    if (lastDot == -1) {
-      return data;
-    } else {
-      return data.substring(0, lastDot);
-    }
-  }
-
-  private static String extractDisplayName(String data) {
-    if (data == null) {
-      return null;
-    }
-    if (data.indexOf('/') == -1) {
-      return data;
-    }
-    if (data.endsWith("/")) {
-      data = data.substring(0, data.length() - 1);
-    }
-    return data.substring(data.lastIndexOf('/') + 1);
-  }
 
   @Override
   public void shutdown() {
