@@ -1,6 +1,7 @@
 package org.robolectric.android.internal;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.annotation.ConscryptMode.Mode.OFF;
@@ -8,11 +9,15 @@ import static org.robolectric.annotation.ConscryptMode.Mode.ON;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.app.Application;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import androidx.test.core.app.ApplicationProvider;
 import java.io.File;
@@ -367,6 +372,30 @@ public class AndroidTestEnvironmentTest {
     RuntimeException e = assertThrows(RuntimeException.class, androidTestEnvironment::resetState);
     assertThat(e).hasMessageThat().contains("Reset failed");
     assertThat(workingShadowProvider.wasReset).isTrue();
+  }
+
+  @Config(minSdk = Q)
+  @Test
+  public void fakeMediaProvider_closesSQLiteDatabase() {
+    setSystemPropertyRule.set("robolectric.fake.media.provider", "true");
+    bootstrapWrapper.callSetUpApplicationState();
+    final Context context = ApplicationProvider.getApplicationContext();
+
+    assertThat(getExternalImageCount(context)).isEqualTo(0);
+    bootstrapWrapper.resetState();
+    assertThat(getExternalImageCount(context)).isEqualTo(-1);
+  }
+
+  private int getExternalImageCount(Context context) {
+    ContentResolver contentResolver = context.getContentResolver();
+    Uri queryUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+    String[] projection = {MediaStore.Images.Media._ID};
+    try (Cursor cursor = contentResolver.query(queryUri, projection, null, null, null)) {
+      if (cursor == null) {
+        return -1;
+      }
+      return cursor.getCount();
+    }
   }
 
   private static class ThrowingShadowProvider implements ShadowProvider {

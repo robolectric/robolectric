@@ -63,6 +63,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.RuntimeEnvironment;
 
 /**
@@ -89,6 +90,7 @@ public final class FakeMediaProvider extends ContentProvider {
 
   private final Random displayNameRandom = new Random();
   private final MediaUriMatcher uriMatcher = new MediaUriMatcher(MediaStore.AUTHORITY);
+  private final AtomicBoolean initialized = new AtomicBoolean();
   private static final String TAG = "FakeMediaProvider";
 
   @Override
@@ -102,6 +104,7 @@ public final class FakeMediaProvider extends ContentProvider {
             () -> {
               SQLiteDatabase db = SQLiteDatabase.create(null);
               db.execSQL(createTableStatement());
+              initialized.set(true);
               return db;
             });
 
@@ -583,5 +586,12 @@ public final class FakeMediaProvider extends ContentProvider {
       data = data.substring(0, data.length() - 1);
     }
     return data.substring(data.lastIndexOf('/') + 1);
+  }
+
+  @Override
+  public void shutdown() {
+    if (initialized.get()) {
+      dbSupplier.get().close();
+    }
   }
 }
