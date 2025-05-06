@@ -3,13 +3,6 @@ plugins {
   alias(libs.plugins.robolectric.java.module)
 }
 
-val axtCoreVersion: String by rootProject.extra
-val axtJunitVersion: String by rootProject.extra
-val axtMonitorVersion: String by rootProject.extra
-val axtRunnerVersion: String by rootProject.extra
-val axtTruthVersion: String by rootProject.extra
-val espressoVersion: String by rootProject.extra
-
 dependencies {
   annotationProcessor(libs.auto.service)
   annotationProcessor(libs.error.prone.core)
@@ -40,9 +33,9 @@ dependencies {
   compileOnly(libs.junit4)
   compileOnly(libs.androidx.annotation)
 
-  api("androidx.test:monitor:$axtMonitorVersion@aar")
-  implementation("androidx.test.espresso:espresso-idling-resource:$espressoVersion@aar")
-  implementation("com.google.testparameterinjector:test-parameter-injector:1.18@jar")
+  api(variantOf(libs.androidx.test.monitor) { artifactType("aar") })
+  implementation(variantOf(libs.androidx.test.espresso.idling.resource) { artifactType("aar") })
+  implementation(variantOf(libs.test.parameter.injector) { artifactType("jar") })
 
   testImplementation(libs.androidx.annotation)
   testImplementation(libs.junit4)
@@ -50,10 +43,10 @@ dependencies {
   testImplementation(libs.mockito)
   testImplementation(libs.mockito.subclass)
   testImplementation(libs.hamcrest)
-  testImplementation("androidx.test:core:$axtCoreVersion@aar")
-  testImplementation("androidx.test.ext:junit:$axtJunitVersion@aar")
-  testImplementation("androidx.test.ext:truth:$axtTruthVersion@aar")
-  testImplementation("androidx.test:runner:$axtRunnerVersion@aar")
+  testImplementation(variantOf(libs.androidx.test.core) { artifactType("aar") })
+  testImplementation(variantOf(libs.androidx.test.ext.junit) { artifactType("aar") })
+  testImplementation(variantOf(libs.androidx.test.ext.truth) { artifactType("aar") })
+  testImplementation(variantOf(libs.androidx.test.runner) { artifactType("aar") })
   testImplementation(libs.guava)
   testImplementation(libs.guava.testlib)
   testCompileOnly(AndroidSdk.MAX_SDK.coordinates) // compile against latest Android SDK
