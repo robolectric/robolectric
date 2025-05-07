@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<attrs xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:text="@android:string/ok"
+  app:title="my title" >
+</attrs>

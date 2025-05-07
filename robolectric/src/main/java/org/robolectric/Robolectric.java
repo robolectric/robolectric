@@ -16,11 +16,13 @@ import android.app.backup.BackupAgent;
 import android.content.ContentProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.XmlResourceParser;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Xml;
 import android.view.View;
+import java.io.IOException;
 import java.lang.reflect.Modifier;
 import javax.annotation.Nullable;
 import org.robolectric.android.AttributeSetBuilderImpl;
@@ -36,6 +38,7 @@ import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 public class Robolectric {
 
@@ -319,11 +322,27 @@ public class Robolectric {
    * Allows for the programmatic creation of an {@link AttributeSet}.
    *
    * <p>Useful for testing {@link View} classes without the need for creating XML snippets.
+   *
+   * @deprecated use {@link #getAttributeSetFromXml(int)} instead
    */
+  @Deprecated
   public static org.robolectric.android.AttributeSetBuilder buildAttributeSet() {
 
     return new AttributeSetBuilderImpl(
         new ArscResourceResolver(RuntimeEnvironment.getApplication())) {};
+  }
+
+  /** Helper method for obtaining an {@link AttributeSet} from an xml resource id */
+  public static AttributeSet getAttributeSetFromXml(int xmlResId) {
+    try {
+      XmlResourceParser parser =
+          RuntimeEnvironment.getApplication().getResources().getXml(xmlResId);
+      while (parser.next() != XmlPullParser.START_TAG) {
+      }
+      return Xml.asAttributeSet(parser);
+    } catch (XmlPullParserException | IOException e) {
+      throw new RuntimeException("Failed to parse XML resource " + xmlResId, e);
+    }
   }
 
   /**

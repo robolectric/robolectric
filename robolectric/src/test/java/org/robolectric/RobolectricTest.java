@@ -8,14 +8,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
+import static org.robolectric.res.AttributeResource.ANDROID_NS;
+import static org.robolectric.res.AttributeResource.RES_AUTO_NS_URI;
 
 import android.app.Activity;
 import android.app.Application;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewParent;
@@ -101,6 +105,34 @@ public class RobolectricTest {
     assertThat(activity.isStarted()).isTrue();
     assertThat(activity.isResumed()).isTrue();
     assertThat(activity.isVisible()).isTrue();
+  }
+
+  @Test
+  public void getAttributeSetFromXml_androidNs() {
+    AttributeSet roboAttributeSet = Robolectric.getAttributeSetFromXml(R.xml.attr_set);
+
+    assertThat(roboAttributeSet.getAttributeCount()).isEqualTo(2);
+    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0))
+        .isEqualTo(android.R.string.ok);
+  }
+
+  @Test
+  public void getAttributeSetFromXml_appNs() {
+    AttributeSet roboAttributeSet = Robolectric.getAttributeSetFromXml(R.xml.attr_set);
+
+    assertThat(roboAttributeSet.getAttributeValue(RES_AUTO_NS_URI, "title")).isEqualTo("my title");
+  }
+
+  @Test
+  public void getAttributeSetFromXml_invalidXmlResId() {
+    assertThrows(Resources.NotFoundException.class, () -> Robolectric.getAttributeSetFromXml(1234));
+  }
+
+  @Test
+  public void getAttributeSetFromXml_emptyXml() {
+    AttributeSet emptySet = Robolectric.getAttributeSetFromXml(R.xml.empty);
+    assertThat(emptySet).isNotNull();
+    assertThat(emptySet.getAttributeCount()).isEqualTo(0);
   }
 
   @Implements(View.class)
