@@ -108,7 +108,11 @@ public @interface Config {
    * A list of instrumented packages, in addition to those that are already instrumented.
    *
    * @return A list of additional instrumented packages.
+   * @deprecated Use {@link
+   *     org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder#addInstrumentedClass(String)}
+   *     instead. This will be removed in a future version of Robolectric.
    */
+  @Deprecated
   String[] instrumentedPackages() default {}; // DEFAULT_INSTRUMENTED_PACKAGES
 
   class Implementation implements Config {
