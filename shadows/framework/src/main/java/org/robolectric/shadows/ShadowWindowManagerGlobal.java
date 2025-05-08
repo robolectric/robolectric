@@ -77,6 +77,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
@@ -452,15 +453,36 @@ public class ShadowWindowManagerGlobal {
       }
       Rect[] rects = findAll(Rect.class, args);
       int rectIdx = 0;
-      configureWindowFrames(
-          windowInfo,
-          /* inAttrs= */ (WindowManager.LayoutParams) args[sdk <= R ? 2 : 1],
-          /* requestedSize= */ null,
-          /* outFrame= */ sdk >= P && rects.length > rectIdx ? rects[rectIdx++] : null,
-          /* outContentInsets= */ sdk <= R ? rects[rectIdx++] : null,
-          /* outVisibleInsets= */ null,
-          /* outStableInsets= */ sdk >= LOLLIPOP_MR1 && sdk <= R ? rects[rectIdx] : null,
-          /* outInsetsState= */ sdk >= Q ? findFirst(InsetsState.class, args) : null);
+      if (sdk <= R) {
+        configureWindowFrames(
+            windowInfo,
+            /* inAttrs= */ (WindowManager.LayoutParams) args[2],
+            /* requestedSize= */ null,
+            /* outFrame= */ sdk >= P && rects.length > rectIdx ? rects[rectIdx++] : null,
+            /* outContentInsets= */ rects[rectIdx++],
+            /* outVisibleInsets= */ null,
+            /* outStableInsets= */ sdk >= LOLLIPOP_MR1 ? rects[rectIdx] : null,
+            /* outInsetsState= */ sdk >= Q ? findFirst(InsetsState.class, args) : null);
+      } else { // post insets migration
+        Optional<WindowRelayoutResult> layout =
+            sdk >= VANILLA_ICE_CREAM
+                ? findFirstOpt(WindowRelayoutResult.class, args)
+                : Optional.empty();
+        configureWindowFrames(
+            windowInfo,
+            /* inAttrs= */ (WindowManager.LayoutParams) args[1],
+            /* requestedSize= */ null,
+            /* outFrame= */ null,
+            /* outContentInsets= */ null,
+            /* outVisibleInsets= */ null,
+            /* outStableInsets= */ null,
+            /* outInsetsState= */ layout.isPresent()
+                ? layout.get().insetsState
+                : findFirst(InsetsState.class, args));
+        if (rects.length > 0) {
+          rects[0].set(0, 0, -1, -1);
+        }
+      }
 
       int res = 0;
       // Temporarily enable this based on a system property to allow for test migration. This will
@@ -492,7 +514,8 @@ public class ShadowWindowManagerGlobal {
       if (sdk >= Q) {
         SurfaceControl surfaceControl =
             sdk >= VANILLA_ICE_CREAM
-                ? windowLayoutResult.surfaceControl
+                    && ReflectionHelpers.hasField(WindowRelayoutResult.class, "surfaceControl")
+                ? ReflectionHelpers.getField(windowLayoutResult, "surfaceControl")
                 : findFirst(SurfaceControl.class, args);
         Shadow.<ShadowSurfaceControl>extract(surfaceControl).initializeNativeObject();
       }
@@ -847,6 +870,11 @@ public class ShadowWindowManagerGlobal {
 
   private static <T> T findFirst(Class<T> type, Object[] args) {
     return type.cast(stream(args).filter(type::isInstance).findFirst().get());
+  }
+
+  private static <T> Optional<T> findFirstOpt(Class<T> type, Object[] args) {
+    return Optional.ofNullable(
+        type.cast(stream(args).filter(type::isInstance).findFirst().orElse(null)));
   }
 
   private static <T> T[] findAll(Class<T> type, Object[] args) {
