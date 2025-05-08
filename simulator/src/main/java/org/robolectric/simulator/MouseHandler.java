@@ -9,7 +9,6 @@ import android.view.MotionEvent;
 import androidx.test.platform.app.InstrumentationRegistry;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.time.Duration;
 import java.time.Instant;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -24,7 +23,6 @@ public class MouseHandler extends MouseAdapter {
       InstrumentationRegistry.getInstrumentation().getUiAutomation();
 
   private boolean isPressed;
-  private Duration androidSystemClockTimeDelta;
   private Instant downTime;
 
   private final Handler handler = new Handler(Looper.getMainLooper());
@@ -76,9 +74,7 @@ public class MouseHandler extends MouseAdapter {
   public void mousePressed(MouseEvent mouseEvent) {
     if (shouldHandle(mouseEvent)) {
       isPressed = true;
-      androidSystemClockTimeDelta =
-          Duration.ofMillis(SystemClock.uptimeMillis()).minus(Duration.ofNanos(System.nanoTime()));
-      downTime = Instant.ofEpochMilli(mouseEvent.getWhen());
+      downTime = Instant.ofEpochMilli(SystemClock.uptimeMillis());
       postMotionEvent(mouseEvent, MotionEvent.ACTION_DOWN);
     }
   }
@@ -112,15 +108,11 @@ public class MouseHandler extends MouseAdapter {
 
   private MotionEvent obtainMotionEvent(MouseEvent mouseEvent, int action) {
     return MotionEvent.obtain(
-        toAndroidTime(downTime),
-        toAndroidTime(Instant.ofEpochMilli(mouseEvent.getWhen())),
+        downTime.toEpochMilli(),
+        SystemClock.uptimeMillis(),
         action,
         mouseEvent.getX(),
         mouseEvent.getY(),
         /* metaState= */ 0);
-  }
-
-  private long toAndroidTime(Instant instant) {
-    return instant.minus(androidSystemClockTimeDelta).toEpochMilli();
   }
 }
