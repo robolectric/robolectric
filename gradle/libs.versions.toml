@@ -132,6 +132,7 @@ play-services-basement = "18.0.1"
 test-parameter-injector = "1.18"
 
 [libraries]
+android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
 android-gradle-api = { module = "com.android.tools.build:gradle-api", version.ref = "android-gradle" }
 
 android-tools-common = { module = "com.android.tools:common", version.ref = "android-tools-common" }
