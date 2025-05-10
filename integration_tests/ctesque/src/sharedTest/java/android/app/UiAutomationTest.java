@@ -2,13 +2,17 @@ package android.app;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.os.Build;
 import android.os.SystemClock;
 import android.view.Display;
 import android.view.Surface;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +36,7 @@ public class UiAutomationTest {
 
   @Test
   public void setRotation_freeze90_isLandscape() {
+    Assume.assumeTrue(isRobolectric() || supportsAutoRotation());
     uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_90);
     try (ActivityScenario<? extends TestActivity> scenario =
         ActivityScenario.launch(TestActivity.class)) {
@@ -51,6 +56,7 @@ public class UiAutomationTest {
 
   @Test
   public void setRotation_freeze180_isPortrait() {
+    Assume.assumeTrue(isRobolectric() || supportsAutoRotation());
     uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_180);
     try (ActivityScenario<? extends TestActivity> scenario =
         ActivityScenario.launch(TestActivity.class)) {
@@ -85,5 +91,44 @@ public class UiAutomationTest {
         // Do nothing
       }
     } while (SystemClock.uptimeMillis() - startMs <= UiAutomationTest.WAIT_TIMEOUT_MS);
+  }
+
+  private static boolean hasDeviceFeature(final String requiredFeature) {
+    return InstrumentationRegistry.getInstrumentation()
+        .getContext()
+        .getPackageManager()
+        .hasSystemFeature(requiredFeature);
+  }
+
+  private static boolean isSystemConfigSupported(final String configName) {
+    try {
+      return InstrumentationRegistry.getInstrumentation()
+          .getContext()
+          .getResources()
+          .getBoolean(Resources.getSystem().getIdentifier(configName, "bool", "android"));
+    } catch (Resources.NotFoundException e) {
+      // Assume this device supports the config.
+      return true;
+    }
+  }
+
+  private static boolean isRobolectric() {
+    return "robolectric".equalsIgnoreCase(Build.FINGERPRINT);
+  }
+
+  /**
+   * Gets whether the real device supports auto rotation. In general such a device has an
+   * accelerometer, has the portrait and landscape features, and has the config_supportAutoRotation
+   * resource.
+   *
+   * <p>Copied from <a
+   * href="https://android-review.googlesource.com/c/platform/cts/+/3467708">Update DisplayTest to
+   * use UiAutomation for rotation.</a>.
+   */
+  private static boolean supportsAutoRotation() {
+    return hasDeviceFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER)
+        && hasDeviceFeature(PackageManager.FEATURE_SCREEN_PORTRAIT)
+        && hasDeviceFeature(PackageManager.FEATURE_SCREEN_LANDSCAPE)
+        && isSystemConfigSupported("config_supportAutoRotation");
   }
 }
