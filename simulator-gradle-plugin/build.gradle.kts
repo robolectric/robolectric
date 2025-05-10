@@ -19,7 +19,7 @@ gradlePlugin {
 }
 
 dependencies {
-  compileOnly("com.android.tools.build:gradle:8.2.2")
+  compileOnly(libs.android.gradle)
   implementation(libs.kotlin.stdlib)
   implementation(project(":simulator"))
 }
