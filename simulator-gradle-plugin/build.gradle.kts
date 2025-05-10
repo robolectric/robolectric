@@ -1,4 +1,3 @@
-import java.io.File
 import org.robolectric.gradle.applyPomMetadata
 import org.robolectric.gradle.sonatypeRepositories
 
@@ -37,7 +36,7 @@ afterEvaluate {
   }
 }
 
-val generatedSourcesDir = File(buildDir, "generated-sources/kotlin/")
+val generatedSourcesDir = project.layout.buildDirectory.dir("generated-sources/kotlin")
 
 // Generates a file containing the Robolectric version to be used by the plugin.
 val generateVersionFile by
@@ -45,8 +44,11 @@ val generateVersionFile by
     outputs.dir(generatedSourcesDir)
     doLast {
       val versionFile =
-        File(generatedSourcesDir, "org/robolectric/simulator/gradle/generated/Version.kt")
-      versionFile.getParentFile().mkdirs()
+        generatedSourcesDir
+          .get()
+          .file("org/robolectric/simulator/gradle/generated/Version.kt")
+          .asFile
+      versionFile.parentFile.mkdirs()
       versionFile.writeText(
         """
         package org.robolectric.simulator.gradle.generated
