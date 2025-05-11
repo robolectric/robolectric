@@ -18,6 +18,13 @@ android {
     targetSdk = 35
     unitTests.isIncludeAndroidResources = true
   }
+
+  androidComponents {
+    beforeVariants(selector().all()) { variantBuilder ->
+      // memoryleaks does not support AndroidTest.
+      variantBuilder.enableAndroidTest = false
+    }
+  }
 }
 
 dependencies {
