@@ -314,7 +314,12 @@ public class ContextTest {
             ClipData applicationClipData = applicationClipboardManager.getPrimaryClip();
             ClipData activityClipData = activityClipboardManager.getPrimaryClip();
 
-            assertThat(activityClipData.toString()).isEqualTo(applicationClipData.toString());
+            if (applicationClipData == null || activityClipData == null) {
+              assertThat(applicationClipData).isNull();
+              assertThat(activityClipData).isNull();
+            } else {
+              assertThat(applicationClipData.toString()).isEqualTo(activityClipData.toString());
+            }
           });
     }
   }
