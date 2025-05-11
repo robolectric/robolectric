@@ -11,6 +11,7 @@ import android.view.Display;
 import android.view.Surface;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.SdkSuppress;
 import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Assume;
 import org.junit.Before;
@@ -19,7 +20,14 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.testapp.TestActivity;
 
-/** Compatibility test for {@link UiAutomation}. */
+/**
+ * Compatibility test for {@link UiAutomation}.
+ *
+ * <p>UiAutomation#setRotation will set the rotation result to Settings.System, and will trigger
+ * Android's updating for display in server part. But its updating will be overridden by the default
+ * display rotation when there is deferring occurs(based on debugging). Before we find a proper
+ * solution to fix it or avoid it, related tests are suppressed from Android 15.
+ */
 @DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class UiAutomationTest {
@@ -30,11 +38,10 @@ public class UiAutomationTest {
   public void setUp() {
     Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
     uiAutomation = instrumentation.getUiAutomation();
-    // Unfreeze rotation before any test.
-    uiAutomation.setRotation(UiAutomation.ROTATION_UNFREEZE);
   }
 
   @Test
+  @SdkSuppress(maxSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
   public void setRotation_freeze90_isLandscape() {
     Assume.assumeTrue(isRobolectric() || supportsAutoRotation());
     uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_90);
@@ -55,6 +62,7 @@ public class UiAutomationTest {
   }
 
   @Test
+  @SdkSuppress(maxSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
   public void setRotation_freeze180_isPortrait() {
     Assume.assumeTrue(isRobolectric() || supportsAutoRotation());
     uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_180);
