@@ -77,7 +77,7 @@ javax-inject = "1"
 junit4 = "4.13.2"
 
 # https://github.com/google/libphonenumber/releases
-libphonenumber = "9.0.4"
+libphonenumber = "9.0.5"
 
 # https://github.com/mockito/mockito/releases
 mockito = "5.17.0"
