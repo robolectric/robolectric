@@ -14,7 +14,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)
-public class ShadowAlertDialog extends ShadowDialog {
+public class ShadowAlertDialog extends ShadowBaseDialog {
   @RealObject private AlertDialog realAlertDialog;
 
   private CharSequence[] items;
