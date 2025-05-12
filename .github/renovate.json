@@ -52,5 +52,7 @@
         "androidx.fragment:fragment"
       ]
     }
-  ]
+  ],
+  "prHourlyLimit": 5,
+  "rebaseWhen": "conflicted"
 }
