@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.hardware.Sensor;
 import android.hardware.SensorDirectChannel;
@@ -82,6 +83,17 @@ public class ShadowSensorManager {
     }
 
     return ((Sensor) sensorsForType.toArray()[0]);
+  }
+
+  @Implementation
+  protected Sensor getDefaultSensor(int type, boolean wakeUpSensor) {
+    Sensor sensor = getDefaultSensor(type);
+    if (sensor == null) {
+      return null;
+    }
+    ShadowSensor shadowSensor = shadowOf(sensor);
+    shadowSensor.setWakeUpFlag(wakeUpSensor);
+    return sensor;
   }
 
   @Implementation
