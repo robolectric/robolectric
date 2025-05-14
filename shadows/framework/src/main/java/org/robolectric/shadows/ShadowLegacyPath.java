@@ -173,8 +173,48 @@ public class ShadowLegacyPath extends ShadowPath {
 
   @Implementation
   protected boolean op(Path path1, Path path2, Path.Op op) {
-    Log.w(TAG, "android.graphics.Path#op() not supported yet.");
-    return false;
+    ShadowLegacyPath p1 = extract(path1);
+    ShadowLegacyPath p2 = extract(path2);
+
+    Area area1 = new Area(p1.mPath);
+    Area area2 = new Area(p2.mPath);
+
+    Area result;
+
+    switch (op) {
+      case DIFFERENCE:
+        area1.subtract(area2);
+        result = area1;
+        break;
+      case INTERSECT:
+        area1.intersect(area2);
+        result = area1;
+        break;
+      case UNION:
+        area1.add(area2);
+        result = area1;
+        break;
+      case XOR:
+        area1.exclusiveOr(area2);
+        result = area1;
+        break;
+      case REVERSE_DIFFERENCE:
+        area2.subtract(area1);
+        result = area2;
+        break;
+      default:
+        Log.w(TAG, "Operation \"" + op + "\" not supported yet.");
+        return false;
+    }
+
+    Path2D.Double newPath = new Path2D.Double(result);
+
+    if (mPath.equals(newPath)) {
+      return false;
+    } else {
+      mPath = newPath;
+      return true;
+    }
   }
 
   @Implementation
