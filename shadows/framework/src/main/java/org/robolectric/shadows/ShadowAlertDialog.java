@@ -1,10 +1,8 @@
 package org.robolectric.shadows;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.view.View;
 import android.widget.Adapter;
-import android.widget.FrameLayout;
 import com.android.internal.app.AlertController;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -17,13 +15,6 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowAlertDialog extends ShadowDialog {
   @RealObject private AlertDialog realAlertDialog;
 
-  private CharSequence[] items;
-  private DialogInterface.OnClickListener clickListener;
-  private boolean isMultiItem;
-  private boolean isSingleItem;
-  private DialogInterface.OnMultiChoiceClickListener multiChoiceClickListener;
-  private FrameLayout custom;
-
   private static ShadowAlertDialog latestAlertDialog;
 
   /**
@@ -32,13 +23,6 @@ public class ShadowAlertDialog extends ShadowDialog {
    */
   public static AlertDialog getLatestAlertDialog() {
     return latestAlertDialog == null ? null : latestAlertDialog.realAlertDialog;
-  }
-
-  public FrameLayout getCustomView() {
-    if (custom == null) {
-      custom = new FrameLayout(context);
-    }
-    return custom;
   }
 
   /** Resets the tracking of the most recently created {@code AlertDialog} */
@@ -119,7 +103,4 @@ public class ShadowAlertDialog extends ShadowDialog {
     AlertController alertController = ReflectionHelpers.getField(realAlertDialog, "mAlert");
     return Shadow.extract(alertController);
   }
-
-  @Implements(AlertDialog.Builder.class)
-  public static class ShadowBuilder {}
 }
