@@ -59,4 +59,9 @@ dependencies {
   annotationProcessor(libs.auto.value)
 
   sqlite4java(libs.bundles.sqlite4java.native)
+
+  testImplementation(project(":robolectric"))
+  testImplementation(libs.junit4)
+  testImplementation(libs.truth)
+  testImplementation(AndroidSdk.MAX_SDK.coordinates)
 }
