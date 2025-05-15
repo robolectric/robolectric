@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.bluetooth.IBluetoothGattServerCallback;
 import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertisingSetCallback;
 import android.bluetooth.le.AdvertisingSetParameters;
@@ -53,6 +54,30 @@ class BluetoothAdvertiseProxyDelegate {
             0,
             parameters.getTxPowerLevel(),
             AdvertisingSetCallback.ADVERTISE_SUCCESS);
+  }
+
+  public void startAdvertisingSet(
+      AdvertisingSetParameters parameters,
+      AdvertiseData advertiseData,
+      AdvertiseData scanResponse,
+      PeriodicAdvertisingParameters periodicParameters,
+      AdvertiseData periodicData,
+      int duration,
+      int maxExtAdvEvents,
+      IBluetoothGattServerCallback gattServerCallback, // new in post-Baklava, ignored
+      IAdvertisingSetCallback callback,
+      AttributionSource attributionSource) {
+    startAdvertisingSet(
+        parameters,
+        advertiseData,
+        scanResponse,
+        periodicParameters,
+        periodicData,
+        duration,
+        maxExtAdvEvents,
+        0,
+        callback,
+        attributionSource);
   }
 
   public void stopAdvertisingSet(

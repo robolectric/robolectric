@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
 import static java.util.Arrays.asList;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecInfo.AudioCapabilities;
@@ -19,8 +20,9 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.Reflector;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.util.reflector.WithType;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Builder for {@link MediaCodecInfo}. */
 public class MediaCodecInfoBuilder {
@@ -151,8 +153,7 @@ public class MediaCodecInfoBuilder {
 
   /** Convert the boolean flags describing codec to values recognized by {@link MediaCodecInfo}. */
   private int getCodecFlags() {
-    MediaCodecInfoReflector mediaCodecInfoReflector =
-        Reflector.reflector(MediaCodecInfoReflector.class);
+    MediaCodecInfoReflector mediaCodecInfoReflector = reflector(MediaCodecInfoReflector.class);
 
     int flags = 0;
 
@@ -283,7 +284,14 @@ public class MediaCodecInfoBuilder {
 
       @Accessor("mFlagsRequired")
       void setFlagsRequired(int flagsRequired);
+
+      @Accessor("mImpl")
+      Object getImpl();
     }
+
+    // for post-Baklava
+    @ForType(className = "android.media.MediaCodecInfo$CodecCapabilities$CodecCapsLegacyImpl")
+    interface CodecCapabilitiesLegacyImplReflector extends CodecCapabilitiesReflector {}
 
     /** Accessor interface for {@link VideoCapabilities}'s internals. */
     @ForType(VideoCapabilities.class)
@@ -294,6 +302,49 @@ public class MediaCodecInfoBuilder {
 
       @Accessor("mHeightRange")
       void setHeightRange(Range<Integer> range);
+
+      @Static
+      VideoCapabilities create(MediaFormat mediaFormat, CodecCapabilities parent);
+
+      // for post-Baklava
+      @Static
+      VideoCapabilities create(
+          MediaFormat info,
+          @WithType("android.media.MediaCodecInfo$CodecCapabilities$CodecCapsLegacyImpl")
+              Object capabilitiesImpl);
+
+      @Accessor("mImpl")
+      Object getImpl();
+    }
+
+    // for post-Baklava
+    @ForType(className = "android.media.MediaCodecInfo$VideoCapabilities$VideoCapsLegacyImpl")
+    interface VideoCapsLegacyImplReflector extends VideoCapabilitiesReflector {}
+
+    @ForType(AudioCapabilities.class)
+    interface AudioCapabilitiesReflector {
+      @Static
+      AudioCapabilities create(MediaFormat info, CodecCapabilities capabilities);
+
+      // for post-Baklava
+      @Static
+      AudioCapabilities create(
+          MediaFormat info,
+          @WithType("android.media.MediaCodecInfo$CodecCapabilities$CodecCapsLegacyImpl")
+              Object capabilitiesImpl);
+    }
+
+    @ForType(EncoderCapabilities.class)
+    interface EncoderCapabilitiesReflector {
+      @Static
+      EncoderCapabilities create(MediaFormat info, CodecCapabilities capabilities);
+
+      // for post-Baklava
+      @Static
+      EncoderCapabilities create(
+          MediaFormat info,
+          @WithType("android.media.MediaCodecInfo$CodecCapabilities$CodecCapsLegacyImpl")
+              Object capabilitiesImpl);
     }
 
     public CodecCapabilities build() {
@@ -304,9 +355,6 @@ public class MediaCodecInfoBuilder {
       final boolean isVideoCodec = mime.startsWith("video/");
 
       CodecCapabilities caps = new CodecCapabilities();
-      CodecCapabilitiesReflector capsReflector =
-          Reflector.reflector(CodecCapabilitiesReflector.class, caps);
-
       caps.profileLevels = profileLevels;
       if (isVideoCodec) {
         Objects.requireNonNull(colorFormats, "colorFormats should not be null for video codec");
@@ -316,6 +364,14 @@ public class MediaCodecInfoBuilder {
             colorFormats == null || colorFormats.length == 0,
             "colorFormats should not be set for audio codec");
         caps.colorFormats = new int[0]; // To prevent crash in CodecCapabilities.dup().
+      }
+      CodecCapabilitiesReflector capsReflector = reflector(CodecCapabilitiesReflector.class, caps);
+      if (RuntimeEnvironment.getApiLevel() > Baklava.SDK_INT) {
+        // data has moved to an Impl class
+        Object impl = capsReflector.getImpl();
+        capsReflector = reflector(CodecCapabilitiesLegacyImplReflector.class, impl);
+        ReflectionHelpers.setField(impl, "mProfileLevels", profileLevels);
+        ReflectionHelpers.setField(impl, "mColorFormats", caps.colorFormats);
       }
 
       capsReflector.setMime(mime);
@@ -329,7 +385,12 @@ public class MediaCodecInfoBuilder {
       if (isVideoCodec) {
         VideoCapabilities videoCaps = createDefaultVideoCapabilities(caps, mediaFormat);
         VideoCapabilitiesReflector videoCapsReflector =
-            Reflector.reflector(VideoCapabilitiesReflector.class, videoCaps);
+            reflector(VideoCapabilitiesReflector.class, videoCaps);
+        if (RuntimeEnvironment.getApiLevel() > Baklava.SDK_INT) {
+          // data has moved to an Impl class
+          Object impl = videoCapsReflector.getImpl();
+          videoCapsReflector = reflector(VideoCapsLegacyImplReflector.class, impl);
+        }
         if (mediaFormat.containsKey(MediaFormat.KEY_MAX_WIDTH)
             && mediaFormat.containsKey(MediaFormat.KEY_WIDTH)) {
           videoCapsReflector.setWidthRange(
@@ -376,31 +437,34 @@ public class MediaCodecInfoBuilder {
     /** Create a default {@link AudioCapabilities} for a given {@link MediaFormat}. */
     private static AudioCapabilities createDefaultAudioCapabilities(
         CodecCapabilities parent, MediaFormat mediaFormat) {
-      return ReflectionHelpers.callStaticMethod(
-          AudioCapabilities.class,
-          "create",
-          ClassParameter.from(MediaFormat.class, mediaFormat),
-          ClassParameter.from(CodecCapabilities.class, parent));
+      if (RuntimeEnvironment.getApiLevel() <= Baklava.SDK_INT) {
+        return reflector(AudioCapabilitiesReflector.class).create(mediaFormat, parent);
+      } else {
+        Object impl = reflector(CodecCapabilitiesReflector.class, parent).getImpl();
+        return reflector(AudioCapabilitiesReflector.class).create(mediaFormat, impl);
+      }
     }
 
     /** Create a default {@link VideoCapabilities} for a given {@link MediaFormat}. */
     private static VideoCapabilities createDefaultVideoCapabilities(
         CodecCapabilities parent, MediaFormat mediaFormat) {
-      return ReflectionHelpers.callStaticMethod(
-          VideoCapabilities.class,
-          "create",
-          ClassParameter.from(MediaFormat.class, mediaFormat),
-          ClassParameter.from(CodecCapabilities.class, parent));
+      if (RuntimeEnvironment.getApiLevel() <= Baklava.SDK_INT) {
+        return reflector(VideoCapabilitiesReflector.class).create(mediaFormat, parent);
+      } else {
+        Object impl = reflector(CodecCapabilitiesReflector.class, parent).getImpl();
+        return reflector(VideoCapabilitiesReflector.class).create(mediaFormat, impl);
+      }
     }
 
     /** Create a default {@link EncoderCapabilities} for a given {@link MediaFormat}. */
     private static EncoderCapabilities createDefaultEncoderCapabilities(
         CodecCapabilities parent, MediaFormat mediaFormat) {
-      return ReflectionHelpers.callStaticMethod(
-          EncoderCapabilities.class,
-          "create",
-          ClassParameter.from(MediaFormat.class, mediaFormat),
-          ClassParameter.from(CodecCapabilities.class, parent));
+      if (RuntimeEnvironment.getApiLevel() <= Baklava.SDK_INT) {
+        return reflector(EncoderCapabilitiesReflector.class).create(mediaFormat, parent);
+      } else {
+        Object impl = reflector(CodecCapabilitiesReflector.class, parent).getImpl();
+        return reflector(EncoderCapabilitiesReflector.class).create(mediaFormat, impl);
+      }
     }
 
     /**
@@ -409,7 +473,7 @@ public class MediaCodecInfoBuilder {
      */
     private static int getSupportedFeatures(CodecCapabilities parent, MediaFormat mediaFormat) {
       int flagsSupported = 0;
-      Object[] validFeatures = ReflectionHelpers.callInstanceMethod(parent, "getValidFeatures");
+      Object[] validFeatures = getValidFeatures(parent);
       for (Object validFeature : validFeatures) {
         String featureName = ReflectionHelpers.getField(validFeature, "mName");
         int featureValue = ReflectionHelpers.getField(validFeature, "mValue");
@@ -427,7 +491,7 @@ public class MediaCodecInfoBuilder {
      */
     private static int getRequiredFeatures(CodecCapabilities parent, String[] requiredFeatures) {
       int flagsRequired = 0;
-      Object[] validFeatures = ReflectionHelpers.callInstanceMethod(parent, "getValidFeatures");
+      Object[] validFeatures = getValidFeatures(parent);
       HashSet<String> requiredFeaturesSet = new HashSet<>(asList(requiredFeatures));
       for (Object validFeature : validFeatures) {
         String featureName = ReflectionHelpers.getField(validFeature, "mName");
@@ -437,6 +501,17 @@ public class MediaCodecInfoBuilder {
         }
       }
       return flagsRequired;
+    }
+
+    private static Object[] getValidFeatures(CodecCapabilities parent) {
+      Object[] validFeatures;
+      if (RuntimeEnvironment.getApiLevel() <= Baklava.SDK_INT) {
+        validFeatures = ReflectionHelpers.callInstanceMethod(parent, "getValidFeatures");
+      } else {
+        Object impl = reflector(CodecCapabilitiesReflector.class, parent).getImpl();
+        validFeatures = ReflectionHelpers.callInstanceMethod(impl, "getValidFeatures");
+      }
+      return validFeatures;
     }
   }
 }
