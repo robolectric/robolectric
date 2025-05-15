@@ -117,10 +117,10 @@ public class ShadowWebView extends ShadowViewGroup {
                           getClassNamed("android.webkit.WebViewProvider$ViewDelegate"),
                           getClassNamed("android.webkit.WebViewProvider$ScrollDelegate")
                         },
-                        (proxy1, method1, args1) -> nullish(method1));
+                        (proxy1, method1, args1) -> getDefaultReturnValue(method1));
                   }
 
-                  return nullish(method);
+                  return getDefaultReturnValue(method);
                 });
         mProvider.set(realView, provider);
       }
@@ -134,16 +134,26 @@ public class ShadowWebView extends ShadowViewGroup {
     ReflectionHelpers.setField(realWebView, "mLayoutParams", params);
   }
 
-  private Object nullish(Method method) {
+  private Object getDefaultReturnValue(Method method) {
     Class<?> returnType = method.getReturnType();
     if (returnType.equals(long.class)
-        || returnType.equals(double.class)
         || returnType.equals(int.class)
-        || returnType.equals(float.class)
         || returnType.equals(short.class)
-        || returnType.equals(byte.class)) return 0;
-    if (returnType.equals(char.class)) return '\0';
-    if (returnType.equals(boolean.class)) return false;
+        || returnType.equals(byte.class)) {
+      return 0;
+    }
+    if (returnType.equals(double.class)) {
+      return 0.0;
+    }
+    if (returnType.equals(float.class)) {
+      return 0.0f;
+    }
+    if (returnType.equals(char.class)) {
+      return '\0';
+    }
+    if (returnType.equals(boolean.class)) {
+      return false;
+    }
     return null;
   }
 
