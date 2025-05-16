@@ -29,7 +29,6 @@ import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.FloatRange;
-import android.app.Instrumentation;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -741,6 +740,31 @@ public class ShadowWindowManagerGlobal {
 
       // The resized method has changed pretty much every other release, this is a canonicalize-d
       // set of all the parameters it has ever taken.
+      if (sdk > UPSIDE_DOWN_CAKE) {
+        if (ReflectionHelpers.hasMethod(
+            IWindow.class,
+            "resized",
+            WindowRelayoutResult.class,
+            boolean.class /* reportDraw */,
+            boolean.class /* forceLayout */,
+            int.class /* displayId */,
+            boolean.class /* dragResizing */)) {
+          ClassParameterBuilder rlrArgs = new ClassParameterBuilder();
+          rlrArgs.add(ClientWindowFrames.class, windowInfo.frames);
+          rlrArgs.add(MergedConfiguration.class, new MergedConfiguration(configuration));
+          rlrArgs.add(InsetsState.class, windowInfo.insetsState);
+          rlrArgs.add(InsetsSourceControl.Array.class, new InsetsSourceControl.Array());
+          WindowRelayoutResult layout =
+              ReflectionHelpers.callConstructor(WindowRelayoutResult.class, rlrArgs.build());
+          args.add(WindowRelayoutResult.class, layout);
+          /* reportDraw */ args.add(boolean.class, false);
+          /* forceLayout */ args.add(boolean.class, false);
+          /* displayId */ args.add(int.class, windowInfo.displayId);
+          /* dragResizing */ args.add(boolean.class, false);
+          callInstanceMethod(window, "resized", args.build());
+          return;
+        }
+      }
       if (sdk >= S) {
         /* frames */ args.add(ClientWindowFrames.class, windowInfo.frames);
       } else {
