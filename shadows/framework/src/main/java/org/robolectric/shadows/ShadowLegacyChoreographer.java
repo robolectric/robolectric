@@ -1,17 +1,19 @@
 package org.robolectric.shadows;
 
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
 import java.time.Duration;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.SoftThreadLocal;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * The {@link Choreographer} shadow for {@link LooperMode.Mode#PAUSED}.
@@ -29,32 +31,27 @@ public class ShadowLegacyChoreographer extends ShadowChoreographer {
   private long nanoTime = 0;
   private static long FRAME_INTERVAL = Duration.ofMillis(10).toNanos();
   private static final Thread MAIN_THREAD = Thread.currentThread();
-  private static SoftThreadLocal<Choreographer> instance = makeThreadLocal();
+  private static ThreadLocal<Choreographer> instance =
+      ThreadLocal.withInitial(() -> makeChoreographer());
   private final Handler handler = new Handler(Looper.myLooper());
   private static volatile int postCallbackDelayMillis = 0;
   private static volatile int postFrameCallbackDelayMillis = 0;
 
-  @SuppressWarnings("ReturnValueIgnored")
-  private static SoftThreadLocal<Choreographer> makeThreadLocal() {
-    return new SoftThreadLocal<Choreographer>() {
-      @Override
-      protected Choreographer create() {
-        Looper looper = Looper.myLooper();
-        if (looper == null) {
-          throw new IllegalStateException("The current thread must have a looper!");
-        }
+  private static Choreographer makeChoreographer() {
+    Looper looper = Looper.myLooper();
+    if (looper == null) {
+      throw new IllegalStateException("The current thread must have a looper!");
+    }
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.O) {
+      return ReflectionHelpers.callConstructor(
+          Choreographer.class,
+          ClassParameter.from(Looper.class, looper),
+          ClassParameter.from(int.class, 0));
 
-        // Choreographer's constructor changes somewhere in Android O...
-        try {
-          Choreographer.class.getDeclaredConstructor(Looper.class);
-          return Shadow.newInstance(
-              Choreographer.class, new Class[] {Looper.class}, new Object[] {looper});
-        } catch (NoSuchMethodException e) {
-          return Shadow.newInstance(
-              Choreographer.class, new Class[] {Looper.class, int.class}, new Object[] {looper, 0});
-        }
-      }
-    };
+    } else {
+      return ReflectionHelpers.callConstructor(
+          Choreographer.class, ClassParameter.from(Looper.class, looper));
+    }
   }
 
   /**
@@ -175,7 +172,7 @@ public class ShadowLegacyChoreographer extends ShadowChoreographer {
     if (Thread.currentThread() != MAIN_THREAD) {
       throw new RuntimeException("You should only call this from the main thread!");
     }
-    instance = makeThreadLocal();
+    instance = ThreadLocal.withInitial(() -> makeChoreographer());
     FRAME_INTERVAL = Duration.ofMillis(10).toNanos();
     postCallbackDelayMillis = 0;
     postFrameCallbackDelayMillis = 0;
