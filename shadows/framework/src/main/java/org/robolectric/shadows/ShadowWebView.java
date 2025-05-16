@@ -21,10 +21,8 @@ import android.webkit.WebView;
 import android.webkit.WebView.HitTestResult;
 import android.webkit.WebViewClient;
 import android.webkit.WebViewFactoryProvider;
+import android.webkit.WebViewProvider;
 import com.google.common.collect.ImmutableList;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -97,72 +95,13 @@ public class ShadowWebView extends ShadowViewGroup {
   @HiddenApi
   @Implementation
   public void ensureProviderCreated() {
-    final ClassLoader classLoader = getClass().getClassLoader();
-    Class<?> webViewProviderClass = getClassNamed("android.webkit.WebViewProvider");
-    Field mProvider;
-    try {
-      mProvider = WebView.class.getDeclaredField("mProvider");
-      mProvider.setAccessible(true);
-      if (mProvider.get(realView) == null) {
-        Object provider =
-            Proxy.newProxyInstance(
-                classLoader,
-                new Class[] {webViewProviderClass},
-                (proxy, method, args) -> {
-                  if (method.getName().equals("getViewDelegate")
-                      || method.getName().equals("getScrollDelegate")) {
-                    return Proxy.newProxyInstance(
-                        classLoader,
-                        new Class[] {
-                          getClassNamed("android.webkit.WebViewProvider$ViewDelegate"),
-                          getClassNamed("android.webkit.WebViewProvider$ScrollDelegate")
-                        },
-                        (proxy1, method1, args1) -> getDefaultReturnValue(method1));
-                  }
-
-                  return getDefaultReturnValue(method);
-                });
-        mProvider.set(realView, provider);
-      }
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    ReflectionHelpers.setField(
+        realWebView, "mProvider", ReflectionHelpers.createDeepProxy(WebViewProvider.class));
   }
 
   @Implementation
   protected void setLayoutParams(LayoutParams params) {
     ReflectionHelpers.setField(realWebView, "mLayoutParams", params);
-  }
-
-  private Object getDefaultReturnValue(Method method) {
-    Class<?> returnType = method.getReturnType();
-    if (returnType.equals(long.class)
-        || returnType.equals(int.class)
-        || returnType.equals(short.class)
-        || returnType.equals(byte.class)) {
-      return 0;
-    }
-    if (returnType.equals(double.class)) {
-      return 0.0;
-    }
-    if (returnType.equals(float.class)) {
-      return 0.0f;
-    }
-    if (returnType.equals(char.class)) {
-      return '\0';
-    }
-    if (returnType.equals(boolean.class)) {
-      return false;
-    }
-    return null;
-  }
-
-  private Class<?> getClassNamed(String className) {
-    try {
-      return getClass().getClassLoader().loadClass(className);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   @Implementation
