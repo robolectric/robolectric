@@ -28,7 +28,7 @@ dependencies {
   // sandbox grouping commit (234dc80c2df61c15504c288cd62acdec8e3dca5c).
   //
   // TODO(hoisie): figure out why this is happening and upgrade to Mockito 5.x.
-  testImplementation("org.mockito:mockito-core:4.11.0")
+  testImplementation("org.mockito:mockito-core:5.17.0")
 
   testImplementation(project(":junit"))
 }
