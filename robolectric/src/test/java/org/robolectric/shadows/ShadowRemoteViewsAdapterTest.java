@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsAdapter;
-import android.widget.RemoteViewsAdapter.RemoteAdapterConnectionCallback;
 import android.widget.RemoteViewsService;
 import android.widget.RemoteViewsService.RemoteViewsFactory;
 import android.widget.TextView;
@@ -43,9 +43,7 @@ public class ShadowRemoteViewsAdapterTest {
   @Test
   @Config(minSdk = VERSION_CODES.O)
   public void getViewApi26AndLater_populatedWithExpectedItems() {
-    RemoteViewsAdapter adapter =
-        new RemoteViewsAdapter(
-            context, createTestIntent(), new FakeRemoteAdapterConnectionCallback(), false);
+    RemoteViewsAdapter adapter = new RemoteViewsAdapter(context, createTestIntent(), mock(), false);
 
     assertThat(adapter.getCount()).isEqualTo(3);
     assertThat(((TextView) adapter.getView(0, null, parent)).getText().toString()).isEqualTo("one");
@@ -57,9 +55,7 @@ public class ShadowRemoteViewsAdapterTest {
   @Test
   @Config(minSdk = VERSION_CODES.O)
   public void constructorApi26AndLater_intentPassedToService() {
-    RemoteViewsAdapter unused =
-        new RemoteViewsAdapter(
-            context, createTestIntent(), new FakeRemoteAdapterConnectionCallback(), false);
+    RemoteViewsAdapter unused = new RemoteViewsAdapter(context, createTestIntent(), mock(), false);
 
     assertThat(capturedIntent.getComponent().getClassName())
         .isEqualTo(TestRemoteViewsService.class.getName());
@@ -124,22 +120,5 @@ public class ShadowRemoteViewsAdapterTest {
     public boolean hasStableIds() {
       return true;
     }
-  }
-
-  private static class FakeRemoteAdapterConnectionCallback
-      implements RemoteAdapterConnectionCallback {
-    @Override
-    public boolean onRemoteAdapterConnected() {
-      return false;
-    }
-
-    @Override
-    public void onRemoteAdapterDisconnected() {}
-
-    @Override
-    public void deferNotifyDataSetChanged() {}
-
-    @Override
-    public void setRemoteViewsAdapter(Intent intent, boolean b) {}
   }
 }
