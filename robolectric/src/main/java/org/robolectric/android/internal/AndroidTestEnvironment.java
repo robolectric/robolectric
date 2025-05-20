@@ -107,6 +107,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
   private final int apiLevel;
 
   private boolean loggingInitialized = false;
+  private FakeMediaProvider fakeMediaProvider;
   private final Path sdkJarPath;
   private final ShadowProvider[] shadowProviders;
   private final TestEnvironmentLifecyclePlugin[] testEnvironmentLifecyclePlugins;
@@ -390,7 +391,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     if (RuntimeEnvironment.getApiLevel() >= Q
         && Boolean.parseBoolean(
             System.getProperty("robolectric.installFakeMediaProvider", "true"))) {
-      Robolectric.setupContentProvider(FakeMediaProvider.class, MediaStore.AUTHORITY);
+      this.fakeMediaProvider =
+          Robolectric.setupContentProvider(FakeMediaProvider.class, MediaStore.AUTHORITY);
     }
 
     PerfStatsCollector.getInstance()
@@ -587,6 +589,10 @@ public class AndroidTestEnvironment implements TestEnvironment {
   @Override
   public void resetState() {
     Locale.setDefault(initialLocale);
+    if (fakeMediaProvider != null) {
+      fakeMediaProvider.shutdown();
+      fakeMediaProvider = null;
+    }
     List<Throwable> exceptions = new ArrayList<>();
     for (ShadowProvider provider : shadowProviders) {
       try {

@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.WeakHashMap;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -37,6 +38,8 @@ public final class HardwareRenderingScreenshot {
       new WeakHashMap<>();
 
   static final String PIXEL_COPY_RENDER_MODE = "robolectric.pixelCopyRenderMode";
+
+  static final String USE_EMBEDDED_VIEW_ROOT = "robolectric.useEmbeddedViewRoot";
 
   private HardwareRenderingScreenshot() {}
 
@@ -71,7 +74,17 @@ public final class HardwareRenderingScreenshot {
       if (RuntimeEnvironment.getApiLevel() >= Q) {
         // HardwareRenderer is only available on API 29+ (Q).
         HardwareRenderer renderer =
-            hardwareRenderers.computeIfAbsent(viewRootImpl, k -> new HardwareRenderer());
+            hardwareRenderers.computeIfAbsent(
+                viewRootImpl,
+                k -> {
+                  if (Boolean.parseBoolean(System.getProperty(USE_EMBEDDED_VIEW_ROOT, "false"))) {
+                    ShadowViewRootImpl shadowViewRootImpl = Shadow.extract(viewRootImpl);
+                    return shadowViewRootImpl.getThreadedRenderer();
+                  } else {
+                    return new HardwareRenderer();
+                  }
+                });
+
         renderer.setSurface(surface);
         setupRendererShadowProperties(renderer, view);
         RenderNode node = getRenderNode(view);

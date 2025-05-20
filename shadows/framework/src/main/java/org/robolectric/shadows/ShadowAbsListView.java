@@ -1,30 +1,43 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.widget.AbsListView;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(AbsListView.class)
 public class ShadowAbsListView extends ShadowAdapterView {
-  private AbsListView.OnScrollListener onScrollListener;
+  @RealObject private AbsListView realAbsListView;
+
   private int smoothScrolledPosition;
   private int lastSmoothScrollByDistance;
   private int lastSmoothScrollByDuration;
 
   @Implementation
   protected void setOnScrollListener(AbsListView.OnScrollListener l) {
-    onScrollListener = l;
+    reflector(AbsListViewReflector.class, realAbsListView).setOnScrollListener(l);
   }
 
   @Implementation
   protected void smoothScrollToPosition(int position) {
     smoothScrolledPosition = position;
+    if (ShadowView.useRealScrolling()) {
+      reflector(AbsListViewReflector.class, realAbsListView).smoothScrollToPosition(position);
+    }
   }
 
   @Implementation
   protected void smoothScrollBy(int distance, int duration) {
     this.lastSmoothScrollByDistance = distance;
     this.lastSmoothScrollByDuration = duration;
+    if (ShadowView.useRealScrolling()) {
+      reflector(AbsListViewReflector.class, realAbsListView).smoothScrollBy(distance, duration);
+    }
   }
 
   /**
@@ -33,7 +46,7 @@ public class ShadowAbsListView extends ShadowAdapterView {
    * @return AbsListView.OnScrollListener
    */
   public AbsListView.OnScrollListener getOnScrollListener() {
-    return onScrollListener;
+    return reflector(AbsListViewReflector.class, realAbsListView).getOnScrollListener();
   }
 
   /**
@@ -61,5 +74,20 @@ public class ShadowAbsListView extends ShadowAdapterView {
    */
   public int getLastSmoothScrollByDuration() {
     return lastSmoothScrollByDuration;
+  }
+
+  @ForType(AbsListView.class)
+  interface AbsListViewReflector {
+    @Direct
+    void setOnScrollListener(AbsListView.OnScrollListener l);
+
+    @Direct
+    void smoothScrollToPosition(int position);
+
+    @Direct
+    void smoothScrollBy(int distance, int duration);
+
+    @Accessor("mOnScrollListener")
+    AbsListView.OnScrollListener getOnScrollListener();
   }
 }

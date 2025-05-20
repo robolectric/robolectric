@@ -26,6 +26,7 @@ import android.view.Choreographer;
 import android.view.IWindowFocusObserver;
 import android.view.IWindowId;
 import android.view.MotionEvent;
+import android.view.ThreadedRenderer;
 import android.view.View;
 import android.view.ViewParent;
 import android.view.WindowId;
@@ -1016,6 +1017,9 @@ public class ShadowView {
 
     @Accessor("mDrawingTime")
     void setDrawingTime(long drawingTime);
+
+    @Accessor("mThreadedRenderer")
+    ThreadedRenderer getThreadedRenderer();
   }
 
   /**

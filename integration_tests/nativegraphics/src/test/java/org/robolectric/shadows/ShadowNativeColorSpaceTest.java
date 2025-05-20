@@ -15,6 +15,7 @@
  */
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -80,7 +81,7 @@ public class ShadowNativeColorSpaceTest {
     2.500000f, 1.000000f, 13.166667f
   };
   private static final float[] SRGB_WHITE_POINT_XYZ = {0.950456f, 1.000f, 1.089058f};
-
+  private static final float[] ILLUMINANT_D50_XYZ = {0.964212f, 1.0f, 0.825188f};
   private static final DoubleUnaryOperator sIdentity = DoubleUnaryOperator.identity();
 
   @Test
@@ -842,8 +843,23 @@ public class ShadowNativeColorSpaceTest {
             });
   }
 
+  // This test is flaky about 50% of the time on APIs 35 and 36. This is because the match function
+  // can match multiple color spaces with the same parameters and the list it checks from is not
+  // deterministic (due to the use of a hashmap). This will be fixed in the most recent APIs, but
+  // will remain flaky in 35-36.
   @Test
+  @Config(maxSdk = UPSIDE_DOWN_CAKE)
   public void testMatch() {
+    doTestMatch();
+  }
+
+  @Test
+  @Config(minSdk = CUR_DEVELOPMENT)
+  public void testMatch_mainPlus() {
+    doTestMatch();
+  }
+
+  private void doTestMatch() {
     for (ColorSpace.Named named : ColorSpace.Named.values()) {
       ColorSpace cs = ColorSpace.get(named);
       if (cs.getModel() == ColorSpace.Model.RGB) {

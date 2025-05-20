@@ -319,6 +319,34 @@ public class ShadowSensorManagerTest {
     assertThat(listener3.getOnFlushCompletedCalls()).isEmpty();
   }
 
+  @Test
+  public void getDefaultSensorWithNoSensorAdded_shouldReturnNull() {
+    assertThat(sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)).isNull();
+    assertThat(sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE, true)).isNull();
+    assertThat(sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE, false)).isNull();
+    assertThat(sensorManager.getSensorList(Sensor.TYPE_HEART_RATE)).isEmpty();
+  }
+
+  @Test
+  public void getDefaultSensorWithWakeUpSensor_shouldReturnCorrectSensorAndWakeUpValue() {
+    Sensor sensor = ShadowSensor.newInstance(Sensor.TYPE_HEART_RATE);
+    shadowOf(sensor).setWakeUpFlag(true);
+    shadowOf(sensorManager).addSensor(sensor);
+
+    assertThat(sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)).isEqualTo(sensor);
+    assertThat(sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE, true)).isEqualTo(sensor);
+  }
+
+  @Test
+  public void getDefaultSensorWithNoWakeUpSensor_shouldReturnCorrectSensorAndWakeUpValue() {
+    Sensor sensor = ShadowSensor.newInstance(Sensor.TYPE_HEART_RATE);
+    shadowOf(sensor).setWakeUpFlag(true);
+    shadowOf(sensorManager).addSensor(sensor);
+
+    assertThat(sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)).isEqualTo(sensor);
+    assertThat(sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE, false)).isEqualTo(sensor);
+  }
+
   private static class TestSensorEventListener implements SensorEventListener2 {
     private Optional<SensorEvent> latestSensorEvent = Optional.absent();
     private final List<Sensor> onFlushCompletedCalls = new ArrayList<>();

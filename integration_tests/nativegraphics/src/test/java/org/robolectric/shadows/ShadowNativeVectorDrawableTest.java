@@ -17,6 +17,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertEquals;
@@ -33,6 +34,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Insets;
+import android.graphics.Path;
+import android.graphics.PathIterator;
+import android.graphics.PathIterator.Segment;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffColorFilter;
@@ -479,6 +483,76 @@ public class ShadowNativeVectorDrawableTest {
     // Midpoint should be blue.
     assertThat(output.getPixel(drawable.getIntrinsicWidth() / 2, drawable.getIntrinsicHeight() / 2))
         .isEqualTo(Color.BLUE);
+  }
+
+  // Copied from here: https://skia-review.googlesource.com/c/skia/+/436477
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void test_moveTo() {
+    // First move
+    Path p = new Path();
+    p.moveTo(10, 11);
+    p.lineTo(20, 21);
+    p.close();
+    p.rMoveTo(30, 31);
+
+    PathIterator iter = p.getPathIterator();
+    Segment s = iter.next();
+    assertThat(s.getVerb()).isEqualTo(PathIterator.VERB_MOVE);
+    assertThat(s.getPoints()[0]).isEqualTo(10);
+    assertThat(s.getPoints()[1]).isEqualTo(11);
+
+    s = iter.next();
+    assertThat(s.getVerb()).isEqualTo(PathIterator.VERB_LINE);
+    assertThat(s.getPoints()[2]).isEqualTo(20);
+    assertThat(s.getPoints()[3]).isEqualTo(21);
+
+    s = iter.next();
+    assertThat(s.getVerb()).isEqualTo(PathIterator.VERB_CLOSE);
+
+    s = iter.next();
+    assertThat(s.getVerb()).isEqualTo(PathIterator.VERB_MOVE);
+    assertThat(s.getPoints()[0]).isEqualTo(10 + 30);
+    assertThat(s.getPoints()[1]).isEqualTo(11 + 31);
+
+    s = iter.next();
+    assertThat(s.getVerb()).isEqualTo(PathIterator.VERB_DONE);
+    p.reset();
+
+    p.moveTo(10, 11);
+    p.lineTo(20, 21);
+    p.rMoveTo(30, 31);
+
+    // Second Move
+    iter = p.getPathIterator();
+    s = iter.next();
+    assertThat(s.getVerb()).isEqualTo(PathIterator.VERB_MOVE);
+    assertThat(s.getPoints()[0]).isEqualTo(10);
+    assertThat(s.getPoints()[1]).isEqualTo(11);
+
+    s = iter.next();
+    assertThat(s.getVerb()).isEqualTo(PathIterator.VERB_LINE);
+    assertThat(s.getPoints()[2]).isEqualTo(20);
+    assertThat(s.getPoints()[3]).isEqualTo(21);
+
+    s = iter.next();
+    assertThat(s.getVerb()).isEqualTo(PathIterator.VERB_MOVE);
+    assertThat(s.getPoints()[0]).isEqualTo(20 + 30);
+    assertThat(s.getPoints()[1]).isEqualTo(21 + 31);
+
+    s = iter.next();
+    assertThat(s.getVerb()).isEqualTo(PathIterator.VERB_DONE);
+    p.reset();
+
+    // Third move
+    p.rMoveTo(30, 31);
+    s = iter.next();
+    assertThat(s.getPoints()[0]).isEqualTo(s.getPoints()[2] + 30);
+    assertThat(s.getPoints()[1]).isEqualTo(s.getPoints()[3] + 31);
+
+    s = iter.next();
+    assertThat(s.getVerb()).isEqualTo(PathIterator.VERB_DONE);
+    p.reset();
   }
 
   private void verifyPreloadDensityInner(Resources res, int densityDpi)

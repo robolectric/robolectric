@@ -28,10 +28,11 @@ import org.robolectric.shadows.testing.TestAccessibilityService;
 public final class ShadowAccessibilityInputConnectionTest {
   private AccessibilityInputConnection inputConnection;
   private ShadowAccessibilityInputConnection shadow;
+  private TestAccessibilityService service;
 
   @Before
   public void setUp() {
-    TestAccessibilityService service = Robolectric.setupService(TestAccessibilityService.class);
+    service = Robolectric.setupService(TestAccessibilityService.class);
     AccessibilityServiceInfo serviceInfo = new AccessibilityServiceInfo();
     serviceInfo.flags |= AccessibilityServiceInfo.FLAG_INPUT_METHOD_EDITOR;
     service.setServiceInfo(serviceInfo);
@@ -49,9 +50,9 @@ public final class ShadowAccessibilityInputConnectionTest {
     inputConnection.commitText("Hello", 0, textAttribute);
     assertThat(shadow.getCommitTextArguments()).hasSize(1);
     ShadowAccessibilityInputConnection.CommitTextArgs args = shadow.getCommitTextArguments().get(0);
-    assertThat(args.text.toString()).isEqualTo("Hello");
-    assertThat(args.newCursorPosition).isEqualTo(0);
-    assertThat(args.textAttribute).isEqualTo(textAttribute);
+    assertThat(args.text().toString()).isEqualTo("Hello");
+    assertThat(args.newCursorPosition()).isEqualTo(0);
+    assertThat(args.textAttribute()).isEqualTo(textAttribute);
 
     List<String> suggestions = Arrays.asList("Suggestion 1", "Suggestion 2", "Suggestion 3");
     TextAttribute textAttribute2 =
@@ -59,9 +60,9 @@ public final class ShadowAccessibilityInputConnectionTest {
     inputConnection.commitText("World", 1, textAttribute2);
     assertThat(shadow.getCommitTextArguments()).hasSize(2);
     args = shadow.getCommitTextArguments().get(1);
-    assertThat(args.text.toString()).isEqualTo("World");
-    assertThat(args.newCursorPosition).isEqualTo(1);
-    assertThat(args.textAttribute).isEqualTo(textAttribute2);
+    assertThat(args.text().toString()).isEqualTo("World");
+    assertThat(args.newCursorPosition()).isEqualTo(1);
+    assertThat(args.textAttribute()).isEqualTo(textAttribute2);
   }
 
   @Test
@@ -142,5 +143,15 @@ public final class ShadowAccessibilityInputConnectionTest {
 
     inputConnection.setSelection(1, 2);
     assertThat(shadow.getSetSelections()).containsExactly(Pair.create(0, 1), Pair.create(1, 2));
+  }
+
+  @Test
+  public void secondInputConnection_sharesState() {
+    // Perform an action on a second input connection from the same service (and thus the same
+    // InputMethod).
+    service.getInputMethod().getCurrentInputConnection().performContextMenuAction(android.R.id.cut);
+
+    // The shadow of the first input connection should be updated.
+    assertThat(shadow.getContextMenuActions()).containsExactly(android.R.id.cut);
   }
 }

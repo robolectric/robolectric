@@ -23,6 +23,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebView.HitTestResult;
 import android.webkit.WebViewClient;
+import android.webkit.WebViewProvider;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.HashMap;
@@ -47,6 +48,14 @@ public class ShadowWebViewTest {
   public void shouldRecordLastLoadedUrl() {
     webView.loadUrl("http://example.com");
     assertThat(shadowOf(webView).getLastLoadedUrl()).isEqualTo("http://example.com");
+  }
+
+  @Test
+  public void testProvider() {
+    shadowOf(webView).ensureProviderCreated();
+    WebViewProvider provider = (WebViewProvider) webView.getWebViewProvider();
+    assertThat(provider.getScrollDelegate()).isNotNull();
+    assertThat(provider.getScale()).isInstanceOf(Float.class);
   }
 
   @Test

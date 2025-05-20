@@ -624,17 +624,19 @@ containing a value of this type.
     }
     public static final class xml {
         public static final int app_restrictions=0x7f070000;
-        public static final int dialog_preferences=0x7f070001;
-        public static final int has_attribute_resource_value=0x7f070002;
-        public static final int has_id=0x7f070003;
-        public static final int has_parent_style_reference=0x7f070004;
-        public static final int has_style_attribute_reference=0x7f070005;
-        public static final int preferences=0x7f070006;
-        public static final int shortcuts=0x7f070007;
-        public static final int temp=0x7f070008;
-        public static final int temp_parent=0x7f070009;
-        public static final int test_wallpaper=0x7f07000a;
-        public static final int xml_attrs=0x7f07000b;
+        public static final int attr_set=0x7f070001;
+        public static final int dialog_preferences=0x7f070002;
+        public static final int empty=0x7f070003;
+        public static final int has_attribute_resource_value=0x7f070004;
+        public static final int has_id=0x7f070005;
+        public static final int has_parent_style_reference=0x7f070006;
+        public static final int has_style_attribute_reference=0x7f070007;
+        public static final int preferences=0x7f070008;
+        public static final int shortcuts=0x7f070009;
+        public static final int temp=0x7f07000a;
+        public static final int temp_parent=0x7f07000b;
+        public static final int test_wallpaper=0x7f07000c;
+        public static final int xml_attrs=0x7f07000d;
     }
     public static final class styleable {
         /** Attributes that can be used with a CustomStateView.

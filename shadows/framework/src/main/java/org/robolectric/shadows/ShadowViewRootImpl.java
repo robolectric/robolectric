@@ -11,6 +11,7 @@ import android.view.HandlerActionQueue;
 import android.view.IWindow;
 import android.view.Surface;
 import android.view.SurfaceControl;
+import android.view.ThreadedRenderer;
 import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowInsets;
@@ -21,6 +22,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadows.ShadowView._AttachInfo_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -77,6 +79,11 @@ public class ShadowViewRootImpl {
     return reflector(ViewRootImplReflector.class, realObject).getSurface();
   }
 
+  ThreadedRenderer getThreadedRenderer() {
+    Object attachInfo = reflector(ViewRootImplReflector.class, realObject).getAttachInfo();
+    return reflector(_AttachInfo_.class, attachInfo).getThreadedRenderer();
+  }
+
   /** Reflector interface for {@link ViewRootImpl}'s internals. */
   @ForType(ViewRootImpl.class)
   protected interface ViewRootImplReflector {
@@ -123,6 +130,9 @@ public class ShadowViewRootImpl {
 
     @Accessor("mWindowAttributes")
     WindowManager.LayoutParams getWindowAttributes();
+
+    @Accessor("mAttachInfo")
+    Object getAttachInfo();
 
     // SDK <= S_V2
     void windowFocusChanged(boolean hasFocus, boolean inTouchMode);
