@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
@@ -356,12 +357,41 @@ public class ShadowBluetoothGattTest {
   }
 
   @Test
+  @Config(minSdk = TIRAMISU)
+  public void writeDescriptor_withValue() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+    service1.addCharacteristic(characteristicWithReadProperty);
+    characteristicWithReadProperty.addDescriptor(descriptor);
+    assertThat(descriptor.getCharacteristic().getService()).isNotNull();
+
+    assertThat(shadowOf(bluetoothGatt).writeDescriptor(descriptor, CHARACTERISTIC_VALUE))
+        .isEqualTo(BluetoothGatt.GATT_SUCCESS);
+    assertThat(resultStatus).isEqualTo(BluetoothGatt.GATT_SUCCESS);
+    assertThat(resultAction).isEqualTo(ACTION_WRITE);
+    assertThat(resultDescriptor).isEqualTo(descriptor);
+    assertThat(shadowOf(bluetoothGatt).getLatestWrittenBytes()).isEqualTo(CHARACTERISTIC_VALUE);
+  }
+
+  @Test
   @Config(minSdk = O)
   public void writeDetachedDescriptor() {
     shadowOf(bluetoothGatt).setGattCallback(callback);
 
     descriptor.setValue(CHARACTERISTIC_VALUE);
     assertThat(shadowOf(bluetoothGatt).writeDescriptor(descriptor)).isFalse();
+    assertThat(resultStatus).isEqualTo(INITIAL_VALUE);
+    assertThat(resultAction).isNull();
+    assertThat(resultDescriptor).isNull();
+    assertThat(shadowOf(bluetoothGatt).getLatestWrittenBytes()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void writeDetachedDescriptor_withValue() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+
+    assertThat(shadowOf(bluetoothGatt).writeDescriptor(descriptor, CHARACTERISTIC_VALUE))
+        .isEqualTo(BluetoothGatt.GATT_FAILURE);
     assertThat(resultStatus).isEqualTo(INITIAL_VALUE);
     assertThat(resultAction).isNull();
     assertThat(resultDescriptor).isNull();
