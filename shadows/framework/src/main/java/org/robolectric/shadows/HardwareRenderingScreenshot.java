@@ -79,7 +79,10 @@ public final class HardwareRenderingScreenshot {
                 k -> {
                   if (Boolean.parseBoolean(System.getProperty(USE_EMBEDDED_VIEW_ROOT, "false"))) {
                     ShadowViewRootImpl shadowViewRootImpl = Shadow.extract(viewRootImpl);
-                    return shadowViewRootImpl.getThreadedRenderer();
+                    // Required to avoid a VerifyError when this lambda class is loaded on SDK <
+                    // 29, where ThreadedRenderer is not a subclass of HardwareRenderer.
+                    Object threadedRenderer = shadowViewRootImpl.getThreadedRenderer();
+                    return (HardwareRenderer) threadedRenderer;
                   } else {
                     return new HardwareRenderer();
                   }
