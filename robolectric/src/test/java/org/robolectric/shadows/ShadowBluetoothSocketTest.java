@@ -186,4 +186,15 @@ public class ShadowBluetoothSocketTest {
     assertThat(connectCompletedExceptionally.get()).isTrue();
     assertThat(bluetoothSocket.isConnected()).isFalse();
   }
+
+  @Test
+  public void connect_customException_throws() throws Exception {
+    IOException customException = new IOException("custom exception");
+    shadowOf(bluetoothSocket).setConnectException(customException);
+
+    bluetoothSocket.close();
+    IOException thrownException = assertThrows(IOException.class, () -> bluetoothSocket.connect());
+
+    assertThat(thrownException).isSameInstanceAs(customException);
+  }
 }

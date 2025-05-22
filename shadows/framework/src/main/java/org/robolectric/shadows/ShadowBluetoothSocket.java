@@ -8,6 +8,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -29,6 +30,7 @@ public class ShadowBluetoothSocket {
   }
 
   private volatile SocketState state = SocketState.INIT;
+  @Nullable private IOException connectExceptionOverride = null;
 
   public ShadowBluetoothSocket() {
     try {
@@ -93,6 +95,14 @@ public class ShadowBluetoothSocket {
     connectSemaphore.release();
   }
 
+  /**
+   * Set the exception that {@link #connect()} will throw if the socket is closed. This can be used
+   * to test situations where {@link android.bluetooth.BluetoothSocketException} is thrown.
+   */
+  public void setConnectException(IOException connectException) {
+    this.connectExceptionOverride = connectException;
+  }
+
   @Implementation
   protected InputStream getInputStream() {
     return inputStream;
@@ -138,6 +148,9 @@ public class ShadowBluetoothSocket {
 
   private void throwIfClosed() throws IOException {
     if (state == SocketState.CLOSED) {
+      if (connectExceptionOverride != null) {
+        throw connectExceptionOverride;
+      }
       throw new IOException("socket closed");
     }
   }
