@@ -332,16 +332,18 @@ public class ShadowSensorManagerTest {
 
     assertThat(sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)).isEqualTo(sensor);
     assertThat(sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE, true)).isEqualTo(sensor);
+    assertThat(sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE, false)).isNull();
   }
 
   @Test
   public void getDefaultSensorWithNoWakeUpSensor_shouldReturnCorrectSensorAndWakeUpValue() {
     Sensor sensor = ShadowSensor.newInstance(Sensor.TYPE_HEART_RATE);
-    shadowOf(sensor).setWakeUpFlag(true);
+    shadowOf(sensor).setWakeUpFlag(false);
     shadowOf(sensorManager).addSensor(sensor);
 
     assertThat(sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)).isEqualTo(sensor);
     assertThat(sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE, false)).isEqualTo(sensor);
+    assertThat(sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE, true)).isNull();
   }
 
   private static class TestSensorEventListener implements SensorEventListener2 {
