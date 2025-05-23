@@ -266,6 +266,12 @@ public class ShadowBluetoothGatt {
     return true;
   }
 
+  @Implementation(minSdk = Build.VERSION_CODES.TIRAMISU)
+  protected int writeDescriptor(BluetoothGattDescriptor descriptor, byte[] value) {
+    descriptor.setValue(value);
+    return writeDescriptor(descriptor) ? BluetoothGatt.GATT_SUCCESS : BluetoothGatt.GATT_FAILURE;
+  }
+
   @Implementation(minSdk = O)
   protected boolean writeCharacteristic(BluetoothGattCharacteristic characteristic) {
     return writeIncomingCharacteristic(characteristic);
