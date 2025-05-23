@@ -9,7 +9,6 @@ dependencies {
 
   api(libs.auto.value.annotations)
   api(libs.guava)
-  compileOnly(libs.findbugs.jsr305)
 
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
