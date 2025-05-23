@@ -12,6 +12,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.UUID;
 import org.junit.After;
@@ -356,12 +357,41 @@ public class ShadowBluetoothGattTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.TIRAMISU)
+  public void writeDescriptor_updated() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+    service1.addCharacteristic(characteristicWithReadProperty);
+    characteristicWithReadProperty.addDescriptor(descriptor);
+    assertThat(descriptor.getCharacteristic().getService()).isNotNull();
+
+    assertThat(shadowOf(bluetoothGatt).writeDescriptor(descriptor, CHARACTERISTIC_VALUE))
+        .isEqualTo(BluetoothGatt.GATT_SUCCESS);
+    assertThat(resultStatus).isEqualTo(BluetoothGatt.GATT_SUCCESS);
+    assertThat(resultAction).isEqualTo(ACTION_WRITE);
+    assertThat(resultDescriptor).isEqualTo(descriptor);
+    assertThat(shadowOf(bluetoothGatt).getLatestWrittenBytes()).isEqualTo(CHARACTERISTIC_VALUE);
+  }
+
+  @Test
   @Config(minSdk = O)
   public void writeDetachedDescriptor() {
     shadowOf(bluetoothGatt).setGattCallback(callback);
 
     descriptor.setValue(CHARACTERISTIC_VALUE);
     assertThat(shadowOf(bluetoothGatt).writeDescriptor(descriptor)).isFalse();
+    assertThat(resultStatus).isEqualTo(INITIAL_VALUE);
+    assertThat(resultAction).isNull();
+    assertThat(resultDescriptor).isNull();
+    assertThat(shadowOf(bluetoothGatt).getLatestWrittenBytes()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.TIRAMISU)
+  public void writeDetachedDescriptor_updated() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+
+    assertThat(shadowOf(bluetoothGatt).writeDescriptor(descriptor, CHARACTERISTIC_VALUE))
+        .isEqualTo(BluetoothGatt.GATT_FAILURE);
     assertThat(resultStatus).isEqualTo(INITIAL_VALUE);
     assertThat(resultAction).isNull();
     assertThat(resultDescriptor).isNull();
