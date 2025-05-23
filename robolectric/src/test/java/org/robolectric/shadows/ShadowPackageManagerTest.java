@@ -5069,6 +5069,46 @@ public class ShadowPackageManagerTest {
     }
   }
 
+  @Test
+  public void addPackageInternal_platformPermissionGroupWithPropertySet_succeeds() {
+    setSystemPropertyRule.set("robolectric.allowPlatformPermissions", "true");
+    Package pkg = new Package(TEST_PACKAGE_NAME);
+    ApplicationInfo appInfo = pkg.applicationInfo;
+    appInfo.flags = ApplicationInfo.FLAG_INSTALLED;
+    appInfo.packageName = TEST_PACKAGE_NAME;
+    appInfo.sourceDir = TEST_APP_PATH;
+    appInfo.name = TEST_PACKAGE_LABEL;
+    PermissionGroupInfo pgi = new PermissionGroupInfo();
+    pgi.name = permission_group.CALENDAR;
+    PermissionGroup pg = new PermissionGroup(pkg, pgi);
+    pkg.permissionGroups.add(pg);
+
+    shadowOf(packageManager).addPackageInternal(pkg); // should not throw
+  }
+
+  @Test
+  public void addPackage_platformPermission_throws() {
+    PackageInfo packageInfo = generateTestPackageInfo();
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = "android.permission.READ_CONTACTS";
+    packageInfo.permissions = new PermissionInfo[] {permissionInfo};
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> shadowOf(packageManager).addPackageNoDefaults(packageInfo));
+  }
+
+  @Test
+  public void addPackage_platformPermissionWhenAllowed_succeeds() {
+    setSystemPropertyRule.set("robolectric.allowPlatformPermissions", "true");
+    PackageInfo packageInfo = generateTestPackageInfo();
+    PermissionInfo permissionInfo = new PermissionInfo();
+    permissionInfo.name = "android.permission.READ_CONTACTS";
+    packageInfo.permissions = new PermissionInfo[] {permissionInfo};
+
+    shadowOf(packageManager).addPackageNoDefaults(packageInfo); // should not throw
+  }
+
   public String[] setPackagesSuspended(
       String[] packageNames,
       boolean suspended,
