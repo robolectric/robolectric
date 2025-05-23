@@ -253,6 +253,20 @@ public class ShadowBluetoothGatt {
 
   @Implementation(minSdk = O)
   protected boolean writeDescriptor(BluetoothGattDescriptor descriptor) {
+    return writeDescriptorInternal(descriptor);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.TIRAMISU)
+  protected int writeDescriptor(BluetoothGattDescriptor descriptor, byte[] value) {
+    descriptor.setValue(value);
+    boolean writeSuccess = writeDescriptorInternal(descriptor);
+    if (writeSuccess) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+    return BluetoothGatt.GATT_FAILURE;
+  }
+
+  private boolean writeDescriptorInternal(BluetoothGattDescriptor descriptor) {
     if (this.getGattCallback() == null) {
       throw new IllegalStateException(NULL_CALLBACK_MSG);
     }
