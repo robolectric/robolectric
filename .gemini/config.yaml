@@ -1,0 +1,5 @@
+# See the following for configuration options and the default values
+# https://developers.google.com/gemini-code-assist/docs/customize-gemini-behavior-github#default-configuration
+code_review:
+  pull_request_opened:
+    summary: false
