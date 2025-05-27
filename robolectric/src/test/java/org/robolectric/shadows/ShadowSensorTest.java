@@ -42,4 +42,12 @@ public class ShadowSensorTest {
     Shadows.shadowOf(sensor).setMinDelay(5);
     assertThat(sensor.getMinDelay()).isEqualTo(5);
   }
+
+  @Test
+  public void getName() {
+    Sensor sensor = ShadowSensor.newInstance(Sensor.TYPE_PROXIMITY);
+    assertThat(sensor.getName()).isNull();
+    Shadows.shadowOf(sensor).setName(Sensor.STRING_TYPE_PROXIMITY);
+    assertThat(sensor.getName()).isEqualTo(Sensor.STRING_TYPE_PROXIMITY);
+  }
 }
