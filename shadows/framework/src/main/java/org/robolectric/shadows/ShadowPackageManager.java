@@ -1000,11 +1000,13 @@ public class ShadowPackageManager {
         for (PermissionInfo permissionInfo : packageInfo.permissions) {
           if (AOSP_PLATFORM_PERMISSIONS.containsKey(permissionInfo.name)
               || permissionInfo.name.startsWith(AOSP_PLATFORM_PERMISSION_PREFIX)) {
-            throw new IllegalArgumentException(
-                "Permission "
-                    + permissionInfo.name
-                    + " is a platform permission. Do not declare it as part of the package or test"
-                    + " app manifest.");
+            if (!allowPlatformPermissions()) {
+              throw new IllegalArgumentException(
+                  "Permission "
+                      + permissionInfo.name
+                      + " is a platform permission. Do not declare it as part of the package or"
+                      + " test app manifest.");
+            }
           }
         }
       }
@@ -1393,11 +1395,13 @@ public class ShadowPackageManager {
 
       if (AOSP_PLATFORM_PERMISSION_GROUPS.containsKey(permissionGroupInfo.name)
           || permissionGroupInfo.name.startsWith(AOSP_PLATFORM_PERMISSION_GROUP_PREFIX)) {
-        throw new IllegalArgumentException(
-            "Permission group "
-                + permissionGroupInfo.name
-                + " is a platform permission group. Do not declare it as part of the test app"
-                + " manifest.");
+        if (!allowPlatformPermissions()) {
+          throw new IllegalArgumentException(
+              "Permission group "
+                  + permissionGroupInfo.name
+                  + " is a platform permission group. Do not declare it as part of the test app"
+                  + " manifest.");
+        }
       }
 
       addPermissionGroupInfo(permissionGroupInfo);
@@ -1411,6 +1415,16 @@ public class ShadowPackageManager {
     addFilters(serviceFilters, appPackage.services);
     addFilters(providerFilters, appPackage.providers);
     addFilters(receiverFilters, appPackage.receivers);
+  }
+
+  /**
+   * Returns true if the test app is allowed to declare platform permissions or permission groups in
+   * its manifest. Normally this is a bad idea as apps cannot do this. The system property is used
+   * to allow this in tests for the Android framework or other system apps that need to do this.
+   */
+  private static boolean allowPlatformPermissions() {
+    return Boolean.parseBoolean(
+        System.getProperty("robolectric.allowPlatformPermissions", "false"));
   }
 
   protected PackageInfo generatePackageInfo(Package appPackage, int flags) {

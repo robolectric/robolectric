@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
@@ -141,7 +140,7 @@ public class ShadowCameraManager {
   // to avoid conflicts.
   // TODO: increment this to  minSdk next-SDK-after-V once V is fully released
   @Implementation(methodName = "openCameraDeviceUserAsync", minSdk = Baklava.SDK_INT)
-  @InDevelopment
+  
   protected CameraDevice openCameraDeviceUserAsyncPostV(
       String cameraId,
       CameraDevice.StateCallback callback,

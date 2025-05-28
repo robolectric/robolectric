@@ -12,6 +12,7 @@ import android.hardware.display.DisplayManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.view.Choreographer;
 import android.view.Display;
 import android.view.MotionEvent;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -71,6 +72,7 @@ public final class Simulator {
   private void loop() {
     ShadowPausedLooper shadowLooper = Shadow.extract(Looper.myLooper());
     shadowLooper.idle();
+    Choreographer.getInstance().postFrameCallback(new SimulatorFrameCallback());
     while (true) {
       long currentSystemTime = System.nanoTime();
       long nextTaskTime = shadowLooper.getNextScheduledTaskTime().toMillis();
@@ -127,5 +129,12 @@ public final class Simulator {
 
     new Handler(Looper.getMainLooper())
         .post(() -> uiAutomation.injectInputEvent(androidEvent, true));
+  }
+
+  private static class SimulatorFrameCallback implements Choreographer.FrameCallback {
+    @Override
+    public void doFrame(long frameTimeNanos) {
+      Choreographer.getInstance().postFrameCallback(this);
+    }
   }
 }

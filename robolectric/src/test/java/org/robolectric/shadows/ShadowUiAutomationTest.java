@@ -4,8 +4,11 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.app.UiAutomation;
 import android.content.ContentResolver;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build.VERSION_CODES;
 import android.provider.Settings;
 import android.view.Surface;
 import androidx.test.core.app.ApplicationProvider;
@@ -13,11 +16,29 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 
 /** Test for {@link ShadowUiAutomation}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowUiAutomationTest {
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void grantRuntimePermission_grantsPermission() {
+    UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    Context context = ApplicationProvider.getApplicationContext();
+    String packageName = context.getPackageName();
+
+    uiAutomation.grantRuntimePermission(android.Manifest.permission.READ_MEDIA_IMAGES, packageName);
+    uiAutomation.grantRuntimePermission(android.Manifest.permission.READ_MEDIA_VIDEO, packageName);
+
+    assertThat(context.checkSelfPermission(android.Manifest.permission.READ_MEDIA_IMAGES))
+        .isEqualTo(PackageManager.PERMISSION_GRANTED);
+    assertThat(context.checkSelfPermission(android.Manifest.permission.READ_MEDIA_VIDEO))
+        .isEqualTo(PackageManager.PERMISSION_GRANTED);
+  }
+
   @Test
   public void setAnimationScale_zero() throws Exception {
     ShadowUiAutomation.setAnimationScaleCompat(0);

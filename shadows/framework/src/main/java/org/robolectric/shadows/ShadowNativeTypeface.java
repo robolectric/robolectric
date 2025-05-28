@@ -29,7 +29,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.TypefaceNatives;
 import org.robolectric.shadow.api.Shadow;
@@ -208,7 +207,7 @@ public class ShadowNativeTypeface extends ShadowTypeface {
   }
 
   @Implementation(minSdk = AndroidVersions.Baklava.SDK_INT)
-  @InDevelopment
+  
   protected static boolean nativeIsVariationInstance(long nativePtr) {
     return false;
     // TODO: call the real impl when it's finally available in native binaries

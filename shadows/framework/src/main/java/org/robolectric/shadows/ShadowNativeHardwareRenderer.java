@@ -26,7 +26,6 @@ import java.io.FileDescriptor;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
 import org.robolectric.shadows.ShadowNativeHardwareRenderer.Picker;
@@ -52,7 +51,7 @@ public class ShadowNativeHardwareRenderer {
     HardwareRendererNatives.preload();
   }
 
-  @InDevelopment
+  
   @Implementation(minSdk = Baklava.SDK_INT)
   protected static void preInitBufferAllocator() {
     // no-op, this method isn't bound on host platforms.

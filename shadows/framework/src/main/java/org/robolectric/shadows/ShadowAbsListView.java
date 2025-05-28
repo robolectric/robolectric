@@ -26,18 +26,14 @@ public class ShadowAbsListView extends ShadowAdapterView {
   @Implementation
   protected void smoothScrollToPosition(int position) {
     smoothScrolledPosition = position;
-    if (ShadowView.useRealScrolling()) {
-      reflector(AbsListViewReflector.class, realAbsListView).smoothScrollToPosition(position);
-    }
+    reflector(AbsListViewReflector.class, realAbsListView).smoothScrollToPosition(position);
   }
 
   @Implementation
   protected void smoothScrollBy(int distance, int duration) {
     this.lastSmoothScrollByDistance = distance;
     this.lastSmoothScrollByDuration = duration;
-    if (ShadowView.useRealScrolling()) {
-      reflector(AbsListViewReflector.class, realAbsListView).smoothScrollBy(distance, duration);
-    }
+    reflector(AbsListViewReflector.class, realAbsListView).smoothScrollBy(distance, duration);
   }
 
   /**

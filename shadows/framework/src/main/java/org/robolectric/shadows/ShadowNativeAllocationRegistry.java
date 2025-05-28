@@ -7,7 +7,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import libcore.util.NativeAllocationRegistry;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.nativeruntime.NativeAllocationRegistryNatives;
 import org.robolectric.shadows.ShadowNativeAllocationRegistry.Picker;
@@ -35,7 +34,6 @@ public class ShadowNativeAllocationRegistry {
    * classloader would be Robolectric's SandboxClassloader, but the value itself does not affect the
    * behavior of actual class.
    */
-  @InDevelopment
   @Implementation(minSdk = Baklava.SDK_INT)
   protected void __constructor__(
       ClassLoader classLoader,

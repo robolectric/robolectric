@@ -63,6 +63,11 @@ public class ShadowSensor {
     _sensor_.setFlags(_sensor_.getFlags() & ~mask);
   }
 
+  /** Sets the return value for {@link Sensor#getName}. */
+  public void setName(String name) {
+    reflector(_Sensor_.class, realSensor).setName(name);
+  }
+
   /** Accessor interface for {@link Sensor}'s internals. */
   @ForType(Sensor.class)
   interface _Sensor_ {
@@ -85,6 +90,9 @@ public class ShadowSensor {
 
     @Accessor("mFlags")
     void setFlags(int flags);
+
+    @Accessor("mName")
+    void setName(String name);
 
     @Accessor("mMinDelay")
     void setMinDelay(int minDelay);

@@ -23,7 +23,6 @@ import java.util.concurrent.Executor;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -41,7 +40,7 @@ public class ShadowCameraDeviceImpl {
   private boolean closed = false;
 
   @Implementation(minSdk = V.SDK_INT)
-  @InDevelopment
+  
   protected void __constructor__(
       String cameraId,
       StateCallback callback,
@@ -77,7 +76,7 @@ public class ShadowCameraDeviceImpl {
   }
 
   @Implementation(minSdk = Baklava.SDK_INT)
-  @InDevelopment
+  
   protected void __constructor__(
       String cameraId,
       StateCallback callback,

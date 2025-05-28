@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
@@ -12,7 +13,6 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
-import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.UUID;
 import org.junit.After;
@@ -357,14 +357,14 @@ public class ShadowBluetoothGattTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.TIRAMISU)
-  public void writeDescriptor_updated() {
+  @Config(minSdk = TIRAMISU)
+  public void writeDescriptor_withValue() {
     shadowOf(bluetoothGatt).setGattCallback(callback);
     service1.addCharacteristic(characteristicWithReadProperty);
     characteristicWithReadProperty.addDescriptor(descriptor);
     assertThat(descriptor.getCharacteristic().getService()).isNotNull();
 
-    assertThat(shadowOf(bluetoothGatt).writeDescriptor(descriptor, CHARACTERISTIC_VALUE))
+    assertThat(bluetoothGatt.writeDescriptor(descriptor, CHARACTERISTIC_VALUE))
         .isEqualTo(BluetoothGatt.GATT_SUCCESS);
     assertThat(resultStatus).isEqualTo(BluetoothGatt.GATT_SUCCESS);
     assertThat(resultAction).isEqualTo(ACTION_WRITE);
@@ -378,7 +378,7 @@ public class ShadowBluetoothGattTest {
     shadowOf(bluetoothGatt).setGattCallback(callback);
 
     descriptor.setValue(CHARACTERISTIC_VALUE);
-    assertThat(shadowOf(bluetoothGatt).writeDescriptor(descriptor)).isFalse();
+    assertThat(bluetoothGatt.writeDescriptor(descriptor)).isFalse();
     assertThat(resultStatus).isEqualTo(INITIAL_VALUE);
     assertThat(resultAction).isNull();
     assertThat(resultDescriptor).isNull();
@@ -386,11 +386,11 @@ public class ShadowBluetoothGattTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.TIRAMISU)
-  public void writeDetachedDescriptor_updated() {
+  @Config(minSdk = TIRAMISU)
+  public void writeDetachedDescriptor_withValue() {
     shadowOf(bluetoothGatt).setGattCallback(callback);
 
-    assertThat(shadowOf(bluetoothGatt).writeDescriptor(descriptor, CHARACTERISTIC_VALUE))
+    assertThat(bluetoothGatt.writeDescriptor(descriptor, CHARACTERISTIC_VALUE))
         .isEqualTo(BluetoothGatt.GATT_FAILURE);
     assertThat(resultStatus).isEqualTo(INITIAL_VALUE);
     assertThat(resultAction).isNull();

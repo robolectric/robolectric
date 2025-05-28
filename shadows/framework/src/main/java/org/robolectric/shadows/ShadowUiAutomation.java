@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.app.UiAutomation.ROTATION_FREEZE_0;
 import static android.app.UiAutomation.ROTATION_FREEZE_180;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
@@ -15,6 +16,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.ActivityThread;
 import android.app.UiAutomation;
 import android.content.ContentResolver;
 import android.content.res.Configuration;
@@ -71,6 +73,16 @@ public class ShadowUiAutomation {
     Settings.Global.putFloat(cr, Settings.Global.ANIMATOR_DURATION_SCALE, scale);
     Settings.Global.putFloat(cr, Settings.Global.TRANSITION_ANIMATION_SCALE, scale);
     Settings.Global.putFloat(cr, Settings.Global.WINDOW_ANIMATION_SCALE, scale);
+  }
+
+  @Implementation(minSdk = P)
+  protected void grantRuntimePermission(String permission, String packageName) {
+    getShadowInstrumentation().grantPermissions(permission);
+  }
+
+  static ShadowInstrumentation getShadowInstrumentation() {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    return Shadow.extract(activityThread.getInstrumentation());
   }
 
   @Implementation(minSdk = TIRAMISU)
