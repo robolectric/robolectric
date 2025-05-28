@@ -8,7 +8,6 @@ import libcore.util.NativeAllocationRegistry;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.versioning.AndroidVersions.Baklava;
@@ -37,7 +36,6 @@ public class ShadowNoopNativeAllocationRegistry {
    * classloader would be Robolectric's SandboxClassloader, but the value itself does not affect the
    * behavior of actual class.
    */
-  @InDevelopment
   @Implementation(minSdk = Baklava.SDK_INT)
   protected void __constructor__(
       ClassLoader classLoader,

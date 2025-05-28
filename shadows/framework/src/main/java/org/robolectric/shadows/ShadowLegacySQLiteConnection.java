@@ -49,7 +49,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadows.util.SQLiteLibraryLoader;
 import org.robolectric.util.PerfStatsCollector;
@@ -109,7 +108,7 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
     CONNECTIONS.close(connectionPtr);
   }
 
-  @InDevelopment
+  
   @Implementation(minSdk = Baklava.SDK_INT)
   protected static void nativeClose(long connectionPtr, boolean fast) {
     CONNECTIONS.close(connectionPtr);

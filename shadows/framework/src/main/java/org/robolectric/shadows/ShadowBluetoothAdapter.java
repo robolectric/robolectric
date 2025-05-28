@@ -51,7 +51,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
@@ -792,7 +791,7 @@ public class ShadowBluetoothAdapter {
   }
 
   @Implementation(minSdk = Baklava.SDK_INT)
-  @InDevelopment
+  
   protected @ClassName("android.bluetooth.IBluetoothAdvertise") Object getBluetoothAdvertise() {
     if (ibluetoothAdvertise == null) {
       ibluetoothAdvertise = BluetoothAdvertiseProxyDelegate.createBluetoothAdvertiseProxy();
