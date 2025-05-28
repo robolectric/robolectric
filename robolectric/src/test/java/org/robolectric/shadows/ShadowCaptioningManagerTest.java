@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -32,7 +32,7 @@ import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /** Tests for the ShadowCaptioningManager. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = KITKAT)
+@Config(minSdk = L)
 public final class ShadowCaptioningManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 

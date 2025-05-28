@@ -17,7 +17,7 @@ import org.robolectric.annotation.Config;
 
 /** Test for {@link SignalStrengthBuilder} */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = Build.VERSION_CODES.ECLAIR_MR1)
+@Config(minSdk = Build.VERSION_CODES.L)
 public class SignalStrengthBuilderTest {
 
   @Test
