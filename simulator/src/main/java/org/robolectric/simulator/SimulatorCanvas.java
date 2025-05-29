@@ -21,7 +21,7 @@ public class SimulatorCanvas extends Canvas {
 
   @Override
   public Color getBackground() {
-    return Color.BLACK;
+    return Color.WHITE;
   }
 
   @Override
@@ -39,6 +39,8 @@ public class SimulatorCanvas extends Canvas {
 
     int width = bitmap.getWidth();
     int height = bitmap.getHeight();
+    graphics.clearRect(0, 0, width, height);
+
     if (pixels == null || pixels.length != width * height) {
       pixels = new int[width * height];
     }
