@@ -16,6 +16,12 @@ fun MavenPublication.applyPomMetadata(project: Project) {
       }
     }
 
+    scm {
+      url.set("https://github.com/robolectric/robolectric")
+      connection.set("scm:git:git://github.com/robolectric/robolectric.git")
+      developerConnection.set("scm:git:git@github.com:robolectric/robolectric.git")
+    }
+
     developers {
       developer {
         name.set("Brett Chabot")
