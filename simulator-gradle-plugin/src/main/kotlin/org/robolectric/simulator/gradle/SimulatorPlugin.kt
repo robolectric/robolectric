@@ -52,9 +52,17 @@ class SimulatorPlugin : Plugin<Project> {
         )
         .resolve()
 
+    val robolectricJvmArgs =
+      listOf(
+        "-Drobolectric.logging.enabled=true",
+        "-Drobolectric.logging=stdout",
+        "-Drobolectric.createActivityContexts=true",
+        "-Drobolectric.useEmbeddedViewRoot=true",
+      )
+
     task.apply {
       classpath = testTask.classpath + project.files(simulator)
-      jvmArgs = testTask.jvmArgs
+      jvmArgs = testTask.jvmArgs + robolectricJvmArgs
       mainClass.set(SimulatorMain::class.qualifiedName)
       args = listOf(resourceApkFile.absolutePath)
       dependsOn(testTaskName, "assembleDebug")
