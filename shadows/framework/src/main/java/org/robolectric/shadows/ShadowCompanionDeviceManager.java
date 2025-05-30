@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
@@ -29,6 +30,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Shadow for CompanionDeviceManager. */
 @Implements(value = CompanionDeviceManager.class, minSdk = VERSION_CODES.O)
@@ -36,6 +38,8 @@ public class ShadowCompanionDeviceManager {
 
   private final Set<RoboAssociationInfo> associations = new HashSet<>();
   private final Set<ComponentName> hasNotificationAccess = new HashSet<>();
+  private final Set<Integer> specifiedRemovableIds = new HashSet<>();
+  private int lastRemoveBondAssociationId = -1;
   private ComponentName lastRequestedNotificationAccess;
   private AssociationRequest lastAssociationRequest;
   private MacAddress lastSystemApiAssociationMacAddress;
@@ -215,6 +219,47 @@ public class ShadowCompanionDeviceManager {
     return this.associations.stream()
         .map(this::createAssociationInfo)
         .collect(toCollection(ArrayList::new));
+  }
+
+  /**
+   * Specify that a given association should return True (i.e. removeBond successful) when
+   * removeBond is called for it.
+   */
+  public void markAssociationBondRemovable(int associationId) {
+    specifiedRemovableIds.add(associationId);
+  }
+
+  /**
+   * Specify that a given association should return False (i.e. removeBond failed) when removeBond
+   * is called for it.
+   */
+  public void markAssociationBondNotRemovable(int associationId) {
+    specifiedRemovableIds.remove(associationId);
+  }
+
+  /** Get the last associationId removeBond was called with, regardless of success. */
+  public int getLastRemoveBondAssociationId() {
+    return lastRemoveBondAssociationId;
+  }
+
+  /**
+   * Handle any attempt to removeBond through CDM. Does not actually remove the underlying BT bond,
+   * but records the method call and association ID it was called with, and returns true if the user
+   * specified that this ID was removable, or false if not or there is no association for the
+   * device.
+   *
+   * @param associationId - id of association to attempt removal for.
+   * @return true if value was set previously by user, false otherwise.
+   */
+  @Implementation(minSdk = Baklava.SDK_INT)
+  protected boolean removeBond(int associationId) {
+    lastRemoveBondAssociationId = associationId;
+    Optional<RoboAssociationInfo> association =
+        this.associations.stream().filter(info -> info.id() == associationId).findFirst();
+    if (association.isEmpty()) {
+      return false;
+    }
+    return specifiedRemovableIds.contains(associationId);
   }
 
   /** Convert {@link RoboAssociationInfo} to actual {@link AssociationInfo}. */
