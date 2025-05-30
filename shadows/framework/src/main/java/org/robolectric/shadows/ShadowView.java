@@ -569,11 +569,11 @@ public class ShadowView {
     if (useRealScrolling()) {
       reflector(_View_.class, realView).scrollTo(x, y);
     } else {
-      reflector(_View_.class, realView)
-          .onScrollChanged(x, y, scrollToCoordinates.x, scrollToCoordinates.y);
       scrollToCoordinates = new Point(x, y);
       reflector(_View_.class, realView).setMemberScrollX(x);
       reflector(_View_.class, realView).setMemberScrollY(y);
+      reflector(_View_.class, realView)
+          .onScrollChanged(x, y, scrollToCoordinates.x, scrollToCoordinates.y);
     }
   }
 
