@@ -76,7 +76,7 @@ public class ShadowUiAutomation {
   }
 
   @Implementation(minSdk = P)
-  protected void grantRuntimePermission(String permission, String packageName) {
+  protected void grantRuntimePermission(String packageName, String permission) {
     getShadowInstrumentation().grantPermissions(permission);
   }
 
