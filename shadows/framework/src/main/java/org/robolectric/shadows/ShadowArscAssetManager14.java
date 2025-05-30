@@ -74,7 +74,6 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
   }
 
   @Implementation(minSdk = V.SDK_INT)
-  
   protected static void nativeSetConfiguration(
       long ptr,
       int mcc,
@@ -130,7 +129,6 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
   }
 
   @Implementation(minSdk = Baklava.SDK_INT)
-  
   protected static void nativeSetConfiguration(
       long ptr,
       int mcc,
@@ -183,7 +181,6 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
   }
 
   @Implementation(minSdk = V.SDK_INT)
-  
   protected static void nativeSetApkAssets(
       long ptr, @Nonnull ApkAssets[] apkAssets, boolean invalidateCaches, boolean preset) {
     nativeSetApkAssets(ptr, apkAssets, invalidateCaches);

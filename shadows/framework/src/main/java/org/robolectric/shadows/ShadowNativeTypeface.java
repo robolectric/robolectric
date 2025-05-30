@@ -207,7 +207,6 @@ public class ShadowNativeTypeface extends ShadowTypeface {
   }
 
   @Implementation(minSdk = AndroidVersions.Baklava.SDK_INT)
-  
   protected static boolean nativeIsVariationInstance(long nativePtr) {
     return false;
     // TODO: call the real impl when it's finally available in native binaries
