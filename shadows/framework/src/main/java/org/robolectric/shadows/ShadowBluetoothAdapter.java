@@ -791,7 +791,6 @@ public class ShadowBluetoothAdapter {
   }
 
   @Implementation(minSdk = Baklava.SDK_INT)
-  
   protected @ClassName("android.bluetooth.IBluetoothAdvertise") Object getBluetoothAdvertise() {
     if (ibluetoothAdvertise == null) {
       ibluetoothAdvertise = BluetoothAdvertiseProxyDelegate.createBluetoothAdvertiseProxy();

@@ -108,7 +108,6 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
     CONNECTIONS.close(connectionPtr);
   }
 
-  
   @Implementation(minSdk = Baklava.SDK_INT)
   protected static void nativeClose(long connectionPtr, boolean fast) {
     CONNECTIONS.close(connectionPtr);

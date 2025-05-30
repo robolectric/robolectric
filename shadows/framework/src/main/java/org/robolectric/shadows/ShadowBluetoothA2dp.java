@@ -218,7 +218,6 @@ public class ShadowBluetoothA2dp {
     return false; // never used since less than minSdk of R.
   }
 
-  
   @Implementation(minSdk = R, maxSdk = Baklava.SDK_INT, methodName = "verifyDeviceNotNull")
   protected void verifyDeviceNotNull(BluetoothDevice device, String methodName) {
     if (VERIFY_DEVICE_NOT_NULL_IS_STATIC) {
@@ -228,7 +227,6 @@ public class ShadowBluetoothA2dp {
     }
   }
 
-  
   @Implementation(minSdk = Baklava.SDK_INT, methodName = "verifyDeviceNotNull")
   protected static void verifyDeviceNotNullBaklava(BluetoothDevice device, String methodName) {
     reflector(BluetoothA2dpReflector.class).verifyDeviceNotNull(device, methodName);

@@ -140,7 +140,6 @@ public class ShadowCameraManager {
   // to avoid conflicts.
   // TODO: increment this to  minSdk next-SDK-after-V once V is fully released
   @Implementation(methodName = "openCameraDeviceUserAsync", minSdk = Baklava.SDK_INT)
-  
   protected CameraDevice openCameraDeviceUserAsyncPostV(
       String cameraId,
       CameraDevice.StateCallback callback,
