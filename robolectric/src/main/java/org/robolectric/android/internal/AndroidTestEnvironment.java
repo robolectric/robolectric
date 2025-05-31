@@ -80,7 +80,7 @@ import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
 import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowInstrumentation._Instrumentation_;
 import org.robolectric.shadows.ShadowLegacyLooper;
-import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
+import org.robolectric.shadows.ShadowLoadedApk.LoadedApkReflector;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageManager;
@@ -349,7 +349,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     final LoadedApk loadedApk =
         activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
-    final _LoadedApk_ _loadedApk_ = reflector(_LoadedApk_.class, loadedApk);
+    final LoadedApkReflector loadedApkReflector = reflector(LoadedApkReflector.class, loadedApk);
 
     Context contextImpl =
         reflector(_ContextImpl_.class).createAppContext(activityThread, loadedApk);
@@ -364,8 +364,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
 
     Resources appResources = application.getResources();
-    _loadedApk_.setResources(appResources);
-    _loadedApk_.setApplication(application);
+    loadedApkReflector.setResources(appResources);
+    loadedApkReflector.setApplication(application);
     if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.O) {
       // Preload fonts resources
       FontsContract.setApplicationContextForResources(application);

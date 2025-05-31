@@ -73,7 +73,7 @@ import org.robolectric.fakes.RoboSplashScreen;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
 import org.robolectric.shadows.ShadowInstrumentation.TargetAndRequestCode;
-import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
+import org.robolectric.shadows.ShadowLoadedApk.LoadedApkReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
@@ -191,8 +191,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
         && RuntimeEnvironment.getApiLevel() >= O) {
       LoadedApk loadedApk =
           activityThread.getPackageInfo(
-              ShadowActivityThread.getApplicationInfo(), null, Context.CONTEXT_INCLUDE_CODE);
-      _LoadedApk_ loadedApkReflector = reflector(_LoadedApk_.class, loadedApk);
+              baseContext.getApplicationInfo(), null, Context.CONTEXT_INCLUDE_CODE);
+      LoadedApkReflector loadedApkReflector = reflector(LoadedApkReflector.class, loadedApk);
       loadedApkReflector.setResources(application.getResources());
       loadedApkReflector.setApplication(application);
       activityContext =
