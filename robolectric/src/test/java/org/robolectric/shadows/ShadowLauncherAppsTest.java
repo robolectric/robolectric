@@ -210,7 +210,7 @@ public class ShadowLauncherAppsTest {
   }
 
   @Test
-  @Config(minSdk = L)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testIsActivityEnabled() {
     ComponentName c1 = new ComponentName(ApplicationProvider.getApplicationContext(), "Activity1");
     ComponentName c2 = new ComponentName(ApplicationProvider.getApplicationContext(), "Activity2");
