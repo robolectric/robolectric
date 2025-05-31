@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static android.os.Looper.getMainLooper;
@@ -265,7 +264,7 @@ public class ShadowAppWidgetManagerTest {
   }
 
   @Test
-  @Config(minSdk = L)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getInstalledProvidersForProfile_returnsWidgetList() {
     UserHandle userHandle = UserHandle.CURRENT;
     assertTrue(appWidgetManager.getInstalledProvidersForProfile(userHandle).isEmpty());

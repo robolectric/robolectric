@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
@@ -134,7 +133,7 @@ public class ShadowBuildTest {
   }
 
   @Test
-  @Config(minSdk = L)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void supported32BitAbis() {
     assertThat(Build.SUPPORTED_32_BIT_ABIS).isEqualTo(new String[] {"armeabi-v7a", "armeabi"});
     ShadowBuild.setSupported32BitAbis(new String[] {"x86"});
@@ -142,7 +141,7 @@ public class ShadowBuildTest {
   }
 
   @Test
-  @Config(minSdk = L)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void supported64BitAbis() {
     assertThat(Build.SUPPORTED_64_BIT_ABIS).isEqualTo(new String[] {"armeabi-v7a", "armeabi"});
     ShadowBuild.setSupported64BitAbis(new String[] {"x86_64"});
@@ -150,7 +149,7 @@ public class ShadowBuildTest {
   }
 
   @Test
-  @Config(minSdk = L)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void supportedAbis() {
     assertThat(Build.SUPPORTED_ABIS).isEqualTo(new String[] {"armeabi-v7a"});
     ShadowBuild.setSupportedAbis(new String[] {"x86"});

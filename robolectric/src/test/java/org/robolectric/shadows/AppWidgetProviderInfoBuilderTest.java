@@ -57,19 +57,19 @@ public class AppWidgetProviderInfoBuilderTest {
   }
 
   @Test
-  @Config(minSdk = L)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getProfile_shouldReturnUserHandleWithAssignedUID() {
     assertThat(appWidgetProviderInfo.getProfile().getIdentifier()).isEqualTo(applicationInfo.uid);
   }
 
   @Test
-  @Config(minSdk = L)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void loadIcon_shouldReturnNonNullIcon() {
     assertThat(appWidgetProviderInfo.loadIcon(context, 240)).isNotNull();
   }
 
   @Test
-  @Config(minSdk = L)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void loadLabel_shouldReturnAssignedLabel() {
     assertThat(appWidgetProviderInfo.loadLabel(packageManager))
         .isEqualTo(providerInfo.nonLocalizedLabel.toString());

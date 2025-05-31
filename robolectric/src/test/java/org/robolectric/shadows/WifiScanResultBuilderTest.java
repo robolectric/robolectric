@@ -83,7 +83,7 @@ public final class WifiScanResultBuilderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setCapabilities_setsCapabilitiesField() {
     String capabilities = "wpa2";
     ScanResult scanResult = new WifiScanResultBuilder().setCapabilities(capabilities).build();
@@ -92,7 +92,7 @@ public final class WifiScanResultBuilderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setBssid_setsBssidField() {
     String bssid = "01:AB:CD:EF:12";
     ScanResult scanResult = new WifiScanResultBuilder().setBssid(bssid).build();
@@ -101,7 +101,7 @@ public final class WifiScanResultBuilderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setRssi_setsLevelField() {
     int rssi = -80;
     ScanResult scanResult = new WifiScanResultBuilder().setRssi(rssi).build();
@@ -110,7 +110,7 @@ public final class WifiScanResultBuilderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setFrequency_setsFrequencyField() {
     int frequency = 2412;
     ScanResult scanResult = new WifiScanResultBuilder().setFrequency(frequency).build();
@@ -119,7 +119,7 @@ public final class WifiScanResultBuilderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setTimestamp_setsTimestampField() {
     int durationMicros = 500000000;
     Duration timeSinceSeen = Duration.ofSeconds(TimeUnit.MICROSECONDS.toSeconds(durationMicros));
@@ -180,7 +180,7 @@ public final class WifiScanResultBuilderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void buildFromEmpty_checkCommonDefaultValues() {
     ScanResult scanResult = new WifiScanResultBuilder().build();
 
