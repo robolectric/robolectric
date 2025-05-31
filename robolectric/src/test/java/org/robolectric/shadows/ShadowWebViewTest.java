@@ -644,13 +644,13 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  @Config(minSdk = 21)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void canEnableSlowWholeDocumentDraw() {
     WebView.enableSlowWholeDocumentDraw();
   }
 
   @Test
-  @Config(minSdk = 21)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void canClearClientCertPreferences() {
     WebView.clearClientCertPreferences(null);
   }
