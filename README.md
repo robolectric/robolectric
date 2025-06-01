@@ -74,6 +74,11 @@ Although complex, this distributed development model enables Android developers
 in different environments to use and contribute to Robolectric, while allowing
 changes to eventually make their way to public Robolectric releases.
 
+> [!TIP]
+> You can trigger the
+> [`sync_google_master`](https://github.com/robolectric/robolectric/actions/workflows/sync_google_master.yml)
+> workflow to create a PR to sync the `google` branch into `master`.
+
 ## Using Snapshots
 
 If you would like to live on the bleeding edge, you can try running against a snapshot build. Keep in mind that snapshots represent the most recent changes on the `master` and may contain bugs.

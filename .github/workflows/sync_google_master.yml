@@ -1,0 +1,25 @@
+name: Sync the google branch into master
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync_google_master:
+    name: "Sync google into master"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: google
+          token: ${{ secrets.ROBOLECTRIC_PAT }}
+
+      - name: Create the PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b sync_google_master
+          git push --set-upstream origin sync_google_master
+          gh pr create --base master --head sync_google_master --title "Merge branch google into master" --body ""
