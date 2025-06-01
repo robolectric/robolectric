@@ -23,7 +23,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
-/** */
+/** Tests for {@link ShadowUIModeManager}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowUIModeManagerTest {
   private Context context;
