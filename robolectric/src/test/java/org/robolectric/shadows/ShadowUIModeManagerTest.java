@@ -41,15 +41,15 @@ public class ShadowUIModeManagerTest {
   @Config(minSdk = M)
   public void testModeSwitch() {
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_UNDEFINED);
-    assertThat(shadowOf(uiModeManager).lastFlags).isEqualTo(0);
+    assertThat(shadowOf(uiModeManager).getLastFlags()).isEqualTo(0);
 
     uiModeManager.enableCarMode(1);
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_CAR);
-    assertThat(shadowOf(uiModeManager).lastFlags).isEqualTo(1);
+    assertThat(shadowOf(uiModeManager).getLastFlags()).isEqualTo(1);
 
     uiModeManager.disableCarMode(2);
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_NORMAL);
-    assertThat(shadowOf(uiModeManager).lastFlags).isEqualTo(2);
+    assertThat(shadowOf(uiModeManager).getLastFlags()).isEqualTo(2);
   }
 
   @Test
@@ -66,8 +66,8 @@ public class ShadowUIModeManagerTest {
     int flags = 1;
     uiModeManager.enableCarMode(priority, flags);
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_CAR);
-    assertThat(shadowOf(uiModeManager).lastCarModePriority).isEqualTo(priority);
-    assertThat(shadowOf(uiModeManager).lastFlags).isEqualTo(flags);
+    assertThat(shadowOf(uiModeManager).getLastCarModePriority()).isEqualTo(priority);
+    assertThat(shadowOf(uiModeManager).getLastFlags()).isEqualTo(flags);
   }
 
   private static final int INVALID_NIGHT_MODE = -4242;
