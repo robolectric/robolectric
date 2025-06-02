@@ -23,12 +23,12 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
-/** Tests for {@link ShadowUIModeManager}. */
+/** Tests for {@link ShadowUiModeManager}. */
 @RunWith(AndroidJUnit4.class)
-public class ShadowUIModeManagerTest {
+public class ShadowUiModeManagerTest {
   private Context context;
   private UiModeManager uiModeManager;
-  private ShadowUIModeManager shadowUiModeManager;
+  private ShadowUiModeManager shadowUiModeManager;
 
   @Before
   public void setUp() {
@@ -145,7 +145,7 @@ public class ShadowUIModeManagerTest {
 
   @Test
   public void getDefaultIsNightModeOn_shouldBeFalse() {
-    assertThat(((ShadowUIModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isFalse();
+    assertThat(((ShadowUiModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isFalse();
   }
 
   @Config(minSdk = TIRAMISU)
@@ -177,7 +177,7 @@ public class ShadowUIModeManagerTest {
             uiModeManager.setNightModeActivatedForCustomMode(
                 UiModeManager.MODE_NIGHT_CUSTOM_TYPE_BEDTIME, true))
         .isTrue();
-    assertThat(((ShadowUIModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isTrue();
+    assertThat(((ShadowUiModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isTrue();
   }
 
   @Config(minSdk = TIRAMISU)
@@ -190,7 +190,7 @@ public class ShadowUIModeManagerTest {
             uiModeManager.setNightModeActivatedForCustomMode(
                 UiModeManager.MODE_NIGHT_CUSTOM_TYPE_BEDTIME, false))
         .isTrue();
-    assertThat(((ShadowUIModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isFalse();
+    assertThat(((ShadowUiModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isFalse();
   }
 
   @Config(minSdk = TIRAMISU)
@@ -199,7 +199,7 @@ public class ShadowUIModeManagerTest {
     uiModeManager.setNightModeCustomType(UiModeManager.MODE_NIGHT_CUSTOM_TYPE_BEDTIME);
 
     assertThat(uiModeManager.setNightModeActivatedForCustomMode(123, true)).isFalse();
-    assertThat(((ShadowUIModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isFalse();
+    assertThat(((ShadowUiModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isFalse();
   }
 
   @Config(minSdk = TIRAMISU)
@@ -211,7 +211,7 @@ public class ShadowUIModeManagerTest {
             uiModeManager.setNightModeActivatedForCustomMode(
                 UiModeManager.MODE_NIGHT_CUSTOM_TYPE_SCHEDULE, true))
         .isFalse();
-    assertThat(((ShadowUIModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isFalse();
+    assertThat(((ShadowUiModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isFalse();
   }
 
   @Config(minSdk = TIRAMISU)
