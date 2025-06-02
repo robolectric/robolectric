@@ -36,7 +36,7 @@ import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link UiModeManager}. */
 @Implements(UiModeManager.class)
-public class ShadowUIModeManager {
+public class ShadowUiModeManager {
   private static final int DEFAULT_PRIORITY = 0;
 
   private int currentModeType = Configuration.UI_MODE_TYPE_UNDEFINED;
