@@ -14,11 +14,11 @@ public class CleanerCompat {
 
   private static final String CLEANER_CLASS_NAME = "java.lang.ref.Cleaner";
   private static final String CLEANABLE_CLASS_NAME = "java.lang.ref.Cleaner$Cleanable";
-  private static final _Cleaner_ CLEANER;
+  private static final CleanerReflector CLEANER;
 
   static {
-    Object cleaner = reflector(_Cleaner_.class).create();
-    CLEANER = reflector(_Cleaner_.class, cleaner);
+    Object cleaner = reflector(CleanerReflector.class).create();
+    CLEANER = reflector(CleanerReflector.class, cleaner);
   }
 
   public static Object register(Object obj, Runnable action) {
@@ -26,12 +26,12 @@ public class CleanerCompat {
   }
 
   public static void clean(Object cleanable) {
-    reflector(_Cleanable_.class, cleanable).clean();
+    reflector(CleanableReflector.class, cleanable).clean();
   }
 
   /** Accessor interface for Cleaner's internals. */
   @ForType(className = CLEANER_CLASS_NAME)
-  interface _Cleaner_ {
+  interface CleanerReflector {
     @Static
     Object create();
 
@@ -40,7 +40,7 @@ public class CleanerCompat {
 
   /** Accessor interface for Cleaner's internals. */
   @ForType(className = CLEANABLE_CLASS_NAME)
-  interface _Cleanable_ {
+  interface CleanableReflector {
 
     void clean();
   }

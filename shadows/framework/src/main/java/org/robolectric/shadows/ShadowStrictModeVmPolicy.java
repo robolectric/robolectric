@@ -23,13 +23,13 @@ public class ShadowStrictModeVmPolicy {
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
       // if VmPolicy was referenced first, sVmPolicy won't be set properly. So force a
       // re-initialization.
-      reflector(_StrictMode_.class).setVmPolicy(VmPolicy.LAX);
+      reflector(StrictModeReflector.class).setVmPolicy(VmPolicy.LAX);
     }
   }
 
   /** Accessor interface for {@link StrictMode}'s internals. */
   @ForType(StrictMode.class)
-  private interface _StrictMode_ {
+  private interface StrictModeReflector {
     @Static
     @Accessor("sVmPolicy")
     void setVmPolicy(VmPolicy vmPolicy);

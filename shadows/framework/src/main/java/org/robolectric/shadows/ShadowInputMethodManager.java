@@ -255,7 +255,7 @@ public class ShadowInputMethodManager {
     if (RuntimeEnvironment.getApiLevel() <= LOLLIPOP_MR1) {
       return InputMethodManager.getInstance();
     }
-    return reflector(_InputMethodManager_.class).peekInstance();
+    return reflector(InputMethodManagerReflector.class).peekInstance();
   }
 
   @Implementation(minSdk = N)
@@ -282,10 +282,11 @@ public class ShadowInputMethodManager {
   @Resetter
   public static void reset() {
     int apiLevel = RuntimeEnvironment.getApiLevel();
-    _InputMethodManager_ _reflector = reflector(_InputMethodManager_.class);
-    _reflector.setInstance(null);
+    InputMethodManagerReflector inputManagerReflector =
+        reflector(InputMethodManagerReflector.class);
+    inputManagerReflector.setInstance(null);
     if (apiLevel > P) {
-      _reflector.getInstanceMap().clear();
+      inputManagerReflector.getInstanceMap().clear();
     }
     softInputVisible = false;
     visibilityChangeHandler = Optional.absent();
@@ -296,7 +297,7 @@ public class ShadowInputMethodManager {
   }
 
   @ForType(InputMethodManager.class)
-  interface _InputMethodManager_ {
+  interface InputMethodManagerReflector {
 
     @Static
     @Direct

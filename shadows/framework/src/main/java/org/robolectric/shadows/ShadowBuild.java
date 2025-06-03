@@ -250,7 +250,7 @@ public class ShadowBuild {
    * <p>Added in API level 31.
    */
   public static void setOdmSku(String odmSku) {
-    reflector(_Build_.class).setOdmSku(odmSku);
+    reflector(BuildReflector.class).setOdmSku(odmSku);
   }
 
   /**
@@ -261,7 +261,7 @@ public class ShadowBuild {
    * <p>Added in API level 31.
    */
   public static void setSku(String sku) {
-    reflector(_Build_.class).setSku(sku);
+    reflector(BuildReflector.class).setSku(sku);
   }
 
   @Implementation
@@ -269,7 +269,7 @@ public class ShadowBuild {
     if (radioVersionOverride != null) {
       return radioVersionOverride;
     }
-    return reflector(_Build_.class).getRadioVersion();
+    return reflector(BuildReflector.class).getRadioVersion();
   }
 
   @Implementation(minSdk = O)
@@ -281,13 +281,13 @@ public class ShadowBuild {
   public static synchronized void reset() {
     radioVersionOverride = null;
     serialOverride = Build.UNKNOWN;
-    reflector(_Build_.class).__staticInitializer__();
-    reflector(_VERSION_.class).__staticInitializer__();
+    reflector(BuildReflector.class).__staticInitializer__();
+    reflector(VersionReflector.class).__staticInitializer__();
   }
 
   /** Reflector interface for {@link Build}. */
   @ForType(Build.class)
-  private interface _Build_ {
+  private interface BuildReflector {
 
     @Static
     void __staticInitializer__();
@@ -307,7 +307,7 @@ public class ShadowBuild {
 
   /** Reflector interface for {@link Build.VERSION}. */
   @ForType(Build.VERSION.class)
-  private interface _VERSION_ {
+  private interface VersionReflector {
 
     @Static
     void __staticInitializer__();

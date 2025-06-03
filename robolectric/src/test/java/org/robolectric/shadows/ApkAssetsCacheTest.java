@@ -19,7 +19,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.ResourcesMode.Mode;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowAssetManager._AssetManager28_;
+import org.robolectric.shadows.ShadowAssetManager.AssetManager28Reflector;
 
 /** Tests that ApkAssets native objects are cached across ClassLoaders. */
 @RunWith(AndroidJUnit4.class)
@@ -49,7 +49,8 @@ public class ApkAssetsCacheTest {
 
   private static String collectPtrs() {
     AssetManager systemAssetManager = AssetManager.getSystem();
-    ApkAssets[] apkAssets = reflector(_AssetManager28_.class, systemAssetManager).getApkAssets();
+    ApkAssets[] apkAssets =
+        reflector(AssetManager28Reflector.class, systemAssetManager).getApkAssets();
     ArrayList<Long> ptrs = new ArrayList<>(apkAssets.length);
     for (ApkAssets item : apkAssets) {
       ShadowArscApkAssets9 apkAssetsShadow = Shadow.extract(item);

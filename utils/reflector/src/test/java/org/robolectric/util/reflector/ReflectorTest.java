@@ -17,15 +17,15 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @RunWith(JUnit4.class)
 public class ReflectorTest {
 
-  private _SomeClass_ reflector;
-  private _SomeClass_ staticReflector;
+  private SomeClassReflector reflector;
+  private SomeClassReflector staticReflector;
 
   @Before
   public void setUp() {
     SomeClass someClass = new SomeClass("c");
-    reflector = reflector(_SomeClass_.class, someClass);
+    reflector = reflector(SomeClassReflector.class, someClass);
 
-    staticReflector = reflector(_SomeClass_.class, null);
+    staticReflector = reflector(SomeClassReflector.class, null);
   }
 
   @Test
@@ -102,7 +102,7 @@ public class ReflectorTest {
     System.out.println("reflection = " + Collections.singletonList(methodByReflectionHelpers(i)));
     System.out.println("accessor = " + Collections.singletonList(methodByReflector(i)));
 
-    _SomeClass_ accessor = reflector(_SomeClass_.class, i);
+    SomeClassReflector accessor = reflector(SomeClassReflector.class, i);
 
     time("ReflectionHelpers", 10_000_000, () -> methodByReflectionHelpers(i));
     time("accessor", 10_000_000, () -> methodByReflector(i));
@@ -121,7 +121,7 @@ public class ReflectorTest {
     System.out.println("reflection = " + Collections.singletonList(fieldByReflectionHelpers(i)));
     System.out.println("accessor = " + Collections.singletonList(fieldByReflector(i)));
 
-    _SomeClass_ accessor = reflector(_SomeClass_.class, i);
+    SomeClassReflector accessor = reflector(SomeClassReflector.class, i);
 
     time("ReflectionHelpers", 10_000_000, () -> fieldByReflectionHelpers(i));
     time("accessor", 10_000_000, () -> fieldByReflector(i));
@@ -140,7 +140,7 @@ public class ReflectorTest {
     System.out.println("reflection = " + Collections.singletonList(methodByReflectionHelpers(i)));
     System.out.println("accessor = " + Collections.singletonList(methodByReflector(i)));
 
-    _SomeClass_ accessor = reflector(_SomeClass_.class, i);
+    SomeClassReflector accessor = reflector(SomeClassReflector.class, i);
 
     time("ReflectionHelpers", 10_000_000, this::constructorByReflectionHelpers);
     time("accessor", 10_000_000, this::constructorByReflector);
@@ -154,7 +154,7 @@ public class ReflectorTest {
   @Test
   public void nonExistentMethod_throwsAssertionError() {
     SomeClass i = new SomeClass("c");
-    _SomeClass_ accessor = reflector(_SomeClass_.class, i);
+    SomeClassReflector accessor = reflector(SomeClassReflector.class, i);
     AssertionError ex =
         assertThrows(AssertionError.class, () -> accessor.nonExistentMethod("a", "b", "c"));
     assertThat(ex).hasMessageThat().startsWith("Error invoking reflector method in ClassLoader ");
@@ -170,7 +170,7 @@ public class ReflectorTest {
 
   /** Accessor interface for {@link SomeClass}'s internals. */
   @ForType(SomeClass.class)
-  interface _SomeClass_ {
+  interface SomeClassReflector {
 
     @Static
     String someStaticMethod(String a, String b);
@@ -271,11 +271,11 @@ public class ReflectorTest {
   }
 
   private String methodByReflector(SomeClass o) {
-    _SomeClass_ accessor = reflector(_SomeClass_.class, o);
+    SomeClassReflector accessor = reflector(SomeClassReflector.class, o);
     return accessor.someMethod("a", "b");
   }
 
-  private String methodBySavedReflector(_SomeClass_ reflector) {
+  private String methodBySavedReflector(SomeClassReflector reflector) {
     return reflector.someMethod("a", "b");
   }
 
@@ -285,11 +285,11 @@ public class ReflectorTest {
   }
 
   private SomeClass constructorByReflector() {
-    _SomeClass_ accessor = reflector(_SomeClass_.class);
+    SomeClassReflector accessor = reflector(SomeClassReflector.class);
     return accessor.newSomeClass("a");
   }
 
-  private SomeClass constructorBySavedReflector(_SomeClass_ reflector) {
+  private SomeClass constructorBySavedReflector(SomeClassReflector reflector) {
     return reflector.newSomeClass("a");
   }
 
@@ -299,11 +299,11 @@ public class ReflectorTest {
   }
 
   private String fieldByReflector(SomeClass o) {
-    reflector(_SomeClass_.class, o).setC("abc");
-    return reflector(_SomeClass_.class, o).getC();
+    reflector(SomeClassReflector.class, o).setC("abc");
+    return reflector(SomeClassReflector.class, o).getC();
   }
 
-  private String fieldBySavedReflector(_SomeClass_ reflector) {
+  private String fieldBySavedReflector(SomeClassReflector reflector) {
     reflector.setC("abc");
     return reflector.getC();
   }

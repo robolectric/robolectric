@@ -86,7 +86,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     // todo: ShadowPicker doesn't discriminate properly between concrete shadow classes for
     // resetters...
     if (RuntimeEnvironment.getApiLevel() < P) {
-      reflector(_AssetManager_.class).setSystem(null);
+      reflector(AssetManagerReflector.class).setSystem(null);
       // NATIVE_THEME_REGISTRY.clear();
       // nativeXMLParserRegistry.clear(); // todo: shouldn't these be freed explicitly? [yes! xw]
       // NATIVE_ASSET_REGISTRY.clear();
@@ -1384,7 +1384,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   @VisibleForTesting
   @Override
   long getNativePtr() {
-    return reflector(_AssetManager_.class, realObject).getNativePtr();
+    return reflector(AssetManagerReflector.class, realObject).getNativePtr();
   }
 
   @Override

@@ -54,7 +54,7 @@ public class ShadowLocaleData {
           "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         };
 
-    _LocaleData_ localDataReflector = reflector(_LocaleData_.class, localeData);
+    LocaleDataReflector localDataReflector = reflector(LocaleDataReflector.class, localeData);
     localeData.tinyMonthNames =
         new String[] {"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"};
     localeData.tinyStandAloneMonthNames = localeData.tinyMonthNames;
@@ -143,7 +143,7 @@ public class ShadowLocaleData {
 
   /** Accessor interface for {@link LocaleData}'s internals. */
   @ForType(LocaleData.class)
-  interface _LocaleData_ {
+  interface LocaleDataReflector {
 
     @Accessor("minusSign")
     void setMinusSign(char c);

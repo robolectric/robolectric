@@ -285,7 +285,7 @@ public class ShadowEnvironment {
     if (RuntimeEnvironment.getApiLevel() < M) {
       Environment.UserEnvironment userEnvironment =
           ReflectionHelpers.getStaticField(Environment.class, "sCurrentUser");
-      reflector(_UserEnvironment_.class, userEnvironment)
+      reflector(UserEnvironmentReflector.class, userEnvironment)
           .setExternalDirsForApp(externalDirs.toArray(new File[0]));
     }
 
@@ -315,7 +315,7 @@ public class ShadowEnvironment {
 
   /** Accessor interface for Environment.UserEnvironment's internals. */
   @ForType(className = "android.os.Environment$UserEnvironment")
-  interface _UserEnvironment_ {
+  interface UserEnvironmentReflector {
     @Accessor("mExternalDirsForApp")
     void setExternalDirsForApp(File[] files);
 

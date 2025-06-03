@@ -73,12 +73,12 @@ import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ClassNameResolver;
 import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowActivityThread._ActivityThread_;
-import org.robolectric.shadows.ShadowActivityThread._AppBindData_;
+import org.robolectric.shadows.ShadowActivityThread.ActivityThreadReflector;
+import org.robolectric.shadows.ShadowActivityThread.AppBindDataReflector;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
+import org.robolectric.shadows.ShadowContextImpl.ContextImplReflector;
 import org.robolectric.shadows.ShadowInstrumentation;
-import org.robolectric.shadows.ShadowInstrumentation._Instrumentation_;
+import org.robolectric.shadows.ShadowInstrumentation.InstrumentationReflector;
 import org.robolectric.shadows.ShadowLegacyLooper;
 import org.robolectric.shadows.ShadowLoadedApk.LoadedApkReflector;
 import org.robolectric.shadows.ShadowLog;
@@ -261,7 +261,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
   private Supplier<Application> createApplicationSupplier(
       AndroidManifest appManifest, Config config) {
     final ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-    final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
+    final ActivityThreadReflector activityThreadReflector =
+        reflector(ActivityThreadReflector.class, activityThread);
     final ShadowActivityThread shadowActivityThread = Shadow.extract(activityThread);
 
     return Suppliers.memoize(
@@ -274,7 +275,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
                             appManifest,
                             config,
                             shadowActivityThread,
-                            _activityThread_,
+                            activityThreadReflector,
                             activityThread.getInstrumentation())));
   }
 
@@ -282,11 +283,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
       AndroidManifest appManifest,
       Config config,
       ShadowActivityThread shadowActivityThread,
-      _ActivityThread_ activityThreadReflector,
+      ActivityThreadReflector activityThreadReflector,
       Instrumentation androidInstrumentation) {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
 
-    Context systemContextImpl = reflector(_ContextImpl_.class).createSystemContext(activityThread);
+    Context systemContextImpl =
+        reflector(ContextImplReflector.class).createSystemContext(activityThread);
     RuntimeEnvironment.systemContext = systemContextImpl;
 
     Application dummyInitialApplication = new Application();
@@ -342,9 +344,10 @@ public class AndroidTestEnvironment implements TestEnvironment {
       throw new RuntimeException(e);
     }
     final Object appBindData = ReflectionHelpers.callConstructor(appBindDataClass);
-    final _AppBindData_ _appBindData_ = reflector(_AppBindData_.class, appBindData);
-    _appBindData_.setProcessName(parsedPackage.packageName);
-    _appBindData_.setAppInfo(applicationInfo);
+    final AppBindDataReflector appBindDataReflector =
+        reflector(AppBindDataReflector.class, appBindData);
+    appBindDataReflector.setProcessName(parsedPackage.packageName);
+    appBindDataReflector.setAppInfo(applicationInfo);
     activityThreadReflector.setBoundApplication(appBindData);
 
     final LoadedApk loadedApk =
@@ -352,15 +355,16 @@ public class AndroidTestEnvironment implements TestEnvironment {
     final LoadedApkReflector loadedApkReflector = reflector(LoadedApkReflector.class, loadedApk);
 
     Context contextImpl =
-        reflector(_ContextImpl_.class).createAppContext(activityThread, loadedApk);
+        reflector(ContextImplReflector.class).createAppContext(activityThread, loadedApk);
     ShadowPackageManager shadowPackageManager = Shadow.extract(contextImpl.getPackageManager());
     shadowPackageManager.addPackageInternal(parsedPackage);
     activityThreadReflector.setInitialApplication(application);
     ShadowApplication shadowApplication = Shadow.extract(application);
     shadowApplication.callAttach(contextImpl);
-    reflector(_ContextImpl_.class, contextImpl).setOuterContext(application);
+    reflector(ContextImplReflector.class, contextImpl).setOuterContext(application);
     if (apiLevel >= VERSION_CODES.O) {
-      reflector(_ContextImpl_.class, contextImpl).setClassLoader(this.getClass().getClassLoader());
+      reflector(ContextImplReflector.class, contextImpl)
+          .setClassLoader(this.getClass().getClassLoader());
     }
 
     Resources appResources = application.getResources();
@@ -511,14 +515,14 @@ public class AndroidTestEnvironment implements TestEnvironment {
           ActivityThread activityThread = ReflectionHelpers.callConstructor(ActivityThread.class);
           ReflectionHelpers.setStaticField(
               ActivityThread.class, "sMainThreadHandler", new Handler(Looper.getMainLooper()));
-          reflector(_ActivityThread_.class, activityThread)
+          reflector(ActivityThreadReflector.class, activityThread)
               .setInstrumentation(androidInstrumentation);
           RuntimeEnvironment.setActivityThread(activityThread);
 
           Application dummyInitialApplication = new Application();
           final ComponentName dummyInitialComponent =
               new ComponentName("", androidInstrumentation.getClass().getSimpleName());
-          reflector(_Instrumentation_.class, androidInstrumentation)
+          reflector(InstrumentationReflector.class, androidInstrumentation)
               .init(
                   activityThread,
                   dummyInitialApplication,

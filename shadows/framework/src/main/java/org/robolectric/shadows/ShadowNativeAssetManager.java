@@ -20,7 +20,6 @@ import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.V;
 
@@ -131,20 +130,6 @@ public class ShadowNativeAssetManager extends ShadowAssetManager {
                     ClassParameter.from(short.class, density),
                     ClassParameter.from(TypedValue.class, typed_value),
                     ClassParameter.from(boolean.class, resolve_references)));
-  }
-
-  @ForType(AssetManager.class)
-  interface AssetManagerReflector {
-    @Accessor("mObject")
-    long getObject();
-
-    void ensureValidLocked();
-
-    @Direct
-    InputStream open(String fileName, int accessMode);
-
-    @Direct
-    InputStream openNonAsset(int cookie, String fileName, int accessMode);
   }
 
   @ForType(XmlBlock.Parser.class)

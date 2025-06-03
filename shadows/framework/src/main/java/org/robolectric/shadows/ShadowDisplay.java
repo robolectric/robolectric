@@ -53,7 +53,7 @@ public class ShadowDisplay {
   @Deprecated
   @Implementation
   protected void getMetrics(DisplayMetrics outMetrics) {
-    reflector(_Display_.class, realObject).getMetrics(outMetrics);
+    reflector(DisplayReflector.class, realObject).getMetrics(outMetrics);
     if (scaledDensity != null) {
       outMetrics.scaledDensity = scaledDensity;
     }
@@ -68,7 +68,7 @@ public class ShadowDisplay {
   @Deprecated
   @Implementation
   protected void getRealMetrics(DisplayMetrics outMetrics) {
-    reflector(_Display_.class, realObject).getRealMetrics(outMetrics);
+    reflector(DisplayReflector.class, realObject).getRealMetrics(outMetrics);
     if (scaledDensity != null) {
       outMetrics.scaledDensity = scaledDensity;
     }
@@ -95,7 +95,7 @@ public class ShadowDisplay {
     if (refreshRate != null) {
       return refreshRate;
     }
-    float realRefreshRate = reflector(_Display_.class, realObject).getRefreshRate();
+    float realRefreshRate = reflector(DisplayReflector.class, realObject).getRefreshRate();
     // refresh rate may be set by native code. if its 0, set to 60fps
     if (realRefreshRate < 0.1) {
       realRefreshRate = 60;
@@ -161,7 +161,7 @@ public class ShadowDisplay {
    * notified of the change.
    */
   public void setFlags(int flags) {
-    reflector(_Display_.class, realObject).setFlags(flags);
+    reflector(DisplayReflector.class, realObject).setFlags(flags);
 
     ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.flags = flags);
   }
@@ -312,7 +312,7 @@ public class ShadowDisplay {
 
   /** Reflector interface for {@link Display}'s internals. */
   @ForType(Display.class)
-  interface _Display_ {
+  interface DisplayReflector {
     @Direct
     void getMetrics(DisplayMetrics outMetrics);
 

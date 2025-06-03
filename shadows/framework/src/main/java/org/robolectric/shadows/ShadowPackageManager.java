@@ -111,7 +111,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadows.ShadowPackageParser._PackageParser_;
+import org.robolectric.shadows.ShadowPackageParser.PackageParserReflector;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -1440,7 +1440,7 @@ public class ShadowPackageManager {
           FrameworkPackageUserState.DEFAULT,
           0);
     } else {
-      return reflector(_PackageParser_.class)
+      return reflector(PackageParserReflector.class)
           .generatePackageInfo(appPackage, new int[] {0}, flags, 0, 0);
     }
   }
