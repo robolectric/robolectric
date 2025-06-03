@@ -131,6 +131,9 @@ play-services-basement = "18.0.1"
 # https://github.com/google/TestParameterInjector/tags
 test-parameter-injector = "1.18"
 
+# https://plugins.gradle.org/plugin/com.gradle.plugin-publish
+gradle-plugin-publish = "1.3.1"
+
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
 android-gradle-api = { module = "com.android.tools.build:gradle-api", version.ref = "android-gradle" }
@@ -264,6 +267,7 @@ application = { id = "application" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt-gradle" }
 error-prone = { id = "net.ltgt.errorprone", version.ref = "error-prone-gradle" }
 idea = { id = "idea" }
+gradle-plugin-publish = { id = "com.gradle.plugin-publish", version.ref = "gradle-plugin-publish" }
 jacoco = { id = "jacoco" }
 java = { id = "java" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
