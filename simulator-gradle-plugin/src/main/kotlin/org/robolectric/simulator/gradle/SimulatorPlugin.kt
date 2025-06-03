@@ -8,13 +8,8 @@ import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.getByName
 import org.robolectric.simulator.SimulatorMain
-import org.robolectric.simulator.gradle.generated.Version
 
-/**
- * The plugin to use Robolectric's simulator.
- *
- * @see Plugin
- */
+/** A plugin to launch the Robolectric simulator. */
 class SimulatorPlugin : Plugin<Project> {
   override fun apply(project: Project) {
     val androidExtension = getAndroidExtension(project)
@@ -34,6 +29,18 @@ class SimulatorPlugin : Plugin<Project> {
   private fun getAndroidExtension(project: Project) =
     project.extensions.findByType(AppExtension::class.java)
 
+  /** Checks if a version string is at least 4.15, when the simulator was introduced. */
+  private fun supportsSimulator(currentVersion: String): Boolean {
+    val currentNumericPart = currentVersion.split('-')[0]
+
+    val currentParts = currentNumericPart.split('.').mapNotNull { it.toIntOrNull() }
+
+    val major = currentParts.getOrElse(0) { 0 }
+    val minor = currentParts.getOrElse(1) { 0 }
+
+    return (major >= 4 && minor >= 15)
+  }
+
   private fun configureTask(project: Project, task: JavaExec) {
     // Find the 'apk-for-local-test.ap_' file
     val targetTask = project.tasks.getByName("packageDebugUnitTestForUnitTest")
@@ -45,12 +52,27 @@ class SimulatorPlugin : Plugin<Project> {
     val testTaskName = "testDebugUnitTest"
     val testTask = project.tasks.getByName<Test>(testTaskName)
 
-    val simulator =
-      project.configurations
-        .detachedConfiguration(
-          project.dependencies.create("org.robolectric:simulator:${Version.VERSION}")
-        )
-        .resolve()
+    val robolectricDependencies =
+      project.configurations.getByName("testImplementation").allDependencies.filter {
+        it.group == "org.robolectric"
+      }
+    check(robolectricDependencies.isNotEmpty()) {
+      "Missing Robolectric dependency in the 'testImplementation' configuration."
+    }
+
+    if (robolectricDependencies.none { it.name == "simulator" }) {
+      val robolectricVersion =
+        robolectricDependencies.maxBy { it.version.orEmpty() }.version.orEmpty()
+
+      check(supportsSimulator(robolectricVersion)) {
+        "Robolectric 4.15 or above is required for the simulator"
+      }
+
+      project.dependencies.add(
+        "testImplementation",
+        "org.robolectric:simulator:$robolectricVersion",
+      )
+    }
 
     val robolectricJvmArgs =
       listOf(
@@ -61,7 +83,7 @@ class SimulatorPlugin : Plugin<Project> {
       )
 
     task.apply {
-      classpath = testTask.classpath + project.files(simulator)
+      classpath = testTask.classpath
       jvmArgs = testTask.jvmArgs + robolectricJvmArgs
       mainClass.set(SimulatorMain::class.qualifiedName)
       args = listOf(resourceApkFile.absolutePath)
