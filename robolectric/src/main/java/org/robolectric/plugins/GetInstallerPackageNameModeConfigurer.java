@@ -57,8 +57,7 @@ public class GetInstallerPackageNameModeConfigurer
     return childConfig;
   }
 
-  private static GetInstallerPackageNameMode.Mode valueFrom(
-      GetInstallerPackageNameMode looperMode) {
-    return looperMode == null ? null : looperMode.value();
+  private static GetInstallerPackageNameMode.Mode valueFrom(GetInstallerPackageNameMode mode) {
+    return mode == null ? null : mode.value();
   }
 }
