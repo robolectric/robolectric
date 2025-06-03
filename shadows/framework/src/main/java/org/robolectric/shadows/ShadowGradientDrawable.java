@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.content.res.ColorStateList;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import org.robolectric.annotation.Implementation;
@@ -17,7 +18,9 @@ public class ShadowGradientDrawable extends ShadowDrawable {
 
   private int color;
   private int shape;
-  private int strokeColor;
+  private ColorStateList strokeColorStateList;
+  private float strokeDashWidth;
+  private float strokeDashGap;
   private int strokeWidth;
 
   @Implementation
@@ -33,9 +36,30 @@ public class ShadowGradientDrawable extends ShadowDrawable {
   }
 
   @Implementation
+  protected void setStroke(int width, ColorStateList colorStateList) {
+    setStrokeInternal(width, colorStateList, 0f, 0f);
+    reflector(GradientDrawableReflector.class, realGradientDrawable)
+        .setStroke(width, colorStateList);
+  }
+
+  @Implementation
+  protected void setStroke(
+      int width, ColorStateList colorStateList, float dashWidth, float dashGap) {
+    setStrokeInternal(width, colorStateList, dashWidth, dashGap);
+    reflector(GradientDrawableReflector.class, realGradientDrawable)
+        .setStroke(width, colorStateList, dashWidth, dashGap);
+  }
+
+  @Implementation
+  protected void setStroke(int width, int color, float dashWidth, float dashGap) {
+    setStrokeInternal(width, ColorStateList.valueOf(color), dashWidth, dashGap);
+    reflector(GradientDrawableReflector.class, realGradientDrawable)
+        .setStroke(width, color, dashWidth, dashGap);
+  }
+
+  @Implementation
   protected void setStroke(int width, int color) {
-    this.strokeWidth = width;
-    this.strokeColor = color;
+    setStrokeInternal(width, ColorStateList.valueOf(color), 0f, 0f);
     reflector(GradientDrawableReflector.class, realGradientDrawable).setStroke(width, color);
   }
 
@@ -63,7 +87,27 @@ public class ShadowGradientDrawable extends ShadowDrawable {
   }
 
   public int getStrokeColor() {
-    return strokeColor;
+    return strokeColorStateList != null ? strokeColorStateList.getDefaultColor() : 0;
+  }
+
+  public ColorStateList getStrokeColorStateList() {
+    return strokeColorStateList;
+  }
+
+  public float getStrokeDashWidth() {
+    return strokeDashWidth;
+  }
+
+  public float getStrokeDashGap() {
+    return strokeDashGap;
+  }
+
+  private void setStrokeInternal(
+      int width, ColorStateList colorStateList, float dashWidth, float dashGap) {
+    this.strokeWidth = width;
+    this.strokeColorStateList = colorStateList;
+    this.strokeDashWidth = dashWidth;
+    this.strokeDashGap = dashGap;
   }
 
   @ForType(GradientDrawable.class)
@@ -77,6 +121,15 @@ public class ShadowGradientDrawable extends ShadowDrawable {
 
     @Direct
     void setShape(int shape);
+
+    @Direct
+    void setStroke(int width, ColorStateList colorStateList);
+
+    @Direct
+    void setStroke(int width, ColorStateList colorStateList, float dashWidth, float dashGap);
+
+    @Direct
+    void setStroke(int width, int color, float dashWidth, float dashGap);
 
     @Direct
     void setStroke(int width, int color);
