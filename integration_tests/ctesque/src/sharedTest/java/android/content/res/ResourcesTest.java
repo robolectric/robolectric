@@ -36,6 +36,7 @@ import android.graphics.drawable.NinePatchDrawable;
 import android.graphics.fonts.Font;
 import android.graphics.fonts.FontFamily;
 import android.os.Build;
+import android.text.SpannedString;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.util.Xml;
@@ -137,9 +138,7 @@ public class ResourcesTest {
   @Test
   public void getText_withHtml() {
     assertThat(resources.getText(R.string.some_html, "value").toString()).isEqualTo("Hello, world");
-    // TODO: Raw resources have lost the tags early, but the following call should return a
-    // SpannedString
-    // assertThat(resources.getText(R.string.some_html)).isInstanceOf(SpannedString.class);
+    assertThat(resources.getText(R.string.some_html)).isInstanceOf(SpannedString.class);
   }
 
   @Test
