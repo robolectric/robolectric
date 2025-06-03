@@ -285,6 +285,19 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void testClearPassword_shouldRemovePassword() {
+    Account account = new Account("name", "type");
+    boolean accountAdded = am.addAccountExplicitly(account, "passwd1", null);
+
+    assertThat(accountAdded).isTrue();
+    assertThat(am.getPassword(account)).isEqualTo("passwd1");
+
+    am.clearPassword(account);
+
+    assertThat(am.getPassword(account)).isNull();
+  }
+
+  @Test
   public void testBlockingGetAuthToken()
       throws AuthenticatorException, OperationCanceledException, IOException {
     Account account = new Account("name", "type");
