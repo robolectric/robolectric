@@ -185,7 +185,7 @@ okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp
 
 powermock-module-junit4-rule = { module = "org.powermock:powermock-module-junit4-rule", version.ref = "powermock" }
 powermock-api-mockito2 = { module = "org.powermock:powermock-api-mockito2", version.ref = "powermock" }
-powermock-classloading-xstream = { module = "org.powermock:powermock-classloading-xstream", version.ref = "powermock" }
+powermock-classloading-objenesis = { module = "org.powermock:powermock-classloading-objenesis", version.ref = "powermock" }
 
 robolectric-nativeruntime-dist-compat = { module = "org.robolectric:nativeruntime-dist-compat", version.ref = "robolectric-nativeruntime-dist-compat" }
 
@@ -255,7 +255,7 @@ jacoco-agent = { module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco" 
 
 [bundles]
 play-services-for-shadows = ["androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows"]
-powermock = ["powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-xstream"]
+powermock = ["powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-objenesis"]
 sqlite4java-native = ["sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86"]
 
 [plugins]
