@@ -6,6 +6,10 @@ plugins {
   signing
 }
 
+// The simulator gradle plugin is versioned separately from the Robolectric library. It is
+// indifferent to the Robolectric version and doesn't need to be updated each Robolectric release.
+version = "1.0-SNAPSHOT"
+
 gradlePlugin {
   website.set("https://robolectric.org/simulator")
   vcsUrl.set("https://github.com/robolectric/robolectric")
