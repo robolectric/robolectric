@@ -329,6 +329,12 @@ public class ShadowUiModeManagerTest {
     assertThrows(IllegalArgumentException.class, () -> shadowUiModeManager.setContrast(-1.1f));
   }
 
+  @Test
+  public void testLegacyNameChange() {
+    assertThat(shadowUiModeManager).isInstanceOf(ShadowUiModeManager.class);
+    assertThat(shadowUiModeManager).isInstanceOf(ShadowUIModeManager.class);
+  }
+
   private void setPermissions(String... permissions) {
     PackageInfo pi = new PackageInfo();
     pi.packageName = context.getPackageName();
