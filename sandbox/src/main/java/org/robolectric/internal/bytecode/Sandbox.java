@@ -22,7 +22,6 @@ public class Sandbox {
   private final SandboxClassLoader sandboxClassLoader;
   private final ExecutorService executorService;
   private ShadowInvalidator shadowInvalidator;
-  public ClassHandler classHandler; // todo not public
   private ShadowMap shadowMap = ShadowMap.EMPTY;
 
   public Sandbox(
@@ -78,8 +77,6 @@ public class Sandbox {
   protected void clearModeInvalidatedClasses() {}
 
   public void configure(ClassHandler classHandler, Interceptors interceptors) {
-    this.classHandler = classHandler;
-
     ClassLoader robolectricClassLoader = getRobolectricClassLoader();
     Class<?> robolectricInternalsClass = bootstrappedClass(RobolectricInternals.class);
     ShadowInvalidator invalidator = getShadowInvalidator();
