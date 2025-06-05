@@ -19,6 +19,7 @@ package org.robolectric.shadows;
 import android.util.TypedValue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.robolectric.manifest.MetaData;
 import org.robolectric.util.Logger;
 
 /** Helper class to provide various conversion method used in handling android resources. */
@@ -47,49 +48,7 @@ public final class ResourceHelper {
    * @throws NumberFormatException if the conversion failed.
    */
   public static int getColor(String value) {
-    if (value != null) {
-      if (!value.startsWith("#")) {
-        throw new NumberFormatException(String.format("Color value '%s' must start with #", value));
-      }
-
-      value = value.substring(1);
-
-      // make sure it's not longer than 32bit
-      if (value.length() > 8) {
-        throw new NumberFormatException(
-            String.format(
-                "Color value '%s' is too long. Format is either"
-                    + "#AARRGGBB, #RRGGBB, #RGB, or #ARGB",
-                value));
-      }
-
-      if (value.length() == 3) { // RGB format
-        char[] color = new char[8];
-        color[0] = color[1] = 'F';
-        color[2] = color[3] = value.charAt(0);
-        color[4] = color[5] = value.charAt(1);
-        color[6] = color[7] = value.charAt(2);
-        value = new String(color);
-      } else if (value.length() == 4) { // ARGB format
-        char[] color = new char[8];
-        color[0] = color[1] = value.charAt(0);
-        color[2] = color[3] = value.charAt(1);
-        color[4] = color[5] = value.charAt(2);
-        color[6] = color[7] = value.charAt(3);
-        value = new String(color);
-      } else if (value.length() == 6) {
-        value = "FF" + value;
-      }
-
-      // this is a RRGGBB or AARRGGBB value
-
-      // Integer.parseInt will fail to inferFromValue strings like "ff191919", so we use
-      // a Long, but cast the result back into an int, since we know that we're only
-      // dealing with 32 bit values.
-      return (int) Long.parseLong(value, 16);
-    }
-
-    throw new NumberFormatException();
+    return MetaData.getColor(value);
   }
 
   /**

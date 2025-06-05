@@ -116,7 +116,6 @@ public final class MetaData {
     return value;
   }
 
-  // todo: this is copied from ResourceHelper, dedupe
   /**
    * Returns the color value represented by the given string value
    *
@@ -136,8 +135,7 @@ public final class MetaData {
       if (value.length() > 8) {
         throw new NumberFormatException(
             String.format(
-                "Color value '%s' is too long. Format is either"
-                    + "#AARRGGBB, #RRGGBB, #RGB, or #ARGB",
+                "Color value '%s' is too long. Format is either #AARRGGBB, #RRGGBB, #RGB, or #ARGB",
                 value));
       }
 
@@ -167,6 +165,6 @@ public final class MetaData {
       return (int) Long.parseLong(value, 16);
     }
 
-    throw new NumberFormatException();
+    throw new NumberFormatException("Color value cannot be null");
   }
 }
