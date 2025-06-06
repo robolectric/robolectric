@@ -92,7 +92,6 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
           ClassParameter.from(SparseIntArray.class, null));
     } else {
       return new WindowInsets.Builder()
-          .setAlwaysConsumeSystemBars(alwaysConsumeSystemBars)
           .setRound(isScreenRound)
           .setSystemWindowInsets(Insets.of(systemWindowInsets))
           .setStableInsets(Insets.of(stableInsets))
