@@ -34,14 +34,9 @@ import org.robolectric.util.reflector.Static;
 import org.robolectric.util.reflector.WithType;
 import org.robolectric.versioning.AndroidVersions.V;
 
-/**
- * Shadow for {@link UiModeManager}.
- *
- * @deprecated This class is misspelled. Update references to use {@link ShadowUiModeManager}.
- */
+/** Shadow for {@link UiModeManager}. */
 @Implements(UiModeManager.class)
-@Deprecated
-public class ShadowUIModeManager extends ShadowUiModeManager {
+public class ShadowUIModeManager {
   private static final int DEFAULT_PRIORITY = 0;
 
   private int currentModeType = Configuration.UI_MODE_TYPE_UNDEFINED;
@@ -71,7 +66,6 @@ public class ShadowUIModeManager extends ShadowUiModeManager {
     return currentModeType;
   }
 
-  @Override
   public void setCurrentModeType(int modeType) {
     this.currentModeType = modeType;
   }
@@ -102,7 +96,6 @@ public class ShadowUIModeManager extends ShadowUiModeManager {
    *
    * @return The tracked last set car mode priority.
    */
-  @Override
   public int getLastCarModePriority() {
     return lastCarModePriority;
   }
@@ -116,7 +109,6 @@ public class ShadowUIModeManager extends ShadowUiModeManager {
    *
    * @return The tracked last set flags.
    */
-  @Override
   public int getLastFlags() {
     return lastFlags;
   }
@@ -164,17 +156,14 @@ public class ShadowUIModeManager extends ShadowUiModeManager {
     return activeProjectionTypes.getOrDefault(projectionType, new HashSet<>());
   }
 
-  @Override
   public int getApplicationNightMode() {
     return currentApplicationNightMode;
   }
 
-  @Override
   public Set<Integer> getActiveProjectionTypes() {
     return new HashSet<>(activeProjectionTypes.keySet());
   }
 
-  @Override
   public void setFailOnProjectionToggle(boolean failOnProjectionToggle) {
     this.failOnProjectionToggle = failOnProjectionToggle;
   }
@@ -233,7 +222,6 @@ public class ShadowUIModeManager extends ShadowUiModeManager {
   }
 
   /** Returns whether night mode is currently on when a custom night mode type is selected. */
-  @Override
   public boolean isNightModeOn() {
     synchronized (lock) {
       return isNightModeOn;
@@ -292,7 +280,6 @@ public class ShadowUIModeManager extends ShadowUiModeManager {
    * <p>The default value for contrast is 0.0f. The permitted values are between -1.0f and 1.0f
    * inclusive.
    */
-  @Override
   public void setContrast(float contrast) {
     checkArgument(
         contrast >= -1.0f && contrast <= 1.0f,
