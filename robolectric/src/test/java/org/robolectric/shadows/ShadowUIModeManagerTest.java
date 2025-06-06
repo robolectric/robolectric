@@ -21,40 +21,41 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
-/** Tests for {@link ShadowUiModeManager}. */
+/** Tests for {@link ShadowUIModeManager}. */
 @RunWith(AndroidJUnit4.class)
-public class ShadowUiModeManagerTest {
+public class ShadowUIModeManagerTest {
   private Context context;
   private UiModeManager uiModeManager;
-  private ShadowUiModeManager shadowUiModeManager;
+  private ShadowUIModeManager shadowUiModeManager;
 
   @Before
   public void setUp() {
     context = ApplicationProvider.getApplicationContext();
     uiModeManager = (UiModeManager) context.getSystemService(Context.UI_MODE_SERVICE);
-    shadowUiModeManager = shadowOf(uiModeManager);
+    shadowUiModeManager = Shadow.extract(uiModeManager);
   }
 
   @Test
   @Config(minSdk = M)
   public void testModeSwitch() {
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_UNDEFINED);
-    assertThat(shadowUiModeManager.getLastFlags()).isEqualTo(0);
+    assertThat(shadowOf(uiModeManager).getLastFlags()).isEqualTo(0);
 
     uiModeManager.enableCarMode(1);
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_CAR);
-    assertThat(shadowUiModeManager.getLastFlags()).isEqualTo(1);
+    assertThat(shadowOf(uiModeManager).getLastFlags()).isEqualTo(1);
 
     uiModeManager.disableCarMode(2);
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_NORMAL);
-    assertThat(shadowUiModeManager.getLastFlags()).isEqualTo(2);
+    assertThat(shadowOf(uiModeManager).getLastFlags()).isEqualTo(2);
   }
 
   @Test
   public void testModeType() {
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_UNDEFINED);
-    shadowUiModeManager.setCurrentModeType(Configuration.UI_MODE_TYPE_DESK);
+    shadowOf(uiModeManager).setCurrentModeType(Configuration.UI_MODE_TYPE_DESK);
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_DESK);
   }
 
@@ -65,8 +66,8 @@ public class ShadowUiModeManagerTest {
     int flags = 1;
     uiModeManager.enableCarMode(priority, flags);
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_CAR);
-    assertThat(shadowUiModeManager.getLastCarModePriority()).isEqualTo(priority);
-    assertThat(shadowUiModeManager.getLastFlags()).isEqualTo(flags);
+    assertThat(shadowOf(uiModeManager).getLastCarModePriority()).isEqualTo(priority);
+    assertThat(shadowOf(uiModeManager).getLastFlags()).isEqualTo(flags);
   }
 
   private static final int INVALID_NIGHT_MODE = -4242;
@@ -144,7 +145,7 @@ public class ShadowUiModeManagerTest {
 
   @Test
   public void getDefaultIsNightModeOn_shouldBeFalse() {
-    assertThat(shadowUiModeManager.isNightModeOn()).isFalse();
+    assertThat(((ShadowUIModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isFalse();
   }
 
   @Config(minSdk = TIRAMISU)
@@ -176,7 +177,7 @@ public class ShadowUiModeManagerTest {
             uiModeManager.setNightModeActivatedForCustomMode(
                 UiModeManager.MODE_NIGHT_CUSTOM_TYPE_BEDTIME, true))
         .isTrue();
-    assertThat(shadowUiModeManager.isNightModeOn()).isTrue();
+    assertThat(((ShadowUIModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isTrue();
   }
 
   @Config(minSdk = TIRAMISU)
@@ -189,7 +190,7 @@ public class ShadowUiModeManagerTest {
             uiModeManager.setNightModeActivatedForCustomMode(
                 UiModeManager.MODE_NIGHT_CUSTOM_TYPE_BEDTIME, false))
         .isTrue();
-    assertThat(shadowUiModeManager.isNightModeOn()).isFalse();
+    assertThat(((ShadowUIModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isFalse();
   }
 
   @Config(minSdk = TIRAMISU)
@@ -198,7 +199,7 @@ public class ShadowUiModeManagerTest {
     uiModeManager.setNightModeCustomType(UiModeManager.MODE_NIGHT_CUSTOM_TYPE_BEDTIME);
 
     assertThat(uiModeManager.setNightModeActivatedForCustomMode(123, true)).isFalse();
-    assertThat(shadowUiModeManager.isNightModeOn()).isFalse();
+    assertThat(((ShadowUIModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isFalse();
   }
 
   @Config(minSdk = TIRAMISU)
@@ -210,7 +211,7 @@ public class ShadowUiModeManagerTest {
             uiModeManager.setNightModeActivatedForCustomMode(
                 UiModeManager.MODE_NIGHT_CUSTOM_TYPE_SCHEDULE, true))
         .isFalse();
-    assertThat(shadowUiModeManager.isNightModeOn()).isFalse();
+    assertThat(((ShadowUIModeManager) Shadow.extract(uiModeManager)).isNightModeOn()).isFalse();
   }
 
   @Config(minSdk = TIRAMISU)
@@ -311,7 +312,7 @@ public class ShadowUiModeManagerTest {
   public void setContrast_whenSet_valueIsReturnedByGetContrast() {
     float expectedContrast = -0.16f;
 
-    shadowUiModeManager.setContrast(expectedContrast);
+    shadowOf(uiModeManager).setContrast(expectedContrast);
 
     float actualContrast = uiModeManager.getContrast();
     assertThat(actualContrast).isEqualTo(expectedContrast);
@@ -320,13 +321,13 @@ public class ShadowUiModeManagerTest {
   @Test
   @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void setContrast_whenCalledWithValueAboveOne_throws() {
-    assertThrows(IllegalArgumentException.class, () -> shadowUiModeManager.setContrast(1.1f));
+    assertThrows(IllegalArgumentException.class, () -> shadowOf(uiModeManager).setContrast(1.1f));
   }
 
   @Test
   @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void setContrast_whenCalledWithValueBelowMinusOne_throws() {
-    assertThrows(IllegalArgumentException.class, () -> shadowUiModeManager.setContrast(-1.1f));
+    assertThrows(IllegalArgumentException.class, () -> shadowOf(uiModeManager).setContrast(-1.1f));
   }
 
   private void setPermissions(String... permissions) {
@@ -334,6 +335,6 @@ public class ShadowUiModeManagerTest {
     pi.packageName = context.getPackageName();
     pi.versionCode = 1;
     pi.requestedPermissions = permissions;
-    shadowOf(context.getPackageManager()).installPackage(pi);
+    ((ShadowPackageManager) Shadow.extract(context.getPackageManager())).installPackage(pi);
   }
 }
