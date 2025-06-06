@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
@@ -456,15 +457,24 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void testAccountsUpdateListener_nullListener() {
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> am.addOnAccountsUpdatedListener(null, null, false));
+    assertThat(exception).hasMessageThat().isEqualTo("the listener is null");
+  }
+
+  @Test
   public void testAccountsUpdateListener_duplicate() {
     TestOnAccountsUpdateListener listener = new TestOnAccountsUpdateListener();
     am.addOnAccountsUpdatedListener(listener, null, false);
-    am.addOnAccountsUpdatedListener(listener, null, false);
-    assertThat(listener.getInvocationCount()).isEqualTo(0);
 
-    Account account = new Account("name", "type");
-    shadowOf(am).addAccount(account);
-    assertThat(listener.getInvocationCount()).isEqualTo(1);
+    IllegalStateException exception =
+        assertThrows(
+            IllegalStateException.class,
+            () -> am.addOnAccountsUpdatedListener(listener, null, false));
+    assertThat(exception).hasMessageThat().isEqualTo("this listener is already added");
   }
 
   @Test
