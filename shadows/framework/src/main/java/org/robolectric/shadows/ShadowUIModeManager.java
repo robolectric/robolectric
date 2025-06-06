@@ -39,7 +39,12 @@ import org.robolectric.versioning.AndroidVersions.V;
 public class ShadowUIModeManager {
   private static final int DEFAULT_PRIORITY = 0;
 
-  private int currentModeType = Configuration.UI_MODE_TYPE_UNDEFINED;
+  /**
+   * @deprecated Use {@link #setCurrentModeType(int)} or {@link UiModeManager#getCurrentModeType()}
+   *     instead.
+   */
+  @Deprecated public int currentModeType = Configuration.UI_MODE_TYPE_UNDEFINED;
+
   private int currentNightMode = UiModeManager.MODE_NIGHT_AUTO;
   private int lastFlags;
   private int lastCarModePriority;
