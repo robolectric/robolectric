@@ -6,6 +6,8 @@ plugins {
   signing
 }
 
+version = "1.0-SNAPSHOT"
+
 gradlePlugin {
   website.set("https://robolectric.org/simulator")
   vcsUrl.set("https://github.com/robolectric/robolectric")
@@ -29,5 +31,4 @@ afterEvaluate {
 dependencies {
   compileOnly(libs.android.gradle)
   implementation(libs.kotlin.stdlib)
-  implementation(project(":simulator"))
 }
