@@ -7,10 +7,16 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.getByName
-import org.robolectric.simulator.SimulatorMain
 
 /** A plugin to launch the Robolectric simulator. */
 class SimulatorPlugin : Plugin<Project> {
+
+  private companion object {
+    // Use a constant to avoid a heavy and unnecessary dependency on Robolectric
+    private const val MAIN_CLASS = "org.robolectric.simulator.SimulatorMain"
+    private val REQUIRED_VERSION = intArrayOf(4, 15)
+  }
+
   override fun apply(project: Project) {
     val androidExtension = getAndroidExtension(project)
     if (androidExtension == null) {
@@ -38,7 +44,7 @@ class SimulatorPlugin : Plugin<Project> {
     val major = currentParts.getOrElse(0) { 0 }
     val minor = currentParts.getOrElse(1) { 0 }
 
-    return (major >= 4 && minor >= 15)
+    return (major >= REQUIRED_VERSION[0] && minor >= REQUIRED_VERSION[1])
   }
 
   private fun configureTask(project: Project, task: JavaExec) {
@@ -85,7 +91,7 @@ class SimulatorPlugin : Plugin<Project> {
     task.apply {
       classpath = testTask.classpath
       jvmArgs = testTask.jvmArgs + robolectricJvmArgs
-      mainClass.set(SimulatorMain::class.qualifiedName)
+      mainClass.set(MAIN_CLASS)
       args = listOf(resourceApkFile.absolutePath)
       dependsOn(testTaskName, "assembleDebug")
       standardOutput = System.out
