@@ -5,6 +5,7 @@ import android.content.res.AssetManager;
 import android.util.ArraySet;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Ordering;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
@@ -95,7 +96,7 @@ public abstract class ShadowAssetManager {
 
   /** Accessor interface for {@link AssetManager}'s internals. */
   @ForType(AssetManager.class)
-  interface _AssetManager_ {
+  interface AssetManagerReflector {
     @Direct
     @Static
     AssetManager getSystem();
@@ -106,11 +107,29 @@ public abstract class ShadowAssetManager {
 
     @Accessor("mObject")
     long getNativePtr();
+
+    @Static
+    @Direct
+    void createSystemAssetsInZygoteLocked();
+
+    @Direct
+    void releaseTheme(long ptr);
+
+    @Accessor("mObject")
+    long getObject();
+
+    void ensureValidLocked();
+
+    @Direct
+    InputStream open(String fileName, int accessMode);
+
+    @Direct
+    InputStream openNonAsset(int cookie, String fileName, int accessMode);
   }
 
   /** Accessor interface for {@link AssetManager}'s internals added in API level 28. */
   @ForType(AssetManager.class)
-  interface _AssetManager28_ extends _AssetManager_ {
+  interface AssetManager28Reflector extends AssetManagerReflector {
 
     @Static
     @Accessor("sSystemApkAssets")

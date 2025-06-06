@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.input.VirtualKeyEvent.ACTION_DOWN;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -340,10 +341,7 @@ public class ShadowVirtualDeviceManagerTest {
 
     VirtualDisplay virtualDisplay =
         virtualDevice.createVirtualDisplay(
-            new VirtualDisplayConfig.Builder("name", DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_DPI)
-                .setSurface(surface)
-                .setFlags(123)
-                .build(),
+            getVirtualDisplayConfig("name", surface, /* flags= */ 123),
             MoreExecutors.directExecutor(),
             mockDisplayCallback);
 
@@ -361,6 +359,43 @@ public class ShadowVirtualDeviceManagerTest {
     assertThat(virtualDisplay.getDisplay().getDisplayId()).isNotEqualTo(Display.DEFAULT_DISPLAY);
     assertThat(virtualDisplay.getDisplay().getName()).isEqualTo("name");
     assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(123);
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testGetVirtualDisplayIds() {
+    String virtualDeviceName = "foo";
+    VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName(virtualDeviceName).build());
+
+    Surface surface = new Surface(new SurfaceTexture(0));
+
+    VirtualDisplay firstVirtualDisplay =
+        virtualDevice.createVirtualDisplay(
+            getVirtualDisplayConfig("firstName", surface, /* flags= */ 123),
+            MoreExecutors.directExecutor(),
+            mockDisplayCallback);
+
+    VirtualDisplay secondVirtualDisplay =
+        virtualDevice.createVirtualDisplay(
+            getVirtualDisplayConfig("secondName", surface, /* flags= */ 123),
+            MoreExecutors.directExecutor(),
+            mockDisplayCallback);
+
+    android.companion.virtual.VirtualDevice filteredVirtualDevice =
+        virtualDeviceManager.getVirtualDevices().stream()
+            .filter(device -> device.getName().equals(virtualDeviceName))
+            .findFirst()
+            .get();
+
+    assertThat(filteredVirtualDevice.getDisplayIds())
+        .asList()
+        .containsExactly(
+            firstVirtualDisplay.getDisplay().getDisplayId(),
+            secondVirtualDisplay.getDisplay().getDisplayId());
+    assertThat(firstVirtualDisplay.getDisplay().getDisplayId())
+        .isNotEqualTo(secondVirtualDisplay.getDisplay().getDisplayId());
   }
 
   @Test
@@ -385,5 +420,12 @@ public class ShadowVirtualDeviceManagerTest {
       assertThat(activityVirtualDevices).isNotNull();
       assertThat(activityVirtualDevices).isEqualTo(applicationVirtualDevices);
     }
+  }
+
+  private VirtualDisplayConfig getVirtualDisplayConfig(String name, Surface surface, int flags) {
+    return new VirtualDisplayConfig.Builder(name, DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_DPI)
+        .setSurface(surface)
+        .setFlags(flags)
+        .build();
   }
 }

@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Unit test for ShadowCompanionDeviceManager. */
 @RunWith(AndroidJUnit4.class)
@@ -363,6 +364,61 @@ public class ShadowCompanionDeviceManagerTest {
         () -> companionDeviceManager.associate(PACKAGE_NAME, macAddress, null));
     assertThat(shadowCompanionDeviceManager.getLastSystemApiAssociationMacAddress())
         .isEqualTo(macAddress);
+  }
+
+  @Test
+  @Config(minSdk = Baklava.SDK_INT)
+  public void testRemoveBond_returnsTrueWhenPreSpecified() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+    int id = shadowCompanionDeviceManager.getMyAssociations().get(0).getId();
+
+    shadowCompanionDeviceManager.markAssociationBondRemovable(id);
+    boolean result = shadowCompanionDeviceManager.removeBond(id);
+
+    assertThat(result).isTrue();
+    assertThat(shadowCompanionDeviceManager.getLastRemoveBondAssociationId()).isEqualTo(id);
+  }
+
+  @Test
+  @Config(minSdk = Baklava.SDK_INT)
+  public void testRemoveBond_returnsFalseWhenPreSpecified() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+    int id = shadowCompanionDeviceManager.getMyAssociations().get(0).getId();
+
+    shadowCompanionDeviceManager.markAssociationBondNotRemovable(id);
+    boolean result = shadowCompanionDeviceManager.removeBond(id);
+
+    assertThat(result).isFalse();
+    assertThat(shadowCompanionDeviceManager.getLastRemoveBondAssociationId()).isEqualTo(id);
+  }
+
+  @Test
+  @Config(minSdk = Baklava.SDK_INT)
+  public void testRemoveBond_returnsFalseIfNoAssociation() {
+    shadowCompanionDeviceManager.markAssociationBondRemovable(1);
+
+    boolean result = shadowCompanionDeviceManager.removeBond(1);
+
+    assertThat(result).isFalse();
+    assertThat(shadowCompanionDeviceManager.getLastRemoveBondAssociationId()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = Baklava.SDK_INT)
+  public void testGetLastRemoveBondAssociationBeforeCalled() {
+    assertThat(shadowCompanionDeviceManager.getLastRemoveBondAssociationId()).isEqualTo(-1);
+  }
+
+  @Test
+  @Config(minSdk = Baklava.SDK_INT)
+  public void testRemoveBond_returnsFalseIfNoValuePreSpecified() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+    int id = shadowCompanionDeviceManager.getMyAssociations().get(0).getId();
+
+    boolean result = shadowCompanionDeviceManager.removeBond(id);
+
+    assertThat(result).isFalse();
+    assertThat(shadowCompanionDeviceManager.getLastRemoveBondAssociationId()).isEqualTo(id);
   }
 
   private CompanionDeviceManager.Callback createCallback() {

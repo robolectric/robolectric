@@ -40,8 +40,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
-import org.robolectric.shadows.ShadowUsbManager._UsbManagerQ_;
-import org.robolectric.shadows.ShadowUsbManager._UsbManager_;
+import org.robolectric.shadows.ShadowUsbManager.UsbManagerQReflector;
+import org.robolectric.shadows.ShadowUsbManager.UsbManagerReflector;
 
 /** Unit tests for {@link ShadowUsbManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -191,9 +191,9 @@ public class ShadowUsbManagerTest {
 
     List<UsbPort> usbPorts = getUsbPorts();
 
-    _usbManager_().setPortRoles(usbPorts.get(0), powerRoleSink, dataRoleHost);
+    newReflector().setPortRoles(usbPorts.get(0), powerRoleSink, dataRoleHost);
 
-    UsbPortStatus usbPortStatus = _usbManager_().getPortStatus(usbPorts.get(0));
+    UsbPortStatus usbPortStatus = newReflector().getPortStatus(usbPorts.get(0));
     assertThat(usbPortStatus.getCurrentPowerRole()).isEqualTo(powerRoleSink);
     assertThat(usbPortStatus.getCurrentDataRole()).isEqualTo(dataRoleHost);
   }
@@ -204,10 +204,10 @@ public class ShadowUsbManagerTest {
     shadowOf(usbManager).addPort("port1");
 
     List<UsbPort> usbPorts = getUsbPorts();
-    _usbManager_()
+    newReflector()
         .setPortRoles(usbPorts.get(0), UsbPortStatus.POWER_ROLE_SINK, UsbPortStatus.DATA_ROLE_HOST);
 
-    UsbPortStatus usbPortStatus = _usbManager_().getPortStatus(usbPorts.get(0));
+    UsbPortStatus usbPortStatus = newReflector().getPortStatus(usbPorts.get(0));
     assertThat(usbPortStatus.getCurrentPowerRole()).isEqualTo(UsbPortStatus.POWER_ROLE_SINK);
     assertThat(usbPortStatus.getCurrentDataRole()).isEqualTo(UsbPortStatus.DATA_ROLE_HOST);
   }
@@ -251,13 +251,13 @@ public class ShadowUsbManagerTest {
   private List<UsbPort> getUsbPorts() {
     // return type changed from UsbPort[] to List<UsbPort> in Q...
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
-      return reflector(_UsbManagerQ_.class, usbManager).getPorts();
+      return reflector(UsbManagerQReflector.class, usbManager).getPorts();
     }
-    return Arrays.asList(_usbManager_().getPorts());
+    return Arrays.asList(newReflector().getPorts());
   }
 
-  private _UsbManager_ _usbManager_() {
-    return reflector(_UsbManager_.class, usbManager);
+  private UsbManagerReflector newReflector() {
+    return reflector(UsbManagerReflector.class, usbManager);
   }
 
   @Test

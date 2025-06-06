@@ -15,19 +15,20 @@ public class ShadowBackgroundThread {
 
   @Resetter
   public static void reset() {
-    _BackgroundThread_ _backgroundThreadStatic_ = reflector(_BackgroundThread_.class);
+    BackgroundThreadReflector backgroundThreadReflector =
+        reflector(BackgroundThreadReflector.class);
 
-    BackgroundThread instance = _backgroundThreadStatic_.getInstance();
+    BackgroundThread instance = backgroundThreadReflector.getInstance();
     if (instance != null) {
       instance.quit();
-      _backgroundThreadStatic_.setInstance(null);
-      _backgroundThreadStatic_.setHandler(null);
+      backgroundThreadReflector.setInstance(null);
+      backgroundThreadReflector.setHandler(null);
     }
   }
 
   /** Accessor interface for {@link BackgroundThread}'s internals. */
   @ForType(BackgroundThread.class)
-  interface _BackgroundThread_ {
+  interface BackgroundThreadReflector {
 
     @Static
     @Accessor("sHandler")

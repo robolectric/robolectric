@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.UiAutomation;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.hardware.display.DisplayManager;
 import android.os.Handler;
@@ -59,7 +60,15 @@ public final class Simulator {
 
     if (this.activityClassToLaunch != null) {
       System.err.println("Launching " + this.activityClassToLaunch.getName());
-      Robolectric.setupActivity(this.activityClassToLaunch);
+      if (Boolean.parseBoolean(
+          System.getProperty("robolectric.useContextStartActivity", "false"))) {
+        Context context = RuntimeEnvironment.getApplication().getApplicationContext();
+        Intent intent = new Intent(context, this.activityClassToLaunch);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
+      } else {
+        Robolectric.setupActivity(this.activityClassToLaunch);
+      }
     }
     // Inject an off-screen motion event to avoid a blank screen when the simulator first starts.
     postMotionEvent();

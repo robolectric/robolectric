@@ -17,7 +17,7 @@ public class ShadowArscAssetInputStream extends ShadowAssetInputStream {
   @RealObject private AssetInputStream realObject;
 
   private Asset getAsset() {
-    long assetPtr = reflector(_AssetInputStream_.class, realObject).getNativeAsset();
+    long assetPtr = reflector(AssetInputStreamReflector.class, realObject).getNativeAsset();
     return Registries.NATIVE_ASSET_REGISTRY.getNativeObject(assetPtr);
   }
 
@@ -29,7 +29,7 @@ public class ShadowArscAssetInputStream extends ShadowAssetInputStream {
 
   /** Accessor interface for {@link AssetInputStream}'s internals. */
   @ForType(AssetInputStream.class)
-  private interface _AssetInputStream_ {
+  private interface AssetInputStreamReflector {
     int getAssetInt();
 
     long getNativeAsset();

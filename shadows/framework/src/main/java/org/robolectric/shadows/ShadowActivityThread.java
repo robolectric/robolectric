@@ -46,7 +46,7 @@ import org.robolectric.util.reflector.Reflector;
 public class ShadowActivityThread {
   private static ApplicationInfo applicationInfo;
   @RealObject protected ActivityThread realActivityThread;
-  @ReflectorObject protected _ActivityThread_ activityThreadReflector;
+  @ReflectorObject protected ActivityThreadReflector activityThreadReflector;
 
   @Implementation
   public static @ClassName("android.content.pm.IPackageManager") Object getPackageManager() {
@@ -120,7 +120,8 @@ public class ShadowActivityThread {
   protected Application getApplication() {
     // Prefer the stored application from the real Activity Thread.
     Application currentApplication =
-        Reflector.reflector(_ActivityThread_.class, realActivityThread).getInitialApplication();
+        Reflector.reflector(ActivityThreadReflector.class, realActivityThread)
+            .getInitialApplication();
     if (currentApplication == null) {
       return RuntimeEnvironment.getApplication();
     } else {
@@ -183,11 +184,11 @@ public class ShadowActivityThread {
     recordReflector.setIntent(intent);
     recordReflector.setActivityInfo(activityInfo);
     recordReflector.setActivity(activity);
-    reflector(_ActivityThread_.class, realActivityThread).getActivities().put(token, record);
+    reflector(ActivityThreadReflector.class, realActivityThread).getActivities().put(token, record);
   }
 
   void removeActivity(IBinder token) {
-    reflector(_ActivityThread_.class, realActivityThread).getActivities().remove(token);
+    reflector(ActivityThreadReflector.class, realActivityThread).getActivities().remove(token);
   }
 
   /**
@@ -228,14 +229,14 @@ public class ShadowActivityThread {
           from(Configuration.class, androidConfiguration));
       ReflectionHelpers.setField(realActivityThread, "mConfigurationController", configController);
     } else {
-      reflector(_ActivityThread_.class, realActivityThread)
+      reflector(ActivityThreadReflector.class, realActivityThread)
           .setCompatConfiguration(androidConfiguration);
     }
   }
 
   /** Accessor interface for {@link ActivityThread}'s internals. */
   @ForType(ActivityThread.class)
-  public interface _ActivityThread_ {
+  public interface ActivityThreadReflector {
 
     @Accessor("mBoundApplication")
     void setBoundApplication(Object data);
@@ -262,7 +263,7 @@ public class ShadowActivityThread {
 
   /** Accessor interface for {@link ActivityThread.AppBindData}'s internals. */
   @ForType(className = "android.app.ActivityThread$AppBindData")
-  public interface _AppBindData_ {
+  public interface AppBindDataReflector {
 
     @Accessor("appInfo")
     void setAppInfo(ApplicationInfo applicationInfo);
@@ -297,7 +298,7 @@ public class ShadowActivityThread {
           "RuntimeEnvironment.getActivityThread() is null, an error likely occurred during test"
               + " initialization.");
     } else {
-      reflector(_ActivityThread_.class, activityThread).getActivities().clear();
+      reflector(ActivityThreadReflector.class, activityThread).getActivities().clear();
     }
   }
 }

@@ -47,7 +47,7 @@ public class ShadowLoadedApk {
       if (applicationInfo == null || applicationInfo.appComponentFactory == null) {
         return;
       }
-      _LoadedApk_ loadedApkReflector = reflector(_LoadedApk_.class, realLoadedApk);
+      LoadedApkReflector loadedApkReflector = reflector(LoadedApkReflector.class, realLoadedApk);
       if (!loadedApkReflector.getIncludeCode()) {
         return;
       }
@@ -72,7 +72,7 @@ public class ShadowLoadedApk {
 
   /** Accessor interface for {@link LoadedApk}'s internals. */
   @ForType(LoadedApk.class)
-  public interface _LoadedApk_ {
+  public interface LoadedApkReflector {
 
     @Accessor("mApplication")
     void setApplication(Application application);

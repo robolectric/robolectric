@@ -33,7 +33,6 @@ import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowContextThemeWrapper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowViewRootImpl;
-import org.robolectric.shadows._Activity_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
@@ -69,7 +68,7 @@ public class ActivityController<T extends Activity>
   // ActivityInfo constant.
   private static final int CONFIG_WINDOW_CONFIGURATION = 0x20000000;
 
-  private _Activity_ _component_;
+  private org.robolectric.shadows.ActivityReflector activityReflector;
   private LifecycleState currentState = LifecycleState.INITIAL;
 
   public static <T extends Activity> ActivityController<T> of(
@@ -88,7 +87,7 @@ public class ActivityController<T extends Activity>
   private ActivityController(T activity, Intent intent) {
     super(activity, intent);
 
-    _component_ = reflector(_Activity_.class, component);
+    activityReflector = reflector(org.robolectric.shadows.ActivityReflector.class, component);
   }
 
   private ActivityController<T> attach(@Nullable Bundle activityOptions) {
@@ -149,11 +148,11 @@ public class ActivityController<T extends Activity>
     invokeWhilePaused(
         () -> {
           if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-            _component_.performRestart();
+            activityReflector.performRestart();
           } else if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
-            _component_.performRestart(true, "restart()");
+            activityReflector.performRestart(true, "restart()");
           } else {
-            _component_.performRestart(true);
+            activityReflector.performRestart(true);
           }
           currentState = LifecycleState.RESTARTED;
         });
@@ -167,9 +166,9 @@ public class ActivityController<T extends Activity>
     invokeWhilePaused(
         () -> {
           if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-            _component_.performStart();
+            activityReflector.performStart();
           } else {
-            _component_.performStart("start()");
+            activityReflector.performStart("start()");
           }
           currentState = LifecycleState.STARTED;
         });
@@ -183,7 +182,7 @@ public class ActivityController<T extends Activity>
   }
 
   public ActivityController<T> postCreate(@Nullable Bundle bundle) {
-    invokeWhilePaused(() -> _component_.onPostCreate(bundle));
+    invokeWhilePaused(() -> activityReflector.onPostCreate(bundle));
     return this;
   }
 
@@ -191,9 +190,9 @@ public class ActivityController<T extends Activity>
     invokeWhilePaused(
         () -> {
           if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-            _component_.performResume();
+            activityReflector.performResume();
           } else {
-            _component_.performResume(true, "resume()");
+            activityReflector.performResume(true, "resume()");
           }
           currentState = LifecycleState.RESUMED;
         });
@@ -201,7 +200,7 @@ public class ActivityController<T extends Activity>
   }
 
   public ActivityController<T> postResume() {
-    invokeWhilePaused(() -> _component_.onPostResume());
+    invokeWhilePaused(() -> activityReflector.onPostResume());
     return this;
   }
 
@@ -215,7 +214,9 @@ public class ActivityController<T extends Activity>
       return this;
     }
     invokeWhilePaused(
-        () -> _component_.performTopResumedActivityChanged(isTop, "topStateChangedWhenResumed"));
+        () ->
+            activityReflector.performTopResumedActivityChanged(
+                isTop, "topStateChangedWhenResumed"));
     return this;
   }
 
@@ -225,8 +226,8 @@ public class ActivityController<T extends Activity>
           // emulate logic of ActivityThread#handleResumeActivity
           component.getWindow().getAttributes().type =
               WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
-          _component_.setDecor(component.getWindow().getDecorView());
-          _component_.makeVisible();
+          activityReflector.setDecor(component.getWindow().getDecorView());
+          activityReflector.makeVisible();
         });
 
     shadowMainLooper.idleIfPaused();
@@ -290,11 +291,11 @@ public class ActivityController<T extends Activity>
     invokeWhilePaused(
         () -> {
           if (RuntimeEnvironment.getApiLevel() <= M) {
-            _component_.performStop();
+            activityReflector.performStop();
           } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-            _component_.performStop(true);
+            activityReflector.performStop(true);
           } else {
-            _component_.performStop(true, "stop()");
+            activityReflector.performStop(true, "stop()");
           }
           currentState = LifecycleState.STOPPED;
         });
@@ -316,7 +317,7 @@ public class ActivityController<T extends Activity>
     // Clear WindowManager state for this activity. On real Android this is done by
     // ActivityThread.handleDestroyActivity, which is initiated by the window manager
     // service.
-    boolean windowAdded = _component_.getWindowAdded();
+    boolean windowAdded = activityReflector.getWindowAdded();
     if (windowAdded) {
       WindowManager windowManager = component.getWindowManager();
       windowManager.removeViewImmediate(component.getWindow().getDecorView());
@@ -357,7 +358,7 @@ public class ActivityController<T extends Activity>
   }
 
   public ActivityController<T> newIntent(Intent intent) {
-    invokeWhilePaused(() -> _component_.onNewIntent(intent));
+    invokeWhilePaused(() -> activityReflector.onNewIntent(intent));
     return this;
   }
 
@@ -475,13 +476,14 @@ public class ActivityController<T extends Activity>
     } else {
       @SuppressWarnings("unchecked")
       final T recreatedActivity = (T) ReflectionHelpers.callConstructor(component.getClass());
-      final _Activity_ _recreatedActivity_ = reflector(_Activity_.class, recreatedActivity);
+      final org.robolectric.shadows.ActivityReflector activityReflector =
+          reflector(org.robolectric.shadows.ActivityReflector.class, recreatedActivity);
 
       shadowMainLooper.runPaused(
           () -> {
             // Set flags
-            _component_.setChangingConfigurations(true);
-            _component_.setConfigChangeFlags(filteredChanges);
+            this.activityReflector.setChangingConfigurations(true);
+            this.activityReflector.setConfigChangeFlags(filteredChanges);
 
             // Perform activity destruction
             final Bundle outState = new Bundle();
@@ -494,26 +496,28 @@ public class ActivityController<T extends Activity>
             // And see ActivityThread#callActivityOnStop for related code.
             getInstrumentation().callActivityOnPause(component);
             if (RuntimeEnvironment.getApiLevel() < P) {
-              _component_.performSaveInstanceState(outState);
+              this.activityReflector.performSaveInstanceState(outState);
               if (RuntimeEnvironment.getApiLevel() <= M) {
-                _component_.performStop();
+                this.activityReflector.performStop();
               } else {
                 // API from N to O_MR1(both including)
-                _component_.performStop(true);
+                this.activityReflector.performStop(true);
               }
             } else {
-              _component_.performStop(true, "configurationChange");
-              _component_.performSaveInstanceState(outState);
+              this.activityReflector.performStop(true, "configurationChange");
+              this.activityReflector.performSaveInstanceState(outState);
             }
 
             // This is the true and complete retained state, including loaders and retained
             // fragments.
-            final Object nonConfigInstance = _component_.retainNonConfigurationInstances();
+            final Object nonConfigInstance =
+                this.activityReflector.retainNonConfigurationInstances();
             // This is the activity's "user" state
             final Object activityConfigInstance =
                 nonConfigInstance == null
                     ? null // No framework or user state.
-                    : reflector(_NonConfigurationInstances_.class, nonConfigInstance).getActivity();
+                    : reflector(NonConfigurationInstancesReflector.class, nonConfigInstance)
+                        .getActivity();
 
             getInstrumentation().callActivityOnDestroy(component);
             makeActivityEligibleForGc();
@@ -527,7 +531,7 @@ public class ActivityController<T extends Activity>
             // Setup controller for the new activity
             attached = false;
             component = recreatedActivity;
-            _component_ = _recreatedActivity_;
+            this.activityReflector = activityReflector;
 
             // TODO: Because robolectric is currently not creating unique context objects per
             //  activity and that the app compat framework uses weak maps to cache resources per
@@ -554,7 +558,7 @@ public class ActivityController<T extends Activity>
             }
 
             // Set saved non config instance
-            _recreatedActivity_.setLastNonConfigurationInstances(nonConfigInstance);
+            activityReflector.setLastNonConfigurationInstances(nonConfigInstance);
             ShadowActivity shadowActivity = Shadow.extract(recreatedActivity);
             shadowActivity.setLastNonConfigurationInstance(activityConfigInstance);
 
@@ -563,23 +567,23 @@ public class ActivityController<T extends Activity>
 
             if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
 
-              _recreatedActivity_.performStart();
+              activityReflector.performStart();
 
             } else {
-              _recreatedActivity_.performStart("configurationChange");
+              activityReflector.performStart("configurationChange");
             }
 
             getInstrumentation().callActivityOnRestoreInstanceState(recreatedActivity, outState);
-            _recreatedActivity_.onPostCreate(outState);
+            activityReflector.onPostCreate(outState);
             if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-              _recreatedActivity_.performResume();
+              activityReflector.performResume();
             } else {
-              _recreatedActivity_.performResume(true, "configurationChange");
+              activityReflector.performResume(true, "configurationChange");
             }
-            _recreatedActivity_.onPostResume();
+            activityReflector.onPostResume();
             // TODO: Call visible() too.
             if (RuntimeEnvironment.getApiLevel() >= Q) {
-              _recreatedActivity_.performTopResumedActivityChanged(true, "configurationChange");
+              activityReflector.performTopResumedActivityChanged(true, "configurationChange");
             }
           });
     }
@@ -620,7 +624,7 @@ public class ActivityController<T extends Activity>
     // reset the flag to false because this Activity instance is going to be destroyed and disposed.
     // https://android.googlesource.com/platform/frameworks/base/+/55418eada51d4f5e6532ae9517af66c50
     // ea495c4/core/java/android/app/ActivityThread.java#4806
-    _component_.setChangingConfigurations(true);
+    activityReflector.setChangingConfigurations(true);
 
     switch (originalState) {
       case INITIAL:
@@ -641,12 +645,12 @@ public class ActivityController<T extends Activity>
 
     Bundle outState = new Bundle();
     saveInstanceState(outState);
-    Object lastNonConfigurationInstances = _component_.retainNonConfigurationInstances();
+    Object lastNonConfigurationInstances = activityReflector.retainNonConfigurationInstances();
     Configuration overrideConfig = component.getResources().getConfiguration();
     destroy();
 
     component = (T) ReflectionHelpers.callConstructor(component.getClass());
-    _component_ = reflector(_Activity_.class, component);
+    activityReflector = reflector(org.robolectric.shadows.ActivityReflector.class, component);
     attached = false;
     attach(/* activityOptions= */ null, lastNonConfigurationInstances, overrideConfig);
     create(outState);
@@ -676,7 +680,7 @@ public class ActivityController<T extends Activity>
 
   // Get the Instrumentation object scoped to the Activity.
   private Instrumentation getInstrumentation() {
-    return _component_.getInstrumentation();
+    return activityReflector.getInstrumentation();
   }
 
   /**
@@ -723,7 +727,7 @@ public class ActivityController<T extends Activity>
 
   /** Accessor interface for android.app.Activity.NonConfigurationInstances' internals. */
   @ForType(className = "android.app.Activity$NonConfigurationInstances")
-  interface _NonConfigurationInstances_ {
+  interface NonConfigurationInstancesReflector {
 
     @Accessor("activity")
     Object getActivity();

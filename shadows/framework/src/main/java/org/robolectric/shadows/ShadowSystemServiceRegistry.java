@@ -31,26 +31,26 @@ public class ShadowSystemServiceRegistry {
   @Resetter
   public static void reset() {
     Map<String, Object> fetchers =
-        reflector(_SystemServiceRegistry_.class).getSystemServiceFetchers();
+        reflector(SystemServiceRegistryReflector.class).getSystemServiceFetchers();
 
     for (Map.Entry<String, Object> oFetcher : fetchers.entrySet()) {
-      _ServiceFetcher_.get(oFetcher.getKey(), oFetcher.getValue()).clearInstance();
+      ServiceFetcherReflector.get(oFetcher.getKey(), oFetcher.getValue()).clearInstance();
     }
   }
 
   /** Accessor interface for {@link android.app.SystemServiceRegistry}'s internals. */
   @ForType(className = "android.app.SystemServiceRegistry")
-  interface _SystemServiceRegistry_ {
+  interface SystemServiceRegistryReflector {
     @Accessor("SYSTEM_SERVICE_FETCHERS")
     Map<String, Object> getSystemServiceFetchers();
   }
 
   /** Accessor interface the various {@link android.app.SystemServiceRegistry.ServiceFetcher}s. */
-  interface _ServiceFetcher_ {
+  interface ServiceFetcherReflector {
 
     void setCachedInstance(Object o);
 
-    static _ServiceFetcher_ get(String key, Object serviceFetcher) {
+    static ServiceFetcherReflector get(String key, Object serviceFetcher) {
       String serviceFetcherClassName = getConcreteClassName(serviceFetcher);
       if (serviceFetcherClassName == null) {
         throw new IllegalStateException("could not find class name for serviceFetcher " + key);
@@ -58,11 +58,11 @@ public class ShadowSystemServiceRegistry {
 
       switch (serviceFetcherClassName) {
         case STATIC_SERVICE_FETCHER_CLASS_NAME:
-          return reflector(_StaticServiceFetcher_.class, serviceFetcher);
+          return reflector(StaticServiceFetcherReflector.class, serviceFetcher);
         case STATIC_CONTEXT_SERVICE_FETCHER_CLASS_NAME_M:
-          return reflector(_ServiceFetcherM_.class, serviceFetcher);
+          return reflector(ServiceFetcherReflectorM.class, serviceFetcher);
         case STATIC_CONTEXT_SERVICE_FETCHER_CLASS_NAME_N:
-          return reflector(_ServiceFetcherN_.class, serviceFetcher);
+          return reflector(ServiceFetcherReflectorN.class, serviceFetcher);
         case CACHED_SERVICE_FETCHER_CLASS_NAME:
           return o -> {}; // these are accessors via the ContextImpl instance, so no reset needed
         default:
@@ -98,7 +98,7 @@ public class ShadowSystemServiceRegistry {
    * internals.
    */
   @ForType(className = STATIC_SERVICE_FETCHER_CLASS_NAME)
-  public interface _StaticServiceFetcher_ extends _ServiceFetcher_ {
+  public interface StaticServiceFetcherReflector extends ServiceFetcherReflector {
     @Accessor("mCachedInstance")
     void setCachedInstance(Object o);
   }
@@ -108,7 +108,7 @@ public class ShadowSystemServiceRegistry {
    * android.app.SystemServiceRegistry.StaticOuterContextServiceFetcher}'s internals (for M).
    */
   @ForType(className = STATIC_CONTEXT_SERVICE_FETCHER_CLASS_NAME_M)
-  public interface _ServiceFetcherM_ extends _ServiceFetcher_ {
+  public interface ServiceFetcherReflectorM extends ServiceFetcherReflector {
     @Accessor("mCachedInstance")
     void setCachedInstance(Object o);
   }
@@ -118,7 +118,7 @@ public class ShadowSystemServiceRegistry {
    * android.app.SystemServiceRegistry.StaticApplicationContextServiceFetcher}'s internals (for N+).
    */
   @ForType(className = STATIC_CONTEXT_SERVICE_FETCHER_CLASS_NAME_N)
-  public interface _ServiceFetcherN_ extends _ServiceFetcher_ {
+  public interface ServiceFetcherReflectorN extends ServiceFetcherReflector {
     @Accessor("mCachedInstance")
     void setCachedInstance(Object o);
   }

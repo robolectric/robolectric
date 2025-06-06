@@ -76,9 +76,6 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.Static;
 import org.robolectric.versioning.AndroidVersions.U;
 
 // transliterated from
@@ -213,10 +210,10 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     // todo: ShadowPicker doesn't discriminate properly between concrete shadow classes for
     // resetters...
     if (RuntimeEnvironment.getApiLevel() >= P) {
-      _AssetManager28_ _assetManagerStatic_ = reflector(_AssetManager28_.class);
-      _assetManagerStatic_.setSystemApkAssetsSet(null);
-      _assetManagerStatic_.setSystemApkAssets(null);
-      _assetManagerStatic_.setSystem(null);
+      AssetManager28Reflector assetManagerReflector = reflector(AssetManager28Reflector.class);
+      assetManagerReflector.setSystemApkAssetsSet(null);
+      assetManagerReflector.setSystemApkAssets(null);
+      assetManagerReflector.setSystem(null);
     }
   }
 
@@ -232,7 +229,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   @VisibleForTesting
   @Override
   long getNativePtr() {
-    return reflector(_AssetManager_.class, realAssetManager).getNativePtr();
+    return reflector(AssetManagerReflector.class, realAssetManager).getNativePtr();
   }
 
   // This is called by zygote (running as user root) as part of preloadResources.
@@ -358,7 +355,8 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
 
   @Override
   Collection<Path> getAllAssetDirs() {
-    ApkAssets[] apkAssetsArray = reflector(_AssetManager28_.class, realAssetManager).getApkAssets();
+    ApkAssets[] apkAssetsArray =
+        reflector(AssetManager28Reflector.class, realAssetManager).getApkAssets();
 
     ArrayList<Path> assetDirs = new ArrayList<>();
     for (ApkAssets apkAssets : apkAssetsArray) {
@@ -452,7 +450,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     // a concurrency concern here.
     inResourcesGetSystem = true;
     try {
-      return reflector(_AssetManager_.class).getSystem();
+      return reflector(AssetManagerReflector.class).getSystem();
     } finally {
       inResourcesGetSystem = false;
     }
@@ -1891,16 +1889,5 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   //   return RegisterMethodsOrDie(env, "android/content/res/AssetManager", gAssetManagerMethods,
   //   NELEM(gAssetManagerMethods));
   //   }
-
-  @ForType(AssetManager.class)
-  interface AssetManagerReflector {
-
-    @Static
-    @Direct
-    void createSystemAssetsInZygoteLocked();
-
-    @Direct
-    void releaseTheme(long ptr);
-  }
 }
 // namespace android

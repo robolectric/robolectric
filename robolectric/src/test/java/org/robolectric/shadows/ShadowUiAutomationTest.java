@@ -29,9 +29,13 @@ public class ShadowUiAutomationTest {
     UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
     Context context = ApplicationProvider.getApplicationContext();
     String packageName = context.getPackageName();
+    assertThat(context.checkSelfPermission(android.Manifest.permission.READ_MEDIA_IMAGES))
+        .isEqualTo(PackageManager.PERMISSION_DENIED);
+    assertThat(context.checkSelfPermission(android.Manifest.permission.READ_MEDIA_VIDEO))
+        .isEqualTo(PackageManager.PERMISSION_DENIED);
 
-    uiAutomation.grantRuntimePermission(android.Manifest.permission.READ_MEDIA_IMAGES, packageName);
-    uiAutomation.grantRuntimePermission(android.Manifest.permission.READ_MEDIA_VIDEO, packageName);
+    uiAutomation.grantRuntimePermission(packageName, android.Manifest.permission.READ_MEDIA_IMAGES);
+    uiAutomation.grantRuntimePermission(packageName, android.Manifest.permission.READ_MEDIA_VIDEO);
 
     assertThat(context.checkSelfPermission(android.Manifest.permission.READ_MEDIA_IMAGES))
         .isEqualTo(PackageManager.PERMISSION_GRANTED);

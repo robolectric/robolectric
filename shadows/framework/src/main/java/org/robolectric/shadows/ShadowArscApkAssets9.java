@@ -68,12 +68,12 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   @RealObject private ApkAssets realApkAssets;
 
   long getNativePtr() {
-    return reflector(_ApkAssets_.class, realApkAssets).getNativePtr();
+    return reflector(ApkAssetsReflector.class, realApkAssets).getNativePtr();
   }
 
   /** Reflector interface for {@link ApkAssets}'s internals. */
   @ForType(ApkAssets.class)
-  interface _ApkAssets_ {
+  interface ApkAssetsReflector {
     @Static
     @Direct
     ApkAssets loadFromPath(String finalPath, boolean system);
@@ -96,7 +96,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       path = RuntimeEnvironment.getAndroidFrameworkJarPath().toString();
     }
 
-    return reflector(_ApkAssets_.class).loadFromPath(path, system);
+    return reflector(ApkAssetsReflector.class).loadFromPath(path, system);
   }
 
   @Implementation(minSdk = R)
@@ -104,7 +104,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     if (FRAMEWORK_APK_PATH.equals(path)) {
       path = RuntimeEnvironment.getAndroidFrameworkJarPath().toString();
     }
-    return reflector(_ApkAssets_.class).loadFromPath(path, flags);
+    return reflector(ApkAssetsReflector.class).loadFromPath(path, flags);
   }
 
   // static jlong NativeLoad(JNIEnv* env, jclass /*clazz*/, jstring java_path, jboolean system,

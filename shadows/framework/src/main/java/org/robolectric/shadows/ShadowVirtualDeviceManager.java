@@ -84,6 +84,8 @@ public class ShadowVirtualDeviceManager {
               VirtualDeviceReflector accessor = reflector(VirtualDeviceReflector.class);
               String deviceName =
                   ((ShadowVirtualDevice) Shadow.extract(virtualDevice)).getParams().getName();
+              int[] displayIds =
+                  ((ShadowVirtualDevice) Shadow.extract(virtualDevice)).getDisplayIds();
               try {
                 // check if VirtualDevice has the U and before constructor
                 VirtualDevice.class.getDeclaredConstructor(int.class, String.class);
@@ -93,7 +95,8 @@ public class ShadowVirtualDeviceManager {
                 DeviceManagerVirtualDeviceReflector virtualDeviceReflector =
                     reflector(DeviceManagerVirtualDeviceReflector.class, virtualDevice);
                 return accessor.newInstanceV(
-                    ReflectionHelpers.createNullProxy(IVirtualDevice.class),
+                    ReflectionHelpers.createDelegatingProxy(
+                        IVirtualDevice.class, (VirtualDeviceDelagate) () -> displayIds),
                     virtualDevice.getDeviceId(),
                     virtualDeviceReflector.getPersistentDeviceId(),
                     deviceName);
@@ -138,6 +141,7 @@ public class ShadowVirtualDeviceManager {
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private Context context;
     private int associationId;
+    private final List<Integer> displayIds = new ArrayList<>();
 
     @Implementation
     protected void __constructor__(
@@ -179,6 +183,10 @@ public class ShadowVirtualDeviceManager {
     @Implementation
     protected void close() {
       isClosed.set(true);
+    }
+
+    public int[] getDisplayIds() {
+      return displayIds.stream().mapToInt(i -> (int) i).toArray();
     }
 
     public boolean isClosed() {
@@ -292,8 +300,11 @@ public class ShadowVirtualDeviceManager {
         @Nonnull VirtualDisplayConfig config,
         @Nullable Executor executor,
         @Nullable VirtualDisplay.Callback callback) {
-      return DisplayManagerGlobal.getInstance()
-          .createVirtualDisplay(context, null, config, callback, executor);
+      VirtualDisplay display =
+          DisplayManagerGlobal.getInstance()
+              .createVirtualDisplay(context, null, config, callback, executor);
+      displayIds.add(display.getDisplay().getDisplayId());
+      return display;
     }
 
     public void setPendingIntentCallbackResultCode(int resultCode) {
@@ -382,5 +393,9 @@ public class ShadowVirtualDeviceManager {
   @ForType(VirtualDeviceManager.VirtualDevice.class)
   private interface DeviceManagerVirtualDeviceReflector {
     String getPersistentDeviceId();
+  }
+
+  private interface VirtualDeviceDelagate {
+    int[] getDisplayIds();
   }
 }

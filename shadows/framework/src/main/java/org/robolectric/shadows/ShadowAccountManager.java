@@ -335,6 +335,15 @@ public class ShadowAccountManager {
   }
 
   @Implementation
+  protected void clearPassword(Account account) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+
+    passwords.remove(account);
+  }
+
+  @Implementation
   protected String getPassword(Account account) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");

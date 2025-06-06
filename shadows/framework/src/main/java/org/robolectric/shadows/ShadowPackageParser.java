@@ -85,7 +85,7 @@ public class ShadowPackageParser {
 
   /** Accessor interface for {@link PackageParser}'s internals. */
   @ForType(PackageParser.class)
-  interface _PackageParser_ {
+  interface PackageParserReflector {
 
     // <= LOLLIPOP
     @Static
@@ -170,7 +170,7 @@ public class ShadowPackageParser {
 
   /** Accessor interface for {@link Package}'s internals. */
   @ForType(Package.class)
-  public interface _Package_ {
+  public interface PackageReflector {
 
     @Accessor("mPath")
     String getPath();

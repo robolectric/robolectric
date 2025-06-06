@@ -81,7 +81,7 @@ public class ShadowContextImpl {
       return null;
     }
     if (!systemServices.containsKey(name)) {
-      return reflector(_ContextImpl_.class, realContextImpl).getSystemService(name);
+      return reflector(ContextImplReflector.class, realContextImpl).getSystemService(name);
     }
     return systemServices.get(name);
   }
@@ -389,7 +389,7 @@ public class ShadowContextImpl {
   protected void startActivityAsUser(Intent intent, Bundle options, UserHandle user) {
     // TODO: Remove this once {@link com.android.server.wmActivityTaskManagerService} is
     // properly shadowed.
-    reflector(_ContextImpl_.class, realContextImpl).startActivity(intent, options);
+    reflector(ContextImplReflector.class, realContextImpl).startActivity(intent, options);
   }
 
   /** Set the user id returned by {@link #getUserId()}. */
@@ -474,7 +474,7 @@ public class ShadowContextImpl {
       }
       return f;
     } else {
-      return reflector(_ContextImpl_.class, realContextImpl).getDatabasePath(name);
+      return reflector(ContextImplReflector.class, realContextImpl).getDatabasePath(name);
     }
   }
 
@@ -485,12 +485,12 @@ public class ShadowContextImpl {
     if (!Strings.isNullOrEmpty(name) && File.separatorChar == '\\') {
       name = name.replace(":", "%3A");
     }
-    return reflector(_ContextImpl_.class, realContextImpl).getSharedPreferences(name, mode);
+    return reflector(ContextImplReflector.class, realContextImpl).getSharedPreferences(name, mode);
   }
 
   /** Reflector interface for {@link android.app.ContextImpl}'s internals. */
   @ForType(className = CLASS_NAME)
-  public interface _ContextImpl_ {
+  public interface ContextImplReflector {
     @Static
     Context createSystemContext(ActivityThread activityThread);
 

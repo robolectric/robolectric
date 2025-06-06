@@ -157,7 +157,7 @@ public class ShadowInstrumentation {
     if (who == null) {
       return null;
     }
-    return reflector(_Instrumentation_.class, realObject)
+    return reflector(InstrumentationReflector.class, realObject)
         .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
   }
 
@@ -187,7 +187,7 @@ public class ShadowInstrumentation {
     verifyActivityInManifest(intent);
     logStartedActivity(intent, target, requestCode, options);
 
-    return reflector(_Instrumentation_.class, realObject)
+    return reflector(InstrumentationReflector.class, realObject)
         .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
   }
 
@@ -1069,7 +1069,7 @@ public class ShadowInstrumentation {
 
   /** Reflector interface for {@link Instrumentation}'s internals. */
   @ForType(Instrumentation.class)
-  public interface _Instrumentation_ {
+  public interface InstrumentationReflector {
     void init(
         ActivityThread thread,
         Context instrContext,

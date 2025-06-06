@@ -22,7 +22,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadows.ShadowView._AttachInfo_;
+import org.robolectric.shadows.ShadowView.AttachInfoReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -81,7 +81,7 @@ public class ShadowViewRootImpl {
 
   ThreadedRenderer getThreadedRenderer() {
     Object attachInfo = reflector(ViewRootImplReflector.class, realObject).getAttachInfo();
-    return reflector(_AttachInfo_.class, attachInfo).getThreadedRenderer();
+    return reflector(AttachInfoReflector.class, attachInfo).getThreadedRenderer();
   }
 
   /** Reflector interface for {@link ViewRootImpl}'s internals. */

@@ -18,7 +18,7 @@ public class ShadowResourcesManager {
 
   @Resetter
   public static void reset() {
-    reflector(_ResourcesManager_.class).setResourcesManager(null);
+    reflector(ResourcesManagerReflector.class).setResourcesManager(null);
   }
 
   /**
@@ -27,13 +27,13 @@ public class ShadowResourcesManager {
    */
   public boolean callApplyConfigurationToResourcesLocked(
       Configuration configuration, CompatibilityInfo compatibilityInfo) {
-    return reflector(_ResourcesManager_.class, realResourcesManager)
+    return reflector(ResourcesManagerReflector.class, realResourcesManager)
         .applyConfigurationToResourcesLocked(configuration, compatibilityInfo);
   }
 
   /** Accessor interface for {@link ResourcesManager}'s internals. */
   @ForType(ResourcesManager.class)
-  private interface _ResourcesManager_ {
+  private interface ResourcesManagerReflector {
     boolean applyConfigurationToResourcesLocked(Configuration config, CompatibilityInfo compat);
 
     @Static

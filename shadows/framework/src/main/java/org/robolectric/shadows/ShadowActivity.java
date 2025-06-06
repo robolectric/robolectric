@@ -72,9 +72,9 @@ import org.robolectric.fakes.RoboIntentSender;
 import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.fakes.RoboSplashScreen;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
+import org.robolectric.shadows.ShadowContextImpl.ContextImplReflector;
 import org.robolectric.shadows.ShadowInstrumentation.TargetAndRequestCode;
-import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
+import org.robolectric.shadows.ShadowLoadedApk.LoadedApkReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
@@ -118,7 +118,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean isTaskMovedToBack = false;
 
   public void setApplication(Application application) {
-    reflector(_Activity_.class, realActivity).setApplication(application);
+    reflector(ActivityReflector.class, realActivity).setApplication(application);
   }
 
   public void callAttach(Intent intent) {
@@ -192,15 +192,15 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
         && RuntimeEnvironment.getApiLevel() >= O) {
       LoadedApk loadedApk =
           activityThread.getPackageInfo(
-              ShadowActivityThread.getApplicationInfo(), null, Context.CONTEXT_INCLUDE_CODE);
-      _LoadedApk_ loadedApkReflector = reflector(_LoadedApk_.class, loadedApk);
+              baseContext.getApplicationInfo(), null, Context.CONTEXT_INCLUDE_CODE);
+      LoadedApkReflector loadedApkReflector = reflector(LoadedApkReflector.class, loadedApk);
       loadedApkReflector.setResources(application.getResources());
       loadedApkReflector.setApplication(application);
       activityContext =
-          reflector(_ContextImpl_.class)
+          reflector(ContextImplReflector.class)
               .createActivityContext(
                   activityThread, loadedApk, activityInfo, token, displayId, overrideConfig);
-      reflector(_ContextImpl_.class, activityContext).setOuterContext(realActivity);
+      reflector(ContextImplReflector.class, activityContext).setOuterContext(realActivity);
       // This is not what the SDK does but for backwards compatibility with previous versions of
       // robolectric, which did not use a separate activity context, move the theme from the
       // application context (previously tests would configure the theme on the application context
@@ -212,7 +212,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       activityContext = baseContext;
     }
 
-    reflector(_Activity_.class, realActivity)
+    reflector(ActivityReflector.class, realActivity)
         .callAttach(
             realActivity,
             activityContext,
@@ -368,23 +368,23 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   protected void finish() {
     // Sets the mFinished field in the real activity so NoDisplay activities can be tested.
-    reflector(_Activity_.class, realActivity).setFinished(true);
+    reflector(ActivityReflector.class, realActivity).setFinished(true);
   }
 
   @Implementation
   protected void finishAndRemoveTask() {
     // Sets the mFinished field in the real activity so NoDisplay activities can be tested.
-    reflector(_Activity_.class, realActivity).setFinished(true);
+    reflector(ActivityReflector.class, realActivity).setFinished(true);
   }
 
   @Implementation
   protected void finishAffinity() {
     // Sets the mFinished field in the real activity so NoDisplay activities can be tested.
-    reflector(_Activity_.class, realActivity).setFinished(true);
+    reflector(ActivityReflector.class, realActivity).setFinished(true);
   }
 
   public void resetIsFinishing() {
-    reflector(_Activity_.class, realActivity).setFinished(false);
+    reflector(ActivityReflector.class, realActivity).setFinished(false);
   }
 
   /**
@@ -434,7 +434,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   public void setWindow(Window window) {
-    reflector(_Activity_.class, realActivity).setWindow(window);
+    reflector(ActivityReflector.class, realActivity).setWindow(window);
   }
 
   @Implementation
@@ -632,17 +632,18 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Deprecated
   public void callOnActivityResult(int requestCode, int resultCode, Intent resultData) {
-    reflector(_Activity_.class, realActivity).onActivityResult(requestCode, resultCode, resultData);
+    reflector(ActivityReflector.class, realActivity)
+        .onActivityResult(requestCode, resultCode, resultData);
   }
 
   /** For internal use only. Not for public use. */
   public void internalCallDispatchActivityResult(
       String who, int requestCode, int resultCode, Intent data) {
     if (VERSION.SDK_INT >= VERSION_CODES.P) {
-      reflector(_Activity_.class, realActivity)
+      reflector(ActivityReflector.class, realActivity)
           .dispatchActivityResult(who, requestCode, resultCode, data, "ACTIVITY_RESULT");
     } else {
-      reflector(_Activity_.class, realActivity)
+      reflector(ActivityReflector.class, realActivity)
           .dispatchActivityResult(who, requestCode, resultCode, data);
     }
   }
@@ -713,14 +714,14 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     Dialog dialog = dialogForId.get(id);
 
     if (dialog == null) {
-      dialog = reflector(_Activity_.class, realActivity).onCreateDialog(id);
+      dialog = reflector(ActivityReflector.class, realActivity).onCreateDialog(id);
       if (dialog == null) {
         return false;
       }
       if (bundle == null) {
-        reflector(_Activity_.class, realActivity).onPrepareDialog(id, dialog);
+        reflector(ActivityReflector.class, realActivity).onPrepareDialog(id, dialog);
       } else {
-        reflector(_Activity_.class, realActivity).onPrepareDialog(id, dialog, bundle);
+        reflector(ActivityReflector.class, realActivity).onPrepareDialog(id, dialog, bundle);
       }
 
       dialogForId.put(id, dialog);
@@ -802,7 +803,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   protected void onDestroy() {
     reflector(DirectActivityReflector.class, realActivity).onDestroy();
     ShadowActivityThread activityThread = Shadow.extract(RuntimeEnvironment.getActivityThread());
-    IBinder token = reflector(_Activity_.class, realActivity).getToken();
+    IBinder token = reflector(ActivityReflector.class, realActivity).getToken();
     activityThread.removeActivity(token);
   }
 
@@ -968,7 +969,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     if (RuntimeEnvironment.getApiLevel() < N) {
       throw new IllegalStateException("initializeVoiceInteractor requires API " + N);
     }
-    reflector(_Activity_.class, realActivity)
+    reflector(ActivityReflector.class, realActivity)
         .setVoiceInteractor(ReflectionHelpers.createDeepProxy(IVoiceInteractor.class));
   }
 

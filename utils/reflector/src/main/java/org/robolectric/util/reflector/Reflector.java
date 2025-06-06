@@ -25,11 +25,11 @@ import org.robolectric.util.PerfStatsCollector;
  * }
  *
  * &#064;ForType(Foo.class)
- * interface _Foo_ {
+ * interface FooReflector {
  *   String getName();
  * }
  *
- * reflector(_Foo_.class, new Foo()).getName();
+ * reflector(FooReflector.class, new Foo()).getName();
  * </pre>
  */
 @SuppressWarnings("NewApi")

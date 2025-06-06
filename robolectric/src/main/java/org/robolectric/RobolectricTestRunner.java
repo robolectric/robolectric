@@ -474,7 +474,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @Priority(Integer.MIN_VALUE)
   @Deprecated
   public static class DeprecatedTestRunnerDefaultConfigProvider implements GlobalConfigProvider {
-    static Config globalConfig;
+    static Config globalConfig = new Config.Builder().build();
 
     @Override
     public Config get() {

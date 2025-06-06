@@ -23,7 +23,7 @@ import org.robolectric.util.reflector.WithType;
 
 /** Accessor interface for {@link Activity}'s internals. */
 @ForType(Activity.class)
-public interface _Activity_ {
+public interface ActivityReflector {
 
   @Accessor("mToken")
   IBinder getToken();
