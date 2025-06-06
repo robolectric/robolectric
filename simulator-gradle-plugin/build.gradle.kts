@@ -6,7 +6,7 @@ plugins {
   signing
 }
 
-version = "1.0-SNAPSHOT"
+version = "1.0"
 
 gradlePlugin {
   website.set("https://robolectric.org/simulator")
