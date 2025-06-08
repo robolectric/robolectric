@@ -55,8 +55,8 @@ public final class ResourceHelper {
    * Returns the TypedValue color type represented by the given string value
    *
    * @param value the color value
-   * @return the color as an int. For backwards compatibility, will return a default of ARGB8 if
-   *     value format is unrecognized.
+   * @return the TypedValue color type. For backwards compatibility, will return a default of ARGB8
+   *     if value format is unrecognized.
    */
   public static int getColorType(String value) {
     if (value != null && value.startsWith("#")) {
@@ -171,7 +171,7 @@ public final class ResourceHelper {
     }
 
     // check the first character
-    if (buf[0] < '0' && buf[0] > '9' && buf[0] != '.' && buf[0] != '-') {
+    if ((buf[0] < '0' || buf[0] > '9') && buf[0] != '.' && buf[0] != '-') {
       return false;
     }
 
