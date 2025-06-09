@@ -17,6 +17,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Package;
 import android.content.res.Resources;
@@ -297,8 +298,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
     shadowInitialApplication.callAttach(systemContextImpl);
 
     Package parsedPackage = loadAppPackage(appManifest);
+    PackageInfo packageInfo = ShadowPackageManager.addPackageInternal(parsedPackage);
 
-    ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
+    ApplicationInfo applicationInfo = packageInfo.applicationInfo;
     Class<? extends Application> applicationClass =
         getApplicationClass(appManifest, config, applicationInfo);
     applicationInfo.className = applicationClass.getName();
@@ -308,21 +310,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
             applicationInfo.packageName, androidInstrumentation.getClass().getSimpleName());
     ReflectionHelpers.setField(androidInstrumentation, "mComponent", actualComponentName);
 
-    // unclear why, but prior to P the processName wasn't set
-    if (apiLevel < P && applicationInfo.processName == null) {
-      applicationInfo.processName = parsedPackage.packageName;
-    }
-
     setUpPackageStorage(applicationInfo, parsedPackage);
-
-    // Bit of a hack... Context.createPackageContext() is called before the application is created.
-    // It calls through
-    // to ActivityThread for the package which in turn calls the PackageManagerService directly.
-    // This works for now
-    // but it might be nicer to have ShadowPackageManager implementation move into the service as
-    // there is also lots of
-    // code in there that can be reusable, e.g: the XxxxIntentResolver code.
-    ShadowActivityThread.setApplicationInfo(applicationInfo);
 
     // Bootstrap.getConfiguration gets any potential updates to configuration via
     // RuntimeEnvironment.setQualifiers.
@@ -346,7 +334,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     final Object appBindData = ReflectionHelpers.callConstructor(appBindDataClass);
     final AppBindDataReflector appBindDataReflector =
         reflector(AppBindDataReflector.class, appBindData);
-    appBindDataReflector.setProcessName(parsedPackage.packageName);
+    appBindDataReflector.setProcessName(applicationInfo.packageName);
     appBindDataReflector.setAppInfo(applicationInfo);
     activityThreadReflector.setBoundApplication(appBindData);
 
@@ -356,8 +344,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     Context contextImpl =
         reflector(ContextImplReflector.class).createAppContext(activityThread, loadedApk);
-    ShadowPackageManager shadowPackageManager = Shadow.extract(contextImpl.getPackageManager());
-    shadowPackageManager.addPackageInternal(parsedPackage);
+
     activityThreadReflector.setInitialApplication(application);
     ShadowApplication shadowApplication = Shadow.extract(application);
     shadowApplication.callAttach(contextImpl);
@@ -403,7 +390,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
         .measure(
             "application onCreate()",
             () -> androidInstrumentation.callApplicationOnCreate(application));
-
+    // TODO(brettchabot): WorkManagerTestInitHelper.closeWorkDatabase() can deadlock when
+    // processName is populated
+    applicationInfo.processName = null;
     return application;
   }
 

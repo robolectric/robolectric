@@ -44,7 +44,6 @@ import org.robolectric.util.reflector.Reflector;
 /** Shadow for {@link ActivityThread}. */
 @Implements(value = ActivityThread.class, isInAndroidSdk = false)
 public class ShadowActivityThread {
-  private static ApplicationInfo applicationInfo;
   @RealObject protected ActivityThread realActivityThread;
   @ReflectorObject protected ActivityThreadReflector activityThreadReflector;
 
@@ -64,10 +63,6 @@ public class ShadowActivityThread {
           if (method.getName().equals("getApplicationInfo")) {
             String packageName = (String) args[0];
             int flags = ((Number) args[1]).intValue();
-            if (packageName.equals(ShadowActivityThread.applicationInfo.packageName)) {
-              return ShadowActivityThread.applicationInfo;
-            }
-
             try {
               return RuntimeEnvironment.getApplication()
                   .getPackageManager()
@@ -189,20 +184,6 @@ public class ShadowActivityThread {
 
   void removeActivity(IBinder token) {
     reflector(ActivityThreadReflector.class, realActivityThread).getActivities().remove(token);
-  }
-
-  /**
-   * Internal use only.
-   *
-   * @deprecated do not use
-   */
-  @Deprecated
-  public static void setApplicationInfo(ApplicationInfo applicationInfo) {
-    ShadowActivityThread.applicationInfo = applicationInfo;
-  }
-
-  static ApplicationInfo getApplicationInfo() {
-    return applicationInfo;
   }
 
   /**

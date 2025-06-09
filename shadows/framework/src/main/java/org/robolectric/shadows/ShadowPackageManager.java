@@ -891,18 +891,9 @@ public class ShadowPackageManager {
   }
 
   /**
-   * Installs a package with the {@link PackageManager}.
-   *
-   * <p>In order to create PackageInfo objects in a valid state please use {@link
-   * androidx.test.core.content.pm.PackageInfoBuilder}.
-   *
-   * <p>This method automatically simulates installation of a package in the system, so it adds a
-   * flag {@link ApplicationInfo#FLAG_INSTALLED} to the application info and makes sure it exits. It
-   * will update applicationInfo in package components as well.
-   *
-   * <p>If you don't want the package to be installed, use {@link #addPackageNoDefaults} instead.
+   * @see #installPackage(PackageInfo)
    */
-  public void installPackage(PackageInfo packageInfo) {
+  static void installPackageInternal(PackageInfo packageInfo) {
     ApplicationInfo appInfo = packageInfo.applicationInfo;
     if (appInfo == null) {
       appInfo = new ApplicationInfo();
@@ -941,7 +932,23 @@ public class ShadowPackageManager {
         }
       }
     }
-    addPackageNoDefaults(packageInfo);
+    addPackageInternal(packageInfo, new PackageStats(packageInfo.packageName));
+  }
+
+  /**
+   * Installs a package with the {@link PackageManager}.
+   *
+   * <p>In order to create PackageInfo objects in a valid state please use {@link
+   * androidx.test.core.content.pm.PackageInfoBuilder}.
+   *
+   * <p>This method automatically simulates installation of a package in the system, so it adds a
+   * flag {@link ApplicationInfo#FLAG_INSTALLED} to the application info and makes sure it exits. It
+   * will update applicationInfo in package components as well.
+   *
+   * <p>If you don't want the package to be installed, use {@link #addPackageNoDefaults} instead.
+   */
+  public void installPackage(PackageInfo packageInfo) {
+    ShadowPackageManager.installPackageInternal(packageInfo);
   }
 
   /** Adds install source information for a package. */
@@ -981,7 +988,6 @@ public class ShadowPackageManager {
     PackageStats packageStats = new PackageStats(packageInfo.packageName);
     addPackage(packageInfo, packageStats);
   }
-
   /**
    * Installs a package with its stats with the {@link PackageManager}.
    *
@@ -989,6 +995,10 @@ public class ShadowPackageManager {
    * sure it is valid (see {@link #installPackage(PackageInfo)}).
    */
   public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
+    ShadowPackageManager.addPackageInternal(packageInfo, packageStats);
+  }
+
+  static void addPackageInternal(PackageInfo packageInfo, PackageStats packageStats) {
     synchronized (lock) {
       if (packageInfo.applicationInfo != null
           && (packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_INSTALLED) == 0) {
@@ -1367,7 +1377,7 @@ public class ShadowPackageManager {
    *
    * @param appPackage
    */
-  public void addPackageInternal(Package appPackage) {
+  public static PackageInfo addPackageInternal(Package appPackage) {
     int flags =
         GET_ACTIVITIES
             | GET_RECEIVERS
@@ -1404,17 +1414,18 @@ public class ShadowPackageManager {
         }
       }
 
-      addPermissionGroupInfo(permissionGroupInfo);
+      permissionGroups.put(permissionGroupInfo.name, permissionGroupInfo);
     }
     PackageInfo packageInfo = generatePackageInfo(appPackage, flags);
 
     packageInfo.applicationInfo.uid = Process.myUid();
     packageInfo.applicationInfo.dataDir = createTempDir(packageInfo.packageName + "-dataDir");
-    installPackage(packageInfo);
+    installPackageInternal(packageInfo);
     addFilters(activityFilters, appPackage.activities);
     addFilters(serviceFilters, appPackage.services);
     addFilters(providerFilters, appPackage.providers);
     addFilters(receiverFilters, appPackage.receivers);
+    return packageInfo;
   }
 
   /**
@@ -1427,7 +1438,7 @@ public class ShadowPackageManager {
         System.getProperty("robolectric.allowPlatformPermissions", "false"));
   }
 
-  protected PackageInfo generatePackageInfo(Package appPackage, int flags) {
+  static PackageInfo generatePackageInfo(Package appPackage, int flags) {
 
     if (RuntimeEnvironment.getApiLevel() >= TIRAMISU) {
       return PackageParser.generatePackageInfo(
@@ -1445,7 +1456,7 @@ public class ShadowPackageManager {
     }
   }
 
-  private void addFilters(
+  private static void addFilters(
       Map<ComponentName, List<IntentFilter>> componentMap,
       List<? extends PackageParser.Component<?>> components) {
     if (components == null) {
