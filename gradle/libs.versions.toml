@@ -100,11 +100,11 @@ sqlite4java = "1.0.392"
 
 # https://developer.android.com/jetpack/androidx/versions
 androidx-annotation = "1.9.1"
-androidx-appcompat = "1.7.0"
+androidx-appcompat = "1.7.1"
 androidx-biometric = "1.1.0"
 androidx-constraintlayout = "2.2.1"
 androidx-core = "1.16.0"
-androidx-fragment = "1.8.7"
+androidx-fragment = "1.8.8"
 androidx-window = "1.4.0"
 androidx-room = "2.7.1"
 androidx-recyclerview = "1.4.0"
@@ -119,7 +119,7 @@ androidx-test-runner = "1.6.2"
 androidx-test-services = "1.5.0"
 
 # https://developer.android.com/jetpack/androidx/releases/compose
-androidx-compose-bom = "2025.05.01"
+androidx-compose-bom = "2025.06.00"
 
 # for shadows/playservices/build.gradle
 androidx-fragment-for-shadows = "1.2.0"
