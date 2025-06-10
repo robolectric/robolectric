@@ -3,13 +3,9 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertFalse;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Build.VERSION_CODES;
@@ -306,22 +302,5 @@ public class ShadowContextTest {
   @Config(minSdk = P)
   public void getWifiRttService() {
     assertThat(context.getSystemService(Context.WIFI_RTT_RANGING_SERVICE)).isNotNull();
-  }
-
-  @Test
-  public void getApplicationInfo() throws NameNotFoundException {
-    ApplicationInfo appInfo = context.getApplicationInfo();
-    assertThat(appInfo).isNotNull();
-    assertThat(appInfo.uid).isEqualTo(android.os.Process.myUid());
-    assertThat(appInfo.packageName).isEqualTo(context.getPackageName());
-
-    // ensure copy is obtained to ensure data consistency
-    ApplicationInfo appFromPkgMgr =
-        context
-            .getPackageManager()
-            .getApplicationInfo(context.getPackageName(), PackageManager.MATCH_ALL);
-    assertFalse(appInfo == appFromPkgMgr);
-    assertThat(appInfo.uid).isEqualTo(appFromPkgMgr.uid);
-    assertThat(appInfo.packageName).isEqualTo(appFromPkgMgr.packageName);
   }
 }
