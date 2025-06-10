@@ -24,7 +24,7 @@ import org.robolectric.util.reflector.Static;
  * @deprecated run on Android APIs >= S, which allows the real Android mime type data to be used
  */
 @Deprecated
-@Implements(value = MimeTypeMap.class)
+@Implements(MimeTypeMap.class)
 public class ShadowMimeTypeMap {
 
   private static final String LOG_TAG = "ShadowMimeTypeMap";

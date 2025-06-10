@@ -11,7 +11,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /** Shadow of {@link MediaScannerConnection} */
-@Implements(value = MediaScannerConnection.class)
+@Implements(MediaScannerConnection.class)
 public class ShadowMediaScannerConnection {
   private static final Set<String> savedPaths = new HashSet<>();
   private static final Set<String> savedMimeTypes = new HashSet<>();

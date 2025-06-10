@@ -36,7 +36,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for InputMethodManager. */
-@Implements(value = InputMethodManager.class)
+@Implements(InputMethodManager.class)
 public class ShadowInputMethodManager {
 
   /**

@@ -52,7 +52,7 @@ import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = AudioManager.class)
+@Implements(AudioManager.class)
 public class ShadowAudioManager {
   @RealObject AudioManager realAudioManager;
 

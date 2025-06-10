@@ -19,7 +19,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for android.text.StaticLayout */
-@Implements(value = StaticLayout.class)
+@Implements(StaticLayout.class)
 public class ShadowStaticLayout {
 
   @ForType(className = "android.text.StaticLayout$LineBreaks")

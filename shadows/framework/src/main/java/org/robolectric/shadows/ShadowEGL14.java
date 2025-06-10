@@ -11,7 +11,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Shadow for EGL14. Currently doesn't handle real graphics work, but avoids crashing when run. */
-@Implements(value = EGL14.class)
+@Implements(EGL14.class)
 public class ShadowEGL14 {
   private static final long UNUSED_HANDLE_ID = 43L;
 

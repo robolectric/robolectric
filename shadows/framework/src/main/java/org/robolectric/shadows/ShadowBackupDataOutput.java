@@ -14,7 +14,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for BackupDataOutput. */
-@Implements(value = BackupDataOutput.class)
+@Implements(BackupDataOutput.class)
 public class ShadowBackupDataOutput {
 
   protected static final String KEY_PREFIX_JOINER = ":";

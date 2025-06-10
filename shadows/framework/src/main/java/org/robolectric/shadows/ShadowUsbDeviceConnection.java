@@ -16,7 +16,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Robolectric implementation of {@link android.hardware.usb.UsbDeviceConnection}. */
-@Implements(value = UsbDeviceConnection.class)
+@Implements(UsbDeviceConnection.class)
 public class ShadowUsbDeviceConnection {
 
   private PipedInputStream outgoingDataPipedInputStream;

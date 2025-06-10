@@ -24,7 +24,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Implements {@link AudioEffect} by shadowing its native methods. */
-@Implements(value = AudioEffect.class)
+@Implements(AudioEffect.class)
 public class ShadowAudioEffect {
   private static final List<AudioEffect.Descriptor> descriptors = new ArrayList<>();
   private static final List<AudioEffect> audioEffects = new ArrayList<>();

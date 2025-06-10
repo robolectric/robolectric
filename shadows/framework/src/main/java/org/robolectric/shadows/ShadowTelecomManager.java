@@ -47,7 +47,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = TelecomManager.class)
+@Implements(TelecomManager.class)
 public class ShadowTelecomManager {
 
   /**

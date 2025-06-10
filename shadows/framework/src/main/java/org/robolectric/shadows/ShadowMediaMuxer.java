@@ -24,7 +24,7 @@ import org.robolectric.util.ReflectionHelpers;
  * Implementation of {@link android.media.MediaMuxer} which directly passes input bytes to the
  * specified file, with no modification.
  */
-@Implements(value = MediaMuxer.class)
+@Implements(MediaMuxer.class)
 public class ShadowMediaMuxer {
   // Maps between 'native' ids and corresponding output streams.
   private static final ConcurrentHashMap<Long, FileOutputStream> outputStreams =

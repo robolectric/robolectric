@@ -53,7 +53,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow of PowerManager */
-@Implements(value = PowerManager.class)
+@Implements(PowerManager.class)
 public class ShadowPowerManager {
 
   @RealObject private PowerManager realPowerManager;

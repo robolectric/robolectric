@@ -35,7 +35,7 @@ import org.robolectric.util.reflector.Static;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Robolectric shadow for SpeechRecognizer. */
-@Implements(value = SpeechRecognizer.class)
+@Implements(SpeechRecognizer.class)
 public class ShadowSpeechRecognizer {
 
   @SuppressWarnings("NonFinalStaticField")

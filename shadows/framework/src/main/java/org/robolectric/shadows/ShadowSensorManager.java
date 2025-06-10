@@ -31,7 +31,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Shadow for {@link SensorManager}. */
-@Implements(value = SensorManager.class)
+@Implements(SensorManager.class)
 public class ShadowSensorManager {
   private static final AtomicBoolean forceListenersToFail = new AtomicBoolean();
   private static final Multimap<Integer, Sensor> sensorMap =

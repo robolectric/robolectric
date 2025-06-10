@@ -72,7 +72,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
  * location on, gps provider enabled, network provider disabled.
  */
 @SuppressWarnings("deprecation")
-@Implements(value = LocationManager.class)
+@Implements(LocationManager.class)
 public class ShadowLocationManager {
 
   private static final String TAG = "ShadowLocationManager";

@@ -22,7 +22,7 @@ import org.robolectric.annotation.Resetter;
  * <p>It is also possible to provide the underlying data by implementing {@link AudioRecordSource}
  * and setting this via {@link #setSourceProvider(AudioRecordSourceProvider)}.
  */
-@Implements(value = AudioRecord.class)
+@Implements(AudioRecord.class)
 public final class ShadowAudioRecord {
 
   @RealObject AudioRecord audioRecord;

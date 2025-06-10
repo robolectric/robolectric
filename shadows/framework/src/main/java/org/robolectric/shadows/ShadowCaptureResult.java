@@ -11,7 +11,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow of {@link CaptureResult}. */
-@Implements(value = CaptureResult.class)
+@Implements(CaptureResult.class)
 public class ShadowCaptureResult {
 
   private final Map<Key<?>, Object> resultsKeyToValue = new HashMap<>();

@@ -15,7 +15,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for BackupDataInput. */
-@Implements(value = BackupDataInput.class)
+@Implements(BackupDataInput.class)
 public class ShadowBackupDataInput {
 
   private List<BackupDataEntity> entities = new ArrayList<>();

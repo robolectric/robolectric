@@ -16,7 +16,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = Network.class)
+@Implements(Network.class)
 public class ShadowNetwork {
 
   @RealObject private Network realObject;

@@ -14,7 +14,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = BluetoothServerSocket.class)
+@Implements(BluetoothServerSocket.class)
 public class ShadowBluetoothServerSocket {
   private final BlockingQueue<BluetoothSocket> sockets = new LinkedBlockingQueue<>();
   private boolean closed;

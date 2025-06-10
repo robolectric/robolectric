@@ -39,11 +39,11 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
 /** Shadow for PackageInstaller. */
-@Implements(value = PackageInstaller.class)
+@Implements(PackageInstaller.class)
 @SuppressLint("NewApi")
 public class ShadowPackageInstaller {
   /** Shadow for PackageInstaller.SessionInfo. */
-  @Implements(value = PackageInstaller.SessionInfo.class)
+  @Implements(PackageInstaller.SessionInfo.class)
   public static class ShadowSessionInfo {
     @RealObject private SessionInfo sessionInfo;
 
@@ -318,7 +318,7 @@ public class ShadowPackageInstaller {
   }
 
   /** Shadow for PackageInstaller.Session. */
-  @Implements(value = PackageInstaller.Session.class)
+  @Implements(PackageInstaller.Session.class)
   public static class ShadowSession {
 
     private OutputStream outputStream;

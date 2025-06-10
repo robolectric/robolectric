@@ -25,7 +25,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Adds Robolectric support for BLE scanning. */
-@Implements(value = BluetoothLeScanner.class)
+@Implements(BluetoothLeScanner.class)
 public class ShadowBluetoothLeScanner {
   private List<ScanParams> activeScanParams = new ArrayList<>();
 

@@ -31,7 +31,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = Paint.class)
+@Implements(Paint.class)
 public class ShadowPaint {
 
   private int color;

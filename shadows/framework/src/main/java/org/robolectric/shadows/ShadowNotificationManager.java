@@ -39,7 +39,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 /** Shadows for NotificationManager. */
 @SuppressWarnings({"UnusedDeclaration", "AndroidConcurrentHashMap"})
-@Implements(value = NotificationManager.class)
+@Implements(NotificationManager.class)
 public class ShadowNotificationManager {
   private static final int MAX_NOTIFICATION_LIMIT = 25;
   private static boolean mAreNotificationsEnabled = true;

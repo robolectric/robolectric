@@ -20,7 +20,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = SmsManager.class)
+@Implements(SmsManager.class)
 public class ShadowSmsManager {
 
   private String smscAddress;

@@ -32,7 +32,7 @@ import org.robolectric.util.reflector.Static;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow implementation of {@link NfcAdapter}. */
-@Implements(value = NfcAdapter.class)
+@Implements(NfcAdapter.class)
 public class ShadowNfcAdapter {
   @RealObject NfcAdapter nfcAdapter;
 

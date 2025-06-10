@@ -41,7 +41,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow class for {@link CameraManager} */
-@Implements(value = CameraManager.class)
+@Implements(CameraManager.class)
 public class ShadowCameraManager {
   // Keep references to cameras so they can be closed after each test
   protected static final Set<CameraDeviceImpl> createdCameras =

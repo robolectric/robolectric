@@ -18,7 +18,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
 /** Robolectric implementation of {@link android.hardware.usb.UsbRequest}. */
-@Implements(value = UsbRequest.class)
+@Implements(UsbRequest.class)
 public class ShadowUsbRequest {
 
   @RealObject private UsbRequest realUsbRequest;

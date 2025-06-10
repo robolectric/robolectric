@@ -62,7 +62,7 @@ import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = BluetoothAdapter.class)
+@Implements(BluetoothAdapter.class)
 public class ShadowBluetoothAdapter {
   @RealObject private BluetoothAdapter realAdapter;
 

@@ -18,7 +18,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow Implementation of {@link android.net.wifi.WifiConfiguration} */
-@Implements(value = WifiConfiguration.class)
+@Implements(WifiConfiguration.class)
 public class ShadowWifiConfiguration {
   @RealObject private WifiConfiguration realObject;
 

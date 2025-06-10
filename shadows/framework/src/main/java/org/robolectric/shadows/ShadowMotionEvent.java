@@ -49,7 +49,7 @@ import org.robolectric.versioning.AndroidVersions.V;
  *     the MotionEvent.obtain methods or via MotionEventBuilder.
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = MotionEvent.class)
+@Implements(MotionEvent.class)
 public class ShadowMotionEvent extends ShadowInputEvent {
 
   private static final NativeObjRegistry<NativeInput.MotionEvent> nativeMotionEventRegistry =

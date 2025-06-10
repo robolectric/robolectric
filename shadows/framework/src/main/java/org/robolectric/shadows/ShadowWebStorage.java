@@ -8,7 +8,7 @@ import org.robolectric.annotation.Implements;
  * Shadow of {@link WebStorage} which constructs a stub instance rather than attempting to create a
  * full Chromium-backed instance.
  */
-@Implements(value = WebStorage.class)
+@Implements(WebStorage.class)
 public class ShadowWebStorage {
 
   @Implementation

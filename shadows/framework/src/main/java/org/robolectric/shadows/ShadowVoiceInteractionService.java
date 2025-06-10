@@ -22,7 +22,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow implementation of {@link android.service.voice.VoiceInteractionService}. */
-@Implements(value = VoiceInteractionService.class)
+@Implements(VoiceInteractionService.class)
 public class ShadowVoiceInteractionService extends ShadowService {
 
   private final List<Bundle> hintBundles = Collections.synchronizedList(new ArrayList<>());

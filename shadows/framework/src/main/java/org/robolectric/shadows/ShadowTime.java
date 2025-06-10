@@ -8,7 +8,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = Time.class)
+@Implements(Time.class)
 public class ShadowTime {
   @RealObject private Time time;
 
