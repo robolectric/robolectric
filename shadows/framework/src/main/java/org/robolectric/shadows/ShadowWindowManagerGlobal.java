@@ -748,6 +748,7 @@ public class ShadowWindowManagerGlobal {
             boolean.class /* reportDraw */,
             boolean.class /* forceLayout */,
             int.class /* displayId */,
+            boolean.class /* syncWithBuffers */,
             boolean.class /* dragResizing */)) {
           ClassParameterBuilder rlrArgs = new ClassParameterBuilder();
           rlrArgs.add(ClientWindowFrames.class, windowInfo.frames);
@@ -760,6 +761,7 @@ public class ShadowWindowManagerGlobal {
           /* reportDraw */ args.add(boolean.class, false);
           /* forceLayout */ args.add(boolean.class, false);
           /* displayId */ args.add(int.class, windowInfo.displayId);
+          /* syncWithBuffers */ args.add(boolean.class, false);
           /* dragResizing */ args.add(boolean.class, false);
           callInstanceMethod(window, "resized", args.build());
           return;
