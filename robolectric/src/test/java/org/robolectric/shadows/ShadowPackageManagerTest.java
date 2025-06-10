@@ -3512,9 +3512,9 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void installerPackageName() {
-    packageManager.setInstallerPackageName("target.package", "installer.package");
+    packageManager.setInstallerPackageName(context.getPackageName(), "installer.package");
 
-    assertThat(packageManager.getInstallerPackageName("target.package"))
+    assertThat(packageManager.getInstallerPackageName(context.getPackageName()))
         .isEqualTo("installer.package");
   }
 
@@ -3532,20 +3532,22 @@ public class ShadowPackageManagerTest {
       packageManager.getInstallerPackageName("target.package");
       fail("Exception expected");
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat().contains("target.package");
+      assertThat(e).hasMessageThat().isEqualTo("Package is not installed: target.package");
     }
   }
 
   @Test
   @GetInstallerPackageNameMode(Mode.REALISTIC)
   public void installerPackageName_uninstalledAndRealisticSettings() {
+    packageManager.setInstallerPackageName(context.getPackageName(), "installer.pkg");
+    shadowOf(packageManager).deletePackage(context.getPackageName());
     try {
-      packageManager.setInstallerPackageName(context.getPackageName(), "installer.pkg");
-      shadowOf(packageManager).deletePackage(context.getPackageName());
       packageManager.getInstallerPackageName(context.getPackageName());
       fail("Exception expected");
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat().contains(context.getPackageName());
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("Package is not installed: " + context.getPackageName());
     }
   }
 

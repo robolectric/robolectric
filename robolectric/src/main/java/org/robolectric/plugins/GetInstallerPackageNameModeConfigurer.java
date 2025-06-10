@@ -22,8 +22,7 @@ public class GetInstallerPackageNameModeConfigurer
   @Nonnull
   @Override
   public GetInstallerPackageNameMode.Mode defaultConfig() {
-    // TODO: switch to REALISTIC
-    return GetInstallerPackageNameMode.Mode.LEGACY;
+    return GetInstallerPackageNameMode.Mode.REALISTIC;
   }
 
   @Override

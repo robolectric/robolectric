@@ -1,5 +1,6 @@
 package org.robolectric.annotation;
 
+import android.content.pm.PackageManager;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,16 +8,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A {@link org.robolectric.pluginapi.config.Configurer} annotation for controlling how Robolectric
- * executes {@code PackageManager#getInstallerPackageName} method.
+ * A {@link org.robolectric.pluginapi.config.Configurer Configurer} annotation for controlling how
+ * Robolectric executes {@link PackageManager#getInstallerPackageName} method.
  *
- * <p>'getInstallerPackageName' method in PackageManager must throw IllegalArgumentException if the
- * installer package is not present. The legacy robolectric behavior returns a null value for these
- * cases.
+ * <p>{@code getInstallerPackageName} method in {@code PackageManager} must throw an {@link
+ * IllegalArgumentException} if the installer package is not present. The legacy Robolectric
+ * behavior returns {@code null} in this case.
  *
  * <p>This annotation can be applied to tests to have Robolectric perform the legacy mechanism of
- * not throwing IllegalArgumentException and instead return 'null', when installer package name is
- * not found.
+ * not throwing {@code IllegalArgumentException} and instead return {@code null}, when installer
+ * package name is not found.
  *
  * <p>This annotation will be deleted in a forthcoming Robolectric release.
  */
@@ -29,9 +30,20 @@ public @interface GetInstallerPackageNameMode {
    * Specifies the different {@code ShadowApplicationPackageManager#getInstallerPackageName} modes.
    */
   enum Mode {
-    /** Robolectric's prior behavior when calling getInstallerPackageName method. */
+    /**
+     * Robolectric's prior behavior when calling the {@code getInstallerPackageName} method.
+     *
+     * @deprecated This mode behaves differently than the Android framework.
+     */
+    @Deprecated
     LEGACY,
-    /** The new, real behavior when calling getInstallerPackageName method. */
+
+    /**
+     * The new, real behavior when calling the {@code getInstallerPackageName} method.
+     *
+     * @deprecated This is the default mode. It doesn't need to be set explicitly.
+     */
+    @Deprecated
     REALISTIC,
   }
 
