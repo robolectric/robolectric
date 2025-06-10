@@ -6,12 +6,10 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ConscryptMode;
@@ -21,7 +19,8 @@ import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.config.ConfigurationStrategy;
+import org.robolectric.pluginapi.config.Configurer;
+import org.robolectric.util.inject.Injector;
 
 /** Loads an apk into the simulator */
 public class AppLoader implements Runnable {
@@ -35,15 +34,40 @@ public class AppLoader implements Runnable {
     this.apkPath = apkPath;
   }
 
+  @SuppressWarnings("unchecked")
+  private Config getBestConfig() {
+    Injector injector =
+        new Injector.Builder().bind(Properties.class, System.getProperties()).build();
+    Configurer<?>[] configurers = injector.getInstance(Configurer[].class);
+    Configurer<Config> bestConfigConfigurer = null;
+    for (Configurer<?> configurer : configurers) {
+      if (configurer.getConfigClass().equals(Config.class)) {
+        // The array is sorted based on priority and Supersedes annotations, so the first
+        // configurer in the list is the best one.
+        bestConfigConfigurer = (Configurer<Config>) configurer;
+        break;
+      }
+    }
+    return bestConfigConfigurer.defaultConfig();
+  }
+
   @Override
   public void run() {
     Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
 
     AndroidManifest manifest = new AndroidManifest(null, null, null, null, "", this.apkPath);
 
-    this.sandbox
-        .getTestEnvironment()
-        .setUpApplicationState("simulator", new FixedConfiguration(), manifest);
+    FixedConfiguration configuration =
+        FixedConfiguration.newBuilder()
+            .put(ConscryptMode.Mode.class, ConscryptMode.Mode.OFF)
+            .put(LooperMode.Mode.class, LooperMode.Mode.PAUSED)
+            .put(LazyApplication.LazyLoad.class, LazyApplication.LazyLoad.OFF)
+            .put(GraphicsMode.Mode.class, GraphicsMode.Mode.NATIVE)
+            .put(SQLiteMode.Mode.class, SQLiteMode.Mode.NATIVE)
+            .put(Config.class, getBestConfig())
+            .build();
+
+    this.sandbox.getTestEnvironment().setUpApplicationState("simulator", configuration, manifest);
 
     Application application = RuntimeEnvironment.getApplication();
 
@@ -69,37 +93,6 @@ public class AppLoader implements Runnable {
       new Simulator(activityClass).start();
     } catch (Exception e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * A {@link ConfigurationStrategy.Configuration} that provides a fixed set of values for the
-   * configuration.
-   */
-  public static class FixedConfiguration implements ConfigurationStrategy.Configuration {
-
-    private static final ImmutableMap<Class<?>, Object> MODES =
-        ImmutableMap.of(
-            Config.class, new Config.Builder().build(),
-            ConscryptMode.Mode.class, ConscryptMode.Mode.OFF,
-            LooperMode.Mode.class, LooperMode.Mode.PAUSED,
-            LazyApplication.LazyLoad.class, LazyApplication.LazyLoad.OFF,
-            GraphicsMode.Mode.class, GraphicsMode.Mode.NATIVE,
-            SQLiteMode.Mode.class, SQLiteMode.Mode.NATIVE);
-
-    @Override
-    public <T> T get(Class<T> aClass) {
-      return aClass.cast(MODES.get(aClass));
-    }
-
-    @Override
-    public Collection<Class<?>> keySet() {
-      return MODES.keySet();
-    }
-
-    @Override
-    public Map<Class<?>, Object> map() {
-      return MODES;
     }
   }
 }
