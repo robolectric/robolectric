@@ -121,11 +121,13 @@ import org.robolectric.annotation.GetInstallerPackageNameMode;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Shadow for {@link ApplicationPackageManager}. */
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false)
@@ -1856,6 +1858,20 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       @ClassName("android.content.pm.PackageManager$ResolveInfoFlags") Object flags,
       int userId) {
     return resolveActivity(intent, (int) ((ResolveInfoFlags) flags).getValue());
+  }
+
+  /**
+   * Behaves as {@link #resolveActivity(Intent, int)} and currently ignores userId and resolvedType
+   */
+  // TODO(brettchabot): this should be PostBaklava
+  @Implementation(minSdk = Baklava.SDK_INT)
+  @InDevelopment
+  protected ResolveInfo resolveActivityAsUser(
+      Intent intent,
+      String resolvedType,
+      @ClassName("android.content.pm.PackageManager$ResolveInfoFlags") Object flags,
+      int userId) {
+    return resolveActivityAsUser(intent, flags, userId);
   }
 
   @Implementation(minSdk = TIRAMISU)
