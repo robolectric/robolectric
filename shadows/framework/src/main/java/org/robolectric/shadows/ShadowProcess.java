@@ -194,4 +194,14 @@ public class ShadowProcess {
   public static void setProcessName(@Nonnull String processName) {
     ShadowProcess.processName = processName;
   }
+
+  /** Sets the current uid to be an isolated uid. */
+  public static void setIsolatedUid() {
+    setUid(android.os.Process.FIRST_ISOLATED_UID);
+  }
+
+  /** Sets the current uid to be an isolated uid. */
+  public static void setIsIsolated() {
+    setIsolatedUid();
+  }
 }
