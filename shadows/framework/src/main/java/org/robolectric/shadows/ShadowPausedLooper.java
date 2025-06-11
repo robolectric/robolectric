@@ -44,15 +44,21 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /**
- * The shadow Looper for {@link LooperMode.Mode#PAUSED and {@link LooperMode.Mode#INSTRUMENTATION_TEST}.
+ * The shadow Looper for {@link LooperMode.Mode#PAUSED} and {@link
+ * LooperMode.Mode#INSTRUMENTATION_TEST}.
  *
- * <p>This shadow differs from the legacy {@link ShadowLegacyLooper} in the following ways:\ - Has
- * no connection to {@link org.robolectric.util.Scheduler}. Its APIs are standalone - The main
- * looper is always paused in PAUSED MODE but can be unpaused in INSTRUMENTATION_TEST mode. When a
- * looper is paused, posted messages to it are not executed unless {@link #idle()} is called. - Just
- * like in real Android, each looper has its own thread, and posted tasks get executed in that
- * thread. - - There is only a single {@link SystemClock} value that all loopers read from. Unlike
- * legacy behavior where each {@link org.robolectric.util.Scheduler} kept their own clock value.
+ * <p>This shadow differs from the legacy {@link ShadowLegacyLooper} in the following ways:
+ *
+ * <ul>
+ *   <li>Has no connection to {@link org.robolectric.util.Scheduler}. Its APIs are standalone.
+ *   <li>The main looper is always paused in PAUSED MODE but can be unpaused in INSTRUMENTATION_TEST
+ *       mode. When a looper is paused, posted messages to it are not executed unless {@link
+ *       #idle()} is called.
+ *   <li>Just like in real Android, each looper has its own thread, and posted tasks get executed in
+ *       that thread.
+ *   <li>There is only a single {@link SystemClock} value that all loopers read from. Unlike legacy
+ *       behavior where each {@link org.robolectric.util.Scheduler} kept their own clock value.
+ * </ul>
  *
  * <p>This class should not be used directly; use {@link ShadowLooper} instead.
  */
