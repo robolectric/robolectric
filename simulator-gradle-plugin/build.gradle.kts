@@ -29,6 +29,6 @@ afterEvaluate {
 }
 
 dependencies {
-  compileOnly(libs.android.gradle)
+  compileOnly(libs.android.gradle.api)
   implementation(libs.kotlin.stdlib)
 }
