@@ -1,12 +1,14 @@
 package org.robolectric.simulator.gradle
 
-import com.android.build.gradle.AppExtension
+import com.android.build.gradle.AppPlugin
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.getByName
+import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.withType
 
 /** A plugin to launch the Robolectric simulator. */
 class SimulatorPlugin : Plugin<Project> {
@@ -18,22 +20,14 @@ class SimulatorPlugin : Plugin<Project> {
   }
 
   override fun apply(project: Project) {
-    val androidExtension = getAndroidExtension(project)
-    if (androidExtension == null) {
-      return
-    }
-
-    project.afterEvaluate {
-      project.tasks.register("simulate", JavaExec::class.java) {
+    project.plugins.withType<AppPlugin> {
+      project.tasks.register<JavaExec>("simulate") {
         group = "simulation"
         description = "Runs the Robolectric simulator"
         configureTask(project, this)
       }
     }
   }
-
-  private fun getAndroidExtension(project: Project) =
-    project.extensions.findByType(AppExtension::class.java)
 
   /** Checks if a version string is at least 4.15, when the simulator was introduced. */
   private fun supportsSimulator(currentVersion: String): Boolean {
