@@ -77,7 +77,10 @@ public final class HardwareRenderingScreenshot {
             hardwareRenderers.computeIfAbsent(
                 viewRootImpl,
                 k -> {
-                  if (Boolean.parseBoolean(System.getProperty(USE_EMBEDDED_VIEW_ROOT, "false"))) {
+                  if (Boolean.parseBoolean(System.getProperty(USE_EMBEDDED_VIEW_ROOT, "true"))) {
+                    // Default to true because Views' RenderNodeAnimators write to the native
+                    // RootRenderNode state. For highest fidelity, we want to use the
+                    // HardwareRenderer that is attached to the ViewRootImpl.
                     ShadowViewRootImpl shadowViewRootImpl = Shadow.extract(viewRootImpl);
                     // Required to avoid a VerifyError when this lambda class is loaded on SDK <
                     // 29, where ThreadedRenderer is not a subclass of HardwareRenderer.
