@@ -32,3 +32,8 @@ dependencies {
   compileOnly(libs.android.gradle.api)
   implementation(libs.kotlin.stdlib)
 }
+
+tasks.validatePlugins {
+  failOnWarning = true
+  enableStricterValidation = true
+}
