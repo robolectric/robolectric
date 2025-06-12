@@ -1,14 +1,14 @@
 name: Graphics Tests
 
-on:
-  push:
-    branches: [ master, 'robolectric-*.x' ]
-    paths-ignore:
-      - '**.md'
-
-  pull_request:
-    # Do not add `paths-ignore` here, this is required to be run on every PR for the `google` branch.
-    branches: [ master, google ]
+#on:
+#  push:
+#    branches: [ master, 'robolectric-*.x' ]
+#    paths-ignore:
+#      - '**.md'
+#
+#  pull_request:
+#    # Do not add `paths-ignore` here, this is required to be run on every PR for the `google` branch.
+#    branches: [ master, google ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

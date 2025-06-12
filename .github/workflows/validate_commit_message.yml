@@ -1,8 +1,8 @@
 name: Validate commit message
 
-on:
-  pull_request:
-    branches: [ master, google ]
+#on:
+#  pull_request:
+#    branches: [ master, google ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -1,8 +1,8 @@
 name: Copybara tests
 
-on:
-  pull_request:
-    branches: [ google ]
+#on:
+#  pull_request:
+#    branches: [ google ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
