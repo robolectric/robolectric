@@ -9,16 +9,16 @@ plugins {
 version = "1.0-SNAPSHOT"
 
 gradlePlugin {
-  website.set("https://robolectric.org/simulator")
-  vcsUrl.set("https://github.com/robolectric/robolectric")
+  website = "https://robolectric.org/simulator"
+  vcsUrl = "https://github.com/robolectric/robolectric"
   plugins {
-    create("simulatorPlugin") {
+    register("simulatorPlugin") {
       id = "org.robolectric.simulator"
       displayName = "Robolectric Simulator"
       description =
         "A Robolectric-powered simulator that has the ability to preview and interact with Android apps in a Robolectric environment"
       implementationClass = "org.robolectric.simulator.gradle.SimulatorPlugin"
-      tags.set(listOf("android", "robolectric", "simulator"))
+      tags = listOf("android", "robolectric", "simulator")
     }
   }
 }
