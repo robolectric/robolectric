@@ -10,12 +10,6 @@ import org.robolectric.annotation.Implements;
 
 @Implements(MediaRecorder.class)
 public class ShadowMediaRecorder {
-  @SuppressWarnings("UnusedDeclaration")
-  @Implementation
-  protected static void __staticInitializer__() {
-    // don't bind the JNI library
-  }
-
   // Recording machine state, as per:
   // http://developer.android.com/reference/android/media/MediaRecorder.html
   public static final int STATE_ERROR = -1;
@@ -26,7 +20,7 @@ public class ShadowMediaRecorder {
   public static final int STATE_RECORDING = 5;
   public static final int STATE_RELEASED = 6;
 
-  private int state;
+  private int state = STATE_INITIAL;
 
   private Camera camera;
   private int audioChannels;
@@ -50,11 +44,6 @@ public class ShadowMediaRecorder {
   private SurfaceTexture recordingSurfaceTexture;
   private MediaRecorder.OnErrorListener errorListener;
   private MediaRecorder.OnInfoListener infoListener;
-
-  @Implementation
-  protected void __constructor__() {
-    state = STATE_INITIAL;
-  }
 
   @Implementation
   protected void setAudioChannels(int numChannels) {
