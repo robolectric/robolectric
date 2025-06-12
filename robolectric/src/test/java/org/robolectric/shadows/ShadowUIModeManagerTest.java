@@ -84,6 +84,11 @@ public class ShadowUIModeManagerTest {
 
     uiModeManager.setNightMode(INVALID_NIGHT_MODE);
     assertThat(uiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_AUTO);
+
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      uiModeManager.setNightMode(UiModeManager.MODE_NIGHT_CUSTOM);
+      assertThat(uiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_CUSTOM);
+    }
   }
 
   @Test
