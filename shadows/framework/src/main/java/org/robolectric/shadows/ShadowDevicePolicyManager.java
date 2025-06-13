@@ -907,7 +907,7 @@ public class ShadowDevicePolicyManager {
   public boolean isPermissionGranted(String packageName, String permission) {
     Boolean isGranted =
         appPermissionGrantedMap.get(new PackageAndPermission(packageName, permission));
-    return isGranted == null ? false : isGranted;
+    return Boolean.TRUE.equals(isGranted);
   }
 
   @Implementation(minSdk = VERSION_CODES.M)
@@ -1302,7 +1302,7 @@ public class ShadowDevicePolicyManager {
       case DevicePolicyManager.PASSWORD_QUALITY_BIOMETRIC_WEAK:
         return true;
       case DevicePolicyManager.PASSWORD_QUALITY_SOMETHING:
-        return password.length() > 0;
+        return !password.isEmpty();
       case DevicePolicyManager.PASSWORD_QUALITY_NUMERIC:
       case DevicePolicyManager.PASSWORD_QUALITY_NUMERIC_COMPLEX: // complexity not enforced
         return digit > 0 && password.length() >= passwordMinimumLength;

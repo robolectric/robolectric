@@ -87,14 +87,14 @@ public class ShadowCallRedirectionService {
   @ForType(CallRedirectionService.class)
   private interface CallRedirectionServiceReflector {
     @Direct
-    public void redirectCall(
+    void redirectCall(
         Uri handle, PhoneAccountHandle initialPhoneAccount, boolean isInteractiveResponseAllowed);
 
     @Direct
-    public void placeCallUnmodified();
+    void placeCallUnmodified();
 
     @Direct
-    public void cancelCall();
+    void cancelCall();
   }
 
   /** The result of the redirection attempt. */

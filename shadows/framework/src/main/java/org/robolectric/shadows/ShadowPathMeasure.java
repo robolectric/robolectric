@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
@@ -52,7 +53,7 @@ public class ShadowPathMeasure {
 
   private static float round(float d, int decimalPlace) {
     BigDecimal bd = new BigDecimal(d);
-    bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
+    bd = bd.setScale(decimalPlace, RoundingMode.HALF_UP);
     return bd.floatValue();
   }
 }
