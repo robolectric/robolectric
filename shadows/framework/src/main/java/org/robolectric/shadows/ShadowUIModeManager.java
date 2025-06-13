@@ -41,10 +41,15 @@ import org.robolectric.versioning.AndroidVersions.V;
 public class ShadowUIModeManager {
   private static final int DEFAULT_PRIORITY = 0;
 
-  public int currentModeType = Configuration.UI_MODE_TYPE_UNDEFINED;
-  public int currentNightMode = UiModeManager.MODE_NIGHT_AUTO;
-  public int lastFlags;
-  public int lastCarModePriority;
+  /**
+   * @deprecated Use {@link #setCurrentModeType(int)} or {@link UiModeManager#getCurrentModeType()}
+   *     instead.
+   */
+  @Deprecated public int currentModeType = Configuration.UI_MODE_TYPE_UNDEFINED;
+
+  private int currentNightMode = UiModeManager.MODE_NIGHT_AUTO;
+  private int lastFlags;
+  private int lastCarModePriority;
   private int currentApplicationNightMode = 0;
   private final Map<Integer, Set<String>> activeProjectionTypes = new HashMap<>();
   private boolean failOnProjectionToggle;
@@ -88,6 +93,31 @@ public class ShadowUIModeManager {
   protected void disableCarMode(int flags) {
     currentModeType = Configuration.UI_MODE_TYPE_NORMAL;
     lastFlags = flags;
+  }
+
+  /**
+   * Returns the last set car mode priority
+   *
+   * <p>It is changed by {@link UiModeManager#enableCarMode(int)} or {@link
+   * UiModeManager#enableCarMode(int, int)}, and tracked by Robolectric for test purpose.
+   *
+   * @return The tracked last set car mode priority.
+   */
+  public int getLastCarModePriority() {
+    return lastCarModePriority;
+  }
+
+  /**
+   * Returns the last set flags.
+   *
+   * <p>It is changed by {@link UiModeManager#enableCarMode(int)}, {@link
+   * UiModeManager#enableCarMode(int, int)} or {@link UiModeManager#disableCarMode(int)}, and
+   * tracked by Robolectric for test purpose.
+   *
+   * @return The tracked last set flags.
+   */
+  public int getLastFlags() {
+    return lastFlags;
   }
 
   @Implementation
