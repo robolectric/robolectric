@@ -45,6 +45,7 @@ public class ShadowAccessibilityService extends ShadowService {
   private final ArrayListMultimap<Integer, AccessibilityWindowInfo> windows =
       ArrayListMultimap.create();
   private final List<GestureDispatch> gesturesDispatched = new ArrayList<>();
+  private AccessibilityNodeInfo rootInActiveWindow;
 
   private boolean canDispatchGestures = true;
 
@@ -137,6 +138,15 @@ public class ShadowAccessibilityService extends ShadowService {
                   new ClassParameter<>(long.class, timestamp));
           callback.onSuccess(screenshotResult);
         });
+  }
+
+  @Implementation
+  protected AccessibilityNodeInfo getRootInActiveWindow() {
+    return rootInActiveWindow;
+  }
+
+  public void setRootInActiveWindow(AccessibilityNodeInfo rootInActiveWindow) {
+    this.rootInActiveWindow = rootInActiveWindow;
   }
 
   /**
