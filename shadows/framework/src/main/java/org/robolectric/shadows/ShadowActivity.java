@@ -990,6 +990,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           parcel.setDataPosition(0);
           List<DirectAction> output = new ArrayList<>();
           parcel.readParcelableList(output, DirectAction.class.getClassLoader());
+          parcel.recycle();
           callback.accept(output);
         });
   }
