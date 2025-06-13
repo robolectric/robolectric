@@ -1,15 +1,25 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.view.Surface;
 import com.google.common.base.Preconditions;
+import java.io.FileDescriptor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(MediaRecorder.class)
 public class ShadowMediaRecorder {
+
+  @RealObject private MediaRecorder realMediaRecorder;
+
   // Recording machine state, as per:
   // http://developer.android.com/reference/android/media/MediaRecorder.html
   public static final int STATE_ERROR = -1;
@@ -100,6 +110,12 @@ public class ShadowMediaRecorder {
   @Implementation
   protected void setOutputFile(String path) {
     outputPath = path;
+    state = STATE_DATA_SOURCE_CONFIGURED;
+  }
+
+  @Implementation
+  protected void setOutputFile(FileDescriptor fileDescriptor) {
+    reflector(MediaRecorderReflector.class, realMediaRecorder).setOutputFile(fileDescriptor);
     state = STATE_DATA_SOURCE_CONFIGURED;
   }
 
@@ -233,6 +249,10 @@ public class ShadowMediaRecorder {
     return outputPath;
   }
 
+  public FileDescriptor getOutputFileDescriptor() {
+    return reflector(MediaRecorderReflector.class, realMediaRecorder).getFileDescriptor();
+  }
+
   public int getOutputFormat() {
     return outputFormat;
   }
@@ -275,5 +295,14 @@ public class ShadowMediaRecorder {
 
   public int getState() {
     return state;
+  }
+
+  @ForType(MediaRecorder.class)
+  interface MediaRecorderReflector {
+    @Direct
+    void setOutputFile(FileDescriptor fileDescriptor);
+
+    @Accessor("mFd")
+    FileDescriptor getFileDescriptor();
   }
 }

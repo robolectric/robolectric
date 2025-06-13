@@ -7,6 +7,7 @@ import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.FileDescriptor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -116,6 +117,18 @@ public class ShadowMediaRecorderTest {
     assertThat(shadowMediaRecorder.getOutputPath()).isNull();
     mediaRecorder.setOutputFile("/dev/null");
     assertThat(shadowMediaRecorder.getOutputPath()).isEqualTo("/dev/null");
+    assertThat(shadowMediaRecorder.getState())
+        .isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+  }
+
+  @Test
+  public void testOutputFileDescriptor() {
+    FileDescriptor fileDescriptor = new FileDescriptor();
+    assertThat(shadowMediaRecorder.getState())
+        .isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
+    assertThat(shadowMediaRecorder.getOutputFileDescriptor()).isNull();
+    mediaRecorder.setOutputFile(fileDescriptor);
+    assertThat(shadowMediaRecorder.getOutputFileDescriptor()).isEqualTo(fileDescriptor);
     assertThat(shadowMediaRecorder.getState())
         .isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
   }
