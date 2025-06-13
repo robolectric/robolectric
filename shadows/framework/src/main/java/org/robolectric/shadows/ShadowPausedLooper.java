@@ -643,7 +643,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
       do {
         msg = getNextExecutableMessage();
         if (msg == null) {
-          throw new IllegalStateException("Runnable is not in the queue");
+          if (looperMode() != LooperMode.Mode.INSTRUMENTATION_TEST) {
+            throw new IllegalStateException("Runnable is not in the queue");
+          } else {
+            break;
+          }
         }
         msg.getTarget().dispatchMessage(msg);
         triggerIdleHandlersIfNeeded(msg);
@@ -667,7 +671,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
       do {
         msg = getNextExecutableMessage();
         if (msg == null) {
-          throw new IllegalStateException("Runnable is not in the queue");
+          if (looperMode() != LooperMode.Mode.INSTRUMENTATION_TEST) {
+            throw new IllegalStateException("Runnable is not in the queue");
+          } else {
+            break;
+          }
         }
         msg.getTarget().dispatchMessage(msg);
 
