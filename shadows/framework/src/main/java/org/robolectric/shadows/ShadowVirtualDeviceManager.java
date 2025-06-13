@@ -77,9 +77,18 @@ public class ShadowVirtualDeviceManager {
     return device;
   }
 
+  @Implementation(minSdk = V.SDK_INT)
+  @Nullable
+  protected VirtualDevice getVirtualDevice(int deviceId) {
+    return getVirtualDevices().stream()
+        .filter(virtualDevice -> virtualDevice.getDeviceId() == deviceId)
+        .findFirst()
+        .orElse(null);
+  }
+
   @Implementation
   @SuppressWarnings("ReturnValueIgnored")
-  protected List<android.companion.virtual.VirtualDevice> getVirtualDevices() {
+  protected List<VirtualDevice> getVirtualDevices() {
     return mVirtualDevices.stream()
         .map(
             virtualDevice -> {
