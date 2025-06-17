@@ -26,6 +26,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 import org.robolectric.util.reflector.WithType;
+import org.robolectric.versioning.AndroidVersions.PostBaklava;
 
 /**
  * The shadow API for {@link android.view.Choreographer}.
@@ -41,7 +42,7 @@ public abstract class ShadowChoreographer {
 
   private static volatile boolean isPaused = false;
 
-  private static volatile Duration frameDelay = getDefaultFrameDelay();
+  private static volatile Duration frameDelay = Duration.ofMillis(getDefaultFrameDelay());
 
   /**
    * This field is only used when {@link #isPaused()} is true. It represents the next scheduled
@@ -211,15 +212,16 @@ public abstract class ShadowChoreographer {
   public static void reset() {
     nextVsyncTimeNanos = 0;
     isPaused = false;
-    frameDelay = getDefaultFrameDelay();
+    frameDelay = Duration.ofMillis(getDefaultFrameDelay());
     if (RuntimeEnvironment.getApiLevel() >= N) {
       ShadowBackdropFrameRenderer.reset();
     }
   }
 
-  private static Duration getDefaultFrameDelay() {
+  @Implementation(minSdk = PostBaklava.SDK_INT)
+  protected static long getDefaultFrameDelay() {
     // Uses 15ms to approximate 60fps.
-    return Duration.ofMillis(Integer.getInteger("robolectric.defaultFrameDelayMs", 15));
+    return Integer.getInteger("robolectric.defaultFrameDelayMs", 15);
   }
 
   /** Accessor interface for {@link Choreographer}'s internals */
