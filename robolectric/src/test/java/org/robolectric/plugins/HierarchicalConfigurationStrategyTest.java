@@ -55,6 +55,7 @@ public class HierarchicalConfigurationStrategyTest {
         "foo",
         TestFakeApp.class,
         "from-test",
+        "test/assets",
         new Class<?>[] {Test1.class},
         new String[] {"com.example.test1"});
 
@@ -64,6 +65,7 @@ public class HierarchicalConfigurationStrategyTest {
         "foo",
         TestFakeApp.class,
         "from-test",
+        "test/assets",
         new Class<?>[] {Test1.class},
         new String[] {"com.example.test1"});
 
@@ -73,6 +75,7 @@ public class HierarchicalConfigurationStrategyTest {
         "furf",
         TestApplication.class,
         "from-method",
+        "method/assets",
         new Class<?>[] {Test1.class, Test2.class},
         new String[] {"com.example.test1", "com.example.method1"});
   }
@@ -85,6 +88,7 @@ public class HierarchicalConfigurationStrategyTest {
         "AndroidManifest.xml",
         DEFAULT_APPLICATION,
         "",
+        "assets",
         new Class<?>[] {},
         new String[] {});
 
@@ -94,6 +98,7 @@ public class HierarchicalConfigurationStrategyTest {
         "AndroidManifest.xml",
         DEFAULT_APPLICATION,
         "",
+        "assets",
         new Class<?>[] {},
         new String[] {});
 
@@ -103,6 +108,7 @@ public class HierarchicalConfigurationStrategyTest {
         "furf",
         TestFakeApp.class,
         "from-method",
+        "method/assets",
         new Class<?>[] {Test1.class},
         new String[] {"com.example.method2"});
   }
@@ -116,6 +122,7 @@ public class HierarchicalConfigurationStrategyTest {
         "foo",
         TestFakeApp.class,
         "from-test",
+        "test/assets",
         new Class<?>[] {Test1.class, Test1.class},
         new String[] {"com.example.test1"});
 
@@ -125,6 +132,7 @@ public class HierarchicalConfigurationStrategyTest {
         "foo",
         TestFakeApp.class,
         "from-test",
+        "test/assets",
         new Class<?>[] {Test1.class, Test1.class},
         new String[] {"com.example.test1"});
 
@@ -134,6 +142,7 @@ public class HierarchicalConfigurationStrategyTest {
         "foo",
         TestFakeApp.class,
         "from-method5",
+        "method5/assets",
         new Class<?>[] {Test1.class, Test1.class, Test1B.class},
         new String[] {"com.example.test1", "com.example.method5"});
   }
@@ -147,6 +156,7 @@ public class HierarchicalConfigurationStrategyTest {
         "foo",
         TestFakeApp.class,
         "from-class6",
+        "test/assets",
         new Class<?>[] {Test1.class, Test1.class, Test1C.class},
         new String[] {"com.example.test1", "com.example.test6"});
 
@@ -156,6 +166,7 @@ public class HierarchicalConfigurationStrategyTest {
         "foo",
         TestFakeApp.class,
         "from-class6",
+        "test/assets",
         new Class<?>[] {Test1.class, Test1.class, Test1C.class},
         new String[] {"com.example.test1", "com.example.test6"});
 
@@ -165,6 +176,7 @@ public class HierarchicalConfigurationStrategyTest {
         "foo",
         TestFakeApp.class,
         "from-method5",
+        "method5/assets",
         new Class<?>[] {Test1.class, Test1.class, Test1C.class, Test1B.class},
         new String[] {"com.example.test1", "com.example.method5", "com.example.test6"});
   }
@@ -178,6 +190,7 @@ public class HierarchicalConfigurationStrategyTest {
         "foo",
         TestFakeApp.class,
         "from-subclass",
+        "test/assets",
         new Class<?>[] {Test1.class},
         new String[] {"com.example.test1"});
 
@@ -187,6 +200,7 @@ public class HierarchicalConfigurationStrategyTest {
         "foo",
         TestFakeApp.class,
         "from-subclass",
+        "test/assets",
         new Class<?>[] {Test1.class},
         new String[] {"com.example.test1"});
 
@@ -196,6 +210,7 @@ public class HierarchicalConfigurationStrategyTest {
         "furf",
         TestApplication.class,
         "from-method",
+        "method/assets",
         new Class<?>[] {Test1.class, Test2.class},
         new String[] {"com.example.test1", "com.example.method1"});
   }
@@ -209,6 +224,7 @@ public class HierarchicalConfigurationStrategyTest {
         "AndroidManifest.xml",
         DEFAULT_APPLICATION,
         "from-subclass",
+        "assets",
         new Class<?>[] {},
         new String[] {});
 
@@ -218,6 +234,7 @@ public class HierarchicalConfigurationStrategyTest {
         "AndroidManifest.xml",
         DEFAULT_APPLICATION,
         "from-subclass",
+        "assets",
         new Class<?>[] {},
         new String[] {});
 
@@ -227,6 +244,7 @@ public class HierarchicalConfigurationStrategyTest {
         "furf",
         TestFakeApp.class,
         "from-method",
+        "method/assets",
         new Class<?>[] {Test1.class},
         new String[] {"com.example.method2"});
   }
@@ -255,6 +273,7 @@ public class HierarchicalConfigurationStrategyTest {
         "--none",
         TestFakeApp.class,
         "from-properties-file",
+        "from/properties/file/assets",
         new Class<?>[] {ShadowView.class, ShadowViewGroup.class},
         new String[] {"com.example.test1", "com.example.test2"});
   }
@@ -270,6 +289,7 @@ public class HierarchicalConfigurationStrategyTest {
         "AndroidManifest.xml",
         DEFAULT_APPLICATION,
         "",
+        "assets",
         new Class<?>[] {},
         new String[] {});
   }
@@ -291,6 +311,7 @@ public class HierarchicalConfigurationStrategyTest {
         "AndroidManifest.xml",
         DEFAULT_APPLICATION,
         "from-org-robolectric",
+        "assets",
         new Class<?>[] {},
         new String[] {});
   }
@@ -306,6 +327,7 @@ public class HierarchicalConfigurationStrategyTest {
         "AndroidManifest.xml",
         DEFAULT_APPLICATION,
         "",
+        "assets",
         new Class<?>[] {},
         new String[] {});
   }
@@ -445,12 +467,14 @@ public class HierarchicalConfigurationStrategyTest {
       String manifest,
       Class<? extends Application> application,
       String qualifiers,
+      String assetsDir,
       Class<?>[] shadows,
       String[] instrumentedPackages) {
     assertThat(config.sdk()).isEqualTo(sdk);
     assertThat(config.manifest()).isEqualTo(manifest);
     assertThat(config.application()).isEqualTo(application);
     assertThat(config.qualifiers()).isEqualTo(qualifiers);
+    assertThat(config.assetDir()).isEqualTo(assetsDir);
     assertThat(config.shadows()).asList().containsAtLeastElementsIn(shadows).inOrder();
     assertThat(config.instrumentedPackages())
         .asList()
@@ -464,7 +488,8 @@ public class HierarchicalConfigurationStrategyTest {
       application = TestFakeApp.class,
       shadows = Test1.class,
       instrumentedPackages = "com.example.test1",
-      qualifiers = "from-test")
+      qualifiers = "from-test",
+      assetDir = "test/assets")
   public static class Test1 {
     @Test
     public void withoutAnnotation() {}
@@ -480,7 +505,8 @@ public class HierarchicalConfigurationStrategyTest {
         application = TestApplication.class,
         shadows = Test2.class,
         instrumentedPackages = "com.example.method1",
-        qualifiers = "from-method")
+        qualifiers = "from-method",
+        assetDir = "method/assets")
     public void withOverrideAnnotation() {}
   }
 
@@ -500,7 +526,8 @@ public class HierarchicalConfigurationStrategyTest {
         application = TestFakeApp.class,
         shadows = Test1.class,
         instrumentedPackages = "com.example.method2",
-        qualifiers = "from-method")
+        qualifiers = "from-method",
+        assetDir = "method/assets")
     public void withOverrideAnnotation() {}
   }
 
@@ -529,7 +556,8 @@ public class HierarchicalConfigurationStrategyTest {
         sdk = 14,
         shadows = Test1B.class,
         instrumentedPackages = "com.example.method5",
-        qualifiers = "from-method5")
+        qualifiers = "from-method5",
+        assetDir = "method5/assets")
     public void withOverrideAnnotation() {}
   }
 
