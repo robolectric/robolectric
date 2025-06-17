@@ -1030,9 +1030,9 @@ public abstract class Asset {
     @Override
     public String toString() {
       if (mFileName == null) {
-        return "_FileAsset{" + "mMap=" + mMap + '}';
+        return "_FileAsset{mMap=" + mMap + '}';
       } else {
-        return "_FileAsset{" + "mFileName='" + mFileName + '\'' + '}';
+        return "_FileAsset{mFileName='" + mFileName + "'}";
       }
     }
   }
@@ -1369,7 +1369,7 @@ public abstract class Asset {
 
     @Override
     public String toString() {
-      return "_CompressedAsset{" + "mMap=" + mMap + '}';
+      return "_CompressedAsset{mMap=" + mMap + '}';
     }
   }
 

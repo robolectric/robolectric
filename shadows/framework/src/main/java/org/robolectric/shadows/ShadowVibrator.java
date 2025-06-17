@@ -183,7 +183,7 @@ public class ShadowVibrator {
 
     @Override
     public String toString() {
-      return "PrimitiveEffect{" + "id=" + id + ", scale=" + scale + ", delay=" + delay + '}';
+      return "PrimitiveEffect{id=" + id + ", scale=" + scale + ", delay=" + delay + '}';
     }
 
     @Override

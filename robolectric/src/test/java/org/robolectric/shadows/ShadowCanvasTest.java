@@ -43,11 +43,11 @@ public class ShadowCanvasTest {
     canvas.drawBitmap(imageBitmap, 100, 200, new Paint());
 
     assertEquals(
-        "Bitmap for file:/an/image.jpg at (1,2)\n" + "Bitmap for file:/an/image.jpg at (100,200)",
+        "Bitmap for file:/an/image.jpg at (1,2)\nBitmap for file:/an/image.jpg at (100,200)",
         shadowOf(canvas).getDescription());
 
     assertEquals(
-        "Bitmap for file:/an/image.jpg at (1,2)\n" + "Bitmap for file:/an/image.jpg at (100,200)",
+        "Bitmap for file:/an/image.jpg at (1,2)\nBitmap for file:/an/image.jpg at (100,200)",
         shadowOf(targetBitmap).getDescription());
   }
 

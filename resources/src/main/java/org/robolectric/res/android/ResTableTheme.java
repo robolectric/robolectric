@@ -251,7 +251,7 @@ public class ResTableTheme {
       if (styleDebug) {
         ResourceName outName = new ResourceName();
         mTable.getResourceName(attrRes, true, outName);
-        System.out.println("  " + outName + "(" + attrRes + ")" + " := " + bagEntry.map.value);
+        System.out.println("  " + outName + "(" + attrRes + ") := " + bagEntry.map.value);
       }
 
       if (kDebugTableNoisy) {

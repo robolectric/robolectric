@@ -71,17 +71,16 @@ public class ShadowSQLiteConnectionTest {
             convertSQLWithLocalizedUnicodeCollator(
                 "select * from `routine` order by name \n\r \f collate\f\n\tunicode"
                     + "\n, id \n\n\t collate\n\t \n\flocalized"))
-        .isEqualTo(
-            "select * from `routine` order by name COLLATE NOCASE\n" + ", id COLLATE NOCASE");
+        .isEqualTo("select * from `routine` order by name COLLATE NOCASE\n, id COLLATE NOCASE");
 
     assertThat(
             convertSQLWithLocalizedUnicodeCollator(
-                "select * from `routine` order by name" + " collate localized"))
+                "select * from `routine` order by name collate localized"))
         .isEqualTo("select * from `routine` order by name COLLATE NOCASE");
 
     assertThat(
             convertSQLWithLocalizedUnicodeCollator(
-                "select * from `routine` order by name" + " collate unicode"))
+                "select * from `routine` order by name collate unicode"))
         .isEqualTo("select * from `routine` order by name COLLATE NOCASE");
   }
 
@@ -94,8 +93,7 @@ public class ShadowSQLiteConnectionTest {
     database.execSQL("insert into routine(name) values ('Hand press 3')");
 
     List<String> expected =
-        Arrays.asList(
-            "Hand press" + " 1", "hand press" + " 2", "Hand press" + " 3", "الصحافة" + " اليدوية");
+        Arrays.asList("Hand press 1", "hand press 2", "Hand press 3", "الصحافة" + " اليدوية");
     String sqlLocalized = "SELECT `name` FROM `routine` ORDER BY `name` collate localized";
     String sqlUnicode = "SELECT `name` FROM `routine` ORDER BY `name` collate unicode";
 

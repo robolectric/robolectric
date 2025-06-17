@@ -900,7 +900,7 @@ public final class AndroidVersions {
       }
       if (!sdkIntCollisions.isEmpty()) {
         errors.append(
-            "The following sdks have different shortCodes, but identical sdkInt " + "versions:\n");
+            "The following sdks have different shortCodes, but identical sdkInt versions:\n");
         for (Map.Entry<AndroidRelease, AndroidRelease> entry : sdkIntCollisions) {
           errors
               .append("Both ")

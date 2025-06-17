@@ -121,7 +121,7 @@ public class ResourcesTest {
   @Test
   public void getStringShouldConvertCodePoints() {
     assertThat(resources.getString(R.string.non_breaking_space))
-        .isEqualTo("Closing" + " soon:\u00A05pm");
+        .isEqualTo("Closing soon:\u00A05pm");
     assertThat(resources.getString(R.string.space)).isEqualTo("Closing soon: 5pm");
   }
 
@@ -967,7 +967,7 @@ public class ResourcesTest {
   @Test
   public void internalWhiteSpaceShouldBeCollapsed() {
     assertThat(resources.getString(R.string.internal_whitespace_blocks))
-        .isEqualTo("Whitespace in" + " the middle");
+        .isEqualTo("Whitespace in the middle");
     assertThat(resources.getString(R.string.internal_newlines)).isEqualTo("Some Newlines");
   }
 

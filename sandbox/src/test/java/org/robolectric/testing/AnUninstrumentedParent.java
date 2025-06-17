@@ -12,6 +12,6 @@ public class AnUninstrumentedParent {
 
   @Override
   public String toString() {
-    return "UninstrumentedParent{parentName='" + parentName + '\'' + '}';
+    return "UninstrumentedParent{parentName='" + parentName + "'}";
   }
 }

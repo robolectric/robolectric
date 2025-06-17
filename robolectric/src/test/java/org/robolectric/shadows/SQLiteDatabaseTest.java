@@ -63,8 +63,7 @@ public class SQLiteDatabaseTest {
             + "  big_int INTEGER\n"
             + ");");
 
-    database.execSQL(
-        "CREATE TABLE blob_table (\n" + "  id INTEGER PRIMARY KEY,\n" + "  blob_col BLOB\n" + ");");
+    database.execSQL("CREATE TABLE blob_table (\n  id INTEGER PRIMARY KEY,\n  blob_col BLOB\n);");
 
     String stringColumnValue = "column_value";
     byte[] byteColumnValue = new byte[] {1, 2, 3};
@@ -137,8 +136,7 @@ public class SQLiteDatabaseTest {
 
     database.insert("table_name", null, values);
 
-    Cursor cursor =
-        database.rawQuery("select second_column, first_column from" + " table_name", null);
+    Cursor cursor = database.rawQuery("select second_column, first_column from table_name", null);
 
     assertThat(cursor.moveToFirst()).isTrue();
 
@@ -168,8 +166,7 @@ public class SQLiteDatabaseTest {
     values.put("second_column", byteColumnValue);
     database.insertOrThrow("table_name", null, values);
 
-    Cursor cursor =
-        database.rawQuery("select second_column, first_column from" + " table_name", null);
+    Cursor cursor = database.rawQuery("select second_column, first_column from table_name", null);
     assertThat(cursor.moveToFirst()).isTrue();
     byte[] byteValueFromDatabase = cursor.getBlob(0);
     String stringValueFromDatabase = cursor.getString(1);
@@ -181,8 +178,7 @@ public class SQLiteDatabaseTest {
   @Test(expected = IllegalArgumentException.class)
   public void testRawQueryThrowsIndex0NullException() {
     database.rawQuery(
-        "select second_column, first_column from rawtable" + " WHERE `id` = ?",
-        new String[] {null});
+        "select second_column, first_column from rawtable WHERE `id` = ?", new String[] {null});
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -194,8 +190,7 @@ public class SQLiteDatabaseTest {
   public void testRawQueryCountWithOneArgument() {
     Cursor cursor =
         database.rawQuery(
-            "select second_column, first_column from rawtable WHERE" + " `id` = ?",
-            new String[] {"1"});
+            "select second_column, first_column from rawtable WHERE `id` = ?", new String[] {"1"});
     assertThat(cursor.getCount()).isEqualTo(1);
     cursor.close();
   }
@@ -210,8 +205,7 @@ public class SQLiteDatabaseTest {
   @Test
   public void testRawQueryCountWithEmptyArguments() {
     Cursor cursor =
-        database.rawQuery(
-            "select second_column, first_column" + " from" + " rawtable", new String[] {});
+        database.rawQuery("select second_column, first_column from rawtable", new String[] {});
     assertThat(cursor.getCount()).isEqualTo(2);
     cursor.close();
   }
@@ -431,11 +425,9 @@ public class SQLiteDatabaseTest {
             + " UNIQUE (`name`)) ",
         new Object[] {});
     database.execSQL(
-        "INSERT INTO `routine` (`name`" + " ,`lastUsed`" + " ) VALUES" + " (?,?)",
-        new Object[] {"Leg Press", 0});
+        "INSERT INTO `routine`(`name`, `lastUsed`) VALUES (?, ?)", new Object[] {"Leg Press", 0});
     database.execSQL(
-        "INSERT INTO `routine` (`name`" + " ,`lastUsed`" + " ) VALUES" + " (?,?)",
-        new Object[] {"Bench" + " Press", 1});
+        "INSERT INTO `routine`(`name`, `lastUsed`) VALUES (?, ?)", new Object[] {"Bench Press", 1});
 
     Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM `routine`", null);
     assertThat(cursor).isNotNull();
@@ -477,7 +469,7 @@ public class SQLiteDatabaseTest {
   @Test(expected = IllegalArgumentException.class)
   public void testExecSQLTooManyBindArguments() {
     database.execSQL(
-        "insert into exectable (first_column) values" + " ('kjhk');", new String[] {"xxxx"});
+        "insert into exectable (first_column) values ('kjhk');", new String[] {"xxxx"});
   }
 
   @Test
@@ -490,12 +482,10 @@ public class SQLiteDatabaseTest {
     String name = "nullone";
 
     database.execSQL(
-        "insert into exectable (first_column, name)" + " values" + " (?,?);",
-        new String[] {null, name});
+        "insert into exectable (first_column, name) values (?, ?);", new String[] {null, name});
 
     Cursor cursor =
-        database.rawQuery(
-            "select * from exectable WHERE" + " `name`" + " = ?", new String[] {name});
+        database.rawQuery("select * from exectable WHERE `name` = ?", new String[] {name});
     cursor.moveToFirst();
     int firstIndex = cursor.getColumnIndex("first_column");
     int nameIndex = cursor.getColumnIndex("name");
@@ -507,7 +497,7 @@ public class SQLiteDatabaseTest {
   @Test
   public void testExecSQLAutoIncrementSQLite() {
     database.execSQL(
-        "CREATE TABLE auto_table (id INTEGER PRIMARY KEY AUTOINCREMENT, name" + " VARCHAR(255));");
+        "CREATE TABLE auto_table (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255));");
 
     ContentValues values = new ContentValues();
     values.put("name", "Chuck");
@@ -843,7 +833,7 @@ public class SQLiteDatabaseTest {
     CancellationSignal signal = new CancellationSignal();
 
     Cursor cursor =
-        database.rawQueryWithFactory(null, "select * from" + " table_name", null, null, signal);
+        database.rawQueryWithFactory(null, "select * from table_name", null, null, signal);
     assertThat(cursor).isNotNull();
     assertThat(cursor.getColumnCount()).isEqualTo(5);
     assertThat(cursor.isClosed()).isFalse();

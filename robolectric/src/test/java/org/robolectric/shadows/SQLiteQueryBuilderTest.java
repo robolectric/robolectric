@@ -29,7 +29,7 @@ public class SQLiteQueryBuilderTest {
     database = SQLiteDatabase.create(null);
 
     database.execSQL(
-        "create table " + TABLE_NAME + " (" + COL_VALUE + " TEXT, " + COL_GROUP + " INTEGER" + ")");
+        "create table " + TABLE_NAME + " (" + COL_VALUE + " TEXT, " + COL_GROUP + " INTEGER)");
 
     ContentValues values = new ContentValues();
     values.put(COL_VALUE, "record1");

@@ -54,7 +54,7 @@ public class ResNameTest {
 
   @Test
   public void hierarchicalNameHandlesWhiteSpace() {
-    String name = "TextAppearance.AppCompat.Widget.ActionMode.Subtitle\n" + "    ";
+    String name = "TextAppearance.AppCompat.Widget.ActionMode.Subtitle\n    ";
 
     ResName resName = new ResName("org.robolectric.example", "style", name);
     assertThat(resName.name).isEqualTo("TextAppearance.AppCompat.Widget.ActionMode.Subtitle");
@@ -64,7 +64,7 @@ public class ResNameTest {
 
   @Test
   public void simpleNameHandlesWhiteSpace() {
-    String name = "Subtitle\n" + "    ";
+    String name = "Subtitle\n    ";
 
     ResName resName = new ResName("org.robolectric.example", "style", name);
     assertThat(resName.name).isEqualTo("Subtitle");
@@ -74,7 +74,7 @@ public class ResNameTest {
 
   @Test
   public void fullyQualifiedNameHandlesWhiteSpace() {
-    String name = "android:style/TextAppearance.AppCompat.Widget.ActionMode.Subtitle\n" + "    ";
+    String name = "android:style/TextAppearance.AppCompat.Widget.ActionMode.Subtitle\n    ";
 
     ResName resName = new ResName(name);
     assertThat(resName.name).isEqualTo("TextAppearance.AppCompat.Widget.ActionMode.Subtitle");

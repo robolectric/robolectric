@@ -137,8 +137,7 @@ public class ShadowStorageManagerTest {
     parcel.setDataPosition(0);
     UserHandle userHandle = new UserHandle(parcel);
     StorageVolumeBuilder storageVolumeBuilder =
-        new StorageVolumeBuilder(
-            "volume" + " " + description, file, description, userHandle, "mounted");
+        new StorageVolumeBuilder("volume " + description, file, description, userHandle, "mounted");
     return storageVolumeBuilder.build();
   }
 
