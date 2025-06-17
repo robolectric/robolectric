@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Properties;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
@@ -37,8 +38,13 @@ public class DefaultManifestFactory implements ManifestFactory {
       assetsDir = getResource(config.assetDir());
     }
 
+    List<ManifestIdentifier> libraryDirs = emptyList();
+    if (config.libraries().length > 0) {
+      Logger.info("@Config(libraries) specified while using Build System API, ignoring");
+    }
+
     return new ManifestIdentifier(
-        packageName, manifestFile, resourcesDir, assetsDir, emptyList(), apkFile);
+        packageName, manifestFile, resourcesDir, assetsDir, libraryDirs, apkFile);
   }
 
   private Path getResource(String pathStr) {
