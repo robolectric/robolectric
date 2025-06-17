@@ -140,8 +140,8 @@ public class ContentProviderControllerTest {
               .acquireContentProviderClient("x-authority");
       transcript.add(
           contentProviderClient == null
-              ? "x-authority" + " not registered" + " yet"
-              : "x-authority" + " is registered");
+              ? "x-authority not registered yet"
+              : "x-authority is registered");
       if (contentProviderClient != null) {
         close(contentProviderClient);
       }

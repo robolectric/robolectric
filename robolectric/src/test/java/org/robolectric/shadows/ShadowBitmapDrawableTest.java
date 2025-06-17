@@ -40,7 +40,7 @@ public class ShadowBitmapDrawableTest {
   public void getBitmap_shouldReturnBitmapUsedToDraw() {
     BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
     assertThat(shadowOf(drawable.getBitmap()).getDescription())
-        .isEqualTo("Bitmap for" + " resource:org.robolectric:drawable/an_image");
+        .isEqualTo("Bitmap for resource:org.robolectric:drawable/an_image");
   }
 
   @Test
@@ -50,7 +50,7 @@ public class ShadowBitmapDrawableTest {
     drawable.draw(canvas);
 
     assertThat(shadowOf(canvas).getDescription())
-        .isEqualTo("Bitmap for" + " resource:org.robolectric:drawable/an_image");
+        .isEqualTo("Bitmap for resource:org.robolectric:drawable/an_image");
   }
 
   @Test

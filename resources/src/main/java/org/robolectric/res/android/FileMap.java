@@ -498,9 +498,9 @@ public class FileMap {
   @Override
   public String toString() {
     if (isFromZip) {
-      return "FileMap{" + "zipFile=" + zipFile.getName() + ", zipEntry=" + zipEntry + '}';
+      return "FileMap{zipFile=" + zipFile.getName() + ", zipEntry=" + zipEntry + '}';
     } else {
-      return "FileMap{" + "mFileName='" + mFileName + '\'' + '}';
+      return "FileMap{mFileName='" + mFileName + "'}";
     }
   }
 }

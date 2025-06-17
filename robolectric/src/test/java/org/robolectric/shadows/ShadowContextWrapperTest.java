@@ -517,7 +517,7 @@ public class ShadowContextWrapperTest {
         new BroadcastReceiver() {
           @Override
           public void onReceive(Context context, Intent intent) {
-            transcript.add("High" + " notified of " + intent.getAction());
+            transcript.add("High notified of " + intent.getAction());
             abortBroadcast();
           }
         };

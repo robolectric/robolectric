@@ -79,7 +79,7 @@ public class ShadowParcel {
       Class<?> parcelableClass = Class.forName(name, false /* initialize */, parcelableClassLoader);
       if (!Parcelable.class.isAssignableFrom(parcelableClass)) {
         throw new BadParcelableException(
-            "Parcelable protocol requires that the " + "class implements Parcelable");
+            "Parcelable protocol requires that the class implements Parcelable");
       }
       Field f = parcelableClass.getField("CREATOR");
 
@@ -90,7 +90,7 @@ public class ShadowParcel {
 
       if ((f.getModifiers() & Modifier.STATIC) == 0) {
         throw new BadParcelableException(
-            "Parcelable protocol requires " + "the CREATOR object to be static on class " + name);
+            "Parcelable protocol requires the CREATOR object to be static on class " + name);
       }
       Class<?> creatorType = f.getType();
       if (!Parcelable.Creator.class.isAssignableFrom(creatorType)) {
@@ -182,7 +182,7 @@ public class ShadowParcel {
       parcelableClass = Class.forName(name, /* initialize= */ false, parcelableClassLoader);
       if (!Parcelable.class.isAssignableFrom(parcelableClass)) {
         throw new BadParcelableException(
-            "Parcelable protocol requires subclassing " + "from Parcelable on class " + name);
+            "Parcelable protocol requires subclassing from Parcelable on class " + name);
       }
       if (clazz != null) {
         if (!clazz.isAssignableFrom(parcelableClass)) {
@@ -205,7 +205,7 @@ public class ShadowParcel {
 
       if ((f.getModifiers() & Modifier.STATIC) == 0) {
         throw new BadParcelableException(
-            "Parcelable protocol requires " + "the CREATOR object to be static on class " + name);
+            "Parcelable protocol requires the CREATOR object to be static on class " + name);
       }
       Class<?> creatorType = f.getType();
       if (!Parcelable.Creator.class.isAssignableFrom(creatorType)) {

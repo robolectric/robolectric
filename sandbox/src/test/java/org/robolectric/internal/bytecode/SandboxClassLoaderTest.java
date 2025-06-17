@@ -419,12 +419,12 @@ public class SandboxClassLoaderTest {
     Class<?> theClass = loadClass(AClassWithEqualsHashCodeToString.class);
     Object instance = theClass.getDeclaredConstructor().newInstance();
     assertThat(transcript)
-        .containsExactly("methodInvoked:" + " AClassWithEqualsHashCodeToString.__constructor__()");
+        .containsExactly("methodInvoked: AClassWithEqualsHashCodeToString.__constructor__()");
     transcript.clear();
 
     instance.toString();
     assertThat(transcript)
-        .containsExactly("methodInvoked:" + " AClassWithEqualsHashCodeToString.toString()");
+        .containsExactly("methodInvoked: AClassWithEqualsHashCodeToString.toString()");
     transcript.clear();
 
     classHandler.valueToReturn = true;
@@ -441,7 +441,7 @@ public class SandboxClassLoaderTest {
     //noinspection ResultOfMethodCallIgnored
     instance.hashCode();
     assertThat(transcript)
-        .containsExactly("methodInvoked:" + " AClassWithEqualsHashCodeToString.hashCode()");
+        .containsExactly("methodInvoked: AClassWithEqualsHashCodeToString.hashCode()");
   }
 
   @Test
@@ -582,7 +582,7 @@ public class SandboxClassLoaderTest {
         String[] paramTypes,
         Object[] params) {
       StringBuilder buf = new StringBuilder();
-      buf.append("methodInvoked:" + " ")
+      buf.append("methodInvoked: ")
           .append(simpleClassName)
           .append(".")
           .append(methodName)

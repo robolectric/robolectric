@@ -653,7 +653,7 @@ public class SdkStore {
 
     @Override
     public String toString() {
-      return "MethodInfo{" + "name='" + name + '\'' + ", paramTypes=" + paramTypes + '}';
+      return "MethodInfo{name='" + name + "', paramTypes=" + paramTypes + '}';
     }
   }
 

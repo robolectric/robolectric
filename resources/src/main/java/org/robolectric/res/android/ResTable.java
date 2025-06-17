@@ -284,7 +284,7 @@ public class ResTable {
 
     if (kDebugLoadTableNoisy) {
       ALOGV(
-          "Adding resources to ResTable: data=%s, size=0x%x, cookie=%d, copy=%b " + "idmap=%s\n",
+          "Adding resources to ResTable: data=%s, size=0x%x, cookie=%d, copy=%b idmap=%s\n",
           data, dataSize, cookie, copyData, idmapData);
     }
 

@@ -447,7 +447,7 @@ public class DefaultRequestDirector implements RequestDirector {
                       + retryReason);
             } else {
               throw new NonRepeatableRequestException(
-                  "Cannot retry request " + "with a non-repeatable request entity.");
+                  "Cannot retry request with a non-repeatable request entity.");
             }
           }
 
@@ -660,7 +660,7 @@ public class DefaultRequestDirector implements RequestDirector {
 
         case HttpRouteDirector.UNREACHABLE:
           throw new IllegalStateException(
-              "Unable to establish route." + "\nplanned = " + route + "\ncurrent = " + fact);
+              "Unable to establish route.\nplanned = " + route + "\ncurrent = " + fact);
 
         case HttpRouteDirector.COMPLETE:
           // do nothing

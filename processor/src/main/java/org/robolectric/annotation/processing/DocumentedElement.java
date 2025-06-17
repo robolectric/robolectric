@@ -18,7 +18,7 @@ public abstract class DocumentedElement {
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "{name='" + name + '\'' + '}';
+    return getClass().getSimpleName() + "{name='" + name + "'}";
   }
 
   public void setDocumentation(String docStr) {
