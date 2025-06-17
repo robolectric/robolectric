@@ -1,6 +1,5 @@
 package org.robolectric.res.android;
 
-import static org.robolectric.res.android.Asset.toIntExact;
 import static org.robolectric.res.android.Errors.NAME_NOT_FOUND;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGW;
@@ -285,7 +284,7 @@ public class ZipFileRO {
         mHandle.zipFile,
         entry.entry,
         entry.dataOffset,
-        toIntExact(entry.entry.getCompressedSize()),
+        Math.toIntExact(entry.entry.getCompressedSize()),
         true)) {
       // delete newMap;
       return null;

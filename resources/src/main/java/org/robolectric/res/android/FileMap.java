@@ -2,7 +2,6 @@ package org.robolectric.res.android;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.robolectric.res.android.Asset.toIntExact;
 import static org.robolectric.res.android.Util.ALOGV;
 
 import com.google.common.collect.ImmutableMap;
@@ -198,7 +197,7 @@ public class FileMap {
     // mBaseLength = adjLength;
     mDataOffset = offset;
     // mDataPtr = mBasePtr + adjust;
-    mDataLength = toIntExact(entry.getSize());
+    mDataLength = Math.toIntExact(entry.getSize());
 
     // assert(mBasePtr != 0);
 
