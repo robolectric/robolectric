@@ -33,6 +33,10 @@ public class DefaultManifestFactory implements ManifestFactory {
       manifestFile = getResource(manifestConfig);
     }
 
+    if (!Config.DEFAULT_ASSET_FOLDER.equals(config.assetDir())) {
+      assetsDir = getResource(config.assetDir());
+    }
+
     return new ManifestIdentifier(
         packageName, manifestFile, resourcesDir, assetsDir, emptyList(), apkFile);
   }
