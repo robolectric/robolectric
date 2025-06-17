@@ -34,6 +34,10 @@ public class DefaultManifestFactory implements ManifestFactory {
       manifestFile = getResource(manifestConfig);
     }
 
+    if (!Config.DEFAULT_RES_FOLDER.equals(config.resourceDir())) {
+      resourcesDir = getResource(config.resourceDir());
+    }
+
     if (!Config.DEFAULT_ASSET_FOLDER.equals(config.assetDir())) {
       assetsDir = getResource(config.assetDir());
     }
