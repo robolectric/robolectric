@@ -19,6 +19,8 @@ import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_PO
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_UP;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_ORIENTATION;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_PRESSURE;
+import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_RELATIVE_X;
+import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_RELATIVE_Y;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_SIZE;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_TOOL_MAJOR;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_TOOL_MINOR;
@@ -59,12 +61,6 @@ public class NativeInput {
    * Maximum number of samples supported per motion event.
    */
   private static final int MAX_SAMPLES = 0xffff; /* UINT16_MAX */
-  /*
-   * Maximum pointer id value supported in a motion event.
-   * Smallest pointer id is 0.
-   * (This is limited by our use of BitSet32 to track pointer assignments.)
-   */
-  private static final int MAX_POINTER_ID = 31;
 
   /*
    * Declare a concrete type for the NDK's input event forward declaration.
@@ -144,6 +140,10 @@ public class NativeInput {
       scaleAxisValue(this, AMOTION_EVENT_AXIS_TOUCH_MINOR, scaleFactor);
       scaleAxisValue(this, AMOTION_EVENT_AXIS_TOOL_MAJOR, scaleFactor);
       scaleAxisValue(this, AMOTION_EVENT_AXIS_TOOL_MINOR, scaleFactor);
+      if (RuntimeEnvironment.getApiLevel() >= AndroidVersions.Sv2.SDK_INT) {
+        scaleAxisValue(this, AMOTION_EVENT_AXIS_RELATIVE_X, scaleFactor);
+        scaleAxisValue(this, AMOTION_EVENT_AXIS_RELATIVE_Y, scaleFactor);
+      }
     }
 
     public void applyOffset(float xOffset, float yOffset) {
@@ -296,7 +296,6 @@ public class NativeInput {
     public static final int ACTION_CANCEL = 3;
     public static final int ACTION_POINTER_DOWN = 5;
     public static final int ACTION_POINTER_UP = 6;
-    private static final int HISTORY_CURRENT = -0x80000000;
     public static final int FLAG_CANCELED = 0x20;
     public static final int ACTION_POINTER_INDEX_MASK = 0xff00;
     public static final int ACTION_POINTER_INDEX_SHIFT = 8;
@@ -811,6 +810,15 @@ public class NativeInput {
         transformPoint(matrix, x.get(), y.get(), x, y);
         c.setAxisValue(AMOTION_EVENT_AXIS_X, x.get() - mXOffset);
         c.setAxisValue(AMOTION_EVENT_AXIS_Y, y.get() - mYOffset);
+
+        if (RuntimeEnvironment.getApiLevel() >= AndroidVersions.Sv2.SDK_INT) {
+          x.set(c.getAxisValue(AMOTION_EVENT_AXIS_RELATIVE_X));
+          y.set(c.getAxisValue(AMOTION_EVENT_AXIS_RELATIVE_Y));
+          transformWithoutTranslation(matrix, x.get(), y.get(), x, y);
+          c.setAxisValue(AMOTION_EVENT_AXIS_RELATIVE_X, x.get());
+          c.setAxisValue(AMOTION_EVENT_AXIS_RELATIVE_Y, y.get());
+        }
+
         float orientation = c.getAxisValue(AMOTION_EVENT_AXIS_ORIENTATION);
         c.setAxisValue(
             AMOTION_EVENT_AXIS_ORIENTATION,
@@ -830,6 +838,13 @@ public class NativeInput {
       }
       outX.set(newX * newZ);
       outY.set(newY * newZ);
+    }
+
+    private static void transformWithoutTranslation(
+        float[] matrix, float x, float y, Ref<Float> outX, Ref<Float> outY) {
+      checkState(matrix.length == 9);
+      outX.set(matrix[0] * x + matrix[1] * y);
+      outY.set(matrix[3] * x + matrix[4] * y);
     }
 
     static float transformAngle(float[] matrix, float angleRadians, float originX, float originY) {

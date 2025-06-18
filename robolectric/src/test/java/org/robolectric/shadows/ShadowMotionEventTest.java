@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.os.Build;
 import android.view.MotionEvent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
@@ -97,5 +98,42 @@ public class ShadowMotionEventTest {
     coords.x = x;
     coords.y = y;
     return coords;
+  }
+
+  @Test
+  public void scale() {
+    MotionEvent.PointerCoords coords = new MotionEvent.PointerCoords();
+    coords.setAxisValue(MotionEvent.AXIS_X, 10.0f);
+    coords.setAxisValue(MotionEvent.AXIS_Y, 20.0f);
+    coords.setAxisValue(MotionEvent.AXIS_RELATIVE_X, 30.0f);
+    coords.setAxisValue(MotionEvent.AXIS_RELATIVE_Y, 40.0f);
+    MotionEvent event = createMotionEventForPointerCoords(coords);
+    event.scale(2.0f);
+    assertEquals(20.0f, event.getX(0), 0);
+    assertEquals(40.0f, event.getY(0), 0);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
+      assertEquals(60.0f, event.getAxisValue(MotionEvent.AXIS_RELATIVE_X), 0);
+      assertEquals(80.0f, event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y), 0);
+    } else {
+      assertEquals(30.0f, event.getAxisValue(MotionEvent.AXIS_RELATIVE_X), 0);
+      assertEquals(40.0f, event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y), 0);
+    }
+  }
+
+  private static MotionEvent createMotionEventForPointerCoords(MotionEvent.PointerCoords coords) {
+    return MotionEvent.obtain(
+        /* downTime= */ 0,
+        /* eventTime= */ 0,
+        /* action= */ MotionEvent.ACTION_DOWN,
+        /* pointerCount= */ 1,
+        new int[] {1},
+        new MotionEvent.PointerCoords[] {coords},
+        /* metaState= */ 0,
+        /* xPrecision= */ 0,
+        /* yPrecision= */ 0,
+        /* deviceId= */ 0,
+        /* edgeFlags= */ 0,
+        /* source= */ 0,
+        /* flags= */ 0);
   }
 }
