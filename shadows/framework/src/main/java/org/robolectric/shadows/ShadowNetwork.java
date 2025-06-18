@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.net.Network;
 import java.io.FileDescriptor;
@@ -10,11 +12,15 @@ import java.net.DatagramSocket;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
+import javax.annotation.Nullable;
+import javax.net.SocketFactory;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(Network.class)
 public class ShadowNetwork {
@@ -24,6 +30,8 @@ public class ShadowNetwork {
   private final Set<Socket> boundSockets = new HashSet<>();
   private final Set<DatagramSocket> boundDatagramSockets = new HashSet<>();
   private final Set<FileDescriptor> boundFileDescriptors = new HashSet<>();
+
+  @Nullable private SocketFactory socketFactoryOverride;
 
   /**
    * Creates new instance of {@link Network}, because its constructor is hidden.
@@ -90,5 +98,24 @@ public class ShadowNetwork {
   @Implementation(minSdk = R)
   public int getNetId() {
     return ReflectionHelpers.getField(realObject, "netId");
+  }
+
+  /** Sets the socket factory to be provided by {@link #getSocketFactory()} */
+  public void setSocketFactory(SocketFactory socketFactory) {
+    socketFactoryOverride = socketFactory;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected SocketFactory getSocketFactory() {
+    if (socketFactoryOverride != null) {
+      return socketFactoryOverride;
+    }
+    return reflector(NetworkReflector.class, realObject).getSocketFactory();
+  }
+
+  @ForType(Network.class)
+  private interface NetworkReflector {
+    @Direct
+    SocketFactory getSocketFactory();
   }
 }
