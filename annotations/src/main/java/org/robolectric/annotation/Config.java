@@ -484,11 +484,21 @@ public @interface Config {
       return this;
     }
 
+    /**
+     * @deprecated Configure package name via your build system; see <a
+     *     href="https://robolectric.org/build-system-integration">Build System Integration</a>
+     */
+    @Deprecated
     public Builder setPackageName(String packageName) {
       this.packageName = packageName;
       return this;
     }
 
+    /**
+     * @deprecated Configure resource directory via your build system; see <a
+     *     href="https://robolectric.org/build-system-integration">Build System Integration</a>
+     */
+    @Deprecated
     public Builder setResourceDir(String resourceDir) {
       this.resourceDir = resourceDir;
       return this;
@@ -499,6 +509,11 @@ public @interface Config {
       return this;
     }
 
+    /**
+     * @deprecated Configure asset directory via your build system; see <a
+     *     href="https://robolectric.org/build-system-integration">Build System Integration</a>
+     */
+    @Deprecated
     public Builder setAssetDir(String assetDir) {
       this.assetDir = assetDir;
       return this;
@@ -519,6 +534,11 @@ public @interface Config {
       return this;
     }
 
+    /**
+     * @deprecated Configure libraries via your build system; see <a
+     *     href="https://robolectric.org/build-system-integration">Build System Integration</a>
+     */
+    @Deprecated
     public Builder setLibraries(String... libraries) {
       this.libraries = libraries;
       return this;
