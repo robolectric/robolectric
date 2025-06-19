@@ -47,7 +47,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
  * IllegalArgumentException} or {@link IllegalStateException} for error-prone behavior normal {@link
  * Parcel} tolerates.
  */
-@Implements(value = Parcel.class)
+@Implements(Parcel.class)
 public class ShadowParcel {
   protected static final String TAG = "Parcel";
 

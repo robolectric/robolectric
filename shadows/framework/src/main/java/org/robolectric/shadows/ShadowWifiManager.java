@@ -57,7 +57,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow for {@link android.net.wifi.WifiManager}. */
-@Implements(value = WifiManager.class)
+@Implements(WifiManager.class)
 @SuppressWarnings("AndroidConcurrentHashMap")
 public class ShadowWifiManager {
   private static final int LOCAL_HOST = 2130706433;

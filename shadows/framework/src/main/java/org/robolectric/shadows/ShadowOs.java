@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** A Shadow for android.system.Os */
-@Implements(value = Os.class)
+@Implements(Os.class)
 public final class ShadowOs {
 
   private ShadowOs() {}

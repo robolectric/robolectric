@@ -24,7 +24,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link MediaSessionManager}. */
-@Implements(value = MediaSessionManager.class)
+@Implements(MediaSessionManager.class)
 public class ShadowMediaSessionManager {
   private static final List<MediaController> controllers = new CopyOnWriteArrayList<>();
   private static final Set<OnActiveSessionsChangedListener> listeners = new CopyOnWriteArraySet<>();

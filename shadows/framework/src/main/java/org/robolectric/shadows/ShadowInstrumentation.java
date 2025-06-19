@@ -72,7 +72,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
-@Implements(value = Instrumentation.class)
+@Implements(Instrumentation.class)
 public class ShadowInstrumentation {
 
   @RealObject private Instrumentation realObject;

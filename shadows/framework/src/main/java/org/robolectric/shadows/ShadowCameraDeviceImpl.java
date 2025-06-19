@@ -39,7 +39,7 @@ public class ShadowCameraDeviceImpl {
   @RealObject private CameraDeviceImpl realObject;
   private boolean closed = false;
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = V.SDK_INT, maxSdk = V.SDK_INT)
   protected void __constructor__(
       String cameraId,
       StateCallback callback,

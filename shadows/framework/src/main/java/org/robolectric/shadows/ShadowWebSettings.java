@@ -12,7 +12,7 @@ import org.robolectric.fakes.RoboWebSettings;
  * Shadow of {@link WebSettings} which returns a dummy user a stub instance rather than the
  * User-Agent used by a WebView.
  */
-@Implements(value = WebSettings.class)
+@Implements(WebSettings.class)
 public class ShadowWebSettings {
 
   /**

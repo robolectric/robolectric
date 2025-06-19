@@ -26,7 +26,7 @@ import org.robolectric.util.reflector.Static;
  * Shadow of {@link android.view.accessibility.AccessibilityWindowInfo} that allows a test to set
  * properties that are locked in the original class.
  */
-@Implements(value = AccessibilityWindowInfo.class)
+@Implements(AccessibilityWindowInfo.class)
 public class ShadowAccessibilityWindowInfo {
   private List<AccessibilityWindowInfo> children = null;
 

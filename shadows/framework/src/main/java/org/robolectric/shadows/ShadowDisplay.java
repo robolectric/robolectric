@@ -24,7 +24,7 @@ import org.robolectric.util.reflector.ForType;
  * @see <a href="http://robolectric.org/device-configuration/">device configuration</a> for details.
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = Display.class)
+@Implements(Display.class)
 public class ShadowDisplay {
 
   /**

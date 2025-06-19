@@ -16,6 +16,7 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
+import androidx.test.core.view.MotionEventBuilder;
 import androidx.test.core.view.PointerCoordsBuilder;
 import androidx.test.core.view.PointerPropertiesBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -684,6 +685,32 @@ public class MotionEventTest {
   }
 
   @Test
+  public void testTransform() {
+    MotionEvent.PointerCoords coords = new MotionEvent.PointerCoords();
+    coords.setAxisValue(MotionEvent.AXIS_X, 10.0f);
+    coords.setAxisValue(MotionEvent.AXIS_Y, 20.0f);
+    coords.setAxisValue(MotionEvent.AXIS_RELATIVE_X, 30.0f);
+    coords.setAxisValue(MotionEvent.AXIS_RELATIVE_Y, 40.0f);
+    MotionEvent event =
+        MotionEventBuilder.newBuilder()
+            .setSource(InputDevice.SOURCE_TOUCHSCREEN)
+            .setPointer(new MotionEvent.PointerProperties(), coords)
+            .build();
+    Matrix matrix = new Matrix();
+    matrix.setValues(new float[] {1, 2, 3, 4, 5, 6, 0, 0, 1});
+    event.transform(matrix);
+    assertThat(event.getX(0)).isWithin(TOLERANCE).of(53.0f);
+    assertThat(event.getY(0)).isWithin(TOLERANCE).of(146.0f);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
+      assertThat(event.getAxisValue(MotionEvent.AXIS_RELATIVE_X)).isWithin(TOLERANCE).of(110.0f);
+      assertThat(event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y)).isWithin(TOLERANCE).of(320.0f);
+    } else {
+      assertThat(event.getAxisValue(MotionEvent.AXIS_RELATIVE_X)).isWithin(TOLERANCE).of(30.0f);
+      assertThat(event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y)).isWithin(TOLERANCE).of(40.0f);
+    }
+  }
+
+  @Test
   public void testTransformShouldApplyMatrixToPointsAndPreserveRawPosition() {
     // Generate some points on a circle.
     // Each point 'i' is a point on a circle of radius ROTATION centered at (3,2) at an angle
@@ -857,6 +884,68 @@ public class MotionEventTest {
   public void testAxisFromToString() {
     assertThat(MotionEvent.axisToString(MotionEvent.AXIS_RTRIGGER)).isEqualTo("AXIS_RTRIGGER");
     assertThat(MotionEvent.axisFromString("AXIS_RTRIGGER")).isEqualTo(MotionEvent.AXIS_RTRIGGER);
+  }
+
+  @Test
+  public void testGetAxisValue() {
+    // Below axes are hardcoded as a special case in MotionEvent.java.
+    MotionEvent.PointerCoords coords = new MotionEvent.PointerCoords();
+    coords.setAxisValue(MotionEvent.AXIS_X, 10.0f);
+    coords.setAxisValue(MotionEvent.AXIS_Y, 20.0f);
+    coords.setAxisValue(MotionEvent.AXIS_PRESSURE, 0.1f);
+    coords.setAxisValue(MotionEvent.AXIS_SIZE, 0.2f);
+    coords.setAxisValue(MotionEvent.AXIS_TOUCH_MAJOR, 0.3f);
+    coords.setAxisValue(MotionEvent.AXIS_TOUCH_MINOR, 0.4f);
+    coords.setAxisValue(MotionEvent.AXIS_TOOL_MAJOR, 0.5f);
+    coords.setAxisValue(MotionEvent.AXIS_TOOL_MINOR, 0.6f);
+    coords.setAxisValue(MotionEvent.AXIS_ORIENTATION, 0.7f);
+    coords.setAxisValue(MotionEvent.AXIS_RELATIVE_X, 30.0f);
+    coords.setAxisValue(MotionEvent.AXIS_RELATIVE_Y, 40.0f);
+    coords.setAxisValue(MotionEvent.AXIS_VSCROLL, 50.0f);
+    coords.setAxisValue(MotionEvent.AXIS_HSCROLL, 60.0f);
+    coords.setAxisValue(MotionEvent.AXIS_SCROLL, 70.0f);
+    MotionEvent event =
+        MotionEventBuilder.newBuilder()
+            .setPointer(new MotionEvent.PointerProperties(), coords)
+            .build();
+
+    assertThat(event.getAxisValue(MotionEvent.AXIS_X)).isWithin(TOLERANCE).of(10.0f);
+    assertThat(event.getAxisValue(MotionEvent.AXIS_Y)).isWithin(TOLERANCE).of(20.0f);
+    assertThat(event.getAxisValue(MotionEvent.AXIS_PRESSURE)).isWithin(TOLERANCE).of(0.1f);
+    assertThat(event.getAxisValue(MotionEvent.AXIS_SIZE)).isWithin(TOLERANCE).of(0.2f);
+    assertThat(event.getAxisValue(MotionEvent.AXIS_TOUCH_MAJOR)).isWithin(TOLERANCE).of(0.3f);
+    assertThat(event.getAxisValue(MotionEvent.AXIS_TOUCH_MINOR)).isWithin(TOLERANCE).of(0.4f);
+    assertThat(event.getAxisValue(MotionEvent.AXIS_TOOL_MAJOR)).isWithin(TOLERANCE).of(0.5f);
+    assertThat(event.getAxisValue(MotionEvent.AXIS_TOOL_MINOR)).isWithin(TOLERANCE).of(0.6f);
+    assertThat(event.getAxisValue(MotionEvent.AXIS_ORIENTATION)).isWithin(TOLERANCE).of(0.7f);
+    assertThat(event.getAxisValue(MotionEvent.AXIS_RELATIVE_X)).isWithin(TOLERANCE).of(30.0f);
+    assertThat(event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y)).isWithin(TOLERANCE).of(40.0f);
+    assertThat(event.getAxisValue(MotionEvent.AXIS_VSCROLL)).isWithin(TOLERANCE).of(50.0f);
+    assertThat(event.getAxisValue(MotionEvent.AXIS_HSCROLL)).isWithin(TOLERANCE).of(60.0f);
+    assertThat(event.getAxisValue(MotionEvent.AXIS_SCROLL)).isWithin(TOLERANCE).of(70.0f);
+  }
+
+  @Test
+  public void testGetPointerCoordsClearsExistingValues() {
+    MotionEvent.PointerCoords coords = new MotionEvent.PointerCoords();
+    coords.setAxisValue(MotionEvent.AXIS_X, 10.0f);
+    coords.setAxisValue(MotionEvent.AXIS_Y, 20.0f);
+    MotionEvent event =
+        MotionEventBuilder.newBuilder()
+            .setPointer(new MotionEvent.PointerProperties(), coords)
+            .build();
+    MotionEvent.PointerCoords coords2 = new MotionEvent.PointerCoords();
+    coords2.setAxisValue(MotionEvent.AXIS_X, 30.0f);
+    coords2.setAxisValue(MotionEvent.AXIS_Y, 40.0f);
+    coords2.setAxisValue(MotionEvent.AXIS_PRESSURE, 0.1f);
+    coords2.setAxisValue(MotionEvent.AXIS_SIZE, 0.2f);
+
+    event.getPointerCoords(0, coords2);
+
+    assertThat(coords2.getAxisValue(MotionEvent.AXIS_X)).isWithin(TOLERANCE).of(10.0f);
+    assertThat(coords2.getAxisValue(MotionEvent.AXIS_Y)).isWithin(TOLERANCE).of(20.0f);
+    assertThat(coords2.getAxisValue(MotionEvent.AXIS_PRESSURE)).isWithin(TOLERANCE).of(0.0f);
+    assertThat(coords2.getAxisValue(MotionEvent.AXIS_SIZE)).isWithin(TOLERANCE).of(0.0f);
   }
 
   private static class MotionEventEqualitySubject extends Subject {

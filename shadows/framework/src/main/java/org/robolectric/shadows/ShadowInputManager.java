@@ -25,7 +25,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link InputManager} */
-@Implements(value = InputManager.class)
+@Implements(InputManager.class)
 public class ShadowInputManager {
 
   @RealObject InputManager realInputManager;

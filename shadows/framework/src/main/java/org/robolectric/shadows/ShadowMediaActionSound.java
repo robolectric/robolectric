@@ -15,7 +15,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** A shadow implementation of {@link android.media.MediaActionSound}. */
-@Implements(value = MediaActionSound.class)
+@Implements(MediaActionSound.class)
 public class ShadowMediaActionSound {
   @RealObject MediaActionSound realObject;
 

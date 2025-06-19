@@ -356,6 +356,19 @@ public class ShadowAccessibilityServiceTest {
     assertThat(service.getSystemActions()).isEqualTo(actions);
   }
 
+  @Test
+  public void setRootInActiveWindow_returnsRootInActiveWindow() {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    node.setText("test");
+    shadow.setRootInActiveWindow(node);
+    assertThat(service.getRootInActiveWindow()).isEqualTo(node);
+  }
+
+  @Test
+  public void setRootInActiveWindow_returnsNull() {
+    assertThat(service.getRootInActiveWindow()).isNull();
+  }
+
   private static GestureDescription createTestGesture() {
     Path path = new Path();
     path.moveTo(/* x= */ 100, /* y= */ 200);

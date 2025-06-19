@@ -10,7 +10,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = AppTask.class)
+@Implements(AppTask.class)
 public class ShadowAppTask {
   private boolean isFinished;
   private RecentTaskInfo recentTaskInfo;

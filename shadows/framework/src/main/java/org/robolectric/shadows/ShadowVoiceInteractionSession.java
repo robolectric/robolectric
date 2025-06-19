@@ -27,7 +27,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Shadow implementation of {@link android.service.voice.VoiceInteractionSession}. */
-@Implements(value = VoiceInteractionSession.class)
+@Implements(VoiceInteractionSession.class)
 public class ShadowVoiceInteractionSession {
 
   private final List<Intent> assistantActivityIntents = new ArrayList<>();

@@ -5,7 +5,7 @@ import android.media.session.MediaSession;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = MediaSession.class)
+@Implements(MediaSession.class)
 public class ShadowMediaSession {
 
   @Implementation

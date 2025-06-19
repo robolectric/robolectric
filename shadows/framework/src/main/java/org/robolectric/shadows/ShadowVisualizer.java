@@ -13,7 +13,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for the {@link Visualizer} class. */
-@Implements(value = Visualizer.class)
+@Implements(Visualizer.class)
 public class ShadowVisualizer {
 
   @RealObject private Visualizer realObject;

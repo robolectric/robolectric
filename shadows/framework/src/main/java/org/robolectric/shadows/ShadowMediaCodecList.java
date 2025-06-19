@@ -22,7 +22,7 @@ import org.robolectric.util.ReflectionHelpers;
  * <p>Custom {@link MediaCodecInfo} can be created using {@link MediaCodecInfoBuilder} and added to
  * the list of codecs via {@link #addCodec}.
  */
-@Implements(value = MediaCodecList.class)
+@Implements(MediaCodecList.class)
 public class ShadowMediaCodecList {
 
   private static final List<MediaCodecInfo> mediaCodecInfos =

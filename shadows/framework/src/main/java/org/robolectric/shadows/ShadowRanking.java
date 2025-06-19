@@ -11,7 +11,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link android.service.notification.NotificationListenerService.Ranking}. */
-@Implements(value = Ranking.class)
+@Implements(Ranking.class)
 public class ShadowRanking {
   @RealObject private Ranking realObject;
 

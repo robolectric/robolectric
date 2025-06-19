@@ -11,7 +11,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /** Fake dropbox manager that starts with no entries. */
-@Implements(value = DropBoxManager.class)
+@Implements(DropBoxManager.class)
 public class ShadowDropBoxManager {
   private static final SortedMap<Long, Entry> entries = new TreeMap<>();
 

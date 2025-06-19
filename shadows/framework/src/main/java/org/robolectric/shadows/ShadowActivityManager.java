@@ -48,7 +48,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link android.app.ActivityManager} */
-@Implements(value = ActivityManager.class)
+@Implements(ActivityManager.class)
 public class ShadowActivityManager {
   private int memoryClass = 16;
   private static String backgroundPackage;

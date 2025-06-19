@@ -10,7 +10,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = CameraCharacteristics.class)
+@Implements(CameraCharacteristics.class)
 public class ShadowCameraCharacteristics {
 
   private final Map<Key<?>, Object> charactersKeyToValue = new HashMap<>();

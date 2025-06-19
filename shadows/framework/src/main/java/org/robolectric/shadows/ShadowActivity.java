@@ -81,7 +81,7 @@ import org.robolectric.util.reflector.WithType;
 import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressWarnings("NewApi")
-@Implements(value = Activity.class)
+@Implements(Activity.class)
 public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @RealObject protected Activity realActivity;

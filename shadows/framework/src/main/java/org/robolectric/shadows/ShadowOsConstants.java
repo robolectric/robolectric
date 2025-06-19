@@ -8,7 +8,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
 /** */
-@Implements(value = OsConstants.class)
+@Implements(OsConstants.class)
 public final class ShadowOsConstants {
 
   @Implementation

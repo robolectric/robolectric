@@ -19,7 +19,7 @@ import org.robolectric.versioning.AndroidVersions.Baklava;
  * <p>This is needed to force the java implementation (as opposed to the unsupported native
  * implementation) on post-baklava SDKs.
  */
-@Implements(value = CodecCapabilities.class)
+@Implements(CodecCapabilities.class)
 public class ShadowCodecCapabilities {
 
   // TODO: figure out why minSdk = PostBaklava doesn't work

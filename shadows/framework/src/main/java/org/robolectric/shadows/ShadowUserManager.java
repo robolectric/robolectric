@@ -56,7 +56,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Robolectric implementation of {@link android.os.UserManager}. */
-@Implements(value = UserManager.class)
+@Implements(UserManager.class)
 public class ShadowUserManager {
 
   /**

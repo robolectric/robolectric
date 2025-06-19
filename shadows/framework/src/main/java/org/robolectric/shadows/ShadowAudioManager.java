@@ -52,7 +52,7 @@ import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = AudioManager.class)
+@Implements(AudioManager.class)
 public class ShadowAudioManager {
   @RealObject AudioManager realAudioManager;
 
@@ -1111,7 +1111,7 @@ public class ShadowAudioManager {
     private AudioFocusRequest(android.media.AudioFocusRequest audioFocusRequest) {
       this.listener = audioFocusRequest.getOnAudioFocusChangeListener();
       this.durationHint = audioFocusRequest.getFocusGain();
-      this.streamType = audioFocusRequest.getAudioAttributes().getVolumeControlStream();
+      this.streamType = AudioAttributes.toLegacyStreamType(audioFocusRequest.getAudioAttributes());
       this.audioFocusRequest = audioFocusRequest;
     }
   }

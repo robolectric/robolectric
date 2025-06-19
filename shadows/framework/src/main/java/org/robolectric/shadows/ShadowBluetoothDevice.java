@@ -44,7 +44,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link BluetoothDevice}. */
-@Implements(value = BluetoothDevice.class)
+@Implements(BluetoothDevice.class)
 public class ShadowBluetoothDevice {
   /**
    * Interceptor interface for {@link BluetoothGatt} objects. Tests that require configuration of

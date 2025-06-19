@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /** Shadow of {@link android.content.RestrictionsManager}. */
-@Implements(value = RestrictionsManager.class)
+@Implements(RestrictionsManager.class)
 public class ShadowRestrictionsManager {
   private static Bundle applicationRestrictions;
 

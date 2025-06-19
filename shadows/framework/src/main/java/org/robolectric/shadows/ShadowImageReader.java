@@ -26,7 +26,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link android.media.ImageReader} */
-@Implements(value = ImageReader.class)
+@Implements(ImageReader.class)
 public class ShadowImageReader {
   // Using same return codes as ImageReader.
   private static final int ACQUIRE_SUCCESS = 0;

@@ -5,7 +5,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow of {@link TotalCaptureResult}. */
-@Implements(value = TotalCaptureResult.class)
+@Implements(TotalCaptureResult.class)
 public class ShadowTotalCaptureResult extends ShadowCaptureResult {
 
   /** Convenience method which returns a new instance of {@link TotalCaptureResult}. */

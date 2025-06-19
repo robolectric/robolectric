@@ -47,7 +47,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow of {@link android.content.pm.LauncherApps}. */
-@Implements(value = LauncherApps.class)
+@Implements(LauncherApps.class)
 public class ShadowLauncherApps {
   private static List<ShortcutInfo> shortcuts = new ArrayList<>();
   private static final Multimap<UserHandle, String> enabledPackages = HashMultimap.create();

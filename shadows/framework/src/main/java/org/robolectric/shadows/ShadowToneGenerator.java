@@ -24,7 +24,7 @@ import org.robolectric.annotation.Resetter;
  * <p>Additionally, there is a maximum number of tones that this class can support. Tones are stored
  * in a first-in-first-out basis.
  */
-@Implements(value = ToneGenerator.class)
+@Implements(ToneGenerator.class)
 public class ShadowToneGenerator {
   // A maximum value is required to avoid OOM errors
   // The number chosen here is arbitrary but should be reasonable for any use case of this class

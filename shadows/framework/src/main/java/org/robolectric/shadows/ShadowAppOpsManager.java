@@ -64,7 +64,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link AppOpsManager}. */
-@Implements(value = AppOpsManager.class)
+@Implements(AppOpsManager.class)
 public class ShadowAppOpsManager {
 
   // OpEntry fields that the shadow doesn't currently allow the test to configure.

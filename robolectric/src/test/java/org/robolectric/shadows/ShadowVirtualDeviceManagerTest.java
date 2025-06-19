@@ -96,6 +96,38 @@ public class ShadowVirtualDeviceManagerTest {
   }
 
   @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testGetVirtualDevice_deviceAvailable_returnsVirtualDevice() {
+    String deviceName = "foo";
+    VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName(deviceName).build());
+
+    assertThat(virtualDeviceManager.getVirtualDevice(virtualDevice.getDeviceId()).getName())
+        .isEqualTo(deviceName);
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testGetVirtualDevice_deviceNotAvailable_returnsNull() {
+    int testDeviceId = 0;
+
+    assertThat(virtualDeviceManager.getVirtualDevice(testDeviceId)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testGetVirtualDevice_deviceAvailable_incorrectId_returnsNull() {
+    VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build());
+
+    int incorrectId = virtualDevice.getDeviceId() + 1;
+
+    assertThat(virtualDeviceManager.getVirtualDevice(incorrectId)).isNull();
+  }
+
+  @Test
   public void testIsClosed() {
     VirtualDevice virtualDevice =
         virtualDeviceManager.createVirtualDevice(

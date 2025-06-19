@@ -8,9 +8,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
-@Implements(value = Telephony.class)
+@Implements(Telephony.class)
 public class ShadowTelephony {
-  @Implements(value = Sms.class)
+  @Implements(Sms.class)
   public static class ShadowSms {
     @Nullable private static String defaultSmsPackage;
 

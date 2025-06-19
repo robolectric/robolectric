@@ -28,7 +28,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Shadow of {@link BluetoothManager} that makes the testing possible. */
-@Implements(value = BluetoothManager.class)
+@Implements(BluetoothManager.class)
 public class ShadowBluetoothManager {
   private static final ImmutableIntArray VALID_STATES =
       ImmutableIntArray.of(

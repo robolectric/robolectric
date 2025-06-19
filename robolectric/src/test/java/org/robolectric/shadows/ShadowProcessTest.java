@@ -155,4 +155,25 @@ public class ShadowProcessTest {
 
     assertThat(Process.myProcessName()).isEmpty();
   }
+
+  @Test
+  public void shouldGetIsIsolatedAsSetTrue() {
+    ShadowProcess.setIsolatedUid();
+
+    assertThat(Process.isIsolated()).isTrue();
+  }
+
+  @Test
+  public void shouldGetIsIsolatedAsDefaultFalse() {
+    assertThat(Process.isIsolated()).isFalse();
+  }
+
+  @Test
+  public void shouldGetIsIsolatedAsFalseAfterReset() {
+    ShadowProcess.setIsolatedUid();
+
+    ShadowProcess.reset();
+
+    assertThat(Process.isIsolated()).isFalse();
+  }
 }

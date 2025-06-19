@@ -22,7 +22,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = JobScheduler.class)
+@Implements(JobScheduler.class)
 public abstract class ShadowJobScheduler {
 
   @Implementation

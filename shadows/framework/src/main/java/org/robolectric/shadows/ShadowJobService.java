@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.versioning.AndroidVersions.U;
 
-@Implements(value = JobService.class)
+@Implements(JobService.class)
 public class ShadowJobService extends ShadowService {
 
   private boolean isJobFinished = false;

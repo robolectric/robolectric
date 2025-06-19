@@ -24,7 +24,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Implementation of {@link android.media.session.MediaController}. */
-@Implements(value = MediaController.class)
+@Implements(MediaController.class)
 public class ShadowMediaController {
   @RealObject private MediaController realMediaController;
   private PlaybackState playbackState;

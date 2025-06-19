@@ -48,7 +48,7 @@ import org.robolectric.versioning.AndroidVersions.U;
  * other methods are expected run through the real class. The two {@link WriteMode} are treated the
  * same.
  */
-@Implements(value = AudioTrack.class)
+@Implements(AudioTrack.class)
 public class ShadowAudioTrack {
 
   /**

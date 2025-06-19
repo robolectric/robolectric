@@ -30,7 +30,10 @@ public final class SimulatorMain {
     }
 
     final AndroidSandbox androidSandbox =
-        SandboxBuilder.newBuilder().addClasspathEntries(extraClasspathEntries).build();
+        SandboxBuilder.newBuilder()
+            .addClasspathEntries(extraClasspathEntries)
+            .setSdkVersion(getSdkVersion())
+            .build();
 
     androidSandbox.runOnMainThread(
         () -> {
@@ -42,6 +45,10 @@ public final class SimulatorMain {
             throw new RuntimeException(e);
           }
         });
+  }
+
+  private static int getSdkVersion() {
+    return Integer.parseInt(System.getProperty("robolectric.deviceconfig.sdk", "35"));
   }
 
   private SimulatorMain() {}

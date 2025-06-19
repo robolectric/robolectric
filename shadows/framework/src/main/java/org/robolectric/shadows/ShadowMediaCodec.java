@@ -56,7 +56,7 @@ import org.robolectric.versioning.AndroidVersions.U;
  * implementation will present an input buffer, which will be copied to an output buffer once
  * queued, which will be subsequently presented to the callback handler.
  */
-@Implements(value = MediaCodec.class)
+@Implements(MediaCodec.class)
 public class ShadowMediaCodec {
   private static final int DEFAULT_BUFFER_SIZE = 512;
   @VisibleForTesting static final int BUFFER_COUNT = 10;

@@ -45,7 +45,7 @@ import org.robolectric.versioning.AndroidVersions.V;
  * For tests, display properties may be changed and devices may be added or removed
  * programmatically.
  */
-@Implements(value = DisplayManager.class)
+@Implements(DisplayManager.class)
 public class ShadowDisplayManager {
 
   @RealObject private DisplayManager realDisplayManager;

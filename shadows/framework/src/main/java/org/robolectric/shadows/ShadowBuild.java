@@ -16,7 +16,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
-@Implements(value = Build.class)
+@Implements(Build.class)
 public class ShadowBuild {
 
   private static String radioVersionOverride = null;

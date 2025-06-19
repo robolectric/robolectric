@@ -34,7 +34,7 @@ import org.robolectric.util.reflector.ForType;
  * <p>TransportControls should always be created by first creating a corresponding MediaController;
  * *NOT*, for instance, via Shadows.newInstanceOf(TransportControls.class).
  */
-@Implements(value = TransportControls.class)
+@Implements(TransportControls.class)
 public class ShadowTransportControls {
   @RealObject protected TransportControls realTransportControls;
 

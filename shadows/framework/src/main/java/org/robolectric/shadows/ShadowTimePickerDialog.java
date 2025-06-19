@@ -9,7 +9,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
-@Implements(value = TimePickerDialog.class)
+@Implements(TimePickerDialog.class)
 public class ShadowTimePickerDialog extends ShadowAlertDialog {
   @RealObject protected TimePickerDialog realTimePickerDialog;
 

@@ -25,7 +25,7 @@ import org.robolectric.annotation.Implements;
 
 /** Shadow for {@link BluetoothHeadset} */
 @NotThreadSafe
-@Implements(value = BluetoothHeadset.class)
+@Implements(BluetoothHeadset.class)
 public class ShadowBluetoothHeadset {
 
   private final Map<BluetoothDevice, Integer> bluetoothDevices = new HashMap<>();

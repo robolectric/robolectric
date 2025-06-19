@@ -31,7 +31,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow implementation of {@link BluetoothGatt}. */
-@Implements(value = BluetoothGatt.class)
+@Implements(BluetoothGatt.class)
 public class ShadowBluetoothGatt {
 
   private static final String NULL_CALLBACK_MSG = "BluetoothGattCallback can not be null.";

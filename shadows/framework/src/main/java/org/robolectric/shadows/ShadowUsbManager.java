@@ -36,7 +36,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.ForType;
 
 /** Robolectric implementation of {@link android.hardware.usb.UsbManager}. */
-@Implements(value = UsbManager.class)
+@Implements(UsbManager.class)
 public class ShadowUsbManager {
 
   @RealObject private UsbManager realUsbManager;
