@@ -43,14 +43,20 @@ class SimulatorPlugin : Plugin<Project> {
 
   private fun configureTask(project: Project, task: JavaExec) {
     // Find the 'apk-for-local-test.ap_' file
-    val targetTask = project.tasks.getByName("packageDebugUnitTestForUnitTest")
+    val packageTaskName = "packageDebugUnitTestForUnitTest"
+    val targetTask =
+      project.tasks.findByName(packageTaskName)
+        ?: throw GradleException(
+          "The '$packageTaskName' task was not found. " +
+            "Check that you have set 'android.testOptions.unitTests.isIncludeAndroidResources = true'" +
+            " in your build.gradle(.kts) file."
+        )
     val resourceApkFile =
       targetTask.outputs.files.find { it.name.endsWith(".ap_") }
         ?: throw GradleException(
-          "Could not find an .ap_ file in the outputs of task '${targetTask.name}'. "
+          "Could not find an .ap_ file in the outputs of task '$packageTaskName'."
         )
-    val testTaskName = "testDebugUnitTest"
-    val testTask = project.tasks.getByName<Test>(testTaskName)
+    val testTask = project.tasks.getByName<Test>("testDebugUnitTest")
 
     val robolectricDependencies =
       project.configurations.getByName("testImplementation").allDependencies.filter {
@@ -87,7 +93,7 @@ class SimulatorPlugin : Plugin<Project> {
       jvmArgs = testTask.jvmArgs + robolectricJvmArgs
       mainClass.set(MAIN_CLASS)
       args = listOf(resourceApkFile.absolutePath)
-      dependsOn(testTaskName, "assembleDebug")
+      dependsOn(targetTask, "assembleDebug")
       standardOutput = System.out
       errorOutput = System.err
     }
