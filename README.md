@@ -93,6 +93,6 @@ repositories {
 }
 
 dependencies {
-    testImplementation "org.robolectric:robolectric:4.15-SNAPSHOT"
+    testImplementation "org.robolectric:robolectric:4.16-SNAPSHOT"
 }
 ```
