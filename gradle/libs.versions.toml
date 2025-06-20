@@ -121,10 +121,6 @@ androidx-test-services = "1.6.0"
 # https://developer.android.com/jetpack/androidx/releases/compose
 androidx-compose-bom = "2025.07.00"
 
-# for shadows/playservices/build.gradle
-androidx-fragment-for-shadows = "1.2.0"
-play-services-for-shadows = "17.0.0"
-
 # https://developers.google.com/android/guides/releases
 play-services-basement = "18.0.1"
 
@@ -241,11 +237,6 @@ androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-mani
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
 
-androidx-fragment-for-shadows = { module = "androidx.fragment:fragment", version.ref = "androidx-fragment-for-shadows" }
-play-services-auth-for-shadows = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-for-shadows" }
-play-services-base-for-shadows = { module = "com.google.android.gms:play-services-base", version.ref = "play-services-for-shadows" }
-play-services-basement-for-shadows = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-for-shadows" }
-
 play-services-basement = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-basement" }
 
 test-parameter-injector = { module = "com.google.testparameterinjector:test-parameter-injector", version.ref = "test-parameter-injector" }
@@ -256,7 +247,6 @@ spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.re
 jacoco-agent = { module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco" }
 
 [bundles]
-play-services-for-shadows = ["androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows"]
 powermock = ["powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-objenesis"]
 sqlite4java-native = ["sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86"]
 
