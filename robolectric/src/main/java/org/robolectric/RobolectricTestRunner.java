@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
 import org.junit.runner.notification.RunListener;
@@ -82,7 +83,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected static ImmutableList<RunListener> loadRunListeners() {
     ServiceLoader<RunListener> sl =
         ServiceLoader.load(RunListener.class, Thread.currentThread().getContextClassLoader());
-    List<RunListener> runListeners = sl.stream().map(ServiceLoader.Provider::get).toList();
+    List<RunListener> runListeners =
+        sl.stream().map(ServiceLoader.Provider::get).collect(Collectors.toList());
     for (RunListener listener : runListeners) {
       if (!listener.getClass().getPackageName().startsWith("org.robolectric")) {
         Logger.warn(
