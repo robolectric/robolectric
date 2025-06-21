@@ -188,7 +188,7 @@ public class ShadowVirtualDeviceManagerTest {
           VirtualDeviceManager.LAUNCH_FAILURE_NO_ACTIVITY);
 
       virtualDevice.launchPendingIntent(0, pendingIntent, context.getMainExecutor(), mockCallback);
-      Robolectric.flushForegroundThreadScheduler();
+      ShadowLooper.idleMainLooper();
 
       verify(mockCallback).accept(VirtualDeviceManager.LAUNCH_FAILURE_NO_ACTIVITY);
       assertThat(shadowVirtualDevice.getLastLaunchedPendingIntent()).isEqualTo(pendingIntent);
