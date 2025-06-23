@@ -106,7 +106,7 @@ androidx-constraintlayout = "2.2.1"
 androidx-core = "1.16.0"
 androidx-fragment = "1.8.8"
 androidx-window = "1.4.0"
-androidx-room = "2.7.1"
+androidx-room = "2.7.2"
 androidx-recyclerview = "1.4.0"
 
 # https://github.com/android/android-test/tags
@@ -119,7 +119,7 @@ androidx-test-runner = "1.6.2"
 androidx-test-services = "1.5.0"
 
 # https://developer.android.com/jetpack/androidx/releases/compose
-androidx-compose-bom = "2025.06.00"
+androidx-compose-bom = "2025.06.01"
 
 # for shadows/playservices/build.gradle
 androidx-fragment-for-shadows = "1.2.0"
