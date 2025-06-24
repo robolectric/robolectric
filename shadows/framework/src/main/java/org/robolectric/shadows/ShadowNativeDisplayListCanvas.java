@@ -63,6 +63,14 @@ public class ShadowNativeDisplayListCanvas extends ShadowNativeRecordingCanvas {
         renderer, propLeft, propTop, propRight, propBottom, propRx, propRy, propPaint);
   }
 
+  @Implementation
+  protected static void nInsertReorderBarrier(long renderer, boolean enableReorder) {
+    // Temporary system property to help with the rollout.
+    if (Boolean.parseBoolean(System.getProperty("robolectric.supportElevationPreS", "false"))) {
+      RecordingCanvasNatives.nEnableZ(renderer, enableReorder);
+    }
+  }
+
   /** Shadow picker for {@link android.view.DisplayListCanvas}. */
   public static final class Picker extends GraphicsShadowPicker<Object> {
     public Picker() {
