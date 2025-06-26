@@ -9,16 +9,23 @@ Robolectric supports running unit tests for *15* different versions of Android, 
 
 ## Usage
 
-Here's an example of a simple test written using Robolectric:
+To use Robolectric in your project, simply add the necessary dependencies to your module's `build.gradle`/`build.gradle.kts` file:
+
+```groovy
+testImplementation("junit:junit:4.13.2")
+testImplementation("org.robolectric:robolectric:4.15.1")
+testImplementation("androidx.test.ext:junit:1.2.1")
+```
+
+Then you can write your tests using Robolectric, like the following example:
 
 ```java
 @RunWith(AndroidJUnit4.class)
 public class MyActivityTest {
-
   @Test
   public void clickingButton_shouldChangeMessage() {
     try (ActivityController<MyActivity> controller = Robolectric.buildActivity(MyActivity.class)) {
-      controller.setup(); // Moves Activity to RESUMED state
+      controller.setup(); // Moves the Activity to the RESUMED state
       MyActivity activity = controller.get();
 
       activity.findViewById(R.id.button).performClick();
@@ -28,21 +35,7 @@ public class MyActivityTest {
 }
 ```
 
-For more information about how to install and use Robolectric on your project, extend its functionality, and join the community of contributors, please visit [robolectric.org](https://robolectric.org).
-
-## Install
-
-### Starting a New Project
-
-If you'd like to start a new project with Robolectric tests, you can refer to `deckard` (for either [Maven](https://github.com/robolectric/deckard-maven) or [Gradle](https://github.com/robolectric/deckard-gradle)) as a guide to setting up both Android and Robolectric on your machine.
-
-### `build.gradle`
-
-```groovy
-testImplementation "junit:junit:4.13.2"
-testImplementation "org.robolectric:robolectric:4.15.1"
-testImplementation "androidx.test.ext:junit:1.2.1"
-```
+For more information about how to install and use Robolectric in your project, extend its functionality, and join the community of contributors, you can visit [robolectric.org](https://robolectric.org).
 
 ## Building and Contributing
 
