@@ -170,7 +170,7 @@ public class ShadowRoleManager {
   }
 
   /**
-   * Remove a role previously added via {@link #addHeldRole(String)}.
+   * Remove a role previously added via {@link #addRoleHolder(String, String, UserHandle)}.
    *
    * @deprecated - Please use {@link ShadowRoleManager#removeRoleHolder}
    */
@@ -191,7 +191,7 @@ public class ShadowRoleManager {
   }
 
   /**
-   * Remove a role previously added via {@link #addAvailableRole(String)}.
+   * Remove a role previously added via {@link #addRoleHolder(String, String, UserHandle)}.
    *
    * @deprecated - Please use {@link ShadowRoleManager#removeRoleHolder}
    */
