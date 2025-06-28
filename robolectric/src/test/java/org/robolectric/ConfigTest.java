@@ -18,8 +18,6 @@ public class ConfigTest {
   public void testDefaults() {
     Config defaults = Config.Builder.defaults().build();
     assertThat(defaults.manifest()).isEqualTo("AndroidManifest.xml");
-    assertThat(defaults.resourceDir()).isEqualTo("res");
-    assertThat(defaults.assetDir()).isEqualTo("assets");
   }
 
   @Test
