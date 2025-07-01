@@ -327,14 +327,14 @@ public class ShadowNativeHardwareRenderer {
     HardwareRendererNatives.nSetFrameCompleteCallback(nativeProxy, callback);
   }
 
-  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = R)
   protected static void nAddObserver(long nativeProxy, long nativeObserver) {
-    HardwareRendererNatives.nAddObserver(nativeProxy, nativeObserver);
+    // currently not supported
   }
 
-  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = R)
   protected static void nRemoveObserver(long nativeProxy, long nativeObserver) {
-    HardwareRendererNatives.nRemoveObserver(nativeProxy, nativeObserver);
+    // currently not supported
   }
 
   @Implementation(maxSdk = TIRAMISU)
