@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.Manifest.permission.USE_BIOMETRIC;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.RequiresPermission;
@@ -26,6 +27,7 @@ public class ShadowBiometricManager {
 
   protected static boolean biometricServiceConnected = true;
   private static int authenticatorType = BiometricManager.Authenticators.EMPTY_SET;
+  private long lastAuthenticationTime = 0L;
 
   @RealObject private BiometricManager realBiometricManager;
 
@@ -120,6 +122,23 @@ public class ShadowBiometricManager {
    */
   public void setAuthenticatorType(int type) {
     authenticatorType = type;
+  }
+
+  /**
+   * Sets the last authentication time.
+   *
+   * @param time the last authentication time or {@link
+   *     BiometricManager#BIOMETRIC_NO_AUTHENTICATION}
+   */
+  public void setLastAuthenticationTime(long time) {
+    lastAuthenticationTime = time;
+  }
+
+  /** Gets the last authentication time set by {@link #setLastAuthenticationTime(long)}. */
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
+  protected long getLastAuthenticationTime(
+      @BiometricManager.Authenticators.Types int authenticators) {
+    return lastAuthenticationTime;
   }
 
   @ForType(BiometricManager.class)
