@@ -65,10 +65,8 @@ public class ShadowNativeDisplayListCanvas extends ShadowNativeRecordingCanvas {
 
   @Implementation
   protected static void nInsertReorderBarrier(long renderer, boolean enableReorder) {
-    // Temporary system property to help with the rollout.
-    if (Boolean.parseBoolean(System.getProperty("robolectric.supportElevationPreS", "false"))) {
-      RecordingCanvasNatives.nEnableZ(renderer, enableReorder);
-    }
+    // nInsertReorderBarrier was renamed to nEnableZ in API 31+ (S+).
+    RecordingCanvasNatives.nEnableZ(renderer, enableReorder);
   }
 
   /** Shadow picker for {@link android.view.DisplayListCanvas}. */

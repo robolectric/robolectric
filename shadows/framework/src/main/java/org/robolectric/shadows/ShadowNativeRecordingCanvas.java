@@ -130,10 +130,8 @@ public class ShadowNativeRecordingCanvas extends ShadowNativeBaseRecordingCanvas
 
   @Implementation(maxSdk = R)
   protected static void nInsertReorderBarrier(long renderer, boolean enableReorder) {
-    // Temporary system property to help with the rollout.
-    if (Boolean.parseBoolean(System.getProperty("robolectric.supportElevationPreS", "false"))) {
-      nEnableZ(renderer, enableReorder);
-    }
+    // nInsertReorderBarrier was renamed to nEnableZ in API 31+ (S+).
+    nEnableZ(renderer, enableReorder);
   }
 
   @Resetter
