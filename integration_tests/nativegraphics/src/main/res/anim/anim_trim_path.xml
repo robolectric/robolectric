@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+An animation that slowly reveals a path by trimming the end of the path.
+`trimPathEnd` is a property in Path that represents the fraction of the path to trim from the end,
+in the range from 0 to 1.
+-->
+<objectAnimator xmlns:android="http://schemas.android.com/apk/res/android"
+    android:propertyName="trimPathEnd"
+    android:valueFrom="0"
+    android:valueTo="1"
+    android:duration="500"
+    android:valueType="floatType"
+    android:interpolator="@android:interpolator/fast_out_slow_in" />

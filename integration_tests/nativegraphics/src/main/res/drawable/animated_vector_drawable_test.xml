@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/vector_icon_heart" >
+    <target
+        android:name="heart"
+        android:animation="@anim/anim_trim_path" />
+</animated-vector>
