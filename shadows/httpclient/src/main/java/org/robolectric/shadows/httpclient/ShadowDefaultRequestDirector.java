@@ -1,6 +1,5 @@
 package org.robolectric.shadows.httpclient;
 
-import com.google.errorprone.annotations.InlineMe;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -134,22 +133,6 @@ public class ShadowDefaultRequestDirector {
         params);
   }
 
-  /**
-   * Get the sent {@link HttpRequest} for the given index.
-   *
-   * @param index The index
-   * @deprecated Use {@link FakeHttp#getSentHttpRequestInfo(int)} instead. This method will be
-   *     removed in Robolectric 4.13.
-   * @return HttpRequest
-   */
-  @Deprecated
-  @InlineMe(
-      replacement = "FakeHttp.getFakeHttpLayer().getSentHttpRequestInfo(index).getHttpRequest()",
-      imports = "org.robolectric.shadows.httpclient.FakeHttp")
-  public static HttpRequest getSentHttpRequest(int index) {
-    return FakeHttp.getFakeHttpLayer().getSentHttpRequestInfo(index).getHttpRequest();
-  }
-
   public static HttpRequest getLatestSentHttpRequest() {
     return getLatestSentHttpRequestInfo().getHttpRequest();
   }
@@ -157,22 +140,6 @@ public class ShadowDefaultRequestDirector {
   public static HttpRequestInfo getLatestSentHttpRequestInfo() {
     int requestCount = FakeHttp.getFakeHttpLayer().getSentHttpRequestInfos().size();
     return FakeHttp.getFakeHttpLayer().getSentHttpRequestInfo(requestCount - 1);
-  }
-
-  /**
-   * Get the sent {@link HttpRequestInfo} for the given index.
-   *
-   * @param index The index
-   * @deprecated Use {@link FakeHttp#getSentHttpRequest(int)} instead. This method will be removed
-   *     in Robolectric 4.13.
-   * @return HttpRequestInfo
-   */
-  @Deprecated
-  @InlineMe(
-      replacement = "FakeHttp.getFakeHttpLayer().getSentHttpRequestInfo(index)",
-      imports = "org.robolectric.shadows.httpclient.FakeHttp")
-  public static HttpRequestInfo getSentHttpRequestInfo(int index) {
-    return FakeHttp.getFakeHttpLayer().getSentHttpRequestInfo(index);
   }
 
   @Implementation
