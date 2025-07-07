@@ -14,11 +14,11 @@ public class SimulatorFrame extends JFrame {
     setLocationByPlatform(true);
     setAlwaysOnTop(true);
     setResizable(false);
-    addKeyListener(new KeyboardHandler());
 
     simulatorCanvas = new SimulatorCanvas();
     simulatorCanvas.setSize(displayWidth, displayHeight);
     add(simulatorCanvas);
+    simulatorCanvas.requestFocus();
     pack();
   }
 
