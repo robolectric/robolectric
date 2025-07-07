@@ -184,6 +184,12 @@ public class DeviceConfig {
 
     if (resTab.orientation != ResTable_config.ORIENTATION_ANY) {
       configuration.orientation = resTab.orientation;
+    } else if (configuration.orientation != Configuration.ORIENTATION_UNDEFINED
+        && (resTab.screenWidthDp != 0 || resTab.screenHeightDp != 0)) {
+      configuration.orientation =
+          configuration.screenWidthDp > configuration.screenHeightDp
+              ? Configuration.ORIENTATION_LANDSCAPE
+              : Configuration.ORIENTATION_PORTRAIT;
     }
 
     // uiMode includes type and night...

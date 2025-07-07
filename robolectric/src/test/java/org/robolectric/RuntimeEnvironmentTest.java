@@ -17,6 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.util.Scheduler;
@@ -147,5 +148,18 @@ public class RuntimeEnvironmentTest {
   public void setQualifiers_withResultFromGetQualifiers() {
     // Calling this should not cause an exception, e.g. API level mismatch.
     RuntimeEnvironment.setQualifiers(RuntimeEnvironment.getQualifiers());
+  }
+
+  @Config(qualifiers = "w100dp-h200dp-port")
+  @Test
+  public void setQualifiers_modifyWidthToGreatThanHeight_setsOrientationToLandscape() {
+    RuntimeEnvironment.setQualifiers("+w300dp");
+
+    assertThat(
+            ApplicationProvider.getApplicationContext()
+                .getResources()
+                .getConfiguration()
+                .orientation)
+        .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
   }
 }
