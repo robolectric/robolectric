@@ -33,7 +33,9 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Override
   public void startActivity(Intent intent, @Nullable Bundle activityOptions) {
-    controller = getInstrumentation().startActivitySyncInternal(intent, activityOptions);
+    controller =
+        getInstrumentation()
+            .startActivitySyncInternal(intent, activityOptions, /* callingPackageName= */ null);
   }
 
   @Override
@@ -44,9 +46,9 @@ public class LocalActivityInvoker implements ActivityInvoker {
   @Override
   public void startActivityForResult(Intent intent, @Nullable Bundle activityOptions) {
     isActivityLaunchedForResult = true;
-    controller = getInstrumentation().startActivitySyncInternal(intent, activityOptions);
-    ShadowActivity shadowActivity = Shadow.extract(controller.get());
-    shadowActivity.setCallingPackage(getInstrumentation().getContext().getPackageName());
+    String callingPackageName = getInstrumentation().getContext().getPackageName();
+    controller =
+        getInstrumentation().startActivitySyncInternal(intent, activityOptions, callingPackageName);
   }
 
   @Override

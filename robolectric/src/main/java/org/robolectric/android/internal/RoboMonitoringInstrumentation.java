@@ -91,11 +91,12 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
   }
 
   public ActivityController<? extends Activity> startActivitySyncInternal(Intent intent) {
-    return startActivitySyncInternal(intent, /* activityOptions= */ null);
+    return startActivitySyncInternal(
+        intent, /* activityOptions= */ null, /* callingPackageName= */ null);
   }
 
   public ActivityController<? extends Activity> startActivitySyncInternal(
-      Intent intent, @Nullable Bundle activityOptions) {
+      Intent intent, @Nullable Bundle activityOptions, @Nullable String callingPackageName) {
     ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
     if (ai == null) {
       throw new RuntimeException(
@@ -125,6 +126,10 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
         () -> {
           ActivityController<? extends Activity> controller =
               Robolectric.buildActivity(activityClass, intent, activityOptions);
+          if (callingPackageName != null) {
+            ShadowActivity shadowActivity = Shadow.extract(controller.get());
+            shadowActivity.setCallingPackage(callingPackageName);
+          }
           activityControllerReference.set(controller);
           controller.create();
           if (controller.get().isFinishing()) {
