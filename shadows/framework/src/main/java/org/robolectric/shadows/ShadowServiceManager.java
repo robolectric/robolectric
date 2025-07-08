@@ -129,6 +129,12 @@ public class ShadowServiceManager {
   @GuardedBy("ShadowServiceManager.class")
   private static final Set<String> unavailableServices = new HashSet<>();
 
+  @GuardedBy("ShadowServiceManager.class")
+  private static final Set<String> declaredServices = new HashSet<>();
+
+  @GuardedBy("ShadowServiceManager.class")
+  private static final Map<String, Object> waitingServices = new HashMap<>();
+
   /** Represents the type of implementation to use for the Binder interface */
   private enum BinderType {
     /* use ReflectionHelpers.createNullProxy */
@@ -474,6 +480,43 @@ public class ShadowServiceManager {
     }
   }
 
+  /**
+   * Returns the {@link IBinder} associated with the given system service. If the given service is
+   * set to unavailable in {@link #setServiceAvailability}, the method will block until the service
+   * becomes available or the thread is interrupted.
+   */
+  @Implementation(minSdk = R)
+  protected static synchronized IBinder waitForService(String name) throws InterruptedException {
+    while (unavailableServices.contains(name)) {
+      waitingServices.putIfAbsent(name, new Object());
+      waitingServices.get(name).wait();
+    }
+    return getBinderForService(name);
+  }
+
+  /**
+   * Returns the {@link IBinder} associated with the given declared system service. If the given
+   * service is set to unavailable in {@link #setServiceAvailability}, the method will block until
+   * the service becomes available or the thread is interrupted.
+   *
+   * <p>If the given service is not declared, {@code null} will be returned immediately.
+   */
+  @Implementation(minSdk = R)
+  @Nullable
+  protected static synchronized IBinder waitForDeclaredService(String name)
+      throws InterruptedException {
+    return isDeclared(name) ? waitForService(name) : null;
+  }
+
+  /**
+   * Returns whether the specified service is declared. Can use {@link #setServiceDeclaredOrNot} to
+   * set the declared status of a service.
+   */
+  @Implementation(minSdk = R)
+  protected static synchronized boolean isDeclared(String name) {
+    return declaredServices.contains(name);
+  }
+
   @Implementation
   protected static String[] listServices() throws RemoteException {
     return null;
@@ -485,14 +528,34 @@ public class ShadowServiceManager {
   /**
    * Sets the availability of the given system service. If the service is set as unavailable,
    * subsequent calls to {@link Context#getSystemService} for that service will return {@code null}.
+   * When a service is set as available, any threads waiting for the service caused by {@link
+   * #waitForService(String)} will be notified and woken up.
    *
    * <p>A service is considered available by default.
    */
   public static synchronized void setServiceAvailability(String service, boolean available) {
     if (available) {
       unavailableServices.remove(service);
+      if (waitingServices.containsKey(service)) {
+        waitingServices.get(service).notifyAll();
+        waitingServices.remove(service);
+      }
     } else {
       unavailableServices.add(service);
+    }
+  }
+
+  /**
+   * Sets the declared status of the given system service. If the service is set as not declared,
+   * subsequent calls to {@link #isDeclared} for that service will return {@code false}.
+   *
+   * <p>A service is considered not declared by default.
+   */
+  public static synchronized void setServiceDeclaredOrNot(String name, boolean declared) {
+    if (declared) {
+      declaredServices.add(name);
+    } else {
+      declaredServices.remove(name);
     }
   }
 
@@ -509,5 +572,7 @@ public class ShadowServiceManager {
   @Resetter
   public static synchronized void reset() {
     unavailableServices.clear();
+    waitingServices.clear();
+    declaredServices.clear();
   }
 }
