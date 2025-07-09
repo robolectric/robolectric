@@ -81,6 +81,7 @@ public class ShadowWifiManager {
   private boolean isWpa3SaeH2eSupported = false;
   private boolean isWpa3SaePublicKeySupported = false;
   private boolean isWpa3SuiteBSupported = false;
+  private boolean doesCallerHavePermissionForGetPrivilegedConfiguredNetworks = true;
   private final AtomicInteger activeLockCount = new AtomicInteger(0);
   private final BitSet readOnlyNetworkIds = new BitSet();
   private final ConcurrentHashMap<WifiManager.OnWifiUsabilityStatsListener, Executor>
@@ -260,6 +261,10 @@ public class ShadowWifiManager {
     this.startScanSucceeds = succeeds;
   }
 
+  public void setDoesCallerHavePermissionForGetPrivilegedConfiguredNetworks(boolean value) {
+    this.doesCallerHavePermissionForGetPrivilegedConfiguredNetworks = value;
+  }
+
   @Implementation
   protected List<ScanResult> getScanResults() {
     return scanResults;
@@ -285,6 +290,9 @@ public class ShadowWifiManager {
 
   @Implementation
   protected List<WifiConfiguration> getPrivilegedConfiguredNetworks() {
+    if (!doesCallerHavePermissionForGetPrivilegedConfiguredNetworks) {
+      return ImmutableList.of();
+    }
     return getConfiguredNetworks();
   }
 

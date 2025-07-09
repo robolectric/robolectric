@@ -351,6 +351,18 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
+  public void
+      getPrivilegedConfiguredNetworks_doesCallerHavePermissionForGetPrivilegedConfiguredNetworksFalse_returnsEmptyList() {
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    wifiConfiguration.networkId = 123;
+    wifiManager.addNetwork(wifiConfiguration);
+    shadowOf(wifiManager).setDoesCallerHavePermissionForGetPrivilegedConfiguredNetworks(false);
+
+    List<WifiConfiguration> list = wifiManager.getPrivilegedConfiguredNetworks();
+    assertThat(list).isEmpty();
+  }
+
+  @Test
   public void getPrivilegedConfiguredNetworks_shouldReturnConfiguredNetworks() {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
     wifiConfiguration.networkId = 123;
