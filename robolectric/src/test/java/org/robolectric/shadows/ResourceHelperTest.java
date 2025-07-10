@@ -38,6 +38,22 @@ public class ResourceHelperTest {
   }
 
   @Test
+  public void getColor_invalidValueLength6() {
+    int color = ResourceHelper.getColor("#12345");
+
+    // TODO This case should probably throw an exception instead
+    assertThat(color).isEqualTo(74565);
+  }
+
+  @Test
+  public void getColor_invalidValueLength8() {
+    int color = ResourceHelper.getColor("#1234567");
+
+    // TODO This case should probably throw an exception instead
+    assertThat(color).isEqualTo(19088743);
+  }
+
+  @Test
   public void getColor_valueTooLong() {
     NumberFormatException exception =
         assertThrows(NumberFormatException.class, () -> ResourceHelper.getColor("#AABBCCDDEE"));
@@ -109,43 +125,477 @@ public class ResourceHelperTest {
   }
 
   @Test
-  public void parseFloatAttribute() {
-    TypedValue out = new TypedValue();
-    ResourceHelper.parseFloatAttribute(null, "0.16", out, false);
-    assertThat(out.getFloat()).isEqualTo(0.16f);
+  public void getColorType_nullValue() {
+    assertThat(ResourceHelper.getColorType(null)).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
+  }
 
-    out = new TypedValue();
-    ResourceHelper.parseFloatAttribute(null, ".16", out, false);
-    assertThat(out.getFloat()).isEqualTo(0.16f);
+  @Test
+  public void getColorType_emptyValue() {
+    assertThat(ResourceHelper.getColorType("")).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
+  }
+
+  @Test
+  public void getColorType_valueDoesNotStartWithHashtag() {
+    assertThat(ResourceHelper.getColorType("FF0000")).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
+  }
+
+  @Test
+  public void getColorType_invalidValueLength6() {
+    assertThat(ResourceHelper.getColorType("#12345")).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
+  }
+
+  @Test
+  public void getColorType_invalidValueLength8() {
+    assertThat(ResourceHelper.getColorType("#1234567")).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
+  }
+
+  @Test
+  public void getColorType_RGBValue() {
+    assertThat(ResourceHelper.getColorType("#abc")).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB4);
+  }
+
+  @Test
+  public void getColorType_invalidRGBValue() {
+    assertThat(ResourceHelper.getColorType("#zzz")).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB4);
+  }
+
+  @Test
+  public void getColorType_ARGBValue() {
+    assertThat(ResourceHelper.getColorType("#abcd")).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB4);
+  }
+
+  @Test
+  public void getColorType_invalidARGBValue() {
+    assertThat(ResourceHelper.getColorType("#zzzz")).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB4);
+  }
+
+  @Test
+  public void getColorType_RRGGBBValue() {
+    assertThat(ResourceHelper.getColorType("#a1b2c3")).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB8);
+  }
+
+  @Test
+  public void getColorType_invalidRRGGBBValue() {
+    assertThat(ResourceHelper.getColorType("#zzzzzz")).isEqualTo(TypedValue.TYPE_INT_COLOR_RGB8);
+  }
+
+  @Test
+  public void getColorType_AARRGGBBValue() {
+    assertThat(ResourceHelper.getColorType("#a1b2c3d4")).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
+  }
+
+  @Test
+  public void getColorType_invalidAARRGGBBValue() {
+    assertThat(ResourceHelper.getColorType("#zzzzzzzz")).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
+  }
+
+  @Test
+  public void getInternalResourceId_nullIdName() {
+    assertThrows(NullPointerException.class, () -> ResourceHelper.getInternalResourceId(null));
+  }
+
+  @Test
+  public void getInternalResourceId_emptyIdName() {
+    RuntimeException exception =
+        assertThrows(RuntimeException.class, () -> ResourceHelper.getInternalResourceId(""));
+    assertThat(exception.getCause()).isInstanceOf(NoSuchFieldException.class);
+  }
+
+  @Test
+  public void getInternalResourceId_invalidIdName() {
+    RuntimeException exception =
+        assertThrows(RuntimeException.class, () -> ResourceHelper.getInternalResourceId("foo_bar"));
+    assertThat(exception.getCause()).isInstanceOf(NoSuchFieldException.class);
+  }
+
+  @Test
+  public void getInternalResourceId_validIdName() {
+    int id = ResourceHelper.getInternalResourceId("content");
+
+    assertThat(id).isEqualTo(com.android.internal.R.id.content);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired() {
+    TypedValue out = new TypedValue();
+
+    assertThrows(
+        AssertionError.class, () -> ResourceHelper.parseFloatAttribute(null, "0.16", out, true));
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_emptyValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, "", out, false);
+
+    assertThat(parseResult).isFalse();
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_blankValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, "  ", out, false);
+
+    assertThat(parseResult).isFalse();
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_nonDigitValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, "hello", out, false);
+
+    assertThat(parseResult).isFalse();
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_nonAsciiValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, "12🍏34", out, false);
+
+    assertThat(parseResult).isFalse();
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_validValue_endingWithSpaces() {
+    String input = "-1.23  ";
+    TypedValue out = new TypedValue();
+    float result = Float.parseFloat(input);
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, input, out, false);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_FLOAT, Float.floatToIntBits(result), result);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_validValue_invalidEnding() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, "-1.23 px", out, false);
+
+    assertThat(parseResult).isFalse();
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_validValue_invalidUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, "-1.23zz", out, false);
+
+    assertThat(parseResult).isFalse();
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_negativeFloatValue() {
+    String input = "-1.23";
+    float result = Float.parseFloat(input);
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, input, out, false);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_FLOAT, Float.floatToIntBits(result), result);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_negativeFloatValue_withUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, "-1.23px", out, false);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, -10317792, -3.0115387e38f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_negativeSmallFloatValue() {
+    String input = "-.23";
+    float result = Float.parseFloat(input);
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, input, out, false);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_FLOAT, Float.floatToIntBits(result), result);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_negativeSmallFloatValue_withUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, "-.23dp", out, false);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, -493921231, -1.3222637e21f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_positiveFloatValue() {
+    String input = "1.23";
+    float result = Float.parseFloat(input);
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, input, out, false);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_FLOAT, Float.floatToIntBits(result), result);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_positiveFloatValue_withUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, "1.23sp", out, false);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, 10317858, 1.4458399e-38f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_positiveSmallFloatValue() {
+    String input = ".23";
+    float result = Float.parseFloat(input);
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, input, out, false);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_FLOAT, Float.floatToIntBits(result), result);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_positiveSmallFloatValue_withUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, ".23pt", out, false);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, 493921331, 3.1848625e-21f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_negativeIntValue() {
+    String input = "-123";
+    float result = Float.parseFloat(input);
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, input, out, false);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_FLOAT, Float.floatToIntBits(result), result);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_negativeIntValue_withUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, "-123in", out, false);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, -31484, Float.NaN);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_positiveIntValue() {
+    String input = "123";
+    float result = Float.parseFloat(input);
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, input, out, false);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_FLOAT, Float.floatToIntBits(result), result);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitNotRequired_positiveIntValue_withUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, "123mm", out, false);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, 31493, 4.4131e-41f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_emptyValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "", out, true);
+
+    assertThat(parseResult).isFalse();
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_blankValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "  ", out, true);
+
+    assertThat(parseResult).isFalse();
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_nonDigitValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "hello", out, true);
+
+    assertThat(parseResult).isFalse();
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_nonAsciiValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "12🍏34", out, true);
+
+    assertThat(parseResult).isFalse();
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_validValue_endingWithSpaces() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "-1.23  ", out, true);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, -10317791, -3.0115389e38f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_validValue_invalidEnding() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "-1.23 px", out, true);
+
+    assertThat(parseResult).isFalse();
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_validValue_invalidUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "-1.23zz", out, true);
+
+    assertThat(parseResult).isFalse();
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_negativeFloatValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "-1.23", out, true);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, -10317791, -3.0115389e38f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_negativeFloatValue_withUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "-1.23px", out, true);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, -10317792, -3.0115387e38f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_negativeSmallFloatValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "-.23", out, true);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, -493921231, -1.3222637e21f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_negativeSmallFloatValue_withUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "-.23dp", out, true);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, -493921231, -1.3222637e21f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_positiveFloatValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "1.23", out, true);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, 10317857, 1.4458397e-38f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_positiveFloatValue_withUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "1.23sp", out, true);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, 10317858, 1.4458399e-38f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_positiveSmallFloatValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", ".23", out, true);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, 493921329, 3.184862e-21f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_positiveSmallFloatValue_withUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", ".23pt", out, true);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, 493921331, 3.1848625e-21f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_negativeIntValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "-123", out, true);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, -31487, Float.NaN);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_negativeIntValue_withUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "-123in", out, true);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, -31484, Float.NaN);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_positiveIntValue() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "123", out, true);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, 31489, 4.4125e-41f);
+  }
+
+  @Test
+  public void parseFloatAttribute_attributeNull_unitRequired_positiveIntValue_withUnit() {
+    TypedValue out = new TypedValue();
+    boolean parseResult = ResourceHelper.parseFloatAttribute("", "123mm", out, true);
+
+    assertThat(parseResult).isTrue();
+    validateTypedValue(out, TypedValue.TYPE_DIMENSION, 31493, 4.4131e-41f);
   }
 
   @Test
   public void parseFloatAttribute_lengthEquals1000_parseSucceed() {
+    String input = generateTestFloatAttribute("0.16", 1000);
     TypedValue out = new TypedValue();
-    boolean parseResult =
-        ResourceHelper.parseFloatAttribute(
-            null, generateTestFloatAttribute("0.16", 1000), out, false);
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, input, out, false);
+
     assertThat(parseResult).isTrue();
-    assertThat(out.getFloat()).isEqualTo(0.16f);
+    validateTypedValue(
+        out, TypedValue.TYPE_FLOAT, Float.floatToIntBits(Float.parseFloat(input)), 0.16f);
   }
 
   @Test
   public void parseFloatAttribute_lengthLargerThan1000_returnsFalse() {
+    String input = generateTestFloatAttribute("0.17", 1001);
     TypedValue out = new TypedValue();
-    boolean parseResult =
-        ResourceHelper.parseFloatAttribute(
-            null, generateTestFloatAttribute("0.17", 1001), out, false);
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, input, out, false);
+
     assertThat(parseResult).isFalse();
   }
 
   @Test
   public void parseFloatAttribute_lengthLessThan1000_parseSucceed() {
+    String input = generateTestFloatAttribute("0.18", 999);
     TypedValue out = new TypedValue();
-    boolean parseResult =
-        ResourceHelper.parseFloatAttribute(
-            null, generateTestFloatAttribute("0.18", 999), out, false);
+    boolean parseResult = ResourceHelper.parseFloatAttribute(null, input, out, false);
+
     assertThat(parseResult).isTrue();
-    assertThat(out.getFloat()).isEqualTo(0.18f);
+    validateTypedValue(
+        out, TypedValue.TYPE_FLOAT, Float.floatToIntBits(Float.parseFloat(input)), 0.18f);
   }
 
   private static String generateTestFloatAttribute(String prefixAttribute, int length) {
@@ -155,5 +605,13 @@ public class ResourceHelperTest {
       builder.append("0");
     }
     return builder.toString();
+  }
+
+  private void validateTypedValue(TypedValue out, int type, int data, float result) {
+    assertThat(out.assetCookie).isEqualTo(0);
+    assertThat(out.string).isNull();
+    assertThat(out.type).isEqualTo(type);
+    assertThat(out.data).isEqualTo(data);
+    assertThat(out.getFloat()).isEqualTo(result);
   }
 }
