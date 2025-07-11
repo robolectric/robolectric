@@ -264,6 +264,18 @@ public class DeviceConfig {
           ReflectionHelpers.getField(configuration, "windowConfiguration");
       windowConfiguration.setBounds(bounds);
       windowConfiguration.setAppBounds(bounds);
+      if (Boolean.parseBoolean(
+          System.getProperty("robolectric.deviceconfig.useWindowConfigurationMaxBounds", "true"))) {
+        if (apiLevel >= VERSION_CODES.S) {
+          System.err.println(
+              "\n\n\n****** Setting Max Bounds to "
+                  + bounds
+                  + " "
+                  + windowConfiguration
+                  + "******\n\n\n");
+          windowConfiguration.setMaxBounds(bounds);
+        }
+      }
     }
   }
 
