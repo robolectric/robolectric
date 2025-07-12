@@ -289,6 +289,30 @@ public class ShadowWifiManagerTest {
 
   @Test
   @Config(minSdk = S)
+  public void addNetwork_nonNullConfig_shouldNotReturnInvalidNetworkId() {
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    int networkId = wifiManager.addNetwork(wifiConfiguration);
+    assertThat(networkId).isNotEqualTo(-1);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void addNetwork_nullConfig_shouldReturnInvalidNetworkId() {
+    int networkId = wifiManager.addNetwork(null);
+    assertThat(networkId).isEqualTo(-1);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void addNetwork_nonNullConfig_setAddNetworkFailureTrue_shouldReturnInvalidNetworkId() {
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    shadowOf(wifiManager).setAddNetworkFailure();
+    int networkId = wifiManager.addNetwork(wifiConfiguration);
+    assertThat(networkId).isEqualTo(-1);
+  }
+
+  @Test
+  @Config(minSdk = S)
   public void
       getCallerConfiguredNetworks_noAccessWifiStatePermission_shouldThrowSecurityException() {
     shadowOf(wifiManager).setAccessWifiStatePermission(false);
