@@ -22,6 +22,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.round;
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ShadowView.useRealGraphics;
 import static org.robolectric.shadows.SystemUi.systemUiForDisplay;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
@@ -91,6 +92,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Shadow for {@link WindowManagerGlobal}. */
 @SuppressWarnings("unused") // Unused params are implementations of Android SDK methods.
@@ -433,7 +435,7 @@ public class ShadowWindowManagerGlobal {
     @Nullable private PredictiveBackGesture currentPredictiveBackGesture;
 
     protected int addToDisplay(Object[] args) {
-      int sdk = RuntimeEnvironment.getApiLevel();
+      int sdk = getApiLevel();
       WindowInfo windowInfo = windows.computeIfAbsent((IWindow) args[0], id -> new WindowInfo());
       int displayId = (int) args[sdk <= R ? 4 : 3];
       // TODO: This is to allow window insets to be keyed per display, i.e. a window has requested
@@ -505,7 +507,7 @@ public class ShadowWindowManagerGlobal {
     }
 
     protected int relayout(Object[] args) {
-      int sdk = RuntimeEnvironment.getApiLevel();
+      int sdk = getApiLevel();
       WindowRelayoutResult windowLayoutResult =
           sdk >= VANILLA_ICE_CREAM ? findFirst(WindowRelayoutResult.class, args) : null;
 
@@ -628,14 +630,14 @@ public class ShadowWindowManagerGlobal {
         if (args[i] instanceof ClipData) {
           lastDragClipData = (ClipData) args[i];
           // In P (SDK 28), the return type changed from boolean to Binder.
-          return RuntimeEnvironment.getApiLevel() >= P ? new Binder() : true;
+          return getApiLevel() >= P ? new Binder() : true;
         }
       }
       throw new AssertionError("Missing ClipData param");
     }
 
     public void updateInsets(Object[] args) {
-      int sdk = RuntimeEnvironment.getApiLevel();
+      int sdk = getApiLevel();
       checkState(sdk >= R);
       IWindow window = (IWindow) args[0];
       WindowInfo windowInfo = windows.computeIfAbsent(window, id -> new WindowInfo());
@@ -689,7 +691,7 @@ public class ShadowWindowManagerGlobal {
 
     void sendInsetsControlChanged(
         IWindow window, @Nullable Integer type, boolean hasControlsChanged) {
-      int sdk = RuntimeEnvironment.getApiLevel();
+      int sdk = getApiLevel();
       WindowInfo windowInfo = requireNonNull(windows.get(window));
       InsetsState insetsState = new InsetsState(windowInfo.insetsState);
       // On R if we don't remove the sources that aren't changing we'll infinite loop when toggling
@@ -723,7 +725,7 @@ public class ShadowWindowManagerGlobal {
     }
 
     void sendResize(IWindow window) {
-      int sdk = RuntimeEnvironment.getApiLevel();
+      int sdk = getApiLevel();
       WindowInfo windowInfo = requireNonNull(windows.get(window));
       configureWindowFrames(
           windowInfo,
@@ -809,7 +811,7 @@ public class ShadowWindowManagerGlobal {
       // resulting in infinite loops, and if no window has control then insets are not updated.
       // TODO: This is almost certainly not the correct logic for determining which window has
       //  control.
-      if (RuntimeEnvironment.getApiLevel() != R) {
+      if (getApiLevel() != R) {
         return;
       }
       for (Entry<IWindow, WindowInfo> entry : windows.entrySet()) {
@@ -824,7 +826,7 @@ public class ShadowWindowManagerGlobal {
     @CanIgnoreReturnValue
     private InsetsSourceControl[] populateInsetSourceControls(
         WindowInfo windowInfo, InsetsSourceControl[] controls) {
-      int sdk = RuntimeEnvironment.getApiLevel();
+      int sdk = getApiLevel();
       // Skip bars after IME as they have the same public types as navigation/status bars and
       // their visibility combines.
       int lastControl = reflector(InsetsStateReflector.class).getImeType();
@@ -850,18 +852,17 @@ public class ShadowWindowManagerGlobal {
     final Rect displayFrame = new Rect();
     final ClientWindowFrames frames;
     final Rect frame;
-    final InsetsState insetsState =
-        RuntimeEnvironment.getApiLevel() >= Q ? new InsetsState() : null;
+    final InsetsState insetsState = getApiLevel() >= Q ? new InsetsState() : null;
     final Rect contentInsets = new Rect();
     final Rect visibleInsets = new Rect();
     final Rect stableInsets = new Rect();
     final WindowManager.LayoutParams attrs = new WindowManager.LayoutParams();
     int displayId = -1;
-    int requestedVisibleTypes = RuntimeEnvironment.getApiLevel() >= R ? systemBars() : 0;
+    int requestedVisibleTypes = getApiLevel() >= R ? systemBars() : 0;
     boolean hasInsetsControl;
 
     WindowInfo() {
-      if (RuntimeEnvironment.getApiLevel() >= S) {
+      if (getApiLevel() >= S) {
         frames = new ClientWindowFrames();
         frame = frames.frame;
       } else {
@@ -949,7 +950,7 @@ public class ShadowWindowManagerGlobal {
         RemoteAnimationTarget departingAnimationTarget);
 
     @Constructor
-    BackMotionEvent newBackMotionEventPostV(
+    BackMotionEvent newBackMotionEventB(
         float touchX,
         float touchY,
         long frameTime,
@@ -957,6 +958,15 @@ public class ShadowWindowManagerGlobal {
         boolean triggerBack,
         int swipeEdge,
         RemoteAnimationTarget departingAnimationTarget);
+
+    @Constructor
+    BackMotionEvent newBackMotionEventPostB(
+        float touchX,
+        float touchY,
+        long frameTime,
+        float progress,
+        boolean triggerBack,
+        int swipeEdge);
   }
 
   @ForType(className = "android.view.InsetsVisibilities")
@@ -969,19 +979,14 @@ public class ShadowWindowManagerGlobal {
 
     static BackMotionEvent newBackMotionEvent(
         @BackEvent.SwipeEdge int edge, float touchX, float touchY, float progress) {
-      if (RuntimeEnvironment.getApiLevel() < VANILLA_ICE_CREAM) {
+      if (getApiLevel() <= UPSIDE_DOWN_CAKE) {
         return reflector(BackMotionEventReflector.class)
             .newBackMotionEvent(
                 touchX, touchY, progress, 0f, // velocity x
                 0f, // velocity y
                 edge, // swipe edge
                 null);
-      }
-      // normally we would consistently determine which constructor to call based on API level,
-      // but that is tricky for in development SDKS. So just determine
-      // what constructor to call based on the constructors we find reflectively
-      java.lang.reflect.Constructor<?> theConstructor = findPublicConstructor();
-      if (theConstructor.getParameterTypes()[2].equals(float.class)) {
+      } else if (getApiLevel() <= VANILLA_ICE_CREAM) {
         return reflector(BackMotionEventReflector.class)
             .newBackMotionEventV(
                 touchX,
@@ -992,9 +997,9 @@ public class ShadowWindowManagerGlobal {
                 Boolean.FALSE, // trigger back
                 edge, // swipe edge
                 null);
-      } else if (theConstructor.getParameterTypes()[2].equals(long.class)) {
+      } else if (getApiLevel() <= Baklava.SDK_INT) {
         return reflector(BackMotionEventReflector.class)
-            .newBackMotionEventPostV(
+            .newBackMotionEventB(
                 touchX,
                 touchY,
                 SystemClock.uptimeMillis(), /* frameTime */
@@ -1003,7 +1008,14 @@ public class ShadowWindowManagerGlobal {
                 edge,
                 null); // swipe edge
       } else {
-        throw new IllegalStateException("Could not find a BackMotionEvent constructor to call");
+        return reflector(BackMotionEventReflector.class)
+            .newBackMotionEventPostB(
+                touchX,
+                touchY,
+                SystemClock.uptimeMillis(), /* frameTime */
+                progress,
+                Boolean.FALSE, // trigger back
+                edge); // swipe edge
       }
     }
 
