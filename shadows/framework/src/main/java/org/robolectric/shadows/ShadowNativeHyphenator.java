@@ -1,9 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+
 import android.text.Hyphenator;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.nativeruntime.HyphenatorNatives;
 import org.robolectric.shadows.ShadowNativeHyphenator.Picker;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /**
  * Shadow for {@link Hyphenator} that is backed by native code. This is a no-op at the moment, as
@@ -14,11 +18,16 @@ import org.robolectric.versioning.AndroidVersions.V;
  */
 @Implements(
     value = Hyphenator.class,
-    minSdk = V.SDK_INT,
+    minSdk = P,
     shadowPicker = Picker.class,
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
 public class ShadowNativeHyphenator {
+
+  @Implementation(minSdk = P, maxSdk = UPSIDE_DOWN_CAKE)
+  protected static void nInit() {
+    HyphenatorNatives.nInit();
+  }
 
   /** Shadow picker for {@link Hyphenator}. */
   public static final class Picker extends GraphicsShadowPicker<Object> {
