@@ -56,7 +56,6 @@ include(
   ":shadowapi",
   ":shadows:framework",
   ":shadows:httpclient",
-  ":shadows:playservices",
   ":simulator",
   ":simulator-gradle-plugin",
   ":testapp",
