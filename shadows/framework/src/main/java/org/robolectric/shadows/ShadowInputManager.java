@@ -3,10 +3,12 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.hardware.input.InputManager;
+import android.hardware.input.InputManagerGlobal;
 import android.util.SparseArray;
 import android.view.InputDevice;
 import android.view.InputEvent;
@@ -14,11 +16,16 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.VerifiedKeyEvent;
 import android.view.VerifiedMotionEvent;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
@@ -30,35 +37,27 @@ public class ShadowInputManager {
 
   @RealObject InputManager realInputManager;
 
-  @Implementation
+  private static final SetMultimap<Integer, Integer> deviceKeys = HashMultimap.create();
+
+  protected static boolean[] deviceHasKeysImpl(int deviceId, int[] keyCodes) {
+    boolean[] result = new boolean[keyCodes.length];
+    for (int i = 0; i < keyCodes.length; i++) {
+      result[i] = deviceKeys.containsEntry(deviceId, keyCodes[i]);
+    }
+    return result;
+  }
+
+  /** On U and above, this method delegates to {@link android.hardware.input.InputManagerGlobal}. */
+  @Implementation(maxSdk = TIRAMISU)
   protected boolean injectInputEvent(InputEvent event, int mode) {
     // ignore
     return true;
   }
 
-  @Implementation
+  /** On U and above, this method delegates to {@link android.hardware.input.InputManagerGlobal}. */
+  @Implementation(maxSdk = TIRAMISU)
   protected boolean[] deviceHasKeys(int id, int[] keyCodes) {
-    return new boolean[keyCodes.length];
-  }
-
-  /** Used in {@link InputDevice#getDeviceIds()} */
-  @Implementation
-  protected int[] getInputDeviceIds() {
-    if (!ReflectionHelpers.hasField(InputManager.class, "mInputDevices")) {
-      return new int[0];
-    }
-
-    SparseArray<InputDevice> inputDevices = getInputDevices();
-    if (inputDevices == null) {
-      return new int[0];
-    }
-
-    int[] ids = new int[inputDevices.size()];
-    for (int i = 0; i < inputDevices.size(); i++) {
-      ids[i] = inputDevices.get(i).getId();
-    }
-
-    return ids;
+    return deviceHasKeysImpl(id, keyCodes);
   }
 
   @Implementation(maxSdk = TIRAMISU)
@@ -70,15 +69,8 @@ public class ShadowInputManager {
           ReflectionHelpers.callConstructor(
               Class.forName("android.hardware.input.InputManager$InputDevicesChangedListener")));
     }
-
     if (getInputDevices() == null) {
-      final int[] ids = realInputManager.getInputDeviceIds();
-
-      SparseArray<InputDevice> inputDevices = new SparseArray<>();
-      for (int id : ids) {
-        inputDevices.put(id, null);
-      }
-      setInputDevices(inputDevices);
+      setInputDevices(new SparseArray<>());
     }
   }
 
@@ -88,6 +80,36 @@ public class ShadowInputManager {
 
   private void setInputDevices(SparseArray<InputDevice> devices) {
     reflector(InputManagerReflector.class, realInputManager).setInputDevices(devices);
+  }
+
+  void addDeviceKeys(int deviceId, int[] keyCodes) {
+    for (int keyCode : keyCodes) {
+      deviceKeys.put(deviceId, keyCode);
+    }
+  }
+
+  public void addInputDevice(InputDevice inputDevice) {
+    if (realInputManager.getInputDevice(inputDevice.getId()) == null) {
+      // Add the input device to the list of input devices.
+      SparseArray<InputDevice> inputDevices =
+          RuntimeEnvironment.getApiLevel() < UPSIDE_DOWN_CAKE
+              ? getInputDevices()
+              : ((ShadowInputManagerGlobal) Shadow.extract(InputManagerGlobal.getInstance()))
+                  .getInputDevices();
+
+      inputDevices.put(inputDevice.getId(), inputDevice);
+    }
+  }
+
+  public void addInputDeviceKeys(int deviceId, int[] keyCodes) {
+    Preconditions.checkNotNull(keyCodes);
+    Preconditions.checkArgument(
+        realInputManager.getInputDevice(deviceId) != null,
+        "Unknown InputDevice with id %s",
+        deviceId);
+    if (keyCodes != null) {
+      addDeviceKeys(deviceId, keyCodes);
+    }
   }
 
   /**
@@ -135,6 +157,7 @@ public class ShadowInputManager {
     if (SDK_INT < U.SDK_INT) {
       ReflectionHelpers.setStaticField(InputManager.class, "sInstance", null);
     }
+    deviceKeys.clear();
   }
 
   @ForType(InputManager.class)

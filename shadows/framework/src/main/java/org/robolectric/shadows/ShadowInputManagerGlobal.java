@@ -8,6 +8,7 @@ import android.view.InputDevice;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
@@ -19,12 +20,6 @@ public class ShadowInputManagerGlobal {
 
   @RealObject InputManagerGlobal realInputManager;
 
-  /** Used in {@link InputDevice#getDeviceIds()} */
-  @Implementation
-  protected int[] getInputDeviceIds() {
-    return new int[0];
-  }
-
   @Implementation
   protected void populateInputDevicesLocked() throws ClassNotFoundException {
     if (ReflectionHelpers.getField(realInputManager, "mInputDevicesChangedListener") == null) {
@@ -35,24 +30,23 @@ public class ShadowInputManagerGlobal {
               Class.forName(
                   "android.hardware.input.InputManagerGlobal$InputDevicesChangedListener")));
     }
-
-    if (getInputDevices() == null) {
-      final int[] ids = realInputManager.getInputDeviceIds();
-
-      SparseArray<InputDevice> inputDevices = new SparseArray<>();
-      for (int id : ids) {
-        inputDevices.put(id, null);
-      }
-      setInputDevices(inputDevices);
+    SparseArray<InputDevice> inputDevices = getInputDevices();
+    if (inputDevices == null) {
+      setInputDevices(new SparseArray<>());
     }
   }
 
-  private SparseArray<InputDevice> getInputDevices() {
+  SparseArray<InputDevice> getInputDevices() {
     return reflector(InputManagerReflector.class, realInputManager).getInputDevices();
   }
 
   private void setInputDevices(SparseArray<InputDevice> devices) {
     reflector(InputManagerReflector.class, realInputManager).setInputDevices(devices);
+  }
+
+  @Implementation
+  protected boolean[] deviceHasKeys(int deviceId, int[] keyCodes) {
+    return ShadowInputManager.deviceHasKeysImpl(deviceId, keyCodes);
   }
 
   @ForType(InputManagerGlobal.class)
@@ -62,5 +56,10 @@ public class ShadowInputManagerGlobal {
 
     @Accessor("mInputDevices")
     void setInputDevices(SparseArray<InputDevice> devices);
+  }
+
+  @Resetter
+  public static void reset() {
+    ReflectionHelpers.setStaticField(InputManagerGlobal.class, "sInstance", null);
   }
 }
