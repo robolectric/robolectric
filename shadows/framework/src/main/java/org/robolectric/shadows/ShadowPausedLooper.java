@@ -676,27 +676,22 @@ public final class ShadowPausedLooper extends ShadowLooper {
    */
   private void executeOnLooper(ControlRunnable runnable) throws IllegalStateException {
     checkState(!shadowQueue().isQuitting(), "Looper is quitting");
-    if (Thread.currentThread() == realLooper.getThread()) {
-      if (runnable instanceof UnPauseRunnable) {
-        // Need to trigger the unpause action in PausedLooperExecutor
-        looperExecutor.execute(runnable);
-      } else {
-        try {
-          runnable.run();
-        } catch (ControlException e) {
-          e.rethrowCause();
-        }
-      }
-    } else {
-      if (looperMode() == LooperMode.Mode.PAUSED && realLooper.equals(Looper.getMainLooper())) {
+    if (Thread.currentThread() != realLooper.getThread()
+        && looperMode() == LooperMode.Mode.PAUSED
+        && realLooper.equals(Looper.getMainLooper())) {
         throw new UnsupportedOperationException(
             "main looper can only be controlled from main thread");
       }
+    try {
       looperExecutor.execute(runnable);
+    } catch (ControlException e) {
+      e.rethrowCause();
+      return;
+    }
+
       runnable.waitTillComplete();
       // throw immediately if looper died while executing tasks
       shadowQueue().checkQueueState();
-    }
   }
 
   /**
@@ -711,7 +706,15 @@ public final class ShadowPausedLooper extends ShadowLooper {
     @Override
     public void execute(@Nonnull Runnable runnable) {
       shadowQueue().checkQueueState();
-      executionQueue.add(runnable);
+      if (Thread.currentThread() == realLooper.getThread()) {
+        runnable.run();
+      } else {
+        executionQueue.add(runnable);
+      }
+      if (runnable instanceof UnPauseRunnable) {
+        // unblock the while loop
+        executionQueue.add(() -> {});
+      }
     }
 
     @Override
@@ -763,9 +766,13 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     @Override
     public void execute(@Nonnull Runnable runnable) {
-      if (!handler.post(runnable)) {
-        throw new IllegalStateException(
-            String.format("post to %s failed. Is handler thread dead?", handler));
+      if (handler.getLooper().getThread() == Thread.currentThread()) {
+        runnable.run();
+      } else {
+        if (!handler.post(runnable)) {
+          throw new IllegalStateException(
+              String.format("post to %s failed. Is handler thread dead?", handler));
+        }
       }
     }
   }
