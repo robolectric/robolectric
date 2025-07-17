@@ -16,48 +16,22 @@
 
 package org.robolectric.shadows;
 
+import static org.robolectric.shadows.ResourceHelper.applyUnit;
+import static org.robolectric.shadows.ResourceHelper.computeTypedValue;
+import static org.robolectric.shadows.ResourceHelper.parseUnit;
+import static org.robolectric.shadows.ResourceHelper.sUnitNames;
+
 import android.util.TypedValue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Helper class to provide various conversion method used in handling android resources. */
+/** Helper class to provide various conversion methods used in handling Android resources. */
 public final class ResourceHelper2 {
 
   private static final Pattern sFloatPattern = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)(.*)");
   private static final float[] sFloatOut = new float[1];
 
   private static final TypedValue mValue = new TypedValue();
-
-  // ------- TypedValue stuff
-  // This is taken from //device/libs/utils/ResourceTypes.cpp
-
-  private static final class UnitEntry {
-    String name;
-    int type;
-    int unit;
-    float scale;
-
-    UnitEntry(String name, int type, int unit, float scale) {
-      this.name = name;
-      this.type = type;
-      this.unit = unit;
-      this.scale = scale;
-    }
-  }
-
-  private static final UnitEntry[] sUnitNames =
-      new UnitEntry[] {
-        new UnitEntry("px", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_PX, 1.0f),
-        new UnitEntry("dip", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
-        new UnitEntry("dp", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
-        new UnitEntry("sp", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_SP, 1.0f),
-        new UnitEntry("pt", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_PT, 1.0f),
-        new UnitEntry("in", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_IN, 1.0f),
-        new UnitEntry("mm", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_MM, 1.0f),
-        new UnitEntry("%", TypedValue.TYPE_FRACTION, TypedValue.COMPLEX_UNIT_FRACTION, 1.0f / 100),
-        new UnitEntry(
-            "%p", TypedValue.TYPE_FRACTION, TypedValue.COMPLEX_UNIT_FRACTION_PARENT, 1.0f / 100),
-      };
 
   /**
    * Returns the raw value from the given attribute float-type value string. This object is only
@@ -159,70 +133,5 @@ public final class ResourceHelper2 {
     }
 
     return false;
-  }
-
-  private static void computeTypedValue(
-      TypedValue outValue, float value, float scale, String unit) {
-    value *= scale;
-    boolean neg = value < 0;
-    if (neg) {
-      value = -value;
-    }
-    long bits = (long) (value * (1 << 23) + .5f);
-    int radix;
-    int shift;
-    if ((bits & 0x7fffff) == 0) {
-      // Always use 23p0 if there is no fraction, just to make
-      // things easier to read.
-      radix = TypedValue.COMPLEX_RADIX_23p0;
-      shift = 23;
-    } else if ((bits & 0xffffffffff800000L) == 0) {
-      // Magnitude is zero -- can fit in 0 bits of precision.
-      radix = TypedValue.COMPLEX_RADIX_0p23;
-      shift = 0;
-    } else if ((bits & 0xffffffff80000000L) == 0) {
-      // Magnitude can fit in 8 bits of precision.
-      radix = TypedValue.COMPLEX_RADIX_8p15;
-      shift = 8;
-    } else if ((bits & 0xffffff8000000000L) == 0) {
-      // Magnitude can fit in 16 bits of precision.
-      radix = TypedValue.COMPLEX_RADIX_16p7;
-      shift = 16;
-    } else {
-      // Magnitude needs entire range, so no fractional part.
-      radix = TypedValue.COMPLEX_RADIX_23p0;
-      shift = 23;
-    }
-    int mantissa = (int) ((bits >> shift) & TypedValue.COMPLEX_MANTISSA_MASK);
-    if (neg) {
-      mantissa = (-mantissa) & TypedValue.COMPLEX_MANTISSA_MASK;
-    }
-    outValue.data |=
-        (radix << TypedValue.COMPLEX_RADIX_SHIFT) | (mantissa << TypedValue.COMPLEX_MANTISSA_SHIFT);
-
-    if ("%".equals(unit)) {
-      value = value * 100;
-    }
-
-    outValue.string = value + unit;
-  }
-
-  private static boolean parseUnit(String str, TypedValue outValue, float[] outScale) {
-    str = str.trim();
-
-    for (UnitEntry unit : sUnitNames) {
-      if (unit.name.equals(str)) {
-        applyUnit(unit, outValue, outScale);
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  private static void applyUnit(UnitEntry unit, TypedValue outValue, float[] outScale) {
-    outValue.type = unit.type;
-    outValue.data = unit.unit << TypedValue.COMPLEX_UNIT_SHIFT;
-    outScale[0] = unit.scale;
   }
 }
