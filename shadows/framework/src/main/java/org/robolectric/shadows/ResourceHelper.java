@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 import org.robolectric.manifest.MetaData;
 import org.robolectric.util.Logger;
 
-/** Helper class to provide various conversion method used in handling android resources. */
+/** Helper class to provide various conversion methods used in handling Android resources. */
 public final class ResourceHelper {
 
   private static final Pattern sFloatPattern = Pattern.compile("(-?[0-9]*(?:\\.[0-9]+)?)(.*)");
@@ -85,7 +85,8 @@ public final class ResourceHelper {
   // ------- TypedValue stuff
   // This is taken from //device/libs/utils/ResourceTypes.cpp
 
-  private static final class UnitEntry {
+  // TODO Make private when `ResourceHelper2` is removed
+  /* package */ static final class UnitEntry {
     String name;
     int type;
     int unit;
@@ -99,7 +100,8 @@ public final class ResourceHelper {
     }
   }
 
-  private static final UnitEntry[] sUnitNames =
+  // TODO Make private when `ResourceHelper2` is removed
+  /* package */ static final UnitEntry[] sUnitNames =
       new UnitEntry[] {
         new UnitEntry("px", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_PX, 1.0f),
         new UnitEntry("dip", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
@@ -192,7 +194,7 @@ public final class ResourceHelper {
       if (!end.isEmpty() && end.charAt(0) != ' ') {
         // Might be a unit...
         if (parseUnit(end, outValue, sFloatOut)) {
-          computeTypedValue(outValue, f, sFloatOut[0]);
+          computeTypedValue(outValue, f, sFloatOut[0], null);
           return true;
         }
         return false;
@@ -212,7 +214,7 @@ public final class ResourceHelper {
           } else {
             // no unit when required? Use dp and out an error.
             applyUnit(sUnitNames[1], outValue, sFloatOut);
-            computeTypedValue(outValue, f, sFloatOut[0]);
+            computeTypedValue(outValue, f, sFloatOut[0], null);
 
             System.out.printf(
                 "Dimension \"%1$s\" in attribute \"%2$s\" is missing unit!%n", value, attribute);
@@ -225,7 +227,9 @@ public final class ResourceHelper {
     return false;
   }
 
-  private static void computeTypedValue(TypedValue outValue, float value, float scale) {
+  // TODO Make private when `ResourceHelper2` is removed
+  /* package */ static void computeTypedValue(
+      TypedValue outValue, float value, float scale, String unit) {
     value *= scale;
     boolean neg = value < 0;
     if (neg) {
@@ -262,9 +266,18 @@ public final class ResourceHelper {
     }
     outValue.data |=
         (radix << TypedValue.COMPLEX_RADIX_SHIFT) | (mantissa << TypedValue.COMPLEX_MANTISSA_SHIFT);
+
+    if (unit != null) {
+      if ("%".equals(unit)) {
+        value = value * 100;
+      }
+
+      outValue.string = value + unit;
+    }
   }
 
-  private static boolean parseUnit(String str, TypedValue outValue, float[] outScale) {
+  // TODO Make private when `ResourceHelper2` is removed
+  /* package */ static boolean parseUnit(String str, TypedValue outValue, float[] outScale) {
     str = str.trim();
 
     for (UnitEntry unit : sUnitNames) {
@@ -277,7 +290,8 @@ public final class ResourceHelper {
     return false;
   }
 
-  private static void applyUnit(UnitEntry unit, TypedValue outValue, float[] outScale) {
+  // TODO Make private when `ResourceHelper2` is removed
+  /* package */ static void applyUnit(UnitEntry unit, TypedValue outValue, float[] outScale) {
     outValue.type = unit.type;
     outValue.data = unit.unit << TypedValue.COMPLEX_UNIT_SHIFT;
     outScale[0] = unit.scale;
