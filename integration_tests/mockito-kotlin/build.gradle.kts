@@ -7,9 +7,7 @@ plugins {
   alias(libs.plugins.robolectric.spotless)
 }
 
-tasks.compileKotlin.configure { compilerOptions.jvmTarget = JvmTarget.JVM_1_8 }
-
-tasks.compileTestKotlin.configure { compilerOptions.jvmTarget = JvmTarget.JVM_1_8 }
+kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_1_8 } }
 
 dependencies {
   api(project(":robolectric"))

@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.compose.compiler)
@@ -18,8 +20,6 @@ android {
     targetCompatibility = JavaVersion.VERSION_11
   }
 
-  kotlinOptions { jvmTarget = "11" }
-
   buildFeatures { compose = true }
 
   testOptions {
@@ -34,6 +34,8 @@ android {
     }
   }
 }
+
+kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_11 } }
 
 dependencies {
   implementation(platform(libs.androidx.compose.bom))
