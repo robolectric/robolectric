@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.detekt)
@@ -18,14 +20,14 @@ android {
     targetCompatibility = JavaVersion.VERSION_1_8
   }
 
-  kotlinOptions { jvmTarget = "1.8" }
-
   testOptions {
     // We must keep targetSdk to 29 for compatibility testing purpose
     targetSdk = 29
     unitTests.isIncludeAndroidResources = true
   }
 }
+
+kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_1_8 } }
 
 dependencies {
   implementation(libs.kotlin.stdlib)
