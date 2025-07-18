@@ -3,11 +3,17 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.app.WindowConfiguration;
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.BrightnessConfiguration;
+import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.IDisplayManagerCallback;
@@ -36,10 +42,12 @@ import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link DisplayManagerGlobal}. */
@@ -50,6 +58,8 @@ public class ShadowDisplayManagerGlobal {
 
   // TODO: remove and use DisplayManagerGlobal directly when compiling against Baklava
   private static final int EVENT_DISPLAY_BASIC_CHANGED = 2;
+
+  @RealObject private DisplayManagerGlobal realDisplayManagerGlobal;
 
   private float saturationLevel = 1f;
   private final SparseArray<BrightnessConfiguration> brightnessConfiguration = new SparseArray<>();
@@ -325,8 +335,40 @@ public class ShadowDisplayManagerGlobal {
         throw new IllegalStateException("no display " + displayId);
       }
 
+      // The default display (id == 0) needs to have its bounds updated to match the new size.
+      // getRealSize() will query mResources variable within it which has a separate configuration
+      // that needs this update as well. This is not true for any other display because they don't
+      // have mResources set to anything by design in Android.
+      if (displayId == 0 && RuntimeEnvironment.getApiLevel() >= S) {
+        DisplayManager displayManager =
+            (DisplayManager)
+                RuntimeEnvironment.getApplication()
+                    .getBaseContext()
+                    .getSystemService(Context.DISPLAY_SERVICE);
+        Resources resources =
+            reflector(DisplayReflector.class, ShadowDisplay.getDefaultDisplay()).getResources();
+
+        WindowConfiguration windowConfiguration = resources.getConfiguration().windowConfiguration;
+        Rect bounds = new Rect(0, 0, displayInfo.logicalWidth, displayInfo.logicalHeight);
+        windowConfiguration.setMaxBounds(bounds);
+        windowConfiguration.setBounds(bounds);
+        windowConfiguration.setAppBounds(bounds);
+
+        // Setting this to 0 forces an update of the cache the next time it is accessed.
+        reflector(DisplayReflector.class, displayManager.getDisplays()[0])
+            .setLastCachedAppSizeUpdate(0);
+      }
       displayInfos.put(displayId, displayInfo);
       notifyListeners(displayId, EVENT_DISPLAY_BASIC_CHANGED);
+    }
+
+    @ForType(Display.class)
+    interface DisplayReflector {
+      @Accessor("mResources")
+      Resources getResources();
+
+      @Accessor("mLastCachedAppSizeUpdate")
+      void setLastCachedAppSizeUpdate(long time);
     }
 
     private synchronized void removeDisplay(int displayId) {
@@ -412,6 +454,13 @@ public class ShadowDisplayManagerGlobal {
 
   @ForType(DisplayManagerGlobal.class)
   interface DisplayManagerGlobalReflector {
+
+    @Direct
+    Display getCompatibleDisplay(int displayId, Resources resources);
+
+    @Direct
+    DisplayInfo getDisplayInfo(int displayId);
+
     @Accessor("mDm")
     void setDm(IDisplayManager displayManager);
 
