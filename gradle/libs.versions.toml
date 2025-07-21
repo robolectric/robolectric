@@ -83,7 +83,7 @@ libphonenumber = "9.0.9"
 mockito = "5.18.0"
 
 # https://github.com/mockk/mockk/releases
-mockk = "1.14.4"
+mockk = "1.14.5"
 
 # https://github.com/takahirom/roborazzi/releases
 roborazzi = "1.46.1"
