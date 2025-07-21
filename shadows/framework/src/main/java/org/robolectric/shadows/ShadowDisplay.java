@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.hardware.display.DisplayManager;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
@@ -313,6 +314,12 @@ public class ShadowDisplay {
   /** Reflector interface for {@link Display}'s internals. */
   @ForType(Display.class)
   interface DisplayReflector {
+    @Accessor("mResources")
+    Resources getResources();
+
+    @Accessor("mLastCachedAppSizeUpdate")
+    void setLastCachedAppSizeUpdate(long time);
+
     @Direct
     void getMetrics(DisplayMetrics outMetrics);
 
