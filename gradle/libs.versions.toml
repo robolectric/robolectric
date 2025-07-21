@@ -119,7 +119,7 @@ androidx-test-runner = "1.6.2"
 androidx-test-services = "1.5.0"
 
 # https://developer.android.com/jetpack/androidx/releases/compose
-androidx-compose-bom = "2025.06.01"
+androidx-compose-bom = "2025.07.00"
 
 # for shadows/playservices/build.gradle
 androidx-fragment-for-shadows = "1.2.0"
