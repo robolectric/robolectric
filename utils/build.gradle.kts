@@ -21,8 +21,6 @@ dependencies {
   api(libs.javax.inject)
   api(libs.javax.annotation.api)
 
-  compileOnly(libs.findbugs.jsr305)
-
   testCompileOnly(libs.auto.service.annotations)
   testAnnotationProcessor(libs.auto.service)
   testAnnotationProcessor(libs.error.prone.core)
