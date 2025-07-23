@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
@@ -26,16 +25,6 @@ public class ShadowDateUtilsTest {
   @Before
   public void setUp() throws Exception {
     context = ApplicationProvider.getApplicationContext();
-  }
-
-  @Test
-  @Config(maxSdk = LOLLIPOP_MR1)
-  public void formatDateTime_withCurrentYear() {
-    final long millisAtStartOfYear = getMillisAtStartOfYear();
-
-    String actual =
-        DateUtils.formatDateTime(context, millisAtStartOfYear, DateUtils.FORMAT_NUMERIC_DATE);
-    assertThat(actual).isEqualTo("1/1");
   }
 
   @Test

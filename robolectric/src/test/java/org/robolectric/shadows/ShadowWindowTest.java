@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
@@ -138,14 +137,6 @@ public class ShadowWindowTest {
     window.setSoftInputMode(7);
 
     assertThat(shadowWindow.getSoftInputMode()).isEqualTo(7);
-  }
-
-  @Test
-  @Config(maxSdk = LOLLIPOP_MR1)
-  public void forPreM_create_shouldCreateImplPhoneWindow() throws Exception {
-    assertThat(
-            ShadowWindow.create(ApplicationProvider.getApplicationContext()).getClass().getName())
-        .isEqualTo("com.android.internal.policy.impl.PhoneWindow");
   }
 
   @Test
