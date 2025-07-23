@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
@@ -148,7 +147,7 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  @Config(minSdk = M)
   public void shouldProvideServicesIntroducedInLollipopMr1() {
     assertThat(context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE))
         .isInstanceOf(SubscriptionManager.class);

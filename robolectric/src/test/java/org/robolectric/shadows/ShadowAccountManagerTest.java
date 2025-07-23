@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -371,7 +371,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  @Config(minSdk = M)
   public void removeAccount_withActivity() throws Exception {
     Account account = new Account("name", "type");
     shadowOf(am).addAccount(account);
@@ -388,7 +388,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  @Config(minSdk = M)
   public void removeAccount_withActivity_doesNotRemoveButReturnsIntent() throws Exception {
     Account account = new Account("name", "type");
     shadowOf(am).addAccount(account);
@@ -1089,7 +1089,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  @Config(minSdk = M)
   public void removeAccountExplicitly() {
     assertThat(
             am.removeAccountExplicitly(new Account("non_existent_account@gmail.com", "gmail.com")))
