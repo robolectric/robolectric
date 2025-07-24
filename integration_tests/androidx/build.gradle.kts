@@ -23,6 +23,7 @@ android {
 dependencies {
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.androidx.window)
+  implementation("androidx.core:core:1.16.0")
 
   // Testing dependencies
   testImplementation(project(":testapp"))
