@@ -265,7 +265,6 @@ public class DeviceConfig {
       windowConfiguration.setBounds(bounds);
       windowConfiguration.setAppBounds(bounds);
       if (apiLevel >= VERSION_CODES.S && useMaxBounds()) {
-        System.err.println("JULIA Setting max bounds to: " + bounds);
         windowConfiguration.setMaxBounds(bounds);
       }
     }
