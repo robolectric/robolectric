@@ -2298,6 +2298,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return whitelisted;
   }
 
+  @Implementation(minSdk = Q)
+  protected boolean isDeviceUpgrading() {
+    return ShadowPackageManager.deviceUpgrading;
+  }
+
   /**
    * Sets {@code packageNames} suspension status to {@code suspended} in the package manager.
    *

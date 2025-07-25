@@ -40,7 +40,6 @@ import android.annotation.UserIdInt;
 import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
@@ -202,6 +201,7 @@ public class ShadowPackageManager {
   static boolean safeMode = false;
   static boolean whitelisted = false;
   boolean shouldShowActivityChooser = false;
+  static boolean deviceUpgrading = false;
   static final Map<String, Integer> distractingPackageRestrictions = new ConcurrentHashMap<>();
 
   static final String AOSP_PLATFORM_PERMISSION_GROUP_PREFIX = "android.permission-group.";
@@ -1857,6 +1857,11 @@ public class ShadowPackageManager {
   /** Set value to be returned by {@link PackageManager#isAutoRevokeWhitelisted}. */
   public void setAutoRevokeWhitelisted(boolean whitelisted) {
     ShadowPackageManager.whitelisted = whitelisted;
+  }
+
+  /** Sets the value to be returned by {@link PackageManager#isDeviceUpgrading} */
+  public static void setDeviceUpgrading(boolean deviceUpgrading) {
+    ShadowPackageManager.deviceUpgrading = deviceUpgrading;
   }
 
   @Resetter
