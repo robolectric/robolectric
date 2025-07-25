@@ -27,6 +27,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 import android.provider.FontsContract;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
@@ -299,6 +300,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     Package parsedPackage = loadAppPackage(appManifest);
 
     ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
+    applicationInfo.uid = Process.myUid();
     Class<? extends Application> applicationClass =
         getApplicationClass(appManifest, config, applicationInfo);
     applicationInfo.className = applicationClass.getName();

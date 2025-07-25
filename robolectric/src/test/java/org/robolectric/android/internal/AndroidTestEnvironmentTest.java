@@ -17,8 +17,10 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Process;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import java.io.File;
 import java.security.GeneralSecurityException;
@@ -59,6 +61,7 @@ import org.robolectric.res.ResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.testing.TestActivity;
 
 @RunWith(BootstrapDeferringRobolectricTestRunner.class)
 @LooperMode(LEGACY)
@@ -384,6 +387,21 @@ public class AndroidTestEnvironmentTest {
     assertThat(getExternalImageCount(context)).isEqualTo(0);
     bootstrapWrapper.resetState();
     assertThat(getExternalImageCount(context)).isEqualTo(-1);
+  }
+
+  @Test
+  public void testUid_uidMatchesApplicationUid() {
+    bootstrapWrapper.callSetUpApplicationState();
+    try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            assertThat(activity.getApplicationInfo().uid).isEqualTo(Process.myUid());
+            assertThat(RuntimeEnvironment.getApplication().getApplicationInfo().uid)
+                .isEqualTo(Process.myUid());
+            assertThat(ApplicationProvider.getApplicationContext().getApplicationInfo().uid)
+                .isEqualTo(Process.myUid());
+          });
+    }
   }
 
   private int getExternalImageCount(Context context) {
