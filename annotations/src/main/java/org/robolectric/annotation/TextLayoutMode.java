@@ -10,27 +10,36 @@ import java.lang.annotation.Target;
  * A {@link org.robolectric.pluginapi.config.Configurer} annotation for controlling how Robolectric
  * performs UI layout.
  *
- * <p>PR #4818 changed Robolectric to be more realistic when performing layout on Android views.
- * This change in behavior could cause tests still using the legacy 'UNPAUSED' looper mode or
+ * <p>PR <a href="https://github.com/robolectric/robolectric/pull/4818">#4818</a> changed
+ * Robolectric to be more realistic when performing layout on Android views. This change in behavior
+ * could cause tests still using the legacy {@link LooperMode.Mode#LEGACY LEGACY} looper mode or
  * relying on views being a specific size to fail.
  *
  * <p>This annotation can be applied to tests to have Robolectric perform the legacy, less accurate
  * mechanism of laying out and measuring Android text views, as a stopgap until the tests can be
  * properly fixed.
  *
- * <p>This annotation will be deleted in a forthcoming Robolectric release.
+ * @deprecated This annotation will be deleted in a forthcoming Robolectric release.
  */
 @Documented
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 public @interface TextLayoutMode {
 
-  /** Specifies the different supported Text layout modes. */
+  /**
+   * Specifies the different supported Text layout modes.
+   *
+   * @deprecated This enum is deprecated along with {@link TextLayoutMode}. The default behavior is
+   *     now equivalent to {@link Mode#REALISTIC} mode, so this annotation is generally no longer
+   *     needed.
+   */
+  @Deprecated
   enum Mode {
     /**
      * Robolectric's layout mode prior to 4.3.
      *
-     * @deprecated LEGACY mode is inaccurate, has known bugs and will be removed in a future
+     * @deprecated {@code LEGACY} mode is inaccurate, has known bugs and will be removed in a future
      *     release.
      */
     @Deprecated
@@ -38,7 +47,7 @@ public @interface TextLayoutMode {
     /**
      * The new, more accurate layout mechanism.
      *
-     * @deprecated REALISTIC is the default mode and does not need to be stated explicitly.
+     * @deprecated {@code REALISTIC} is the default mode and does not need to be stated explicitly.
      */
     @Deprecated
     REALISTIC,
