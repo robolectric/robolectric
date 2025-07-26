@@ -13,9 +13,7 @@ import android.os.Build;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -185,17 +183,18 @@ public class ShadowWifiP2pManagerTest {
     WifiP2pManager.Channel applicationChannel =
         manager.initialize(context, Looper.getMainLooper(), null);
 
-    CountDownLatch latch = new CountDownLatch(2);
-    final String[] applicationGroupNameHolder = new String[1];
-    final String[] activityGroupNameHolder = new String[1];
+    WifiP2pGroup groupInfo = new WifiP2pGroup();
+    shadowOf(groupInfo).setNetworkName("network");
+
+    shadowManager.setGroupInfo(applicationChannel, groupInfo);
+    final AtomicReference<String> applicationGroupNameHolder = new AtomicReference<>();
+    final AtomicReference<String> activityGroupNameHolder = new AtomicReference<>();
 
     manager.requestGroupInfo(
         applicationChannel,
         group -> {
-          if (group != null) {
-            applicationGroupNameHolder[0] = group.getNetworkName();
-          }
-          latch.countDown();
+          assertThat(group).isNotNull();
+          applicationGroupNameHolder.set(group.getNetworkName());
         });
 
     try (ActivityController<Activity> controller =
@@ -209,24 +208,17 @@ public class ShadowWifiP2pManagerTest {
         assertThat(manager).isSameInstanceAs(activityWifiP2pManager);
       }
 
-      WifiP2pManager.Channel activityChannel =
-          Objects.requireNonNull(activityWifiP2pManager)
-              .initialize(activity, activity.getMainLooper(), null);
-
       activityWifiP2pManager.requestGroupInfo(
-          activityChannel,
+          applicationChannel,
           group -> {
-            if (group != null) {
-              activityGroupNameHolder[0] = group.getNetworkName();
-            }
-            latch.countDown();
+            assertThat(group).isNotNull();
+            activityGroupNameHolder.set(group.getNetworkName());
           });
+      shadowMainLooper().idle();
 
-      latch.await(5, TimeUnit.SECONDS); // Adjust timeout as necessary
-
-      assertThat(applicationGroupNameHolder[0]).isEqualTo(activityGroupNameHolder[0]);
-    } catch (InterruptedException e) {
-      throw new AssertionError("Failed because of latch interrupt", e);
+      assertThat(applicationGroupNameHolder.get()).isNotNull();
+      assertThat(activityGroupNameHolder.get()).isNotNull();
+      assertThat(applicationGroupNameHolder.get()).isEqualTo(activityGroupNameHolder.get());
     } finally {
       System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
