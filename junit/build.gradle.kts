@@ -7,6 +7,5 @@ dependencies {
   api(project(":sandbox"))
   api(project(":pluginapi"))
 
-  compileOnly(libs.findbugs.jsr305)
   compileOnly(libs.junit4)
 }
