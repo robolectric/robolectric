@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.content.res.ApkAssets.PROPERTY_DYNAMIC;
+import static android.content.res.ApkAssets.PROPERTY_SYSTEM;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -57,9 +59,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   //
   // namespace android {
 
-  // TODO: just use the ApkAssets constants. For some unknown reason these cannot be found
-  private static final int PROPERTY_SYSTEM = 1 << 0;
-  private static final int PROPERTY_DYNAMIC = 1 << 1;
+  // ApkAssets.PROPERTY_OVERLAY is private, so we redefine it here.
   private static final int PROPERTY_OVERLAY = 1 << 3;
 
   protected static final String FRAMEWORK_APK_PATH =
