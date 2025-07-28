@@ -134,6 +134,9 @@ test-parameter-injector = "1.18"
 # https://plugins.gradle.org/plugin/com.gradle.plugin-publish
 gradle-plugin-publish = "1.3.1"
 
+# https://github.com/jspecify/jspecify/releases
+jspecify = "1.0.0"
+
 [libraries]
 android-gradle-api = { module = "com.android.tools.build:gradle-api", version.ref = "android-gradle" }
 
@@ -254,6 +257,8 @@ spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.re
 
 # Not used, but helps Renovate trigger updates for Jacoco
 jacoco-agent = { module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco" }
+
+jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 
 [bundles]
 play-services-for-shadows = ["androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows"]
