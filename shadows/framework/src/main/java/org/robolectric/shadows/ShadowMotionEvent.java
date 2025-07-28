@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
@@ -181,35 +182,17 @@ public class ShadowMotionEvent extends ShadowInputEvent {
       int pointerCount,
       PointerProperties[] pointerPropertiesObjArray,
       PointerCoords[] pointerCoordsObjArray) {
-
-    validatePointerCount(pointerCount);
-    validatePointerPropertiesArray(pointerPropertiesObjArray, pointerCount);
-    validatePointerCoordsObjArray(pointerCoordsObjArray, pointerCount);
-
-    NativeInput.MotionEvent event;
-    if (nativePtr > 0) {
-      event = nativeMotionEventRegistry.getNativeObject(nativePtr);
-    } else {
-      event = new NativeInput.MotionEvent();
-      nativePtr = nativeMotionEventRegistry.register(event);
-    }
-
-    NativeInput.PointerCoords[] rawPointerCoords = new NativeInput.PointerCoords[pointerCount];
-    for (int i = 0; i < pointerCount; i++) {
-      PointerCoords pointerCoordsObj = pointerCoordsObjArray[i];
-      requireNonNull(pointerCoordsObj);
-      rawPointerCoords[i] = pointerCoordsToNative(pointerCoordsObj, xOffset, yOffset);
-    }
-
-    event.initialize(
+    return nativeInitialize(
+        nativePtr,
         deviceId,
         source,
+        /* displayId= */ 0,
         action,
-        0,
         flags,
         edgeFlags,
         metaState,
         buttonState,
+        /* classification= */ 0,
         xOffset,
         yOffset,
         xPrecision,
@@ -218,8 +201,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
         eventTimeNanos,
         pointerCount,
         pointerPropertiesObjArray,
-        rawPointerCoords);
-    return nativePtr;
+        pointerCoordsObjArray);
   }
 
   // TODO(brettchabot): properly handle displayId
@@ -245,15 +227,35 @@ public class ShadowMotionEvent extends ShadowInputEvent {
       int pointerCount,
       PointerProperties[] pointerIds,
       PointerCoords[] pointerCoords) {
-    return nativeInitialize(
-        nativePtr,
+    validatePointerCount(pointerCount);
+    validatePointerPropertiesArray(pointerIds, pointerCount);
+    validatePointerCoordsObjArray(pointerCoords, pointerCount);
+
+    NativeInput.MotionEvent event;
+    if (nativePtr > 0) {
+      event = nativeMotionEventRegistry.getNativeObject(nativePtr);
+    } else {
+      event = new NativeInput.MotionEvent();
+      nativePtr = nativeMotionEventRegistry.register(event);
+    }
+
+    NativeInput.PointerCoords[] rawPointerCoords = new NativeInput.PointerCoords[pointerCount];
+    for (int i = 0; i < pointerCount; i++) {
+      PointerCoords pointerCoordsObj = pointerCoords[i];
+      requireNonNull(pointerCoordsObj);
+      rawPointerCoords[i] = pointerCoordsToNative(pointerCoordsObj, xOffset, yOffset);
+    }
+
+    event.initialize(
         deviceId,
         source,
         action,
+        0,
         flags,
         edgeFlags,
         metaState,
         buttonState,
+        classification,
         xOffset,
         yOffset,
         xPrecision,
@@ -262,7 +264,8 @@ public class ShadowMotionEvent extends ShadowInputEvent {
         eventTimeNanos,
         pointerCount,
         pointerIds,
-        pointerCoords);
+        rawPointerCoords);
+    return nativePtr;
   }
 
   @Implementation
@@ -570,6 +573,13 @@ public class ShadowMotionEvent extends ShadowInputEvent {
   protected static void nativeSetButtonState(long nativePtr, int buttonState) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.setButtonState(buttonState);
+  }
+
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  protected static int nativeGetClassification(long nativePtr) {
+    NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
+    return event.getClassification();
   }
 
   @Implementation
