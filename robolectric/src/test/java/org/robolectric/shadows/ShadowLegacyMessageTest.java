@@ -11,14 +11,17 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(Mode.LEGACY)
+@Config(maxSdk = Baklava.SDK_INT)
 public class ShadowLegacyMessageTest {
 
   @Test

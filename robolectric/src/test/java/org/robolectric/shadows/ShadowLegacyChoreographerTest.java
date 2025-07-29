@@ -11,12 +11,15 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.Duration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Unit tests for {@link ShadowLegacyChoreographer}. */
 @RunWith(AndroidJUnit4.class)
 @LooperMode(Mode.LEGACY)
+@Config(maxSdk = Baklava.SDK_INT)
 public class ShadowLegacyChoreographerTest {
 
   @Test

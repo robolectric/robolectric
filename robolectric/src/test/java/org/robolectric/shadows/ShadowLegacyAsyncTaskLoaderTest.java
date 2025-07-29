@@ -12,11 +12,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Unit tests for {@link ShadowLegacyAsyncTaskLoader}. */
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LEGACY)
+@Config(maxSdk = Baklava.SDK_INT)
 public class ShadowLegacyAsyncTaskLoaderTest {
   private final List<String> transcript = new ArrayList<>();
 

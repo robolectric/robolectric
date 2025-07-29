@@ -18,9 +18,11 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.internal.bytecode.RobolectricInternals;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LEGACY)
+@Config(maxSdk = Baklava.SDK_INT)
 public class ShadowLegacySystemClockTest {
 
   @Test

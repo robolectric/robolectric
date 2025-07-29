@@ -18,8 +18,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 public class ServiceControllerTest {
@@ -66,6 +68,7 @@ public class ServiceControllerTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() {
     ShadowLooper.unPauseMainLooper();
     controller.create();

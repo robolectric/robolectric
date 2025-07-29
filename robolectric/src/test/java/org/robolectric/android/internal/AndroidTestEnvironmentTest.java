@@ -62,9 +62,11 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.testing.TestActivity;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(BootstrapDeferringRobolectricTestRunner.class)
 @LooperMode(LEGACY)
+@Config(maxSdk = Baklava.SDK_INT)
 public class AndroidTestEnvironmentTest {
 
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
