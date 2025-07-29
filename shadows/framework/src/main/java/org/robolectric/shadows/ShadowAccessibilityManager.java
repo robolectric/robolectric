@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.MagnificationSpec;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityManager.AccessibilityServicesStateChangeListener;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
 import android.view.accessibility.IAccessibilityManager;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.ClassName;
@@ -141,6 +143,7 @@ public class ShadowAccessibilityManager {
   public void setAccessibilityServiceList(List<ServiceInfo> accessibilityServiceList) {
     Objects.requireNonNull(accessibilityServiceList);
     ShadowAccessibilityManager.accessibilityServiceList = new ArrayList<>(accessibilityServiceList);
+    notifyAccessibilityServicesStateChangeListeners();
   }
 
   @Nullable
@@ -155,6 +158,7 @@ public class ShadowAccessibilityManager {
     Objects.requireNonNull(enabledAccessibilityServiceList);
     ShadowAccessibilityManager.enabledAccessibilityServiceList =
         new ArrayList<>(enabledAccessibilityServiceList);
+    notifyAccessibilityServicesStateChangeListeners();
   }
 
   @Implementation
@@ -167,6 +171,24 @@ public class ShadowAccessibilityManager {
     Objects.requireNonNull(installedAccessibilityServiceList);
     ShadowAccessibilityManager.installedAccessibilityServiceList =
         new ArrayList<>(installedAccessibilityServiceList);
+    notifyAccessibilityServicesStateChangeListeners();
+  }
+
+  private void notifyAccessibilityServicesStateChangeListeners() {
+    if (getApiLevel() < O) {
+      return;
+    }
+
+    ArrayMap<AccessibilityServicesStateChangeListener, Executor>
+        onAccessibilityServicesStateChangeListeners =
+            reflector(AccessibilityManagerReflector.class, realAccessibilityManager)
+                .getServicesStateChangeListeners();
+    for (AccessibilityServicesStateChangeListener l :
+        onAccessibilityServicesStateChangeListeners.keySet()) {
+      if (l != null) {
+        l.onAccessibilityServicesStateChanged(realAccessibilityManager);
+      }
+    }
   }
 
   @Implementation
@@ -292,6 +314,9 @@ public class ShadowAccessibilityManager {
     @Accessor("mTouchExplorationStateChangeListeners")
     ArrayMap<TouchExplorationStateChangeListener, Handler>
         getTouchExplorationStateChangeListeners();
+
+    @Accessor("mServicesStateChangeListeners") // Only available on O+
+    ArrayMap<AccessibilityServicesStateChangeListener, Executor> getServicesStateChangeListeners();
   }
 
   @ForType(AccessibilityManager.class)
