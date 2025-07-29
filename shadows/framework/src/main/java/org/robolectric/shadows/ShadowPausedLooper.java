@@ -5,7 +5,6 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.app.Instrumentation;
 import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.Looper;
@@ -44,15 +43,21 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /**
- * The shadow Looper for {@link LooperMode.Mode#PAUSED and {@link LooperMode.Mode#INSTRUMENTATION_TEST}.
+ * The shadow Looper for {@link LooperMode.Mode#PAUSED} and {@link
+ * LooperMode.Mode#INSTRUMENTATION_TEST}.
  *
- * <p>This shadow differs from the legacy {@link ShadowLegacyLooper} in the following ways:\ - Has
- * no connection to {@link org.robolectric.util.Scheduler}. Its APIs are standalone - The main
- * looper is always paused in PAUSED MODE but can be unpaused in INSTRUMENTATION_TEST mode. When a
- * looper is paused, posted messages to it are not executed unless {@link #idle()} is called. - Just
- * like in real Android, each looper has its own thread, and posted tasks get executed in that
- * thread. - - There is only a single {@link SystemClock} value that all loopers read from. Unlike
- * legacy behavior where each {@link org.robolectric.util.Scheduler} kept their own clock value.
+ * <p>This shadow differs from the legacy {@link ShadowLegacyLooper} in the following ways:
+ *
+ * <ul>
+ *   <li>Has no connection to {@link Scheduler}. Its APIs are standalone
+ *   <li>The main looper is always paused in PAUSED MODE but can be unpaused in INSTRUMENTATION_TEST
+ *       mode. When a looper is paused, posted messages to it are not executed unless {@link
+ *       #idle()} is called.
+ *   <li>Just like in real Android, each looper has its own thread, and posted tasks get executed in
+ *       that thread.
+ *   <li>There is only a single {@link SystemClock} value that all loopers read from. Unlike legacy
+ *       behavior where each {@link Scheduler} kept their own clock value.
+ * </ul>
  *
  * <p>This class should not be used directly; use {@link ShadowLooper} instead.
  */
@@ -390,7 +395,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
             .isQuitting()) { // Trying to unpause a quitted background Looper may deadlock.
 
       if (isPaused()
-          && !(realLooper == Looper.getMainLooper() && looperMode != Mode.INSTRUMENTATION_TEST)) {
+          && (realLooper != Looper.getMainLooper() || looperMode == Mode.INSTRUMENTATION_TEST)) {
         unPause();
       }
     }
@@ -679,9 +684,9 @@ public final class ShadowPausedLooper extends ShadowLooper {
     if (Thread.currentThread() != realLooper.getThread()
         && looperMode() == LooperMode.Mode.PAUSED
         && realLooper.equals(Looper.getMainLooper())) {
-        throw new UnsupportedOperationException(
-            "main looper can only be controlled from main thread");
-      }
+      throw new UnsupportedOperationException(
+          "main looper can only be controlled from main thread");
+    }
     try {
       looperExecutor.execute(runnable);
     } catch (ControlException e) {
@@ -689,9 +694,9 @@ public final class ShadowPausedLooper extends ShadowLooper {
       return;
     }
 
-      runnable.waitTillComplete();
-      // throw immediately if looper died while executing tasks
-      shadowQueue().checkQueueState();
+    runnable.waitTillComplete();
+    // throw immediately if looper died while executing tasks
+    shadowQueue().checkQueueState();
   }
 
   /**
