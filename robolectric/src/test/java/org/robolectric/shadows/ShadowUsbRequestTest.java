@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.Mockito.when;
@@ -93,7 +92,7 @@ public class ShadowUsbRequestTest {
   }
 
   @Test
-  @Config(sdk = LOLLIPOP)
+  @Config(sdk = Config.OLDEST_SDK)
   // Before P, there's a limitation on the size of data that can be exchanged. Data over this limit
   // is cropped.
   public void queue_outOfSize() {

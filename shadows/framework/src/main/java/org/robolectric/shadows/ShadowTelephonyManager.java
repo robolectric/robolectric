@@ -128,6 +128,7 @@ public class ShadowTelephonyManager {
   private static volatile boolean readPhoneStatePermission = true;
   private int phoneType = TelephonyManager.PHONE_TYPE_GSM;
   private String line1Number;
+  private int primaryImeiSlotIndex = -1;
   private int networkType;
   private int dataNetworkType = TelephonyManager.NETWORK_TYPE_UNKNOWN;
   private int voiceNetworkType = TelephonyManager.NETWORK_TYPE_UNKNOWN;
@@ -466,6 +467,22 @@ public class ShadowTelephonyManager {
   /** Set the IMEI returned by {@link #getImei(int)}. */
   public void setImei(int slotIndex, String imei) {
     slotIndexToImei.put(slotIndex, imei);
+  }
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected String getPrimaryImei() {
+    checkReadPhoneStatePermission();
+    if (primaryImeiSlotIndex != -1) {
+      // Returns the imei of the given slot index for multi-SIM.
+      return slotIndexToImei.getOrDefault(primaryImeiSlotIndex, "");
+    }
+    // Returns imei for single-SIM, as the primary IMEI slot index is unset.
+    return imei;
+  }
+
+  /** Set the primary IMEI slot index for {@link #getPrimaryImei()}. */
+  public void setPrimaryImeiSlotIndex(int primaryImeiSlotIndex) {
+    this.primaryImeiSlotIndex = primaryImeiSlotIndex;
   }
 
   @Implementation(minSdk = O)

@@ -4931,6 +4931,15 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void setDeviceUpgrading() {
+    assertThat(packageManager.isDeviceUpgrading()).isFalse();
+
+    ShadowPackageManager.setDeviceUpgrading(true);
+    assertThat(packageManager.isDeviceUpgrading()).isTrue();
+  }
+
+  @Test
   public void hasSystemFeature_default() {
     for (String feature : SystemFeatureListInitializer.getSystemFeatures().keySet()) {
       assertThat(packageManager.hasSystemFeature(feature)).isTrue();

@@ -12,6 +12,10 @@ public class SimulatorCanvas extends Canvas {
   private int[] pixels;
 
   public SimulatorCanvas() {
+    setFocusable(true); // Required for keyboard focus.
+    setFocusTraversalKeysEnabled(false); // Send tab keys to the simulator.
+    addKeyListener(new KeyboardHandler());
+
     MouseHandler mouseHandler = new MouseHandler();
     addMouseListener(mouseHandler);
     addMouseMotionListener(mouseHandler);

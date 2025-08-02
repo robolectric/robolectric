@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -17,8 +17,10 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OnAccountsUpdateListener;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import androidx.test.core.app.ApplicationProvider;
@@ -376,7 +378,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  @Config(minSdk = M)
   public void removeAccount_withActivity() throws Exception {
     Account account = new Account("name", "type");
     shadowOf(am).addAccount(account);
@@ -393,7 +395,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  @Config(minSdk = M)
   public void removeAccount_withActivity_doesNotRemoveButReturnsIntent() throws Exception {
     Account account = new Account("name", "type");
     shadowOf(am).addAccount(account);
@@ -1103,7 +1105,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  @Config(minSdk = M)
   public void removeAccountExplicitly() {
     assertThat(
             am.removeAccountExplicitly(new Account("non_existent_account@gmail.com", "gmail.com")))
@@ -1182,5 +1184,128 @@ public class ShadowAccountManagerTest {
 
       assertThat(activityAccounts).isEqualTo(applicationAccounts);
     }
+  }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP_MR1)
+  public void confirmCredentials_permissionNotGranted_throwsSecurityException() throws Exception {
+
+    assertThrows(
+        "confirmCredentials() should throw security exception if manage accounts permission is not"
+            + " granted",
+        SecurityException.class,
+        () -> am.confirmCredentials(null, null, null, null, null));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void confirmCredentials_nullAccount_throwsIllegalArgumentException() throws Exception {
+    assertThrows(
+        "confirmCredentials() should throw an illegal argument exception if the account is null",
+        IllegalArgumentException.class,
+        () -> am.confirmCredentials(null, null, null, null, null));
+  }
+
+  @Test
+  public void confirmCredentials_noActivityAndNoPasswordSpecified() throws Exception {
+    shadowOf((Application) ApplicationProvider.getApplicationContext())
+        .grantPermissions(android.Manifest.permission.MANAGE_ACCOUNTS);
+    shadowOf(am).addAuthenticator("com.google");
+    Account account = new Account("name@gmail.com", "com.google");
+    shadowOf(am).addAccount(account);
+
+    AccountManagerFuture<Bundle> result = am.confirmCredentials(account, null, null, null, null);
+    Bundle resultBundle = result.getResult();
+
+    assertThat((Intent) resultBundle.getParcelable(AccountManager.KEY_INTENT)).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void confirmCredentials_shouldCallCallback() throws Exception {
+    shadowOf(am).addAuthenticator("com.google");
+    Account account = new Account("name@gmail.com", "com.google");
+    shadowOf(am).addAccount(account);
+    TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
+
+    AccountManagerFuture<Bundle> result =
+        am.confirmCredentials(account, null, null, callback, new Handler());
+
+    assertThat(callback.hasBeenCalled()).isFalse();
+
+    shadowMainLooper().idle();
+    assertThat(result.isDone()).isTrue();
+    assertThat(callback.accountManagerFuture).isNotNull();
+
+    Bundle resultBundle = callback.getResult();
+    assertThat((Intent) resultBundle.getParcelable(AccountManager.KEY_INTENT)).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void confirmCredentials_activitySpecified() throws Exception {
+    shadowOf(am).addAuthenticator("com.google");
+    Account account = new Account("name@gmail.com", "com.google");
+    shadowOf(am).addAccount(account);
+
+    AccountManagerFuture<Bundle> result =
+        am.confirmCredentials(account, null, activity, null, null);
+    Bundle resultBundle = result.getResult();
+
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo("com.google");
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_NAME)).isEqualTo("name@gmail.com");
+    assertThat(resultBundle.getBoolean(AccountManager.KEY_BOOLEAN_RESULT)).isTrue();
+    assertThat(resultBundle.getLong(AccountManager.KEY_LAST_AUTHENTICATED_TIME)).isEqualTo(-1);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void confirmCredentials_passwordMatches_returnsTrue() throws Exception {
+    shadowOf(am).addAuthenticator("com.google");
+    Account account = new Account("name@gmail.com", "com.google");
+    shadowOf(am).addAccount(account);
+    shadowOf(am).setPassword(account, "password");
+
+    Bundle options = new Bundle();
+    options.putString(AccountManager.KEY_PASSWORD, "password");
+    AccountManagerFuture<Bundle> result = am.confirmCredentials(account, options, null, null, null);
+    Bundle resultBundle = result.getResult();
+
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo("com.google");
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_NAME)).isEqualTo("name@gmail.com");
+    assertThat(resultBundle.getBoolean(AccountManager.KEY_BOOLEAN_RESULT)).isTrue();
+    assertThat(resultBundle.getLong(AccountManager.KEY_LAST_AUTHENTICATED_TIME)).isEqualTo(-1);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void confirmCredentials_passwordDoesNotMatch_returnsFalse() throws Exception {
+    shadowOf(am).addAuthenticator("com.google");
+    Account account = new Account("name@gmail.com", "com.google");
+    shadowOf(am).addAccount(account);
+    shadowOf(am).setPassword(account, "password");
+
+    Bundle options = new Bundle();
+    options.putString(AccountManager.KEY_PASSWORD, "wrong_password");
+    AccountManagerFuture<Bundle> result = am.confirmCredentials(account, options, null, null, null);
+    Bundle resultBundle = result.getResult();
+
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo("com.google");
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_NAME)).isEqualTo("name@gmail.com");
+    assertThat(resultBundle.getBoolean(AccountManager.KEY_BOOLEAN_RESULT)).isFalse();
+    assertThat(resultBundle.getLong(AccountManager.KEY_LAST_AUTHENTICATED_TIME)).isEqualTo(-1);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void confirmCredentials_noAuthenticatorDefined() throws Exception {
+    Account account = new Account("name@gmail.com", "com.google");
+    AccountManagerFuture<Bundle> future =
+        am.confirmCredentials(account, null, activity, null, null);
+    assertThrows(
+        "confirmCredentials() should throw an authenticator exception if no authenticator was"
+            + " registered for this account type",
+        AuthenticatorException.class,
+        () -> future.getResult());
   }
 }

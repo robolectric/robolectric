@@ -21,12 +21,12 @@ public class ShadowWifiP2pGroup {
 
   @Implementation
   public void setPassphrase(String passphrase) {
-    reflector(WifiP2pGroupReflector.class, realObject).setInterface(passphrase);
+    reflector(WifiP2pGroupReflector.class, realObject).setPassphrase(passphrase);
   }
 
   @Implementation
   public void setNetworkName(String networkName) {
-    reflector(WifiP2pGroupReflector.class, realObject).setInterface(networkName);
+    reflector(WifiP2pGroupReflector.class, realObject).setNetworkName(networkName);
   }
 
   @ForType(WifiP2pGroup.class)

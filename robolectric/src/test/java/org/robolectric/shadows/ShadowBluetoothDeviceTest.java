@@ -166,6 +166,56 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
+  public void createBond_setsBondStateToBonded_ifCreatedBond() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    shadowOf(device).setCreatedBond(true);
+    boolean result = device.createBond();
+
+    assertThat(result).isTrue();
+    assertThat(device.getBondState()).isEqualTo(BOND_BONDED);
+  }
+
+  @Test
+  public void createBond_doesNotSetBondStateToBonded_ifNotCreatedBond() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    shadowOf(device).setCreatedBond(false);
+    boolean result = device.createBond();
+
+    assertThat(result).isFalse();
+    assertThat(device.getBondState()).isEqualTo(BOND_NONE);
+  }
+
+  @Test
+  public void removeBond_setsBondStateToNone_ifCreatedBond() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    shadowOf(device).setCreatedBond(true);
+    shadowOf(device).setBondState(BOND_BONDED);
+    boolean result = shadowOf(device).removeBond();
+
+    assertThat(result).isTrue();
+    assertThat(device.getBondState()).isEqualTo(BOND_NONE);
+  }
+
+  @Test
+  public void removeBond_doesNotSetBondStateToNone_ifNotCreatedBond() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    shadowOf(device).setCreatedBond(false);
+    shadowOf(device).setBondState(BOND_BONDED);
+    boolean result = shadowOf(device).removeBond();
+
+    assertThat(result).isFalse();
+    assertThat(device.getBondState()).isEqualTo(BOND_BONDED);
+  }
+
+  @Test
   public void getCorrectFetchUuidsWithSdpCount() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);

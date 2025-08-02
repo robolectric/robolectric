@@ -72,23 +72,9 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
-  @Config(maxSdk = VERSION_CODES.LOLLIPOP_MR1)
-  public void setTimeZone_abbreviateTimezoneId_accept() {
-    alarmManager.setTimeZone("PST");
-    assertThat(TimeZone.getDefault().getID()).isEqualTo("PST");
-  }
-
-  @Test
   @Config(minSdk = VERSION_CODES.M)
   public void setTimeZone_invalidTimeZone_ignore() {
     assertThrows(IllegalArgumentException.class, () -> alarmManager.setTimeZone("-07:00"));
-  }
-
-  @Test
-  @Config(maxSdk = VERSION_CODES.LOLLIPOP_MR1)
-  public void setTimeZone_invalidTimeZone_fallbackToGMT() {
-    alarmManager.setTimeZone("-07:00");
-    assertThat(TimeZone.getDefault().getID()).isEqualTo("GMT");
   }
 
   @Test

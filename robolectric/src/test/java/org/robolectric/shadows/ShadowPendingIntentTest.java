@@ -1017,4 +1017,16 @@ public class ShadowPendingIntentTest {
     // This is weird as well. `isTargetedToPackage` is really `isNotExplicitIntent`.
     assertThat(pendingIntent.isTargetedToPackage()).isTrue();
   }
+
+  @Test
+  public void getIntentSender_sendIntent_startsActivity() throws Exception {
+    Intent embedded = new Intent().setPackage("pkg");
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, embedded, 0);
+    pendingIntent.getIntentSender().sendIntent(context, 0, embedded, null, null);
+
+    ShadowApplication application =
+        shadowOf((Application) ApplicationProvider.getApplicationContext());
+    Intent sent = application.getNextStartedActivity();
+    assertThat(sent.filterEquals(embedded)).isTrue();
+  }
 }

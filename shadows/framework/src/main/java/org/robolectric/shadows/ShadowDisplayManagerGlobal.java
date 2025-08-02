@@ -3,9 +3,13 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.app.WindowConfiguration;
+import android.content.res.Resources;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.BrightnessConfiguration;
 import android.hardware.display.DisplayManagerGlobal;
@@ -325,8 +329,32 @@ public class ShadowDisplayManagerGlobal {
         throw new IllegalStateException("no display " + displayId);
       }
 
+      // The default display (id == 0) needs to have its bounds updated to match the new size.
+      // getRealSize() will query mResources variable within it which has a separate configuration
+      // that needs this update as well. This is not true for any other display because they don't
+      // have mResources set to anything by design in Android.
+      if (displayId == 0 && RuntimeEnvironment.getApiLevel() >= S && useMaxBounds()) {
+        Resources resources =
+            reflector(ShadowDisplay.DisplayReflector.class, ShadowDisplay.getDefaultDisplay())
+                .getResources();
+
+        WindowConfiguration windowConfiguration = resources.getConfiguration().windowConfiguration;
+        Rect bounds = new Rect(0, 0, displayInfo.logicalWidth, displayInfo.logicalHeight);
+        windowConfiguration.setMaxBounds(bounds);
+        windowConfiguration.setBounds(bounds);
+        windowConfiguration.setAppBounds(bounds);
+
+        // Setting this to 0 forces an update of the cache the next time it is accessed.
+        reflector(ShadowDisplay.DisplayReflector.class, ShadowDisplay.getDefaultDisplay())
+            .setLastCachedAppSizeUpdate(0);
+      }
       displayInfos.put(displayId, displayInfo);
       notifyListeners(displayId, EVENT_DISPLAY_BASIC_CHANGED);
+    }
+
+    private boolean useMaxBounds() {
+      return Boolean.parseBoolean(
+          System.getProperty("robolectric.deviceconfig.useMaxBounds", "true"));
     }
 
     private synchronized void removeDisplay(int displayId) {

@@ -16,6 +16,7 @@ import android.net.wifi.aware.SubscribeDiscoverySession;
 import android.net.wifi.aware.WifiAwareManager;
 import android.net.wifi.aware.WifiAwareSession;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
@@ -103,7 +104,7 @@ public final class ShadowWifiAwareManagerTest {
   }
 
   @Test
-  public void publish_shouldPublishServiceIfWifiAwareUnavailable() {
+  public void publish_shouldNotPublishServiceIfWifiAwareUnavailable() {
     int sessionId = 2;
     PublishConfig config = new PublishConfig.Builder().setServiceName("service").build();
     PublishDiscoverySession publishDiscoverySession =
@@ -171,6 +172,25 @@ public final class ShadowWifiAwareManagerTest {
         ShadowWifiAwareManager.newWifiAwareSession(wifiAwareManager, binder, CLIENT_ID);
     assertThat(wifiAwareSession).isNotNull();
     wifiAwareSession.close();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void isDeviceAttached_shouldReturnTrueIfSessionAttached() {
+    shadowOf(wifiAwareManager).setSessionDetached(false);
+    assertThat(wifiAwareManager.isDeviceAttached()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void attachFromIdle_deviceIsAttached() {
+    shadowOf(wifiAwareManager).setAvailable(true);
+    shadowOf(wifiAwareManager).setSessionDetached(true);
+    TestAttachCallback testAttachCallback = new TestAttachCallback();
+    wifiAwareManager.attach(testAttachCallback, handler);
+    shadowMainLooper().idle();
+    assertThat(testAttachCallback.success).isTrue();
+    assertThat(wifiAwareManager.isDeviceAttached()).isTrue();
   }
 
   private static class TestAttachCallback extends AttachCallback {

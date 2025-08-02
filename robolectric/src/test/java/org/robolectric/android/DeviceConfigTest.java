@@ -1,11 +1,20 @@
 package org.robolectric.android;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.shadows.ShadowDisplayManager.addDisplay;
 
+import android.content.Context;
 import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.hardware.display.DisplayManager;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
+import android.view.Display;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
 import org.junit.Before;
@@ -15,6 +24,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Qualifiers;
+import org.robolectric.shadows.ShadowDisplayManager;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
 public class DeviceConfigTest {
@@ -23,12 +34,14 @@ public class DeviceConfigTest {
   private DisplayMetrics displayMetrics;
   private int apiLevel;
   private String optsForO;
+  private Context context;
 
   @Before
   public void setUp() throws Exception {
     configuration = new Configuration();
     displayMetrics = new DisplayMetrics();
     apiLevel = RuntimeEnvironment.getApiLevel();
+    context = RuntimeEnvironment.getApplication().getBaseContext();
 
     optsForO = RuntimeEnvironment.getApiLevel() >= O ? "nowidecg-lowdr-" : "";
   }
@@ -78,6 +91,116 @@ public class DeviceConfigTest {
             "fr-ldltr-sw400dp-w500dp-large-long-round-"
                 + optsForO
                 + "land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void testWindowResources_maxBounds() {
+    Resources systemResources = Resources.getSystem();
+    Resources appResources = ApplicationProvider.getApplicationContext().getResources();
+
+    Rect maxBounds = systemResources.getConfiguration().windowConfiguration.getMaxBounds();
+    Rect appMaxBounds = appResources.getConfiguration().windowConfiguration.getMaxBounds();
+
+    assertThat(maxBounds).isEqualTo(appMaxBounds);
+    assertThat(maxBounds.width()).isGreaterThan(0);
+    assertThat(maxBounds.height()).isGreaterThan(0);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void testChangeDisplay_changeDefaultDisplay_getsCorrectRealSize() {
+    changeDisplay(0, "w400dp-h800dp");
+
+    DisplayManager displayManager =
+        (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
+
+    Display[] displays = displayManager.getDisplays();
+    assertThat(displays).hasLength(1);
+
+    assertThat((Resources) ReflectionHelpers.getField(displays[0], "mResources")).isNotNull();
+    assertDisplayWidthHeight(displays[0], 400, 800);
+    assertRealSize(displays[0], 400, 800);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void testChangeDisplay_changeNonDefaultDisplay_getsCorrectRealSize() {
+    addDisplay("w500dp-h900dp");
+    changeDisplay(1, "w400dp-h800dp");
+
+    DisplayManager displayManager =
+        (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
+
+    Display[] displays = displayManager.getDisplays();
+    assertThat(displays).hasLength(2);
+
+    assertThat((Resources) ReflectionHelpers.getField(displays[0], "mResources")).isNotNull();
+    assertRealSize(displays[0], 320, 470);
+    assertDisplayWidthHeight(displays[0], 320, 470);
+
+    assertThat((Resources) ReflectionHelpers.getField(displays[1], "mResources")).isNull();
+    assertDisplayWidthHeight(displays[1], 400, 800);
+    assertRealSize(displays[1], 400, 800);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void testAddDisplay_getMaxBoundsFromDisplay() {
+    addDisplay("w500dp-h900dp");
+
+    DisplayManager displayManager =
+        (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
+
+    Display[] displays = displayManager.getDisplays();
+    assertThat(displays).hasLength(2);
+
+    assertThat((Resources) ReflectionHelpers.getField(displays[0], "mResources")).isNotNull();
+    assertRealSize(displays[0], 320, 470);
+    assertDisplayWidthHeight(displays[0], 320, 470);
+
+    assertThat((Resources) ReflectionHelpers.getField(displays[1], "mResources")).isNull();
+    assertRealSize(displays[1], 500, 900);
+    assertDisplayWidthHeight(displays[1], 500, 900);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void testAddDisplay_multipleDisplaysHaveCorrectIds() {
+    addDisplay("w100dp-h100dp");
+    addDisplay("w200dp-h200dp");
+
+    DisplayManager displayManager =
+        (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
+
+    Display[] displays = displayManager.getDisplays();
+
+    assertThat((Resources) ReflectionHelpers.getField(displays[0], "mResources")).isNotNull();
+    assertThat(displays[0].getDisplayId()).isEqualTo(0);
+    assertRealSize(displays[0], 320, 470);
+    assertDisplayWidthHeight(displays[0], 320, 470);
+
+    assertThat((Resources) ReflectionHelpers.getField(displays[1], "mResources")).isNull();
+    assertThat(displays[1].getDisplayId()).isEqualTo(1);
+    assertRealSize(displays[1], 100, 100);
+    assertDisplayWidthHeight(displays[1], 100, 100);
+
+    assertThat((Resources) ReflectionHelpers.getField(displays[2], "mResources")).isNull();
+    assertThat(displays[2].getDisplayId()).isEqualTo(2);
+    assertRealSize(displays[2], 200, 200);
+    assertDisplayWidthHeight(displays[2], 200, 200);
+  }
+
+  private void assertRealSize(Display display, int expectedWidth, int expectedHeight) {
+    Point realSize = new Point();
+    display.getRealSize(realSize);
+    assertThat(realSize.x).isEqualTo(expectedWidth);
+    assertThat(realSize.y).isEqualTo(expectedHeight);
+  }
+
+  private void assertDisplayWidthHeight(Display display, int expectedWidth, int expectedHeight) {
+    assertThat(display.getWidth()).isEqualTo(expectedWidth);
+    assertThat(display.getHeight()).isEqualTo(expectedHeight);
   }
 
   @Test
@@ -220,5 +343,12 @@ public class DeviceConfigTest {
 
   private String asQualifierString() {
     return ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
+  }
+
+  private void changeDisplay(int displayId, String qualifiers) {
+    DisplayManager displayManager =
+        (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
+    ShadowDisplayManager.changeDisplay(
+        displayManager.getDisplays()[displayId].getDisplayId(), qualifiers);
   }
 }

@@ -1,6 +1,7 @@
 package android.view;
 
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static androidx.test.ext.truth.view.MotionEventSubject.assertThat;
 import static androidx.test.ext.truth.view.PointerCoordsSubject.assertThat;
 import static androidx.test.ext.truth.view.PointerPropertiesSubject.assertThat;
@@ -51,6 +52,7 @@ public class MotionEventTest {
   private static final int DEVICE_ID_1 = 1;
   private static final int EDGE_FLAGS = MotionEvent.EDGE_TOP;
   private static final float TOLERANCE = 0.01f;
+  private static final int FLAG_2 = 2;
 
   @Before
   public void setup() {
@@ -148,6 +150,63 @@ public class MotionEventTest {
     assertThat(motionEventDynamic).size().isWithin(TOLERANCE).of(SIZE_1F);
     assertThat(motionEventDynamic).xPrecision().isWithin(TOLERANCE).of(X_PRECISION_3F);
     assertThat(motionEventDynamic).yPrecision().isWithin(TOLERANCE).of(Y_PRECISION_4F);
+  }
+
+  @Test
+  public void testObtainWithClassification() {
+    assumeTrue(Build.VERSION.SDK_INT >= UPSIDE_DOWN_CAKE);
+    final int pointerCount = 1;
+    final int displayId = 5;
+    PointerProperties properties0 =
+        PointerPropertiesBuilder.newBuilder()
+            .setId(0)
+            .setToolType(MotionEvent.TOOL_TYPE_FINGER)
+            .build();
+    PointerCoords coords0 =
+        PointerCoordsBuilder.newBuilder()
+            .setCoords(X_3F, Y_4F)
+            .setPressure(PRESSURE_1F)
+            .setSize(SIZE_1F)
+            .setTool(1.2f, 1.4f)
+            .build();
+    motionEventDynamic =
+        MotionEvent.obtain(
+            downTime,
+            eventTime,
+            MotionEvent.ACTION_DOWN,
+            pointerCount,
+            new PointerProperties[] {properties0},
+            new PointerCoords[] {coords0},
+            META_STATE,
+            MotionEvent.BUTTON_SECONDARY,
+            X_PRECISION_3F,
+            Y_PRECISION_4F,
+            DEVICE_ID_1,
+            EDGE_FLAGS,
+            InputDevice.SOURCE_TOUCHSCREEN,
+            displayId,
+            FLAG_2,
+            MotionEvent.CLASSIFICATION_PINCH);
+
+    assertThat(motionEventDynamic).isNotNull();
+    assertThat(motionEventDynamic).hasDownTime(downTime);
+    assertThat(motionEventDynamic).hasEventTime(eventTime);
+    assertThat(motionEventDynamic).hasAction(MotionEvent.ACTION_DOWN);
+    assertThat(motionEventDynamic).hasPointerCount(pointerCount);
+    assertThat(motionEventDynamic).pointerProperties(0).isEqualTo(properties0);
+    MotionEventEqualitySubject.assertThat(motionEventDynamic)
+        .pointerCoords(0)
+        .isEqualToWithinTolerance(coords0, TOLERANCE);
+    assertThat(motionEventDynamic).hasMetaState(META_STATE);
+    assertThat(motionEventDynamic).hasButtonState(MotionEvent.BUTTON_SECONDARY);
+    assertThat(motionEventDynamic).xPrecision().isWithin(TOLERANCE).of(X_PRECISION_3F);
+    assertThat(motionEventDynamic).yPrecision().isWithin(TOLERANCE).of(Y_PRECISION_4F);
+    assertThat(motionEventDynamic).hasDeviceId(DEVICE_ID_1);
+    assertThat(motionEventDynamic).hasEdgeFlags(EDGE_FLAGS);
+    assertThat(motionEventDynamic.getSource()).isEqualTo(InputDevice.SOURCE_TOUCHSCREEN);
+    // displayId is neither exposed nor set in the shadow.
+    assertThat(motionEventDynamic.getFlags()).isEqualTo(FLAG_2);
+    assertThat(motionEventDynamic.getClassification()).isEqualTo(MotionEvent.CLASSIFICATION_PINCH);
   }
 
   @Test

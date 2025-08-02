@@ -139,22 +139,4 @@ public final class AndroidVersionsTest {
     assertThat(new AndroidVersions.M().getVersion()).isEqualTo("6.0");
     assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("M");
   }
-
-  @Test
-  @Config(sdk = 22)
-  public void testStandardInitializationLMR1() {
-    assertThat(AndroidVersions.LMR1.SDK_INT).isEqualTo(22);
-    assertThat(AndroidVersions.LMR1.SHORT_CODE).isEqualTo("LMR1");
-    assertThat(new AndroidVersions.LMR1().getVersion()).isEqualTo("5.1");
-    assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("LMR1");
-  }
-
-  @Test
-  @Config(sdk = 21)
-  public void testStandardInitializationL() {
-    assertThat(AndroidVersions.L.SDK_INT).isEqualTo(21);
-    assertThat(AndroidVersions.L.SHORT_CODE).isEqualTo("L");
-    assertThat(new AndroidVersions.L().getVersion()).isEqualTo("5.0");
-    assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("L");
-  }
 }

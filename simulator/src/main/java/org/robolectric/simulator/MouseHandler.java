@@ -7,12 +7,16 @@ import android.os.SystemClock;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import androidx.test.platform.app.InstrumentationRegistry;
+import java.awt.Component;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.Instant;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.robolectric.shadows.ShadowUiAutomation;
 import org.robolectric.simulator.pluginapi.MenuCustomizer;
 import org.robolectric.util.inject.Injector;
@@ -28,9 +32,37 @@ public class MouseHandler extends MouseAdapter {
   private final Handler handler = new Handler(Looper.getMainLooper());
 
   private final JPopupMenu rightClickMenu;
+  private Component previouslyFocusedComponent;
 
   public MouseHandler() {
     rightClickMenu = new JPopupMenu();
+
+    rightClickMenu.addPopupMenuListener(
+        new PopupMenuListener() {
+          @Override
+          public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+            previouslyFocusedComponent =
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+          }
+
+          @Override
+          public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+            restoreFocus();
+          }
+
+          @Override
+          public void popupMenuCanceled(PopupMenuEvent e) {
+            restoreFocus();
+          }
+
+          private void restoreFocus() {
+            SwingUtilities.invokeLater(
+                () -> {
+                  previouslyFocusedComponent.requestFocusInWindow();
+                });
+          }
+        });
+
     rightClickMenu.add(getBackMenuItem());
 
     // Allow plugins to customize the right click menu.

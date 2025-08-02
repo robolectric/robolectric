@@ -39,6 +39,7 @@ public class RangingResultBuilder {
   private byte[] lcr = new byte[0];
   private ResponderLocation unverifiedResponderLocation = null;
   private boolean is80211mcMeasurement = true;
+  private boolean is80211azNtbMeasurement = false;
 
   public RangingResultBuilder(int status, MacAddress mac, long timestampMillis, int distanceMm) {
     this.status = status;
@@ -88,6 +89,12 @@ public class RangingResultBuilder {
     return this;
   }
 
+  // This was added in Android V.
+  public RangingResultBuilder setIs80211azNtbMeasurement(boolean is80211azNtbMeasurement) {
+    this.is80211azNtbMeasurement = is80211azNtbMeasurement;
+    return this;
+  }
+
   public RangingResult build() {
     if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
       Object builder;
@@ -116,6 +123,8 @@ public class RangingResultBuilder {
           .setRangingTimestampMillis(timestampMillis);
       reflector(RangingResultBuilderReflector.class, builder)
           .set80211mcMeasurement(is80211mcMeasurement);
+      reflector(RangingResultBuilderReflector.class, builder)
+          .set80211azNtbMeasurement(is80211azNtbMeasurement);
       return reflector(RangingResultBuilderReflector.class, builder).build();
     }
     if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.R) {

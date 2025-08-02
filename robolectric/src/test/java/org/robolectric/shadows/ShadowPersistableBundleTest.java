@@ -21,7 +21,7 @@ public class ShadowPersistableBundleTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.LOLLIPOP_MR1)
+  @Config(minSdk = Build.VERSION_CODES.M)
   public void putBoolean() {
     bundle.putBoolean("foo", true);
     assertThat(bundle.getBoolean("foo")).isTrue();
@@ -30,7 +30,7 @@ public class ShadowPersistableBundleTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.LOLLIPOP_MR1)
+  @Config(minSdk = Build.VERSION_CODES.M)
   public void putBooleanArray() {
     boolean[] array = {false, true};
     bundle.putBooleanArray("foo", array);

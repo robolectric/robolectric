@@ -99,6 +99,21 @@ public class ActivityScenarioTest {
     }
   }
 
+  private static class OnCreatePackageNameActivity extends Activity {
+
+    private String callingPackageOnCreate;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      callingPackageOnCreate = getCallingPackage();
+    }
+
+    public String getCallingPackageOnCreate() {
+      return callingPackageOnCreate;
+    }
+  }
+
   /**
    * @noinspection NewClassNamingConvention
    */
@@ -357,6 +372,20 @@ public class ActivityScenarioTest {
           activity ->
               assertThat(activity.getCallingActivity().getPackageName())
                   .isEqualTo("org.robolectric.integrationtests.axt"));
+    }
+  }
+
+  @Test
+  public void launchActivityForResult_intent_hasCallingPackageOnCreate() {
+    Context context = ApplicationProvider.getApplicationContext();
+    Intent startActivityIntent = new Intent().setClass(context, OnCreatePackageNameActivity.class);
+
+    try (ActivityScenario<OnCreatePackageNameActivity> scenario =
+        ActivityScenario.launchActivityForResult(startActivityIntent, null)) {
+      scenario.onActivity(
+          activity -> {
+            assertThat(activity.getCallingPackageOnCreate()).isEqualTo(context.getPackageName());
+          });
     }
   }
 

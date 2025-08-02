@@ -130,7 +130,8 @@ public class ShadowNativeRecordingCanvas extends ShadowNativeBaseRecordingCanvas
 
   @Implementation(maxSdk = R)
   protected static void nInsertReorderBarrier(long renderer, boolean enableReorder) {
-    // no-op
+    // nInsertReorderBarrier was renamed to nEnableZ in API 31+ (S+).
+    nEnableZ(renderer, enableReorder);
   }
 
   @Resetter

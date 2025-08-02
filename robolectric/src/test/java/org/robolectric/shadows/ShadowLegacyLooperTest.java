@@ -28,14 +28,17 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LEGACY)
+@Config(maxSdk = Baklava.SDK_INT)
 public class ShadowLegacyLooperTest {
 
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
@@ -64,6 +63,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.testing.TestActivity;
 import org.robolectric.util.Scheduler;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowApplicationTest {
@@ -148,7 +148,7 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  @Config(minSdk = M)
   public void shouldProvideServicesIntroducedInLollipopMr1() {
     assertThat(context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE))
         .isInstanceOf(SubscriptionManager.class);
@@ -933,6 +933,7 @@ public class ShadowApplicationTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void getBackgroundThreadScheduler_shouldMatchRobolectricValue() {
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler())
         .isSameInstanceAs(Robolectric.getBackgroundThreadScheduler());
@@ -940,6 +941,7 @@ public class ShadowApplicationTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_byDefault() {
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
@@ -949,6 +951,7 @@ public class ShadowApplicationTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void
       getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_withAdvancedScheduling() {
     Scheduler s = new Scheduler();
