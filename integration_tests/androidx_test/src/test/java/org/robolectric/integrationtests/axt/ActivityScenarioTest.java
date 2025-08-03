@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.Process;
 import androidx.appcompat.R;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -396,6 +397,19 @@ public class ActivityScenarioTest {
         ActivityScenario.launch(ActivityWithCustomConstructor.class)) {
       assertThat(activityScenario.getState()).isEqualTo(State.RESUMED);
       activityScenario.onActivity(activity -> assertThat(activity.getIntValue()).isEqualTo(100));
+    }
+  }
+
+  @Test
+  public void testUid_uidMatchesApplicationUid() {
+    try (ActivityScenario<TranscriptActivity> scenario =
+        ActivityScenario.launch(TranscriptActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            assertThat(activity.getApplicationInfo().uid).isEqualTo(Process.myUid());
+            assertThat(ApplicationProvider.getApplicationContext().getApplicationInfo().uid)
+                .isEqualTo(Process.myUid());
+          });
     }
   }
 }
