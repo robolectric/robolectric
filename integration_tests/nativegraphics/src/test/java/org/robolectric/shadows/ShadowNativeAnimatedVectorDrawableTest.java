@@ -5,16 +5,23 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import android.app.Activity;
+import android.app.UiAutomation;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Xml;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
@@ -28,6 +35,7 @@ import org.xmlpull.v1.XmlPullParserException;
 public class ShadowNativeAnimatedVectorDrawableTest {
   private static final int IMAGE_WIDTH = 64;
   private static final int IMAGE_HEIGHT = 64;
+
 
   private static final int RES_ID = R.drawable.animation_vector_drawable_grouping_1;
 
@@ -119,5 +127,31 @@ public class ShadowNativeAnimatedVectorDrawableTest {
     drawable.stop();
 
     assertFalse(Shadows.shadowOf(drawable).isStartInitiated());
+  }
+
+  @Test
+  public void render_animatedVectorDrawable_withScreenshot() {
+    TestActivity activity = Robolectric.setupActivity(TestActivity.class);
+    AnimatedVectorDrawable drawable = (AnimatedVectorDrawable) activity.imageView.getDrawable();
+    assertTrue(Shadows.shadowOf(drawable).isStartInitiated());
+    UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    uiAutomation.takeScreenshot();
+  }
+
+  public static class TestActivity extends Activity {
+    ImageView imageView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      imageView = new ImageView(this);
+      imageView.setImageResource(R.drawable.animated_vector_drawable_test);
+
+      ((ViewGroup) findViewById(android.R.id.content)).addView(imageView);
+
+      AnimatedVectorDrawable animatedVectorDrawable =
+          (AnimatedVectorDrawable) imageView.getDrawable();
+      animatedVectorDrawable.start();
+    }
   }
 }

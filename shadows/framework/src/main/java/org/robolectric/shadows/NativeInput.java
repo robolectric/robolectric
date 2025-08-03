@@ -306,6 +306,7 @@ public class NativeInput {
     private int mEdgeFlags;
     private int mMetaState;
     private int mButtonState;
+    private int mClassification;
     private float mXOffset;
     private float mYOffset;
     private float mXPrecision;
@@ -367,6 +368,10 @@ public class NativeInput {
 
     public void setButtonState(int buttonState) {
       mButtonState = buttonState;
+    }
+
+    public int getClassification() {
+      return mClassification;
     }
 
     public int getActionButton() {
@@ -688,6 +693,7 @@ public class NativeInput {
         int edgeFlags,
         int metaState,
         int buttonState,
+        int classification,
         float xOffset,
         float yOffset,
         float xPrecision,
@@ -704,6 +710,7 @@ public class NativeInput {
       mEdgeFlags = edgeFlags;
       mMetaState = metaState;
       mButtonState = buttonState;
+      mClassification = classification;
       mXOffset = xOffset;
       mYOffset = yOffset;
       mXPrecision = xPrecision;
@@ -727,6 +734,7 @@ public class NativeInput {
       mEdgeFlags = other.mEdgeFlags;
       mMetaState = other.mMetaState;
       mButtonState = other.mButtonState;
+      mClassification = other.mClassification;
       mXOffset = other.mXOffset;
       mYOffset = other.mYOffset;
       mXPrecision = other.mXPrecision;
@@ -883,6 +891,7 @@ public class NativeInput {
       mEdgeFlags = parcel.readInt();
       mMetaState = parcel.readInt();
       mButtonState = parcel.readInt();
+      mClassification = parcel.readInt();
       mXOffset = parcel.readFloat();
       mYOffset = parcel.readFloat();
       mXPrecision = parcel.readFloat();
@@ -924,6 +933,7 @@ public class NativeInput {
       parcel.writeInt(mEdgeFlags);
       parcel.writeInt(mMetaState);
       parcel.writeInt(mButtonState);
+      parcel.writeInt(mClassification);
       parcel.writeFloat(mXOffset);
       parcel.writeFloat(mYOffset);
       parcel.writeFloat(mXPrecision);

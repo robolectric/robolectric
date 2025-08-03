@@ -247,6 +247,42 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getPrimaryImei_primaryImeiSlotIndexUnset_returnsImeiForSingleSim() {
+    String testImei = "test imei";
+    shadowOf(telephonyManager).setImei(testImei);
+
+    assertEquals(testImei, telephonyManager.getPrimaryImei());
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getPrimaryImei_primaryImeiSlotIndexSet_returnsImeiForSlotIndex() {
+    int primaryImeiSlotIndex = 0;
+    String testImei = "test imei";
+    shadowOf(telephonyManager).setImei(primaryImeiSlotIndex, testImei);
+    shadowOf(telephonyManager).setPrimaryImeiSlotIndex(primaryImeiSlotIndex);
+
+    assertEquals(testImei, telephonyManager.getPrimaryImei());
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getPrimaryImei_primaryImeiSlotIndexOutOfRange_returnsEmpty() {
+    shadowOf(telephonyManager).setImei(0, "test imei");
+    shadowOf(telephonyManager).setPrimaryImeiSlotIndex(1);
+
+    assertEquals("", telephonyManager.getPrimaryImei());
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getPrimaryImei_readPhoneStatePermissionNotGranted_throwsSecurityException() {
+    shadowOf(telephonyManager).setReadPhoneStatePermission(false);
+    assertThrows(SecurityException.class, () -> telephonyManager.getPrimaryImei());
+  }
+
+  @Test
   @Config(minSdk = O)
   public void getMeid() {
     String testMeid = "4test meid";

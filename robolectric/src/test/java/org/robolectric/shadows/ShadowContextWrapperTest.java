@@ -57,6 +57,7 @@ import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowApplication.Wrapper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Tests {@link ShadowContextWrapper} */
 @Config(manifest = "TestAndroidManifestWithReceivers.xml")
@@ -248,6 +249,7 @@ public class ShadowContextWrapperTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided_legacy() {
     HandlerThread handlerThread = new HandlerThread("test");
     handlerThread.start();

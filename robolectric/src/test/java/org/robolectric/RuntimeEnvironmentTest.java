@@ -17,15 +17,18 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.util.Scheduler;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 public class RuntimeEnvironmentTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void setMainThread_forCurrentThread() {
     RuntimeEnvironment.setMainThread(Thread.currentThread());
     assertThat(RuntimeEnvironment.getMainThread()).isSameInstanceAs(Thread.currentThread());
@@ -33,6 +36,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void setMainThread_forNewThread() {
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
@@ -41,6 +45,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void isMainThread_forNewThread_withoutSwitch() throws InterruptedException {
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
@@ -61,6 +66,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void isMainThread_forNewThread_withSwitch() throws InterruptedException {
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
@@ -81,6 +87,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void isMainThread_withArg_forNewThread_withSwitch() {
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
@@ -89,6 +96,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void getSetMasterScheduler() {
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
@@ -147,5 +155,18 @@ public class RuntimeEnvironmentTest {
   public void setQualifiers_withResultFromGetQualifiers() {
     // Calling this should not cause an exception, e.g. API level mismatch.
     RuntimeEnvironment.setQualifiers(RuntimeEnvironment.getQualifiers());
+  }
+
+  @Config(qualifiers = "w100dp-h200dp-port")
+  @Test
+  public void setQualifiers_modifyWidthToGreatThanHeight_setsOrientationToLandscape() {
+    RuntimeEnvironment.setQualifiers("+w300dp");
+
+    assertThat(
+            ApplicationProvider.getApplicationContext()
+                .getResources()
+                .getConfiguration()
+                .orientation)
+        .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
   }
 }

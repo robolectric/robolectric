@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -255,23 +253,7 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(sdk = LOLLIPOP)
-  public void getExternalStorageStatePreLollipopMR1() {
-    File storageDir1 = ShadowEnvironment.addExternalDir("dir1");
-    File storageDir2 = ShadowEnvironment.addExternalDir("dir2");
-    ShadowEnvironment.setExternalStorageState(storageDir1, Environment.MEDIA_MOUNTED);
-    ShadowEnvironment.setExternalStorageState(storageDir2, Environment.MEDIA_REMOVED);
-    ShadowEnvironment.setExternalStorageState("blah");
-
-    assertThat(ShadowEnvironment.getStorageState(storageDir1)).isEqualTo(Environment.MEDIA_MOUNTED);
-    assertThat(ShadowEnvironment.getStorageState(storageDir2)).isEqualTo(Environment.MEDIA_REMOVED);
-    assertThat(ShadowEnvironment.getStorageState(new File(storageDir1, "subpath")))
-        .isEqualTo(Environment.MEDIA_MOUNTED);
-    assertThat(ShadowEnvironment.getExternalStorageState()).isEqualTo("blah");
-  }
-
-  @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  @Config(minSdk = M)
   public void getExternalStorageState() {
     File storageDir1 = ShadowEnvironment.addExternalDir("dir1");
     File storageDir2 = ShadowEnvironment.addExternalDir("dir2");

@@ -41,6 +41,7 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowWindowManagerImpl;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 public class ActivityControllerTest {
@@ -77,6 +78,7 @@ public class ActivityControllerTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void pendingTasks_areRunEagerly_whenActivityIsStarted_andSchedulerUnPaused() {
     final Scheduler s = Robolectric.getForegroundThreadScheduler();
     final long startTime = s.getCurrentTime();
@@ -87,6 +89,7 @@ public class ActivityControllerTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void delayedTasks_areNotRunEagerly_whenActivityIsStarted_andSchedulerUnPaused() {
     // Regression test for issue #1509
     final Scheduler s = Robolectric.getForegroundThreadScheduler();
@@ -125,6 +128,7 @@ public class ActivityControllerTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() {
     ShadowLooper.unPauseMainLooper();
     controller.create();

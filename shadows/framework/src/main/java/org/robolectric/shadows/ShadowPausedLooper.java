@@ -5,7 +5,6 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.app.Instrumentation;
 import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.Looper;
@@ -50,14 +49,14 @@ import org.robolectric.util.reflector.Static;
  * <p>This shadow differs from the legacy {@link ShadowLegacyLooper} in the following ways:
  *
  * <ul>
- *   <li>Has no connection to {@link org.robolectric.util.Scheduler}. Its APIs are standalone.
+ *   <li>Has no connection to {@link Scheduler}. Its APIs are standalone
  *   <li>The main looper is always paused in PAUSED MODE but can be unpaused in INSTRUMENTATION_TEST
  *       mode. When a looper is paused, posted messages to it are not executed unless {@link
  *       #idle()} is called.
  *   <li>Just like in real Android, each looper has its own thread, and posted tasks get executed in
  *       that thread.
  *   <li>There is only a single {@link SystemClock} value that all loopers read from. Unlike legacy
- *       behavior where each {@link org.robolectric.util.Scheduler} kept their own clock value.
+ *       behavior where each {@link Scheduler} kept their own clock value.
  * </ul>
  *
  * <p>This class should not be used directly; use {@link ShadowLooper} instead.
@@ -396,7 +395,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
             .isQuitting()) { // Trying to unpause a quitted background Looper may deadlock.
 
       if (isPaused()
-          && !(realLooper == Looper.getMainLooper() && looperMode != Mode.INSTRUMENTATION_TEST)) {
+          && (realLooper != Looper.getMainLooper() || looperMode == Mode.INSTRUMENTATION_TEST)) {
         unPause();
       }
     }
@@ -682,27 +681,22 @@ public final class ShadowPausedLooper extends ShadowLooper {
    */
   private void executeOnLooper(ControlRunnable runnable) throws IllegalStateException {
     checkState(!shadowQueue().isQuitting(), "Looper is quitting");
-    if (Thread.currentThread() == realLooper.getThread()) {
-      if (runnable instanceof UnPauseRunnable) {
-        // Need to trigger the unpause action in PausedLooperExecutor
-        looperExecutor.execute(runnable);
-      } else {
-        try {
-          runnable.run();
-        } catch (ControlException e) {
-          e.rethrowCause();
-        }
-      }
-    } else {
-      if (looperMode() == LooperMode.Mode.PAUSED && realLooper.equals(Looper.getMainLooper())) {
-        throw new UnsupportedOperationException(
-            "main looper can only be controlled from main thread");
-      }
-      looperExecutor.execute(runnable);
-      runnable.waitTillComplete();
-      // throw immediately if looper died while executing tasks
-      shadowQueue().checkQueueState();
+    if (Thread.currentThread() != realLooper.getThread()
+        && looperMode() == LooperMode.Mode.PAUSED
+        && realLooper.equals(Looper.getMainLooper())) {
+      throw new UnsupportedOperationException(
+          "main looper can only be controlled from main thread");
     }
+    try {
+      looperExecutor.execute(runnable);
+    } catch (ControlException e) {
+      e.rethrowCause();
+      return;
+    }
+
+    runnable.waitTillComplete();
+    // throw immediately if looper died while executing tasks
+    shadowQueue().checkQueueState();
   }
 
   /**
@@ -717,7 +711,15 @@ public final class ShadowPausedLooper extends ShadowLooper {
     @Override
     public void execute(@Nonnull Runnable runnable) {
       shadowQueue().checkQueueState();
-      executionQueue.add(runnable);
+      if (Thread.currentThread() == realLooper.getThread()) {
+        runnable.run();
+      } else {
+        executionQueue.add(runnable);
+      }
+      if (runnable instanceof UnPauseRunnable) {
+        // unblock the while loop
+        executionQueue.add(() -> {});
+      }
     }
 
     @Override
@@ -769,9 +771,13 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     @Override
     public void execute(@Nonnull Runnable runnable) {
-      if (!handler.post(runnable)) {
-        throw new IllegalStateException(
-            String.format("post to %s failed. Is handler thread dead?", handler));
+      if (handler.getLooper().getThread() == Thread.currentThread()) {
+        runnable.run();
+      } else {
+        if (!handler.post(runnable)) {
+          throw new IllegalStateException(
+              String.format("post to %s failed. Is handler thread dead?", handler));
+        }
       }
     }
   }

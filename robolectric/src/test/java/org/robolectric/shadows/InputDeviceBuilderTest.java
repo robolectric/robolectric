@@ -68,4 +68,11 @@ public class InputDeviceBuilderTest {
 
     assertDevice(device);
   }
+
+  @Test
+  public void testBuild_virtualDevice() {
+    // A virtual device has a negative id.
+    final InputDevice device = InputDeviceBuilder.newBuilder().setId(-10).build();
+    assertThat(device.isVirtual()).isTrue();
+  }
 }

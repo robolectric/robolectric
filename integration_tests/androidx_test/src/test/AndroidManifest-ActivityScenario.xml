@@ -18,6 +18,9 @@
     <activity
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTest$ActivityWithCustomConstructor"
         android:exported="true"/>
+    <activity
+        android:name="org.robolectric.integrationtests.axt.ActivityScenarioTest$OnCreatePackageNameActivity"
+        android:exported = "true"/>
     <activity-alias
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTestAlias"
         android:targetActivity="org.robolectric.integrationtests.axt.ActivityScenarioTest$TranscriptActivity" />

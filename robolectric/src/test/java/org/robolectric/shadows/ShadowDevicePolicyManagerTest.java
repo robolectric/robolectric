@@ -18,8 +18,6 @@ import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_COMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_FINALIZED;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_INCOMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_UNMANAGED;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -650,27 +648,7 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(sdk = LOLLIPOP)
-  public void isUninstallBlockedWithNullAdminShouldThrowNullPointerExceptionOnLollipop() {
-    // GIVEN the caller is the device owner, and thus an active admin
-    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
-
-    // GIVEN an app which is blocked from being uninstalled
-    String app = "com.example.app";
-    devicePolicyManager.setUninstallBlocked(testComponent, app, true);
-
-    // WHEN DevicePolicyManager#UninstallBlocked is called with null admin
-    // THEN it should throw NullPointerException
-    try {
-      devicePolicyManager.isUninstallBlocked(/* admin= */ null, app);
-      fail("expected NullPointerException");
-    } catch (NullPointerException expected) {
-      // expected
-    }
-  }
-
-  @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  @Config(minSdk = M)
   public void
       isUninstallBlockedWithNullAdminShouldNotThrowNullPointerExceptionOnLollipopMr1AndAbove() {
     // GIVEN the caller is the device owner, and thus an active admin

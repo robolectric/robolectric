@@ -14,7 +14,6 @@ import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.util.SparseIntArray;
 import android.util.TypedValue;
@@ -81,10 +80,7 @@ public class ShadowResourcesTest {
    * ourselves.
    */
   @Test
-  @Config(
-      sdk =
-          Build.VERSION_CODES
-              .LOLLIPOP) // android:color/secondary_text_material_dark was added in API 21
+  @Config(sdk = Config.OLDEST_SDK) // android:color/secondary_text_material_dark was added in API 21
   public void shouldGenerateIdsForResourcesThatAreMissingRValues() {
     int identifier_missing_from_r_file =
         resources.getIdentifier("secondary_text_material_dark", "color", "android");

@@ -58,7 +58,7 @@ public @interface LooperMode {
      *       for code that enforces that it runs on a non-main {@link android.os.Looper} thread.
      * </ol>
      *
-     * @deprecated use LooperMode.PAUSED
+     * @deprecated use LooperMode.PAUSED. LEGACY mode is not supported on Android SDKs > Baklava
      */
     @Deprecated
     LEGACY,

@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadow.api.Shadow;
@@ -30,10 +31,12 @@ import org.robolectric.shadows.ShadowMessage.MessageReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Unit tests for {@link ShadowLegacyMessageQueue}. */
 @RunWith(AndroidJUnit4.class)
 @LooperMode(Mode.LEGACY)
+@Config(maxSdk = Baklava.SDK_INT)
 public class ShadowLegacyMessageQueueTest {
   private Looper looper;
   private MessageQueue queue;

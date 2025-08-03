@@ -6,7 +6,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.versioning.AndroidVersions.PostBaklava;
+import org.robolectric.annotation.InDevelopment;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
@@ -74,6 +75,7 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
   }
 
   @Implementation(minSdk = V.SDK_INT)
+  @InDevelopment
   protected static void nativeSetConfiguration(
       long ptr,
       int mcc,
@@ -128,7 +130,8 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
         majorVersion);
   }
 
-  @Implementation(minSdk = PostBaklava.SDK_INT)
+  @Implementation(minSdk = Baklava.SDK_INT)
+  @InDevelopment
   protected static void nativeSetConfiguration(
       long ptr,
       int mcc,

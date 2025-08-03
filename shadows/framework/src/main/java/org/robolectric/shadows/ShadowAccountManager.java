@@ -15,6 +15,7 @@ import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import java.io.IOException;
@@ -31,10 +32,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.Scheduler.IdleState;
 
 @Implements(AccountManager.class)
 public class ShadowAccountManager {
@@ -768,6 +769,50 @@ public class ShadowAccountManager {
     }
 
     return result.toArray(new Account[0]);
+  }
+
+  @Implementation
+  protected AccountManagerFuture<Bundle> confirmCredentials(
+      final Account account,
+      final Bundle options,
+      final Activity activity,
+      final AccountManagerCallback<Bundle> callback,
+      final Handler handler) {
+    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+      RuntimeEnvironment.getApplication()
+          .enforceCallingPermission(android.Manifest.permission.MANAGE_ACCOUNTS, null);
+    }
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+    return start(
+        new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
+          @Override
+          public Bundle doWork() throws AuthenticatorException {
+            Bundle result = new Bundle();
+            if (!authenticators.containsKey(account.type)) {
+              throw new AuthenticatorException("No authenticator specified for " + account.type);
+            }
+            String password = null;
+            if (options != null) {
+              password = options.getString(AccountManager.KEY_PASSWORD);
+            }
+            if (activity == null && password == null) {
+              result.putParcelable(AccountManager.KEY_INTENT, new Intent());
+            } else {
+              result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
+              result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
+              if (password != null) {
+                result.putBoolean(
+                    AccountManager.KEY_BOOLEAN_RESULT, password.equals(passwords.get(account)));
+              } else {
+                result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, true);
+              }
+              result.putLong(AccountManager.KEY_LAST_AUTHENTICATED_TIME, -1);
+            }
+            return result;
+          }
+        });
   }
 
   /**

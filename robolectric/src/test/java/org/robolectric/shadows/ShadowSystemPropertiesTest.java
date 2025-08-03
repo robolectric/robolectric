@@ -53,18 +53,6 @@ public class ShadowSystemPropertiesTest {
   // android-all jar instead of loading build.prop from classpath aka LATEST_SDK.
 
   @Test
-  @Config(sdk = 21)
-  public void readPropFromJarNotClassPath21() {
-    assertThat(SystemProperties.getInt("ro.build.version.sdk", 0)).isEqualTo(21);
-  }
-
-  @Test
-  @Config(sdk = 22)
-  public void readPropFromJarNotClassPath22() {
-    assertThat(SystemProperties.getInt("ro.build.version.sdk", 0)).isEqualTo(22);
-  }
-
-  @Test
   @Config(sdk = 23)
   public void readPropFromJarNotClassPath23() {
     assertThat(SystemProperties.getInt("ro.build.version.sdk", 0)).isEqualTo(23);

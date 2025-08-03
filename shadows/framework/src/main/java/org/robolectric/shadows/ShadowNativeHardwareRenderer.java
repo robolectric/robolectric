@@ -92,20 +92,20 @@ public class ShadowNativeHardwareRenderer {
     return HardwareRendererNatives.nCreateRootRenderNode();
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT, methodName = "nCreateProxy")
-  protected static long nCreateProxyPostR(boolean translucent, long rootRenderNode) {
-    return nCreateProxy(translucent, rootRenderNode);
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  protected static long nCreateProxy(boolean translucent, long rootRenderNode) {
+    return HardwareRendererNatives.nCreateProxy(translucent, rootRenderNode);
   }
 
   @Implementation(minSdk = R, maxSdk = R)
   protected static long nCreateProxy(
       boolean translucent, boolean isWideGamut, long rootRenderNode) {
-    return nCreateProxy(true, rootRenderNode);
+    return nCreateProxy(translucent, rootRenderNode);
   }
 
-  @Implementation(minSdk = Q, maxSdk = Q)
-  protected static long nCreateProxy(boolean translucent, long rootRenderNode) {
-    return HardwareRendererNatives.nCreateProxy(translucent, rootRenderNode);
+  @Implementation(minSdk = Q, maxSdk = Q, methodName = "nCreateProxy")
+  protected static long nCreateProxyQ(boolean translucent, long rootRenderNode) {
+    return nCreateProxy(translucent, rootRenderNode);
   }
 
   @Implementation(maxSdk = U.SDK_INT)
@@ -326,14 +326,14 @@ public class ShadowNativeHardwareRenderer {
     HardwareRendererNatives.nSetFrameCompleteCallback(nativeProxy, callback);
   }
 
-  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = R)
   protected static void nAddObserver(long nativeProxy, long nativeObserver) {
-    HardwareRendererNatives.nAddObserver(nativeProxy, nativeObserver);
+    // currently not supported
   }
 
-  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = R)
   protected static void nRemoveObserver(long nativeProxy, long nativeObserver) {
-    HardwareRendererNatives.nRemoveObserver(nativeProxy, nativeObserver);
+    // currently not supported
   }
 
   @Implementation(maxSdk = TIRAMISU)

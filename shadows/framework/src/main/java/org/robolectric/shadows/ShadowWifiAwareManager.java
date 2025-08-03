@@ -11,6 +11,7 @@ import android.net.wifi.aware.SubscribeDiscoverySession;
 import android.net.wifi.aware.WifiAwareManager;
 import android.net.wifi.aware.WifiAwareSession;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import org.robolectric.annotation.Implementation;
@@ -62,6 +63,11 @@ public class ShadowWifiAwareManager {
       Handler handler = new Handler(looper);
       handler.post(() -> callback.onSubscribeStarted(discoverySessionToSubscribe));
     }
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.S)
+  protected boolean isDeviceAttached() {
+    return !sessionDetached;
   }
 
   /** Returns a new instance of PublishDiscoverySession. */

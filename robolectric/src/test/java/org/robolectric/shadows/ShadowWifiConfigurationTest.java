@@ -83,22 +83,6 @@ public class ShadowWifiConfigurationTest {
     assertThat(copy.enterpriseConfig.getPassword()).isEqualTo("fake password");
   }
 
-  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
-  @Test
-  public void shouldCopy_sdk21() {
-    WifiConfiguration wifiConfiguration = new WifiConfiguration();
-
-    wifiConfiguration.networkId = 1;
-    wifiConfiguration.SSID = "SSID";
-    wifiConfiguration.creatorUid = 888;
-
-    WifiConfiguration copy = shadowOf(wifiConfiguration).copy();
-
-    assertThat(copy.networkId).isEqualTo(1);
-    assertThat(copy.SSID).isEqualTo("SSID");
-    assertThat(copy.creatorUid).isEqualTo(888);
-  }
-
   @Config(minSdk = Build.VERSION_CODES.M)
   @Test
   public void shouldCopy_sdk23() {

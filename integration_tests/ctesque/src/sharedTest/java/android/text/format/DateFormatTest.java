@@ -63,14 +63,6 @@ public class DateFormatTest {
         .isEqualTo("Nov 25, 2000");
   }
 
-  @SdkSuppress(maxSdkVersion = 22)
-  @Config(maxSdk = 22)
-  @Test
-  public void getDateFormat_pre23() {
-    assertThat(DateFormat.getDateFormat(getApplicationContext()).format(dateAM))
-        .isEqualTo("11/25/2000");
-  }
-
   @SdkSuppress(minSdkVersion = 23)
   @Config(minSdk = 23)
   @Test

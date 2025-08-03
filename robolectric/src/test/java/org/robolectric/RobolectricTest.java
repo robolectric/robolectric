@@ -35,6 +35,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 public class RobolectricTest {
@@ -50,6 +51,7 @@ public class RobolectricTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void shouldResetBackgroundSchedulerBeforeTests() {
     assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
     Robolectric.getBackgroundThreadScheduler().pause();
@@ -57,6 +59,7 @@ public class RobolectricTest {
 
   @Test
   @LooperMode(LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void shouldResetBackgroundSchedulerAfterTests() {
     assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
     Robolectric.getBackgroundThreadScheduler().pause();

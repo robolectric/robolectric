@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.Process;
 import androidx.appcompat.R;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -96,6 +97,21 @@ public class ActivityScenarioTest {
     public void onWindowFocusChanged(boolean hasFocus) {
       super.onWindowFocusChanged(hasFocus);
       callbacks.add("onWindowFocusChanged " + hasFocus);
+    }
+  }
+
+  private static class OnCreatePackageNameActivity extends Activity {
+
+    private String callingPackageOnCreate;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      callingPackageOnCreate = getCallingPackage();
+    }
+
+    public String getCallingPackageOnCreate() {
+      return callingPackageOnCreate;
     }
   }
 
@@ -361,12 +377,39 @@ public class ActivityScenarioTest {
   }
 
   @Test
+  public void launchActivityForResult_intent_hasCallingPackageOnCreate() {
+    Context context = ApplicationProvider.getApplicationContext();
+    Intent startActivityIntent = new Intent().setClass(context, OnCreatePackageNameActivity.class);
+
+    try (ActivityScenario<OnCreatePackageNameActivity> scenario =
+        ActivityScenario.launchActivityForResult(startActivityIntent, null)) {
+      scenario.onActivity(
+          activity -> {
+            assertThat(activity.getCallingPackageOnCreate()).isEqualTo(context.getPackageName());
+          });
+    }
+  }
+
+  @Test
   @Config(minSdk = P)
   public void launchActivityWithCustomConstructor() {
     try (ActivityScenario<ActivityWithCustomConstructor> activityScenario =
         ActivityScenario.launch(ActivityWithCustomConstructor.class)) {
       assertThat(activityScenario.getState()).isEqualTo(State.RESUMED);
       activityScenario.onActivity(activity -> assertThat(activity.getIntValue()).isEqualTo(100));
+    }
+  }
+
+  @Test
+  public void testUid_uidMatchesApplicationUid() {
+    try (ActivityScenario<TranscriptActivity> scenario =
+        ActivityScenario.launch(TranscriptActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            assertThat(activity.getApplicationInfo().uid).isEqualTo(Process.myUid());
+            assertThat(ApplicationProvider.getApplicationContext().getApplicationInfo().uid)
+                .isEqualTo(Process.myUid());
+          });
     }
   }
 }

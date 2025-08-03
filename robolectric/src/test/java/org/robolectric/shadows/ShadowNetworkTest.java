@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -28,7 +26,7 @@ public class ShadowNetworkTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  @Config(minSdk = M)
   public void bindSocketDatagramSocket_shouldNotCrash() throws Exception {
     Network network = ShadowNetwork.newInstance(0);
     network.bindSocket(new DatagramSocket());
@@ -48,7 +46,7 @@ public class ShadowNetworkTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  @Config(minSdk = M)
   public void isSocketBoundSocketDatagramSocket() throws Exception {
     Network network = ShadowNetwork.newInstance(0);
     DatagramSocket datagramSocket = new DatagramSocket();
@@ -86,7 +84,7 @@ public class ShadowNetworkTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
+  @Config(minSdk = M)
   public void setSocketFactory_shouldOverrideSocketFactory() {
     Network network = ShadowNetwork.newInstance(0);
     ShadowNetwork shadowNetwork = Shadows.shadowOf(network);
@@ -98,7 +96,7 @@ public class ShadowNetworkTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
+  @Config(minSdk = M)
   public void getSocketFactory_withoutOverride_shouldReturnSocketFactory() {
     Network network = ShadowNetwork.newInstance(0);
     ShadowNetwork shadowNetwork = Shadows.shadowOf(network);

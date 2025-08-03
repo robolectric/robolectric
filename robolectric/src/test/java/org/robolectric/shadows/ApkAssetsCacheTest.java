@@ -20,10 +20,11 @@ import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.ResourcesMode.Mode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.AssetManager28Reflector;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Tests that ApkAssets native objects are cached across ClassLoaders. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = P)
+@Config(minSdk = P, maxSdk = Baklava.SDK_INT)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @ResourcesMode(Mode.BINARY)
 public class ApkAssetsCacheTest {

@@ -40,7 +40,7 @@ include(
   ":integration_tests:roborazzi",
   ":integration_tests:room",
   ":integration_tests:sdkcompat",
-  ":integration_tests:security-providers",
+  ":integration_tests:securityproviders",
   ":integration_tests:sparsearray",
   ":integration_tests:testparameterinjector",
   ":integration_tests:versioning",

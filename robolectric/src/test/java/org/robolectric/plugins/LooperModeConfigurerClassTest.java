@@ -6,6 +6,7 @@ import android.os.Looper;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.config.ConfigurationRegistry;
@@ -13,6 +14,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLegacyLooper;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPausedLooper;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Unit tests for classes annotated with @LooperMode. */
 @RunWith(AndroidJUnit4.class)
@@ -26,12 +28,14 @@ public class LooperModeConfigurerClassTest {
 
   @Test
   @LooperMode(Mode.LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void overriddenAtMethod() {
     assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameInstanceAs(Mode.LEGACY);
   }
 
   @Test
   @LooperMode(Mode.LEGACY)
+  @Config(maxSdk = Baklava.SDK_INT)
   public void shouldUseLegacyShadows() {
     assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameInstanceAs(Mode.LEGACY);
 

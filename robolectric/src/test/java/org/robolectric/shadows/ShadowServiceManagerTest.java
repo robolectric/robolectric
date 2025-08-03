@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.versioning.AndroidVersions.R;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /** Tests for {@link ShadowServiceManager}. */
@@ -60,6 +61,75 @@ public final class ShadowServiceManagerTest {
     ShadowServiceManager.setServiceAvailability(Context.INPUT_METHOD_SERVICE, false);
 
     assertThat(ServiceManager.checkService(Context.INPUT_METHOD_SERVICE)).isNull();
+  }
+
+  @Test
+  @Config(sdk = R.SDK_INT)
+  public void waitForService_available_shouldReturnNonNull() {
+    assertThat(ServiceManager.waitForService(Context.INPUT_METHOD_SERVICE)).isNotNull();
+  }
+
+  @Test
+  @Config(sdk = R.SDK_INT)
+  public void waitForService_unavailable_shouldKeepNull() throws Exception {
+    AtomicReference<IBinder> binder = new AtomicReference<>();
+    ExecutorService e = Executors.newFixedThreadPool(1);
+    ShadowServiceManager.setServiceAvailability(Context.INPUT_METHOD_SERVICE, false);
+
+    e.execute(
+        () -> {
+          binder.set(ServiceManager.waitForService(Context.INPUT_METHOD_SERVICE));
+        });
+    e.shutdown();
+    e.awaitTermination(10, SECONDS);
+
+    assertThat(binder.get()).isNull();
+  }
+
+  @Test
+  @Config(sdk = R.SDK_INT)
+  public void waitForService_availableLater_shouldReturnNonNull() throws Exception {
+    AtomicReference<IBinder> binder = new AtomicReference<>();
+    ExecutorService e = Executors.newFixedThreadPool(1);
+    ShadowServiceManager.setServiceAvailability(Context.INPUT_METHOD_SERVICE, false);
+
+    e.execute(
+        () -> {
+          binder.set(ServiceManager.waitForService(Context.INPUT_METHOD_SERVICE));
+        });
+    ShadowServiceManager.setServiceAvailability(Context.INPUT_METHOD_SERVICE, true);
+    e.shutdown();
+    e.awaitTermination(10, SECONDS);
+
+    assertThat(binder.get()).isNotNull();
+  }
+
+  @Test
+  @Config(sdk = R.SDK_INT)
+  public void waitForDeclaredService_declaredAndAvailable_shouldReturnNonNull() throws Exception {
+    ShadowServiceManager.setServiceDeclaredOrNot(Context.INPUT_METHOD_SERVICE, true);
+
+    assertThat(ServiceManager.waitForDeclaredService(Context.INPUT_METHOD_SERVICE)).isNotNull();
+  }
+
+  @Test
+  @Config(sdk = R.SDK_INT)
+  public void waitForDeclaredService_nonDeclared_shouldReturnNull() throws Exception {
+    assertThat(ServiceManager.waitForDeclaredService(Context.INPUT_METHOD_SERVICE)).isNull();
+  }
+
+  @Test
+  @Config(sdk = R.SDK_INT)
+  public void isDeclared_declared_shouldReturnTrue() {
+    ShadowServiceManager.setServiceDeclaredOrNot(Context.INPUT_METHOD_SERVICE, true);
+
+    assertThat(ServiceManager.isDeclared(Context.INPUT_METHOD_SERVICE)).isTrue();
+  }
+
+  @Test
+  @Config(sdk = R.SDK_INT)
+  public void isDeclared_nonDeclared_shouldReturnFalse() {
+    assertThat(ServiceManager.isDeclared(Context.INPUT_METHOD_SERVICE)).isFalse();
   }
 
   @Test

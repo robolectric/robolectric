@@ -3,7 +3,10 @@
     package="org.robolectric.testapp">
     <application
         android:theme="@style/Theme.Robolectric" android:enabled="true">
-      <activity android:name=".TestActivity" android:exported="true">
+      <activity
+          android:name=".TestActivity"
+          android:exported="true"
+          android:permission="android.permission.CREATE_VIRTUAL_DEVICE">
         <intent-filter>
             <category android:name="android.intent.category.LAUNCHER"/>
             <action android:name="android.intent.action.MAIN"/>

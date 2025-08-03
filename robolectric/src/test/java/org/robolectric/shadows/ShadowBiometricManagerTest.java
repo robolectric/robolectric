@@ -7,6 +7,7 @@ import static android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_SECUR
 import static android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Activity;
@@ -128,5 +129,17 @@ public class ShadowBiometricManagerTest {
 
       assertThat(activityCanAuthenticate).isEqualTo(applicationCanAuthenticate);
     }
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void getLastAuthenticationTime_setLastAuthenticationTime_returnsExpectedValue() {
+    ShadowBiometricManager shadowBiometricManager = Shadow.extract(biometricManager);
+    shadowBiometricManager.setLastAuthenticationTime(1234567890L);
+
+    assertThat(
+            biometricManager.getLastAuthenticationTime(
+                BiometricManager.Authenticators.BIOMETRIC_WEAK))
+        .isEqualTo(1234567890L);
   }
 }

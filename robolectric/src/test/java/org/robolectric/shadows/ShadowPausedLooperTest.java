@@ -752,6 +752,21 @@ public class ShadowPausedLooperTest {
     assertThat(wasRun.get()).isTrue();
   }
 
+  /** Verifies unpause of an already unpaused looper is ignored */
+  @Test
+  public void unpause_ignored() {
+    ShadowPausedLooper shadowLooper = Shadow.extract(handlerThread.getLooper());
+    assertThat(shadowLooper.isPaused()).isFalse();
+    shadowLooper.unPause();
+  }
+
+  @Test
+  public void unpause_mainLooper() {
+    ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
+    assertThat(shadowLooper.isPaused()).isTrue();
+    assertThrows(UnsupportedOperationException.class, shadowLooper::unPause);
+  }
+
   private static class BlockingRunnable implements Runnable {
     CountDownLatch latch = new CountDownLatch(1);
 
