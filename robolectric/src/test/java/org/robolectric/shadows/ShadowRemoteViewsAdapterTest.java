@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
 
 import android.content.Context;
 import android.content.Intent;
@@ -45,7 +46,7 @@ public class ShadowRemoteViewsAdapterTest {
   public void getViewApi26AndLater_populatedWithExpectedItems() {
     RemoteViewsAdapter adapter =
         new RemoteViewsAdapter(
-            context, createTestIntent(), new FakeRemoteAdapterConnectionCallback(), false);
+            context, createTestIntent(), mock(RemoteAdapterConnectionCallback.class), false);
 
     assertThat(adapter.getCount()).isEqualTo(3);
     assertThat(((TextView) adapter.getView(0, null, parent)).getText().toString()).isEqualTo("one");
@@ -59,7 +60,7 @@ public class ShadowRemoteViewsAdapterTest {
   public void constructorApi26AndLater_intentPassedToService() {
     RemoteViewsAdapter unused =
         new RemoteViewsAdapter(
-            context, createTestIntent(), new FakeRemoteAdapterConnectionCallback(), false);
+            context, createTestIntent(), mock(RemoteAdapterConnectionCallback.class), false);
 
     assertThat(capturedIntent.getComponent().getClassName())
         .isEqualTo(TestRemoteViewsService.class.getName());
@@ -124,22 +125,5 @@ public class ShadowRemoteViewsAdapterTest {
     public boolean hasStableIds() {
       return true;
     }
-  }
-
-  private static class FakeRemoteAdapterConnectionCallback
-      implements RemoteAdapterConnectionCallback {
-    @Override
-    public boolean onRemoteAdapterConnected() {
-      return false;
-    }
-
-    @Override
-    public void onRemoteAdapterDisconnected() {}
-
-    @Override
-    public void deferNotifyDataSetChanged() {}
-
-    @Override
-    public void setRemoteViewsAdapter(Intent intent, boolean b) {}
   }
 }
