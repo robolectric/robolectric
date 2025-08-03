@@ -64,25 +64,26 @@ build_signed_packages() {
 mavenize() {
     local FILE_NAME_BASE=android-all-${ROBOLECTRIC_VERSION}
     mvn install:install-file \
-      -Dfile=${JAR_DIR}/${FILE_NAME_BASE}.jar \
+      -Dfile="${JAR_DIR}/${FILE_NAME_BASE}.jar" \
       -DgroupId=org.robolectric \
       -DartifactId=android-all \
-      -Dversion=${ROBOLECTRIC_VERSION} \
-      -Dpackaging=jar
+      -Dversion="${ROBOLECTRIC_VERSION}" \
+      -Dpackaging=jar \
+      -DpomFile="${JAR_DIR}/${ANDROID_ALL_POM}"
 
     mvn install:install-file \
-      -Dfile=${JAR_DIR}/${FILE_NAME_BASE}-sources.jar \
+      -Dfile="${JAR_DIR}/${FILE_NAME_BASE}-sources.jar" \
       -DgroupId=org.robolectric \
       -DartifactId=android-all \
-      -Dversion=${ROBOLECTRIC_VERSION} \
+      -Dversion="${ROBOLECTRIC_VERSION}" \
       -Dpackaging=jar \
       -Dclassifier=sources
 
     mvn install:install-file \
-      -Dfile=${JAR_DIR}/${FILE_NAME_BASE}-javadoc.jar \
+      -Dfile="${JAR_DIR}/${FILE_NAME_BASE}-javadoc.jar" \
       -DgroupId=org.robolectric \
       -DartifactId=android-all \
-      -Dversion=${ROBOLECTRIC_VERSION} \
+      -Dversion="${ROBOLECTRIC_VERSION}" \
       -Dpackaging=jar \
       -Dclassifier=javadoc
 }
