@@ -1,5 +1,3 @@
-import org.gradle.internal.jvm.Jvm
-
 plugins {
   alias(libs.plugins.robolectric.deployed.java.module)
   alias(libs.plugins.robolectric.java.module)
@@ -47,11 +45,6 @@ dependencies {
   api(libs.guava)
   api(libs.gson)
   implementation(libs.auto.common)
-
-  val toolsJar = Jvm.current().getToolsJar()
-  if (toolsJar != null) {
-    implementation(files(toolsJar))
-  }
 
   testImplementation(libs.javax.annotation.api)
   testImplementation(libs.junit4)

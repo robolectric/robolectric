@@ -1,5 +1,3 @@
-import org.gradle.internal.jvm.Jvm
-
 plugins {
   alias(libs.plugins.robolectric.deployed.java.module)
   alias(libs.plugins.robolectric.java.module)
@@ -24,12 +22,6 @@ dependencies {
 
   annotationProcessor(libs.auto.service)
   annotationProcessor(libs.error.prone.core)
-
-  // In JDK 9, tools.jar disappears!
-  val toolsJar = Jvm.current().getToolsJar()
-  if (toolsJar != null) {
-    "compile"(files(toolsJar))
-  }
 
   // Testing dependencies
   testImplementation(libs.junit4)
