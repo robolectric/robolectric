@@ -17,6 +17,7 @@ import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.util.Util;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.L;
 import org.robolectric.versioning.AndroidVersions.LMR1;
 import org.robolectric.versioning.AndroidVersions.M;
@@ -77,6 +78,7 @@ public class DefaultSdkProvider implements SdkProvider {
     knownSdks.put(T.SDK_INT, new DefaultSdk(T.SDK_INT, "13", "9030017", "Tiramisu", 9));
     knownSdks.put(U.SDK_INT, new DefaultSdk(U.SDK_INT, "14", "10818077", "REL", 17));
     knownSdks.put(V.SDK_INT, new DefaultSdk(V.SDK_INT, "15", "12714715", "REL", 17));
+    knownSdks.put(Baklava.SDK_INT, new DefaultSdk(Baklava.SDK_INT, "16", "13785805", "REL", 21));
   }
 
   @Override

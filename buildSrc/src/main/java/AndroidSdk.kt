@@ -65,9 +65,27 @@ class AndroidSdk(
     val TIRAMISU = AndroidSdk(33, "13", "9030017")
     val U = AndroidSdk(34, "14", "10818077")
     val V = AndroidSdk(35, "15", "12714715")
+    val BAKLAVA = AndroidSdk(36, "16", "13785805")
 
     val ALL_SDKS =
-      listOf(LOLLIPOP, LOLLIPOP_MR1, M, N, N_MR1, O, O_MR1, P, Q, R, S, S_V2, TIRAMISU, U, V)
+      listOf(
+        LOLLIPOP,
+        LOLLIPOP_MR1,
+        M,
+        N,
+        N_MR1,
+        O,
+        O_MR1,
+        P,
+        Q,
+        R,
+        S,
+        S_V2,
+        TIRAMISU,
+        U,
+        V,
+        BAKLAVA,
+      )
 
     val MAX_SDK = ALL_SDKS.maxBy { it.apiLevel }
   }
