@@ -82,7 +82,7 @@ If you would like to live on the bleeding edge, you can try running against a sn
 
 ```groovy
 repositories {
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url "https://central.sonatype.com/repository/maven-snapshots/" }
 }
 
 dependencies {
