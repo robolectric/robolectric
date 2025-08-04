@@ -2,7 +2,7 @@
 robolectric-nativeruntime-dist-compat = "1.0.17"
 
 # https://developer.android.com/studio/releases
-android-gradle = "8.11.1"
+android-gradle = "8.12.0"
 
 android-tools-common = "31.11.1"
 
