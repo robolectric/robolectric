@@ -57,15 +57,15 @@ fun MavenPublication.applyPomMetadata(project: Project) {
     withXml {
       asNode().appendNode("distributionManagement").apply {
         appendNode("repository").apply {
-          appendNode("id", "sonatype-nexus")
-          appendNode("name", "Sonatype Nexus")
-          appendNode("url", "https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+          appendNode("id", "central-portal")
+          appendNode("name", "Central Staging Repository")
+          appendNode("url", PUBLISH_URL)
         }
 
         appendNode("snapshotRepository").apply {
-          appendNode("id", "sonatype-nexus-snapshots")
-          appendNode("name", "Sonatype Nexus Snapshots")
-          appendNode("url", "https://oss.sonatype.org/content/repositories/snapshots/")
+          appendNode("id", "central-portal-snapshots")
+          appendNode("name", "Central Snapshots Repository")
+          appendNode("url", PUBLISH_SNAPSHOTS_URL)
         }
       }
     }
