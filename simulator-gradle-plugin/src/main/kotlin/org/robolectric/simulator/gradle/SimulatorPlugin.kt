@@ -1,14 +1,14 @@
 package org.robolectric.simulator.gradle
 
-import com.android.build.gradle.AppPlugin
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.testing.Test
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.getByName
 import org.gradle.kotlin.dsl.register
-import org.gradle.kotlin.dsl.withType
 
 /** A plugin to launch the Robolectric simulator. */
 class SimulatorPlugin : Plugin<Project> {
@@ -20,11 +20,15 @@ class SimulatorPlugin : Plugin<Project> {
   }
 
   override fun apply(project: Project) {
-    project.plugins.withType<AppPlugin> {
-      project.tasks.register<JavaExec>("simulate") {
-        group = "simulation"
-        description = "Runs the Robolectric simulator"
-        configureTask(project, this)
+    project.extensions.configure<ApplicationAndroidComponentsExtension> {
+      onVariants { variant ->
+        val variantName = variant.name.replaceFirstChar { it.uppercase() }
+
+        project.tasks.register<JavaExec>("simulate$variantName") {
+          group = "simulation"
+          description = "Runs the Robolectric simulator for the $variantName variant"
+          configureTask(project, this, variantName)
+        }
       }
     }
   }
@@ -38,12 +42,13 @@ class SimulatorPlugin : Plugin<Project> {
     val major = currentParts.getOrElse(0) { 0 }
     val minor = currentParts.getOrElse(1) { 0 }
 
-    return (major >= REQUIRED_VERSION[0] && minor >= REQUIRED_VERSION[1])
+    return major > REQUIRED_VERSION[0] ||
+      (major == REQUIRED_VERSION[0] && minor >= REQUIRED_VERSION[1])
   }
 
-  private fun configureTask(project: Project, task: JavaExec) {
+  private fun configureTask(project: Project, task: JavaExec, variantName: String) {
     // Find the 'apk-for-local-test.ap_' file
-    val packageTaskName = "packageDebugUnitTestForUnitTest"
+    val packageTaskName = "package${variantName}UnitTestForUnitTest"
     val targetTask =
       project.tasks.findByName(packageTaskName)
         ?: throw GradleException(
@@ -56,7 +61,7 @@ class SimulatorPlugin : Plugin<Project> {
         ?: throw GradleException(
           "Could not find an .ap_ file in the outputs of task '$packageTaskName'."
         )
-    val testTask = project.tasks.getByName<Test>("testDebugUnitTest")
+    val testTask = project.tasks.getByName<Test>("test${variantName}UnitTest")
 
     val robolectricDependencies =
       project.configurations.getByName("testImplementation").allDependencies.filter {
@@ -71,7 +76,7 @@ class SimulatorPlugin : Plugin<Project> {
         robolectricDependencies.maxBy { it.version.orEmpty() }.version.orEmpty()
 
       check(supportsSimulator(robolectricVersion)) {
-        "Robolectric 4.15 or above is required for the simulator"
+        "Robolectric ${REQUIRED_VERSION.joinToString(".")} or above is required for the simulator"
       }
 
       project.dependencies.add(
@@ -93,7 +98,7 @@ class SimulatorPlugin : Plugin<Project> {
       jvmArgs = testTask.jvmArgs + robolectricJvmArgs
       mainClass.set(MAIN_CLASS)
       args = listOf(resourceApkFile.absolutePath)
-      dependsOn(targetTask, "assembleDebug")
+      dependsOn(targetTask, "assemble$variantName")
       standardOutput = System.out
       errorOutput = System.err
     }
