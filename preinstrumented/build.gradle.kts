@@ -1,4 +1,5 @@
 import java.net.URI
+import org.robolectric.gradle.PUBLISH_URL
 
 plugins {
   alias(libs.plugins.application)
@@ -102,7 +103,7 @@ if (System.getenv("PUBLISH_PREINSTRUMENTED_JARS") == "true") {
 
     repositories {
       maven {
-        url = URI("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+        url = URI(PUBLISH_URL)
 
         credentials {
           username = System.getProperty("sonatype-login") ?: System.getenv("SONATYPE_LOGIN")
