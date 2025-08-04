@@ -8,6 +8,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.annotation.SystemApi;
 import android.app.IUiModeManager;
 import android.app.UiModeManager;
+import android.app.UiModeManager.ContrastChangeListener;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -16,6 +17,7 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.util.ArrayMap;
 import com.android.internal.annotations.GuardedBy;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
@@ -23,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -290,11 +293,28 @@ public class ShadowUIModeManager {
         "Contrast value must be between -1.0f and 1.0f inclusive. Provided value: %s",
         contrast);
 
+    ArrayMap<ContrastChangeListener, Executor> listeners;
     if (RuntimeEnvironment.getApiLevel() == VERSION_CODES.UPSIDE_DOWN_CAKE) {
       reflector(UiModeManagerReflector.class, realUiModeManager).setContrast(contrast);
+      listeners =
+          reflector(UiModeManagerReflector.class, realUiModeManager).getContrastChangeListeners();
     } else {
       Object globals = reflector(UiModeManagerReflector.class, realUiModeManager).getGlobals();
       reflector(UiModeManagerGlobalsReflector.class, globals).setContrast(contrast);
+      listeners =
+          reflector(UiModeManagerGlobalsReflector.class, globals).getContrastChangeListeners();
+    }
+
+    for (Map.Entry<ContrastChangeListener, Executor> entry : listeners.entrySet()) {
+      final ContrastChangeListener listener = entry.getKey();
+      final Executor executor = entry.getValue();
+
+      if (listener != null && executor != null) {
+        executor.execute(
+            () -> {
+              listener.onContrastChanged(contrast);
+            });
+      }
     }
   }
 
@@ -323,6 +343,10 @@ public class ShadowUIModeManager {
     @Accessor("mContrast")
     void setContrast(float value); // Stores the contrast value for Android U.
 
+    @Accessor("mContrastChangeListeners")
+    ArrayMap<ContrastChangeListener, Executor>
+        getContrastChangeListeners(); // Stores the contrast listeners for Android U.
+
     @Accessor("sGlobals")
     @Static
     Object getGlobals(); // Stores the contrast value for Android V and above.
@@ -336,6 +360,10 @@ public class ShadowUIModeManager {
   interface UiModeManagerGlobalsReflector {
     @Accessor("mContrast")
     void setContrast(float contrast);
+
+    @Accessor("mContrastChangeListeners")
+    ArrayMap<ContrastChangeListener, Executor>
+        getContrastChangeListeners(); // Stores the contrast listeners for Android V and above.
 
     @Constructor
     Object newGlobals(IUiModeManager iUiModeManager);

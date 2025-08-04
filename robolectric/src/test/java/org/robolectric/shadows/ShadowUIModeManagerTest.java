@@ -7,15 +7,19 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.UiModeManager;
+import android.app.UiModeManager.ContrastChangeListener;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.res.Configuration;
 import android.provider.Settings;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.Executor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -324,6 +328,23 @@ public class ShadowUIModeManagerTest {
 
   @Test
   @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void setContrast_whenSet_callListeners() {
+    float expectedContrast = -0.16f;
+
+    ContrastChangeListener contrastChangeListener = mock(ContrastChangeListener.class);
+    TestExecutor usedExecutor = new TestExecutor();
+    TestExecutor unusedExecutor = new TestExecutor();
+
+    uiModeManager.addContrastChangeListener(usedExecutor, contrastChangeListener);
+    shadowUiModeManager.setContrast(expectedContrast);
+
+    verify(contrastChangeListener).onContrastChanged(expectedContrast);
+    assertThat(usedExecutor.hasExecuted).isTrue();
+    assertThat(unusedExecutor.hasExecuted).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void setContrast_whenCalledWithValueAboveOne_throws() {
     assertThrows(IllegalArgumentException.class, () -> shadowUiModeManager.setContrast(1.1f));
   }
@@ -340,5 +361,15 @@ public class ShadowUIModeManagerTest {
     pi.versionCode = 1;
     pi.requestedPermissions = permissions;
     shadowOf(context.getPackageManager()).installPackage(pi);
+  }
+
+  private static class TestExecutor implements Executor {
+    private boolean hasExecuted = false;
+
+    @Override
+    public void execute(Runnable command) {
+      hasExecuted = true;
+      command.run();
+    }
   }
 }
