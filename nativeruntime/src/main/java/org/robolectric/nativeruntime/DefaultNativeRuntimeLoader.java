@@ -5,6 +5,7 @@ import static com.google.common.base.StandardSystemProperty.OS_NAME;
 
 import android.database.CursorWindow;
 import android.graphics.Typeface;
+import android.text.Hyphenator;
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
@@ -40,6 +41,7 @@ import org.robolectric.util.Logger;
 import org.robolectric.util.OsUtil;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.inject.Injector;
 import org.robolectric.versioning.AndroidVersions;
@@ -54,6 +56,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
       new AtomicReference<>();
 
   protected static final String METHOD_BINDING_FORMAT = "$$robo$$${method}$nativeBinding";
+  private static final String HYPHEN_DATA_DIR = "hyphen-data";
 
   // Core classes for which native methods are to be registered for Android V and above.
   protected static final ImmutableList<String> CORE_CLASS_NATIVES =
@@ -64,6 +67,8 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
             "android.database.sqlite.SQLiteConnection",
             "android.database.sqlite.SQLiteRawStatement",
             "android.media.ImageReader",
+            "android.os.SystemProperties",
+            "android.text.Hyphenator",
             "android.view.Surface",
             "com.android.internal.util.VirtualRefBasePtr",
             "libcore.util.NativeAllocationRegistry",
@@ -196,6 +201,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
                 if (AndroidVersions.CURRENT.getSdkInt() >= AndroidVersions.O.SDK_INT) {
                   // Only copy fonts if graphics is supported, not just SQLite.
                   maybeCopyFonts(extractDirectory);
+                  maybeCopyHyphenData(extractDirectory);
                 }
                 maybeCopyIcuData(extractDirectory);
                 maybeCopyExtraResources(extractDirectory);
@@ -207,9 +213,21 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
                   System.setProperty("method_binding_format", METHOD_BINDING_FORMAT);
                 }
                 loadLibrary(extractDirectory);
+                String hyphenDataDir =
+                    extractDirectory
+                        .getBasePath()
+                        .resolve(HYPHEN_DATA_DIR)
+                        .toFile()
+                        .getAbsolutePath();
                 if (isAndroidVOrGreater()) {
                   invokeDeferredStaticInitializers();
+                  setNativeSystemProperty("ro.hyphen.data.dir", hyphenDataDir);
                   Typeface.loadPreinstalledSystemFontMap();
+                } else {
+                  System.setProperty("hyphen.data.dir", hyphenDataDir);
+                }
+                if (AndroidVersions.CURRENT.getSdkInt() >= AndroidVersions.P.SDK_INT) {
+                  Hyphenator.init();
                 }
               });
     } catch (IOException e) {
@@ -314,6 +332,47 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
     }
   }
 
+  /**
+   * Attempts to copy the hyphen data to a temporary directory. This is only relevant for native
+   * graphics.
+   */
+  private void maybeCopyHyphenData(TempDirectory tempDirectory) throws IOException {
+    URI hyphenDataUri;
+    try {
+      hyphenDataUri = Resources.getResource(HYPHEN_DATA_DIR + "/").toURI();
+    } catch (IllegalArgumentException | URISyntaxException e) {
+      Logger.info("Could not load hyphen data files: " + e.getMessage());
+      return;
+    }
+
+    FileSystem zipfs = null;
+
+    if ("jar".equals(hyphenDataUri.getScheme())) {
+      zipfs = FileSystems.newFileSystem(hyphenDataUri, ImmutableMap.of("create", "true"));
+    }
+
+    Path hyphenDataInputPath = Paths.get(hyphenDataUri);
+    tempDirectory.create(HYPHEN_DATA_DIR);
+
+    try (Stream<Path> pathStream = java.nio.file.Files.walk(hyphenDataInputPath)) {
+      Iterator<Path> fileIterator = pathStream.iterator();
+      while (fileIterator.hasNext()) {
+        Path path = fileIterator.next();
+        // Avoid copying parent directory.
+        if (Objects.equals(path.getFileName().toString(), HYPHEN_DATA_DIR)) {
+          continue;
+        }
+        String hyphenDataPath = HYPHEN_DATA_DIR + "/" + path.getFileName();
+        URL resource = Resources.getResource(hyphenDataPath);
+        Path outputPath = tempDirectory.getBasePath().resolve(hyphenDataPath);
+        Resources.asByteSource(resource).copyTo(Files.asByteSink(outputPath.toFile()));
+      }
+    }
+    if (zipfs != null) {
+      zipfs.close();
+    }
+  }
+
   private void loadLibrary(TempDirectory tempDirectory) throws IOException {
     Path libraryPath = tempDirectory.getBasePath().resolve(libraryName());
     URL libraryResource = Resources.getResource(nativeLibraryPath());
@@ -386,5 +445,20 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
 
   private static boolean isAndroidVOrGreater() {
     return AndroidVersions.CURRENT.getSdkInt() >= AndroidVersions.V.SDK_INT;
+  }
+
+  /**
+   * Sets a system property in native code. This is required to communicate certain pieces of
+   * configuration data to native code, such as the hyphenation data directory for Android V+.
+   */
+  protected static void setNativeSystemProperty(String key, String value) {
+    String nativeSetMethodName =
+        Shadow.directNativeMethodName("android.os.SystemProperties", "native_set");
+    ReflectionHelpers.callStaticMethod(
+        Shadow.class.getClassLoader(),
+        "android.os.SystemProperties",
+        nativeSetMethodName,
+        ClassParameter.from(String.class, key),
+        ClassParameter.from(String.class, value));
   }
 }
