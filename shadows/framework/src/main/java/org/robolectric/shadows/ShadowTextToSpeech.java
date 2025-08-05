@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -39,6 +40,7 @@ public class ShadowTextToSpeech {
   private static final Set<Locale> languageAvailabilities = new HashSet<>();
   private static final Set<Voice> voices = new HashSet<>();
   private static TextToSpeech lastTextToSpeechInstance;
+  @Nullable private static Bundle lastParams;
 
   @RealObject private TextToSpeech tts;
 
@@ -121,6 +123,7 @@ public class ShadowTextToSpeech {
     lastSpokenText = text.toString();
     spokenTextList.add(text.toString());
     this.queueMode = queueMode;
+    lastParams = params;
 
     if (utteranceId != null) {
       // The onStart and onDone callbacks are normally delivered asynchronously. Since in
@@ -361,11 +364,21 @@ public class ShadowTextToSpeech {
     return lastTextToSpeechInstance;
   }
 
+  /**
+   * Returns the most recently used params {@link Bundle} passed to {@link #speak} or null if none
+   * exist.
+   */
+  @Nullable
+  public static Bundle getLastParams() {
+    return lastParams == null ? null : new Bundle(lastParams);
+  }
+
   @Resetter
   public static void reset() {
     languageAvailabilities.clear();
     voices.clear();
     lastTextToSpeechInstance = null;
+    lastParams = null;
   }
 
   @ForType(TextToSpeech.class)
