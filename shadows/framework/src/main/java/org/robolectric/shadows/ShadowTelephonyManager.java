@@ -119,6 +119,15 @@ public class ShadowTelephonyManager {
   private String groupIdLevel1;
   private String networkOperatorName = "";
   private String networkCountryIso = "";
+
+  /**
+   * The last known valid network country, which is emitted by {@link
+   * TelephonyManager#EXTRA_LAST_KNOWN_NETWORK_COUNTRY}
+   *
+   * <p>This will be empty if it was never set or known.
+   */
+  private String lastKnownNetworkCountryIso = "";
+
   private String networkOperator = "";
   private String networkSpecifier = "";
   private Locale simLocale;
@@ -512,9 +521,37 @@ public class ShadowTelephonyManager {
     return networkOperatorName;
   }
 
+  /**
+   * Sets the network country ISO returned by {@link #getNetworkCountryIso()}.
+   *
+   * <p>This mirrors an internal Android API that was removed as the information is now fetched from
+   * {@link com.android.internal.telephony.LocaleTracker}.
+   *
+   * <p>Outside of the Android usage, this is intended as a general purpose setter. On SDK >Q, it
+   * will also broadcast {@link TelephonyManager#ACTION_NETWORK_COUNTRY_CHANGED}.
+   */
   @Implementation(minSdk = LOLLIPOP_MR1, maxSdk = P)
   public void setNetworkCountryIso(String networkCountryIso) {
-    this.networkCountryIso = networkCountryIso;
+    String lowerCaseNetworkCountryIso = null;
+    if (networkCountryIso != null) {
+      lowerCaseNetworkCountryIso = Ascii.toLowerCase(networkCountryIso);
+      // Only update the "last known" country if the country is valid.
+      if (!lowerCaseNetworkCountryIso.isBlank() && lowerCaseNetworkCountryIso.length() == 2) {
+        lastKnownNetworkCountryIso = lowerCaseNetworkCountryIso;
+      }
+    }
+    this.networkCountryIso = lowerCaseNetworkCountryIso;
+    if (Build.VERSION.SDK_INT >= Q) {
+      Intent intent =
+          new Intent(TelephonyManager.ACTION_NETWORK_COUNTRY_CHANGED)
+              .putExtra(TelephonyManager.EXTRA_NETWORK_COUNTRY, lowerCaseNetworkCountryIso);
+      // The extra was made public on SDK U, but was actually added in SDK R (as @hide).
+      if (Build.VERSION.SDK_INT >= R) {
+        intent.putExtra(
+            TelephonyManager.EXTRA_LAST_KNOWN_NETWORK_COUNTRY, lastKnownNetworkCountryIso);
+      }
+      RuntimeEnvironment.getApplication().sendBroadcast(intent);
+    }
   }
 
   /**
@@ -523,7 +560,7 @@ public class ShadowTelephonyManager {
    */
   @Implementation
   protected String getNetworkCountryIso() {
-    return networkCountryIso == null ? null : Ascii.toLowerCase(networkCountryIso);
+    return networkCountryIso;
   }
 
   /** Sets the sim locale returned by {@link #getSimLocale()}. */
