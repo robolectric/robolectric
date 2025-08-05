@@ -16,7 +16,7 @@ class SimulatorPlugin : Plugin<Project> {
   private companion object {
     // Use a constant to avoid a heavy and unnecessary dependency on Robolectric
     private const val MAIN_CLASS = "org.robolectric.simulator.SimulatorMain"
-    private val REQUIRED_VERSION = intArrayOf(4, 15)
+    private val REQUIRED_VERSION = Version("4.15")
   }
 
   override fun apply(project: Project) {
@@ -31,19 +31,6 @@ class SimulatorPlugin : Plugin<Project> {
         }
       }
     }
-  }
-
-  /** Checks if a version string is at least 4.15, when the simulator was introduced. */
-  private fun supportsSimulator(currentVersion: String): Boolean {
-    val currentNumericPart = currentVersion.split('-')[0]
-
-    val currentParts = currentNumericPart.split('.').mapNotNull { it.toIntOrNull() }
-
-    val major = currentParts.getOrElse(0) { 0 }
-    val minor = currentParts.getOrElse(1) { 0 }
-
-    return major > REQUIRED_VERSION[0] ||
-      (major == REQUIRED_VERSION[0] && minor >= REQUIRED_VERSION[1])
   }
 
   private fun configureTask(project: Project, task: JavaExec, variantName: String) {
@@ -63,26 +50,23 @@ class SimulatorPlugin : Plugin<Project> {
         )
     val testTask = project.tasks.getByName<Test>("test${variantName}UnitTest")
 
-    val robolectricDependencies =
-      project.configurations.getByName("testImplementation").allDependencies.filter {
-        it.group == "org.robolectric"
+    project.configurations.named("test${variantName}Implementation").configure {
+      val robolectricDependencies = allDependencies.filter { it.group == "org.robolectric" }
+
+      if (robolectricDependencies.none { it.name == "simulator" }) {
+        val robolectricVersion =
+          robolectricDependencies
+            .maxOfOrNull { Version(it.version.orEmpty()) }
+            ?.takeIf { it >= REQUIRED_VERSION }
+        if (robolectricVersion == null) {
+          project.logger.warn("No compatible Robolectric version found. Using $REQUIRED_VERSION.")
+        }
+
+        val simulatorDependency =
+          "org.robolectric:simulator:${robolectricVersion ?: REQUIRED_VERSION}"
+
+        dependencies.add(project.dependencies.create(simulatorDependency))
       }
-    check(robolectricDependencies.isNotEmpty()) {
-      "Missing Robolectric dependency in the 'testImplementation' configuration."
-    }
-
-    if (robolectricDependencies.none { it.name == "simulator" }) {
-      val robolectricVersion =
-        robolectricDependencies.maxBy { it.version.orEmpty() }.version.orEmpty()
-
-      check(supportsSimulator(robolectricVersion)) {
-        "Robolectric ${REQUIRED_VERSION.joinToString(".")} or above is required for the simulator"
-      }
-
-      project.dependencies.add(
-        "testImplementation",
-        "org.robolectric:simulator:$robolectricVersion",
-      )
     }
 
     val robolectricJvmArgs =
@@ -102,5 +86,37 @@ class SimulatorPlugin : Plugin<Project> {
       standardOutput = System.out
       errorOutput = System.err
     }
+  }
+}
+
+private class Version(val version: String) : Comparable<Version> {
+  private val major: Int
+  private val minor: Int
+  private val patch: Int
+  private val tag: String
+
+  init {
+    val versionAndTag = version.split('-', limit = 2)
+    val parts = versionAndTag[0].split('.').map { it.toIntOrNull() ?: 0 }
+
+    this.major = parts.getOrElse(0) { 0 }
+    this.minor = parts.getOrElse(1) { 0 }
+    this.patch = parts.getOrElse(2) { 0 }
+    this.tag = versionAndTag.getOrElse(1) { "" }
+  }
+
+  override fun compareTo(other: Version): Int {
+    val result = compareValuesBy(this, other, Version::major, Version::minor, Version::patch)
+
+    return when {
+      result != 0 -> result
+      tag.isNotEmpty() && other.tag.isEmpty() -> -1
+      tag.isEmpty() && other.tag.isNotEmpty() -> 1
+      else -> tag.compareTo(other.tag, ignoreCase = true)
+    }
+  }
+
+  override fun toString(): String {
+    return version
   }
 }
