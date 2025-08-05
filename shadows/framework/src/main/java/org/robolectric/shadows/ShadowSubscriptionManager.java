@@ -12,10 +12,13 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.telephony.SubscriptionManager.INVALID_SIM_SLOT_INDEX;
 
+import android.content.Intent;
 import android.os.Build.VERSION;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.SubscriptionManager.OnSubscriptionsChangedListener;
+import android.telephony.TelephonyManager;
+import com.android.internal.telephony.PhoneConstants;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -106,21 +110,71 @@ public class ShadowSubscriptionManager {
     ShadowSubscriptionManager.activeDataSubscriptionId = activeDataSubscriptionId;
   }
 
-  /** Sets the value that will be returned by {@link #getDefaultSubscriptionId()}. */
+  /**
+   * Sets the default subscription and broadcasts {@link
+   * SubscriptionManager#ACTION_DEFAULT_SUBSCRIPTION_CHANGED}
+   */
   public static void setDefaultSubscriptionId(int defaultSubscriptionId) {
     ShadowSubscriptionManager.defaultSubscriptionId = defaultSubscriptionId;
+    // Note that the default data subscription also corresponds to either the voice or data
+    // subscription depending on whether the device is voice capable, but we don't encode this here
+    // for simplicity and instead just have a 1:1 between the setter and the broadcast.
+    // Note: The broadcast was made public on SDK O and used the legacy extra prior.
+    Intent intent =
+        new Intent(SubscriptionManager.ACTION_DEFAULT_SUBSCRIPTION_CHANGED)
+            .putExtra(PhoneConstants.SUBSCRIPTION_KEY, defaultSubscriptionId);
+    if (VERSION.SDK_INT >= O) {
+      intent.putExtra(SubscriptionManager.EXTRA_SUBSCRIPTION_INDEX, defaultSubscriptionId);
+    }
+    RuntimeEnvironment.getApplication().sendBroadcast(intent);
   }
 
+  /**
+   * Sets the default data subscription and broadcasts {@link
+   * TelephonyManager#ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED}
+   */
   public static void setDefaultDataSubscriptionId(int defaultDataSubscriptionId) {
     ShadowSubscriptionManager.defaultDataSubscriptionId = defaultDataSubscriptionId;
+    Intent intent =
+        new Intent(TelephonyManager.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED)
+            .putExtra(PhoneConstants.SUBSCRIPTION_KEY, defaultDataSubscriptionId);
+    if (VERSION.SDK_INT >= Q) {
+      // The canonical SubscriptionManager extra for this event was added in SDK Q.
+      intent.putExtra(SubscriptionManager.EXTRA_SUBSCRIPTION_INDEX, defaultDataSubscriptionId);
+    }
+    RuntimeEnvironment.getApplication().sendBroadcast(intent);
   }
 
+  /**
+   * Sets the default SMS subscription and broadcasts {@link
+   * SubscriptionManager#ACTION_DEFAULT_SMS_SUBSCRIPTION_CHANGED}
+   */
   public static void setDefaultSmsSubscriptionId(int defaultSmsSubscriptionId) {
     ShadowSubscriptionManager.defaultSmsSubscriptionId = defaultSmsSubscriptionId;
+    // Note: The broadcast was made public on SDK O and used the legacy extra prior.
+    Intent intent =
+        new Intent(SubscriptionManager.ACTION_DEFAULT_SMS_SUBSCRIPTION_CHANGED)
+            .putExtra(PhoneConstants.SUBSCRIPTION_KEY, defaultSmsSubscriptionId);
+    if (VERSION.SDK_INT >= O) {
+      intent.putExtra(SubscriptionManager.EXTRA_SUBSCRIPTION_INDEX, defaultSmsSubscriptionId);
+    }
+    RuntimeEnvironment.getApplication().sendBroadcast(intent);
   }
 
+  /**
+   * Sets the default voice subscription and broadcasts {@link
+   * TelephonyManager#ACTION_DEFAULT_VOICE_SUBSCRIPTION_CHANGED}
+   */
   public static void setDefaultVoiceSubscriptionId(int defaultVoiceSubscriptionId) {
     ShadowSubscriptionManager.defaultVoiceSubscriptionId = defaultVoiceSubscriptionId;
+    Intent intent =
+        new Intent(TelephonyManager.ACTION_DEFAULT_VOICE_SUBSCRIPTION_CHANGED)
+            .putExtra(PhoneConstants.SUBSCRIPTION_KEY, defaultVoiceSubscriptionId);
+    if (VERSION.SDK_INT >= Q) {
+      // The canonical SubscriptionManager extra for this event was added in SDK Q.
+      intent.putExtra(SubscriptionManager.EXTRA_SUBSCRIPTION_INDEX, defaultVoiceSubscriptionId);
+    }
+    RuntimeEnvironment.getApplication().sendBroadcast(intent);
   }
 
   /**
