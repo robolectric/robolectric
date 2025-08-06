@@ -477,6 +477,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
+  @Override
   protected PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
     return getPackageInfo(packageName, (long) flags);
   }
@@ -491,6 +492,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   private PackageInfo getPackageInfo(String packageName, long flags) throws NameNotFoundException {
     synchronized (lock) {
+      if ((flags & PackageManager.MATCH_FACTORY_ONLY) != 0) {
+        return tryRetrievingFactoryInfo(packageName, flags);
+      }
       PackageInfo info = packageInfos.get(packageName);
       if (info == null
           && (flags & MATCH_UNINSTALLED_PACKAGES) != 0
