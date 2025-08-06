@@ -376,7 +376,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   private void loadLibrary(TempDirectory tempDirectory) throws IOException {
     Path libraryPath = tempDirectory.getBasePath().resolve(libraryName());
     URL libraryResource = Resources.getResource(nativeLibraryPath());
-    Logger.info("Loading android native library from: " + libraryResource);
+    Logger.info("Loading android native library from: %s", libraryResource);
     Resources.asByteSource(libraryResource).copyTo(Files.asByteSink(libraryPath.toFile()));
     System.load(libraryPath.toAbsolutePath().toString());
   }
