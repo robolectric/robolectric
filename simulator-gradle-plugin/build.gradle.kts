@@ -40,6 +40,10 @@ afterEvaluate {
 dependencies {
   compileOnly(libs.android.gradle.api)
   implementation(libs.kotlin.stdlib)
+
+  testImplementation(libs.junit4)
+  testImplementation(libs.test.parameter.injector)
+  testImplementation(libs.truth)
 }
 
 tasks.validatePlugins {
