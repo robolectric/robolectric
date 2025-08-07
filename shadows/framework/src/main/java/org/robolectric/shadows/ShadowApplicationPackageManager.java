@@ -957,7 +957,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   private static int matchIntentFilter(Intent intent, IntentFilter intentFilter) {
     return intentFilter.match(
         intent.getAction(),
-        intent.getType(),
+        intent.resolveTypeIfNeeded(RuntimeEnvironment.getApplication().getContentResolver()),
         intent.getScheme(),
         intent.getData(),
         intent.getCategories(),
