@@ -15,9 +15,6 @@ conscrypt = "2.5.2"
 # https://github.com/bcgit/bc-java/tags
 bouncycastle = "1.81"
 
-# https://github.com/findbugsproject/findbugs/tags
-findbugs-jsr305 = "3.0.2"
-
 # https://github.com/hamcrest/JavaHamcrest/releases
 hamcrest = "3.0"
 
@@ -162,7 +159,6 @@ error-prone-test-helpers = { module = "com.google.errorprone:error_prone_test_he
 
 conscrypt-openjdk-uber = { module = "org.conscrypt:conscrypt-openjdk-uber", version.ref = "conscrypt" }
 bcprov-jdk18on = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
-findbugs-jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "findbugs-jsr305" }
 
 guava = { module = "com.google.guava:guava", version.ref = "guava-jre" }
 guava-testlib = { module = "com.google.guava:guava-testlib", version.ref = "guava-jre" }
