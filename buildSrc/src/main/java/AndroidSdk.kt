@@ -50,7 +50,7 @@ class AndroidSdk(
   companion object {
     private const val PREINSTRUMENTED_VERSION = 7
 
-    val LOLLIPOP = AndroidSdk(21, "5.0.2_r3", "r0")
+    // TODO: remove LOLLIPOP_MR1 once shadows/httpclient is compiled against org.apache.http.legacy
     val LOLLIPOP_MR1 = AndroidSdk(22, "5.1.1_r9", "r2")
     val M = AndroidSdk(23, "6.0.1_r3", "r1")
     val N = AndroidSdk(24, "7.0.0_r1", "r1")
@@ -67,25 +67,7 @@ class AndroidSdk(
     val V = AndroidSdk(35, "15", "12714715")
     val BAKLAVA = AndroidSdk(36, "16", "13785805")
 
-    val ALL_SDKS =
-      listOf(
-        LOLLIPOP,
-        LOLLIPOP_MR1,
-        M,
-        N,
-        N_MR1,
-        O,
-        O_MR1,
-        P,
-        Q,
-        R,
-        S,
-        S_V2,
-        TIRAMISU,
-        U,
-        V,
-        BAKLAVA,
-      )
+    val ALL_SDKS = listOf(M, N, N_MR1, O, O_MR1, P, Q, R, S, S_V2, TIRAMISU, U, V, BAKLAVA)
 
     val MAX_SDK = ALL_SDKS.maxBy { it.apiLevel }
   }
