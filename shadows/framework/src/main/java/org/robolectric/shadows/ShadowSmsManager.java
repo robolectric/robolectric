@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 
@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -29,12 +28,12 @@ public class ShadowSmsManager {
 
   @Resetter
   public static void reset() {
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP_MR1) {
+
       Map<String, Object> sSubInstances =
           ReflectionHelpers.getStaticField(SmsManager.class, "sSubInstances");
       sSubInstances.clear();
       defaultSmsSubscriptionId = -1;
-    }
+
   }
 
   // SMS functionality

@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_HOME;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -392,12 +391,7 @@ public class ShadowDevicePolicyManager {
   @Implementation
   protected boolean isUninstallBlocked(@Nullable ComponentName admin, String packageName) {
     if (admin == null) {
-      // Starting from LOLLIPOP_MR1, the behavior of this API is changed such that passing null as
-      // the admin parameter will return if any admin has blocked the uninstallation. Before L MR1,
-      // passing null will cause a NullPointerException to be raised.
-      if (Build.VERSION.SDK_INT < LOLLIPOP_MR1) {
-        throw new NullPointerException("ComponentName is null");
-      }
+      // ignore
     } else {
       enforceActiveAdmin(admin);
     }

@@ -6,7 +6,6 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
-import android.os.Build;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -78,15 +77,8 @@ public class ShadowRenderNodeAnimatorTest {
     animator.cancel();
 
     assertThat(listener.startCount).isEqualTo(0);
-    // This behavior changed between L and L MR1. In older versions, onAnimationCancel and
-    // onAnimationEnd would always be called regardless of whether the animation was started.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-      assertThat(listener.cancelCount).isEqualTo(0);
-      assertThat(listener.endCount).isEqualTo(0);
-    } else {
-      assertThat(listener.cancelCount).isEqualTo(1);
-      assertThat(listener.endCount).isEqualTo(1);
-    }
+    assertThat(listener.cancelCount).isEqualTo(0);
+    assertThat(listener.endCount).isEqualTo(0);
   }
 
   @Test
@@ -98,15 +90,8 @@ public class ShadowRenderNodeAnimatorTest {
 
     shadowMainLooper().idle();
 
-    // This behavior changed between L and L MR1. In older versions, onAnimationEnd would always be
-    // called without any guarantee that onAnimationStart had been called first.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-      assertThat(listener.startCount).isEqualTo(1);
-      assertThat(listener.endCount).isEqualTo(1);
-    } else {
-      assertThat(listener.startCount).isEqualTo(0);
-      assertThat(listener.endCount).isEqualTo(1);
-    }
+    assertThat(listener.startCount).isEqualTo(1);
+    assertThat(listener.endCount).isEqualTo(1);
   }
 
   @Test
@@ -148,15 +133,8 @@ public class ShadowRenderNodeAnimatorTest {
     animator.start();
     animator.cancel();
 
-    // This behavior changed between L and L MR1. In older versions, onAnimationStart gets called
-    // *twice* if you cancel a delayed animation before any of its frames run (as both cancel() and
-    // onFinished() implement special behavior for STATE_DELAYED, but the state only gets set to
-    // finished after onFinished()).
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-      assertThat(listener.startCount).isEqualTo(1);
-    } else {
-      assertThat(listener.startCount).isEqualTo(2);
-    }
+    assertThat(listener.startCount).isEqualTo(1);
+
     assertThat(listener.cancelCount).isEqualTo(1);
     assertThat(listener.endCount).isEqualTo(1);
   }

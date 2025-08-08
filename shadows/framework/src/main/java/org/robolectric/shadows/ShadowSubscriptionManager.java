@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -35,7 +34,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = SubscriptionManager.class, minSdk = LOLLIPOP_MR1)
+@Implements(value = SubscriptionManager.class)
 public class ShadowSubscriptionManager {
 
   private static boolean readPhoneStatePermission = true;
@@ -223,7 +222,7 @@ public class ShadowSubscriptionManager {
    * Returns the active list of {@link SubscriptionInfo} that were set via {@link
    * #setActiveSubscriptionInfoList}.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected List<SubscriptionInfo> getActiveSubscriptionInfoList() {
     checkReadPhoneStatePermission();
     return subscriptionList;
@@ -261,7 +260,7 @@ public class ShadowSubscriptionManager {
    * Returns the size of the list of {@link SubscriptionInfo} that were set via {@link
    * #setActiveSubscriptionInfoList}. If no list was set, returns 0.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected int getActiveSubscriptionInfoCount() {
     checkReadPhoneStatePermission();
     return subscriptionList == null ? 0 : subscriptionList.size();
@@ -273,7 +272,7 @@ public class ShadowSubscriptionManager {
    *
    * <p>An exception will be thrown if the READ_PHONE_STATE permission has not been granted.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected SubscriptionInfo getActiveSubscriptionInfo(int subId) {
     checkReadPhoneStatePermission();
     if (subscriptionList == null) {
@@ -292,7 +291,7 @@ public class ShadowSubscriptionManager {
    *     #getActiveSubscriptionInfoList} and the value returned by {@link
    *     #getActiveSubscriptionInfoCount}.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected int getActiveSubscriptionInfoCountMax() {
     List<SubscriptionInfo> infoList = getActiveSubscriptionInfoList();
 
@@ -435,7 +434,7 @@ public class ShadowSubscriptionManager {
    * Adds a listener to a local list of listeners. Will be triggered by {@link
    * #setActiveSubscriptionInfoList} when the local list of {@link SubscriptionInfo} is updated.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected void addOnSubscriptionsChangedListener(OnSubscriptionsChangedListener listener) {
     listeners.add(listener);
     listener.onSubscriptionsChanged();
@@ -456,7 +455,7 @@ public class ShadowSubscriptionManager {
    * Removes a listener from a local list of listeners. Will be triggered by {@link
    * #setActiveSubscriptionInfoList} when the local list of {@link SubscriptionInfo} is updated.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected void removeOnSubscriptionsChangedListener(OnSubscriptionsChangedListener listener) {
     listeners.remove(listener);
   }
@@ -472,7 +471,7 @@ public class ShadowSubscriptionManager {
   }
 
   /** Returns subscription Ids that were set via {@link #setActiveSubscriptionInfoList}. */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   @HiddenApi
   protected int[] getActiveSubscriptionIdList() {
     final List<SubscriptionInfo> infos = getActiveSubscriptionInfoList();
@@ -519,7 +518,7 @@ public class ShadowSubscriptionManager {
    * #setNetworkRoamingStatus} to return subscription Ids marked as roaming. Otherwise subscription
    * Ids will be considered as non-roaming if they are not in the cache.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected boolean isNetworkRoaming(int simSubscriptionId) {
     return roamingSimSubscriptionIds.contains(simSubscriptionId);
   }
@@ -551,7 +550,7 @@ public class ShadowSubscriptionManager {
    * Uses the map of subscription IDs to phone IDs managed by {@link #putPhoneId} and {@link
    * #removePhoneId} to return the phone ID for a given subscription ID.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1, maxSdk = P)
+  @Implementation(maxSdk = P)
   @HiddenApi
   protected static int getPhoneId(int subId) {
     if (phoneIds.containsKey(subId)) {
@@ -565,7 +564,7 @@ public class ShadowSubscriptionManager {
    * support, so its {@code int[]} return type ended up being an unused vestige from that older
    * design.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   @HiddenApi
   protected static int[] getSubId(int slotIndex) {
     int subId = getSubscriptionId(slotIndex);

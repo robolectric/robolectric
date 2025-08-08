@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -445,7 +444,7 @@ public class ShadowTelephonyManager {
     deviceSoftwareVersion = newDeviceSoftwareVersion;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   public void setNetworkOperatorName(String networkOperatorName) {
     this.networkOperatorName = networkOperatorName;
   }
@@ -530,7 +529,7 @@ public class ShadowTelephonyManager {
    * <p>Outside of the Android usage, this is intended as a general purpose setter. On SDK >Q, it
    * will also broadcast {@link TelephonyManager#ACTION_NETWORK_COUNTRY_CHANGED}.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1, maxSdk = P)
+  @Implementation(maxSdk = P)
   public void setNetworkCountryIso(String networkCountryIso) {
     String lowerCaseNetworkCountryIso = null;
     if (networkCountryIso != null) {
@@ -606,7 +605,7 @@ public class ShadowTelephonyManager {
     return simOperatorName;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   public void setSimOperatorName(String simOperatorName) {
     this.simOperatorName = simOperatorName;
   }
@@ -643,7 +642,7 @@ public class ShadowTelephonyManager {
     return simCountryIsoMap.get(subId);
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   public void setSimCountryIso(String simCountryIso) {
     setSimCountryIso(/* subId= */ 0, simCountryIso);
   }
@@ -772,7 +771,7 @@ public class ShadowTelephonyManager {
     return phoneType;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   public void setPhoneType(int phoneType) {
     this.phoneType = phoneType;
   }
@@ -823,7 +822,7 @@ public class ShadowTelephonyManager {
    * correspond to one of the {@code NETWORK_TYPE_*} constants defined on {@link TelephonyManager},
    * but this is not enforced.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   public void setDataNetworkType(int dataNetworkType) {
     this.dataNetworkType = dataNetworkType;
   }
@@ -1133,7 +1132,7 @@ public class ShadowTelephonyManager {
   /**
    * Returns {@code true} by default or the value specified via {@link #setVoiceCapable(boolean)}.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected boolean isVoiceCapable() {
     return voiceCapable;
   }

@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -159,20 +158,6 @@ public class ShadowInstrumentation {
     }
     return reflector(InstrumentationReflector.class, realObject)
         .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
-  }
-
-  @Implementation(maxSdk = LOLLIPOP_MR1)
-  protected ActivityResult execStartActivity(
-      Context who,
-      IBinder contextThread,
-      IBinder token,
-      Fragment target,
-      Intent intent,
-      int requestCode,
-      Bundle options) {
-    verifyActivityInManifest(intent);
-    logStartedActivity(intent, null, requestCode, options);
-    return null;
   }
 
   @Implementation(minSdk = M)

@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.L;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -247,12 +245,12 @@ public class ShadowPaint {
     this.textSkewX = skewX;
   }
 
-  @Implementation(minSdk = L)
+  @Implementation
   protected float getLetterSpacing() {
     return letterSpacing;
   }
 
-  @Implementation(minSdk = L)
+  @Implementation
   protected void setLetterSpacing(float letterSpacing) {
     this.letterSpacing = letterSpacing;
   }
@@ -614,34 +612,4 @@ public class ShadowPaint {
     return nGetRunAdvance(0, text, start, end, contextStart, contextEnd, isRtl, offset);
   }
 
-  @Implementation(maxSdk = LOLLIPOP_MR1)
-  protected static float native_getTextRunAdvances(
-      long nativeObject,
-      long nativeTypeface,
-      char[] text,
-      int index,
-      int count,
-      int contextIndex,
-      int contextCount,
-      boolean isRtl,
-      float[] advances,
-      int advancesIndex) {
-    return nGetRunAdvance(
-        0, text, index, index + count, contextIndex, contextIndex + contextCount, isRtl, index);
-  }
-
-  @Implementation(maxSdk = LOLLIPOP_MR1)
-  protected static float native_getTextRunAdvances(
-      long nativeObject,
-      long nativeTypeface,
-      String text,
-      int start,
-      int end,
-      int contextStart,
-      int contextEnd,
-      boolean isRtl,
-      float[] advances,
-      int advancesIndex) {
-    return nGetRunAdvance(0, text.toCharArray(), start, end, contextStart, contextEnd, isRtl, 0);
-  }
 }

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S_V2;
@@ -117,7 +116,7 @@ public class ShadowLocaleDataTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  
   public void shouldSupportLocaleEn_US_percentPost22() {
     LocaleData localeData = LocaleData.get(Locale.US);
     LocaleDataReflector localeDataReflector = reflector(LocaleDataReflector.class, localeData);

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
@@ -246,17 +245,6 @@ public class ShadowInputMethodManager {
 
   @Implementation
   protected void displayCompletions(View view, CompletionInfo[] completions) {}
-
-  @Implementation(maxSdk = LOLLIPOP_MR1)
-  protected static InputMethodManager peekInstance() {
-    // Android has a bug pre M where peekInstance was dereferenced without a null check:-
-    // https://github.com/aosp-mirror/platform_frameworks_base/commit/a046faaf38ad818e6b5e981a39fd7394cf7cee03
-    // So for earlier versions, just call through directly to getInstance()
-    if (RuntimeEnvironment.getApiLevel() <= LOLLIPOP_MR1) {
-      return InputMethodManager.getInstance();
-    }
-    return reflector(InputMethodManagerReflector.class).peekInstance();
-  }
 
   @Implementation(minSdk = N)
   protected boolean startInputInner(

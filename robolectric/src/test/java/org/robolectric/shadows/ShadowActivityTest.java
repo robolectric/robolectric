@@ -130,7 +130,6 @@ public class ShadowActivityTest {
     }
   }
 
-  @Config(minSdk = M)
   @Test
   public void createActivity_noDisplayNotFinished_shouldThrowIllegalStateException() {
     try {

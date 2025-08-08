@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -67,7 +65,7 @@ public class ShadowNetwork {
    * Simulates a socket bind. isSocketBound can be called to verify that the socket was bound to
    * this network interface, and boundSocketCount() will increment for any unique socket.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected void bindSocket(DatagramSocket socket) {
     boundDatagramSockets.add(socket);
   }
@@ -105,7 +103,7 @@ public class ShadowNetwork {
     socketFactoryOverride = socketFactory;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected SocketFactory getSocketFactory() {
     if (socketFactoryOverride != null) {
       return socketFactoryOverride;

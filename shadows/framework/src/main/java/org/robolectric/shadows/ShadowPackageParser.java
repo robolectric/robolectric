@@ -1,14 +1,10 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Callback;
 import android.content.pm.PackageParser.Package;
 import android.os.Build;
-import android.util.ArraySet;
 import android.util.DisplayMetrics;
 import java.io.File;
 import java.nio.file.Path;
@@ -87,28 +83,6 @@ public class ShadowPackageParser {
   @ForType(PackageParser.class)
   interface PackageParserReflector {
 
-    // <= LOLLIPOP
-    @Static
-    PackageInfo generatePackageInfo(
-        PackageParser.Package p,
-        int[] gids,
-        int flags,
-        long firstInstallTime,
-        long lastUpdateTime,
-        HashSet<String> grantedPermissions,
-        @WithType("android.content.pm.PackageUserState") Object state);
-
-    // LOLLIPOP_MR1
-    @Static
-    PackageInfo generatePackageInfo(
-        PackageParser.Package p,
-        int[] gids,
-        int flags,
-        long firstInstallTime,
-        long lastUpdateTime,
-        ArraySet<String> grantedPermissions,
-        @WithType("android.content.pm.PackageUserState") Object state);
-
     @Static
     PackageInfo generatePackageInfo(
         PackageParser.Package p,
@@ -125,27 +99,8 @@ public class ShadowPackageParser {
         int flags,
         long firstInstallTime,
         long lastUpdateTime) {
-      int apiLevel = RuntimeEnvironment.getApiLevel();
 
-      if (apiLevel == LOLLIPOP) {
-        return generatePackageInfo(
-            p,
-            gids,
-            flags,
-            firstInstallTime,
-            lastUpdateTime,
-            new HashSet<>(),
-            newPackageUserState());
-      } else if (apiLevel <= LOLLIPOP_MR1) {
-        return generatePackageInfo(
-            p,
-            gids,
-            flags,
-            firstInstallTime,
-            lastUpdateTime,
-            new ArraySet<>(),
-            newPackageUserState());
-      } else {
+
         return generatePackageInfo(
             p,
             gids,
@@ -154,7 +109,6 @@ public class ShadowPackageParser {
             lastUpdateTime,
             (Set<String>) new HashSet<String>(),
             newPackageUserState());
-      }
     }
 
     Package parsePackage(File file, String fileName, DisplayMetrics displayMetrics, int flags);

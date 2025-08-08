@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -66,12 +65,6 @@ public class ShadowDisplayEventReceiver {
   protected static long nativeInit(
       WeakReference<DisplayEventReceiver> receiver, MessageQueue msgQueue) {
     return nativeObjRegistry.register(new NativeDisplayEventReceiver(receiver));
-  }
-
-  @Implementation(maxSdk = LOLLIPOP_MR1)
-  protected static long nativeInit(DisplayEventReceiver receiver, MessageQueue msgQueue) {
-    return nativeObjRegistry.register(
-        new NativeDisplayEventReceiver(new WeakReference<>(receiver)));
   }
 
   @Implementation(minSdk = R, maxSdk = TIRAMISU)

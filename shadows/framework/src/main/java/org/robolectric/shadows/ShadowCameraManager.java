@@ -452,9 +452,7 @@ public class ShadowCameraManager {
   }
 
   /** Shadow class for internal class CameraManager$CameraManagerGlobal */
-  @Implements(
-      className = "android.hardware.camera2.CameraManager$CameraManagerGlobal",
-      minSdk = VERSION_CODES.LOLLIPOP_MR1)
+  @Implements(className = "android.hardware.camera2.CameraManager$CameraManagerGlobal")
   public static class ShadowCameraManagerGlobal {
 
     /**

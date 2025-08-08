@@ -38,20 +38,7 @@ public class ShadowAudioEffect {
   private boolean isEnabled = false;
   private int errorCode = SUCCESS;
 
-  @Implementation(maxSdk = VERSION_CODES.LOLLIPOP_MR1)
-  protected int native_setup(
-      Object audioEffectThis,
-      String type,
-      String uuid,
-      int priority,
-      int audioSession,
-      int[] id,
-      Object[] desc) {
-    return native_setup(
-        audioEffectThis, type, uuid, priority, audioSession, id, desc, /* opPackageName= */ null);
-  }
-
-  @Implementation(minSdk = VERSION_CODES.M, maxSdk = VERSION_CODES.Q)
+  @Implementation(maxSdk = VERSION_CODES.Q)
   protected int native_setup(
       Object audioEffectThis,
       String type,

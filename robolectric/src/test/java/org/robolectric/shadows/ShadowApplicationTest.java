@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -148,14 +147,12 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  @Config(minSdk = M)
   public void shouldProvideServicesIntroducedInLollipopMr1() {
     assertThat(context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE))
         .isInstanceOf(SubscriptionManager.class);
   }
 
   @Test
-  @Config(minSdk = M)
   public void shouldProvideServicesIntroducedMarshmallow() {
     assertThat(context.getSystemService(Context.FINGERPRINT_SERVICE))
         .isInstanceOf(FingerprintManager.class);

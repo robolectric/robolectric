@@ -35,7 +35,6 @@ import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
 import static android.content.pm.PackageManager.VERIFICATION_REJECT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -4031,7 +4030,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  
   public void setUnbadgedApplicationIcon() throws Exception {
     String packageName = context.getPackageName();
     Drawable d = new BitmapDrawable();

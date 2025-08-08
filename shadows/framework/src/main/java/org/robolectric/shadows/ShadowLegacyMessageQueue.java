@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.setField;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -50,11 +49,6 @@ public class ShadowLegacyMessageQueue extends ShadowMessageQueue {
 
   @Implementation
   protected static void nativeDestroy(long ptr) {}
-
-  @Implementation(maxSdk = LOLLIPOP_MR1)
-  protected static boolean nativeIsIdling(long ptr) {
-    return false;
-  }
 
   @Override
   public Scheduler getScheduler() {

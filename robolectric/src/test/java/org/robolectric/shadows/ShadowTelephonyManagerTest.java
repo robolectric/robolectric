@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SERVICE;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -689,7 +688,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  
   public void shouldGiveVoiceCapableTrue() {
     shadowOf(telephonyManager).setVoiceCapable(true);
 
@@ -697,7 +696,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  
   public void shouldGiveVoiceCapableFalse() {
     shadowOf(telephonyManager).setVoiceCapable(false);
 

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
@@ -73,10 +72,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     ShadowPausedSystemClock.removeListener(q.clockListener);
   }
 
-  @Implementation(maxSdk = LOLLIPOP_MR1, methodName = "nativePollOnce")
-  protected static void nativePollOncePreM(long ptr, int timeoutMillis) {
-    nativeQueueRegistry.getNativeObject(ptr).nativePollOnce(ptr, timeoutMillis);
-  }
 
   @Implementation(minSdk = M)
   protected void nativePollOnce(long ptr, int timeoutMillis) {

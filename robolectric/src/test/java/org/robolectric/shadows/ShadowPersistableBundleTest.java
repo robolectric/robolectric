@@ -152,11 +152,8 @@ public class ShadowPersistableBundleTest {
   public void getWrongType() {
     bundle.putInt("foo", 1);
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-      assertThat(bundle.getBoolean("foo")).isFalse();
-      assertThat(bundle.getBooleanArray("foo")).isNull();
-    }
-
+    assertThat(bundle.getBoolean("foo")).isFalse();
+    assertThat(bundle.getBooleanArray("foo")).isNull();
     assertThat(bundle.getDouble("foo")).isEqualTo(0.0);
     assertThat(bundle.getDoubleArray("foo")).isNull();
     assertThat(bundle.getIntArray("foo")).isNull();

@@ -1,7 +1,5 @@
 package org.robolectric.android.internal;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -200,9 +198,7 @@ public final class DisplayConfig {
     type = other.type;
     // address = other.address;
     name = other.name;
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP_MR1) {
-      uniqueId = other.uniqueId;
-    }
+    uniqueId = other.uniqueId;
     appWidth = other.appWidth;
     appHeight = other.appHeight;
     smallestNominalAppWidth = other.smallestNominalAppWidth;
@@ -212,11 +208,10 @@ public final class DisplayConfig {
     logicalWidth = other.logicalWidth;
     logicalHeight = other.logicalHeight;
     rotation = other.rotation;
-    if (RuntimeEnvironment.getApiLevel() >= M) {
-      modeId = other.modeId;
-      defaultModeId = other.defaultModeId;
-      supportedModes = Arrays.copyOf(other.supportedModes, other.supportedModes.length);
-    }
+    modeId = other.modeId;
+    defaultModeId = other.defaultModeId;
+    supportedModes = Arrays.copyOf(other.supportedModes, other.supportedModes.length);
+
     if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
       colorMode = other.colorMode;
       supportedColorModes =
@@ -331,9 +326,7 @@ public final class DisplayConfig {
     other.type = type;
     // other.address = address;
     other.name = name;
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP_MR1) {
-      other.uniqueId = uniqueId;
-    }
+    other.uniqueId = uniqueId;
     other.appWidth = appWidth;
     other.appHeight = appHeight;
     other.smallestNominalAppWidth = smallestNominalAppWidth;
@@ -343,11 +336,9 @@ public final class DisplayConfig {
     other.logicalWidth = logicalWidth;
     other.logicalHeight = logicalHeight;
     other.rotation = rotation;
-    if (RuntimeEnvironment.getApiLevel() >= M) {
-      other.modeId = modeId;
-      other.defaultModeId = defaultModeId;
-      other.supportedModes = Arrays.copyOf(supportedModes, supportedModes.length);
-    }
+    other.modeId = modeId;
+    other.defaultModeId = defaultModeId;
+    other.supportedModes = Arrays.copyOf(supportedModes, supportedModes.length);
     if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
       other.colorMode = colorMode;
       other.supportedColorModes = Arrays.copyOf(supportedColorModes, supportedColorModes.length);
