@@ -110,19 +110,13 @@ public final class ShadowPausedLooper extends ShadowLooper {
   }
 
   @Override
+  public void idleFor(Duration idleForDuration) {
+    executeOnLooper(new IdleForRunnable(idleForDuration));
+  }
+
+  @Override
   public void idleFor(long time, TimeUnit timeUnit) {
-    long endingTimeMs = SystemClock.uptimeMillis() + timeUnit.toMillis(time);
-    long nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
-    while (nextScheduledTimeMs != 0 && nextScheduledTimeMs <= endingTimeMs) {
-      ShadowSystemClock.advanceBy(
-          nextScheduledTimeMs - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
-      idle();
-      nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
-    }
-    ShadowSystemClock.advanceBy(endingTimeMs - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
-    // the last SystemClock update might have added new tasks to the main looper via Choreographer
-    // so idle once more.
-    idle();
+    idleFor(Duration.of(time, timeUnit.toChronoUnit()));
   }
 
   @Override
@@ -590,6 +584,32 @@ public final class ShadowPausedLooper extends ShadowLooper {
       if (exception != null) {
         throw exception;
       }
+    }
+  }
+
+  private class IdleForRunnable extends ControlRunnable {
+    private final Duration idleForDuration;
+    private final IdlingRunnable idleRunnable = new IdlingRunnable();
+
+    IdleForRunnable(Duration duration) {
+      super();
+      idleForDuration = duration;
+    }
+
+    @Override
+    public void doRun() {
+      long endingTimeMs = SystemClock.uptimeMillis() + idleForDuration.toMillis();
+      long nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
+      while (nextScheduledTimeMs != 0 && nextScheduledTimeMs <= endingTimeMs) {
+        ShadowSystemClock.advanceBy(
+            Duration.ofMillis(nextScheduledTimeMs - SystemClock.uptimeMillis()));
+        idleRunnable.doRun();
+        nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
+      }
+      ShadowSystemClock.advanceBy(Duration.ofMillis(endingTimeMs - SystemClock.uptimeMillis()));
+      // the last SystemClock update might have added new tasks to the main looper via Choreographer
+      // so idle once more.
+      idleRunnable.doRun();
     }
   }
 
