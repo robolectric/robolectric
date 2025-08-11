@@ -441,9 +441,15 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   /** Retrieves the next message or null if the queue is idle. */
   private Message getNextExecutableMessage() {
-    synchronized (realLooper.getQueue()) {
-      // Use null if the queue is idle, otherwise getNext() will block.
-      return shadowQueue().isIdle() ? null : shadowQueue().getNext();
+    checkState(
+        Thread.currentThread() == realLooper.getThread(),
+        "getNextExecutableMessage is only supported from looper thread");
+    try (TestLooperManagerCompat looperManager = TestLooperManagerCompat.acquire(realLooper)) {
+      Long when = looperManager.peekWhen();
+      if (when != null && when <= SystemClock.uptimeMillis()) {
+        return looperManager.poll();
+      }
+      return null;
     }
   }
 
@@ -633,8 +639,10 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     @Override
     public void doRun() {
-
-      Message msg = shadowQueue().getNextIgnoringWhen();
+      Message msg;
+      try (TestLooperManagerCompat looperManager = TestLooperManagerCompat.acquire(realLooper)) {
+        msg = looperManager.poll();
+      }
       if (msg != null) {
         SystemClock.setCurrentTimeMillis(shadowMsg(msg).getWhen());
         msg.getTarget().dispatchMessage(msg);
