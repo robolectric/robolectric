@@ -30,6 +30,7 @@ public class ShadowRemoteAccessibilityInputConnection {
   private final List<Pair<Integer, Integer>> setSelections = new ArrayList<>();
   private final List<SurroundingTextArgs> surroundingTextArguments = new ArrayList<>();
   private final List<CommitTextArgs> commitTextArguments = new ArrayList<>();
+  private final List<Pair<Integer, Integer>> deleteSurroundingTextArguments = new ArrayList<>();
 
   @Implementation(minSdk = TIRAMISU)
   protected void commitText(CharSequence text, int newCursorPosition, TextAttribute textAttribute) {
@@ -60,6 +61,11 @@ public class ShadowRemoteAccessibilityInputConnection {
   @Implementation(minSdk = TIRAMISU)
   protected void setSelection(int start, int end) {
     setSelections.add(Pair.create(start, end));
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected void deleteSurroundingText(int beforeLength, int afterLength) {
+    deleteSurroundingTextArguments.add(Pair.create(beforeLength, afterLength));
   }
 
   /**
@@ -107,5 +113,13 @@ public class ShadowRemoteAccessibilityInputConnection {
    */
   List<Pair<Integer, Integer>> getSetSelections() {
     return ImmutableList.copyOf(setSelections);
+  }
+
+  /**
+   * Returns the list of deleteSurroundingText arguments sent to this input connection in the order
+   * they were received.
+   */
+  List<Pair<Integer, Integer>> getDeleteSurroundingTextArguments() {
+    return ImmutableList.copyOf(deleteSurroundingTextArguments);
   }
 }

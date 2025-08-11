@@ -113,6 +113,10 @@ public class ShadowAccessibilityInputConnection {
     return getRemote().getSetSelections();
   }
 
+  public List<Pair<Integer, Integer>> getDeleteSurroundingTextArguments() {
+    return getRemote().getDeleteSurroundingTextArguments();
+  }
+
   private ShadowRemoteAccessibilityInputConnection getRemote() {
     return Shadow.extract(
         reflector(AccessibilityInputConnectionReflector.class, realInputConnection).getIc());
