@@ -361,6 +361,15 @@ public abstract class ShadowLooper {
    */
   public abstract Duration getLastScheduledTaskTime();
 
+  /**
+   * Continuously run all Messages on this Looper until its queue is empty. SystemClock is advanced
+   * to the scheduled time of last executed Message.
+   *
+   * <p>Use with caution, as this method will never terminate if tasks are posted continuously (eg
+   * infinite animation loops).
+   */
+  public abstract void runUntilEmpty();
+
   public static class Picker extends LooperShadowPicker<ShadowLooper> {
 
     public Picker() {

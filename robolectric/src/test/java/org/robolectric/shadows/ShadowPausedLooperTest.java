@@ -7,6 +7,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -765,6 +766,23 @@ public class ShadowPausedLooperTest {
     ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
     assertThat(shadowLooper.isPaused()).isTrue();
     assertThrows(UnsupportedOperationException.class, shadowLooper::unPause);
+  }
+
+  @Test
+  public void runUntilEmpty() {
+    final Handler mainHandler = new Handler();
+
+    long origTime = SystemClock.uptimeMillis();
+    Runnable mockRunnable = mock(Runnable.class);
+    Runnable postingRunnable = () -> mainHandler.postDelayed(mockRunnable, 100);
+    mainHandler.post(mockRunnable);
+    mainHandler.post(postingRunnable);
+
+    verify(mockRunnable, never()).run();
+
+    shadowMainLooper().runUntilEmpty();
+    verify(mockRunnable, times(2)).run();
+    assertThat(SystemClock.uptimeMillis() - origTime).isEqualTo(100);
   }
 
   private static class BlockingRunnable implements Runnable {

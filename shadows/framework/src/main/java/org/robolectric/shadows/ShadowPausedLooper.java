@@ -190,6 +190,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
   }
 
   @Override
+  public void runUntilEmpty() {
+    executeOnLooper(new RunToEmptyRunnable());
+  }
+
+  @Override
   public void runToNextTask() {
     idleFor(Duration.ofMillis(getNextScheduledTaskTime().toMillis() - SystemClock.uptimeMillis()));
   }
@@ -589,6 +594,21 @@ public final class ShadowPausedLooper extends ShadowLooper {
       }
       if (exception != null) {
         throw exception;
+      }
+    }
+  }
+
+  private class RunToEmptyRunnable extends ControlRunnable {
+    private final IdlingRunnable idleRunnable = new IdlingRunnable();
+
+    @Override
+    public void doRun() {
+      long nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
+      while (nextScheduledTimeMs != 0) {
+        ShadowSystemClock.advanceBy(
+            Duration.ofMillis(nextScheduledTimeMs - SystemClock.uptimeMillis()));
+        idleRunnable.doRun();
+        nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
       }
     }
   }
