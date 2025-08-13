@@ -289,7 +289,13 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public Duration getNextScheduledTaskTime() {
-    return shadowQueue().getNextScheduledTaskTime();
+    try (TestLooperManagerCompat testLooperManagerCompat =
+        TestLooperManagerCompat.acquire(realLooper)) {
+      Long nextWhen = testLooperManagerCompat.peekWhen();
+      return nextWhen == null
+          ? Duration.ZERO
+          : Duration.ofMillis(ShadowPausedMessageQueue.convertWhenToScheduledTime(nextWhen));
+    }
   }
 
   @Override

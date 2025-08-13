@@ -226,15 +226,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     return reflector(MessageQueueReflector.class, realQueue).getQuitting();
   }
 
-  Duration getNextScheduledTaskTime() {
-    Message next = peekNextExecutableMessage();
-
-    if (next == null) {
-      return Duration.ZERO;
-    }
-    return Duration.ofMillis(convertWhenToScheduledTime(shadowOfMsg(next).getWhen()));
-  }
-
   Duration getLastScheduledTaskTime() {
     long when = 0;
     synchronized (realQueue) {
@@ -252,7 +243,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     return Duration.ofMillis(convertWhenToScheduledTime(when));
   }
 
-  private static long convertWhenToScheduledTime(long when) {
+  static long convertWhenToScheduledTime(long when) {
     // in some situations, when can be 0 or less than uptimeMillis. Always floor it to at least
     // convertWhenToUptime
     if (when < SystemClock.uptimeMillis()) {
