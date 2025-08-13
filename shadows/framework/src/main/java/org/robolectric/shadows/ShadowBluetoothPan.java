@@ -15,6 +15,7 @@ import org.robolectric.annotation.Implements;
 @Implements(value = BluetoothPan.class, isInAndroidSdk = false)
 public class ShadowBluetoothPan {
   private final Map<BluetoothDevice, Integer> bluetoothDevices = new HashMap<>();
+  private boolean bluetoothTetheringOn;
 
   /**
    * Adds the given bluetoothDevice with connectionState to the list of devices returned by {@link
@@ -46,6 +47,15 @@ public class ShadowBluetoothPan {
   }
 
   /**
+   * Sets the value of {@link ShadowBluetoothPan#bluetoothTetheringOn}
+   *
+   * @param value the value to set
+   */
+  public void setBluetoothTetheringOn(boolean value) {
+    bluetoothTetheringOn = value;
+  }
+
+  /**
    * Returns a list of devices that are currently connected.
    *
    * @return a list of devices that are currently connected
@@ -72,5 +82,15 @@ public class ShadowBluetoothPan {
       }
     }
     return ImmutableList.copyOf(deviceList);
+  }
+
+  /**
+   * Returns the value of {@link ShadowBluetoothPan#bluetoothTetheringOn}
+   *
+   * @return the value of {@link ShadowBluetoothPan#bluetoothTetheringOn}
+   */
+  @Implementation
+  protected boolean isTetheringOn() {
+    return bluetoothTetheringOn;
   }
 }

@@ -93,4 +93,26 @@ public final class ShadowBluetoothPanTest {
                 new int[] {BluetoothProfile.STATE_CONNECTED}))
         .isEmpty();
   }
+
+  @Test
+  public void isTetheringOn_returnsTrue() {
+    // TODO: Use BluetoothPan instance to replace Shadow.newInstanceOf
+    BluetoothPan bluetoothPan = Shadow.newInstanceOf(BluetoothPan.class);
+    ShadowBluetoothPan shadowBluetoothPan = Shadow.extract(bluetoothPan);
+
+    shadowBluetoothPan.setBluetoothTetheringOn(true);
+
+    assertThat(bluetoothPan.isTetheringOn()).isTrue();
+  }
+
+  @Test
+  public void isTetheringOn_returnsFalse() {
+    // TODO: Use BluetoothPan instance to replace Shadow.newInstanceOf
+    BluetoothPan bluetoothPan = Shadow.newInstanceOf(BluetoothPan.class);
+    ShadowBluetoothPan shadowBluetoothPan = Shadow.extract(bluetoothPan);
+
+    shadowBluetoothPan.setBluetoothTetheringOn(false);
+
+    assertThat(bluetoothPan.isTetheringOn()).isFalse();
+  }
 }
