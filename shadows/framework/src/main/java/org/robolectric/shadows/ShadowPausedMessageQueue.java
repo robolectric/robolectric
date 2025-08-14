@@ -15,6 +15,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import java.time.Duration;
 import java.util.ArrayList;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -46,6 +47,9 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   private ShadowPausedSystemClock.Listener clockListener;
   private Exception uncaughtException = null;
 
+  @GuardedBy("realQueue")
+  private boolean pendingWake;
+
   // shadow constructor instead of nativeInit because nativeInit signature has changed across SDK
   // versions
   @Implementation
@@ -56,9 +60,9 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     clockListener =
         () -> {
           synchronized (realQueue) {
-            // only wake up the Looper thread if queue is non empty to reduce contention if many
-            // Looper threads are active
-            if (getMessages() != null) {
+            if (!realQueue.isIdle()) {
+              // only wake up the Looper thread if queue is non empty to reduce contention if many
+              // Looper threads are active
               nativeWake(ptr);
             }
           }
@@ -72,24 +76,25 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     ShadowPausedSystemClock.removeListener(q.clockListener);
   }
 
-
   @Implementation(minSdk = M)
   protected void nativePollOnce(long ptr, int timeoutMillis) {
-    if (timeoutMillis == 0) {
-      return;
-    }
     synchronized (realQueue) {
-      // only block if queue is empty
-      // ignore timeout since clock is not advancing. ClockListener will notify when clock advances
-      while (isIdle() && !isQuitting()) {
-        isPolling = true;
-        try {
+      isPolling = true;
+      try {
+        if (pendingWake) {
+          // Calling with pending wake returns immediately
+        } else if (timeoutMillis == 0) {
+          // Calling epoll_wait() with 0 returns immediately
+        } else {
+          // ignore timeout since clock is not advancing. ClockListener will notify when clock
+          // advances
           realQueue.wait();
-        } catch (InterruptedException e) {
-          // ignore
         }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
       }
       isPolling = false;
+      pendingWake = false;
     }
   }
 
@@ -114,9 +119,10 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     // return the next message. To simulate this behavior check if the queue is idle and if it is
     // mark the queue as blocked and wait on a new message.
     synchronized (realQueue) {
-      if (isIdle()) {
+      if (realQueue.isIdle()) {
         reflector(MessageQueueReflector.class, realQueue).setBlocked(true);
         try {
+          pendingWake = false;
           realQueue.wait(timeout);
         } catch (InterruptedException ignored) {
           // Fall through and unblock with no messages.
@@ -130,7 +136,9 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   @Implementation
   protected static void nativeWake(long ptr) {
     MessageQueue realQueue = nativeQueueRegistry.getNativeObject(ptr).realQueue;
-    synchronized (realQueue) {
+    ShadowPausedMessageQueue shadowPausedMessageQueue = Shadow.extract(realQueue);
+    synchronized (shadowPausedMessageQueue.realQueue) {
+      shadowPausedMessageQueue.pendingWake = true;
       realQueue.notifyAll();
     }
   }
@@ -143,16 +151,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   /** Exposes the API23+_isIdle method to older platforms */
   @Implementation(minSdk = 23)
   public boolean isIdle() {
-    synchronized (realQueue) {
-      Message msg = peekNextExecutableMessage();
-      if (msg == null) {
-        return true;
-      }
-
-      long now = SystemClock.uptimeMillis();
-      long when = shadowOfMsg(msg).getWhen();
-      return now < when;
-    }
+    return reflector(MessageQueueReflector.class, realQueue).isIdle();
   }
 
   Message peekNextExecutableMessage() {
@@ -326,6 +325,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
         msgQueue.setLast(null);
         msgQueue.setAsyncMessageCount(0);
       }
+      pendingWake = false;
     }
     setUncaughtException(null);
   }
@@ -466,5 +466,8 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
     @Accessor("mBlocked")
     void setBlocked(boolean blocked);
+
+    @Direct
+    boolean isIdle();
   }
 }

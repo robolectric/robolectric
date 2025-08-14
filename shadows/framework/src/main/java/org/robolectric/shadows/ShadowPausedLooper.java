@@ -121,10 +121,26 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public boolean isIdle() {
-    if (Thread.currentThread() == realLooper.getThread() || isPaused) {
-      return shadowQueue().isIdle();
+    if (realLooper.getThread() == Thread.currentThread()) {
+      // for accuracy, MessageQueue.isIdle won't be used here, because
+      // it will return false if there is only a single sync barrier posted.
+      // Which will cause busy-loops when called from idle(), since there is no actual executable
+      // messages to be executed
+      return !hasExecutableMessages();
+    } else if (isPaused()) {
+      // we'll take our chances with MessageQueue.isIdle. Calling isIdle from a non Looper thread
+      // is going to be racy regardless
+      return realLooper.getQueue().isIdle();
     } else {
-      return shadowQueue().isIdle() && shadowQueue().isPolling();
+      // attempt to detect case where a task is currently executing
+      return realLooper.getQueue().isIdle() && shadowQueue().isPolling();
+    }
+  }
+
+  private boolean hasExecutableMessages() {
+    try (TestLooperManagerCompat lm = TestLooperManagerCompat.acquire(realLooper)) {
+      Long peekWhen = lm.peekWhen();
+      return peekWhen != null && peekWhen <= SystemClock.uptimeMillis();
     }
   }
 
@@ -531,7 +547,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     // Run the idle handlers without holding the lock, removing those that return false from their
     // queueIdle() method.
     synchronized (realLooper.getQueue()) {
-      if (lastMessageRead == null || !shadowQueue().isIdle()) {
+      if (lastMessageRead == null || !realLooper.getQueue().isIdle()) {
         return;
       }
       idleHandlers = shadowQueue().getIdleHandlersCopy();
