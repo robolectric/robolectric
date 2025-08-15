@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-  //noinspection GradleDependency keep compileSdk to 29 for compatibility testing purpose
-  compileSdk = 29
+  //noinspection GradleDependency keep compileSdk to 30 for compatibility testing purpose
+  compileSdk = 30
   namespace = "org.robolectric.integrationtests.sdkcompat"
 
-  defaultConfig { minSdk = 21 }
+  defaultConfig { minSdk = 23 }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_1_8
