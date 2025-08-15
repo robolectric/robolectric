@@ -74,7 +74,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -415,49 +414,6 @@ public class ShadowActivityTest {
     assertThat(intentForResult.intent).isNotNull();
     assertThat(intentForResult.intent).isSameInstanceAs(intent);
     assertThat(intentForResult.requestCode).isEqualTo(142);
-  }
-
-  @Test
-  public void noActivitiesStarted_peekNextReturnsNull() {
-    activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
-    @Nullable
-    ShadowActivity.IntentForResult intentForResult =
-        shadowOf(activity).peekNextStartedActivityForResult();
-    assertThat(intentForResult).isNull();
-  }
-
-  @Test
-  public void startSequenceOfDifferentActivitiesIfNeeded_peekNextReturnsLast() {
-    activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
-
-    Intent intent0 = new Intent().setClass(activity, DialogLifeCycleActivity.class);
-
-    activity.startActivityIfNeeded(intent0, /* requestCode= */ 142);
-
-    @Nullable
-    ShadowActivity.IntentForResult intentForResult0 =
-        shadowOf(activity).peekNextStartedActivityForResult();
-    assertThat(intentForResult0).isNotNull();
-    assertThat(shadowOf(activity).peekNextStartedActivityForResult())
-        .isSameInstanceAs(intentForResult0);
-    assertThat(intentForResult0.intent).isSameInstanceAs(intent0);
-    assertThat(intentForResult0.requestCode).isEqualTo(142);
-    assertThat(intentForResult0.options).isNull();
-
-    Bundle options = new Bundle();
-    options.putString("key", "value");
-    Intent intent1 = new Intent().setClass(activity, DialogLifeCycleActivity.class);
-    activity.startActivityIfNeeded(intent1, /* requestCode= */ 241, options);
-
-    @Nullable
-    ShadowActivity.IntentForResult intentForResult1 =
-        shadowOf(activity).peekNextStartedActivityForResult();
-    assertThat(intentForResult1).isNotNull();
-    assertThat(shadowOf(activity).peekNextStartedActivityForResult())
-        .isSameInstanceAs(intentForResult1);
-    assertThat(intentForResult1.intent).isSameInstanceAs(intent1);
-    assertThat(intentForResult1.requestCode).isEqualTo(241);
-    assertThat(intentForResult1.options).isEqualTo(options);
   }
 
   @Test

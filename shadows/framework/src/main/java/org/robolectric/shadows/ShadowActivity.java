@@ -52,9 +52,6 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import androidx.test.runner.lifecycle.ActivityLifecycleMonitor;
-import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
-import androidx.test.runner.lifecycle.Stage;
 import com.android.internal.app.IVoiceInteractor;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -539,8 +536,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   /**
    * Returns the most recent {@code Intent} started by {@link
-   * Activity#startActivityForResult(Intent, int)}, or {@link Activity#startActivityIfNeeded(Intent,
-   * int)} if it started its target activity, without consuming it.
+   * Activity#startActivityForResult(Intent, int)} without consuming it.
    *
    * @return the most recently started {@code Intent}, wrapped in an {@link
    *     ShadowActivity.IntentForResult} object
@@ -551,58 +547,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     ShadowInstrumentation shadowInstrumentation =
         Shadow.extract(activityThread.getInstrumentation());
     return shadowInstrumentation.peekNextStartedActivityForResult();
-  }
-
-  private boolean wouldReuseTargetActivity(Intent intent) {
-    PackageManager packageManager = realActivity.getPackageManager();
-    @Nullable ComponentName targetComponentName = intent.resolveActivity(packageManager);
-    if (targetComponentName == null) {
-      // No activity exists to handle the intent.
-      return false;
-    }
-
-    boolean singleTopViaManifest;
-    try {
-      singleTopViaManifest =
-          packageManager.getActivityInfo(targetComponentName, 0).launchMode
-              == ActivityInfo.LAUNCH_SINGLE_TOP;
-    } catch (PackageManager.NameNotFoundException e) {
-      singleTopViaManifest = false;
-    }
-    boolean singleTopViaIntent = (intent.getFlags() & Intent.FLAG_ACTIVITY_SINGLE_TOP) != 0;
-    return singleTopViaManifest || singleTopViaIntent;
-  }
-
-  private boolean targetActivityResumed(Intent intent) {
-    PackageManager packageManager = realActivity.getPackageManager();
-    @Nullable ComponentName targetComponentName = intent.resolveActivity(packageManager);
-    if (targetComponentName == null) {
-      // No activity exists to handle the intent.
-      return false;
-    }
-    ActivityLifecycleMonitor monitor = ActivityLifecycleMonitorRegistry.getInstance();
-
-    for (Activity activity : monitor.getActivitiesInStage(Stage.RESUMED)) {
-      if (activity.getComponentName().equals(targetComponentName)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  @Implementation
-  protected boolean startActivityIfNeeded(
-      Intent intent, int requestCode, @Nullable Bundle options) {
-    // Return false if "is not needed" to startActivity: if target activity has SINGLE_TOP behavior
-    // enabled and it's currently RESUMED.
-    if (wouldReuseTargetActivity(intent) && targetActivityResumed(intent)) {
-      return false;
-    }
-
-    // Otherwise, behavior is like startActivityForResult.
-    reflector(DirectActivityReflector.class, realActivity)
-        .startActivityForResult(intent, requestCode, options);
-    return true;
   }
 
   @Implementation
@@ -1156,7 +1100,5 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     void requestPermissions(String[] permissions, int requestCode);
 
     void requestPermissions(String[] permissions, int requestCode, int deviceId);
-
-    void startActivityForResult(Intent intent, int requestCode, @Nullable Bundle options);
   }
 }
