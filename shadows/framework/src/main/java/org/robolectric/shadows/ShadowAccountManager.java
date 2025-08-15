@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.O;
 
 import android.accounts.Account;
@@ -15,7 +14,6 @@ import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import java.io.IOException;
@@ -32,7 +30,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -199,7 +196,7 @@ public class ShadowAccountManager {
    * Removes the account unless {@link #setRemoveAccountIntent} has been set. If set, the future
    * Bundle will include the Intent and {@link AccountManager#KEY_BOOLEAN_RESULT} will be false.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected AccountManagerFuture<Bundle> removeAccount(
       Account account,
       Activity activity,
@@ -225,7 +222,7 @@ public class ShadowAccountManager {
         });
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected boolean removeAccountExplicitly(Account account) {
     passwords.remove(account);
     userData.remove(account);
@@ -778,10 +775,6 @@ public class ShadowAccountManager {
       final Activity activity,
       final AccountManagerCallback<Bundle> callback,
       final Handler handler) {
-    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-      RuntimeEnvironment.getApplication()
-          .enforceCallingPermission(android.Manifest.permission.MANAGE_ACCOUNTS, null);
-    }
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }

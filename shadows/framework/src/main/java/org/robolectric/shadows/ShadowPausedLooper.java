@@ -110,27 +110,37 @@ public final class ShadowPausedLooper extends ShadowLooper {
   }
 
   @Override
+  public void idleFor(Duration idleForDuration) {
+    executeOnLooper(new IdleForRunnable(idleForDuration));
+  }
+
+  @Override
   public void idleFor(long time, TimeUnit timeUnit) {
-    long endingTimeMs = SystemClock.uptimeMillis() + timeUnit.toMillis(time);
-    long nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
-    while (nextScheduledTimeMs != 0 && nextScheduledTimeMs <= endingTimeMs) {
-      ShadowSystemClock.advanceBy(
-          nextScheduledTimeMs - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
-      idle();
-      nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
-    }
-    ShadowSystemClock.advanceBy(endingTimeMs - SystemClock.uptimeMillis(), TimeUnit.MILLISECONDS);
-    // the last SystemClock update might have added new tasks to the main looper via Choreographer
-    // so idle once more.
-    idle();
+    idleFor(Duration.of(time, timeUnit.toChronoUnit()));
   }
 
   @Override
   public boolean isIdle() {
-    if (Thread.currentThread() == realLooper.getThread() || isPaused) {
-      return shadowQueue().isIdle();
+    if (realLooper.getThread() == Thread.currentThread()) {
+      // for accuracy, MessageQueue.isIdle won't be used here, because
+      // it will return false if there is only a single sync barrier posted.
+      // Which will cause busy-loops when called from idle(), since there is no actual executable
+      // messages to be executed
+      return !hasExecutableMessages();
+    } else if (isPaused()) {
+      // we'll take our chances with MessageQueue.isIdle. Calling isIdle from a non Looper thread
+      // is going to be racy regardless
+      return realLooper.getQueue().isIdle();
     } else {
-      return shadowQueue().isIdle() && shadowQueue().isPolling();
+      // attempt to detect case where a task is currently executing
+      return realLooper.getQueue().isIdle() && shadowQueue().isPolling();
+    }
+  }
+
+  private boolean hasExecutableMessages() {
+    try (TestLooperManagerCompat lm = TestLooperManagerCompat.acquire(realLooper)) {
+      Long peekWhen = lm.peekWhen();
+      return peekWhen != null && peekWhen <= SystemClock.uptimeMillis();
     }
   }
 
@@ -193,6 +203,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
   @Override
   public void runToEndOfTasks() {
     idleFor(Duration.ofMillis(getLastScheduledTaskTime().toMillis() - SystemClock.uptimeMillis()));
+  }
+
+  @Override
+  public void runUntilEmpty() {
+    executeOnLooper(new RunToEmptyRunnable());
   }
 
   @Override
@@ -290,7 +305,13 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public Duration getNextScheduledTaskTime() {
-    return shadowQueue().getNextScheduledTaskTime();
+    try (TestLooperManagerCompat testLooperManagerCompat =
+        TestLooperManagerCompat.acquire(realLooper)) {
+      Long nextWhen = testLooperManagerCompat.peekWhen();
+      return nextWhen == null
+          ? Duration.ZERO
+          : Duration.ofMillis(ShadowPausedMessageQueue.convertWhenToScheduledTime(nextWhen));
+    }
   }
 
   @Override
@@ -447,9 +468,15 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   /** Retrieves the next message or null if the queue is idle. */
   private Message getNextExecutableMessage() {
-    synchronized (realLooper.getQueue()) {
-      // Use null if the queue is idle, otherwise getNext() will block.
-      return shadowQueue().isIdle() ? null : shadowQueue().getNext();
+    checkState(
+        Thread.currentThread() == realLooper.getThread(),
+        "getNextExecutableMessage is only supported from looper thread");
+    try (TestLooperManagerCompat looperManager = TestLooperManagerCompat.acquire(realLooper)) {
+      Long when = looperManager.peekWhen();
+      if (when != null && when <= SystemClock.uptimeMillis()) {
+        return looperManager.poll();
+      }
+      return null;
     }
   }
 
@@ -520,7 +547,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     // Run the idle handlers without holding the lock, removing those that return false from their
     // queueIdle() method.
     synchronized (realLooper.getQueue()) {
-      if (lastMessageRead == null || !shadowQueue().isIdle()) {
+      if (lastMessageRead == null || !realLooper.getQueue().isIdle()) {
         return;
       }
       idleHandlers = shadowQueue().getIdleHandlersCopy();
@@ -593,6 +620,47 @@ public final class ShadowPausedLooper extends ShadowLooper {
     }
   }
 
+  private class RunToEmptyRunnable extends ControlRunnable {
+    private final IdlingRunnable idleRunnable = new IdlingRunnable();
+
+    @Override
+    public void doRun() {
+      long nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
+      while (nextScheduledTimeMs != 0) {
+        ShadowSystemClock.advanceBy(
+            Duration.ofMillis(nextScheduledTimeMs - SystemClock.uptimeMillis()));
+        idleRunnable.doRun();
+        nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
+      }
+    }
+  }
+
+  private class IdleForRunnable extends ControlRunnable {
+    private final Duration idleForDuration;
+    private final IdlingRunnable idleRunnable = new IdlingRunnable();
+
+    IdleForRunnable(Duration duration) {
+      super();
+      idleForDuration = duration;
+    }
+
+    @Override
+    public void doRun() {
+      long endingTimeMs = SystemClock.uptimeMillis() + idleForDuration.toMillis();
+      long nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
+      while (nextScheduledTimeMs != 0 && nextScheduledTimeMs <= endingTimeMs) {
+        ShadowSystemClock.advanceBy(
+            Duration.ofMillis(nextScheduledTimeMs - SystemClock.uptimeMillis()));
+        idleRunnable.doRun();
+        nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
+      }
+      ShadowSystemClock.advanceBy(Duration.ofMillis(endingTimeMs - SystemClock.uptimeMillis()));
+      // the last SystemClock update might have added new tasks to the main looper via Choreographer
+      // so idle once more.
+      idleRunnable.doRun();
+    }
+  }
+
   private class IdlingRunnable extends ControlRunnable {
 
     @Override
@@ -613,8 +681,10 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     @Override
     public void doRun() {
-
-      Message msg = shadowQueue().getNextIgnoringWhen();
+      Message msg;
+      try (TestLooperManagerCompat looperManager = TestLooperManagerCompat.acquire(realLooper)) {
+        msg = looperManager.poll();
+      }
       if (msg != null) {
         SystemClock.setCurrentTimeMillis(shadowMsg(msg).getWhen());
         msg.getTarget().dispatchMessage(msg);

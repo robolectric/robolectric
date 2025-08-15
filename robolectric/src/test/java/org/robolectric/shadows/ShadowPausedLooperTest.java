@@ -7,6 +7,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -24,7 +25,6 @@ import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.util.concurrent.SettableFuture;
 import java.time.Duration;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -156,14 +156,14 @@ public class ShadowPausedLooperTest {
 
   @Test
   public void postedDelayedBackgroundLooperTasksAreExecutedOnlyWhenSystemClockAdvanced() {
-    Runnable mockRunnable = mock(Runnable.class);
-    new Handler(handlerThread.getLooper()).postDelayed(mockRunnable, 10);
+    AtomicBoolean wasRun = new AtomicBoolean(false);
+    new Handler(handlerThread.getLooper()).postDelayed(() -> wasRun.set(true), 10);
     ShadowPausedLooper shadowLooper = Shadow.extract(handlerThread.getLooper());
     shadowLooper.idle();
-    verify(mockRunnable, times(0)).run();
+    assertThat(wasRun.get()).isFalse();
     ShadowSystemClock.advanceBy(Duration.ofMillis(100));
     shadowLooper.idle();
-    verify(mockRunnable, times(1)).run();
+    assertThat(wasRun.get()).isTrue();
   }
 
   @Test
@@ -171,12 +171,9 @@ public class ShadowPausedLooperTest {
     ExecutorService executorService = newSingleThreadExecutor();
     Future<Boolean> result =
         executorService.submit(
-            new Callable<Boolean>() {
-              @Override
-              public Boolean call() throws Exception {
-                shadowMainLooper().idle();
-                return true;
-              }
+            () -> {
+              shadowMainLooper().idle();
+              return true;
             });
     try {
       result.get();
@@ -414,8 +411,7 @@ public class ShadowPausedLooperTest {
 
   @Before
   public void assertMainLooperEmpty() {
-    ShadowPausedMessageQueue queue = Shadow.extract(getMainLooper().getQueue());
-    assertThat(queue.isIdle()).isTrue();
+    assertThat(getMainLooper().getQueue().isIdle()).isTrue();
   }
 
   @Test
@@ -669,7 +665,8 @@ public class ShadowPausedLooperTest {
                 } catch (InterruptedException e) {
                   Thread.currentThread().interrupt();
                 }
-              });
+              },
+              "looper_customThread_unPauseAfterQuit-" + i);
       t.start();
       Looper looper = future.get();
       shadowOf(looper).pause();
@@ -765,6 +762,23 @@ public class ShadowPausedLooperTest {
     ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
     assertThat(shadowLooper.isPaused()).isTrue();
     assertThrows(UnsupportedOperationException.class, shadowLooper::unPause);
+  }
+
+  @Test
+  public void runUntilEmpty() {
+    final Handler mainHandler = new Handler();
+
+    long origTime = SystemClock.uptimeMillis();
+    Runnable mockRunnable = mock(Runnable.class);
+    Runnable postingRunnable = () -> mainHandler.postDelayed(mockRunnable, 100);
+    mainHandler.post(mockRunnable);
+    mainHandler.post(postingRunnable);
+
+    verify(mockRunnable, never()).run();
+
+    shadowMainLooper().runUntilEmpty();
+    verify(mockRunnable, times(2)).run();
+    assertThat(SystemClock.uptimeMillis() - origTime).isEqualTo(100);
   }
 
   private static class BlockingRunnable implements Runnable {

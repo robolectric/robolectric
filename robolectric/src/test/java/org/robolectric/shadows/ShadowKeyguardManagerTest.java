@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.KEYGUARD_SERVICE;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -101,7 +100,7 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  
   public void isDeviceLocked() {
     assertThat(manager.isDeviceLocked()).isFalse();
 
@@ -111,7 +110,7 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  
   public void isDeviceLockedByUserId() {
     assertThat(manager.isDeviceLocked(USER_ID)).isFalse();
 

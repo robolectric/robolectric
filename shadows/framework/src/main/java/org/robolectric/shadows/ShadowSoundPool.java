@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -46,15 +45,6 @@ public class ShadowSoundPool {
     return ReflectionHelpers.createNullProxy(IAudioService.class);
   }
 
-  // Pre api 23, the SoundPool holds an internal delegate rather than directly been used itself.
-  // Because of this it's necessary to override the public method, rather than the internal
-  // native method.
-  @Implementation(maxSdk = LOLLIPOP_MR1)
-  protected int play(
-      int soundID, float leftVolume, float rightVolume, int priority, int loop, float rate) {
-    playedSounds.add(new Playback(soundID, leftVolume, rightVolume, priority, loop, rate));
-    return 1;
-  }
 
   @Implementation(minSdk = M, maxSdk = TIRAMISU)
   protected int _play(

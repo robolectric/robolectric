@@ -21,7 +21,6 @@ import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -477,6 +476,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
+  @Override
   protected PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
     return getPackageInfo(packageName, (long) flags);
   }
@@ -491,6 +491,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   private PackageInfo getPackageInfo(String packageName, long flags) throws NameNotFoundException {
     synchronized (lock) {
+      if ((flags & PackageManager.MATCH_FACTORY_ONLY) != 0) {
+        return tryRetrievingFactoryInfo(packageName, flags);
+      }
       PackageInfo info = packageInfos.get(packageName);
       if (info == null
           && (flags & MATCH_UNINSTALLED_PACKAGES) != 0
@@ -1180,11 +1183,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
   }
 
-  @Override
-  @Implementation(maxSdk = LOLLIPOP_MR1)
-  protected void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {}
-
-  @Implementation(minSdk = M)
+  @Implementation
   protected void freeStorageAndNotify(
       String volumeUuid, long freeStorageSize, IPackageDataObserver observer) {}
 
@@ -2207,7 +2206,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected boolean isUpgrade() {
     return false;
   }
@@ -2228,7 +2227,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    * Gets the unbadged icon based on the values set by {@link
    * ShadowPackageManager#setUnbadgedApplicationIcon} or returns null if nothing has been set.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected Drawable loadUnbadgedItemIcon(PackageItemInfo itemInfo, ApplicationInfo appInfo) {
     Drawable result = unbadgedApplicationIcons.get(itemInfo.packageName);
     if (result != null) {

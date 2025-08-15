@@ -1187,18 +1187,6 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(maxSdk = Build.VERSION_CODES.LOLLIPOP_MR1)
-  public void confirmCredentials_permissionNotGranted_throwsSecurityException() throws Exception {
-
-    assertThrows(
-        "confirmCredentials() should throw security exception if manage accounts permission is not"
-            + " granted",
-        SecurityException.class,
-        () -> am.confirmCredentials(null, null, null, null, null));
-  }
-
-  @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
   public void confirmCredentials_nullAccount_throwsIllegalArgumentException() throws Exception {
     assertThrows(
         "confirmCredentials() should throw an illegal argument exception if the account is null",
@@ -1221,7 +1209,6 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
   public void confirmCredentials_shouldCallCallback() throws Exception {
     shadowOf(am).addAuthenticator("com.google");
     Account account = new Account("name@gmail.com", "com.google");

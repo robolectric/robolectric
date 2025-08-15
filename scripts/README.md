@@ -52,8 +52,6 @@ Now use repo to sync the android source, and then build.
 
 The currently supported Android versions are:
 
-*  `5.0.2_r3`    - Lollipop API 21
-*  `5.1.1_r9`    - Lollipop MR1 API 22
 *  `6.0.1_r3`    - Marshmallow API 23
 *  `7.0.0_r1`    - Nougat API 24
 *  `7.1.0_r7`    - Nougat MR1 API 25

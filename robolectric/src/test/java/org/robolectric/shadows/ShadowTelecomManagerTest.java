@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -130,7 +129,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  
   public void clearAccountsForPackage() {
     PhoneAccountHandle accountHandle1 = createHandle("a.package", "OtherConnectionService", "id1");
     telecomService.registerPhoneAccount(
@@ -224,7 +223,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  
   public void getPhoneAccountsForPackage() {
     PhoneAccountHandle handleInThisApplicationsPackage = createHandle("id1");
     telecomService.registerPhoneAccount(
@@ -675,7 +674,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  
   public void getLine1Number() {
     // Check initial state
     PhoneAccountHandle phoneAccountHandle = createHandle("id1");
@@ -691,7 +690,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  
   public void getLine1Number_noPermission_throwsSecurityException() {
     shadowOf(telecomService).setReadPhoneStatePermission(false);
 

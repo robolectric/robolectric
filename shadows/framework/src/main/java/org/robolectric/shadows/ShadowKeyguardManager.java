@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -181,7 +180,7 @@ public class ShadowKeyguardManager {
    * @return false by default, or the value passed to {@link #setIsDeviceLocked(boolean)}.
    * @see #isDeviceLocked()
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected boolean isDeviceLocked() {
     return isDeviceLocked;
   }
@@ -199,7 +198,7 @@ public class ShadowKeyguardManager {
     }
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected boolean isDeviceLocked(int userId) {
     return deviceLockedForUsers.contains(userId);
   }

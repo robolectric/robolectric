@@ -986,12 +986,7 @@ public class GradientDrawableTest {
       radiusDrawable.setBounds(0, 0, 10, 10);
       radiusDrawable.draw(canvas);
     } catch (Exception e) {
-      if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
-        assertTrue(e instanceof IllegalArgumentException);
-        assertEquals("radius must be > 0", e.getMessage());
-      } else {
-        fail("Threw exception: " + e + " with negative radius");
-      }
+      fail("Threw exception: " + e + " with negative radius");
     }
   }
 

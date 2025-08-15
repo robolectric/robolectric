@@ -16,12 +16,18 @@ import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Build.VERSION;
 import android.os.Handler;
 import android.os.Looper;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
+import android.telephony.TelephonyManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.android.internal.telephony.PhoneConstants;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,7 +45,12 @@ import org.robolectric.shadows.ShadowSubscriptionManager.SubscriptionInfoBuilder
 public class ShadowSubscriptionManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
+  private static final int SUBSCRIPTION_ID = 1;
+
   private SubscriptionManager subscriptionManager;
+
+  private final ShadowApplication shadowApplication =
+      shadowOf((Application) getApplicationContext());
 
   @Before
   public void setUp() throws Exception {
@@ -57,31 +68,90 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
-  public void shouldGiveDefaultSubscriptionId() {
-    int testId = 42;
-    ShadowSubscriptionManager.setDefaultSubscriptionId(testId);
-    assertThat(SubscriptionManager.getDefaultSubscriptionId()).isEqualTo(testId);
+  public void setDefaultSubscriptionId_updatesSub_broadcastsDefaultSubChanged() {
+    ShadowSubscriptionManager.setDefaultSubscriptionId(SUBSCRIPTION_ID);
+
+    assertThat(SubscriptionManager.getDefaultSubscriptionId()).isEqualTo(SUBSCRIPTION_ID);
+    List<Intent> intents = shadowApplication.getBroadcastIntents();
+    assertThat(intents).hasSize(1);
+    assertSubscriptionBroadcastReceived(
+        intents.get(0),
+        SubscriptionManager.ACTION_DEFAULT_SUBSCRIPTION_CHANGED,
+        /* expectedSubscriptionId= */ SUBSCRIPTION_ID,
+        /* expectSubscriptionManagerExtra= */ VERSION.SDK_INT >= O);
   }
 
   @Test
-  public void shouldGiveDefaultDataSubscriptionId() {
-    int testId = 42;
-    ShadowSubscriptionManager.setDefaultDataSubscriptionId(testId);
-    assertThat(SubscriptionManager.getDefaultDataSubscriptionId()).isEqualTo(testId);
+  public void setDefaultDataSubscriptionId_updatesSub_broadcastsDefaultDataSubChanged() {
+    ShadowSubscriptionManager.setDefaultDataSubscriptionId(SUBSCRIPTION_ID);
+
+    assertThat(SubscriptionManager.getDefaultDataSubscriptionId()).isEqualTo(SUBSCRIPTION_ID);
+    List<Intent> intents = shadowApplication.getBroadcastIntents();
+    assertThat(intents).hasSize(1);
+    assertSubscriptionBroadcastReceived(
+        intents.get(0),
+        TelephonyManager.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED,
+        /* expectedSubscriptionId= */ SUBSCRIPTION_ID,
+        /* expectSubscriptionManagerExtra= */ VERSION.SDK_INT >= Q);
   }
 
   @Test
-  public void shouldGiveDefaultSmsSubscriptionId() {
-    int testId = 42;
-    ShadowSubscriptionManager.setDefaultSmsSubscriptionId(testId);
-    assertThat(SubscriptionManager.getDefaultSmsSubscriptionId()).isEqualTo(testId);
+  public void setDefaultSmsSubscriptionId_updatesSub_broadcastsDefaultSmsSubChanged() {
+    ShadowSubscriptionManager.setDefaultSmsSubscriptionId(SUBSCRIPTION_ID);
+
+    assertThat(SubscriptionManager.getDefaultSmsSubscriptionId()).isEqualTo(SUBSCRIPTION_ID);
+    List<Intent> intents = shadowApplication.getBroadcastIntents();
+    assertThat(intents).hasSize(1);
+    assertSubscriptionBroadcastReceived(
+        intents.get(0),
+        SubscriptionManager.ACTION_DEFAULT_SMS_SUBSCRIPTION_CHANGED,
+        /* expectedSubscriptionId= */ SUBSCRIPTION_ID,
+        /* expectSubscriptionManagerExtra= */ VERSION.SDK_INT >= O);
   }
 
   @Test
-  public void shouldGiveDefaultVoiceSubscriptionId() {
-    int testId = 42;
-    ShadowSubscriptionManager.setDefaultVoiceSubscriptionId(testId);
-    assertThat(SubscriptionManager.getDefaultVoiceSubscriptionId()).isEqualTo(testId);
+  public void setDefaultVoiceSubscriptionId_broadcastsDefaultVoiceSubChanged() {
+    ShadowSubscriptionManager.setDefaultVoiceSubscriptionId(SUBSCRIPTION_ID);
+
+    assertThat(SubscriptionManager.getDefaultVoiceSubscriptionId()).isEqualTo(SUBSCRIPTION_ID);
+    List<Intent> intents = shadowApplication.getBroadcastIntents();
+    assertThat(intents).hasSize(1);
+    assertSubscriptionBroadcastReceived(
+        intents.get(0),
+        TelephonyManager.ACTION_DEFAULT_VOICE_SUBSCRIPTION_CHANGED,
+        /* expectedSubscriptionId= */ SUBSCRIPTION_ID,
+        /* expectSubscriptionManagerExtra= */ VERSION.SDK_INT >= Q);
+  }
+
+  /**
+   * Asserts that the provided intent has the expected subscription broadcast action and includes
+   * the given subscription ID.
+   *
+   * @param expectSubscriptionManagerExtra whether to check for the canonical {@link
+   *     SubscriptionManager#EXTRA_SUBSCRIPTION_INDEX} in addition to the legacy extra {@link
+   *     PhoneConstants#SUBSCRIPTION_KEY}.
+   */
+  private void assertSubscriptionBroadcastReceived(
+      Intent actualIntent,
+      String expectedAction,
+      int expectedSubscriptionId,
+      boolean expectSubscriptionManagerExtra) {
+    assertThat(actualIntent.getAction()).isEqualTo(expectedAction);
+    assertThat(actualIntent.hasExtra(PhoneConstants.SUBSCRIPTION_KEY)).isTrue();
+    assertThat(
+            actualIntent.getIntExtra(
+                PhoneConstants.SUBSCRIPTION_KEY, SubscriptionManager.INVALID_SUBSCRIPTION_ID))
+        .isEqualTo(expectedSubscriptionId);
+    if (expectSubscriptionManagerExtra) {
+      assertThat(actualIntent.hasExtra(SubscriptionManager.EXTRA_SUBSCRIPTION_INDEX)).isTrue();
+      assertThat(
+              actualIntent.getIntExtra(
+                  SubscriptionManager.EXTRA_SUBSCRIPTION_INDEX,
+                  SubscriptionManager.INVALID_SUBSCRIPTION_ID))
+          .isEqualTo(expectedSubscriptionId);
+    } else {
+      assertThat(actualIntent.hasExtra(SubscriptionManager.EXTRA_SUBSCRIPTION_INDEX)).isFalse();
+    }
   }
 
   @Test

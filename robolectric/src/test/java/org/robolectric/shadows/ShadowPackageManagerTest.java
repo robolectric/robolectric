@@ -23,6 +23,7 @@ import static android.content.pm.PackageManager.FLAG_PERMISSION_GRANTED_BY_DEFAU
 import static android.content.pm.PackageManager.FLAG_PERMISSION_SYSTEM_FIXED;
 import static android.content.pm.PackageManager.FLAG_PERMISSION_USER_FIXED;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
+import static android.content.pm.PackageManager.MATCH_FACTORY_ONLY;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -34,7 +35,6 @@ import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
 import static android.content.pm.PackageManager.VERIFICATION_REJECT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -156,7 +156,8 @@ public class ShadowPackageManagerTest {
   private static final String REAL_TEST_APP_ASSET_PATH = "assets/exampleapp.apk";
   private static final String REAL_TEST_APP_PACKAGE_NAME = "org.robolectric.exampleapp";
   private static final String TEST_PACKAGE3_NAME = "com.a.third.package";
-  private static final int TEST_PACKAGE_VERSION_CODE = 10000;
+  private static final int TEST_PACKAGE_VERSION_CODE = 10001;
+  private static final int TEST_SYSTEM_PACKAGE_VERSION_CODE = 10000;
   public static final int INSTALL_VERIFICATION_ID = 1234;
   public static final String INITIATING_PACKAGE_NAME = "initiating.package";
   public static final String INSTALLING_PACKAGE_NAME = "installing.package";
@@ -4029,7 +4030,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  
   public void setUnbadgedApplicationIcon() throws Exception {
     String packageName = context.getPackageName();
     Drawable d = new BitmapDrawable();
@@ -5118,6 +5119,25 @@ public class ShadowPackageManagerTest {
     shadowOf(packageManager).addPackageNoDefaults(packageInfo); // should not throw
   }
 
+  @Test
+  public void installUpdatedSystemApp_flagsDetermineReturnedPackageInfo() throws Exception {
+    shadowOf(packageManager).installPackage(generateTestSystemPackageInfo());
+    shadowOf(packageManager).installPackage(generateTestUpdatedSystemPackageInfo());
+
+    verifyTestSystemPackageInfo(
+        packageManager.getPackageInfo(TEST_PACKAGE_NAME, MATCH_FACTORY_ONLY));
+    verifyTestUpdatedSystemPackageInfo(packageManager.getPackageInfo(TEST_PACKAGE_NAME, 0));
+  }
+
+  @Test
+  public void installNonSystemApp_cantFindViaMatchFactoryOnly() throws Exception {
+    shadowOf(packageManager).installPackage(generateTestPackageInfo());
+
+    assertThrows(
+        NameNotFoundException.class,
+        () -> packageManager.getPackageInfo(TEST_PACKAGE_NAME, MATCH_FACTORY_ONLY));
+  }
+
   public String[] setPackagesSuspended(
       String[] packageNames,
       boolean suspended,
@@ -5128,9 +5148,30 @@ public class ShadowPackageManagerTest {
         packageNames, suspended, appExtras, launcherExtras, dialogMessage);
   }
 
+  // test package info for generic package
   private PackageInfo generateTestPackageInfo() {
+    return generatePackageInfoForTest(ApplicationInfo.FLAG_INSTALLED, TEST_PACKAGE_VERSION_CODE);
+  }
+
+  // test package info for system package
+  private PackageInfo generateTestSystemPackageInfo() {
+    return generatePackageInfoForTest(
+        ApplicationInfo.FLAG_INSTALLED | ApplicationInfo.FLAG_SYSTEM,
+        TEST_SYSTEM_PACKAGE_VERSION_CODE);
+  }
+
+  // test package info for updated system package
+  private PackageInfo generateTestUpdatedSystemPackageInfo() {
+    return generatePackageInfoForTest(
+        ApplicationInfo.FLAG_INSTALLED
+            | ApplicationInfo.FLAG_SYSTEM
+            | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP,
+        TEST_PACKAGE_VERSION_CODE);
+  }
+
+  private PackageInfo generatePackageInfoForTest(int flags, int versionCode) {
     ApplicationInfo appInfo = new ApplicationInfo();
-    appInfo.flags = ApplicationInfo.FLAG_INSTALLED;
+    appInfo.flags = flags;
     appInfo.packageName = TEST_PACKAGE_NAME;
     appInfo.sourceDir = TEST_APP_PATH;
     appInfo.name = TEST_PACKAGE_LABEL;
@@ -5138,15 +5179,36 @@ public class ShadowPackageManagerTest {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = TEST_PACKAGE_NAME;
     packageInfo.applicationInfo = appInfo;
-    packageInfo.versionCode = TEST_PACKAGE_VERSION_CODE;
+    packageInfo.versionCode = versionCode;
     return packageInfo;
   }
 
+  private void verifyTestSystemPackageInfo(PackageInfo packageInfo) {
+    verifyPackageInfo(
+        packageInfo,
+        ApplicationInfo.FLAG_INSTALLED | ApplicationInfo.FLAG_SYSTEM,
+        TEST_SYSTEM_PACKAGE_VERSION_CODE);
+  }
+
   private void verifyTestPackageInfo(PackageInfo packageInfo) {
+    verifyPackageInfo(packageInfo, ApplicationInfo.FLAG_INSTALLED, TEST_PACKAGE_VERSION_CODE);
+  }
+
+  private void verifyTestUpdatedSystemPackageInfo(PackageInfo packageInfo) {
+    verifyPackageInfo(
+        packageInfo,
+        ApplicationInfo.FLAG_INSTALLED
+            | ApplicationInfo.FLAG_SYSTEM
+            | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP,
+        TEST_PACKAGE_VERSION_CODE);
+  }
+
+  private void verifyPackageInfo(PackageInfo packageInfo, int flags, int versionCode) {
     assertThat(packageInfo).isNotNull();
-    assertThat(packageInfo.versionCode).isEqualTo(TEST_PACKAGE_VERSION_CODE);
+    assertThat(packageInfo.versionCode).isEqualTo(versionCode);
     ApplicationInfo applicationInfo = packageInfo.applicationInfo;
     assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
+    assertThat(applicationInfo.flags).isEqualTo(flags);
     assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
   }

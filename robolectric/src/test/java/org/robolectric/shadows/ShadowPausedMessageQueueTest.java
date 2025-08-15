@@ -40,7 +40,7 @@ public class ShadowPausedMessageQueueTest {
 
   @Test
   public void isIdle_initial() {
-    assertThat(shadowQueue.isIdle()).isTrue();
+    assertThat(queue.isIdle()).isTrue();
   }
 
   @Test
@@ -48,7 +48,7 @@ public class ShadowPausedMessageQueueTest {
     Message msg = Message.obtain();
     msg.setTarget(new Handler());
     shadowQueue.doEnqueueMessage(msg, 0);
-    assertThat(shadowQueue.isIdle()).isFalse();
+    assertThat(queue.isIdle()).isFalse();
   }
 
   @Test

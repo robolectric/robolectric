@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -462,7 +461,7 @@ public class ShadowWindowManagerGlobal {
             /* outFrame= */ sdk >= P && rects.length > rectIdx ? rects[rectIdx++] : null,
             /* outContentInsets= */ rects[rectIdx++],
             /* outVisibleInsets= */ null,
-            /* outStableInsets= */ sdk >= LOLLIPOP_MR1 ? rects[rectIdx] : null,
+            /* outStableInsets= */ rects[rectIdx],
             /* outInsetsState= */ sdk >= Q ? findFirst(InsetsState.class, args) : null);
       } else { // post insets migration
         Optional<WindowRelayoutResult> layout =

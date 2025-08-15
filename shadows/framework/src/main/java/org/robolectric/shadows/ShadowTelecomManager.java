@@ -314,7 +314,7 @@ public class ShadowTelecomManager {
     accounts.clear();
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   @HiddenApi
   public void clearAccountsForPackage(String packageName) {
     Set<PhoneAccountHandle> phoneAccountHandlesInPackage = new HashSet<>();
@@ -386,7 +386,7 @@ public class ShadowTelecomManager {
     return voicemailNumbers.get(accountHandle);
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected String getLine1Number(PhoneAccountHandle accountHandle) {
     checkReadPhoneStatePermission();
     return line1Numbers.get(accountHandle);
@@ -717,7 +717,7 @@ public class ShadowTelecomManager {
     return handleMmiValue;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected Uri getAdnUriForPhoneAccount(PhoneAccountHandle accountHandle) {
     return Uri.parse("content://icc/adn");
   }

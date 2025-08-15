@@ -648,7 +648,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
   public void
       isUninstallBlockedWithNullAdminShouldNotThrowNullPointerExceptionOnLollipopMr1AndAbove() {
     // GIVEN the caller is the device owner, and thus an active admin

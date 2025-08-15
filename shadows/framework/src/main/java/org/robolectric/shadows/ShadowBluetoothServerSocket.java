@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
 
 @Implements(BluetoothServerSocket.class)
 public class ShadowBluetoothServerSocket {
@@ -71,8 +70,7 @@ public class ShadowBluetoothServerSocket {
    * immediately in the {@link #accept(int)} method.
    */
   public BluetoothSocket deviceConnected(BluetoothDevice device) {
-    BluetoothSocket socket = Shadow.newInstanceOf(BluetoothSocket.class);
-    ReflectionHelpers.setField(socket, "mDevice", device);
+    BluetoothSocket socket = ShadowBluetoothSocket.create(device);
     sockets.offer(socket);
     return socket;
   }

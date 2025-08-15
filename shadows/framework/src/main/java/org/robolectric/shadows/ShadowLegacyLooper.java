@@ -273,6 +273,11 @@ public class ShadowLegacyLooper extends ShadowLooper {
   }
 
   @Override
+  public void runUntilEmpty() {
+    throw new UnsupportedOperationException("not supported in legacy Looper");
+  }
+
+  @Override
   public void unPause() {
     getScheduler().unPause();
   }

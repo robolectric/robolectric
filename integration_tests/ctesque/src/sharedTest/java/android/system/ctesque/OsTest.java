@@ -1,6 +1,5 @@
 package android.system.ctesque;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
@@ -116,8 +115,6 @@ public class OsTest {
 
   @Test
   public void pread_handleFNF() throws Exception {
-    // API 21 throws IOException not ErrnoException
-    assumeTrue(VERSION.SDK_INT > LOLLIPOP);
     try (FileInputStream fis = new FileInputStream(file)) {
       FileDescriptor fd = fis.getFD();
       assertThat(fd.valid()).isTrue();

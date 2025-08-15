@@ -146,6 +146,18 @@ public final class ShadowAccessibilityInputConnectionTest {
   }
 
   @Test
+  public void deleteSurroundingText_recordsArguments() {
+    assertThat(shadow.getDeleteSurroundingTextArguments()).isEmpty();
+
+    inputConnection.deleteSurroundingText(0, 1);
+    assertThat(shadow.getDeleteSurroundingTextArguments()).containsExactly(Pair.create(0, 1));
+
+    inputConnection.deleteSurroundingText(1, 2);
+    assertThat(shadow.getDeleteSurroundingTextArguments())
+        .containsExactly(Pair.create(0, 1), Pair.create(1, 2));
+  }
+
+  @Test
   public void secondInputConnection_sharesState() {
     // Perform an action on a second input connection from the same service (and thus the same
     // InputMethod).

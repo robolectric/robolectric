@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.R;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Bundle;
@@ -111,12 +109,10 @@ public class ShadowAccessibilityNodeInfo {
 
     newShadow.refreshReturnValue = shadowInfo.refreshReturnValue;
 
-    if (getApiLevel() >= LOLLIPOP_MR1) {
-      newShadow.traversalAfter =
-          (shadowInfo.traversalAfter == null) ? null : obtain(shadowInfo.traversalAfter);
-      newShadow.traversalBefore =
-          (shadowInfo.traversalBefore == null) ? null : obtain(shadowInfo.traversalBefore);
-    }
+    newShadow.traversalAfter =
+        (shadowInfo.traversalAfter == null) ? null : obtain(shadowInfo.traversalAfter);
+    newShadow.traversalBefore =
+        (shadowInfo.traversalBefore == null) ? null : obtain(shadowInfo.traversalBefore);
     if (shadowInfo.accessibilityWindowInfo != null) {
       newShadow.accessibilityWindowInfo =
           ShadowAccessibilityWindowInfo.obtain(shadowInfo.accessibilityWindowInfo);
@@ -211,7 +207,6 @@ public class ShadowAccessibilityNodeInfo {
     if (labeledBy != null) {
       labeledBy.recycle();
     }
-    if (getApiLevel() >= LOLLIPOP_MR1) {
       if (traversalAfter != null) {
         traversalAfter.recycle();
       }
@@ -219,7 +214,7 @@ public class ShadowAccessibilityNodeInfo {
       if (traversalBefore != null) {
         traversalBefore.recycle();
       }
-    }
+
   }
 
   @Implementation
@@ -336,7 +331,7 @@ public class ShadowAccessibilityNodeInfo {
     labeledBy = obtain(info);
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected AccessibilityNodeInfo getTraversalAfter() {
     if (useRealAni()) {
       return accessibilityNodeInfoReflector.getTraversalAfter();
@@ -348,7 +343,7 @@ public class ShadowAccessibilityNodeInfo {
     return obtain(traversalAfter);
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected void setTraversalAfter(View view, int virtualDescendantId) {
     if (useRealAni()) {
       accessibilityNodeInfoReflector.setTraversalAfter(view, virtualDescendantId);
@@ -379,7 +374,7 @@ public class ShadowAccessibilityNodeInfo {
     this.traversalAfter = obtain(info);
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected AccessibilityNodeInfo getTraversalBefore() {
     if (useRealAni()) {
       return accessibilityNodeInfoReflector.getTraversalBefore();
@@ -391,7 +386,7 @@ public class ShadowAccessibilityNodeInfo {
     return obtain(traversalBefore);
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected void setTraversalBefore(View info, int virtualDescendantId) {
     if (useRealAni()) {
       accessibilityNodeInfoReflector.setTraversalBefore(info, virtualDescendantId);

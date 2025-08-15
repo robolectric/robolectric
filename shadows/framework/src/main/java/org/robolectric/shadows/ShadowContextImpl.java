@@ -23,7 +23,6 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileUtils;
@@ -435,25 +434,6 @@ public class ShadowContextImpl {
         ReflectionHelpers.loadClass(
             ShadowContextImpl.class.getClassLoader(), "android.app.ContextImpl");
     ReflectionHelpers.setStaticField(contextImplClass, prefsCacheFieldName, null);
-
-    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.LOLLIPOP_MR1) {
-      HashMap<String, Object> fetchers =
-          ReflectionHelpers.getStaticField(contextImplClass, "SYSTEM_SERVICE_MAP");
-      Class staticServiceFetcherClass =
-          ReflectionHelpers.loadClass(
-              ShadowContextImpl.class.getClassLoader(),
-              "android.app.ContextImpl$StaticServiceFetcher");
-
-      for (Object o : fetchers.values()) {
-        if (staticServiceFetcherClass.isInstance(o)) {
-          ReflectionHelpers.setField(staticServiceFetcherClass, o, "mCachedInstance", null);
-        }
-      }
-
-      Object windowServiceFetcher = fetchers.get(Context.WINDOW_SERVICE);
-      ReflectionHelpers.setField(
-          windowServiceFetcher.getClass(), windowServiceFetcher, "mDefaultDisplay", null);
-    }
   }
 
   private ShadowInstrumentation getShadowInstrumentation() {

@@ -350,8 +350,13 @@ public abstract class ShadowLooper {
   public abstract void pause();
 
   /**
-   * @return the scheduled time of the next posted task; Duration.ZERO if there is no currently
-   *     scheduled task.
+   * Returns the scheduled time of the next posted task; Duration.ZERO if there is no currently
+   * scheduled task.
+   *
+   * <p>It is recommended to call this from the Looper's own thread, especially if calling
+   * frequently in a loop as each call may require execution on the Looper thread.
+   *
+   * <p>Consider using one of the run* or idleFor methods instead.
    */
   public abstract Duration getNextScheduledTaskTime();
 
@@ -360,6 +365,15 @@ public abstract class ShadowLooper {
    *     scheduled task.
    */
   public abstract Duration getLastScheduledTaskTime();
+
+  /**
+   * Continuously run all Messages on this Looper until its queue is empty. SystemClock is advanced
+   * to the scheduled time of last executed Message.
+   *
+   * <p>Use with caution, as this method will never terminate if tasks are posted continuously (eg
+   * infinite animation loops).
+   */
+  public abstract void runUntilEmpty();
 
   public static class Picker extends LooperShadowPicker<ShadowLooper> {
 

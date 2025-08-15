@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SERVICE;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -28,6 +27,7 @@ import static android.telephony.TelephonyManager.NETWORK_TYPE_EVDO_0;
 import static android.telephony.TelephonyManager.NETWORK_TYPE_LTE;
 import static android.telephony.emergency.EmergencyNumber.EMERGENCY_NUMBER_SOURCE_DATABASE;
 import static android.telephony.emergency.EmergencyNumber.EMERGENCY_SERVICE_CATEGORY_POLICE;
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.assertEquals;
@@ -82,6 +82,7 @@ import android.telephony.emergency.EmergencyNumber;
 import android.telephony.gba.UaSecurityProtocolIdentifier;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
@@ -108,10 +109,17 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowTelephonyManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
+  private static final String NETWORK_COUNTRY_ISO_US = "us";
+  private static final String NETWORK_COUNTRY_ISO_US_UPPERCASE =
+      Ascii.toUpperCase(NETWORK_COUNTRY_ISO_US);
+
   private TelephonyManager telephonyManager;
   private ShadowTelephonyManager shadowTelephonyManager;
   private TelephonyManager tmForSub5;
   private String defaultNetworkCountryIso;
+
+  private final ShadowApplication shadowApplication =
+      shadowOf((Application) getApplicationContext());
 
   @Before
   public void setUp() throws Exception {
@@ -394,9 +402,82 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  public void shouldGiveNetworkCountryIsoInLowercase() {
-    shadowOf(telephonyManager).setNetworkCountryIso("SomeIso");
-    assertEquals("someiso", telephonyManager.getNetworkCountryIso());
+  @Config(maxSdk = P)
+  public void
+      setNetworkCountryIso_untilSdkP_convertsToLowerCase_doesNotBroadcastNetworkCountryChanged() {
+    shadowOf(telephonyManager).setNetworkCountryIso(NETWORK_COUNTRY_ISO_US_UPPERCASE);
+
+    assertThat(telephonyManager.getNetworkCountryIso()).isEqualTo(NETWORK_COUNTRY_ISO_US);
+    List<Intent> intents = shadowApplication.getBroadcastIntents();
+    assertThat(intents).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setNetworkCountryIso_fromSdkQ_convertsToLowerCase_broadcastsNetworkCountryChanged() {
+    shadowOf(telephonyManager).setNetworkCountryIso(NETWORK_COUNTRY_ISO_US_UPPERCASE);
+
+    assertThat(telephonyManager.getNetworkCountryIso()).isEqualTo(NETWORK_COUNTRY_ISO_US);
+    List<Intent> intents = shadowApplication.getBroadcastIntents();
+    assertThat(intents).hasSize(1);
+    Intent intent = intents.get(0);
+    assertThat(intent.getAction()).isEqualTo(TelephonyManager.ACTION_NETWORK_COUNTRY_CHANGED);
+    assertThat(intent.getStringExtra(TelephonyManager.EXTRA_NETWORK_COUNTRY))
+        .isEqualTo(NETWORK_COUNTRY_ISO_US);
+    if (Build.VERSION.SDK_INT >= R) {
+      assertThat(intent.getStringExtra(TelephonyManager.EXTRA_LAST_KNOWN_NETWORK_COUNTRY))
+          .isEqualTo(NETWORK_COUNTRY_ISO_US);
+    } else {
+      assertThat(intent.hasExtra(TelephonyManager.EXTRA_LAST_KNOWN_NETWORK_COUNTRY)).isFalse();
+    }
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void
+      setNetworkCountryIso_fromSdkQ_nullCountry_doesNotAttemptLowerCaseConversion_broadcastsNull() {
+    shadowOf(telephonyManager).setNetworkCountryIso(null);
+
+    assertThat(telephonyManager.getNetworkCountryIso()).isNull();
+    List<Intent> intents = shadowApplication.getBroadcastIntents();
+    assertThat(intents).hasSize(1);
+    Intent intent = intents.get(0);
+    assertThat(intent.getAction()).isEqualTo(TelephonyManager.ACTION_NETWORK_COUNTRY_CHANGED);
+    assertThat(intent.getStringExtra(TelephonyManager.EXTRA_NETWORK_COUNTRY)).isNull();
+    if (Build.VERSION.SDK_INT >= R) {
+      // The last country is never set, so it should be empty.
+      assertThat(intent.getStringExtra(TelephonyManager.EXTRA_LAST_KNOWN_NETWORK_COUNTRY))
+          .isEmpty();
+    } else {
+      assertThat(intent.hasExtra(TelephonyManager.EXTRA_LAST_KNOWN_NETWORK_COUNTRY)).isFalse();
+    }
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setNetworkCountryIso_fromSdkR_maintainsValidLastKnownNetworkCountry() {
+    // Start with a valid network country & validate it was set correctly.
+    shadowOf(telephonyManager).setNetworkCountryIso(NETWORK_COUNTRY_ISO_US_UPPERCASE);
+
+    // Ensure the initial broadcast sets both extras to the US.
+    List<Intent> intents = shadowApplication.getBroadcastIntents();
+    assertThat(intents).hasSize(1);
+    Intent intent = intents.get(0);
+    assertThat(intent.getAction()).isEqualTo(TelephonyManager.ACTION_NETWORK_COUNTRY_CHANGED);
+    assertThat(intent.getStringExtra(TelephonyManager.EXTRA_NETWORK_COUNTRY))
+        .isEqualTo(NETWORK_COUNTRY_ISO_US);
+    assertThat(intent.getStringExtra(TelephonyManager.EXTRA_LAST_KNOWN_NETWORK_COUNTRY))
+        .isEqualTo(NETWORK_COUNTRY_ISO_US);
+
+    // Now set an invalid country & validate the last known country is unchanged.
+    shadowOf(telephonyManager).setNetworkCountryIso(null);
+
+    assertThat(intents).hasSize(2);
+    Intent latestIntent = intents.get(1);
+    assertThat(latestIntent.getAction()).isEqualTo(TelephonyManager.ACTION_NETWORK_COUNTRY_CHANGED);
+    assertThat(latestIntent.getStringExtra(TelephonyManager.EXTRA_NETWORK_COUNTRY)).isNull();
+    assertThat(latestIntent.getStringExtra(TelephonyManager.EXTRA_LAST_KNOWN_NETWORK_COUNTRY))
+        .isEqualTo(NETWORK_COUNTRY_ISO_US);
   }
 
   @Test
@@ -610,7 +691,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  
   public void shouldGiveVoiceCapableTrue() {
     shadowOf(telephonyManager).setVoiceCapable(true);
 
@@ -618,7 +699,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP_MR1)
+  
   public void shouldGiveVoiceCapableFalse() {
     shadowOf(telephonyManager).setVoiceCapable(false);
 

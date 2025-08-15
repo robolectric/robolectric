@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.ApplicationInfo.FLAG_SYSTEM;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.EXTRA_VERIFICATION_ID;
 import static android.content.pm.PackageManager.GET_ACTIVITIES;
@@ -130,6 +131,10 @@ public class ShadowPackageManager {
 
   @GuardedBy("lock")
   static final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
+
+  // package infos for APKs in the system image
+  @GuardedBy("lock")
+  static final Map<String, PackageInfo> factoryPackageInfos = new LinkedHashMap<>();
 
   @GuardedBy("lock")
   static final Map<String, ModuleInfo> moduleInfos = new LinkedHashMap<>();
@@ -890,19 +895,8 @@ public class ShadowPackageManager {
     }
   }
 
-  /**
-   * Installs a package with the {@link PackageManager}.
-   *
-   * <p>In order to create PackageInfo objects in a valid state please use {@link
-   * androidx.test.core.content.pm.PackageInfoBuilder}.
-   *
-   * <p>This method automatically simulates installation of a package in the system, so it adds a
-   * flag {@link ApplicationInfo#FLAG_INSTALLED} to the application info and makes sure it exits. It
-   * will update applicationInfo in package components as well.
-   *
-   * <p>If you don't want the package to be installed, use {@link #addPackageNoDefaults} instead.
-   */
-  public void installPackage(PackageInfo packageInfo) {
+  /** Adds reasonable defaults to unset fields in the PackageInfo instance. */
+  private void populatePackageInfoWithDefaults(PackageInfo packageInfo) {
     ApplicationInfo appInfo = packageInfo.applicationInfo;
     if (appInfo == null) {
       appInfo = new ApplicationInfo();
@@ -941,6 +935,29 @@ public class ShadowPackageManager {
         }
       }
     }
+  }
+
+  /**
+   * Installs a package with the {@link PackageManager}.
+   *
+   * <p>In order to create PackageInfo objects in a valid state please use {@link
+   * androidx.test.core.content.pm.PackageInfoBuilder}.
+   *
+   * <p>This method automatically simulates installation of a package in the system, so it adds a
+   * flag {@link ApplicationInfo#FLAG_INSTALLED} to the application info and makes sure it exits. It
+   * will update applicationInfo in package components as well.
+   *
+   * <p>If you don't want the package to be installed, use {@link #addPackageNoDefaults} instead.
+   *
+   * <p>To simulate a scenario in which a system image app was updated, in which the system image
+   * APK exists, but the update in the data partition is the active version of the APK, call
+   * installPackage() with the system image PackageInfo, and then again with the data partition
+   * update PackageInfo. In this case getPackageInfo() with the MATCH_FACTORY_ONLY flag will return
+   * the system image's PackageInfo, while other calls will return the data partition's info.
+   */
+  public void installPackage(PackageInfo packageInfo) {
+    populatePackageInfoWithDefaults(packageInfo);
+    // After adding defaults to packageInfo, we can call method that doesn't validate/add defaults.
     addPackageNoDefaults(packageInfo);
   }
 
@@ -1011,6 +1028,12 @@ public class ShadowPackageManager {
         }
       }
 
+      if (isSystemApp(packageInfo)) {
+        // If we're simulating installation of an update to a system app via two addPackage() calls,
+        // don't overwrite original system image PackageInfo so that it can still be retrieved with
+        // MATCH_FACTORY_ONLY.
+        factoryPackageInfos.putIfAbsent(packageInfo.packageName, packageInfo);
+      }
       packageInfos.put(packageInfo.packageName, packageInfo);
       packageStatsMap.put(packageInfo.packageName, packageStats);
 
@@ -1049,6 +1072,28 @@ public class ShadowPackageManager {
   @InlineMe(replacement = "this.installPackage(packageInfo)")
   public final void addPackage(PackageInfo packageInfo) {
     installPackage(packageInfo);
+  }
+
+  @Nullable
+  protected PackageInfo tryRetrievingFactoryInfo(String packageName, long flags)
+      throws PackageManager.NameNotFoundException {
+    synchronized (lock) {
+      @Nullable PackageInfo factoryPackageInfo = factoryPackageInfos.get(packageName);
+      if (factoryPackageInfo == null) {
+        throw new PackageManager.NameNotFoundException(packageName);
+      }
+      return factoryPackageInfo;
+    }
+  }
+
+  @Implementation
+  @Nullable
+  protected PackageInfo getPackageInfo(String packageName, int flags)
+      throws PackageManager.NameNotFoundException {
+    if ((flags & PackageManager.MATCH_FACTORY_ONLY) != 0) {
+      return tryRetrievingFactoryInfo(packageName, flags);
+    }
+    return realPackageManager.getPackageInfo(packageName, flags);
   }
 
   /**
@@ -1109,6 +1154,7 @@ public class ShadowPackageManager {
   public void removePackage(String packageName) {
     synchronized (lock) {
       packageInfos.remove(packageName);
+      factoryPackageInfos.remove(packageName);
 
       packageSettings.remove(packageName);
     }
@@ -1859,6 +1905,11 @@ public class ShadowPackageManager {
     ShadowPackageManager.whitelisted = whitelisted;
   }
 
+  private static boolean isSystemApp(PackageInfo packageInfo) {
+    return packageInfo.applicationInfo != null
+        && (packageInfo.applicationInfo.flags & FLAG_SYSTEM) == FLAG_SYSTEM;
+  }
+
   /** Sets the value to be returned by {@link PackageManager#isDeviceUpgrading} */
   public static void setDeviceUpgrading(boolean deviceUpgrading) {
     ShadowPackageManager.deviceUpgrading = deviceUpgrading;
@@ -1871,6 +1922,7 @@ public class ShadowPackageManager {
       systemAvailableFeatures.clear();
       systemSharedLibraryNames.clear();
       packageInfos.clear();
+      factoryPackageInfos.clear();
       packageArchiveInfo.clear();
       packageStatsMap.clear();
       packageInstallerMap.clear();

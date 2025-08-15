@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -119,6 +118,15 @@ public class ShadowTelephonyManager {
   private String groupIdLevel1;
   private String networkOperatorName = "";
   private String networkCountryIso = "";
+
+  /**
+   * The last known valid network country, which is emitted by {@link
+   * TelephonyManager#EXTRA_LAST_KNOWN_NETWORK_COUNTRY}
+   *
+   * <p>This will be empty if it was never set or known.
+   */
+  private String lastKnownNetworkCountryIso = "";
+
   private String networkOperator = "";
   private String networkSpecifier = "";
   private Locale simLocale;
@@ -436,7 +444,7 @@ public class ShadowTelephonyManager {
     deviceSoftwareVersion = newDeviceSoftwareVersion;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   public void setNetworkOperatorName(String networkOperatorName) {
     this.networkOperatorName = networkOperatorName;
   }
@@ -512,9 +520,37 @@ public class ShadowTelephonyManager {
     return networkOperatorName;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1, maxSdk = P)
+  /**
+   * Sets the network country ISO returned by {@link #getNetworkCountryIso()}.
+   *
+   * <p>This mirrors an internal Android API that was removed as the information is now fetched from
+   * {@link com.android.internal.telephony.LocaleTracker}.
+   *
+   * <p>Outside of the Android usage, this is intended as a general purpose setter. On SDK >Q, it
+   * will also broadcast {@link TelephonyManager#ACTION_NETWORK_COUNTRY_CHANGED}.
+   */
+  @Implementation(maxSdk = P)
   public void setNetworkCountryIso(String networkCountryIso) {
-    this.networkCountryIso = networkCountryIso;
+    String lowerCaseNetworkCountryIso = null;
+    if (networkCountryIso != null) {
+      lowerCaseNetworkCountryIso = Ascii.toLowerCase(networkCountryIso);
+      // Only update the "last known" country if the country is valid.
+      if (!lowerCaseNetworkCountryIso.isBlank() && lowerCaseNetworkCountryIso.length() == 2) {
+        lastKnownNetworkCountryIso = lowerCaseNetworkCountryIso;
+      }
+    }
+    this.networkCountryIso = lowerCaseNetworkCountryIso;
+    if (Build.VERSION.SDK_INT >= Q) {
+      Intent intent =
+          new Intent(TelephonyManager.ACTION_NETWORK_COUNTRY_CHANGED)
+              .putExtra(TelephonyManager.EXTRA_NETWORK_COUNTRY, lowerCaseNetworkCountryIso);
+      // The extra was made public on SDK U, but was actually added in SDK R (as @hide).
+      if (Build.VERSION.SDK_INT >= R) {
+        intent.putExtra(
+            TelephonyManager.EXTRA_LAST_KNOWN_NETWORK_COUNTRY, lastKnownNetworkCountryIso);
+      }
+      RuntimeEnvironment.getApplication().sendBroadcast(intent);
+    }
   }
 
   /**
@@ -523,7 +559,7 @@ public class ShadowTelephonyManager {
    */
   @Implementation
   protected String getNetworkCountryIso() {
-    return networkCountryIso == null ? null : Ascii.toLowerCase(networkCountryIso);
+    return networkCountryIso;
   }
 
   /** Sets the sim locale returned by {@link #getSimLocale()}. */
@@ -569,7 +605,7 @@ public class ShadowTelephonyManager {
     return simOperatorName;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   public void setSimOperatorName(String simOperatorName) {
     this.simOperatorName = simOperatorName;
   }
@@ -606,7 +642,7 @@ public class ShadowTelephonyManager {
     return simCountryIsoMap.get(subId);
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   public void setSimCountryIso(String simCountryIso) {
     setSimCountryIso(/* subId= */ 0, simCountryIso);
   }
@@ -735,7 +771,7 @@ public class ShadowTelephonyManager {
     return phoneType;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   public void setPhoneType(int phoneType) {
     this.phoneType = phoneType;
   }
@@ -786,7 +822,7 @@ public class ShadowTelephonyManager {
    * correspond to one of the {@code NETWORK_TYPE_*} constants defined on {@link TelephonyManager},
    * but this is not enforced.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   public void setDataNetworkType(int dataNetworkType) {
     this.dataNetworkType = dataNetworkType;
   }
@@ -1096,7 +1132,7 @@ public class ShadowTelephonyManager {
   /**
    * Returns {@code true} by default or the value specified via {@link #setVoiceCapable(boolean)}.
    */
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   protected boolean isVoiceCapable() {
     return voiceCapable;
   }

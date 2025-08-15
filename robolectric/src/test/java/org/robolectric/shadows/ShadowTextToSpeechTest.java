@@ -439,6 +439,40 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
+  public void getLastParams_neverCalled_returnsNull() {
+    assertThat(ShadowTextToSpeech.getLastParams()).isNull();
+  }
+
+  @Test
+  public void getLastParams_called_returnsParams() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+    Bundle params = new Bundle();
+    params.putString("testKey", "testValue");
+    textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, params, "TTSEnable");
+
+    shadowMainLooper().idle();
+
+    assertThat(ShadowTextToSpeech.getLastParams().getString("testKey"))
+        .isEqualTo(params.getString("testKey"));
+  }
+
+  @Test
+  public void getLastParams_calledTwice_returnsMostRecentParams() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+    Bundle paramsOne = new Bundle();
+    paramsOne.putString("testOneKey", "testOneValue");
+    textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, paramsOne, "TTSEnableOne");
+    Bundle paramsTwo = new Bundle();
+    paramsTwo.putString("testTwoKey", "testTwoValue");
+    textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, paramsTwo, "TTSEnableTwo");
+
+    shadowMainLooper().idle();
+
+    assertThat(ShadowTextToSpeech.getLastParams().getString("testTwoKey"))
+        .isEqualTo(paramsTwo.getString("testTwoKey"));
+  }
+
+  @Test
   public void getSpokenTextList_neverSpoke_returnsEmpty() {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     assertThat(shadowOf(textToSpeech).getSpokenTextList()).isEmpty();

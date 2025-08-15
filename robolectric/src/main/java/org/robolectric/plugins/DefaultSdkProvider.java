@@ -17,8 +17,7 @@ import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.util.Util;
-import org.robolectric.versioning.AndroidVersions.L;
-import org.robolectric.versioning.AndroidVersions.LMR1;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.M;
 import org.robolectric.versioning.AndroidVersions.N;
 import org.robolectric.versioning.AndroidVersions.NMR1;
@@ -62,8 +61,6 @@ public class DefaultSdkProvider implements SdkProvider {
   }
 
   protected void populateSdks(TreeMap<Integer, Sdk> knownSdks) {
-    knownSdks.put(L.SDK_INT, new DefaultSdk(L.SDK_INT, "5.0.2_r3", "r0", "REL", 8));
-    knownSdks.put(LMR1.SDK_INT, new DefaultSdk(LMR1.SDK_INT, "5.1.1_r9", "r2", "REL", 8));
     knownSdks.put(M.SDK_INT, new DefaultSdk(M.SDK_INT, "6.0.1_r3", "r1", "REL", 8));
     knownSdks.put(N.SDK_INT, new DefaultSdk(N.SDK_INT, "7.0.0_r1", "r1", "REL", 8));
     knownSdks.put(NMR1.SDK_INT, new DefaultSdk(NMR1.SDK_INT, "7.1.0_r7", "r1", "REL", 8));
@@ -77,6 +74,7 @@ public class DefaultSdkProvider implements SdkProvider {
     knownSdks.put(T.SDK_INT, new DefaultSdk(T.SDK_INT, "13", "9030017", "Tiramisu", 9));
     knownSdks.put(U.SDK_INT, new DefaultSdk(U.SDK_INT, "14", "10818077", "REL", 17));
     knownSdks.put(V.SDK_INT, new DefaultSdk(V.SDK_INT, "15", "12714715", "REL", 17));
+    knownSdks.put(Baklava.SDK_INT, new DefaultSdk(Baklava.SDK_INT, "16", "13921718", "REL", 21));
   }
 
   @Override

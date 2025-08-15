@@ -1,16 +1,26 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.util.reflector.Reflector.reflector;
+
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @Implements(BluetoothSocket.class)
 public class ShadowBluetoothSocket {
@@ -22,6 +32,8 @@ public class ShadowBluetoothSocket {
   // One permit allows connect() without a prior blockConnect() to complete immediately.
   private final Semaphore connectSemaphore = new Semaphore(1);
   private final AtomicBoolean wasBlockRequested = new AtomicBoolean(false);
+
+
 
   private enum SocketState {
     INIT,
@@ -159,5 +171,26 @@ public class ShadowBluetoothSocket {
   protected void close() throws IOException {
     state = SocketState.CLOSED;
     connectSemaphore.release();
+  }
+
+  static BluetoothSocket create(BluetoothDevice device) {
+    BluetoothSocket newSocket = Shadow.newInstanceOf(BluetoothSocket.class);
+    // TODO: remove field check once SDK is released that has mRemoteDevice
+    if (getApiLevel() > Baklava.SDK_INT
+        && ReflectionHelpers.hasField(BluetoothSocket.class, "mRemoteDevice")) {
+      reflector(BluetoothSocketReflector.class, newSocket).setRemoteDevice(Optional.of(device));
+    } else {
+      reflector(BluetoothSocketReflector.class, newSocket).setDevice(device);
+    }
+    return newSocket;
+  }
+
+  @ForType(BluetoothSocket.class)
+  private interface BluetoothSocketReflector {
+    @Accessor("mRemoteDevice")
+    void setRemoteDevice(Optional<BluetoothDevice> remoteDevice);
+
+    @Accessor("mDevice")
+    void setDevice(BluetoothDevice device);
   }
 }

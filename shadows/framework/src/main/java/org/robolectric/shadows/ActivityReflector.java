@@ -28,24 +28,6 @@ public interface ActivityReflector {
   @Accessor("mToken")
   IBinder getToken();
 
-  // <= LOLLIPOP:
-  void attach(
-      Context context,
-      ActivityThread activityThread,
-      Instrumentation instrumentation,
-      IBinder token,
-      int ident,
-      Application application,
-      Intent intent,
-      ActivityInfo activityInfo,
-      CharSequence title,
-      Activity parent,
-      String id,
-      @WithType("android.app.Activity$NonConfigurationInstances")
-          Object lastNonConfigurationInstances,
-      Configuration configuration,
-      @WithType("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor);
-
   // <= M
   void attach(
       Context context,
@@ -165,23 +147,7 @@ public interface ActivityReflector {
           Object lastNonConfigurationInstances) {
     Configuration config = new Configuration(application.getResources().getConfiguration());
     int apiLevel = RuntimeEnvironment.getApiLevel();
-    if (apiLevel == Build.VERSION_CODES.LOLLIPOP) {
-      attach(
-          baseContext,
-          activityThread,
-          instrumentation,
-          token,
-          0,
-          application,
-          intent,
-          activityInfo,
-          activityTitle,
-          null,
-          null,
-          lastNonConfigurationInstances,
-          config,
-          null);
-    } else if (apiLevel <= Build.VERSION_CODES.M) {
+    if (apiLevel <= Build.VERSION_CODES.M) {
       attach(
           baseContext,
           activityThread,

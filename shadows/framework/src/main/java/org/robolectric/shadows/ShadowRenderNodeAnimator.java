@@ -1,9 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.Q;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.view.Choreographer;
@@ -41,7 +38,7 @@ public class ShadowRenderNodeAnimator {
     }
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   public void moveToRunningState() {
     reflector(RenderNodeAnimatorReflector.class, realObject).moveToRunningState();
     if (!isEnding) {
@@ -55,9 +52,6 @@ public class ShadowRenderNodeAnimator {
   @Implementation
   public void doStart() {
     reflector(RenderNodeAnimatorReflector.class, realObject).doStart();
-    if (getApiLevel() == LOLLIPOP) {
-      schedule();
-    }
   }
 
   @Implementation
@@ -65,14 +59,6 @@ public class ShadowRenderNodeAnimator {
     RenderNodeAnimatorReflector renderNodeReflector =
         reflector(RenderNodeAnimatorReflector.class, realObject);
     renderNodeReflector.cancel();
-    if (getApiLevel() == LOLLIPOP) {
-      int state = renderNodeReflector.getState();
-      if (state != STATE_FINISHED) {
-        // In 21, RenderNodeAnimator only calls nEnd, it doesn't call the Java end method. Thus, it
-        // expects the native code will end up calling onFinished, so we do that here.
-        renderNodeReflector.onFinished();
-      }
-    }
   }
 
   @Implementation
