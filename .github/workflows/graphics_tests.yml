@@ -44,14 +44,6 @@ jobs:
       - name: Show runner info
         run: uname -a
 
-      - name: Disable graphics tests on SDK 36 (macOS)
-        if: runner.os == 'macOS'
-        run: echo "ENABLED_SDKS=26,27,28,29,30,31,32,33,34,35" >> $GITHUB_ENV
-
-      - name: Disable graphics tests on SDK 36 (Windows)
-        if: runner.os == 'Windows'
-        run: echo "ENABLED_SDKS=26,27,28,29,30,31,32,33,34,35" >> $env:GITHUB_ENV
-
       - name: Run unit tests
         env:
           SKIP_ERRORPRONE: true
@@ -61,7 +53,6 @@ jobs:
           :integration_tests:nativegraphics:testDebugUnitTest
           --stacktrace --continue
           "-Drobolectric.alwaysIncludeVariantMarkersInTestName=true"
-          "-Drobolectric.enabledSdks=${{ env.ENABLED_SDKS }}"
           "-Dorg.gradle.workers.max=2"
 
       - name: Upload Test Results
