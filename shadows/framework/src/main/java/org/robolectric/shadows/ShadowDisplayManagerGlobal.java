@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.WindowConfiguration;
@@ -53,7 +54,8 @@ public class ShadowDisplayManagerGlobal {
   private static DisplayManagerGlobal instance;
 
   // TODO: remove and use DisplayManagerGlobal directly when compiling against Baklava
-  private static final int EVENT_DISPLAY_BASIC_CHANGED = 2;
+  public static final int EVENT_DISPLAY_BASIC_CHANGED = 2;
+  public static final int EVENT_DISPLAY_STATE_CHANGED = 9;
 
   private float saturationLevel = 1f;
   private final SparseArray<BrightnessConfiguration> brightnessConfiguration = new SparseArray<>();
@@ -153,6 +155,10 @@ public class ShadowDisplayManagerGlobal {
 
   void changeDisplay(int displayId, DisplayInfo displayInfo) {
     mDm.changeDisplay(displayId, displayInfo);
+  }
+
+  void changeDisplay(int displayId, DisplayInfo displayInfo, int[] eventTypes) {
+    mDm.changeDisplay(displayId, displayInfo, eventTypes);
   }
 
   void removeDisplay(int displayId) {
@@ -325,6 +331,11 @@ public class ShadowDisplayManagerGlobal {
     }
 
     private synchronized void changeDisplay(int displayId, DisplayInfo displayInfo) {
+      changeDisplay(displayId, displayInfo, new int[] {EVENT_DISPLAY_BASIC_CHANGED});
+    }
+
+    private synchronized void changeDisplay(
+        int displayId, DisplayInfo displayInfo, int[] eventTypes) {
       if (!displayInfos.containsKey(displayId)) {
         throw new IllegalStateException("no display " + displayId);
       }
@@ -349,7 +360,11 @@ public class ShadowDisplayManagerGlobal {
             .setLastCachedAppSizeUpdate(0);
       }
       displayInfos.put(displayId, displayInfo);
-      notifyListeners(displayId, EVENT_DISPLAY_BASIC_CHANGED);
+
+      for (int eventType : eventTypes) {
+        notifyListeners(displayId, eventType);
+      }
+      shadowMainLooper().idle();
     }
 
     private boolean useMaxBounds() {
