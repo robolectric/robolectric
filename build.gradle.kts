@@ -216,3 +216,7 @@ val prefetchDependencies by
       } // End allprojects
     } // End doLast
   } // End task registration
+
+// The following line sets the CodeQL GitHub Action to use JDK 21:
+// languageVersion = JavaLanguageVersion.of(21)
+// See https://github.com/github/codeql-action/issues/1855
