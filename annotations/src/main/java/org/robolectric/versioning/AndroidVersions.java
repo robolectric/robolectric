@@ -18,6 +18,7 @@ package org.robolectric.versioning;
 
 import static java.util.Arrays.asList;
 
+import android.os.Build;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -37,20 +38,23 @@ import java.util.zip.ZipEntry;
 import javax.annotation.Nullable;
 
 /**
- * Android versioning is complicated.<br>
- * 1) There is a yearly letter release with an increasing of one alpha step each year A-> B, B-> C,
- * and so on. While commonly referenced these are not the release numbers. This class calls these
- * shortcodes. Also minor version number releases (usually within the same year) will start with the
- * same letter.<br>
- * 2) There is an SDK_INT field in android.os.Build.VERSION that tracks a version of the internal
- * SDK. While useful to track the actual released versions of Android, these are not the release
- * number. More importantly, android.os.Build.VERSION uses code names to describe future versions.
- * Multiple code names may be in development at once on different branches of Android.<br>
- * 3) There is a yearly release major number followed by a minor number, which may or may not be
- * used.<br>
- * 4) Relevant logic and reasoning should match androidx.core.os.BuildCompat.java with the caveat
- * that this class guess at the future release version number and short of the current dev branch.
- * <br>
+ * Android versioning is complicated.
+ *
+ * <ol>
+ *   <li>There is a yearly letter release with an increasing of one alpha step each year A-> B, B->
+ *       C, and so on. While commonly referenced these are not the release numbers. This class calls
+ *       these shortcodes. Also minor version number releases (usually within the same year) will
+ *       start with the same letter.
+ *   <li>There is {@link Build.VERSION#SDK_INT} that tracks a version of the internal SDK. While
+ *       useful to track the actual released versions of Android, these are not the release number.
+ *       More importantly, {@link Build.VERSION} uses code names to describe future versions.
+ *       Multiple code names may be in development at once on different branches of Android.
+ *   <li>There is a yearly release major number followed by a minor number, which may or may not be
+ *       used.
+ *   <li>Relevant logic and reasoning should match {@link androidx.core.os.BuildCompat BuildCompat}
+ *       with the caveat that this class guess at the future release version number and short of the
+ *       current dev branch.
+ * </ol>
  */
 public final class AndroidVersions {
 
