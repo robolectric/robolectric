@@ -128,6 +128,9 @@ play-services-for-shadows = "17.0.0"
 # https://developers.google.com/android/guides/releases
 play-services-basement = "18.0.1"
 
+# Only used for shadows/httpclient tests
+legacy-apache-http-client = "1.0"
+
 [libraries]
 android-gradle-api = { module = "com.android.tools.build:gradle-api", version.ref = "android-gradle" }
 
@@ -245,6 +248,9 @@ spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.re
 
 # Not used, but helps Renovate trigger updates for Jacoco
 jacoco-agent = { module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco" }
+
+# Only used for shadows/httpclient tests
+legacy-apache-http-client = { module = "org.robolectric:legacy-apache-http-client-for-robolectric-testing", version.ref = "legacy-apache-http-client" }
 
 [bundles]
 play-services-for-shadows = ["androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows"]
