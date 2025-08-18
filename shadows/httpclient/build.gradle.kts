@@ -19,15 +19,16 @@ dependencies {
   // We should keep httpclient version for low level API compatibility.
   earlyRuntime(libs.apache.http.core)
   api(libs.apache.http.client)
-  compileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates)
+  compileOnly(AndroidSdk.MAX_SDK.coordinates)
+  compileOnly(libs.legacy.apache.http.client)
 
   testImplementation(project(":robolectric"))
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
   testImplementation(variantOf(libs.androidx.test.ext.junit) { artifactType("aar") })
 
-  testCompileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates)
-  testRuntimeOnly(AndroidSdk.S.coordinates)
+  testImplementation(libs.legacy.apache.http.client)
+  testImplementation(AndroidSdk.MAX_SDK.coordinates)
 }
 
 // httpcore needs to come before android-all on runtime classpath; the gradle IntelliJ plugin

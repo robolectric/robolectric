@@ -27,6 +27,7 @@ import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /**
@@ -257,6 +258,12 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
    * <p>Do not use, will likely be removed in a future release.
    */
   public int internalGetSize() {
+    // The following logic won't work on the new MessageQueue implementation used on SDKs >
+    // Baklava.
+    checkState(
+        getApiLevel() <= Baklava.SDK_INT,
+        "size() is not supported on SDKs > baklava. Consider using Handler.hasMessages or"
+            + " hasCallbacks instead");
     int count = 0;
     synchronized (realQueue) {
       Message next = getMessages();
