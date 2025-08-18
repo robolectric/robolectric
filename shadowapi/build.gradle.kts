@@ -4,8 +4,6 @@ plugins {
 }
 
 dependencies {
-  compileOnly(libs.findbugs.jsr305)
-
   api(project(":annotations"))
   api(project(":utils"))
   testImplementation(libs.findbugs.jsr305)

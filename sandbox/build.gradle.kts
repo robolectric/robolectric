@@ -18,7 +18,6 @@ dependencies {
   api(libs.asm)
   api(libs.asm.commons)
   api(libs.guava)
-  compileOnly(libs.findbugs.jsr305)
 
   testImplementation(libs.findbugs.jsr305)
   testImplementation(libs.junit4)
