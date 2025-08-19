@@ -29,15 +29,18 @@ import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.ShadowAlarmManager.ScheduledAlarm;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAlarmManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private Context context;
   private AlarmManager alarmManager;
@@ -655,8 +658,7 @@ public class ShadowAlarmManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.O)
   public void alarmManager_instance_retrievesSameAlarmClockInfo() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
 
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
@@ -673,8 +675,6 @@ public class ShadowAlarmManagerTest {
       AlarmManager.AlarmClockInfo activityAlarmClock = activityAlarmManager.getNextAlarmClock();
 
       assertThat(activityAlarmClock).isEqualTo(applicationAlarmClock);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 

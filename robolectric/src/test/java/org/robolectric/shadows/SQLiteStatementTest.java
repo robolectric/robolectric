@@ -87,8 +87,7 @@ public class SQLiteStatementTest {
     database.beginTransaction();
     try {
       SQLiteStatement insertStatement =
-          database.compileStatement(
-              "INSERT INTO `routine` " + "(`name` ,`lastUsed`) VALUES ('test',0)");
+          database.compileStatement("INSERT INTO `routine`(`name`, `lastUsed`) VALUES ('test', 0)");
       try {
         insertStatement.executeInsert();
       } finally {

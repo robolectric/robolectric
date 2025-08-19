@@ -5,11 +5,6 @@
     <artifactId>ARTIFACT_ID</artifactId>
     <version>VERSION</version>
     <packaging>jar</packaging>
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>9</version>
-    </parent>
     <name>Google Android ARTIFACT_ID Library</name>
     <description>
         A library jar that provides APIs for Applications written for the Google Android Platform.

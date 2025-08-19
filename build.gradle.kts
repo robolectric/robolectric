@@ -2,14 +2,6 @@ import groovy.util.Node
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.robolectric.gradle.ShadowsPlugin.ShadowsPluginExtension
 
-// https://github.com/gradle/gradle/issues/21267
-val axtCoreVersion by project.extra { libs.versions.androidx.test.core.get() }
-val axtJunitVersion by project.extra { libs.versions.androidx.test.ext.junit.get() }
-val axtMonitorVersion by project.extra { libs.versions.androidx.test.monitor.get() }
-val axtRunnerVersion by project.extra { libs.versions.androidx.test.runner.get() }
-val axtTruthVersion by project.extra { libs.versions.androidx.test.ext.truth.get() }
-val espressoVersion by project.extra { libs.versions.androidx.test.espresso.get() }
-
 // For use of external initialization scripts...
 val allSdks by project.extra(AndroidSdk.ALL_SDKS)
 val configAnnotationProcessing by project.extra(emptyList<Project>())
@@ -224,3 +216,7 @@ val prefetchDependencies by
       } // End allprojects
     } // End doLast
   } // End task registration
+
+// The following line sets the CodeQL GitHub Action to use JDK 21:
+// languageVersion = JavaLanguageVersion.of(21)
+// See https://github.com/github/codeql-action/issues/1855

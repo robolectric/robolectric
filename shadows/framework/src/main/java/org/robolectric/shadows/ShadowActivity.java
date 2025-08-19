@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.AnimRes;
@@ -439,7 +440,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   protected void runOnUiThread(Runnable action) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
-      ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
+      RuntimeEnvironment.getMasterScheduler().post(action);
     } else {
       reflector(DirectActivityReflector.class, realActivity).runOnUiThread(action);
     }
@@ -989,6 +990,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           parcel.setDataPosition(0);
           List<DirectAction> output = new ArrayList<>();
           parcel.readParcelableList(output, DirectAction.class.getClassLoader());
+          parcel.recycle();
           callback.accept(output);
         });
   }
@@ -1071,10 +1073,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
         }
       }
     }
-  }
-
-  private ShadowPackageManager shadowOf(PackageManager packageManager) {
-    return Shadow.extract(packageManager);
   }
 
   @ForType(value = Activity.class, direct = true)

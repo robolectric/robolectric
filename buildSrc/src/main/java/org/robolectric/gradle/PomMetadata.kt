@@ -7,7 +7,7 @@ fun MavenPublication.applyPomMetadata(project: Project) {
   pom {
     name.set(project.name)
     description.set("An alternative Android testing framework.")
-    url.set("http://robolectric.org")
+    url.set("https://robolectric.org")
 
     licenses {
       license {
@@ -16,24 +16,57 @@ fun MavenPublication.applyPomMetadata(project: Project) {
       }
     }
 
+    scm {
+      url.set("https://github.com/robolectric/robolectric")
+      connection.set("scm:git:git://github.com/robolectric/robolectric.git")
+      developerConnection.set("scm:git:git@github.com:robolectric/robolectric.git")
+    }
+
     developers {
       developer {
         name.set("Brett Chabot")
         email.set("brettchabot@google.com")
         organization.set("Google Inc.")
-        organizationUrl.set("http://google.com")
+        organizationUrl.set("https://google.com")
       }
 
       developer {
         name.set("Michael Hoisie")
         email.set("hoisie@google.com")
         organization.set("Google Inc.")
-        organizationUrl.set("http://google.com")
+        organizationUrl.set("https://google.com")
       }
 
       developer {
         name.set("Christian Williams")
         email.set("antixian666@gmail.com")
+      }
+    }
+
+    issueManagement {
+      system.set("GitHub Issues")
+      url.set("https://github.com/robolectric/robolectric/issues")
+    }
+
+    ciManagement {
+      system.set("GitHub Actions")
+      url.set("https://github.com/robolectric/robolectric/actions")
+    }
+
+    // TODO Simplify this once https://github.com/gradle/gradle/issues/28759 is released
+    withXml {
+      asNode().appendNode("distributionManagement").apply {
+        appendNode("repository").apply {
+          appendNode("id", "central-portal")
+          appendNode("name", "Central Staging Repository")
+          appendNode("url", PUBLISH_URL)
+        }
+
+        appendNode("snapshotRepository").apply {
+          appendNode("id", "central-portal-snapshots")
+          appendNode("name", "Central Snapshots Repository")
+          appendNode("url", PUBLISH_SNAPSHOTS_URL)
+        }
       }
     }
   }

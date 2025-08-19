@@ -11,18 +11,21 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Optional;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /** Tests for ShadowColorDisplayManager. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = Q)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING) // getAppSaturationLevel_afterReset* depends on order
 public class ShadowColorDisplayManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private static final String PACKAGE_NAME = "test_package_name";
 
@@ -158,8 +161,8 @@ public class ShadowColorDisplayManagerTest {
 
   @Test
   public void colorDisplayManager_activityContextEnabled_differentInstancesRetrieveSettings() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       ColorDisplayManager appColorDisplayManager =
@@ -177,9 +180,6 @@ public class ShadowColorDisplayManagerTest {
               .isNightDisplayActivated();
 
       assertThat(activityNightDisplayActivated).isEqualTo(appNightDisplayActivated);
-
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

@@ -40,6 +40,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapperI;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.RoboInject;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
@@ -50,12 +51,9 @@ import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 import org.robolectric.plugins.StubSdk;
-import org.robolectric.res.ResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
@@ -77,7 +75,7 @@ public class AndroidTestEnvironmentTest {
     assertThat(RuntimeEnvironment.getMasterScheduler())
         .isSameInstanceAs(ShadowLooper.getShadowMainLooper().getScheduler());
     assertThat(RuntimeEnvironment.getMasterScheduler())
-        .isSameInstanceAs(ShadowApplication.getInstance().getForegroundThreadScheduler());
+        .isSameInstanceAs(Robolectric.getForegroundThreadScheduler());
   }
 
   @Test
@@ -89,7 +87,7 @@ public class AndroidTestEnvironmentTest {
     final ShadowApplication shadowApplication =
         Shadow.extract(ApplicationProvider.getApplicationContext());
     assertThat(shadowApplication.getBackgroundThreadScheduler())
-        .isSameInstanceAs(shadowApplication.getForegroundThreadScheduler());
+        .isSameInstanceAs(Robolectric.getForegroundThreadScheduler());
     assertThat(RuntimeEnvironment.getMasterScheduler())
         .isSameInstanceAs(RuntimeEnvironment.getMasterScheduler());
   }
@@ -100,7 +98,7 @@ public class AndroidTestEnvironmentTest {
     final ShadowApplication shadowApplication =
         Shadow.extract(ApplicationProvider.getApplicationContext());
     assertThat(shadowApplication.getBackgroundThreadScheduler())
-        .isNotSameInstanceAs(shadowApplication.getForegroundThreadScheduler());
+        .isNotSameInstanceAs(Robolectric.getForegroundThreadScheduler());
   }
 
   @Test
@@ -236,24 +234,6 @@ public class AndroidTestEnvironmentTest {
         };
     bootstrapWrapper.tearDownApplication();
     assertThat(events).containsExactly("terminated");
-  }
-
-  /** Can't use Mockito for classloader issues */
-  static class ThrowingManifest extends AndroidManifest {
-    public ThrowingManifest(AndroidManifest androidManifest) {
-      super(
-          androidManifest.getAndroidManifestFile(),
-          androidManifest.getResDirectory(),
-          androidManifest.getAssetsDirectory(),
-          androidManifest.getLibraryManifests(),
-          null,
-          androidManifest.getApkFile());
-    }
-
-    @Override
-    public void initMetaData(ResourceTable resourceTable) throws RoboNotFoundException {
-      throw new RoboNotFoundException("This is just a test");
-    }
   }
 
   @Test

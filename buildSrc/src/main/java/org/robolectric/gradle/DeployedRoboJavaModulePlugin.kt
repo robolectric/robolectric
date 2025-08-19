@@ -2,7 +2,6 @@ package org.robolectric.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.plugins.BasePluginExtension
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
@@ -23,11 +22,6 @@ class DeployedRoboJavaModulePlugin : Plugin<Project> {
     val projectVersion = project.version.toString()
     val isSnapshotVersion = projectVersion.endsWith("-SNAPSHOT")
     val mavenArtifactName = project.path.substring(1).split(":").joinToString("-")
-
-    project.extensions.configure<BasePluginExtension> {
-      // For Maven local install
-      archivesName.set(mavenArtifactName)
-    }
 
     project.extensions.configure<JavaPluginExtension> {
       val sourcesJar =

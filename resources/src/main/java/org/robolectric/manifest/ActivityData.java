@@ -211,6 +211,6 @@ public class ActivityData {
   }
 
   public static String getTargetAttr(String xmlns) {
-    return withXMLNS("android", TARGET_ACTIVITY);
+    return withXMLNS(xmlns, TARGET_ACTIVITY);
   }
 }

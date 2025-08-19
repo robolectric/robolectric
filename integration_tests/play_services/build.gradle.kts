@@ -2,7 +2,6 @@ plugins { alias(libs.plugins.robolectric.java.module) }
 
 dependencies {
   api(project(":robolectric"))
-  api(project(":shadows:playservices"))
   compileOnly(AndroidSdk.MAX_SDK.coordinates)
 
   testCompileOnly(AndroidSdk.MAX_SDK.coordinates)

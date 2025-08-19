@@ -17,17 +17,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /** Tests for {@link ShadowSliceManager}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = VERSION_CODES.P)
 public final class ShadowSliceManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private static final String PACKAGE_NAME_1 = "com.google.testing.slicemanager.foo";
   private static final int PACKAGE_1_UID = 10;
@@ -101,8 +104,8 @@ public final class ShadowSliceManagerTest {
 
   @Test
   public void sliceManager_activityContextEnabled_differentInstancesRetrieveSlices() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       SliceManager applicationSliceManager =
@@ -127,9 +130,6 @@ public final class ShadowSliceManagerTest {
       List<Uri> applicationPinnedSlices = applicationSliceManager.getPinnedSlices();
       List<Uri> activityPinnedSlices = activitySliceManager.getPinnedSlices();
       assertThat(applicationPinnedSlices).isEqualTo(activityPinnedSlices);
-
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

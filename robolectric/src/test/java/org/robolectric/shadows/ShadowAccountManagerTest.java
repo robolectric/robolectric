@@ -28,14 +28,18 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import java.util.Arrays;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAccountManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private AccountManager am;
   private Activity activity;
   private Context appContext;
@@ -468,15 +472,24 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void testAccountsUpdateListener_nullListener() {
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> am.addOnAccountsUpdatedListener(null, null, false));
+    assertThat(exception).hasMessageThat().isEqualTo("the listener is null");
+  }
+
+  @Test
   public void testAccountsUpdateListener_duplicate() {
     TestOnAccountsUpdateListener listener = new TestOnAccountsUpdateListener();
     am.addOnAccountsUpdatedListener(listener, null, false);
-    am.addOnAccountsUpdatedListener(listener, null, false);
-    assertThat(listener.getInvocationCount()).isEqualTo(0);
 
-    Account account = new Account("name", "type");
-    shadowOf(am).addAccount(account);
-    assertThat(listener.getInvocationCount()).isEqualTo(1);
+    IllegalStateException exception =
+        assertThrows(
+            IllegalStateException.class,
+            () -> am.addOnAccountsUpdatedListener(listener, null, false));
+    assertThat(exception).hasMessageThat().isEqualTo("this listener is already added");
   }
 
   @Test
@@ -1154,8 +1167,8 @@ public class ShadowAccountManagerTest {
   @Test
   @Config(minSdk = O)
   public void accountManager_activityContextEnabled_differentInstancesRetrieveAccounts() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       AccountManager applicationAccountManager = appContext.getSystemService(AccountManager.class);
@@ -1170,8 +1183,6 @@ public class ShadowAccountManagerTest {
           activityAccountManager.getAccountsByType("com.example.account_type");
 
       assertThat(activityAccounts).isEqualTo(applicationAccounts);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 

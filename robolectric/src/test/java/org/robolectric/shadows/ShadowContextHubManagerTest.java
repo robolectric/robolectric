@@ -24,18 +24,22 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
 /** Tests for {@link ShadowContextHubManager}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = Build.VERSION_CODES.N)
 public class ShadowContextHubManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   // Do not reference a non-public field in a test, because those get loaded outside the Robolectric
   // sandbox
   // DO NOT DO: private ContextHubManager contextHubManager;
@@ -171,8 +175,7 @@ public class ShadowContextHubManagerTest {
   @Test
   @Config(minSdk = 30)
   public void contextHubManager_instance_retrievesSameContextHubInfo() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
 
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
@@ -192,8 +195,6 @@ public class ShadowContextHubManagerTest {
       assertThat(activityContextHubs).isNotEmpty();
 
       assertThat(activityContextHubs).isEqualTo(applicationContextHubs);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 

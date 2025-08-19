@@ -54,6 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -63,11 +64,14 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
 import org.robolectric.annotation.ResourcesMode;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.util.TestRunnable;
 
 @RunWith(AndroidJUnit4.class)
 @GraphicsMode(Mode.LEGACY)
 public class ShadowViewTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private View view;
   private List<String> transcript;
   private Application context;
@@ -422,13 +426,10 @@ public class ShadowViewTest {
   @Test
   public void scrollTo_shouldStoreTheScrolledCoordinates() {
     // This test depends on broken scrolling behavior.
-    System.setProperty("robolectric.useRealScrolling", "false");
-    try {
-      view.scrollTo(1, 2);
-      assertThat(shadowOf(view).scrollToCoordinates).isEqualTo(new Point(1, 2));
-    } finally {
-      System.clearProperty("robolectric.useRealScrolling");
-    }
+    setSystemPropertyRule.set("robolectric.useRealScrolling", "false");
+
+    view.scrollTo(1, 2);
+    assertThat(shadowOf(view).scrollToCoordinates).isEqualTo(new Point(1, 2));
   }
 
   @Test
@@ -442,17 +443,14 @@ public class ShadowViewTest {
   @Test
   public void scrollBy_shouldStoreTheScrolledCoordinates() {
     // This test depends on broken scrolling behavior.
-    System.setProperty("robolectric.useRealScrolling", "false");
-    try {
-      view.scrollTo(4, 5);
-      view.scrollBy(10, 20);
-      assertThat(shadowOf(view).scrollToCoordinates).isEqualTo(new Point(14, 25));
+    setSystemPropertyRule.set("robolectric.useRealScrolling", "false");
 
-      assertThat(view.getScrollX()).isEqualTo(14);
-      assertThat(view.getScrollY()).isEqualTo(25);
-    } finally {
-      System.clearProperty("robolectric.useRealScrolling");
-    }
+    view.scrollTo(4, 5);
+    view.scrollBy(10, 20);
+    assertThat(shadowOf(view).scrollToCoordinates).isEqualTo(new Point(14, 25));
+
+    assertThat(view.getScrollX()).isEqualTo(14);
+    assertThat(view.getScrollY()).isEqualTo(25);
   }
 
   @Test

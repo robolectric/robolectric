@@ -527,7 +527,7 @@ public class ShadowView {
   @Implementation
   protected boolean post(Runnable action) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
-      ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
+      RuntimeEnvironment.getMasterScheduler().post(action);
       return true;
     } else {
       return reflector(ViewReflector.class, realView).post(action);
@@ -537,9 +537,7 @@ public class ShadowView {
   @Implementation
   protected boolean postDelayed(Runnable action, long delayMills) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
-      ShadowApplication.getInstance()
-          .getForegroundThreadScheduler()
-          .postDelayed(action, delayMills);
+      RuntimeEnvironment.getMasterScheduler().postDelayed(action, delayMills);
       return true;
     } else {
       return reflector(ViewReflector.class, realView).postDelayed(action, delayMills);
@@ -549,8 +547,7 @@ public class ShadowView {
   @Implementation
   protected void postInvalidateDelayed(long delayMilliseconds) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
-      ShadowApplication.getInstance()
-          .getForegroundThreadScheduler()
+      RuntimeEnvironment.getMasterScheduler()
           .postDelayed(() -> realView.invalidate(), delayMilliseconds);
     } else {
       reflector(ViewReflector.class, realView).postInvalidateDelayed(delayMilliseconds);

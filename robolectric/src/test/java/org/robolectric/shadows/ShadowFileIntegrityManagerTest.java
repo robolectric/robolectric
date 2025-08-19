@@ -10,16 +10,19 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Objects;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = R)
 public final class ShadowFileIntegrityManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private FileIntegrityManager fileIntegrityManager;
 
@@ -44,8 +47,8 @@ public final class ShadowFileIntegrityManagerTest {
 
   @Test
   public void fileIntegrityManager_activityContextEnabled_retrievesSameValues() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       FileIntegrityManager applicationFileIntegrityManager =
@@ -65,8 +68,6 @@ public final class ShadowFileIntegrityManagerTest {
           Objects.requireNonNull(activityFileIntegrityManager).isApkVeritySupported();
 
       assertThat(activityApkVeritySupported).isEqualTo(applicationApkVeritySupported);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

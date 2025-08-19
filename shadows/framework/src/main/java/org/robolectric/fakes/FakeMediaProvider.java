@@ -450,7 +450,7 @@ public final class FakeMediaProvider extends ContentProvider {
     // real Android will just throw SecurityException if it doesn't recognize the id.
     // so just do that
     if (count <= 0) {
-      throw new SecurityException("Could not find entries " + uri.toString());
+      throw new SecurityException("Could not find entries " + uri);
     }
     return count;
   }

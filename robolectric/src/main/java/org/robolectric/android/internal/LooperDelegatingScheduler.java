@@ -159,10 +159,4 @@ public class LooperDelegatingScheduler extends Scheduler {
   public Duration getLastScheduledTaskTime() {
     return shadowOf(looper).getLastScheduledTaskTime();
   }
-
-  @Override
-  @Deprecated
-  public void idleConstantly(boolean shouldIdleConstantly) {
-    throw new UnsupportedOperationException("idleConstantly is not supported in PAUSED LooperMode");
-  }
 }

@@ -32,18 +32,21 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.truth.Correspondence;
 import java.time.Duration;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowPowerManager.ShadowLowPowerStandbyPortsLock;
 import org.robolectric.versioning.AndroidVersions.U;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowPowerManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private Application context;
   private PowerManager powerManager;
@@ -741,8 +744,8 @@ public class ShadowPowerManagerTest {
   @Test
   @Config(minSdk = O)
   public void powerManager_activityContextEnabled_checkIsInteractive() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       PowerManager applicationPowerManager =
@@ -758,8 +761,6 @@ public class ShadowPowerManagerTest {
       boolean activityIsInteractive = activityPowerManager.isInteractive();
 
       assertThat(activityIsInteractive).isEqualTo(applicationIsInteractive);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 

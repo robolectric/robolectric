@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -38,12 +39,15 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.ShadowUsbManager.UsbManagerQReflector;
 import org.robolectric.shadows.ShadowUsbManager.UsbManagerReflector;
 
 /** Unit tests for {@link ShadowUsbManager}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowUsbManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private static final String DEVICE_NAME_1 = "usb1";
   private static final String DEVICE_NAME_2 = "usb2";
 
@@ -259,8 +263,8 @@ public class ShadowUsbManagerTest {
   @Test
   @Config(minSdk = O)
   public void usbManager_activityContextEnabled_differentInstancesRetrieveSameUsbDevices() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       UsbManager applicationUsbManager =
@@ -274,8 +278,6 @@ public class ShadowUsbManagerTest {
       HashMap<String, UsbDevice> activityDevices = activityUsbManager.getDeviceList();
 
       assertThat(activityDevices).isEqualTo(applicationDevices);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

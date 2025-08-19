@@ -44,6 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -51,6 +52,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.ShadowAppOpsManager.ModeAndException;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -58,6 +60,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 /** Unit tests for {@link ShadowAppOpsManager}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowAppOpsManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private static final String PACKAGE_NAME1 = "com.company1.pkg1";
   private static final String PACKAGE_NAME2 = "com.company2.pkg2";
@@ -773,8 +776,8 @@ public class ShadowAppOpsManagerTest {
   @Test
   @Config(minSdk = O)
   public void appOpsManager_activityContextEnabled_differentInstancesRetrieveOps() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       // Get the AppOpsManager instances
@@ -796,8 +799,6 @@ public class ShadowAppOpsManagerTest {
       List<PackageOps> activityPackageOpsList = shadowActivityAppOpsManager.getPackagesForOps(ops);
 
       assertThat(activityPackageOpsList).isEqualTo(applicationPackageOpsList);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

@@ -209,7 +209,6 @@ public class ShadowPaint {
   }
 
   @Implementation(minSdk = AndroidVersions.Baklava.SDK_INT)
-  
   protected Typeface setTypefaceWithoutWarning(Typeface typeface) {
     this.typeface = typeface;
     return typeface;
@@ -557,7 +556,6 @@ public class ShadowPaint {
   }
 
   @Implementation(minSdk = V.SDK_INT)
-  
   protected static float nGetRunCharacterAdvance(
       long paintPtr,
       char[] text,

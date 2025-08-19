@@ -71,10 +71,7 @@ public class ManifestFactoryTest {
         };
 
     Config.Implementation config =
-        Config.Builder.defaults()
-            .setManifest("TestAndroidManifest.xml")
-            .setPackageName("another.package")
-            .build();
+        Config.Builder.defaults().setManifest("TestAndroidManifest.xml").build();
     ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
     assertThat(manifestFactory).isInstanceOf(DefaultManifestFactory.class);
     ManifestIdentifier manifestIdentifier = manifestFactory.identify(config);
@@ -83,6 +80,6 @@ public class ManifestFactoryTest {
     assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("/path/to/merged-resources"));
     assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Paths.get("/path/to/merged-assets"));
     assertThat(manifestIdentifier.getLibraries()).isEmpty();
-    assertThat(manifestIdentifier.getPackageName()).isEqualTo("another.package");
+    assertThat(manifestIdentifier.getPackageName()).isNull();
   }
 }

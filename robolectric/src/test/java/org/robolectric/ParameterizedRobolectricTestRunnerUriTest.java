@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 /**
  * Parameterized tests using an Android class.
@@ -29,7 +28,6 @@ public final class ParameterizedRobolectricTestRunnerUriTest {
   }
 
   @Test
-  @Config(manifest = Config.NONE)
   public void parse() {
     assertThat(Uri.parse(basePath).buildUpon().path(resourcePath).build()).isEqualTo(expectedUri);
   }

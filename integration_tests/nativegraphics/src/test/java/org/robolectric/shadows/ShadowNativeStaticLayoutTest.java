@@ -100,7 +100,7 @@ public class ShadowNativeStaticLayoutTest {
   /* the first line must have one tab. the others not. totally 6 lines
    */
   private static final CharSequence LAYOUT_TEXT =
-      "CharSe\tq\nChar" + "Sequence\nCharSequence\nHello\n, world\nLongLongLong";
+      "CharSe\tq\nCharSequence\nCharSequence\nHello\n, world\nLongLongLong";
 
   private static final CharSequence LAYOUT_TEXT_SINGLE_LINE = "CharSequence";
 

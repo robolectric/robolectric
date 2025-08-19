@@ -228,7 +228,6 @@ public class ShadowBluetoothA2dp {
     }
   }
 
-  
   @Implementation(minSdk = Baklava.SDK_INT, methodName = "verifyDeviceNotNull")
   protected static void verifyDeviceNotNullBaklava(BluetoothDevice device, String methodName) {
     reflector(BluetoothA2dpReflector.class).verifyDeviceNotNull(device, methodName);

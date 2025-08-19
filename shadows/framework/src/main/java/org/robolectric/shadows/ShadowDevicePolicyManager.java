@@ -25,10 +25,12 @@ import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.app.ApplicationPackageManager;
 import android.app.KeyguardManager;
+import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManager.NearbyStreamingPolicy;
 import android.app.admin.DevicePolicyManager.PasswordComplexity;
 import android.app.admin.DevicePolicyManager.UserProvisioningState;
+import android.app.admin.DevicePolicyState;
 import android.app.admin.IDevicePolicyManager;
 import android.app.admin.SystemUpdateInfo;
 import android.app.admin.SystemUpdatePolicy;
@@ -907,7 +909,7 @@ public class ShadowDevicePolicyManager {
   public boolean isPermissionGranted(String packageName, String permission) {
     Boolean isGranted =
         appPermissionGrantedMap.get(new PackageAndPermission(packageName, permission));
-    return isGranted == null ? false : isGranted;
+    return Boolean.TRUE.equals(isGranted);
   }
 
   @Implementation(minSdk = VERSION_CODES.M)
@@ -929,10 +931,10 @@ public class ShadowDevicePolicyManager {
       }
       if (Arrays.asList(packageInfo.requestedPermissions).contains(permission)) {
         if (grantState == DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED) {
-          ShadowApplication.getInstance().grantPermissions(permission);
+          shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(permission);
         }
         if (grantState == DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED) {
-          ShadowApplication.getInstance().denyPermissions(permission);
+          shadowOf(RuntimeEnvironment.getApplication()).denyPermissions(permission);
         }
       } else {
         // the app does not require this permission
@@ -1302,7 +1304,7 @@ public class ShadowDevicePolicyManager {
       case DevicePolicyManager.PASSWORD_QUALITY_BIOMETRIC_WEAK:
         return true;
       case DevicePolicyManager.PASSWORD_QUALITY_SOMETHING:
-        return password.length() > 0;
+        return !password.isEmpty();
       case DevicePolicyManager.PASSWORD_QUALITY_NUMERIC:
       case DevicePolicyManager.PASSWORD_QUALITY_NUMERIC_COMPLEX: // complexity not enforced
         return digit > 0 && password.length() >= passwordMinimumLength;

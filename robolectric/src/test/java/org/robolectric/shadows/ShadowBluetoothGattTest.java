@@ -364,7 +364,7 @@ public class ShadowBluetoothGattTest {
     characteristicWithReadProperty.addDescriptor(descriptor);
     assertThat(descriptor.getCharacteristic().getService()).isNotNull();
 
-    assertThat(shadowOf(bluetoothGatt).writeDescriptor(descriptor, CHARACTERISTIC_VALUE))
+    assertThat(bluetoothGatt.writeDescriptor(descriptor, CHARACTERISTIC_VALUE))
         .isEqualTo(BluetoothGatt.GATT_SUCCESS);
     assertThat(resultStatus).isEqualTo(BluetoothGatt.GATT_SUCCESS);
     assertThat(resultAction).isEqualTo(ACTION_WRITE);
@@ -378,7 +378,7 @@ public class ShadowBluetoothGattTest {
     shadowOf(bluetoothGatt).setGattCallback(callback);
 
     descriptor.setValue(CHARACTERISTIC_VALUE);
-    assertThat(shadowOf(bluetoothGatt).writeDescriptor(descriptor)).isFalse();
+    assertThat(bluetoothGatt.writeDescriptor(descriptor)).isFalse();
     assertThat(resultStatus).isEqualTo(INITIAL_VALUE);
     assertThat(resultAction).isNull();
     assertThat(resultDescriptor).isNull();
@@ -386,11 +386,11 @@ public class ShadowBluetoothGattTest {
   }
 
   @Test
-  @Config(minSdk = O)
+  @Config(minSdk = TIRAMISU)
   public void writeDetachedDescriptor_withValue() {
     shadowOf(bluetoothGatt).setGattCallback(callback);
 
-    assertThat(shadowOf(bluetoothGatt).writeDescriptor(descriptor, CHARACTERISTIC_VALUE))
+    assertThat(bluetoothGatt.writeDescriptor(descriptor, CHARACTERISTIC_VALUE))
         .isEqualTo(BluetoothGatt.GATT_FAILURE);
     assertThat(resultStatus).isEqualTo(INITIAL_VALUE);
     assertThat(resultAction).isNull();

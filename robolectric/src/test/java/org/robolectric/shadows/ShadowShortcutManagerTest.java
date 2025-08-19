@@ -22,11 +22,13 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
 /** Unit tests for ShadowShortcutManager. */
@@ -37,6 +39,8 @@ public final class ShadowShortcutManagerTest {
   private static final int DYNAMIC_SHORTCUT_COUNT = 4;
   private static final int CACHED_DYNAMIC_SHORTCUT_COUNT = 3;
   private static final int PINNED_SHORTCUT_COUNT = 2;
+
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private ShortcutManager shortcutManager;
 
@@ -394,8 +398,8 @@ public final class ShadowShortcutManagerTest {
   @Test
   @Config(minSdk = O)
   public void shortcutManager_activityContextEnabled_differentInstancesCheckRateLimiting() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       ShortcutManager applicationShortcutManager =
@@ -413,8 +417,6 @@ public final class ShadowShortcutManagerTest {
       boolean activityRateLimiting = activityShortcutManager.isRateLimitingActive();
 
       assertThat(activityRateLimiting).isEqualTo(applicationRateLimiting);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

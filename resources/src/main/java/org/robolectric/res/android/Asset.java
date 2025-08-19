@@ -755,7 +755,7 @@ public abstract class Asset {
       }
 
       /* adjust count if we're near EOF */
-      maxLen = toIntExact(mLength - mOffset);
+      maxLen = Math.toIntExact(mLength - mOffset);
       if (count > maxLen) count = maxLen;
 
       if (!isTruthy(count)) {
@@ -766,13 +766,13 @@ public abstract class Asset {
         /* copy from mapped area */
         // printf("map read\n");
         // memcpy(buf, (String)mMap.getDataPtr() + mOffset, count);
-        System.arraycopy(mMap.getDataPtr(), toIntExact(mOffset), buf, bufOffset, count);
+        System.arraycopy(mMap.getDataPtr(), Math.toIntExact(mOffset), buf, bufOffset, count);
         actual = count;
       } else if (mBuf != null) {
         /* copy from buffer */
         // printf("buf read\n");
         // memcpy(buf, (String)mBuf + mOffset, count);
-        System.arraycopy(mBuf, toIntExact(mOffset), buf, bufOffset, count);
+        System.arraycopy(mBuf, Math.toIntExact(mOffset), buf, bufOffset, count);
         actual = count;
       } else {
         /* read from the file */
@@ -886,7 +886,7 @@ public abstract class Asset {
 
         /* zero-length files are allowed; not sure about zero-len allocs */
         /* (works fine with gcc + x86linux) */
-        allocLen = toIntExact(mLength);
+        allocLen = Math.toIntExact(mLength);
         if (mLength == 0) allocLen = 1;
 
         buf = new byte[allocLen];
@@ -903,7 +903,7 @@ public abstract class Asset {
             // fseek(mFp, mStart, SEEK_SET);
             mFp.seek(mStart);
             // if (fread(buf, 1, mLength, mFp) != (size_t) mLength) {
-            if (mFp.read(buf, 0, toIntExact(mLength)) != (int) mLength) {
+            if (mFp.read(buf, 0, Math.toIntExact(mLength)) != (int) mLength) {
               ALOGE("failed reading %d bytes\n", mLength);
               // delete[] buf;
               return null;
@@ -924,7 +924,7 @@ public abstract class Asset {
 
         map = new FileMap();
         // if (!map.create(null, fileno(mFp), mStart, mLength, true)) {
-        if (!map.create(null, -1, mStart, toIntExact(mLength), true)) {
+        if (!map.create(null, -1, mStart, Math.toIntExact(mLength), true)) {
           // delete map;
           return null;
         }
@@ -1030,9 +1030,9 @@ public abstract class Asset {
     @Override
     public String toString() {
       if (mFileName == null) {
-        return "_FileAsset{" + "mMap=" + mMap + '}';
+        return "_FileAsset{mMap=" + mMap + '}';
       } else {
-        return "_FileAsset{" + "mFileName='" + mFileName + '\'' + '}';
+        return "_FileAsset{mFileName='" + mFileName + "'}";
       }
     }
   }
@@ -1247,7 +1247,7 @@ public abstract class Asset {
       assert (mBuf != null);
 
       /* adjust count if we're near EOF */
-      maxLen = toIntExact(mUncompressedLen - mOffset);
+      maxLen = Math.toIntExact(mUncompressedLen - mOffset);
       if (count > maxLen) count = maxLen;
 
       if (!isTruthy(count)) return 0;
@@ -1255,7 +1255,7 @@ public abstract class Asset {
       /* copy from buffer */
       // printf("comp buf read\n");
       //      memcpy(buf, (String)mBuf + mOffset, count);
-      System.arraycopy(mBuf, toIntExact(mOffset), buf, bufOffset, count);
+      System.arraycopy(mBuf, Math.toIntExact(mOffset), buf, bufOffset, count);
       actual = count;
       //       }
 
@@ -1369,15 +1369,7 @@ public abstract class Asset {
 
     @Override
     public String toString() {
-      return "_CompressedAsset{" + "mMap=" + mMap + '}';
+      return "_CompressedAsset{mMap=" + mMap + '}';
     }
-  }
-
-  // todo: remove when Android supports this
-  static int toIntExact(long value) {
-    if ((int) value != value) {
-      throw new ArithmeticException("integer overflow");
-    }
-    return (int) value;
   }
 }

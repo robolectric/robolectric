@@ -591,7 +591,6 @@ public class ShadowMotionEvent extends ShadowInputEvent {
 
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   @HiddenApi
-  
   protected static float nativeGetXOffset(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getXOffset();
@@ -599,7 +598,6 @@ public class ShadowMotionEvent extends ShadowInputEvent {
 
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   @HiddenApi
-  
   protected static float nativeGetYOffset(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getYOffset();
@@ -613,14 +611,12 @@ public class ShadowMotionEvent extends ShadowInputEvent {
 
   @Implementation(minSdk = V.SDK_INT)
   @HiddenApi
-  
   protected static float nativeGetRawXOffset(long nativePtr) {
     return getNativeMotionEvent(nativePtr).getXOffset();
   }
 
   @Implementation(minSdk = V.SDK_INT)
   @HiddenApi
-  
   protected static float nativeGetRawYOffset(long nativePtr) {
     return getNativeMotionEvent(nativePtr).getYOffset();
   }

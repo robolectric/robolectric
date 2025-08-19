@@ -94,11 +94,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowSubscriptionManager.SubscriptionInfoBuilder;
 import org.robolectric.util.ReflectionHelpers;
@@ -106,6 +108,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowTelephonyManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private static final int SUB_ID_1 = 1;
 
@@ -1872,8 +1875,8 @@ public class ShadowTelephonyManagerTest {
   @Test
   @Config(minSdk = O)
   public void telephonyManager_activityContextEnabled_differentInstancesRetrievePhoneCount() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       TelephonyManager applicationTelephonyManager =
@@ -1890,8 +1893,6 @@ public class ShadowTelephonyManagerTest {
       int activityPhoneCount = activityTelephonyManager.getPhoneCount();
 
       assertThat(activityPhoneCount).isEqualTo(applicationPhoneCount);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 

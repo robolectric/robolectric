@@ -74,6 +74,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -83,6 +84,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.fakes.RoboSplashScreen;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowActivity.IntentSenderRequest;
 import org.robolectric.util.TestRunnable;
@@ -92,6 +94,8 @@ import org.robolectric.versioning.AndroidVersions.Baklava;
 @RunWith(AndroidJUnit4.class)
 @SuppressWarnings("RobolectricSystemContext") // preexisting when check was enabled
 public class ShadowActivityTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private Activity activity;
 
   @Test
@@ -1726,14 +1730,10 @@ public class ShadowActivityTest {
   @Test
   @Config(minSdk = VERSION_CODES.R)
   public void getDisplay_succeeds() {
-    try {
-      System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
 
-      Activity activity = Robolectric.setupActivity(Activity.class);
-      assertThat(activity.getDisplay()).isNotNull();
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", "false");
-    }
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    assertThat(activity.getDisplay()).isNotNull();
   }
 
   /////////////////////////////

@@ -10,12 +10,14 @@ import android.os.Build.VERSION_CODES;
 import android.os.LocaleList;
 import androidx.test.core.app.ApplicationProvider;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(RobolectricTestRunner.class)
@@ -23,6 +25,8 @@ import org.robolectric.shadow.api.Shadow;
 public final class ShadowLocaleManagerTest {
   private static final String DEFAULT_PACKAGE_NAME = "my.app";
   private static final LocaleList DEFAULT_LOCALES = LocaleList.forLanguageTags("en-XC,ar-XB");
+
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private LocaleManager localeManager;
   private ShadowLocaleManager shadowLocaleManager;
@@ -96,8 +100,8 @@ public final class ShadowLocaleManagerTest {
 
   @Test
   public void localeManager_activityContextEnabled_differentInstancesRetrieveLocales() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       LocaleManager applicationLocaleManager =
@@ -113,8 +117,6 @@ public final class ShadowLocaleManagerTest {
       LocaleList activityLocales = activityLocaleManager.getApplicationLocales();
 
       assertThat(activityLocales).isEqualTo(applicationLocales);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

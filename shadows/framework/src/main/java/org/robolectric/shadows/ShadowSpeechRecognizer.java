@@ -155,7 +155,6 @@ public class ShadowSpeechRecognizer {
 
   /** Handles changing the listener and allows access to the internal listener to trigger events. */
   @Implementation(maxSdk = U.SDK_INT) // TODO(hoisie): Update this to support Android V
-  
   protected void handleChangeListener(RecognitionListener listener) {
     getState().recognitionListener = listener;
   }

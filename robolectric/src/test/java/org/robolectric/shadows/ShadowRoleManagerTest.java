@@ -19,16 +19,19 @@ import android.os.UserHandle;
 import androidx.test.core.content.pm.PackageInfoBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 /** Unit tests for {@link org.robolectric.shadows.ShadowRoleManager}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = Build.VERSION_CODES.Q)
 public final class ShadowRoleManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private final RoleManager roleManager = getApplication().getSystemService(RoleManager.class);
 
@@ -126,8 +129,8 @@ public final class ShadowRoleManagerTest {
 
   @Test
   public void roleManager_activityContextEnabled_differentInstancesRetrieveRoles() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       RoleManager applicationRoleManager = roleManager;
@@ -142,8 +145,6 @@ public final class ShadowRoleManagerTest {
       boolean activityRoleHeld = activityRoleManager.isRoleHeld(RoleManager.ROLE_SMS);
 
       assertThat(activityRoleHeld).isEqualTo(applicationRoleHeld);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 

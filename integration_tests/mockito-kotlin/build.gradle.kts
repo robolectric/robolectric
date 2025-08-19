@@ -7,11 +7,7 @@ plugins {
   alias(libs.plugins.robolectric.spotless)
 }
 
-tasks.compileKotlin.configure { compilerOptions.jvmTarget = JvmTarget.JVM_1_8 }
-
-tasks.compileTestKotlin.configure { compilerOptions.jvmTarget = JvmTarget.JVM_1_8 }
-
-val axtJunitVersion: String by rootProject.extra
+kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_1_8 } }
 
 dependencies {
   api(project(":robolectric"))
@@ -19,7 +15,7 @@ dependencies {
 
   testCompileOnly(AndroidSdk.MAX_SDK.coordinates)
   testRuntimeOnly(AndroidSdk.MAX_SDK.coordinates)
-  testImplementation("androidx.test.ext:junit:$axtJunitVersion@aar")
+  testImplementation(variantOf(libs.androidx.test.ext.junit) { artifactType("aar") })
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
   testImplementation(libs.kotlin.stdlib)

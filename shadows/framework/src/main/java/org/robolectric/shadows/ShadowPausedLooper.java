@@ -95,13 +95,13 @@ public final class ShadowPausedLooper extends ShadowLooper {
   @Override
   public void quitUnchecked() {
     throw new UnsupportedOperationException(
-        "this action is not" + " supported" + " in " + looperMode() + " mode.");
+        "this action is not supported in " + looperMode() + " mode.");
   }
 
   @Override
   public boolean hasQuit() {
     throw new UnsupportedOperationException(
-        "this action is not" + " supported" + " in " + looperMode() + " mode.");
+        "this action is not supported in " + looperMode() + " mode.");
   }
 
   @Override
@@ -178,13 +178,13 @@ public final class ShadowPausedLooper extends ShadowLooper {
   @Override
   public void resetScheduler() {
     throw new UnsupportedOperationException(
-        "this action is not" + " supported" + " in " + looperMode() + " mode.");
+        "this action is not supported in " + looperMode() + " mode.");
   }
 
   @Override
   public void reset() {
     throw new UnsupportedOperationException(
-        "this action is not" + " supported" + " in " + looperMode() + " mode.");
+        "this action is not supported in " + looperMode() + " mode.");
   }
 
   @Override
@@ -197,7 +197,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
   @Override
   public void idleConstantly(boolean shouldIdleConstantly) {
     throw new UnsupportedOperationException(
-        "this action is not" + " supported" + " in " + looperMode() + " mode.");
+        "this action is not supported in " + looperMode() + " mode.");
   }
 
   @Override

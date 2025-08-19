@@ -18,7 +18,6 @@ class GradleManagedDevicePlugin : Plugin<Project> {
       return
     }
 
-    @Suppress("UnstableApiUsage")
     androidExtension.testOptions {
       animationsDisabled = true
 
@@ -69,18 +68,18 @@ class GradleManagedDevicePlugin : Plugin<Project> {
         localDevices.register(NAME_API_35) {
           device = "Nexus One"
           apiLevel = 35
-          systemImageSource = "aosp"
+          systemImageSource = "aosp-atd"
         }
 
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneIntegrationTestGroupDebugAndroidTest
         groups.register("nexusOneIntegrationTestGroup") {
-          targetDevices.add(devices[NAME_API_29])
-          targetDevices.add(devices[NAME_API_30])
-          targetDevices.add(devices[NAME_API_31])
-          targetDevices.add(devices[NAME_API_32])
-          targetDevices.add(devices[NAME_API_33])
-          targetDevices.add(devices[NAME_API_34])
-          targetDevices.add(devices[NAME_API_35])
+          targetDevices.add(allDevices[NAME_API_29])
+          targetDevices.add(allDevices[NAME_API_30])
+          targetDevices.add(allDevices[NAME_API_31])
+          targetDevices.add(allDevices[NAME_API_32])
+          targetDevices.add(allDevices[NAME_API_33])
+          targetDevices.add(allDevices[NAME_API_34])
+          targetDevices.add(allDevices[NAME_API_35])
         }
       } // managedDevices
     } // testOptions

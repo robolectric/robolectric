@@ -25,6 +25,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
@@ -33,6 +34,7 @@ import org.robolectric.versioning.AndroidVersions.V;
 @Config(minSdk = U.SDK_INT)
 @RunWith(RobolectricTestRunner.class)
 public class ShadowWearableSensingManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   @Rule public final MockitoRule mockito = MockitoJUnit.rule();
 
@@ -168,8 +170,8 @@ public class ShadowWearableSensingManagerTest {
 
   @Test
   public void wearableSensingManager_activityContextEnabled_differentInstancesProvideDataStream() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       WearableSensingManager applicationWearableSensingManager =
@@ -198,8 +200,6 @@ public class ShadowWearableSensingManagerTest {
           activityPfd, executor, activityStatusConsumer);
 
       assertThat(activityStatus[0]).isEqualTo(applicationStatus[0]);
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

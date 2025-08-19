@@ -22,6 +22,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -29,12 +30,15 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
 /** Tests for {@link ShadowAmbientContextManager}. */
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = VERSION_CODES.TIRAMISU)
 public class ShadowAmbientContextManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private Context context;
 
   @Before
@@ -192,8 +196,8 @@ public class ShadowAmbientContextManagerTest {
 
   @Test
   public void ambientContextManager_activityContextEnabled_differentInstancesQueryStatus() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       AmbientContextManager applicationAmbientContextManager =
@@ -236,8 +240,6 @@ public class ShadowAmbientContextManagerTest {
       assertThat(applicationStatus.get()).isEqualTo(activityStatus.get());
     } catch (Exception e) {
       fail("Test failed due to exception: " + e.getMessage());
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 }

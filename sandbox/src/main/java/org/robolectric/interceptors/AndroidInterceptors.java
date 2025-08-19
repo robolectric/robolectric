@@ -86,8 +86,7 @@ public class AndroidInterceptors {
             .invoke(obj, input, value);
       } catch (ReflectiveOperationException e) {
         throw new RuntimeException(
-            "Failed to interact with raw FileDescriptor internals;" + " perhaps JRE has changed?",
-            e);
+            "Failed to interact with raw FileDescriptor internals; perhaps JRE has changed?", e);
       }
       return null;
     }

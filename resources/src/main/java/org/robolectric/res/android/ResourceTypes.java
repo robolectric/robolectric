@@ -1466,7 +1466,7 @@ public class ResourceTypes {
 
     @Override
     public String toString() {
-      return "ResTable_map{" + "name=" + name + ", value=" + value + '}';
+      return "ResTable_map{name=" + name + ", value=" + value + '}';
     }
   }
 

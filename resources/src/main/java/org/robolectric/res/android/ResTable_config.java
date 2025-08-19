@@ -1222,32 +1222,32 @@ public class ResTable_config {
     result.put(Type.LOCALE_VARIANT_STRING, localeVariantString());
     result.put(
         Type.SCREEN_LAYOUT_DIRECTION,
-        getOrDefault(SCREENLAYOUT_LAYOUTDIR_VALUES, screenLayoutDirection(), ""));
+        SCREENLAYOUT_LAYOUTDIR_VALUES.getOrDefault(screenLayoutDirection(), ""));
     result.put(
         Type.SMALLEST_SCREEN_WIDTH_DP,
         smallestScreenWidthDp != 0 ? "sw" + smallestScreenWidthDp + "dp" : "");
     result.put(Type.SCREEN_WIDTH_DP, screenWidthDp != 0 ? "w" + screenWidthDp + "dp" : "");
     result.put(Type.SCREEN_HEIGHT_DP, screenHeightDp != 0 ? "h" + screenHeightDp + "dp" : "");
     result.put(
-        Type.SCREEN_LAYOUT_SIZE, getOrDefault(SCREENLAYOUT_SIZE_VALUES, screenLayoutSize(), ""));
+        Type.SCREEN_LAYOUT_SIZE, SCREENLAYOUT_SIZE_VALUES.getOrDefault(screenLayoutSize(), ""));
     result.put(
-        Type.SCREEN_LAYOUT_LONG, getOrDefault(SCREENLAYOUT_LONG_VALUES, screenLayoutLong(), ""));
+        Type.SCREEN_LAYOUT_LONG, SCREENLAYOUT_LONG_VALUES.getOrDefault(screenLayoutLong(), ""));
     result.put(
-        Type.SCREEN_LAYOUT_ROUND, getOrDefault(SCREENLAYOUT_ROUND_VALUES, screenLayoutRound(), ""));
-    result.put(Type.COLOR_MODE_HDR, getOrDefault(COLOR_MODE_HDR_VALUES, colorModeHdr(), ""));
+        Type.SCREEN_LAYOUT_ROUND, SCREENLAYOUT_ROUND_VALUES.getOrDefault(screenLayoutRound(), ""));
+    result.put(Type.COLOR_MODE_HDR, COLOR_MODE_HDR_VALUES.getOrDefault(colorModeHdr(), ""));
     result.put(
         Type.COLOR_MODE_WIDE_COLOR_GAMUT,
-        getOrDefault(COLOR_MODE_WIDE_COLOR_GAMUT_VALUES, colorModeWideColorGamut(), ""));
-    result.put(Type.ORIENTATION, getOrDefault(ORIENTATION_VALUES, orientation, ""));
-    result.put(Type.UI_MODE_TYPE, getOrDefault(UI_MODE_TYPE_VALUES, uiModeType(), ""));
-    result.put(Type.UI_MODE_NIGHT, getOrDefault(UI_MODE_NIGHT_VALUES, uiModeNight(), ""));
-    result.put(Type.DENSITY_DPI, getOrDefault(DENSITY_DPI_VALUES, density, density + "dpi"));
-    result.put(Type.TOUCHSCREEN, getOrDefault(TOUCHSCREEN_VALUES, touchscreen, ""));
-    result.put(Type.KEYBOARD_HIDDEN, getOrDefault(KEYBOARDHIDDEN_VALUES, keyboardHidden(), ""));
-    result.put(Type.KEYBOARD, getOrDefault(KEYBOARD_VALUES, keyboard, ""));
+        COLOR_MODE_WIDE_COLOR_GAMUT_VALUES.getOrDefault(colorModeWideColorGamut(), ""));
+    result.put(Type.ORIENTATION, ORIENTATION_VALUES.getOrDefault(orientation, ""));
+    result.put(Type.UI_MODE_TYPE, UI_MODE_TYPE_VALUES.getOrDefault(uiModeType(), ""));
+    result.put(Type.UI_MODE_NIGHT, UI_MODE_NIGHT_VALUES.getOrDefault(uiModeNight(), ""));
+    result.put(Type.DENSITY_DPI, DENSITY_DPI_VALUES.getOrDefault(density, density + "dpi"));
+    result.put(Type.TOUCHSCREEN, TOUCHSCREEN_VALUES.getOrDefault(touchscreen, ""));
+    result.put(Type.KEYBOARD_HIDDEN, KEYBOARDHIDDEN_VALUES.getOrDefault(keyboardHidden(), ""));
+    result.put(Type.KEYBOARD, KEYBOARD_VALUES.getOrDefault(keyboard, ""));
     result.put(
-        Type.NAVIGATION_HIDDEN, getOrDefault(NAVIGATIONHIDDEN_VALUES, navigationHidden(), ""));
-    result.put(Type.NAVIGATION, getOrDefault(NAVIGATION_VALUES, navigation, ""));
+        Type.NAVIGATION_HIDDEN, NAVIGATIONHIDDEN_VALUES.getOrDefault(navigationHidden(), ""));
+    result.put(Type.NAVIGATION, NAVIGATION_VALUES.getOrDefault(navigation, ""));
     result.put(
         Type.SCREEN_SIZE,
         screenWidth != 0 || screenHeight != 0 ? screenWidth + "x" + screenHeight : "");
@@ -1261,13 +1261,6 @@ public class ResTable_config {
     }
     result.put(Type.SDK_VERSION, sdkVersion);
     return result;
-  }
-
-  private <K, V> V getOrDefault(Map<K, V> map, K key, V defaultValue) {
-    // TODO(acornwall): Remove this when Java 8's Map#getOrDefault is available.
-    // Null is not returned, even if the map contains a key whose value is null. This is intended.
-    V value = map.get(key);
-    return value != null ? value : defaultValue;
   }
 
   // constants for isBetterThan...

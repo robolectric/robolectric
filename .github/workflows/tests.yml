@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 env:
-  cache-version: v1
+  cache-version: v2
 
 jobs:
   build:
@@ -86,7 +86,7 @@ jobs:
       # Allow tests to continue on other devices if they fail on one device.
       fail-fast: false
       matrix:
-        api-level: [ 29, 34 ]
+        api-level: [ 29, 35 ]
 
     steps:
       - name: Free disk space

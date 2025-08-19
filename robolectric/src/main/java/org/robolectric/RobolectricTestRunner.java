@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
 import org.junit.runner.notification.RunListener;
@@ -35,7 +36,6 @@ import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.DefaultManifestFactory;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
-import org.robolectric.internal.MavenManifestFactory;
 import org.robolectric.internal.SandboxManager;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.TestEnvironment;
@@ -83,7 +83,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected static ImmutableList<RunListener> loadRunListeners() {
     ServiceLoader<RunListener> sl =
         ServiceLoader.load(RunListener.class, Thread.currentThread().getContextClassLoader());
-    List<RunListener> runListeners = sl.stream().map(ServiceLoader.Provider::get).toList();
+    List<RunListener> runListeners =
+        sl.stream().map(ServiceLoader.Provider::get).collect(Collectors.toList());
     for (RunListener listener : runListeners) {
       if (!listener.getClass().getPackageName().startsWith("org.robolectric")) {
         Logger.warn(
@@ -369,12 +370,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @param config Specification of the SDK version, manifest file, package name, etc.
    */
   protected ManifestFactory getManifestFactory(Config config) {
-    Properties buildSystemApiProperties = getBuildSystemApiProperties();
-    if (buildSystemApiProperties != null) {
-      return new DefaultManifestFactory(buildSystemApiProperties);
+    Properties properties = getBuildSystemApiProperties();
+    if (properties == null) {
+      properties = new Properties();
     }
 
-    return new MavenManifestFactory();
+    return new DefaultManifestFactory(properties);
   }
 
   protected Properties getBuildSystemApiProperties() {

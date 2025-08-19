@@ -7,7 +7,12 @@ import org.robolectric.annotation.TextLayoutMode.Mode;
 import org.robolectric.pluginapi.config.Configurer;
 import org.robolectric.plugins.config.SingleValueConfigurer;
 
-/** Provides configuration to Robolectric for its &#064;{@link TextLayoutMode} annotation. */
+/**
+ * Provides configuration to Robolectric for its {@link TextLayoutMode @TextLayoutMode} annotation.
+ *
+ * @deprecated This class will be deleted in a forthcoming Robolectric release.
+ */
+@Deprecated
 @AutoService(Configurer.class)
 public class TextLayoutModeConfigurer extends SingleValueConfigurer<TextLayoutMode, Mode> {
 

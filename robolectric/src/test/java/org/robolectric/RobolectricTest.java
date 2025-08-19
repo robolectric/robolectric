@@ -32,7 +32,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
-import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.ReflectionHelpers;
@@ -91,7 +90,7 @@ public class RobolectricTest {
 
   @Test
   public void checkActivities_shouldSetValueOnShadowApplication() {
-    ShadowApplication.getInstance().checkActivities(true);
+    shadowOf(RuntimeEnvironment.getApplication()).checkActivities(true);
     assertThrows(
         ActivityNotFoundException.class,
         () ->

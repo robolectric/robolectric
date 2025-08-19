@@ -1,6 +1,6 @@
 # Modified from https://github.com/iwahjoedi/android-devcontainer/blob/main/Image/Dockerfile
 # Docker image version history: https://github.com/devcontainers/images/tree/main/src/base-ubuntu/history
-FROM mcr.microsoft.com/devcontainers/base:1-ubuntu-24.04
+FROM mcr.microsoft.com/devcontainers/base:2-ubuntu-24.04
 
 ENV DEVCONTAINER="true"
 

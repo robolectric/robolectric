@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static android.os.Looper.getMainLooper;
@@ -41,15 +40,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAppWidgetManagerTest {
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
   private Context context;
   private AppWidgetManager appWidgetManager;
   private ShadowAppWidgetManager shadowAppWidgetManager;
@@ -261,7 +264,7 @@ public class ShadowAppWidgetManagerTest {
   }
 
   @Test
-  @Config(minSdk = L)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getInstalledProvidersForProfile_returnsWidgetList() {
     UserHandle userHandle = UserHandle.CURRENT;
     assertTrue(appWidgetManager.getInstalledProvidersForProfile(userHandle).isEmpty());
@@ -603,8 +606,8 @@ public class ShadowAppWidgetManagerTest {
   @Test
   @Config(minSdk = O)
   public void appWidgetManager_activityContextEnabled_sharedState() {
-    String originalProperty = System.getProperty("robolectric.createActivityContexts", "");
-    System.setProperty("robolectric.createActivityContexts", "true");
+    setSystemPropertyRule.set("robolectric.createActivityContexts", "true");
+
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(Activity.class).setup()) {
       AppWidgetManager applicationAppWidgetManager =
@@ -617,8 +620,6 @@ public class ShadowAppWidgetManagerTest {
       applicationAppWidgetManager.updateAppWidgetOptions(1, null);
 
       assertThat(activityAppWidgetManager.getAppWidgetOptions(1)).isNotNull();
-    } finally {
-      System.setProperty("robolectric.createActivityContexts", originalProperty);
     }
   }
 

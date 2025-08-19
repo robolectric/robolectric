@@ -99,7 +99,6 @@ public class ShadowInputMethodManager {
   }
 
   @Implementation(minSdk = Baklava.SDK_INT)
-  
   protected boolean hideSoftInputFromWindow(
       IBinder windowToken,
       int flags,

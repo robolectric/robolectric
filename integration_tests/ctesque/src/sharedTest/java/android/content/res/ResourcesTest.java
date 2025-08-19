@@ -36,6 +36,7 @@ import android.graphics.drawable.NinePatchDrawable;
 import android.graphics.fonts.Font;
 import android.graphics.fonts.FontFamily;
 import android.os.Build;
+import android.text.SpannedString;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.util.Xml;
@@ -120,7 +121,7 @@ public class ResourcesTest {
   @Test
   public void getStringShouldConvertCodePoints() {
     assertThat(resources.getString(R.string.non_breaking_space))
-        .isEqualTo("Closing" + " soon:\u00A05pm");
+        .isEqualTo("Closing soon:\u00A05pm");
     assertThat(resources.getString(R.string.space)).isEqualTo("Closing soon: 5pm");
   }
 
@@ -137,9 +138,7 @@ public class ResourcesTest {
   @Test
   public void getText_withHtml() {
     assertThat(resources.getText(R.string.some_html, "value").toString()).isEqualTo("Hello, world");
-    // TODO: Raw resources have lost the tags early, but the following call should return a
-    // SpannedString
-    // assertThat(resources.getText(R.string.some_html)).isInstanceOf(SpannedString.class);
+    assertThat(resources.getText(R.string.some_html)).isInstanceOf(SpannedString.class);
   }
 
   @Test
@@ -968,7 +967,7 @@ public class ResourcesTest {
   @Test
   public void internalWhiteSpaceShouldBeCollapsed() {
     assertThat(resources.getString(R.string.internal_whitespace_blocks))
-        .isEqualTo("Whitespace in" + " the middle");
+        .isEqualTo("Whitespace in the middle");
     assertThat(resources.getString(R.string.internal_newlines)).isEqualTo("Some Newlines");
   }
 

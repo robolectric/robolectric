@@ -5,13 +5,13 @@
 # more information on building AOSP.
 #
 # Usage:
-#   build-android-prebuilt.sh <jar directory path> <android version> <robolectric version>
+#   build-android-prebuilt.sh <jar directory path> <android version> <build_id>
 #
 
-set -ex
+set -eux
 
 function usage() {
-    echo "Usage: ${0} <jar dir path> <android-version> <robolectric-sub-version>"
+    echo "Usage: ${0} <jar dir path> <android-version> <build_id>"
 }
 
 if [[ $# -ne 3 ]]; then
@@ -21,75 +21,93 @@ fi
 
 JAR_DIR=$(readlink -e "$1")
 ANDROID_VERSION="$2"
-ROBOLECTRIC_SUB_VERSION="$3"
+BUILD_ID="$3"
 
-SCRIPT_DIR=$(cd $(dirname "$0"); pwd)
+SCRIPT_DIR="$(cd $(dirname "$0"); pwd)"
 
-ROBOLECTRIC_VERSION=${ANDROID_VERSION}-robolectric-${ROBOLECTRIC_SUB_VERSION}
+AA_VERSION="${ANDROID_VERSION}-robolectric-${BUILD_ID}"
+
+TEMP_DIR="$(mktemp -d -t android-all.XXXXXXXXXX)"
+
+STAGING_DIR="${TEMP_DIR}/staging/org/robolectric/android-all/${AA_VERSION}"
 
 # Final artifact names
-ANDROID_ALL=android-all-${ROBOLECTRIC_VERSION}.jar
-ANDROID_ALL_POM=android-all-${ROBOLECTRIC_VERSION}.pom
-ANDROID_ALL_SRC=android-all-${ROBOLECTRIC_VERSION}-sources.jar
-ANDROID_ALL_DOC=android-all-${ROBOLECTRIC_VERSION}-javadoc.jar
-ANDROID_BUNDLE=android-all-${ROBOLECTRIC_VERSION}-bundle.jar
+ANDROID_ALL="android-all-${AA_VERSION}.jar"
+ANDROID_ALL_POM="android-all-${AA_VERSION}.pom"
+ANDROID_ALL_SRC="android-all-${AA_VERSION}-sources.jar"
+ANDROID_ALL_DOC="android-all-${AA_VERSION}-javadoc.jar"
+ANDROID_BUNDLE="android-all-${AA_VERSION}-bundle.jar"
 
 generate_empty_sources() {
-    TMP=`mktemp --directory`
-    cd ${TMP}
-    jar cf ${JAR_DIR}/${ANDROID_ALL_SRC} .
-    cd ${JAR_DIR}; rm -rf ${TMP}
+    local TMP="$(mktemp --directory)"
+    (cd "${TMP}" && jar cf "${STAGING_DIR}/${ANDROID_ALL_SRC}" .)
+    rm -rf "${TMP}"
 }
 
 generate_empty_javadoc() {
-    TMP=`mktemp --directory`
-    cd ${TMP}
-    jar cf ${JAR_DIR}/${ANDROID_ALL_DOC} .
-    cd ${JAR_DIR}; rm -rf ${TMP}
+    local TMP="$(mktemp --directory)"
+    (cd "${TMP}" && jar cf "${STAGING_DIR}/${ANDROID_ALL_DOC}" .)
+    rm -rf "${TMP}"
 }
 
 build_signed_packages() {
     echo "Robolectric: Building android-all.pom..."
-    sed s/VERSION/${ROBOLECTRIC_VERSION}/ ${SCRIPT_DIR}/pom_template.xml | sed s/ARTIFACT_ID/android-all/ > ${JAR_DIR}/${ANDROID_ALL_POM}
+    sed "s/VERSION/${AA_VERSION}/" "${SCRIPT_DIR}/pom_template.xml" | sed s/ARTIFACT_ID/android-all/ > "${STAGING_DIR}/${ANDROID_ALL_POM}"
 
     echo "Robolectric: Signing files with gpg..."
     for ext in ".jar" "-javadoc.jar" "-sources.jar" ".pom"; do
-        ( cd ${JAR_DIR} && gpg -ab android-all-${ROBOLECTRIC_VERSION}$ext )
+        (cd "${STAGING_DIR}" && gpg -ab "android-all-${AA_VERSION}$ext")
     done
 
+    pushd "${STAGING_DIR}"
+      # Generate md5, sha1, sha256, and sha512 checksums for all primary artifacts
+      for f in *.pom *.jar *.asc; do
+        echo "  - Generating checksums for ${f}"
+        md5sum "$f" | awk '{print $1}' > "$f.md5"
+        sha1sum "$f" | awk '{print $1}' > "$f.sha1"
+        sha256sum "$f" | awk '{print $1}' > "$f.sha256"
+        sha512sum "$f" | awk '{print $1}' > "$f.sha512"
+      done
+    popd
+
     echo "Robolectric: Creating bundle for Sonatype upload..."
-    cd ${JAR_DIR}; jar cf ${ANDROID_BUNDLE} *.jar *.pom *.asc
+    (cd "${TEMP_DIR}/staging" && zip -r "../android-all-${AA_VERSION}-bundle.zip" .)
 }
 
 mavenize() {
-    local FILE_NAME_BASE=android-all-${ROBOLECTRIC_VERSION}
+    local FILE_NAME_BASE=android-all-${AA_VERSION}
     mvn install:install-file \
-      -Dfile=${JAR_DIR}/${FILE_NAME_BASE}.jar \
+      -Dfile="${STAGING_DIR}/${FILE_NAME_BASE}.jar" \
       -DgroupId=org.robolectric \
       -DartifactId=android-all \
-      -Dversion=${ROBOLECTRIC_VERSION} \
-      -Dpackaging=jar
+      -Dversion="${AA_VERSION}" \
+      -Dpackaging=jar \
+      -DpomFile="${STAGING_DIR}/${ANDROID_ALL_POM}"
 
     mvn install:install-file \
-      -Dfile=${JAR_DIR}/${FILE_NAME_BASE}-sources.jar \
+      -Dfile="${STAGING_DIR}/${FILE_NAME_BASE}-sources.jar" \
       -DgroupId=org.robolectric \
       -DartifactId=android-all \
-      -Dversion=${ROBOLECTRIC_VERSION} \
+      -Dversion="${AA_VERSION}" \
       -Dpackaging=jar \
       -Dclassifier=sources
 
     mvn install:install-file \
-      -Dfile=${JAR_DIR}/${FILE_NAME_BASE}-javadoc.jar \
+      -Dfile="${STAGING_DIR}/${FILE_NAME_BASE}-javadoc.jar" \
       -DgroupId=org.robolectric \
       -DartifactId=android-all \
-      -Dversion=${ROBOLECTRIC_VERSION} \
+      -Dversion="${AA_VERSION}" \
       -Dpackaging=jar \
       -Dclassifier=javadoc
 }
+
+echo "Creating android-all package in ${TEMP_DIR}"
+mkdir -p "${STAGING_DIR}"
+cp "${JAR_DIR}/${ANDROID_ALL}" "${STAGING_DIR}"
 
 generate_empty_javadoc
 generate_empty_sources
 build_signed_packages
 mavenize
 
-echo "DONE!!"
+echo "Done generating bundle ${TEMP_DIR}/android-all-${AA_VERSION}-bundle.zip"

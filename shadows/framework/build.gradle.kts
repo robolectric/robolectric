@@ -39,8 +39,6 @@ tasks.jar.configure { dependsOn(copySqliteNatives) }
 
 tasks.javadoc.configure { dependsOn(copySqliteNatives) }
 
-val axtMonitorVersion: String by rootProject.extra
-
 dependencies {
   api(project(":annotations"))
   api(project(":nativeruntime"))
@@ -51,8 +49,7 @@ dependencies {
   api(project(":utils"))
   api(project(":utils:reflector"))
 
-  api("androidx.test:monitor:$axtMonitorVersion@aar")
-
+  api(variantOf(libs.androidx.test.monitor) { artifactType("aar") })
   implementation(libs.error.prone.annotations)
   compileOnly(libs.findbugs.jsr305)
   api(libs.sqlite4java)
@@ -62,4 +59,9 @@ dependencies {
   annotationProcessor(libs.auto.value)
 
   sqlite4java(libs.bundles.sqlite4java.native)
+
+  testImplementation(project(":robolectric"))
+  testImplementation(libs.junit4)
+  testImplementation(libs.truth)
+  testImplementation(AndroidSdk.MAX_SDK.coordinates)
 }

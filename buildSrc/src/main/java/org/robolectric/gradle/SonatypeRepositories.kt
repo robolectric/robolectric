@@ -3,12 +3,16 @@ package org.robolectric.gradle
 import java.net.URI
 import org.gradle.api.publish.PublishingExtension
 
+const val PUBLISH_URL =
+  "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
+const val PUBLISH_SNAPSHOTS_URL = "https://central.sonatype.com/repository/maven-snapshots/"
+
 fun PublishingExtension.sonatypeRepositories(isSnapshotVersion: Boolean) {
   repositories {
     maven {
-      name = "SonatypeOSS"
-      val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-      val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+      name = "CentralPortal"
+      val releasesRepoUrl = PUBLISH_URL
+      val snapshotsRepoUrl = PUBLISH_SNAPSHOTS_URL
 
       url = if (isSnapshotVersion) URI(snapshotsRepoUrl) else URI(releasesRepoUrl)
 

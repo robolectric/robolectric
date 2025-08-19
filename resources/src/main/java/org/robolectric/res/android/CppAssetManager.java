@@ -1,6 +1,5 @@
 package org.robolectric.res.android;
 
-import static org.robolectric.res.android.Asset.toIntExact;
 import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeDirectory;
 import static org.robolectric.res.android.Util.ALOGD;
 import static org.robolectric.res.android.Util.ALOGE;
@@ -986,7 +985,7 @@ public class CppAssetManager {
           "Opened uncompressed entry %s in zip %s mode %s: %s",
           entryName.string(), pZipFile.mFileName, mode, pAsset);
     } else {
-      pAsset = Asset.createFromCompressedMap(dataMap, toIntExact(uncompressedLen.get()), mode);
+      pAsset = Asset.createFromCompressedMap(dataMap, Math.toIntExact(uncompressedLen.get()), mode);
       ALOGV(
           "Opened compressed entry %s in zip %s mode %s: %s",
           entryName.string(), pZipFile.mFileName, mode, pAsset);

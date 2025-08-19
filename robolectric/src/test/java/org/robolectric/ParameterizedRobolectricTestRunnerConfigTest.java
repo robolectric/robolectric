@@ -27,13 +27,13 @@ public final class ParameterizedRobolectricTestRunnerConfigTest {
   }
 
   @Test
-  @Config(manifest = Config.NONE, shadows = ShadowCursorWrapper1.class)
+  @Config(shadows = ShadowCursorWrapper1.class)
   public void getType1() {
     assertThat(new CursorWrapper(null).getType(expectedType)).isEqualTo(1);
   }
 
   @Test
-  @Config(manifest = Config.NONE, shadows = ShadowCursorWrapperEcho.class)
+  @Config(shadows = ShadowCursorWrapperEcho.class)
   public void getTypeEcho() {
     assertThat(new CursorWrapper(null).getType(expectedType)).isEqualTo(expectedType);
   }

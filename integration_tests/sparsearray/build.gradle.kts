@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.detekt)
@@ -17,13 +19,20 @@ android {
     targetCompatibility = JavaVersion.VERSION_1_8
   }
 
-  kotlinOptions { jvmTarget = "1.8" }
-
   testOptions {
     targetSdk = 35
     unitTests.isIncludeAndroidResources = true
   }
+
+  androidComponents {
+    beforeVariants(selector().all()) { variantBuilder ->
+      // sparsearray does not support AndroidTest.
+      variantBuilder.enableAndroidTest = false
+    }
+  }
 }
+
+kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_1_8 } }
 
 dependencies {
   compileOnly(AndroidSdk.MAX_SDK.coordinates)

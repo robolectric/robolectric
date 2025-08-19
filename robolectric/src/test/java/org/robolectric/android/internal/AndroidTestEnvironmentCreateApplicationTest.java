@@ -110,7 +110,7 @@ public class AndroidTestEnvironmentCreateApplicationTest {
   public void shouldLoadConfigApplicationIfSpecified() throws Exception {
     Application application =
         createApplication(
-            newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"),
+            newConfigWith("<application android:name=\"ClassNameToIgnore\"/>"),
             new Config.Builder().setApplication(TestFakeApp.class).build(),
             null);
     assertThat(application.getClass()).isEqualTo(TestFakeApp.class);
@@ -120,7 +120,7 @@ public class AndroidTestEnvironmentCreateApplicationTest {
   public void shouldLoadConfigInnerClassApplication() throws Exception {
     Application application =
         createApplication(
-            newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"),
+            newConfigWith("<application android:name=\"ClassNameToIgnore\"/>"),
             new Config.Builder().setApplication(TestFakeAppInner.class).build(),
             null);
     assertThat(application.getClass()).isEqualTo(TestFakeAppInner.class);

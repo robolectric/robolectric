@@ -6,8 +6,6 @@
     "schedule:weekly"
   ],
   "ignoreDeps": [
-    "com.google.android.gms:play-services-auth",
-    "com.google.android.gms:play-services-base",
     "com.google.android.gms:play-services-basement",
     "org.apache.httpcomponents:httpclient",
     "org.apache.httpcomponents:httpcore",
@@ -43,14 +41,8 @@
       "matchPackageNames": [
         "androidx.*"
       ]
-    },
-    {
-      "enabled": false,
-      "matchCurrentVersion": "1.2.0",
-      "matchManagers": "gradle",
-      "matchPackageNames": [
-        "androidx.fragment:fragment"
-      ]
     }
-  ]
+  ],
+  "prHourlyLimit": 5,
+  "rebaseWhen": "conflicted"
 }
