@@ -298,6 +298,13 @@ public class ShadowUIModeManager {
       reflector(UiModeManagerReflector.class, realUiModeManager).setContrast(contrast);
       listeners =
           reflector(UiModeManagerReflector.class, realUiModeManager).getContrastChangeListeners();
+    } else if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.BAKLAVA) {
+      Object globals = reflector(UiModeManagerReflector.class, realUiModeManager).getGlobals();
+      int userId = reflector(UiModeManagerReflector.class, realUiModeManager).getUserId();
+      Object userCallback =
+          reflector(UiModeManagerGlobalsReflector.class, globals).getUserCallbackOrCreate(userId);
+      reflector(UserCallbackReflector.class, userCallback).setContrast(contrast);
+      listeners = reflector(UserCallbackReflector.class, userCallback).getContrastChangeListeners();
     } else {
       Object globals = reflector(UiModeManagerReflector.class, realUiModeManager).getGlobals();
       reflector(UiModeManagerGlobalsReflector.class, globals).setContrast(contrast);
@@ -354,6 +361,8 @@ public class ShadowUIModeManager {
     @Accessor("sGlobals")
     @Static
     void setGlobals(@WithType("android.app.UiModeManager$Globals") Object value);
+
+    int getUserId();
   }
 
   @ForType(className = "android.app.UiModeManager$Globals")
@@ -367,6 +376,19 @@ public class ShadowUIModeManager {
 
     @Constructor
     Object newGlobals(IUiModeManager iUiModeManager);
+
+    /* UserCallback */ Object getUserCallbackOrCreate(int userId);
+  }
+
+  @ForType(className = "android.app.UiModeManager$UserCallback")
+  private interface UserCallbackReflector {
+
+    @Accessor("mContrastChangeListeners")
+    ArrayMap<ContrastChangeListener, Executor>
+        getContrastChangeListeners(); // Stores the contrast listeners for above Android B.
+
+    @Accessor("mContrast")
+    void setContrast(float contrast);
   }
 
   private void assertHasPermission(String... permissions) {
