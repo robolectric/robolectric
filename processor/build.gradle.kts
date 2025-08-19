@@ -53,7 +53,6 @@ dependencies {
     implementation(files(toolsJar))
   }
 
-  testImplementation(libs.javax.annotation.api)
   testImplementation(libs.junit4)
   testImplementation(libs.mockito)
   testImplementation(libs.mockito.subclass)
