@@ -333,14 +333,12 @@ public class ShadowUIModeManagerTest {
 
     ContrastChangeListener contrastChangeListener = mock(ContrastChangeListener.class);
     TestExecutor usedExecutor = new TestExecutor();
-    TestExecutor unusedExecutor = new TestExecutor();
 
     uiModeManager.addContrastChangeListener(usedExecutor, contrastChangeListener);
     shadowUiModeManager.setContrast(expectedContrast);
 
     verify(contrastChangeListener).onContrastChanged(expectedContrast);
     assertThat(usedExecutor.hasExecuted).isTrue();
-    assertThat(unusedExecutor.hasExecuted).isFalse();
   }
 
   @Test
