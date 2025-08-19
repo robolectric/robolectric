@@ -90,6 +90,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;
@@ -105,6 +106,8 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowTelephonyManagerTest {
+
+  private static final int SUB_ID_1 = 1;
 
   private static final String NETWORK_COUNTRY_ISO_US = "us";
   private static final String NETWORK_COUNTRY_ISO_US_UPPERCASE =
@@ -688,7 +691,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  
   public void shouldGiveVoiceCapableTrue() {
     shadowOf(telephonyManager).setVoiceCapable(true);
 
@@ -696,7 +698,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  
   public void shouldGiveVoiceCapableFalse() {
     shadowOf(telephonyManager).setVoiceCapable(false);
 
@@ -1376,6 +1377,87 @@ public class ShadowTelephonyManagerTest {
     assertThat(telephonyManager.getDataActivity()).isEqualTo(TelephonyManager.DATA_ACTIVITY_IN);
     shadowOf(telephonyManager).setDataActivity(TelephonyManager.DATA_ACTIVITY_OUT);
     assertThat(telephonyManager.getDataActivity()).isEqualTo(TelephonyManager.DATA_ACTIVITY_OUT);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setPreferredOpportunisticDataSubscription_withoutCallback_setsPreferredSubId() {
+    shadowOf(telephonyManager)
+        .setPreferredOpportunisticDataSubscriptionCallbackResult(
+            SUB_ID_1, TelephonyManager.SET_OPPORTUNISTIC_SUB_SUCCESS);
+
+    telephonyManager.setPreferredOpportunisticDataSubscription(
+        SUB_ID_1, /* needValidation= */ false, directExecutor(), /* callback= */ null);
+
+    assertThat(telephonyManager.getPreferredOpportunisticDataSubscription()).isEqualTo(SUB_ID_1);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void
+      setPreferredOpportunisticDataSubscription_withCallback_callbackSuccessResult_setsPreferredSubId() {
+    shadowOf(telephonyManager)
+        .setPreferredOpportunisticDataSubscriptionCallbackResult(
+            SUB_ID_1, TelephonyManager.SET_OPPORTUNISTIC_SUB_SUCCESS);
+    AtomicInteger callbackResult = new AtomicInteger();
+
+    telephonyManager.setPreferredOpportunisticDataSubscription(
+        SUB_ID_1,
+        /* needValidation= */ false,
+        directExecutor(),
+        /* callback= */ callbackResult::set);
+
+    assertThat(callbackResult.get()).isEqualTo(TelephonyManager.SET_OPPORTUNISTIC_SUB_SUCCESS);
+    assertThat(telephonyManager.getPreferredOpportunisticDataSubscription()).isEqualTo(SUB_ID_1);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void
+      setPreferredOpportunisticDataSubscription_withCallback_callbackFailureResult_doesNotSetPreferredSubId() {
+    AtomicInteger callbackResult = new AtomicInteger();
+    shadowOf(telephonyManager)
+        .setPreferredOpportunisticDataSubscriptionCallbackResult(
+            SUB_ID_1, TelephonyManager.SET_OPPORTUNISTIC_SUB_INACTIVE_SUBSCRIPTION);
+
+    telephonyManager.setPreferredOpportunisticDataSubscription(
+        SUB_ID_1,
+        /* needValidation= */ false,
+        directExecutor(),
+        /* callback= */ callbackResult::set);
+
+    assertThat(callbackResult.get())
+        .isEqualTo(TelephonyManager.SET_OPPORTUNISTIC_SUB_INACTIVE_SUBSCRIPTION);
+    assertThat(telephonyManager.getPreferredOpportunisticDataSubscription())
+        .isEqualTo(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void
+      setPreferredOpportunisticDataSubscription_withCallback_callbackResultNotConfigured_callbackReturnsSuccess() {
+    AtomicInteger callbackResult = new AtomicInteger();
+
+    telephonyManager.setPreferredOpportunisticDataSubscription(
+        SUB_ID_1,
+        /* needValidation= */ false,
+        directExecutor(),
+        /* callback= */ callbackResult::set);
+
+    assertThat(callbackResult.get()).isEqualTo(TelephonyManager.SET_OPPORTUNISTIC_SUB_SUCCESS);
+    assertThat(telephonyManager.getPreferredOpportunisticDataSubscription()).isEqualTo(SUB_ID_1);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void
+      setPreferredOpportunisticDataSubscriptionCallbackResult_invalidResult_doesNotSetPreferredSubId() {
+    shadowOf(telephonyManager)
+        .setPreferredOpportunisticDataSubscriptionCallbackResult(
+            SUB_ID_1, /* result= */ Integer.MAX_VALUE);
+
+    assertThat(telephonyManager.getPreferredOpportunisticDataSubscription())
+        .isEqualTo(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID);
   }
 
   @Test
