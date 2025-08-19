@@ -5,6 +5,7 @@ import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACC_STATIC;
 import static org.objectweb.asm.Opcodes.ACC_SUPER;
+import static org.objectweb.asm.Opcodes.ACC_VOLATILE;
 import static org.objectweb.asm.Opcodes.V1_5;
 
 import java.lang.annotation.Annotation;
@@ -198,7 +199,12 @@ class ReflectorClassWriter extends ClassWriter {
     void write() {
       // write our field to hold target field reference (but just once)...
       if (fieldRefs.add(targetFieldName)) {
-        visitField(ACC_PRIVATE | ACC_STATIC, fieldRefName, FIELD_TYPE.getDescriptor(), null, null);
+        visitField(
+            ACC_PRIVATE | ACC_STATIC | ACC_VOLATILE,
+            fieldRefName,
+            FIELD_TYPE.getDescriptor(),
+            null,
+            null);
       }
 
       visitCode();
@@ -277,7 +283,7 @@ class ReflectorClassWriter extends ClassWriter {
     void write() {
       // write field to hold method reference...
       visitField(
-          ACC_PRIVATE | ACC_STATIC,
+          ACC_PRIVATE | ACC_STATIC | ACC_VOLATILE,
           constructorRefName,
           CONSTRUCTOR_TYPE.getDescriptor(),
           null,
@@ -405,7 +411,12 @@ class ReflectorClassWriter extends ClassWriter {
 
     void write() {
       // write field to hold method reference...
-      visitField(ACC_PRIVATE | ACC_STATIC, methodRefName, METHOD_TYPE.getDescriptor(), null, null);
+      visitField(
+          ACC_PRIVATE | ACC_STATIC | ACC_VOLATILE,
+          methodRefName,
+          METHOD_TYPE.getDescriptor(),
+          null,
+          null);
 
       visitCode();
 
