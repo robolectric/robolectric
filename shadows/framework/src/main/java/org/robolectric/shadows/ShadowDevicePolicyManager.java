@@ -440,6 +440,14 @@ public class ShadowDevicePolicyManager {
   }
 
   /**
+   * @see #getDeviceOwnerComponentOnAnyUser()
+   */
+  @Implementation(minSdk = N)
+  protected ComponentName getDeviceOwnerComponentOnAnyUser() {
+    return deviceOwner;
+  }
+
+  /**
    * @see #setDeviceOwner(ComponentName)
    */
   @Implementation(minSdk = N)
