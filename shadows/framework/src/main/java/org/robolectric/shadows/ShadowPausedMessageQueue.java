@@ -100,9 +100,10 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   /**
    * Polls the message queue waiting until a message is posted to the head of the queue. This will
-   * suspend the thread until a new message becomes available. Returns immediately if the queue is
-   * not idle. There's no guarantee that the message queue will not still be idle when returning,
-   * but if the message queue becomes not idle it will return immediately.
+   * suspend the thread until a new message becomes available.
+   *
+   * <p>It is the responsibility of the caller to ensure that it is only called when Looper is idle.
+   * There's no guarantee that the message queue will not still be idle when returning,
    *
    * <p>See {@link ShadowPausedLooper#poll(long)} for more information.
    *
@@ -119,16 +120,14 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     // return the next message. To simulate this behavior check if the queue is idle and if it is
     // mark the queue as blocked and wait on a new message.
     synchronized (realQueue) {
-      if (realQueue.isIdle()) {
-        reflector(MessageQueueReflector.class, realQueue).setBlocked(true);
-        try {
-          pendingWake = false;
-          realQueue.wait(timeout);
-        } catch (InterruptedException ignored) {
-          // Fall through and unblock with no messages.
-        } finally {
-          reflector(MessageQueueReflector.class, realQueue).setBlocked(false);
-        }
+      reflector(MessageQueueReflector.class, realQueue).setBlocked(true);
+      try {
+        pendingWake = false;
+        realQueue.wait(timeout);
+      } catch (InterruptedException ignored) {
+        // Fall through and unblock with no messages.
+      } finally {
+        reflector(MessageQueueReflector.class, realQueue).setBlocked(false);
       }
     }
   }
