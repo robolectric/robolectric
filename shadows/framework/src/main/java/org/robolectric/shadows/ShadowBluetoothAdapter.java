@@ -568,7 +568,6 @@ public class ShadowBluetoothAdapter {
     if (proxy == null) {
       return false;
     } else {
-      listener.onServiceConnected(profile, proxy);
       List<BluetoothProfile.ServiceListener> profileListeners =
           bluetoothProfileServiceListeners.get(profile);
       if (profileListeners != null) {
@@ -576,6 +575,7 @@ public class ShadowBluetoothAdapter {
       } else {
         bluetoothProfileServiceListeners.put(profile, new ArrayList<>(ImmutableList.of(listener)));
       }
+      listener.onServiceConnected(profile, proxy);
       return true;
     }
   }
