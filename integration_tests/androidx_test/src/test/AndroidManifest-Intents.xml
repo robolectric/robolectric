@@ -5,7 +5,7 @@
 
   <uses-sdk
       android:minSdkVersion="23"
-      android:targetSdkVersion="35"/>
+      android:targetSdkVersion="36"/>
 
   <application>
     <activity

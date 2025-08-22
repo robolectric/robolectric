@@ -16,7 +16,7 @@ android {
   lint { abortOnError = false }
 
   testOptions {
-    targetSdk = 35
+    targetSdk = 36
     unitTests.isIncludeAndroidResources = true
   }
 

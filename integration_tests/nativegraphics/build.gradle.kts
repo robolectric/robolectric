@@ -10,7 +10,7 @@ android {
   defaultConfig { minSdk = 26 }
 
   testOptions {
-    targetSdk = 35
+    targetSdk = 36
     unitTests {
       isIncludeAndroidResources = true
       all { it.systemProperty("robolectric.graphicsMode", "NATIVE") }
