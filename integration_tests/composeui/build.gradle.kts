@@ -23,7 +23,7 @@ android {
   buildFeatures { compose = true }
 
   testOptions {
-    targetSdk = 35
+    targetSdk = 36
     unitTests { isIncludeAndroidResources = true }
   }
 
