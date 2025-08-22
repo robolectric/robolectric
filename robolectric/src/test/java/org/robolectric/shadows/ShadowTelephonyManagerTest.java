@@ -57,6 +57,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.PersistableBundle;
 import android.telecom.PhoneAccountHandle;
+import android.telephony.AvailableNetworkInfo;
 import android.telephony.CarrierRestrictionRules;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
@@ -196,6 +197,49 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setCallState(CALL_STATE_RINGING, "123");
 
     verifyNoMoreInteractions(callback);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void updateAvailableNetworks_failResult_invokesCallback_doesNotUpdateAvailableNetworks() {
+    shadowTelephonyManager.setUpdateAvailableNetworksCallbackResult(
+        TelephonyManager.UPDATE_AVAILABLE_NETWORKS_ABORTED);
+    AtomicInteger callbackResult = new AtomicInteger();
+
+    telephonyManager.updateAvailableNetworks(
+        ImmutableList.of(
+            new AvailableNetworkInfo(
+                SUB_ID_1,
+                AvailableNetworkInfo.PRIORITY_LOW,
+                /* mccMncs= */ ImmutableList.of(),
+                /* bands= */ ImmutableList.of())),
+        directExecutor(),
+        /* callback= */ callbackResult::set);
+
+    assertThat(callbackResult.get()).isEqualTo(TelephonyManager.UPDATE_AVAILABLE_NETWORKS_ABORTED);
+    assertThat(shadowTelephonyManager.getAvailableNetworks()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void updateAvailableNetworks_successResult_invokesCallback_updatesAvailableNetworks() {
+    AvailableNetworkInfo availableNetworkInfo =
+        new AvailableNetworkInfo(
+            SUB_ID_1,
+            AvailableNetworkInfo.PRIORITY_LOW,
+            /* mccMncs= */ ImmutableList.of(),
+            /* bands= */ ImmutableList.of());
+    shadowTelephonyManager.setUpdateAvailableNetworksCallbackResult(
+        TelephonyManager.UPDATE_AVAILABLE_NETWORKS_SUCCESS);
+    AtomicInteger callbackResult = new AtomicInteger();
+
+    telephonyManager.updateAvailableNetworks(
+        ImmutableList.of(availableNetworkInfo),
+        directExecutor(),
+        /* callback= */ callbackResult::set);
+
+    assertThat(callbackResult.get()).isEqualTo(TelephonyManager.UPDATE_AVAILABLE_NETWORKS_SUCCESS);
+    assertThat(shadowTelephonyManager.getAvailableNetworks()).containsExactly(availableNetworkInfo);
   }
 
   @Test

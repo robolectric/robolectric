@@ -33,6 +33,7 @@ import android.os.SystemProperties;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.Annotation.NetworkType;
 import android.telephony.Annotation.OverrideNetworkType;
+import android.telephony.AvailableNetworkInfo;
 import android.telephony.CarrierRestrictionRules;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
@@ -51,6 +52,7 @@ import android.telephony.TelephonyDisplayInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.TelephonyManager.CellInfoCallback;
 import android.telephony.TelephonyManager.SetOpportunisticSubscriptionResult;
+import android.telephony.TelephonyManager.UpdateAvailableNetworksResult;
 import android.telephony.VisualVoicemailSmsFilterSettings;
 import android.telephony.emergency.EmergencyNumber;
 import android.text.TextUtils;
@@ -200,6 +202,10 @@ public class ShadowTelephonyManager {
   private /*CarrierRestrictionRules*/ Object carrierRestrictionRules;
   private final AtomicInteger modemRebootCount = new AtomicInteger();
   private String iccAuthentication;
+
+  private List<AvailableNetworkInfo> availableNetworks = new ArrayList<>();
+  private int updateAvailableNetworksCallbackResult =
+      TelephonyManager.UPDATE_AVAILABLE_NETWORKS_SUCCESS;
 
   /**
    * The preferred opportunistic data subscription ID, which is configurable via {@link
@@ -369,6 +375,41 @@ public class ShadowTelephonyManager {
   /** Returns the most recent callback passed to #registerTelephonyCallback(). */
   public /*TelephonyCallback*/ Object getLastTelephonyCallback() {
     return lastTelephonyCallback;
+  }
+
+  /**
+   * Implementation of {@link TelephonyManager#updateAvailableNetworks}.
+   *
+   * <p>This will invoke the callback, which can be configured by {@link
+   * #setUpdateAvailableNetworksCallbackResult}. By default, it will emit {@link
+   * TelephonyManager#UPDATE_AVAILABLE_NETWORKS_SUCCESS}. If a fail result is configured, the
+   * available networks will not be updated.
+   */
+  @Implementation(minSdk = Q)
+  protected void updateAvailableNetworks(
+      List<AvailableNetworkInfo> availableNetworks, Executor executor, Consumer<Integer> callback) {
+    if (updateAvailableNetworksCallbackResult
+        == TelephonyManager.UPDATE_AVAILABLE_NETWORKS_SUCCESS) {
+      // We don't update the available networks if a failure result was configured in the callback.
+      this.availableNetworks = availableNetworks;
+    }
+    if (callback != null) {
+      executor.execute(() -> callback.accept(updateAvailableNetworksCallbackResult));
+    }
+  }
+
+  /** Sets the result of the callback passed to {@link #updateAvailableNetworks}. */
+  public void setUpdateAvailableNetworksCallbackResult(@UpdateAvailableNetworksResult int result) {
+    updateAvailableNetworksCallbackResult = result;
+  }
+
+  /**
+   * Returns the available networks configured by {@link #updateAvailableNetworks}.
+   *
+   * <p>There is currently no public API that provides this information to callers.
+   */
+  public List<AvailableNetworkInfo> getAvailableNetworks() {
+    return ImmutableList.copyOf(availableNetworks);
   }
 
   /** Call state may be specified via {@link #setCallState(int)}. */
