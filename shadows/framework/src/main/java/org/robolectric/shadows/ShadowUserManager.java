@@ -54,6 +54,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Robolectric implementation of {@link android.os.UserManager}. */
 @Implements(UserManager.class)
@@ -1278,6 +1279,9 @@ public class ShadowUserManager {
 
     @Accessor("mUserId")
     void setUserId(int userId);
+
+    @Accessor("mUserId")
+    int getUserId();
   }
 
   @Implementation(minSdk = TIRAMISU)
@@ -1313,5 +1317,15 @@ public class ShadowUserManager {
       sources.add(new EnforcingUser(userHandle.getIdentifier(), RESTRICTION_SOURCE_SYSTEM));
     }
     return sources;
+  }
+
+  // TODO: should be minSdk PostBaklava
+  @Implementation(minSdk = Baklava.SDK_INT)
+  protected boolean isMainUser() {
+    // in PostBaklava, the framework implementation changed to call into a system service.
+    // This shadow just inlines the previous implementation to keep this method functional
+    final UserInfo user =
+        getUserInfo(reflector(UserManagerReflector.class, realObject).getUserId());
+    return user != null && user.isMain();
   }
 }
