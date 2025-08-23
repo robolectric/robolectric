@@ -19,6 +19,7 @@ public class SimulatorCanvas extends Canvas {
     MouseHandler mouseHandler = new MouseHandler();
     addMouseListener(mouseHandler);
     addMouseMotionListener(mouseHandler);
+    addMouseWheelListener(mouseHandler);
   }
 
   private BufferedImage image;
