@@ -4,6 +4,7 @@ import android.app.UiAutomation;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -11,6 +12,8 @@ import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.time.Instant;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -22,7 +25,7 @@ import org.robolectric.simulator.pluginapi.MenuCustomizer;
 import org.robolectric.util.inject.Injector;
 
 /** A {@link MouseAdapter} that triggers Android {@link MotionEvent}s when the mouse is pressed. */
-public class MouseHandler extends MouseAdapter {
+public class MouseHandler extends MouseAdapter implements MouseWheelListener {
   private final UiAutomation uiAutomation =
       InstrumentationRegistry.getInstrumentation().getUiAutomation();
 
@@ -146,5 +149,41 @@ public class MouseHandler extends MouseAdapter {
         mouseEvent.getX(),
         mouseEvent.getY(),
         /* metaState= */ 0);
+  }
+
+  @Override
+  public void mouseWheelMoved(MouseWheelEvent e) {
+    sendMouseWheelEvent(e);
+  }
+
+  private void sendMouseWheelEvent(MouseWheelEvent e) {
+    long downTime = SystemClock.uptimeMillis();
+    long eventTime = SystemClock.uptimeMillis();
+    MotionEvent.PointerProperties[] pointerProperties = {new MotionEvent.PointerProperties()};
+    pointerProperties[0].id = 0;
+    pointerProperties[0].toolType = MotionEvent.TOOL_TYPE_MOUSE;
+    MotionEvent.PointerCoords[] pointerCoords = {new MotionEvent.PointerCoords()};
+    pointerCoords[0].x = e.getX();
+    pointerCoords[0].y = e.getY();
+    pointerCoords[0].setAxisValue(MotionEvent.AXIS_VSCROLL, e.getWheelRotation());
+    MotionEvent motionEvent =
+        MotionEvent.obtain(
+            downTime,
+            eventTime,
+            MotionEvent.ACTION_SCROLL,
+            /* pointerCount= */ 1,
+            pointerProperties,
+            pointerCoords,
+            /* metaState= */ 0,
+            /* buttonState= */ 0,
+            /* xPrecision= */ 1.0f,
+            /* yPrecision= */ 1.0f,
+            /* deviceId= */ 0,
+            /* edgeFlags= */ 0,
+            InputDevice.SOURCE_MOUSE,
+            /* flags= */ 0);
+
+    handler.post(() -> uiAutomation.injectInputEvent(motionEvent, true));
+    e.consume();
   }
 }

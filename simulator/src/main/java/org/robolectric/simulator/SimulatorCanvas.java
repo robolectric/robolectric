@@ -19,6 +19,7 @@ public class SimulatorCanvas extends Canvas {
     MouseHandler mouseHandler = new MouseHandler();
     addMouseListener(mouseHandler);
     addMouseMotionListener(mouseHandler);
+    addMouseWheelListener(mouseHandler);
   }
 
   private BufferedImage image;
@@ -43,8 +44,6 @@ public class SimulatorCanvas extends Canvas {
 
     int width = bitmap.getWidth();
     int height = bitmap.getHeight();
-    graphics.clearRect(0, 0, width, height);
-
     if (pixels == null || pixels.length != width * height) {
       pixels = new int[width * height];
     }

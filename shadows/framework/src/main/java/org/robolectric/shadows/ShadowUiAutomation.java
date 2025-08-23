@@ -29,6 +29,7 @@ import android.os.IBinder;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.view.Display;
+import android.view.InputDevice;
 import android.view.InputEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -201,18 +202,33 @@ public class ShadowUiAutomation {
       Root root = touchableRoots.get(i);
       if (i == touchableRoots.size() - 1 || root.isTouchModal() || root.isTouchInside(event)) {
         event.offsetLocation(-root.locationOnScreen.x, -root.locationOnScreen.y);
-        root.getRootView().dispatchTouchEvent(event);
+        if (shouldDispatchGenericMotionEvent(event)) {
+          root.getRootView().dispatchGenericMotionEvent(event);
+        } else {
+          root.getRootView().dispatchTouchEvent(event);
+        }
         event.offsetLocation(root.locationOnScreen.x, root.locationOnScreen.y);
         break;
       } else if (event.getActionMasked() == MotionEvent.ACTION_DOWN && root.watchTouchOutside()) {
         MotionEvent outsideEvent = MotionEvent.obtain(event);
         outsideEvent.setAction(MotionEvent.ACTION_OUTSIDE);
         outsideEvent.offsetLocation(-root.locationOnScreen.x, -root.locationOnScreen.y);
-        root.getRootView().dispatchTouchEvent(outsideEvent);
+        if (shouldDispatchGenericMotionEvent(outsideEvent)) {
+          root.getRootView().dispatchGenericMotionEvent(outsideEvent);
+        } else {
+          root.getRootView().dispatchTouchEvent(outsideEvent);
+        }
         outsideEvent.recycle();
       }
     }
     return true;
+  }
+
+  // Mouse scroll events should be dispatched through dispatchGenericMotionEvent instead of the
+  // default dispatchTouchEvent.
+  private static boolean shouldDispatchGenericMotionEvent(MotionEvent event) {
+    return event.isFromSource(InputDevice.SOURCE_MOUSE)
+        && event.getActionMasked() == MotionEvent.ACTION_SCROLL;
   }
 
   private static boolean injectKeyEvent(KeyEvent event) {

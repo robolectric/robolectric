@@ -57,6 +57,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.PersistableBundle;
 import android.telecom.PhoneAccountHandle;
+import android.telephony.AvailableNetworkInfo;
 import android.telephony.CarrierRestrictionRules;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
@@ -90,6 +91,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;
@@ -108,6 +110,8 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @RunWith(AndroidJUnit4.class)
 public class ShadowTelephonyManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
+  private static final int SUB_ID_1 = 1;
 
   private static final String NETWORK_COUNTRY_ISO_US = "us";
   private static final String NETWORK_COUNTRY_ISO_US_UPPERCASE =
@@ -193,6 +197,49 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setCallState(CALL_STATE_RINGING, "123");
 
     verifyNoMoreInteractions(callback);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void updateAvailableNetworks_failResult_invokesCallback_doesNotUpdateAvailableNetworks() {
+    shadowTelephonyManager.setUpdateAvailableNetworksCallbackResult(
+        TelephonyManager.UPDATE_AVAILABLE_NETWORKS_ABORTED);
+    AtomicInteger callbackResult = new AtomicInteger();
+
+    telephonyManager.updateAvailableNetworks(
+        ImmutableList.of(
+            new AvailableNetworkInfo(
+                SUB_ID_1,
+                AvailableNetworkInfo.PRIORITY_LOW,
+                /* mccMncs= */ ImmutableList.of(),
+                /* bands= */ ImmutableList.of())),
+        directExecutor(),
+        /* callback= */ callbackResult::set);
+
+    assertThat(callbackResult.get()).isEqualTo(TelephonyManager.UPDATE_AVAILABLE_NETWORKS_ABORTED);
+    assertThat(shadowTelephonyManager.getAvailableNetworks()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void updateAvailableNetworks_successResult_invokesCallback_updatesAvailableNetworks() {
+    AvailableNetworkInfo availableNetworkInfo =
+        new AvailableNetworkInfo(
+            SUB_ID_1,
+            AvailableNetworkInfo.PRIORITY_LOW,
+            /* mccMncs= */ ImmutableList.of(),
+            /* bands= */ ImmutableList.of());
+    shadowTelephonyManager.setUpdateAvailableNetworksCallbackResult(
+        TelephonyManager.UPDATE_AVAILABLE_NETWORKS_SUCCESS);
+    AtomicInteger callbackResult = new AtomicInteger();
+
+    telephonyManager.updateAvailableNetworks(
+        ImmutableList.of(availableNetworkInfo),
+        directExecutor(),
+        /* callback= */ callbackResult::set);
+
+    assertThat(callbackResult.get()).isEqualTo(TelephonyManager.UPDATE_AVAILABLE_NETWORKS_SUCCESS);
+    assertThat(shadowTelephonyManager.getAvailableNetworks()).containsExactly(availableNetworkInfo);
   }
 
   @Test
@@ -691,7 +738,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  
   public void shouldGiveVoiceCapableTrue() {
     shadowOf(telephonyManager).setVoiceCapable(true);
 
@@ -699,7 +745,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  
   public void shouldGiveVoiceCapableFalse() {
     shadowOf(telephonyManager).setVoiceCapable(false);
 
@@ -1379,6 +1424,87 @@ public class ShadowTelephonyManagerTest {
     assertThat(telephonyManager.getDataActivity()).isEqualTo(TelephonyManager.DATA_ACTIVITY_IN);
     shadowOf(telephonyManager).setDataActivity(TelephonyManager.DATA_ACTIVITY_OUT);
     assertThat(telephonyManager.getDataActivity()).isEqualTo(TelephonyManager.DATA_ACTIVITY_OUT);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setPreferredOpportunisticDataSubscription_withoutCallback_setsPreferredSubId() {
+    shadowOf(telephonyManager)
+        .setPreferredOpportunisticDataSubscriptionCallbackResult(
+            SUB_ID_1, TelephonyManager.SET_OPPORTUNISTIC_SUB_SUCCESS);
+
+    telephonyManager.setPreferredOpportunisticDataSubscription(
+        SUB_ID_1, /* needValidation= */ false, directExecutor(), /* callback= */ null);
+
+    assertThat(telephonyManager.getPreferredOpportunisticDataSubscription()).isEqualTo(SUB_ID_1);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void
+      setPreferredOpportunisticDataSubscription_withCallback_callbackSuccessResult_setsPreferredSubId() {
+    shadowOf(telephonyManager)
+        .setPreferredOpportunisticDataSubscriptionCallbackResult(
+            SUB_ID_1, TelephonyManager.SET_OPPORTUNISTIC_SUB_SUCCESS);
+    AtomicInteger callbackResult = new AtomicInteger();
+
+    telephonyManager.setPreferredOpportunisticDataSubscription(
+        SUB_ID_1,
+        /* needValidation= */ false,
+        directExecutor(),
+        /* callback= */ callbackResult::set);
+
+    assertThat(callbackResult.get()).isEqualTo(TelephonyManager.SET_OPPORTUNISTIC_SUB_SUCCESS);
+    assertThat(telephonyManager.getPreferredOpportunisticDataSubscription()).isEqualTo(SUB_ID_1);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void
+      setPreferredOpportunisticDataSubscription_withCallback_callbackFailureResult_doesNotSetPreferredSubId() {
+    AtomicInteger callbackResult = new AtomicInteger();
+    shadowOf(telephonyManager)
+        .setPreferredOpportunisticDataSubscriptionCallbackResult(
+            SUB_ID_1, TelephonyManager.SET_OPPORTUNISTIC_SUB_INACTIVE_SUBSCRIPTION);
+
+    telephonyManager.setPreferredOpportunisticDataSubscription(
+        SUB_ID_1,
+        /* needValidation= */ false,
+        directExecutor(),
+        /* callback= */ callbackResult::set);
+
+    assertThat(callbackResult.get())
+        .isEqualTo(TelephonyManager.SET_OPPORTUNISTIC_SUB_INACTIVE_SUBSCRIPTION);
+    assertThat(telephonyManager.getPreferredOpportunisticDataSubscription())
+        .isEqualTo(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void
+      setPreferredOpportunisticDataSubscription_withCallback_callbackResultNotConfigured_callbackReturnsSuccess() {
+    AtomicInteger callbackResult = new AtomicInteger();
+
+    telephonyManager.setPreferredOpportunisticDataSubscription(
+        SUB_ID_1,
+        /* needValidation= */ false,
+        directExecutor(),
+        /* callback= */ callbackResult::set);
+
+    assertThat(callbackResult.get()).isEqualTo(TelephonyManager.SET_OPPORTUNISTIC_SUB_SUCCESS);
+    assertThat(telephonyManager.getPreferredOpportunisticDataSubscription()).isEqualTo(SUB_ID_1);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void
+      setPreferredOpportunisticDataSubscriptionCallbackResult_invalidResult_doesNotSetPreferredSubId() {
+    shadowOf(telephonyManager)
+        .setPreferredOpportunisticDataSubscriptionCallbackResult(
+            SUB_ID_1, /* result= */ Integer.MAX_VALUE);
+
+    assertThat(telephonyManager.getPreferredOpportunisticDataSubscription())
+        .isEqualTo(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID);
   }
 
   @Test

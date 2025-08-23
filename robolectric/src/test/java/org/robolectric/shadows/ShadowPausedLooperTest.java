@@ -14,7 +14,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
@@ -37,13 +36,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.res.android.Ref;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LooperMode.Mode.PAUSED)
@@ -621,6 +617,17 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
+  public void poll_with_syncBarrier() {
+    int barrier = Looper.getMainLooper().getQueue().postSyncBarrier();
+    ShadowPausedLooper shadowPausedLooper = Shadow.extract(Looper.getMainLooper());
+    long startTime = System.nanoTime();
+    shadowPausedLooper.poll(10);
+    Duration elapsedTime = Duration.ofNanos(System.nanoTime() - startTime);
+    assertThat(elapsedTime.toMillis()).isAtLeast(10);
+    Looper.getMainLooper().getQueue().removeSyncBarrier(barrier);
+  }
+
+  @Test
   @Config(minSdk = VERSION_CODES.M)
   public void runOneTask_ignoreSyncBarrier() {
     int barrier = Looper.getMainLooper().getQueue().postSyncBarrier();
@@ -710,7 +717,7 @@ public class ShadowPausedLooperTest {
     AtomicBoolean wasRun = new AtomicBoolean(false);
     handler.post(
         () -> {
-          token.set(postSyncBarrierCompat(handlerThread.getLooper()));
+          token.set(handlerThread.getLooper().getQueue().postSyncBarrier());
           handler.post(() -> wasRun.set(true));
         });
     shadowLooper.idle();
@@ -719,7 +726,13 @@ public class ShadowPausedLooperTest {
     // should be effectively a no-op and not deadlock
     shadowLooper.idle();
     // remove sync barriers messages need to get posted as async
-    asyncHandler.post(() -> removeSyncBarrierCompat(handlerThread.getLooper(), token.get()));
+    asyncHandler.post(
+        () -> {
+          Looper looper = handlerThread.getLooper();
+          int token1 = token.get();
+
+          looper.getQueue().removeSyncBarrier(token1);
+        });
     shadowLooper.idle();
     assertThat(wasRun.get()).isTrue();
   }
@@ -735,7 +748,7 @@ public class ShadowPausedLooperTest {
     AtomicBoolean wasRun = new AtomicBoolean(false);
     handler.post(
         () -> {
-          token.set(postSyncBarrierCompat(handlerThread.getLooper()));
+          token.set(handlerThread.getLooper().getQueue().postSyncBarrier());
           handler.post(() -> wasRun.set(true));
         });
     shadowLooper.idle();
@@ -744,7 +757,13 @@ public class ShadowPausedLooperTest {
     // should be effectively a no-op and not deadlock
     shadowLooper.idle();
     // remove sync barriers messages need to get posted as async
-    asyncHandler.post(() -> removeSyncBarrierCompat(handlerThread.getLooper(), token.get()));
+    asyncHandler.post(
+        () -> {
+          Looper looper = handlerThread.getLooper();
+          int token1 = token.get();
+
+          looper.getQueue().removeSyncBarrier(token1);
+        });
     shadowLooper.idle();
     assertThat(wasRun.get()).isTrue();
   }
@@ -799,28 +818,4 @@ public class ShadowPausedLooperTest {
     handler.post(() -> {});
   }
 
-  private static int postSyncBarrierCompat(Looper looper) {
-    if (RuntimeEnvironment.getApiLevel() >= 23) {
-      return looper.getQueue().postSyncBarrier();
-    } else {
-      return reflector(LooperReflector.class, looper).postSyncBarrier();
-    }
-  }
-
-  private static void removeSyncBarrierCompat(Looper looper, int token) {
-    if (RuntimeEnvironment.getApiLevel() >= 23) {
-      looper.getQueue().removeSyncBarrier(token);
-    } else {
-      reflector(LooperReflector.class, looper).removeSyncBarrier(token);
-    }
-  }
-
-  @ForType(Looper.class)
-  private interface LooperReflector {
-    @Direct
-    int postSyncBarrier();
-
-    @Direct
-    void removeSyncBarrier(int token);
-  }
 }

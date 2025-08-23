@@ -73,7 +73,7 @@ public class DefaultSdkProvider implements SdkProvider {
     knownSdks.put(Sv2.SDK_INT, new DefaultSdk(Sv2.SDK_INT, "12.1", "8229987", "REL", 9));
     knownSdks.put(T.SDK_INT, new DefaultSdk(T.SDK_INT, "13", "9030017", "Tiramisu", 9));
     knownSdks.put(U.SDK_INT, new DefaultSdk(U.SDK_INT, "14", "10818077", "REL", 17));
-    knownSdks.put(V.SDK_INT, new DefaultSdk(V.SDK_INT, "15", "12714715", "REL", 17));
+    knownSdks.put(V.SDK_INT, new DefaultSdk(V.SDK_INT, "15", "13954326", "REL", 17));
     knownSdks.put(Baklava.SDK_INT, new DefaultSdk(Baklava.SDK_INT, "16", "13921718", "REL", 21));
   }
 

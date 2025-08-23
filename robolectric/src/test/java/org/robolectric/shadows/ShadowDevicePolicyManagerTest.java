@@ -136,6 +136,17 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  @Config(minSdk = N)
+  public void getDeviceOwnerComponentOnAnyUserShouldReturnDeviceOwnerComponentName() {
+    // GIVEN a test component which is the device owner app of the device
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // WHEN DevicePolicyManager#getDeviceOwnerComponentOnAnyUser is called
+    // THEN the method should return the component
+    assertThat(devicePolicyManager.getDeviceOwnerComponentOnAnyUser()).isEqualTo(testComponent);
+  }
+
+  @Test
   public void getDeviceOwnerShouldReturnDeviceOwnerPackageName() {
     // GIVEN a test package which is the device owner app of the device
     String testPackage = testComponent.getPackageName();

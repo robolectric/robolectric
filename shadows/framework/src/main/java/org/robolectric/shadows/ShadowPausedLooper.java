@@ -300,7 +300,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
    */
   public void poll(long timeout) {
     checkState(Looper.myLooper() == Looper.getMainLooper() && Looper.myLooper() == realLooper);
-    shadowQueue().poll(timeout);
+    synchronized (realLooper.getQueue()) {
+      if (isIdle()) {
+        shadowQueue().poll(timeout);
+      }
+    }
   }
 
   @Override

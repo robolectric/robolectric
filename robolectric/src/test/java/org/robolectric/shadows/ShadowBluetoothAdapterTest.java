@@ -14,6 +14,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -621,6 +622,26 @@ public class ShadowBluetoothAdapterTest {
     bluetoothAdapter.closeProfileProxy(MOCK_PROFILE1, mockProxy);
 
     assertThat(shadowOf(bluetoothAdapter).hasActiveProfileProxy(MOCK_PROFILE1)).isFalse();
+  }
+
+  @Test
+  public void closeProfileProxy_duringServiceConnectedCallback_notified() {
+    BluetoothProfile mockProxy = mock(BluetoothProfile.class);
+    BluetoothProfile.ServiceListener mockServiceListener =
+        mock(BluetoothProfile.ServiceListener.class);
+    shadowOf(bluetoothAdapter).setProfileProxy(MOCK_PROFILE1, mockProxy);
+
+    doAnswer(
+            invocation -> {
+              bluetoothAdapter.closeProfileProxy(MOCK_PROFILE1, mockProxy);
+              return null;
+            })
+        .when(mockServiceListener)
+        .onServiceConnected(anyInt(), any());
+
+    bluetoothAdapter.getProfileProxy(
+        RuntimeEnvironment.getApplication(), mockServiceListener, MOCK_PROFILE1);
+    verify(mockServiceListener).onServiceDisconnected(MOCK_PROFILE1);
   }
 
   @Test
