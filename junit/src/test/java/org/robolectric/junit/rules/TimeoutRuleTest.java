@@ -1,17 +1,17 @@
 package org.robolectric.junit.rules;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestTimedOutException;
 
 /** Tests for {@link TimeoutRule}. */
-@RunWith(AndroidJUnit4.class)
+@RunWith(JUnit4.class)
 public final class TimeoutRuleTest {
 
   private final TimeoutRule rule = TimeoutRule.millis(200);
