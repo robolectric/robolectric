@@ -6,10 +6,10 @@ plugins {
 // test with a project that depends on the stubs jar, not org.robolectric:android-all
 
 android {
-  compileSdk = 35
+  compileSdk = 36
   namespace = "org.robolectric"
 
-  defaultConfig { minSdk = 21 }
+  defaultConfig { minSdk = 23 }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -17,7 +17,7 @@ android {
   }
 
   testOptions {
-    targetSdk = 35
+    targetSdk = 36
     unitTests.isIncludeAndroidResources = true
   }
 }
