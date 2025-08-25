@@ -783,10 +783,10 @@ public class ShadowInstrumentation {
   }
 
   /**
-   * Consumes the most recent {@code Intent} started by {@link
-   * #startService(android.content.Intent)} and returns it.
+   * Consumes the oldest {@code Intent} started by {@link #startService(android.content.Intent)} and
+   * returns it.
    *
-   * @return the most recently started {@code Intent}
+   * @return the oldest started {@code Intent}
    */
   Intent getNextStartedService() {
     if (startedServices.isEmpty()) {
@@ -797,10 +797,10 @@ public class ShadowInstrumentation {
   }
 
   /**
-   * Returns the most recent {@code Intent} started by {@link #startService(android.content.Intent)}
+   * Returns the oldest {@code Intent} started by {@link #startService(android.content.Intent)}
    * without consuming it.
    *
-   * @return the most recently started {@code Intent}
+   * @return the oldest started {@code Intent}
    */
   Intent peekNextStartedService() {
     if (startedServices.isEmpty()) {
