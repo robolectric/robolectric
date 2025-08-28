@@ -7,6 +7,7 @@ import android.net.wifi.WifiSsid;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableList;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
@@ -15,6 +16,31 @@ import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public final class WifiScanResultBuilderTest {
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void setInformationElements_withData() {
+    ScanResult.InformationElement mobileInformationElement =
+        InformationElementBuilder.newBuilder()
+            .setId(107) // EID_INTERWORKING
+            .setBytes(new byte[] {1, 2, 3})
+            .build();
+    ImmutableList<ScanResult.InformationElement> informationElements =
+        ImmutableList.of(mobileInformationElement);
+    ScanResult scanResult =
+        new WifiScanResultBuilder()
+            .setSsid("\"IETest\"")
+            .setInformationElements(informationElements)
+            .build();
+    assertThat(scanResult.getInformationElements()).containsExactly(mobileInformationElement);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void getInformationElements_noData() {
+    ScanResult scanResult = new WifiScanResultBuilder().setSsid("\"IETest\"").build();
+    assertThat(scanResult.getInformationElements()).isEmpty();
+  }
+
   @Test
   @Config(maxSdk = VERSION_CODES.S_V2)
   public void setSsid_withQuotedUtf8String_setsQuotedSsidField() {
