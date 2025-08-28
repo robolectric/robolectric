@@ -96,7 +96,7 @@ public class ShadowPausedMessageQueueTest {
     Message msg3 = Message.obtain(new Handler(), 3);
     shadowQueue.doEnqueueMessage(msg3, 3);
 
-    shadowQueue.drainQueue(input -> true);
+    shadowQueue.drainQueue();
 
     Message msg2 = Message.obtain(new Handler(), 2);
     shadowQueue.doEnqueueMessage(msg2, 2);
