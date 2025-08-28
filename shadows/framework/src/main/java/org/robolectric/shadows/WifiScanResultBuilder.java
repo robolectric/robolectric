@@ -8,6 +8,8 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
@@ -33,6 +35,9 @@ public final class WifiScanResultBuilder {
   private int centerFreq0 = UNSPECIFIED;
   private int centerFreq1 = UNSPECIFIED;
   private boolean is80211McRttResponder = false;
+
+  // Added in API 30, not supported in ScanResult.Builder
+  private List<ScanResult.InformationElement> informationElements = new ArrayList<>();
 
   // Added in API 33
   @Nullable private WifiSsid wifiSsid;
@@ -244,10 +249,30 @@ public final class WifiScanResultBuilder {
     return this;
   }
 
+  /**
+   * Sets the return value of {@link ScanResult#getInformationElements()}.
+   *
+   * @return this builder, for chaining
+   */
+  @CanIgnoreReturnValue
+  @RequiresApi(VERSION_CODES.R)
+  public WifiScanResultBuilder setInformationElements(
+      List<ScanResult.InformationElement> informationElements) {
+    this.informationElements = informationElements;
+    return this;
+  }
+
   /** Returns a new {@link ScanResult} instance as configured in this builder. */
   public ScanResult build() {
     if (USE_NATIVE_BUILDER) {
-      return ensureRealBuilder().build();
+      ScanResult scanResult = ensureRealBuilder().build();
+
+      if (VERSION.SDK_INT >= VERSION_CODES.R) {
+        scanResult.informationElements =
+            informationElements.toArray(new ScanResult.InformationElement[0]);
+      }
+
+      return scanResult;
     }
 
     long timestampMicros = TimeUnit.MILLISECONDS.toMicros(timeSinceSeen.toMillis());
@@ -281,6 +306,11 @@ public final class WifiScanResultBuilder {
       if (is80211McRttResponder) {
         scanResult.setFlag(ScanResult.FLAG_80211mc_RESPONDER);
       }
+    }
+
+    if (VERSION.SDK_INT >= VERSION_CODES.R) {
+      scanResult.informationElements =
+          informationElements.toArray(new ScanResult.InformationElement[0]);
     }
 
     return scanResult;
