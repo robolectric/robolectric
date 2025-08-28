@@ -14,6 +14,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowAccessibilityInputConnection.CommitTextArgs;
 import org.robolectric.shadows.ShadowAccessibilityInputConnection.SurroundingTextArgs;
+import org.robolectric.shadows.ShadowAccessibilityInputConnection.SurroundingTextCallback;
 
 /** Shadow for RemoteAccessibilityInputConnection, used by AccessibilityInputConnection. */
 @Implements(
@@ -22,7 +23,7 @@ import org.robolectric.shadows.ShadowAccessibilityInputConnection.SurroundingTex
     isInAndroidSdk = false)
 public class ShadowRemoteAccessibilityInputConnection {
 
-  private SurroundingText surroundingTextToReturn = null;
+  private SurroundingTextCallback surroundingTextCallback;
 
   private final List<Integer> contextMenuActions = new ArrayList<>();
   private final List<Integer> editorActions = new ArrayList<>();
@@ -40,7 +41,10 @@ public class ShadowRemoteAccessibilityInputConnection {
   @Implementation(minSdk = TIRAMISU)
   protected SurroundingText getSurroundingText(int beforeLength, int afterLength, int flags) {
     surroundingTextArguments.add(SurroundingTextArgs.create(beforeLength, afterLength, flags));
-    return surroundingTextToReturn;
+    if (surroundingTextCallback != null) {
+      return surroundingTextCallback.get(beforeLength, afterLength, flags);
+    }
+    return null;
   }
 
   @Implementation(minSdk = TIRAMISU)
@@ -75,9 +79,9 @@ public class ShadowRemoteAccessibilityInputConnection {
     return ImmutableList.copyOf(commitTextArguments);
   }
 
-  /** Sets the surrounding text to be returned by {@link #getSurroundingText(int, int, int)}. */
-  void setSurroundingText(SurroundingText surroundingText) {
-    this.surroundingTextToReturn = surroundingText;
+  /** Sets a custom callback to define the behavior of getSurroundingText. */
+  void setSurroundingTextCallback(SurroundingTextCallback callback) {
+    this.surroundingTextCallback = callback;
   }
 
   /** Returns the list of arguments passed to {@link #getSurroundingText(int, int, int)}. */

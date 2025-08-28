@@ -32,6 +32,12 @@ public class ShadowAccessibilityInputConnection {
 
   @RealObject private AccessibilityInputConnection realInputConnection;
 
+  /** A functional interface to define custom logic for getSurroundingText in tests. */
+  @FunctionalInterface
+  public interface SurroundingTextCallback {
+    SurroundingText get(int beforeLength, int afterLength, int flags);
+  }
+
   /** A class that holds the arguments passed to {@link #getSurroundingText(int, int, int)}. */
   @AutoValue
   public abstract static class SurroundingTextArgs {
@@ -75,7 +81,19 @@ public class ShadowAccessibilityInputConnection {
 
   /** Sets the surrounding text to be returned by {@link #getSurroundingText(int, int, int)}. */
   public void setSurroundingText(SurroundingText surroundingText) {
-    getRemote().setSurroundingText(surroundingText);
+    setSurroundingTextCallback(
+        (beforeLength, afterLength, flags) -> {
+          return surroundingText;
+        });
+  }
+
+  /**
+   * Sets a custom callback to define the behavior of {@link #getSurroundingText(int, int, int)}.
+   * This allows for more complex test scenarios where the returned text needs to change
+   * dynamically.
+   */
+  public void setSurroundingTextCallback(SurroundingTextCallback callback) {
+    getRemote().setSurroundingTextCallback(callback);
   }
 
   /** Returns the list of arguments passed to {@link #getSurroundingText(int, int, int)}. */
