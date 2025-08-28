@@ -10,11 +10,10 @@ import android.os.Message;
 import android.os.MessageQueue;
 import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
-import android.util.Log;
 import com.android.internal.annotations.VisibleForTesting;
-import com.google.common.base.Predicate;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -46,7 +45,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
       new NativeObjRegistry<>(ShadowPausedMessageQueue.class);
   private boolean isPolling = false;
   private ShadowPausedSystemClock.Listener clockListener;
-  private Exception uncaughtException = null;
+  private final AtomicReference<Exception> uncaughtExceptionRef = new AtomicReference<>(null);
 
   @GuardedBy("realQueue")
   private boolean pendingWake;
@@ -183,21 +182,9 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   @Implementation
   protected boolean enqueueMessage(Message msg, long when) {
-    synchronized (realQueue) {
-      if (uncaughtException != null) {
-        // looper thread has died
-        IllegalStateException e =
-            new IllegalStateException(
-                msg.getTarget()
-                    + " sending message to a Looper thread that has died due to an uncaught"
-                    + " exception",
-                uncaughtException);
-        Log.w("ShadowPausedMessageQueue", e);
-        msg.recycle();
-        throw e;
-      }
+    checkQueueState();
       return reflector(MessageQueueReflector.class, realQueue).enqueueMessage(msg, when);
-    }
+
   }
 
   Message getMessages() {
@@ -323,6 +310,8 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   @Override
   public void reset() {
     MessageQueueReflector msgQueue = reflector(MessageQueueReflector.class, realQueue);
+
+    setUncaughtException(null);
     synchronized (realQueue) {
       msgQueue.setMessages(null);
       msgQueue.setIdleHandlers(new ArrayList<>());
@@ -333,7 +322,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
       }
       pendingWake = false;
     }
-    setUncaughtException(null);
+
   }
 
   private static ShadowPausedMessage shadowOfMsg(Message head) {
@@ -381,36 +370,28 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
    * interaction will rethrow the exception.
    */
   void setUncaughtException(Exception e) {
-    synchronized (realQueue) {
-      this.uncaughtException = e;
-    }
+    this.uncaughtExceptionRef.set(e);
   }
 
+
   boolean hasUncaughtException() {
-    synchronized (realQueue) {
-      return uncaughtException != null;
-    }
+    return uncaughtExceptionRef.get() != null;
   }
 
   void checkQueueState() {
-    synchronized (realQueue) {
-      if (uncaughtException != null) {
-        throw new IllegalStateException(
-            "Looper thread that has died due to an uncaught exception", uncaughtException);
+    Exception uncaughtException = uncaughtExceptionRef.get();
+    if (uncaughtException != null) {
+      throw new IllegalStateException(
+          "Looper thread has died due to an uncaught exception", uncaughtException);
       }
-    }
+
   }
 
-  /**
-   * Remove all messages from queue
-   *
-   * @param msgProcessor a callback to apply to each mesg
-   */
-  void drainQueue(Predicate<Runnable> msgProcessor) {
+  /** Remove all messages from queue */
+  void drainQueue() {
     synchronized (realQueue) {
       Message msg = getMessages();
       while (msg != null) {
-        boolean unused = msgProcessor.apply(msg.getCallback());
         Message next = shadowOfMsg(msg).internalGetNext();
         shadowOfMsg(msg).recycleUnchecked();
         msg = next;

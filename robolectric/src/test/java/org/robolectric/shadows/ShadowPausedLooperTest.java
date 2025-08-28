@@ -174,10 +174,8 @@ public class ShadowPausedLooperTest {
     try {
       result.get();
       fail("idling main looper from background thread unexpectedly succeeded.");
-    } catch (InterruptedException e) {
-      throw e;
     } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(UnsupportedOperationException.class);
+      assertThat(e).hasCauseThat().isInstanceOf(IllegalStateException.class);
     } finally {
       executorService.shutdown();
     }
