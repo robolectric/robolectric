@@ -11,7 +11,7 @@ plugins {
 
 android {
   namespace = "org.robolectric.integrationtests.composeui"
-  compileSdk = 35
+  compileSdk = 36
 
   defaultConfig { minSdk = 21 }
 
