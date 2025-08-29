@@ -12,6 +12,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
 
 /** Unit tests for {@link AccessibilityWindowInfoBuilder}. */
 @RunWith(AndroidJUnit4.class)
@@ -40,6 +41,7 @@ public class AccessibilityWindowInfoBuilderTest {
     assertThat(actualBounds).isEqualTo(bounds);
   }
 
+  @GraphicsMode(GraphicsMode.Mode.NATIVE) // This test requires accurate Region.
   @Config(minSdk = R)
   @Test
   public void setRegionInScreen_atLeastR_setsCorrectRegion() {
@@ -54,6 +56,7 @@ public class AccessibilityWindowInfoBuilderTest {
     assertThat(outRegion).isEqualTo(region);
   }
 
+  @GraphicsMode(GraphicsMode.Mode.NATIVE) // This test requires accurate Region.
   @Config(minSdk = R)
   @Test
   public void setBoundsAndRegion_atLeastR_regionTakesPrecedence() {
