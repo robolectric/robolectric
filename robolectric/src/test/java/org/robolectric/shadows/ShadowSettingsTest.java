@@ -348,4 +348,40 @@ public class ShadowSettingsTest {
     assertThat(Settings.Config.getString("namespace/missing_key")).isEqualTo(null);
     assertThat(Settings.Config.getString("missing_namespace/key")).isEqualTo(null);
   }
+
+  @Test
+  public void systemPutGetInt_whenDatabaseIsFailing_notSaveModification() {
+    assertThat(Settings.System.putInt(contentResolver, "property", 42)).isTrue();
+    ShadowSettings.setSimulateDatabaseFailure(true);
+
+    assertThat(Settings.System.putInt(contentResolver, "property", 2)).isFalse();
+    assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(0);
+
+    ShadowSettings.setSimulateDatabaseFailure(false);
+    assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(42);
+  }
+
+  @Test
+  public void securePutGetInt_whenDatabaseIsFailing_notSaveModification() {
+    assertThat(Settings.Secure.putInt(contentResolver, "property", 42)).isTrue();
+    ShadowSettings.setSimulateDatabaseFailure(true);
+
+    assertThat(Settings.Secure.putInt(contentResolver, "property", 2)).isFalse();
+    assertThat(Settings.Secure.getInt(contentResolver, "property", 0)).isEqualTo(0);
+
+    ShadowSettings.setSimulateDatabaseFailure(false);
+    assertThat(Settings.Secure.getInt(contentResolver, "property", 0)).isEqualTo(42);
+  }
+
+  @Test
+  public void globalPutGetInt_whenDatabaseIsFailing_notSaveModification() {
+    assertThat(Settings.Global.putInt(contentResolver, "property", 42)).isTrue();
+    ShadowSettings.setSimulateDatabaseFailure(true);
+
+    assertThat(Settings.Global.putInt(contentResolver, "property", 2)).isFalse();
+    assertThat(Settings.Global.getInt(contentResolver, "property", 0)).isEqualTo(0);
+
+    ShadowSettings.setSimulateDatabaseFailure(false);
+    assertThat(Settings.Global.getInt(contentResolver, "property", 0)).isEqualTo(42);
+  }
 }
