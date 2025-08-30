@@ -29,6 +29,7 @@ build
 
 # IntelliJ
 .idea
+!.idea/icon.png
 *.iml
 *.iws
 *.ipr
