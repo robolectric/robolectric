@@ -18,7 +18,7 @@
         android:width="64dp"
         android:viewportHeight="400"
         android:viewportWidth="400"
-        android:alpha = "0.5" >
+        android:alpha="0.5" >
 
     <group android:name="backgroundGroup">
         <path
