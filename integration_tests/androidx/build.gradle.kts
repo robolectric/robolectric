@@ -7,7 +7,7 @@ android {
   compileSdk = 36
   namespace = "org.robolectric.integrationtests.androidx"
 
-  defaultConfig { minSdk = 21 }
+  defaultConfig { minSdk = 23 }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -15,7 +15,7 @@ android {
   }
 
   testOptions {
-    targetSdk = 35
+    targetSdk = 36
     unitTests.isIncludeAndroidResources = true
   }
 }
