@@ -34,7 +34,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Run aggregateDocs
-        run: ./gradlew clean aggregateDocs
+        # Disable parallel as a workaround for Gradle 9's concurrent model.
+        run: ./gradlew clean aggregateDocs --no-parallel
 
       - name: Upload docs
         uses: actions/upload-artifact@v4
