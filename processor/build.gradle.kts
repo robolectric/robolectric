@@ -48,10 +48,8 @@ dependencies {
   api(libs.gson)
   implementation(libs.auto.common)
 
-  val toolsJar = Jvm.current().getToolsJar()
-  if (toolsJar != null) {
-    implementation(files(toolsJar))
-  }
+  val toolsJar: File? = Jvm.current().getToolsJar()
+  toolsJar?.let { implementation(files(it)) }
 
   testImplementation(libs.junit4)
   testImplementation(libs.mockito)
