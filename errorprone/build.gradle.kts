@@ -26,10 +26,8 @@ dependencies {
   annotationProcessor(libs.error.prone.core)
 
   // In JDK 9, tools.jar disappears!
-  val toolsJar = Jvm.current().getToolsJar()
-  if (toolsJar != null) {
-    "compile"(files(toolsJar))
-  }
+  val toolsJar: File? = Jvm.current().getToolsJar()
+  toolsJar?.let { "compile"(files(it)) }
 
   // Testing dependencies
   testImplementation(libs.junit4)
