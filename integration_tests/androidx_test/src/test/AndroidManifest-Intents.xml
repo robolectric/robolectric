@@ -10,7 +10,7 @@
   <application>
     <activity
         android:name="org.robolectric.integrationtests.axt.IntentsTest$ResultCapturingActivity"
-        android:exported = "true">
+        android:exported="true">
         </activity>
   </application>
 
