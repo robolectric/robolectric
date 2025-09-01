@@ -94,7 +94,7 @@ okhttp = "5.1.0"
 # https://github.com/powermock/powermock/releases
 powermock = "2.0.9"
 
-snakeyaml = "2.4"
+snakeyaml = "2.5"
 
 sqlite4java = "1.0.392"
 
