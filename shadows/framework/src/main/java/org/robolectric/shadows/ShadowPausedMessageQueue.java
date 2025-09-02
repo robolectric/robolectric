@@ -10,7 +10,6 @@ import android.os.Message;
 import android.os.MessageQueue;
 import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
-import com.android.internal.annotations.VisibleForTesting;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
@@ -21,7 +20,6 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowMessage.MessageReflector;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -153,38 +151,11 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     return reflector(MessageQueueReflector.class, realQueue).isIdle();
   }
 
-  Message peekNextExecutableMessage() {
-    MessageQueueReflector internalQueue = reflector(MessageQueueReflector.class, realQueue);
-    Message msg = internalQueue.getMessages();
-
-    if (msg != null && shadowOfMsg(msg).getTarget() == null) {
-      // Stalled by a barrier.  Find the next asynchronous message in the queue.
-      do {
-        msg = shadowOfMsg(msg).internalGetNext();
-      } while (msg != null && !msg.isAsynchronous());
-    }
-
-    return msg;
-  }
-
-  Message getNext() {
-    return reflector(MessageQueueReflector.class, realQueue).next();
-  }
-
-  boolean isQuitAllowed() {
-    return reflector(MessageQueueReflector.class, realQueue).getQuitAllowed();
-  }
-
-  @VisibleForTesting
-  void doEnqueueMessage(Message msg, long when) {
-    enqueueMessage(msg, when);
-  }
-
   @Implementation
   protected boolean enqueueMessage(Message msg, long when) {
     checkQueueState();
-      return reflector(MessageQueueReflector.class, realQueue).enqueueMessage(msg, when);
 
+    return reflector(MessageQueueReflector.class, realQueue).enqueueMessage(msg, when);
   }
 
   Message getMessages() {
@@ -198,35 +169,35 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     }
   }
 
-  void quit() {
-    quit(true);
-  }
-
   @Implementation
   protected void quit(boolean allowed) {
     reflector(MessageQueueReflector.class, realQueue).quit(allowed);
     ShadowPausedSystemClock.removeListener(clockListener);
   }
 
-  boolean isQuitting() {
-    return reflector(MessageQueueReflector.class, realQueue).getQuitting();
-  }
-
   Duration getLastScheduledTaskTime() {
-    long when = 0;
-    synchronized (realQueue) {
-      Message next = getMessages();
-      if (next == null) {
+    if (getApiLevel() > Baklava.SDK_INT) {
+      Message msg = reflector(MessageQueueReflector.class, realQueue).peekLastMessageForTest();
+      if (msg == null) {
         return Duration.ZERO;
       }
-      while (next != null) {
-        if (next.getTarget() != null) {
-          when = shadowOfMsg(next).getWhen();
+      return Duration.ofMillis(convertWhenToScheduledTime(shadowOfMsg(msg).getWhen()));
+    } else {
+      long when = 0;
+      synchronized (realQueue) {
+        Message next = getMessages();
+        if (next == null) {
+          return Duration.ZERO;
         }
-        next = shadowOfMsg(next).internalGetNext();
+        while (next != null) {
+          if (next.getTarget() != null) {
+            when = shadowOfMsg(next).getWhen();
+          }
+          next = shadowOfMsg(next).internalGetNext();
+        }
       }
+      return Duration.ofMillis(convertWhenToScheduledTime(when));
     }
-    return Duration.ofMillis(convertWhenToScheduledTime(when));
   }
 
   static long convertWhenToScheduledTime(long when) {
@@ -241,7 +212,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   /**
    * Internal method to get the number of entries in the MessageQueue.
    *
-   * <p>Do not use, will likely be removed in a future release.
+   * <p>Do not use, will likely be removed in a future release and not supported on SDKs > Baklava
    */
   public int internalGetSize() {
     // The following logic won't work on the new MessageQueue implementation used on SDKs >
@@ -263,66 +234,32 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     return count;
   }
 
-  /**
-   * Returns the message at the head of the queue immediately, regardless of its scheduled time.
-   * Compare to {@link #getNext()} which will only return the next message if the system clock is
-   * advanced to its scheduled time.
-   *
-   * <p>This is a copy of the real MessageQueue.next implementation with the 'when' handling logic
-   * omitted.
-   */
-  Message getNextIgnoringWhen() {
-    MessageQueueReflector queueReflector = reflector(MessageQueueReflector.class, realQueue);
-    synchronized (realQueue) {
-      Message prevMsg = null;
-      Message msg = getMessages();
-      // Head is blocked on synchronization barrier, find next asynchronous message.
-      if (msg != null && msg.getTarget() == null) {
-        do {
-          prevMsg = msg;
-          msg = shadowOfMsg(msg).internalGetNext();
-        } while (msg != null && !msg.isAsynchronous());
-      }
-      if (msg != null) {
-        Message nextMsg = reflector(MessageReflector.class, msg).getNext();
-        if (prevMsg != null) {
-          reflector(MessageReflector.class, prevMsg).setNext(nextMsg);
-          if (reflector(MessageReflector.class, prevMsg).getNext() == null
-              && getApiLevel() >= V.SDK_INT) {
-            queueReflector.setLast(prevMsg);
-          }
-        } else {
-          queueReflector.setMessages(nextMsg);
-          if (nextMsg == null && getApiLevel() >= V.SDK_INT) {
-            queueReflector.setLast(null);
-          }
-        }
-        if (msg.isAsynchronous() && getApiLevel() >= V.SDK_INT) {
-          queueReflector.setAsyncMessageCount(queueReflector.getAsyncMessageCount() - 1);
-        }
-      }
-      return msg;
-    }
-  }
-
   // TODO: reconsider exposing this as a public API. Only ShadowPausedLooper needs to access this,
   // so it should be package private
   @Override
   public void reset() {
     MessageQueueReflector msgQueue = reflector(MessageQueueReflector.class, realQueue);
-
     setUncaughtException(null);
-    synchronized (realQueue) {
-      msgQueue.setMessages(null);
-      msgQueue.setIdleHandlers(new ArrayList<>());
-      msgQueue.setNextBarrierToken(0);
-      if (getApiLevel() >= V.SDK_INT) {
-        msgQueue.setLast(null);
-        msgQueue.setAsyncMessageCount(0);
-      }
-      pendingWake = false;
-    }
+    if (getApiLevel() > Baklava.SDK_INT) {
+      msgQueue.resetForTest();
+    } else {
+      synchronized (realQueue) {
+        Message msg = getMessages();
+        while (msg != null) {
+          Message next = shadowOfMsg(msg).internalGetNext();
+          shadowOfMsg(msg).recycleUnchecked();
+          msg = next;
+        }
+        reflector(MessageQueueReflector.class, realQueue).setMessages(null);
+        if (getApiLevel() >= V.SDK_INT) {
+          reflector(MessageQueueReflector.class, realQueue).setLast(null);
+          reflector(MessageQueueReflector.class, realQueue).setAsyncMessageCount(0);
+        }
 
+        msgQueue.setIdleHandlers(new ArrayList<>());
+        msgQueue.setNextBarrierToken(0);
+      }
+    }
   }
 
   private static ShadowPausedMessage shadowOfMsg(Message head) {
@@ -373,35 +310,12 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     this.uncaughtExceptionRef.set(e);
   }
 
-
-  boolean hasUncaughtException() {
-    return uncaughtExceptionRef.get() != null;
-  }
-
   void checkQueueState() {
     Exception uncaughtException = uncaughtExceptionRef.get();
     if (uncaughtException != null) {
       throw new IllegalStateException(
           "Looper thread has died due to an uncaught exception", uncaughtException);
       }
-
-  }
-
-  /** Remove all messages from queue */
-  void drainQueue() {
-    synchronized (realQueue) {
-      Message msg = getMessages();
-      while (msg != null) {
-        Message next = shadowOfMsg(msg).internalGetNext();
-        shadowOfMsg(msg).recycleUnchecked();
-        msg = next;
-      }
-      reflector(MessageQueueReflector.class, realQueue).setMessages(null);
-      if (getApiLevel() >= V.SDK_INT) {
-        reflector(MessageQueueReflector.class, realQueue).setLast(null);
-        reflector(MessageQueueReflector.class, realQueue).setAsyncMessageCount(0);
-      }
-    }
   }
 
   /** Accessor interface for {@link MessageQueue}'s internals. */
@@ -412,8 +326,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
     @Direct
     boolean enqueueMessage(Message msg, long when);
-
-    Message next();
 
     @Accessor("mMessages")
     void setMessages(Message msg);
@@ -430,23 +342,14 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     @Accessor("mNextBarrierToken")
     void setNextBarrierToken(int token);
 
-    @Accessor("mQuitAllowed")
-    boolean getQuitAllowed();
-
     @Accessor("mPtr")
     void setPtr(long ptr);
 
     @Direct
     void quit(boolean b);
 
-    @Accessor("mQuitting")
-    boolean getQuitting();
-
     @Accessor("mLast")
     void setLast(Message msg);
-
-    @Accessor("mAsyncMessageCount")
-    int getAsyncMessageCount();
 
     @Accessor("mAsyncMessageCount")
     void setAsyncMessageCount(int asyncMessageCount);
@@ -456,5 +359,12 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
     @Direct
     boolean isIdle();
+
+    // only available on > Baklava
+    @Direct
+    void resetForTest();
+
+    @Direct
+    Message peekLastMessageForTest();
   }
 }

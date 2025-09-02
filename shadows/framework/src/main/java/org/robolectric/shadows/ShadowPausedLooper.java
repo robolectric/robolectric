@@ -453,11 +453,10 @@ public final class ShadowPausedLooper extends ShadowLooper {
     } catch (Exception e) {
       Looper realLooper = Objects.requireNonNull(Looper.myLooper());
       ShadowPausedMessageQueue shadowQueue = Shadow.extract(realLooper.getQueue());
-      ShadowPausedLooper shadowLooper = Shadow.extract(realLooper);
       if (!ignoreUncaughtExceptions) {
         shadowQueue.setUncaughtException(e);
-        shadowQueue.drainQueue();
       }
+      ShadowPausedLooper shadowLooper = Shadow.extract(realLooper);
       if (Looper.getMainLooper() == realLooper) {
         // Need to keep using same thread for main Looper, because a lot of code keeps static
         // references to the main Looper that persist across tests

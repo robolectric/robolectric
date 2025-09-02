@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.shadows.ShadowPausedMessageQueue.convertWhenToScheduledTime;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Looper;
@@ -134,6 +135,44 @@ final class TestLooperManagerCompat implements AutoCloseable {
     if (delegate != null) {
       delegate.release();
     }
+  }
+
+  public Long peekTailWhen() {
+    if (delegate != null && getApiLevel() > Baklava.SDK_INT) {
+      return reflector(TestLooperManagerReflector.class, delegate).peekTailWhen();
+    } else {
+      return legacyPeekTailWhen(getQueue());
+    }
+  }
+
+  private MessageQueue getQueue() {
+    if (delegate != null) {
+      return delegate.getMessageQueue();
+    } else {
+      return queue;
+    }
+  }
+
+  private static Long legacyPeekTailWhen(MessageQueue queue) {
+    LegacyMessageQueueReflector queueReflector =
+        reflector(LegacyMessageQueueReflector.class, queue);
+    Long lastWhen = null;
+
+    synchronized (queue) {
+      Message next = queueReflector.getMessages();
+      while (next != null) {
+        if (next.getTarget() != null) {
+          lastWhen = shadowOfMsg(next).getWhen();
+        }
+        next = shadowOfMsg(next).internalGetNext();
+      }
+    }
+    return lastWhen == null ? null : convertWhenToScheduledTime(lastWhen);
+  }
+
+  @ForType(TestLooperManager.class)
+  private interface TestLooperManagerReflector {
+    Long peekTailWhen();
   }
 
   @ForType(MessageQueue.class)
