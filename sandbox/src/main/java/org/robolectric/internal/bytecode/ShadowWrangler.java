@@ -330,7 +330,8 @@ public class ShadowWrangler implements ClassHandler {
         if (implementation == null) {
           continue;
         }
-        String mappedMethodName = implementation.methodName().trim();
+        String mappedMethodName = implementation.methodName();
+        mappedMethodName = mappedMethodName == null ? "" : mappedMethodName.trim();
         if (mappedMethodName.isEmpty() || !mappedMethodName.equals(methodName)) {
           continue;
         }

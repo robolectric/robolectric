@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
   compileOnly(libs.findbugs.jsr305)
-  compileOnly(libs.javax.annotation.api)
+  api(libs.jspecify)
   compileOnly(AndroidSdk.MAX_SDK.coordinates)
   testImplementation(libs.truth)
   testImplementation(libs.junit4)

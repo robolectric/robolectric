@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -227,7 +228,7 @@ public class ShadowMapTest {
 
   public static class NullReturningPicker implements ShadowPicker<Object> {
     @Override
-    public Class<?> pickShadowClass() {
+    public @Nullable Class<?> pickShadowClass() {
       return null;
     }
   }
