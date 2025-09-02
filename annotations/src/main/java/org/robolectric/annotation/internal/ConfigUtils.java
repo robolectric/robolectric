@@ -1,17 +1,18 @@
 package org.robolectric.annotation.internal;
 
 import android.os.Build;
+import org.jspecify.annotations.NonNull;
 import org.robolectric.annotation.Config;
 
 public class ConfigUtils {
   private ConfigUtils() {}
 
-  public static String[] parseStringArrayProperty(String property) {
+  public static @NonNull String @NonNull [] parseStringArrayProperty(@NonNull String property) {
     if (property.isEmpty()) return new String[0];
     return property.split("[, ]+");
   }
 
-  public static int[] parseSdkArrayProperty(String property) {
+  public static int @NonNull [] parseSdkArrayProperty(@NonNull String property) {
     String[] parts = parseStringArrayProperty(property);
     int[] result = new int[parts.length];
     for (int i = 0; i < parts.length; i++) {
@@ -21,7 +22,7 @@ public class ConfigUtils {
     return result;
   }
 
-  public static int parseSdkInt(String part) {
+  public static int parseSdkInt(@NonNull String part) {
     String spec = part.trim();
     switch (spec) {
       case "ALL_SDKS":

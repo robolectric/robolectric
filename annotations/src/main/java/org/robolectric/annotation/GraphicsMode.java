@@ -5,6 +5,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A {@link org.robolectric.pluginapi.config.Configurer} annotation for controlling which graphics
@@ -23,5 +24,5 @@ public @interface GraphicsMode {
     NATIVE,
   }
 
-  Mode value();
+  @NonNull Mode value();
 }
