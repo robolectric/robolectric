@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.shadows.ShadowPausedLooper.shadowMsg;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Looper;
@@ -12,6 +13,8 @@ import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.Implementation;
@@ -20,6 +23,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowMessage.MessageReflector;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -50,6 +54,14 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   @GuardedBy("realQueue")
   private boolean pendingWake;
 
+  private final AtomicReference<QueueListener> queueListenerRef = new AtomicReference<>(null);
+
+  private interface QueueListener {
+
+    /** Called when there is a new executable message available. */
+    void onExecutableMsg();
+  }
+
   // shadow constructor instead of nativeInit because nativeInit signature has changed across SDK
   // versions
   @Implementation
@@ -66,6 +78,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
               nativeWake(ptr);
             }
           }
+          updateListener();
         };
     ShadowPausedSystemClock.addStaticListener(clockListener);
   }
@@ -111,40 +124,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     }
   }
 
-  /**
-   * Polls the message queue waiting until a message is posted to the head of the queue. This will
-   * suspend the thread until a new message becomes available.
-   *
-   * <p>It is the responsibility of the caller to ensure that it is only called when Looper is idle.
-   * There's no guarantee that the message queue will not still be idle when returning,
-   *
-   * <p>See {@link ShadowPausedLooper#poll(long)} for more information.
-   *
-   * @param timeout Timeout in milliseconds, the maximum time to wait before returning, or 0 to wait
-   *     indefinitely,
-   */
-  void poll(long timeout) {
-    checkState(Looper.myLooper() == Looper.getMainLooper() && Looper.myQueue() == realQueue);
-    // Message queue typically expects the looper to loop calling next() which returns current
-    // messages from the head of the queue. If no messages are current it will mark itself blocked
-    // and call nativePollOnce (see above) which suspends the thread until the next message's time.
-    // When messages are posted to the queue, if a new message is posted to the head and the queue
-    // is marked as blocked, then the enqueue function will notify and resume next(), allowing it
-    // return the next message. To simulate this behavior check if the queue is idle and if it is
-    // mark the queue as blocked and wait on a new message.
-    synchronized (realQueue) {
-      reflector(MessageQueueReflector.class, realQueue).setBlocked(true);
-      try {
-        pendingWake = false;
-        realQueue.wait(timeout);
-      } catch (InterruptedException ignored) {
-        // Fall through and unblock with no messages.
-      } finally {
-        reflector(MessageQueueReflector.class, realQueue).setBlocked(false);
-      }
-    }
-  }
-
   @Implementation
   protected static void nativeWake(long ptr) {
     MessageQueue realQueue = nativeQueueRegistry.getNativeObject(ptr).realQueue;
@@ -169,8 +148,69 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   @Implementation
   protected boolean enqueueMessage(Message msg, long when) {
     checkQueueState();
+    boolean result = reflector(MessageQueueReflector.class, realQueue).enqueueMessage(msg, when);
+    if (result) {
+      updateListener();
+    }
+    return result;
+  }
 
-    return reflector(MessageQueueReflector.class, realQueue).enqueueMessage(msg, when);
+  void poll(long timeout) {
+    checkState(
+        Looper.myLooper() == Looper.getMainLooper() && Looper.myLooper().getQueue() == realQueue);
+    // need to add a listener before checking executable messages, to avoid race condition where
+    // message gets
+    // posted immediately after checking state
+    CountDownLatch latch = new CountDownLatch(1);
+    queueListenerRef.set(latch::countDown);
+    if (!hasExecutableMsg()) {
+      try {
+        if (timeout == 0) {
+          latch.await();
+        } else {
+          latch.await(timeout, TimeUnit.MILLISECONDS);
+        }
+      } catch (InterruptedException e) {
+        // Fall through and unblock with no messages.
+      }
+    }
+    queueListenerRef.set(null);
+  }
+
+  private void updateListener() {
+    QueueListener listener = queueListenerRef.get();
+    // if listener is non null, we know poll() is blocking the Looper thread and its safe for us to
+    // call
+    // hasExecutableMsg
+    if (listener != null && hasExecutableMsg()) {
+      listener.onExecutableMsg();
+    }
+  }
+
+  /**
+   * Return true if there is an executable Message currently available for execution.
+   *
+   * <p>It is the caller's responsibility to ensure this does not race with the Looper thread
+   * calling next. Thus it should only be called on the Looper thread, or when its known the Looper
+   * thread is blocked (such as from poll())
+   */
+  private boolean hasExecutableMsg() {
+    if (getApiLevel() > Baklava.SDK_INT) {
+      Long when = reflector(MessageQueueReflector.class, realQueue).peekWhenForTest();
+      return when != null && when <= SystemClock.uptimeMillis();
+    } else {
+      final long now = SystemClock.uptimeMillis();
+      synchronized (realQueue) {
+        Message msg = getMessages();
+        if (msg != null && msg.getTarget() == null) {
+          // Stalled by a barrier.  Find the next asynchronous message in the queue.
+          do {
+            msg = reflector(MessageReflector.class, msg).getNext();
+          } while (msg != null && !msg.isAsynchronous());
+        }
+        return msg != null && shadowMsg(msg).getWhen() <= now;
+      }
+    }
   }
 
   Message getMessages() {
@@ -188,6 +228,12 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   protected void quit(boolean allowed) {
     reflector(MessageQueueReflector.class, realQueue).quit(allowed);
     ShadowPausedSystemClock.removeListener(clockListener);
+  }
+
+  @Implementation
+  protected void removeSyncBarrier(int token) {
+    reflector(MessageQueueReflector.class, realQueue).removeSyncBarrier(token);
+    updateListener();
   }
 
   Duration getLastScheduledTaskTime() {
@@ -369,9 +415,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     @Accessor("mAsyncMessageCount")
     void setAsyncMessageCount(int asyncMessageCount);
 
-    @Accessor("mBlocked")
-    void setBlocked(boolean blocked);
-
     @Direct
     boolean isIdle();
 
@@ -385,5 +428,11 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     @Direct
     @Static
     boolean computeUseConcurrent();
+
+    @Direct
+    void removeSyncBarrier(int token);
+
+    @Direct
+    Long peekWhenForTest();
   }
 }

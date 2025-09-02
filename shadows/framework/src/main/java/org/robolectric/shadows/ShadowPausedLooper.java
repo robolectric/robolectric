@@ -291,11 +291,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
    */
   public void poll(long timeout) {
     checkState(Looper.myLooper() == Looper.getMainLooper() && Looper.myLooper() == realLooper);
-    synchronized (realLooper.getQueue()) {
-      if (isIdle()) {
-        shadowQueue().poll(timeout);
-      }
-    }
+    shadowQueue().poll(timeout);
   }
 
   @Override
@@ -405,7 +401,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
         String.format("this action is not supported in %s mode.", looperMode()));
   }
 
-  private static ShadowPausedMessage shadowMsg(Message msg) {
+  static ShadowPausedMessage shadowMsg(Message msg) {
     return Shadow.extract(msg);
   }
 

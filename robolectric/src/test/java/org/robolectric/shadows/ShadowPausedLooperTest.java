@@ -626,6 +626,89 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
+  public void poll_notIdle() {
+    ShadowPausedLooper shadowPausedLooper = Shadow.extract(Looper.getMainLooper());
+    new Handler(Looper.getMainLooper()).post(() -> {});
+    // should return immediately. Checking elapsed time here would be flaky
+    shadowPausedLooper.poll(0);
+  }
+
+  @Test
+  public void poll_future_msg() {
+    ShadowPausedLooper shadowPausedLooper = Shadow.extract(Looper.getMainLooper());
+    new Handler(Looper.getMainLooper()).postDelayed(() -> {}, 10);
+    long startTime = System.nanoTime();
+    // poll should wait the full 10 ms, as the posted message is not executable yet
+    shadowPausedLooper.poll(10);
+    Duration elapsedTime = Duration.ofNanos(System.nanoTime() - startTime);
+    assertThat(elapsedTime.toMillis()).isAtLeast(10);
+  }
+
+  @Test
+  public void poll_future_msg_clock_advanced() {
+    ShadowPausedLooper shadowPausedLooper = Shadow.extract(Looper.getMainLooper());
+    new Handler(Looper.getMainLooper()).postDelayed(() -> {}, 10);
+    new Handler(handlerThread.getLooper())
+        .post(
+            () -> {
+              try {
+                // give time for poll to block
+                Thread.sleep(10);
+              } catch (InterruptedException e) {
+                // ignore
+              }
+              ShadowSystemClock.advanceBy(Duration.ofMillis(10));
+            });
+    // should not block forever
+    shadowPausedLooper.poll(0);
+  }
+
+  @Test
+  public void poll_removeSyncBarrier() {
+    int barrier = Looper.getMainLooper().getQueue().postSyncBarrier();
+    // post a message blocked by a sync barrier
+    new Handler(Looper.getMainLooper()).post(() -> {});
+    ShadowPausedLooper shadowPausedLooper = Shadow.extract(Looper.getMainLooper());
+    new Handler(handlerThread.getLooper())
+        .post(
+            () -> {
+              try {
+                // give time for poll to block
+                Thread.sleep(10);
+              } catch (InterruptedException e) {
+                // ignore
+              }
+              Looper.getMainLooper().getQueue().removeSyncBarrier(barrier);
+            });
+
+    // should not block forever
+    shadowPausedLooper.poll(0);
+  }
+
+  @Test
+  public void poll_new_message_blocked_by_sync() {
+    ShadowPausedLooper shadowPausedLooper = Shadow.extract(Looper.getMainLooper());
+    int token = Looper.getMainLooper().getQueue().postSyncBarrier();
+    new Handler(handlerThread.getLooper())
+        .post(
+            () -> {
+              try {
+                // try to make poll block first
+                Thread.sleep(1);
+              } catch (InterruptedException e) {
+              }
+              new Handler(Looper.getMainLooper()).post(() -> {});
+            });
+
+    // should wait the entire time
+    long startTime = System.nanoTime();
+    shadowPausedLooper.poll(20);
+    long elapsedMs = Duration.ofNanos(System.nanoTime() - startTime).toMillis();
+    assertThat(elapsedMs).isAtLeast(20);
+    Looper.getMainLooper().getQueue().removeSyncBarrier(token);
+  }
+
+  @Test
   @Config(minSdk = VERSION_CODES.M)
   public void runOneTask_ignoreSyncBarrier() {
     int barrier = Looper.getMainLooper().getQueue().postSyncBarrier();
