@@ -24,6 +24,8 @@ import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions;
 import org.robolectric.versioning.AndroidVersions.Baklava;
 import org.robolectric.versioning.AndroidVersions.V;
 
@@ -66,6 +68,19 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
           }
         };
     ShadowPausedSystemClock.addStaticListener(clockListener);
+  }
+
+  /**
+   * This is temporary method intended to be used for Robolectric's own unit tests to force
+   * concurrent MessageQueue in the indevelopment Android SDK
+   */
+  @Implementation(minSdk = AndroidVersions.PostBaklava.SDK_INT)
+  protected static boolean computeUseConcurrent() {
+    String overrideprop = System.getProperty("robolectric.overrideUseConcurrentMessageQueue");
+    if (overrideprop != null) {
+      return Boolean.parseBoolean(overrideprop);
+    }
+    return reflector(MessageQueueReflector.class).computeUseConcurrent();
   }
 
   @Implementation
@@ -366,5 +381,9 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
     @Direct
     Message peekLastMessageForTest();
+
+    @Direct
+    @Static
+    boolean computeUseConcurrent();
   }
 }
