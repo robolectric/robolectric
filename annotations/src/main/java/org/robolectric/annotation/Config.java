@@ -425,7 +425,7 @@ public @interface Config {
       String qualifiersOverlayValue = overlayConfig.qualifiers();
       if (qualifiersOverlayValue != null && !qualifiersOverlayValue.isEmpty()) {
         if (qualifiersOverlayValue.startsWith("+")) {
-          this.qualifiers = this.qualifiers + " " + qualifiersOverlayValue;
+          this.qualifiers += " " + qualifiersOverlayValue;
         } else {
           this.qualifiers = qualifiersOverlayValue;
         }
