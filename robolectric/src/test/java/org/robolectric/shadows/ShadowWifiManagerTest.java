@@ -709,7 +709,7 @@ public class ShadowWifiManagerTest {
     wifiManager.addOnWifiUsabilityStatsListener(directExecutor(), mockListener);
 
     // WHEN
-    WifiUsabilityStatsEntryBuilder builder = new WifiUsabilityStatsEntryBuilder();
+    WifiUsabilityStatsEntryBuilder builder = WifiUsabilityStatsEntryBuilder.newBuilder();
     builder
         .setTimeStampMillis(1234567L)
         .setRssi(23)
@@ -798,7 +798,7 @@ public class ShadowWifiManagerTest {
         mock(WifiManager.OnWifiUsabilityStatsListener.class);
     wifiManager.addOnWifiUsabilityStatsListener(directExecutor(), mockListener);
 
-    WifiUsabilityStatsEntryBuilder builder = new WifiUsabilityStatsEntryBuilder();
+    WifiUsabilityStatsEntryBuilder builder = WifiUsabilityStatsEntryBuilder.newBuilder();
     builder
         .setTimeStampMillis(1234567L)
         .setRssi(23)
@@ -826,7 +826,7 @@ public class ShadowWifiManagerTest {
         .setCellularDataNetworkType(0)
         .setCellularSignalStrengthDbm(0)
         .setCellularSignalStrengthDb(0)
-        .setSameRegisteredCell(false);
+        .setIsSameRegisteredCell(false);
 
     // WHEN
     wifiManager.removeOnWifiUsabilityStatsListener(mockListener);
