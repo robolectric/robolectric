@@ -87,6 +87,15 @@ public class AccessibilityWindowInfoBuilderTest {
     assertThat(windowInfo.getId()).isEqualTo(123);
   }
 
+  @Test
+  public void setType_setsCorrectType() {
+    AccessibilityWindowInfo windowInfo =
+        AccessibilityWindowInfoBuilder.newBuilder()
+            .setType(AccessibilityWindowInfo.TYPE_INPUT_METHOD)
+            .build();
+    assertThat(windowInfo.getType()).isEqualTo(AccessibilityWindowInfo.TYPE_INPUT_METHOD);
+  }
+
   @Config(minSdk = N)
   @Test
   public void setTitle_setsCorrectTitle() {
