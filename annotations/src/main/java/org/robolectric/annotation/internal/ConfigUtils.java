@@ -1,5 +1,6 @@
 package org.robolectric.annotation.internal;
 
+import android.os.Build;
 import org.robolectric.annotation.Config;
 
 public class ConfigUtils {
@@ -36,7 +37,7 @@ public class ConfigUtils {
           return Integer.parseInt(spec);
         } catch (NumberFormatException e) {
           try {
-            return (int) android.os.Build.VERSION_CODES.class.getField(part).get(null);
+            return (int) Build.VERSION_CODES.class.getField(part).get(null);
           } catch (Exception e2) {
             throw new IllegalArgumentException("unknown SDK \"" + part + "\"");
           }
