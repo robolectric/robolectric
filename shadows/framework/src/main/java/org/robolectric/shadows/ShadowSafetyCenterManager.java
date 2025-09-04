@@ -1,7 +1,10 @@
 package org.robolectric.shadows;
 
 import android.os.Build.VERSION_CODES;
+import android.safetycenter.SafetyCenterData;
+import android.safetycenter.SafetyCenterIssue;
 import android.safetycenter.SafetyCenterManager;
+import android.safetycenter.SafetyCenterManager.OnSafetyCenterDataChangedListener;
 import android.safetycenter.SafetyEvent;
 import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceErrorDetails;
@@ -10,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
@@ -39,6 +43,12 @@ public class ShadowSafetyCenterManager {
 
   @GuardedBy("lock")
   private static boolean enabled = false;
+
+  @GuardedBy("lock")
+  private static SafetyCenterData safetyCenterData;
+
+  @GuardedBy("lock")
+  private static final Map<OnSafetyCenterDataChangedListener, Executor> listeners = new HashMap<>();
 
   @Implementation
   protected boolean isSafetyCenterEnabled() {
@@ -139,6 +149,80 @@ public class ShadowSafetyCenterManager {
       errorsById.clear();
       throwForId.clear();
       enabled = false;
+      safetyCenterData = null;
+      listeners.clear();
+    }
+  }
+
+  @Implementation
+  protected SafetyCenterData getSafetyCenterData() {
+    synchronized (lock) {
+      return safetyCenterData;
+    }
+  }
+
+  public void setSafetyCenterData(@Nonnull SafetyCenterData safetyCenterDataInput) {
+    synchronized (lock) {
+      safetyCenterData = safetyCenterDataInput;
+      notifyListenersOfDataChange(safetyCenterData);
+    }
+  }
+
+  @Implementation
+  protected void addOnSafetyCenterDataChangedListener(
+      @Nonnull Executor executor, @Nonnull OnSafetyCenterDataChangedListener listener) {
+    synchronized (lock) {
+      listeners.put(listener, executor);
+    }
+  }
+
+  @Implementation
+  protected void removeOnSafetyCenterDataChangedListener(
+      @Nonnull OnSafetyCenterDataChangedListener listener) {
+    synchronized (lock) {
+      listeners.remove(listener);
+    }
+  }
+
+  @Implementation
+  protected void dismissSafetyCenterIssue(@Nonnull String safetyCenterIssueId) {
+    synchronized (lock) {
+      if (safetyCenterData == null) {
+        return;
+      }
+
+      SafetyCenterData.Builder builder = new SafetyCenterData.Builder(safetyCenterData);
+
+      builder.clearIssues();
+      builder.clearDismissedIssues();
+
+      for (SafetyCenterIssue issue : safetyCenterData.getIssues()) {
+        if (issue.getId().equals(safetyCenterIssueId)) {
+          builder.addDismissedIssue(issue);
+        } else {
+          builder.addIssue(issue);
+        }
+      }
+
+      for (SafetyCenterIssue issue : safetyCenterData.getDismissedIssues()) {
+        builder.addDismissedIssue(issue);
+      }
+
+      safetyCenterData = builder.build();
+      notifyListenersOfDataChange(safetyCenterData);
+    }
+  }
+
+  @GuardedBy("lock")
+  private static void notifyListenersOfDataChange(@Nonnull SafetyCenterData safetyCenterData) {
+    for (Map.Entry<OnSafetyCenterDataChangedListener, Executor> entry : listeners.entrySet()) {
+      final OnSafetyCenterDataChangedListener listener = entry.getKey();
+      final Executor executor = entry.getValue();
+
+      executor.execute(
+          () -> {
+            listener.onSafetyCenterDataChanged(safetyCenterData);
+          });
     }
   }
 }
