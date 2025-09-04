@@ -28,10 +28,10 @@ import org.robolectric.versioning.AndroidVersions.V;
 public class ShadowCardEmulation {
 
   private static final Set<ComponentName> defaultObserveModeEnabledServices = new HashSet<>();
-  private static Map<String, ComponentName> defaultServiceForCategoryMap = new HashMap<>();
+  private static final Map<String, ComponentName> defaultServiceForCategoryMap = new HashMap<>();
   private static ComponentName preferredService = null;
-  private static Map<ComponentName, Map<String, Boolean>> pollingLoopPatternFiltersForService =
-      new HashMap<>();
+  private static final Map<ComponentName, Map<String, Boolean>>
+      pollingLoopPatternFiltersForService = new HashMap<>();
   private static String pollingLoopFilterAllowedCharactersRegex = "[a-fA-F0-9\\?\\.\\*]+";
 
   @RealObject CardEmulation cardEmulation;
@@ -145,9 +145,10 @@ public class ShadowCardEmulation {
 
   @Resetter
   public static void reset() {
-    defaultServiceForCategoryMap = new HashMap<>();
+    defaultObserveModeEnabledServices.clear();
+    defaultServiceForCategoryMap.clear();
     preferredService = null;
-    pollingLoopPatternFiltersForService = new HashMap<>();
+    pollingLoopPatternFiltersForService.clear();
     CardEmulationReflector reflector = reflector(CardEmulationReflector.class);
     reflector.setIsInitialized(false);
     reflector.setService(null);
