@@ -190,6 +190,20 @@ public class ShadowBluetoothGatt {
   }
 
   /**
+   * Overrides {@link BluetoothGatt#setPreferredPhy} to always fail before {@link
+   * ShadowBluetoothGatt#setGattCallback} is called, and always succeed after.
+   */
+  @Implementation(minSdk = O)
+  protected void setPreferredPhy(int txPhy, int rxPhy, int phyOptions) {
+    if (this.bluetoothGattCallback == null) {
+      return;
+    }
+
+    this.bluetoothGattCallback.onPhyUpdate(
+        this.realBluetoothGatt, txPhy, rxPhy, BluetoothGatt.GATT_SUCCESS);
+  }
+
+  /**
    * Overrides {@link BluetoothGatt#discoverServices} to always return false unless there are
    * discoverable services made available by {@link ShadowBluetoothGatt#addDiscoverableService}
    *
