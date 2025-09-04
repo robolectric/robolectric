@@ -24,6 +24,7 @@ import android.app.ambientcontext.IAmbientContextManager;
 import android.app.job.IJobScheduler;
 import android.app.role.IRoleManager;
 import android.app.slice.ISliceManager;
+import android.app.supervision.ISupervisionManager;
 import android.app.timedetector.ITimeDetectorService;
 import android.app.timezonedetector.ITimeZoneDetectorService;
 import android.app.trust.ITrustManager;
@@ -88,6 +89,9 @@ import android.permission.ILegacyPermissionManager;
 import android.permission.IPermissionManager;
 import android.safetycenter.ISafetyCenterManager;
 import android.security.IFileIntegrityService;
+import android.security.advancedprotection.IAdvancedProtectionService;
+import android.security.authenticationpolicy.IAuthenticationPolicyService;
+import android.security.intrusiondetection.IIntrusionDetectionService;
 import android.speech.IRecognitionServiceManager;
 import android.uwb.IUwbAdapter;
 import android.view.IWindowManager;
@@ -115,6 +119,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.versioning.AndroidVersions;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link ServiceManager}. */
@@ -379,6 +384,17 @@ public class ShadowServiceManager {
           "protolog_configuration" /* Context.PROTOLOG_CONFIGURATION_SERVICE, */,
           "com.android.internal.protolog.ProtoLogConfigurationService"
           /* new ProtoLogConfigurationServiceImpl.class */ );
+    }
+    if (RuntimeEnvironment.getApiLevel() >= AndroidVersions.Baklava.SDK_INT) {
+      addBinderService(
+          binderServices, Context.ADVANCED_PROTECTION_SERVICE, IAdvancedProtectionService.class);
+      addBinderService(
+          binderServices, Context.INTRUSION_DETECTION_SERVICE, IIntrusionDetectionService.class);
+      addBinderService(binderServices, Context.SUPERVISION_SERVICE, ISupervisionManager.class);
+      addBinderService(
+          binderServices,
+          Context.AUTHENTICATION_POLICY_SERVICE,
+          IAuthenticationPolicyService.class);
     }
 
     return binderServices;
