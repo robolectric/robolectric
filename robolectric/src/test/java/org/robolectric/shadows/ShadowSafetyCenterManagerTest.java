@@ -2,15 +2,21 @@ package org.robolectric.shadows;
 
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.assertThrows;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build.VERSION_CODES;
+import android.safetycenter.SafetyCenterData;
+import android.safetycenter.SafetyCenterIssue;
 import android.safetycenter.SafetyCenterManager;
+import android.safetycenter.SafetyCenterManager.OnSafetyCenterDataChangedListener;
+import android.safetycenter.SafetyCenterStatus;
 import android.safetycenter.SafetyEvent;
 import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceErrorDetails;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -520,5 +526,124 @@ public final class ShadowSafetyCenterManagerTest {
 
       assertThat(activityEnabled).isEqualTo(applicationEnabled);
     }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void getSafetyCenterData_whenDataSetByShadow_returnsThatData() {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
+    SafetyCenterData safetyCenterData = (SafetyCenterData) createSafetyCenterData();
+
+    shadowSafetyCenterManager.setSafetyCenterData(safetyCenterData);
+
+    assertThat(safetyCenterManager.getSafetyCenterData()).isEqualTo(safetyCenterData);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void addOnSafetyCenterDataChangedListener_whenDataChanges_listenerIsCalled()
+      throws Exception {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
+    AtomicBoolean listenerCalled = new AtomicBoolean(false);
+
+    shadowSafetyCenterManager.addOnSafetyCenterDataChangedListener(
+        directExecutor(),
+        new OnSafetyCenterDataChangedListener() {
+          @Override
+          public void onSafetyCenterDataChanged(SafetyCenterData safetyCenterData) {
+            assertThat(safetyCenterData).isNotNull();
+            listenerCalled.set(true);
+          }
+        });
+    shadowSafetyCenterManager.setSafetyCenterData((SafetyCenterData) createSafetyCenterData());
+
+    assertThat(listenerCalled.get()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void removeOnSafetyCenterDataChangedListener_listenerIsNotCalled() throws Exception {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
+    AtomicBoolean listenerCalled = new AtomicBoolean(false);
+    OnSafetyCenterDataChangedListener listener =
+        new OnSafetyCenterDataChangedListener() {
+          @Override
+          public void onSafetyCenterDataChanged(SafetyCenterData safetyCenterData) {
+            listenerCalled.set(true);
+          }
+        };
+
+    shadowSafetyCenterManager.addOnSafetyCenterDataChangedListener(directExecutor(), listener);
+    shadowSafetyCenterManager.removeOnSafetyCenterDataChangedListener(listener);
+    shadowSafetyCenterManager.setSafetyCenterData((SafetyCenterData) createSafetyCenterData());
+
+    assertThat(listenerCalled.get()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void dismissSafetyCenterIssue_removesIssueFromActiveList() {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
+    SafetyCenterIssue issue = new SafetyCenterIssue.Builder("id1", "title", "summary").build();
+    SafetyCenterData dataWithIssue = (SafetyCenterData) createSafetyCenterDataWithIssue(issue);
+
+    shadowSafetyCenterManager.setSafetyCenterData(dataWithIssue);
+    safetyCenterManager.dismissSafetyCenterIssue("id1");
+    SafetyCenterData updatedData = safetyCenterManager.getSafetyCenterData();
+
+    assertThat(updatedData.getIssues()).isEmpty();
+    assertThat(updatedData.getDismissedIssues()).hasSize(1);
+    assertThat(updatedData.getDismissedIssues().get(0).getId()).isEqualTo("id1");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void dismissSafetyCenterIssue_notifiesListeners() throws Exception {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
+    AtomicBoolean listenerCalled = new AtomicBoolean(false);
+    SafetyCenterIssue issue = new SafetyCenterIssue.Builder("id1", "title", "summary").build();
+    SafetyCenterData dataWithIssue = (SafetyCenterData) createSafetyCenterDataWithIssue(issue);
+
+    shadowSafetyCenterManager.setSafetyCenterData(dataWithIssue);
+    shadowSafetyCenterManager.addOnSafetyCenterDataChangedListener(
+        directExecutor(),
+        new OnSafetyCenterDataChangedListener() {
+          @Override
+          public void onSafetyCenterDataChanged(SafetyCenterData safetyCenterData) {
+            assertThat(safetyCenterData.getIssues()).isEmpty();
+            assertThat(safetyCenterData.getDismissedIssues()).hasSize(1);
+            listenerCalled.set(true);
+          }
+        });
+    safetyCenterManager.dismissSafetyCenterIssue("id1");
+
+    assertThat(listenerCalled.get()).isTrue();
+  }
+
+  private Object createSafetyCenterData() {
+    SafetyCenterStatus.Builder statusBuilder =
+        new SafetyCenterStatus.Builder("Test Title", "Test Summary");
+    statusBuilder.setSeverityLevel(SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_RECOMMENDATION);
+    SafetyCenterStatus safetyCenterStatus = statusBuilder.build();
+    return new SafetyCenterData.Builder(safetyCenterStatus).build();
+  }
+
+  private Object createSafetyCenterDataWithIssue(Object issueObject) {
+    SafetyCenterIssue issue = (SafetyCenterIssue) issueObject;
+    SafetyCenterStatus.Builder statusBuilder =
+        new SafetyCenterStatus.Builder("Test Title", "Test Summary");
+    statusBuilder.setSeverityLevel(SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_RECOMMENDATION);
+    SafetyCenterStatus safetyCenterStatus = statusBuilder.build();
+    return new SafetyCenterData.Builder(safetyCenterStatus).addIssue(issue).build();
   }
 }
