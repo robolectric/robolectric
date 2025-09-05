@@ -5,6 +5,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.jspecify.annotations.NonNull;
 import org.robolectric.shadow.api.ShadowPicker;
 
 /**
@@ -22,14 +23,14 @@ public @interface Implements {
    *
    * @return Android class to shadow.
    */
-  Class<?> value() default void.class;
+  @NonNull Class<?> value() default void.class;
 
   /**
    * Android class name (if the Class object is not accessible).
    *
    * @return Android class name.
    */
-  String className() default "";
+  @NonNull String className() default "";
 
   /**
    * Denotes that this type exists in the public Android SDK. When this value is true, the
@@ -68,7 +69,7 @@ public @interface Implements {
    * Robolectric classloader. All shadow classes implementing the same Android class must use the
    * same {@link ShadowPicker}.
    */
-  Class<? extends ShadowPicker<?>> shadowPicker() default DefaultShadowPicker.class;
+  @NonNull Class<? extends ShadowPicker<?>> shadowPicker() default DefaultShadowPicker.class;
 
   /**
    * If set to true, Robolectric will invoke the native method variant instead of the no-op variant.
