@@ -1096,7 +1096,7 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = P)
-  public void shouldGetSimCarrierId() {
+  public void getCarrierId_valueConfigured_returnsCarrierId() {
     int expectedCarrierId = 132;
     shadowOf(telephonyManager).setSimCarrierId(expectedCarrierId);
 
@@ -1104,12 +1104,25 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = P)
+  public void getCarrierId_valueNotConfigured_returnsUnknown() {
+    assertThat(telephonyManager.getSimCarrierId()).isEqualTo(TelephonyManager.UNKNOWN_CARRIER_ID);
+  }
+
+  @Test
   @Config(minSdk = Q)
-  public void shouldGetSimSpecificCarrierId() {
+  public void getSimSpecificCarrierId_valueConfigured_returnsCarrierId() {
     int expectedCarrierId = 132;
     shadowOf(telephonyManager).setSimSpecificCarrierId(expectedCarrierId);
 
     assertThat(telephonyManager.getSimSpecificCarrierId()).isEqualTo(expectedCarrierId);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getSimSpecificCarrierId_valueNotConfigured_returnsUnknown() {
+    assertThat(telephonyManager.getSimSpecificCarrierId())
+        .isEqualTo(TelephonyManager.UNKNOWN_CARRIER_ID);
   }
 
   @Test

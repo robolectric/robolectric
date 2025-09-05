@@ -172,8 +172,8 @@ public class ShadowTelephonyManager {
       Collections.synchronizedMap(new LinkedHashMap<>());
   private static final Map<Integer, String> simCountryIsoMap =
       Collections.synchronizedMap(new LinkedHashMap<>());
-  private int simCarrierId;
-  private int simSpecificCarrierId;
+  private int simCarrierId = TelephonyManager.UNKNOWN_CARRIER_ID;
+  private int simSpecificCarrierId = TelephonyManager.UNKNOWN_CARRIER_ID;
   private CharSequence simCarrierIdName;
   private int carrierIdFromSimMccMnc;
   private String subscriberId;

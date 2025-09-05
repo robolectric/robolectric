@@ -46,6 +46,7 @@ public class ShadowSubscriptionManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private static final int SUBSCRIPTION_ID = 1;
+  private static final int CARRIER_ID = 1989;
 
   private SubscriptionManager subscriptionManager;
 
@@ -683,6 +684,17 @@ public class ShadowSubscriptionManagerTest {
                 .buildSubscriptionInfo()
                 .isOpportunistic())
         .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void subscriptionInfoBuilder_setCarrierId_returnsCarrierId() {
+    SubscriptionInfo subscriptionInfo =
+        ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+            .setCarrierId(CARRIER_ID)
+            .buildSubscriptionInfo();
+
+    assertThat(subscriptionInfo.getCarrierId()).isEqualTo(CARRIER_ID);
   }
 
   @Test
