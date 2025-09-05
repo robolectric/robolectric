@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -11,13 +13,16 @@ import android.nfc.NfcAdapter;
 import android.nfc.cardemulation.CardEmulation;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.util.concurrent.MoreExecutors;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /** Test the shadow implementation of {@link CardEmulation}. */
@@ -30,6 +35,8 @@ public final class ShadowCardEmulationTest {
   private CardEmulation cardEmulation;
   private ComponentName service;
   private ShadowCardEmulation shadowCardEmulation;
+
+  private Executor executor = MoreExecutors.directExecutor();
 
   @Before
   public void setUp() throws Exception {
@@ -167,6 +174,108 @@ public final class ShadowCardEmulationTest {
             cardEmulation.removePollingLoopPatternFilterForService(
                 service, invalidPollingLoopFilter))
         .isFalse();
+  }
+
+  @Test
+  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  public void registerNfcEventCallback_shouldRegisterNfcEventCallback() {
+    CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
+    cardEmulation.registerNfcEventCallback(executor, testCallback);
+
+    assertThat(shadowCardEmulation.getNfcEventCallbackListeners().keySet())
+        .containsExactly(testCallback);
+  }
+
+  @Test
+  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  public void unregisterNfcEventCallback_shouldRegisterNfcEventCallback() {
+    CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
+    cardEmulation.registerNfcEventCallback(executor, testCallback);
+    assertThat(shadowCardEmulation.getNfcEventCallbackListeners().keySet())
+        .containsExactly(testCallback);
+
+    cardEmulation.unregisterNfcEventCallback(testCallback);
+    assertThat(shadowCardEmulation.getNfcEventCallbackListeners()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  public void triggerOnNfcStateChanged_shouldTriggerNfcEventCallbackListeners() {
+    CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
+    cardEmulation.registerNfcEventCallback(executor, testCallback);
+
+    shadowCardEmulation.triggerOnNfcStateChanged(NfcAdapter.STATE_ON);
+
+    verify(testCallback).onNfcStateChanged(NfcAdapter.STATE_ON);
+  }
+
+  @Test
+  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  public void triggerOnRemoteFieldChanged_shouldTriggerNfcEventCallbackListeners() {
+    CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
+    cardEmulation.registerNfcEventCallback(executor, testCallback);
+
+    shadowCardEmulation.triggerOnRemoteFieldChanged(/* isDetected= */ true);
+
+    verify(testCallback).onRemoteFieldChanged(/* isDetected= */ true);
+  }
+
+  @Test
+  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  public void triggerOnAidConflictOccurred_shouldTriggerNfcEventCallbackListeners() {
+    CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
+    cardEmulation.registerNfcEventCallback(executor, testCallback);
+    String testAid = "0000";
+
+    shadowCardEmulation.triggerOnAidConflictOccurred(testAid);
+
+    verify(testCallback).onAidConflictOccurred(testAid);
+  }
+
+  @Test
+  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  public void triggerOnAidNotRouted_shouldTriggerNfcEventCallbackListeners() {
+    CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
+    cardEmulation.registerNfcEventCallback(executor, testCallback);
+    String testAid = "0000";
+
+    shadowCardEmulation.triggerOnAidNotRouted(testAid);
+
+    verify(testCallback).onAidNotRouted(testAid);
+  }
+
+  @Test
+  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  public void triggerOnInternalErrorReported_shouldTriggerNfcEventCallbackListeners() {
+    CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
+    cardEmulation.registerNfcEventCallback(executor, testCallback);
+    int error = CardEmulation.NFC_INTERNAL_ERROR_NFC_HARDWARE_ERROR;
+
+    shadowCardEmulation.triggerOnInternalErrorReported(error);
+
+    verify(testCallback).onInternalErrorReported(error);
+  }
+
+  @Test
+  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  public void triggerOnPreferredServiceChanged_shouldTriggerNfcEventCallbackListeners() {
+    CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
+    cardEmulation.registerNfcEventCallback(executor, testCallback);
+
+    shadowCardEmulation.triggerOnPreferredServiceChanged(true);
+
+    verify(testCallback).onPreferredServiceChanged(true);
+  }
+
+  @Test
+  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  public void triggerOnObserveModeStateChanged_shouldTriggerNfcEventCallbackListeners() {
+    CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
+    cardEmulation.registerNfcEventCallback(executor, testCallback);
+
+    shadowCardEmulation.triggerOnObserveModeStateChanged(false);
+
+    verify(testCallback).onObserveModeStateChanged(false);
   }
 
   // TODO: delete when this test compiles against V sdk
