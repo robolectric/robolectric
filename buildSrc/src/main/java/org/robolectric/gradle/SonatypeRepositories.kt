@@ -11,10 +11,7 @@ fun PublishingExtension.sonatypeRepositories(isSnapshotVersion: Boolean) {
   repositories {
     maven {
       name = "CentralPortal"
-      val releasesRepoUrl = PUBLISH_URL
-      val snapshotsRepoUrl = PUBLISH_SNAPSHOTS_URL
-
-      url = if (isSnapshotVersion) URI(snapshotsRepoUrl) else URI(releasesRepoUrl)
+      url = URI(if (isSnapshotVersion) PUBLISH_SNAPSHOTS_URL else PUBLISH_URL)
 
       credentials {
         username = System.getProperty("sonatype-login", System.getenv("SONATYPE_LOGIN"))
