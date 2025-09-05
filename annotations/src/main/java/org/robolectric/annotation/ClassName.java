@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
  *    // Generally, &#64;ClassName will be used together with Object type.
  *    &#64;Implementation
  *    public &#64;ClassName("com.android.RealReturnType") Object setBar(
- *        &#64;ClassName("com.android.RealClassName") Object para1,
+ *        &#64;ClassName("com.android.RealClassName", addedInSdk = 36) Object para1,
  *        int para2,
  *        String para3) {
  *
@@ -39,4 +39,7 @@ public @interface ClassName {
    * Class#getCanonicalName()}; e.g. {@code Foo$Bar} instead of {@code Foo.Bar}.
    */
   String value();
+
+  /** The SDK version in which the class was introduced. */
+  int addedInSdk() default Implementation.DEFAULT_SDK;
 }
