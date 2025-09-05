@@ -11,6 +11,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.telephony.SubscriptionManager.INVALID_SIM_SLOT_INDEX;
 
+import android.annotation.RequiresApi;
 import android.content.Intent;
 import android.os.Build.VERSION;
 import android.telephony.SubscriptionInfo;
@@ -717,6 +718,12 @@ public class ShadowSubscriptionManager {
 
     public SubscriptionInfoBuilder setDisplayName(String name) {
       ReflectionHelpers.setField(subscriptionInfo, "mDisplayName", name);
+      return this;
+    }
+
+    @RequiresApi(Q)
+    public SubscriptionInfoBuilder setCarrierId(int carrierId) {
+      ReflectionHelpers.setField(subscriptionInfo, "mCarrierId", carrierId);
       return this;
     }
 
