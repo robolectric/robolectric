@@ -128,7 +128,7 @@ play-services-basement = "18.0.1"
 test-parameter-injector = "1.18"
 
 # https://plugins.gradle.org/plugin/com.gradle.plugin-publish
-gradle-plugin-publish = "1.3.1"
+gradle-plugin-publish = "2.0.0"
 
 # Only used for shadows/httpclient tests
 legacy-apache-http-client = "1.0"
