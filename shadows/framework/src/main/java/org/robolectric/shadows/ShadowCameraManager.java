@@ -26,8 +26,10 @@ import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
@@ -136,11 +138,10 @@ public class ShadowCameraManager {
     return openCameraDeviceUserAsync(cameraId, callback, executor, uid, oomScoreOffset);
   }
 
-  // in development API has reverted back to the T signature. Just use a different method name
+  // Baklava API has reverted back to the T signature. Just use a different method name
   // to avoid conflicts.
-  // TODO: increment this to  minSdk next-SDK-after-V once V is fully released
   @Implementation(methodName = "openCameraDeviceUserAsync", minSdk = Baklava.SDK_INT)
-  protected CameraDevice openCameraDeviceUserAsyncPostV(
+  protected CameraDevice openCameraDeviceUserAsyncBaklava(
       String cameraId,
       CameraDevice.StateCallback callback,
       Executor executor,
@@ -149,6 +150,19 @@ public class ShadowCameraManager {
       boolean unused) {
     return openCameraDeviceUserAsync(
         cameraId, callback, executor, unusedClientUid, unusedOomScoreOffset);
+  }
+
+  // TODO: increment to PostBaklava.SDK_INT once annotation logic is fixed
+  @Implementation(minSdk = Baklava.SDK_INT)
+  @InDevelopment
+  protected CameraDevice openCameraDeviceUserAsync(
+      String cameraId,
+      CameraDevice.StateCallback callback,
+      Executor executor,
+      int unusedOomScoreOffset,
+      @ClassName("android.content.res.CameraCompatibilityInfo") Object unusedCompatibilityInfo,
+      boolean unusedSharedMode) {
+    return openCameraDeviceUserAsync(cameraId, callback, executor, 0, unusedOomScoreOffset);
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.S, maxSdk = Build.VERSION_CODES.TIRAMISU)
