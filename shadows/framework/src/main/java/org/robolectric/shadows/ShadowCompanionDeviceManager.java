@@ -17,11 +17,15 @@ import android.os.Handler;
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
@@ -39,6 +43,8 @@ public class ShadowCompanionDeviceManager {
   private final Set<RoboAssociationInfo> associations = new HashSet<>();
   private final Set<ComponentName> hasNotificationAccess = new HashSet<>();
   private final Set<Integer> specifiedRemovableIds = new HashSet<>();
+  private final Map<Integer, InputStream> attachedInputStreams = new ConcurrentHashMap<>();
+  private final Map<Integer, OutputStream> attachedOutputStreams = new ConcurrentHashMap<>();
   private int lastRemoveBondAssociationId = -1;
   private ComponentName lastRequestedNotificationAccess;
   private AssociationRequest lastAssociationRequest;
@@ -112,6 +118,19 @@ public class ShadowCompanionDeviceManager {
     lastAssociationCallback = callback;
   }
 
+  @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  protected void attachSystemDataTransport(
+      int associationId, InputStream inputStream, OutputStream outputStream) {
+    attachedInputStreams.put(associationId, inputStream);
+    attachedOutputStreams.put(associationId, outputStream);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  protected void detachSystemDataTransport(int associationId) {
+    attachedInputStreams.remove(associationId);
+    attachedOutputStreams.remove(associationId);
+  }
+
   @Implementation(minSdk = VERSION_CODES.TIRAMISU)
   protected void associate(
       AssociationRequest request, Executor executor, CompanionDeviceManager.Callback callback) {
@@ -160,6 +179,24 @@ public class ShadowCompanionDeviceManager {
    */
   public AssociationRequest getLastAssociationRequest() {
     return lastAssociationRequest;
+  }
+
+  /**
+   * This method will return the last input stream passed to {@code
+   * CompanionDeviceManager#attachSystemDataTransport(int, InputStream, OutputStream)}. for the
+   * given association, or null if no such association exists.
+   */
+  public InputStream getAttachedInputStream(int associationId) {
+    return attachedInputStreams.get(associationId);
+  }
+
+  /**
+   * This method will return the last output stream passed to {@code
+   * CompanionDeviceManager#attachSystemDataTransport(int, InputStream, OutputStream)}. for the
+   * given association, or null if no such association exists.
+   */
+  public OutputStream getAttachedOutputStream(int associationId) {
+    return attachedOutputStreams.get(associationId);
   }
 
   /**
