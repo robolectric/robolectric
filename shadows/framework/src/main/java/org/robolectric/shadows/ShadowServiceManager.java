@@ -87,6 +87,7 @@ import android.os.ServiceManager;
 import android.os.storage.IStorageManager;
 import android.permission.ILegacyPermissionManager;
 import android.permission.IPermissionManager;
+import android.ranging.IRangingAdapter;
 import android.safetycenter.ISafetyCenterManager;
 import android.security.IFileIntegrityService;
 import android.security.advancedprotection.IAdvancedProtectionService;
@@ -205,6 +206,12 @@ public class ShadowServiceManager {
           return (IInterface) delegate;
       }
       throw new IllegalStateException("unrecognized binder type " + binderType);
+    }
+
+    void reset() {
+      if (delegate instanceof ResettableService) {
+        ((ResettableService) delegate).reset();
+      }
     }
   }
 
@@ -395,6 +402,12 @@ public class ShadowServiceManager {
           binderServices,
           Context.AUTHENTICATION_POLICY_SERVICE,
           IAuthenticationPolicyService.class);
+      addBinderService(
+          binderServices,
+          Context.RANGING_SERVICE,
+          IRangingAdapter.class,
+          BinderType.CONCRETE,
+          new FakeRangingAdapter());
     }
 
     return binderServices;
@@ -590,5 +603,13 @@ public class ShadowServiceManager {
     unavailableServices.clear();
     waitingServices.clear();
     declaredServices.clear();
+    for (BinderService service : binderServices.values()) {
+      service.reset();
+    }
+  }
+
+  /** Fake services that store stateshould implement this to reset their state between tests. */
+  interface ResettableService {
+    void reset();
   }
 }
