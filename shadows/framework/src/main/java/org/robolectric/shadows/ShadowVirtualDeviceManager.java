@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.companion.virtual.VirtualDeviceManager.LAUNCH_SUCCESS;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.PendingIntent;
@@ -9,6 +10,8 @@ import android.companion.virtual.IVirtualDeviceManager;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
+import android.companion.virtual.camera.VirtualCamera;
+import android.companion.virtual.camera.VirtualCameraConfig;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtual.sensor.VirtualSensorCallback;
 import android.companion.virtual.sensor.VirtualSensorDirectChannelCallback;
@@ -34,6 +37,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -142,6 +146,8 @@ public class ShadowVirtualDeviceManager {
       isInAndroidSdk = false)
   public static class ShadowVirtualDevice {
     private static final AtomicInteger nextDeviceId = new AtomicInteger(1);
+    private static final AtomicInteger nextCameraId = new AtomicInteger(1);
+    static final List<VirtualCamera> virtualCameras = new ArrayList<>();
 
     @RealObject VirtualDeviceManager.VirtualDevice realVirtualDevice;
     private VirtualDeviceParams params;
@@ -208,6 +214,10 @@ public class ShadowVirtualDeviceManager {
       return params;
     }
 
+    public List<VirtualCamera> getVirtualCameras() {
+      return virtualCameras;
+    }
+
     @Implementation
     protected List<VirtualSensor> getVirtualSensorList() {
       if (params.getVirtualSensorConfigs() == null) {
@@ -263,6 +273,19 @@ public class ShadowVirtualDeviceManager {
             ReflectionHelpers.createNullProxy(
                 loadClass("android.hardware.input.IVirtualInputDevice")));
       }
+    }
+
+    @Implementation(minSdk = V.SDK_INT)
+    protected @ClassName("android.companion.virtual.camera.VirtualCamera") Object
+        createVirtualCamera(
+            @ClassName("android.companion.virtual.camera.VirtualCameraConfig") Object config) {
+      String id = String.valueOf(nextCameraId.getAndIncrement());
+
+      IVirtualDevice virtualDevice = ReflectionHelpers.createNullProxy(IVirtualDevice.class);
+      VirtualCamera virtualCamera =
+          new VirtualCamera(virtualDevice, id, (VirtualCameraConfig) config);
+      virtualCameras.add(virtualCamera);
+      return virtualCamera;
     }
 
     @Implementation
@@ -368,7 +391,9 @@ public class ShadowVirtualDeviceManager {
     @Resetter
     public static void reset() {
       nextDeviceId.set(1);
+      nextCameraId.set(1);
       mVirtualDevices.clear();
+      virtualCameras.clear();
       service = null;
     }
   }
