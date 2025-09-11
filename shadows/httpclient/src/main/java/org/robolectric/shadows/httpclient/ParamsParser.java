@@ -13,6 +13,10 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
 
+/**
+ * @deprecated Apache HTTP client is deprecated in Android. Please migrate to an other solution
+ */
+@Deprecated
 public class ParamsParser {
 
   public static Map<String, String> parseParams(HttpRequest request) {

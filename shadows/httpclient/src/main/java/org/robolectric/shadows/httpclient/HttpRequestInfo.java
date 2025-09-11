@@ -5,6 +5,10 @@ import org.apache.http.HttpRequest;
 import org.apache.http.client.RequestDirector;
 import org.apache.http.protocol.HttpContext;
 
+/**
+ * @deprecated Apache HTTP client is deprecated in Android. Please migrate to an other solution
+ */
+@Deprecated
 public class HttpRequestInfo {
   HttpRequest httpRequest;
   HttpHost httpHost;
