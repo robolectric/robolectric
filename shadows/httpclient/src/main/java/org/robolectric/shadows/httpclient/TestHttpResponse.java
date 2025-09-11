@@ -19,6 +19,10 @@ import org.apache.http.StatusLine;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 
+/**
+ * @deprecated Apache HTTP client is deprecated in Android. Please migrate to an other solution
+ */
+@Deprecated
 public class TestHttpResponse extends HttpResponseStub {
 
   private final int statusCode;

@@ -32,6 +32,10 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.Util;
 
+/**
+ * @deprecated Apache HTTP client is deprecated in Android. Please migrate to an other solution
+ */
+@Deprecated
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(DefaultRequestDirector.class)
 public class ShadowDefaultRequestDirector {

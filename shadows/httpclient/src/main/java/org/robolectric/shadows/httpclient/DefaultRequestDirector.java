@@ -131,7 +131,9 @@ import org.apache.http.protocol.HttpRequestExecutor;
  * </ul>
  *
  * @since 4.0
+ * @deprecated Apache HTTP client is deprecated in Android. Please migrate to an other solution
  */
+@Deprecated
 public class DefaultRequestDirector implements RequestDirector {
 
   private final Log log;

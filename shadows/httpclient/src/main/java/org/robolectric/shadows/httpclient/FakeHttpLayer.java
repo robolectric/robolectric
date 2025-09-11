@@ -20,6 +20,10 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 
+/**
+ * @deprecated Apache HTTP client is deprecated in Android. Please migrate to an other solution
+ */
+@Deprecated
 public class FakeHttpLayer {
   private final List<HttpResponseGenerator> pendingHttpResponses = new ArrayList<>();
   private final List<HttpRequestInfo> httpRequestInfos = new ArrayList<>();
