@@ -133,6 +133,9 @@ gradle-plugin-publish = "2.0.0"
 # Only used for shadows/httpclient tests
 legacy-apache-http-client = "1.0"
 
+# https://github.com/jspecify/jspecify/releases
+jspecify = "1.0.0"
+
 [libraries]
 android-gradle-api = { module = "com.android.tools.build:gradle-api", version.ref = "android-gradle" }
 
@@ -251,6 +254,8 @@ jacoco-agent = { module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco" 
 
 # Only used for shadows/httpclient tests
 legacy-apache-http-client = { module = "org.robolectric:legacy-apache-http-client-for-robolectric-testing", version.ref = "legacy-apache-http-client" }
+
+jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 
 [bundles]
 powermock = ["powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-objenesis"]
