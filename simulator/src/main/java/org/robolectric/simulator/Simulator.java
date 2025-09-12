@@ -31,6 +31,8 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPausedLooper;
 import org.robolectric.shadows.ShadowSystemClock;
 import org.robolectric.shadows.ShadowView;
+import org.robolectric.simulator.pluginapi.RemoteControl;
+import org.robolectric.util.inject.Injector;
 
 /** The main entry point for the Robolectric Simulator for use in existing Robolectric tests. */
 @Beta
@@ -75,6 +77,7 @@ public final class Simulator {
 
     startUi();
     captureScreen();
+    connectRemoteControl();
     loop();
   }
 
@@ -138,6 +141,14 @@ public final class Simulator {
 
     new Handler(Looper.getMainLooper())
         .post(() -> uiAutomation.injectInputEvent(androidEvent, true));
+  }
+
+  private void connectRemoteControl() {
+    // The default RemoteControl is a no-op stub.
+    Injector injector = new Injector.Builder(Looper.class.getClassLoader()).build();
+    RemoteControl remoteControl = injector.getInstance(RemoteControl.class);
+    remoteControl.connect(
+        InstrumentationRegistry.getInstrumentation().getUiAutomation(), Looper.getMainLooper());
   }
 
   private static class SimulatorFrameCallback implements Choreographer.FrameCallback {
