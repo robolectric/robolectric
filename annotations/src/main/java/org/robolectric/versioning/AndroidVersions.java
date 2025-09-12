@@ -19,6 +19,7 @@ package org.robolectric.versioning;
 import static java.util.Arrays.asList;
 
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -169,7 +170,7 @@ public final class AndroidVersions {
    */
   public static final class J extends AndroidReleased {
 
-    public static final int SDK_INT = 16;
+    public static final int SDK_INT = VERSION_CODES.JELLY_BEAN;
 
     public static final String SHORT_CODE = "J";
 
@@ -199,7 +200,7 @@ public final class AndroidVersions {
    */
   public static final class JMR1 extends AndroidReleased {
 
-    public static final int SDK_INT = 17;
+    public static final int SDK_INT = VERSION_CODES.JELLY_BEAN_MR1;
 
     public static final String SHORT_CODE = "JMR1";
 
@@ -229,7 +230,7 @@ public final class AndroidVersions {
    */
   public static final class JMR2 extends AndroidReleased {
 
-    public static final int SDK_INT = 18;
+    public static final int SDK_INT = VERSION_CODES.JELLY_BEAN_MR2;
 
     public static final String SHORT_CODE = "JMR2";
 
@@ -259,7 +260,7 @@ public final class AndroidVersions {
    */
   public static final class K extends AndroidReleased {
 
-    public static final int SDK_INT = 19;
+    public static final int SDK_INT = VERSION_CODES.KITKAT;
 
     public static final String SHORT_CODE = "K";
 
@@ -291,7 +292,7 @@ public final class AndroidVersions {
    */
   public static final class L extends AndroidReleased {
 
-    public static final int SDK_INT = 21;
+    public static final int SDK_INT = VERSION_CODES.LOLLIPOP;
 
     public static final String SHORT_CODE = "L";
 
@@ -321,7 +322,7 @@ public final class AndroidVersions {
    */
   public static final class LMR1 extends AndroidReleased {
 
-    public static final int SDK_INT = 22;
+    public static final int SDK_INT = VERSION_CODES.LOLLIPOP_MR1;
 
     public static final String SHORT_CODE = "LMR1";
 
@@ -351,7 +352,7 @@ public final class AndroidVersions {
    */
   public static final class M extends AndroidReleased {
 
-    public static final int SDK_INT = 23;
+    public static final int SDK_INT = VERSION_CODES.M;
 
     public static final String SHORT_CODE = "M";
 
@@ -381,7 +382,7 @@ public final class AndroidVersions {
    */
   public static final class N extends AndroidReleased {
 
-    public static final int SDK_INT = 24;
+    public static final int SDK_INT = VERSION_CODES.N;
 
     public static final String SHORT_CODE = "N";
 
@@ -411,7 +412,7 @@ public final class AndroidVersions {
    */
   public static final class NMR1 extends AndroidReleased {
 
-    public static final int SDK_INT = 25;
+    public static final int SDK_INT = VERSION_CODES.N_MR1;
 
     public static final String SHORT_CODE = "NMR1";
 
@@ -441,7 +442,7 @@ public final class AndroidVersions {
    */
   public static final class O extends AndroidReleased {
 
-    public static final int SDK_INT = 26;
+    public static final int SDK_INT = VERSION_CODES.O;
 
     public static final String SHORT_CODE = "O";
 
@@ -471,7 +472,7 @@ public final class AndroidVersions {
    */
   public static final class OMR1 extends AndroidReleased {
 
-    public static final int SDK_INT = 27;
+    public static final int SDK_INT = VERSION_CODES.O_MR1;
 
     public static final String SHORT_CODE = "OMR1";
 
@@ -501,7 +502,7 @@ public final class AndroidVersions {
    */
   public static final class P extends AndroidReleased {
 
-    public static final int SDK_INT = 28;
+    public static final int SDK_INT = VERSION_CODES.P;
 
     public static final String SHORT_CODE = "P";
 
@@ -531,7 +532,7 @@ public final class AndroidVersions {
    */
   public static final class Q extends AndroidReleased {
 
-    public static final int SDK_INT = 29;
+    public static final int SDK_INT = VERSION_CODES.Q;
 
     public static final String SHORT_CODE = "Q";
 
@@ -561,7 +562,7 @@ public final class AndroidVersions {
    */
   public static final class R extends AndroidReleased {
 
-    public static final int SDK_INT = 30;
+    public static final int SDK_INT = VERSION_CODES.R;
 
     public static final String SHORT_CODE = "R";
 
@@ -591,7 +592,7 @@ public final class AndroidVersions {
    */
   public static final class S extends AndroidReleased {
 
-    public static final int SDK_INT = 31;
+    public static final int SDK_INT = VERSION_CODES.S;
 
     public static final String SHORT_CODE = "S";
 
@@ -622,7 +623,7 @@ public final class AndroidVersions {
   @SuppressWarnings("UPPER_SNAKE_CASE")
   public static final class Sv2 extends AndroidReleased {
 
-    public static final int SDK_INT = 32;
+    public static final int SDK_INT = VERSION_CODES.S_V2;
 
     public static final String SHORT_CODE = "Sv2";
 
@@ -652,7 +653,7 @@ public final class AndroidVersions {
    */
   public static final class T extends AndroidReleased {
 
-    public static final int SDK_INT = 33;
+    public static final int SDK_INT = VERSION_CODES.TIRAMISU;
 
     public static final String SHORT_CODE = "T";
 
@@ -682,7 +683,7 @@ public final class AndroidVersions {
    */
   public static final class U extends AndroidReleased {
 
-    public static final int SDK_INT = 34;
+    public static final int SDK_INT = VERSION_CODES.UPSIDE_DOWN_CAKE;
 
     public static final String SHORT_CODE = "U";
 
@@ -712,7 +713,7 @@ public final class AndroidVersions {
    */
   public static final class V extends AndroidReleased {
 
-    public static final int SDK_INT = 35;
+    public static final int SDK_INT = VERSION_CODES.VANILLA_ICE_CREAM;
 
     public static final String SHORT_CODE = "V";
 
@@ -741,7 +742,7 @@ public final class AndroidVersions {
    */
   public static final class Baklava extends AndroidReleased {
 
-    public static final int SDK_INT = 36;
+    public static final int SDK_INT = VERSION_CODES.BAKLAVA;
 
     public static final String SHORT_CODE = "Baklava";
 
