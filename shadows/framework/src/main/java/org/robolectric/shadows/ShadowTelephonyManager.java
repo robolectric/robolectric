@@ -693,14 +693,8 @@ public class ShadowTelephonyManager {
    */
   @Implementation
   protected String getSimCountryIso() {
-    int subId = getSubscriptionIdInternal();
-    String simCountryIso = simCountryIsoMap.get(getSubscriptionIdInternal());
-    if (simCountryIso == null && subId == SubscriptionManager.getDefaultSubscriptionId()) {
-      // Previously this shadow unconditionally returns the country set on subId 0  (which defaults
-      // to "" instead of null), even if the default subId is not 0.
-      return "";
-    }
-    return simCountryIso == null ? null : Ascii.toLowerCase(simCountryIso);
+    String simCountryIso = simCountryIsoMap.get(/* subId= */ 0);
+    return simCountryIso == null ? simCountryIso : Ascii.toLowerCase(simCountryIso);
   }
 
   @Implementation(minSdk = N, maxSdk = Q)
@@ -711,7 +705,7 @@ public class ShadowTelephonyManager {
 
   @Implementation
   public void setSimCountryIso(String simCountryIso) {
-    setSimCountryIso(getSubscriptionIdInternal(), simCountryIso);
+    setSimCountryIso(/* subId= */ 0, simCountryIso);
   }
 
   /** Sets the {@code simCountryIso} for the given {@code subId}. */
@@ -1455,22 +1449,6 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #getSubscriberId()}. */
   public void setSubscriberId(String subscriberId) {
     this.subscriberId = subscriberId;
-  }
-
-  private int getSubscriptionIdInternal() {
-    if (VERSION.SDK_INT < R) {
-      return 0;
-    }
-    if (realTelephonyManager == null) {
-      // Some existing tests calls new ShadowTelephonyManager() directly leaving fields
-      // uninitialized.
-      return 0;
-    }
-    int subId = realTelephonyManager.getSubscriptionId();
-    if (subId == SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
-      return 0;
-    }
-    return subId;
   }
 
   @Implementation(minSdk = R)
