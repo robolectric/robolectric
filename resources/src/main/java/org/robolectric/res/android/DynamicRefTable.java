@@ -1,7 +1,9 @@
 package org.robolectric.res.android;
 
 // transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/include/androidfw/ResourceTypes.h
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ResourceTypes.cpp
+//   and
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/ResourceTypes.h
 
 import static org.robolectric.res.android.Errors.BAD_TYPE;
 import static org.robolectric.res.android.Errors.NO_ERROR;
@@ -9,7 +11,10 @@ import static org.robolectric.res.android.Errors.UNKNOWN_ERROR;
 import static org.robolectric.res.android.ResTable.APP_PACKAGE_ID;
 import static org.robolectric.res.android.ResTable.Res_GETPACKAGE;
 import static org.robolectric.res.android.ResTable.SYS_PACKAGE_ID;
+import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.ALOGW;
+import static org.robolectric.res.android.Util.dtohl;
+import static org.robolectric.res.android.ResTable.kDebugLibNoisy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,10 +39,33 @@ public class DynamicRefTable {
     mLookupTable[SYS_PACKAGE_ID] = SYS_PACKAGE_ID;
   }
 
-  //  // Loads an unmapped reference table from the package.
-  //  Errors load(final ResTable_lib_header header) {
-  //    return null;
-  //  }
+  // Loads an unmapped reference table from the package.
+  int load(final ResourceTypes.ResTable_lib_header header) {
+    final int entryCount = dtohl(header.count);
+    final int sizeOfEntries = ResourceTypes.ResTable_lib_entry.SIZEOF * entryCount;
+    final int expectedSize = dtohl(header.header.size) - dtohl(header.header.headerSize);
+    if (sizeOfEntries > expectedSize) {
+      ALOGW("ResTable_lib_header size %d is too small to fit %d entries (x %d).",
+          expectedSize, entryCount, ResourceTypes.ResTable_lib_entry.SIZEOF);
+      return UNKNOWN_ERROR;
+    }
+
+    for (int entryIndex = 0; entryIndex < entryCount; entryIndex++) {
+      int entryOffset = header.myOffset() + header.header.headerSize + (entryIndex * ResourceTypes.ResTable_lib_entry.SIZEOF);
+      ResourceTypes.ResTable_lib_entry entry = new ResourceTypes.ResTable_lib_entry(header.myBuf(), entryOffset);
+      final int packageId = dtohl(entry.packageId);
+      String packageName = Util.ReadUtf16StringFromDevice(entry.packageName, entry.packageName.length);
+      if (kDebugLibNoisy) {
+        ALOGV("Found lib entry %s with id %d\n", packageName, packageId);
+      }
+      if (packageId >= 256) {
+        ALOGW("Bad package id 0x%08x", packageId);
+        return UNKNOWN_ERROR;
+      }
+      mEntries.put(packageName, (byte) packageId);
+    }
+    return NO_ERROR;
+  }
 
   // Adds mappings from the other DynamicRefTable
   int addMappings(final DynamicRefTable other) {
