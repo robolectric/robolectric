@@ -28,7 +28,7 @@ class GradleManagedDevicePlugin : Plugin<Project> {
           localDevices.register("nexusOneApi$apiLevel") {
             device = "Nexus One"
             this.apiLevel = apiLevel
-            systemImageSource = if (apiLevel == 29) "aosp" else "aosp-atd"
+            systemImageSource = "aosp-atd"
           }
         }
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneIntegrationTestGroupDebugAndroidTest
@@ -40,6 +40,6 @@ class GradleManagedDevicePlugin : Plugin<Project> {
   } // apply
 
   private companion object {
-    private val API_LEVELS = 29..36
+    private val API_LEVELS = 30..36
   }
 }
