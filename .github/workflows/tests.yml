@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 env:
-  cache-version: v2
+  cache-version: v3
 
 jobs:
   build:
@@ -86,7 +86,7 @@ jobs:
       # Allow tests to continue on other devices if they fail on one device.
       fail-fast: false
       matrix:
-        api-level: [ 29, 36 ]
+        api-level: [ 30, 36 ]
 
     steps:
       - name: Free disk space
@@ -114,7 +114,7 @@ jobs:
       - name: Determine emulator target
         id: determine-target
         run: |
-          TARGET="google_apis"
+          TARGET="aosp_atd"
           echo "TARGET=$TARGET" >> $GITHUB_OUTPUT
 
       - name: AVD cache
@@ -133,6 +133,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           target: ${{ steps.determine-target.outputs.TARGET }}
           arch: x86_64
+          channel: canary
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
@@ -146,6 +147,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           target: ${{ steps.determine-target.outputs.TARGET }}
           arch: x86_64
+          channel: canary
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
