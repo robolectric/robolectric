@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsAdapter;
+import android.widget.RemoteViewsAdapter.RemoteAdapterConnectionCallback;
 import android.widget.RemoteViewsService;
 import android.widget.RemoteViewsService.RemoteViewsFactory;
 import android.widget.TextView;
@@ -43,7 +44,9 @@ public class ShadowRemoteViewsAdapterTest {
   @Test
   @Config(minSdk = VERSION_CODES.O)
   public void getViewApi26AndLater_populatedWithExpectedItems() {
-    RemoteViewsAdapter adapter = new RemoteViewsAdapter(context, createTestIntent(), mock(), false);
+    RemoteViewsAdapter adapter =
+        new RemoteViewsAdapter(
+            context, createTestIntent(), mock(RemoteAdapterConnectionCallback.class), false);
 
     assertThat(adapter.getCount()).isEqualTo(3);
     assertThat(((TextView) adapter.getView(0, null, parent)).getText().toString()).isEqualTo("one");
@@ -55,8 +58,6 @@ public class ShadowRemoteViewsAdapterTest {
   @Test
   @Config(minSdk = VERSION_CODES.O)
   public void constructorApi26AndLater_intentPassedToService() {
-    RemoteViewsAdapter unused = new RemoteViewsAdapter(context, createTestIntent(), mock(), false);
-
     assertThat(capturedIntent.getComponent().getClassName())
         .isEqualTo(TestRemoteViewsService.class.getName());
     assertThat(capturedIntent.getStringExtra(TEST_EXTRA_KEY)).isEqualTo(TEST_EXTRA_VALUE);
