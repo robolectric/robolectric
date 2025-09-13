@@ -27,8 +27,8 @@ class RoboJavaModulePlugin : Plugin<Project> {
     }
 
     project.tasks.withType<JavaCompile>().configureEach {
-      sourceCompatibility = JavaVersion.VERSION_1_8.toString()
-      targetCompatibility = JavaVersion.VERSION_1_8.toString()
+      sourceCompatibility = JavaVersion.VERSION_11.toString()
+      targetCompatibility = JavaVersion.VERSION_11.toString()
 
       // Show all warnings except boot classpath
       if (System.getProperty("lint") != null && System.getProperty("lint") != "false") {
