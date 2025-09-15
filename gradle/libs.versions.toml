@@ -61,7 +61,7 @@ guava-jre = "33.4.8-jre"
 gson = "2.13.1"
 
 # https://github.com/google/truth/releases
-truth = "1.4.4"
+truth = "1.4.5"
 
 # https://github.com/unicode-org/icu/releases
 icu4j = "77.1"
