@@ -17,6 +17,10 @@ import android.content.IntentSender;
 import android.net.MacAddress;
 import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.Executors;
 import javax.annotation.Nonnull;
 import org.junit.Before;
@@ -419,6 +423,36 @@ public class ShadowCompanionDeviceManagerTest {
 
     assertThat(result).isFalse();
     assertThat(shadowCompanionDeviceManager.getLastRemoveBondAssociationId()).isEqualTo(id);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void testAttachSystemDataTransport_updatesShadow() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+    int id = shadowCompanionDeviceManager.getMyAssociations().get(0).getId();
+    InputStream inputStream = new ByteArrayInputStream(new byte[] {0x01});
+    OutputStream outputStream = new ByteArrayOutputStream();
+
+    companionDeviceManager.attachSystemDataTransport(id, inputStream, outputStream);
+
+    assertThat(shadowCompanionDeviceManager.getAttachedInputStream(id))
+        .isSameInstanceAs(inputStream);
+    assertThat(shadowCompanionDeviceManager.getAttachedOutputStream(id))
+        .isSameInstanceAs(outputStream);
+
+    companionDeviceManager.detachSystemDataTransport(id);
+    assertThat(shadowCompanionDeviceManager.getAttachedInputStream(id)).isNull();
+    assertThat(shadowCompanionDeviceManager.getAttachedOutputStream(id)).isNull();
+  }
+
+  @Test
+  public void testGetAttachedInputStream_returnsNullIfNoTransportAttached() {
+    assertThat(shadowCompanionDeviceManager.getAttachedInputStream(1)).isNull();
+  }
+
+  @Test
+  public void testGetAttachedOutputStream_returnsNullIfNoTransportAttached() {
+    assertThat(shadowCompanionDeviceManager.getAttachedOutputStream(1)).isNull();
   }
 
   private CompanionDeviceManager.Callback createCallback() {
