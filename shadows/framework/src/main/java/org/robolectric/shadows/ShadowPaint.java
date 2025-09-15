@@ -208,7 +208,9 @@ public class ShadowPaint {
     return typeface;
   }
 
-  @Implementation(minSdk = AndroidVersions.Baklava.SDK_INT)
+  @Implementation(
+      minSdk = AndroidVersions.Baklava.SDK_INT,
+      maxSdk = AndroidVersions.Baklava.SDK_INT)
   protected Typeface setTypefaceWithoutWarning(Typeface typeface) {
     this.typeface = typeface;
     return typeface;

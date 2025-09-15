@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -29,7 +32,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
@@ -38,9 +40,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
-import org.robolectric.versioning.AndroidVersions.Baklava;
-import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
+import org.robolectric.versioning.AndroidVersions.PostBaklava;
 
 /** Shadow class for {@link CameraManager} */
 @Implements(CameraManager.class)
@@ -116,7 +116,7 @@ public class ShadowCameraManager {
     }
   }
 
-  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId,
       CameraDevice.StateCallback callback,
@@ -127,7 +127,7 @@ public class ShadowCameraManager {
     return openCameraDeviceUserAsync(cameraId, callback, executor, uid, oomScoreOffset);
   }
 
-  @Implementation(minSdk = V.SDK_INT, maxSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM, maxSdk = VANILLA_ICE_CREAM)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId,
       CameraDevice.StateCallback callback,
@@ -140,7 +140,7 @@ public class ShadowCameraManager {
 
   // Baklava API has reverted back to the T signature. Just use a different method name
   // to avoid conflicts.
-  @Implementation(methodName = "openCameraDeviceUserAsync", minSdk = Baklava.SDK_INT)
+  @Implementation(methodName = "openCameraDeviceUserAsync", minSdk = BAKLAVA, maxSdk = BAKLAVA)
   protected CameraDevice openCameraDeviceUserAsyncBaklava(
       String cameraId,
       CameraDevice.StateCallback callback,
@@ -152,9 +152,7 @@ public class ShadowCameraManager {
         cameraId, callback, executor, unusedClientUid, unusedOomScoreOffset);
   }
 
-  // TODO: increment to PostBaklava.SDK_INT once annotation logic is fixed
-  @Implementation(minSdk = Baklava.SDK_INT)
-  @InDevelopment
+  @Implementation(minSdk = PostBaklava.SDK_INT)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId,
       CameraDevice.StateCallback callback,
@@ -300,7 +298,7 @@ public class ShadowCameraManager {
       CameraCharacteristics characteristics,
       Context context) {
     Map<String, CameraCharacteristics> cameraCharacteristicsMap = Collections.emptyMap();
-    if (RuntimeEnvironment.getApiLevel() >= Baklava.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= BAKLAVA) {
       return reflector(ReflectorCameraDeviceImpl.class)
           .newCameraDeviceImplPostV(
               cameraId,
@@ -313,7 +311,7 @@ public class ShadowCameraManager {
               null,
               false);
 
-    } else if (RuntimeEnvironment.getApiLevel() == V.SDK_INT) {
+    } else if (RuntimeEnvironment.getApiLevel() == VANILLA_ICE_CREAM) {
       return reflector(ReflectorCameraDeviceImpl.class)
           .newCameraDeviceImplV(
               cameraId,

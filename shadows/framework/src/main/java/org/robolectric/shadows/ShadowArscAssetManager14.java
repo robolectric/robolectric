@@ -1,22 +1,23 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+
 import android.content.res.ApkAssets;
 import android.content.res.AssetManager;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
-import org.robolectric.versioning.AndroidVersions.Baklava;
-import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
+import org.robolectric.versioning.AndroidVersions.PostBaklava;
 
 // transliterated from
 // https://android.googlesource.com/platform/frameworks/base/+/android-10.0.0_r47/core/jni/android_util_AssetManager.cpp
 
 @Implements(
     value = AssetManager.class,
-    minSdk = U.SDK_INT,
+    minSdk = UPSIDE_DOWN_CAKE,
     shadowPicker = ShadowAssetManager.Picker.class)
 @SuppressWarnings("NewApi")
 public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
@@ -30,7 +31,7 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
   //                                    jint smallest_screen_width_dp, jint screen_width_dp,
   //                                    jint screen_height_dp, jint screen_layout, jint ui_mode,
   //                                    jint color_mode, jint major_version) {
-  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeSetConfiguration(
       long ptr,
       int mcc,
@@ -74,8 +75,7 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
         major_version);
   }
 
-  @Implementation(minSdk = V.SDK_INT)
-  @InDevelopment
+  @Implementation(minSdk = VANILLA_ICE_CREAM, maxSdk = BAKLAVA)
   protected static void nativeSetConfiguration(
       long ptr,
       int mcc,
@@ -130,8 +130,7 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
         majorVersion);
   }
 
-  @Implementation(minSdk = Baklava.SDK_INT)
-  @InDevelopment
+  @Implementation(minSdk = PostBaklava.SDK_INT)
   protected static void nativeSetConfiguration(
       long ptr,
       int mcc,
@@ -183,7 +182,7 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
         forceRefresh);
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected static void nativeSetApkAssets(
       long ptr, @Nonnull ApkAssets[] apkAssets, boolean invalidateCaches, boolean preset) {
     nativeSetApkAssets(ptr, apkAssets, invalidateCaches);

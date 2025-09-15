@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.NativeObjRegistry;
@@ -87,6 +88,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
    * concurrent MessageQueue in the indevelopment Android SDK
    */
   @Implementation(minSdk = AndroidVersions.PostBaklava.SDK_INT)
+  @InDevelopment
   protected static boolean computeUseConcurrent() {
     String overrideprop = System.getProperty("robolectric.overrideUseConcurrentMessageQueue");
     if (overrideprop != null) {
