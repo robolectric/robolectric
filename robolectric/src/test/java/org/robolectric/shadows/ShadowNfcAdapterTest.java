@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.same;
@@ -26,7 +27,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.V;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowNfcAdapterTest {
@@ -262,7 +262,7 @@ public class ShadowNfcAdapterTest {
   }
 
   @Test
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = VANILLA_ICE_CREAM)
   public void isObserveModeSupported_shouldReturnSupportedState() {
     final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(context);
     final NfcAdapterVReflector adapterReflector = reflector(NfcAdapterVReflector.class, adapter);
@@ -276,7 +276,7 @@ public class ShadowNfcAdapterTest {
   }
 
   @Test
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = VANILLA_ICE_CREAM)
   public void isObserveModeEnabled_shouldReturnEnabledState() {
     final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(context);
     final NfcAdapterVReflector adapterReflector = reflector(NfcAdapterVReflector.class, adapter);
@@ -291,7 +291,7 @@ public class ShadowNfcAdapterTest {
   }
 
   @Test
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = VANILLA_ICE_CREAM)
   public void setObserveModeEnabled_notSupported_doesNothing() {
     final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(context);
     final NfcAdapterVReflector adapterReflector = reflector(NfcAdapterVReflector.class, adapter);

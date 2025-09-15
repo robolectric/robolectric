@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -14,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Robolectric test for {@link ShadowJobService}. */
 @RunWith(AndroidJUnit4.class)
@@ -82,7 +82,7 @@ public class ShadowJobServiceTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void setNotification_succeeds() {
     // ensure setNotification doesn't crash
     jobService.setNotification(

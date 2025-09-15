@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -18,11 +19,10 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.internal.bytecode.RobolectricInternals;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LEGACY)
-@Config(maxSdk = Baklava.SDK_INT)
+@Config(maxSdk = BAKLAVA)
 public class ShadowLegacySystemClockTest {
 
   @Test
