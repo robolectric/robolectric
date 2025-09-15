@@ -591,14 +591,14 @@ public class AndroidManifest implements UsesSdk {
           if (latestRelease.getShortCode().equals(sdkString)) {
             return latestRelease.getSdkInt();
           }
-        } else {
+        }
           // check the unreleased versions
           for (AndroidRelease release : unreleasedReleases) {
             if (release.getShortCode().equals(sdkString)) {
               return release.getSdkInt();
             }
           }
-        }
+
       }
     }
     return null;

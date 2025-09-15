@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -123,9 +124,21 @@ public class SdkStore {
   private synchronized void loadSdksOnce() {
     if (!loaded) {
       sdks.addAll(
-          loadFromSources(loadFromClasspath, sdksFile, overrideSdkLocation, overrideSdkInt));
+          validateSdks(
+              loadFromSources(loadFromClasspath, sdksFile, overrideSdkLocation, overrideSdkInt)));
       loaded = true;
     }
+  }
+
+  private static List<Sdk> validateSdks(List<Sdk> sdks) {
+    Set<Integer> sdkInts = new HashSet<>();
+    for (Sdk sdk : sdks) {
+      if (sdkInts.contains(sdk.sdkInt)) {
+        throw new RuntimeException("Duplicate SDK int found in list of SDKs: " + sdk.sdkInt);
+      }
+      sdkInts.add(sdk.sdkInt);
+    }
+    return sdks;
   }
 
   /**

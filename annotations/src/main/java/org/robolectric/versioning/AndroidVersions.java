@@ -744,7 +744,7 @@ public final class AndroidVersions {
 
     public static final int SDK_INT = VERSION_CODES.BAKLAVA;
 
-    public static final String SHORT_CODE = "Baklava";
+    public static final String SHORT_CODE = "unused";
 
     public static final String VERSION = "16";
 
@@ -771,9 +771,11 @@ public final class AndroidVersions {
    */
   public static final class PostBaklava extends AndroidUnreleased {
 
-    public static final int SDK_INT = 37;
+    public static final int SDK_INT = VERSION_CODES.CUR_DEVELOPMENT;
 
-    public static final String SHORT_CODE = "PostBaklava";
+    // TODO: currently indevelopment SDK on main branch still has codename Baklava
+    // this should presumably be updated to 'C' once that switch happens
+    public static final String SHORT_CODE = "Baklava";
 
     public static final String VERSION = "17";
 
@@ -932,6 +934,7 @@ public final class AndroidVersions {
 
     public AndroidRelease computeCurrentSdk(
         int reportedVersion, String releaseName, String codename, List<String> activeCodeNames) {
+
       AndroidRelease current = null;
       // Special case "REL", which means the build is not a pre-release build.
       if (Objects.equals(codename, "REL")) {
@@ -1057,10 +1060,6 @@ public final class AndroidVersions {
         try {
           AndroidRelease rel = (AndroidRelease) clazz.getDeclaredConstructor().newInstance();
           allReleases.add(rel);
-          // inspect field name - as this is our only chance to inspect it.
-          if (!rel.getClass().getSimpleName().equals(rel.getShortCode())) {
-            classesWithIllegalNames.add(rel.getClass());
-          }
         } catch (NoSuchMethodException
             | InstantiationException
             | IllegalArgumentException

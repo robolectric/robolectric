@@ -239,20 +239,20 @@ public class AndroidManifestTest {
   }
 
   @Test
-  public void shouldReadUnfinlizedSdkVersionFromAndroidManifest() throws Exception {
+  public void shouldReadUnfinalizedSdkVersionFromAndroidManifest() throws Exception {
     assertThat(
             newConfigWith("minSdkBaklavaShortNameSdk.xml", "android:minSdkVersion=\"Baklava\"")
                 .getMinSdkVersion())
-        .isEqualTo(36);
+        .isEqualTo(10000);
     assertThat(
             newConfigWith(
                     "targetSdkBaklavaShortNameSdk.xml", "android:targetSdkVersion=\"Baklava\"")
                 .getTargetSdkVersion())
-        .isEqualTo(36);
+        .isEqualTo(10000);
     assertThat(
             newConfigWith("maxSdkBaklavaShortNameSdk.xml", "android:maxSdkVersion=\"Baklava\"")
                 .getMaxSdkVersion())
-        .isEqualTo(36);
+        .isEqualTo(10000);
   }
 
   @Test
