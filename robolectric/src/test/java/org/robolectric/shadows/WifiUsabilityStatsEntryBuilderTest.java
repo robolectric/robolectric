@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.net.wifi.WifiInfo;
@@ -10,7 +11,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.versioning.AndroidVersions.S;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = VERSION_CODES.Q)
@@ -49,7 +49,7 @@ public class WifiUsabilityStatsEntryBuilderTest {
         .setCellularSignalStrengthDb(10)
         .setIsSameRegisteredCell(true);
 
-    if (RuntimeEnvironment.getApiLevel() >= S.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= S) {
       builder
           .setTimeSliceDutyCycleInPercent(80)
           .setIsCellularDataAvailable(true)
@@ -87,7 +87,7 @@ public class WifiUsabilityStatsEntryBuilderTest {
     assertThat(entry.getCellularSignalStrengthDb()).isEqualTo(10);
     assertThat(entry.isSameRegisteredCell()).isTrue();
 
-    if (RuntimeEnvironment.getApiLevel() >= S.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= S) {
       assertThat(entry.getTimeSliceDutyCycleInPercent()).isEqualTo(80);
       assertThat(entry.isCellularDataAvailable()).isTrue();
       assertThat(entry.isThroughputSufficient()).isTrue();

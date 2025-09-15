@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -88,7 +89,6 @@ import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowActivity.IntentSenderRequest;
 import org.robolectric.util.TestRunnable;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Test of ShadowActivity. */
 @RunWith(AndroidJUnit4.class)
@@ -446,7 +446,7 @@ public class ShadowActivityTest {
 
   @Test
   @LooperMode(LEGACY)
-  @Config(maxSdk = Baklava.SDK_INT)
+  @Config(maxSdk = BAKLAVA)
   public void shouldQueueUiTasksWhenUiThreadIsPaused() {
     shadowOf(getMainLooper()).pause();
 

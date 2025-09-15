@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.times;
@@ -27,11 +29,9 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Unit test for ShadowWearableSensingManager. */
-@Config(minSdk = U.SDK_INT)
+@Config(minSdk = UPSIDE_DOWN_CAKE)
 @RunWith(RobolectricTestRunner.class)
 public class ShadowWearableSensingManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
@@ -90,7 +90,7 @@ public class ShadowWearableSensingManagerTest {
   }
 
   @Test
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = VANILLA_ICE_CREAM)
   public void startHotwordRecognition() throws Exception {
     WearableSensingManager wearableSensingManager =
         (WearableSensingManager)
@@ -102,7 +102,7 @@ public class ShadowWearableSensingManagerTest {
   }
 
   @Test
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = VANILLA_ICE_CREAM)
   public void stopHotwordRecognition() throws Exception {
     WearableSensingManager wearableSensingManager =
         (WearableSensingManager)
@@ -137,7 +137,7 @@ public class ShadowWearableSensingManagerTest {
   }
 
   @Test
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = VANILLA_ICE_CREAM)
   public void setStartHotwordRecognitionResult() throws Exception {
     WearableSensingManager wearableSensingManager =
         (WearableSensingManager)
@@ -153,7 +153,7 @@ public class ShadowWearableSensingManagerTest {
   }
 
   @Test
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = VANILLA_ICE_CREAM)
   public void setStopHotwordRecognitionResult() throws Exception {
     WearableSensingManager wearableSensingManager =
         (WearableSensingManager)

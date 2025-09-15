@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
 import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
@@ -28,7 +29,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.versioning.AndroidVersions.U;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowSettingsTest {
@@ -331,7 +331,7 @@ public class ShadowSettingsTest {
         .isEqualTo(0);
   }
 
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   @Test
   public void testConfig_putAndGetString() {
     assertThat(Settings.Config.putString("namespace", "key", "value", false)).isTrue();
@@ -340,7 +340,7 @@ public class ShadowSettingsTest {
     assertThat(Settings.Config.getString("missing_namespace/key")).isEqualTo(null);
   }
 
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   @Test
   public void testConfig_putAndGetStrings() {
     assertThat(Settings.Config.putString("namespace", "key", "value", false)).isTrue();

@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
@@ -58,7 +59,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.versioning.AndroidVersions.U;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowWifiManagerTest {
@@ -1235,7 +1235,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void addLocalOnlyConnectionFailureListener_nullExecutor_throwsIllegalArgumentException() {
     assertThrows(
         IllegalArgumentException.class,
@@ -1245,7 +1245,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void addLocalOnlyConnectionFailureListener_nullListener_throwsIllegalArgumentException() {
     assertThrows(
         IllegalArgumentException.class,
@@ -1255,7 +1255,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void
       removeLocalOnlyConnectionFailureListener_nullListener_throwsIllegalArgumentException() {
     assertThrows(
@@ -1264,7 +1264,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void triggerLocalConnectionFailure_callbackTriggered() throws Exception {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     TestFailureListener listener = new TestFailureListener();
@@ -1288,7 +1288,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void triggerLocalConnectionFailure_multipleCallbacksRegistered_allCallbacksTriggered()
       throws Exception {
     ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -1319,7 +1319,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void
       triggerLocalConnectionFailure_multipleCallbacksRegisteredOnDifferentExecutors_allCallbacksTriggered()
           throws Exception {
@@ -1353,7 +1353,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void triggerLocalConnectionFailure_listenerRemovedBeforeTrigger_callbackNotInvoked() {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     TestFailureListener listener = new TestFailureListener();
