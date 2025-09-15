@@ -29,8 +29,8 @@ public @interface ResourcesMode {
      */
     BINARY,
     /**
-     * Experimental: use AOSP native code to read resource data. Currently only functioning on
-     * android V and linux
+     * Use AOSP native code to read resource data. Requires android Baklava or later. Currently only
+     * well tested on Linux.
      */
     NATIVE,
   }
