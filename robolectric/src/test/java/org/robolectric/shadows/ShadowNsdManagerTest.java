@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -14,6 +15,7 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdManager.DiscoveryListener;
 import android.net.nsd.NsdManager.RegistrationListener;
 import android.net.nsd.NsdManager.ResolveListener;
+import android.net.nsd.NsdManager.ServiceInfoCallback;
 import android.net.nsd.NsdServiceInfo;
 import android.os.Build.VERSION_CODES;
 import androidx.test.core.app.ApplicationProvider;
@@ -157,7 +159,7 @@ public final class ShadowNsdManagerTest {
     serviceInfo2.setServiceName("test_service2");
     serviceInfo2.setServiceType("foo.baz");
     assertThrows(
-        UnsupportedOperationException.class,
+        IllegalArgumentException.class,
         () ->
             nsdManager.registerService(
                 serviceInfo2, NsdManager.PROTOCOL_DNS_SD, registrationListener));
@@ -167,8 +169,7 @@ public final class ShadowNsdManagerTest {
   public void unregisterService_withUnregisteredListener_throwsException() {
     // Try to unregister without ever registering.
     assertThrows(
-        UnsupportedOperationException.class,
-        () -> nsdManager.unregisterService(registrationListener));
+        IllegalArgumentException.class, () -> nsdManager.unregisterService(registrationListener));
     // No callbacks should happen.
     verify(registrationListener, never()).onServiceRegistered(any());
     verify(registrationListener, never()).onServiceUnregistered(any());
@@ -237,7 +238,7 @@ public final class ShadowNsdManagerTest {
 
     // Now try to register same listener again.
     assertThrows(
-        UnsupportedOperationException.class,
+        IllegalArgumentException.class,
         () ->
             nsdManager.discoverServices(
                 serviceType, NsdManager.PROTOCOL_DNS_SD, discoveryListener));
@@ -290,8 +291,7 @@ public final class ShadowNsdManagerTest {
   @Test
   public void stopServiceDiscovery_withUnregisteredListener_throwsException() {
     assertThrows(
-        UnsupportedOperationException.class,
-        () -> nsdManager.stopServiceDiscovery(discoveryListener));
+        IllegalArgumentException.class, () -> nsdManager.stopServiceDiscovery(discoveryListener));
 
     // Check that the shadow made no callbacks.
     verify(discoveryListener, never()).onDiscoveryStopped(any());
@@ -331,6 +331,87 @@ public final class ShadowNsdManagerTest {
     shadowNsdManager.removeResolveListener(resolveListener);
     assertThat(shadowNsdManager.getResolveListeners(serviceInfo)).isEmpty();
     assertThat(shadowNsdManager.getResolveListenerServiceInfo(resolveListener)).isNull();
+  }
+
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @Test
+  public void registerServiceInfoCallback_savesCallback() {
+    ServiceInfoCallback serviceInfoCallback = mock(ServiceInfoCallback.class);
+    // First register for service resolution.
+    NsdServiceInfo serviceInfo = createTestServiceInfo();
+    nsdManager.registerServiceInfoCallback(serviceInfo, fakeExecutor, serviceInfoCallback);
+    assertThat(shadowNsdManager.getServiceInfoCallbacks(serviceInfo))
+        .containsExactly(serviceInfoCallback);
+    assertThat(shadowNsdManager.getServiceInfoCallbackServiceInfo(serviceInfoCallback))
+        .isEqualTo(serviceInfo);
+  }
+
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @Test
+  public void registerServiceInfoCallback_withRegisteredCallback_throwsException() {
+    ServiceInfoCallback serviceInfoCallback = mock(ServiceInfoCallback.class);
+    // First register for service resolution.
+    NsdServiceInfo serviceInfo = createTestServiceInfo();
+    nsdManager.registerServiceInfoCallback(serviceInfo, fakeExecutor, serviceInfoCallback);
+    assertThat(shadowNsdManager.getServiceInfoCallbacks(serviceInfo))
+        .containsExactly(serviceInfoCallback);
+    assertThat(shadowNsdManager.getServiceInfoCallbackServiceInfo(serviceInfoCallback))
+        .isEqualTo(serviceInfo);
+  }
+
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @Test
+  public void removeServiceInfoCallback_removesCallback() {
+    ServiceInfoCallback serviceInfoCallback = mock(ServiceInfoCallback.class);
+    // First register for service resolution.
+    NsdServiceInfo serviceInfo = createTestServiceInfo();
+    nsdManager.registerServiceInfoCallback(serviceInfo, fakeExecutor, serviceInfoCallback);
+    assertThat(shadowNsdManager.getServiceInfoCallbacks(serviceInfo))
+        .containsExactly(serviceInfoCallback);
+    assertThat(shadowNsdManager.getServiceInfoCallbackServiceInfo(serviceInfoCallback))
+        .isEqualTo(serviceInfo);
+    // Now remove the listener.
+    shadowNsdManager.removeServiceInfoCallback(serviceInfoCallback);
+    assertThat(shadowNsdManager.getServiceInfoCallbacks(serviceInfo)).isEmpty();
+    assertThat(shadowNsdManager.getServiceInfoCallbackServiceInfo(serviceInfoCallback)).isNull();
+  }
+
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @Test
+  public void reset_clearsAll() {
+    NsdServiceInfo serviceInfo = createTestServiceInfo();
+    nsdManager.registerService(serviceInfo, NsdManager.PROTOCOL_DNS_SD, registrationListener);
+    assertThat(shadowNsdManager.getRegisteredServiceInfo(registrationListener))
+        .isEqualTo(serviceInfo);
+    assertThat(shadowNsdManager.getRegistrationListener(serviceInfo))
+        .isEqualTo(registrationListener);
+
+    nsdManager.discoverServices(
+        serviceInfo.getServiceType(), NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+    assertThat(shadowNsdManager.getDiscoveryListenerServiceType(discoveryListener))
+        .isEqualTo(serviceInfo.getServiceType());
+    assertThat(shadowNsdManager.getDiscoveryListeners(serviceInfo.getServiceType()))
+        .containsExactly(discoveryListener);
+
+    nsdManager.resolveService(serviceInfo, resolveListener);
+    assertThat(shadowNsdManager.getResolveListenerServiceInfo(resolveListener))
+        .isEqualTo(serviceInfo);
+    assertThat(shadowNsdManager.getResolveListeners(serviceInfo)).containsExactly(resolveListener);
+
+    ServiceInfoCallback serviceInfoCallback = mock(ServiceInfoCallback.class);
+    nsdManager.registerServiceInfoCallback(serviceInfo, fakeExecutor, serviceInfoCallback);
+    assertThat(shadowNsdManager.getServiceInfoCallbackServiceInfo(serviceInfoCallback))
+        .isEqualTo(serviceInfo);
+
+    ShadowNsdManager.reset();
+
+    assertThat(shadowNsdManager.getRegisteredServiceInfo(registrationListener)).isNull();
+    assertThat(shadowNsdManager.getDiscoveryListenerServiceType(discoveryListener)).isNull();
+    assertThat(shadowNsdManager.getDiscoveryListeners(serviceInfo.getServiceType())).isNull();
+    assertThat(shadowNsdManager.getResolveListenerServiceInfo(resolveListener)).isNull();
+    assertThat(shadowNsdManager.getResolveListeners(serviceInfo)).isNull();
+    assertThat(shadowNsdManager.getServiceInfoCallbacks(serviceInfo)).isNull();
+    assertThat(shadowNsdManager.getServiceInfoCallbackServiceInfo(serviceInfoCallback)).isNull();
   }
 
   public static class FakeExecutor implements Executor {
