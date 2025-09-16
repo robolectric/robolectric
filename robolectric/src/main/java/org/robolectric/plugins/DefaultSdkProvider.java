@@ -1,5 +1,19 @@
 package org.robolectric.plugins;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.S_V2;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+
 import com.google.auto.service.AutoService;
 import java.net.URL;
 import java.nio.file.Files;
@@ -17,19 +31,6 @@ import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.util.Util;
-import org.robolectric.versioning.AndroidVersions.Baklava;
-import org.robolectric.versioning.AndroidVersions.M;
-import org.robolectric.versioning.AndroidVersions.N;
-import org.robolectric.versioning.AndroidVersions.NMR1;
-import org.robolectric.versioning.AndroidVersions.O;
-import org.robolectric.versioning.AndroidVersions.OMR1;
-import org.robolectric.versioning.AndroidVersions.P;
-import org.robolectric.versioning.AndroidVersions.Q;
-import org.robolectric.versioning.AndroidVersions.R;
-import org.robolectric.versioning.AndroidVersions.S;
-import org.robolectric.versioning.AndroidVersions.Sv2;
-import org.robolectric.versioning.AndroidVersions.T;
-import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
 /**
@@ -61,20 +62,20 @@ public class DefaultSdkProvider implements SdkProvider {
   }
 
   protected void populateSdks(TreeMap<Integer, Sdk> knownSdks) {
-    knownSdks.put(M.SDK_INT, new DefaultSdk(M.SDK_INT, "6.0.1_r3", "r1", "REL", 8));
-    knownSdks.put(N.SDK_INT, new DefaultSdk(N.SDK_INT, "7.0.0_r1", "r1", "REL", 8));
-    knownSdks.put(NMR1.SDK_INT, new DefaultSdk(NMR1.SDK_INT, "7.1.0_r7", "r1", "REL", 8));
-    knownSdks.put(O.SDK_INT, new DefaultSdk(O.SDK_INT, "8.0.0_r4", "r1", "REL", 8));
-    knownSdks.put(OMR1.SDK_INT, new DefaultSdk(OMR1.SDK_INT, "8.1.0", "4611349", "REL", 8));
-    knownSdks.put(P.SDK_INT, new DefaultSdk(P.SDK_INT, "9", "4913185-2", "REL", 8));
-    knownSdks.put(Q.SDK_INT, new DefaultSdk(Q.SDK_INT, "10", "5803371", "REL", 9));
-    knownSdks.put(R.SDK_INT, new DefaultSdk(R.SDK_INT, "11", "6757853", "REL", 9));
-    knownSdks.put(S.SDK_INT, new DefaultSdk(S.SDK_INT, "12", "7732740", "REL", 9));
-    knownSdks.put(Sv2.SDK_INT, new DefaultSdk(Sv2.SDK_INT, "12.1", "8229987", "REL", 9));
-    knownSdks.put(T.SDK_INT, new DefaultSdk(T.SDK_INT, "13", "9030017", "Tiramisu", 9));
-    knownSdks.put(U.SDK_INT, new DefaultSdk(U.SDK_INT, "14", "10818077", "REL", 17));
+    knownSdks.put(M, new DefaultSdk(M, "6.0.1_r3", "r1", "REL", 8));
+    knownSdks.put(N, new DefaultSdk(N, "7.0.0_r1", "r1", "REL", 8));
+    knownSdks.put(N_MR1, new DefaultSdk(N_MR1, "7.1.0_r7", "r1", "REL", 8));
+    knownSdks.put(O, new DefaultSdk(O, "8.0.0_r4", "r1", "REL", 8));
+    knownSdks.put(O_MR1, new DefaultSdk(O_MR1, "8.1.0", "4611349", "REL", 8));
+    knownSdks.put(P, new DefaultSdk(P, "9", "4913185-2", "REL", 8));
+    knownSdks.put(Q, new DefaultSdk(Q, "10", "5803371", "REL", 9));
+    knownSdks.put(R, new DefaultSdk(R, "11", "6757853", "REL", 9));
+    knownSdks.put(S, new DefaultSdk(S, "12", "7732740", "REL", 9));
+    knownSdks.put(S_V2, new DefaultSdk(S_V2, "12.1", "8229987", "REL", 9));
+    knownSdks.put(TIRAMISU, new DefaultSdk(TIRAMISU, "13", "9030017", "Tiramisu", 9));
+    knownSdks.put(UPSIDE_DOWN_CAKE, new DefaultSdk(UPSIDE_DOWN_CAKE, "14", "10818077", "REL", 17));
     knownSdks.put(V.SDK_INT, new DefaultSdk(V.SDK_INT, "15", "13954326", "REL", 17));
-    knownSdks.put(Baklava.SDK_INT, new DefaultSdk(Baklava.SDK_INT, "16", "13921718", "REL", 21));
+    knownSdks.put(BAKLAVA, new DefaultSdk(BAKLAVA, "16", "13921718", "REL", 21));
   }
 
   @Override

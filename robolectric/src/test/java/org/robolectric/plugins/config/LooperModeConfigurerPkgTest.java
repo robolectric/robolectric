@@ -1,5 +1,6 @@
 package org.robolectric.plugins.config;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -9,7 +10,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.config.ConfigurationRegistry;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Unit tests for packages annotated with @LooperMode. */
 @RunWith(AndroidJUnit4.class)
@@ -22,7 +22,7 @@ public class LooperModeConfigurerPkgTest {
 
   @Test
   @LooperMode(Mode.LEGACY)
-  @Config(maxSdk = Baklava.SDK_INT)
+  @Config(maxSdk = BAKLAVA)
   public void overriddenAtMethod() {
     assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameInstanceAs(Mode.LEGACY);
   }

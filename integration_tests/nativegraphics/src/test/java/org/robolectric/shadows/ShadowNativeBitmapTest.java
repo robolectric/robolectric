@@ -18,6 +18,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -60,7 +61,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.versioning.AndroidVersions.U;
 
 @org.robolectric.annotation.Config(minSdk = O)
 @RunWith(RobolectricTestRunner.class)
@@ -1581,7 +1581,7 @@ public class ShadowNativeBitmapTest {
     assertFalse(bitmap2.sameAs(bitmap1));
   }
 
-  @org.robolectric.annotation.Config(maxSdk = U.SDK_INT) // TODO(hoisie): fix in V and above
+  @org.robolectric.annotation.Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): fix in V and above
   @Test
   public void testSameAs_hardware() {
     Bitmap bitmap1 = BitmapFactory.decodeResource(res, R.drawable.robot, HARDWARE_OPTIONS);
@@ -1740,7 +1740,7 @@ public class ShadowNativeBitmapTest {
     assertThat(bitmap.getColorSpace()).isEqualTo(ColorSpace.get(ColorSpace.Named.ADOBE_RGB));
   }
 
-  @org.robolectric.annotation.Config(minSdk = U.SDK_INT)
+  @org.robolectric.annotation.Config(minSdk = UPSIDE_DOWN_CAKE)
   @Test
   public void noGainmap_returnsNull() {
     Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);

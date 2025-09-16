@@ -1,5 +1,6 @@
 package org.robolectric.android.internal;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeTrue;
@@ -18,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.util.Scheduler;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(Mode.PAUSED)
@@ -69,7 +69,7 @@ public class LooperDelegatingSchedulerTest {
 
   @Test
   public void size() {
-    assumeTrue(getApiLevel() <= Baklava.SDK_INT);
+    assumeTrue(getApiLevel() <= BAKLAVA);
     assertThat(scheduler.size()).isEqualTo(0);
 
     Runnable runnable = mock(Runnable.class);

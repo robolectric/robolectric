@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -21,14 +22,13 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.util.Scheduler;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 public class RuntimeEnvironmentTest {
 
   @Test
   @LooperMode(LEGACY)
-  @Config(maxSdk = Baklava.SDK_INT)
+  @Config(maxSdk = BAKLAVA)
   public void setMainThread_forCurrentThread() {
     RuntimeEnvironment.setMainThread(Thread.currentThread());
     assertThat(RuntimeEnvironment.getMainThread()).isSameInstanceAs(Thread.currentThread());
@@ -36,7 +36,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   @LooperMode(LEGACY)
-  @Config(maxSdk = Baklava.SDK_INT)
+  @Config(maxSdk = BAKLAVA)
   public void setMainThread_forNewThread() {
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
@@ -45,7 +45,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   @LooperMode(LEGACY)
-  @Config(maxSdk = Baklava.SDK_INT)
+  @Config(maxSdk = BAKLAVA)
   public void isMainThread_forNewThread_withoutSwitch() throws InterruptedException {
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
@@ -66,7 +66,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   @LooperMode(LEGACY)
-  @Config(maxSdk = Baklava.SDK_INT)
+  @Config(maxSdk = BAKLAVA)
   public void isMainThread_forNewThread_withSwitch() throws InterruptedException {
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
@@ -87,7 +87,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   @LooperMode(LEGACY)
-  @Config(maxSdk = Baklava.SDK_INT)
+  @Config(maxSdk = BAKLAVA)
   public void isMainThread_withArg_forNewThread_withSwitch() {
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
@@ -96,7 +96,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   @LooperMode(LEGACY)
-  @Config(maxSdk = Baklava.SDK_INT)
+  @Config(maxSdk = BAKLAVA)
   public void getSetMasterScheduler() {
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);

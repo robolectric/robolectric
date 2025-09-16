@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -30,7 +31,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.OsUtil;
-import org.robolectric.versioning.AndroidVersions.V;
 
 @Config(minSdk = P)
 @RunWith(RobolectricTestRunner.class)
@@ -160,7 +160,7 @@ public class ShadowNativeImageDecoderTest {
         resId -> ImageDecoder.createSource(getAsReadOnlyByteBuffer(resId)));
 
     // TODO(hoisie): Support file sources in Android V+.
-    if (RuntimeEnvironment.getApiLevel() < V.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() < VANILLA_ICE_CREAM) {
       builder.add(resId -> ImageDecoder.createSource(getAsFile(resId)));
     }
 

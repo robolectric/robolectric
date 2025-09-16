@@ -1,5 +1,6 @@
 package org.robolectric.android.util.concurrent;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
@@ -16,11 +17,10 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.Scheduler;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LEGACY)
-@Config(maxSdk = Baklava.SDK_INT)
+@Config(maxSdk = BAKLAVA)
 public class RoboExecutorServiceTest {
   private List<String> transcript;
   private RoboExecutorService executorService;

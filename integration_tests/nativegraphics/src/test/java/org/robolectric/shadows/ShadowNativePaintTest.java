@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -51,7 +52,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions;
-import org.robolectric.versioning.AndroidVersions.U;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = O)
@@ -1994,7 +1994,7 @@ public class ShadowNativePaintTest {
     }
   }
 
-  @Config(maxSdk = U.SDK_INT) // TODO(hoisie): fix in V and above
+  @Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): fix in V and above
   @Test
   public void testElegantText() {
     final Paint p = new Paint();
