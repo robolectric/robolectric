@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.TruthJUnit.assume;
 
 import android.graphics.RuntimeShader;
@@ -14,7 +15,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.OsUtil;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.versioning.AndroidVersions.U;
 
 @Config(minSdk = S)
 @RunWith(AndroidJUnit4.class)
@@ -69,7 +69,7 @@ public class ShadowNativeRuntimeShaderTest {
 
   /** {@link #SKSL} does not compile on V and above. */
   @SuppressWarnings("CheckReturnValue")
-  @Config(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
+  @Config(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   @Test
   public void testConstructorT() {
     new RuntimeShader(SKSL);
