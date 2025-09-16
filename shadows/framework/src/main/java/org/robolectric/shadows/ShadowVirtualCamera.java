@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.companion.virtual.camera.VirtualCamera;
@@ -12,10 +13,9 @@ import org.robolectric.shadows.ShadowVirtualDeviceManager.ShadowVirtualDevice;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link VirtualCamera}. */
-@Implements(value = VirtualCamera.class, minSdk = V.SDK_INT, isInAndroidSdk = false)
+@Implements(value = VirtualCamera.class, minSdk = VANILLA_ICE_CREAM, isInAndroidSdk = false)
 public class ShadowVirtualCamera {
 
   @RealObject VirtualCamera realObject;

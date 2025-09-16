@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
@@ -7,6 +8,8 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Bundle;
@@ -30,9 +33,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.Baklava;
-import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for InputMethodManager. */
 @Implements(InputMethodManager.class)
@@ -82,7 +82,7 @@ public class ShadowInputMethodManager {
     return showSoftInput(view, flags, resultReceiver);
   }
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected boolean showSoftInput(
       View view,
       @ClassName("android.view.inputmethod.ImeTracker$Token") Object statsToken,
@@ -92,13 +92,13 @@ public class ShadowInputMethodManager {
     return showSoftInput(view, flags, resultReceiver, reason);
   }
 
-  @Implementation(minSdk = S, maxSdk = V.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = VANILLA_ICE_CREAM)
   protected boolean hideSoftInputFromWindow(
       IBinder windowToken, int flags, ResultReceiver resultReceiver, int ignoredReason) {
     return hideSoftInputFromWindow(windowToken, flags, resultReceiver);
   }
 
-  @Implementation(minSdk = Baklava.SDK_INT)
+  @Implementation(minSdk = BAKLAVA)
   protected boolean hideSoftInputFromWindow(
       IBinder windowToken,
       int flags,

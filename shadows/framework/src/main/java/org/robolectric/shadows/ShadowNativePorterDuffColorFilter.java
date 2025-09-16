@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.graphics.PorterDuffColorFilter;
 import org.robolectric.annotation.Implementation;
@@ -10,7 +11,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.PorterDuffColorFilterNatives;
 import org.robolectric.shadows.ShadowNativePorterDuffColorFilter.Picker;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link PorterDuffColorFilter} that is backed by native code */
 @Implements(
@@ -21,7 +21,7 @@ import org.robolectric.versioning.AndroidVersions.U;
     callNativeMethodsByDefault = true)
 public class ShadowNativePorterDuffColorFilter extends ShadowPorterDuffColorFilter {
 
-  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = Q, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long native_CreateBlendModeFilter(int srcColor, int blendmode) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return PorterDuffColorFilterNatives.native_CreateBlendModeFilter(srcColor, blendmode);

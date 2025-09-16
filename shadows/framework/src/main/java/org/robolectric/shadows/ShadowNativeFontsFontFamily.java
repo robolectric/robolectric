@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.graphics.fonts.FontFamily;
 import org.robolectric.annotation.Implementation;
@@ -11,7 +12,6 @@ import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.FontFamilyBuilderNatives;
 import org.robolectric.nativeruntime.FontsFontFamilyNatives;
 import org.robolectric.shadows.ShadowNativeFontsFontFamily.Picker;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link FontFamily} that is backed by native code */
 @Implements(
@@ -22,22 +22,22 @@ import org.robolectric.versioning.AndroidVersions.U;
     callNativeMethodsByDefault = true)
 public class ShadowNativeFontsFontFamily {
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nGetFontSize(long family) {
     return FontsFontFamilyNatives.nGetFontSize(family);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nGetFont(long family, int i) {
     return FontsFontFamilyNatives.nGetFont(family, i);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static String nGetLangTags(long family) {
     return FontsFontFamilyNatives.nGetLangTags(family);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nGetVariant(long family) {
     return FontsFontFamilyNatives.nGetVariant(family);
   }
@@ -50,13 +50,13 @@ public class ShadowNativeFontsFontFamily {
       isInAndroidSdk = false,
       callNativeMethodsByDefault = true)
   public static class ShadowNativeFontFamilyBuilder {
-    @Implementation(maxSdk = U.SDK_INT)
+    @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
     protected static long nInitBuilder() {
       DefaultNativeRuntimeLoader.injectAndLoad();
       return FontFamilyBuilderNatives.nInitBuilder();
     }
 
-    @Implementation(maxSdk = U.SDK_INT)
+    @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
     protected static void nAddFont(long builderPtr, long fontPtr) {
       FontFamilyBuilderNatives.nAddFont(builderPtr, fontPtr);
     }
@@ -67,7 +67,7 @@ public class ShadowNativeFontsFontFamily {
       return FontFamilyBuilderNatives.nBuild(builderPtr, langTags, variant, isCustomFallback);
     }
 
-    @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+    @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)
     protected static long nBuild(
         long builderPtr,
         String langTags,
@@ -77,7 +77,7 @@ public class ShadowNativeFontsFontFamily {
       return FontFamilyBuilderNatives.nBuild(builderPtr, langTags, variant, isCustomFallback);
     }
 
-    @Implementation(maxSdk = U.SDK_INT)
+    @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
     protected static long nGetReleaseNativeFamily() {
       return FontFamilyBuilderNatives.nGetReleaseNativeFamily();
     }

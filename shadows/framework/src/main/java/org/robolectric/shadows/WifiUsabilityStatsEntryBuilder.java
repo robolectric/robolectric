@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.net.wifi.WifiUsabilityStatsEntry;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** A Builder for {@link WifiUsabilityStatsEntry} */
 public interface WifiUsabilityStatsEntryBuilder {
@@ -83,7 +83,7 @@ public interface WifiUsabilityStatsEntryBuilder {
   WifiUsabilityStatsEntryBuilder setIsWifiScoringEnabled(boolean enabled);
 
   static WifiUsabilityStatsEntryBuilder newBuilder() {
-    if (getApiLevel() <= Baklava.SDK_INT) {
+    if (getApiLevel() <= BAKLAVA) {
       return new WifiUsabilityStatsEntryBuilderLegacyImpl();
     } else {
       // For newer APIs, delegate to the framework's WifiUsabilityStatsEntry.Builder

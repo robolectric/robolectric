@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.net.wifi.WifiInfo;
@@ -11,7 +12,6 @@ import android.os.Build.VERSION_CODES;
 import android.util.SparseArray;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Builder for {@link WifiUsabilityStatsEntry}. */
 final class WifiUsabilityStatsEntryBuilderLegacyImpl implements WifiUsabilityStatsEntryBuilder {
@@ -157,7 +157,7 @@ final class WifiUsabilityStatsEntryBuilderLegacyImpl implements WifiUsabilitySta
           ClassParameter.from(int.class, cellularSignalStrengthDb),
           ClassParameter.from(boolean.class, isSameRegisteredCell),
           ClassParameter.from(SparseArray.class, new SparseArray<>())); // new in V
-    } else if (getApiLevel() <= Baklava.SDK_INT) {
+    } else if (getApiLevel() <= BAKLAVA) {
       return ReflectionHelpers.callConstructor(
           WifiUsabilityStatsEntry.class,
           ClassParameter.from(long.class, timeStampMillis),

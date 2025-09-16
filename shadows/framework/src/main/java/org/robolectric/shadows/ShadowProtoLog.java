@@ -1,14 +1,15 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Shadow for ProtoLog. */
 @Implements(
     className = "com.android.internal.protolog.ProtoLog",
     isInAndroidSdk = false,
-    minSdk = Baklava.SDK_INT)
+    minSdk = BAKLAVA)
 public class ShadowProtoLog {
 
   @Implementation

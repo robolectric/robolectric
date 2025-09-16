@@ -7,6 +7,8 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.annotation.TextLayoutMode.Mode.REALISTIC;
 
 import android.graphics.ColorFilter;
@@ -25,8 +27,6 @@ import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.versioning.AndroidVersions;
-import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Paint.class)
@@ -480,13 +480,13 @@ public class ShadowPaint {
     return text.length();
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected static int nGetFontMetricsInt(
       long paintPtr, FontMetricsInt fmi, /* Ignored */ boolean useLocale) {
     return nGetFontMetricsInt(paintPtr, fmi);
   }
 
-  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = P, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nGetFontMetricsInt(long paintPtr, FontMetricsInt fmi) {
     if (ConfigurationRegistry.get(TextLayoutMode.Mode.class) == REALISTIC) {
       // TODO: hack, just set values to those we see on emulator
@@ -542,7 +542,7 @@ public class ShadowPaint {
     return 0f;
   }
 
-  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)
   protected static float nGetRunCharacterAdvance(
       long paintPtr,
       char[] text,
@@ -557,7 +557,7 @@ public class ShadowPaint {
     return nGetRunAdvance(paintPtr, text, start, end, contextStart, contextEnd, isRtl, offset);
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected static float nGetRunCharacterAdvance(
       long paintPtr,
       char[] text,

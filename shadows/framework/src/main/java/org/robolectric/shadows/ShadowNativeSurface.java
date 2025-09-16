@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Canvas;
@@ -29,7 +30,6 @@ import org.robolectric.shadows.ShadowNativeSurface.Picker;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Surface} that is backed by native code */
 @Implements(
@@ -53,13 +53,13 @@ public class ShadowNativeSurface {
     return 0;
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeCreateFromSurfaceControl(long surfaceControlNativeObject) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return SurfaceNatives.nativeCreateFromSurfaceControl(surfaceControlNativeObject);
   }
 
-  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = Q, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeGetFromSurfaceControl(
       long surfaceObject, long surfaceControlNativeObject) {
     DefaultNativeRuntimeLoader.injectAndLoad();
@@ -71,97 +71,97 @@ public class ShadowNativeSurface {
     return nativeGetFromSurfaceControl(0, surfaceControlNativeObject);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeGetFromBlastBufferQueue(
       long surfaceObject, long blastBufferQueueNativeObject) {
     return SurfaceNatives.nativeGetFromBlastBufferQueue(
         surfaceObject, blastBufferQueueNativeObject);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeLockCanvas(long nativeObject, Canvas canvas, Rect dirty)
       throws OutOfResourcesException {
     return SurfaceNatives.nativeLockCanvas(nativeObject, canvas, dirty);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeUnlockCanvasAndPost(long nativeObject, Canvas canvas) {
     SurfaceNatives.nativeUnlockCanvasAndPost(nativeObject, canvas);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeRelease(long nativeObject) {
     SurfaceNatives.nativeRelease(nativeObject);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static boolean nativeIsValid(long nativeObject) {
     return SurfaceNatives.nativeIsValid(nativeObject);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static boolean nativeIsConsumerRunningBehind(long nativeObject) {
     return SurfaceNatives.nativeIsConsumerRunningBehind(nativeObject);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeReadFromParcel(long nativeObject, Parcel source) {
     return SurfaceNatives.nativeReadFromParcel(nativeObject, source);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeWriteToParcel(long nativeObject, Parcel dest) {
     SurfaceNatives.nativeWriteToParcel(nativeObject, dest);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeAllocateBuffers(long nativeObject) {
     SurfaceNatives.nativeAllocateBuffers(nativeObject);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nativeGetWidth(long nativeObject) {
     return SurfaceNatives.nativeGetWidth(nativeObject);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nativeGetHeight(long nativeObject) {
     return SurfaceNatives.nativeGetHeight(nativeObject);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeGetNextFrameNumber(long nativeObject) {
     return SurfaceNatives.nativeGetNextFrameNumber(nativeObject);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nativeSetScalingMode(long nativeObject, int scalingMode) {
     return SurfaceNatives.nativeSetScalingMode(nativeObject, scalingMode);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nativeForceScopedDisconnect(long nativeObject) {
     return SurfaceNatives.nativeForceScopedDisconnect(nativeObject);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nativeAttachAndQueueBufferWithColorSpace(
       long nativeObject, HardwareBuffer buffer, int colorSpaceId) {
     return SurfaceNatives.nativeAttachAndQueueBufferWithColorSpace(
         nativeObject, buffer, colorSpaceId);
   }
 
-  @Implementation(minSdk = O_MR1, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O_MR1, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nativeSetSharedBufferModeEnabled(long nativeObject, boolean enabled) {
     return SurfaceNatives.nativeSetSharedBufferModeEnabled(nativeObject, enabled);
   }
 
-  @Implementation(minSdk = O_MR1, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O_MR1, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nativeSetAutoRefreshEnabled(long nativeObject, boolean enabled) {
     return SurfaceNatives.nativeSetAutoRefreshEnabled(nativeObject, enabled);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nativeSetFrameRate(
       long nativeObject, float frameRate, int compatibility, int changeFrameRateStrategy) {
     return SurfaceNatives.nativeSetFrameRate(

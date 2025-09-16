@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.shadows.ShadowArscApkAssets9.FRAMEWORK_APK_PATH;
 
 import android.content.res.ApkAssets;
@@ -13,11 +14,10 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.versioning.AndroidVersions.V;
 
 @Implements(
     value = ApkAssets.class,
-    minSdk = V.SDK_INT,
+    minSdk = VANILLA_ICE_CREAM,
     callNativeMethodsByDefault = true,
     shadowPicker = ShadowApkAssets.Picker.class,
     isInAndroidSdk = false)

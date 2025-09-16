@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.HandlerThread;
@@ -12,12 +13,11 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for new SurfaceSyncGroup introduced in android U. */
 @Implements(
     value = SurfaceSyncGroup.class,
-    minSdk = U.SDK_INT,
+    minSdk = UPSIDE_DOWN_CAKE,
     // TODO: remove when minimum supported compileSdk is >= 34
     isInAndroidSdk = false)
 public class ShadowSurfaceSyncGroup {

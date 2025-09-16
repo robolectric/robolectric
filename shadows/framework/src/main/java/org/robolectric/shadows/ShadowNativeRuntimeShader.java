@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.graphics.RuntimeShader;
 import org.robolectric.annotation.Implementation;
@@ -14,7 +15,6 @@ import org.robolectric.nativeruntime.RuntimeShaderNatives;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowNativeRuntimeShader.Picker;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link RuntimeShader} that is backed by native code */
 @Implements(
@@ -132,7 +132,7 @@ public class ShadowNativeRuntimeShader {
   private static final String RIPPLE_SHADER_31 =
       RIPPLE_SHADER_UNIFORMS_31 + RIPPLE_SHADER_LIB_31 + RIPPLE_SHADER_MAIN_31;
 
-  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected void __constructor__(String sksl) {
     // This is a workaround for supporting RippleShader from T+ with the native code from S.
     // There were some new capabilities added to SKSL in T which are not available in S. Use the
@@ -149,12 +149,12 @@ public class ShadowNativeRuntimeShader {
         RuntimeShader.class, runtimeShader, ClassParameter.from(String.class, sksl));
   }
 
-  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = R, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeGetFinalizer() {
     return RuntimeShaderNatives.nativeGetFinalizer();
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeCreateBuilder(String sksl) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return RuntimeShaderNatives.nativeCreateBuilder(sksl);
@@ -165,7 +165,7 @@ public class ShadowNativeRuntimeShader {
     return RuntimeShaderNatives.nativeCreateShader(shaderBuilder, matrix, isOpaque);
   }
 
-  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeCreateShader(long shaderBuilder, long matrix) {
     return nativeCreateShader(shaderBuilder, matrix, false);
   }
@@ -176,13 +176,13 @@ public class ShadowNativeRuntimeShader {
     RuntimeShaderNatives.nativeUpdateUniforms(shaderBuilder, uniformName, uniforms);
   }
 
-  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeUpdateUniforms(
       long shaderBuilder, String uniformName, float[] uniforms, boolean isColor) {
     nativeUpdateUniforms(shaderBuilder, uniformName, uniforms);
   }
 
-  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeUpdateUniforms(
       long shaderBuilder,
       String uniformName,
@@ -194,13 +194,13 @@ public class ShadowNativeRuntimeShader {
     // no-op
   }
 
-  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeUpdateUniforms(
       long shaderBuilder, String uniformName, int[] uniforms) {
     // no-op
   }
 
-  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeUpdateUniforms(
       long shaderBuilder,
       String uniformName,
@@ -212,7 +212,7 @@ public class ShadowNativeRuntimeShader {
     // no-op
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeUpdateShader(long shaderBuilder, String shaderName, long shader) {
     RuntimeShaderNatives.nativeUpdateShader(shaderBuilder, shaderName, shader);
   }

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
@@ -24,7 +25,6 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow implementation of {@link CardEmulation}. */
 @Implements(CardEmulation.class)
@@ -56,7 +56,7 @@ public class ShadowCardEmulation {
     return true;
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected boolean setShouldDefaultToObserveModeForService(
       ComponentName service, boolean shouldDefaultToObserveMode) {
     if (shouldDefaultToObserveMode) {
@@ -68,7 +68,7 @@ public class ShadowCardEmulation {
   }
 
   /** Registers a polling loop filter for a service and stores if auto transact is enabled. */
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected boolean registerPollingLoopPatternFilterForService(
       ComponentName service, String pollingLoopFilter, boolean autoTransact) {
     if (pollingLoopFilter.isEmpty()
@@ -87,7 +87,7 @@ public class ShadowCardEmulation {
   }
 
   /** Registers a polling loop filter for a service and stores if auto transact is enabled. */
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected boolean removePollingLoopPatternFilterForService(
       ComponentName service, String pollingLoopFilter) {
     if (pollingLoopFilter.isEmpty()

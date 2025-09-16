@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -37,7 +38,6 @@ import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 import org.robolectric.util.reflector.WithType;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link UiModeManager}. */
 @Implements(UiModeManager.class)
@@ -327,7 +327,7 @@ public class ShadowUIModeManager {
 
   @Resetter
   public static void reset() {
-    if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM) {
       IUiModeManager service =
           IUiModeManager.Stub.asInterface(
               reflector(ServiceManagerReflector.class).getServiceOrThrow(Context.UI_MODE_SERVICE));

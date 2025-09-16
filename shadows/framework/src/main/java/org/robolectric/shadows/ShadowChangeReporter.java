@@ -1,11 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.R;
+
 import com.android.internal.compat.ChangeReporter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.versioning.AndroidVersions.R;
 
-@Implements(value = ChangeReporter.class, isInAndroidSdk = false, minSdk = R.SDK_INT)
+@Implements(value = ChangeReporter.class, isInAndroidSdk = false, minSdk = R)
 public class ShadowChangeReporter {
 
   /** Don't write any compat change to logs, as its spammy in Robolectric. */

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Bundle;
@@ -24,7 +25,6 @@ import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Properties of {@link android.view.accessibility.AccessibilityNodeInfo} that are normally locked
@@ -571,7 +571,7 @@ public class ShadowAccessibilityNodeInfo {
    * will have direct access to the real {@link AccessibilityNodeInfo} hierarchy, so we want all
    * future interactions with ANI to use the real object.
    */
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void setQueryFromAppProcessEnabled(View view, boolean enabled) {
     accessibilityNodeInfoReflector.setQueryFromAppProcessEnabled(view, enabled);
     if (enabled) {

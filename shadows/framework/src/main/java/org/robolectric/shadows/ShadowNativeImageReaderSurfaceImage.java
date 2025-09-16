@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.hardware.HardwareBuffer;
 import org.robolectric.annotation.ClassName;
@@ -11,7 +12,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.nativeruntime.ImageReaderSurfaceImageNatives;
 import org.robolectric.shadows.ShadowImageReader.ShadowSurfaceImage;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@code ImageReader.SurfaceImage} that is backed by native code. */
 @Implements(
@@ -31,24 +31,24 @@ public class ShadowNativeImageReaderSurfaceImage {
         realSurfaceImage, numPlanes, readerFormat, /* readerUsage= */ 0);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected synchronized @ClassName("android.media.ImageReader$SurfaceImage$SurfacePlane[]") Object
       nativeCreatePlanes(int numPlanes, int readerFormat, long readerUsage) {
     return ImageReaderSurfaceImageNatives.nativeSurfaceImageCreatePlanes(
         realSurfaceImage, numPlanes, readerFormat, readerUsage);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected synchronized int nativeGetWidth() {
     return ImageReaderSurfaceImageNatives.nativeSurfaceImageGetWidth(realSurfaceImage);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected synchronized int nativeGetHeight() {
     return ImageReaderSurfaceImageNatives.nativeSurfaceImageGetHeight(realSurfaceImage);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected synchronized int nativeGetFormat(int readerFormat) {
     return ImageReaderSurfaceImageNatives.nativeSurfaceImageGetFormat(
         realSurfaceImage, readerFormat);

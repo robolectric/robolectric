@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -20,7 +21,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @Implements(BluetoothSocket.class)
 public class ShadowBluetoothSocket {
@@ -176,7 +176,7 @@ public class ShadowBluetoothSocket {
   static BluetoothSocket create(BluetoothDevice device) {
     BluetoothSocket newSocket = Shadow.newInstanceOf(BluetoothSocket.class);
     // TODO: remove field check once SDK is released that has mRemoteDevice
-    if (getApiLevel() > Baklava.SDK_INT
+    if (getApiLevel() > BAKLAVA
         && ReflectionHelpers.hasField(BluetoothSocket.class, "mRemoteDevice")) {
       reflector(BluetoothSocketReflector.class, newSocket).setRemoteDevice(Optional.of(device));
     } else {

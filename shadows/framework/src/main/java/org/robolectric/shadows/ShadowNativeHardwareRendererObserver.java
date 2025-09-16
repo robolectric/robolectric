@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.graphics.HardwareRendererObserver;
 import java.lang.ref.WeakReference;
@@ -13,7 +14,6 @@ import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererObserverNatives;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowNativeHardwareRendererObserver.Picker;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link HardwareRendererObserver} that is backed by native code */
 @Implements(
@@ -27,7 +27,7 @@ public class ShadowNativeHardwareRendererObserver {
   public HardwareRendererObserverNatives hardwareRendererObserverNatives =
       new HardwareRendererObserverNatives();
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nGetNextBuffer(long nativePtr, long[] data) {
     return HardwareRendererObserverNatives.nGetNextBuffer(nativePtr, data);
   }
@@ -43,7 +43,7 @@ public class ShadowNativeHardwareRendererObserver {
     return hardwareRendererObserverNatives.nCreateObserver(waitForPresentTime);
   }
 
-  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nCreateObserver(
       WeakReference<HardwareRendererObserver> observer, boolean waitForPresentTime) {
     HardwareRendererObserver hardwareRendererObserver = observer.get();

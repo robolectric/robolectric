@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.content.Context;
 import android.content.Intent;
@@ -24,7 +25,6 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.versioning.AndroidVersions.U;
 
 @Implements(value = CarrierConfigManager.class, minSdk = M)
 public class ShadowCarrierConfigManager {
@@ -83,7 +83,7 @@ public class ShadowCarrierConfigManager {
    * subscription. {@link #setConfigForSubId(int, PersistableBundle)}, or default values for an
    * invalid {@code subId}.
    */
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   @Nonnull
   public PersistableBundle getConfigForSubId(int subId, @Nonnull String... keys) {
     checkReadPhoneStatePermission();
@@ -214,14 +214,14 @@ public class ShadowCarrierConfigManager {
     RuntimeEnvironment.getApplication().sendBroadcast(intent);
   }
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void registerCarrierConfigChangeListener(
       Executor executor, CarrierConfigManager.CarrierConfigChangeListener listener) {
     carrierConfigChangedListener = listener;
     carrierConfigChangedListenerExecutor = executor;
   }
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void unregisterCarrierConfigChangeListener(
       CarrierConfigManager.CarrierConfigChangeListener listener) {
     carrierConfigChangedListener = null;

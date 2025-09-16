@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -44,7 +45,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.U;
 
 @Implements(AccessibilityManager.class)
 public class ShadowAccessibilityManager {
@@ -265,7 +265,7 @@ public class ShadowAccessibilityManager {
    * android.view.accessibility.DirectAccessibilityConnection} calls it to determine if any
    * transformations have occurred on this window.
    */
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected @ClassName("android.view.accessibility.IAccessibilityManager.WindowTransformationSpec")
   Object getWindowTransformationSpec(int windowId) {
     // Return a value that represents no transformation.

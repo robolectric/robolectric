@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.provider.Settings.Secure.LOCATION_MODE_OFF;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -32,7 +33,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.U;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Settings.class)
@@ -574,7 +574,7 @@ public class ShadowSettings {
       return put(key, value);
     }
 
-    @Implementation(minSdk = U.SDK_INT)
+    @Implementation(minSdk = UPSIDE_DOWN_CAKE)
     protected static boolean putString(
         String namespace, String name, String value, boolean makeDefault) {
       String key = reflector(SettingsConfigReflector.class).createCompositeName(namespace, name);
@@ -586,7 +586,7 @@ public class ShadowSettings {
       return get(name);
     }
 
-    @Implementation(minSdk = U.SDK_INT)
+    @Implementation(minSdk = UPSIDE_DOWN_CAKE)
     protected static String getString(String name) {
       return get(name);
     }
@@ -632,7 +632,7 @@ public class ShadowSettings {
       return true;
     }
 
-    @Implementation(minSdk = U.SDK_INT)
+    @Implementation(minSdk = UPSIDE_DOWN_CAKE)
     protected static boolean deleteString(String namespace, String name) {
       String key = reflector(SettingsConfigReflector.class).createCompositeName(namespace, name);
       settings.remove(key);

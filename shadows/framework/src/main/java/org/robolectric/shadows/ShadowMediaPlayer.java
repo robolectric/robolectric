@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.ERROR;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.IDLE;
@@ -52,7 +53,6 @@ import org.robolectric.shadows.util.DataSource;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Automated testing of media playback can be a difficult thing - especially testing that your code
@@ -527,7 +527,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     Shadow.invokeConstructor(MediaPlayer.class, player);
   }
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void __constructor__(@Nonnull Context context, int sessionId) {
     init();
     // Ensure that the real object is set up properly.

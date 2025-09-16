@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.res.android.ApkAssetsCookie.K_INVALID_COOKIE;
 import static org.robolectric.res.android.ApkAssetsCookie.kInvalidCookie;
 import static org.robolectric.res.android.Asset.SEEK_CUR;
@@ -75,7 +76,6 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.versioning.AndroidVersions.U;
 
 // transliterated from
 // https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android_util_AssetManager.cpp
@@ -516,7 +516,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
   // static void NativeSetApkAssets(JNIEnv* env, jclass /*clazz*/, jlong ptr,
   //                                jobjectArray apk_assets_array, jboolean invalidate_caches) {
-  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = P, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeSetApkAssets(
       long ptr,
       @Nonnull android.content.res.ApkAssets[] apk_assets_array,

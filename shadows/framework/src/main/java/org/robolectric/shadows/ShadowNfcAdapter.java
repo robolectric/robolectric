@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
@@ -29,7 +30,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow implementation of {@link NfcAdapter}. */
 @Implements(NfcAdapter.class)
@@ -87,7 +87,7 @@ public class ShadowNfcAdapter {
   @GuardedBy("this")
   private boolean isObserverModeEnabled = false;
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected boolean setObserveModeEnabled(boolean enabled) {
     synchronized (this) {
       if (isObserveModeSupported) {
@@ -98,14 +98,14 @@ public class ShadowNfcAdapter {
     return false;
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected boolean isObserveModeEnabled() {
     synchronized (this) {
       return isObserverModeEnabled;
     }
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected boolean isObserveModeSupported() {
     synchronized (this) {
       return isObserveModeSupported;
