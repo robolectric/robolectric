@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -36,7 +37,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions;
 
 /** Shadow for {@link Typeface} that is backed by native code */
 @Implements(
@@ -206,9 +206,7 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return TypefaceNatives.nativeGetFamily(nativePtr, index);
   }
 
-  @Implementation(
-      minSdk = AndroidVersions.Baklava.SDK_INT,
-      maxSdk = AndroidVersions.Baklava.SDK_INT)
+  @Implementation(minSdk = BAKLAVA, maxSdk = BAKLAVA)
   protected static boolean nativeIsVariationInstance(long nativePtr) {
     return false;
     // TODO: call the real impl when it's finally available in native binaries

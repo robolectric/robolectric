@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -121,7 +122,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.versioning.AndroidVersions;
 
 /** Shadow for {@link ServiceManager}. */
 @SuppressWarnings("NewApi")
@@ -392,7 +392,7 @@ public class ShadowServiceManager {
           "com.android.internal.protolog.ProtoLogConfigurationService"
           /* new ProtoLogConfigurationServiceImpl.class */ );
     }
-    if (RuntimeEnvironment.getApiLevel() >= AndroidVersions.Baklava.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= BAKLAVA) {
       addBinderService(
           binderServices, Context.ADVANCED_PROTECTION_SERVICE, IAdvancedProtectionService.class);
       addBinderService(

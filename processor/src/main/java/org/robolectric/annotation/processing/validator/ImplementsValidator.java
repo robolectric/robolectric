@@ -216,7 +216,7 @@ public class ImplementsValidator extends Validator {
         if (classInfo == null) {
           if (!sdk.suppressWarnings(
               shadowClassElem, "robolectric.internal.IgnoreMissingClass", allowInDev)) {
-            problems.add("Shadowed type is not found: " + shadowedClassName, sdk.sdkInt);
+            problems.add("Shadowed type is not found: " + shadowedClassName, sdk.sdkInfo.apiLevel);
           }
         } else {
           StringBuilder builder = new StringBuilder();
@@ -230,7 +230,7 @@ public class ImplementsValidator extends Validator {
                     + shadowParams
                     + " but found "
                     + classInfo.getSignature(),
-                sdk.sdkInt);
+                sdk.sdkInfo.apiLevel);
           }
         }
       }
@@ -280,7 +280,7 @@ public class ImplementsValidator extends Validator {
       for (SdkStore.Sdk sdk : sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk)) {
         String problem = sdk.verifyMethod(sdkClassName, methodElement, looseSignatures, allowInDev);
         if (problem != null) {
-          problems.add(problem, sdk.sdkInt);
+          problems.add(problem, sdk.sdkInfo.apiLevel);
         }
       }
 
@@ -314,7 +314,8 @@ public class ImplementsValidator extends Validator {
         String problem = sdk.verifyMethod(sdkClassName, methodElement, looseSignatures, allowInDev);
         if (problem == null && sdk.getClassInfo(sdkClassName) != null) {
           problems.add(
-              "Missing @Implementation on method " + methodElement.getSimpleName(), sdk.sdkInt);
+              "Missing @Implementation on method " + methodElement.getSimpleName(),
+              sdk.sdkInfo.apiLevel);
         }
       }
 

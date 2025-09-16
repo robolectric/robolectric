@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -19,7 +20,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions;
 
 /**
  * Basic shadow implementation for the {@link OverlayManager}.
@@ -104,7 +104,7 @@ public final class ShadowOverlayManager {
 
   private void checkPermission() {
     Context context = null;
-    if (RuntimeEnvironment.getApiLevel() >= AndroidVersions.Baklava.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= BAKLAVA) {
       OverlayManagerImpl overlayManagerImpl =
           reflector(OverlayManagerReflector.class, realOverlayManager).getOverlayManagerImpl();
       context = reflector(OverlayManagerImplReflector.class, overlayManagerImpl).getContext();

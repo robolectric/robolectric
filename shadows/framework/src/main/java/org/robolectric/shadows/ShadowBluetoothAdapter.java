@@ -13,6 +13,7 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
@@ -53,7 +54,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
@@ -620,15 +620,13 @@ public class ShadowBluetoothAdapter {
     return null;
   }
 
-  @Implementation(minSdk = BAKLAVA)
-  @InDevelopment
-  protected IBinder getProfile(
+  @Implementation(minSdk = POST_BAKLAVA)
+  protected void getProfile(
       int profile, @ClassName("android.bluetooth.IBluetoothProfileCallback") Object callback) {
     IBinder binder = getProfile(profile);
     if (binder != null) {
       reflector(IBluetoothProfileCallbackReflector.class, callback).getProfileReply(binder);
     }
-    return binder;
   }
 
   @ForType(className = "android.bluetooth.IBluetoothProfileCallback")

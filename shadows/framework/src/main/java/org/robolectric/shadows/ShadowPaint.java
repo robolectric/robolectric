@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -26,7 +27,7 @@ import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.versioning.AndroidVersions;
+
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Paint.class)
@@ -208,9 +209,7 @@ public class ShadowPaint {
     return typeface;
   }
 
-  @Implementation(
-      minSdk = AndroidVersions.Baklava.SDK_INT,
-      maxSdk = AndroidVersions.Baklava.SDK_INT)
+  @Implementation(minSdk = BAKLAVA, maxSdk = BAKLAVA)
   protected Typeface setTypefaceWithoutWarning(Typeface typeface) {
     this.typeface = typeface;
     return typeface;

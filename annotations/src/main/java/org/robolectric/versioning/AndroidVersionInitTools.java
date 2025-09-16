@@ -8,7 +8,10 @@ import org.robolectric.versioning.AndroidVersions.AndroidRelease;
 /**
  * Utility access method to allow robolectric to instantiate AndroidVersions without cluttering code
  * completion for users of AndroidVersions's embedded Types of one per Android Releases.
+ *
+ * @deprecated use VersionCalculator instead
  */
+@Deprecated
 public final class AndroidVersionInitTools {
 
   private AndroidVersionInitTools() {}

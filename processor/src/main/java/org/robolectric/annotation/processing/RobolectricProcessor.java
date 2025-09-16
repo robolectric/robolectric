@@ -27,6 +27,7 @@ import org.robolectric.annotation.processing.validator.RealObjectValidator;
 import org.robolectric.annotation.processing.validator.ResetterValidator;
 import org.robolectric.annotation.processing.validator.SdkStore;
 import org.robolectric.annotation.processing.validator.Validator;
+import org.robolectric.versioning.VersionCalculator.SdkInfo;
 
 /** Annotation processor entry point for Robolectric annotations. */
 @SupportedOptions({
@@ -68,7 +69,7 @@ public class RobolectricProcessor extends AbstractProcessor {
   private boolean validateCompiledSdk;
   private boolean allowInDev;
   private String overrideSdkLocation;
-  private int overrideSdkInt;
+  private SdkInfo overrideSdkInfo;
   private boolean allowLooseSignatures;
 
   /** Default constructor. */
@@ -83,14 +84,14 @@ public class RobolectricProcessor extends AbstractProcessor {
    */
   @VisibleForTesting
   public RobolectricProcessor(Map<String, String> options) {
-    this(options, null, -1);
+    this(options, null, null);
   }
 
   public RobolectricProcessor(
-      Map<String, String> options, String overrideSdkLocation, int overrideSdkInt) {
+      Map<String, String> options, String overrideSdkLocation, SdkInfo overrideSdkInfo) {
     processOptions(options);
     this.overrideSdkLocation = overrideSdkLocation;
-    this.overrideSdkInt = overrideSdkInt;
+    this.overrideSdkInfo = overrideSdkInfo;
   }
 
   @Override
@@ -100,7 +101,7 @@ public class RobolectricProcessor extends AbstractProcessor {
     modelBuilder = new RobolectricModel.Builder(environment);
 
     SdkStore sdkStore =
-        new SdkStore(sdksFile, validateCompiledSdk, overrideSdkLocation, overrideSdkInt);
+        new SdkStore(sdksFile, validateCompiledSdk, overrideSdkLocation, overrideSdkInfo);
 
     addValidator(new ImplementationValidator(modelBuilder, environment));
     addValidator(

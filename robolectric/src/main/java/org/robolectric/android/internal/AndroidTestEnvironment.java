@@ -381,7 +381,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     appResources.updateConfiguration(androidConfiguration, Bootstrap.getDisplayMetrics());
 
     // Circumvent the 'No Compatibility callbacks set!' log. See #8509
-    if (apiLevel >= AndroidVersions.V.SDK_INT) {
+    if (apiLevel >= VANILLA_ICE_CREAM) {
       // Adds loggableChanges parameter.
       ReflectionHelpers.callStaticMethod(
           AppCompatCallbacks.class,
