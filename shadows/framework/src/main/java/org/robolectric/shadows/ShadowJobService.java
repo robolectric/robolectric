@@ -1,11 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+
 import android.app.Notification;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.versioning.AndroidVersions.U;
 
 @Implements(JobService.class)
 public class ShadowJobService extends ShadowService {
@@ -20,7 +21,7 @@ public class ShadowJobService extends ShadowService {
   }
 
   /** Stubbed out for now, as the real implementation throws an NPE when executed in Robolectric. */
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void setNotification(
       JobParameters params,
       int notificationId,
@@ -28,12 +29,12 @@ public class ShadowJobService extends ShadowService {
       int jobEndNotificationPolicy) {}
 
   /** Stubbed out for now, as the real implementation throws an NPE when executed in Robolectric. */
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void updateEstimatedNetworkBytes(
       JobParameters params, long downloadBytes, long uploadBytes) {}
 
   /** Stubbed out for now, as the real implementation throws an NPE when executed in Robolectric. */
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void updateTransferredNetworkBytes(
       JobParameters params, long downloadBytes, long uploadBytes) {}
 

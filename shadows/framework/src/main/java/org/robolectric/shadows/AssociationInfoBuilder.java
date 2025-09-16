@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.companion.AssociatedDevice;
@@ -11,7 +12,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Builder for {@link AssociationInfo}. */
 public class AssociationInfoBuilder {
@@ -131,7 +131,7 @@ public class AssociationInfoBuilder {
             ClassParameter.from(long.class, approvedMs),
             ClassParameter.from(long.class, lastTimeConnectedMs));
 
-      } else if (RuntimeEnvironment.getApiLevel() == U.SDK_INT) {
+      } else if (RuntimeEnvironment.getApiLevel() == UPSIDE_DOWN_CAKE) {
         return ReflectionHelpers.callConstructor(
             AssociationInfo.class,
             ClassParameter.from(int.class, id),

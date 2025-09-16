@@ -1,7 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+
 import org.robolectric.annotation.Implements;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link android.database.sqlite.SQLiteRawStatement}. */
 @SuppressWarnings(
@@ -10,7 +11,7 @@ import org.robolectric.versioning.AndroidVersions.V;
     className = "android.database.sqlite.SQLiteRawStatement",
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true,
-    minSdk = V.SDK_INT,
+    minSdk = VANILLA_ICE_CREAM,
     shadowPicker = ShadowNativeSQLiteRawStatement.Picker.class)
 public class ShadowNativeSQLiteRawStatement {
 

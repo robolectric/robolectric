@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+
 import android.os.SystemProperties;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +13,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.versioning.AndroidVersions.V;
 
 @Implements(value = SystemProperties.class, isInAndroidSdk = false)
 public class ShadowSystemProperties {
@@ -129,7 +130,7 @@ public class ShadowSystemProperties {
     buildProperties.setProperty("debug.sqlite.journalmode", "MEMORY");
 
     // TODO: definitely put this into generated build.prop
-    if (RuntimeEnvironment.getApiLevel() > V.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() > VANILLA_ICE_CREAM) {
       buildProperties.setProperty("ro.vendor.api_level", "202404");
     }
   }

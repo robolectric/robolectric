@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+
 import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
 import android.security.advancedprotection.AdvancedProtectionFeature;
@@ -14,13 +16,9 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Shadow for the AdvancedProtectionManager framework class. */
-@Implements(
-    value = AdvancedProtectionManager.class,
-    minSdk = Baklava.SDK_INT,
-    isInAndroidSdk = false)
+@Implements(value = AdvancedProtectionManager.class, minSdk = BAKLAVA, isInAndroidSdk = false)
 public class ShadowAdvancedProtectionManager {
   private final Object lock = new Object();
 

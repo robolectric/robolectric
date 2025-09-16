@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.graphics.LightingColorFilter;
 import org.robolectric.annotation.Implementation;
@@ -8,7 +9,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.LightingColorFilterNatives;
 import org.robolectric.shadows.ShadowNativeLightingColorFilter.Picker;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link LightingColorFilter} that is backed by native code */
 @Implements(
@@ -18,7 +18,7 @@ import org.robolectric.versioning.AndroidVersions.U;
     callNativeMethodsByDefault = true)
 public class ShadowNativeLightingColorFilter {
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long native_CreateLightingFilter(int mul, int add) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return LightingColorFilterNatives.native_CreateLightingFilter(mul, add);

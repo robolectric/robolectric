@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.media.MediaCodecInfo.CodecCapabilities;
@@ -11,7 +12,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /**
  * Shadow for {@link CodecCapabilities}.
@@ -23,9 +23,9 @@ import org.robolectric.versioning.AndroidVersions.Baklava;
 public class ShadowCodecCapabilities {
 
   // TODO: figure out why minSdk = PostBaklava doesn't work
-  @Implementation(minSdk = Baklava.SDK_INT)
+  @Implementation(minSdk = BAKLAVA)
   protected static CodecCapabilities createFromProfileLevel(String mime, int profile, int level) {
-    if (RuntimeEnvironment.getApiLevel() <= Baklava.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() <= BAKLAVA) {
       return reflector(CodecCapabiltiesReflector.class)
           .createFromProfileLevel(mime, profile, level);
     }

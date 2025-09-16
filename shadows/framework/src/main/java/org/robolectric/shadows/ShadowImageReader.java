@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Canvas;
@@ -23,7 +24,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link android.media.ImageReader} */
 @Implements(ImageReader.class)
@@ -69,7 +69,7 @@ public class ShadowImageReader {
     return nativeImageSetup(image);
   }
 
-  @Implementation(minSdk = U.SDK_INT, methodName = "nativeImageSetup")
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE, methodName = "nativeImageSetup")
   protected int nativeImageSetupFromU(Image image) {
     return nativeImageSetup(image);
   }

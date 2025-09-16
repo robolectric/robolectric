@@ -29,7 +29,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link InputManager} */
 @Implements(InputManager.class)
@@ -154,7 +153,7 @@ public class ShadowInputManager {
 
   @Resetter
   public static void reset() {
-    if (SDK_INT < U.SDK_INT) {
+    if (SDK_INT < UPSIDE_DOWN_CAKE) {
       ReflectionHelpers.setStaticField(InputManager.class, "sInstance", null);
     }
     deviceKeys.clear();

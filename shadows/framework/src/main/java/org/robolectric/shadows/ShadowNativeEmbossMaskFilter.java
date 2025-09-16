@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.graphics.EmbossMaskFilter;
 import org.robolectric.annotation.Implementation;
@@ -8,7 +9,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.EmbossMaskFilterNatives;
 import org.robolectric.shadows.ShadowNativeEmbossMaskFilter.Picker;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link EmbossMaskFilter} that is backed by native code */
 @Implements(
@@ -18,7 +18,7 @@ import org.robolectric.versioning.AndroidVersions.U;
     callNativeMethodsByDefault = true)
 public class ShadowNativeEmbossMaskFilter {
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeConstructor(
       float[] direction, float ambient, float specular, float blurRadius) {
     DefaultNativeRuntimeLoader.injectAndLoad();

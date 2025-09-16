@@ -83,8 +83,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link TelephonyManager}. */
 @Implements(TelephonyManager.class)
@@ -505,12 +503,12 @@ public class ShadowTelephonyManager {
     deviceSoftwareVersion = newDeviceSoftwareVersion;
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   public void setNetworkOperatorName(String networkOperatorName) {
     this.networkOperatorName = networkOperatorName;
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   public void setNetworkOperatorNameForPhone(
       /* Ignored */ int phoneId, String networkOperatorName) {
     setNetworkOperatorName(networkOperatorName);
@@ -666,12 +664,12 @@ public class ShadowTelephonyManager {
     return simOperatorName;
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   public void setSimOperatorName(String simOperatorName) {
     this.simOperatorName = simOperatorName;
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   public void setSimOperatorNameForPhone(/* Ignored */ int phoneId, String name) {
     setSimOperatorName(name);
   }
@@ -832,12 +830,12 @@ public class ShadowTelephonyManager {
     return phoneType;
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   public void setPhoneType(int phoneType) {
     this.phoneType = phoneType;
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   public void setPhoneType(/* Ignored */ int phoneId, int type) {
     setPhoneType(type);
   }

@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetManager;
@@ -28,7 +29,6 @@ import org.robolectric.nativeruntime.FontNatives;
 import org.robolectric.shadows.ShadowNativeFont.Picker;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Font} that is backed by native code */
 @Implements(
@@ -38,78 +38,78 @@ import org.robolectric.versioning.AndroidVersions.U;
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
 public class ShadowNativeFont {
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nGetMinikinFontPtr(long font) {
     return FontNatives.nGetMinikinFontPtr(font);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nCloneFont(long font) {
     return FontNatives.nCloneFont(font);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static ByteBuffer nNewByteBuffer(long font) {
     return FontNatives.nNewByteBuffer(font);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nGetBufferAddress(long font) {
     return FontNatives.nGetBufferAddress(font);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nGetSourceId(long font) {
     return FontNatives.nGetSourceId(font);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nGetReleaseNativeFont() {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return FontNatives.nGetReleaseNativeFont();
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static float nGetGlyphBounds(long font, int glyphId, long paint, RectF rect) {
     return FontNatives.nGetGlyphBounds(font, glyphId, paint, rect);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static float nGetFontMetrics(long font, long paint, Paint.FontMetrics metrics) {
     return FontNatives.nGetFontMetrics(font, paint, metrics);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static String nGetFontPath(long fontPtr) {
     return FontNatives.nGetFontPath(fontPtr);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static String nGetLocaleList(long familyPtr) {
     return FontNatives.nGetLocaleList(familyPtr);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nGetPackedStyle(long fontPtr) {
     return FontNatives.nGetPackedStyle(fontPtr);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nGetIndex(long fontPtr) {
     return FontNatives.nGetIndex(fontPtr);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nGetAxisCount(long fontPtr) {
     return FontNatives.nGetAxisCount(fontPtr);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nGetAxisInfo(long fontPtr, int i) {
     return FontNatives.nGetAxisInfo(fontPtr, i);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long[] nGetAvailableFontSet() {
     return FontNatives.nGetAvailableFontSet();
   }
@@ -168,18 +168,18 @@ public class ShadowNativeFont {
       }
     }
 
-    @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
+    @Implementation(minSdk = Q, maxSdk = UPSIDE_DOWN_CAKE)
     protected static long nInitBuilder() {
       DefaultNativeRuntimeLoader.injectAndLoad();
       return FontBuilderNatives.nInitBuilder();
     }
 
-    @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
+    @Implementation(minSdk = Q, maxSdk = UPSIDE_DOWN_CAKE)
     protected static void nAddAxis(long builderPtr, int tag, float value) {
       FontBuilderNatives.nAddAxis(builderPtr, tag, value);
     }
 
-    @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+    @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
     protected static long nBuild(
         long builderPtr,
         ByteBuffer buffer,
@@ -212,7 +212,7 @@ public class ShadowNativeFont {
       return FontNatives.nGetReleaseNativeFont();
     }
 
-    @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+    @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
     protected static long nClone(
         long fontPtr, long builderPtr, int weight, boolean italic, int ttcIndex) {
       return FontBuilderNatives.nClone(fontPtr, builderPtr, weight, italic, ttcIndex);

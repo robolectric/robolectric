@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -44,7 +45,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.V;
 
 @Implements(PendingIntent.class)
 @SuppressLint("NewApi")
@@ -551,7 +551,7 @@ public class ShadowPendingIntent {
     parceledPendingIntents.add(sender);
     out.writeInt(index);
 
-    if (getApiLevel() >= V.SDK_INT) {
+    if (getApiLevel() >= VANILLA_ICE_CREAM) {
       ThreadLocal<List<OnMarshaledListener>> sOnMarshaledListeners =
           ReflectionHelpers.getStaticField(PendingIntent.class, "sOnMarshaledListener");
       List<OnMarshaledListener> listeners = sOnMarshaledListeners.get();

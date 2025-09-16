@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.annotation.ColorLong;
 import android.graphics.BaseRecordingCanvas;
@@ -14,7 +15,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.BaseRecordingCanvasNatives;
 import org.robolectric.shadows.ShadowNativeBaseRecordingCanvas.Picker;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link BaseRecordingCanvas} that is backed by native code */
 @Implements(
@@ -25,7 +25,7 @@ import org.robolectric.versioning.AndroidVersions.U;
     isInAndroidSdk = false)
 public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawBitmap(
       long nativeCanvas,
       long bitmapHandle,
@@ -46,7 +46,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         bitmapDensity);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawBitmap(
       long nativeCanvas,
       long bitmapHandle,
@@ -77,7 +77,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         bitmapDensity);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawBitmap(
       long nativeCanvas,
       int[] colors,
@@ -93,64 +93,64 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         nativeCanvas, colors, offset, stride, x, y, width, height, hasAlpha, nativePaintOrZero);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawColor(long nativeCanvas, int color, int mode) {
     BaseRecordingCanvasNatives.nDrawColor(nativeCanvas, color, mode);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawColor(
       long nativeCanvas, long nativeColorSpace, @ColorLong long color, int mode) {
     BaseRecordingCanvasNatives.nDrawColor(nativeCanvas, nativeColorSpace, color, mode);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawPaint(long nativeCanvas, long nativePaint) {
     BaseRecordingCanvasNatives.nDrawPaint(nativeCanvas, nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawPoint(long canvasHandle, float x, float y, long paintHandle) {
     BaseRecordingCanvasNatives.nDrawPoint(canvasHandle, x, y, paintHandle);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawPoints(
       long canvasHandle, float[] pts, int offset, int count, long paintHandle) {
     BaseRecordingCanvasNatives.nDrawPoints(canvasHandle, pts, offset, count, paintHandle);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawLine(
       long nativeCanvas, float startX, float startY, float stopX, float stopY, long nativePaint) {
     BaseRecordingCanvasNatives.nDrawLine(nativeCanvas, startX, startY, stopX, stopY, nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawLines(
       long canvasHandle, float[] pts, int offset, int count, long paintHandle) {
     BaseRecordingCanvasNatives.nDrawLines(canvasHandle, pts, offset, count, paintHandle);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawRect(
       long nativeCanvas, float left, float top, float right, float bottom, long nativePaint) {
     BaseRecordingCanvasNatives.nDrawRect(nativeCanvas, left, top, right, bottom, nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawOval(
       long nativeCanvas, float left, float top, float right, float bottom, long nativePaint) {
     BaseRecordingCanvasNatives.nDrawOval(nativeCanvas, left, top, right, bottom, nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawCircle(
       long nativeCanvas, float cx, float cy, float radius, long nativePaint) {
     BaseRecordingCanvasNatives.nDrawCircle(nativeCanvas, cx, cy, radius, nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawArc(
       long nativeCanvas,
       float left,
@@ -165,7 +165,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         nativeCanvas, left, top, right, bottom, startAngle, sweep, useCenter, nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawRoundRect(
       long nativeCanvas,
       float left,
@@ -179,7 +179,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         nativeCanvas, left, top, right, bottom, rx, ry, nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawDoubleRoundRect(
       long nativeCanvas,
       float outerLeft,
@@ -212,7 +212,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawDoubleRoundRect(
       long nativeCanvas,
       float outerLeft,
@@ -241,17 +241,17 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawPath(long nativeCanvas, long nativePath, long nativePaint) {
     BaseRecordingCanvasNatives.nDrawPath(nativeCanvas, nativePath, nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawRegion(long nativeCanvas, long nativeRegion, long nativePaint) {
     BaseRecordingCanvasNatives.nDrawRegion(nativeCanvas, nativeRegion, nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawNinePatch(
       long nativeCanvas,
       long nativeBitmap,
@@ -276,14 +276,14 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         bitmapDensity);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawBitmapMatrix(
       long nativeCanvas, long bitmapHandle, long nativeMatrix, long nativePaint) {
     BaseRecordingCanvasNatives.nDrawBitmapMatrix(
         nativeCanvas, bitmapHandle, nativeMatrix, nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawBitmapMesh(
       long nativeCanvas,
       long bitmapHandle,
@@ -306,7 +306,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawVertices(
       long nativeCanvas,
       int mode,
@@ -337,7 +337,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         nativePaint);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawGlyphs(
       long nativeCanvas,
       int[] glyphIds,
@@ -358,7 +358,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawText(
       long nativeCanvas,
       char[] text,
@@ -372,7 +372,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         nativeCanvas, text, index, count, x, y, flags, nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawText(
       long nativeCanvas,
       String text,
@@ -415,7 +415,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         nativeCanvas, text, start, end, x, y, flags, nativePaint, nativeTypeface);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawTextRun(
       long nativeCanvas,
       String text,
@@ -435,7 +435,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
    * The signature of this method is the same from SDK levels O and above, but the last native
    * pointer changed from a Typeface pointer to a MeasuredParagraph pointer in P.
    */
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawTextRun(
       long nativeCanvas,
       char[] text,
@@ -504,7 +504,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         nativeTypeface);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawTextOnPath(
       long nativeCanvas,
       char[] text,
@@ -519,7 +519,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
         nativeCanvas, text, index, count, nativePath, hOffset, vOffset, bidiFlags, nativePaint);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nDrawTextOnPath(
       long nativeCanvas,
       String text,
@@ -577,7 +577,7 @@ public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
     BaseRecordingCanvasNatives.nPunchHole(renderer, left, top, right, bottom, rx, ry);
   }
 
-  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nPunchHole(
       long renderer,
       float left,

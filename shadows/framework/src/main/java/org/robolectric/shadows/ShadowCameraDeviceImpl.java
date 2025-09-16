@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
@@ -30,8 +32,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
-import org.robolectric.versioning.AndroidVersions.Baklava;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow class for {@link CameraDeviceImpl} */
 @Implements(value = CameraDeviceImpl.class, isInAndroidSdk = false)
@@ -39,7 +39,7 @@ public class ShadowCameraDeviceImpl {
   @RealObject private CameraDeviceImpl realObject;
   private boolean closed = false;
 
-  @Implementation(minSdk = V.SDK_INT, maxSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM, maxSdk = VANILLA_ICE_CREAM)
   protected void __constructor__(
       String cameraId,
       StateCallback callback,
@@ -74,7 +74,7 @@ public class ShadowCameraDeviceImpl {
         .setDeviceExecutor(MoreExecutors.directExecutor());
   }
 
-  @Implementation(minSdk = Baklava.SDK_INT)
+  @Implementation(minSdk = BAKLAVA)
   protected void __constructor__(
       String cameraId,
       StateCallback callback,

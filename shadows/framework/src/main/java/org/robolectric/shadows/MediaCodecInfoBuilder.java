@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.Q;
 import static java.util.Arrays.asList;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -22,7 +23,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 import org.robolectric.util.reflector.WithType;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Builder for {@link MediaCodecInfo}. */
 public class MediaCodecInfoBuilder {
@@ -366,7 +366,7 @@ public class MediaCodecInfoBuilder {
         caps.colorFormats = new int[0]; // To prevent crash in CodecCapabilities.dup().
       }
       CodecCapabilitiesReflector capsReflector = reflector(CodecCapabilitiesReflector.class, caps);
-      if (RuntimeEnvironment.getApiLevel() > Baklava.SDK_INT) {
+      if (RuntimeEnvironment.getApiLevel() > BAKLAVA) {
         // data has moved to an Impl class
         Object impl = capsReflector.getImpl();
         capsReflector = reflector(CodecCapabilitiesLegacyImplReflector.class, impl);
@@ -386,7 +386,7 @@ public class MediaCodecInfoBuilder {
         VideoCapabilities videoCaps = createDefaultVideoCapabilities(caps, mediaFormat);
         VideoCapabilitiesReflector videoCapsReflector =
             reflector(VideoCapabilitiesReflector.class, videoCaps);
-        if (RuntimeEnvironment.getApiLevel() > Baklava.SDK_INT) {
+        if (RuntimeEnvironment.getApiLevel() > BAKLAVA) {
           // data has moved to an Impl class
           Object impl = videoCapsReflector.getImpl();
           videoCapsReflector = reflector(VideoCapsLegacyImplReflector.class, impl);
@@ -437,7 +437,7 @@ public class MediaCodecInfoBuilder {
     /** Create a default {@link AudioCapabilities} for a given {@link MediaFormat}. */
     private static AudioCapabilities createDefaultAudioCapabilities(
         CodecCapabilities parent, MediaFormat mediaFormat) {
-      if (RuntimeEnvironment.getApiLevel() <= Baklava.SDK_INT) {
+      if (RuntimeEnvironment.getApiLevel() <= BAKLAVA) {
         return reflector(AudioCapabilitiesReflector.class).create(mediaFormat, parent);
       } else {
         Object impl = reflector(CodecCapabilitiesReflector.class, parent).getImpl();
@@ -448,7 +448,7 @@ public class MediaCodecInfoBuilder {
     /** Create a default {@link VideoCapabilities} for a given {@link MediaFormat}. */
     private static VideoCapabilities createDefaultVideoCapabilities(
         CodecCapabilities parent, MediaFormat mediaFormat) {
-      if (RuntimeEnvironment.getApiLevel() <= Baklava.SDK_INT) {
+      if (RuntimeEnvironment.getApiLevel() <= BAKLAVA) {
         return reflector(VideoCapabilitiesReflector.class).create(mediaFormat, parent);
       } else {
         Object impl = reflector(CodecCapabilitiesReflector.class, parent).getImpl();
@@ -459,7 +459,7 @@ public class MediaCodecInfoBuilder {
     /** Create a default {@link EncoderCapabilities} for a given {@link MediaFormat}. */
     private static EncoderCapabilities createDefaultEncoderCapabilities(
         CodecCapabilities parent, MediaFormat mediaFormat) {
-      if (RuntimeEnvironment.getApiLevel() <= Baklava.SDK_INT) {
+      if (RuntimeEnvironment.getApiLevel() <= BAKLAVA) {
         return reflector(EncoderCapabilitiesReflector.class).create(mediaFormat, parent);
       } else {
         Object impl = reflector(CodecCapabilitiesReflector.class, parent).getImpl();
@@ -505,7 +505,7 @@ public class MediaCodecInfoBuilder {
 
     private static Object[] getValidFeatures(CodecCapabilities parent) {
       Object[] validFeatures;
-      if (RuntimeEnvironment.getApiLevel() <= Baklava.SDK_INT) {
+      if (RuntimeEnvironment.getApiLevel() <= BAKLAVA) {
         validFeatures = ReflectionHelpers.callInstanceMethod(parent, "getValidFeatures");
       } else {
         Object impl = reflector(CodecCapabilitiesReflector.class, parent).getImpl();

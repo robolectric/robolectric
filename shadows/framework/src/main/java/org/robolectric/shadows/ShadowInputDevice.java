@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+
 import android.view.InputDevice;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
@@ -7,7 +9,6 @@ import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * @deprecated use {@link InputDeviceBuilder}.
@@ -22,7 +23,7 @@ public class ShadowInputDevice {
    */
   @Deprecated
   public static InputDevice makeInputDeviceNamed(String deviceName) {
-    if (RuntimeEnvironment.getApiLevel() >= U.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
       InputDevice.Builder builder = new InputDevice.Builder();
       builder.setName(deviceName);
       return builder.build();

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetManager;
@@ -21,11 +22,10 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.V;
 
 @Implements(
     value = AssetManager.class,
-    minSdk = V.SDK_INT,
+    minSdk = VANILLA_ICE_CREAM,
     callNativeMethodsByDefault = true,
     shadowPicker = ShadowAssetManager.Picker.class)
 public class ShadowNativeAssetManager extends ShadowAssetManager {

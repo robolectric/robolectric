@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.RemoteException;
@@ -10,10 +11,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Adds Robolectric support for UWB ranging. */
-@Implements(value = RangingManager.class, minSdk = Baklava.SDK_INT, isInAndroidSdk = false)
+@Implements(value = RangingManager.class, minSdk = BAKLAVA, isInAndroidSdk = false)
 public class ShadowRangingManager {
 
   @RealObject private RangingManager realRangingManager;

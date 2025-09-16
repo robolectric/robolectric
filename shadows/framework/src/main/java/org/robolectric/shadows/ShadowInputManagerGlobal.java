@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.hardware.input.InputManagerGlobal;
@@ -12,10 +13,9 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for new InputManagerGlobal introduced in android U. */
-@Implements(value = InputManagerGlobal.class, isInAndroidSdk = false, minSdk = U.SDK_INT)
+@Implements(value = InputManagerGlobal.class, isInAndroidSdk = false, minSdk = UPSIDE_DOWN_CAKE)
 public class ShadowInputManagerGlobal {
 
   @RealObject InputManagerGlobal realInputManager;

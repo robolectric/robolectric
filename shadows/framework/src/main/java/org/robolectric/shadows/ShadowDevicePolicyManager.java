@@ -13,6 +13,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
@@ -75,7 +76,6 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link DevicePolicyManager}. */
 @Implements(DevicePolicyManager.class)
@@ -1678,7 +1678,7 @@ public class ShadowDevicePolicyManager {
   }
 
   /** Return a stub value set by {@link #setDevicePolicyState(DevicePolicyState)} */
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected @ClassName("android.app.admin.DevicePolicyState") Object getDevicePolicyState() {
     return devicePolicyState;
   }

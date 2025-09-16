@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -32,7 +33,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Shadow for PixelCopy that uses View.draw to create screenshots. The real PixelCopy performs a
@@ -114,7 +114,7 @@ public class ShadowPixelCopy {
     alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
   }
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected static void request(
       @ClassName("android.view.PixelCopy$Request") Object requestObject,
       Executor callbackExecutor,
@@ -206,7 +206,10 @@ public class ShadowPixelCopy {
     return bitmap;
   }
 
-  @Implements(value = PixelCopy.Request.Builder.class, minSdk = U.SDK_INT, isInAndroidSdk = false)
+  @Implements(
+      value = PixelCopy.Request.Builder.class,
+      minSdk = UPSIDE_DOWN_CAKE,
+      isInAndroidSdk = false)
   public static class ShadowPixelCopyRequestBuilder {
 
     // TODO(brettchabot): remove once robolectric has proper support for initializing a Surface

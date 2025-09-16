@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -14,8 +16,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.Baklava;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link NativeAllocationRegistry} that is backed by native code */
 @Implements(
@@ -34,7 +34,7 @@ public class ShadowNativeAllocationRegistry {
    * classloader would be Robolectric's SandboxClassloader, but the value itself does not affect the
    * behavior of actual class.
    */
-  @Implementation(minSdk = Baklava.SDK_INT)
+  @Implementation(minSdk = BAKLAVA)
   protected void __constructor__(
       ClassLoader classLoader,
       Class<?> clazz,
@@ -72,7 +72,7 @@ public class ShadowNativeAllocationRegistry {
         != 0;
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void applyFreeFunction(long freeFunction, long nativePtr) {
     NativeAllocationRegistryNatives.applyFreeFunction(freeFunction, nativePtr);
   }

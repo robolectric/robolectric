@@ -1,10 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 
 import android.database.sqlite.SQLiteAbortException;
 import android.database.sqlite.SQLiteAccessPermException;
@@ -52,8 +54,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadows.util.SQLiteLibraryLoader;
 import org.robolectric.util.PerfStatsCollector;
-import org.robolectric.versioning.AndroidVersions.Baklava;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link android.database.sqlite.SQLiteConnection} that is backed by sqlite4java. */
 @Implements(value = android.database.sqlite.SQLiteConnection.class, isInAndroidSdk = false)
@@ -103,12 +103,12 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
     CONNECTIONS.reset();
   }
 
-  @Implementation(maxSdk = V.SDK_INT)
+  @Implementation(maxSdk = VANILLA_ICE_CREAM)
   protected static void nativeClose(long connectionPtr) {
     CONNECTIONS.close(connectionPtr);
   }
 
-  @Implementation(minSdk = Baklava.SDK_INT)
+  @Implementation(minSdk = BAKLAVA)
   protected static void nativeClose(long connectionPtr, boolean fast) {
     CONNECTIONS.close(connectionPtr);
   }

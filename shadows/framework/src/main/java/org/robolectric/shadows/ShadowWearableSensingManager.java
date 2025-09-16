@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static java.util.Objects.requireNonNull;
 
 import android.app.wearable.WearableSensingManager;
@@ -18,13 +20,11 @@ import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for VirtualDeviceManager. */
 @Implements(
     value = WearableSensingManager.class,
-    minSdk = U.SDK_INT,
+    minSdk = UPSIDE_DOWN_CAKE,
     // TODO: remove when minimum supported compileSdk is >= 34
     isInAndroidSdk = false)
 public class ShadowWearableSensingManager {
@@ -60,7 +60,7 @@ public class ShadowWearableSensingManager {
     executor.execute(() -> statusConsumer.accept(provideDataResult));
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected void startHotwordRecognition(
       @Nullable ComponentName targetVisComponentName,
       @Nonnull Executor executor,
@@ -70,7 +70,7 @@ public class ShadowWearableSensingManager {
     executor.execute(() -> statusConsumer.accept(startHotwordRecognitionResult));
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected void stopHotwordRecognition(
       @Nonnull Executor executor, @Nonnull @StatusCode Consumer<Integer> statusConsumer) {
     requireNonNull(executor);

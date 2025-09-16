@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.RequiresApi;
@@ -32,7 +33,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Robolectric shadow for SpeechRecognizer. */
 @Implements(SpeechRecognizer.class)
@@ -115,7 +115,7 @@ public class ShadowSpeechRecognizer {
     return getState().isRecognizerDestroyed;
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected void destroy() {
     getState().isRecognizerDestroyed = true;
     getDirectAccessors().destroy();
@@ -126,7 +126,7 @@ public class ShadowSpeechRecognizer {
     return getState().recognizerIntent;
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected void startListening(Intent recognizerIntent) {
     // Record the most recent requested intent.
     ShadowSpeechRecognizerState shadowState = getState();
@@ -154,7 +154,7 @@ public class ShadowSpeechRecognizer {
   }
 
   /** Handles changing the listener and allows access to the internal listener to trigger events. */
-  @Implementation(maxSdk = U.SDK_INT) // TODO(hoisie): Update this to support Android V
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): Update this to support Android V
   protected void handleChangeListener(RecognitionListener listener) {
     getState().recognitionListener = listener;
   }
@@ -184,7 +184,7 @@ public class ShadowSpeechRecognizer {
   }
 
   @RequiresApi(api = VERSION_CODES.TIRAMISU)
-  @Implementation(minSdk = VERSION_CODES.TIRAMISU, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected void checkRecognitionSupport(
       @Nonnull Intent recognizerIntent,
       @Nonnull Executor executor,
@@ -202,7 +202,7 @@ public class ShadowSpeechRecognizer {
     return getState().latestModelDownloadIntent;
   }
 
-  @Implementation(minSdk = VERSION_CODES.TIRAMISU, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected void triggerModelDownload(Intent recognizerIntent) {
     getState().latestModelDownloadIntent = recognizerIntent;
   }

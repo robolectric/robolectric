@@ -2,13 +2,13 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.graphics.ColorFilter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.ColorFilterNatives;
 import org.robolectric.shadows.ShadowNativeColorFilter.Picker;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link ColorFilter} that is backed by native code */
 @Implements(
@@ -18,7 +18,7 @@ import org.robolectric.versioning.AndroidVersions.U;
     callNativeMethodsByDefault = true)
 public class ShadowNativeColorFilter {
 
-  @Implementation(minSdk = O_MR1, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O_MR1, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeGetFinalizer() {
     return ColorFilterNatives.nativeGetFinalizer();
   }

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.RuntimeEnvironment.isMainThread;
@@ -27,7 +28,6 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /**
  * The shadow Looper implementation for {@link LooperMode.Mode#LEGACY}.
@@ -98,8 +98,7 @@ public class ShadowLegacyLooper extends ShadowLooper {
 
   @Implementation
   protected void __constructor__(boolean quitAllowed) {
-    checkState(
-        getApiLevel() <= Baklava.SDK_INT, "LEGACY LooperMode is not supported on SDKs > Baklava");
+    checkState(getApiLevel() <= BAKLAVA, "LEGACY LooperMode is not supported on SDKs > Baklava");
     invokeConstructor(Looper.class, realObject, from(boolean.class, quitAllowed));
     if (isMainThread()) {
       mainLooper = realObject;

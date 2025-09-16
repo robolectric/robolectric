@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -15,7 +16,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.CanvasNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Canvas} that is backed by native code */
 @Implements(
@@ -25,22 +25,22 @@ import org.robolectric.versioning.AndroidVersions.U;
     callNativeMethodsByDefault = true)
 public class ShadowNativeCanvas extends ShadowNativeBaseCanvas {
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nFreeCaches() {
     CanvasNatives.nFreeCaches();
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nFreeTextLayoutCaches() {
     CanvasNatives.nFreeTextLayoutCaches();
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nGetNativeFinalizer() {
     return CanvasNatives.nGetNativeFinalizer();
   }
 
-  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = P, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nSetCompatibilityVersion(int apiLevel) {
     CanvasNatives.nSetCompatibilityVersion(apiLevel);
   }
@@ -50,7 +50,7 @@ public class ShadowNativeCanvas extends ShadowNativeBaseCanvas {
     return nInitRaster(bitmap != null ? bitmap.getNativeInstance() : 0);
   }
 
-  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = Q, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nInitRaster(long bitmapHandle) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return CanvasNatives.nInitRaster(bitmapHandle);
@@ -61,37 +61,37 @@ public class ShadowNativeCanvas extends ShadowNativeBaseCanvas {
     CanvasNatives.nSetBitmap(canvasHandle, bitmap != null ? bitmap.getNativeInstance() : 0);
   }
 
-  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = Q, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nSetBitmap(long canvasHandle, long bitmapHandle) {
     CanvasNatives.nSetBitmap(canvasHandle, bitmapHandle);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static boolean nGetClipBounds(long nativeCanvas, Rect bounds) {
     return CanvasNatives.nGetClipBounds(nativeCanvas, bounds);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static boolean nIsOpaque(long canvasHandle) {
     return CanvasNatives.nIsOpaque(canvasHandle);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nGetWidth(long canvasHandle) {
     return CanvasNatives.nGetWidth(canvasHandle);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nGetHeight(long canvasHandle) {
     return CanvasNatives.nGetHeight(canvasHandle);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nSave(long canvasHandle, int saveFlags) {
     return CanvasNatives.nSave(canvasHandle, saveFlags);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nSaveLayer(
       long nativeCanvas, float l, float t, float r, float b, long nativePaint) {
     return CanvasNatives.nSaveLayer(nativeCanvas, l, t, r, b, nativePaint);
@@ -103,7 +103,7 @@ public class ShadowNativeCanvas extends ShadowNativeBaseCanvas {
     return nSaveLayer(nativeCanvas, l, t, r, b, nativePaint);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nSaveLayerAlpha(
       long nativeCanvas, float l, float t, float r, float b, int alpha) {
     return CanvasNatives.nSaveLayerAlpha(nativeCanvas, l, t, r, b, alpha);
@@ -115,88 +115,88 @@ public class ShadowNativeCanvas extends ShadowNativeBaseCanvas {
     return nSaveLayerAlpha(nativeCanvas, l, t, r, b, alpha);
   }
 
-  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = Q, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nSaveUnclippedLayer(long nativeCanvas, int l, int t, int r, int b) {
     return CanvasNatives.nSaveUnclippedLayer(nativeCanvas, l, t, r, b);
   }
 
-  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = Q, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nRestoreUnclippedLayer(long nativeCanvas, int saveCount, long nativePaint) {
     CanvasNatives.nRestoreUnclippedLayer(nativeCanvas, saveCount, nativePaint);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static boolean nRestore(long canvasHandle) {
     return CanvasNatives.nRestore(canvasHandle);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nRestoreToCount(long canvasHandle, int saveCount) {
     CanvasNatives.nRestoreToCount(canvasHandle, saveCount);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nGetSaveCount(long canvasHandle) {
     return CanvasNatives.nGetSaveCount(canvasHandle);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nTranslate(long canvasHandle, float dx, float dy) {
     CanvasNatives.nTranslate(canvasHandle, dx, dy);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nScale(long canvasHandle, float sx, float sy) {
     CanvasNatives.nScale(canvasHandle, sx, sy);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nRotate(long canvasHandle, float degrees) {
     CanvasNatives.nRotate(canvasHandle, degrees);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nSkew(long canvasHandle, float sx, float sy) {
     CanvasNatives.nSkew(canvasHandle, sx, sy);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nConcat(long nativeCanvas, long nativeMatrix) {
     CanvasNatives.nConcat(nativeCanvas, nativeMatrix);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nSetMatrix(long nativeCanvas, long nativeMatrix) {
     CanvasNatives.nSetMatrix(nativeCanvas, nativeMatrix);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static boolean nClipRect(
       long nativeCanvas, float left, float top, float right, float bottom, int regionOp) {
     return CanvasNatives.nClipRect(nativeCanvas, left, top, right, bottom, regionOp);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static boolean nClipPath(long nativeCanvas, long nativePath, int regionOp) {
     return CanvasNatives.nClipPath(nativeCanvas, nativePath, regionOp);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nSetDrawFilter(long nativeCanvas, long nativeFilter) {
     CanvasNatives.nSetDrawFilter(nativeCanvas, nativeFilter);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nGetMatrix(long nativeCanvas, long nativeMatrix) {
     CanvasNatives.nGetMatrix(nativeCanvas, nativeMatrix);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static boolean nQuickReject(long nativeCanvas, long nativePath) {
     return CanvasNatives.nQuickReject(nativeCanvas, nativePath);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static boolean nQuickReject(
       long nativeCanvas, float left, float top, float right, float bottom) {
     return CanvasNatives.nQuickReject(nativeCanvas, left, top, right, bottom);

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.graphics.CanvasProperty;
 import org.robolectric.annotation.Implementation;
@@ -8,7 +9,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.CanvasPropertyNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.shadows.ShadowNativeCanvasProperty.Picker;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link CanvasProperty} that is backed by native code */
 @Implements(
@@ -19,13 +19,13 @@ import org.robolectric.versioning.AndroidVersions.U;
     callNativeMethodsByDefault = true)
 public class ShadowNativeCanvasProperty<T> {
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nCreateFloat(float initialValue) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return CanvasPropertyNatives.nCreateFloat(initialValue);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nCreatePaint(long initialValuePaintPtr) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return CanvasPropertyNatives.nCreatePaint(initialValuePaintPtr);

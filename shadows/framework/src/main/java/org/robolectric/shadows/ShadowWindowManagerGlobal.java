@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -91,7 +92,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Shadow for {@link WindowManagerGlobal}. */
 @SuppressWarnings("unused") // Unused params are implementations of Android SDK methods.
@@ -996,7 +996,7 @@ public class ShadowWindowManagerGlobal {
                 Boolean.FALSE, // trigger back
                 edge, // swipe edge
                 null);
-      } else if (getApiLevel() <= Baklava.SDK_INT) {
+      } else if (getApiLevel() <= BAKLAVA) {
         return reflector(BackMotionEventReflector.class)
             .newBackMotionEventB(
                 touchX,

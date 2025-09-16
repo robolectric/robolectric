@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.base.Verify.verifyNotNull;
 
 import android.os.Trace;
@@ -19,7 +20,6 @@ import java.util.function.Supplier;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Shadow implementation for {@link Trace}, which stores the traces locally in arrays (unlike the
@@ -112,7 +112,7 @@ public class ShadowTrace {
     previousAsyncSections.add(section);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeGetEnabledTags() {
     return tags;
   }

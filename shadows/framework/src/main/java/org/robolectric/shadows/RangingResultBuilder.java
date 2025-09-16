@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.net.MacAddress;
@@ -13,7 +14,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /**
  * A builder for creating ShadowRangingResults. Status, macAddress, distance [mm] and timestamp are
@@ -96,7 +96,7 @@ public class RangingResultBuilder {
   }
 
   public RangingResult build() {
-    if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM) {
       Object builder;
       try {
         builder =

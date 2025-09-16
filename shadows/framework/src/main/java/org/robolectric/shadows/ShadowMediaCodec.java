@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
@@ -39,7 +40,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Implementation of {@link android.media.MediaCodec} which supports both asynchronous and
@@ -447,7 +447,7 @@ public class ShadowMediaCodec {
   @Implementation(maxSdk = TIRAMISU)
   protected void invalidateByteBuffer(@Nullable ByteBuffer[] buffers, int index) {}
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void invalidateByteBufferLocked(
       @Nullable ByteBuffer[] buffers, int index, boolean input) {}
 
@@ -455,14 +455,14 @@ public class ShadowMediaCodec {
   @Implementation(maxSdk = TIRAMISU)
   protected void validateInputByteBuffer(@Nullable ByteBuffer[] buffers, int index) {}
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void validateInputByteBufferLocked(@Nullable ByteBuffer[] buffers, int index) {}
 
   /** Prevents calling Android-only methods on basic ByteBuffer objects. */
   @Implementation(maxSdk = TIRAMISU)
   protected void revalidateByteBuffer(@Nullable ByteBuffer[] buffers, int index) {}
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void revalidateByteBuffer(@Nullable ByteBuffer[] buffers, int index, boolean input) {}
 
   /**
@@ -480,7 +480,7 @@ public class ShadowMediaCodec {
     }
   }
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void validateOutputByteBufferLocked(
       @Nullable ByteBuffer[] buffers, int index, @Nonnull BufferInfo info) {
     validateOutputByteBuffer(buffers, index, info);
@@ -490,14 +490,14 @@ public class ShadowMediaCodec {
   @Implementation(maxSdk = TIRAMISU)
   protected void invalidateByteBuffers(@Nullable ByteBuffer[] buffers) {}
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void invalidateByteBuffersLocked(@Nullable ByteBuffer[] buffers) {}
 
   /** Prevents attempting to free non-direct ByteBuffer objects. */
   @Implementation(maxSdk = TIRAMISU)
   protected void freeByteBuffer(@Nullable ByteBuffer buffer) {}
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void freeByteBufferLocked(@Nullable ByteBuffer buffer) {}
 
   /** Shadows CodecBuffer to prevent attempting to free non-direct ByteBuffer objects. */

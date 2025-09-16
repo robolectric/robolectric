@@ -1,11 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+
 import android.nfc.NfcFrameworkInitializer;
 import android.nfc.NfcServiceManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Shadow for new NfcFrameworkInitializer class in U.
@@ -14,7 +15,10 @@ import org.robolectric.versioning.AndroidVersions.U;
  * and besides seems wasteful to always do so. This shadow exists to lazy load the
  * NfcServiceManager.
  */
-@Implements(value = NfcFrameworkInitializer.class, isInAndroidSdk = false, minSdk = U.SDK_INT)
+@Implements(
+    value = NfcFrameworkInitializer.class,
+    isInAndroidSdk = false,
+    minSdk = UPSIDE_DOWN_CAKE)
 public class ShadowNfcFrameworkInitializer {
   private static NfcServiceManager nfcServiceManager = null;
 

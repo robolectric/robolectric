@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+
 import android.annotation.RequiresApi;
 import android.app.LocaleManager;
 import android.content.res.Configuration;
@@ -13,7 +15,6 @@ import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow of {@link LocaleManager} */
 @Implements(value = LocaleManager.class, minSdk = VERSION_CODES.TIRAMISU, isInAndroidSdk = false)
@@ -73,7 +74,7 @@ public class ShadowLocaleManager {
    * <p>Use this method in tests to substitute call for {@link
    * LocaleManager#setApplicationLocales(LocaleList)}.
    */
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void setApplicationLocales(
       String packageName, LocaleList locales, boolean fromDelegate) {
     setApplicationLocales(packageName, locales);
