@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
@@ -23,7 +24,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions;
 
 /** Test the shadow implementation of {@link CardEmulation}. */
 @RunWith(AndroidJUnit4.class)
@@ -177,7 +177,7 @@ public final class ShadowCardEmulationTest {
   }
 
   @Test
-  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  @Config(minSdk = BAKLAVA)
   public void registerNfcEventCallback_shouldRegisterNfcEventCallback() {
     CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
     cardEmulation.registerNfcEventCallback(executor, testCallback);
@@ -187,7 +187,7 @@ public final class ShadowCardEmulationTest {
   }
 
   @Test
-  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  @Config(minSdk = BAKLAVA)
   public void unregisterNfcEventCallback_shouldRegisterNfcEventCallback() {
     CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
     cardEmulation.registerNfcEventCallback(executor, testCallback);
@@ -199,7 +199,7 @@ public final class ShadowCardEmulationTest {
   }
 
   @Test
-  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  @Config(minSdk = BAKLAVA)
   public void triggerOnNfcStateChanged_shouldTriggerNfcEventCallbackListeners() {
     CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
     cardEmulation.registerNfcEventCallback(executor, testCallback);
@@ -210,7 +210,7 @@ public final class ShadowCardEmulationTest {
   }
 
   @Test
-  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  @Config(minSdk = BAKLAVA)
   public void triggerOnRemoteFieldChanged_shouldTriggerNfcEventCallbackListeners() {
     CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
     cardEmulation.registerNfcEventCallback(executor, testCallback);
@@ -221,7 +221,7 @@ public final class ShadowCardEmulationTest {
   }
 
   @Test
-  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  @Config(minSdk = BAKLAVA)
   public void triggerOnAidConflictOccurred_shouldTriggerNfcEventCallbackListeners() {
     CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
     cardEmulation.registerNfcEventCallback(executor, testCallback);
@@ -233,7 +233,7 @@ public final class ShadowCardEmulationTest {
   }
 
   @Test
-  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  @Config(minSdk = BAKLAVA)
   public void triggerOnAidNotRouted_shouldTriggerNfcEventCallbackListeners() {
     CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
     cardEmulation.registerNfcEventCallback(executor, testCallback);
@@ -245,7 +245,7 @@ public final class ShadowCardEmulationTest {
   }
 
   @Test
-  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  @Config(minSdk = BAKLAVA)
   public void triggerOnInternalErrorReported_shouldTriggerNfcEventCallbackListeners() {
     CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
     cardEmulation.registerNfcEventCallback(executor, testCallback);
@@ -257,7 +257,7 @@ public final class ShadowCardEmulationTest {
   }
 
   @Test
-  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  @Config(minSdk = BAKLAVA)
   public void triggerOnPreferredServiceChanged_shouldTriggerNfcEventCallbackListeners() {
     CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
     cardEmulation.registerNfcEventCallback(executor, testCallback);
@@ -268,7 +268,7 @@ public final class ShadowCardEmulationTest {
   }
 
   @Test
-  @Config(minSdk = AndroidVersions.Baklava.SDK_INT)
+  @Config(minSdk = BAKLAVA)
   public void triggerOnObserveModeStateChanged_shouldTriggerNfcEventCallbackListeners() {
     CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
     cardEmulation.registerNfcEventCallback(executor, testCallback);

@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.os.Looper;
 import android.view.Choreographer;
@@ -26,7 +27,6 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 import org.robolectric.util.reflector.WithType;
-import org.robolectric.versioning.AndroidVersions.PostBaklava;
 
 /**
  * The shadow API for {@link android.view.Choreographer}.
@@ -218,7 +218,7 @@ public abstract class ShadowChoreographer {
     }
   }
 
-  @Implementation(minSdk = PostBaklava.SDK_INT)
+  @Implementation(minSdk = POST_BAKLAVA)
   protected static long getDefaultFrameDelay() {
     // Uses 15ms to approximate 60fps.
     return Integer.getInteger("robolectric.defaultFrameDelayMs", 15);

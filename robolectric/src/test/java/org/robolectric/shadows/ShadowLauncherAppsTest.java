@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -57,7 +58,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions;
 
 /** Robolectric test for {@link ShadowLauncherApps}. */
 @RunWith(AndroidJUnit4.class)
@@ -445,7 +445,7 @@ public class ShadowLauncherAppsTest {
           ClassParameter.from(Context.class, ApplicationProvider.getApplicationContext()),
           ClassParameter.from(UserHandle.class, userHandle),
           ClassParameter.from(LauncherActivityInfoInternal.class, launcherActivityInfoInternal));
-    } else if (RuntimeEnvironment.getApiLevel() >= AndroidVersions.Baklava.SDK_INT) {
+    } else if (RuntimeEnvironment.getApiLevel() >= BAKLAVA) {
       boolean supportsMultiInstanceSystemUi = false;
       try {
         supportsMultiInstanceSystemUi =

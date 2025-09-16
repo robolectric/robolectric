@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
@@ -40,7 +41,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
-import org.robolectric.versioning.AndroidVersions.PostBaklava;
 
 /** Shadow class for {@link CameraManager} */
 @Implements(CameraManager.class)
@@ -152,7 +152,7 @@ public class ShadowCameraManager {
         cameraId, callback, executor, unusedClientUid, unusedOomScoreOffset);
   }
 
-  @Implementation(minSdk = PostBaklava.SDK_INT)
+  @Implementation(minSdk = POST_BAKLAVA)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId,
       CameraDevice.StateCallback callback,

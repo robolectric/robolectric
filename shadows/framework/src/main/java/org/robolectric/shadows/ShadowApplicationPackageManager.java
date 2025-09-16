@@ -35,6 +35,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.annotation.GetInstallerPackageNameMode.Mode.REALISTIC;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.Manifest.permission;
 import android.annotation.DrawableRes;
@@ -126,7 +127,6 @@ import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.PostBaklava;
 
 /** Shadow for {@link ApplicationPackageManager}. */
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false)
@@ -1862,7 +1862,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   /**
    * Behaves as {@link #resolveActivity(Intent, int)} and currently ignores userId and resolvedType
    */
-  @Implementation(minSdk = PostBaklava.SDK_INT)
+  @Implementation(minSdk = POST_BAKLAVA)
   protected ResolveInfo resolveActivityAsUser(
       Intent intent,
       String resolvedType,
