@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.S_V2;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.NativeAndroidInput.AINPUT_EVENT_TYPE_MOTION;
 import static org.robolectric.shadows.NativeAndroidInput.AINPUT_SOURCE_CLASS_JOYSTICK;
@@ -37,7 +38,6 @@ import java.util.List;
 import java.util.Optional;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.android.Ref;
-import org.robolectric.versioning.AndroidVersions;
 
 /**
  * Java representation of framework native input Transliterated from oreo-mr1 (SDK 27)
@@ -140,7 +140,7 @@ public class NativeInput {
       scaleAxisValue(this, AMOTION_EVENT_AXIS_TOUCH_MINOR, scaleFactor);
       scaleAxisValue(this, AMOTION_EVENT_AXIS_TOOL_MAJOR, scaleFactor);
       scaleAxisValue(this, AMOTION_EVENT_AXIS_TOOL_MINOR, scaleFactor);
-      if (RuntimeEnvironment.getApiLevel() >= AndroidVersions.Sv2.SDK_INT) {
+      if (RuntimeEnvironment.getApiLevel() >= S_V2) {
         scaleAxisValue(this, AMOTION_EVENT_AXIS_RELATIVE_X, scaleFactor);
         scaleAxisValue(this, AMOTION_EVENT_AXIS_RELATIVE_Y, scaleFactor);
       }
@@ -819,7 +819,7 @@ public class NativeInput {
         c.setAxisValue(AMOTION_EVENT_AXIS_X, x.get() - mXOffset);
         c.setAxisValue(AMOTION_EVENT_AXIS_Y, y.get() - mYOffset);
 
-        if (RuntimeEnvironment.getApiLevel() >= AndroidVersions.Sv2.SDK_INT) {
+        if (RuntimeEnvironment.getApiLevel() >= S_V2) {
           x.set(c.getAxisValue(AMOTION_EVENT_AXIS_RELATIVE_X));
           y.set(c.getAxisValue(AMOTION_EVENT_AXIS_RELATIVE_Y));
           transformWithoutTranslation(matrix, x.get(), y.get(), x, y);
@@ -998,7 +998,7 @@ public class NativeInput {
     private static boolean shouldDisregardTransformation(int source) {
       // From the ctesque test result, the offsetLocation is not supported by non pointer source
       // sources from Android 12L. So this method expects itself can work from Android 12L.
-      if (RuntimeEnvironment.getApiLevel() >= AndroidVersions.Sv2.SDK_INT) {
+      if (RuntimeEnvironment.getApiLevel() >= S_V2) {
         // See
         // https://cs.android.com/android/_/android/platform/frameworks/native/+/7e1ee565b3fe4738e6771bceb2e9679562232992.
         // Do not apply any transformations to axes from joysticks, touchpads, or relative mice.
