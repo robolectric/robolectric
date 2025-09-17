@@ -50,6 +50,7 @@ import android.os.Handler;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -1471,6 +1472,11 @@ public class ShadowDevicePolicyManager {
   protected int getPermissionPolicy(ComponentName admin) {
     enforceDeviceOwnerOrProfileOwner(admin);
     return permissionPolicy;
+  }
+
+  @Implementation(minSdk = M)
+  protected void setGlobalSetting(@NonNull ComponentName admin, String setting, String value) {
+    Settings.Global.putString(context.getContentResolver(), setting, value);
   }
 
   /**
