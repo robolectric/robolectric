@@ -21,6 +21,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
@@ -38,7 +39,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewConfiguration.class)
@@ -190,7 +190,7 @@ public class ShadowViewConfiguration {
 
   @Resetter
   public static void reset() {
-    if (AndroidVersions.CURRENT.getSdkInt() >= AndroidVersions.V.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM) {
       ViewConfiguration.resetCacheForTesting();
     } else {
       reflector(ViewConfigurationReflector.class).getStaticCache().clear();

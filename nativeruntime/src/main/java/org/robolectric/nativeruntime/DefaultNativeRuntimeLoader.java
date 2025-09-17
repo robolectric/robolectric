@@ -1,10 +1,16 @@
 package org.robolectric.nativeruntime;
 
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.base.StandardSystemProperty.OS_ARCH;
 import static com.google.common.base.StandardSystemProperty.OS_NAME;
 
 import android.database.CursorWindow;
 import android.graphics.Typeface;
+import android.os.Build;
+import android.os.Build.VERSION;
 import android.text.Hyphenator;
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
@@ -44,7 +50,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.inject.Injector;
-import org.robolectric.versioning.AndroidVersions;
 
 /** Loads the Robolectric native runtime. */
 @AutoService(NativeRuntimeLoader.class)
@@ -198,7 +203,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
               "loadNativeRuntime",
               () -> {
                 extractDirectory = new TempDirectory("nativeruntime");
-                if (AndroidVersions.CURRENT.getSdkInt() >= AndroidVersions.O.SDK_INT) {
+                if (VERSION.SDK_INT >= O) {
                   // Only copy fonts if graphics is supported, not just SQLite.
                   maybeCopyFonts(extractDirectory);
                   maybeCopyHyphenData(extractDirectory);
@@ -226,7 +231,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
                 } else {
                   System.setProperty("hyphen.data.dir", hyphenDataDir);
                 }
-                if (AndroidVersions.CURRENT.getSdkInt() >= AndroidVersions.P.SDK_INT) {
+                if (VERSION.SDK_INT >= P) {
                   Hyphenator.init();
                 }
               });
@@ -261,7 +266,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   private void maybeCopyIcuData(TempDirectory tempDirectory) throws IOException {
     URL icuDatUrl;
     try {
-      if (AndroidVersions.CURRENT.getSdkInt() <= AndroidVersions.U.SDK_INT) {
+      if (Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
         icuDatUrl = Resources.getResource("icu/icudt68l.dat");
       } else {
         List<String> resources = getResourcesInAndroidAll("icu/icudt");
@@ -277,7 +282,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
     }
     Path icuPath = tempDirectory.create("icu");
     Path icuDatPath;
-    if (AndroidVersions.CURRENT.getSdkInt() <= AndroidVersions.U.SDK_INT) {
+    if (VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
       icuDatPath = icuPath.resolve("icudt68l.dat");
     } else {
       List<String> parts = Splitter.on('/').splitToList(icuDatUrl.toString());
@@ -444,7 +449,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   }
 
   private static boolean isAndroidVOrGreater() {
-    return AndroidVersions.CURRENT.getSdkInt() >= AndroidVersions.V.SDK_INT;
+    return VERSION.SDK_INT >= VANILLA_ICE_CREAM;
   }
 
   /**
