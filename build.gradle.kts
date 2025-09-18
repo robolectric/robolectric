@@ -110,11 +110,12 @@ gradle.projectsEvaluated {
 
         noTimestamp(true)
         links(
-          "https://docs.oracle.com/javase/8/docs/api/",
+          "https://docs.oracle.com/en/java/javase/11/docs/api/",
           "https://developer.android.com/reference/",
         )
         // Set Javadoc source to JDK 8 to avoid unnamed module problem
-        // when running 'aggregateJavadocs' with OpenJDK 13+.
+        // when running 'aggregateJavadocs' with OpenJDK 13+, although
+        // the source/target version has changed to JDK11.
         source("8")
         header = headerHtml
         footer = headerHtml

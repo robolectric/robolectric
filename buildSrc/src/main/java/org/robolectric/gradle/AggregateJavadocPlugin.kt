@@ -32,7 +32,7 @@ class AggregateJavadocPlugin : Plugin<Project> {
 
           val javadocDirectory = rootProject.layout.buildDirectory.dir("docs/javadoc").get().asFile
 
-          setDestinationDir(javadocDirectory)
+          destinationDir = javadocDirectory
           classpath = rootProject.files(javadocTasks.map { it.classpath })
         }
       }
