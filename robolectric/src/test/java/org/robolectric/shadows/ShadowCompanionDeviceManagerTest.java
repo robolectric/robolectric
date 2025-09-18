@@ -156,6 +156,7 @@ public class ShadowCompanionDeviceManagerTest {
     assertThat(companionDeviceManager.getAssociations()).isEmpty();
     shadowCompanionDeviceManager.addAssociation(info);
     assertThat(companionDeviceManager.getMyAssociations()).contains(expectedInfo);
+    assertThat(companionDeviceManager.getAllAssociations()).contains(expectedInfo);
   }
 
   @Test
@@ -213,6 +214,7 @@ public class ShadowCompanionDeviceManagerTest {
     assertThat(companionDeviceManager.getAssociations()).isEmpty();
     shadowCompanionDeviceManager.addAssociation(info);
     assertThat(companionDeviceManager.getMyAssociations()).contains(info);
+    assertThat(companionDeviceManager.getAllAssociations()).contains(info);
   }
 
   @Test
@@ -230,6 +232,7 @@ public class ShadowCompanionDeviceManagerTest {
     companionDeviceManager.disassociate(1);
     assertThat(companionDeviceManager.getAssociations()).isEmpty();
     assertThat(companionDeviceManager.getMyAssociations()).isEmpty();
+    assertThat(companionDeviceManager.getAllAssociations()).isEmpty();
   }
 
   @Test
