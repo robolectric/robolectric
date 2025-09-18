@@ -253,6 +253,15 @@ public class ShadowCompanionDeviceManager {
 
   @Implementation(minSdk = VERSION_CODES.TIRAMISU)
   protected List<AssociationInfo> getMyAssociations() {
+    return getAssociationInfos();
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected List<AssociationInfo> getAllAssociations() {
+    return getAssociationInfos();
+  }
+
+  private List<AssociationInfo> getAssociationInfos() {
     return this.associations.stream()
         .map(this::createAssociationInfo)
         .collect(toCollection(ArrayList::new));
