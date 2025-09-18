@@ -78,11 +78,11 @@ jobs:
       - name: Run :preinstrumented:instrumentAll
         run: ./gradlew :preinstrumented:instrumentAll
 
-      - name: Run :preinstrumented:instrumentAll with SDK 33
-        run: PREINSTRUMENTED_SDK_VERSIONS=33 ./gradlew :preinstrumented:instrumentAll
+      - name: Run :preinstrumented:instrumentAll with SDK 36
+        run: PREINSTRUMENTED_SDK_VERSIONS=36 ./gradlew :preinstrumented:instrumentAll
 
-      - name: Run :preinstrumented:publishToMavenLocal with SDK 33
-        run: PREINSTRUMENTED_SDK_VERSIONS=33 PUBLISH_PREINSTRUMENTED_JARS=true ./gradlew :preinstrumented:publishToMavenLocal
+      - name: Run :preinstrumented:publishToMavenLocal with SDK 36
+        run: PREINSTRUMENTED_SDK_VERSIONS=36 PUBLISH_PREINSTRUMENTED_JARS=true ./gradlew :preinstrumented:publishToMavenLocal
 
   run_publishToMavenLocal:
     runs-on: ubuntu-latest
