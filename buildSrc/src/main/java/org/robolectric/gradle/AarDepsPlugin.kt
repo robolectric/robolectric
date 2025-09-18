@@ -32,7 +32,11 @@ class AarDepsPlugin : Plugin<Project> {
       configurations.forEach { configuration ->
         // I suspect we're meant to use the org.gradle.usage attribute, but this works.
         if (configuration.name.endsWith("Classpath")) {
-          configuration.attributes { attribute(ARTIFACT_TYPE_ATTRIBUTE, EXT_JAR) }
+          // We should skip swift related classpath as Kotlin from some versions started
+          // to support it to avoid configuration method calling issue.
+          if (!configuration.name.contains("swift")) {
+            configuration.attributes { attribute(ARTIFACT_TYPE_ATTRIBUTE, EXT_JAR) }
+          }
         }
       }
     }
