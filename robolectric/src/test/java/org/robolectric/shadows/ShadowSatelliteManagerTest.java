@@ -182,6 +182,63 @@ public class ShadowSatelliteManagerTest {
     return isSupported.get();
   }
 
+  @Test
+  public void requestIsCommunicationAllowedForCurrentLocation_returnsFalseByDefault()
+      throws Exception {
+    assertThat(requestIsCommunicationAllowedForCurrentLocation()).isFalse();
+  }
+
+  @Test
+  public void requestIsCommunicationAllowedForCurrentLocation_whenSetToTrue_returnsTrue()
+      throws Exception {
+    getShadowSatelliteManager().setIsCommunicationAllowedForCurrentLocation(true, null);
+
+    assertThat(requestIsCommunicationAllowedForCurrentLocation()).isTrue();
+  }
+
+  @Test
+  public void requestIsCommunicationAllowedForCurrentLocation_whenSetToFalse_returnsFalse()
+      throws Exception {
+    getShadowSatelliteManager().setIsCommunicationAllowedForCurrentLocation(false, null);
+
+    assertThat(requestIsCommunicationAllowedForCurrentLocation()).isFalse();
+  }
+
+  @Test
+  public void requestIsCommunicationAllowedForCurrentLocation_whenSetToError_throws()
+      throws Exception {
+    getShadowSatelliteManager()
+        .setIsCommunicationAllowedForCurrentLocation(true, new SatelliteException(123));
+
+    assertThrows(Exception.class, this::requestIsCommunicationAllowedForCurrentLocation);
+  }
+
+  private boolean requestIsCommunicationAllowedForCurrentLocation() throws Exception {
+    AtomicBoolean isCommunicationAllowedForCurrentLocation = new AtomicBoolean(false);
+    // Declared as Exception to work around NoClassDefFoundError relating to SatelliteException's
+    // definition being flagged.
+    AtomicReference<Exception> error = new AtomicReference<>();
+    OutcomeReceiver<Boolean, SatelliteException> callback =
+        new OutcomeReceiver<Boolean, SatelliteException>() {
+          @Override
+          public void onResult(Boolean result) {
+            isCommunicationAllowedForCurrentLocation.set(result);
+          }
+
+          @Override
+          public void onError(SatelliteException e) {
+            error.set(e); // Still receives SatelliteException, but stored as Exception
+          }
+        };
+
+    getShadowSatelliteManager()
+        .requestIsCommunicationAllowedForCurrentLocation(directExecutor(), callback);
+    if (error.get() != null) {
+      throw error.get();
+    }
+    return isCommunicationAllowedForCurrentLocation.get();
+  }
+
   private ShadowSatelliteManager getShadowSatelliteManager() {
     return Shadow.extract(context.getSystemService(SatelliteManager.class));
   }
