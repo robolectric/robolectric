@@ -7,7 +7,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ShadowPausedLooper.shadowMsg;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.os.Looper;
 import android.os.Message;
@@ -22,7 +21,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.NativeObjRegistry;
@@ -32,7 +30,6 @@ import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.Static;
 
 /**
  * The shadow {@link} MessageQueue} for {@link LooperMode.Mode#PAUSED}
@@ -82,20 +79,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
           updateListener();
         };
     ShadowPausedSystemClock.addStaticListener(clockListener);
-  }
-
-  /**
-   * This is temporary method intended to be used for Robolectric's own unit tests to force
-   * concurrent MessageQueue in the indevelopment Android SDK
-   */
-  @Implementation(minSdk = POST_BAKLAVA)
-  @InDevelopment
-  protected static boolean computeUseConcurrent() {
-    String overrideprop = System.getProperty("robolectric.overrideUseConcurrentMessageQueue");
-    if (overrideprop != null) {
-      return Boolean.parseBoolean(overrideprop);
-    }
-    return reflector(MessageQueueReflector.class).computeUseConcurrent();
   }
 
   @Implementation
@@ -426,10 +409,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
     @Direct
     Message peekLastMessageForTest();
-
-    @Direct
-    @Static
-    boolean computeUseConcurrent();
 
     @Direct
     void removeSyncBarrier(int token);
