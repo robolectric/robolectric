@@ -1101,25 +1101,19 @@ public class ResTable {
 
       } else if (ctype == RES_TABLE_LIBRARY_TYPE) {
         if (group.dynamicRefTable.entries().isEmpty()) {
-          throw new UnsupportedOperationException("libraries not supported yet");
-          //       const ResTable_lib_header* lib = (const ResTable_lib_header*) chunk;
-          //       status_t err = validate_chunk(&lib->header, sizeof(*lib),
-          //       endPos, "ResTable_lib_header");
-          //       if (err != NO_ERROR) {
-          //         return (mError=err);
-          //       }
-          //
-          //       err = group->dynamicRefTable.load(lib);
-          //       if (err != NO_ERROR) {
-          //          return (mError=err);
-          //        }
-          //
-          //        // Fill in the reference table with the entries we already know about.
-          //        size_t N = mPackageGroups.size();
-          //        for (size_t i = 0; i < N; i++) {
-          //          group.dynamicRefTable.addMapping(mPackageGroups[i].name,
-          // mPackageGroups[i].id);
-          //        }
+          final ResourceTypes.ResTable_lib_header lib = new ResourceTypes.ResTable_lib_header(chunk.myBuf(), chunk.myOffset());
+          err = validate_chunk(lib.header, ResourceTypes.ResTable_lib_header.SIZEOF, endPos, "ResTable_lib_header");
+          if (err != NO_ERROR) {
+            return (mError = err);
+          }
+          err = group.dynamicRefTable.load(lib);
+          if (err != NO_ERROR) {
+            return (mError = err);
+          }
+          // Fill in the reference table with the entries we already know about.
+          for (PackageGroup packageGroup : mPackageGroups.values()) {
+            group.dynamicRefTable.addMapping(packageGroup.name, (byte) packageGroup.id);
+          }
         } else {
           ALOGW("Found multiple library tables, ignoring...");
         }
