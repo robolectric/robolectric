@@ -36,6 +36,9 @@ public class ShadowSatelliteManager {
   private static final FakeTelephony fakeTelephony = new FakeTelephony();
   private final AtomicBoolean isSupported = new AtomicBoolean(false);
   private final AtomicReference<SatelliteException> isSupportedError = new AtomicReference<>();
+  private final AtomicBoolean isCommunicationAllowedForCurrentLocation = new AtomicBoolean(false);
+  private final AtomicReference<SatelliteException> isCommunicationAllowedForCurrentLocationError =
+      new AtomicReference<>();
 
   /** Updates the current state of the satellite modem, and notifies all listeners. */
   public void triggerSatelliteModemStateChange(int state) throws RemoteException {
@@ -69,6 +72,33 @@ public class ShadowSatelliteManager {
             callback.onError(isSupportedError.get());
           } else {
             callback.onResult(isSupported.get());
+          }
+        });
+  }
+
+  /**
+   * Sets the result of {@link SatelliteManager#requestIsCommunicationAllowedForCurrentLocation}
+   * calls.
+   *
+   * <p>Accepts both the boolean result indicating whether satellite is allowed or not, and an
+   * optional error which will be returned instead, when non-null.
+   */
+  public void setIsCommunicationAllowedForCurrentLocation(
+      boolean newValue, @Nullable SatelliteException error) {
+    isCommunicationAllowedForCurrentLocation.set(newValue);
+    isCommunicationAllowedForCurrentLocationError.set(error);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
+  protected void requestIsCommunicationAllowedForCurrentLocation(
+      @NonNull @CallbackExecutor Executor executor,
+      @NonNull OutcomeReceiver<Boolean, SatelliteException> callback) {
+    executor.execute(
+        () -> {
+          if (isCommunicationAllowedForCurrentLocationError.get() != null) {
+            callback.onError(isCommunicationAllowedForCurrentLocationError.get());
+          } else {
+            callback.onResult(isCommunicationAllowedForCurrentLocation.get());
           }
         });
   }
