@@ -32,15 +32,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPausedLooper;
 import org.robolectric.shadows.ShadowUiAutomation;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 /** A {@link UiController} that runs on a local JVM with Robolectric. */
 public class LocalUiController implements UiController {
@@ -49,15 +48,16 @@ public class LocalUiController implements UiController {
 
   private static long idlingResourceErrorTimeoutMs = SECONDS.toMillis(26);
   private final HashSet<IdlingResourceProxyImpl> syncedIdlingResources = new HashSet<>();
-  private final ExecutorService looperIdlingExecutor = Executors.newCachedThreadPool(new ThreadFactory() {
-    private final AtomicInteger count = new AtomicInteger(1);
+  private final ExecutorService looperIdlingExecutor =
+      Executors.newCachedThreadPool(
+          new ThreadFactory() {
+            private final AtomicInteger count = new AtomicInteger(1);
 
-    @Override
-    public Thread newThread(Runnable r) {
-        return new Thread(r, "LocalUiController-" + count.getAndIncrement());
-    }
-});
-
+            @Override
+            public Thread newThread(Runnable r) {
+              return new Thread(r, "LocalUiController-" + count.getAndIncrement());
+            }
+          });
 
   /**
    * Sets the error timeout for idling resources.
