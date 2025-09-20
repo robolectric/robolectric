@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -36,15 +37,15 @@ import org.robolectric.versioning.AndroidVersions.Baklava;
 @Implements(value = CompanionDeviceManager.class, minSdk = VERSION_CODES.O)
 public class ShadowCompanionDeviceManager {
 
-  private final Set<RoboAssociationInfo> associations = new HashSet<>();
-  private final Set<ComponentName> hasNotificationAccess = new HashSet<>();
-  private final Set<Integer> specifiedRemovableIds = new HashSet<>();
-  private int lastRemoveBondAssociationId = -1;
-  private ComponentName lastRequestedNotificationAccess;
-  private AssociationRequest lastAssociationRequest;
-  private MacAddress lastSystemApiAssociationMacAddress;
-  private CompanionDeviceManager.Callback lastAssociationCallback;
-  private String lastObservingDevicePresenceDeviceAddress;
+  private static final Set<RoboAssociationInfo> associations = new HashSet<>();
+  private static final Set<ComponentName> hasNotificationAccess = new HashSet<>();
+  private static final Set<Integer> specifiedRemovableIds = new HashSet<>();
+  private static int lastRemoveBondAssociationId = -1;
+  private static ComponentName lastRequestedNotificationAccess;
+  private static AssociationRequest lastAssociationRequest;
+  private static MacAddress lastSystemApiAssociationMacAddress;
+  private static CompanionDeviceManager.Callback lastAssociationCallback;
+  private static String lastObservingDevicePresenceDeviceAddress;
 
   private static final int DEFAULT_SYSTEMDATASYNCFLAGS = -1;
 
@@ -339,6 +340,18 @@ public class ShadowCompanionDeviceManager {
     return shadowInstrumentation.checkPermission(
             permission, android.os.Process.myPid(), android.os.Process.myUid())
         == PERMISSION_GRANTED;
+  }
+
+  @Resetter
+  public static void reset() {
+    associations.clear();
+    hasNotificationAccess.clear();
+    specifiedRemovableIds.clear();
+    lastRequestedNotificationAccess = null;
+    lastAssociationRequest = null;
+    lastSystemApiAssociationMacAddress = null;
+    lastAssociationCallback = null;
+    lastObservingDevicePresenceDeviceAddress = null;
   }
 
   /**
