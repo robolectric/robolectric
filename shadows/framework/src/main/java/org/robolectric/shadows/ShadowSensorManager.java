@@ -155,7 +155,6 @@ public class ShadowSensorManager {
   }
 
   /** Propagates the {@code event} to only registered listeners of the given sensor. */
-  @SuppressWarnings("JdkCollectors") // toImmutableList is only supported in Java 8+.
   public void sendSensorEventToListeners(SensorEvent event, Sensor sensor) {
     List<SensorEventListener> listenersRegisteredToSensor =
         listeners.entries().stream()
