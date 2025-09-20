@@ -132,7 +132,6 @@ public class SdkStore {
    * @return a list of sdk_int's to jar locations as a string, one tuple per line.
    */
   @Override
-  @SuppressWarnings("JdkCollectors")
   public String toString() {
     loadSdksOnce();
     StringBuilder builder = new StringBuilder();
