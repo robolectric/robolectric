@@ -48,21 +48,6 @@ public class ShadowSensorManager {
     forceListenersToFail.set(false);
   }
 
-  /**
-   * Provide a Sensor for the indicated sensor type.
-   *
-   * @param sensorType from Sensor constants
-   * @param sensor Sensor instance
-   * @deprecated Use {@link ShadowSensor#newInstance(int)} to construct your {@link Sensor} and add
-   *     to the {@link SensorManager} using {@link #addSensor(Sensor)} instead. This method will be
-   *     removed at some point allowing us to use more of the real {@link SensorManager} code.
-   */
-  @Deprecated
-  public void addSensor(int sensorType, Sensor sensor) {
-    requireNonNull(sensor);
-    sensorMap.put(sensorType, sensor);
-  }
-
   /** Adds a {@link Sensor} to the {@link SensorManager} */
   public void addSensor(Sensor sensor) {
     requireNonNull(sensor);
@@ -202,59 +187,6 @@ public class ShadowSensorManager {
               }
             });
     return listeners.containsKey(listener);
-  }
-
-  /**
-   * @deprecated Use {@code {@link SensorEventBuilder#newBuilder()}} instead.
-   */
-  @Deprecated
-  public SensorEvent createSensorEvent() {
-    return ReflectionHelpers.callConstructor(SensorEvent.class);
-  }
-
-  /**
-   * Creates a {@link SensorEvent} with the given value array size, which the caller should set
-   * based on the type of {@link Sensor} which is being emulated.
-   *
-   * <p>Callers can then specify individual values for the event. For example, for a proximity event
-   * a caller may wish to specify the distance value:
-   *
-   * <pre>{@code
-   * event.values[0] = distance;
-   * }</pre>
-   *
-   * <p>See {@link SensorEvent#values} for more information about values.
-   *
-   * @deprecated Use {@code {@link SensorEventBuilder#newBuilder()}} instead.
-   */
-  @Deprecated
-  public static SensorEvent createSensorEvent(int valueArraySize) {
-    return createSensorEvent(valueArraySize, Sensor.TYPE_GRAVITY);
-  }
-
-  /**
-   * Creates a {@link SensorEvent} for the given {@link Sensor} type with the given value array
-   * size, which the caller should set based on the type of sensor which is being emulated.
-   *
-   * <p>Callers can then specify individual values for the event. For example, for a proximity event
-   * a caller may wish to specify the distance value:
-   *
-   * <pre>{@code
-   * event.values[0] = distance;
-   * }</pre>
-   *
-   * <p>See {@link SensorEvent#values} for more information about values.
-   *
-   * @deprecated Use {@code {@link SensorEventBuilder#newBuilder()}} instead.
-   */
-  @Deprecated
-  public static SensorEvent createSensorEvent(int valueArraySize, int sensorType) {
-    checkArgument(valueArraySize > 0);
-    ClassParameter<Integer> valueArraySizeParam = new ClassParameter<>(int.class, valueArraySize);
-    SensorEvent sensorEvent =
-        ReflectionHelpers.callConstructor(SensorEvent.class, valueArraySizeParam);
-    sensorEvent.sensor = ShadowSensor.newInstance(sensorType);
-    return sensorEvent;
   }
 
   @Implementation(minSdk = O)
