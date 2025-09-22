@@ -30,7 +30,7 @@ android {
 dependencies {
   // Testing dependencies
   testImplementation(project(":robolectric"))
-  testImplementation("com.google.testparameterinjector:test-parameter-injector:1.19@jar")
+  testImplementation(variantOf(libs.test.parameter.injector) { artifactType("jar") })
   testImplementation(libs.findbugs.jsr305)
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
