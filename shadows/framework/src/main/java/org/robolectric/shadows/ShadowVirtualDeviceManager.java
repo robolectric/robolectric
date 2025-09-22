@@ -49,6 +49,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
@@ -59,11 +60,13 @@ public class ShadowVirtualDeviceManager {
   private static final List<VirtualDeviceManager.VirtualDevice> mVirtualDevices = new ArrayList<>();
   private Context context;
   private static IVirtualDeviceManager service;
+  @RealObject VirtualDeviceManager realObject;
 
   @Implementation
   protected void __constructor__(IVirtualDeviceManager service, Context context) {
     this.context = context;
     ShadowVirtualDeviceManager.service = service;
+    reflector(VirtualDeviceManagerReflector.class, realObject).__constructor__(service, context);
   }
 
   @Implementation
@@ -77,6 +80,7 @@ public class ShadowVirtualDeviceManager {
             ClassParameter.from(int.class, associationId),
             ClassParameter.from(VirtualDeviceParams.class, params));
     mVirtualDevices.add(device);
+    maybeNotifyVirtualDeviceListeners(context, device.getDeviceId(), /* isClosing= */ false);
     return device;
   }
 
@@ -195,10 +199,11 @@ public class ShadowVirtualDeviceManager {
       return persistentDeviceId;
     }
 
-    /** Prevents a NPE when calling .close() on a VirtualDevice in unit tests. */
     @Implementation
     protected void close() {
       isClosed.set(true);
+      mVirtualDevices.remove(realVirtualDevice);
+      maybeNotifyVirtualDeviceListeners(context, deviceId, /* isClosing= */ true);
     }
 
     public int[] getDisplayIds() {
@@ -397,6 +402,24 @@ public class ShadowVirtualDeviceManager {
     }
   }
 
+  private static void maybeNotifyVirtualDeviceListeners(
+      Context context, int deviceId, boolean isClosing) {
+    if (RuntimeEnvironment.getApiLevel() > UPSIDE_DOWN_CAKE) {
+      VirtualDeviceManager vdm = context.getSystemService(VirtualDeviceManager.class);
+      List<?> listeners =
+          reflector(VirtualDeviceManagerReflector.class, vdm).getVirtualDeviceListeners();
+      for (Object listener : listeners) {
+        if (isClosing) {
+          reflector(VirtualDeviceListenerDelegateReflector.class, listener)
+              .onVirtualDeviceClosed(deviceId);
+        } else {
+          reflector(VirtualDeviceListenerDelegateReflector.class, listener)
+              .onVirtualDeviceCreated(deviceId);
+        }
+      }
+    }
+  }
+
   @ForType(
       className =
           "android.companion.virtual.VirtualDeviceParams$Builder$VirtualSensorCallbackDelegate")
@@ -466,6 +489,25 @@ public class ShadowVirtualDeviceManager {
   @ForType(VirtualDeviceManager.VirtualDevice.class)
   private interface DeviceManagerVirtualDeviceReflector {
     String getPersistentDeviceId();
+  }
+
+  @ForType(VirtualDeviceManager.class)
+  private interface VirtualDeviceManagerReflector {
+
+    @Direct
+    void __constructor__(IVirtualDeviceManager service, Context context);
+
+    @Accessor("mVirtualDeviceListeners")
+    List<?> getVirtualDeviceListeners();
+  }
+
+  @ForType(
+      className = "android.companion.virtual.VirtualDeviceManager$VirtualDeviceListenerDelegate")
+  private interface VirtualDeviceListenerDelegateReflector {
+
+    void onVirtualDeviceCreated(int deviceId);
+
+    void onVirtualDeviceClosed(int deviceId);
   }
 
   private interface VirtualDeviceDelagate {

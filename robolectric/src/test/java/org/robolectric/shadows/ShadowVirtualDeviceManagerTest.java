@@ -15,6 +15,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
+import android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.camera.VirtualCamera;
 import android.companion.virtual.camera.VirtualCameraCallback;
@@ -93,12 +94,29 @@ public class ShadowVirtualDeviceManagerTest {
   @Test
   public void testCreateVirtualDevice() {
     assertThat(virtualDeviceManager.getVirtualDevices()).isEmpty();
-    try (VirtualDevice ignored =
+    try (VirtualDevice unused =
         virtualDeviceManager.createVirtualDevice(
             0, new VirtualDeviceParams.Builder().setName("foo").build())) {
       assertThat(virtualDeviceManager.getVirtualDevices()).hasSize(1);
       assertThat(virtualDeviceManager.getVirtualDevices().get(0).getName()).isEqualTo("foo");
     }
+    // When device is closed, it's removed from the list.
+    assertThat(virtualDeviceManager.getVirtualDevices()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testRegisterVirtualDeviceListener() {
+    VirtualDeviceListener listener = mock(VirtualDeviceListener.class);
+    virtualDeviceManager.registerVirtualDeviceListener(MoreExecutors.directExecutor(), listener);
+
+    try (VirtualDevice unused =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      verify(listener).onVirtualDeviceCreated(1);
+    }
+    // When device is closed, listener is notified.
+    verify(listener).onVirtualDeviceClosed(1);
   }
 
   @Test
