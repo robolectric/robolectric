@@ -709,7 +709,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           iterator.remove();
         }
       }
-      Collections.sort(result, new ResolveInfoComparator());
+      result.sort(new ResolveInfoComparator());
       return result;
     }
   }
