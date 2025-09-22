@@ -52,7 +52,7 @@ auto-service = "1.1.1"
 auto-value = "1.11.0"
 
 # https://github.com/google/compile-testing/releases
-compile-testing = "0.22.0"
+compile-testing = "0.23.0"
 
 # https://github.com/google/guava/releases
 guava-jre = "33.4.8-jre"
