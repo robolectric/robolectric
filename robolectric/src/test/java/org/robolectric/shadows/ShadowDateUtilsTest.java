@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.app.Application;
 import android.os.SystemClock;
@@ -15,7 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.LooperMode;
 import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
@@ -52,7 +50,6 @@ public class ShadowDateUtilsTest {
   }
 
   @Test
-  @LooperMode(LEGACY)
   @Config(maxSdk = Baklava.SDK_INT)
   public void isToday_shouldReturnFalseForNotToday() {
     long today = java.util.Calendar.getInstance().getTimeInMillis();
