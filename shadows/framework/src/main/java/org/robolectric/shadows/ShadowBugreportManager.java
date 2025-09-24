@@ -26,6 +26,7 @@ public class ShadowBugreportManager {
 
   @Nullable private ParcelFileDescriptor bugreportFd;
   @Nullable private ParcelFileDescriptor screenshotFd;
+  @Nullable private BugreportParams params;
   @Nullable private Executor executor;
   @Nullable private BugreportCallback callback;
   private boolean bugreportRequested;
@@ -51,6 +52,7 @@ public class ShadowBugreportManager {
     } else {
       this.bugreportFd = bugreportFd;
       this.screenshotFd = screenshotFd;
+      this.params = params;
       this.executor = executor;
       this.callback = callback;
     }
@@ -182,6 +184,12 @@ public class ShadowBugreportManager {
     return screenshotFd;
   }
 
+  /** Returns the params if set with {@code startBugreport}, else null. */
+  @Nullable
+  public BugreportParams getParams() {
+    return params;
+  }
+
   private void resetParams() {
     try {
       if (bugreportFd != null) {
@@ -195,6 +203,7 @@ public class ShadowBugreportManager {
     }
     bugreportFd = null;
     screenshotFd = null;
+    params = null;
     executor = null;
     callback = null;
     bugreportRequested = false;
