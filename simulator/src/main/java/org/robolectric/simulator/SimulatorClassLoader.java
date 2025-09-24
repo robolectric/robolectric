@@ -64,6 +64,14 @@ public class SimulatorClassLoader extends AndroidSandbox.SdkSandboxClassLoader {
     return Collections.enumeration(urls);
   }
 
+  @Override
+  protected URL getResourceUrl(String name) {
+    if (extraClassLoader.getResource(name) != null) {
+      return extraClassLoader.getResource(name);
+    }
+    return super.getResourceUrl(name);
+  }
+
   /** Encapsulates a collection of Jar files. */
   public static class JarCollection {
 

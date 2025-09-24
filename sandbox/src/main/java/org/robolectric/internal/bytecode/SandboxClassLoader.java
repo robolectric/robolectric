@@ -118,7 +118,7 @@ public class SandboxClassLoader extends URLClassLoader {
     return getResourceUrl(name);
   }
 
-  private URL getResourceUrl(String name) {
+  protected URL getResourceUrl(String name) {
     URL result = resourceProvider.getResource(name);
     if (LOG_RESOURCE_USAGE && result != null) {
       PerfStatsCollector.getInstance().incrementCount("SandboxClassLoader.getResource " + name);
