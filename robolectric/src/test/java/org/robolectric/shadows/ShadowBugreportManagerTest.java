@@ -78,16 +78,18 @@ public final class ShadowBugreportManagerTest {
   @Test
   public void startBugreport() throws Exception {
     BugreportCallback callback = mock(BugreportCallback.class);
+    BugreportParams params = new BugreportParams(BugreportParams.BUGREPORT_MODE_FULL);
     shadowBugreportManager.startBugreport(
         createWriteFile("bugreport"),
         createWriteFile("screenshot"),
-        new BugreportParams(BugreportParams.BUGREPORT_MODE_FULL),
+        params,
         directExecutor(),
         callback);
     shadowMainLooper().idle();
 
     assertThat(shadowBugreportManager.isBugreportInProgress()).isTrue();
     assertThat(shadowBugreportManager.getScreenshotFd()).isNotNull();
+    assertThat(shadowBugreportManager.getParams()).isEqualTo(params);
     verify(callback, never()).onFinished();
     verify(callback, never()).onError(anyInt());
   }
