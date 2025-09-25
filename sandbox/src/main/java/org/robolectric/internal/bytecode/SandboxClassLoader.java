@@ -136,7 +136,20 @@ public class SandboxClassLoader extends URLClassLoader {
       }
       return fromUrlsClassLoader;
     }
+    InputStream fromAlternateClassLoader = getClassBytesFromAlternateClassLoader(resName);
+    if (fromAlternateClassLoader != null) {
+      return fromAlternateClassLoader;
+    }
     return super.getResourceAsStream(resName);
+  }
+
+  /**
+   * This exists to be overridden by the simulator class loader. It allows the simulator class
+   * loader to prefer classes from the deploy jar (e.g. compiled resource jars) over classes from
+   * the runtime classpath.
+   */
+  protected InputStream getClassBytesFromAlternateClassLoader(String classResName) {
+    return null;
   }
 
   @Override
@@ -165,7 +178,7 @@ public class SandboxClassLoader extends URLClassLoader {
     }
   }
 
-  protected Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {
+  private Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {
     byte[] classBytes = getByteCode(className);
     ClassDetails classDetails = new ClassDetails(classBytes);
     if (config.shouldInstrument(classDetails)) {
@@ -189,7 +202,7 @@ public class SandboxClassLoader extends URLClassLoader {
     }
   }
 
-  protected byte[] getByteCode(String className) throws ClassNotFoundException {
+  private byte[] getByteCode(String className) throws ClassNotFoundException {
     try (InputStream classBytesStream = getClassBytesAsStreamPreferringLocalUrls(className)) {
       if (classBytesStream == null) {
         throw new ClassNotFoundException(className);
