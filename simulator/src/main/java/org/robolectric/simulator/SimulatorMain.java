@@ -35,16 +35,21 @@ public final class SimulatorMain {
             .setSdkVersion(getSdkVersion())
             .build();
 
-    androidSandbox.runOnMainThread(
-        () -> {
-          try {
-            Class<?> appLoaderClass = androidSandbox.bootstrappedClass(AppLoader.class);
-            Constructor<?> ctor = appLoaderClass.getConstructor(AndroidSandbox.class, Path.class);
-            ((Runnable) ctor.newInstance(androidSandbox, apkFile.toPath())).run();
-          } catch (Exception e) {
-            throw new RuntimeException(e);
-          }
-        });
+    try {
+      androidSandbox.runOnMainThread(
+          () -> {
+            try {
+              Class<?> appLoaderClass = androidSandbox.bootstrappedClass(AppLoader.class);
+              Constructor<?> ctor = appLoaderClass.getConstructor(AndroidSandbox.class, Path.class);
+              ((Runnable) ctor.newInstance(androidSandbox, apkFile.toPath())).run();
+            } catch (ReflectiveOperationException e) {
+              throw new RuntimeException(e);
+            }
+          });
+    } catch (Throwable t) {
+      t.printStackTrace();
+      System.exit(1);
+    }
   }
 
   private static int getSdkVersion() {
