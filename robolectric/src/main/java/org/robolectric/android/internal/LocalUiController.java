@@ -45,6 +45,7 @@ import org.robolectric.shadows.ShadowUiAutomation;
 public class LocalUiController implements UiController {
 
   private static final String TAG = "LocalUiController";
+  private static final String THREAD_NAME_PREFIX = "LocalUiController-";
 
   private static long idlingResourceErrorTimeoutMs = SECONDS.toMillis(26);
   private final HashSet<IdlingResourceProxyImpl> syncedIdlingResources = new HashSet<>();
@@ -52,10 +53,13 @@ public class LocalUiController implements UiController {
       Executors.newCachedThreadPool(
           new ThreadFactory() {
             private final AtomicInteger count = new AtomicInteger(1);
+            private final ThreadFactory defaultFactory = Executors.defaultThreadFactory();
 
             @Override
             public Thread newThread(Runnable r) {
-              return new Thread(r, "LocalUiController-" + count.getAndIncrement());
+              Thread thread = defaultFactory.newThread(r);
+              thread.setName(THREAD_NAME_PREFIX + count.getAndIncrement());
+              return thread;
             }
           });
 
