@@ -107,7 +107,7 @@ public class ShadowVirtualDeviceManager {
                     reflector(DeviceManagerVirtualDeviceReflector.class, virtualDevice);
                 return accessor.newInstanceV(
                     ReflectionHelpers.createDelegatingProxy(
-                        IVirtualDevice.class, (VirtualDeviceDelagate) () -> displayIds),
+                        IVirtualDevice.class, (VirtualDeviceDelegate) () -> displayIds),
                     virtualDevice.getDeviceId(),
                     virtualDeviceReflector.getPersistentDeviceId(),
                     deviceName);
@@ -444,7 +444,7 @@ public class ShadowVirtualDeviceManager {
     String getPersistentDeviceId();
   }
 
-  private interface VirtualDeviceDelagate {
+  private interface VirtualDeviceDelegate {
     int[] getDisplayIds();
   }
 }
