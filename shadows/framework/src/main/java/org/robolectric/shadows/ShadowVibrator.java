@@ -87,7 +87,6 @@ public class ShadowVibrator {
   }
 
   /** Returns the last list of {@link PrimitiveSegment} vibrations in {@link PrimitiveEffect}. */
-  @SuppressWarnings("JdkCollectors") // toImmutableList is only supported in Java 8+.
   public List<PrimitiveEffect> getPrimitiveSegmentsInPrimitiveEffects() {
     return vibrationEffectSegments.stream()
         .filter(segment -> segment instanceof PrimitiveSegment)
