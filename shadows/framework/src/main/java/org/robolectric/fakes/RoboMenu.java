@@ -8,7 +8,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
@@ -42,7 +41,7 @@ public class RoboMenu implements Menu {
     menuItem.setOrder(order);
     menuItems.add(menuItem);
     menuItem.setGroupId(groupId);
-    Collections.sort(menuItems, new CustomMenuItemComparator());
+    menuItems.sort(Comparator.comparingInt(MenuItem::getOrder));
     menuItem.setItemId(itemId);
     menuItem.setTitle(title);
     return menuItem;
@@ -197,13 +196,5 @@ public class RoboMenu implements Menu {
       }
     }
     return null;
-  }
-
-  private static class CustomMenuItemComparator implements Comparator<MenuItem> {
-
-    @Override
-    public int compare(MenuItem a, MenuItem b) {
-      return Integer.compare(a.getOrder(), b.getOrder());
-    }
   }
 }
