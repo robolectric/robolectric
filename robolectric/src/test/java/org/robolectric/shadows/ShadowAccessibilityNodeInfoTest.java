@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -340,5 +341,51 @@ public class ShadowAccessibilityNodeInfoTest {
     assertThat(collectionInfo.getRowCount()).isEqualTo(12);
     assertThat(collectionInfo.getColumnCount()).isEqualTo(0);
     assertThat(collectionInfo.isHierarchical()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void addLabeledBy_addsToLabeledByList() {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    View labelView = new View(ApplicationProvider.getApplicationContext());
+
+    node.addLabeledBy(labelView);
+
+    assertThat(node.getLabeledByList()).hasSize(1);
+    assertThat(node.getLabeledByList().get(0)).isEqualTo(AccessibilityNodeInfo.obtain(labelView));
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void addLabeledBy_multipleLabels_addsAllToLabeledByList() {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    View labelView1 = new View(ApplicationProvider.getApplicationContext());
+    View labelView2 = new View(ApplicationProvider.getApplicationContext());
+
+    node.addLabeledBy(labelView1);
+    node.addLabeledBy(labelView2);
+
+    assertThat(node.getLabeledByList()).hasSize(2);
+    assertThat(node.getLabeledByList().get(0)).isEqualTo(AccessibilityNodeInfo.obtain(labelView1));
+    assertThat(node.getLabeledByList().get(1)).isEqualTo(AccessibilityNodeInfo.obtain(labelView2));
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void getLabeledByList_isEmptyByDefault() {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+
+    assertThat(node.getLabeledByList()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void getLabeledByList_returnsLabeledByList() {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    View labelView = new View(ApplicationProvider.getApplicationContext());
+    node.addLabeledBy(labelView);
+
+    assertThat(node.getLabeledByList()).hasSize(1);
+    assertThat(node.getLabeledByList().get(0)).isEqualTo(labelView.createAccessibilityNodeInfo());
   }
 }
