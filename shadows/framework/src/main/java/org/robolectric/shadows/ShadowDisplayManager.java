@@ -301,6 +301,20 @@ public class ShadowDisplayManager {
    * @param consumer a function which modifies the display properties
    */
   static void changeDisplay(int displayId, Consumer<DisplayConfig> consumer) {
+    changeDisplay(
+        displayId, consumer, new int[] {ShadowDisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED});
+  }
+
+  /**
+   * Changes properties of a simulated display. The original properties will be passed to the
+   * {@param consumer}, which may modify them in place. The display will be updated with the new
+   * properties.
+   *
+   * @param displayId the display id to change
+   * @param consumer a function which modifies the display properties
+   * @param eventTypes the event type to notify listeners
+   */
+  static void changeDisplay(int displayId, Consumer<DisplayConfig> consumer, int[] eventTypes) {
     DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
     if (displayInfo != null) {
       DisplayConfig displayConfig = new DisplayConfig(displayInfo);
@@ -309,7 +323,7 @@ public class ShadowDisplayManager {
       fixNominalDimens(displayInfo);
     }
 
-    getShadowDisplayManagerGlobal().changeDisplay(displayId, displayInfo);
+    getShadowDisplayManagerGlobal().changeDisplay(displayId, displayInfo, eventTypes);
   }
 
   /**
