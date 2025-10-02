@@ -148,7 +148,9 @@ public final class Simulator {
     Injector injector = new Injector.Builder(Looper.class.getClassLoader()).build();
     RemoteControl remoteControl = injector.getInstance(RemoteControl.class);
     remoteControl.connect(
-        InstrumentationRegistry.getInstrumentation().getUiAutomation(), Looper.getMainLooper());
+        InstrumentationRegistry.getInstrumentation()
+            .getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES),
+        Looper.getMainLooper());
   }
 
   private static class SimulatorFrameCallback implements Choreographer.FrameCallback {
