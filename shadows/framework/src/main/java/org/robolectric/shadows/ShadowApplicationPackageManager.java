@@ -21,7 +21,6 @@ import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
-import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -1039,31 +1038,52 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected Resources getResourcesForApplication(@Nonnull ApplicationInfo applicationInfo)
-      throws PackageManager.NameNotFoundException {
-    synchronized (lock) {
-      if (getContext().getPackageName().equals(applicationInfo.packageName)) {
-        return getContext().getResources();
-      } else if (packageInfos.containsKey(applicationInfo.packageName)) {
-        Resources appResources = resources.get(applicationInfo.packageName);
-        if (appResources == null) {
-          appResources = new Resources(new AssetManager(), null, null);
-          resources.put(applicationInfo.packageName, appResources);
-        }
-        return appResources;
-      }
-      Resources resources = null;
+      throws NameNotFoundException {
+    String packageName = applicationInfo.packageName;
+    Resources res = getResourcesForPackageName(packageName);
+    if (res != null) {
+      return res;
+    }
 
-      try {
-        resources =
-            reflector(ReflectorApplicationPackageManager.class, realObject)
-                .getResourcesForApplication(applicationInfo);
-      } catch (Exception ex) {
-        // handled below
+    try {
+      // This handles uninstalled packages that can not be fetched by package name.
+      res =
+          reflector(ReflectorApplicationPackageManager.class, realObject)
+              .getResourcesForApplication(applicationInfo);
+    } catch (Exception ex) {
+      // Handled below
+    }
+    if (res != null) {
+      return res;
+    }
+    throw new NameNotFoundException(packageName);
+  }
+
+  @Implementation
+  protected Resources getResourcesForApplication(String packageName) throws NameNotFoundException {
+    Resources res = getResourcesForPackageName(packageName);
+    if (res != null) {
+      return res;
+    }
+    throw new NameNotFoundException(packageName);
+  }
+
+  @Nullable
+  private Resources getResourcesForPackageName(String packageName) {
+    if (getContext().getPackageName().equals(packageName)) {
+      return getContext().getResources();
+    }
+    synchronized (lock) {
+      if (!packageInfos.containsKey(packageName)) {
+        return null;
       }
-      if (resources == null) {
-        throw new NameNotFoundException(applicationInfo.packageName);
+      Resources res = resources.get(packageName);
+      if (res != null) {
+        return res;
       }
-      return resources;
+      res = new Resources(new AssetManager(), null, null);
+      resources.put(packageName, res);
+      return res;
     }
   }
 
@@ -1957,23 +1977,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getResourcesForApplication(activityName.getPackageName());
   }
 
-  @Implementation
-  protected Resources getResourcesForApplication(String appPackageName)
-      throws NameNotFoundException {
-    synchronized (lock) {
-      if (getContext().getPackageName().equals(appPackageName)) {
-        return getContext().getResources();
-      } else if (packageInfos.containsKey(appPackageName)) {
-        Resources appResources = resources.get(appPackageName);
-        if (appResources == null) {
-          appResources = new Resources(new AssetManager(), null, null);
-          resources.put(appPackageName, appResources);
-        }
-        return appResources;
-      }
-      throw new NameNotFoundException(appPackageName);
-    }
-  }
 
   @Implementation
   protected Resources getResourcesForApplicationAsUser(String appPackageName, int userId)
@@ -2504,7 +2507,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   private interface ReflectorApplicationPackageManager {
 
     @Direct
-    Resources getResourcesForApplication(@Nonnull ApplicationInfo applicationInfo);
+    Resources getResourcesForApplication(@Nonnull ApplicationInfo applicationInfo)
+        throws NameNotFoundException;
 
     @Direct
     Drawable getDrawable(
