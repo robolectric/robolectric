@@ -81,7 +81,7 @@ jobs:
 
       # CodeQL will assemble the project before performing the analysis.
       # We add this extra step to take advantage of GitHub Actions caches.
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       # If the analyze step fails for one of the languages you are analyzing with
       # "We were unable to automatically build your code", modify the matrix above

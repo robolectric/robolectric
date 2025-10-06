@@ -34,7 +34,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Build
         run: |
@@ -58,7 +58,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Run unit tests
         run: |
@@ -103,7 +103,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Enable KVM group perms
         run: |
@@ -181,7 +181,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Publish
         run: ./gradlew publish --stacktrace
