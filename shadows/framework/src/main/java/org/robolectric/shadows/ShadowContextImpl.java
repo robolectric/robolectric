@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -250,7 +249,7 @@ public class ShadowContextImpl {
   }
 
   /** Behaves as {@link #sendOrderedBroadcastAsUser}. Currently ignores appOp and options. */
-  @Implementation(minSdk = M)
+  @Implementation
   protected void sendOrderedBroadcastAsUser(
       Intent intent,
       UserHandle userHandle,
