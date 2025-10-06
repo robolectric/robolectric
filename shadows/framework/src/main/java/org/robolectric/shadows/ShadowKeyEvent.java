@@ -7,12 +7,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.L;
 
 /** Shadow for {@link KeyEvent}. */
 @Implements(KeyEvent.class)
@@ -22,7 +20,6 @@ public class ShadowKeyEvent extends ShadowInputEvent {
 
   static {
     keyCodeMap = new HashMap<>();
-    if (RuntimeEnvironment.getApiLevel() >= L.SDK_INT) {
       String keyCodeConstantPrefix = reflector(KeyEventReflector.class).getLabelPrefix();
       for (Field field : KeyEvent.class.getDeclaredFields()) {
         if (field.getName().startsWith(keyCodeConstantPrefix)
@@ -36,10 +33,9 @@ public class ShadowKeyEvent extends ShadowInputEvent {
           }
         }
       }
-    }
   }
 
-  @Implementation(minSdk = L.SDK_INT)
+  @Implementation
   protected static int nativeKeyCodeFromString(String keyCode) {
     return keyCodeMap.getOrDefault(keyCode, KeyEvent.KEYCODE_UNKNOWN);
   }
