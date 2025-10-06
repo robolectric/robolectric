@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -77,7 +76,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     ShadowPausedSystemClock.removeListener(q.clockListener);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void nativePollOnce(long ptr, int timeoutMillis) {
     synchronized (realQueue) {
       isPolling = true;
@@ -143,13 +142,13 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     }
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected static boolean nativeIsPolling(long ptr) {
     return nativeQueueRegistry.getNativeObject(ptr).isPolling;
   }
 
   /** Exposes the API23+_isIdle method to older platforms */
-  @Implementation(minSdk = 23)
+  @Implementation
   public boolean isIdle() {
     return reflector(MessageQueueReflector.class, realQueue).isIdle();
   }
@@ -204,7 +203,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     return reflector(MessageQueueReflector.class, realQueue).getMessages();
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isPolling() {
     synchronized (realQueue) {
       return isPolling;
