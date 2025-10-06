@@ -75,7 +75,6 @@ public class BitmapTest {
   }
 
   @Test
-  @SdkSuppress(minSdkVersion = M) // getAlpha() returns 0 on less than M
   public void testExtractAlpha() {
     // normal case
     Bitmap bitmap =

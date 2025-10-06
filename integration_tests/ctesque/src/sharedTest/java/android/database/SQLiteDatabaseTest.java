@@ -260,7 +260,6 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  @SdkSuppress(minSdkVersion = M) // This test fails on emulators for SDKs 21 and 22
   public void fts4() {
     database.execSQL(
         "CREATE VIRTUAL TABLE documents USING fts4 ("
