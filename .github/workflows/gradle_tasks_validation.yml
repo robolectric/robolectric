@@ -31,7 +31,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Run aggregateDocs
         # Disable parallel as a workaround for Gradle 9's concurrent model.
@@ -55,7 +55,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Run javadocJar
         run: ./gradlew clean javadocJar
@@ -73,7 +73,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Run :preinstrumented:instrumentAll
         run: ./gradlew :preinstrumented:instrumentAll
@@ -96,7 +96,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Publish to Maven local
         run: ./gradlew publishToMavenLocal
