@@ -489,6 +489,65 @@ public class ShadowBluetoothGattTest {
 
   @Test
   @Config
+  public void readCharacteristic_withoutCallback() {
+    assertThrows(
+        IllegalStateException.class,
+        () -> bluetoothGatt.readCharacteristic(characteristicWithReadProperty));
+  }
+
+  @Test
+  @Config
+  public void readCharacteristic_withCallback() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+    assertThat(bluetoothGatt.readCharacteristic(characteristicWithReadProperty)).isFalse();
+    assertThat(resultStatus).isEqualTo(INITIAL_VALUE);
+    assertThat(resultAction).isNull();
+    assertThat(resultCharacteristic).isNull();
+    assertThat(shadowOf(bluetoothGatt).getLatestReadBytes()).isNull();
+  }
+
+  @Test
+  @Config
+  public void readCharacteristic_withCallbackAndServiceSet() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+    service1.addCharacteristic(characteristicWithReadProperty);
+    assertThat(characteristicWithReadProperty.getService()).isNotNull();
+    assertThat(bluetoothGatt.readCharacteristic(characteristicWithReadProperty)).isTrue();
+    assertThat(resultStatus).isEqualTo(BluetoothGatt.GATT_SUCCESS);
+    assertThat(resultAction).isEqualTo(ACTION_READ);
+    assertThat(resultCharacteristic).isEqualTo(characteristicWithReadProperty);
+    assertThat(shadowOf(bluetoothGatt).getLatestReadBytes()).isNull();
+  }
+
+  @Test
+  @Config
+  public void readCharacteristic_withCallbackAndServiceSet_withValue() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+    service1.addCharacteristic(characteristicWithReadProperty);
+    assertThat(characteristicWithReadProperty.getService()).isNotNull();
+    characteristicWithReadProperty.setValue(CHARACTERISTIC_VALUE);
+    assertThat(bluetoothGatt.readCharacteristic(characteristicWithReadProperty)).isTrue();
+    assertThat(resultStatus).isEqualTo(BluetoothGatt.GATT_SUCCESS);
+    assertThat(resultAction).isEqualTo(ACTION_READ);
+    assertThat(resultCharacteristic).isEqualTo(characteristicWithReadProperty);
+    assertThat(shadowOf(bluetoothGatt).getLatestReadBytes()).isEqualTo(CHARACTERISTIC_VALUE);
+  }
+
+  @Test
+  @Config
+  public void readCharacteristic_withCallbackAndServiceSet_wrongProperty() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+    service1.addCharacteristic(characteristicWithWriteProperties);
+    assertThat(characteristicWithWriteProperties.getService()).isNotNull();
+    assertThat(bluetoothGatt.readCharacteristic(characteristicWithWriteProperties)).isFalse();
+    assertThat(resultStatus).isEqualTo(INITIAL_VALUE);
+    assertThat(resultAction).isNull();
+    assertThat(resultCharacteristic).isNull();
+    assertThat(shadowOf(bluetoothGatt).getLatestReadBytes()).isNull();
+  }
+
+  @Test
+  @Config
   public void writeIncomingCharacteristic_withoutCallback() {
     service1.addCharacteristic(characteristicWithWriteProperties);
     assertThrows(

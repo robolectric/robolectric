@@ -333,6 +333,11 @@ public class ShadowBluetoothGatt {
     return true;
   }
 
+  @Implementation
+  protected boolean readCharacteristic(BluetoothGattCharacteristic characteristic) {
+    return readIncomingCharacteristic(characteristic);
+  }
+
   /**
    * Writes bytes from incoming characteristic if properties are valid and callback is set. Callback
    * responds with BluetoothGattCallback#onCharacteristicRead and returns true when successful.
