@@ -159,7 +159,7 @@ public class ShadowLogTest {
     // assert that the new handler captures the message
     assertEquals("msg", captured[0]);
     // reset the handler
-    Log.setWtfHandler(prevWtfHandler);
+    assertThat(Log.setWtfHandler(prevWtfHandler)).isNotNull();
 
     assertLogged(Log.ASSERT, "tag", "msg", throwable);
   }
