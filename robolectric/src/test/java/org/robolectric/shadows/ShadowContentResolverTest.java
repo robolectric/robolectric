@@ -1227,7 +1227,7 @@ public class ShadowContentResolverTest {
       provider.getIContentProvider().getType(uri); // should not throw
     } else {
       // just call validateIncomingUri directly
-      provider.validateIncomingUri(uri);
+      assertThat(provider.validateIncomingUri(uri)).isNotNull();
     }
   }
 
