@@ -248,7 +248,13 @@ public class ShadowDisplay {
    *     Display#STATE_DOZE}, {@link Display#STATE_DOZE_SUSPEND}, or {@link Display#STATE_UNKNOWN}.
    */
   public void setState(int state) {
-    ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.state = state);
+    ShadowDisplayManager.changeDisplay(
+        realObject.getDisplayId(),
+        di -> di.state = state,
+        new int[] {
+          ShadowDisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED,
+          ShadowDisplayManagerGlobal.EVENT_DISPLAY_STATE_CHANGED,
+        });
   }
 
   /**
