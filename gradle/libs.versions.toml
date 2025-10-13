@@ -106,7 +106,7 @@ androidx-constraintlayout = "2.2.1"
 androidx-core = "1.17.0"
 androidx-fragment = "1.8.9"
 androidx-window = "1.5.0"
-androidx-room = "2.8.1"
+androidx-room = "2.8.2"
 androidx-recyclerview = "1.4.0"
 
 # https://github.com/android/android-test/tags
@@ -119,7 +119,7 @@ androidx-test-runner = "1.7.0"
 androidx-test-services = "1.6.0"
 
 # https://developer.android.com/jetpack/androidx/releases/compose
-androidx-compose-bom = "2025.09.01"
+androidx-compose-bom = "2025.10.00"
 
 # https://developers.google.com/android/guides/releases
 play-services-basement = "18.0.1"
