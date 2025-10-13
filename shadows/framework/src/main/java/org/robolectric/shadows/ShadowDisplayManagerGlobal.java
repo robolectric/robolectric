@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.WindowConfiguration;
@@ -34,7 +36,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.Nullable;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
@@ -52,8 +53,10 @@ public class ShadowDisplayManagerGlobal {
   private static final String TOPOLOGY_LISTENERS_FIELD_NAME = "mTopologyListeners";
   private static DisplayManagerGlobal instance;
 
-  // TODO: remove and use DisplayManagerGlobal directly when compiling against Baklava
-  private static final int EVENT_DISPLAY_BASIC_CHANGED = 2;
+  // value of EVENT_DISPLAY constants changed in post Baklava
+  private static final int EVENT_DISPLAY_ADDED = getApiLevel() > BAKLAVA ? 1 << 1 : 1;
+  private static final int EVENT_DISPLAY_BASIC_CHANGED = getApiLevel() > BAKLAVA ? 1 << 2 : 2;
+  private static final int EVENT_DISPLAY_REMOVED = getApiLevel() > BAKLAVA ? 1 << 8 : 3;
 
   private float saturationLevel = 1f;
   private final SparseArray<BrightnessConfiguration> brightnessConfiguration = new SparseArray<>();
@@ -316,11 +319,11 @@ public class ShadowDisplayManagerGlobal {
     private synchronized int addDisplay(DisplayInfo displayInfo) {
       int nextId = nextDisplayId++;
       displayInfos.put(nextId, displayInfo);
-      if (RuntimeEnvironment.getApiLevel() >= Q) {
+      if (getApiLevel() >= Q) {
         displayInfo.displayId = nextId;
       }
       systemUis.put(nextId, new SystemUi(nextId));
-      notifyListeners(nextId, DisplayManagerGlobal.EVENT_DISPLAY_ADDED);
+      notifyListeners(nextId, EVENT_DISPLAY_ADDED);
       return nextId;
     }
 
@@ -333,7 +336,7 @@ public class ShadowDisplayManagerGlobal {
       // getRealSize() will query mResources variable within it which has a separate configuration
       // that needs this update as well. This is not true for any other display because they don't
       // have mResources set to anything by design in Android.
-      if (displayId == 0 && RuntimeEnvironment.getApiLevel() >= S && useMaxBounds()) {
+      if (displayId == 0 && getApiLevel() >= S && useMaxBounds()) {
         Resources resources =
             reflector(ShadowDisplay.DisplayReflector.class, ShadowDisplay.getDefaultDisplay())
                 .getResources();
@@ -364,7 +367,7 @@ public class ShadowDisplayManagerGlobal {
 
       displayInfos.remove(displayId);
       systemUis.remove(displayId);
-      notifyListeners(displayId, DisplayManagerGlobal.EVENT_DISPLAY_REMOVED);
+      notifyListeners(displayId, EVENT_DISPLAY_REMOVED);
     }
 
     private void notifyListeners(int nextId, int event) {
