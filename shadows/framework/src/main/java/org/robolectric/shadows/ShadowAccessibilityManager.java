@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
@@ -23,6 +24,7 @@ import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeL
 import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
 import android.view.accessibility.IAccessibilityManager;
 import android.view.accessibility.IAccessibilityManager.WindowTransformationSpec;
+import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,6 +60,7 @@ public class ShadowAccessibilityManager {
       new ArrayList<>();
   private static List<AccessibilityServiceInfo> enabledAccessibilityServiceList = new ArrayList<>();
   private static List<ServiceInfo> accessibilityServiceList = new ArrayList<>();
+  private static final List<String> accessibilityShortcutTargets = new ArrayList<>();
   private static final HashMap<AccessibilityStateChangeListener, Handler>
       onAccessibilityStateChangeListeners = new HashMap<>();
   private static boolean touchExplorationEnabled;
@@ -74,6 +77,7 @@ public class ShadowAccessibilityManager {
     installedAccessibilityServiceList.clear();
     enabledAccessibilityServiceList.clear();
     accessibilityServiceList.clear();
+    accessibilityShortcutTargets.clear();
     onAccessibilityStateChangeListeners.clear();
     touchExplorationEnabled = false;
     isAccessibilityButtonSupported = true;
@@ -172,6 +176,17 @@ public class ShadowAccessibilityManager {
     ShadowAccessibilityManager.installedAccessibilityServiceList =
         new ArrayList<>(installedAccessibilityServiceList);
     notifyAccessibilityServicesStateChangeListeners();
+  }
+
+  @Implementation(minSdk = BAKLAVA)
+  protected List<String> getAccessibilityShortcutTargets(@UserShortcutType int shortcutType) {
+    return Collections.unmodifiableList(accessibilityShortcutTargets);
+  }
+
+  public void setAccessibilityShortcutTargets(List<String> accessibilityShortcutTargets) {
+    Objects.requireNonNull(accessibilityShortcutTargets);
+    ShadowAccessibilityManager.accessibilityShortcutTargets.clear();
+    ShadowAccessibilityManager.accessibilityShortcutTargets.addAll(accessibilityShortcutTargets);
   }
 
   private void notifyAccessibilityServicesStateChangeListeners() {
