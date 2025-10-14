@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.ACCESSIBILITY_SERVICE;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
@@ -127,6 +128,23 @@ public class ShadowAccessibilityManagerTest {
     shadowOf(accessibilityManager).setInstalledAccessibilityServiceList(new ArrayList<>());
 
     assertThat(listenerCalled[0]).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void getAccessibilityShortcutTargets_shouldReturnEmptyListByDefault() {
+    assertThat(accessibilityManager.getAccessibilityShortcutTargets(0)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void setAccessibilityShortcutTargets_shouldReturnExpectedTargets() {
+    List<String> expected = new ArrayList<>();
+    expected.add("com.example.app/MyService");
+
+    shadowOf(accessibilityManager).setAccessibilityShortcutTargets(expected);
+
+    assertThat(accessibilityManager.getAccessibilityShortcutTargets(0)).isEqualTo(expected);
   }
 
   @Test
