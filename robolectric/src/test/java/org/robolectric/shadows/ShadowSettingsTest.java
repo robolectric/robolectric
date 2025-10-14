@@ -348,4 +348,41 @@ public class ShadowSettingsTest {
     assertThat(Settings.Config.getString("namespace/missing_key")).isEqualTo(null);
     assertThat(Settings.Config.getString("missing_namespace/key")).isEqualTo(null);
   }
+
+  /** These are not public APIs, but they may be used by system apps in the Android platform. */
+  @Test
+  public void putStringForUser_variants() throws Exception {
+    boolean success = Settings.Secure.putStringForUser(contentResolver, "property", "value", 1);
+    assertThat(success).isTrue();
+    assertThat(Settings.Secure.getStringForUser(contentResolver, "property", 1)).isEqualTo("value");
+    assertThat(Settings.Secure.getString(contentResolver, "property")).isEqualTo("value");
+
+    success = Settings.System.putStringForUser(contentResolver, "property", "value", 1);
+    assertThat(success).isTrue();
+    assertThat(Settings.System.getStringForUser(contentResolver, "property", 1)).isEqualTo("value");
+    assertThat(Settings.System.getString(contentResolver, "property")).isEqualTo("value");
+
+    success = Settings.Global.putStringForUser(contentResolver, "property", "value", 1);
+    assertThat(success).isTrue();
+    assertThat(Settings.Global.getStringForUser(contentResolver, "property", 1)).isEqualTo("value");
+    assertThat(Settings.Global.getString(contentResolver, "property")).isEqualTo("value");
+  }
+
+  /** These are not public APIs, but they may be used by system apps in the Android platform. */
+  @Test
+  public void putIntForUser_variants() throws Exception {
+    boolean success = Settings.Secure.putIntForUser(contentResolver, "property", 1, 1);
+    assertThat(success).isTrue();
+    assertThat(Settings.Secure.getIntForUser(contentResolver, "property", 1)).isEqualTo(1);
+    assertThat(Settings.Secure.getInt(contentResolver, "property", 1)).isEqualTo(1);
+
+    success = Settings.System.putIntForUser(contentResolver, "property", 1, 1);
+    assertThat(success).isTrue();
+    assertThat(Settings.System.getIntForUser(contentResolver, "property", 1)).isEqualTo(1);
+    assertThat(Settings.System.getInt(contentResolver, "property", 1)).isEqualTo(1);
+
+    Settings.Secure.putInt(contentResolver, Settings.Secure.ODI_CAPTIONS_ENABLED, 1);
+    assertThat(Settings.Secure.getIntForUser(contentResolver, Secure.ODI_CAPTIONS_ENABLED, 0, 1))
+        .isEqualTo(1);
+  }
 }
