@@ -1,9 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.Q;
 
-import android.annotation.RequiresApi;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import java.util.ArrayList;
@@ -34,7 +32,6 @@ public class ShadowMediaCodecList {
    * @param mediaCodecInfo {@link MediaCodecInfo} describing the codec. Use {@link
    *     MediaCodecInfoBuilder} to create an instance of it.
    */
-  @RequiresApi(Q)
   public static void addCodec(MediaCodecInfo mediaCodecInfo) {
     mediaCodecInfos.add(mediaCodecInfo);
   }
