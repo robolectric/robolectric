@@ -69,7 +69,6 @@ public class ShadowTrace {
       return;
     }
     if (currentSections.get().isEmpty()) {
-      Log.e(TAG, "Trying to end a trace section that was never started");
       return;
     }
     previousSections.get().offer(currentSections.get().removeFirst());
@@ -105,7 +104,6 @@ public class ShadowTrace {
     AsyncTraceSection section =
         AsyncTraceSection.newBuilder().setSectionName(sectionName).setCookie(cookie).build();
     if (!currentAsyncSections.contains(section)) {
-      Log.e(TAG, "Trying to end a trace section that was never started");
       return;
     }
     currentAsyncSections.remove(section);
