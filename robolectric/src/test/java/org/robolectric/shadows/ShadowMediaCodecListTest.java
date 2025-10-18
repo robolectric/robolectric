@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION.SDK_INT;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.media.MediaCodecInfo;
@@ -8,6 +8,7 @@ import android.media.MediaCodecInfo.CodecCapabilities;
 import android.media.MediaCodecInfo.CodecProfileLevel;
 import android.media.MediaCodecList;
 import android.media.MediaFormat;
+import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +17,7 @@ import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowMediaCodecList}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = Q)
+@Config(sdk = Config.ALL_SDKS)
 public class ShadowMediaCodecListTest {
 
   private static final MediaCodecInfo AAC_ENCODER_INFO =
@@ -113,6 +114,13 @@ public class ShadowMediaCodecListTest {
     expected.level = CodecProfileLevel.AVCLevel2;
     assertThat(codecCapabilities.getMimeType()).isEqualTo(MediaFormat.MIMETYPE_VIDEO_AVC);
     assertThat(codecCapabilities.profileLevels).hasLength(1);
-    assertThat(codecCapabilities.profileLevels[0]).isEqualTo(expected);
+    if (SDK_INT >= VERSION_CODES.P) {
+      assertThat(codecCapabilities.profileLevels[0]).isEqualTo(expected);
+    } else {
+      // CodecProfileLevel didn't implement equals/hashcode until API 28.
+      assertThat(codecCapabilities.profileLevels[0].profile)
+          .isEqualTo(CodecProfileLevel.AVCProfileBaseline);
+      assertThat(codecCapabilities.profileLevels[0].level).isEqualTo(CodecProfileLevel.AVCLevel2);
+    }
   }
 }
