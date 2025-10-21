@@ -248,16 +248,23 @@ public class ShadowSettingsTest {
   }
 
   @Test
-  public void testGlobalGetFloat() {
+  public void testGlobalGetFloat() throws Exception {
     float durationScale =
         Global.getFloat(
             context.getContentResolver(), Settings.Global.ANIMATOR_DURATION_SCALE, /* def= */ 1.0f);
+    assertThat(durationScale).isEqualTo(1.0f);
 
+    durationScale =
+        Settings.Global.getFloat(
+            context.getContentResolver(), Settings.Global.ANIMATOR_DURATION_SCALE);
     assertThat(durationScale).isEqualTo(1.0f);
 
     Global.putFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 0.01f);
     assertThat(
             Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, /* def= */ 0))
+        .isEqualTo(0.01f);
+
+    assertThat(Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE))
         .isEqualTo(0.01f);
   }
 
