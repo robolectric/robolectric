@@ -16,6 +16,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,14 +28,14 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
-import org.robolectric.util.TestRunnable;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LEGACY)
 @Config(maxSdk = BAKLAVA)
 public class ShadowHandlerTest {
   private List<String> transcript;
-  TestRunnable scratchRunnable = new TestRunnable();
+  AtomicBoolean wasRun = new AtomicBoolean(false);
+  Runnable scratchRunnable = () -> wasRun.set(true);
 
   private final Handler.Callback callback =
       new Handler.Callback() {
@@ -117,21 +118,21 @@ public class ShadowHandlerTest {
   public void testPostAndIdleMainLooper() {
     new Handler().post(scratchRunnable);
     ShadowLooper.idleMainLooper();
-    assertThat(scratchRunnable.wasRun).isTrue();
+    assertThat(wasRun.get()).isTrue();
   }
 
   @Test
   public void postDelayedThenIdleMainLooper_shouldNotRunRunnable() {
     new Handler().postDelayed(scratchRunnable, 1);
     ShadowLooper.idleMainLooper();
-    assertThat(scratchRunnable.wasRun).isFalse();
+    assertThat(wasRun.get()).isFalse();
   }
 
   @Test
   public void testPostDelayedThenRunMainLooperOneTask() {
     new Handler().postDelayed(scratchRunnable, 1);
     ShadowLooper.runMainLooperOneTask();
-    assertThat(scratchRunnable.wasRun).isTrue();
+    assertThat(wasRun.get()).isTrue();
   }
 
   @Test
@@ -144,63 +145,72 @@ public class ShadowHandlerTest {
 
     shadowLooper.unPause();
 
-    assertThat(scratchRunnable.wasRun).isFalse();
+    assertThat(wasRun.get()).isFalse();
   }
 
   @Test
   public void testPostDelayedThenRunMainLooperToNextTask_shouldRunOneTask() {
     new Handler().postDelayed(scratchRunnable, 1);
     ShadowLooper.runMainLooperToNextTask();
-    assertThat(scratchRunnable.wasRun).isTrue();
+    assertThat(wasRun.get()).isTrue();
   }
 
   @Test
   public void testPostDelayedTwiceThenRunMainLooperToNextTask_shouldRunMultipleTasks() {
-    TestRunnable task1 = new TestRunnable();
-    TestRunnable task2 = new TestRunnable();
+    AtomicBoolean wasRun1 = new AtomicBoolean(false);
+    AtomicBoolean wasRun2 = new AtomicBoolean(false);
+    Runnable task1 = () -> wasRun1.set(true);
+    Runnable task2 = () -> wasRun2.set(true);
 
     new Handler().postDelayed(task1, 1);
     new Handler().postDelayed(task2, 1);
 
     ShadowLooper.runMainLooperToNextTask();
-    assertThat(task1.wasRun).isTrue();
-    assertThat(task2.wasRun).isTrue();
+    assertThat(wasRun1.get()).isTrue();
+    assertThat(wasRun2.get()).isTrue();
   }
 
   @Test
   public void testPostDelayedTwiceThenRunMainLooperOneTask_shouldRunOnlyOneTask() {
-    TestRunnable task1 = new TestRunnable();
-    TestRunnable task2 = new TestRunnable();
+    AtomicBoolean wasRun1 = new AtomicBoolean(false);
+    AtomicBoolean wasRun2 = new AtomicBoolean(false);
+    Runnable task1 = () -> wasRun1.set(true);
+    Runnable task2 = () -> wasRun2.set(true);
 
     new Handler().postDelayed(task1, 1);
     new Handler().postDelayed(task2, 1);
 
     ShadowLooper.runMainLooperOneTask();
-    assertThat(task1.wasRun).isTrue();
-    assertThat(task2.wasRun).isFalse();
+    assertThat(wasRun1.get()).isTrue();
+    assertThat(wasRun2.get()).isFalse();
   }
 
   @Test
   public void testPostDelayedMultipleThenRunMainLooperOneTask_shouldRunMultipleTask() {
-    TestRunnable task1 = new TestRunnable();
-    TestRunnable task2 = new TestRunnable();
-    TestRunnable task3 = new TestRunnable();
+    AtomicBoolean wasRun1 = new AtomicBoolean(false);
+    AtomicBoolean wasRun2 = new AtomicBoolean(false);
+    AtomicBoolean wasRun3 = new AtomicBoolean(false);
+    Runnable task1 = () -> wasRun1.set(true);
+    Runnable task2 = () -> wasRun2.set(true);
+    Runnable task3 = () -> wasRun3.set(true);
 
     new Handler().postDelayed(task1, 1);
     new Handler().postDelayed(task2, 10);
     new Handler().postDelayed(task3, 100);
 
     ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-    assertThat(task1.wasRun).isTrue();
-    assertThat(task2.wasRun).isTrue();
-    assertThat(task3.wasRun).isTrue();
+    assertThat(wasRun1.get()).isTrue();
+    assertThat(wasRun2.get()).isTrue();
+    assertThat(wasRun3.get()).isTrue();
   }
 
   @Test
   public void
       testPostAtFrontOfQueueThenRunMainLooperOneTaskAtATime_shouldRunFrontOfQueueTaskFirst() {
-    TestRunnable task1 = new TestRunnable();
-    TestRunnable task2 = new TestRunnable();
+    AtomicBoolean wasRun1 = new AtomicBoolean(false);
+    AtomicBoolean wasRun2 = new AtomicBoolean(false);
+    Runnable task1 = () -> wasRun1.set(true);
+    Runnable task2 = () -> wasRun2.set(true);
 
     ShadowLooper.pauseMainLooper();
     new Handler().post(task1);
@@ -209,10 +219,10 @@ public class ShadowHandlerTest {
     assertTrue(result);
 
     ShadowLooper.runMainLooperOneTask();
-    assertThat(task2.wasRun).isTrue();
-    assertThat(task1.wasRun).isFalse();
+    assertThat(wasRun2.get()).isTrue();
+    assertThat(wasRun1.get()).isFalse();
     ShadowLooper.runMainLooperOneTask();
-    assertThat(task1.wasRun).isTrue();
+    assertThat(wasRun1.get()).isTrue();
   }
 
   @Test
@@ -407,7 +417,7 @@ public class ShadowHandlerTest {
     ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
     assertWithMessage("Message").that(wasRun[0]).isFalse();
-    assertWithMessage("Callback").that(scratchRunnable.wasRun).isFalse();
+    assertWithMessage("Callback").that(this.wasRun.get()).isFalse();
   }
 
   @Test

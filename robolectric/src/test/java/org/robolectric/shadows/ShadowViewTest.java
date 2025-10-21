@@ -65,7 +65,6 @@ import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
 import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
-import org.robolectric.util.TestRunnable;
 
 @RunWith(AndroidJUnit4.class)
 @GraphicsMode(Mode.LEGACY)
@@ -297,13 +296,12 @@ public class ShadowViewTest {
   @Test
   public void shouldPostActionsToTheMessageQueue() {
     shadowMainLooper().pause();
-
-    TestRunnable runnable = new TestRunnable();
+    AtomicBoolean wasRun = new AtomicBoolean(false);
+    Runnable runnable = () -> wasRun.set(true);
     assertThat(view.post(runnable)).isTrue();
-    assertFalse(runnable.wasRun);
-
+    assertThat(wasRun.get()).isFalse();
     shadowMainLooper().idle();
-    assertTrue(runnable.wasRun);
+    assertThat(wasRun.get()).isTrue();
   }
 
   @Test
@@ -324,23 +322,25 @@ public class ShadowViewTest {
   public void shouldPostActionsToTheMessageQueueWithDelay() {
     shadowMainLooper().pause();
 
-    TestRunnable runnable = new TestRunnable();
+    AtomicBoolean wasRun = new AtomicBoolean(false);
+    Runnable runnable = () -> wasRun.set(true);
     view.postDelayed(runnable, 1);
-    assertFalse(runnable.wasRun);
+    assertThat(wasRun.get()).isFalse();
 
     shadowMainLooper().idleFor(Duration.ofMillis(1));
-    assertTrue(runnable.wasRun);
+    assertThat(wasRun.get()).isTrue();
   }
 
   @Test
   public void shouldRemovePostedCallbacksFromMessageQueue() {
-    TestRunnable runnable = new TestRunnable();
+    AtomicBoolean wasRun = new AtomicBoolean(false);
+    Runnable runnable = () -> wasRun.set(true);
     assertThat(view.postDelayed(runnable, 1)).isTrue();
 
     assertThat(view.removeCallbacks(runnable)).isTrue();
 
     shadowMainLooper().idleFor(Duration.ofMillis(1));
-    assertThat(runnable.wasRun).isFalse();
+    assertThat(wasRun.get()).isFalse();
   }
 
   @Test
