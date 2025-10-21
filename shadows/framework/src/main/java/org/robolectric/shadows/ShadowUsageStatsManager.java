@@ -716,6 +716,11 @@ public class ShadowUsageStatsManager {
       usageStats.mLastTimeUsed = lastTimeUsed;
       return this;
     }
+
+    public UsageStatsBuilder setLastTimeVisible(long lastTimeVisible) {
+      usageStats.mLastTimeVisible = lastTimeVisible;
+      return this;
+    }
   }
 
   /**
