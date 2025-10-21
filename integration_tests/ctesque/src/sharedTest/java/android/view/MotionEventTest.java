@@ -213,7 +213,7 @@ public class MotionEventTest {
   public void actionButton() {
     MotionEvent event =
         MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, X_3F, Y_4F, META_STATE);
-      assertThat(event).hasActionButton(0);
+    assertThat(event).hasActionButton(0);
   }
 
   @Test

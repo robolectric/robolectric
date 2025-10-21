@@ -116,7 +116,6 @@ public class ShadowLocaleDataTest {
   }
 
   @Test
-  
   public void shouldSupportLocaleEn_US_percentPost22() {
     LocaleData localeData = LocaleData.get(Locale.US);
     LocaleDataReflector localeDataReflector = reflector(LocaleDataReflector.class, localeData);

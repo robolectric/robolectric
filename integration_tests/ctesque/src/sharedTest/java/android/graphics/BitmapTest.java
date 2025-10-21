@@ -1,6 +1,5 @@
 package android.graphics;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;

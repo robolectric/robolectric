@@ -293,7 +293,6 @@ public class ShadowAccessibilityManagerTest {
     assertThat(accessibilityManager.getRecommendedTimeoutMillis(1, flags)).isEqualTo(1);
   }
 
-
   @Test
   public void getAccessibilityServiceList_doesNotNPE() {
     assertThat(accessibilityManager.getAccessibilityServiceList()).isEmpty();

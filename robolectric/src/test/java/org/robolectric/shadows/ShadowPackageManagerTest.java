@@ -4030,7 +4030,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  
   public void setUnbadgedApplicationIcon() throws Exception {
     String packageName = context.getPackageName();
     Drawable d = new BitmapDrawable();

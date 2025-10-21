@@ -45,7 +45,6 @@ public class ShadowSoundPool {
     return ReflectionHelpers.createNullProxy(IAudioService.class);
   }
 
-
   @Implementation(minSdk = M, maxSdk = TIRAMISU)
   protected int _play(
       int soundID, float leftVolume, float rightVolume, int priority, int loop, float rate) {

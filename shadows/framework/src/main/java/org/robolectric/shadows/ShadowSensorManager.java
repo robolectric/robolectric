@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
-import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import android.hardware.Sensor;
