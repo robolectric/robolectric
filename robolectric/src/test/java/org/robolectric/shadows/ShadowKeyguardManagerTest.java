@@ -100,7 +100,6 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
-  
   public void isDeviceLocked() {
     assertThat(manager.isDeviceLocked()).isFalse();
 
@@ -110,7 +109,6 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
-  
   public void isDeviceLockedByUserId() {
     assertThat(manager.isDeviceLocked(USER_ID)).isFalse();
 

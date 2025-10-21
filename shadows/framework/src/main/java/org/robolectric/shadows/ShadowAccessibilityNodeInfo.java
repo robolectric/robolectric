@@ -207,14 +207,13 @@ public class ShadowAccessibilityNodeInfo {
     if (labeledBy != null) {
       labeledBy.recycle();
     }
-      if (traversalAfter != null) {
-        traversalAfter.recycle();
-      }
+    if (traversalAfter != null) {
+      traversalAfter.recycle();
+    }
 
-      if (traversalBefore != null) {
-        traversalBefore.recycle();
-      }
-
+    if (traversalBefore != null) {
+      traversalBefore.recycle();
+    }
   }
 
   @Implementation

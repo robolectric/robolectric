@@ -609,5 +609,4 @@ public class ShadowPaint {
       int offset) {
     return nGetRunAdvance(0, text, start, end, contextStart, contextEnd, isRtl, offset);
   }
-
 }

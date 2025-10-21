@@ -2,16 +2,11 @@ package org.robolectric.res.android;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.res.android.Errors.NO_ERROR;
-import static org.robolectric.res.android.ResourceTypes.RES_TABLE_LIBRARY_TYPE;
-import static org.robolectric.res.android.ResourceTypes.RES_TABLE_PACKAGE_TYPE;
-import static org.robolectric.res.android.ResourceTypes.RES_TABLE_TYPE;
 
-import java.nio.ByteBuffer;
 import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 
 @RunWith(JUnit4.class)
 public class ResTableLibraryLoadingTest {
@@ -87,5 +82,4 @@ public class ResTableLibraryLoadingTest {
     Map<String, Byte> entries = dynamicRefTable.entries();
     assertThat(entries).containsEntry("com.example.package", (byte) 0x02);
   }
-
 }

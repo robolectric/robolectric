@@ -11,10 +11,10 @@ import static org.robolectric.res.android.Errors.UNKNOWN_ERROR;
 import static org.robolectric.res.android.ResTable.APP_PACKAGE_ID;
 import static org.robolectric.res.android.ResTable.Res_GETPACKAGE;
 import static org.robolectric.res.android.ResTable.SYS_PACKAGE_ID;
+import static org.robolectric.res.android.ResTable.kDebugLibNoisy;
 import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.dtohl;
-import static org.robolectric.res.android.ResTable.kDebugLibNoisy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,16 +45,22 @@ public class DynamicRefTable {
     final int sizeOfEntries = ResourceTypes.ResTable_lib_entry.SIZEOF * entryCount;
     final int expectedSize = dtohl(header.header.size) - dtohl(header.header.headerSize);
     if (sizeOfEntries > expectedSize) {
-      ALOGW("ResTable_lib_header size %d is too small to fit %d entries (x %d).",
+      ALOGW(
+          "ResTable_lib_header size %d is too small to fit %d entries (x %d).",
           expectedSize, entryCount, ResourceTypes.ResTable_lib_entry.SIZEOF);
       return UNKNOWN_ERROR;
     }
 
     for (int entryIndex = 0; entryIndex < entryCount; entryIndex++) {
-      int entryOffset = header.myOffset() + header.header.headerSize + (entryIndex * ResourceTypes.ResTable_lib_entry.SIZEOF);
-      ResourceTypes.ResTable_lib_entry entry = new ResourceTypes.ResTable_lib_entry(header.myBuf(), entryOffset);
+      int entryOffset =
+          header.myOffset()
+              + header.header.headerSize
+              + (entryIndex * ResourceTypes.ResTable_lib_entry.SIZEOF);
+      ResourceTypes.ResTable_lib_entry entry =
+          new ResourceTypes.ResTable_lib_entry(header.myBuf(), entryOffset);
       final int packageId = dtohl(entry.packageId);
-      String packageName = Util.ReadUtf16StringFromDevice(entry.packageName, entry.packageName.length);
+      String packageName =
+          Util.ReadUtf16StringFromDevice(entry.packageName, entry.packageName.length);
       if (kDebugLibNoisy) {
         ALOGV("Found lib entry %s with id %d\n", packageName, packageId);
       }

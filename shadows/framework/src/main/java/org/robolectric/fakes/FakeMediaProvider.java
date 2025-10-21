@@ -561,7 +561,6 @@ public final class FakeMediaProvider extends ContentProvider {
         + ")";
   }
 
-
   @Override
   public void shutdown() {
     if (initialized.get()) {

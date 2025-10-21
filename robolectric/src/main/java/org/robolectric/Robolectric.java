@@ -337,8 +337,7 @@ public class Robolectric {
     try {
       XmlResourceParser parser =
           RuntimeEnvironment.getApplication().getResources().getXml(xmlResId);
-      while (parser.next() != XmlPullParser.START_TAG) {
-      }
+      while (parser.next() != XmlPullParser.START_TAG) {}
       return Xml.asAttributeSet(parser);
     } catch (XmlPullParserException | IOException e) {
       throw new RuntimeException("Failed to parse XML resource " + xmlResId, e);
