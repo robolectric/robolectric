@@ -88,7 +88,6 @@ import org.robolectric.fakes.RoboSplashScreen;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowActivity.IntentSenderRequest;
-import org.robolectric.util.TestRunnable;
 
 /** Test of ShadowActivity. */
 @RunWith(AndroidJUnit4.class)
@@ -438,10 +437,11 @@ public class ShadowActivityTest {
 
   @Test
   public void shouldRunUiTasksImmediatelyByDefault() {
-    TestRunnable runnable = new TestRunnable();
+    AtomicBoolean wasRun = new AtomicBoolean(false);
+    Runnable runnable = () -> wasRun.set(true);
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     activity.runOnUiThread(runnable);
-    assertTrue(runnable.wasRun);
+    assertThat(wasRun.get()).isTrue();
   }
 
   @Test
@@ -451,12 +451,13 @@ public class ShadowActivityTest {
     shadowOf(getMainLooper()).pause();
 
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
-    TestRunnable runnable = new TestRunnable();
+    AtomicBoolean wasRun = new AtomicBoolean(false);
+    Runnable runnable = () -> wasRun.set(true);
     activity.runOnUiThread(runnable);
-    assertFalse(runnable.wasRun);
+    assertThat(wasRun.get()).isFalse();
 
     shadowOf(getMainLooper()).idle();
-    assertTrue(runnable.wasRun);
+    assertThat(wasRun.get()).isTrue();
   }
 
   /**
@@ -467,9 +468,10 @@ public class ShadowActivityTest {
   @LooperMode(Mode.PAUSED)
   public void shouldExecutePostedUiTasksInRealisticLooper() {
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
-    TestRunnable runnable = new TestRunnable();
+    AtomicBoolean wasRun = new AtomicBoolean(false);
+    Runnable runnable = () -> wasRun.set(true);
     activity.runOnUiThread(runnable);
-    assertTrue(runnable.wasRun);
+    assertThat(wasRun.get()).isTrue();
   }
 
   @Test
