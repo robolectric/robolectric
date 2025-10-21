@@ -185,7 +185,7 @@ public class DynamicRefTableTest {
 
   // Helper method to create a library table buffer with a single entry
   private ByteBuffer createLibraryTableBuffer(int packageId, String packageName) {
-    return createLibraryTableBuffer(new int[]{packageId}, new String[]{packageName});
+    return createLibraryTableBuffer(new int[] {packageId}, new String[] {packageName});
   }
 
   // Helper method to create a library table buffer with multiple entries

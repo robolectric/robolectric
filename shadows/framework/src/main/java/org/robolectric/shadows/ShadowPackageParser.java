@@ -100,15 +100,14 @@ public class ShadowPackageParser {
         long firstInstallTime,
         long lastUpdateTime) {
 
-
-        return generatePackageInfo(
-            p,
-            gids,
-            flags,
-            firstInstallTime,
-            lastUpdateTime,
-            (Set<String>) new HashSet<String>(),
-            newPackageUserState());
+      return generatePackageInfo(
+          p,
+          gids,
+          flags,
+          firstInstallTime,
+          lastUpdateTime,
+          (Set<String>) new HashSet<String>(),
+          newPackageUserState());
     }
 
     Package parsePackage(File file, String fileName, DisplayMetrics displayMetrics, int flags);

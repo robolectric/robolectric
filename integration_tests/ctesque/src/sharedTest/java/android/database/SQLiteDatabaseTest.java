@@ -1,6 +1,5 @@
 package android.database;
 
-import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertThrows;
@@ -13,7 +12,6 @@ import android.database.sqlite.SQLiteException;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.SdkSuppress;
 import androidx.test.filters.Suppress;
 import com.google.common.base.Ascii;
 import com.google.common.base.Throwables;

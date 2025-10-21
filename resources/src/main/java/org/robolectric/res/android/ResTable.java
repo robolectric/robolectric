@@ -1101,8 +1101,14 @@ public class ResTable {
 
       } else if (ctype == RES_TABLE_LIBRARY_TYPE) {
         if (group.dynamicRefTable.entries().isEmpty()) {
-          final ResourceTypes.ResTable_lib_header lib = new ResourceTypes.ResTable_lib_header(chunk.myBuf(), chunk.myOffset());
-          err = validate_chunk(lib.header, ResourceTypes.ResTable_lib_header.SIZEOF, endPos, "ResTable_lib_header");
+          final ResourceTypes.ResTable_lib_header lib =
+              new ResourceTypes.ResTable_lib_header(chunk.myBuf(), chunk.myOffset());
+          err =
+              validate_chunk(
+                  lib.header,
+                  ResourceTypes.ResTable_lib_header.SIZEOF,
+                  endPos,
+                  "ResTable_lib_header");
           if (err != NO_ERROR) {
             return (mError = err);
           }

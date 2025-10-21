@@ -129,7 +129,6 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  
   public void clearAccountsForPackage() {
     PhoneAccountHandle accountHandle1 = createHandle("a.package", "OtherConnectionService", "id1");
     telecomService.registerPhoneAccount(
@@ -223,7 +222,6 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  
   public void getPhoneAccountsForPackage() {
     PhoneAccountHandle handleInThisApplicationsPackage = createHandle("id1");
     telecomService.registerPhoneAccount(
@@ -674,7 +672,6 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  
   public void getLine1Number() {
     // Check initial state
     PhoneAccountHandle phoneAccountHandle = createHandle("id1");
@@ -690,7 +687,6 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  
   public void getLine1Number_noPermission_throwsSecurityException() {
     shadowOf(telecomService).setReadPhoneStatePermission(false);
 

@@ -20,19 +20,19 @@ public class ShadowKeyEvent extends ShadowInputEvent {
 
   static {
     keyCodeMap = new HashMap<>();
-      String keyCodeConstantPrefix = reflector(KeyEventReflector.class).getLabelPrefix();
-      for (Field field : KeyEvent.class.getDeclaredFields()) {
-        if (field.getName().startsWith(keyCodeConstantPrefix)
-            && Modifier.isStatic(field.getModifiers())) {
-          String keyCodeString = field.getName().substring(keyCodeConstantPrefix.length());
-          try {
-            keyCodeMap.put(keyCodeString, field.getInt(null));
-          } catch (IllegalAccessException e) {
-            throw new RuntimeException(
-                "unable to get reflectively get value for " + keyCodeString, e);
-          }
+    String keyCodeConstantPrefix = reflector(KeyEventReflector.class).getLabelPrefix();
+    for (Field field : KeyEvent.class.getDeclaredFields()) {
+      if (field.getName().startsWith(keyCodeConstantPrefix)
+          && Modifier.isStatic(field.getModifiers())) {
+        String keyCodeString = field.getName().substring(keyCodeConstantPrefix.length());
+        try {
+          keyCodeMap.put(keyCodeString, field.getInt(null));
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(
+              "unable to get reflectively get value for " + keyCodeString, e);
         }
       }
+    }
   }
 
   @Implementation

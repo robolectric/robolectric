@@ -170,7 +170,7 @@ public class ShadowBluetoothAdapter {
   @Deprecated
   public void setBluetoothLeAdvertiser(BluetoothLeAdvertiser advertiser) {
 
-      reflector(BluetoothAdapterReflector.class, realAdapter).setBluetoothLeAdvertiser(advertiser);
+    reflector(BluetoothAdapterReflector.class, realAdapter).setBluetoothLeAdvertiser(advertiser);
   }
 
   @Implementation
