@@ -17,7 +17,7 @@ import org.robolectric.util.PerfStatsCollector;
  *
  * @see <a href="http://robolectric.org/configuring/">Configuring Robolectric</a>.
  */
-@SuppressWarnings({"AndroidJdkLibsChecker", "NewApi"})
+@SuppressWarnings("NewApi")
 @AutoService(ConfigurationStrategy.class)
 @Priority(Integer.MIN_VALUE)
 public class HierarchicalConfigurationStrategy implements ConfigurationStrategy {

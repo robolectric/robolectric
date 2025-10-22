@@ -15,7 +15,7 @@ import org.robolectric.pluginapi.config.Configurer;
  * Robolectric](http://robolectric.org/configuring/) but it may be useful for other {@link
  * Configurer}s as well.
  */
-@SuppressWarnings({"AndroidJdkLibsChecker", "NewApi"})
+@SuppressWarnings("NewApi")
 public class PackagePropertiesLoader {
 
   /**
