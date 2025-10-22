@@ -87,7 +87,6 @@ public class LooperDelegatingScheduler extends Scheduler {
   }
 
   @Override
-  @SuppressWarnings("AndroidJdkLibsChecker")
   public boolean advanceToLastPostedRunnable() {
     long scheduledTime = getNextScheduledTaskTime().toMillis();
     shadowOf(looper).runToEndOfTasks();
@@ -95,7 +94,6 @@ public class LooperDelegatingScheduler extends Scheduler {
   }
 
   @Override
-  @SuppressWarnings("AndroidJdkLibsChecker")
   public boolean advanceToNextPostedRunnable() {
     long scheduledTime = getNextScheduledTaskTime().toMillis();
     shadowOf(looper).runToNextTask();
@@ -108,7 +106,6 @@ public class LooperDelegatingScheduler extends Scheduler {
   }
 
   @Override
-  @SuppressWarnings("AndroidJdkLibsChecker")
   public boolean advanceTo(long endTime) {
     if (endTime < SystemClock.uptimeMillis()) {
       return false;
@@ -118,14 +115,12 @@ public class LooperDelegatingScheduler extends Scheduler {
     return hasQueueTasks;
   }
 
-  @SuppressWarnings("AndroidJdkLibsChecker")
   private boolean hasTasksScheduledBefore(long timeMs) {
     long scheduledTimeMs = getNextScheduledTaskTime().toMillis();
     return scheduledTimeMs > 0 && scheduledTimeMs <= timeMs;
   }
 
   @Override
-  @SuppressWarnings("AndroidJdkLibsChecker")
   public boolean runOneTask() {
     long scheduledTime = getNextScheduledTaskTime().toMillis();
     shadowOf(looper).runOneTask();
@@ -149,13 +144,11 @@ public class LooperDelegatingScheduler extends Scheduler {
   }
 
   @Override
-  @SuppressWarnings("AndroidJdkLibsChecker")
   public Duration getNextScheduledTaskTime() {
     return shadowOf(looper).getNextScheduledTaskTime();
   }
 
   @Override
-  @SuppressWarnings("AndroidJdkLibsChecker")
   public Duration getLastScheduledTaskTime() {
     return shadowOf(looper).getLastScheduledTaskTime();
   }

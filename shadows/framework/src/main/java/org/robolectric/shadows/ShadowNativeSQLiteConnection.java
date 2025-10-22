@@ -275,7 +275,6 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
   }
 
   @Implementation(minSdk = R, maxSdk = UPSIDE_DOWN_CAKE)
-  @SuppressWarnings("AndroidJdkLibsChecker")
   protected static void nativeRegisterCustomScalarFunction(
       long connectionPtr, String name, UnaryOperator<String> function) {
     PerfStatsCollector.getInstance()
@@ -287,7 +286,6 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
   }
 
   @Implementation(minSdk = R, maxSdk = UPSIDE_DOWN_CAKE)
-  @SuppressWarnings("AndroidJdkLibsChecker")
   protected static void nativeRegisterCustomAggregateFunction(
       long connectionPtr, String name, BinaryOperator<String> function) {
     PerfStatsCollector.getInstance()
