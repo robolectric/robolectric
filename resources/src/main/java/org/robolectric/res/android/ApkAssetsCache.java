@@ -16,7 +16,6 @@ import java.util.HashMap;
  * be possible to have a per-sdk-level reference counting mechanism where an item could be freed if
  * all sandboxes referencing that item are collected.
  */
-@SuppressWarnings("AndroidJdkLibsChecker")
 public final class ApkAssetsCache {
 
   private static final HashMap<Key, Long> cachedApkAssetsPtrs = new HashMap<>();

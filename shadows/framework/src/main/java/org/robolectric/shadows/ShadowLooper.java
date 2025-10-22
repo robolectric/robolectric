@@ -218,7 +218,6 @@ public abstract class ShadowLooper {
   public abstract void idleFor(long time, TimeUnit timeUnit);
 
   /** A variant of {@link #idleFor(long, TimeUnit)} that accepts a Duration. */
-  @SuppressWarnings("AndroidJdkLibsChecker")
   public void idleFor(Duration duration) {
     idleFor(duration.toMillis(), TimeUnit.MILLISECONDS);
   }

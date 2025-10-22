@@ -252,7 +252,6 @@ public class LocalUiController implements UiController {
   }
 
   @Override
-  @SuppressWarnings("AndroidJdkLibsChecker")
   public void loopMainThreadForAtLeast(long millisDelay) {
     shadowMainLooper().idleFor(Duration.ofMillis(millisDelay));
   }
