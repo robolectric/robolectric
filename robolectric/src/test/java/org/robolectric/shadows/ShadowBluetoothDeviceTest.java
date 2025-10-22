@@ -676,6 +676,34 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
+  public void getConnectCount_returnsZeroWhenConnectIsNotCalled() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(shadowOf(device).getConnectCount()).isEqualTo(0);
+    assertThat(device.isConnected()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void getConnectCount_returnsNumberOfTimesConnectIsCalled() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    device.connect();
+    assertThat(shadowOf(device).getConnectCount()).isEqualTo(1);
+    assertThat(device.isConnected()).isTrue();
+
+    device.connect();
+    assertThat(shadowOf(device).getConnectCount()).isEqualTo(2);
+    assertThat(device.isConnected()).isTrue();
+
+    device.connect();
+    assertThat(shadowOf(device).getConnectCount()).isEqualTo(3);
+    assertThat(device.isConnected()).isTrue();
+  }
+
+  @Test
   @Config(minSdk = VERSION_CODES.Q)
   public void setSilenceMode_shouldBeSaved() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
