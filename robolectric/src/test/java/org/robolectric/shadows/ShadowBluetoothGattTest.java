@@ -841,4 +841,35 @@ public class ShadowBluetoothGattTest {
     assertThat(bluetoothGatt.setCharacteristicNotification(characteristicWithReadProperty, false))
         .isFalse();
   }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void readCharacteristic_withCallback() {
+    service1.addCharacteristic(characteristicWithReadProperty);
+
+    ShadowBluetoothGatt shadowBluetoothGatt = shadowOf(bluetoothGatt);
+    characteristicWithReadProperty.setValue(CHARACTERISTIC_VALUE);
+    shadowBluetoothGatt.setGattCallback(callback);
+    assertThat(bluetoothGatt.readCharacteristic(characteristicWithReadProperty)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void readCharacteristic_withoutCallback_throwsException() {
+    service1.addCharacteristic(characteristicWithReadProperty);
+
+    assertThrows(
+        IllegalStateException.class,
+        () -> bluetoothGatt.readCharacteristic(characteristicWithReadProperty));
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void readCharacteristic_withCallback_readCharacteristicUnsuccessfully() {
+    service1.addCharacteristic(characteristicWithWriteProperties);
+
+    ShadowBluetoothGatt shadowBluetoothGatt = shadowOf(bluetoothGatt);
+    shadowBluetoothGatt.setGattCallback(callback);
+    assertThat(bluetoothGatt.readCharacteristic(characteristicWithWriteProperties)).isFalse();
+  }
 }
