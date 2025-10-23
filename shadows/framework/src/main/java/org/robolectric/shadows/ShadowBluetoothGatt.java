@@ -42,6 +42,7 @@ public class ShadowBluetoothGatt {
   private boolean isClosed = false;
   private byte[] writtenBytes;
   private byte[] readBytes;
+
   // TODO: ShadowBluetoothGatt.services should be removed in favor of just using the real
   // BluetoothGatt.mServices.
   private final Set<BluetoothGattService> discoverableServices = new HashSet<>();
@@ -306,6 +307,11 @@ public class ShadowBluetoothGatt {
     return BluetoothGatt.GATT_FAILURE;
   }
 
+  @Implementation(minSdk = Build.VERSION_CODES.TIRAMISU)
+  protected boolean readCharacteristic(BluetoothGattCharacteristic characteristic) {
+    return readIncomingCharacteristic(characteristic);
+  }
+
   /**
    * Reads bytes from incoming characteristic if properties are valid and callback is set. Callback
    * responds with {@link BluetoothGattCallback#onCharacteristicWrite} and returns true when
@@ -343,17 +349,19 @@ public class ShadowBluetoothGatt {
    *     ShadowBluetoothGatt#setGattCallback}
    */
   public boolean readIncomingCharacteristic(BluetoothGattCharacteristic characteristic) {
-    if (this.getGattCallback() == null) {
-      throw new IllegalStateException(NULL_CALLBACK_MSG);
-    }
-    if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) == 0
-        || characteristic.getService() == null) {
+    if (!isCharactersiticValidForRead(characteristic)) {
       return false;
     }
 
     this.readBytes = characteristic.getValue();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      this.bluetoothGattCallback.onCharacteristicRead(
+          this.realBluetoothGatt, characteristic, this.readBytes, BluetoothGatt.GATT_SUCCESS);
+    } else {
     this.bluetoothGattCallback.onCharacteristicRead(
         this.realBluetoothGatt, characteristic, BluetoothGatt.GATT_SUCCESS);
+    }
+
     return true;
   }
 
@@ -443,6 +451,14 @@ public class ShadowBluetoothGatt {
 
   private boolean isCallbackAppropriate() {
     return this.getGattCallback() != null && this.isConnected;
+  }
+
+  private boolean isCharactersiticValidForRead(BluetoothGattCharacteristic characteristic) {
+    if (this.getGattCallback() == null) {
+      throw new IllegalStateException(NULL_CALLBACK_MSG);
+    }
+    return (characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) != 0
+        && characteristic.getService() != null;
   }
 
   @ForType(BluetoothGatt.class)
