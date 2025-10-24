@@ -51,7 +51,7 @@ import org.robolectric.util.reflector.ForType;
 @Implements(AccessibilityManager.class)
 public class ShadowAccessibilityManager {
   private static AccessibilityManager sInstance;
-  private static final Object sInstanceSync = new Object();
+  private static final Object sLock = new Object();
 
   @RealObject AccessibilityManager realAccessibilityManager;
   private static final List<AccessibilityEvent> sentAccessibilityEvents = new ArrayList<>();
@@ -69,24 +69,24 @@ public class ShadowAccessibilityManager {
 
   @Resetter
   public static void reset() {
-    synchronized (sInstanceSync) {
+    synchronized (sLock) {
       sInstance = null;
+      sentAccessibilityEvents.clear();
+      enabled = false;
+      installedAccessibilityServiceList.clear();
+      enabledAccessibilityServiceList.clear();
+      accessibilityServiceList.clear();
+      accessibilityShortcutTargets.clear();
+      onAccessibilityStateChangeListeners.clear();
+      touchExplorationEnabled = false;
+      isAccessibilityButtonSupported = true;
     }
-    sentAccessibilityEvents.clear();
-    enabled = false;
-    installedAccessibilityServiceList.clear();
-    enabledAccessibilityServiceList.clear();
-    accessibilityServiceList.clear();
-    accessibilityShortcutTargets.clear();
-    onAccessibilityStateChangeListeners.clear();
-    touchExplorationEnabled = false;
-    isAccessibilityButtonSupported = true;
   }
 
   @HiddenApi
   @Implementation
   public static AccessibilityManager getInstance(Context context) throws Exception {
-    synchronized (sInstanceSync) {
+    synchronized (sLock) {
       if (sInstance == null) {
         sInstance = createInstance(context);
       }
@@ -118,20 +118,27 @@ public class ShadowAccessibilityManager {
   @Implementation(minSdk = O)
   protected void addAccessibilityStateChangeListener(
       AccessibilityStateChangeListener listener, Handler handler) {
-    onAccessibilityStateChangeListeners.put(listener, handler);
+    synchronized (sLock) {
+      onAccessibilityStateChangeListeners.put(listener, handler);
+    }
   }
 
   @Implementation
   protected boolean removeAccessibilityStateChangeListener(
       AccessibilityStateChangeListener listener) {
-    final boolean wasRegistered = onAccessibilityStateChangeListeners.containsKey(listener);
-    onAccessibilityStateChangeListeners.remove(listener);
+    final boolean wasRegistered;
+    synchronized (sLock) {
+      wasRegistered = onAccessibilityStateChangeListeners.containsKey(listener);
+      onAccessibilityStateChangeListeners.remove(listener);
+    }
     return wasRegistered;
   }
 
   @Implementation
   protected List<ServiceInfo> getAccessibilityServiceList() {
-    return Collections.unmodifiableList(accessibilityServiceList);
+    synchronized (sLock) {
+      return Collections.unmodifiableList(accessibilityServiceList);
+    }
   }
 
   public void setInteractiveUiTimeout(int interactiveUiTimeoutMillis) {
@@ -146,7 +153,10 @@ public class ShadowAccessibilityManager {
 
   public void setAccessibilityServiceList(List<ServiceInfo> accessibilityServiceList) {
     Objects.requireNonNull(accessibilityServiceList);
-    ShadowAccessibilityManager.accessibilityServiceList = new ArrayList<>(accessibilityServiceList);
+    synchronized (sLock) {
+      ShadowAccessibilityManager.accessibilityServiceList =
+          new ArrayList<>(accessibilityServiceList);
+    }
     notifyAccessibilityServicesStateChangeListeners();
   }
 
@@ -154,39 +164,51 @@ public class ShadowAccessibilityManager {
   @Implementation
   protected List<AccessibilityServiceInfo> getEnabledAccessibilityServiceList(
       int feedbackTypeFlags) {
-    return Collections.unmodifiableList(enabledAccessibilityServiceList);
+    synchronized (sLock) {
+      return Collections.unmodifiableList(enabledAccessibilityServiceList);
+    }
   }
 
   public void setEnabledAccessibilityServiceList(
       List<AccessibilityServiceInfo> enabledAccessibilityServiceList) {
     Objects.requireNonNull(enabledAccessibilityServiceList);
-    ShadowAccessibilityManager.enabledAccessibilityServiceList =
-        new ArrayList<>(enabledAccessibilityServiceList);
+    synchronized (sLock) {
+      ShadowAccessibilityManager.enabledAccessibilityServiceList =
+          new ArrayList<>(enabledAccessibilityServiceList);
+    }
     notifyAccessibilityServicesStateChangeListeners();
   }
 
   @Implementation
   protected List<AccessibilityServiceInfo> getInstalledAccessibilityServiceList() {
-    return Collections.unmodifiableList(installedAccessibilityServiceList);
+    synchronized (sLock) {
+      return Collections.unmodifiableList(installedAccessibilityServiceList);
+    }
   }
 
   public void setInstalledAccessibilityServiceList(
       List<AccessibilityServiceInfo> installedAccessibilityServiceList) {
     Objects.requireNonNull(installedAccessibilityServiceList);
-    ShadowAccessibilityManager.installedAccessibilityServiceList =
-        new ArrayList<>(installedAccessibilityServiceList);
+    synchronized (sLock) {
+      ShadowAccessibilityManager.installedAccessibilityServiceList =
+          new ArrayList<>(installedAccessibilityServiceList);
+    }
     notifyAccessibilityServicesStateChangeListeners();
   }
 
   @Implementation(minSdk = BAKLAVA)
   protected List<String> getAccessibilityShortcutTargets(@UserShortcutType int shortcutType) {
-    return Collections.unmodifiableList(accessibilityShortcutTargets);
+    synchronized (sLock) {
+      return Collections.unmodifiableList(accessibilityShortcutTargets);
+    }
   }
 
   public void setAccessibilityShortcutTargets(List<String> accessibilityShortcutTargets) {
     Objects.requireNonNull(accessibilityShortcutTargets);
-    ShadowAccessibilityManager.accessibilityShortcutTargets.clear();
-    ShadowAccessibilityManager.accessibilityShortcutTargets.addAll(accessibilityShortcutTargets);
+    synchronized (sLock) {
+      ShadowAccessibilityManager.accessibilityShortcutTargets.clear();
+      ShadowAccessibilityManager.accessibilityShortcutTargets.addAll(accessibilityShortcutTargets);
+    }
   }
 
   private void notifyAccessibilityServicesStateChangeListeners() {
@@ -208,7 +230,9 @@ public class ShadowAccessibilityManager {
 
   @Implementation
   protected void sendAccessibilityEvent(AccessibilityEvent event) {
-    sentAccessibilityEvents.add(event);
+    synchronized (sLock) {
+      sentAccessibilityEvents.add(event);
+    }
     reflector(AccessibilityManagerReflector.class, realAccessibilityManager)
         .sendAccessibilityEvent(event);
   }
@@ -218,17 +242,26 @@ public class ShadowAccessibilityManager {
    * via {@link #sendAccessibilityEvent}.
    */
   public ImmutableList<AccessibilityEvent> getSentAccessibilityEvents() {
-    return ImmutableList.copyOf(sentAccessibilityEvents);
+    synchronized (sLock) {
+      return ImmutableList.copyOf(sentAccessibilityEvents);
+    }
   }
 
   @Implementation
   protected boolean isEnabled() {
-    return enabled;
+    synchronized (sLock) {
+      return enabled;
+    }
   }
 
   public void setEnabled(boolean enabled) {
-    ShadowAccessibilityManager.enabled = enabled;
-    ReflectionHelpers.setField(realAccessibilityManager, "mIsEnabled", enabled);
+    HashMap<AccessibilityStateChangeListener, Handler> onAccessibilityStateChangeListeners;
+    synchronized (sLock) {
+      ShadowAccessibilityManager.enabled = enabled;
+      ReflectionHelpers.setField(realAccessibilityManager, "mIsEnabled", enabled);
+      onAccessibilityStateChangeListeners =
+          new HashMap<>(ShadowAccessibilityManager.onAccessibilityStateChangeListeners);
+    }
     for (AccessibilityStateChangeListener l : onAccessibilityStateChangeListeners.keySet()) {
       if (l != null) {
         l.onAccessibilityStateChanged(enabled);
@@ -238,11 +271,15 @@ public class ShadowAccessibilityManager {
 
   @Implementation
   protected boolean isTouchExplorationEnabled() {
-    return touchExplorationEnabled;
+    synchronized (sLock) {
+      return touchExplorationEnabled;
+    }
   }
 
   public void setTouchExplorationEnabled(boolean touchExplorationEnabled) {
-    ShadowAccessibilityManager.touchExplorationEnabled = touchExplorationEnabled;
+    synchronized (sLock) {
+      ShadowAccessibilityManager.touchExplorationEnabled = touchExplorationEnabled;
+    }
     List<TouchExplorationStateChangeListener> listeners;
     if (getApiLevel() >= O) {
       listeners =
@@ -265,7 +302,9 @@ public class ShadowAccessibilityManager {
    */
   @Implementation(minSdk = O_MR1)
   protected static boolean isAccessibilityButtonSupported() {
-    return isAccessibilityButtonSupported;
+    synchronized (sLock) {
+      return isAccessibilityButtonSupported;
+    }
   }
 
   @HiddenApi
@@ -297,7 +336,9 @@ public class ShadowAccessibilityManager {
    * value of {@link AccessibilityManager#isAccessibilityButtonSupported()}.
    */
   public static void setAccessibilityButtonSupported(boolean supported) {
-    isAccessibilityButtonSupported = supported;
+    synchronized (sLock) {
+      isAccessibilityButtonSupported = supported;
+    }
   }
 
   static class MyHandler extends Handler {
