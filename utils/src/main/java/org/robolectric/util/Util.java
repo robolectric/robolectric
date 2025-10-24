@@ -58,16 +58,6 @@ public class Util {
     }
   }
 
-  public static <T> T[] reverse(T[] array) {
-    for (int i = 0; i < array.length / 2; i++) {
-      int destI = array.length - i - 1;
-      T o = array[destI];
-      array[destI] = array[i];
-      array[i] = o;
-    }
-    return array;
-  }
-
   @SuppressWarnings("NewApi")
   public static Path pathFrom(URL localArtifactUrl) {
     try {
