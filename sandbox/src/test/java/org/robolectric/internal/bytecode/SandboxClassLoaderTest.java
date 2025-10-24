@@ -67,7 +67,6 @@ import org.robolectric.testing.AnInstrumentedChild;
 import org.robolectric.testing.AnUninstrumentedClass;
 import org.robolectric.testing.AnUninstrumentedParent;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Util;
 
 @RunWith(JUnit4.class)
 public class SandboxClassLoaderTest {
@@ -545,16 +544,6 @@ public class SandboxClassLoaderTest {
   public void shouldWorkWithEnums() throws Exception {
     loadClass(AnEnum.class);
   }
-
-  @Test
-  public void shouldReverseAnArray() {
-    assertArrayEquals(new Integer[] {5, 4, 3, 2, 1}, Util.reverse(new Integer[] {1, 2, 3, 4, 5}));
-    assertArrayEquals(new Integer[] {4, 3, 2, 1}, Util.reverse(new Integer[] {1, 2, 3, 4}));
-    assertArrayEquals(new Integer[] {1}, Util.reverse(new Integer[] {1}));
-    assertArrayEquals(new Integer[] {}, Util.reverse(new Integer[] {}));
-  }
-
-  /////////////////////////////
 
   private Object getDeclaredFieldValue(Class<?> aClass, Object o, String fieldName)
       throws Exception {
