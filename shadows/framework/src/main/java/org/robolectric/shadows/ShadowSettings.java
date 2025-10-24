@@ -31,6 +31,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -45,28 +46,8 @@ public class ShadowSettings {
     private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>(DEFAULTS);
 
     @Implementation
-    protected static boolean putInt(ContentResolver cr, String name, int value) {
-      return put(cr, name, value);
-    }
-
-    @Implementation
-    protected static int getInt(ContentResolver cr, String name, int def) {
-      return get(Integer.class, name).orElse(def);
-    }
-
-    @Implementation
-    protected static int getInt(ContentResolver cr, String name) throws SettingNotFoundException {
-      return get(Integer.class, name).orElseThrow(() -> new SettingNotFoundException(name));
-    }
-
-    @Implementation
     protected static boolean putString(ContentResolver cr, String name, String value) {
-      return put(cr, name, value);
-    }
-
-    @Implementation
-    protected static String getString(ContentResolver cr, String name) {
-      return get(String.class, name).orElse(null);
+      return putStringForUser(cr, name, value, 0);
     }
 
     @Implementation
@@ -86,38 +67,12 @@ public class ShadowSettings {
     }
 
     @Implementation
-    protected static boolean putLong(ContentResolver cr, String name, long value) {
-      return put(cr, name, value);
-    }
-
-    @Implementation
-    protected static long getLong(ContentResolver cr, String name, long def) {
-      return get(Long.class, name).orElse(def);
-    }
-
-    @Implementation
-    protected static long getLong(ContentResolver cr, String name) throws SettingNotFoundException {
-      return get(Long.class, name).orElseThrow(() -> new SettingNotFoundException(name));
-    }
-
-    @Implementation
     protected static boolean putFloat(ContentResolver cr, String name, float value) {
-      boolean result = put(cr, name, value);
+      boolean result = reflector(SettingsSystemReflector.class).putFloat(cr, name, value);
       if (Settings.System.WINDOW_ANIMATION_SCALE.equals(name)) {
         ShadowValueAnimator.setDurationScale(value);
       }
       return result;
-    }
-
-    @Implementation
-    protected static float getFloat(ContentResolver cr, String name, float def) {
-      return get(Float.class, name).orElse(def);
-    }
-
-    @Implementation
-    protected static float getFloat(ContentResolver cr, String name)
-        throws SettingNotFoundException {
-      return get(Float.class, name).orElseThrow(() -> new SettingNotFoundException(name));
     }
 
     private static boolean put(ContentResolver cr, String name, Object value) {
@@ -128,10 +83,6 @@ public class ShadowSettings {
         }
       }
       return true;
-    }
-
-    private static <T> Optional<T> get(Class<T> type, String name) {
-      return settings.getOrDefault(name, Optional.empty()).filter(type::isInstance).map(type::cast);
     }
 
     @Resetter
@@ -259,7 +210,6 @@ public class ShadowSettings {
         // Map from to underlying location provider storage API to location mode
         return reflector(SettingsSecureReflector.class).getLocationModeForUser(cr, 0);
       }
-
       return get(Integer.class, name).orElse(def);
     }
 
@@ -269,14 +219,14 @@ public class ShadowSettings {
     }
 
     @Implementation
-    protected static String getString(ContentResolver cr, String name) {
-      return get(String.class, name).orElse(null);
-    }
-
-    @Implementation
     protected static boolean putStringForUser(
         ContentResolver cr, String name, String value, int userHandle) {
       return put(cr, name, value);
+    }
+
+    @Implementation
+    protected static String getString(ContentResolver cr, String name) {
+      return getStringForUser(cr, name, 0);
     }
 
     @Implementation
@@ -287,37 +237,6 @@ public class ShadowSettings {
         return null;
       }
       return String.valueOf(optionalValue.get());
-    }
-
-    @Implementation
-    protected static boolean putLong(ContentResolver cr, String name, long value) {
-      return put(cr, name, value);
-    }
-
-    @Implementation
-    protected static long getLong(ContentResolver cr, String name, long def) {
-      return get(Long.class, name).orElse(def);
-    }
-
-    @Implementation
-    protected static long getLong(ContentResolver cr, String name) throws SettingNotFoundException {
-      return get(Long.class, name).orElseThrow(() -> new SettingNotFoundException(name));
-    }
-
-    @Implementation
-    protected static boolean putFloat(ContentResolver cr, String name, float value) {
-      return put(cr, name, value);
-    }
-
-    @Implementation
-    protected static float getFloat(ContentResolver cr, String name, float def) {
-      return get(Float.class, name).orElse(def);
-    }
-
-    @Implementation
-    protected static float getFloat(ContentResolver cr, String name)
-        throws SettingNotFoundException {
-      return get(Float.class, name).orElseThrow(() -> new SettingNotFoundException(name));
     }
 
     private static boolean put(ContentResolver cr, String name, Object value) {
@@ -353,28 +272,13 @@ public class ShadowSettings {
     private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>(DEFAULTS);
 
     @Implementation
-    protected static boolean putInt(ContentResolver cr, String name, int value) {
-      return put(cr, name, value);
-    }
-
-    @Implementation
-    protected static int getInt(ContentResolver cr, String name, int def) {
-      return get(Integer.class, name).orElse(def);
-    }
-
-    @Implementation
-    protected static int getInt(ContentResolver cr, String name) throws SettingNotFoundException {
-      return get(Integer.class, name).orElseThrow(() -> new SettingNotFoundException(name));
-    }
-
-    @Implementation
     protected static boolean putString(ContentResolver cr, String name, String value) {
       return put(cr, name, value);
     }
 
     @Implementation
     protected static String getString(ContentResolver cr, String name) {
-      return get(String.class, name).orElse(null);
+      return getStringForUser(cr, name, 0);
     }
 
     @Implementation
@@ -393,40 +297,13 @@ public class ShadowSettings {
       return String.valueOf(optionalValue.get());
     }
 
-
-    @Implementation
-    protected static boolean putLong(ContentResolver cr, String name, long value) {
-      return put(cr, name, value);
-    }
-
-    @Implementation
-    protected static long getLong(ContentResolver cr, String name, long def) {
-      return get(Long.class, name).orElse(def);
-    }
-
-    @Implementation
-    protected static long getLong(ContentResolver cr, String name) throws SettingNotFoundException {
-      return get(Long.class, name).orElseThrow(() -> new SettingNotFoundException(name));
-    }
-
     @Implementation
     protected static boolean putFloat(ContentResolver cr, String name, float value) {
-      boolean result = put(cr, name, value);
+      boolean result = reflector(SettingsGlobalReflector.class).putFloat(cr, name, value);
       if (Settings.Global.ANIMATOR_DURATION_SCALE.equals(name)) {
         ShadowValueAnimator.setDurationScale(value);
       }
       return result;
-    }
-
-    @Implementation
-    protected static float getFloat(ContentResolver cr, String name, float def) {
-      return get(Float.class, name).orElse(def);
-    }
-
-    @Implementation
-    protected static float getFloat(ContentResolver cr, String name)
-        throws SettingNotFoundException {
-      return get(Float.class, name).orElseThrow(() -> new SettingNotFoundException(name));
     }
 
     private static boolean put(ContentResolver cr, String name, Object value) {
@@ -437,10 +314,6 @@ public class ShadowSettings {
         }
       }
       return true;
-    }
-
-    private static <T> Optional<T> get(Class<T> type, String name) {
-      return settings.getOrDefault(name, Optional.empty()).filter(type::isInstance).map(type::cast);
     }
 
     @Resetter
@@ -671,6 +544,20 @@ public class ShadowSettings {
   @Resetter
   public static void reset() {
     canDrawOverlays = false;
+  }
+
+  @ForType(Settings.System.class)
+  interface SettingsSystemReflector {
+    @Static
+    @Direct
+    boolean putFloat(ContentResolver cr, String name, float value);
+  }
+
+  @ForType(Settings.Global.class)
+  interface SettingsGlobalReflector {
+    @Static
+    @Direct
+    boolean putFloat(ContentResolver cr, String name, float value);
   }
 
   @ForType(Settings.Secure.class)
