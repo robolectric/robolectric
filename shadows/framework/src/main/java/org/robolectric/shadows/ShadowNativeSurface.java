@@ -59,11 +59,10 @@ public class ShadowNativeSurface {
     return SurfaceNatives.nativeCreateFromSurfaceControl(surfaceControlNativeObject);
   }
 
-  @Implementation(minSdk = Q, maxSdk = UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = Q)
   protected static long nativeGetFromSurfaceControl(
       long surfaceObject, long surfaceControlNativeObject) {
-    DefaultNativeRuntimeLoader.injectAndLoad();
-    return SurfaceNatives.nativeGetFromSurfaceControl(surfaceObject, surfaceControlNativeObject);
+    return 0;
   }
 
   @Implementation(minSdk = P, maxSdk = P)
