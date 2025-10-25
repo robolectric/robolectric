@@ -35,6 +35,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
@@ -68,7 +69,8 @@ public class ShadowCameraManager {
   public static void reset() {
     for (CameraDeviceImpl cameraDevice : createdCameras) {
       if (cameraDevice != null) {
-        cameraDevice.close();
+        ShadowCameraDeviceImpl shadowCameraDevice = Shadow.extract(cameraDevice);
+        shadowCameraDevice.markClosed();
       }
     }
     createdCameras.clear();
@@ -77,7 +79,8 @@ public class ShadowCameraManager {
     registeredCallbacks.clear();
     torchCallbacks.clear();
     if (lastDevice != null) {
-      lastDevice.close();
+      ShadowCameraDeviceImpl shadowCameraDevice = Shadow.extract(lastDevice);
+      shadowCameraDevice.markClosed();
     }
     lastDevice = null;
     lastCallback = null;
