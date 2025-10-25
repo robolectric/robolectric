@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -19,6 +20,8 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,6 +30,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
+import org.robolectric.util.ReflectionHelpers;
 
 /** Tests for {@link ShadowCameraManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -261,8 +265,13 @@ public class ShadowCameraManagerTest {
     ArgumentCaptor<CameraDevice> cameraDeviceCaptor = ArgumentCaptor.forClass(CameraDevice.class);
     verify(mockCallback).onOpened(cameraDeviceCaptor.capture());
     ShadowCameraManager.reset();
+    boolean isClosed =
+        ReflectionHelpers.callInstanceMethod(cameraDeviceCaptor.getValue(), "isClosed");
+    assertThat(isClosed).isTrue();
     shadowOf(Looper.myLooper()).idle();
-    verify(mockCallback).onClosed(cameraDeviceCaptor.getValue());
+    // Verify that the closed callback is not called by the resetter, in case the executor is
+    // already closed.
+    verify(mockCallback, never()).onClosed(cameraDeviceCaptor.getValue());
   }
 
   @Test
@@ -444,5 +453,23 @@ public class ShadowCameraManagerTest {
 
       assertThat(activityCameraIdList).isEqualTo(applicationCameraIdList);
     }
+  }
+
+  @Config(minSdk = VERSION_CODES.P)
+  @Test
+  public void reset_withClosedCallbackExecutor_doesNotThrow() throws Exception {
+
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    ExecutorService singletonExecutor = Executors.newSingleThreadExecutor();
+    shadowOf(Looper.myLooper()).idle();
+    CameraDevice.StateCallback mockCallback = mock(CameraDevice.StateCallback.class);
+
+    cameraManager.openCamera(CAMERA_ID_0, singletonExecutor, mockCallback);
+
+    singletonExecutor.shutdown();
+    singletonExecutor.awaitTermination(1, SECONDS);
+
+    ShadowCameraManager.reset();
   }
 }

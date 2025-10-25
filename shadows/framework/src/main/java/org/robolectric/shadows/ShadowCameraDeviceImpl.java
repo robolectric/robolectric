@@ -22,6 +22,7 @@ import android.view.Surface;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -170,8 +171,12 @@ public class ShadowCameraDeviceImpl {
         deviceHandler.post(callOnClosed);
       }
     }
-
+    markClosed();
     closed = true;
+  }
+
+  void markClosed() {
+    reflector(CameraDeviceImplReflector.class, realObject).getClosing().set(true);
   }
 
   @Implementation
@@ -191,6 +196,10 @@ public class ShadowCameraDeviceImpl {
 
   @ForType(CameraDeviceImpl.class)
   interface CameraDeviceImplReflector {
+
+    @Accessor("mClosing")
+    AtomicBoolean getClosing();
+
     @Direct
     void __constructor__(
         String cameraId,
