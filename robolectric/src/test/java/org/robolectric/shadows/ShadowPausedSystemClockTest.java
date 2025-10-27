@@ -36,7 +36,7 @@ public class ShadowPausedSystemClockTest {
   @Test
   public void sleep_notifiesListener() {
     AtomicBoolean listenerCalled = new AtomicBoolean();
-    ShadowPausedSystemClock.addListener(() -> listenerCalled.set(true));
+    ShadowPausedSystemClock.addListener(advancedBy -> listenerCalled.set(true));
 
     SystemClock.sleep(100);
 
@@ -80,7 +80,7 @@ public class ShadowPausedSystemClockTest {
   @Test
   public void deepSleep_notifiesListener() {
     AtomicBoolean listenerCalled = new AtomicBoolean();
-    ShadowPausedSystemClock.addListener(() -> listenerCalled.set(true));
+    ShadowPausedSystemClock.addListener(advancedBy -> listenerCalled.set(true));
 
     ShadowPausedSystemClock.deepSleep(100);
 
@@ -126,7 +126,7 @@ public class ShadowPausedSystemClockTest {
   @Test
   public void setCurrentTimeMillis_notifiesListener() {
     AtomicBoolean listenerCalled = new AtomicBoolean();
-    ShadowPausedSystemClock.addListener(() -> listenerCalled.set(true));
+    ShadowPausedSystemClock.addListener(advancedBy -> listenerCalled.set(true));
 
     SystemClock.setCurrentTimeMillis(200);
 

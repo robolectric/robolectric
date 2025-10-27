@@ -174,7 +174,7 @@ public class ShadowDisplayEventReceiver {
       ShadowPausedSystemClock.addStaticListener(clockListener);
     }
 
-    private void onClockAdvanced() {
+    private void onClockAdvanced(Duration advancedBy) {
       synchronized (this) {
         long nextVsyncTime = ShadowChoreographer.getNextVsyncTimeNanos();
         if (nextVsyncTime == 0 || ShadowPausedSystemClock.uptimeNanos() < nextVsyncTime) {
