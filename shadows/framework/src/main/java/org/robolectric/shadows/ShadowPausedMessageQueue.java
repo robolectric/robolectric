@@ -26,6 +26,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowMessage.MessageReflector;
+import org.robolectric.shadows.ShadowPausedSystemClock.Listener;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -45,12 +46,19 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   // just use this class as the native object
   private static final NativeObjRegistry<ShadowPausedMessageQueue> nativeQueueRegistry =
       new NativeObjRegistry<>(ShadowPausedMessageQueue.class);
-  private boolean isPolling = false;
   private ShadowPausedSystemClock.Listener clockListener;
   private final AtomicReference<Exception> uncaughtExceptionRef = new AtomicReference<>(null);
 
-  @GuardedBy("realQueue")
+  private final Object poller = new Object();
+
+  @GuardedBy("poller")
   private boolean pendingWake;
+
+  @GuardedBy("poller")
+  private boolean isPolling = false;
+
+  @GuardedBy("poller")
+  private long pollTimeout = Long.MAX_VALUE;
 
   private final AtomicReference<QueueListener> queueListenerRef = new AtomicReference<>(null);
 
@@ -68,16 +76,30 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     long ptr = nativeQueueRegistry.register(this);
     reflector(MessageQueueReflector.class, realQueue).setPtr(ptr);
     clockListener =
-        () -> {
-          synchronized (realQueue) {
-            if (!realQueue.isIdle()) {
-              // only wake up the Looper thread if queue is non empty to reduce contention if many
-              // Looper threads are active
-              nativeWake(ptr);
+        new Listener() {
+          @Override
+          public void onClockAdvanced(Duration advancedBy) {
+            synchronized (poller) {
+              if (isPolling) {
+                pollTimeout -= advancedBy.toMillis();
+                // only wake up the Looper thread if needed to reduce contention if many
+                // Looper threads are active
+                if (pollTimeout <= 0) {
+                  nativeWake(ptr);
+                }
+              } else {
+                // There can be a race condition between the clock advances and a new delayed
+                // message getting posted.
+                // To protect against this, ensure the next call to nativePollOnce does not block.
+                // In the worst case this will just result in an extra no-op loopOnce for the Looper
+                // thread
+                pendingWake = true;
+              }
             }
+            updateListener();
           }
-          updateListener();
         };
+
     ShadowPausedSystemClock.addStaticListener(clockListener);
   }
 
@@ -89,7 +111,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   @Implementation(minSdk = M)
   protected void nativePollOnce(long ptr, int timeoutMillis) {
-    synchronized (realQueue) {
+    synchronized (poller) {
       isPolling = true;
       try {
         if (pendingWake) {
@@ -97,13 +119,15 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
         } else if (timeoutMillis == 0) {
           // Calling epoll_wait() with 0 returns immediately
         } else {
-          // ignore timeout since clock is not advancing. ClockListener will notify when clock
-          // advances
-          realQueue.wait();
+          // store timeout so ClockListener can notify when clock
+          // advances sufficiently
+          pollTimeout = timeoutMillis;
+          poller.wait();
         }
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
+      pollTimeout = Long.MAX_VALUE;
       isPolling = false;
       pendingWake = false;
     }
@@ -113,15 +137,18 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   protected static void nativeWake(long ptr) {
     MessageQueue realQueue = nativeQueueRegistry.getNativeObject(ptr).realQueue;
     ShadowPausedMessageQueue shadowPausedMessageQueue = Shadow.extract(realQueue);
-    synchronized (shadowPausedMessageQueue.realQueue) {
+    synchronized (shadowPausedMessageQueue.poller) {
       shadowPausedMessageQueue.pendingWake = true;
-      realQueue.notifyAll();
+      shadowPausedMessageQueue.poller.notifyAll();
     }
   }
 
   @Implementation(minSdk = M)
   protected static boolean nativeIsPolling(long ptr) {
-    return nativeQueueRegistry.getNativeObject(ptr).isPolling;
+    ShadowPausedMessageQueue sq = nativeQueueRegistry.getNativeObject(ptr);
+    synchronized (sq.poller) {
+      return sq.isPolling;
+    }
   }
 
   /** Exposes the API23+_isIdle method to older platforms */
@@ -204,7 +231,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   @Implementation(minSdk = M)
   protected boolean isPolling() {
-    synchronized (realQueue) {
+    synchronized (poller) {
       return isPolling;
     }
   }
