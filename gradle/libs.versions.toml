@@ -22,7 +22,7 @@ findbugs-jsr305 = "3.0.2"
 hamcrest = "3.0"
 
 # https://github.com/google/error-prone/releases
-error-prone = "2.42.0"
+error-prone = "2.43.0"
 
 # https://github.com/tbroyer/gradle-errorprone-plugin/releases
 error-prone-gradle = "4.3.0"
