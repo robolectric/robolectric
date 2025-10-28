@@ -46,6 +46,23 @@ public class ShadowBiometricPrompt {
     }
   }
 
+  /**
+   * Returns the {@link BiometricPrompt} for the current authentication session, or {@code null} if
+   * there is no session in progress.
+   *
+   * <p>Use this method to check if an authentication session is in progress, and/or to perform
+   * additional assertions on the {@link BiometricPrompt} being shown such as its title or
+   * description.
+   */
+  @Nullable
+  public static BiometricPrompt getCurrentPrompt() {
+    AuthenticateSession session = getCurrentSession();
+    if (session == null) {
+      return null;
+    }
+    return session.getPrompt();
+  }
+
   /** Cancels the current authentication session and triggers {@link CancellationSignal#cancel}. */
   public static void cancelCurrentSession() {
     requireCurrentSession().cancelSession();
@@ -70,6 +87,17 @@ public class ShadowBiometricPrompt {
     requireAndClearCurrentSession().authenticateWithError(errorCode, message);
   }
 
+  /**
+   * Simulates a failed authentication by triggering {@link
+   * AuthenticationCallback#onAuthenticationFailed}.
+   *
+   * <p>Note that this does not clear the current session. A failed authentication typically means
+   * the user can retry.
+   */
+  public static void failCurrentSessionOnce() {
+    requireCurrentSession().failOnce();
+  }
+
   @Implementation
   protected void authenticate(
       CancellationSignal cancel,
@@ -78,7 +106,8 @@ public class ShadowBiometricPrompt {
     reflector(BiometricPromptReflector.class, realBiometricPrompt)
         .authenticate(cancel, executor, callback);
     synchronized (lock) {
-      currentAuthenticateSession = new AuthenticateSession(callback, cancel, executor);
+      currentAuthenticateSession =
+          new AuthenticateSession(realBiometricPrompt, callback, cancel, executor);
     }
   }
 
@@ -91,46 +120,54 @@ public class ShadowBiometricPrompt {
     reflector(BiometricPromptReflector.class, realBiometricPrompt)
         .authenticate(crypto, cancel, executor, callback);
     synchronized (lock) {
-      currentAuthenticateSession = new AuthenticateSession(callback, cancel, executor);
+      currentAuthenticateSession =
+          new AuthenticateSession(realBiometricPrompt, callback, cancel, executor);
+    }
+  }
+
+  @Nullable
+  private static AuthenticateSession getCurrentSession() {
+    synchronized (lock) {
+      return currentAuthenticateSession;
     }
   }
 
   private static AuthenticateSession requireCurrentSession() {
-    AuthenticateSession session;
-    synchronized (lock) {
-      checkState(
-          currentAuthenticateSession != null,
-          "No current authentication session. Did you forget to call authenticate() first?");
-      session = currentAuthenticateSession;
-    }
+    AuthenticateSession session = getCurrentSession();
+    checkState(
+        session != null,
+        "No current authentication session. Did you forget to call authenticate() first?");
     return session;
   }
 
   private static AuthenticateSession requireAndClearCurrentSession() {
-    AuthenticateSession authenticateSession;
     synchronized (lock) {
       checkState(
           currentAuthenticateSession != null,
           "No current authentication session. Did you forget to call authenticate() first?");
-      authenticateSession = currentAuthenticateSession;
+      AuthenticateSession authenticateSession = currentAuthenticateSession;
       currentAuthenticateSession = null;
+      return authenticateSession;
     }
-    return authenticateSession;
   }
 
-  private class AuthenticateSession {
+  private static final class AuthenticateSession {
+    private final BiometricPrompt prompt;
     private final AuthenticationCallback callback;
     private final CancellationSignal cancel;
     private final Executor executor;
 
     AuthenticateSession(
+        BiometricPrompt prompt,
         AuthenticationCallback callback,
         CancellationSignal cancel,
         @CallbackExecutor Executor executor) {
+      requireNonNull(prompt, "BiometricPrompt must be non-null");
       requireNonNull(callback, "AuthenticationCallback must be non-null");
       requireNonNull(cancel, "CancellationSignal must be non-null");
       requireNonNull(executor, "Executor must be non-null");
 
+      this.prompt = prompt;
       this.callback = callback;
       this.cancel = cancel;
       this.executor = executor;
@@ -151,6 +188,10 @@ public class ShadowBiometricPrompt {
           });
     }
 
+    private BiometricPrompt getPrompt() {
+      return prompt;
+    }
+
     private void cancelSession() {
       cancel.cancel();
     }
@@ -161,6 +202,10 @@ public class ShadowBiometricPrompt {
 
     private void authenticateWithError(int errorCode, String message) {
       executor.execute(() -> callback.onAuthenticationError(errorCode, message));
+    }
+
+    private void failOnce() {
+      executor.execute(() -> callback.onAuthenticationFailed());
     }
 
     private AuthenticationResult getAuthenticationResult() {

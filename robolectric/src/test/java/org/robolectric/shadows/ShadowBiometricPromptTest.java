@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -45,6 +46,18 @@ public final class ShadowBiometricPromptTest {
 
   @Mock private AuthenticationCallback authenticationCallback1;
   @Mock private AuthenticationCallback authenticationCallback2;
+
+  @Test
+  public void getCurrentPrompt_noPrompt_returnsNull() {
+    assertThat(ShadowBiometricPrompt.getCurrentPrompt()).isNull();
+  }
+
+  @Test
+  public void getCurrentPrompt_returnsPromptInProgress() {
+    biometricPrompt.authenticate(cancellationSignal, executor, authenticationCallback1);
+
+    assertThat(ShadowBiometricPrompt.getCurrentPrompt()).isEqualTo(biometricPrompt);
+  }
 
   @Test
   public void authenticateCurrentSessionSuccessfully_triggersOnAuthenticationSucceeded() {
@@ -148,6 +161,17 @@ public final class ShadowBiometricPromptTest {
     assertThrows(
         IllegalStateException.class,
         () -> ShadowBiometricPrompt.authenticateCurrentSessionSuccessfully());
+  }
+
+  @Test
+  public void failCurrentSessionOnce_callsOnAuthenticationFailedAndDoesNotClearSession() {
+    biometricPrompt.authenticate(cancellationSignal, executor, authenticationCallback1);
+
+    ShadowBiometricPrompt.failCurrentSessionOnce();
+    waitForIdle();
+
+    verify(authenticationCallback1).onAuthenticationFailed();
+    assertThat(ShadowBiometricPrompt.getCurrentPrompt()).isNotNull();
   }
 
   private void waitForIdle() {
