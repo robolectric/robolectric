@@ -43,7 +43,7 @@ import org.robolectric.versioning.AndroidVersions.V;
 @Priority(Integer.MIN_VALUE)
 public class DefaultSdkProvider implements SdkProvider {
 
-  private static final int RUNNING_JAVA_VERSION = Util.getJavaVersion();
+  private static final int RUNNING_JAVA_VERSION = Runtime.version().feature();
 
   private static final int PREINSTRUMENTED_VERSION = 7;
 
