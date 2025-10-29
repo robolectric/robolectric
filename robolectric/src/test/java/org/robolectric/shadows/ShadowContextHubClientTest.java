@@ -48,6 +48,27 @@ public final class ShadowContextHubClientTest {
   }
 
   @Test
+  public void clearMessages_ensureMessageListIsEmpty() {
+    ContextHubClient contextHubClient = (ContextHubClient) createContextHubClient();
+    ShadowContextHubClient shadowContextHubClient = Shadow.extract(contextHubClient);
+
+    // Send a message to the nano app.
+    NanoAppMessage message =
+        NanoAppMessage.createMessageToNanoApp(
+            /* targetNanoAppId= */ 0L, /* messageType= */ 0, /* messageBody= */ new byte[10]);
+    int returnValue = contextHubClient.sendMessageToNanoApp(message);
+
+    // Ensure we have a successful result and our sent message is captured.
+    assertThat(returnValue).isEqualTo(ContextHubTransaction.RESULT_SUCCESS);
+    assertThat(shadowContextHubClient.getMessages()).containsExactly(message);
+
+    // Clear the messages.
+    shadowContextHubClient.clearMessages();
+
+    assertThat(shadowContextHubClient.getMessages()).isEmpty();
+  }
+
+  @Test
   public void whenContextHubIsClosed_ensureIsClosedIsTrue() {
     ContextHubClient contextHubClient = (ContextHubClient) createContextHubClient();
     ShadowContextHubClient shadowContextHubClient = Shadow.extract(contextHubClient);
