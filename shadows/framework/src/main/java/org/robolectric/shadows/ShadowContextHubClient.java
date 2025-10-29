@@ -51,6 +51,10 @@ public class ShadowContextHubClient {
     return ImmutableList.copyOf(messages);
   }
 
+  public void clearMessages() {
+    messages.clear();
+  }
+
   @RequiresApi(VERSION_CODES.Q)
   public boolean isClosed() {
     return reflector(ContextHubClientReflector.class, realContextHubClient).getIsClosed().get();
