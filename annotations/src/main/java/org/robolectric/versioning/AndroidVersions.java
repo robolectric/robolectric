@@ -25,7 +25,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -1075,7 +1074,7 @@ public final class AndroidVersions {
         }
       }
     }
-    Collections.sort(allReleases, AndroidRelease::compareTo);
+    allReleases.sort(AndroidRelease::compareTo);
 
     SdkInformation sdkInformation = new SdkInformation(allReleases, classesWithIllegalNames);
     sdkInformation.handleStaticErrors();
