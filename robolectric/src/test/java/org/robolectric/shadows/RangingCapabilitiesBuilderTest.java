@@ -29,5 +29,4 @@ public final class RangingCapabilitiesBuilderTest {
     assertThat(rangingCapabilities.getTechnologyAvailability())
         .containsExactly(UWB, ENABLED, BLE_CS, DISABLED_USER_RESTRICTIONS);
   }
-
 }

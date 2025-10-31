@@ -351,24 +351,24 @@ public class ShadowAccessibilityNodeInfo {
    * <p>If one wishes to use a real ANI node in a test, which is a recommended practice, below is a
    * test snippet:
    *
-   * {@snippet :
-   *  Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
-   *  LinearLayout layout = new LinearLayout(activity);
-   *  layout.setOrientation(LinearLayout.VERTICAL);
-   *  TextView label1 = new TextView(activity);
-   *  label1.setText("Label 1");
-   *  layout.addView(label1);
-   *  TextView label2 = new TextView(activity);
-   *  label2.setText("Label 2");
-   *  layout.addView(label2);
-   *  activity.setContentView(layout);
-   *  View view = activity.getWindow().getDecorView();
-   *  AccessibilityNodeInfo node = new AccessibilityNodeInfo();
-   *  node.setQueryFromAppProcessEnabled(view, true);
-   *  node.addLabeledBy(label1);
-   *  node.addLabeledBy(label2);
-   *  List<AccessibilityNodeInfo> labeledByList = node.getLabeledByList();
-   * }
+   * <pre>{@code
+   * Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
+   * LinearLayout layout = new LinearLayout(activity);
+   * layout.setOrientation(LinearLayout.VERTICAL);
+   * TextView label1 = new TextView(activity);
+   * label1.setText("Label 1");
+   * layout.addView(label1);
+   * TextView label2 = new TextView(activity);
+   * label2.setText("Label 2");
+   * layout.addView(label2);
+   * activity.setContentView(layout);
+   * View view = activity.getWindow().getDecorView();
+   * AccessibilityNodeInfo node = new AccessibilityNodeInfo();
+   * node.setQueryFromAppProcessEnabled(view, true);
+   * node.addLabeledBy(label1);
+   * node.addLabeledBy(label2);
+   * List<AccessibilityNodeInfo> labeledByList = node.getLabeledByList();
+   * }</pre>
    *
    * @see #getLabeledByList()
    */
