@@ -16,6 +16,11 @@ final class NoOpRemoteControl implements RemoteControl {
   }
 
   @Override
+  public void onCycle(long uptimeNanos) {
+    // Do nothing
+  }
+
+  @Override
   public void disconnect(Duration timeout) {
     // Do nothing
   }
