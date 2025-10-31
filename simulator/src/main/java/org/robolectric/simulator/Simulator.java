@@ -50,6 +50,7 @@ public final class Simulator {
   private boolean headless = false;
   private float displayWidth;
   private float displayHeight;
+  private RemoteControl remoteControl = null;
   private ScreenRecorder screenRecorder = null;
   private final Semaphore writingFrame = new Semaphore(1);
 
@@ -112,6 +113,7 @@ public final class Simulator {
       ShadowSystemClock.advanceBy(Duration.ofNanos(System.nanoTime() - currentSystemTime));
       shadowLooper.idle();
       captureScreen();
+      remoteControl.onCycle(SystemClock.uptimeNanos());
     }
   }
 
@@ -171,7 +173,7 @@ public final class Simulator {
   private void connectRemoteControl() {
     // The default RemoteControl is a no-op stub.
     Injector injector = new Injector.Builder(Looper.class.getClassLoader()).build();
-    RemoteControl remoteControl = injector.getInstance(RemoteControl.class);
+    remoteControl = injector.getInstance(RemoteControl.class);
     remoteControl.connect(
         InstrumentationRegistry.getInstrumentation()
             .getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES),
