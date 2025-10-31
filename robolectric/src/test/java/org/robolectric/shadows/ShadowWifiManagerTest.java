@@ -136,6 +136,44 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
+  public void setWifiEnabled_whenNotModifiableAndWifiIsEnabled_doesNotChangeState() {
+    wifiManager.setWifiEnabled(true);
+    shadowOf(wifiManager).setWifiModifiable(false);
+
+    // Try to disable WiFi. Should return false as state is different, and state should not change.
+    assertThat(wifiManager.setWifiEnabled(false)).isFalse();
+    assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_ENABLED);
+
+    // Try to enable WiFi. Should return true as state is same, and state should not change.
+    assertThat(wifiManager.setWifiEnabled(true)).isTrue();
+    assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_ENABLED);
+  }
+
+  @Test
+  public void setWifiEnabled_whenNotModifiableAndWifiIsDisabled_doesNotChangeState() {
+    wifiManager.setWifiEnabled(false);
+    shadowOf(wifiManager).setWifiModifiable(false);
+
+    // Try to enable WiFi. Should return false as state is different, and state should not change.
+    assertThat(wifiManager.setWifiEnabled(true)).isFalse();
+    assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_DISABLED);
+
+    // Try to disable WiFi. Should return true as state is same, and state should not change.
+    assertThat(wifiManager.setWifiEnabled(false)).isTrue();
+    assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_DISABLED);
+  }
+
+  @Test
+  public void setWifiEnabled_whenModifiableIsRestored_changesState() {
+    wifiManager.setWifiEnabled(true);
+    shadowOf(wifiManager).setWifiModifiable(false);
+    shadowOf(wifiManager).setWifiModifiable(true);
+
+    assertThat(wifiManager.setWifiEnabled(false)).isTrue();
+    assertThat(wifiManager.isWifiEnabled()).isFalse();
+  }
+
+  @Test
   public void startScan() {
     // By default startScan() succeeds.
     assertThat(wifiManager.startScan()).isTrue();
