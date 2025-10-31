@@ -103,15 +103,13 @@ public class ShadowNativeSurface {
     return SurfaceNatives.nativeIsConsumerRunningBehind(nativeObject);
   }
 
-  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
+  @Implementation
   protected static long nativeReadFromParcel(long nativeObject, Parcel source) {
-    return SurfaceNatives.nativeReadFromParcel(nativeObject, source);
+    return 0;
   }
 
-  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
-  protected static void nativeWriteToParcel(long nativeObject, Parcel dest) {
-    SurfaceNatives.nativeWriteToParcel(nativeObject, dest);
-  }
+  @Implementation
+  protected static void nativeWriteToParcel(long nativeObject, Parcel dest) {}
 
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeAllocateBuffers(long nativeObject) {

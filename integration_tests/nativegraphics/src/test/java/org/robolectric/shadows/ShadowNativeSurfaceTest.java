@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 
 import android.graphics.SurfaceTexture;
+import android.os.Parcel;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -39,5 +40,15 @@ public class ShadowNativeSurfaceTest {
         new SurfaceControl.Builder().setName("test").setBufferSize(100, 100).build();
     Surface surface = new Surface(control);
     surface.release();
+  }
+
+  @Test
+  public void surface_toFromParcel_doesNotThrow() {
+    Surface surface = Shadow.newInstanceOf(Surface.class);
+    Parcel parcel = Parcel.obtain();
+
+    surface.writeToParcel(parcel, /* flags= */ 0);
+    parcel.setDataPosition(0);
+    surface.readFromParcel(parcel);
   }
 }
