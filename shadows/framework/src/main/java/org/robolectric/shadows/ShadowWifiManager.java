@@ -66,6 +66,7 @@ public class ShadowWifiManager {
   private boolean accessWifiStatePermission = true;
   private boolean changeWifiStatePermission = true;
   private int wifiState = WifiManager.WIFI_STATE_ENABLED;
+  private boolean wifiModifiable = true;
   private boolean wasSaved = false;
   private WifiInfo wifiInfo;
   private List<ScanResult> scanResults;
@@ -157,8 +158,25 @@ public class ShadowWifiManager {
   @Implementation
   protected boolean setWifiEnabled(boolean wifiEnabled) {
     checkAccessWifiStatePermission();
+    if (!wifiModifiable) {
+      boolean isCurrentlyEnabled = (this.wifiState == WifiManager.WIFI_STATE_ENABLED);
+      return wifiEnabled == isCurrentlyEnabled;
+    }
     this.wifiState = wifiEnabled ? WifiManager.WIFI_STATE_ENABLED : WifiManager.WIFI_STATE_DISABLED;
     return true;
+  }
+
+  /**
+   * Sets whether calls to {@link #setWifiEnabled(boolean)} can modify the wifi state. This helps to
+   * simulate cases where the framework blocks the app's request, such as when airplane mode is
+   * enabled, or a user restriction is set.
+   *
+   * <p>If set to false, {@link #setWifiEnabled(boolean)} will not change the wifi state, and will
+   * return true if the requested state matches the current state, and false otherwise. By default,
+   * this is true and {@link #setWifiEnabled(boolean)} will always succeed and modify the state.
+   */
+  public void setWifiModifiable(boolean wifiModifiable) {
+    this.wifiModifiable = wifiModifiable;
   }
 
   public void setWifiState(int wifiState) {
