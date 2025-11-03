@@ -89,7 +89,7 @@ mockk = "1.14.6"
 roborazzi = "1.50.0"
 
 # https://square.github.io/okhttp/changelogs/changelog/
-okhttp = "5.2.1"
+okhttp = "5.3.0"
 
 # https://github.com/powermock/powermock/releases
 powermock = "2.0.9"
