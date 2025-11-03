@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
-import org.robolectric.util.Util;
 
 /**
  * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's
@@ -208,7 +207,7 @@ public class SandboxClassLoader extends URLClassLoader {
         throw new ClassNotFoundException(className);
       }
 
-      return Util.readBytes(classBytesStream);
+      return classBytesStream.readAllBytes();
     } catch (IOException e) {
       throw new ClassNotFoundException("couldn't load " + className, e);
     }
