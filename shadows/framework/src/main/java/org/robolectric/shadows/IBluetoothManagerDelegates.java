@@ -10,7 +10,9 @@ import android.bluetooth.IBluetoothGatt;
 import android.bluetooth.IBluetoothManagerCallback;
 import android.bluetooth.IBluetoothProfileServiceConnection;
 import android.content.Context;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Messenger;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import org.robolectric.RuntimeEnvironment;
@@ -96,5 +98,11 @@ class IBluetoothManagerDelegates {
         // nothing to do
       }
     }
+
+    public android.os.Messenger getServiceMessenger() {
+      // just return a non-null Messenger. This will be unused
+      return new Messenger(Handler.getMain());
+    }
   }
 }
+

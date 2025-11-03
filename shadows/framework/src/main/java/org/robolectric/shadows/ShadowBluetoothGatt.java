@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.R;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
@@ -12,8 +14,11 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.IBluetoothGatt;
+import android.content.AttributionSource;
 import android.content.Context;
 import android.os.Build;
+import android.os.Handler;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +32,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.PerfStatsCollector;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -61,7 +68,20 @@ public class ShadowBluetoothGatt {
 
       BluetoothGatt bluetoothGatt;
       int apiLevel = RuntimeEnvironment.getApiLevel();
-      if (apiLevel > R) {
+      if (apiLevel > BAKLAVA) {
+        bluetoothGatt =
+            reflector(BluetoothGattReflector.class)
+                .newInstance(
+                    ReflectionHelpers.createNullProxy(IBluetoothGatt.class),
+                    device,
+                    0,
+                    false,
+                    0,
+                    null,
+                    false,
+                    null,
+                    null);
+      } else if (apiLevel > R) {
         bluetoothGatt =
             Shadow.newInstance(
                 BluetoothGatt.class,
@@ -463,6 +483,18 @@ public class ShadowBluetoothGatt {
 
   @ForType(BluetoothGatt.class)
   private interface BluetoothGattReflector {
+
+    @Constructor
+    BluetoothGatt newInstance(
+        IBluetoothGatt iGatt,
+        BluetoothDevice device,
+        int transport,
+        boolean opportunistic,
+        int phy,
+        AttributionSource source,
+        boolean autoConnect,
+        BluetoothGattCallback callback,
+        Handler handler);
 
     @Direct
     void disconnect();
