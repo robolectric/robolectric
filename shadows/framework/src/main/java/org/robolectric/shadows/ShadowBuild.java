@@ -7,6 +7,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.RequiresApi;
 import android.os.Build;
+import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -74,6 +75,15 @@ public class ShadowBuild {
    */
   public static void setDebuggable(Boolean isDebuggable) {
     ReflectionHelpers.setStaticField(Build.class, "IS_DEBUGGABLE", isDebuggable);
+  }
+
+  /**
+   * Sets the value of the {@link Build#IS_USERDEBUG} field.
+   *
+   * <p>It will be reset for the next test.
+   */
+  public static void setUserdebug(Boolean isUserdebug) {
+    ReflectionHelpers.setStaticField(Build.class, "IS_USERDEBUG", isUserdebug);
   }
 
   /**
@@ -182,6 +192,13 @@ public class ShadowBuild {
    */
   public static void setType(String type) {
     ReflectionHelpers.setStaticField(Build.class, "TYPE", type);
+
+    if (Build.VERSION.SDK_INT >= O) {
+      ReflectionHelpers.setStaticField(Build.class, "IS_USER", Objects.equals(type, "user"));
+      ReflectionHelpers.setStaticField(
+          Build.class, "IS_USERDEBUG", Objects.equals(type, "userdebug"));
+      ReflectionHelpers.setStaticField(Build.class, "IS_ENG", Objects.equals(type, "eng"));
+    }
   }
 
   /**
