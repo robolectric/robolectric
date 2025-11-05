@@ -432,6 +432,36 @@ public class ShadowBluetoothAdapterTest {
     assertThat(remoteDevice2.getBondState()).isEqualTo(BluetoothDevice.BOND_BONDED);
   }
 
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void testGetRemoteDevice_shouldHavePublicAddressType() {
+    BluetoothDevice remoteDevice = bluetoothAdapter.getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(remoteDevice.getAddressType()).isEqualTo(BluetoothDevice.ADDRESS_TYPE_PUBLIC);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void testGetRemoteLeDevice_withSameAddressType_sameState() {
+    BluetoothDevice remoteDevice1 =
+        bluetoothAdapter.getRemoteLeDevice(MOCK_MAC_ADDRESS, BluetoothDevice.ADDRESS_TYPE_PUBLIC);
+    BluetoothDevice remoteDevice2 =
+        bluetoothAdapter.getRemoteLeDevice(MOCK_MAC_ADDRESS, BluetoothDevice.ADDRESS_TYPE_PUBLIC);
+
+    assertThat(remoteDevice1.getAddressType()).isEqualTo(remoteDevice2.getAddressType());
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void testGetRemoteLeDevice_withDifferentAddressType_differentState() {
+    BluetoothDevice remoteDevice1 =
+        bluetoothAdapter.getRemoteLeDevice(MOCK_MAC_ADDRESS, BluetoothDevice.ADDRESS_TYPE_PUBLIC);
+    BluetoothDevice remoteDevice2 =
+        bluetoothAdapter.getRemoteLeDevice(MOCK_MAC_ADDRESS, BluetoothDevice.ADDRESS_TYPE_RANDOM);
+
+    assertThat(remoteDevice1.getAddressType()).isNotEqualTo(remoteDevice2.getAddressType());
+  }
+
   @Test
   public void insecureRfcomm_notNull() throws Exception {
     assertThat(
