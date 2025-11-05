@@ -114,6 +114,25 @@ public class ShadowBuildTest {
     assertThat(Build.TYPE).isEqualTo("robo_type");
   }
 
+  @Config(minSdk = O)
+  @Test
+  public void setBuildTypes() {
+    ShadowBuild.setType("user");
+    assertThat(Build.IS_USER).isEqualTo(true);
+    assertThat(Build.IS_USERDEBUG).isEqualTo(false);
+    assertThat(Build.IS_ENG).isEqualTo(false);
+
+    ShadowBuild.setType("userdebug");
+    assertThat(Build.IS_USER).isEqualTo(false);
+    assertThat(Build.IS_USERDEBUG).isEqualTo(true);
+    assertThat(Build.IS_ENG).isEqualTo(false);
+
+    ShadowBuild.setType("eng");
+    assertThat(Build.IS_USER).isEqualTo(false);
+    assertThat(Build.IS_USERDEBUG).isEqualTo(false);
+    assertThat(Build.IS_ENG).isEqualTo(true);
+  }
+
   @Test
   public void resetPerTest() {
     checkValues();
