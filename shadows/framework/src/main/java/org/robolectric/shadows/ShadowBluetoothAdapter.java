@@ -36,6 +36,7 @@ import android.os.IInterface;
 import android.os.ParcelUuid;
 import android.provider.Settings;
 import android.util.Log;
+import android.util.Pair;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.time.Duration;
@@ -91,7 +92,7 @@ public class ShadowBluetoothAdapter {
 
   private static boolean isBluetoothSupported = true;
 
-  private static final Map<String, BluetoothDevice> deviceCache = new HashMap<>();
+  private static final Map<Pair<String, Integer>, BluetoothDevice> deviceCache = new HashMap<>();
   private Set<BluetoothDevice> bondedDevices = new HashSet<>();
   private List<BluetoothDevice> mostRecentlyConnectedDevices = new ArrayList<>();
   private final Set<LeScanCallback> leScanCallbacks = new HashSet<>();
@@ -178,12 +179,24 @@ public class ShadowBluetoothAdapter {
 
   @Implementation
   protected synchronized BluetoothDevice getRemoteDevice(String address) {
-    if (!deviceCache.containsKey(address)) {
+    Pair<String, Integer> key = Pair.create(address, BluetoothDevice.ADDRESS_TYPE_PUBLIC);
+    if (!deviceCache.containsKey(key)) {
       deviceCache.put(
-          address,
-          reflector(BluetoothAdapterReflector.class, realAdapter).getRemoteDevice(address));
+          key, reflector(BluetoothAdapterReflector.class, realAdapter).getRemoteDevice(address));
     }
-    return deviceCache.get(address);
+    return deviceCache.get(key);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected synchronized BluetoothDevice getRemoteLeDevice(String address, int addressType) {
+    Pair<String, Integer> key = Pair.create(address, addressType);
+    if (!deviceCache.containsKey(key)) {
+      deviceCache.put(
+          key,
+          reflector(BluetoothAdapterReflector.class, realAdapter)
+              .getRemoteLeDevice(address, addressType));
+    }
+    return deviceCache.get(key);
   }
 
   public void setMostRecentlyConnectedDevices(List<BluetoothDevice> devices) {
@@ -841,6 +854,9 @@ public class ShadowBluetoothAdapter {
 
     @Direct
     BluetoothDevice getRemoteDevice(String address);
+
+    @Direct
+    BluetoothDevice getRemoteLeDevice(String address, int addressType);
 
     @Accessor("sAdapter")
     @Static
