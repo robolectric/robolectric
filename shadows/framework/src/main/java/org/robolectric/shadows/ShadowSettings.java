@@ -15,7 +15,6 @@ import android.content.Intent;
 import android.location.LocationManager;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
-import android.provider.Settings.SettingNotFoundException;
 import android.text.TextUtils;
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
@@ -94,7 +93,7 @@ public class ShadowSettings {
 
   @Implements(value = Settings.Secure.class)
   public static class ShadowSecure {
-    private static final HashMap<String, Optional<Object>> SECURE_DEFAULTS = new HashMap<>();
+    private static final HashMap<String, Optional<String>> SECURE_DEFAULTS = new HashMap<>();
 
     // source of truth for initial location state
     static final boolean INITIAL_GPS_PROVIDER_STATE = true;
@@ -102,20 +101,23 @@ public class ShadowSettings {
 
     static {
       if (INITIAL_GPS_PROVIDER_STATE && INITIAL_NETWORK_PROVIDER_STATE) {
-        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Optional.of(Secure.LOCATION_MODE_HIGH_ACCURACY));
+        SECURE_DEFAULTS.put(
+            Secure.LOCATION_MODE, Optional.of(String.valueOf(Secure.LOCATION_MODE_HIGH_ACCURACY)));
         SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, Optional.of("gps,network"));
       } else if (INITIAL_GPS_PROVIDER_STATE) {
-        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Optional.of(Secure.LOCATION_MODE_SENSORS_ONLY));
+        SECURE_DEFAULTS.put(
+            Secure.LOCATION_MODE, Optional.of(String.valueOf(Secure.LOCATION_MODE_SENSORS_ONLY)));
         SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, Optional.of("gps"));
       } else if (INITIAL_NETWORK_PROVIDER_STATE) {
-        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Optional.of(Secure.LOCATION_MODE_BATTERY_SAVING));
+        SECURE_DEFAULTS.put(
+            Secure.LOCATION_MODE, Optional.of(String.valueOf(Secure.LOCATION_MODE_BATTERY_SAVING)));
         SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, Optional.of("network"));
       } else {
-        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Optional.of(LOCATION_MODE_OFF));
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Optional.of(String.valueOf(LOCATION_MODE_OFF)));
       }
     }
 
-    private static final Map<String, Optional<Object>> dataMap =
+    private static final Map<String, Optional<String>> dataMap =
         new ConcurrentHashMap<>(SECURE_DEFAULTS);
 
     @Implementation(maxSdk = P)
@@ -163,8 +165,9 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putInt(ContentResolver cr, String name, int value) {
-      boolean changed = !Objects.equals(dataMap.put(name, Optional.of(value)), Optional.of(value));
-
+      // In real Android, all settings types are stored as Strings.
+      Optional<String> valueString = Optional.of(String.valueOf(value));
+      boolean changed = !Objects.equals(dataMap.put(name, valueString), valueString);
       if (Settings.Secure.LOCATION_MODE.equals(name)) {
         if (RuntimeEnvironment.getApiLevel() <= P) {
           // do this after setting location mode but before invoking contentobservers, so that
@@ -195,25 +198,6 @@ public class ShadowSettings {
     }
 
     @Implementation
-    protected static int getInt(ContentResolver cr, String name) throws SettingNotFoundException {
-      if (Settings.Secure.LOCATION_MODE.equals(name) && RuntimeEnvironment.getApiLevel() < P) {
-        // Map from to underlying location provider storage API to location mode
-        return reflector(SettingsSecureReflector.class).getLocationModeForUser(cr, 0);
-      }
-
-      return get(Integer.class, name).orElseThrow(() -> new SettingNotFoundException(name));
-    }
-
-    @Implementation
-    protected static int getInt(ContentResolver cr, String name, int def) {
-      if (Settings.Secure.LOCATION_MODE.equals(name) && RuntimeEnvironment.getApiLevel() < P) {
-        // Map from to underlying location provider storage API to location mode
-        return reflector(SettingsSecureReflector.class).getLocationModeForUser(cr, 0);
-      }
-      return get(Integer.class, name).orElse(def);
-    }
-
-    @Implementation
     protected static boolean putString(ContentResolver cr, String name, String value) {
       return put(cr, name, value);
     }
@@ -232,14 +216,14 @@ public class ShadowSettings {
     @Implementation
     protected static String getStringForUser(ContentResolver cr, String name, int userHandle) {
       // In real Android, all settings types are stored as Strings.
-      Optional<Object> optionalValue = dataMap.getOrDefault(name, Optional.empty());
+      Optional<String> optionalValue = dataMap.getOrDefault(name, Optional.empty());
       if (!optionalValue.isPresent()) {
         return null;
       }
-      return String.valueOf(optionalValue.get());
+      return optionalValue.get();
     }
 
-    private static boolean put(ContentResolver cr, String name, Object value) {
+    private static boolean put(ContentResolver cr, String name, String value) {
       if (!Objects.equals(
           dataMap.put(name, Optional.ofNullable(value)), Optional.ofNullable(value))) {
         if (cr != null) {
@@ -247,10 +231,6 @@ public class ShadowSettings {
         }
       }
       return true;
-    }
-
-    private static <T> Optional<T> get(Class<T> type, String name) {
-      return dataMap.getOrDefault(name, Optional.empty()).filter(type::isInstance).map(type::cast);
     }
 
     public static void remove(String name) {
@@ -558,12 +538,6 @@ public class ShadowSettings {
     @Static
     @Direct
     boolean putFloat(ContentResolver cr, String name, float value);
-  }
-
-  @ForType(Settings.Secure.class)
-  interface SettingsSecureReflector {
-    @Static
-    int getLocationModeForUser(ContentResolver cr, int userId);
   }
 
   @ForType(Settings.Config.class)

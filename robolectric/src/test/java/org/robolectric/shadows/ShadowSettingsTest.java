@@ -404,4 +404,14 @@ public class ShadowSettingsTest {
             Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 0f))
         .isEqualTo(2.0f);
   }
+
+  @Test
+  public void settingsSecure_int_storedAsStrings() {
+    Settings.Secure.putInt(contentResolver, "property", 3);
+    assertThat(Settings.Secure.getString(contentResolver, "property")).isEqualTo("3");
+
+    Settings.Secure.putString(contentResolver, "property", "2");
+    assertThat(Settings.Secure.getInt(contentResolver, "property", -1)).isEqualTo(2);
+    assertThat(Settings.Secure.getIntForUser(contentResolver, "property", -1, 0)).isEqualTo(2);
+  }
 }
