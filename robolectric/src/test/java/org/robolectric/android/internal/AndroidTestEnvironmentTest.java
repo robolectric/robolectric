@@ -3,6 +3,7 @@ package org.robolectric.android.internal;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.annotation.ConscryptMode.Mode.OFF;
@@ -29,8 +30,10 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.crypto.Cipher;
@@ -366,6 +369,25 @@ public class AndroidTestEnvironmentTest {
     assertThat(getExternalImageCount(context)).isEqualTo(0);
     bootstrapWrapper.resetState();
     assertThat(getExternalImageCount(context)).isEqualTo(-1);
+  }
+
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  @Test
+  public void clears_configurationSystemProperties() {
+    Map<String, String> originalProperties = new HashMap<>();
+    String[] propertiesToCheck = {
+      "use_base_native_hostruntime",
+      "core_native_classes",
+      "graphics_native_classes",
+      "method_binding_format"
+    };
+    for (String property : propertiesToCheck) {
+      originalProperties.put(property, System.getProperty(property));
+    }
+    bootstrapWrapper.callSetUpApplicationState();
+    for (String property : propertiesToCheck) {
+      assertThat(System.getProperty(property)).isEqualTo(originalProperties.get(property));
+    }
   }
 
   private int getExternalImageCount(Context context) {
