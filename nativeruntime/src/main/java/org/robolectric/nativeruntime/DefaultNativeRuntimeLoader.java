@@ -31,9 +31,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -62,6 +64,19 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
 
   protected static final String METHOD_BINDING_FORMAT = "$$robo$$${method}$nativeBinding";
   private static final String HYPHEN_DATA_DIR = "hyphen-data";
+
+  // These system properties are used to configure JNI registration for RNG (libandroid_runtime)
+  // when it is being loaded. They are also used by Paparazzi, which loads a different version of
+  // libandroid_runtime that is packaged in Android Studio's LayoutLib. To ensure that RNG does not
+  // inadvertently override the LayoutLib configuration, these properties are saved before RNG is
+  // loaded and restored afterwards.
+  private static final ImmutableList<String> PROPERTIES_TO_RESTORE =
+      ImmutableList.of(
+          "use_base_native_hostruntime", // Whether to use base HostRuntime or LayoutlibLoader.
+          "core_native_classes", // Classes in base/core/jni to register.
+          "graphics_native_classes", // Classes in libs/hwui/jni to register.
+          "method_binding_format" // Format for method binding. Used to support shadows in RNG.
+          );
 
   // Core classes for which native methods are to be registered for Android V and above.
   protected static final ImmutableList<String> CORE_CLASS_NATIVES =
@@ -208,16 +223,23 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
                   maybeCopyFonts(extractDirectory);
                   maybeCopyHyphenData(extractDirectory);
                 }
+                Map<String, String> originalProperties = new HashMap<>();
                 maybeCopyIcuData(extractDirectory);
                 maybeCopyExtraResources(extractDirectory);
                 if (isAndroidVOrGreater()) {
+                  originalProperties = saveSystemProperties();
+                  System.setProperty("use_base_native_hostruntime", "true");
                   System.setProperty(
                       "core_native_classes", String.join(",", getCoreClassNatives()));
                   System.setProperty(
                       "graphics_native_classes", String.join(",", getGraphicsNatives()));
                   System.setProperty("method_binding_format", METHOD_BINDING_FORMAT);
                 }
-                loadLibrary(extractDirectory);
+                try {
+                  loadLibrary(extractDirectory);
+                } finally {
+                  restoreSystemProperties(originalProperties);
+                }
                 String hyphenDataDir =
                     extractDirectory
                         .getBasePath()
@@ -450,6 +472,24 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
 
   private static boolean isAndroidVOrGreater() {
     return VERSION.SDK_INT >= VANILLA_ICE_CREAM;
+  }
+
+  private Map<String, String> saveSystemProperties() {
+    Map<String, String> originalProperties = new HashMap<>();
+    for (String property : PROPERTIES_TO_RESTORE) {
+      originalProperties.put(property, System.getProperty(property));
+    }
+    return originalProperties;
+  }
+
+  private void restoreSystemProperties(Map<String, String> originalProperties) {
+    for (Map.Entry<String, String> entry : originalProperties.entrySet()) {
+      if (entry.getValue() == null) {
+        System.clearProperty(entry.getKey());
+      } else {
+        System.setProperty(entry.getKey(), entry.getValue());
+      }
+    }
   }
 
   /**
