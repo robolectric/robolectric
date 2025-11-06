@@ -17,9 +17,14 @@ import android.telephony.satellite.ISatelliteModemStateCallback;
 import android.telephony.satellite.SatelliteManager;
 import android.telephony.satellite.SatelliteManager.SatelliteException;
 import com.android.internal.telephony.ITelephony;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import android.telephony.satellite.SatelliteSubscriberProvisionStatus;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.robolectric.annotation.Implementation;
@@ -34,11 +39,41 @@ import org.robolectric.annotation.Resetter;
 public class ShadowSatelliteManager {
 
   private static final FakeTelephony fakeTelephony = new FakeTelephony();
-  private final AtomicBoolean isSupported = new AtomicBoolean(false);
-  private final AtomicReference<SatelliteException> isSupportedError = new AtomicReference<>();
-  private final AtomicBoolean isCommunicationAllowedForCurrentLocation = new AtomicBoolean(false);
-  private final AtomicReference<SatelliteException> isCommunicationAllowedForCurrentLocationError =
+  private static final AtomicBoolean isSupported = new AtomicBoolean(false);
+  private static final AtomicReference<SatelliteException> isSupportedError = new AtomicReference<>();
+  private static final AtomicBoolean isCommunicationAllowedForCurrentLocation =
+      new AtomicBoolean(false);
+  private static final AtomicReference<SatelliteException>
+      isCommunicationAllowedForCurrentLocationError = new AtomicReference<>();
+  private static final AtomicReference<List<SatelliteSubscriberProvisionStatus>>
+      satelliteSubscriberProvisionStatus = new AtomicReference<>();
+  private static final AtomicReference<SatelliteException> satelliteSubscriberProvisionStatusError =
       new AtomicReference<>();
+  private static final Map<Integer, Set<Integer>> attachRestrictionReasons = new HashMap<>();
+  private static List<String> satelliteDataOptimizedApps = new ArrayList<>();
+  private static final Map<java.util.function.Consumer<Boolean>, Executor>
+      supportedStateChangedCallbacks = new HashMap<>();
+
+  /** Test helper: set the provision status that will be returned by requests. */
+  public void setSatelliteSubscriberProvisionStatus(
+      List<SatelliteSubscriberProvisionStatus> status, @Nullable SatelliteException error) {
+    satelliteSubscriberProvisionStatus.set(status);
+    satelliteSubscriberProvisionStatusError.set(error);
+  }
+
+  /** Test helper: set attach restriction reasons for a carrier. */
+  public void setAttachRestrictionReasonsForCarrier(int carrierId, Set<Integer> reasons) {
+    if (reasons == null) {
+      attachRestrictionReasons.remove(carrierId);
+    } else {
+      attachRestrictionReasons.put(carrierId, new HashSet<>(reasons));
+    }
+  }
+
+  /** Test helper: set satellite data optimized apps list. */
+  public void setSatelliteDataOptimizedApps(List<String> apps) {
+    satelliteDataOptimizedApps = apps == null ? new ArrayList<>() : new ArrayList<>(apps);
+  }
 
   /** Updates the current state of the satellite modem, and notifies all listeners. */
   public void triggerSatelliteModemStateChange(int state) throws RemoteException {
@@ -111,6 +146,53 @@ public class ShadowSatelliteManager {
     return fakeTelephony;
   }
 
+  @Implementation(minSdk = VERSION_CODES.BAKLAVA)
+  protected int registerForSupportedStateChanged(
+      @NonNull @CallbackExecutor Executor executor,
+      @NonNull java.util.function.Consumer<Boolean> callback) {
+    supportedStateChangedCallbacks.put(callback, executor);
+    return SATELLITE_RESULT_SUCCESS;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.BAKLAVA)
+  protected void unregisterForSupportedStateChanged(
+      @NonNull java.util.function.Consumer<Boolean> callback) {
+    supportedStateChangedCallbacks.remove(callback);
+  }
+
+  /** Triggers the callback for satellite supported state changes. */
+  public void triggerOnSupportedStateChanged(boolean isSupported) {
+    for (Map.Entry<java.util.function.Consumer<Boolean>, Executor> entry :
+        supportedStateChangedCallbacks.entrySet()) {
+      entry.getValue().execute(() -> entry.getKey().accept(isSupported));
+    }
+  }
+
+  @Implementation(minSdk = VERSION_CODES.BAKLAVA)
+  protected void requestSatelliteSubscriberProvisionStatus(
+      @NonNull @CallbackExecutor Executor executor,
+      @NonNull OutcomeReceiver<List<SatelliteSubscriberProvisionStatus>, SatelliteException>
+          callback) {
+    executor.execute(
+        () -> {
+          if (satelliteSubscriberProvisionStatusError.get() != null) {
+            callback.onError(satelliteSubscriberProvisionStatusError.get());
+          } else {
+            callback.onResult(satelliteSubscriberProvisionStatus.get());
+          }
+        });
+  }
+
+  @Implementation(minSdk = VERSION_CODES.BAKLAVA)
+  protected Set<Integer> getAttachRestrictionReasonsForCarrier(int carrierId) {
+    return new HashSet<>(attachRestrictionReasons.getOrDefault(carrierId, new HashSet<>()));
+  }
+
+  @Implementation(minSdk = VERSION_CODES.BAKLAVA)
+  protected List<String> getSatelliteDataOptimizedApps() {
+    return new ArrayList<>(satelliteDataOptimizedApps);
+  }
+
   private static class FakeTelephony extends ITelephony.Default {
 
     private final Set<ISatelliteModemStateCallback> satelliteCallbacks = new HashSet<>();
@@ -165,5 +247,14 @@ public class ShadowSatelliteManager {
   @Resetter
   public static void reset() {
     fakeTelephony.reset();
+    isSupported.set(false);
+    isSupportedError.set(null);
+    isCommunicationAllowedForCurrentLocation.set(false);
+    isCommunicationAllowedForCurrentLocationError.set(null);
+    satelliteSubscriberProvisionStatus.set(null);
+    satelliteSubscriberProvisionStatusError.set(null);
+    attachRestrictionReasons.clear();
+    satelliteDataOptimizedApps.clear();
+    supportedStateChangedCallbacks.clear();
   }
 }
