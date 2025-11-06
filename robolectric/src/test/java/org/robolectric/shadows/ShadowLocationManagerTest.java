@@ -63,6 +63,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
@@ -217,7 +218,13 @@ public class ShadowLocationManagerTest {
     assertThat(locationManager.getBestProvider(all, true)).isEqualTo(NETWORK_PROVIDER);
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, false);
     shadowLocationManager.setProviderEnabled(PASSIVE_PROVIDER, false);
-    assertThat(locationManager.getBestProvider(all, true)).isEqualTo(MY_PROVIDER);
+    if (RuntimeEnvironment.getApiLevel() != VERSION_CODES.P) {
+      assertThat(locationManager.getBestProvider(all, true)).isEqualTo(MY_PROVIDER);
+    } else {
+      // In Android P, the location mode is OFF when all providers are disabled, so the best
+      // provider is null.
+      assertThat(locationManager.getBestProvider(all, true)).isNull();
+    }
 
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, true);
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
@@ -227,7 +234,13 @@ public class ShadowLocationManagerTest {
     assertThat(locationManager.getBestProvider(none, true)).isEqualTo(NETWORK_PROVIDER);
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, false);
     shadowLocationManager.setProviderEnabled(MY_PROVIDER, false);
-    assertThat(locationManager.getBestProvider(none, true)).isEqualTo(PASSIVE_PROVIDER);
+    if (RuntimeEnvironment.getApiLevel() != VERSION_CODES.P) {
+      assertThat(locationManager.getBestProvider(none, true)).isEqualTo(PASSIVE_PROVIDER);
+    } else {
+      // In Android P, the location mode is OFF when all network and gps providers are disabled, so
+      // the best provider is null.
+      assertThat(locationManager.getBestProvider(none, true)).isNull();
+    }
   }
 
   @Test
