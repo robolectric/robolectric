@@ -78,15 +78,6 @@ public class ShadowBuild {
   }
 
   /**
-   * Sets the value of the {@link Build#IS_USERDEBUG} field.
-   *
-   * <p>It will be reset for the next test.
-   */
-  public static void setUserdebug(Boolean isUserdebug) {
-    ReflectionHelpers.setStaticField(Build.class, "IS_USERDEBUG", isUserdebug);
-  }
-
-  /**
    * Sets the value of the {@link Build#MODEL} field.
    *
    * <p>It will be reset for the next test.
