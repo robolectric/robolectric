@@ -16,7 +16,6 @@ import android.telephony.satellite.SatelliteManager;
 import android.telephony.satellite.SatelliteManager.SatelliteException;
 import android.telephony.satellite.SatelliteModemStateCallback;
 import androidx.test.core.app.ApplicationProvider;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +31,21 @@ public class ShadowSatelliteManagerTest {
 
   private int currentModemState = UNSET;
   private final Context context = ApplicationProvider.getApplicationContext();
+
+  static class TestOutcomeReceiver<T> implements OutcomeReceiver<T, SatelliteException> {
+    final AtomicReference<T> result = new AtomicReference<>();
+    final AtomicReference<SatelliteException> error = new AtomicReference<>();
+
+    @Override
+    public void onResult(T result) {
+      this.result.set(result);
+    }
+
+    @Override
+    public void onError(SatelliteException error) {
+      this.error.set(error);
+    }
+  }
 
   @Test
   public void registerForModemStateChanged_returnsSuccess() {
@@ -133,59 +147,43 @@ public class ShadowSatelliteManagerTest {
 
   @Test
   public void requestIsSupported_returnsFalseByDefault() throws Exception {
-    assertThat(requestIsSupported()).isFalse();
+    assertThat(requestIsSupported().result.get()).isFalse();
   }
 
   @Test
   public void requestIsSupported_whenSetToTrue_returnsTrue() throws Exception {
     getShadowSatelliteManager().setIsSupportedResponse(true, null);
 
-    assertThat(requestIsSupported()).isTrue();
+    assertThat(requestIsSupported().result.get()).isTrue();
   }
 
   @Test
   public void requestIsSupported_whenSetToFalse_returnsFalse() throws Exception {
     getShadowSatelliteManager().setIsSupportedResponse(false, null);
 
-    assertThat(requestIsSupported()).isFalse();
+    assertThat(requestIsSupported().result.get()).isFalse();
   }
 
   @Test
   public void requestIsSupported_whenSetToError_throws() throws Exception {
     getShadowSatelliteManager().setIsSupportedResponse(true, new SatelliteException(123));
 
-    assertThrows(Exception.class, this::requestIsSupported);
+    TestOutcomeReceiver<Boolean> receiver = requestIsSupported();
+
+    assertThat(receiver.error.get()).isNotNull();
   }
 
-  private boolean requestIsSupported() throws Exception {
-    AtomicBoolean isSupported = new AtomicBoolean(false);
-    // Declared as Exception to work around NoClassDefFoundError relating to SatelliteException's
-    // definition being flagged.
-    AtomicReference<Exception> error = new AtomicReference<>();
-    OutcomeReceiver<Boolean, SatelliteException> callback =
-        new OutcomeReceiver<Boolean, SatelliteException>() {
-          @Override
-          public void onResult(Boolean result) {
-            isSupported.set(result);
-          }
-
-          @Override
-          public void onError(SatelliteException e) {
-            error.set(e); // Still receives SatelliteException, but stored as Exception
-          }
-        };
-
-    getShadowSatelliteManager().requestIsSupported(directExecutor(), callback);
-    if (error.get() != null) {
-      throw error.get();
-    }
-    return isSupported.get();
+  private TestOutcomeReceiver<Boolean> requestIsSupported() throws Exception {
+    TestOutcomeReceiver<Boolean> receiver = new TestOutcomeReceiver<>();
+    SatelliteManager satelliteManager = context.getSystemService(SatelliteManager.class);
+    satelliteManager.requestIsSupported(directExecutor(), receiver);
+    return receiver;
   }
 
   @Test
   public void requestIsCommunicationAllowedForCurrentLocation_returnsFalseByDefault()
       throws Exception {
-    assertThat(requestIsCommunicationAllowedForCurrentLocation()).isFalse();
+    assertThat(requestIsCommunicationAllowedForCurrentLocation().result.get()).isFalse();
   }
 
   @Test
@@ -193,7 +191,7 @@ public class ShadowSatelliteManagerTest {
       throws Exception {
     getShadowSatelliteManager().setIsCommunicationAllowedForCurrentLocation(true, null);
 
-    assertThat(requestIsCommunicationAllowedForCurrentLocation()).isTrue();
+    assertThat(requestIsCommunicationAllowedForCurrentLocation().result.get()).isTrue();
   }
 
   @Test
@@ -201,7 +199,7 @@ public class ShadowSatelliteManagerTest {
       throws Exception {
     getShadowSatelliteManager().setIsCommunicationAllowedForCurrentLocation(false, null);
 
-    assertThat(requestIsCommunicationAllowedForCurrentLocation()).isFalse();
+    assertThat(requestIsCommunicationAllowedForCurrentLocation().result.get()).isFalse();
   }
 
   @Test
@@ -210,33 +208,15 @@ public class ShadowSatelliteManagerTest {
     getShadowSatelliteManager()
         .setIsCommunicationAllowedForCurrentLocation(true, new SatelliteException(123));
 
-    assertThrows(Exception.class, this::requestIsCommunicationAllowedForCurrentLocation);
+    TestOutcomeReceiver<Boolean> receiver = requestIsCommunicationAllowedForCurrentLocation();
+    assertThat(receiver.error.get()).isNotNull();
   }
 
-  private boolean requestIsCommunicationAllowedForCurrentLocation() throws Exception {
-    AtomicBoolean isCommunicationAllowedForCurrentLocation = new AtomicBoolean(false);
-    // Declared as Exception to work around NoClassDefFoundError relating to SatelliteException's
-    // definition being flagged.
-    AtomicReference<Exception> error = new AtomicReference<>();
-    OutcomeReceiver<Boolean, SatelliteException> callback =
-        new OutcomeReceiver<Boolean, SatelliteException>() {
-          @Override
-          public void onResult(Boolean result) {
-            isCommunicationAllowedForCurrentLocation.set(result);
-          }
-
-          @Override
-          public void onError(SatelliteException e) {
-            error.set(e); // Still receives SatelliteException, but stored as Exception
-          }
-        };
-
-    getShadowSatelliteManager()
-        .requestIsCommunicationAllowedForCurrentLocation(directExecutor(), callback);
-    if (error.get() != null) {
-      throw error.get();
-    }
-    return isCommunicationAllowedForCurrentLocation.get();
+  private TestOutcomeReceiver<Boolean> requestIsCommunicationAllowedForCurrentLocation() {
+    TestOutcomeReceiver<Boolean> receiver = new TestOutcomeReceiver<>();
+    SatelliteManager satelliteManager = context.getSystemService(SatelliteManager.class);
+    satelliteManager.requestIsCommunicationAllowedForCurrentLocation(directExecutor(), receiver);
+    return receiver;
   }
 
   private ShadowSatelliteManager getShadowSatelliteManager() {
