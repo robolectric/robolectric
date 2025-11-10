@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Locale;
 import java.util.concurrent.Executors;
 import javax.annotation.Nonnull;
 import org.junit.Before;
@@ -63,6 +64,18 @@ public class ShadowCompanionDeviceManagerTest {
     shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
     companionDeviceManager.disassociate(MAC_ADDRESS);
     assertThat(companionDeviceManager.getAssociations()).isEmpty();
+  }
+
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  @Test
+  public void testAddAssociation_withAssociationInfo() {
+    AssociationInfo associationInfo =
+        AssociationInfoBuilder.newBuilder().setId(100).setDeviceMacAddress(MAC_ADDRESS).build();
+
+    assertThat(companionDeviceManager.getAssociations()).isEmpty();
+    shadowOf(companionDeviceManager).addAssociation(associationInfo);
+    assertThat(companionDeviceManager.getAssociations())
+        .contains(MAC_ADDRESS.toLowerCase(Locale.ROOT));
   }
 
   @Test
