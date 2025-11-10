@@ -119,7 +119,7 @@ androidx-test-runner = "1.7.0"
 androidx-test-services = "1.6.0"
 
 # https://developer.android.com/jetpack/androidx/releases/compose
-androidx-compose-bom = "2025.10.01"
+androidx-compose-bom = "2025.11.00"
 
 # https://developers.google.com/android/guides/releases
 play-services-basement = "18.0.1"
