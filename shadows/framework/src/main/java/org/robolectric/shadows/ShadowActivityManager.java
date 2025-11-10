@@ -450,6 +450,11 @@ public class ShadowActivityManager {
     return true;
   }
 
+  @Implementation
+  protected boolean clearApplicationUserData() {
+    return clearApplicationUserData(context.getPackageName(), null);
+  }
+
   /**
    * Returns true after clearing application user data was requested by calling {@link
    * ActivityManager#clearApplicationUserData()}.
