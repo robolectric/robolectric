@@ -197,7 +197,16 @@ public class ShadowServiceManager {
     private IInterface createBinderImplementation() {
       switch (binderType) {
         case NULL_PROXY:
-          return ReflectionHelpers.createNullProxy(clazz);
+          // This creates a proxy that returns null or zero for all methods, with the exception of
+          // asBinder(), which returns the cached binder.
+          return ReflectionHelpers.createDelegatingProxy(
+              clazz,
+              new Object() {
+                @SuppressWarnings("unused")
+                IBinder asBinder() {
+                  return cachedBinder;
+                }
+              });
         case DEEP_PROXY:
           return ReflectionHelpers.createDeepProxy(clazz);
         case DELEGATING_PROXY:
