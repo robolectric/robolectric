@@ -164,6 +164,17 @@ public final class ShadowServiceManagerTest {
     assertThat(expectedStub.called).isTrue();
   }
 
+  @Test
+  public void addService_shouldSupportAsBinder() {
+    IBinder iBinder = ServiceManager.getService("activity_task");
+    IStubbedInterface foundStub = StubbedInterface.Stub.asInterface(iBinder);
+    assertThat(foundStub.asBinder()).isNotNull();
+
+    IBinder iBinder2 = ServiceManager.getService("activity_task");
+    IStubbedInterface foundStub2 = StubbedInterface.Stub.asInterface(iBinder2);
+    assertThat(foundStub2.asBinder()).isEqualTo(foundStub.asBinder());
+  }
+
   // Stub interface to test that the service is returned correctly
   private static class StubbedInterface implements IStubbedInterface {
 
