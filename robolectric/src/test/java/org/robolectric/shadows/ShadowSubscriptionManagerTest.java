@@ -688,6 +688,143 @@ public class ShadowSubscriptionManagerTest {
 
   @Test
   @Config(minSdk = Q)
+  public void
+      setOpportunistic_activeSubscription_isNotOpportunistic_shouldUpdateSubscriptionInfo() {
+    SubscriptionInfo subscriptionInfo =
+        ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+            .setId(SUBSCRIPTION_ID)
+            .setIsOpportunistic(false)
+            .buildSubscriptionInfo();
+    shadowOf(subscriptionManager).setActiveSubscriptionInfos(subscriptionInfo);
+
+    boolean updated = subscriptionManager.setOpportunistic(true, SUBSCRIPTION_ID);
+
+    assertThat(updated).isTrue();
+    assertThat(subscriptionManager.getActiveSubscriptionInfo(SUBSCRIPTION_ID).isOpportunistic())
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void setOpportunistic_allSubscriptions_isNotOpportunistic_shouldUpdateSubscriptionInfo() {
+    SubscriptionInfo subscriptionInfo =
+        ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+            .setId(SUBSCRIPTION_ID)
+            .setIsOpportunistic(false)
+            .buildSubscriptionInfo();
+    shadowOf(subscriptionManager).setAllSubscriptionInfos(subscriptionInfo);
+
+    boolean updated = subscriptionManager.setOpportunistic(true, SUBSCRIPTION_ID);
+
+    assertThat(updated).isTrue();
+    assertThat(subscriptionManager.getAllSubscriptionInfoList().get(0).isOpportunistic()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void
+      setOpportunistic_availableSubscriptions_isNotOpportunistic_shouldUpdateSubscriptionInfo() {
+    SubscriptionInfo subscriptionInfo =
+        ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+            .setId(SUBSCRIPTION_ID)
+            .setIsOpportunistic(false)
+            .buildSubscriptionInfo();
+    shadowOf(subscriptionManager).setAvailableSubscriptionInfos(subscriptionInfo);
+
+    boolean updated = subscriptionManager.setOpportunistic(true, SUBSCRIPTION_ID);
+
+    assertThat(updated).isTrue();
+    assertThat(subscriptionManager.getAvailableSubscriptionInfoList().get(0).isOpportunistic())
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void
+      setOpportunistic_accessibleSubscriptions_isNotOpportunistic_shouldUpdateSubscriptionInfo() {
+    SubscriptionInfo subscriptionInfo =
+        ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+            .setId(SUBSCRIPTION_ID)
+            .setIsOpportunistic(false)
+            .buildSubscriptionInfo();
+    shadowOf(subscriptionManager).setAccessibleSubscriptionInfos(subscriptionInfo);
+
+    boolean updated = subscriptionManager.setOpportunistic(true, SUBSCRIPTION_ID);
+
+    assertThat(updated).isTrue();
+    assertThat(subscriptionManager.getAccessibleSubscriptionInfoList().get(0).isOpportunistic())
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setOpportunistic_isNotOpportunistic_triggersSubscriptionsChanged() {
+    DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
+    subscriptionManager.addOnSubscriptionsChangedListener(listener);
+    SubscriptionInfo subscriptionInfo =
+        ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+            .setId(SUBSCRIPTION_ID)
+            .setIsOpportunistic(false)
+            .buildSubscriptionInfo();
+    shadowOf(subscriptionManager).setAllSubscriptionInfos(subscriptionInfo);
+    int initialInvocationCount = listener.subscriptionChangedCount;
+
+    subscriptionManager.setOpportunistic(true, SUBSCRIPTION_ID);
+
+    assertThat(listener.subscriptionChangedCount - initialInvocationCount).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setOpportunistic_isAlreadyOpportunistic_shouldNotUpdateSubscriptionInfo() {
+    SubscriptionInfo subscriptionInfo =
+        ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+            .setId(SUBSCRIPTION_ID)
+            .setIsOpportunistic(true)
+            .buildSubscriptionInfo();
+    shadowOf(subscriptionManager).setActiveSubscriptionInfos(subscriptionInfo);
+
+    boolean updated = subscriptionManager.setOpportunistic(true, SUBSCRIPTION_ID);
+
+    assertThat(updated).isFalse();
+    assertThat(subscriptionManager.getActiveSubscriptionInfo(SUBSCRIPTION_ID).isOpportunistic())
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setOpportunistic_isAlreadyOpportunistic_shouldNotTriggerSubscriptionsChanged() {
+    DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
+    subscriptionManager.addOnSubscriptionsChangedListener(listener);
+    SubscriptionInfo subscriptionInfo =
+        ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+            .setId(SUBSCRIPTION_ID)
+            .setIsOpportunistic(true)
+            .buildSubscriptionInfo();
+    shadowOf(subscriptionManager).setAccessibleSubscriptionInfos(subscriptionInfo);
+    int initialInvocationCount = listener.subscriptionChangedCount;
+
+    subscriptionManager.setOpportunistic(true, SUBSCRIPTION_ID);
+
+    assertThat(listener.subscriptionChangedCount - initialInvocationCount).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setOpportunistic_subscriptionListIsNull_shouldUpdateNothing() {
+    DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
+    subscriptionManager.addOnSubscriptionsChangedListener(listener);
+    shadowOf(subscriptionManager).setActiveSubscriptionInfoList(null);
+    int initialInvocationCount = listener.subscriptionChangedCount;
+
+    boolean updated = subscriptionManager.setOpportunistic(true, SUBSCRIPTION_ID);
+
+    assertThat(updated).isFalse();
+    assertThat(listener.subscriptionChangedCount).isEqualTo(initialInvocationCount);
+  }
+
+  @Test
+  @Config(minSdk = Q)
   public void subscriptionInfoBuilder_setCarrierId_returnsCarrierId() {
     SubscriptionInfo subscriptionInfo =
         ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
