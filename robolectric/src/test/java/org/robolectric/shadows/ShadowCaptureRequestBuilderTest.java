@@ -10,7 +10,6 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
-import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
@@ -19,7 +18,6 @@ import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowCaptureRequestBuilder}. */
 @RunWith(AndroidJUnit4.class)
@@ -45,7 +43,6 @@ public class ShadowCaptureRequestBuilderTest {
   }
 
   @Test
-  @Config(sdk = VERSION_CODES.P)
   public void testGetAndSet() {
     builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
     builder.set(CaptureRequest.COLOR_CORRECTION_MODE, CaptureRequest.COLOR_CORRECTION_MODE_FAST);
