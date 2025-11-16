@@ -182,4 +182,17 @@ public class ShadowTypefaceTest {
     assertThat(typeface2).isNotNull();
     assertThat(typeface2.toString()).isNotEmpty();
   }
+
+  @Test
+  @Config(minSdk = Q)
+  public void createTypeface_customFallbackBuilderWithoutSetStyle_fallbackTo400()
+      throws IOException {
+    Font font = new Font.Builder(fontFile).build();
+    FontFamily family = new FontFamily.Builder(font).build();
+    Typeface typeface = new Typeface.CustomFallbackBuilder(family).build();
+    assertThat(typeface).isNotNull();
+    // See
+    // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android10-release/graphics/java/android/graphics/Typeface.java#791 .
+    assertThat(shadowOf(typeface).getFontDescription().getStyle()).isEqualTo(400);
+  }
 }
