@@ -258,8 +258,10 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
     protected Typeface build() {
       Typeface result = reflector(CustomFallbackBuilderReflector.class, realBuilder).build();
       FontStyle style = reflector(CustomFallbackBuilderReflector.class, realBuilder).getStyle();
+      // See
+      // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android10-release/graphics/java/android/graphics/Typeface.java#791.
       ((ShadowLegacyTypeface) Shadow.extract(result)).description =
-          new FontDesc(null, style.getWeight());
+          new FontDesc(null, style == null ? 400 : style.getWeight());
       return result;
     }
   }
