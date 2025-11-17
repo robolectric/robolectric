@@ -49,7 +49,7 @@ asm = "9.9"
 # https://github.com/google/auto/releases
 auto-common = "1.2.2"
 auto-service = "1.1.1"
-auto-value = "1.11.0"
+auto-value = "1.11.1"
 
 # https://github.com/google/compile-testing/releases
 compile-testing = "0.23.0"
