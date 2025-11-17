@@ -302,6 +302,13 @@ public class ShadowContextImplTest {
   }
 
   @Test
+  public void startServiceAsUser_shouldThrowOnImplicitIntent() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> context.startServiceAsUser(new Intent("dummy_action"), Process.myUserHandle()));
+  }
+
+  @Test
   public void stopService_shouldThrowOnImplicitIntent() {
     assertThrows(
         IllegalArgumentException.class, () -> context.stopService(new Intent("dummy_action")));
