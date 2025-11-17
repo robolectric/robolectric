@@ -20,7 +20,7 @@ android {
   }
 
   androidComponents {
-    beforeVariants(selector().all()) { variantBuilder ->
+    beforeVariants { variantBuilder ->
       // memoryleaks does not support AndroidTest.
       variantBuilder.enableAndroidTest = false
     }
