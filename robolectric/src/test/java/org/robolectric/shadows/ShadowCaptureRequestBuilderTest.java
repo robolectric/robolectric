@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -18,6 +19,7 @@ import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 
 /** Tests for {@link ShadowCaptureRequestBuilder}. */
 @RunWith(AndroidJUnit4.class)
@@ -46,10 +48,31 @@ public class ShadowCaptureRequestBuilderTest {
   public void testGetAndSet() {
     builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
     builder.set(CaptureRequest.COLOR_CORRECTION_MODE, CaptureRequest.COLOR_CORRECTION_MODE_FAST);
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      builder.set(CaptureRequest.CONTROL_ZOOM_RATIO, 1.0f);
+    }
+    builder.set(CaptureRequest.CONTROL_AE_LOCK, true);
+    builder.set(CaptureRequest.JPEG_QUALITY, (byte) 95);
+    builder.set(CaptureRequest.LENS_FOCUS_DISTANCE, 1.0f);
+
     assertThat(builder.get(CaptureRequest.CONTROL_AF_MODE))
         .isEqualTo(CaptureRequest.CONTROL_AF_MODE_OFF);
     assertThat(builder.get(CaptureRequest.COLOR_CORRECTION_MODE))
         .isEqualTo(CaptureRequest.COLOR_CORRECTION_MODE_FAST);
+    assertThat(builder.get(CaptureRequest.CONTROL_AE_LOCK)).isEqualTo(true);
+    assertThat(builder.get(CaptureRequest.JPEG_QUALITY)).isEqualTo(95);
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      assertThat(builder.get(CaptureRequest.CONTROL_ZOOM_RATIO)).isEqualTo(1.0f);
+    }
+    assertThat(builder.get(CaptureRequest.LENS_FOCUS_DISTANCE)).isEqualTo(1.0f);
+  }
+
+  @Test
+  public void build_returnsCaptureRequest() {
+    builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
+    CaptureRequest request = builder.build();
+    assertThat(request.get(CaptureRequest.CONTROL_AF_MODE))
+        .isEqualTo(CaptureRequest.CONTROL_AF_MODE_OFF);
   }
 
   private class CameraStateCallback extends CameraDevice.StateCallback {
