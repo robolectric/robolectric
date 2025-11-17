@@ -8,7 +8,6 @@ android {
     minSdk = 21
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    vectorDrawables.useSupportLibrary = true
   }
 
   lint {

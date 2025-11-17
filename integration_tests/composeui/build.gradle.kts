@@ -24,11 +24,11 @@ android {
 
   testOptions {
     targetSdk = 36
-    unitTests { isIncludeAndroidResources = true }
+    unitTests.isIncludeAndroidResources = true
   }
 
   androidComponents {
-    beforeVariants(selector().all()) { variantBuilder ->
+    beforeVariants { variantBuilder ->
       // composeui does not support AndroidTest now.
       variantBuilder.enableAndroidTest = false
     }
