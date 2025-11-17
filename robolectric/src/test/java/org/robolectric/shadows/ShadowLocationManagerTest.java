@@ -28,6 +28,7 @@ import android.content.IntentFilter;
 import android.location.Criteria;
 import android.location.GnssAntennaInfo;
 import android.location.GnssAntennaInfo.PhaseCenterOffset;
+import android.location.GnssCapabilities;
 import android.location.GnssMeasurementRequest;
 import android.location.GnssMeasurementsEvent;
 import android.location.GnssStatus;
@@ -1428,6 +1429,29 @@ public class ShadowLocationManagerTest {
     assertThat(locationManager.getGnssBatchSize()).isEqualTo(0);
     shadowLocationManager.setGnssBatchSize(5);
     assertThat(locationManager.getGnssBatchSize()).isEqualTo(5);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void testGetGnssCapabilities_returnsNullByDefault() {
+    assertThat(locationManager.getGnssCapabilities()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void testGetGnssCapabilities_returnsSetCapabilities() {
+    // For ease of testing and readability, we use VERSION_CODES.S here, even though the API was
+    // available before. Instead of setting the capability bits manually, we can use the builder.
+    GnssCapabilities gnssCapabilities =
+        new GnssCapabilities.Builder()
+            .setHasMeasurements(true)
+            .setHasMeasurementCorrections(true)
+            .setHasMeasurementCorrectionsLosSats(true)
+            .setHasMeasurementCorrectionsForDriving(true)
+            .setHasSatellitePvt(true)
+            .build();
+    shadowLocationManager.setGnssCapabilities(gnssCapabilities);
+    assertThat(locationManager.getGnssCapabilities()).isSameInstanceAs(gnssCapabilities);
   }
 
   @Test
