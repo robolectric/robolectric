@@ -43,7 +43,7 @@ android {
   }
 
   androidComponents {
-    beforeVariants(selector().all()) { variantBuilder ->
+    beforeVariants { variantBuilder ->
       // Roborazzi does not support AndroidTest.
       variantBuilder.enableAndroidTest = false
     }

@@ -25,7 +25,7 @@ android {
   }
 
   androidComponents {
-    beforeVariants(selector().all()) { variantBuilder ->
+    beforeVariants { variantBuilder ->
       // sparsearray does not support AndroidTest.
       variantBuilder.enableAndroidTest = false
     }
