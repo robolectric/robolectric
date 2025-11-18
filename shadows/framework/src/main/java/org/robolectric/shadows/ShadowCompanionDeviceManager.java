@@ -49,6 +49,7 @@ public class ShadowCompanionDeviceManager {
   private final Map<Integer, OutputStream> attachedOutputStreams = new ConcurrentHashMap<>();
   private final Map<Integer, Set<BiConsumer<Integer, byte[]>>> messageReceivedListeners =
       new ConcurrentHashMap<>();
+  private final Map<Integer, Integer> systemDataSyncFlags = new ConcurrentHashMap<>();
   private int lastRemoveBondAssociationId = -1;
   private ComponentName lastRequestedNotificationAccess;
   private AssociationRequest lastAssociationRequest;
@@ -171,6 +172,12 @@ public class ShadowCompanionDeviceManager {
     throw new DeviceNotAssociatedException("Association does not exist");
   }
 
+  @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  protected void enableSystemDataSyncForTypes(int associationId, int flags) {
+    systemDataSyncFlags.put(
+        associationId, systemDataSyncFlags.getOrDefault(associationId, 0) | flags);
+  }
+
   /**
    * This method will return the last {@link AssociationRequest} passed to {@code
    * CompanionDeviceManager#associate(AssociationRequest, CompanionDeviceManager.Callback, Handler)}
@@ -247,6 +254,15 @@ public class ShadowCompanionDeviceManager {
    */
   public String getLastObservingDevicePresenceDeviceAddress() {
     return lastObservingDevicePresenceDeviceAddress;
+  }
+
+  /**
+   * Returns the system data sync flags passed to {@code
+   * CompanionDeviceManager#enableSystemDataSyncForTypes(int, int)} for the given association, or 0
+   * if no such association exists.
+   */
+  public int getSystemDataSyncFlags(int associationId) {
+    return systemDataSyncFlags.getOrDefault(associationId, 0);
   }
 
   private void checkHasAssociation() {
