@@ -23,6 +23,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.BluetoothSocketSettings;
 import android.bluetooth.BluetoothStatusCodes;
 import android.bluetooth.IBluetoothGatt;
 import android.bluetooth.le.BluetoothLeAdvertiser;
@@ -251,10 +252,11 @@ public class ShadowBluetoothAdapter {
 
   @Implementation(minSdk = BAKLAVA)
   protected BluetoothServerSocket listenUsingSocketSettings(
+      // ClassName can be replaced with a direct reference once minimum supported compileSdkVersion
+      // is 36.
       @ClassName("android.bluetooth.BluetoothSocketSettings") Object settingsObject)
       throws IOException {
-    BluetoothSocketSettingsReflector settings =
-        reflector(BluetoothSocketSettingsReflector.class, settingsObject);
+    BluetoothSocketSettings settings = (BluetoothSocketSettings) settingsObject;
     if (settings.getSocketType() == BluetoothSocket.TYPE_LE) {
       int psm = 0x80;
       if (isFixedPsmSupported && settings.getL2capPsm() != 0) {
@@ -909,18 +911,5 @@ public class ShadowBluetoothAdapter {
     @Accessor("sBluetoothLeScanner")
     @Static
     void setSBluetoothLeScanner(BluetoothLeScanner scanner);
-  }
-
-  @ForType(className = "android.bluetooth.BluetoothSocketSettings")
-  interface BluetoothSocketSettingsReflector {
-    int getSocketType();
-
-    int getL2capPsm();
-
-    boolean isAuthenticationRequired();
-
-    boolean isEncryptionRequired();
-
-    UUID getRfcommUuid();
   }
 }
