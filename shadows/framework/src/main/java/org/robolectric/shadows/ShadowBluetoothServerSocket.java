@@ -27,6 +27,16 @@ public class ShadowBluetoothServerSocket {
         new Object[] {type, auth, encrypt, uuid});
   }
 
+  @SuppressLint("PrivateApi")
+  public static BluetoothServerSocket newInstance(
+      int type, boolean auth, boolean encrypt, int psm) {
+
+    return Shadow.newInstance(
+        BluetoothServerSocket.class,
+        new Class<?>[] {Integer.TYPE, Boolean.TYPE, Boolean.TYPE, Integer.TYPE},
+        new Object[] {type, auth, encrypt, psm});
+  }
+
   // Port ranges are valid from 1 to MAX_RFCOMM_CHANNEL.
   private static int getPort(ParcelUuid uuid) {
     return Math.abs(uuid.hashCode() % BluetoothSocket.MAX_RFCOMM_CHANNEL) + 1;

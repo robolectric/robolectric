@@ -109,6 +109,7 @@ public class ShadowBluetoothAdapter {
   private boolean isLeExtendedAdvertisingSupported = true;
   private boolean isLeCodedPhySupported = true;
   private boolean isLe2MPhySupported = true;
+  private boolean isFixedPsmSupported = false;
   private boolean isOverridingProxyBehavior;
   private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
   private final Map<Integer, BluetoothProfile> profileProxies = new HashMap<>();
@@ -174,7 +175,7 @@ public class ShadowBluetoothAdapter {
   @Deprecated
   public void setBluetoothLeAdvertiser(BluetoothLeAdvertiser advertiser) {
 
-      reflector(BluetoothAdapterReflector.class, realAdapter).setBluetoothLeAdvertiser(advertiser);
+    reflector(BluetoothAdapterReflector.class, realAdapter).setBluetoothLeAdvertiser(advertiser);
   }
 
   @Implementation
@@ -246,6 +247,41 @@ public class ShadowBluetoothAdapter {
   protected BluetoothServerSocket listenUsingL2capChannel() throws IOException {
     return ShadowBluetoothServerSocket.newInstance(
         BluetoothSocket.TYPE_L2CAP, /* auth= */ false, /* encrypt= */ true, /* uuid= */ null);
+  }
+
+  @Implementation(minSdk = BAKLAVA)
+  protected BluetoothServerSocket listenUsingSocketSettings(
+      @ClassName("android.bluetooth.BluetoothSocketSettings") Object settingsObject)
+      throws IOException {
+    BluetoothSocketSettingsReflector settings =
+        reflector(BluetoothSocketSettingsReflector.class, settingsObject);
+    if (settings.getSocketType() == BluetoothSocket.TYPE_LE) {
+      int psm = 0x80;
+      if (isFixedPsmSupported && settings.getL2capPsm() != 0) {
+        psm = settings.getL2capPsm();
+      }
+      return ShadowBluetoothServerSocket.newInstance(
+          BluetoothSocket.TYPE_LE,
+          settings.isAuthenticationRequired(),
+          settings.isEncryptionRequired(),
+          psm);
+    }
+    return ShadowBluetoothServerSocket.newInstance(
+        settings.getSocketType(),
+        settings.isAuthenticationRequired(),
+        settings.isEncryptionRequired(),
+        new ParcelUuid(settings.getRfcommUuid()));
+  }
+
+  /**
+   * Sets whether fixed PSM is supported for L2CAP connections in tests.
+   *
+   * @param isFixedPsmSupported If true, {@link #listenUsingSocketSettings} will produce a server
+   *     socket using the requested PSM via {@link BluetoothSocketSettings#getL2capPsm()}. If false,
+   *     the server socket will use a default PSM value (without simulating PSM allocation process).
+   */
+  public void setIsFixedPsmSupported(boolean isFixedPsmSupported) {
+    this.isFixedPsmSupported = isFixedPsmSupported;
   }
 
   @Implementation
@@ -873,5 +909,18 @@ public class ShadowBluetoothAdapter {
     @Accessor("sBluetoothLeScanner")
     @Static
     void setSBluetoothLeScanner(BluetoothLeScanner scanner);
+  }
+
+  @ForType(className = "android.bluetooth.BluetoothSocketSettings")
+  interface BluetoothSocketSettingsReflector {
+    int getSocketType();
+
+    int getL2capPsm();
+
+    boolean isAuthenticationRequired();
+
+    boolean isEncryptionRequired();
+
+    UUID getRfcommUuid();
   }
 }
