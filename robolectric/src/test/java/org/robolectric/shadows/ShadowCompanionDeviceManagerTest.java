@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -22,9 +23,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Duration;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiConsumer;
 import javax.annotation.Nonnull;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,15 +47,22 @@ public class ShadowCompanionDeviceManagerTest {
   private static final String PACKAGE_NAME = "org.robolectric";
 
   private final Application application = getApplicationContext();
+  private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+  private ComponentName componentName;
   private CompanionDeviceManager companionDeviceManager;
   private ShadowCompanionDeviceManager shadowCompanionDeviceManager;
-  private ComponentName componentName;
 
   @Before
   public void setUp() throws Exception {
     companionDeviceManager = application.getSystemService(CompanionDeviceManager.class);
     shadowCompanionDeviceManager = shadowOf(companionDeviceManager);
     componentName = new ComponentName(application, Application.class);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    executorService.shutdownNow();
   }
 
   @Test
@@ -276,7 +289,7 @@ public class ShadowCompanionDeviceManagerTest {
   public void testAssociate_executorVariant_updatesShadow() {
     AssociationRequest request = new AssociationRequest.Builder().build();
     CompanionDeviceManager.Callback callback = createCallback();
-    companionDeviceManager.associate(request, Executors.newSingleThreadExecutor(), callback);
+    companionDeviceManager.associate(request, executorService, callback);
 
     assertThat(shadowCompanionDeviceManager.getLastAssociationRequest()).isSameInstanceAs(request);
     assertThat(shadowCompanionDeviceManager.getLastAssociationCallback())
@@ -471,6 +484,75 @@ public class ShadowCompanionDeviceManagerTest {
     assertThat(shadowCompanionDeviceManager.getAttachedOutputStream(1)).isNull();
   }
 
+  @Test
+  @Config(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
+  public void testAddOnMessageReceivedListener_addsListener() {
+    TestCdmListener testListener = new TestCdmListener();
+    int messageType = 100;
+
+    companionDeviceManager.addOnMessageReceivedListener(executorService, messageType, testListener);
+
+    assertThat(shadowCompanionDeviceManager.getMessageReceivedListeners(messageType))
+        .containsExactly(testListener);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
+  public void testGetLastMessageListener_returnsNullIfNoListenerAdded() {
+    assertThat(shadowCompanionDeviceManager.getMessageReceivedListeners(100)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
+  public void testRemoveOnMessageReceivedListener_removesListener() {
+    TestCdmListener testListener = new TestCdmListener();
+    int messageType = 100;
+    companionDeviceManager.addOnMessageReceivedListener(executorService, messageType, testListener);
+
+    companionDeviceManager.removeOnMessageReceivedListener(messageType, testListener);
+
+    assertThat(shadowCompanionDeviceManager.getMessageReceivedListeners(messageType)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
+  public void testSendMessage_sendsMessageToAddedListeners() throws Exception {
+    TestCdmListener listener = new TestCdmListener();
+    byte[] data = new byte[] {0x01};
+    int messageType = 100;
+    int id = 10;
+    shadowCompanionDeviceManager.addAssociation(
+        AssociationInfoBuilder.newBuilder().setDeviceMacAddress(MAC_ADDRESS).setId(id).build());
+
+    companionDeviceManager.addOnMessageReceivedListener(executorService, messageType, listener);
+
+    companionDeviceManager.sendMessage(messageType, data, new int[] {0, 1, 2});
+
+    assertThat(listener.awaitInvocation()).isTrue();
+    assertThat(listener.receivedId).isEqualTo(id);
+    assertThat(listener.receivedData).isEqualTo(data);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
+  public void testRemoveOnMessageReceivedListener_noLongerReceivesMessages() throws Exception {
+    TestCdmListener listener = new TestCdmListener();
+    byte[] data = new byte[] {0x01};
+    int messageType = 100;
+    int id = 10;
+    shadowCompanionDeviceManager.addAssociation(
+        AssociationInfoBuilder.newBuilder().setDeviceMacAddress(MAC_ADDRESS).setId(id).build());
+    companionDeviceManager.addOnMessageReceivedListener(executorService, messageType, listener);
+
+    companionDeviceManager.removeOnMessageReceivedListener(messageType, listener);
+
+    companionDeviceManager.sendMessage(messageType, data, new int[] {0, 1, 2});
+
+    executorService.shutdown();
+    assertThat(executorService.awaitTermination(100, MILLISECONDS)).isTrue();
+    assertThat(listener.hasInvocation()).isFalse();
+  }
+
   private CompanionDeviceManager.Callback createCallback() {
     return new CompanionDeviceManager.Callback() {
       @Override
@@ -479,5 +561,29 @@ public class ShadowCompanionDeviceManagerTest {
       @Override
       public void onFailure(CharSequence error) {}
     };
+  }
+
+  /** A test listener for receiving messages from the CompanionDeviceManager. */
+  private static class TestCdmListener implements BiConsumer<Integer, byte[]> {
+    private static final Duration WAIT_TIMEOUT = Duration.ofMillis(100);
+    final CountDownLatch countDownLatch = new CountDownLatch(1);
+
+    int receivedId;
+    byte[] receivedData;
+
+    @Override
+    public void accept(Integer id, byte[] data) {
+      receivedId = id;
+      receivedData = data;
+      countDownLatch.countDown();
+    }
+
+    private boolean awaitInvocation() throws InterruptedException {
+      return countDownLatch.await(WAIT_TIMEOUT.toMillis(), MILLISECONDS);
+    }
+
+    private boolean hasInvocation() {
+      return countDownLatch.getCount() == 0;
+    }
   }
 }
