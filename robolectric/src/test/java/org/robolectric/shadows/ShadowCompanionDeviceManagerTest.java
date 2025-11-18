@@ -553,6 +553,38 @@ public class ShadowCompanionDeviceManagerTest {
     assertThat(listener.hasInvocation()).isFalse();
   }
 
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void testEnableSystemDataSyncForTypes_updatesShadow() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+    int id = shadowCompanionDeviceManager.getMyAssociations().get(0).getId();
+    int flag = 1 << 0;
+
+    companionDeviceManager.enableSystemDataSyncForTypes(id, flag);
+
+    assertThat(shadowCompanionDeviceManager.getSystemDataSyncFlags(id)).isEqualTo(flag);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void testEnableSystemDataSyncForTypes_multipleFlags_updatesShadow() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+    int id = shadowCompanionDeviceManager.getMyAssociations().get(0).getId();
+    int flagOne = 1 << 0;
+    int flagTwo = 1 << 1;
+
+    companionDeviceManager.enableSystemDataSyncForTypes(id, flagOne);
+    assertThat(shadowCompanionDeviceManager.getSystemDataSyncFlags(id)).isEqualTo(flagOne);
+    companionDeviceManager.enableSystemDataSyncForTypes(id, flagTwo);
+    assertThat(shadowCompanionDeviceManager.getSystemDataSyncFlags(id))
+        .isEqualTo(flagOne | flagTwo);
+  }
+
+  @Test
+  public void testGetSystemDataSyncFlags_noAssociation_returnsZero() {
+    assertThat(shadowCompanionDeviceManager.getSystemDataSyncFlags(1)).isEqualTo(0);
+  }
+
   private CompanionDeviceManager.Callback createCallback() {
     return new CompanionDeviceManager.Callback() {
       @Override
