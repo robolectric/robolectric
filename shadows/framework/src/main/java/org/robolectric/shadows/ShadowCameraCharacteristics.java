@@ -2,13 +2,13 @@ package org.robolectric.shadows;
 
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraCharacteristics.Key;
+import android.hardware.camera2.impl.CameraMetadataNative;
 import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.util.ReflectionHelpers;
 
 @Implements(CameraCharacteristics.class)
 public class ShadowCameraCharacteristics {
@@ -17,7 +17,8 @@ public class ShadowCameraCharacteristics {
 
   /** Convenience method which returns a new instance of {@link CameraCharacteristics}. */
   public static CameraCharacteristics newCameraCharacteristics() {
-    return ReflectionHelpers.callConstructor(CameraCharacteristics.class);
+    CameraMetadataNative cm = new CameraMetadataNative();
+    return new CameraCharacteristics(cm);
   }
 
   @Implementation

@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.impl.CameraMetadataNative;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,5 +41,11 @@ public class ShadowCameraCharacteristicsTest {
     shadowOf(cameraCharacteristics).set(key0, 1);
 
     assertThat(cameraCharacteristics.get(key0)).isEqualTo(1);
+  }
+
+  @Test
+  public void getNativeCopy_doesNotNPE() {
+    CameraMetadataNative nativeCopy = cameraCharacteristics.getNativeCopy();
+    assertThat(nativeCopy).isNotNull();
   }
 }
