@@ -59,6 +59,7 @@ import android.location.ICountryDetector;
 import android.location.ILocationManager;
 import android.media.IAudioService;
 import android.media.IMediaRouterService;
+import android.media.metrics.IMediaMetricsManager;
 import android.media.session.ISessionManager;
 import android.net.IConnectivityManager;
 import android.net.IIpSecService;
@@ -368,6 +369,7 @@ public class ShadowServiceManager {
           binderServices, Context.TRANSLATION_MANAGER_SERVICE, ITranslationManager.class);
       addBinderService(binderServices, Context.SENSOR_PRIVACY_SERVICE, ISensorPrivacyManager.class);
       addBinderService(binderServices, Context.VPN_MANAGEMENT_SERVICE, IVpnManager.class);
+      addBinderService(binderServices, Context.MEDIA_METRICS_SERVICE, IMediaMetricsManager.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= TIRAMISU) {
       addBinderService(
