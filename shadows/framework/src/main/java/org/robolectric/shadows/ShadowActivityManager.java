@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static java.util.stream.Collectors.toCollection;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -12,6 +13,7 @@ import android.annotation.RequiresApi;
 import android.annotation.RequiresPermission;
 import android.app.ActivityManager;
 import android.app.ApplicationExitInfo;
+import android.app.ApplicationStartInfo;
 import android.app.IActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
@@ -68,6 +70,7 @@ public class ShadowActivityManager {
   private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
   private boolean isBackgroundRestricted;
   private static final Deque<Object> appExitInfoList = new ArrayDeque<>();
+  private static final Deque<Object> appStartInfoList = new ArrayDeque<>();
   private ConfigurationInfo configurationInfo;
   private Context context;
   private static final ArrayList<Locale> supportedLocales = new ArrayList<>();
@@ -386,6 +389,7 @@ public class ShadowActivityManager {
     importanceListeners.clear();
     uidImportances.clear();
     appExitInfoList.clear();
+    appStartInfoList.clear();
     isLowRamDeviceOverride = null;
     supportedLocales.clear();
   }
@@ -440,6 +444,32 @@ public class ShadowActivityManager {
   public void addApplicationExitInfo(Object info) {
     Preconditions.checkArgument(info instanceof ApplicationExitInfo);
     appExitInfoList.addFirst(info);
+  }
+
+  /**
+   * Returns the matched {@link ApplicationStartInfo} added by {@link #addApplicationStartInfo}.
+   * {@code packageName} is ignored.
+   */
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
+  // ApplicationStartInfo cannot be referenced directly in order to support building Robolectric
+  // with older SDKs.
+  protected List</*android.app.ApplicationStartInfo*/ ?> getHistoricalProcessStartReasons(
+      int maxNum) {
+    return appStartInfoList.stream()
+        .map(i -> (ApplicationStartInfo) i)
+        .limit(maxNum == 0 ? appStartInfoList.size() : maxNum)
+        .collect(toCollection(ArrayList::new));
+  }
+
+  /**
+   * Adds an {@link ApplicationStartInfo} to be returned by {@link
+   * #getHistoricalProcessStartReasons(int)}. See {@link ApplicationStartInfoBuilder} for creating
+   * {@link ApplicationStartInfo} instances.
+   */
+  @RequiresApi(api = VANILLA_ICE_CREAM)
+  public void addApplicationStartInfo(Object info) {
+    Preconditions.checkArgument(info instanceof ApplicationStartInfo);
+    appStartInfoList.addFirst(info);
   }
 
   @Implementation
@@ -568,6 +598,73 @@ public class ShadowActivityManager {
     private ApplicationExitInfoBuilder() {
       this.instance = new ApplicationExitInfo();
       this.shadow = Shadow.extract(instance);
+    }
+  }
+
+  /** Builder class for {@link ApplicationStartInfo} */
+  @RequiresApi(api = VANILLA_ICE_CREAM)
+  public static class ApplicationStartInfoBuilder {
+
+    private final ApplicationStartInfo instance;
+
+    public static ApplicationStartInfoBuilder newBuilder() {
+      return new ApplicationStartInfoBuilder();
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setDefiningUid(int uid) {
+      instance.setDefiningUid(uid);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setPackageUid(int packageUid) {
+      instance.setPackageUid(packageUid);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setPid(int pid) {
+      instance.setPid(pid);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setProcessName(String processName) {
+      instance.setProcessName(processName);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setRealUid(int realUid) {
+      instance.setRealUid(realUid);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setStartType(int startType) {
+      instance.setStartType(startType);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setReason(int reason) {
+      instance.setReason(reason);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder addStartupTimestamp(int key, long timestamp) {
+      instance.addStartupTimestamp(key, timestamp);
+      return this;
+    }
+
+    public ApplicationStartInfo build() {
+      return instance;
+    }
+
+    private ApplicationStartInfoBuilder() {
+      this.instance = ReflectionHelpers.newInstance(ApplicationStartInfo.class);
     }
   }
 
