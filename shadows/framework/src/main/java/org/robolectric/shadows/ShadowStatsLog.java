@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
-import static com.google.common.collect.ImmutableList.toImmutableList;
-import static java.util.stream.Collectors.collectingAndThen;
 
 import android.util.StatsEvent;
 import android.util.StatsLog;
@@ -21,33 +19,23 @@ public class ShadowStatsLog {
   @Implementation
   protected static void __staticInitializer__() {}
 
-  private static List<StatsEvent> statsEvents = Collections.synchronizedList(new ArrayList<>());
+  private static List<StatsLogItem> statsLogs = Collections.synchronizedList(new ArrayList<>());
 
   public static List<StatsLogItem> getStatsLogs() {
-    synchronized (statsEvents) {
-      return statsEvents.stream()
-          .map(
-              statsEvent ->
-                  StatsLogItem.create(
-                      statsEvent.getAtomId(), statsEvent.getNumBytes(), statsEvent.getBytes()))
-          .collect(collectingAndThen(toImmutableList(), Collections::unmodifiableList));
-    }
-  }
-
-  public static List<StatsEvent> getStatsEvents() {
-    synchronized (statsEvents) {
-      return Collections.unmodifiableList(statsEvents);
-    }
+    return Collections.unmodifiableList(statsLogs);
   }
 
   @Resetter
   public static void reset() {
-    statsEvents = Collections.synchronizedList(new ArrayList<>());
+    statsLogs = Collections.synchronizedList(new ArrayList<>());
   }
 
   @Implementation
   public static void write(final StatsEvent statsEvent) {
-    statsEvents.add(statsEvent);
+    statsLogs.add(
+        StatsLogItem.create(
+            statsEvent.getAtomId(), statsEvent.getNumBytes(), statsEvent.getBytes()));
+    statsEvent.release();
   }
 
   /** Single atom log item for write api. */
