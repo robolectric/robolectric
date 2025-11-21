@@ -4,6 +4,10 @@ import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,12 +20,12 @@ import android.safetycenter.SafetyCenterStatus;
 import android.safetycenter.SafetyEvent;
 import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceErrorDetails;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
@@ -548,20 +552,16 @@ public final class ShadowSafetyCenterManagerTest {
     SafetyCenterManager safetyCenterManager =
         getApplicationContext().getSystemService(SafetyCenterManager.class);
     ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
-    AtomicBoolean listenerCalled = new AtomicBoolean(false);
 
-    shadowSafetyCenterManager.addOnSafetyCenterDataChangedListener(
-        directExecutor(),
-        new OnSafetyCenterDataChangedListener() {
-          @Override
-          public void onSafetyCenterDataChanged(SafetyCenterData safetyCenterData) {
-            assertThat(safetyCenterData).isNotNull();
-            listenerCalled.set(true);
-          }
-        });
+    OnSafetyCenterDataChangedListener mockListener = mock(OnSafetyCenterDataChangedListener.class);
+
+    ArgumentCaptor<SafetyCenterData> dataCaptor = ArgumentCaptor.forClass(SafetyCenterData.class);
+
+    shadowSafetyCenterManager.addOnSafetyCenterDataChangedListener(directExecutor(), mockListener);
     shadowSafetyCenterManager.setSafetyCenterData((SafetyCenterData) createSafetyCenterData());
-
-    assertThat(listenerCalled.get()).isTrue();
+    verify(mockListener).onSafetyCenterDataChanged(dataCaptor.capture());
+    SafetyCenterData capturedData = dataCaptor.getValue();
+    assertThat(capturedData).isNotNull();
   }
 
   @Test
@@ -570,20 +570,13 @@ public final class ShadowSafetyCenterManagerTest {
     SafetyCenterManager safetyCenterManager =
         getApplicationContext().getSystemService(SafetyCenterManager.class);
     ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
-    AtomicBoolean listenerCalled = new AtomicBoolean(false);
-    OnSafetyCenterDataChangedListener listener =
-        new OnSafetyCenterDataChangedListener() {
-          @Override
-          public void onSafetyCenterDataChanged(SafetyCenterData safetyCenterData) {
-            listenerCalled.set(true);
-          }
-        };
+    OnSafetyCenterDataChangedListener mockListener = mock(OnSafetyCenterDataChangedListener.class);
 
-    shadowSafetyCenterManager.addOnSafetyCenterDataChangedListener(directExecutor(), listener);
-    shadowSafetyCenterManager.removeOnSafetyCenterDataChangedListener(listener);
+    shadowSafetyCenterManager.addOnSafetyCenterDataChangedListener(directExecutor(), mockListener);
+    shadowSafetyCenterManager.removeOnSafetyCenterDataChangedListener(mockListener);
     shadowSafetyCenterManager.setSafetyCenterData((SafetyCenterData) createSafetyCenterData());
 
-    assertThat(listenerCalled.get()).isFalse();
+    verify(mockListener, never()).onSafetyCenterDataChanged(any());
   }
 
   @Test
@@ -610,24 +603,23 @@ public final class ShadowSafetyCenterManagerTest {
     SafetyCenterManager safetyCenterManager =
         getApplicationContext().getSystemService(SafetyCenterManager.class);
     ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
-    AtomicBoolean listenerCalled = new AtomicBoolean(false);
     SafetyCenterIssue issue = new SafetyCenterIssue.Builder("id1", "title", "summary").build();
     SafetyCenterData dataWithIssue = (SafetyCenterData) createSafetyCenterDataWithIssue(issue);
 
     shadowSafetyCenterManager.setSafetyCenterData(dataWithIssue);
-    shadowSafetyCenterManager.addOnSafetyCenterDataChangedListener(
-        directExecutor(),
-        new OnSafetyCenterDataChangedListener() {
-          @Override
-          public void onSafetyCenterDataChanged(SafetyCenterData safetyCenterData) {
-            assertThat(safetyCenterData.getIssues()).isEmpty();
-            assertThat(safetyCenterData.getDismissedIssues()).hasSize(1);
-            listenerCalled.set(true);
-          }
-        });
+
+    OnSafetyCenterDataChangedListener mockListener = mock(OnSafetyCenterDataChangedListener.class);
+
+    ArgumentCaptor<SafetyCenterData> dataCaptor = ArgumentCaptor.forClass(SafetyCenterData.class);
+
+    shadowSafetyCenterManager.addOnSafetyCenterDataChangedListener(directExecutor(), mockListener);
     safetyCenterManager.dismissSafetyCenterIssue("id1");
 
-    assertThat(listenerCalled.get()).isTrue();
+    verify(mockListener).onSafetyCenterDataChanged(dataCaptor.capture());
+
+    SafetyCenterData capturedData = dataCaptor.getValue();
+    assertThat(capturedData.getIssues()).isEmpty();
+    assertThat(capturedData.getDismissedIssues()).hasSize(1);
   }
 
   private Object createSafetyCenterData() {
