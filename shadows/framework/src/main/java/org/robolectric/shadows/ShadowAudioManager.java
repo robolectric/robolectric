@@ -58,7 +58,6 @@ public class ShadowAudioManager {
 
   public static final int MAX_VOLUME_MUSIC_DTMF = 15;
   public static final int DEFAULT_MAX_VOLUME = 7;
-  public static final int MIN_VOLUME = 0;
   public static final int DEFAULT_VOLUME = 7;
   public static final int INVALID_VOLUME = 0;
   public static final int FLAG_NO_ACTION = 0;
@@ -75,6 +74,7 @@ public class ShadowAudioManager {
           AudioManager.STREAM_ACCESSIBILITY);
 
   private static final int INVALID_PATCH_HANDLE = -1;
+  private static final int DEFAULT_MIN_VOLUME = 0;
   private static final float MAX_VOLUME_DB = 0;
   private static final float MIN_VOLUME_DB = -100;
 
@@ -122,10 +122,18 @@ public class ShadowAudioManager {
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
-      streamStatus.put(stream, new AudioStream(DEFAULT_VOLUME, DEFAULT_MAX_VOLUME, FLAG_NO_ACTION));
+      streamStatus.put(
+          stream,
+          new AudioStream(DEFAULT_MIN_VOLUME, DEFAULT_VOLUME, DEFAULT_MAX_VOLUME, FLAG_NO_ACTION));
     }
     streamStatus.get(AudioManager.STREAM_MUSIC).setMaxVolume(MAX_VOLUME_MUSIC_DTMF);
     streamStatus.get(AudioManager.STREAM_DTMF).setMaxVolume(MAX_VOLUME_MUSIC_DTMF);
+  }
+
+  @Implementation(minSdk = P)
+  protected int getStreamMinVolume(int streamType) {
+    AudioStream stream = streamStatus.get(streamType);
+    return (stream != null) ? stream.getMinVolume() : INVALID_VOLUME;
   }
 
   @Implementation
@@ -146,13 +154,16 @@ public class ShadowAudioManager {
     if (stream == null) {
       return INVALID_VOLUME;
     }
-    if (index < MIN_VOLUME || index > stream.getMaxVolume()) {
+
+    int minVol = stream.getMinVolume();
+    int maxVol = stream.getMaxVolume();
+    if (index < minVol || index > maxVol) {
       throw new IllegalArgumentException("Invalid stream volume index " + index);
     }
-    if (index == MIN_VOLUME) {
+    if (index == minVol) {
       return Float.NEGATIVE_INFINITY;
     }
-    float interpolation = (index - MIN_VOLUME) / (float) (stream.getMaxVolume() - MIN_VOLUME);
+    float interpolation = (index - minVol) / (float) (stream.getMaxVolume() - minVol);
     return MIN_VOLUME_DB + interpolation * (MAX_VOLUME_DB - MIN_VOLUME_DB);
   }
 
@@ -277,6 +288,11 @@ public class ShadowAudioManager {
     Object newModeDispatcherStub(AudioManager audioManager);
 
     void dispatchAudioModeChanged(int newMode);
+  }
+
+  @RequiresApi(P)
+  public void setStreamMinVolume(int streamMinVolume) {
+    streamStatus.forEach((key, value) -> value.setMinVolume(streamMinVolume));
   }
 
   public void setStreamMaxVolume(int streamMaxVolume) {
@@ -1117,17 +1133,23 @@ public class ShadowAudioManager {
   }
 
   private static class AudioStream {
+    private int minVolume;
     private int currentVolume;
     private int maxVolume;
     private int flag;
 
-    public AudioStream(int currVol, int maxVol, int flag) {
-      if (MIN_VOLUME > maxVol) {
+    AudioStream(int minVol, int currVol, int maxVol, int flag) {
+      if (minVol > maxVol) {
         throw new IllegalArgumentException("Min volume is higher than max volume.");
       }
+      setMinVolume(minVol);
       setCurrentVolume(currVol);
       setMaxVolume(maxVol);
       setFlag(flag);
+    }
+
+    int getMinVolume() {
+      return minVolume;
     }
 
     public int getCurrentVolume() {
@@ -1142,11 +1164,15 @@ public class ShadowAudioManager {
       return flag;
     }
 
+    void setMinVolume(int vol) {
+      minVolume = vol;
+    }
+
     public void setCurrentVolume(int vol) {
       if (vol > maxVolume) {
         vol = maxVolume;
-      } else if (vol < MIN_VOLUME) {
-        vol = MIN_VOLUME;
+      } else if (vol < minVolume) {
+        vol = minVolume;
       }
       currentVolume = vol;
     }

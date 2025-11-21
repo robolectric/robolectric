@@ -165,6 +165,14 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
+  @Config(minSdk = P)
+  public void getStreamMinVolume_shouldReturnMinVolume() throws Exception {
+    for (int stream : ShadowAudioManager.ALL_STREAMS) {
+      assertThat(audioManager.getStreamMinVolume(stream)).isEqualTo(0);
+    }
+  }
+
+  @Test
   public void getStreamMaxVolume_shouldReturnMaxVolume() throws Exception {
     for (int stream : ShadowAudioManager.ALL_STREAMS) {
       switch (stream) {
@@ -209,6 +217,16 @@ public class ShadowAudioManagerTest {
       if (vol > ShadowAudioManager.DEFAULT_MAX_VOLUME) {
         vol = 1;
       }
+    }
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void setStreamMinVolume_shouldSetMinVolumeForAllStreams() {
+    final int newMinVol = 5;
+    shadowOf(audioManager).setStreamMinVolume(newMinVol);
+    for (int stream : ShadowAudioManager.ALL_STREAMS) {
+      assertThat(audioManager.getStreamMinVolume(stream)).isEqualTo(newMinVol);
     }
   }
 
@@ -285,9 +303,9 @@ public class ShadowAudioManagerTest {
   @Test
   @Config(minSdk = P)
   public void getStreamVolumeDb_minVolume_returnsNegativeInf() {
+    int minVolume = shadowOf(audioManager).getStreamMinVolume(AudioManager.STREAM_MUSIC);
     float volumeDb =
-        audioManager.getStreamVolumeDb(
-            AudioManager.STREAM_MUSIC, ShadowAudioManager.MIN_VOLUME, /* deviceType= */ 0);
+        audioManager.getStreamVolumeDb(AudioManager.STREAM_MUSIC, minVolume, /* deviceType= */ 0);
 
     assertThat(volumeDb).isNegativeInfinity();
   }
@@ -296,7 +314,7 @@ public class ShadowAudioManagerTest {
   @Config(minSdk = P)
   public void getStreamVolumeDb_mediumVolumes_returnsDecrementingNegativeValues() {
     int maxVolume = ShadowAudioManager.MAX_VOLUME_MUSIC_DTMF;
-    int minVolume = ShadowAudioManager.MIN_VOLUME;
+    int minVolume = shadowOf(audioManager).getStreamMinVolume(AudioManager.STREAM_MUSIC);
     float lastVolumeDb =
         audioManager.getStreamVolumeDb(AudioManager.STREAM_MUSIC, maxVolume, /* deviceType= */ 0);
 
