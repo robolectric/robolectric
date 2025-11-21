@@ -79,6 +79,9 @@ public class ShadowNfcAdapter {
   private NfcAdapter.ReaderCallback readerCallback;
 
   @GuardedBy("this")
+  private Bundle readerModeExtras;
+
+  @GuardedBy("this")
   private NfcAntennaInfo nfcAntennaInfo;
 
   @GuardedBy("this")
@@ -196,6 +199,7 @@ public class ShadowNfcAdapter {
 
     synchronized (this) {
       readerCallback = callback;
+      readerModeExtras = extras;
     }
   }
 
@@ -208,12 +212,18 @@ public class ShadowNfcAdapter {
     }
     synchronized (this) {
       readerCallback = null;
+      readerModeExtras = null;
     }
   }
 
   /** Returns true if NFC is in reader mode. */
   public synchronized boolean isInReaderMode() {
     return readerCallback != null;
+  }
+
+  /** Returns extras bundle passed to reader mode. */
+  public synchronized Bundle getReaderModeExtras() {
+    return readerModeExtras;
   }
 
   /** Dispatches the tag onto any registered readers. */
