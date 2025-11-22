@@ -13,7 +13,7 @@ import org.junit.runners.model.Statement;
  */
 public class SetSystemPropertyRule implements TestRule {
 
-  private Map<String, String> originalProperties = new HashMap<>();
+  private final Map<String, String> originalProperties = new HashMap<>();
 
   public SetSystemPropertyRule() {}
 
