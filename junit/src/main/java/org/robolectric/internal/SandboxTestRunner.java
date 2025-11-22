@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 
 import com.google.common.base.Splitter;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -52,6 +53,7 @@ import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.sandbox.ShadowMatcher;
+import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.ReflectionHelpers;
@@ -59,7 +61,7 @@ import org.robolectric.util.Util;
 import org.robolectric.util.inject.Injector;
 
 /**
- * Sandbox test runner that runs each test in a sandboxed class loader environment. Typically this
+ * Sandbox test runner that runs each test in a sandboxed class loader environment. Typically, this
  * runner should not be directly accessed, use {@link org.robolectric.RobolectricTestRunner}
  * instead.
  */
@@ -67,6 +69,7 @@ import org.robolectric.util.inject.Injector;
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
+  public static final String CLASS_NAME_JUNIT_JUPITER_TEST = "org.junit.jupiter.api.Test";
 
   protected static Injector.Builder defaultInjector() {
     return new Injector.Builder();
@@ -99,6 +102,32 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     shadowProviders = injector.getInstance(ShadowProviders.class);
     classHandlerBuilder = injector.getInstance(ClassHandlerBuilder.class);
     perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
+
+    // The computeTestMethods is not a good place to do following validation as it will be called
+    // multiple times, and one calling is from parent class' constructor.
+    warnWhenMixingJUnitJupiterUsage();
+  }
+
+  /** Print necessary warning logs when trying to use JUnit5 with Robolectric. */
+  private void warnWhenMixingJUnitJupiterUsage() {
+    try {
+      Class<?> junit5TestClass = Class.forName(CLASS_NAME_JUNIT_JUPITER_TEST);
+      if (junit5TestClass.isAnnotation()) {
+        @SuppressWarnings("unchecked")
+        List<FrameworkMethod> junit5TestMethods =
+            getTestClass().getAnnotatedMethods((Class<? extends Annotation>) junit5TestClass);
+        if (!junit5TestMethods.isEmpty()) {
+          Logger.warn(
+              "You're using JUnit5 with Robolectric, and it might have compatibility"
+                  + " issues that cause strange problems.");
+          Logger.warn(
+              "You can try https://github.com/apter-tech/junit5-robolectric-extension if you want"
+                  + " to use JUnit5 and Robolectric, and omit this message if you're using it.");
+        }
+      }
+    } catch (ClassNotFoundException ignored) {
+      // Do nothing
+    }
   }
 
   @Nonnull
