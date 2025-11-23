@@ -1,48 +1,49 @@
 package org.robolectric.integrationtests.kotlin.exception
 
 import android.app.Activity
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.shadows.ShadowLooper
 
 @RunWith(RobolectricTestRunner::class)
 @OptIn(DelicateCoroutinesApi::class)
-class DummyExceptionTest {
+class RobolectricExceptionCollectorTest {
 
-    lateinit var uninitializedProperty: String
-
-    @Test
-    fun `GIVEN throwUncaughtExceptions property is true, THEN an exception is thrown`() {
-        val controller = Robolectric.buildActivity(Activity::class.java)
-        controller.setup().resume()
-        val exception = assertThrows(
-            UninitializedPropertyAccessException::class.java
-        ) {
-            controller.use {
-                uninitializedProperty.toUByte() // Throws UninitializedPropertyAccessException
-            }
-        }
-        assert(exception != null)
-    }
+    lateinit var pleaseDontUseMe: String
 
     @Test
-    fun `GIVEN throwUncaughtExceptions property is false, THEN the exception is swallowed`() {
-        // Set false on purpose
+    fun `GIVEN throwUncaughtExceptions property true, WHEN coroutine fails, THEN an exception is thrown`() {
+        // Set to true to make this test and the subsequent one fail too
         System.setProperty("robolectric.throwUncaughtExceptions", "false")
         val controller = Robolectric.buildActivity(Activity::class.java)
         controller.setup().resume()
         controller.use {
             GlobalScope.launch {
-                uninitializedProperty.toUByte()
+                // Throws UninitializedPropertyAccessException
+                pleaseDontUseMe.toUByte()
             }
         }
+        assert(true)
+    }
+
+    @Test
+    fun `GIVEN throwUncaughtExceptions property is false, THEN the exception is swallowed`() {
+        // Test crashes if set to true, OR if previous test also crashed!
+        System.setProperty("robolectric.throwUncaughtExceptions", "false")
+        val controller = Robolectric.buildActivity(Activity::class.java)
+        controller.setup().resume()
+        controller.use {
+            GlobalScope.launch {
+                // Throws UninitializedPropertyAccessException
+                pleaseDontUseMe.toUByte()
+            }
+        }
+        assert(true)
     }
 }

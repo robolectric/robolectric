@@ -36,6 +36,7 @@ import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.DefaultManifestFactory;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
+import org.robolectric.internal.RobolectricExceptionCollector;
 import org.robolectric.internal.SandboxManager;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.TestEnvironment;
@@ -78,6 +79,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     // validation introduced in Bouncy Castle 1.71.
     // https://github.com/bcgit/bc-java/issues/1144
     System.setProperty("org.bouncycastle.rsa.max_mr_tests", "0");
+    // Installs the Robolectric Exception Collector if needed.
+    // This is for demo purpose only to toggle the property and show it works via test.
+    if (Boolean.parseBoolean(System.getProperty("robolectric.throwUncaughtExceptions", "true"))) {
+      RobolectricExceptionCollector.install();
+    }
   }
 
   protected static ImmutableList<RunListener> loadRunListeners() {

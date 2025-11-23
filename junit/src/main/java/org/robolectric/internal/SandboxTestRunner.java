@@ -4,23 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 
 import com.google.common.base.Splitter;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.WeakHashMap;
-import javax.annotation.Nonnull;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -57,6 +41,25 @@ import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
 import org.robolectric.util.inject.Injector;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.WeakHashMap;
+
+import javax.annotation.Nonnull;
 
 /**
  * Sandbox test runner that runs each test in a sandboxed class loader environment. Typically this
@@ -478,6 +481,11 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
     Queue<Throwable> thrown = new ArrayDeque<>();
 
+    // We can also check BEFORE the next test starts as well..
+    if (Boolean.parseBoolean(System.getProperty("robolectric.throwUncaughtExceptions", "true"))) {
+      RobolectricExceptionCollector.throwFirstSuppressedException();
+    }
+
     try {
       if (USE_LEGACY_SANDBOX_FLOW) {
         // Only invoke @BeforeClass once per class
@@ -524,6 +532,11 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         first.addSuppressed(thrown.remove());
       }
       throw Util.sneakyThrow(first);
+    }
+    // Here we again check for this property
+    if (Boolean.parseBoolean(System.getProperty("robolectric.throwUncaughtExceptions", "true"))) {
+      // And then after all said and done we check again for exception
+      RobolectricExceptionCollector.throwFirstSuppressedException();
     }
   }
 
