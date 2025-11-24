@@ -125,7 +125,7 @@ androidx-compose-bom = "2025.11.01"
 play-services-basement = "18.0.1"
 
 # https://github.com/google/TestParameterInjector/tags
-test-parameter-injector = "1.19"
+test-parameter-injector = "1.20"
 
 # https://plugins.gradle.org/plugin/com.gradle.plugin-publish
 gradle-plugin-publish = "2.0.0"
