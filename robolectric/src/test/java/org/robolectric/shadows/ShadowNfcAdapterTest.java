@@ -18,6 +18,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.NfcAntennaInfo;
 import android.nfc.Tag;
 import android.os.Build;
+import android.os.Bundle;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Collections;
 import org.junit.Before;
@@ -225,6 +226,47 @@ public class ShadowNfcAdapterTest {
     adapter.disableReaderMode(activity);
 
     assertThat(shadowOf(adapter).isInReaderMode()).isFalse();
+  }
+
+  @Test
+  public void getReaderModeExtras_beforeEnableReaderMode_shouldReturnNull() {
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+
+    assertThat(shadowOf(adapter).getReaderModeExtras()).isNull();
+  }
+
+  @Test
+  public void getReaderModeExtras_afterEnableReaderMode_shouldReturnExtras() {
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+    NfcAdapter.ReaderCallback callback = mock(NfcAdapter.ReaderCallback.class);
+    Bundle extras = new Bundle();
+    extras.putByteArray("test", new byte[] {0x01, 0x02});
+    adapter.enableReaderMode(
+        activity,
+        callback,
+        NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+        extras);
+
+    assertThat(shadowOf(adapter).getReaderModeExtras()).isEqualTo(extras);
+  }
+
+  @Test
+  public void getReaderModeExtras_afterDisableReaderMode_shouldReturnNull() {
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+    NfcAdapter.ReaderCallback callback = mock(NfcAdapter.ReaderCallback.class);
+    Bundle extras = new Bundle();
+    extras.putByteArray("test", new byte[] {0x01, 0x02});
+    adapter.enableReaderMode(
+        activity,
+        callback,
+        NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+        extras);
+    adapter.disableReaderMode(activity);
+
+    assertThat(shadowOf(adapter).getReaderModeExtras()).isNull();
   }
 
   @Test
