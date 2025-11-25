@@ -35,6 +35,7 @@ public final class ShadowStatsLogTest {
 
     assertEquals(1, ShadowStatsLog.getStatsLogs().size());
     assertEquals(expectedAtomId, ShadowStatsLog.getStatsLogs().get(0).atomId());
+    assertThat(ShadowStatsLog.getStatsEvents()).containsExactly(statsEvent);
 
     final ByteBuffer buffer =
         ByteBuffer.wrap(ShadowStatsLog.getStatsLogs().get(0).bytes())
@@ -89,6 +90,7 @@ public final class ShadowStatsLogTest {
 
     assertEquals(1, ShadowStatsLog.getStatsLogs().size());
     assertEquals(expectedAtomId, ShadowStatsLog.getStatsLogs().get(0).atomId());
+    assertThat(ShadowStatsLog.getStatsEvents()).containsExactly(statsEvent);
 
     final ByteBuffer buffer =
         ByteBuffer.wrap(ShadowStatsLog.getStatsLogs().get(0).bytes())
@@ -136,6 +138,7 @@ public final class ShadowStatsLogTest {
     long maxTimestamp = SystemClock.elapsedRealtimeNanos();
 
     assertThat(ShadowStatsLog.getStatsLogs()).hasSize(statsEvents.size());
+    assertThat(ShadowStatsLog.getStatsEvents()).containsExactlyElementsIn(statsEvents).inOrder();
 
     for (int i = 0; i < statsEvents.size(); i++) {
       assertEquals((int) expectedAtomIds.get(i), ShadowStatsLog.getStatsLogs().get(i).atomId());
@@ -197,6 +200,7 @@ public final class ShadowStatsLogTest {
 
     assertEquals(1, ShadowStatsLog.getStatsLogs().size());
     assertEquals(expectedAtomId, ShadowStatsLog.getStatsLogs().get(0).atomId());
+    assertThat(ShadowStatsLog.getStatsEvents()).containsExactly(statsEvent);
 
     final ByteBuffer buffer =
         ByteBuffer.wrap(ShadowStatsLog.getStatsLogs().get(0).bytes())
@@ -239,5 +243,33 @@ public final class ShadowStatsLogTest {
     assertThat(statsEvent.getNumBytes()).isEqualTo(buffer.position());
 
     statsEvent.release();
+  }
+
+  @Test
+  public void testReset() {
+    final StatsEvent statsEvent = StatsEvent.newBuilder().usePooledBuffer().build();
+    StatsLog.write(statsEvent);
+
+    assertThat(ShadowStatsLog.getStatsLogs()).hasSize(1);
+    assertThat(ShadowStatsLog.getStatsEvents()).hasSize(1);
+
+    ShadowStatsLog.reset();
+
+    assertThat(ShadowStatsLog.getStatsLogs()).isEmpty();
+    assertThat(ShadowStatsLog.getStatsEvents()).isEmpty();
+  }
+
+  @Test
+  public void testGetStatsLogsReturnsLiveView() {
+    List<ShadowStatsLog.StatsLogItem> statsLogs = ShadowStatsLog.getStatsLogs();
+    final StatsEvent statsEvent1 = StatsEvent.newBuilder().usePooledBuffer().build();
+    StatsLog.write(statsEvent1);
+
+    assertThat(statsLogs).hasSize(1);
+
+    final StatsEvent statsEvent2 = StatsEvent.newBuilder().usePooledBuffer().build();
+    StatsLog.write(statsEvent2);
+
+    assertThat(statsLogs).hasSize(2);
   }
 }
