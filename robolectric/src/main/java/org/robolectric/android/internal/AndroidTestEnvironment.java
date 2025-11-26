@@ -333,11 +333,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     Bootstrap.setUpDisplay();
     activityThread.applyConfigurationToResources(androidConfiguration);
-
-    Application application = ReflectionHelpers.callConstructor(applicationClass);
     RuntimeEnvironment.setConfiguredApplicationClass(applicationClass);
-
-    RuntimeEnvironment.application = application;
 
     final Class<?> appBindDataClass;
     try {
@@ -360,6 +356,24 @@ public class AndroidTestEnvironment implements TestEnvironment {
         reflector(ContextImplReflector.class).createAppContext(activityThread, loadedApk);
     ShadowPackageManager shadowPackageManager = Shadow.extract(contextImpl.getPackageManager());
     shadowPackageManager.addPackageInternal(parsedPackage);
+
+    // If we're SDK 28+ and have an AppComponentFactory, call through it if possible
+    Application application;
+    if (loadedApk != null && apiLevel >= P && loadedApk.getAppFactory() != null) {
+      try {
+        application =
+            loadedApk
+                .getAppFactory()
+                .instantiateApplication(loadedApk.getClassLoader(), applicationClass.getName());
+      } catch (ReflectiveOperationException e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      application = ReflectionHelpers.callConstructor(applicationClass);
+    }
+
+    RuntimeEnvironment.application = application;
+
     activityThreadReflector.setInitialApplication(application);
     ShadowApplication shadowApplication = Shadow.extract(application);
     shadowApplication.callAttach(contextImpl);

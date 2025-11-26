@@ -91,6 +91,13 @@ class NormalCompatibilityTest {
   }
 
   @Test
+  fun `TestApp created correctly using AppComponentFactory`() {
+    val testApp = RuntimeEnvironment.getApplication()
+    check(testApp is TestApp)
+    assertThat(testApp.instantiatedWithAppFactory).isTrue()
+  }
+
+  @Test
   fun `MainActivity created correctly using AppComponentFactory`() {
     buildActivity(MainActivity::class.java).use { controller ->
       val activity = controller.setup().get()
