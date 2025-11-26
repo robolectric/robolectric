@@ -116,8 +116,9 @@ public class DefaultSdkPicker implements SdkPicker {
         throw new IllegalArgumentException(
             "Package targetSdkVersion=" + appTargetSdk + " < minSdkVersion=" + appMinSdk);
       } else if (appMaxSdk != 0 && appTargetSdk > appMaxSdk) {
-        throw new IllegalArgumentException(
+        System.err.println(
             "Package targetSdkVersion=" + appTargetSdk + " > maxSdkVersion=" + appMaxSdk);
+        return Collections.singleton(sdkCollection.getSdk(appMaxSdk));
       }
       return Collections.singleton(sdkCollection.getSdk(appTargetSdk));
     }
