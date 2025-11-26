@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.bluetooth.IBluetoothGattServerCallback;
 import android.bluetooth.le.AdvertiseData;
@@ -11,6 +12,8 @@ import android.bluetooth.le.PeriodicAdvertisingParameters;
 import android.content.AttributionSource;
 import android.os.IBinder;
 import android.os.RemoteException;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadows.BluetoothGattProxyDelegate.IAdvertisingSetCallbackReflectorPostB;
 import org.robolectric.shadows.BluetoothGattProxyDelegate.IAdvertisingSetCallbackReflectorV;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -48,12 +51,18 @@ class BluetoothAdvertiseProxyDelegate {
       IAdvertisingSetCallback callback,
       AttributionSource attributionSource) {
 
-    reflector(IAdvertisingSetCallbackReflectorV.class, callback)
-        .onAdvertisingSetStarted(
-            ReflectionHelpers.createNullProxy(IBinder.class),
-            0,
-            parameters.getTxPowerLevel(),
-            AdvertisingSetCallback.ADVERTISE_SUCCESS);
+    if (RuntimeEnvironment.getApiLevel() >= POST_BAKLAVA) {
+      reflector(IAdvertisingSetCallbackReflectorPostB.class, callback)
+          .onAdvertisingSetStarted(
+              0, parameters.getTxPowerLevel(), AdvertisingSetCallback.ADVERTISE_SUCCESS);
+    } else {
+      reflector(IAdvertisingSetCallbackReflectorV.class, callback)
+          .onAdvertisingSetStarted(
+              ReflectionHelpers.createNullProxy(IBinder.class),
+              0,
+              parameters.getTxPowerLevel(),
+              AdvertisingSetCallback.ADVERTISE_SUCCESS);
+    }
   }
 
   public void startAdvertisingSet(
