@@ -133,6 +133,16 @@ public class ShadowTimeManager {
           ClassParameter.from(int.class, Capabilities.CAPABILITY_POSSESSED));
     }
 
+    if (ReflectionHelpers.hasMethod(
+        TimeZoneCapabilities.Builder.class,
+        "setConfigureTimeZoneOffsetChangeNotificationsEnabledCapability",
+        int.class)) {
+      ReflectionHelpers.callInstanceMethod(
+          timeZoneCapabilitiesBuilder,
+          "setConfigureTimeZoneOffsetChangeNotificationsEnabledCapability",
+          ClassParameter.from(int.class, Capabilities.CAPABILITY_POSSESSED));
+    }
+
     if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
       ReflectionHelpers.callInstanceMethod(
           timeZoneCapabilitiesBuilder,
