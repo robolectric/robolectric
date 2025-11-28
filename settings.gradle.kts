@@ -26,6 +26,7 @@ include(
   ":integration_tests:ctesque",
   ":integration_tests:dependency-on-stubs",
   ":integration_tests:jacoco-offline",
+  ":integration_tests:junit-vintage-engine",
   ":integration_tests:kotlin",
   ":integration_tests:libphonenumber",
   ":integration_tests:memoryleaks",
