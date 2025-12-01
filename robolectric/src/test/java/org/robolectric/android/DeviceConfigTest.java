@@ -3,6 +3,7 @@ package org.robolectric.android;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.android.DeviceConfig.getUiModeNight;
 import static org.robolectric.shadows.ShadowDisplayManager.addDisplay;
 
 import android.content.Context;
@@ -23,7 +24,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.Qualifiers;
 import org.robolectric.shadows.ShadowDisplayManager;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -49,7 +49,11 @@ public class DeviceConfigTest {
   @Test
   public void applyToConfiguration() {
     applyQualifiers("en-rUS-w400dp-h800dp-notround");
-    assertThat(asQualifierString()).isEqualTo("en-rUS-ldltr-w400dp-h800dp-notround");
+    assertThat(asQualifierString())
+        .isEqualTo(
+            "en-rUS-ldltr-sw400dp-w400dp-h800dp-normal-long-notround-"
+                + optsForO
+                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
   @Test
@@ -67,28 +71,28 @@ public class DeviceConfigTest {
     applyQualifiers("fr-land");
     assertThat(asQualifierString())
         .isEqualTo(
-            "fr-ldltr-sw400dp-w400dp-h800dp-normal-notlong-notround-"
+            "fr-ldltr-sw400dp-w800dp-h400dp-normal-notlong-notround-"
                 + optsForO
                 + "land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
 
     applyQualifiers("w500dp-large-television-night-xxhdpi-notouch-keyshidden");
     assertThat(asQualifierString())
         .isEqualTo(
-            "fr-ldltr-sw400dp-w500dp-large-notlong-notround-"
+            "fr-ldltr-sw400dp-w640dp-h500dp-large-notlong-notround-"
                 + optsForO
                 + "land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
 
     applyQualifiers("long");
     assertThat(asQualifierString())
         .isEqualTo(
-            "fr-ldltr-sw400dp-w500dp-large-long-notround-"
+            "fr-ldltr-sw400dp-w640dp-h500dp-large-long-notround-"
                 + optsForO
                 + "land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
 
     applyQualifiers("round");
     assertThat(asQualifierString())
         .isEqualTo(
-            "fr-ldltr-sw400dp-w500dp-large-long-round-"
+            "fr-ldltr-sw400dp-w640dp-h500dp-large-long-round-"
                 + optsForO
                 + "land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
   }
@@ -334,11 +338,19 @@ public class DeviceConfigTest {
     assertThat(displayMetrics.ydpi).isEqualTo((float) 240.0);
   }
 
+  @Test
+  public void uiModeNight() {
+    assertThat(getUiModeNight(configuration)).isEqualTo(Configuration.UI_MODE_NIGHT_UNDEFINED);
+    applyQualifiers("night");
+    assertThat(getUiModeNight(configuration)).isEqualTo(Configuration.UI_MODE_NIGHT_YES);
+    applyQualifiers("notnight");
+    assertThat(getUiModeNight(configuration)).isEqualTo(Configuration.UI_MODE_NIGHT_NO);
+  }
+
   //////////////////////////
 
   private void applyQualifiers(String qualifiers) {
-    DeviceConfig.applyToConfiguration(
-        Qualifiers.parse(qualifiers), apiLevel, configuration, displayMetrics);
+    Bootstrap.applyQualifiers(qualifiers, apiLevel, configuration, displayMetrics);
   }
 
   private String asQualifierString() {

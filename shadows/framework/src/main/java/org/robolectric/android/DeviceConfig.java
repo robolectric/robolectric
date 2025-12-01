@@ -471,7 +471,7 @@ public class DeviceConfig {
     configuration.uiMode = (configuration.uiMode & ~Configuration.UI_MODE_TYPE_MASK) | value;
   }
 
-  private static int getUiModeNight(Configuration configuration) {
+  static int getUiModeNight(Configuration configuration) {
     return configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
   }
 
