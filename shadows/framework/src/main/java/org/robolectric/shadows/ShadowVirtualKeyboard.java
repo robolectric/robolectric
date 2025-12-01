@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualKeyboard;
 import android.os.Build.VERSION_CODES;
@@ -21,5 +23,20 @@ public class ShadowVirtualKeyboard extends ShadowVirtualInputDevice {
 
   public List<VirtualKeyEvent> getSentEvents() {
     return sentEvents;
+  }
+
+  // POST_BAKLAVA moved close() to ShadowVirtualKeyboard.
+  @Override
+  @Implementation(minSdk = POST_BAKLAVA)
+  @SuppressWarnings("RedundantOverride") // Needed because of hierarchy changes with POST_B.
+  protected void close() {
+    super.close();
+  }
+
+  // POST_BAKLAVA moved close() to ShadowVirtualKeyboard.
+  @Override
+  @SuppressWarnings("RedundantOverride") // Needed because of hierarchy changes with POST_B.
+  public boolean isClosed() {
+    return super.isClosed();
   }
 }
