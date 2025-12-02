@@ -3,6 +3,10 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import android.content.Context;
 import android.security.advancedprotection.AdvancedProtectionFeature;
@@ -31,42 +35,39 @@ public class ShadowAdvancedProtectionManagerTest {
   public void getSetAdvancedProtectionEnabled_success() {
     AdvancedProtectionManager advancedProtectionManager = getManager();
     ShadowAdvancedProtectionManager shadow = Shadow.extract(advancedProtectionManager);
-    TestCallback cb = new TestCallback();
+    AdvancedProtectionManager.Callback cb = mock(AdvancedProtectionManager.Callback.class);
     advancedProtectionManager.registerAdvancedProtectionCallback(Runnable::run, cb);
 
     assertThat(advancedProtectionManager.isAdvancedProtectionEnabled()).isFalse();
     assertThat(shadow.isAdvancedProtectionEnabled()).isFalse();
-    assertThat(cb.states).hasSize(1);
-    assertThat(cb.states.get(0)).isFalse();
-
+    verify(cb).onAdvancedProtectionChanged(false);
     advancedProtectionManager.setAdvancedProtectionEnabled(true);
 
     assertThat(advancedProtectionManager.isAdvancedProtectionEnabled()).isTrue();
     assertThat(shadow.isAdvancedProtectionEnabled()).isTrue();
-    assertThat(cb.states).hasSize(2);
-    assertThat(cb.states.get(1)).isTrue();
+    verify(cb).onAdvancedProtectionChanged(true);
   }
 
   @Test
   public void setAdvancedProtectionEnabled_callbackOnlyOnChanged() {
     AdvancedProtectionManager advancedProtectionManager = getManager();
     ShadowAdvancedProtectionManager shadow = Shadow.extract(advancedProtectionManager);
-    TestCallback cb = new TestCallback();
+    AdvancedProtectionManager.Callback cb = mock(AdvancedProtectionManager.Callback.class);
     advancedProtectionManager.registerAdvancedProtectionCallback(Runnable::run, cb);
 
     assertThat(advancedProtectionManager.isAdvancedProtectionEnabled()).isFalse();
     assertThat(shadow.isAdvancedProtectionEnabled()).isFalse();
-    assertThat(cb.states).hasSize(1);
-    assertThat(cb.states.get(0)).isFalse();
+    verify(cb).onAdvancedProtectionChanged(false);
+    clearInvocations(cb);
 
     advancedProtectionManager.setAdvancedProtectionEnabled(false);
 
-    assertThat(cb.states).hasSize(1);
+    verify(cb, never()).onAdvancedProtectionChanged(false);
   }
 
   @Test
   public void registerListener_success() {
-    AdvancedProtectionManager.Callback cb = new TestCallback();
+    AdvancedProtectionManager.Callback cb = mock(AdvancedProtectionManager.Callback.class);
     AdvancedProtectionManager advancedProtectionManager = getManager();
 
     advancedProtectionManager.registerAdvancedProtectionCallback(Runnable::run, cb);
@@ -76,7 +77,7 @@ public class ShadowAdvancedProtectionManagerTest {
 
   @Test
   public void unregisterListener_success() {
-    AdvancedProtectionManager.Callback cb = new TestCallback();
+    AdvancedProtectionManager.Callback cb = mock(AdvancedProtectionManager.Callback.class);
     AdvancedProtectionManager advancedProtectionManager = getManager();
 
     advancedProtectionManager.registerAdvancedProtectionCallback(Runnable::run, cb);
@@ -129,15 +130,6 @@ public class ShadowAdvancedProtectionManagerTest {
     List<AdvancedProtectionFeature> features3 =
         advancedProtectionManager.getAdvancedProtectionFeatures();
     assertThat(features3).isEmpty();
-  }
-
-  private static class TestCallback implements AdvancedProtectionManager.Callback {
-    final List<Boolean> states = new ArrayList<>();
-
-    @Override
-    public void onAdvancedProtectionChanged(boolean enabled) {
-      states.add(enabled);
-    }
   }
 
   private AdvancedProtectionManager getManager() {
