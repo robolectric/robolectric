@@ -77,7 +77,6 @@ javax-inject = "1"
 junit4 = "4.13.2"
 # https://github.com/junit-team/junit-framework/releases
 junit-jupiter = "5.14.1"
-junit-platform = "1.14.1"
 
 # https://github.com/google/libphonenumber/releases
 libphonenumber = "9.0.19"
@@ -183,7 +182,7 @@ icu4j = { module = "com.ibm.icu:icu4j", version.ref = "icu4j" }
 junit4 = { module = "junit:junit", version.ref = "junit4" }
 junit-jupiter-bom = { module = "org.junit:junit-bom", version.ref = "junit-jupiter" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
-junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 junit-vintage = { module = "org.junit.vintage:junit-vintage-engine" }
 
 javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javax-annotation-api" }
