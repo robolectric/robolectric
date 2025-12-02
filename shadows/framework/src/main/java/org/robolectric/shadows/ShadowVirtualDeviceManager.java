@@ -54,7 +54,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
 /** Shadow for VirtualDeviceManager. */
-@Implements(value = VirtualDeviceManager.class, minSdk = UPSIDE_DOWN_CAKE, isInAndroidSdk = false)
+@Implements(value = VirtualDeviceManager.class, minSdk = UPSIDE_DOWN_CAKE)
 public class ShadowVirtualDeviceManager {
 
   private static final List<VirtualDeviceManager.VirtualDevice> mVirtualDevices = new ArrayList<>();
