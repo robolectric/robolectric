@@ -64,7 +64,8 @@ public class AndroidConfigurer {
         .doNotAcquirePackage("org.w3c.")
         .doNotAcquirePackage("org.xml.")
         .doNotAcquirePackage("org.specs2") // Required for Maven SureFire / RoboSpecs.
-        .doNotAcquirePackage("scala."); // Required for Maven SureFire / RoboSpecs.
+        .doNotAcquirePackage("scala.") // Required for Maven SureFire / RoboSpecs.
+        .doNotAcquirePackage("dev.reformator.stacktracedecoroutinator."); // Have to be loaded in the same CL as Kotlin.
 
     builder
         .addClassNameTranslation(
