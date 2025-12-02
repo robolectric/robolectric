@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.hardware.camera2.impl.CameraMetadataNative;
+import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,10 +26,8 @@ public class ShadowCameraMetadataNative {
 
   @Implementation
   protected void __constructor__(CameraMetadataNative other) {
+    Preconditions.checkNotNull(other);
     reflector(CameraMetadataNativeReflector.class, realObject).__constructor__(other);
-    if (other == null) {
-      return;
-    }
     ShadowCameraMetadataNative otherShadow = Shadow.extract(other);
     this.characteristics.putAll(otherShadow.characteristics);
   }
