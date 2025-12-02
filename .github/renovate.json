@@ -9,7 +9,10 @@
     "com.google.android.gms:play-services-basement",
     "org.apache.httpcomponents:httpclient",
     "org.apache.httpcomponents:httpcore",
-    "org.robolectric:nativeruntime-dist-compat"
+    "org.robolectric:nativeruntime-dist-compat",
+    "org.junit.platform:junit-platform-launcher",
+    "org.junit.jupiter:junit-jupiter-engine",
+    "org.junit.vintage:junit-vintage-engine"
   ],
   "labels": [
     "dependencies"
