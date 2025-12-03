@@ -224,26 +224,42 @@ public class ShadowBluetoothAdapter {
   protected BluetoothServerSocket listenUsingInsecureRfcommWithServiceRecord(
       String serviceName, UUID uuid) {
     return ShadowBluetoothServerSocket.newInstance(
-        BluetoothSocket.TYPE_RFCOMM, /* auth= */ false, /* encrypt= */ false, new ParcelUuid(uuid));
+        realAdapter,
+        BluetoothSocket.TYPE_RFCOMM,
+        /* auth= */ false,
+        /* encrypt= */ false,
+        new ParcelUuid(uuid));
   }
 
   @Implementation
   protected BluetoothServerSocket listenUsingRfcommWithServiceRecord(String serviceName, UUID uuid)
       throws IOException {
     return ShadowBluetoothServerSocket.newInstance(
-        BluetoothSocket.TYPE_RFCOMM, /* auth= */ false, /* encrypt= */ true, new ParcelUuid(uuid));
+        realAdapter,
+        BluetoothSocket.TYPE_RFCOMM,
+        /* auth= */ false,
+        /* encrypt= */ true,
+        new ParcelUuid(uuid));
   }
 
   @Implementation(minSdk = Q)
   protected BluetoothServerSocket listenUsingInsecureL2capChannel() throws IOException {
     return ShadowBluetoothServerSocket.newInstance(
-        BluetoothSocket.TYPE_L2CAP, /* auth= */ false, /* encrypt= */ true, /* uuid= */ null);
+        realAdapter,
+        BluetoothSocket.TYPE_L2CAP,
+        /* auth= */ false,
+        /* encrypt= */ true,
+        /* uuid= */ null);
   }
 
   @Implementation(minSdk = Q)
   protected BluetoothServerSocket listenUsingL2capChannel() throws IOException {
     return ShadowBluetoothServerSocket.newInstance(
-        BluetoothSocket.TYPE_L2CAP, /* auth= */ false, /* encrypt= */ true, /* uuid= */ null);
+        realAdapter,
+        BluetoothSocket.TYPE_L2CAP,
+        /* auth= */ false,
+        /* encrypt= */ true,
+        /* uuid= */ null);
   }
 
   @Implementation(minSdk = BAKLAVA)
@@ -265,6 +281,7 @@ public class ShadowBluetoothAdapter {
           psm);
     }
     return ShadowBluetoothServerSocket.newInstance(
+        realAdapter,
         settings.getSocketType(),
         settings.isAuthenticationRequired(),
         settings.isEncryptionRequired(),
