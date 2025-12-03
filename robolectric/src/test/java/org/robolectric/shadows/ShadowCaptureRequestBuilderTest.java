@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,9 +71,15 @@ public class ShadowCaptureRequestBuilderTest {
   @Test
   public void build_returnsCaptureRequest() {
     builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
+    builder.set(CaptureRequest.JPEG_QUALITY, (byte) 95);
+
     CaptureRequest request = builder.build();
     assertThat(request.get(CaptureRequest.CONTROL_AF_MODE))
         .isEqualTo(CaptureRequest.CONTROL_AF_MODE_OFF);
+    assertThat(request.get(CaptureRequest.JPEG_QUALITY)).isEqualTo(95);
+
+    List<CaptureRequest.Key<?>> keys = request.getKeys();
+    assertThat(keys).containsExactly(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.JPEG_QUALITY);
   }
 
   private class CameraStateCallback extends CameraDevice.StateCallback {
