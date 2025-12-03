@@ -32,7 +32,7 @@ public class QualifiersTest {
   public void testDefaultQualifiers() {
     assertThat(RuntimeEnvironment.getQualifiers())
         .isEqualTo(
-            "en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+            "en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-470x320");
   }
 
   @Test
@@ -40,7 +40,7 @@ public class QualifiersTest {
   public void testDefaultQualifiers_withoutRegion() {
     assertThat(RuntimeEnvironment.getQualifiers())
         .isEqualTo(
-            "en-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+            "en-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-470x320");
   }
 
   @Test

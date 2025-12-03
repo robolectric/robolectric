@@ -61,8 +61,7 @@ public class ConfigurationV25 {
     return sb.toString();
   }
 
-  public static String resourceQualifierString(
-      Configuration config, DisplayMetrics displayMetrics) {
+  public static String resourceQualifierString(Configuration config, DisplayMetrics metrics) {
     ArrayList<String> parts = new ArrayList<>();
 
     if (config.mcc != 0) {
@@ -314,6 +313,19 @@ public class ConfigurationV25 {
         break;
       default:
         break;
+    }
+
+    if (metrics != null) {
+      final int width;
+      final int height;
+      if (metrics.widthPixels >= metrics.heightPixels) {
+        width = metrics.widthPixels;
+        height = metrics.heightPixels;
+      } else {
+        width = metrics.heightPixels;
+        height = metrics.widthPixels;
+      }
+      parts.add(width + "x" + height);
     }
 
     return TextUtils.join("-", parts);
