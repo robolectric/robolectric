@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -38,8 +40,13 @@ public class ShadowHardwareRenderer {
 
   // `nCreateProxy` function signature changed in R, have to create two functions with different
   // function name for pre-R and post-R.
-  @Implementation(minSdk = S, methodName = "nCreateProxy")
+  @Implementation(minSdk = S, maxSdk = BAKLAVA, methodName = "nCreateProxy")
   protected static long nCreateProxyFromS(boolean translucent, long rootRenderNode) {
+    return nCreateProxy(translucent, rootRenderNode);
+  }
+
+  @Implementation(minSdk = POST_BAKLAVA)
+  protected static long nCreateProxy(boolean translucent, long rootRenderNode, boolean useIpc) {
     return nCreateProxy(translucent, rootRenderNode);
   }
 
