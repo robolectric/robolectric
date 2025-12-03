@@ -138,14 +138,14 @@ public class BootstrapTest {
   @Test
   public void applyQualifiers_shouldAddDefaults() {
     Bootstrap.applyQualifiers("", Build.VERSION.RESOURCES_SDK_INT, configuration, displayMetrics);
-    String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
+    String outQualifiers = RuntimeEnvironment.getQualifiers(configuration, displayMetrics);
 
     assertThat(outQualifiers)
         .isEqualTo(
             "en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-"
                 + optsForO
                 + "port-notnight-mdpi"
-                + "-finger-keyssoft-nokeys-navhidden-nonav");
+                + "-finger-keyssoft-nokeys-navhidden-nonav-470x320");
 
     assertThat(configuration.mcc).isEqualTo(0);
     assertThat(configuration.mnc).isEqualTo(0);
@@ -191,7 +191,7 @@ public class BootstrapTest {
         RuntimeEnvironment.getApiLevel(),
         configuration,
         displayMetrics);
-    String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
+    String outQualifiers = RuntimeEnvironment.getQualifiers(configuration, displayMetrics);
 
     // Setting Locale results in forcing layout direction to match locale
     assertThat(outQualifiers)
@@ -200,7 +200,7 @@ public class BootstrapTest {
                 + "-xlarge-long-round"
                 + altOptsForO
                 + "-land-appliance-night-hdpi-notouch-"
-                + "keyshidden-12key-navhidden-dpad");
+                + "keyshidden-12key-navhidden-dpad-720x684");
 
     assertThat(configuration.mcc).isEqualTo(310);
     assertThat(configuration.mnc).isEqualTo(4);
@@ -300,10 +300,11 @@ public class BootstrapTest {
   }
 
   @Test
+  @Config(minSdk = 25)
   public void applyQualifiers_shouldSetLocaleScript() {
     Bootstrap.applyQualifiers(
         "b+sr+Latn", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
-    String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
+    String outQualifiers = RuntimeEnvironment.getQualifiers(configuration, displayMetrics);
 
     assertThat(configuration.locale.getScript()).isEqualTo("Latn");
     assertThat(outQualifiers).contains("b+sr+Latn");
@@ -324,7 +325,7 @@ public class BootstrapTest {
         RuntimeEnvironment.getApiLevel(),
         configuration,
         displayMetrics);
-    String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
+    String outQualifiers = RuntimeEnvironment.getQualifiers(configuration, displayMetrics);
 
     assertThat(outQualifiers).startsWith("fr-ldltr-sw321dp-w321dp-h470dp-normal");
   }
@@ -336,7 +337,7 @@ public class BootstrapTest {
         RuntimeEnvironment.getApiLevel(),
         configuration,
         displayMetrics);
-    String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
+    String outQualifiers = RuntimeEnvironment.getQualifiers(configuration, displayMetrics);
 
     assertThat(outQualifiers).startsWith("fr-ldltr-sw321dp-w321dp-h426dp-small");
   }
@@ -348,7 +349,7 @@ public class BootstrapTest {
         RuntimeEnvironment.getApiLevel(),
         configuration,
         displayMetrics);
-    String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
+    String outQualifiers = RuntimeEnvironment.getQualifiers(configuration, displayMetrics);
 
     assertThat(outQualifiers).startsWith("fr-ldltr-sw321dp-w321dp-h426dp-small");
     assertThat(outQualifiers).contains("-xxhdpi-");

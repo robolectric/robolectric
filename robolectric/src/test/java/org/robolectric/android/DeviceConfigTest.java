@@ -53,7 +53,7 @@ public class DeviceConfigTest {
         .isEqualTo(
             "en-rUS-ldltr-sw400dp-w400dp-h800dp-normal-long-notround-"
                 + optsForO
-                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-800x400");
   }
 
   @Test
@@ -61,40 +61,43 @@ public class DeviceConfigTest {
     applyQualifiers(
         "en-rUS-ldltr-sw400dp-w400dp-h800dp-normal-notlong-notround-"
             + optsForO
-            + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+            + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-800x400");
     assertThat(asQualifierString())
         .isEqualTo(
             "en-rUS-ldltr-sw400dp-w400dp-h800dp-normal-notlong-notround-"
                 + optsForO
-                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-800x400");
 
     applyQualifiers("fr-land");
     assertThat(asQualifierString())
         .isEqualTo(
             "fr-ldltr-sw400dp-w800dp-h400dp-normal-notlong-notround-"
                 + optsForO
-                + "land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+                + "land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-800x400");
 
     applyQualifiers("w500dp-large-television-night-xxhdpi-notouch-keyshidden");
     assertThat(asQualifierString())
         .isEqualTo(
             "fr-ldltr-sw400dp-w640dp-h500dp-large-notlong-notround-"
                 + optsForO
-                + "land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
+                + "land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav-1920x1500");
 
     applyQualifiers("long");
     assertThat(asQualifierString())
         .isEqualTo(
             "fr-ldltr-sw400dp-w640dp-h500dp-large-long-notround-"
                 + optsForO
-                + "land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
+                + "land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav-1920x1500");
 
-    applyQualifiers("round");
-    assertThat(asQualifierString())
-        .isEqualTo(
-            "fr-ldltr-sw400dp-w640dp-h500dp-large-long-round-"
-                + optsForO
-                + "land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav");
+    // round only applicable on APIs > = 26
+    if (RuntimeEnvironment.getApiLevel() >= O) {
+      applyQualifiers("round");
+      assertThat(asQualifierString())
+          .isEqualTo(
+              "fr-ldltr-sw400dp-w640dp-h500dp-large-long-round-"
+                  + optsForO
+                  + "land-television-night-xxhdpi-notouch-keyshidden-nokeys-navhidden-nonav-1920x1500");
+    }
   }
 
   @Config(minSdk = S)
@@ -215,7 +218,7 @@ public class DeviceConfigTest {
         .isEqualTo(
             "en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-"
                 + optsForO
-                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-470x320");
   }
 
   // todo: this fails on LOLLIPOP through M... why?
@@ -231,7 +234,7 @@ public class DeviceConfigTest {
             locale.getLanguage()
                 + "-ldrtl-sw320dp-w320dp-h470dp-normal-notlong-notround-"
                 + optsForO
-                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-470x320");
   }
 
   @Test
@@ -243,7 +246,7 @@ public class DeviceConfigTest {
         .isEqualTo(
             "en-rUS-ldltr-sw400dp-w800dp-h400dp-normal-long-notround-"
                 + optsForO
-                + "land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+                + "land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-800x400");
   }
 
   @Test
@@ -255,7 +258,7 @@ public class DeviceConfigTest {
         .isEqualTo(
             "en-rUS-ldltr-sw400dp-w400dp-h800dp-normal-long-notround-"
                 + optsForO
-                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-800x400");
   }
 
   @Test
@@ -267,7 +270,7 @@ public class DeviceConfigTest {
         .isEqualTo(
             "en-rUS-ldltr-sw480dp-w640dp-h480dp-large-notlong-notround-"
                 + optsForO
-                + "land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+                + "land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-640x480");
   }
 
   @Test
@@ -279,7 +282,7 @@ public class DeviceConfigTest {
         .isEqualTo(
             "en-rUS-ldltr-sw640dp-w800dp-h640dp-large-notlong-notround-"
                 + optsForO
-                + "land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+                + "land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-800x640");
   }
 
   @Test
@@ -291,7 +294,7 @@ public class DeviceConfigTest {
         .isEqualTo(
             "en-rUS-ldltr-sw320dp-w320dp-h587dp-normal-long-notround-"
                 + optsForO
-                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-587x320");
   }
 
   @Test
@@ -303,7 +306,7 @@ public class DeviceConfigTest {
         .isEqualTo(
             "en-rUS-ldltr-sw320dp-w320dp-h590dp-normal-long-notround-"
                 + optsForO
-                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
+                + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-590x320");
   }
 
   @Ignore("consider how to reset uiMode type")
@@ -354,7 +357,7 @@ public class DeviceConfigTest {
   }
 
   private String asQualifierString() {
-    return ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
+    return RuntimeEnvironment.getQualifiers(configuration, displayMetrics);
   }
 
   private void changeDisplay(int displayId, String qualifiers) {
