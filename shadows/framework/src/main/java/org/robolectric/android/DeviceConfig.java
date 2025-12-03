@@ -107,11 +107,15 @@ public class DeviceConfig {
     existingConfiguration.updateFrom(configFromQualifiers);
     updateDisplayMetricsFrom(existingDisplayMetrics, metricsFromQualifiers);
 
-    applyUpdateRules(existingConfiguration, configFromQualifiers);
+    applyUpdateRules(
+        existingConfiguration, configFromQualifiers, existingDisplayMetrics, metricsFromQualifiers);
   }
 
   private static void applyUpdateRules(
-      Configuration configuration, Configuration configFromQualifiers) {
+      Configuration configuration,
+      Configuration configFromQualifiers,
+      DisplayMetrics metrics,
+      DisplayMetrics metricsFromQualifiers) {
     // if screen layout size has been requested, with no screen dimensions, clear out screen
     // dimensions so they can be recalculated
     if (getScreenLayoutSize(configFromQualifiers) != Configuration.SCREENLAYOUT_SIZE_UNDEFINED) {
@@ -121,6 +125,26 @@ public class DeviceConfig {
       if (configFromQualifiers.screenHeightDp == 0) {
         configuration.screenHeightDp = 0;
       }
+      // reset pixels to 0 so they will be recalculated
+      metrics.widthPixels = 0;
+      metrics.heightPixels = 0;
+    } else if (configFromQualifiers.screenWidthDp == 0
+        && configFromQualifiers.screenHeightDp == 0
+        && metricsFromQualifiers.widthPixels != 0
+        && metricsFromQualifiers.heightPixels != 0) {
+      // only pixel info has been provided. Recalculate dp based on it
+      if (metricsFromQualifiers.densityDpi == Configuration.DENSITY_DPI_UNDEFINED) {
+        throw new IllegalArgumentException("dpi must be provided if pixel size is provided");
+      }
+
+      // dp = px / ( dpi / 160 )
+      float densityScale = configFromQualifiers.densityDpi / (float) DisplayMetrics.DENSITY_DEFAULT;
+      configuration.screenWidthDp = Math.round(metricsFromQualifiers.widthPixels / densityScale);
+      configuration.screenHeightDp = Math.round(metricsFromQualifiers.heightPixels / densityScale);
+    } else {
+      // reset pixels to 0 so they will be recalculated
+      metrics.widthPixels = 0;
+      metrics.heightPixels = 0;
     }
 
     // reset orientation based on width and height if its unspecified in this qualifier update
@@ -179,17 +203,14 @@ public class DeviceConfig {
   /**
    * Calculates and sets the DisplayMetrics width|height Pixels according to the screen width/height
    * dp from Configuration.
-   *
-   * <p>TODO: Historically in Robolectric a display's dimension was specified in density-independent
-   * (dp) units. This is not consistent with how virtual and physical devices are described, which
-   * is typically in terms of pixels. A qualifier String can specify width|height pixels as well.
-   * Take that into account rather than overwriting display metrics.
    */
   private static void setPixels(Configuration configuration, DisplayMetrics displayMetrics) {
-    int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
-    int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
-    displayMetrics.widthPixels = displayMetrics.noncompatWidthPixels = widthPx;
-    displayMetrics.heightPixels = displayMetrics.noncompatHeightPixels = heightPx;
+    if (displayMetrics.widthPixels == 0 && displayMetrics.heightPixels == 0) {
+      int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
+      int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
+      displayMetrics.widthPixels = displayMetrics.noncompatWidthPixels = widthPx;
+      displayMetrics.heightPixels = displayMetrics.noncompatHeightPixels = heightPx;
+    }
   }
 
   /**
@@ -271,10 +292,10 @@ public class DeviceConfig {
               : Configuration.ORIENTATION_PORTRAIT;
     } else if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT
         && configuration.screenWidthDp > configuration.screenHeightDp) {
-      swapXY(configuration);
+      swapXY(configuration, displayMetrics);
     } else if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         && configuration.screenWidthDp < configuration.screenHeightDp) {
-      swapXY(configuration);
+      swapXY(configuration, displayMetrics);
     }
 
     if (getUiModeType(configuration) == Configuration.UI_MODE_TYPE_UNDEFINED) {
@@ -333,12 +354,18 @@ public class DeviceConfig {
     return ScreenSize.find(getScreenLayoutSize(configuration));
   }
 
-  private static void swapXY(Configuration configuration) {
+  private static void swapXY(Configuration configuration, DisplayMetrics displayMetrics) {
     int oldWidth = configuration.screenWidthDp;
     //noinspection SuspiciousNameCombination
     configuration.screenWidthDp = configuration.screenHeightDp;
     //noinspection SuspiciousNameCombination
     configuration.screenHeightDp = oldWidth;
+
+    int oldPxWidth = displayMetrics.widthPixels;
+    //noinspection SuspiciousNameCombination
+    displayMetrics.widthPixels = displayMetrics.heightPixels;
+    //noinspection SuspiciousNameCombination
+    displayMetrics.heightPixels = oldPxWidth;
   }
 
   private static Locale getLocale(Configuration configuration, int apiLevel) {

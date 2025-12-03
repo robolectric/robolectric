@@ -296,8 +296,7 @@ class QualifierParser {
             sb.append(s);
             sb.append(", ");
           });
-      throwParseError(
-          qualifierString, "Found unrecognized trailing qualifier segments " + sb.toString());
+      throwParseError(qualifierString, "Found unrecognized trailing qualifier segments " + sb);
     }
 
     return true;
@@ -730,9 +729,6 @@ class QualifierParser {
     if (matcher.matches()) {
       int w = Integer.parseInt(matcher.group(1));
       int h = Integer.parseInt(matcher.group(2));
-      if (w < h) {
-        return false;
-      }
       out.widthPixels = w;
       out.heightPixels = h;
       return true;

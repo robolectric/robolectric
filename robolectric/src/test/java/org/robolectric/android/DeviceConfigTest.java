@@ -3,6 +3,7 @@ package org.robolectric.android;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.android.DeviceConfig.getUiModeNight;
 import static org.robolectric.shadows.ShadowDisplayManager.addDisplay;
 
@@ -339,6 +340,39 @@ public class DeviceConfigTest {
     assertThat(displayMetrics.density).isEqualTo((float) 1.5);
     assertThat(displayMetrics.xdpi).isEqualTo((float) 240.0);
     assertThat(displayMetrics.ydpi).isEqualTo((float) 240.0);
+  }
+
+  /**
+   * Test that a number dpi (as opposed to a literal constant like xhdpi) is supported. This is
+   * necessary to simulate devices such as Nexus 6 that use intermediate densities. See
+   * DisplayMetrics.DENSITY_* constants.
+   */
+  @Test
+  public void applyQualifiers_numericDpi() {
+    applyQualifiers("w731dp-h1463dp-280dpi");
+    assertThat(displayMetrics.widthPixels).isEqualTo(1279);
+    assertThat(displayMetrics.heightPixels).isEqualTo(2560);
+    assertThat(displayMetrics.density).isEqualTo((float) 1.75);
+    assertThat(displayMetrics.xdpi).isEqualTo((float) 280.0);
+    assertThat(displayMetrics.ydpi).isEqualTo((float) 280.0);
+  }
+
+  @Test
+  public void applyQualifiers_pixels() {
+    applyQualifiers("280dpi-1280x2560");
+    assertThat(displayMetrics.widthPixels).isEqualTo(1280);
+    assertThat(displayMetrics.heightPixels).isEqualTo(2560);
+    assertThat(displayMetrics.density).isEqualTo((float) 1.75);
+    assertThat(displayMetrics.xdpi).isEqualTo((float) 280.0);
+    assertThat(displayMetrics.ydpi).isEqualTo((float) 280.0);
+
+    assertThat(configuration.screenWidthDp).isEqualTo(731);
+    assertThat(configuration.screenHeightDp).isEqualTo(1463);
+  }
+
+  @Test
+  public void applyQualifiers_pixelsWithoutDpiRejected() {
+    assertThrows(IllegalArgumentException.class, () -> applyQualifiers("1280x2560"));
   }
 
   @Test

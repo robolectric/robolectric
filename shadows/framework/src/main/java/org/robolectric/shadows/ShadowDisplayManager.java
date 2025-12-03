@@ -148,8 +148,8 @@ public class ShadowDisplayManager {
       boolean isNaturallyPortrait,
       String name,
       int displayType) {
-    int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
-    int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
+    int widthPx = displayMetrics.widthPixels;
+    int heightPx = displayMetrics.heightPixels;
 
     DisplayInfo displayInfo = new DisplayInfo();
     displayInfo.name = name;
