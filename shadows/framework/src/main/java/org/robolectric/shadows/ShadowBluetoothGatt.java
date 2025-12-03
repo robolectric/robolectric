@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -82,7 +83,9 @@ public class ShadowBluetoothGatt {
                     ReflectionHelpers.createNullProxy(IBluetoothGatt.class),
                     device,
                     null,
-                    gattConnectionSettings);
+                    gattConnectionSettings,
+                    null,
+                    null);
       } else if (apiLevel > R) {
         bluetoothGatt =
             Shadow.newInstance(
@@ -493,6 +496,16 @@ public class ShadowBluetoothGatt {
         AttributionSource source,
         @WithType("android.bluetooth.BluetoothGattConnectionSettings")
             Object gattConnectionSettings);
+
+    @Constructor
+    BluetoothGatt newInstance(
+        IBluetoothGatt iGatt,
+        BluetoothDevice device,
+        AttributionSource source,
+        @WithType("android.bluetooth.BluetoothGattConnectionSettings")
+            Object gattConnectionSettings,
+        @WithType("android.bluetooth.BluetoothGattCallback") Object callback,
+        Executor executor);
 
     @Direct
     void disconnect();
