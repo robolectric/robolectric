@@ -65,7 +65,7 @@ public class AndroidConfigurer {
         .doNotAcquirePackage("org.xml.")
         .doNotAcquirePackage("org.specs2") // Required for Maven SureFire / RoboSpecs.
         .doNotAcquirePackage("scala.") // Required for Maven SureFire / RoboSpecs.
-        .doNotAcquirePackage("dev.reformator.stacktracedecoroutinator."); // Have to be loaded in the same CL as Kotlin.
+        .doNotAcquirePackage("dev.reformator.stacktracedecoroutinator."); // Decoroutinator must be loaded in the same classloader as Kotlin to avoid class loading issues. See https://github.com/Anamorphosee/stacktrace-decoroutinator/issues/71
 
     builder
         .addClassNameTranslation(
