@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static java.util.Objects.requireNonNull;
@@ -283,7 +284,8 @@ public class ShadowDisplayManager {
       throw new UnsupportedOperationException("multiple display modes not supported before M");
     }
     DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
-    if (RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM) {
+    if (RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM
+        && RuntimeEnvironment.getApiLevel() <= BAKLAVA) {
       ReflectionHelpers.setField(displayInfo, "appsSupportedModes", supportedModes);
     } else {
       displayInfo.supportedModes = supportedModes;
