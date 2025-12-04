@@ -1,6 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.os.Build.VERSION_CODES;
+import android.os.UserHandle;
 import android.safetycenter.SafetyCenterData;
 import android.safetycenter.SafetyCenterIssue;
 import android.safetycenter.SafetyCenterManager;
@@ -19,6 +24,8 @@ import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link SafetyCenterManager}. */
 @Implements(
@@ -224,5 +231,33 @@ public class ShadowSafetyCenterManager {
             listener.onSafetyCenterDataChanged(safetyCenterData);
           });
     }
+  }
+
+  /**
+   * Helper method to create a SafetyCenterIssue.Builder that works across SDKs.
+   *
+   * @return
+   */
+  public static SafetyCenterIssue.Builder newSafetyCenterIssueBuilder(
+      String id, CharSequence title, CharSequence summary) {
+    if (getApiLevel() <= BAKLAVA) {
+      return new SafetyCenterIssue.Builder(id, title, summary);
+    } else {
+      return reflector(SafetyCenterIssueBuilderReflector.class)
+          .newInstance(id, title, summary, UserHandle.CURRENT, Set.of("1"), "1", "1");
+    }
+  }
+
+  @ForType(SafetyCenterIssue.Builder.class)
+  private interface SafetyCenterIssueBuilderReflector {
+    @Constructor
+    SafetyCenterIssue.Builder newInstance(
+        String id,
+        CharSequence title,
+        CharSequence summary,
+        UserHandle user,
+        Set<String> safetySourceIds,
+        String issueTypeId,
+        String safetySourceIssueId);
   }
 }
