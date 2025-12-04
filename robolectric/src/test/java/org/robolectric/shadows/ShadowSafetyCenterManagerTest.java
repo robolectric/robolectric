@@ -585,7 +585,8 @@ public final class ShadowSafetyCenterManagerTest {
     SafetyCenterManager safetyCenterManager =
         getApplicationContext().getSystemService(SafetyCenterManager.class);
     ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
-    SafetyCenterIssue issue = new SafetyCenterIssue.Builder("id1", "title", "summary").build();
+    SafetyCenterIssue issue =
+        ShadowSafetyCenterManager.newSafetyCenterIssueBuilder("id1", "title", "summary").build();
     SafetyCenterData dataWithIssue = (SafetyCenterData) createSafetyCenterDataWithIssue(issue);
 
     shadowSafetyCenterManager.setSafetyCenterData(dataWithIssue);
@@ -603,7 +604,9 @@ public final class ShadowSafetyCenterManagerTest {
     SafetyCenterManager safetyCenterManager =
         getApplicationContext().getSystemService(SafetyCenterManager.class);
     ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
-    SafetyCenterIssue issue = new SafetyCenterIssue.Builder("id1", "title", "summary").build();
+
+    SafetyCenterIssue issue =
+        ShadowSafetyCenterManager.newSafetyCenterIssueBuilder("id1", "title", "summary").build();
     SafetyCenterData dataWithIssue = (SafetyCenterData) createSafetyCenterDataWithIssue(issue);
 
     shadowSafetyCenterManager.setSafetyCenterData(dataWithIssue);
