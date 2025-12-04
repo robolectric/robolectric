@@ -729,8 +729,8 @@ class QualifierParser {
     if (matcher.matches()) {
       int w = Integer.parseInt(matcher.group(1));
       int h = Integer.parseInt(matcher.group(2));
-      out.widthPixels = w;
-      out.heightPixels = h;
+      out.widthPixels = out.noncompatWidthPixels = w;
+      out.heightPixels = out.noncompatHeightPixels = h;
       return true;
     }
     return false;

@@ -178,6 +178,12 @@ public class DeviceConfig {
     if (metricsFromQualifiers.ydpi > 0) {
       existingDisplayMetrics.ydpi = metricsFromQualifiers.ydpi;
     }
+    if (metricsFromQualifiers.noncompatWidthPixels > 0) {
+      existingDisplayMetrics.noncompatWidthPixels = metricsFromQualifiers.noncompatWidthPixels;
+    }
+    if (metricsFromQualifiers.noncompatHeightPixels > 0) {
+      existingDisplayMetrics.noncompatHeightPixels = metricsFromQualifiers.noncompatHeightPixels;
+    }
   }
 
   private static void setBounds(
