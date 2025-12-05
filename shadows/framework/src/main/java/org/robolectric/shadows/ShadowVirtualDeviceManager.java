@@ -70,9 +70,11 @@ public class ShadowVirtualDeviceManager {
     reflector(VirtualDeviceManagerReflector.class, realObject).__constructor__(service, context);
   }
 
+  @SuppressWarnings("ProtectedImplementationLintCheck")
   @Implementation
-  protected VirtualDeviceManager.VirtualDevice createVirtualDevice(
-      int associationId, VirtualDeviceParams params) {
+  public VirtualDeviceManager.VirtualDevice createVirtualDevice(
+      int associationId,
+      @ClassName("android.companion.virtual.VirtualDeviceParams") Object params) {
     VirtualDeviceManager.VirtualDevice device =
         ReflectionHelpers.callConstructor(
             VirtualDeviceManager.VirtualDevice.class,
@@ -200,8 +202,9 @@ public class ShadowVirtualDeviceManager {
       return persistentDeviceId;
     }
 
+    @SuppressWarnings("ProtectedImplementationLintCheck")
     @Implementation
-    protected void close() {
+    public void close() {
       isClosed.set(true);
       mVirtualDevices.remove(realVirtualDevice);
       maybeNotifyVirtualDeviceListeners(context, deviceId, /* isClosing= */ true);
@@ -357,8 +360,9 @@ public class ShadowVirtualDeviceManager {
       }
     }
 
+    @SuppressWarnings("ProtectedImplementationLintCheck")
     @Implementation
-    protected VirtualDisplay createVirtualDisplay(
+    public VirtualDisplay createVirtualDisplay(
         @Nonnull VirtualDisplayConfig config,
         @Nullable Executor executor,
         @Nullable VirtualDisplay.Callback callback) {
