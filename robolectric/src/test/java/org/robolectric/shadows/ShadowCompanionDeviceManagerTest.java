@@ -14,6 +14,7 @@ import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
 import android.companion.DeviceNotAssociatedException;
+import android.companion.ObservingDevicePresenceRequest;
 import android.content.ComponentName;
 import android.content.IntentSender;
 import android.net.MacAddress;
@@ -324,10 +325,56 @@ public class ShadowCompanionDeviceManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.BAKLAVA)
+  public void testStartObservingDevicePresence_withRequest_deviceAssociated_presenceObserved() {
+    int associationId = 1;
+    AssociationInfo info =
+        AssociationInfoBuilder.newBuilder()
+            .setId(associationId)
+            .setDeviceMacAddress(MAC_ADDRESS)
+            .build();
+    shadowCompanionDeviceManager.addAssociation(info);
+
+    ObservingDevicePresenceRequest request =
+        new ObservingDevicePresenceRequest.Builder().setAssociationId(associationId).build();
+    shadowCompanionDeviceManager.startObservingDevicePresence(request);
+
+    assertThat(shadowCompanionDeviceManager.getLastObservingDevicePresenceRequestAssociationId())
+        .isEqualTo(associationId);
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(associationId)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.BAKLAVA)
+  public void
+      testStartObservingDevicePresence_withRequest_deviceNotAssociated_presenceNotObserved() {
+    int nonExistentAssociationId = 999;
+    ObservingDevicePresenceRequest request =
+        new ObservingDevicePresenceRequest.Builder()
+            .setAssociationId(nonExistentAssociationId)
+            .build();
+
+    shadowCompanionDeviceManager.startObservingDevicePresence(request);
+
+    assertThat(shadowCompanionDeviceManager.getLastObservingDevicePresenceRequestAssociationId())
+        .isEqualTo(nonExistentAssociationId);
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(nonExistentAssociationId))
+        .isFalse();
+  }
+
+  @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
   public void
       testGetLastObservingDevicePresenceDeviceAddress_startObservingDevicePresenceNotCalled_returnsNull() {
     assertThat(shadowCompanionDeviceManager.getLastObservingDevicePresenceDeviceAddress()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.BAKLAVA)
+  public void
+      testGetLastObservingDevicePresenceRequestAssociationId_startObservingDevicePresenceNotCalled_returnsNegative() {
+    assertThat(shadowCompanionDeviceManager.getLastObservingDevicePresenceRequestAssociationId())
+        .isEqualTo(-1);
   }
 
   @Test

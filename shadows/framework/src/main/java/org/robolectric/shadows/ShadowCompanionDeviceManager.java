@@ -11,6 +11,7 @@ import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
 import android.companion.DeviceNotAssociatedException;
+import android.companion.ObservingDevicePresenceRequest;
 import android.content.ComponentName;
 import android.net.MacAddress;
 import android.os.Build.VERSION_CODES;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,6 +45,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowCompanionDeviceManager {
 
   private final Set<RoboAssociationInfo> associations = new HashSet<>();
+  private final Set<Object> observingAssociationsIds = new HashSet<>();
   private final Set<ComponentName> hasNotificationAccess = new HashSet<>();
   private final Set<Integer> specifiedRemovableIds = new HashSet<>();
   private final Map<Integer, InputStream> attachedInputStreams = new ConcurrentHashMap<>();
@@ -56,6 +59,7 @@ public class ShadowCompanionDeviceManager {
   private MacAddress lastSystemApiAssociationMacAddress;
   private CompanionDeviceManager.Callback lastAssociationCallback;
   private String lastObservingDevicePresenceDeviceAddress;
+  private int lastObservingDevicePresenceRequestAssociationId = -1;
 
   private static final int DEFAULT_SYSTEMDATASYNCFLAGS = -1;
 
@@ -172,6 +176,27 @@ public class ShadowCompanionDeviceManager {
     throw new DeviceNotAssociatedException("Association does not exist");
   }
 
+  @Implementation(minSdk = VERSION_CODES.BAKLAVA)
+  protected void startObservingDevicePresence(ObservingDevicePresenceRequest request) {
+    Objects.requireNonNull(request, "ObservingDevicePresenceRequest cannot be null");
+    int associationId = request.getAssociationId();
+    lastObservingDevicePresenceRequestAssociationId = associationId;
+    for (RoboAssociationInfo association : associations) {
+      if (associationId == association.id()) {
+        observingAssociationsIds.add(associationId);
+        return;
+      }
+    }
+  }
+
+  /**
+   * Returns the associationId from the request passed to {@code
+   * CompanionDeviceManager#startObservingDevicePresence(ObservingDevicePresenceRequest)}.
+   */
+  public int getLastObservingDevicePresenceRequestAssociationId() {
+    return lastObservingDevicePresenceRequestAssociationId;
+  }
+
   @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   protected void enableSystemDataSyncForTypes(int associationId, int flags) {
     systemDataSyncFlags.put(
@@ -285,6 +310,16 @@ public class ShadowCompanionDeviceManager {
     return this.associations.stream()
         .map(this::createAssociationInfo)
         .collect(toCollection(ArrayList::new));
+  }
+
+  /**
+   * Returns true if the given associationId is being observed for device presence.
+   *
+   * @param associationId the associationId to check
+   * @return true if the given associationId is being observed for device presence, false otherwise
+   */
+  public boolean isObservingDevicePresence(int associationId) {
+    return observingAssociationsIds.contains(associationId);
   }
 
   /**
