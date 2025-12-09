@@ -36,8 +36,8 @@ class BluetoothProvisioner(applicationContext: Context) {
       }
     val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     val scanner = bluetoothManager.adapter.bluetoothLeScanner
-    scanner.startScan(scanCallback)
-    awaitClose { scanner.stopScan(scanCallback) }
+    scanner?.startScan(scanCallback)
+    awaitClose { scanner?.stopScan(scanCallback) }
   }
 
   fun connectToDevice(device: BluetoothDevice): Flow<BluetoothGatt> = callbackFlow {
