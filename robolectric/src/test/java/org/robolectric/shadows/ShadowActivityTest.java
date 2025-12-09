@@ -1738,6 +1738,32 @@ public class ShadowActivityTest {
     assertThat(activity.getDisplay()).isNotNull();
   }
 
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void setLocusContext_updatesLastLocusContextFields() {
+    try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {
+      Activity activity = controller.setup().get();
+      ShadowActivity shadowActivity = shadowOf(activity);
+
+      assertThat(shadowActivity.getLastLocusContextId()).isNull();
+      assertThat(shadowActivity.getLastLocusContextExtras()).isNull();
+
+      activity.setLocusContext(new LocusId("test_locus_id"), /* bundle= */ null);
+      assertThat(shadowActivity.getLastLocusContextId()).isEqualTo(new LocusId("test_locus_id"));
+      assertThat(shadowActivity.getLastLocusContextExtras()).isNull();
+
+      Bundle extras = new Bundle();
+      extras.putString("test", "hello");
+      activity.setLocusContext(new LocusId("test_locus_id_2"), extras);
+      assertThat(shadowActivity.getLastLocusContextId()).isEqualTo(new LocusId("test_locus_id_2"));
+      assertThat(shadowActivity.getLastLocusContextExtras()).isEqualTo(extras);
+
+      activity.setLocusContext(/* locusId= */ null, /* bundle= */ null);
+      assertThat(shadowActivity.getLastLocusContextId()).isNull();
+      assertThat(shadowActivity.getLastLocusContextExtras()).isNull();
+    }
+  }
+
   /////////////////////////////
 
   private static class DialogCreatingActivity extends Activity {

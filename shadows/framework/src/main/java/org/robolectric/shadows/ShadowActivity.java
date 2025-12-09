@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
@@ -29,6 +30,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.LocusId;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -116,6 +118,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean showWhenLocked = false;
   private boolean turnScreenOn = false;
   private boolean isTaskMovedToBack = false;
+  private LocusId lastLocusContextId;
+  private Bundle lastLocusContextExtras;
 
   public void setApplication(Application application) {
     reflector(ActivityReflector.class, realActivity).setApplication(application);
@@ -491,6 +495,29 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   protected void reportFullyDrawn() {
     hasReportedFullyDrawn = true;
+  }
+
+  @Implementation(minSdk = R)
+  protected void setLocusContext(LocusId locusId, @Nullable Bundle extras) {
+    this.lastLocusContextId = locusId;
+    this.lastLocusContextExtras = extras;
+    reflector(DirectActivityReflector.class, realActivity).setLocusContext(locusId, extras);
+  }
+
+  /**
+   * @return the most recently populated locus context {@link LocusId}.
+   */
+  @Nullable
+  public LocusId getLastLocusContextId() {
+    return lastLocusContextId;
+  }
+
+  /**
+   * @return the most recently populated locus context {@link Bundle} extras.
+   */
+  @Nullable
+  public Bundle getLastLocusContextExtras() {
+    return lastLocusContextExtras;
   }
 
   /**
@@ -1098,5 +1125,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     void requestPermissions(String[] permissions, int requestCode);
 
     void requestPermissions(String[] permissions, int requestCode, int deviceId);
+
+    void setLocusContext(LocusId locusId, @Nullable Bundle bundle);
   }
 }
