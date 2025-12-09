@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.shadows.ShadowArscApkAssets9.FRAMEWORK_APK_PATH;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.ApkAssets;
 import android.content.res.loader.AssetsProvider;
@@ -10,10 +11,11 @@ import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.PerfStatsCollector;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.Direct.DirectFormat;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @Implements(
     value = ApkAssets.class,
@@ -44,13 +46,8 @@ public class ShadowNativeApkAssets extends ShadowApkAssets {
             "load native " + (system ? "framework" : "app") + " resources",
             () -> {
               long ptr =
-                  ReflectionHelpers.callStaticMethod(
-                      ApkAssets.class,
-                      Shadow.directNativeMethodName(ApkAssets.class.getName(), "nativeLoad"),
-                      ClassParameter.from(int.class, format),
-                      ClassParameter.from(String.class, adjustedPath),
-                      ClassParameter.from(int.class, flags),
-                      ClassParameter.from(AssetsProvider.class, asset));
+                  reflector(ApkAssetsReflector.class)
+                      .nativeLoad(format, adjustedPath, flags, asset);
               if (ptr > 0) {
                 cachedApkAssetsPtrs.put(adjustedPath, ptr);
               }
@@ -61,5 +58,12 @@ public class ShadowNativeApkAssets extends ShadowApkAssets {
   @Implementation
   protected static void nativeDestroy(long ptr) {
     // ignoring nativeDestroy in order to cache assets across tests
+  }
+
+  @ForType(ApkAssets.class)
+  interface ApkAssetsReflector {
+    @Static
+    @Direct(format = DirectFormat.NATIVE)
+    long nativeLoad(int format, String path, int flags, AssetsProvider asset);
   }
 }

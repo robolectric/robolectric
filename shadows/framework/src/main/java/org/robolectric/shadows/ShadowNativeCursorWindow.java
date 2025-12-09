@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.database.CharArrayBuffer;
 import android.database.CursorWindow;
@@ -10,9 +11,10 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.CursorWindowNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.Direct.DirectFormat;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link CursorWindow} that is backed by native code */
 @Implements(value = CursorWindow.class, isInAndroidSdk = false, callNativeMethodsByDefault = true)
@@ -58,13 +60,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
       return CursorWindowNatives.nativePutBlob(windowPtr, value, row, column);
     } else {
       // directly call the real native method, renamed by during instrumentation
-      return ReflectionHelpers.callStaticMethod(
-          CursorWindow.class,
-          Shadow.directNativeMethodName(CursorWindow.class.getName(), "nativePutBlob"),
-          ClassParameter.from(long.class, windowPtr),
-          ClassParameter.from(byte[].class, value),
-          ClassParameter.from(int.class, row),
-          ClassParameter.from(int.class, column));
+      return reflector(CursorWindowReflector.class).nativePutBlob(windowPtr, value, row, column);
     }
   }
 
@@ -76,13 +72,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
       return CursorWindowNatives.nativePutString(windowPtr, value, row, column);
     } else {
       // directly call the real native method, renamed by during instrumentation
-      return ReflectionHelpers.callStaticMethod(
-          CursorWindow.class,
-          Shadow.directNativeMethodName(CursorWindow.class.getName(), "nativePutString"),
-          ClassParameter.from(long.class, windowPtr),
-          ClassParameter.from(String.class, value),
-          ClassParameter.from(int.class, row),
-          ClassParameter.from(int.class, column));
+      return reflector(CursorWindowReflector.class).nativePutString(windowPtr, value, row, column);
     }
   }
 
@@ -139,5 +129,16 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static boolean nativePutNull(long windowPtr, int row, int column) {
     return CursorWindowNatives.nativePutNull(windowPtr, row, column);
+  }
+
+  @ForType(CursorWindow.class)
+  interface CursorWindowReflector {
+    @Static
+    @Direct(format = DirectFormat.NATIVE)
+    boolean nativePutBlob(long windowPtr, byte[] value, int row, int column);
+
+    @Static
+    @Direct(format = DirectFormat.NATIVE)
+    boolean nativePutString(long windowPtr, String value, int row, int column);
   }
 }
