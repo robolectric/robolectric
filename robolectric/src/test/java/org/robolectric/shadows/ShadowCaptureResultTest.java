@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.hardware.camera2.CaptureResult;
@@ -17,14 +16,10 @@ public class ShadowCaptureResultTest {
   private final CaptureResult captureResult = ShadowCaptureResult.newCaptureResult();
 
   @Test
-  public void testSetExistingKey() {
+  public void testSetExistingKey_updatesValue() {
     shadowOf(captureResult).set(timestampKey, 1L);
-    try {
-      shadowOf(captureResult).set(timestampKey, 2L);
-      fail();
-    } catch (IllegalArgumentException exception) {
-      // Pass.
-    }
+    shadowOf(captureResult).set(timestampKey, 2L);
+    assertThat(captureResult.get(timestampKey)).isEqualTo(2L);
   }
 
   @Test
