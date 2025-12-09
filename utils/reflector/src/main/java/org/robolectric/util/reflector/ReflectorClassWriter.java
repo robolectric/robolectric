@@ -23,6 +23,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
+import org.robolectric.util.reflector.Direct.DirectFormat;
 
 @SuppressWarnings("NewApi")
 class ReflectorClassWriter extends ClassWriter {
@@ -599,11 +600,19 @@ class ReflectorClassWriter extends ClassWriter {
     String getMethodName() {
       String methodName = iMethod.getName();
       if (iMethod.isAnnotationPresent(Direct.class) || directModifier) {
-        methodName =
-            "$$robo$$"
-                + targetType.getClassName().replace('.', '_').replace('$', '_')
-                + "$"
-                + methodName;
+        DirectFormat format =
+            iMethod.isAnnotationPresent(Direct.class)
+                ? iMethod.getAnnotation(Direct.class).format()
+                : DirectFormat.DEFAULT;
+        if (format == DirectFormat.DEFAULT) {
+          methodName =
+              "$$robo$$"
+                  + targetType.getClassName().replace('.', '_').replace('$', '_')
+                  + "$"
+                  + methodName;
+        } else {
+          methodName = "$$robo$$" + methodName + "$nativeBinding";
+        }
       }
       return methodName;
     }
