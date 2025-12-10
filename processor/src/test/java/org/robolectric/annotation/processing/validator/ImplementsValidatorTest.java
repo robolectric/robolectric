@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.processing.DocumentedMethod;
 import org.robolectric.annotation.processing.Utils;
-import org.robolectric.versioning.AndroidVersions;
+import org.robolectric.versioning.VersionCalculator.SdkInfo;
 
 /** Tests for {@link ImplementsValidator */
 @RunWith(JUnit4.class)
@@ -50,13 +50,11 @@ public class ImplementsValidatorTest {
   public void implementsWithParameterMismatch_shouldNotCompile() {
     final String testClass =
         "org.robolectric.annotation.processing.shadows.ShadowImplementsWithParameterMismatch";
-    AndroidVersions.AndroidRelease unreleased = AndroidVersions.getUnreleased().get(0);
+    SdkInfo unreleased = new SdkInfo(10000, false);
     HashMap<String, String> props = new HashMap<>();
     props.put("org.robolectric.annotation.processing.sdkCheckMode", "ERROR");
     props.put("org.robolectric.annotation.processing.validateCompileSdk", "true");
-    assertAbout(
-            singleClass(
-                props, Utils.getClassRootDir(ParameterizedDummy.class), unreleased.getSdkInt()))
+    assertAbout(singleClass(props, Utils.getClassRootDir(ParameterizedDummy.class), unreleased))
         .that(testClass)
         .failsToCompile()
         .withErrorContaining(
@@ -69,13 +67,11 @@ public class ImplementsValidatorTest {
   public void implementsWithMissingParameters_shouldNotCompile() {
     final String testClass =
         "org.robolectric.annotation.processing.shadows.ShadowImplementsWithMissingParameters";
-    AndroidVersions.AndroidRelease unreleased = AndroidVersions.getUnreleased().get(0);
+    SdkInfo unreleased = new SdkInfo(10000, false);
     HashMap<String, String> props = new HashMap<>();
     props.put("org.robolectric.annotation.processing.sdkCheckMode", "ERROR");
     props.put("org.robolectric.annotation.processing.validateCompileSdk", "true");
-    assertAbout(
-            singleClass(
-                props, Utils.getClassRootDir(ParameterizedDummy.class), unreleased.getSdkInt()))
+    assertAbout(singleClass(props, Utils.getClassRootDir(ParameterizedDummy.class), unreleased))
         .that(testClass)
         .failsToCompile()
         .withErrorContaining(
@@ -87,13 +83,11 @@ public class ImplementsValidatorTest {
   public void implementsWithCorrectParameters_shouldCompile() {
     final String testClass =
         "org.robolectric.annotation.processing.shadows.ShadowImplementsWithCorrectParams";
-    AndroidVersions.AndroidRelease unreleased = AndroidVersions.getUnreleased().get(0);
+    SdkInfo unreleased = new SdkInfo(10000, false);
     HashMap<String, String> props = new HashMap<>();
     props.put("org.robolectric.annotation.processing.sdkCheckMode", "ERROR");
     props.put("org.robolectric.annotation.processing.validateCompileSdk", "true");
-    assertAbout(
-            singleClass(
-                props, Utils.getClassRootDir(ParameterizedDummy.class), unreleased.getSdkInt()))
+    assertAbout(singleClass(props, Utils.getClassRootDir(ParameterizedDummy.class), unreleased))
         .that(testClass)
         .compilesWithoutError();
   }
@@ -102,11 +96,11 @@ public class ImplementsValidatorTest {
   public void implementsWithExtraParameters_shouldNotCompile() {
     final String testClass =
         "org.robolectric.annotation.processing.shadows.ShadowImplementsWithExtraParameters";
-    AndroidVersions.AndroidRelease unreleased = AndroidVersions.getUnreleased().get(0);
+    SdkInfo unreleased = new SdkInfo(10000, false);
     HashMap<String, String> props = new HashMap<>();
     props.put("org.robolectric.annotation.processing.sdkCheckMode", "ERROR");
     props.put("org.robolectric.annotation.processing.validateCompileSdk", "true");
-    assertAbout(singleClass(props, Utils.getClassRootDir(Dummy.class), unreleased.getSdkInt()))
+    assertAbout(singleClass(props, Utils.getClassRootDir(Dummy.class), unreleased))
         .that(testClass)
         .failsToCompile()
         .withErrorContaining("Shadow type is mismatched, expected <T, S, R> but found  ")

@@ -1,9 +1,12 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.graphics.SurfaceTexture;
+import android.os.Parcel;
 import android.view.Surface;
+import android.view.SurfaceControl;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,5 +31,24 @@ public class ShadowNativeSurfaceTest {
     SurfaceTexture st = new SurfaceTexture(false);
     Surface s = new Surface(st);
     s.release();
+  }
+
+  @Config(minSdk = Q)
+  @Test
+  public void surface_fromSurfaceControl_doesNotThrow() {
+    SurfaceControl control =
+        new SurfaceControl.Builder().setName("test").setBufferSize(100, 100).build();
+    Surface surface = new Surface(control);
+    surface.release();
+  }
+
+  @Test
+  public void surface_toFromParcel_doesNotThrow() {
+    Surface surface = Shadow.newInstanceOf(Surface.class);
+    Parcel parcel = Parcel.obtain();
+
+    surface.writeToParcel(parcel, /* flags= */ 0);
+    parcel.setDataPosition(0);
+    surface.readFromParcel(parcel);
   }
 }

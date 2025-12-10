@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -18,8 +20,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.versioning.AndroidVersions.R;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Tests for {@link ShadowServiceManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -32,7 +32,7 @@ public final class ShadowServiceManagerTest {
   }
 
   @Test
-  @Config(sdk = V.SDK_INT)
+  @Config(sdk = VANILLA_ICE_CREAM)
   public void getSensitiveContentProtectionManager_returnsSomething() {
     // TODO: replace with Context.SENSITIVE_CONTENT_PROTECTION_SERVICE once this test compiles
     // against V
@@ -64,13 +64,13 @@ public final class ShadowServiceManagerTest {
   }
 
   @Test
-  @Config(sdk = R.SDK_INT)
+  @Config(sdk = R)
   public void waitForService_available_shouldReturnNonNull() {
     assertThat(ServiceManager.waitForService(Context.INPUT_METHOD_SERVICE)).isNotNull();
   }
 
   @Test
-  @Config(sdk = R.SDK_INT)
+  @Config(sdk = R)
   public void waitForService_unavailable_shouldKeepNull() throws Exception {
     AtomicReference<IBinder> binder = new AtomicReference<>();
     ExecutorService e = Executors.newFixedThreadPool(1);
@@ -87,7 +87,7 @@ public final class ShadowServiceManagerTest {
   }
 
   @Test
-  @Config(sdk = R.SDK_INT)
+  @Config(sdk = R)
   public void waitForService_availableLater_shouldReturnNonNull() throws Exception {
     AtomicReference<IBinder> binder = new AtomicReference<>();
     ExecutorService e = Executors.newFixedThreadPool(1);
@@ -105,7 +105,7 @@ public final class ShadowServiceManagerTest {
   }
 
   @Test
-  @Config(sdk = R.SDK_INT)
+  @Config(sdk = R)
   public void waitForDeclaredService_declaredAndAvailable_shouldReturnNonNull() throws Exception {
     ShadowServiceManager.setServiceDeclaredOrNot(Context.INPUT_METHOD_SERVICE, true);
 
@@ -113,13 +113,13 @@ public final class ShadowServiceManagerTest {
   }
 
   @Test
-  @Config(sdk = R.SDK_INT)
+  @Config(sdk = R)
   public void waitForDeclaredService_nonDeclared_shouldReturnNull() throws Exception {
     assertThat(ServiceManager.waitForDeclaredService(Context.INPUT_METHOD_SERVICE)).isNull();
   }
 
   @Test
-  @Config(sdk = R.SDK_INT)
+  @Config(sdk = R)
   public void isDeclared_declared_shouldReturnTrue() {
     ShadowServiceManager.setServiceDeclaredOrNot(Context.INPUT_METHOD_SERVICE, true);
 
@@ -127,7 +127,7 @@ public final class ShadowServiceManagerTest {
   }
 
   @Test
-  @Config(sdk = R.SDK_INT)
+  @Config(sdk = R)
   public void isDeclared_nonDeclared_shouldReturnFalse() {
     assertThat(ServiceManager.isDeclared(Context.INPUT_METHOD_SERVICE)).isFalse();
   }
@@ -162,6 +162,17 @@ public final class ShadowServiceManagerTest {
 
     foundStub.reportCalled();
     assertThat(expectedStub.called).isTrue();
+  }
+
+  @Test
+  public void addService_shouldSupportAsBinder() {
+    IBinder iBinder = ServiceManager.getService("activity_task");
+    IStubbedInterface foundStub = StubbedInterface.Stub.asInterface(iBinder);
+    assertThat(foundStub.asBinder()).isNotNull();
+
+    IBinder iBinder2 = ServiceManager.getService("activity_task");
+    IStubbedInterface foundStub2 = StubbedInterface.Stub.asInterface(iBinder2);
+    assertThat(foundStub2.asBinder()).isEqualTo(foundStub.asBinder());
   }
 
   // Stub interface to test that the service is returned correctly

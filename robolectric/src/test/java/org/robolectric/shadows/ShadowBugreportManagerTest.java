@@ -70,7 +70,7 @@ public final class ShadowBugreportManagerTest {
     shadowBugreportManager.requestBugreport(
         new BugreportParams(BugreportParams.BUGREPORT_MODE_INTERACTIVE), title, description);
 
-    // executeOnFinished() will call resetParams(), which should not crash from referencing any null
+    // executeOnFInished() will call resetParams(), which should not crash from referencing any null
     // values.
     shadowBugreportManager.executeOnFinished();
   }
@@ -93,19 +93,20 @@ public final class ShadowBugreportManagerTest {
   }
 
   @Test
-  public void startBugreport_noPermission() {
+  public void startBugreport_noPermission() throws Exception {
     BugreportCallback callback = mock(BugreportCallback.class);
     shadowBugreportManager.setHasPermission(false);
 
     assertThrows(
         SecurityException.class,
-        () ->
-            shadowBugreportManager.startBugreport(
-                createWriteFile("bugreport"),
-                createWriteFile("screenshot"),
-                new BugreportParams(BugreportParams.BUGREPORT_MODE_FULL),
-                directExecutor(),
-                callback));
+        () -> {
+          shadowBugreportManager.startBugreport(
+              createWriteFile("bugreport"),
+              createWriteFile("screenshot"),
+              new BugreportParams(BugreportParams.BUGREPORT_MODE_FULL),
+              directExecutor(),
+              callback);
+        });
     shadowMainLooper().idle();
 
     assertThat(shadowBugreportManager.isBugreportInProgress()).isFalse();
@@ -166,7 +167,7 @@ public final class ShadowBugreportManagerTest {
 
   @Test
   @Config(minSdk = UPSIDE_DOWN_CAKE)
-  public void retrieveBugreport_noPermission() {
+  public void retrieveBugreport_noPermission() throws Exception {
     BugreportCallback callback = mock(BugreportCallback.class);
     shadowBugreportManager.setHasPermission(false);
 
@@ -182,7 +183,7 @@ public final class ShadowBugreportManagerTest {
   }
 
   @Test
-  public void cancelBugreport() throws Exception {
+  public void cancelBugreport_setsFlag() throws Exception {
     BugreportCallback callback = mock(BugreportCallback.class);
     shadowBugreportManager.startBugreport(
         createWriteFile("bugreport"),
@@ -191,12 +192,36 @@ public final class ShadowBugreportManagerTest {
         directExecutor(),
         callback);
     shadowMainLooper().idle();
-
     assertThat(shadowBugreportManager.isBugreportInProgress()).isTrue();
-    verify(callback, never()).onFinished();
-    verify(callback, never()).onError(anyInt());
 
     shadowBugreportManager.cancelBugreport();
+    shadowMainLooper().idle();
+
+    assertThat(shadowBugreportManager.wasBugreportCanceled()).isTrue();
+    verify(callback, never()).onError(anyInt());
+  }
+
+  @Test
+  public void cancelBugreport_noBugreportInProgress_doesNothing() {
+    shadowBugreportManager.cancelBugreport();
+    shadowMainLooper().idle();
+
+    assertThat(shadowBugreportManager.wasBugreportCanceled()).isFalse();
+  }
+
+  @Test
+  public void executeOnCancel_callsOnError() throws Exception {
+    BugreportCallback callback = mock(BugreportCallback.class);
+    shadowBugreportManager.startBugreport(
+        createWriteFile("bugreport"),
+        createWriteFile("screenshot"),
+        new BugreportParams(BugreportParams.BUGREPORT_MODE_FULL),
+        directExecutor(),
+        callback);
+    shadowMainLooper().idle();
+    assertThat(shadowBugreportManager.isBugreportInProgress()).isTrue();
+
+    shadowBugreportManager.executeOnCancel();
     shadowMainLooper().idle();
 
     assertThat(shadowBugreportManager.isBugreportInProgress()).isFalse();

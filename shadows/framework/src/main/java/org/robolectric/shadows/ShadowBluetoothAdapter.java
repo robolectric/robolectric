@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.bluetooth.BluetoothAdapter.STATE_ON;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -8,8 +9,10 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
@@ -19,6 +22,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.BluetoothSocketSettings;
 import android.bluetooth.BluetoothStatusCodes;
 import android.bluetooth.IBluetoothGatt;
 import android.bluetooth.le.BluetoothLeAdvertiser;
@@ -31,6 +35,7 @@ import android.os.IInterface;
 import android.os.ParcelUuid;
 import android.provider.Settings;
 import android.util.Log;
+import android.util.Pair;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.time.Duration;
@@ -56,8 +61,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.Baklava;
-import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BluetoothAdapter.class)
@@ -88,7 +91,7 @@ public class ShadowBluetoothAdapter {
 
   private static boolean isBluetoothSupported = true;
 
-  private static final Map<String, BluetoothDevice> deviceCache = new HashMap<>();
+  private static final Map<Pair<String, Integer>, BluetoothDevice> deviceCache = new HashMap<>();
   private Set<BluetoothDevice> bondedDevices = new HashSet<>();
   private List<BluetoothDevice> mostRecentlyConnectedDevices = new ArrayList<>();
   private final Set<LeScanCallback> leScanCallbacks = new HashSet<>();
@@ -105,6 +108,7 @@ public class ShadowBluetoothAdapter {
   private boolean isLeExtendedAdvertisingSupported = true;
   private boolean isLeCodedPhySupported = true;
   private boolean isLe2MPhySupported = true;
+  private boolean isFixedPsmSupported = false;
   private boolean isOverridingProxyBehavior;
   private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
   private final Map<Integer, BluetoothProfile> profileProxies = new HashMap<>();
@@ -175,12 +179,24 @@ public class ShadowBluetoothAdapter {
 
   @Implementation
   protected synchronized BluetoothDevice getRemoteDevice(String address) {
-    if (!deviceCache.containsKey(address)) {
+    Pair<String, Integer> key = Pair.create(address, BluetoothDevice.ADDRESS_TYPE_PUBLIC);
+    if (!deviceCache.containsKey(key)) {
       deviceCache.put(
-          address,
-          reflector(BluetoothAdapterReflector.class, realAdapter).getRemoteDevice(address));
+          key, reflector(BluetoothAdapterReflector.class, realAdapter).getRemoteDevice(address));
     }
-    return deviceCache.get(address);
+    return deviceCache.get(key);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected synchronized BluetoothDevice getRemoteLeDevice(String address, int addressType) {
+    Pair<String, Integer> key = Pair.create(address, addressType);
+    if (!deviceCache.containsKey(key)) {
+      deviceCache.put(
+          key,
+          reflector(BluetoothAdapterReflector.class, realAdapter)
+              .getRemoteLeDevice(address, addressType));
+    }
+    return deviceCache.get(key);
   }
 
   public void setMostRecentlyConnectedDevices(List<BluetoothDevice> devices) {
@@ -210,26 +226,79 @@ public class ShadowBluetoothAdapter {
   protected BluetoothServerSocket listenUsingInsecureRfcommWithServiceRecord(
       String serviceName, UUID uuid) {
     return ShadowBluetoothServerSocket.newInstance(
-        BluetoothSocket.TYPE_RFCOMM, /* auth= */ false, /* encrypt= */ false, new ParcelUuid(uuid));
+        realAdapter,
+        BluetoothSocket.TYPE_RFCOMM,
+        /* auth= */ false,
+        /* encrypt= */ false,
+        new ParcelUuid(uuid));
   }
 
   @Implementation
   protected BluetoothServerSocket listenUsingRfcommWithServiceRecord(String serviceName, UUID uuid)
       throws IOException {
     return ShadowBluetoothServerSocket.newInstance(
-        BluetoothSocket.TYPE_RFCOMM, /* auth= */ false, /* encrypt= */ true, new ParcelUuid(uuid));
+        realAdapter,
+        BluetoothSocket.TYPE_RFCOMM,
+        /* auth= */ false,
+        /* encrypt= */ true,
+        new ParcelUuid(uuid));
   }
 
   @Implementation(minSdk = Q)
   protected BluetoothServerSocket listenUsingInsecureL2capChannel() throws IOException {
     return ShadowBluetoothServerSocket.newInstance(
-        BluetoothSocket.TYPE_L2CAP, /* auth= */ false, /* encrypt= */ true, /* uuid= */ null);
+        realAdapter,
+        BluetoothSocket.TYPE_L2CAP,
+        /* auth= */ false,
+        /* encrypt= */ true,
+        /* uuid= */ null);
   }
 
   @Implementation(minSdk = Q)
   protected BluetoothServerSocket listenUsingL2capChannel() throws IOException {
     return ShadowBluetoothServerSocket.newInstance(
-        BluetoothSocket.TYPE_L2CAP, /* auth= */ false, /* encrypt= */ true, /* uuid= */ null);
+        realAdapter,
+        BluetoothSocket.TYPE_L2CAP,
+        /* auth= */ false,
+        /* encrypt= */ true,
+        /* uuid= */ null);
+  }
+
+  @Implementation(minSdk = BAKLAVA)
+  protected BluetoothServerSocket listenUsingSocketSettings(
+      // ClassName can be replaced with a direct reference once minimum supported compileSdkVersion
+      // is 36.
+      @ClassName("android.bluetooth.BluetoothSocketSettings") Object settingsObject)
+      throws IOException {
+    BluetoothSocketSettings settings = (BluetoothSocketSettings) settingsObject;
+    if (settings.getSocketType() == BluetoothSocket.TYPE_LE) {
+      int psm = 0x80;
+      if (isFixedPsmSupported && settings.getL2capPsm() != 0) {
+        psm = settings.getL2capPsm();
+      }
+      return ShadowBluetoothServerSocket.newInstance(
+          BluetoothSocket.TYPE_LE,
+          settings.isAuthenticationRequired(),
+          settings.isEncryptionRequired(),
+          psm);
+    }
+    return ShadowBluetoothServerSocket.newInstance(
+        realAdapter,
+        settings.getSocketType(),
+        settings.isAuthenticationRequired(),
+        settings.isEncryptionRequired(),
+        new ParcelUuid(settings.getRfcommUuid()));
+  }
+
+  /**
+   * Sets whether fixed PSM is supported for L2CAP connections in tests.
+   *
+   * @param isFixedPsmSupported If true, {@link #listenUsingSocketSettings} will produce a server
+   *     socket using the requested PSM via {@link BluetoothSocketSettings#getL2capPsm()}. If false,
+   *     the server socket will use a default PSM value (without simulating PSM allocation process).
+   */
+  public void setIsFixedPsmSupported(boolean isFixedPsmSupported) {
+    this.isFixedPsmSupported = isFixedPsmSupported;
   }
 
   @Implementation
@@ -602,7 +671,7 @@ public class ShadowBluetoothAdapter {
     }
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected IBinder getProfile(int profile) {
     if (isEnabled()) {
       IInterface localProxy = createBinderProfileProxy(profile);
@@ -613,6 +682,20 @@ public class ShadowBluetoothAdapter {
       }
     }
     return null;
+  }
+
+  @Implementation(minSdk = POST_BAKLAVA)
+  protected void getProfile(
+      int profile, @ClassName("android.bluetooth.IBluetoothProfileCallback") Object callback) {
+    IBinder binder = getProfile(profile);
+    if (binder != null) {
+      reflector(IBluetoothProfileCallbackReflector.class, callback).getProfileReply(binder);
+    }
+  }
+
+  @ForType(className = "android.bluetooth.IBluetoothProfileCallback")
+  private interface IBluetoothProfileCallbackReflector {
+    void getProfileReply(IBinder binder);
   }
 
   private static IInterface createBinderProfileProxy(int profile) {
@@ -775,7 +858,7 @@ public class ShadowBluetoothAdapter {
 
   // TODO: remove this method as it shouldn't be necessary.
   //  Real android just calls IBluetoothManager.getBluetoothGatt
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected IBluetoothGatt getBluetoothGatt() {
     if (ibluetoothGatt == null) {
       ibluetoothGatt = BluetoothGattProxyDelegate.createBluetoothGattProxy();
@@ -783,7 +866,7 @@ public class ShadowBluetoothAdapter {
     return ibluetoothGatt;
   }
 
-  @Implementation(minSdk = Baklava.SDK_INT)
+  @Implementation(minSdk = BAKLAVA)
   protected @ClassName("android.bluetooth.IBluetoothAdvertise") Object getBluetoothAdvertise() {
     if (ibluetoothAdvertise == null) {
       ibluetoothAdvertise = BluetoothAdvertiseProxyDelegate.createBluetoothAdvertiseProxy();
@@ -822,6 +905,9 @@ public class ShadowBluetoothAdapter {
 
     @Direct
     BluetoothDevice getRemoteDevice(String address);
+
+    @Direct
+    BluetoothDevice getRemoteLeDevice(String address, int addressType);
 
     @Accessor("sAdapter")
     @Static

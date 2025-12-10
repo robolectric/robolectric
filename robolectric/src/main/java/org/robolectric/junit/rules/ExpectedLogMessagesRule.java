@@ -90,7 +90,8 @@ public final class ExpectedLogMessagesRule implements TestRule {
           "RippleDrawable",
           // Logged in in-development versions of android with AconfigStorageException
           "FeatureFlagsImpl",
-          "FeatureFlagsImplExport");
+          "FeatureFlagsImplExport",
+          "ExportedFlags");
 
   private final Set<ExpectedLogItem> expectedLogs = new HashSet<>();
   private final Set<LogItem> observedLogs = new HashSet<>();

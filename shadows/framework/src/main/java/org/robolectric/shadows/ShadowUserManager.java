@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -54,7 +55,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Robolectric implementation of {@link android.os.UserManager}. */
 @Implements(UserManager.class)
@@ -1320,7 +1320,7 @@ public class ShadowUserManager {
   }
 
   // TODO: should be minSdk PostBaklava
-  @Implementation(minSdk = Baklava.SDK_INT)
+  @Implementation(minSdk = BAKLAVA)
   protected boolean isMainUser() {
     // in PostBaklava, the framework implementation changed to call into a system service.
     // This shadow just inlines the previous implementation to keep this method functional

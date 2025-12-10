@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -7,6 +8,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.FontFamily;
@@ -35,8 +37,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Typeface} that is backed by native code */
 @Implements(
@@ -54,7 +54,7 @@ public class ShadowNativeTypeface extends ShadowTypeface {
 
   @Implementation(minSdk = S)
   protected static void __staticInitializer__() {
-    if (RuntimeEnvironment.getApiLevel() <= U.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() <= UPSIDE_DOWN_CAKE) {
       Shadow.directInitialize(Typeface.class);
       // Initialize the system font map. In real Android this is done as part of Application startup
       // and uses a more complex SharedMemory system not supported in Robolectric.
@@ -137,24 +137,24 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return fontFamily;
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeCreateFromTypeface(long nativeInstance, int style) {
     return TypefaceNatives.nativeCreateFromTypeface(nativeInstance, style);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeCreateFromTypefaceWithExactStyle(
       long nativeInstance, int weight, boolean italic) {
     return TypefaceNatives.nativeCreateFromTypefaceWithExactStyle(nativeInstance, weight, italic);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeCreateFromTypefaceWithVariation(
       long nativeInstance, List<FontVariationAxis> axes) {
     return TypefaceNatives.nativeCreateFromTypefaceWithVariation(nativeInstance, axes);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeCreateWeightAlias(long nativeInstance, int weight) {
     return TypefaceNatives.nativeCreateWeightAlias(nativeInstance, weight);
   }
@@ -164,33 +164,33 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return TypefaceNatives.nativeCreateFromArray(familyArray, 0, weight, italic);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeCreateFromArray(
       long[] familyArray, long fallbackTypeface, int weight, int italic) {
     return TypefaceNatives.nativeCreateFromArray(familyArray, fallbackTypeface, weight, italic);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int[] nativeGetSupportedAxes(long nativeInstance) {
     return TypefaceNatives.nativeGetSupportedAxes(nativeInstance);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeSetDefault(long nativePtr) {
     TypefaceNatives.nativeSetDefault(nativePtr);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nativeGetStyle(long nativePtr) {
     return TypefaceNatives.nativeGetStyle(nativePtr);
   }
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nativeGetWeight(long nativePtr) {
     return TypefaceNatives.nativeGetWeight(nativePtr);
   }
 
-  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = P, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeGetReleaseFunc() {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return TypefaceNatives.nativeGetReleaseFunc();
@@ -206,14 +206,14 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return TypefaceNatives.nativeGetFamily(nativePtr, index);
   }
 
-  @Implementation(minSdk = AndroidVersions.Baklava.SDK_INT)
+  @Implementation(minSdk = BAKLAVA, maxSdk = BAKLAVA)
   protected static boolean nativeIsVariationInstance(long nativePtr) {
     return false;
     // TODO: call the real impl when it's finally available in native binaries
     // return TypefaceNatives.nativeIsVariationInstance(nativePtr);
   }
 
-  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = Q, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeRegisterGenericFamily(String str, long nativePtr) {
     TypefaceNatives.nativeRegisterGenericFamily(str, nativePtr);
   }
@@ -223,7 +223,7 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return TypefaceNatives.nativeWriteTypefaces(buffer, nativePtrs);
   }
 
-  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nativeWriteTypefaces(ByteBuffer buffer, int position, long[] nativePtrs) {
     return nativeWriteTypefaces(buffer, nativePtrs);
   }
@@ -233,22 +233,22 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return TypefaceNatives.nativeReadTypefaces(buffer);
   }
 
-  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long[] nativeReadTypefaces(ByteBuffer buffer, int position) {
     return nativeReadTypefaces(buffer);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeForceSetStaticFinalField(String fieldName, Typeface typeface) {
     TypefaceNatives.nativeForceSetStaticFinalField(fieldName, typeface);
   }
 
-  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = S, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeAddFontCollections(long nativePtr) {
     TypefaceNatives.nativeAddFontCollections(nativePtr);
   }
 
-  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeRegisterLocaleList(String locales) {
     // no-op
   }

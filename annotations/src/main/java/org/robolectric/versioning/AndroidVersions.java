@@ -19,6 +19,7 @@ package org.robolectric.versioning;
 import static java.util.Arrays.asList;
 
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -54,7 +55,10 @@ import org.jspecify.annotations.Nullable;
  *       with the caveat that this class guess at the future release version number and short of the
  *       current dev branch.
  * </ol>
+ *
+ * @deprecated use VersionCalculator instead
  */
+@Deprecated
 public final class AndroidVersions {
 
   @SuppressWarnings("FieldMayBeFinal") // The value is changed via reflection in tests
@@ -62,7 +66,12 @@ public final class AndroidVersions {
 
   private AndroidVersions() {}
 
-  /** Representation of an android release, one that has occurred, or is expected. */
+  /**
+   * Representation of an android release, one that has occurred, or is expected.
+   *
+   * @deprecated use VersionCalculator.SdkInfo instead
+   */
+  @Deprecated
   public abstract static class AndroidRelease implements Comparable<AndroidRelease> {
 
     /**
@@ -135,7 +144,10 @@ public final class AndroidVersions {
    * ShortCode: "" <br>
    * SDK API Level: "" <br>
    * release: false <br>
+   *
+   * @deprecated unused
    */
+  @Deprecated
   public static final class Unbound extends AndroidUnreleased {
 
     public static final int SDK_INT = -1;
@@ -165,10 +177,13 @@ public final class AndroidVersions {
    * ShortCode: J <br>
    * SDK API Level: 16 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class J extends AndroidReleased {
 
-    public static final int SDK_INT = 16;
+    public static final int SDK_INT = VERSION_CODES.JELLY_BEAN;
 
     public static final String SHORT_CODE = "J";
 
@@ -195,10 +210,13 @@ public final class AndroidVersions {
    * ShortCode: JMR1 <br>
    * SDK API Level: 17 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class JMR1 extends AndroidReleased {
 
-    public static final int SDK_INT = 17;
+    public static final int SDK_INT = VERSION_CODES.JELLY_BEAN_MR1;
 
     public static final String SHORT_CODE = "JMR1";
 
@@ -225,10 +243,13 @@ public final class AndroidVersions {
    * ShortCode: JMR2 <br>
    * SDK API Level: 18 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class JMR2 extends AndroidReleased {
 
-    public static final int SDK_INT = 18;
+    public static final int SDK_INT = VERSION_CODES.JELLY_BEAN_MR2;
 
     public static final String SHORT_CODE = "JMR2";
 
@@ -255,10 +276,13 @@ public final class AndroidVersions {
    * ShortCode: K <br>
    * SDK API Level: 19 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class K extends AndroidReleased {
 
-    public static final int SDK_INT = 19;
+    public static final int SDK_INT = VERSION_CODES.KITKAT;
 
     public static final String SHORT_CODE = "K";
 
@@ -287,10 +311,13 @@ public final class AndroidVersions {
    * ShortCode: L <br>
    * SDK API Level: 21 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class L extends AndroidReleased {
 
-    public static final int SDK_INT = 21;
+    public static final int SDK_INT = VERSION_CODES.LOLLIPOP;
 
     public static final String SHORT_CODE = "L";
 
@@ -317,10 +344,13 @@ public final class AndroidVersions {
    * ShortCode: LMR1 <br>
    * SDK API Level: 22 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class LMR1 extends AndroidReleased {
 
-    public static final int SDK_INT = 22;
+    public static final int SDK_INT = VERSION_CODES.LOLLIPOP_MR1;
 
     public static final String SHORT_CODE = "LMR1";
 
@@ -347,10 +377,13 @@ public final class AndroidVersions {
    * ShortCode: M <br>
    * SDK API Level: 23 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class M extends AndroidReleased {
 
-    public static final int SDK_INT = 23;
+    public static final int SDK_INT = VERSION_CODES.M;
 
     public static final String SHORT_CODE = "M";
 
@@ -377,10 +410,13 @@ public final class AndroidVersions {
    * ShortCode: N <br>
    * SDK API Level: 24 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class N extends AndroidReleased {
 
-    public static final int SDK_INT = 24;
+    public static final int SDK_INT = VERSION_CODES.N;
 
     public static final String SHORT_CODE = "N";
 
@@ -407,10 +443,13 @@ public final class AndroidVersions {
    * ShortCode: NMR1 <br>
    * SDK API Level: 25 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class NMR1 extends AndroidReleased {
 
-    public static final int SDK_INT = 25;
+    public static final int SDK_INT = VERSION_CODES.N_MR1;
 
     public static final String SHORT_CODE = "NMR1";
 
@@ -437,10 +476,13 @@ public final class AndroidVersions {
    * ShortCode: O <br>
    * SDK API Level: 26 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class O extends AndroidReleased {
 
-    public static final int SDK_INT = 26;
+    public static final int SDK_INT = VERSION_CODES.O;
 
     public static final String SHORT_CODE = "O";
 
@@ -467,10 +509,13 @@ public final class AndroidVersions {
    * ShortCode: OMR1 <br>
    * SDK API Level: 27 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class OMR1 extends AndroidReleased {
 
-    public static final int SDK_INT = 27;
+    public static final int SDK_INT = VERSION_CODES.O_MR1;
 
     public static final String SHORT_CODE = "OMR1";
 
@@ -497,10 +542,13 @@ public final class AndroidVersions {
    * ShortCode: P <br>
    * SDK API Level: 28 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class P extends AndroidReleased {
 
-    public static final int SDK_INT = 28;
+    public static final int SDK_INT = VERSION_CODES.P;
 
     public static final String SHORT_CODE = "P";
 
@@ -527,10 +575,13 @@ public final class AndroidVersions {
    * ShortCode: Q <br>
    * SDK API Level: 29 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class Q extends AndroidReleased {
 
-    public static final int SDK_INT = 29;
+    public static final int SDK_INT = VERSION_CODES.Q;
 
     public static final String SHORT_CODE = "Q";
 
@@ -557,10 +608,13 @@ public final class AndroidVersions {
    * ShortCode: R <br>
    * SDK API Level: 30 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class R extends AndroidReleased {
 
-    public static final int SDK_INT = 30;
+    public static final int SDK_INT = VERSION_CODES.R;
 
     public static final String SHORT_CODE = "R";
 
@@ -587,10 +641,13 @@ public final class AndroidVersions {
    * ShortCode: S <br>
    * SDK API Level: 31 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class S extends AndroidReleased {
 
-    public static final int SDK_INT = 31;
+    public static final int SDK_INT = VERSION_CODES.S;
 
     public static final String SHORT_CODE = "S";
 
@@ -617,11 +674,14 @@ public final class AndroidVersions {
    * ShortCode: Sv2 <br>
    * SDK API Level: 32 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   @SuppressWarnings("UPPER_SNAKE_CASE")
   public static final class Sv2 extends AndroidReleased {
 
-    public static final int SDK_INT = 32;
+    public static final int SDK_INT = VERSION_CODES.S_V2;
 
     public static final String SHORT_CODE = "Sv2";
 
@@ -648,10 +708,13 @@ public final class AndroidVersions {
    * ShortCode: T <br>
    * SDK API Level: 33 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class T extends AndroidReleased {
 
-    public static final int SDK_INT = 33;
+    public static final int SDK_INT = VERSION_CODES.TIRAMISU;
 
     public static final String SHORT_CODE = "T";
 
@@ -678,10 +741,13 @@ public final class AndroidVersions {
    * ShortCode: U <br>
    * SDK API Level: 34 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class U extends AndroidReleased {
 
-    public static final int SDK_INT = 34;
+    public static final int SDK_INT = VERSION_CODES.UPSIDE_DOWN_CAKE;
 
     public static final String SHORT_CODE = "U";
 
@@ -708,10 +774,13 @@ public final class AndroidVersions {
    * ShortCode: V <br>
    * SDK API Level: 35 <br>
    * release: true <br>
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class V extends AndroidReleased {
 
-    public static final int SDK_INT = 35;
+    public static final int SDK_INT = VERSION_CODES.VANILLA_ICE_CREAM;
 
     public static final String SHORT_CODE = "V";
 
@@ -737,12 +806,15 @@ public final class AndroidVersions {
    * Baklava is an SDK after V, the name scheme has wrapped the alphabet.
    *
    * <p>All values here subject to change.
+   *
+   * @deprecated use android.os.Build.VERSION_CODES instead
    */
+  @Deprecated
   public static final class Baklava extends AndroidReleased {
 
-    public static final int SDK_INT = 36;
+    public static final int SDK_INT = VERSION_CODES.BAKLAVA;
 
-    public static final String SHORT_CODE = "Baklava";
+    public static final String SHORT_CODE = "unused";
 
     public static final String VERSION = "16";
 
@@ -766,12 +838,17 @@ public final class AndroidVersions {
    * Placeholder for the next InDevelopment release after Baklava.
    *
    * <p>All values here subject to change.
+   *
+   * @deprecated use VersionCalculator.POST_BAKLAVA instead
    */
+  @Deprecated
   public static final class PostBaklava extends AndroidUnreleased {
 
-    public static final int SDK_INT = 37;
+    public static final int SDK_INT = VERSION_CODES.CUR_DEVELOPMENT;
 
-    public static final String SHORT_CODE = "PostBaklava";
+    // TODO: currently indevelopment SDK on main branch still has codename Baklava
+    // this should presumably be updated to 'C' once that switch happens
+    public static final String SHORT_CODE = "Baklava";
 
     public static final String VERSION = "17";
 
@@ -791,8 +868,12 @@ public final class AndroidVersions {
     }
   }
 
-  /** The current release this process is running on. */
-  public static final AndroidRelease CURRENT;
+  /**
+   * The current release this process is running on.
+   *
+   * @depecrated use RuntimeEnvironment.getApiLevel instead
+   */
+  @Deprecated public static final AndroidRelease CURRENT;
 
   @Nullable
   public static AndroidRelease getReleaseForSdkInt(@Nullable Integer sdkInt) {
@@ -930,6 +1011,7 @@ public final class AndroidVersions {
 
     public AndroidRelease computeCurrentSdk(
         int reportedVersion, String releaseName, String codename, List<String> activeCodeNames) {
+
       AndroidRelease current = null;
       // Special case "REL", which means the build is not a pre-release build.
       if (Objects.equals(codename, "REL")) {
@@ -1055,10 +1137,6 @@ public final class AndroidVersions {
         try {
           AndroidRelease rel = (AndroidRelease) clazz.getDeclaredConstructor().newInstance();
           allReleases.add(rel);
-          // inspect field name - as this is our only chance to inspect it.
-          if (!rel.getClass().getSimpleName().equals(rel.getShortCode())) {
-            classesWithIllegalNames.add(rel.getClass());
-          }
         } catch (NoSuchMethodException
             | InstantiationException
             | IllegalArgumentException

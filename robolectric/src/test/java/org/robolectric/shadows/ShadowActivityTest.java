@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -87,8 +88,6 @@ import org.robolectric.fakes.RoboSplashScreen;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowActivity.IntentSenderRequest;
-import org.robolectric.util.TestRunnable;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Test of ShadowActivity. */
 @RunWith(AndroidJUnit4.class)
@@ -438,25 +437,27 @@ public class ShadowActivityTest {
 
   @Test
   public void shouldRunUiTasksImmediatelyByDefault() {
-    TestRunnable runnable = new TestRunnable();
+    AtomicBoolean wasRun = new AtomicBoolean(false);
+    Runnable runnable = () -> wasRun.set(true);
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     activity.runOnUiThread(runnable);
-    assertTrue(runnable.wasRun);
+    assertThat(wasRun.get()).isTrue();
   }
 
   @Test
   @LooperMode(LEGACY)
-  @Config(maxSdk = Baklava.SDK_INT)
+  @Config(maxSdk = BAKLAVA)
   public void shouldQueueUiTasksWhenUiThreadIsPaused() {
     shadowOf(getMainLooper()).pause();
 
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
-    TestRunnable runnable = new TestRunnable();
+    AtomicBoolean wasRun = new AtomicBoolean(false);
+    Runnable runnable = () -> wasRun.set(true);
     activity.runOnUiThread(runnable);
-    assertFalse(runnable.wasRun);
+    assertThat(wasRun.get()).isFalse();
 
     shadowOf(getMainLooper()).idle();
-    assertTrue(runnable.wasRun);
+    assertThat(wasRun.get()).isTrue();
   }
 
   /**
@@ -467,9 +468,10 @@ public class ShadowActivityTest {
   @LooperMode(Mode.PAUSED)
   public void shouldExecutePostedUiTasksInRealisticLooper() {
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
-    TestRunnable runnable = new TestRunnable();
+    AtomicBoolean wasRun = new AtomicBoolean(false);
+    Runnable runnable = () -> wasRun.set(true);
     activity.runOnUiThread(runnable);
-    assertTrue(runnable.wasRun);
+    assertThat(wasRun.get()).isTrue();
   }
 
   @Test
@@ -1734,6 +1736,32 @@ public class ShadowActivityTest {
 
     Activity activity = Robolectric.setupActivity(Activity.class);
     assertThat(activity.getDisplay()).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void setLocusContext_updatesLastLocusContextFields() {
+    try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {
+      Activity activity = controller.setup().get();
+      ShadowActivity shadowActivity = shadowOf(activity);
+
+      assertThat(shadowActivity.getLastLocusContextId()).isNull();
+      assertThat(shadowActivity.getLastLocusContextExtras()).isNull();
+
+      activity.setLocusContext(new LocusId("test_locus_id"), /* bundle= */ null);
+      assertThat(shadowActivity.getLastLocusContextId()).isEqualTo(new LocusId("test_locus_id"));
+      assertThat(shadowActivity.getLastLocusContextExtras()).isNull();
+
+      Bundle extras = new Bundle();
+      extras.putString("test", "hello");
+      activity.setLocusContext(new LocusId("test_locus_id_2"), extras);
+      assertThat(shadowActivity.getLastLocusContextId()).isEqualTo(new LocusId("test_locus_id_2"));
+      assertThat(shadowActivity.getLastLocusContextExtras()).isEqualTo(extras);
+
+      activity.setLocusContext(/* locusId= */ null, /* bundle= */ null);
+      assertThat(shadowActivity.getLastLocusContextId()).isNull();
+      assertThat(shadowActivity.getLastLocusContextExtras()).isNull();
+    }
   }
 
   /////////////////////////////

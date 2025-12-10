@@ -2,7 +2,9 @@ package org.robolectric.shadows;
 
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
@@ -39,7 +41,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /**
  * For tests, display properties may be changed and devices may be added or removed
@@ -148,8 +149,8 @@ public class ShadowDisplayManager {
       boolean isNaturallyPortrait,
       String name,
       int displayType) {
-    int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
-    int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
+    int widthPx = displayMetrics.widthPixels;
+    int heightPx = displayMetrics.heightPixels;
 
     DisplayInfo displayInfo = new DisplayInfo();
     displayInfo.name = name;
@@ -283,7 +284,8 @@ public class ShadowDisplayManager {
       throw new UnsupportedOperationException("multiple display modes not supported before M");
     }
     DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
-    if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM
+        && RuntimeEnvironment.getApiLevel() <= BAKLAVA) {
       ReflectionHelpers.setField(displayInfo, "appsSupportedModes", supportedModes);
     } else {
       displayInfo.supportedModes = supportedModes;

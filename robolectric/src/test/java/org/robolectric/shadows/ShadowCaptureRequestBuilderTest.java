@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -10,16 +11,16 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
-import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
+import org.robolectric.RuntimeEnvironment;
 
 /** Tests for {@link ShadowCaptureRequestBuilder}. */
 @RunWith(AndroidJUnit4.class)
@@ -45,14 +46,40 @@ public class ShadowCaptureRequestBuilderTest {
   }
 
   @Test
-  @Config(sdk = VERSION_CODES.P)
   public void testGetAndSet() {
     builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
     builder.set(CaptureRequest.COLOR_CORRECTION_MODE, CaptureRequest.COLOR_CORRECTION_MODE_FAST);
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      builder.set(CaptureRequest.CONTROL_ZOOM_RATIO, 1.0f);
+    }
+    builder.set(CaptureRequest.CONTROL_AE_LOCK, true);
+    builder.set(CaptureRequest.JPEG_QUALITY, (byte) 95);
+    builder.set(CaptureRequest.LENS_FOCUS_DISTANCE, 1.0f);
+
     assertThat(builder.get(CaptureRequest.CONTROL_AF_MODE))
         .isEqualTo(CaptureRequest.CONTROL_AF_MODE_OFF);
     assertThat(builder.get(CaptureRequest.COLOR_CORRECTION_MODE))
         .isEqualTo(CaptureRequest.COLOR_CORRECTION_MODE_FAST);
+    assertThat(builder.get(CaptureRequest.CONTROL_AE_LOCK)).isEqualTo(true);
+    assertThat(builder.get(CaptureRequest.JPEG_QUALITY)).isEqualTo(95);
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      assertThat(builder.get(CaptureRequest.CONTROL_ZOOM_RATIO)).isEqualTo(1.0f);
+    }
+    assertThat(builder.get(CaptureRequest.LENS_FOCUS_DISTANCE)).isEqualTo(1.0f);
+  }
+
+  @Test
+  public void build_returnsCaptureRequest() {
+    builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
+    builder.set(CaptureRequest.JPEG_QUALITY, (byte) 95);
+
+    CaptureRequest request = builder.build();
+    assertThat(request.get(CaptureRequest.CONTROL_AF_MODE))
+        .isEqualTo(CaptureRequest.CONTROL_AF_MODE_OFF);
+    assertThat(request.get(CaptureRequest.JPEG_QUALITY)).isEqualTo(95);
+
+    List<CaptureRequest.Key<?>> keys = request.getKeys();
+    assertThat(keys).containsExactly(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.JPEG_QUALITY);
   }
 
   private class CameraStateCallback extends CameraDevice.StateCallback {

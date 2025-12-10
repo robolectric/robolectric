@@ -21,7 +21,9 @@ import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
@@ -33,6 +35,7 @@ import android.app.AppOpsManager;
 import android.app.AppOpsManager.OnOpChangedListener;
 import android.app.AppOpsManager.OpEntry;
 import android.app.AppOpsManager.PackageOps;
+import android.app.AsyncNotedAppOp;
 import android.app.SyncNotedAppOp;
 import android.content.Context;
 import android.media.AudioAttributes;
@@ -606,6 +609,41 @@ public class ShadowAppOpsManagerTest {
     verify(callback).onSelfNoted(captor.capture());
     assertThat(captor.getValue().getOp()).isEqualTo(AppOpsManager.OPSTR_MONITOR_LOCATION);
     assertThat(captor.getValue().getAttributionTag()).isEqualTo("tag");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.BAKLAVA)
+  public void setOnOpNotedCallback_withIgnoreAsyncFlag_togglesAsyncNotifications() {
+    ShadowAppOpsManager shadowAppOps = shadowOf(appOps);
+    AppOpsManager.OnOpNotedCallback callback = mock(AppOpsManager.OnOpNotedCallback.class);
+
+    // Test WITH the IGNORE_ASYNC flag
+    int flagsWithIgnore = AppOpsManager.OP_NOTED_CALLBACK_FLAG_IGNORE_ASYNC;
+    appOps.setOnOpNotedCallback(directExecutor(), callback, flagsWithIgnore);
+
+    AsyncNotedAppOp asyncOp =
+        new AsyncNotedAppOp(
+            AppOpsManager.OP_RECORD_AUDIO,
+            UID_1,
+            "asyncRecordTag",
+            "testMessage",
+            System.currentTimeMillis());
+
+    shadowAppOps.simulateAsyncOpNoted(asyncOp);
+
+    verify(callback, never())
+        .onAsyncNoted(any()); // Should not receive async op since IGNORE_ASYNC is set.
+
+    // Unset the callback
+    appOps.setOnOpNotedCallback(null, null, 0);
+
+    // Test WITHOUT the IGNORE_ASYNC flag
+    int flagsWithoutIgnore = 0;
+
+    appOps.setOnOpNotedCallback(directExecutor(), callback, flagsWithoutIgnore);
+    shadowAppOps.simulateAsyncOpNoted(asyncOp);
+
+    verify(callback).onAsyncNoted(asyncOp);
   }
 
   @Config(minSdk = Q)

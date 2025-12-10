@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.content.Context;
@@ -25,13 +25,15 @@ import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = M)
+@Config(minSdk = M, maxSdk = BAKLAVA)
 public class ShadowFingerprintManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private FingerprintManager manager;
+  private ShadowFingerprintManager shadowFingerprintManager;
 
   @Before
   public void setUp() {
@@ -39,6 +41,8 @@ public class ShadowFingerprintManagerTest {
         (FingerprintManager)
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.FINGERPRINT_SERVICE);
+
+    shadowFingerprintManager = Shadow.extract(manager);
   }
 
   @Test
@@ -50,7 +54,7 @@ public class ShadowFingerprintManagerTest {
 
     manager.authenticate(cryptoObject, null, 0, mockCallback, null);
 
-    shadowOf(manager).authenticationSucceeds();
+    shadowFingerprintManager.authenticationSucceeds();
 
     ArgumentCaptor<AuthenticationResult> result =
         ArgumentCaptor.forClass(AuthenticationResult.class);
@@ -68,7 +72,7 @@ public class ShadowFingerprintManagerTest {
 
     manager.authenticate(cryptoObject, null, 0, mockCallback, null);
 
-    shadowOf(manager).authenticationFails();
+    shadowFingerprintManager.authenticationFails();
 
     verify(mockCallback).onAuthenticationFailed();
   }
@@ -77,37 +81,37 @@ public class ShadowFingerprintManagerTest {
   public void hasEnrolledFingerprints() {
     assertThat(manager.hasEnrolledFingerprints()).isFalse();
 
-    shadowOf(manager).setHasEnrolledFingerprints(true);
+    shadowFingerprintManager.setHasEnrolledFingerprints(true);
 
     assertThat(manager.hasEnrolledFingerprints()).isTrue();
   }
 
   @Test
   public void setDefaultFingerprints() {
-    assertThat(shadowOf(manager).getEnrolledFingerprints()).isEmpty();
+    assertThat(shadowFingerprintManager.getEnrolledFingerprints()).isEmpty();
 
-    shadowOf(manager).setDefaultFingerprints(1);
+    shadowFingerprintManager.setDefaultFingerprints(1);
     assertThat(manager.getEnrolledFingerprints().get(0).getName().toString())
         .isEqualTo("Fingerprint 0");
 
-    assertThat(shadowOf(manager).getFingerprintId(0)).isEqualTo(0);
+    assertThat(shadowFingerprintManager.getFingerprintId(0)).isEqualTo(0);
     assertThat(manager.hasEnrolledFingerprints()).isTrue();
 
-    shadowOf(manager).setDefaultFingerprints(0);
+    shadowFingerprintManager.setDefaultFingerprints(0);
     assertThat(manager.getEnrolledFingerprints()).isEmpty();
     assertThat(manager.hasEnrolledFingerprints()).isFalse();
   }
 
   @Test
   public void setHasEnrolledFingerprints_shouldSetNumberOfFingerprints() {
-    assertThat(shadowOf(manager).getEnrolledFingerprints()).isEmpty();
+    assertThat(shadowFingerprintManager.getEnrolledFingerprints()).isEmpty();
 
-    shadowOf(manager).setHasEnrolledFingerprints(true);
+    shadowFingerprintManager.setHasEnrolledFingerprints(true);
 
     assertThat(manager.getEnrolledFingerprints()).hasSize(1);
     assertThat(manager.hasEnrolledFingerprints()).isTrue();
 
-    shadowOf(manager).setHasEnrolledFingerprints(false);
+    shadowFingerprintManager.setHasEnrolledFingerprints(false);
     assertThat(manager.getEnrolledFingerprints()).isEmpty();
     assertThat(manager.hasEnrolledFingerprints()).isFalse();
   }
@@ -116,7 +120,7 @@ public class ShadowFingerprintManagerTest {
   public void isHardwareDetected() {
     assertThat(manager.isHardwareDetected()).isFalse();
 
-    shadowOf(manager).setIsHardwareDetected(true);
+    shadowFingerprintManager.setIsHardwareDetected(true);
 
     assertThat(manager.isHardwareDetected()).isTrue();
   }

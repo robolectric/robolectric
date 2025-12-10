@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -88,6 +89,7 @@ public class ShadowBluetoothDevice {
   private int batteryLevel = BluetoothDevice.BATTERY_LEVEL_BLUETOOTH_OFF;
   private boolean isInSilenceMode = false;
   private boolean isConnected = false;
+  private int connectCount = 0;
   @Nullable private BluetoothGattConnectionInterceptor bluetoothGattConnectionInterceptor = null;
   private final Map<Integer, Integer> connectionHandlesByTransportType = new HashMap<>();
 
@@ -489,6 +491,18 @@ public class ShadowBluetoothDevice {
     checkForBluetoothConnectPermission();
     this.isInSilenceMode = isInSilenceMode;
     return true;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected int connect() {
+    connectCount++;
+    isConnected = true;
+    return BluetoothStatusCodes.SUCCESS;
+  }
+
+  /** Returns the number of times {@link BluetoothDevice#connect} has been called. */
+  public int getConnectCount() {
+    return connectCount;
   }
 
   @Implementation

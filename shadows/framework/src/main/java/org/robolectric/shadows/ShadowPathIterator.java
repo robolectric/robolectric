@@ -1,15 +1,16 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+
 import android.graphics.PathIterator;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link PathIterator} in LEGACY graphics. */
 @Implements(
     value = PathIterator.class,
-    minSdk = U.SDK_INT,
+    minSdk = UPSIDE_DOWN_CAKE,
     isInAndroidSdk = false /* disable shadowOf generation */)
 public class ShadowPathIterator {
 
@@ -24,7 +25,7 @@ public class ShadowPathIterator {
   }
 
   /** Also shadow the upcoming indevelopment nNextHost */
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected static int nNextHost(long nativeIterator, float[] points) {
     return PathIterator.VERB_DONE;
   }

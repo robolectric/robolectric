@@ -52,7 +52,7 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
 
   /** Callback for clock updates */
   interface Listener {
-    void onClockAdvanced();
+    void onClockAdvanced(Duration advancedBy);
   }
 
   static void addListener(Listener listener) {
@@ -78,7 +78,7 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
       currentUptimeNs += (millis * MILLIS_PER_NANO);
       currentRealtimeNs += (millis * MILLIS_PER_NANO);
     }
-    informListeners();
+    informListeners(Duration.ofMillis(millis));
   }
 
   /**
@@ -92,15 +92,15 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
     synchronized (ShadowPausedSystemClock.class) {
       currentRealtimeNs += (millis * MILLIS_PER_NANO);
     }
-    informListeners();
+    informListeners(Duration.ofMillis(millis));
   }
 
-  private static void informListeners() {
+  private static void informListeners(Duration duration) {
     for (Listener listener : listeners) {
-      listener.onClockAdvanced();
+      listener.onClockAdvanced(duration);
     }
     for (Listener listener : staticListeners) {
-      listener.onClockAdvanced();
+      listener.onClockAdvanced(duration);
     }
   }
 
@@ -129,17 +129,19 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   @Implementation
   protected static boolean setCurrentTimeMillis(long millis) {
     long newTimeNs = millis * MILLIS_PER_NANO;
+    long advanceNanos;
     synchronized (ShadowPausedSystemClock.class) {
       if (currentUptimeNs > newTimeNs) {
         return false;
       } else if (currentUptimeNs == newTimeNs) {
         return true;
       } else {
+        advanceNanos = newTimeNs - currentUptimeNs;
         currentUptimeNs = newTimeNs;
         currentRealtimeNs = newTimeNs;
       }
     }
-    informListeners();
+    informListeners(Duration.ofNanos(advanceNanos));
     return true;
   }
 
@@ -199,7 +201,7 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
       currentUptimeNs += duration.toNanos();
       currentRealtimeNs += duration.toNanos();
     }
-    informListeners();
+    informListeners(duration);
   }
 
   @Resetter

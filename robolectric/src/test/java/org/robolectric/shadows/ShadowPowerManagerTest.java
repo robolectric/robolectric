@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.PowerManager.LowPowerStandbyPortDescription.MATCH_PORT_REMOTE;
 import static android.os.PowerManager.LowPowerStandbyPortDescription.PROTOCOL_TCP;
 import static android.os.PowerManager.LowPowerStandbyPortDescription.PROTOCOL_UDP;
@@ -42,7 +43,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowPowerManager.ShadowLowPowerStandbyPortsLock;
-import org.robolectric.versioning.AndroidVersions.U;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowPowerManagerTest {
@@ -628,7 +628,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void setLowPowerStandbySupported() {
     ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
     shadowPowerManager.setLowPowerStandbySupported(true);
@@ -636,7 +636,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void setLowPowerStandbyEnabled() {
     ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
     shadowPowerManager.setLowPowerStandbySupported(true);
@@ -645,7 +645,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void setLowPowerStandbyEnabled_notSupported() {
     ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
     shadowPowerManager.setLowPowerStandbySupported(false);
@@ -654,7 +654,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void isAllowedInLowPowerStandby() {
     ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
     shadowPowerManager.addAllowedInLowPowerStandby("hello world");
@@ -662,7 +662,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void isAllowedInLowPowerStandby_notSupported() {
     ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
     shadowPowerManager.setLowPowerStandbySupported(false);
@@ -670,7 +670,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void isExemptFromLowPowerStandby() {
     ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
     shadowPowerManager.setExemptFromLowPowerStandby(true);
@@ -678,7 +678,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void isExemptFromLowPowerStandby_notSupported() {
     ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
     shadowPowerManager.setLowPowerStandbySupported(false);
@@ -686,7 +686,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void newLowPowerStandbyPortsLock_setsPorts() {
     LowPowerStandbyPortDescription port1 =
         new LowPowerStandbyPortDescription(PROTOCOL_TCP, MATCH_PORT_REMOTE, 42);
@@ -701,7 +701,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void shadowLowPowerStandbyPortsLock_getAcquireCount() {
     LowPowerStandbyPortDescription defaultPort =
         new LowPowerStandbyPortDescription(PROTOCOL_TCP, MATCH_PORT_REMOTE, 42);
@@ -715,7 +715,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void shadowLowPowerStandbyPortsLock_acquire_held() {
     LowPowerStandbyPortDescription defaultPort =
         new LowPowerStandbyPortDescription(PROTOCOL_TCP, MATCH_PORT_REMOTE, 42);
@@ -728,7 +728,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   public void shadowLowPowerStandbyPortsLock_acquire_released() {
     LowPowerStandbyPortDescription defaultPort =
         new LowPowerStandbyPortDescription(PROTOCOL_TCP, MATCH_PORT_REMOTE, 42);

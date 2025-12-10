@@ -6,7 +6,6 @@ package org.robolectric.res.android;
  * Stores a sparsely populated array. Has a fixed size of 256 (number of entries that a byte can
  * represent).
  */
-@SuppressWarnings("AndroidJdkLibsChecker")
 public abstract class ByteBucketArray<T> {
   public ByteBucketArray(T mDefault) {
     this.mDefault = mDefault;

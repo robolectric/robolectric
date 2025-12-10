@@ -5,11 +5,13 @@ import static android.graphics.Paint.CURSOR_AT;
 import static android.graphics.Paint.CURSOR_AT_OR_AFTER;
 import static android.graphics.Paint.CURSOR_AT_OR_BEFORE;
 import static android.graphics.Paint.CURSOR_BEFORE;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -50,8 +52,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions;
-import org.robolectric.versioning.AndroidVersions.U;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = O)
@@ -109,7 +109,7 @@ public class ShadowNativePaintTest {
     Paint paint = new Paint();
     paint.setTypeface(Typeface.DEFAULT);
     // TODO: investigate post Baklava measure text differences
-    assumeTrue(RuntimeEnvironment.getApiLevel() <= AndroidVersions.Baklava.SDK_INT);
+    assumeTrue(RuntimeEnvironment.getApiLevel() <= BAKLAVA);
     assertThat(paint.measureText("Hello")).isEqualTo(28.0f);
     assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(9.0f);
     assertThat(paint.measureText(new StringBuilder("Hello"), 1, 4)).isEqualTo(12.0f);
@@ -1994,7 +1994,7 @@ public class ShadowNativePaintTest {
     }
   }
 
-  @Config(maxSdk = U.SDK_INT) // TODO(hoisie): fix in V and above
+  @Config(maxSdk = UPSIDE_DOWN_CAKE) // TODO(hoisie): fix in V and above
   @Test
   public void testElegantText() {
     final Paint p = new Paint();

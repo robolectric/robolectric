@@ -3,6 +3,7 @@ package org.robolectric.android.internal;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -96,7 +97,6 @@ import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.Util;
 import org.robolectric.versioning.AndroidVersions;
-import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressLint("NewApi")
 public class AndroidTestEnvironment implements TestEnvironment {
@@ -145,7 +145,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     // Starting in Android V and above, the native runtime does not support begin lazy-loaded, it
     // must be loaded upfront.
-    if (shouldLoadNativeRuntime() && RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
+    if (shouldLoadNativeRuntime() && RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM) {
       DefaultNativeRuntimeLoader.injectAndLoad();
     }
 
@@ -395,7 +395,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     appResources.updateConfiguration(androidConfiguration, Bootstrap.getDisplayMetrics());
 
     // Circumvent the 'No Compatibility callbacks set!' log. See #8509
-    if (apiLevel >= AndroidVersions.V.SDK_INT) {
+    if (apiLevel >= VANILLA_ICE_CREAM) {
       // Adds loggableChanges parameter.
       ReflectionHelpers.callStaticMethod(
           AppCompatCallbacks.class,

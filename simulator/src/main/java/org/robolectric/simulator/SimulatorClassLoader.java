@@ -18,7 +18,6 @@ import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.Sdk;
-import org.robolectric.util.Util;
 
 /**
  * An override of {@link AndroidSandbox.SdkSandboxClassLoader} that supports extra local Jars in the
@@ -38,17 +37,21 @@ public class SimulatorClassLoader extends AndroidSandbox.SdkSandboxClassLoader {
     extraClassLoader = new UrlResourceProvider(jarCollection.getUrls());
   }
 
+  /**
+   * This allows the simulator to provide classes from the deploy jar before classes from the
+   * runtime classpath.
+   *
+   * <p>The order of preference is:
+   *
+   * <ol>
+   *   <li>The Android framework jars
+   *   <li>The extra jars managed by the simulator (deploy jar and extra jars passed as args)
+   *   <li>The jars that are on the runtime classpath.
+   * </ol>
+   */
   @Override
-  protected byte[] getByteCode(String className) throws ClassNotFoundException {
-    String classFilename = className.replace('.', '/') + ".class";
-    try (InputStream classBytesStream = extraClassLoader.getResourceAsStream(classFilename)) {
-      if (classBytesStream == null) {
-        return super.getByteCode(className);
-      }
-      return Util.readBytes(classBytesStream);
-    } catch (IOException e) {
-      throw new ClassNotFoundException("couldn't load " + className, e);
-    }
+  protected InputStream getClassBytesFromAlternateClassLoader(String classResName) {
+    return extraClassLoader.getResourceAsStream(classResName);
   }
 
   /**
@@ -62,6 +65,14 @@ public class SimulatorClassLoader extends AndroidSandbox.SdkSandboxClassLoader {
     urls.addAll(Collections.list(super.findResources(name)));
     urls.addAll(Collections.list(extraClassLoader.findResources(name)));
     return Collections.enumeration(urls);
+  }
+
+  @Override
+  protected URL getResourceUrl(String name) {
+    if (extraClassLoader.getResource(name) != null) {
+      return extraClassLoader.getResource(name);
+    }
+    return super.getResourceUrl(name);
   }
 
   /** Encapsulates a collection of Jar files. */

@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
@@ -15,7 +16,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.BitmapShaderNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.shadows.ShadowNativeBitmapShader.Picker;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link BitmapShader} that is backed by native code */
 @Implements(
@@ -54,7 +54,7 @@ public class ShadowNativeBitmapShader {
         nativeMatrix, bitmapHandle, shaderTileModeX, shaderTileModeY, filter);
   }
 
-  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeCreate(
       long nativeMatrix,
       long bitmapHandle,

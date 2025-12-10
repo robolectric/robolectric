@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.robolectric.Shadows.shadowOf;
@@ -34,11 +35,10 @@ import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LEGACY)
-@Config(maxSdk = Baklava.SDK_INT)
+@Config(maxSdk = BAKLAVA)
 public class ShadowLegacyLooperTest {
 
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();

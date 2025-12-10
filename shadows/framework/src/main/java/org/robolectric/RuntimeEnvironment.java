@@ -12,6 +12,7 @@ import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import com.google.common.base.Supplier;
@@ -179,7 +180,24 @@ public class RuntimeEnvironment {
    *     (https://developer.android.com/guide/topics/resources/providing-resources.html#QualifierRules)[here].
    */
   public static String getQualifiers(Configuration configuration, DisplayMetrics displayMetrics) {
-    return ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
+    if (getApiLevel() >= Q) {
+      String qualifiers = Configuration.resourceQualifierString(configuration, displayMetrics);
+      // historically setQualifiers rejects a qualifier string with a SDK version. So just strip
+      // off the version, as many tests pass the output of this method into setQualifiers
+      String versionSegment = "-v" + Build.VERSION.RESOURCES_SDK_INT;
+      if (qualifiers.endsWith(versionSegment)) {
+        qualifiers = qualifiers.substring(0, qualifiers.length() - versionSegment.length());
+      }
+      return qualifiers;
+
+    } else {
+      // we could use Configuration.resourceQualifierString(), but it has inconsistent behavior
+      // across
+      // API levels (like swapping of widecolor gamut and hdr on certain API levels) which make it
+      // cumbersome to handle.
+      // So for now, just rely on the legacy Robolectric copy
+      return ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
+    }
   }
 
   /**

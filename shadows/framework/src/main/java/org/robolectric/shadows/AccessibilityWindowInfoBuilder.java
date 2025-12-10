@@ -17,6 +17,7 @@ public class AccessibilityWindowInfoBuilder {
   private boolean focused;
   private int id = -1;
   private CharSequence title;
+  private int type = AccessibilityWindowInfo.UNDEFINED_WINDOW_ID;
 
   private AccessibilityWindowInfoBuilder() {}
 
@@ -99,6 +100,21 @@ public class AccessibilityWindowInfoBuilder {
   }
 
   /**
+   * Sets the type of the window.
+   *
+   * <p>This corresponds to the hidden {@code setType(int)} method in {@link
+   * AccessibilityWindowInfo}.
+   *
+   * @param type The type.
+   * @return This builder.
+   */
+  @CanIgnoreReturnValue
+  public AccessibilityWindowInfoBuilder setType(int type) {
+    this.type = type;
+    return this;
+  }
+
+  /**
    * Builds the {@link AccessibilityWindowInfo} instance.
    *
    * @return The constructed {@link AccessibilityWindowInfo}.
@@ -109,6 +125,9 @@ public class AccessibilityWindowInfoBuilder {
 
     if (id != -1) {
       windowInfo.setId(id);
+    }
+    if (type != AccessibilityWindowInfo.UNDEFINED_WINDOW_ID) {
+      windowInfo.setType(type);
     }
     if (title != null && RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
       ReflectionHelpers.setField(windowInfo, "mTitle", title);

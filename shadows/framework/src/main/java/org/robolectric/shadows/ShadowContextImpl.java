@@ -336,6 +336,12 @@ public class ShadowContextImpl {
     return getShadowInstrumentation().startService(service);
   }
 
+  @Implementation
+  protected ComponentName startServiceAsUser(Intent service, UserHandle user) {
+    validateServiceIntent(service);
+    return getShadowInstrumentation().startService(service);
+  }
+
   @Implementation(minSdk = O)
   protected ComponentName startForegroundService(Intent service) {
     return startService(service);

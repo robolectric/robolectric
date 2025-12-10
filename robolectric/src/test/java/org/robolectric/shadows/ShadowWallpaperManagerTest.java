@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -343,6 +344,24 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
+  @Config(minSdk = BAKLAVA)
+  public void setBitmap_shouldUpdateBackupEligibility() throws Exception {
+    manager.setBitmap(
+        TEST_IMAGE_1,
+        /* visibleCropHint= */ null,
+        /* allowBackup= */ true,
+        WallpaperManager.FLAG_SYSTEM);
+    manager.setBitmap(
+        TEST_IMAGE_2,
+        /* visibleCropHint= */ null,
+        /* allowBackup= */ true,
+        WallpaperManager.FLAG_LOCK);
+
+    assertThat(manager.isWallpaperBackupEligible(WallpaperManager.FLAG_SYSTEM)).isTrue();
+    assertThat(manager.isWallpaperBackupEligible(WallpaperManager.FLAG_LOCK)).isTrue();
+  }
+
+  @Test
   @Config(minSdk = N)
   public void getWallpaperFile_flagSystem_nothingCached_shouldReturnNull() {
     assertThat(manager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM)).isNull();
@@ -392,6 +411,22 @@ public class ShadowWallpaperManagerTest {
   @Config(minSdk = N)
   public void getWallpaperFile_unsupportedFlag_shouldReturnNull() {
     assertThat(manager.getWallpaperFile(UNSUPPORTED_FLAG)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void getWallpaperFile_getCropped_shouldReturnParcelFileDescriptor() throws Exception {
+    manager.setBitmap(
+        TEST_IMAGE_1,
+        /* visibleCropHint= */ null,
+        /* allowBackup= */ false,
+        WallpaperManager.FLAG_SYSTEM);
+
+    try (ParcelFileDescriptor parcelFileDescriptor =
+        manager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM, /* getCropped= */ true)) {
+      assertThat(getBytesFromFileDescriptor(parcelFileDescriptor.getFileDescriptor()))
+          .isEqualTo(getBytesFromBitmap(TEST_IMAGE_1));
+    }
   }
 
   @Test
@@ -514,6 +549,24 @@ public class ShadowWallpaperManagerTest {
     assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_LOCK)).isNull();
     assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_SYSTEM)).isNull();
     assertThat(shadowOf(manager).getBitmap(UNSUPPORTED_FLAG)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void setStream_shouldUpdateBackupEligibility() throws Exception {
+    manager.setStream(
+        new ByteArrayInputStream(getBytesFromBitmap(TEST_IMAGE_1)),
+        /* visibleCropHint= */ null,
+        /* allowBackup= */ true,
+        WallpaperManager.FLAG_SYSTEM);
+    manager.setStream(
+        new ByteArrayInputStream(getBytesFromBitmap(TEST_IMAGE_2)),
+        /* visibleCropHint= */ null,
+        /* allowBackup= */ true,
+        WallpaperManager.FLAG_LOCK);
+
+    assertThat(manager.isWallpaperBackupEligible(WallpaperManager.FLAG_SYSTEM)).isTrue();
+    assertThat(manager.isWallpaperBackupEligible(WallpaperManager.FLAG_LOCK)).isTrue();
   }
 
   @Test
@@ -710,5 +763,30 @@ public class ShadowWallpaperManagerTest {
 
       assertThat(activityWallpaper).isEqualTo(applicationWallpaper);
     }
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void isWallpaperBackupEligible_neverSetBitmap_returnsFalse() throws Exception {
+    assertThat(manager.isWallpaperBackupEligible(WallpaperManager.FLAG_SYSTEM)).isFalse();
+    assertThat(manager.isWallpaperBackupEligible(WallpaperManager.FLAG_LOCK)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void isWallpaperBackupEligible_notAllowBackup_returnsFalse() throws Exception {
+    manager.setBitmap(
+        TEST_IMAGE_1,
+        /* visibleCropHint= */ null,
+        /* allowBackup= */ false,
+        WallpaperManager.FLAG_SYSTEM);
+    manager.setBitmap(
+        TEST_IMAGE_2,
+        /* visibleCropHint= */ null,
+        /* allowBackup= */ false,
+        WallpaperManager.FLAG_SYSTEM);
+
+    assertThat(manager.isWallpaperBackupEligible(WallpaperManager.FLAG_SYSTEM)).isFalse();
+    assertThat(manager.isWallpaperBackupEligible(WallpaperManager.FLAG_LOCK)).isFalse();
   }
 }

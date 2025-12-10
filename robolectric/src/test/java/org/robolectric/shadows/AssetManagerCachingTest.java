@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Application;
@@ -16,11 +17,10 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.ResourcesMode.Mode;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.versioning.AndroidVersions.P;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = P.SDK_INT)
+@Config(minSdk = P)
 @ResourcesMode(Mode.BINARY)
 public class AssetManagerCachingTest {
   private static final AtomicLong systemNativePtr = new AtomicLong();

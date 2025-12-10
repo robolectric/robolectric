@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.R;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
@@ -12,6 +14,8 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.IBluetoothGatt;
+import android.content.AttributionSource;
 import android.content.Context;
 import android.os.Build;
 import java.util.ArrayList;
@@ -19,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -27,8 +32,11 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.PerfStatsCollector;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.WithType;
 
 /** Shadow implementation of {@link BluetoothGatt}. */
 @Implements(BluetoothGatt.class)
@@ -42,6 +50,7 @@ public class ShadowBluetoothGatt {
   private boolean isClosed = false;
   private byte[] writtenBytes;
   private byte[] readBytes;
+
   // TODO: ShadowBluetoothGatt.services should be removed in favor of just using the real
   // BluetoothGatt.mServices.
   private final Set<BluetoothGattService> discoverableServices = new HashSet<>();
@@ -60,7 +69,24 @@ public class ShadowBluetoothGatt {
 
       BluetoothGatt bluetoothGatt;
       int apiLevel = RuntimeEnvironment.getApiLevel();
-      if (apiLevel > R) {
+      if (apiLevel > BAKLAVA) {
+        Object gattConnectionSettingsBuilder =
+            reflector(BluetoothGattConnectionSettingsBuilderReflector.class).newInstance();
+        Object gattConnectionSettings =
+            reflector(
+                    BluetoothGattConnectionSettingsBuilderReflector.class,
+                    gattConnectionSettingsBuilder)
+                .build();
+        bluetoothGatt =
+            reflector(BluetoothGattReflector.class)
+                .newInstance(
+                    ReflectionHelpers.createNullProxy(IBluetoothGatt.class),
+                    device,
+                    null,
+                    gattConnectionSettings,
+                    null,
+                    null);
+      } else if (apiLevel > R) {
         bluetoothGatt =
             Shadow.newInstance(
                 BluetoothGatt.class,
@@ -190,6 +216,20 @@ public class ShadowBluetoothGatt {
   }
 
   /**
+   * Overrides {@link BluetoothGatt#setPreferredPhy} to always fail before {@link
+   * ShadowBluetoothGatt#setGattCallback} is called, and always succeed after.
+   */
+  @Implementation(minSdk = O)
+  protected void setPreferredPhy(int txPhy, int rxPhy, int phyOptions) {
+    if (this.bluetoothGattCallback == null) {
+      return;
+    }
+
+    this.bluetoothGattCallback.onPhyUpdate(
+        this.realBluetoothGatt, txPhy, rxPhy, BluetoothGatt.GATT_SUCCESS);
+  }
+
+  /**
    * Overrides {@link BluetoothGatt#discoverServices} to always return false unless there are
    * discoverable services made available by {@link ShadowBluetoothGatt#addDiscoverableService}
    *
@@ -292,6 +332,11 @@ public class ShadowBluetoothGatt {
     return BluetoothGatt.GATT_FAILURE;
   }
 
+  @Implementation(minSdk = Build.VERSION_CODES.TIRAMISU)
+  protected boolean readCharacteristic(BluetoothGattCharacteristic characteristic) {
+    return readIncomingCharacteristic(characteristic);
+  }
+
   /**
    * Reads bytes from incoming characteristic if properties are valid and callback is set. Callback
    * responds with {@link BluetoothGattCallback#onCharacteristicWrite} and returns true when
@@ -329,17 +374,19 @@ public class ShadowBluetoothGatt {
    *     ShadowBluetoothGatt#setGattCallback}
    */
   public boolean readIncomingCharacteristic(BluetoothGattCharacteristic characteristic) {
-    if (this.getGattCallback() == null) {
-      throw new IllegalStateException(NULL_CALLBACK_MSG);
-    }
-    if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) == 0
-        || characteristic.getService() == null) {
+    if (!isCharactersiticValidForRead(characteristic)) {
       return false;
     }
 
     this.readBytes = characteristic.getValue();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      this.bluetoothGattCallback.onCharacteristicRead(
+          this.realBluetoothGatt, characteristic, this.readBytes, BluetoothGatt.GATT_SUCCESS);
+    } else {
     this.bluetoothGattCallback.onCharacteristicRead(
         this.realBluetoothGatt, characteristic, BluetoothGatt.GATT_SUCCESS);
+    }
+
     return true;
   }
 
@@ -431,13 +478,47 @@ public class ShadowBluetoothGatt {
     return this.getGattCallback() != null && this.isConnected;
   }
 
+  private boolean isCharactersiticValidForRead(BluetoothGattCharacteristic characteristic) {
+    if (this.getGattCallback() == null) {
+      throw new IllegalStateException(NULL_CALLBACK_MSG);
+    }
+    return (characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) != 0
+        && characteristic.getService() != null;
+  }
+
   @ForType(BluetoothGatt.class)
   private interface BluetoothGattReflector {
+
+    @Constructor
+    BluetoothGatt newInstance(
+        IBluetoothGatt iGatt,
+        BluetoothDevice device,
+        AttributionSource source,
+        @WithType("android.bluetooth.BluetoothGattConnectionSettings")
+            Object gattConnectionSettings);
+
+    @Constructor
+    BluetoothGatt newInstance(
+        IBluetoothGatt iGatt,
+        BluetoothDevice device,
+        AttributionSource source,
+        @WithType("android.bluetooth.BluetoothGattConnectionSettings")
+            Object gattConnectionSettings,
+        @WithType("android.bluetooth.BluetoothGattCallback") Object callback,
+        Executor executor);
 
     @Direct
     void disconnect();
 
     @Direct
     void close();
+  }
+
+  @ForType(className = "android.bluetooth.BluetoothGattConnectionSettings$Builder")
+  private interface BluetoothGattConnectionSettingsBuilderReflector {
+    @Constructor
+    Object newInstance();
+
+    Object build();
   }
 }

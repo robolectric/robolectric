@@ -7,6 +7,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.RequiresApi;
 import android.os.Build;
+import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -182,6 +183,13 @@ public class ShadowBuild {
    */
   public static void setType(String type) {
     ReflectionHelpers.setStaticField(Build.class, "TYPE", type);
+
+    if (Build.VERSION.SDK_INT >= O) {
+      ReflectionHelpers.setStaticField(Build.class, "IS_USER", Objects.equals(type, "user"));
+      ReflectionHelpers.setStaticField(
+          Build.class, "IS_USERDEBUG", Objects.equals(type, "userdebug"));
+      ReflectionHelpers.setStaticField(Build.class, "IS_ENG", Objects.equals(type, "eng"));
+    }
   }
 
   /**

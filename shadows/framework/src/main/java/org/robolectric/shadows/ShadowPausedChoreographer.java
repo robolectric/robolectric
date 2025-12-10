@@ -1,5 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.FrameInfo;
@@ -20,12 +26,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowDisplayEventReceiver.DisplayEventReceiverReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.versioning.AndroidVersions.NMR1;
-import org.robolectric.versioning.AndroidVersions.O;
-import org.robolectric.versioning.AndroidVersions.Q;
-import org.robolectric.versioning.AndroidVersions.S;
-import org.robolectric.versioning.AndroidVersions.T;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * A {@link Choreographer} shadow for {@link LooperMode.Mode#PAUSED}.
@@ -46,19 +46,19 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
 
   @RealObject private Choreographer realChoreographer;
 
-  @Implementation(maxSdk = NMR1.SDK_INT)
+  @Implementation(maxSdk = N_MR1)
   protected void __constructor__(Looper looper) {
     reflector(ChoreographerReflector.class, realChoreographer).__constructor__(looper);
     activeChoreographers.add(realChoreographer);
   }
 
-  @Implementation(minSdk = O.SDK_INT, maxSdk = T.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = TIRAMISU)
   protected void __constructor__(Looper looper, int vsyncSource) {
     reflector(ChoreographerReflector.class, realChoreographer).__constructor__(looper, vsyncSource);
     activeChoreographers.add(realChoreographer);
   }
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void __constructor__(Looper looper, int vsyncSource, long layerHandle) {
     reflector(ChoreographerReflector.class, realChoreographer)
         .__constructor__(looper, vsyncSource, layerHandle);
@@ -92,7 +92,7 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
     ChoreographerReflector choreographerReflector =
         reflector(ChoreographerReflector.class, realChoreographer);
     choreographerReflector.setLastFrameTimeNanos(Long.MIN_VALUE);
-    if (RuntimeEnvironment.getApiLevel() >= S.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= S) {
       choreographerReflector.setLastFrameIntervalNanos(0);
     }
     choreographerReflector.setFrameScheduled(false);
@@ -102,7 +102,7 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
     }
     choreographerReflector.setCallbackPool(null);
     choreographerReflector.setCallbacksRunning(false);
-    if (RuntimeEnvironment.getApiLevel() >= U.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
       ReflectionHelpers.callInstanceMethod(
           choreographerReflector.getFrameData(),
           "update",
@@ -110,7 +110,7 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
           ClassParameter.from(int.class, 0));
     }
 
-    if (RuntimeEnvironment.getApiLevel() >= Q.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
       Arrays.fill(((FrameInfo) choreographerReflector.getFrameInfo()).frameInfo, 0);
     }
     DisplayEventReceiver receiver =

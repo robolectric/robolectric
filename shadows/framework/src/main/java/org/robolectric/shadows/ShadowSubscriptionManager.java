@@ -11,6 +11,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.telephony.SubscriptionManager.INVALID_SIM_SLOT_INDEX;
 
+import android.annotation.RequiresApi;
 import android.content.Intent;
 import android.os.Build.VERSION;
 import android.telephony.SubscriptionInfo;
@@ -33,6 +34,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Reflector;
 
 @Implements(value = SubscriptionManager.class)
 public class ShadowSubscriptionManager {
@@ -672,6 +676,40 @@ public class ShadowSubscriptionManager {
     phoneNumberMap.put(subscriptionId, phoneNumber);
   }
 
+  /**
+   * Sets the opportunistic flag for the given {@code subscriptionId}.
+   *
+   * @return whether the opportunistic flag is updated.
+   */
+  @Implementation(minSdk = Q)
+  protected boolean setOpportunistic(boolean opportunistic, int subId) {
+    boolean changed = setOpportunisticInList(subscriptionList, subId, opportunistic);
+    changed |= setOpportunisticInList(allSubscriptionList, subId, opportunistic);
+    changed |= setOpportunisticInList(accessibleSubscriptionList, subId, opportunistic);
+    changed |= setOpportunisticInList(availableSubscriptionList, subId, opportunistic);
+
+    if (changed) {
+      dispatchOnSubscriptionsChanged();
+    }
+    return changed;
+  }
+
+  private boolean setOpportunisticInList(
+      List<SubscriptionInfo> list, int subId, boolean opportunistic) {
+    if (list == null) {
+      return false;
+    }
+    boolean changedInList = false;
+    for (SubscriptionInfo info : list) {
+      if (info.getSubscriptionId() == subId && info.isOpportunistic() != opportunistic) {
+        Reflector.reflector(SubscriptionInfoReflector.class, info)
+            .setIsOpportunistic(opportunistic);
+        changedInList = true;
+      }
+    }
+    return changedInList;
+  }
+
   @Resetter
   public static void reset() {
     activeDataSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
@@ -685,6 +723,12 @@ public class ShadowSubscriptionManager {
     phoneNumberMap.clear();
     readPhoneStatePermission = true;
     readPhoneNumbersPermission = true;
+  }
+
+  @ForType(SubscriptionInfo.class)
+  interface SubscriptionInfoReflector {
+    @Accessor("mIsOpportunistic")
+    void setIsOpportunistic(boolean opportunistic);
   }
 
   /** Builder class to create instance of {@link SubscriptionInfo}. */
@@ -717,6 +761,12 @@ public class ShadowSubscriptionManager {
 
     public SubscriptionInfoBuilder setDisplayName(String name) {
       ReflectionHelpers.setField(subscriptionInfo, "mDisplayName", name);
+      return this;
+    }
+
+    @RequiresApi(Q)
+    public SubscriptionInfoBuilder setCarrierId(int carrierId) {
+      ReflectionHelpers.setField(subscriptionInfo, "mCarrierId", carrierId);
       return this;
     }
 

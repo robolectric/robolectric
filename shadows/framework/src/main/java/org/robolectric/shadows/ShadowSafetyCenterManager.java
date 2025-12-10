@@ -1,7 +1,15 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.os.Build.VERSION_CODES;
+import android.os.UserHandle;
+import android.safetycenter.SafetyCenterData;
+import android.safetycenter.SafetyCenterIssue;
 import android.safetycenter.SafetyCenterManager;
+import android.safetycenter.SafetyCenterManager.OnSafetyCenterDataChangedListener;
 import android.safetycenter.SafetyEvent;
 import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceErrorDetails;
@@ -10,11 +18,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link SafetyCenterManager}. */
 @Implements(
@@ -39,6 +50,12 @@ public class ShadowSafetyCenterManager {
 
   @GuardedBy("lock")
   private static boolean enabled = false;
+
+  @GuardedBy("lock")
+  private static SafetyCenterData safetyCenterData;
+
+  @GuardedBy("lock")
+  private static final Map<OnSafetyCenterDataChangedListener, Executor> listeners = new HashMap<>();
 
   @Implementation
   protected boolean isSafetyCenterEnabled() {
@@ -139,6 +156,108 @@ public class ShadowSafetyCenterManager {
       errorsById.clear();
       throwForId.clear();
       enabled = false;
+      safetyCenterData = null;
+      listeners.clear();
     }
+  }
+
+  @Implementation
+  protected SafetyCenterData getSafetyCenterData() {
+    synchronized (lock) {
+      return safetyCenterData;
+    }
+  }
+
+  public void setSafetyCenterData(@Nonnull SafetyCenterData safetyCenterDataInput) {
+    synchronized (lock) {
+      safetyCenterData = safetyCenterDataInput;
+      notifyListenersOfDataChange(safetyCenterData);
+    }
+  }
+
+  @Implementation
+  protected void addOnSafetyCenterDataChangedListener(
+      @Nonnull Executor executor, @Nonnull OnSafetyCenterDataChangedListener listener) {
+    synchronized (lock) {
+      listeners.put(listener, executor);
+    }
+  }
+
+  @Implementation
+  protected void removeOnSafetyCenterDataChangedListener(
+      @Nonnull OnSafetyCenterDataChangedListener listener) {
+    synchronized (lock) {
+      listeners.remove(listener);
+    }
+  }
+
+  @Implementation
+  protected void dismissSafetyCenterIssue(@Nonnull String safetyCenterIssueId) {
+    synchronized (lock) {
+      if (safetyCenterData == null) {
+        return;
+      }
+
+      SafetyCenterData.Builder builder = new SafetyCenterData.Builder(safetyCenterData);
+
+      builder.clearIssues();
+      builder.clearDismissedIssues();
+
+      for (SafetyCenterIssue issue : safetyCenterData.getIssues()) {
+        if (issue.getId().equals(safetyCenterIssueId)) {
+          builder.addDismissedIssue(issue);
+        } else {
+          builder.addIssue(issue);
+        }
+      }
+
+      for (SafetyCenterIssue issue : safetyCenterData.getDismissedIssues()) {
+        builder.addDismissedIssue(issue);
+      }
+
+      safetyCenterData = builder.build();
+      notifyListenersOfDataChange(safetyCenterData);
+    }
+  }
+
+  @GuardedBy("lock")
+  private static void notifyListenersOfDataChange(@Nonnull SafetyCenterData safetyCenterData) {
+    for (Map.Entry<OnSafetyCenterDataChangedListener, Executor> entry : listeners.entrySet()) {
+      final OnSafetyCenterDataChangedListener listener = entry.getKey();
+      final Executor executor = entry.getValue();
+
+      executor.execute(
+          () -> {
+            listener.onSafetyCenterDataChanged(safetyCenterData);
+          });
+    }
+  }
+
+  /**
+   * Helper method to create a SafetyCenterIssue.Builder that works across SDKs.
+   *
+   * @return
+   */
+  public static SafetyCenterIssue.Builder newSafetyCenterIssueBuilder(
+      String id, CharSequence title, CharSequence summary) {
+    if (getApiLevel() <= BAKLAVA) {
+      return new SafetyCenterIssue.Builder(id, title, summary);
+    } else {
+      return reflector(SafetyCenterIssueBuilderReflector.class)
+          .newInstance(id, title, summary, UserHandle.CURRENT, Set.of("1"), "1", "1");
+    }
+  }
+
+  @ForType(SafetyCenterIssue.Builder.class)
+  private interface SafetyCenterIssueBuilderReflector {
+    @Constructor
+    SafetyCenterIssue.Builder newInstance(
+        String id,
+        CharSequence title,
+        CharSequence summary,
+        UserHandle user,
+        Set<String> safetySourceIds,
+        String issueTypeId,
+        String safetySourceIssueId);
   }
 }

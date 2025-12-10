@@ -1,6 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
@@ -18,13 +22,56 @@ public class ShadowBluetoothServerSocket {
   private final BlockingQueue<BluetoothSocket> sockets = new LinkedBlockingQueue<>();
   private boolean closed;
 
+  /** Deprecated use {@link #newInstance(BluetoothAdapter, int, boolean, boolean, ParcelUuid)} */
+  @Deprecated
   @SuppressLint("PrivateApi")
   public static BluetoothServerSocket newInstance(
       int type, boolean auth, boolean encrypt, ParcelUuid uuid) {
-    return Shadow.newInstance(
-        BluetoothServerSocket.class,
-        new Class<?>[] {Integer.TYPE, Boolean.TYPE, Boolean.TYPE, ParcelUuid.class},
-        new Object[] {type, auth, encrypt, uuid});
+    return newInstance(BluetoothAdapter.getDefaultAdapter(), type, auth, encrypt, uuid);
+  }
+
+  public static BluetoothServerSocket newInstance(
+      BluetoothAdapter adapter, int type, boolean auth, boolean encrypt, ParcelUuid uuid) {
+    if (getApiLevel() > BAKLAVA) {
+      return Shadow.newInstance(
+          BluetoothServerSocket.class,
+          new Class<?>[] {
+            BluetoothAdapter.class, Integer.TYPE, Boolean.TYPE, Boolean.TYPE, ParcelUuid.class
+          },
+          new Object[] {adapter, type, auth, encrypt, uuid});
+
+    } else {
+      return Shadow.newInstance(
+          BluetoothServerSocket.class,
+          new Class<?>[] {Integer.TYPE, Boolean.TYPE, Boolean.TYPE, ParcelUuid.class},
+          new Object[] {type, auth, encrypt, uuid});
+    }
+  }
+
+  /** Deprecated use {@link #newInstance(BluetoothAdapter, int, boolean, boolean, int)} */
+  @Deprecated
+  @SuppressLint("PrivateApi")
+  public static BluetoothServerSocket newInstance(
+      int type, boolean auth, boolean encrypt, int psm) {
+    return newInstance(BluetoothAdapter.getDefaultAdapter(), type, auth, encrypt, psm);
+  }
+
+  public static BluetoothServerSocket newInstance(
+      BluetoothAdapter adapter, int type, boolean auth, boolean encrypt, int psm) {
+    if (getApiLevel() > BAKLAVA) {
+      return Shadow.newInstance(
+          BluetoothServerSocket.class,
+          new Class<?>[] {
+            BluetoothAdapter.class, Integer.TYPE, Boolean.TYPE, Boolean.TYPE, int.class
+          },
+          new Object[] {adapter, type, auth, encrypt, psm});
+
+    } else {
+      return Shadow.newInstance(
+          BluetoothServerSocket.class,
+          new Class<?>[] {Integer.TYPE, Boolean.TYPE, Boolean.TYPE, int.class},
+          new Object[] {type, auth, encrypt, psm});
+    }
   }
 
   // Port ranges are valid from 1 to MAX_RFCOMM_CHANNEL.

@@ -21,14 +21,14 @@ import org.robolectric.annotation.Implements;
  */
 @Implements(value = BugreportManager.class, minSdk = Q, isInAndroidSdk = false)
 public class ShadowBugreportManager {
-
   private boolean hasPermission = true;
-
   @Nullable private ParcelFileDescriptor bugreportFd;
   @Nullable private ParcelFileDescriptor screenshotFd;
+  @Nullable private BugreportParams params;
   @Nullable private Executor executor;
   @Nullable private BugreportCallback callback;
   private boolean bugreportRequested;
+  private boolean bugreportCanceled;
   @Nullable private CharSequence shareTitle;
   @Nullable private CharSequence shareDescription;
 
@@ -51,6 +51,7 @@ public class ShadowBugreportManager {
     } else {
       this.bugreportFd = bugreportFd;
       this.screenshotFd = screenshotFd;
+      this.params = params;
       this.executor = executor;
       this.callback = callback;
     }
@@ -88,11 +89,25 @@ public class ShadowBugreportManager {
     }
   }
 
-  /** Cancels bugreport in progress and executes {@link BugreportCallback#onError}. */
+  /** Cancels bugreport in progress. */
   @Implementation
   protected void cancelBugreport() {
-    enforcePermission("cancelBugreport");
-    executeOnError(BugreportCallback.BUGREPORT_ERROR_RUNTIME);
+    if (isBugreportInProgress()) {
+      bugreportCanceled = true;
+      enforcePermission("cancelBugreport");
+    }
+  }
+
+  /** Returns true if {@link #cancelBugreport} was called. */
+  public boolean wasBugreportCanceled() {
+    return bugreportCanceled;
+  }
+
+  /** Execute {@link BugreportCallback#onError} when bugreport is cancelled. */
+  public void executeOnCancel() {
+    if (isBugreportInProgress()) {
+      executeOnError(BugreportCallback.BUGREPORT_ERROR_RUNTIME);
+    }
   }
 
   /** Executes {@link BugreportCallback#onProgress} on the provided Executor. */
@@ -182,6 +197,12 @@ public class ShadowBugreportManager {
     return screenshotFd;
   }
 
+  /** Returns the params if set with {@code startBugreport}, else null. */
+  @Nullable
+  public BugreportParams getParams() {
+    return params;
+  }
+
   private void resetParams() {
     try {
       if (bugreportFd != null) {
@@ -195,9 +216,11 @@ public class ShadowBugreportManager {
     }
     bugreportFd = null;
     screenshotFd = null;
+    params = null;
     executor = null;
     callback = null;
     bugreportRequested = false;
+    bugreportCanceled = false;
     shareTitle = null;
     shareDescription = null;
   }

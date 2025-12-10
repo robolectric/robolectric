@@ -5,6 +5,7 @@ import static android.app.usage.UsageStatsManager.INTERVAL_WEEKLY;
 import static android.content.Context.USAGE_STATS_SERVICE;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.robolectric.Shadows.shadowOf;
@@ -42,7 +43,6 @@ import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageLimitObserver;
 import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageObserver;
 import org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver;
 import org.robolectric.shadows.ShadowUsageStatsManager.UsageStatsBuilder;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Test for {@link ShadowUsageStatsManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -412,6 +412,7 @@ public class ShadowUsageStatsManagerTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
   public void usageStatsBuilder_noFieldsSet() {
     UsageStats usage =
         UsageStatsBuilder.newBuilder()
@@ -421,14 +422,17 @@ public class ShadowUsageStatsManagerTest {
     assertThat(usage.getFirstTimeStamp()).isEqualTo(0);
     assertThat(usage.getLastTimeStamp()).isEqualTo(0);
     assertThat(usage.getLastTimeUsed()).isEqualTo(0);
+    assertThat(usage.getLastTimeVisible()).isEqualTo(0);
     assertThat(usage.getTotalTimeInForeground()).isEqualTo(0);
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
   public void usageStatsBuilder() {
     long firstTimestamp = 1_500_000_000_000L;
     long lastTimestamp = firstTimestamp + 10000;
     long lastTimeUsed = firstTimestamp + 100;
+    long lastTimeVisible = firstTimestamp + 200;
     long totalTimeInForeground = HOURS.toMillis(10);
 
     UsageStats usage =
@@ -439,11 +443,13 @@ public class ShadowUsageStatsManagerTest {
             .setLastTimeStamp(lastTimestamp)
             .setLastTimeUsed(lastTimeUsed)
             .setTotalTimeInForeground(totalTimeInForeground)
+            .setLastTimeVisible(lastTimeVisible)
             .build();
     assertThat(usage.getPackageName()).isEqualTo(TEST_PACKAGE_NAME1);
     assertThat(usage.getFirstTimeStamp()).isEqualTo(firstTimestamp);
     assertThat(usage.getLastTimeStamp()).isEqualTo(lastTimestamp);
     assertThat(usage.getLastTimeUsed()).isEqualTo(lastTimeUsed);
+    assertThat(usage.getLastTimeVisible()).isEqualTo(lastTimeVisible);
     assertThat(usage.getTotalTimeInForeground()).isEqualTo(totalTimeInForeground);
   }
 
@@ -1066,7 +1072,7 @@ public class ShadowUsageStatsManagerTest {
   }
 
   @Test
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = VANILLA_ICE_CREAM)
   public void testQueryEvents_newApiV_shouldReturn() {
     // These events should be returned.
     shadowOf(usageStatsManager)

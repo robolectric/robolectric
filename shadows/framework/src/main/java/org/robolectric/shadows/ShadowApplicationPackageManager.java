@@ -34,6 +34,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.annotation.GetInstallerPackageNameMode.Mode.REALISTIC;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.Manifest.permission;
 import android.annotation.DrawableRes;
@@ -120,13 +121,11 @@ import org.robolectric.annotation.GetInstallerPackageNameMode;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Shadow for {@link ApplicationPackageManager}. */
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false)
@@ -1039,31 +1038,52 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected Resources getResourcesForApplication(@Nonnull ApplicationInfo applicationInfo)
-      throws PackageManager.NameNotFoundException {
-    synchronized (lock) {
-      if (getContext().getPackageName().equals(applicationInfo.packageName)) {
-        return getContext().getResources();
-      } else if (packageInfos.containsKey(applicationInfo.packageName)) {
-        Resources appResources = resources.get(applicationInfo.packageName);
-        if (appResources == null) {
-          appResources = new Resources(new AssetManager(), null, null);
-          resources.put(applicationInfo.packageName, appResources);
-        }
-        return appResources;
-      }
-      Resources resources = null;
+      throws NameNotFoundException {
+    String packageName = applicationInfo.packageName;
+    Resources res = getResourcesForPackageName(packageName);
+    if (res != null) {
+      return res;
+    }
 
-      try {
-        resources =
-            reflector(ReflectorApplicationPackageManager.class, realObject)
-                .getResourcesForApplication(applicationInfo);
-      } catch (Exception ex) {
-        // handled below
+    try {
+      // This handles uninstalled packages that can not be fetched by package name.
+      res =
+          reflector(ReflectorApplicationPackageManager.class, realObject)
+              .getResourcesForApplication(applicationInfo);
+    } catch (Exception ex) {
+      // Handled below
+    }
+    if (res != null) {
+      return res;
+    }
+    throw new NameNotFoundException(packageName);
+  }
+
+  @Implementation
+  protected Resources getResourcesForApplication(String packageName) throws NameNotFoundException {
+    Resources res = getResourcesForPackageName(packageName);
+    if (res != null) {
+      return res;
+    }
+    throw new NameNotFoundException(packageName);
+  }
+
+  @Nullable
+  private Resources getResourcesForPackageName(String packageName) {
+    if (getContext().getPackageName().equals(packageName)) {
+      return getContext().getResources();
+    }
+    synchronized (lock) {
+      if (!packageInfos.containsKey(packageName)) {
+        return null;
       }
-      if (resources == null) {
-        throw new NameNotFoundException(applicationInfo.packageName);
+      Resources res = resources.get(packageName);
+      if (res != null) {
+        return res;
       }
-      return resources;
+      res = new Resources(new AssetManager(), null, null);
+      resources.put(packageName, res);
+      return res;
     }
   }
 
@@ -1862,9 +1882,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   /**
    * Behaves as {@link #resolveActivity(Intent, int)} and currently ignores userId and resolvedType
    */
-  // TODO(brettchabot): this should be PostBaklava
-  @Implementation(minSdk = Baklava.SDK_INT)
-  @InDevelopment
+  @Implementation(minSdk = POST_BAKLAVA)
   protected ResolveInfo resolveActivityAsUser(
       Intent intent,
       String resolvedType,
@@ -1959,23 +1977,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getResourcesForApplication(activityName.getPackageName());
   }
 
-  @Implementation
-  protected Resources getResourcesForApplication(String appPackageName)
-      throws NameNotFoundException {
-    synchronized (lock) {
-      if (getContext().getPackageName().equals(appPackageName)) {
-        return getContext().getResources();
-      } else if (packageInfos.containsKey(appPackageName)) {
-        Resources appResources = resources.get(appPackageName);
-        if (appResources == null) {
-          appResources = new Resources(new AssetManager(), null, null);
-          resources.put(appPackageName, appResources);
-        }
-        return appResources;
-      }
-      throw new NameNotFoundException(appPackageName);
-    }
-  }
 
   @Implementation
   protected Resources getResourcesForApplicationAsUser(String appPackageName, int userId)
@@ -2506,7 +2507,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   private interface ReflectorApplicationPackageManager {
 
     @Direct
-    Resources getResourcesForApplication(@Nonnull ApplicationInfo applicationInfo);
+    Resources getResourcesForApplication(@Nonnull ApplicationInfo applicationInfo)
+        throws NameNotFoundException;
 
     @Direct
     Drawable getDrawable(

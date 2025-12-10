@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
@@ -20,6 +22,7 @@ import android.view.Surface;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -30,8 +33,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
-import org.robolectric.versioning.AndroidVersions.Baklava;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow class for {@link CameraDeviceImpl} */
 @Implements(value = CameraDeviceImpl.class, isInAndroidSdk = false)
@@ -39,7 +40,7 @@ public class ShadowCameraDeviceImpl {
   @RealObject private CameraDeviceImpl realObject;
   private boolean closed = false;
 
-  @Implementation(minSdk = V.SDK_INT, maxSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM, maxSdk = VANILLA_ICE_CREAM)
   protected void __constructor__(
       String cameraId,
       StateCallback callback,
@@ -74,7 +75,7 @@ public class ShadowCameraDeviceImpl {
         .setDeviceExecutor(MoreExecutors.directExecutor());
   }
 
-  @Implementation(minSdk = Baklava.SDK_INT)
+  @Implementation(minSdk = BAKLAVA)
   protected void __constructor__(
       String cameraId,
       StateCallback callback,
@@ -170,8 +171,12 @@ public class ShadowCameraDeviceImpl {
         deviceHandler.post(callOnClosed);
       }
     }
-
+    markClosed();
     closed = true;
+  }
+
+  void markClosed() {
+    reflector(CameraDeviceImplReflector.class, realObject).getClosing().set(true);
   }
 
   @Implementation
@@ -191,6 +196,10 @@ public class ShadowCameraDeviceImpl {
 
   @ForType(CameraDeviceImpl.class)
   interface CameraDeviceImplReflector {
+
+    @Accessor("mClosing")
+    AtomicBoolean getClosing();
+
     @Direct
     void __constructor__(
         String cameraId,

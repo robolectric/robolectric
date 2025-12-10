@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,8 +49,8 @@ import org.objectweb.asm.util.TraceSignatureVisitor;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.InDevelopment;
-import org.robolectric.versioning.AndroidVersionInitTools;
-import org.robolectric.versioning.AndroidVersions;
+import org.robolectric.versioning.VersionCalculator;
+import org.robolectric.versioning.VersionCalculator.SdkInfo;
 
 /** Encapsulates a collection of Android framework jars. */
 public class SdkStore {
@@ -63,16 +64,19 @@ public class SdkStore {
   private final boolean loadFromClasspath;
 
   private final String overrideSdkLocation;
-  private final int overrideSdkInt;
+  private final SdkInfo overrideSdkInfo;
   private final String sdksFile;
 
   /** */
   public SdkStore(
-      String sdksFile, boolean loadFromClasspath, String overrideSdkLocation, int overrideSdkInt) {
+      String sdksFile,
+      boolean loadFromClasspath,
+      String overrideSdkLocation,
+      SdkInfo overrideSdkInfo) {
     this.sdksFile = sdksFile;
     this.loadFromClasspath = loadFromClasspath;
     this.overrideSdkLocation = overrideSdkLocation;
-    this.overrideSdkInt = overrideSdkInt;
+    this.overrideSdkInfo = overrideSdkInfo;
   }
 
   /**
@@ -83,7 +87,7 @@ public class SdkStore {
     loadSdksOnce();
     List<Sdk> matchingSdks = new ArrayList<>();
     for (Sdk sdk : sdks) {
-      int sdkInt = sdk.sdkRelease.getSdkInt();
+      int sdkInt = sdk.sdkInfo.apiLevel;
       if (sdkInt >= classMinSdk && (sdkInt <= classMaxSdk || classMaxSdk == -1)) {
         matchingSdks.add(sdk);
       }
@@ -112,7 +116,7 @@ public class SdkStore {
 
     List<Sdk> matchingSdks = new ArrayList<>();
     for (Sdk sdk : sdks) {
-      int sdkInt = sdk.sdkRelease.getSdkInt();
+      int sdkInt = sdk.sdkInfo.apiLevel;
       if (sdkInt >= minSdk && sdkInt <= maxSdk) {
         matchingSdks.add(sdk);
       }
@@ -123,9 +127,22 @@ public class SdkStore {
   private synchronized void loadSdksOnce() {
     if (!loaded) {
       sdks.addAll(
-          loadFromSources(loadFromClasspath, sdksFile, overrideSdkLocation, overrideSdkInt));
+          validateSdks(
+              loadFromSources(loadFromClasspath, sdksFile, overrideSdkLocation, overrideSdkInfo)));
       loaded = true;
     }
+  }
+
+  private static List<Sdk> validateSdks(List<Sdk> sdks) {
+    Set<Integer> sdkInts = new HashSet<>();
+    for (Sdk sdk : sdks) {
+      if (sdkInts.contains(sdk.sdkInfo.apiLevel)) {
+        throw new RuntimeException(
+            "Duplicate API level found in list of SDKs: " + sdk.sdkInfo.apiLevel);
+      }
+      sdkInts.add(sdk.sdkInfo.apiLevel);
+    }
+    return sdks;
   }
 
   /**
@@ -139,7 +156,7 @@ public class SdkStore {
     for (Sdk sdk : sdks.stream().sorted().collect(Collectors.toList())) {
       builder
           .append("    ")
-          .append(sdk.sdkRelease.getSdkInt())
+          .append(sdk.sdkInfo.apiLevel)
           .append(" : ")
           .append(sdk.path)
           .append("\n");
@@ -191,17 +208,17 @@ public class SdkStore {
    * @return a list of sdks to check with annotation processing validators.
    */
   private static ImmutableList<Sdk> loadFromSources(
-      boolean localSdk, String sdkFileName, String overrideSdkLocation, int overrideSdkInt) {
+      boolean localSdk, String sdkFileName, String overrideSdkLocation, SdkInfo overrideSdkInfo) {
     if (localSdk) {
       if (overrideSdkLocation != null) {
-        Sdk sdk = new Sdk(overrideSdkLocation, overrideSdkInt);
+        Sdk sdk = new Sdk(overrideSdkLocation, overrideSdkInfo);
         return ImmutableList.of(sdk);
       } else {
         String target = compilationSdkTarget();
         if (target != null) {
           Sdk sdk = new Sdk(target);
           // We don't want to test released versions in Android source tree.
-          return sdk.sdkRelease.isReleased() ? ImmutableList.of() : ImmutableList.of(sdk);
+          return sdk.sdkInfo.isReleased ? ImmutableList.of() : ImmutableList.of(sdk);
         }
       }
     }
@@ -243,8 +260,7 @@ public class SdkStore {
 
     private final String path;
     private final JarFile jarFile;
-    final AndroidVersions.AndroidRelease sdkRelease;
-    final int sdkInt;
+    final VersionCalculator.SdkInfo sdkInfo;
     private final Map<String, ClassInfo> classInfos = new HashMap<>();
     private static File tempDir;
 
@@ -252,19 +268,18 @@ public class SdkStore {
       this(path, null);
     }
 
-    Sdk(String path, Integer sdkInt) {
+    Sdk(String path, SdkInfo overrideSdkInfo) {
       this.path = path;
       if (path.startsWith("classpath:") || path.endsWith(".jar")) {
         this.jarFile = ensureJar();
       } else {
         this.jarFile = null;
       }
-      if (sdkInt == null) {
-        this.sdkRelease = readSdkVersion();
+      if (overrideSdkInfo != null) {
+        this.sdkInfo = overrideSdkInfo;
       } else {
-        this.sdkRelease = AndroidVersions.getReleaseForSdkInt(sdkInt);
+        this.sdkInfo = new VersionCalculator().calculateSdkInfo(Objects.requireNonNull(jarFile));
       }
-      this.sdkInt = sdkRelease.getSdkInt();
     }
 
     /**
@@ -347,13 +362,7 @@ public class SdkStore {
       InDevelopment[] inDev = annotatedElement.getAnnotationsByType(InDevelopment.class);
       // Marked in development, sdk is not released, or is the last release (which may still be
       // marked unreleased in g/main aosp/main.
-      return allowInDev
-          && inDev.length > 0
-          && (!sdkRelease.isReleased()
-              || sdkRelease
-                  == AndroidVersions.getReleases().stream()
-                      .max(AndroidVersions.AndroidRelease::compareTo)
-                      .get());
+      return allowInDev && inDev.length > 0 && !sdkInfo.isReleased;
     }
 
     private static boolean typeIsOkForLooseSignatures(
@@ -388,19 +397,6 @@ public class SdkStore {
       return classInfo == NULL_CLASS_INFO ? null : classInfo;
     }
 
-    /**
-     * Determine the API level for this SDK jar by inspecting its {@code build.prop} file.
-     *
-     * @return the API level
-     */
-    private AndroidVersions.AndroidRelease readSdkVersion() {
-      try {
-        return AndroidVersionInitTools.computeReleaseVersion(jarFile);
-      } catch (IOException e) {
-        throw new RuntimeException("failed to read build.prop from " + path);
-      }
-    }
-
     private JarFile ensureJar() {
       try {
         if (path.startsWith("classpath:")) {
@@ -410,8 +406,7 @@ public class SdkStore {
         }
 
       } catch (IOException e) {
-        throw new RuntimeException(
-            "failed to open SDK " + sdkRelease.getSdkInt() + " at " + path, e);
+        throw new RuntimeException("failed to open SDK at " + path, e);
       }
     }
 
@@ -488,7 +483,7 @@ public class SdkStore {
 
     @Override
     public int compareTo(Sdk sdk) {
-      return sdk.sdkRelease.getSdkInt() - sdkRelease.getSdkInt();
+      return sdk.sdkInfo.apiLevel - sdkInfo.apiLevel;
     }
   }
 

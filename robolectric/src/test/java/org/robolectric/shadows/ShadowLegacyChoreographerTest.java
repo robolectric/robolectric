@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -15,12 +16,11 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 /** Unit tests for {@link ShadowLegacyChoreographer}. */
 @RunWith(AndroidJUnit4.class)
 @LooperMode(Mode.LEGACY)
-@Config(maxSdk = Baklava.SDK_INT)
+@Config(maxSdk = BAKLAVA)
 public class ShadowLegacyChoreographerTest {
 
   @Test

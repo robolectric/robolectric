@@ -1,5 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.Q;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.RemoteException;
@@ -16,10 +21,9 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.Q;
 
 /** Robolectric shadow to support {@link CallRedirectionService}. */
-@Implements(value = CallRedirectionService.class, minSdk = Q.SDK_INT)
+@Implements(value = CallRedirectionService.class, minSdk = Q)
 public class ShadowCallRedirectionService {
   @RealObject CallRedirectionService callRedirectionService;
   @ReflectorObject protected CallRedirectionServiceReflector callRedirectionServiceReflector;
@@ -32,14 +36,25 @@ public class ShadowCallRedirectionService {
    */
   public void placeCall(
       Uri uri, PhoneAccountHandle phoneAccountHandle, boolean allowInteractiveResponse) {
-    ICallRedirectionService.Stub binder =
-        (ICallRedirectionService.Stub) callRedirectionService.onBind(new Intent());
+    ICallRedirectionService binder =
+        (ICallRedirectionService) callRedirectionService.onBind(new Intent());
+    ICallRedirectionServiceReflector binderReflector =
+        reflector(ICallRedirectionServiceReflector.class, binder);
     try {
-      binder.placeCall(
-          ReflectionHelpers.createNullProxy(ICallRedirectionAdapter.class),
-          uri,
-          phoneAccountHandle,
-          allowInteractiveResponse);
+      if (getApiLevel() <= BAKLAVA) {
+        binderReflector.placeCall(
+            ReflectionHelpers.createNullProxy(ICallRedirectionAdapter.class),
+            uri,
+            phoneAccountHandle,
+            allowInteractiveResponse);
+      } else {
+        binderReflector.placeCall(
+            ReflectionHelpers.createNullProxy(ICallRedirectionAdapter.class),
+            uri,
+            uri,
+            phoneAccountHandle,
+            allowInteractiveResponse);
+      }
     } catch (RemoteException e) {
       throw new AssertionError(e);
     }
@@ -95,6 +110,27 @@ public class ShadowCallRedirectionService {
 
     @Direct
     void cancelCall();
+  }
+
+  @ForType(ICallRedirectionService.class)
+  private interface ICallRedirectionServiceReflector {
+
+    // For <= BAKLAVA
+    void placeCall(
+        ICallRedirectionAdapter nullProxy,
+        Uri uri,
+        PhoneAccountHandle phoneAccountHandle,
+        boolean allowInteractiveResponse)
+        throws RemoteException;
+
+    // For > BAKLAVA
+    void placeCall(
+        ICallRedirectionAdapter nullProxy,
+        Uri uri,
+        Uri uri2,
+        PhoneAccountHandle phoneAccountHandle,
+        boolean allowInteractiveResponse)
+        throws RemoteException;
   }
 
   /** The result of the redirection attempt. */

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SERVICE;
+import static android.os.Build.VERSION_CODES.BASE;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -1047,7 +1048,16 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = BASE)
   public void shouldGetSimIso() {
+    assertThat(telephonyManager.getSimCountryIso()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getSimCountryIso_nonDefaultSubId_notOverriden_returnsEmpty() {
+    ShadowSubscriptionManager.setDefaultSubscriptionId(123);
+
     assertThat(telephonyManager.getSimCountryIso()).isEmpty();
   }
 
@@ -1061,6 +1071,21 @@ public class ShadowTelephonyManagerTest {
   private String callGetSimCountryIso(TelephonyManager telephonyManager, int subId) {
     return ReflectionHelpers.callInstanceMethod(
         telephonyManager, "getSimCountryIso", ClassParameter.from(int.class, subId));
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getSimCountryIso_usesSubscriptionId() {
+    TelephonyManager telephonyManager1 = newTelephonyManager(1);
+    ShadowTelephonyManager shadowTelephonyManager1 = Shadow.extract(telephonyManager1);
+    shadowTelephonyManager1.setSimCountryIso("us");
+
+    TelephonyManager telephonyManager2 = newTelephonyManager(2);
+    ShadowTelephonyManager shadowTelephonyManager2 = Shadow.extract(telephonyManager2);
+    shadowTelephonyManager2.setSimCountryIso("ca");
+
+    assertThat(telephonyManager1.getSimCountryIso()).isEqualTo("us");
+    assertThat(telephonyManager2.getSimCountryIso()).isEqualTo("ca");
   }
 
   @Test
@@ -1096,7 +1121,7 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = P)
-  public void shouldGetSimCarrierId() {
+  public void getCarrierId_valueConfigured_returnsCarrierId() {
     int expectedCarrierId = 132;
     shadowOf(telephonyManager).setSimCarrierId(expectedCarrierId);
 
@@ -1104,12 +1129,25 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = P)
+  public void getCarrierId_valueNotConfigured_returnsUnknown() {
+    assertThat(telephonyManager.getSimCarrierId()).isEqualTo(TelephonyManager.UNKNOWN_CARRIER_ID);
+  }
+
+  @Test
   @Config(minSdk = Q)
-  public void shouldGetSimSpecificCarrierId() {
+  public void getSimSpecificCarrierId_valueConfigured_returnsCarrierId() {
     int expectedCarrierId = 132;
     shadowOf(telephonyManager).setSimSpecificCarrierId(expectedCarrierId);
 
     assertThat(telephonyManager.getSimSpecificCarrierId()).isEqualTo(expectedCarrierId);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getSimSpecificCarrierId_valueNotConfigured_returnsUnknown() {
+    assertThat(telephonyManager.getSimSpecificCarrierId())
+        .isEqualTo(TelephonyManager.UNKNOWN_CARRIER_ID);
   }
 
   @Test

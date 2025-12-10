@@ -29,8 +29,7 @@ import org.robolectric.internal.bytecode.ClassNodeProvider;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.util.inject.Injector;
-import org.robolectric.versioning.AndroidVersionInitTools;
-import org.robolectric.versioning.AndroidVersions.AndroidRelease;
+import org.robolectric.versioning.VersionCalculator;
 
 /** Runs Robolectric invokedynamic instrumentation on an android-all jar. */
 public class JarInstrumentor {
@@ -250,7 +249,6 @@ public class JarInstrumentor {
   }
 
   private int getJarAndroidSDKVersion(JarFile jarFile) throws IOException {
-    AndroidRelease release = AndroidVersionInitTools.computeReleaseVersion(jarFile);
-    return release.getSdkInt();
+    return new VersionCalculator().calculateSdkInfo(jarFile).apiLevel;
   }
 }

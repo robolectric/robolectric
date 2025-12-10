@@ -1,5 +1,6 @@
 package org.robolectric.android.controller;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -28,6 +29,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,8 +42,6 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowWindowManagerImpl;
 import org.robolectric.util.Scheduler;
-import org.robolectric.util.TestRunnable;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 public class ActivityControllerTest {
@@ -64,8 +64,10 @@ public class ActivityControllerTest {
   }
 
   public static class TestDelayedPostActivity extends Activity {
-    TestRunnable r1 = new TestRunnable();
-    TestRunnable r2 = new TestRunnable();
+    AtomicBoolean wasRun1 = new AtomicBoolean(false);
+    AtomicBoolean wasRun2 = new AtomicBoolean(false);
+    Runnable r1 = () -> wasRun1.set(true);
+    Runnable r2 = () -> wasRun2.set(true);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,27 +80,27 @@ public class ActivityControllerTest {
 
   @Test
   @LooperMode(LEGACY)
-  @Config(maxSdk = Baklava.SDK_INT)
+  @Config(maxSdk = BAKLAVA)
   public void pendingTasks_areRunEagerly_whenActivityIsStarted_andSchedulerUnPaused() {
     final Scheduler s = Robolectric.getForegroundThreadScheduler();
     final long startTime = s.getCurrentTime();
     TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);
-    assertWithMessage("immediate task").that(activity.r1.wasRun).isTrue();
+    assertWithMessage("immediate task").that(activity.wasRun1.get()).isTrue();
     assertWithMessage("currentTime").that(s.getCurrentTime()).isEqualTo(startTime);
   }
 
   @Test
   @LooperMode(LEGACY)
-  @Config(maxSdk = Baklava.SDK_INT)
+  @Config(maxSdk = BAKLAVA)
   public void delayedTasks_areNotRunEagerly_whenActivityIsStarted_andSchedulerUnPaused() {
     // Regression test for issue #1509
     final Scheduler s = Robolectric.getForegroundThreadScheduler();
     final long startTime = s.getCurrentTime();
     TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);
-    assertWithMessage("before flush").that(activity.r2.wasRun).isFalse();
+    assertWithMessage("before flush").that(activity.wasRun2.get()).isFalse();
     assertWithMessage("currentTime before flush").that(s.getCurrentTime()).isEqualTo(startTime);
     s.advanceToLastPostedRunnable();
-    assertWithMessage("after flush").that(activity.r2.wasRun).isTrue();
+    assertWithMessage("after flush").that(activity.wasRun2.get()).isTrue();
     assertWithMessage("currentTime after flush")
         .that(s.getCurrentTime())
         .isEqualTo(startTime + 60000);
@@ -128,7 +130,7 @@ public class ActivityControllerTest {
 
   @Test
   @LooperMode(LEGACY)
-  @Config(maxSdk = Baklava.SDK_INT)
+  @Config(maxSdk = BAKLAVA)
   public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() {
     ShadowLooper.unPauseMainLooper();
     controller.create();

@@ -26,6 +26,7 @@ import static android.graphics.PathIterator.VERB_DONE;
 import static android.graphics.PathIterator.VERB_LINE;
 import static android.graphics.PathIterator.VERB_MOVE;
 import static android.graphics.PathIterator.VERB_QUAD;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -40,10 +41,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-import org.robolectric.versioning.AndroidVersions.U;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(minSdk = U.SDK_INT)
+@Config(minSdk = UPSIDE_DOWN_CAKE)
 public class ShadowNativePathIteratorTest {
 
   private Path mPath;
@@ -172,7 +172,7 @@ public class ShadowNativePathIteratorTest {
     assertEquals(PathIterator.VERB_DONE, segment.getVerb());
   }
 
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   @Test
   public void testIterable() {
     mPath.lineTo(100f, 200f);
@@ -246,7 +246,7 @@ public class ShadowNativePathIteratorTest {
     assertEquals(PathIterator.VERB_DONE, iterator.next().getVerb());
   }
 
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   @Test
   public void testConic() {
     mPath.conicTo(100f, 200f, 300f, 400f, 2f);
@@ -332,7 +332,7 @@ public class ShadowNativePathIteratorTest {
     assertEquals(PathIterator.VERB_DONE, iterator.next().getVerb());
   }
 
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   @Test
   public void testPathModification() {
     mPath.lineTo(100f, 200f);
@@ -391,7 +391,7 @@ public class ShadowNativePathIteratorTest {
     }
   }
 
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   @Test
   public void testRecreation() {
     mPath.moveTo(10f, 10f);

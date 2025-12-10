@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.same;
@@ -17,6 +18,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.NfcAntennaInfo;
 import android.nfc.Tag;
 import android.os.Build;
+import android.os.Bundle;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Collections;
 import org.junit.Before;
@@ -26,7 +28,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.V;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowNfcAdapterTest {
@@ -228,6 +229,47 @@ public class ShadowNfcAdapterTest {
   }
 
   @Test
+  public void getReaderModeExtras_beforeEnableReaderMode_shouldReturnNull() {
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+
+    assertThat(shadowOf(adapter).getReaderModeExtras()).isNull();
+  }
+
+  @Test
+  public void getReaderModeExtras_afterEnableReaderMode_shouldReturnExtras() {
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+    NfcAdapter.ReaderCallback callback = mock(NfcAdapter.ReaderCallback.class);
+    Bundle extras = new Bundle();
+    extras.putByteArray("test", new byte[] {0x01, 0x02});
+    adapter.enableReaderMode(
+        activity,
+        callback,
+        NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+        extras);
+
+    assertThat(shadowOf(adapter).getReaderModeExtras()).isEqualTo(extras);
+  }
+
+  @Test
+  public void getReaderModeExtras_afterDisableReaderMode_shouldReturnNull() {
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+    NfcAdapter.ReaderCallback callback = mock(NfcAdapter.ReaderCallback.class);
+    Bundle extras = new Bundle();
+    extras.putByteArray("test", new byte[] {0x01, 0x02});
+    adapter.enableReaderMode(
+        activity,
+        callback,
+        NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+        extras);
+    adapter.disableReaderMode(activity);
+
+    assertThat(shadowOf(adapter).getReaderModeExtras()).isNull();
+  }
+
+  @Test
   public void dispatchTagDiscovered_shouldDispatchTagToCallback() {
     final Activity activity = Robolectric.setupActivity(Activity.class);
     NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
@@ -262,7 +304,7 @@ public class ShadowNfcAdapterTest {
   }
 
   @Test
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = VANILLA_ICE_CREAM)
   public void isObserveModeSupported_shouldReturnSupportedState() {
     final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(context);
     final NfcAdapterVReflector adapterReflector = reflector(NfcAdapterVReflector.class, adapter);
@@ -276,7 +318,7 @@ public class ShadowNfcAdapterTest {
   }
 
   @Test
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = VANILLA_ICE_CREAM)
   public void isObserveModeEnabled_shouldReturnEnabledState() {
     final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(context);
     final NfcAdapterVReflector adapterReflector = reflector(NfcAdapterVReflector.class, adapter);
@@ -291,7 +333,7 @@ public class ShadowNfcAdapterTest {
   }
 
   @Test
-  @Config(minSdk = V.SDK_INT)
+  @Config(minSdk = VANILLA_ICE_CREAM)
   public void setObserveModeEnabled_notSupported_doesNothing() {
     final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(context);
     final NfcAdapterVReflector adapterReflector = reflector(NfcAdapterVReflector.class, adapter);

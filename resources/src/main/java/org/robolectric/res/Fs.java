@@ -25,7 +25,6 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
-import org.robolectric.util.Util;
 
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public abstract class Fs {
@@ -104,7 +103,9 @@ public abstract class Fs {
   }
 
   public static byte[] getBytes(Path path) throws IOException {
-    return Util.readBytes(getInputStream(path));
+    try (InputStream in = getInputStream(path)) {
+      return in.readAllBytes();
+    }
   }
 
   public static Path[] listFiles(Path path) throws IOException {

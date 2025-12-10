@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -10,6 +11,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static java.util.Objects.requireNonNull;
 
 import android.accounts.IAccountManager;
@@ -24,13 +26,13 @@ import android.app.ambientcontext.IAmbientContextManager;
 import android.app.job.IJobScheduler;
 import android.app.role.IRoleManager;
 import android.app.slice.ISliceManager;
+import android.app.supervision.ISupervisionManager;
 import android.app.timedetector.ITimeDetectorService;
 import android.app.timezonedetector.ITimeZoneDetectorService;
 import android.app.trust.ITrustManager;
 import android.app.usage.IStorageStatsManager;
 import android.app.usage.IUsageStatsManager;
 import android.app.wearable.IWearableSensingManager;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.IBluetooth;
 import android.bluetooth.IBluetoothManager;
 import android.companion.ICompanionDeviceManager;
@@ -56,6 +58,7 @@ import android.location.ICountryDetector;
 import android.location.ILocationManager;
 import android.media.IAudioService;
 import android.media.IMediaRouterService;
+import android.media.metrics.IMediaMetricsManager;
 import android.media.session.ISessionManager;
 import android.net.IConnectivityManager;
 import android.net.IIpSecService;
@@ -73,7 +76,6 @@ import android.net.wifi.rtt.IWifiRttManager;
 import android.nfc.INfcAdapter;
 import android.os.BatteryStats;
 import android.os.Binder;
-import android.os.BluetoothServiceManager;
 import android.os.IBatteryPropertiesRegistrar;
 import android.os.IBinder;
 import android.os.IDumpstate;
@@ -86,8 +88,12 @@ import android.os.ServiceManager;
 import android.os.storage.IStorageManager;
 import android.permission.ILegacyPermissionManager;
 import android.permission.IPermissionManager;
+import android.ranging.IRangingAdapter;
 import android.safetycenter.ISafetyCenterManager;
 import android.security.IFileIntegrityService;
+import android.security.advancedprotection.IAdvancedProtectionService;
+import android.security.authenticationpolicy.IAuthenticationPolicyService;
+import android.security.intrusiondetection.IIntrusionDetectionService;
 import android.speech.IRecognitionServiceManager;
 import android.uwb.IUwbAdapter;
 import android.view.IWindowManager;
@@ -115,7 +121,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link ServiceManager}. */
 @SuppressWarnings("NewApi")
@@ -191,7 +196,16 @@ public class ShadowServiceManager {
     private IInterface createBinderImplementation() {
       switch (binderType) {
         case NULL_PROXY:
-          return ReflectionHelpers.createNullProxy(clazz);
+          // This creates a proxy that returns null or zero for all methods, with the exception of
+          // asBinder(), which returns the cached binder.
+          return ReflectionHelpers.createDelegatingProxy(
+              clazz,
+              new Object() {
+                @SuppressWarnings("unused")
+                IBinder asBinder() {
+                  return cachedBinder;
+                }
+              });
         case DEEP_PROXY:
           return ReflectionHelpers.createDeepProxy(clazz);
         case DELEGATING_PROXY:
@@ -201,22 +215,12 @@ public class ShadowServiceManager {
       }
       throw new IllegalStateException("unrecognized binder type " + binderType);
     }
-  }
 
-  private static String findBlueToothServiceManagerName() {
-    final String bluetoothServiceManager;
-    if (ReflectionHelpers.hasField(BluetoothAdapter.class, "BLUETOOTH_MANAGER_SERVICE")) {
-      bluetoothServiceManager =
-          ReflectionHelpers.getStaticField(BluetoothAdapter.class, "BLUETOOTH_MANAGER_SERVICE");
-    } else {
-      bluetoothServiceManager = BluetoothServiceManager.BLUETOOTH_MANAGER_SERVICE;
+    void reset() {
+      if (delegate instanceof ResettableService) {
+        ((ResettableService) delegate).reset();
+      }
     }
-    if (bluetoothServiceManager == null) {
-      throw new RuntimeException(
-          "The storage location of the name of the BLUETOOTH_MANAGER_SERVICE"
-              + "has changed in framework code, time to update ShadowServiceManager");
-    }
-    return bluetoothServiceManager;
   }
 
   private static Map<String, BinderService> buildBinderServicesMap() {
@@ -250,12 +254,24 @@ public class ShadowServiceManager {
     addBinderService(binderServices, Context.NFC_SERVICE, INfcAdapter.class, BinderType.DEEP_PROXY);
     addBinderService(binderServices, Context.USER_SERVICE, IUserManager.class);
 
-    addBinderService(
-        binderServices,
-        findBlueToothServiceManagerName(),
-        IBluetoothManager.class,
-        BinderType.DELEGATING_PROXY,
-        IBluetoothManagerDelegates.createDelegate());
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      // use the android-generated 'Default' stub implementation of the IBluetoothManager system
+      // service. The advantage of doing this is it can be shadowed to add functionality.
+      // See ShadowIBluetoothManager
+      addBinderService(
+          binderServices,
+          "bluetooth_manager",
+          IBluetoothManager.class,
+          BinderType.CONCRETE,
+          new IBluetoothManager.Default());
+    } else {
+      addBinderService(
+          binderServices,
+          "bluetooth_manager",
+          IBluetoothManager.class,
+          BinderType.DELEGATING_PROXY,
+          new IBluetoothManagerDelegateS());
+    }
 
     addBinderService(binderServices, Context.APP_OPS_SERVICE, IAppOpsService.class);
     addBinderService(binderServices, "batteryproperties", IBatteryPropertiesRegistrar.class);
@@ -347,6 +363,7 @@ public class ShadowServiceManager {
           binderServices, Context.TRANSLATION_MANAGER_SERVICE, ITranslationManager.class);
       addBinderService(binderServices, Context.SENSOR_PRIVACY_SERVICE, ISensorPrivacyManager.class);
       addBinderService(binderServices, Context.VPN_MANAGEMENT_SERVICE, IVpnManager.class);
+      addBinderService(binderServices, Context.MEDIA_METRICS_SERVICE, IMediaMetricsManager.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= TIRAMISU) {
       addBinderService(
@@ -361,7 +378,7 @@ public class ShadowServiceManager {
       addBinderService(
           binderServices, Context.WEARABLE_SENSING_SERVICE, IWearableSensingManager.class);
     }
-    if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM) {
       // TODO: replace strings with references once compiling against V
       addBinderService(
           binderServices,
@@ -379,6 +396,23 @@ public class ShadowServiceManager {
           "protolog_configuration" /* Context.PROTOLOG_CONFIGURATION_SERVICE, */,
           "com.android.internal.protolog.ProtoLogConfigurationService"
           /* new ProtoLogConfigurationServiceImpl.class */ );
+    }
+    if (RuntimeEnvironment.getApiLevel() >= BAKLAVA) {
+      addBinderService(
+          binderServices, Context.ADVANCED_PROTECTION_SERVICE, IAdvancedProtectionService.class);
+      addBinderService(
+          binderServices, Context.INTRUSION_DETECTION_SERVICE, IIntrusionDetectionService.class);
+      addBinderService(binderServices, Context.SUPERVISION_SERVICE, ISupervisionManager.class);
+      addBinderService(
+          binderServices,
+          Context.AUTHENTICATION_POLICY_SERVICE,
+          IAuthenticationPolicyService.class);
+      addBinderService(
+          binderServices,
+          Context.RANGING_SERVICE,
+          IRangingAdapter.class,
+          BinderType.CONCRETE,
+          new FakeRangingAdapter());
     }
 
     return binderServices;
@@ -574,5 +608,13 @@ public class ShadowServiceManager {
     unavailableServices.clear();
     waitingServices.clear();
     declaredServices.clear();
+    for (BinderService service : binderServices.values()) {
+      service.reset();
+    }
+  }
+
+  /** Fake services that store stateshould implement this to reset their state between tests. */
+  interface ResettableService {
+    void reset();
   }
 }

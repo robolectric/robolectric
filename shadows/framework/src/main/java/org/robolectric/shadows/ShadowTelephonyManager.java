@@ -83,8 +83,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link TelephonyManager}. */
 @Implements(TelephonyManager.class)
@@ -172,8 +170,8 @@ public class ShadowTelephonyManager {
       Collections.synchronizedMap(new LinkedHashMap<>());
   private static final Map<Integer, String> simCountryIsoMap =
       Collections.synchronizedMap(new LinkedHashMap<>());
-  private int simCarrierId;
-  private int simSpecificCarrierId;
+  private int simCarrierId = TelephonyManager.UNKNOWN_CARRIER_ID;
+  private int simSpecificCarrierId = TelephonyManager.UNKNOWN_CARRIER_ID;
   private CharSequence simCarrierIdName;
   private int carrierIdFromSimMccMnc;
   private String subscriberId;
@@ -505,12 +503,12 @@ public class ShadowTelephonyManager {
     deviceSoftwareVersion = newDeviceSoftwareVersion;
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   public void setNetworkOperatorName(String networkOperatorName) {
     this.networkOperatorName = networkOperatorName;
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   public void setNetworkOperatorNameForPhone(
       /* Ignored */ int phoneId, String networkOperatorName) {
     setNetworkOperatorName(networkOperatorName);
@@ -666,12 +664,12 @@ public class ShadowTelephonyManager {
     return simOperatorName;
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   public void setSimOperatorName(String simOperatorName) {
     this.simOperatorName = simOperatorName;
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   public void setSimOperatorNameForPhone(/* Ignored */ int phoneId, String name) {
     setSimOperatorName(name);
   }
@@ -693,8 +691,19 @@ public class ShadowTelephonyManager {
    */
   @Implementation
   protected String getSimCountryIso() {
-    String simCountryIso = simCountryIsoMap.get(/* subId= */ 0);
-    return simCountryIso == null ? simCountryIso : Ascii.toLowerCase(simCountryIso);
+    String simCountryIso;
+    if (VERSION.SDK_INT < N) {
+      simCountryIso = simCountryIsoMap.get(0);
+    } else {
+      int subId = getSubscriptionIdInternal();
+      simCountryIso = simCountryIsoMap.get(getSubscriptionIdInternal());
+      if (simCountryIso == null && subId == SubscriptionManager.getDefaultSubscriptionId()) {
+        // Previously this shadow unconditionally returns the country set on subId 0  (which
+        // defaults to "" instead of null), even if the default subId is not 0.
+        return "";
+      }
+    }
+    return simCountryIso == null ? null : Ascii.toLowerCase(simCountryIso);
   }
 
   @Implementation(minSdk = N, maxSdk = Q)
@@ -705,7 +714,7 @@ public class ShadowTelephonyManager {
 
   @Implementation
   public void setSimCountryIso(String simCountryIso) {
-    setSimCountryIso(/* subId= */ 0, simCountryIso);
+    setSimCountryIso(getSubscriptionIdInternal(), simCountryIso);
   }
 
   /** Sets the {@code simCountryIso} for the given {@code subId}. */
@@ -832,12 +841,12 @@ public class ShadowTelephonyManager {
     return phoneType;
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   public void setPhoneType(int phoneType) {
     this.phoneType = phoneType;
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   public void setPhoneType(/* Ignored */ int phoneId, int type) {
     setPhoneType(type);
   }
@@ -1449,6 +1458,22 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #getSubscriberId()}. */
   public void setSubscriberId(String subscriberId) {
     this.subscriberId = subscriberId;
+  }
+
+  private int getSubscriptionIdInternal() {
+    if (VERSION.SDK_INT < R) {
+      return 0;
+    }
+    if (realTelephonyManager == null) {
+      // Some existing tests calls new ShadowTelephonyManager() directly leaving fields
+      // uninitialized.
+      return 0;
+    }
+    int subId = realTelephonyManager.getSubscriptionId();
+    if (subId == SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+      return 0;
+    }
+    return subId;
   }
 
   @Implementation(minSdk = R)

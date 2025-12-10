@@ -87,20 +87,20 @@ public class ShadowContextWrapper {
   }
 
   /**
-   * Consumes the most recent {@code Intent} started by {@link
+   * Consumes the oldest {@code Intent} started by {@link
    * android.content.Context#startService(android.content.Intent)} and returns it.
    *
-   * @return the most recently started {@code Intent}
+   * @return the oldest started {@code Intent}
    */
   public Intent getNextStartedService() {
     return getShadowInstrumentation().getNextStartedService();
   }
 
   /**
-   * Returns the most recent {@code Intent} started by {@link
+   * Returns the oldest {@code Intent} started by {@link
    * android.content.Context#startService(android.content.Intent)} without consuming it.
    *
-   * @return the most recently started {@code Intent}
+   * @return the oldest started {@code Intent}
    */
   public Intent peekNextStartedService() {
     return getShadowInstrumentation().peekNextStartedService();

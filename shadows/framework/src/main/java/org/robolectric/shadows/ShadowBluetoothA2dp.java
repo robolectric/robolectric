@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.bluetooth.BluetoothA2dp;
@@ -29,8 +31,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions;
-import org.robolectric.versioning.AndroidVersions.Baklava;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow of {@link BluetoothA2dp}. */
 @Implements(BluetoothA2dp.class)
@@ -219,7 +219,7 @@ public class ShadowBluetoothA2dp {
     return false; // never used since less than minSdk of R.
   }
 
-  @Implementation(minSdk = R, maxSdk = V.SDK_INT, methodName = "verifyDeviceNotNull")
+  @Implementation(minSdk = R, maxSdk = VANILLA_ICE_CREAM, methodName = "verifyDeviceNotNull")
   protected void verifyDeviceNotNull(BluetoothDevice device, String methodName) {
     if (VERIFY_DEVICE_NOT_NULL_IS_STATIC) {
       reflector(BluetoothA2dpReflector.class).verifyDeviceNotNull(device, methodName);
@@ -228,7 +228,7 @@ public class ShadowBluetoothA2dp {
     }
   }
 
-  @Implementation(minSdk = Baklava.SDK_INT, methodName = "verifyDeviceNotNull")
+  @Implementation(minSdk = BAKLAVA, methodName = "verifyDeviceNotNull")
   protected static void verifyDeviceNotNullBaklava(BluetoothDevice device, String methodName) {
     reflector(BluetoothA2dpReflector.class).verifyDeviceNotNull(device, methodName);
   }

@@ -29,7 +29,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link InputManager} */
 @Implements(InputManager.class)
@@ -91,12 +90,7 @@ public class ShadowInputManager {
   public void addInputDevice(InputDevice inputDevice) {
     if (realInputManager.getInputDevice(inputDevice.getId()) == null) {
       // Add the input device to the list of input devices.
-      SparseArray<InputDevice> inputDevices =
-          RuntimeEnvironment.getApiLevel() < UPSIDE_DOWN_CAKE
-              ? getInputDevices()
-              : ((ShadowInputManagerGlobal) Shadow.extract(InputManagerGlobal.getInstance()))
-                  .getInputDevices();
-
+      SparseArray<InputDevice> inputDevices = getAllInputDevices();
       inputDevices.put(inputDevice.getId(), inputDevice);
     }
   }
@@ -110,6 +104,23 @@ public class ShadowInputManager {
     if (keyCodes != null) {
       addDeviceKeys(deviceId, keyCodes);
     }
+  }
+
+  /**
+   * Removes an {@link InputDevice} from the shadowed {@link InputManager}.
+   *
+   * @param id The ID of the device to remove.
+   */
+  public void removeInputDevice(int id) {
+    SparseArray<InputDevice> inputDevices = getAllInputDevices();
+    inputDevices.remove(id);
+  }
+
+  private SparseArray<InputDevice> getAllInputDevices() {
+    return RuntimeEnvironment.getApiLevel() < UPSIDE_DOWN_CAKE
+        ? getInputDevices()
+        : ((ShadowInputManagerGlobal) Shadow.extract(InputManagerGlobal.getInstance()))
+            .getInputDevices();
   }
 
   /**
@@ -154,7 +165,7 @@ public class ShadowInputManager {
 
   @Resetter
   public static void reset() {
-    if (SDK_INT < U.SDK_INT) {
+    if (SDK_INT < UPSIDE_DOWN_CAKE) {
       ReflectionHelpers.setStaticField(InputManager.class, "sInstance", null);
     }
     deviceKeys.clear();

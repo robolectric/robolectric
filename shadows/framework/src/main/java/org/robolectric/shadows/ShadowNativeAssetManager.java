@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetManager;
@@ -17,15 +18,15 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.PerfStatsCollector;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.Direct.DirectFormat;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.V;
+import org.robolectric.util.reflector.Static;
 
 @Implements(
     value = AssetManager.class,
-    minSdk = V.SDK_INT,
+    minSdk = VANILLA_ICE_CREAM,
     callNativeMethodsByDefault = true,
     shadowPicker = ShadowAssetManager.Picker.class)
 public class ShadowNativeAssetManager extends ShadowAssetManager {
@@ -98,18 +99,17 @@ public class ShadowNativeAssetManager extends ShadowAssetManager {
                     parser != null
                         ? reflector(XmlBlockParserReflector.class, parser).getParseState()
                         : 0;
-                ReflectionHelpers.callStaticMethod(
-                    AssetManager.class,
-                    Shadow.directNativeMethodName(
-                        AssetManager.class.getName(), "nativeApplyStyleWithArray"),
-                    ClassParameter.from(long.class, assetManagerReflector.getObject()),
-                    ClassParameter.from(long.class, themePtr),
-                    ClassParameter.from(int.class, defStyleAttr),
-                    ClassParameter.from(int.class, defStyleRes),
-                    ClassParameter.from(long.class, xmlParserPtr),
-                    ClassParameter.from(int[].class, inAttrs),
-                    ClassParameter.from(int[].class, outValues),
-                    ClassParameter.from(int[].class, outIndices));
+
+                reflector(AssetManagerDirectReflector.class)
+                    .nativeApplyStyleWithArray(
+                        assetManagerReflector.getObject(),
+                        themePtr,
+                        defStyleAttr,
+                        defStyleRes,
+                        xmlParserPtr,
+                        inAttrs,
+                        outValues,
+                        outIndices);
               }
             });
   }
@@ -121,20 +121,33 @@ public class ShadowNativeAssetManager extends ShadowAssetManager {
         .measure(
             "native nativeGetResourceValue",
             () ->
-                ReflectionHelpers.callStaticMethod(
-                    AssetManager.class,
-                    Shadow.directNativeMethodName(
-                        AssetManager.class.getName(), "nativeGetResourceValue"),
-                    ClassParameter.from(long.class, ptr),
-                    ClassParameter.from(int.class, resid),
-                    ClassParameter.from(short.class, density),
-                    ClassParameter.from(TypedValue.class, typed_value),
-                    ClassParameter.from(boolean.class, resolve_references)));
+                reflector(AssetManagerDirectReflector.class)
+                    .nativeGetResourceValue(ptr, resid, density, typed_value, resolve_references));
   }
 
   @ForType(XmlBlock.Parser.class)
   interface XmlBlockParserReflector {
     @Accessor("mParseState")
     long getParseState();
+  }
+
+  @ForType(AssetManager.class)
+  interface AssetManagerDirectReflector {
+    @Direct(format = DirectFormat.NATIVE)
+    @Static
+    int nativeGetResourceValue(
+        long ptr, int resid, short density, TypedValue typedValue, boolean resolveReferences);
+
+    @Direct(format = DirectFormat.NATIVE)
+    @Static
+    void nativeApplyStyleWithArray(
+        long ptr,
+        long themePtr,
+        int defStyleAttr,
+        int defStyleRes,
+        long xmlParserPtr,
+        int[] inAttrs,
+        int[] outValues,
+        int[] outIndices);
   }
 }

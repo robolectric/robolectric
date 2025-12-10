@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -45,6 +46,8 @@ public class ShadowWallpaperManager {
   private static Bitmap homeScreenImage = null;
   private static Rect lockScreenVisibleCropHint = null;
   private static Rect homeScreenVisibleCropHint = null;
+  private static boolean lockScreenAllowBackup = false;
+  private static boolean homeScreenAllowBackup = false;
   private static boolean isWallpaperAllowed = true;
   private static boolean isWallpaperSupported = true;
   private static WallpaperInfo wallpaperInfo = null;
@@ -112,7 +115,7 @@ public class ShadowWallpaperManager {
    *
    * @param fullImage the bitmap image to be cached in the memory
    * @param visibleCropHint the visible crop hint to be cached in the memory
-   * @param allowBackup not used
+   * @param allowBackup whether the wallpaper is backup eligible
    * @param which either {@link WallpaperManager#FLAG_LOCK} or {WallpaperManager#FLAG_SYSTEM}
    * @return 0 if fails to cache. Otherwise, 1.
    */
@@ -128,6 +131,7 @@ public class ShadowWallpaperManager {
           ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM)
               ? -1
               : wallpaperId.incrementAndGet();
+      lockScreenAllowBackup = allowBackup;
       wallpaperInfo = null;
     }
 
@@ -135,6 +139,7 @@ public class ShadowWallpaperManager {
       homeScreenImage = fullImage;
       homeScreenVisibleCropHint = visibleCropHint;
       homeScreenId = wallpaperId.incrementAndGet();
+      homeScreenAllowBackup = allowBackup;
       wallpaperInfo = null;
     }
     return 1;
@@ -190,6 +195,30 @@ public class ShadowWallpaperManager {
   }
 
   /**
+   * Gets a wallpaper file associated with {@code which}.
+   *
+   * @param which either {@link WallpaperManager#FLAG_LOCK} or {WallpaperManager#FLAG_SYSTEM}
+   * @param getCropped not used.
+   * @return An open, readable file descriptor to the requested wallpaper image file; {@code null}
+   *     if no such wallpaper is configured.
+   */
+  @Implementation(minSdk = BAKLAVA)
+  protected ParcelFileDescriptor getWallpaperFile(int which, boolean getCropped) {
+    return getWallpaperFile(which);
+  }
+
+  /** Returns whether the current wallpaper is backup eligible. */
+  @Implementation(minSdk = BAKLAVA)
+  protected boolean isWallpaperBackupEligible(int which) {
+    if (which == WallpaperManager.FLAG_LOCK) {
+      return lockScreenAllowBackup;
+    } else if (which == WallpaperManager.FLAG_SYSTEM) {
+      return homeScreenAllowBackup;
+    }
+    return false;
+  }
+
+  /**
    * Returns the id of the current wallpaper associated with {@code which}. If there is no such
    * wallpaper configured, returns a negative number.
    */
@@ -226,7 +255,7 @@ public class ShadowWallpaperManager {
    *
    * @param bitmapData the input stream which contains a bitmap image to be cached in the memory
    * @param visibleCropHint not used
-   * @param allowBackup not used
+   * @param allowBackup whether the wallpaper is backup eligible
    * @param which either {@link WallpaperManager#FLAG_LOCK} or {WallpaperManager#FLAG_SYSTEM}
    * @return 0 if fails to cache. Otherwise, 1.
    */
@@ -239,11 +268,13 @@ public class ShadowWallpaperManager {
     if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
       lockScreenImage = BitmapFactory.decodeStream(bitmapData);
       lockScreenVisibleCropHint = visibleCropHint;
+      lockScreenAllowBackup = allowBackup;
     }
 
     if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
       homeScreenImage = BitmapFactory.decodeStream(bitmapData);
       homeScreenVisibleCropHint = visibleCropHint;
+      homeScreenAllowBackup = allowBackup;
     }
     return 1;
   }

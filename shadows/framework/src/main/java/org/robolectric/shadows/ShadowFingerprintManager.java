@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -30,7 +31,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Provides testing APIs for {@link FingerprintManager} */
 @SuppressWarnings("NewApi")
-@Implements(value = FingerprintManager.class, minSdk = M)
+@Implements(value = FingerprintManager.class, minSdk = M, maxSdk = BAKLAVA, isInAndroidSdk = false)
 public class ShadowFingerprintManager {
 
   private static final String TAG = "ShadowFingerprintManager";

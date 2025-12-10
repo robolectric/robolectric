@@ -6,7 +6,6 @@ import android.content.res.Resources;
 import android.util.DisplayMetrics;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.robolectric.res.Qualifiers;
 import org.robolectric.shadows.ShadowDateUtils;
 import org.robolectric.shadows.ShadowDisplayManager;
 import org.robolectric.shadows.ShadowDisplayManagerGlobal;
@@ -99,9 +98,7 @@ public class Bootstrap {
             "Cannot specify conflicting platform version in qualifiers: \"" + qualifiersStr + "\"");
       }
 
-      Qualifiers qualifiers = Qualifiers.parse(qualifiersStr);
-
-      DeviceConfig.applyToConfiguration(qualifiers, apiLevel, configuration, displayMetrics);
+      DeviceConfig.applyToConfiguration(qualifiersStr, configuration, displayMetrics);
     }
 
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);

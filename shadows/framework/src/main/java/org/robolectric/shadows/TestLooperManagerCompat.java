@@ -1,6 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.shadows.ShadowPausedMessageQueue.convertWhenToScheduledTime;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Looper;
@@ -13,8 +16,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowMessage.MessageReflector;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.Baklava;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /**
  * Compat class that supports the {@link TestLooperManager} Baklava+ functionality on older Android
@@ -40,7 +41,7 @@ final class TestLooperManagerCompat implements AutoCloseable {
   }
 
   static TestLooperManagerCompat acquire(Looper looper) {
-    if (getApiLevel() >= Baklava.SDK_INT) {
+    if (getApiLevel() >= BAKLAVA) {
       TestLooperManager testLooperManager = new TestLooperManager(looper);
       return new TestLooperManagerCompat(testLooperManager);
     } else {
@@ -110,16 +111,16 @@ final class TestLooperManagerCompat implements AutoCloseable {
         if (prevMsg != null) {
           reflector(MessageReflector.class, prevMsg).setNext(nextMsg);
           if (reflector(MessageReflector.class, prevMsg).getNext() == null
-              && getApiLevel() >= V.SDK_INT) {
+              && getApiLevel() >= VANILLA_ICE_CREAM) {
             queueReflector.setLast(prevMsg);
           }
         } else {
           queueReflector.setMessages(nextMsg);
-          if (nextMsg == null && getApiLevel() >= V.SDK_INT) {
+          if (nextMsg == null && getApiLevel() >= VANILLA_ICE_CREAM) {
             queueReflector.setLast(null);
           }
         }
-        if (msg.isAsynchronous() && getApiLevel() >= V.SDK_INT) {
+        if (msg.isAsynchronous() && getApiLevel() >= VANILLA_ICE_CREAM) {
           queueReflector.setAsyncMessageCount(queueReflector.getAsyncMessageCount() - 1);
         }
       }
@@ -136,6 +137,44 @@ final class TestLooperManagerCompat implements AutoCloseable {
     if (delegate != null) {
       delegate.release();
     }
+  }
+
+  public Long peekTailWhen() {
+    if (delegate != null && getApiLevel() > BAKLAVA) {
+      return reflector(TestLooperManagerReflector.class, delegate).peekTailWhen();
+    } else {
+      return legacyPeekTailWhen(getQueue());
+    }
+  }
+
+  private MessageQueue getQueue() {
+    if (delegate != null) {
+      return delegate.getMessageQueue();
+    } else {
+      return queue;
+    }
+  }
+
+  private static Long legacyPeekTailWhen(MessageQueue queue) {
+    LegacyMessageQueueReflector queueReflector =
+        reflector(LegacyMessageQueueReflector.class, queue);
+    Long lastWhen = null;
+
+    synchronized (queue) {
+      Message next = queueReflector.getMessages();
+      while (next != null) {
+        if (next.getTarget() != null) {
+          lastWhen = shadowOfMsg(next).getWhen();
+        }
+        next = shadowOfMsg(next).internalGetNext();
+      }
+    }
+    return lastWhen == null ? null : convertWhenToScheduledTime(lastWhen);
+  }
+
+  @ForType(TestLooperManager.class)
+  private interface TestLooperManagerReflector {
+    Long peekTailWhen();
   }
 
   @ForType(MessageQueue.class)

@@ -20,6 +20,7 @@ import android.app.AppOpsManager.OnOpChangedListener;
 import android.app.AppOpsManager.OpEntry;
 import android.app.AppOpsManager.OpEventProxyInfo;
 import android.app.AppOpsManager.PackageOps;
+import android.app.AsyncNotedAppOp;
 import android.app.SyncNotedAppOp;
 import android.content.AttributionSource;
 import android.content.Context;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -62,6 +64,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link AppOpsManager}. */
 @Implements(AppOpsManager.class)
@@ -579,6 +582,39 @@ public class ShadowAppOpsManager {
     keys.add(Key.create(null, packageName, op));
   }
 
+  /**
+   * Simulates an asynchronous operation being noted.
+   *
+   * <p>If an {@link AppOpsManager.OnOpNotedCallback} is registered and is not set to ignore async
+   * events, its {@link AppOpsManager.OnOpNotedCallback#onAsyncNoted} method will be invoked on the
+   * {@link AppOpsManager.OnOpNotedCallback#mAsyncExecutor} executor.
+   *
+   * @param asyncOp The {@link AsyncNotedAppOp} to simulate.
+   */
+  public void simulateAsyncOpNoted(AsyncNotedAppOp asyncOp) {
+    AppOpsManagerReflector appOpsManagerReflector = reflector(AppOpsManagerReflector.class, null);
+    Object lock = appOpsManagerReflector.getLock();
+    synchronized (lock) {
+      AppOpsManager.OnOpNotedCallback callback = appOpsManagerReflector.getOnOpNotedCallback();
+      boolean sIgnoreAsyncNotedCallback = false;
+      // The sIgnoreAsyncNotedCallback field was introduced in API level 36 (BAKLAVA).
+      if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.BAKLAVA) {
+        sIgnoreAsyncNotedCallback = appOpsManagerReflector.getIgnoreAsyncNotedCallback();
+      }
+
+      if (callback != null && !sIgnoreAsyncNotedCallback) {
+        Executor executor =
+            reflector(OnOpNotedCallbackReflector.class, callback).getAsyncExecutor();
+        if (executor != null) {
+          executor.execute(
+              () -> {
+                callback.onAsyncNoted(asyncOp);
+              });
+        }
+      }
+    }
+  }
+
   @Implementation
   protected void stopWatchingMode(OnOpChangedListener callback) {
     appOpListeners.remove(callback);
@@ -700,6 +736,27 @@ public class ShadowAppOpsManager {
     longRunningOp.clear();
     appOpListeners.clear();
     audioRestrictions.clear();
+  }
+
+  @ForType(AppOpsManager.OnOpNotedCallback.class)
+  interface OnOpNotedCallbackReflector {
+    @Accessor("mAsyncExecutor")
+    Executor getAsyncExecutor();
+  }
+
+  @ForType(AppOpsManager.class)
+  interface AppOpsManagerReflector {
+    @Static
+    @Accessor("sLock")
+    Object getLock();
+
+    @Static
+    @Accessor("sOnOpNotedCallback")
+    AppOpsManager.OnOpNotedCallback getOnOpNotedCallback();
+
+    @Static
+    @Accessor("sIgnoreAsyncNotedCallback")
+    boolean getIgnoreAsyncNotedCallback();
   }
 
   @ForType(className = "android.app.AppOpInfo")

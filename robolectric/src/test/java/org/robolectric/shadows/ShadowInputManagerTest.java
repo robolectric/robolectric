@@ -91,6 +91,16 @@ public class ShadowInputManagerTest {
     assertThat(inputDevice.hasKeys(100, 101, 102)).isEqualTo(new boolean[] {true, true, false});
   }
 
+  @Test
+  public void removeInputDevice() {
+    InputDevice inputDevice = createInputDevice(1);
+    shadowOf(inputManager).addInputDevice(inputDevice);
+    assertThat(inputManager.getInputDevice(1)).isNotNull();
+
+    shadowOf(inputManager).removeInputDevice(1);
+    assertThat(inputManager.getInputDevice(1)).isNull();
+  }
+
   private static InputDevice createInputDevice(int inputDeviceId) {
     if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
       // Use the Robolectric InputDeviceBuilder for U+.

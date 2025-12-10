@@ -8,6 +8,7 @@ import com.google.common.truth.Truth.assertWithMessage
 import java.util.ArrayList
 import java.util.Random
 import java.util.TreeMap
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import org.junit.Before
 import org.junit.Test
@@ -210,41 +211,45 @@ class SchedulerTest {
   @Test
   @Throws(Exception::class)
   fun remove_ShouldRemoveAllInstancesOfRunnableFromQueue() {
-    scheduler.post(TestRunnable())
-    val runnable = TestRunnable()
+    scheduler.post(Runnable {})
+    val wasRun = AtomicBoolean(false)
+    val runnable = Runnable { wasRun.set(true) }
     scheduler.post(runnable)
     scheduler.post(runnable)
     assertThat(scheduler.size()).isEqualTo(3)
     scheduler.remove(runnable)
     assertThat(scheduler.size()).isEqualTo(1)
     scheduler.advanceToLastPostedRunnable()
-    assertThat(runnable.wasRun).isFalse()
+    assertThat(wasRun.get()).isFalse()
   }
 
   @Test
   @Throws(Exception::class)
   fun reset_shouldUnPause() {
     scheduler.pause()
-    val runnable = TestRunnable()
+    val wasRun = AtomicBoolean(false)
+    val runnable = Runnable { wasRun.set(true) }
     scheduler.post(runnable)
-    assertThat(runnable.wasRun).isFalse()
+    assertThat(wasRun.get()).isFalse()
     scheduler.reset()
     scheduler.post(runnable)
-    assertThat(runnable.wasRun).isTrue()
+    assertThat(wasRun.get()).isTrue()
   }
 
   @Test
   @Throws(Exception::class)
   fun reset_shouldClearPendingRunnables() {
     scheduler.pause()
-    val runnable1 = TestRunnable()
+    val wasRun1 = AtomicBoolean(false)
+    val runnable1 = Runnable { wasRun1.set(true) }
     scheduler.post(runnable1)
-    assertThat(runnable1.wasRun).isFalse()
+    assertThat(wasRun1.get()).isFalse()
     scheduler.reset()
-    val runnable2 = TestRunnable()
+    val wasRun2 = AtomicBoolean(false)
+    val runnable2 = Runnable { wasRun2.set(true) }
     scheduler.post(runnable2)
-    assertThat(runnable1.wasRun).isFalse()
-    assertThat(runnable2.wasRun).isTrue()
+    assertThat(wasRun1.get()).isFalse()
+    assertThat(wasRun2.get()).isTrue()
   }
 
   @Test

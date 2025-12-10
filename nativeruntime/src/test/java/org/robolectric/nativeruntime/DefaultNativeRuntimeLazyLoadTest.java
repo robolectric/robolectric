@@ -1,5 +1,6 @@
 package org.robolectric.nativeruntime;
 
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.database.CursorWindow;
@@ -8,10 +9,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.versioning.AndroidVersions.U;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(minSdk = Config.OLDEST_SDK, maxSdk = U.SDK_INT)
+@Config(minSdk = Config.OLDEST_SDK, maxSdk = UPSIDE_DOWN_CAKE)
 public final class DefaultNativeRuntimeLazyLoadTest {
 
   /**

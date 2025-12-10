@@ -18,6 +18,7 @@ import java.util.Map;
 import javax.tools.JavaFileObject;
 import org.robolectric.annotation.processing.RobolectricProcessor;
 import org.robolectric.annotation.processing.Utils;
+import org.robolectric.versioning.VersionCalculator.SdkInfo;
 
 public final class SingleClassSubject extends Subject {
 
@@ -26,9 +27,9 @@ public final class SingleClassSubject extends Subject {
   }
 
   public static Subject.Factory<SingleClassSubject, String> singleClass(
-      Map<String, String> processorOpts, String sdkLocation, int sdkInt) {
+      Map<String, String> processorOpts, String sdkLocation, SdkInfo sdkInfo) {
     return (FailureMetadata failureMetadata, String subject) ->
-        new SingleClassSubject(failureMetadata, subject, processorOpts, sdkLocation, sdkInt);
+        new SingleClassSubject(failureMetadata, subject, processorOpts, sdkLocation, sdkInfo);
   }
 
   public static Subject.Factory<SingleClassSubject, String> singleClass(
@@ -46,7 +47,7 @@ public final class SingleClassSubject extends Subject {
 
   public SingleClassSubject(
       FailureMetadata failureMetadata, String subject, Map<String, String> processorOpts) {
-    this(failureMetadata, subject, processorOpts, null, -1);
+    this(failureMetadata, subject, processorOpts, null, null);
   }
 
   public SingleClassSubject(
@@ -54,7 +55,7 @@ public final class SingleClassSubject extends Subject {
       String subject,
       Map<String, String> processorOpts,
       String sdkLocation,
-      int sdkInt) {
+      SdkInfo sdkInfo) {
     super(failureMetadata, subject);
     source = JavaFileObjects.forResource(Utils.toResourcePath(subject));
     Map<String, String> opts = new HashMap<>(DEFAULT_OPTS);
@@ -62,7 +63,7 @@ public final class SingleClassSubject extends Subject {
     tester =
         assertAbout(javaSources())
             .that(ImmutableList.of(source, Utils.SHADOW_EXTRACTOR_SOURCE))
-            .processedWith(new RobolectricProcessor(opts, sdkLocation, sdkInt));
+            .processedWith(new RobolectricProcessor(opts, sdkLocation, sdkInfo));
   }
 
   public SuccessfulCompilationClause compilesWithoutError() {

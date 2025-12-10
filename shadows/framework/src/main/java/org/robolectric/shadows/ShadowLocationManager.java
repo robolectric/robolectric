@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.location.Criteria;
 import android.location.GnssAntennaInfo;
+import android.location.GnssCapabilities;
 import android.location.GnssMeasurementsEvent;
 import android.location.GnssStatus;
 import android.location.GpsStatus;
@@ -313,6 +314,8 @@ public class ShadowLocationManager {
   private int gnssYearOfHardware;
 
   private int gnssBatchSize;
+
+  private GnssCapabilities gnssCapabilities;
 
   public ShadowLocationManager() {
     // create default providers
@@ -1126,6 +1129,21 @@ public class ShadowLocationManager {
     for (GnssStatusCallbackTransport transport : transports) {
       transport.onStopped();
     }
+  }
+
+  /**
+   * Allows to set the {@link GnssCapabilities} returned by {@link
+   * LocationManager#getGnssCapabilities()}.
+   */
+  @RequiresApi(VERSION_CODES.R)
+  public void setGnssCapabilities(@Nullable GnssCapabilities gnssCapabilities) {
+    this.gnssCapabilities = gnssCapabilities;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.R)
+  @Nullable
+  protected GnssCapabilities getGnssCapabilities() {
+    return gnssCapabilities;
   }
 
   @Implementation(minSdk = VERSION_CODES.N)

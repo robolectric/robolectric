@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.graphics.SumPathEffect;
 import org.robolectric.annotation.Implementation;
@@ -8,7 +9,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.SumPathEffectNatives;
 import org.robolectric.shadows.ShadowNativeSumPathEffect.Picker;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link SumPathEffect} that is backed by native code */
 @Implements(
@@ -18,7 +18,7 @@ import org.robolectric.versioning.AndroidVersions.U;
     callNativeMethodsByDefault = true)
 public class ShadowNativeSumPathEffect {
 
-  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = O, maxSdk = UPSIDE_DOWN_CAKE)
   protected static long nativeCreate(long first, long second) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return SumPathEffectNatives.nativeCreate(first, second);

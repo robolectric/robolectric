@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 
@@ -15,7 +16,6 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.Statement;
 import org.robolectric.annotation.Config;
-import org.robolectric.versioning.AndroidVersions;
 
 @RunWith(RobolectricTestRunner.class)
 public final class ClassRuleInvocationTest {
@@ -76,13 +76,13 @@ public final class ClassRuleInvocationTest {
 
   // Make sure that the ClassRule is setup for other sandboxes.
   @Test
-  @Config(sdk = AndroidVersions.S.SDK_INT)
+  @Config(sdk = S)
   public void anotherSandboxTempFolder() throws IOException {
     assertNotNull(tempFolder.get());
   }
 
   @Test
-  @Config(sdk = AndroidVersions.S.SDK_INT)
+  @Config(sdk = S)
   public void anotherSandboxComparisonCount() throws IOException {
     assertThat(counter.get()).isEqualTo(3);
   }

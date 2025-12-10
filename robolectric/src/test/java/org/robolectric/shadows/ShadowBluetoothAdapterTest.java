@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.LinkedBlockingQueue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,7 +49,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Unit tests for {@link ShadowBluetoothAdapter} */
 @RunWith(AndroidJUnit4.class)
@@ -432,6 +430,36 @@ public class ShadowBluetoothAdapterTest {
     assertThat(remoteDevice2.getBondState()).isEqualTo(BluetoothDevice.BOND_NONE);
     shadowOf(remoteDevice1).setBondState(BluetoothDevice.BOND_BONDED);
     assertThat(remoteDevice2.getBondState()).isEqualTo(BluetoothDevice.BOND_BONDED);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void testGetRemoteDevice_shouldHavePublicAddressType() {
+    BluetoothDevice remoteDevice = bluetoothAdapter.getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(remoteDevice.getAddressType()).isEqualTo(BluetoothDevice.ADDRESS_TYPE_PUBLIC);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void testGetRemoteLeDevice_withSameAddressType_sameState() {
+    BluetoothDevice remoteDevice1 =
+        bluetoothAdapter.getRemoteLeDevice(MOCK_MAC_ADDRESS, BluetoothDevice.ADDRESS_TYPE_PUBLIC);
+    BluetoothDevice remoteDevice2 =
+        bluetoothAdapter.getRemoteLeDevice(MOCK_MAC_ADDRESS, BluetoothDevice.ADDRESS_TYPE_PUBLIC);
+
+    assertThat(remoteDevice1.getAddressType()).isEqualTo(remoteDevice2.getAddressType());
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void testGetRemoteLeDevice_withDifferentAddressType_differentState() {
+    BluetoothDevice remoteDevice1 =
+        bluetoothAdapter.getRemoteLeDevice(MOCK_MAC_ADDRESS, BluetoothDevice.ADDRESS_TYPE_PUBLIC);
+    BluetoothDevice remoteDevice2 =
+        bluetoothAdapter.getRemoteLeDevice(MOCK_MAC_ADDRESS, BluetoothDevice.ADDRESS_TYPE_RANDOM);
+
+    assertThat(remoteDevice1.getAddressType()).isNotEqualTo(remoteDevice2.getAddressType());
   }
 
   @Test
@@ -844,13 +872,13 @@ public class ShadowBluetoothAdapterTest {
         .isEqualTo(BluetoothStatusCodes.ERROR_BLUETOOTH_NOT_ENABLED);
   }
 
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   @Test
   public void getProfileProxy_serviceListenerInvoked() throws Exception {
     shadowOf((Application) getApplicationContext()).grantPermissions(permission.BLUETOOTH);
     bluetoothAdapter.enable();
-    LinkedBlockingQueue<Integer> profileQueue = new LinkedBlockingQueue<>();
-    LinkedBlockingQueue<BluetoothProfile> proxyQueue = new LinkedBlockingQueue<>();
+    List<Integer> profileQueue = new ArrayList<>();
+    List<BluetoothProfile> proxyQueue = new ArrayList<>();
     BluetoothProfile.ServiceListener listener =
         new ServiceListener() {
           @Override
@@ -869,11 +897,13 @@ public class ShadowBluetoothAdapterTest {
         .isTrue();
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThat(profileQueue.take()).isEqualTo(BluetoothProfile.HEADSET);
-    assertThat(proxyQueue.take()).isInstanceOf(BluetoothHeadset.class);
+    assertThat(profileQueue).hasSize(1);
+    assertThat(proxyQueue).hasSize(1);
+    assertThat(profileQueue.getFirst()).isEqualTo(BluetoothProfile.HEADSET);
+    assertThat(proxyQueue.getFirst()).isInstanceOf(BluetoothHeadset.class);
   }
 
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   @Test
   public void getProfileProxy_adapterDisabled_serviceListenerNotInvoked() {
     bluetoothAdapter.disable();
@@ -887,13 +917,13 @@ public class ShadowBluetoothAdapterTest {
     verify(listener, never()).onServiceConnected(anyInt(), any(BluetoothProfile.class));
   }
 
-  @Config(minSdk = U.SDK_INT)
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
   @Test
   public void disconnectProfileProxy_serviceListenerInvoked() throws Exception {
     shadowOf((Application) getApplicationContext()).grantPermissions(permission.BLUETOOTH);
     bluetoothAdapter.enable();
-    LinkedBlockingQueue<Integer> profileQueue = new LinkedBlockingQueue<>();
-    LinkedBlockingQueue<BluetoothHeadset> headsetProxies = new LinkedBlockingQueue<>();
+    List<Integer> profileQueue = new ArrayList<>();
+    List<BluetoothHeadset> headsetProxies = new ArrayList<>();
     BluetoothProfile.ServiceListener listener =
         new ServiceListener() {
           @Override
@@ -909,10 +939,10 @@ public class ShadowBluetoothAdapterTest {
 
     bluetoothAdapter.getProfileProxy(getApplicationContext(), listener, BluetoothProfile.HEADSET);
     shadowOf(Looper.getMainLooper()).idle();
-    bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, headsetProxies.take());
+    bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, headsetProxies.getFirst());
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThat(profileQueue.take()).isEqualTo(BluetoothProfile.HEADSET);
+    assertThat(profileQueue.getFirst()).isEqualTo(BluetoothProfile.HEADSET);
   }
 
   private PendingIntent createTestPendingIntent(Intent intent) {

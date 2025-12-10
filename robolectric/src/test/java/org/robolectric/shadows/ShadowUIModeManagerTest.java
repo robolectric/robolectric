@@ -307,7 +307,7 @@ public class ShadowUIModeManagerTest {
   @Config(minSdk = S)
   public void getProjectingPackages_projecting_returnsNotEmpty() {
     setPermissions(android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION);
-    uiModeManager.requestProjection(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE);
+    assertThat(uiModeManager.requestProjection(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE)).isTrue();
 
     assertThat(uiModeManager.getProjectingPackages(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE))
         .contains(RuntimeEnvironment.getApplication().getPackageName());
@@ -317,7 +317,7 @@ public class ShadowUIModeManagerTest {
   @Config(minSdk = S)
   public void getProjectingPackages_projecting_allTypes_returnsNotEmpty() {
     setPermissions(android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION);
-    uiModeManager.requestProjection(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE);
+    assertThat(uiModeManager.requestProjection(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE)).isTrue();
 
     assertThat(uiModeManager.getProjectingPackages(UiModeManager.PROJECTION_TYPE_ALL))
         .contains(RuntimeEnvironment.getApplication().getPackageName());

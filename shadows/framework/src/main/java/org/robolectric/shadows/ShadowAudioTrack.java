@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.media.AudioTrack.ERROR_DEAD_OBJECT;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -9,9 +10,11 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.annotation.RequiresApi;
 import android.media.AudioAttributes;
@@ -41,7 +44,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Implementation of a couple methods in {@link AudioTrack}. Only a couple methods are supported,
@@ -332,7 +334,7 @@ public class ShadowAudioTrack {
     return AudioTrack.SUCCESS;
   }
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = BAKLAVA)
   protected int native_setup(
       Object /*WeakReference<AudioTrack>*/ audioTrack,
       Object /*AudioAttributes*/ attributes,
@@ -355,6 +357,42 @@ public class ShadowAudioTrack {
     }
     setBufferSizeInFrames(buffSizeInBytes);
     return AudioTrack.SUCCESS;
+  }
+
+  @Implementation(minSdk = POST_BAKLAVA)
+  protected int native_setup(
+      Object /*WeakReference<AudioTrack>*/ audioTrack,
+      Object /*AudioAttributes*/ attributes,
+      int[] sampleRate,
+      int channelMask,
+      int channelIndexMask,
+      int audioFormat,
+      int buffSizeInBytes,
+      int mode,
+      int[] sessionId,
+      @Nonnull Parcel attributionSource,
+      long nativeAudioTrack,
+      boolean offload,
+      int encapsulationMode,
+      Object tunerConfiguration,
+      @Nonnull String opPackageName,
+      @Nonnull String codecProvenance) {
+    return native_setup(
+        audioTrack,
+        attributes,
+        sampleRate,
+        channelMask,
+        channelIndexMask,
+        audioFormat,
+        buffSizeInBytes,
+        mode,
+        sessionId,
+        attributionSource,
+        nativeAudioTrack,
+        offload,
+        encapsulationMode,
+        tunerConfiguration,
+        opPackageName);
   }
 
   /**

@@ -15,13 +15,19 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
+import android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener;
 import android.companion.virtual.VirtualDeviceParams;
+import android.companion.virtual.camera.VirtualCamera;
+import android.companion.virtual.camera.VirtualCameraCallback;
+import android.companion.virtual.camera.VirtualCameraConfig;
 import android.companion.virtual.sensor.VirtualSensorCallback;
 import android.companion.virtual.sensor.VirtualSensorConfig;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.hardware.camera2.CameraMetadata;
 import android.hardware.display.VirtualDisplay;
 import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.VirtualKeyEvent;
@@ -88,12 +94,29 @@ public class ShadowVirtualDeviceManagerTest {
   @Test
   public void testCreateVirtualDevice() {
     assertThat(virtualDeviceManager.getVirtualDevices()).isEmpty();
-    try (VirtualDevice ignored =
+    try (VirtualDevice unused =
         virtualDeviceManager.createVirtualDevice(
             0, new VirtualDeviceParams.Builder().setName("foo").build())) {
       assertThat(virtualDeviceManager.getVirtualDevices()).hasSize(1);
       assertThat(virtualDeviceManager.getVirtualDevices().get(0).getName()).isEqualTo("foo");
     }
+    // When device is closed, it's removed from the list.
+    assertThat(virtualDeviceManager.getVirtualDevices()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testRegisterVirtualDeviceListener() {
+    VirtualDeviceListener listener = mock(VirtualDeviceListener.class);
+    virtualDeviceManager.registerVirtualDeviceListener(MoreExecutors.directExecutor(), listener);
+
+    try (VirtualDevice unused =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      verify(listener).onVirtualDeviceCreated(1);
+    }
+    // When device is closed, listener is notified.
+    verify(listener).onVirtualDeviceClosed(1);
   }
 
   @Test
@@ -456,6 +479,33 @@ public class ShadowVirtualDeviceManagerTest {
       assertThat(firstVirtualDisplay.getDisplay().getDisplayId())
           .isNotEqualTo(secondVirtualDisplay.getDisplay().getDisplayId());
     }
+  }
+
+  @Test
+  @Config(sdk = VANILLA_ICE_CREAM)
+  public void testCreateVirtualCamera() {
+    VirtualCameraCallback callback = mock(VirtualCameraCallback.class);
+
+    VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(0, new VirtualDeviceParams.Builder().build());
+    ShadowVirtualDevice shadowVirtualDevice = Shadow.extract(virtualDevice);
+    VirtualCamera camera =
+        virtualDevice.createVirtualCamera(
+            new VirtualCameraConfig.Builder("name")
+                .setLensFacing(CameraMetadata.LENS_FACING_FRONT)
+                .addStreamConfig(200, 300, ImageFormat.YUV_420_888, 30)
+                .setVirtualCameraCallback(MoreExecutors.directExecutor(), callback)
+                .build());
+
+    assertThat(shadowVirtualDevice.getVirtualCameras()).containsExactly(camera);
+
+    ShadowVirtualCamera shadowCamera = Shadow.extract(camera);
+    shadowCamera.getVirtualCameraCallback().onStreamClosed(99);
+    verify(callback).onStreamClosed(99);
+
+    // Verify closing the camera removes it from the camera list.
+    camera.close();
+    assertThat(shadowVirtualDevice.getVirtualCameras()).isEmpty();
   }
 
   @Test

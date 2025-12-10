@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.os.Parcel;
 import android.view.SurfaceControl;
@@ -18,7 +19,6 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link android.view.SurfaceControl} */
 @Implements(value = SurfaceControl.class, isInAndroidSdk = false)
@@ -83,7 +83,7 @@ public class ShadowSurfaceControl {
 
   void initializeNativeObject() {
     surfaceControlReflector.setNativeObject(nativeObject.incrementAndGet());
-    if (RuntimeEnvironment.getApiLevel() >= U.SDK_INT) {
+    if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
       surfaceControlReflector.setFreeNativeResources(() -> {});
     }
   }

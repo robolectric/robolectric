@@ -2,6 +2,9 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S_V2;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.media.Image;
@@ -22,9 +25,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.T;
-import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link ImageReader} that is backed by native code */
 @Implements(
@@ -41,7 +41,7 @@ public class ShadowNativeImageReader {
    * The {@link ImageReader} static initializer invokes its own native methods in static
    * initializer. This has to be deferred starting in Android V.
    */
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected static void __staticInitializer__() {
     // deferred
   }
@@ -56,7 +56,7 @@ public class ShadowNativeImageReader {
     imageReaderReflector.setMemberNativeContext(natives.mNativeContext);
   }
 
-  @Implementation(minSdk = T.SDK_INT, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected synchronized void nativeInit(
       Object weakSelf,
       int w,
@@ -74,17 +74,17 @@ public class ShadowNativeImageReader {
     imageReaderReflector.setMemberNativeContext(natives.mNativeContext);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected void nativeClose() {
     natives.nativeClose();
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected void nativeReleaseImage(Image i) {
     natives.nativeReleaseImage(i);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected Surface nativeGetSurface() {
     return natives.nativeGetSurface();
   }
@@ -94,7 +94,7 @@ public class ShadowNativeImageReader {
     return natives.nativeDetachImage(i);
   }
 
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected void nativeDiscardFreeBuffers() {
     natives.nativeDiscardFreeBuffers();
   }
@@ -120,19 +120,22 @@ public class ShadowNativeImageReader {
     return natives.nativeImageSetup(i);
   }
 
-  @Implementation(minSdk = T.SDK_INT, maxSdk = T.SDK_INT)
+  @Implementation(minSdk = TIRAMISU, maxSdk = TIRAMISU)
   protected int nativeImageSetup(Image i, boolean legacyValidateImageFormat) {
     return natives.nativeImageSetup(i);
   }
 
-  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT, methodName = "nativeImageSetup")
+  @Implementation(
+      minSdk = UPSIDE_DOWN_CAKE,
+      maxSdk = UPSIDE_DOWN_CAKE,
+      methodName = "nativeImageSetup")
   protected int nativeImageSetupPostT(Image i) {
     // Note: reverted to Q-S API
     return natives.nativeImageSetup(i);
   }
 
   /** We use a class initializer to allow the native code to cache some field offsets. */
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeClassInit() {
     DefaultNativeRuntimeLoader.injectAndLoad();
     ImageReaderNatives.nativeClassInit();

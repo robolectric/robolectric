@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.res.android.ApkAssetsCookie.K_INVALID_COOKIE;
 import static org.robolectric.res.android.ApkAssetsCookie.kInvalidCookie;
 import static org.robolectric.res.android.Asset.SEEK_CUR;
@@ -21,6 +23,7 @@ import static org.robolectric.res.android.Util.JNI_FALSE;
 import static org.robolectric.res.android.Util.JNI_TRUE;
 import static org.robolectric.res.android.Util.isTruthy;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.annotation.AnyRes;
 import android.annotation.ArrayRes;
@@ -75,7 +78,6 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.versioning.AndroidVersions.U;
 
 // transliterated from
 // https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android_util_AssetManager.cpp
@@ -516,7 +518,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
   // static void NativeSetApkAssets(JNIEnv* env, jclass /*clazz*/, jlong ptr,
   //                                jobjectArray apk_assets_array, jboolean invalidate_caches) {
-  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
+  @Implementation(minSdk = P, maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nativeSetApkAssets(
       long ptr,
       @Nonnull android.content.res.ApkAssets[] apk_assets_array,
@@ -1289,7 +1291,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   }
 
   // static jobjectArray NativeGetSizeConfigurations(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = BAKLAVA)
   protected static @Nullable Configuration[] nativeGetSizeConfigurations(long ptr) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
     Set<ResTable_config> configurations =
@@ -1313,6 +1315,11 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
       // env.DeleteLocalRef(java_configuration);
     }
     return array;
+  }
+
+  @Implementation(minSdk = POST_BAKLAVA)
+  protected static @Nullable Configuration[] nativeGetResourceConfigurations(long ptr) {
+    return nativeGetSizeConfigurations(ptr);
   }
 
   // static void NativeApplyStyle(JNIEnv* env, jclass /*clazz*/, jlong ptr, jlong theme_ptr,

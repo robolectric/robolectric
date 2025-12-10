@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertFalse;
@@ -23,7 +24,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
-import org.robolectric.versioning.AndroidVersions.Baklava;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowSharedPreferencesTest {
@@ -242,7 +242,7 @@ public class ShadowSharedPreferencesTest {
    */
   @Test
   @LooperMode(LooperMode.Mode.LEGACY)
-  @Config(maxSdk = Baklava.SDK_INT)
+  @Config(maxSdk = BAKLAVA)
   public void commit_inParallel_doesNotDeadlock() throws InterruptedException {
     SharedPreferences sharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(ApplicationProvider.getApplicationContext());

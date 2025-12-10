@@ -6,6 +6,7 @@ import static android.media.MediaFormat.MIMETYPE_VIDEO_AVC;
 import static android.media.MediaFormat.MIMETYPE_VIDEO_VP9;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
@@ -19,7 +20,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.versioning.AndroidVersions.U;
 
 /** Tests for {@link MediaCodecInfoBuilder}. */
 @RunWith(AndroidJUnit4.class)
@@ -431,7 +431,7 @@ public class MediaCodecInfoBuilderTest {
   }
 
   private static Range<Integer> getDefaultSupportedVideoSizeRange() {
-    if (getApiLevel() <= U.SDK_INT) {
+    if (getApiLevel() <= UPSIDE_DOWN_CAKE) {
       return new Range<>(2, 896);
     } else {
       // Intentionally adjusted in android V see

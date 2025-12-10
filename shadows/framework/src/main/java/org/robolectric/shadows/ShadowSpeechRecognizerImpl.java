@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.RequiresApi;
@@ -21,7 +22,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /**
  * Robolectric shadow for SpeechRecognizerImpl.
@@ -47,7 +47,7 @@ import org.robolectric.versioning.AndroidVersions.V;
 @Implements(
     className = ShadowSpeechRecognizerImpl.CLASS_NAME,
     isInAndroidSdk = false,
-    minSdk = V.SDK_INT)
+    minSdk = VANILLA_ICE_CREAM)
 public class ShadowSpeechRecognizerImpl extends ShadowSpeechRecognizer {
   protected static final String CLASS_NAME = "android.speech.SpeechRecognizerImpl";
 

@@ -5,9 +5,10 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.os.Build.VERSION_CODES;
 import com.google.auto.value.AutoValue;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
@@ -33,8 +34,12 @@ public class ShadowNsdManager {
       new HashMap<>();
   private static final Map<NsdManager.ResolveListener, NsdServiceInfo> resolveListeners =
       new HashMap<>();
+  private static final Map<NsdManager.ServiceInfoCallback, NsdServiceInfo> serviceInfoCallbacks =
+      new HashMap<>();
   private static final Map<NsdServiceKey, ArrayList<NsdManager.ResolveListener>> resolveServices =
       new HashMap<>();
+  private static final Map<NsdServiceKey, ArrayList<NsdManager.ServiceInfoCallback>>
+      serviceInfoServices = new HashMap<>();
 
   @AutoValue
   abstract static class NsdServiceKey {
@@ -70,9 +75,8 @@ public class ShadowNsdManager {
       NsdManager.RegistrationListener listener) {
     NsdServiceKey serviceKey =
         NsdServiceKey.create(serviceInfo.getServiceName(), serviceInfo.getServiceType());
-    if (registeredListeners.containsKey(listener)) {
-      throw new UnsupportedOperationException("registerService: listener already registered");
-    }
+    Preconditions.checkArgument(
+        !registeredListeners.containsKey(listener), "listener already registered");
     if (protocolType != NsdManager.PROTOCOL_DNS_SD) {
       Logger.warn("registerService: invalid protocol type");
       executor.execute(
@@ -87,14 +91,12 @@ public class ShadowNsdManager {
 
   @Implementation
   protected void unregisterService(NsdManager.RegistrationListener listener) {
-    if (!registeredListeners.containsKey(listener)) {
-      throw new UnsupportedOperationException("unregisterService: listener not registered");
-    } else {
-      NsdServiceInfo serviceInfo = registeredListeners.get(listener);
-      registeredServices.remove(getServiceKey(serviceInfo));
-      registeredListeners.remove(listener);
-      listener.onServiceUnregistered(serviceInfo);
-    }
+    Preconditions.checkArgument(
+        registeredListeners.containsKey(listener), "listener not registered");
+    NsdServiceInfo serviceInfo = registeredListeners.get(listener);
+    registeredServices.remove(getServiceKey(serviceInfo));
+    registeredListeners.remove(listener);
+    listener.onServiceUnregistered(serviceInfo);
   }
 
   @Implementation(maxSdk = VERSION_CODES.S_V2)
@@ -111,9 +113,8 @@ public class ShadowNsdManager {
       Executor executor,
       NsdManager.DiscoveryListener listener) {
     // Check for existing discovery listeners.
-    if (discoveryListeners.containsKey(listener)) {
-      throw new UnsupportedOperationException("discoverServices: listener already registered");
-    }
+    Preconditions.checkArgument(
+        !discoveryListeners.containsKey(listener), "listener already registered");
     // Register the listener.
     discoveryServiceTypes.putIfAbsent(serviceType, new ArrayList<>());
     discoveryServiceTypes.get(serviceType).add(listener);
@@ -126,9 +127,8 @@ public class ShadowNsdManager {
   @Implementation
   protected void stopServiceDiscovery(NsdManager.DiscoveryListener listener) {
     // Check for existing discovery listener.
-    if (!discoveryListeners.containsKey(listener)) {
-      throw new UnsupportedOperationException("stopServiceDiscovery: listener not registered");
-    }
+    Preconditions.checkArgument(
+        discoveryListeners.containsKey(listener), "listener not registered");
     // Unregister the listener.
     String serviceType = discoveryListeners.get(listener);
     discoveryServiceTypes.remove(serviceType);
@@ -136,18 +136,25 @@ public class ShadowNsdManager {
     listener.onDiscoveryStopped(serviceType);
   }
 
+  @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  protected void registerServiceInfoCallback(
+      NsdServiceInfo serviceInfo, Executor executor, NsdManager.ServiceInfoCallback callback) {
+    Preconditions.checkArgument(
+        !serviceInfoCallbacks.containsKey(callback), "callback already registered");
+    // Register the callback.
+    NsdServiceKey serviceKey = getServiceKey(serviceInfo);
+    serviceInfoServices.putIfAbsent(serviceKey, new ArrayList<>());
+    serviceInfoServices.get(serviceKey).add(callback);
+    serviceInfoCallbacks.put(callback, serviceInfo);
+  }
+
   @Implementation
   protected void resolveService(NsdServiceInfo serviceInfo, NsdManager.ResolveListener listener) {
-    if (resolveListeners.containsKey(listener)) {
-      throw new UnsupportedOperationException("resolveService: listener already registered");
-    }
+    Preconditions.checkArgument(
+        !resolveListeners.containsKey(listener), "listener already registered");
     // Register the resolver.
     NsdServiceKey serviceKey = getServiceKey(serviceInfo);
     resolveServices.putIfAbsent(serviceKey, new ArrayList<>());
-
-    if (!resolveServices.containsKey(serviceKey)) {
-      resolveServices.put(serviceKey, new ArrayList<>());
-    }
     resolveServices.get(serviceKey).add(listener);
     // Add new listener to listener tracking.
     resolveListeners.put(listener, serviceInfo);
@@ -165,7 +172,9 @@ public class ShadowNsdManager {
     discoveryListeners.clear();
     discoveryServiceTypes.clear();
     resolveListeners.clear();
+    serviceInfoCallbacks.clear();
     resolveServices.clear();
+    serviceInfoServices.clear();
   }
 
   /**
@@ -197,9 +206,9 @@ public class ShadowNsdManager {
   }
 
   @Nullable
-  public List<NsdManager.DiscoveryListener> getDiscoveryListeners(String serviceType) {
+  public ImmutableList<NsdManager.DiscoveryListener> getDiscoveryListeners(String serviceType) {
     if (discoveryServiceTypes.containsKey(serviceType)) {
-      return new ArrayList<>(discoveryServiceTypes.get(serviceType));
+      return ImmutableList.copyOf(discoveryServiceTypes.get(serviceType));
     }
     return null;
   }
@@ -219,18 +228,33 @@ public class ShadowNsdManager {
   }
 
   @Nullable
-  public List<NsdManager.ResolveListener> getResolveListeners(NsdServiceInfo serviceInfo) {
+  public ImmutableList<NsdManager.ResolveListener> getResolveListeners(NsdServiceInfo serviceInfo) {
     NsdServiceKey serviceKey = getServiceKey(serviceInfo);
     if (resolveServices.containsKey(serviceKey)) {
-      return new ArrayList<>(resolveServices.get(serviceKey));
+      return ImmutableList.copyOf(resolveServices.get(serviceKey));
+    }
+    return null;
+  }
+
+  @Nullable
+  public ImmutableList<NsdManager.ServiceInfoCallback> getServiceInfoCallbacks(
+      NsdServiceInfo serviceInfo) {
+    NsdServiceKey serviceKey = getServiceKey(serviceInfo);
+    if (serviceInfoServices.containsKey(serviceKey)) {
+      return ImmutableList.copyOf(serviceInfoServices.get(serviceKey));
     }
     return null;
   }
 
   @Nullable
   public NsdServiceInfo getResolveListenerServiceInfo(NsdManager.ResolveListener listener) {
-    if (resolveListeners.containsKey(listener)) {
-      return resolveListeners.get(listener);
+    return resolveListeners.getOrDefault(listener, null);
+  }
+
+  @Nullable
+  public NsdServiceInfo getServiceInfoCallbackServiceInfo(NsdManager.ServiceInfoCallback callback) {
+    if (serviceInfoCallbacks.containsKey(callback)) {
+      return serviceInfoCallbacks.get(callback);
     }
     return null;
   }
@@ -241,6 +265,15 @@ public class ShadowNsdManager {
       NsdServiceKey serviceKey = getServiceKey(serviceInfo);
       resolveServices.get(serviceKey).remove(listener);
       resolveListeners.remove(listener);
+    }
+  }
+
+  protected void removeServiceInfoCallback(NsdManager.ServiceInfoCallback callback) {
+    if (serviceInfoCallbacks.containsKey(callback)) {
+      NsdServiceInfo serviceInfo = serviceInfoCallbacks.get(callback);
+      NsdServiceKey serviceKey = getServiceKey(serviceInfo);
+      serviceInfoServices.get(serviceKey).remove(callback);
+      serviceInfoCallbacks.remove(callback);
     }
   }
 }

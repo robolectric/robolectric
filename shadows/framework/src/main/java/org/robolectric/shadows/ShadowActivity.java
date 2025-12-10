@@ -5,8 +5,10 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -28,6 +30,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.LocusId;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -78,7 +81,6 @@ import org.robolectric.shadows.ShadowLoadedApk.LoadedApkReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
-import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressWarnings("NewApi")
 @Implements(Activity.class)
@@ -116,6 +118,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean showWhenLocked = false;
   private boolean turnScreenOn = false;
   private boolean isTaskMovedToBack = false;
+  private LocusId lastLocusContextId;
+  private Bundle lastLocusContextExtras;
 
   public void setApplication(Application application) {
     reflector(ActivityReflector.class, realActivity).setApplication(application);
@@ -493,6 +497,29 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     hasReportedFullyDrawn = true;
   }
 
+  @Implementation(minSdk = R)
+  protected void setLocusContext(LocusId locusId, @Nullable Bundle extras) {
+    this.lastLocusContextId = locusId;
+    this.lastLocusContextExtras = extras;
+    reflector(DirectActivityReflector.class, realActivity).setLocusContext(locusId, extras);
+  }
+
+  /**
+   * @return the most recently populated locus context {@link LocusId}.
+   */
+  @Nullable
+  public LocusId getLastLocusContextId() {
+    return lastLocusContextId;
+  }
+
+  /**
+   * @return the most recently populated locus context {@link Bundle} extras.
+   */
+  @Nullable
+  public Bundle getLastLocusContextExtras() {
+    return lastLocusContextExtras;
+  }
+
   /**
    * @return whether {@code ReportFullyDrawn()} methods has been called.
    */
@@ -849,7 +876,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
         .requestPermissions(permissions, requestCode);
   }
 
-  @Implementation(minSdk = V.SDK_INT)
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
   protected void requestPermissions(String[] permissions, int requestCode, int deviceId) {
     lastRequestedPermission = new PermissionsRequest(permissions, requestCode, deviceId);
     reflector(DirectActivityReflector.class, realActivity)
@@ -1098,5 +1125,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     void requestPermissions(String[] permissions, int requestCode);
 
     void requestPermissions(String[] permissions, int requestCode, int deviceId);
+
+    void setLocusContext(LocusId locusId, @Nullable Bundle bundle);
   }
 }

@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
+
 import android.content.pm.PackageManager;
 import android.os.Build.VERSION_CODES;
 import android.os.SystemProperties;
@@ -7,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.versioning.AndroidVersions;
 
 final class SystemFeatureListInitializer {
 
@@ -46,7 +47,7 @@ final class SystemFeatureListInitializer {
       features.put(PackageManager.FEATURE_TELEPHONY_EUICC, true);
       features.put(PackageManager.FEATURE_TELEPHONY_EUICC_MEP, true);
       features.put(PackageManager.FEATURE_TELEPHONY_IMS, true);
-      if (apiLevel >= AndroidVersions.Baklava.SDK_INT) {
+      if (apiLevel >= BAKLAVA) {
         features.put(PackageManager.FEATURE_TELEPHONY_SATELLITE, true);
       }
     }

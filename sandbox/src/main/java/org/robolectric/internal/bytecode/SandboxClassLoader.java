@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
-import org.robolectric.util.Util;
 
 /**
  * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's
@@ -118,7 +117,7 @@ public class SandboxClassLoader extends URLClassLoader {
     return getResourceUrl(name);
   }
 
-  private URL getResourceUrl(String name) {
+  protected URL getResourceUrl(String name) {
     URL result = resourceProvider.getResource(name);
     if (LOG_RESOURCE_USAGE && result != null) {
       PerfStatsCollector.getInstance().incrementCount("SandboxClassLoader.getResource " + name);
@@ -136,7 +135,20 @@ public class SandboxClassLoader extends URLClassLoader {
       }
       return fromUrlsClassLoader;
     }
+    InputStream fromAlternateClassLoader = getClassBytesFromAlternateClassLoader(resName);
+    if (fromAlternateClassLoader != null) {
+      return fromAlternateClassLoader;
+    }
     return super.getResourceAsStream(resName);
+  }
+
+  /**
+   * This exists to be overridden by the simulator class loader. It allows the simulator class
+   * loader to prefer classes from the deploy jar (e.g. compiled resource jars) over classes from
+   * the runtime classpath.
+   */
+  protected InputStream getClassBytesFromAlternateClassLoader(String classResName) {
+    return null;
   }
 
   @Override
@@ -165,7 +177,7 @@ public class SandboxClassLoader extends URLClassLoader {
     }
   }
 
-  protected Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {
+  private Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {
     byte[] classBytes = getByteCode(className);
     ClassDetails classDetails = new ClassDetails(classBytes);
     if (config.shouldInstrument(classDetails)) {
@@ -189,13 +201,13 @@ public class SandboxClassLoader extends URLClassLoader {
     }
   }
 
-  protected byte[] getByteCode(String className) throws ClassNotFoundException {
+  private byte[] getByteCode(String className) throws ClassNotFoundException {
     try (InputStream classBytesStream = getClassBytesAsStreamPreferringLocalUrls(className)) {
       if (classBytesStream == null) {
         throw new ClassNotFoundException(className);
       }
 
-      return Util.readBytes(classBytesStream);
+      return classBytesStream.readAllBytes();
     } catch (IOException e) {
       throw new ClassNotFoundException("couldn't load " + className, e);
     }

@@ -30,7 +30,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.Util;
+import org.robolectric.util.ReflectionHelpers;
 
 /**
  * @deprecated Apache HTTP client is deprecated in Android. Please migrate to an other solution
@@ -238,15 +238,10 @@ public class ShadowDefaultRequestDirector {
     }
     if (entity instanceof BasicHttpEntity) {
       BasicHttpEntity basicEntity = (BasicHttpEntity) entity;
-      try {
-        Field contentField = BasicHttpEntity.class.getDeclaredField("content");
-        contentField.setAccessible(true);
-        InputStream content = (InputStream) contentField.get(basicEntity);
-
-        byte[] buffer = Util.readBytes(content);
-
+      try (InputStream content = ReflectionHelpers.getField(basicEntity, "content")) {
+        byte[] buffer = content.readAllBytes();
         FakeHttp.getFakeHttpLayer().addHttpResponseContent(buffer);
-        contentField.set(basicEntity, new ByteArrayInputStream(buffer));
+        ReflectionHelpers.setField(basicEntity, "content", new ByteArrayInputStream(buffer));
       } catch (Exception e) {
         // fail to record
       }

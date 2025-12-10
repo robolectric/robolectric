@@ -28,6 +28,7 @@ import android.content.IntentFilter;
 import android.location.Criteria;
 import android.location.GnssAntennaInfo;
 import android.location.GnssAntennaInfo.PhaseCenterOffset;
+import android.location.GnssCapabilities;
 import android.location.GnssMeasurementRequest;
 import android.location.GnssMeasurementsEvent;
 import android.location.GnssStatus;
@@ -63,6 +64,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
@@ -217,7 +219,13 @@ public class ShadowLocationManagerTest {
     assertThat(locationManager.getBestProvider(all, true)).isEqualTo(NETWORK_PROVIDER);
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, false);
     shadowLocationManager.setProviderEnabled(PASSIVE_PROVIDER, false);
-    assertThat(locationManager.getBestProvider(all, true)).isEqualTo(MY_PROVIDER);
+    if (RuntimeEnvironment.getApiLevel() != VERSION_CODES.P) {
+      assertThat(locationManager.getBestProvider(all, true)).isEqualTo(MY_PROVIDER);
+    } else {
+      // In Android P, the location mode is OFF when all providers are disabled, so the best
+      // provider is null.
+      assertThat(locationManager.getBestProvider(all, true)).isNull();
+    }
 
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, true);
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
@@ -227,7 +235,13 @@ public class ShadowLocationManagerTest {
     assertThat(locationManager.getBestProvider(none, true)).isEqualTo(NETWORK_PROVIDER);
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, false);
     shadowLocationManager.setProviderEnabled(MY_PROVIDER, false);
-    assertThat(locationManager.getBestProvider(none, true)).isEqualTo(PASSIVE_PROVIDER);
+    if (RuntimeEnvironment.getApiLevel() != VERSION_CODES.P) {
+      assertThat(locationManager.getBestProvider(none, true)).isEqualTo(PASSIVE_PROVIDER);
+    } else {
+      // In Android P, the location mode is OFF when all network and gps providers are disabled, so
+      // the best provider is null.
+      assertThat(locationManager.getBestProvider(none, true)).isNull();
+    }
   }
 
   @Test
@@ -1415,6 +1429,29 @@ public class ShadowLocationManagerTest {
     assertThat(locationManager.getGnssBatchSize()).isEqualTo(0);
     shadowLocationManager.setGnssBatchSize(5);
     assertThat(locationManager.getGnssBatchSize()).isEqualTo(5);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void testGetGnssCapabilities_returnsNullByDefault() {
+    assertThat(locationManager.getGnssCapabilities()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void testGetGnssCapabilities_returnsSetCapabilities() {
+    // For ease of testing and readability, we use VERSION_CODES.S here, even though the API was
+    // available before. Instead of setting the capability bits manually, we can use the builder.
+    GnssCapabilities gnssCapabilities =
+        new GnssCapabilities.Builder()
+            .setHasMeasurements(true)
+            .setHasMeasurementCorrections(true)
+            .setHasMeasurementCorrectionsLosSats(true)
+            .setHasMeasurementCorrectionsForDriving(true)
+            .setHasSatellitePvt(true)
+            .build();
+    shadowLocationManager.setGnssCapabilities(gnssCapabilities);
+    assertThat(locationManager.getGnssCapabilities()).isSameInstanceAs(gnssCapabilities);
   }
 
   @Test
