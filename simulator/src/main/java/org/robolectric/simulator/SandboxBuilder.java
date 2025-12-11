@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import org.robolectric.android.AndroidSdkShadowMatcher;
 import org.robolectric.annotation.ResourcesMode;
@@ -64,14 +65,18 @@ public final class SandboxBuilder {
 
     ArrayList<Sdk> sdks = new ArrayList<>(sdkProvider.getSdks());
 
-    Sdk chosenSdk = Iterables.getLast(sdks);
-    if (sdkVersion != -1) {
+    Sdk chosenSdk = null;
+    if (sdkVersion == -1) {
+      chosenSdk = Iterables.getLast(sdks);
+    } else {
+
       for (Sdk sdk : sdks) {
         if (sdk.getApiLevel() == sdkVersion) {
           chosenSdk = sdk;
         }
       }
     }
+    Objects.requireNonNull(chosenSdk, String.format("Requested SDK %d is unknown", sdkVersion));
 
     Interceptors interceptors = new Interceptors(AndroidInterceptors.all());
 
