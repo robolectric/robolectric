@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.hardware.camera2.CameraCharacteristics;
@@ -22,13 +21,8 @@ public class ShadowCameraCharacteristicsTest {
   @Test
   public void testSetExistingKey() {
     shadowOf(cameraCharacteristics).set(key0, 1);
-
-    try {
-      shadowOf(cameraCharacteristics).set(key0, 1);
-      fail();
-    } catch (IllegalArgumentException e) {
-      // Expected
-    }
+    shadowOf(cameraCharacteristics).set(key0, 2);
+    assertThat(cameraCharacteristics.get(key0)).isEqualTo(2);
   }
 
   @Test
@@ -47,5 +41,14 @@ public class ShadowCameraCharacteristicsTest {
   public void getNativeCopy_doesNotNPE() {
     CameraMetadataNative nativeCopy = cameraCharacteristics.getNativeCopy();
     assertThat(nativeCopy).isNotNull();
+  }
+
+  @Test
+  public void setKey_intArray() {
+    int[] capabilities = new int[] {1, 2, 3};
+    shadowOf(cameraCharacteristics)
+        .set(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES, capabilities);
+    assertThat(cameraCharacteristics.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES))
+        .isEqualTo(capabilities);
   }
 }
