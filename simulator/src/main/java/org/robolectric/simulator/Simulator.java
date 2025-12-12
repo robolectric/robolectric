@@ -34,6 +34,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowChoreographer;
+import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPausedLooper;
 import org.robolectric.shadows.ShadowSystemClock;
@@ -72,6 +73,7 @@ public final class Simulator {
     ShadowView.setUseRealViewAnimations(true);
     ShadowChoreographer.setPaused(true);
     ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
+    ShadowLog.setCaptureLogsEnabled(false);
 
     if (this.activityClassToLaunch != null) {
       System.err.println("Launching " + this.activityClassToLaunch.getName());
