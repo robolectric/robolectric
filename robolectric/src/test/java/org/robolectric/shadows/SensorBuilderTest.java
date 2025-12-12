@@ -19,6 +19,7 @@ public class SensorBuilderTest {
     assertThat(testSensor.isWakeUpSensor()).isEqualTo(false);
     assertThat(testSensor.getMaximumRange()).isEqualTo(0f);
     assertThat(testSensor.getMinDelay()).isEqualTo(0);
+    assertThat(testSensor.getMaxDelay()).isEqualTo(0);
     assertThat(testSensor.getName()).isEqualTo(null);
     assertThat(testSensor.getFifoMaxEventCount()).isEqualTo(0);
     assertThat(testSensor.getFifoReservedEventCount()).isEqualTo(0);
@@ -32,6 +33,7 @@ public class SensorBuilderTest {
             .setWakeUpFlag(true)
             .setMaximumRange(10f)
             .setMinDelay(100)
+            .setMaxDelay(200)
             .setName("test_sensor")
             .setFifoMaxEventCount(10)
             .setFifoReservedEventCount(5)
@@ -41,6 +43,7 @@ public class SensorBuilderTest {
     assertThat(testSensor.isWakeUpSensor()).isEqualTo(true);
     assertThat(testSensor.getMaximumRange()).isEqualTo(10f);
     assertThat(testSensor.getMinDelay()).isEqualTo(100);
+    assertThat(testSensor.getMaxDelay()).isEqualTo(200);
     assertThat(testSensor.getName()).isEqualTo("test_sensor");
     assertThat(testSensor.getFifoMaxEventCount()).isEqualTo(10);
     assertThat(testSensor.getFifoReservedEventCount()).isEqualTo(5);

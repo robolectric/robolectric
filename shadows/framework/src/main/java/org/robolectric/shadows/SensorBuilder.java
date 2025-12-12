@@ -13,6 +13,7 @@ public class SensorBuilder {
   private int flags;
   private float maximumRange;
   private int minDelay;
+  private int maxDelay;
   private String name;
   private int fifoMaxEventCount;
   private int fifoReservedEventCount;
@@ -45,9 +46,33 @@ public class SensorBuilder {
     return this;
   }
 
+  /**
+   * Sets the minimum delay in microseconds for this sensor.
+   *
+   * <p>This is the minimum time between samples when the sensor is in continuous mode.
+   *
+   * @param minDelay minimum delay in microseconds
+   * @see <a
+   *     href="https://developer.android.com/reference/android/hardware/Sensor#getMinDelay()">Sensor.getMinDelay()</a>
+   */
   @CanIgnoreReturnValue
   public SensorBuilder setMinDelay(int minDelay) {
     this.minDelay = minDelay;
+    return this;
+  }
+
+  /**
+   * Sets the maximum delay in microseconds for this sensor.
+   *
+   * <p>This is the maximum time between samples when the sensor is in continuous mode.
+   *
+   * @param maxDelay maximum delay in microseconds
+   * @see <a
+   *     href="https://developer.android.com/reference/android/hardware/Sensor#getMaxDelay()">Sensor.getMaxDelay()</a>
+   */
+  @CanIgnoreReturnValue
+  public SensorBuilder setMaxDelay(int maxDelay) {
+    this.maxDelay = maxDelay;
     return this;
   }
 
@@ -74,6 +99,7 @@ public class SensorBuilder {
     ReflectionHelpers.setField(sensor, "mType", type);
     ReflectionHelpers.setField(sensor, "mMaxRange", maximumRange);
     ReflectionHelpers.setField(sensor, "mMinDelay", minDelay);
+    ReflectionHelpers.setField(sensor, "mMaxDelay", maxDelay);
     ReflectionHelpers.setField(sensor, "mName", name);
     ReflectionHelpers.setField(sensor, "mFlags", flags);
     ReflectionHelpers.setField(sensor, "mFifoMaxEventCount", fifoMaxEventCount);
