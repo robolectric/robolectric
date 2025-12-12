@@ -20,6 +20,8 @@ public class SensorBuilderTest {
     assertThat(testSensor.getMaximumRange()).isEqualTo(0f);
     assertThat(testSensor.getMinDelay()).isEqualTo(0);
     assertThat(testSensor.getName()).isEqualTo(null);
+    assertThat(testSensor.getFifoMaxEventCount()).isEqualTo(0);
+    assertThat(testSensor.getFifoReservedEventCount()).isEqualTo(0);
   }
 
   @Test
@@ -31,6 +33,8 @@ public class SensorBuilderTest {
             .setMaximumRange(10f)
             .setMinDelay(100)
             .setName("test_sensor")
+            .setFifoMaxEventCount(10)
+            .setFifoReservedEventCount(5)
             .build();
 
     assertThat(testSensor.getType()).isEqualTo(TYPE_ACCELEROMETER);
@@ -38,6 +42,8 @@ public class SensorBuilderTest {
     assertThat(testSensor.getMaximumRange()).isEqualTo(10f);
     assertThat(testSensor.getMinDelay()).isEqualTo(100);
     assertThat(testSensor.getName()).isEqualTo("test_sensor");
+    assertThat(testSensor.getFifoMaxEventCount()).isEqualTo(10);
+    assertThat(testSensor.getFifoReservedEventCount()).isEqualTo(5);
   }
 
   @Test

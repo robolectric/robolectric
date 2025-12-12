@@ -14,6 +14,8 @@ public class SensorBuilder {
   private float maximumRange;
   private int minDelay;
   private String name;
+  private int fifoMaxEventCount;
+  private int fifoReservedEventCount;
 
   private SensorBuilder() {}
 
@@ -55,6 +57,18 @@ public class SensorBuilder {
     return this;
   }
 
+  @CanIgnoreReturnValue
+  public SensorBuilder setFifoMaxEventCount(int fifoMaxEventCount) {
+    this.fifoMaxEventCount = fifoMaxEventCount;
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public SensorBuilder setFifoReservedEventCount(int fifoReservedEventCount) {
+    this.fifoReservedEventCount = fifoReservedEventCount;
+    return this;
+  }
+
   public Sensor build() {
     Sensor sensor = ReflectionHelpers.callConstructor(Sensor.class);
     ReflectionHelpers.setField(sensor, "mType", type);
@@ -62,6 +76,8 @@ public class SensorBuilder {
     ReflectionHelpers.setField(sensor, "mMinDelay", minDelay);
     ReflectionHelpers.setField(sensor, "mName", name);
     ReflectionHelpers.setField(sensor, "mFlags", flags);
+    ReflectionHelpers.setField(sensor, "mFifoMaxEventCount", fifoMaxEventCount);
+    ReflectionHelpers.setField(sensor, "mFifoReservedEventCount", fifoReservedEventCount);
     return sensor;
   }
 }
