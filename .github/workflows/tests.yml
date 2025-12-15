@@ -71,7 +71,7 @@ jobs:
           -x :integration_tests:roborazzi:test
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: test_results_${{ matrix.api-versions }}
@@ -118,7 +118,7 @@ jobs:
           echo "TARGET=$TARGET" >> $GITHUB_OUTPUT
 
       - name: AVD cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: avd-cache
         with:
           path: |
@@ -158,7 +158,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: test-results-${{ matrix.api-level }}-${{ steps.determine-target.outputs.TARGET }}-${{ matrix.shard }}
           path: |
