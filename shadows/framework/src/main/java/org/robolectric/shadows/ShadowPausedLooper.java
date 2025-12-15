@@ -139,8 +139,10 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void unPause() {
+    // Do not use looperMode() here, because its cached value might already have been reset
+    LooperMode.Mode looperMode = ConfigurationRegistry.get(LooperMode.Mode.class);
     if (realLooper == Looper.getMainLooper()
-        && looperMode() != LooperMode.Mode.INSTRUMENTATION_TEST) {
+        && looperMode != LooperMode.Mode.INSTRUMENTATION_TEST) {
       throw new UnsupportedOperationException("main looper cannot be unpaused");
     }
     looperControlService.unpause();
