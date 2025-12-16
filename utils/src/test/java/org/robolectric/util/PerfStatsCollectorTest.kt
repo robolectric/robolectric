@@ -100,10 +100,10 @@ class PerfStatsCollectorTest {
   @Test
   @Throws(Exception::class)
   fun reset_shouldClearAllMetadataAndMetrics() {
-    collector.putMetadata(String::class.java, "metadata")
+    collector.putMetadata(org.robolectric.pluginapi.perf.Metadata(123))
     collector.startEvent("event").finished()
     collector.reset()
-    assertThat(collector.metadata.get(String::class.java)).isNull()
+    assertThat(collector.metadata).isNull()
     assertThat(collector.metrics).isEmpty()
   }
 

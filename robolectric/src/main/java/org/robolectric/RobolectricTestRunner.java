@@ -3,7 +3,6 @@ package org.robolectric;
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -52,6 +51,7 @@ import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.config.ConfigurationStrategy;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.config.GlobalConfigProvider;
+import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -286,9 +286,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
     Sdk sdk = roboMethod.getSdk();
-    perfStatsCollector.putMetadata(
-        AndroidMetadata.class,
-        new AndroidMetadata(ImmutableMap.of("ro.build.version.sdk", "" + sdk.getApiLevel())));
+    perfStatsCollector.putMetadata(new Metadata(sdk.getApiLevel()));
 
     Logger.lifecycle(
         roboMethod.getDeclaringClass().getName()
