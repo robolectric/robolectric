@@ -19,7 +19,7 @@ public class PerfStatsCollector {
   private static final PerfStatsCollector INSTANCE = new PerfStatsCollector();
 
   private final Clock clock;
-  private final Map<Class<?>, Object> metadata = new HashMap<>();
+  private Metadata metadata = null;
   private final Map<MetricKey, Metric> metricMap = new HashMap<>();
   private boolean enabled = true;
 
@@ -99,20 +99,20 @@ public class PerfStatsCollector {
     return new ArrayList<>(metricMap.values());
   }
 
-  public synchronized <T> void putMetadata(Class<T> metadataClass, T metadata) {
+  public synchronized void putMetadata(Metadata metadata) {
     if (!enabled) {
       return;
     }
 
-    this.metadata.put(metadataClass, metadata);
+    this.metadata = metadata;
   }
 
   public synchronized Metadata getMetadata() {
-    return new Metadata(metadata);
+    return metadata;
   }
 
   public void reset() {
-    metadata.clear();
+    metadata = null;
     metricMap.clear();
   }
 

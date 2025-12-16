@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
-import org.robolectric.AndroidMetadata;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
@@ -32,9 +31,7 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
   public synchronized void finalReport() {
     Map<MetricKey, MetricValue> mergedMetrics = new TreeMap<>();
     for (Data perfStatsData : perfStatsData) {
-      AndroidMetadata metadata = perfStatsData.metadata.get(AndroidMetadata.class);
-      Map<String, String> deviceBootProperties = metadata.getDeviceBootProperties();
-      int sdkInt = Integer.parseInt(deviceBootProperties.get("ro.build.version.sdk"));
+      int sdkInt = perfStatsData.metadata.getSdk();
 
       for (Metric metric : perfStatsData.metrics) {
         MetricKey key = new MetricKey(metric.getName(), metric.isSuccess(), sdkInt);
