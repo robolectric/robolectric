@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -41,8 +42,8 @@ public class ShadowConnectivityManager {
   private static int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
   private static final Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<>();
 
-  private static final HashSet<ConnectivityManager.NetworkCallback> networkCallbacks =
-      new HashSet<>();
+  private static final Set<ConnectivityManager.NetworkCallback> networkCallbacks =
+      ConcurrentHashMap.newKeySet();
   private static final HashSet<PendingIntent> networkCallbackPendingIntents = new HashSet<>();
 
   private static final Map<Integer, Network> netIdToNetwork = new HashMap<>();
