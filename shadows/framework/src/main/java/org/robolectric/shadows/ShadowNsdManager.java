@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.net.Network;
+import android.net.nsd.DiscoveryRequest;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.os.Build.VERSION_CODES;
@@ -124,6 +125,21 @@ public class ShadowNsdManager {
     executor.execute(() -> listener.onDiscoveryStarted(serviceType));
   }
 
+  @Implementation(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
+  protected void discoverServices(
+      DiscoveryRequest request, Executor executor, NsdManager.DiscoveryListener listener) {
+    // Check for existing discovery listeners.
+    Preconditions.checkArgument(
+        !discoveryListeners.containsKey(listener), "listener already registered");
+    // Register the listener.
+    discoveryServiceTypes.putIfAbsent(request.getServiceType(), new ArrayList<>());
+    discoveryServiceTypes.get(request.getServiceType()).add(listener);
+    // Add new listener to listener tracking.
+    discoveryListeners.put(listener, request.getServiceType());
+    // Notify the listener of the successful start of discovery.
+    executor.execute(() -> listener.onDiscoveryStarted(request.getServiceType()));
+  }
+
   @Implementation
   protected void stopServiceDiscovery(NsdManager.DiscoveryListener listener) {
     // Check for existing discovery listener.
@@ -146,6 +162,19 @@ public class ShadowNsdManager {
     serviceInfoServices.putIfAbsent(serviceKey, new ArrayList<>());
     serviceInfoServices.get(serviceKey).add(callback);
     serviceInfoCallbacks.put(callback, serviceInfo);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  protected void unregisterServiceInfoCallback(NsdManager.ServiceInfoCallback callback) {
+    // Check for existing callback.
+    Preconditions.checkArgument(
+        serviceInfoCallbacks.containsKey(callback), "callback not registered");
+    // Unregister the callback.
+    NsdServiceInfo serviceInfo = serviceInfoCallbacks.get(callback);
+    NsdServiceKey serviceKey = getServiceKey(serviceInfo);
+    serviceInfoServices.get(serviceKey).remove(callback);
+    serviceInfoCallbacks.remove(callback);
+    callback.onServiceInfoCallbackUnregistered();
   }
 
   @Implementation

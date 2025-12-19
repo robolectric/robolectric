@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import android.app.Application;
 import android.content.Context;
 import android.net.Network;
+import android.net.nsd.DiscoveryRequest;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdManager.DiscoveryListener;
 import android.net.nsd.NsdManager.RegistrationListener;
@@ -209,6 +210,23 @@ public final class ShadowNsdManagerTest {
     verify(discoveryListener).onDiscoveryStarted(serviceType);
   }
 
+  @Config(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
+  @Test
+  public void discoverServices_withDiscoveryRequest_invokesListener() {
+    // First register for service discovery.
+    String serviceType = "foo.bar";
+    DiscoveryRequest discoveryRequest = new DiscoveryRequest.Builder(serviceType).build();
+    nsdManager.discoverServices(discoveryRequest, fakeExecutor, discoveryListener);
+
+    // See if executor was used for callback.
+    assertThat(fakeExecutor.command).isNotNull();
+    // Now we can run the callback.
+    fakeExecutor.command.run();
+
+    // Check that the listener was notified of discovery start.
+    verify(discoveryListener).onDiscoveryStarted(serviceType);
+  }
+
   @Test
   public void discoverServices_invokesListener() {
     // First register for service discovery.
@@ -244,12 +262,49 @@ public final class ShadowNsdManagerTest {
                 serviceType, NsdManager.PROTOCOL_DNS_SD, discoveryListener));
   }
 
+  @Config(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
+  @Test
+  public void discoverServices_withDiscoveryRequest_sameListener_throwsException() {
+    // First register for service discovery.
+    String serviceType = "foo.bar";
+
+    DiscoveryRequest discoveryRequest = new DiscoveryRequest.Builder(serviceType).build();
+    nsdManager.discoverServices(discoveryRequest, fakeExecutor, discoveryListener);
+
+    // Now try to register same listener again.
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> nsdManager.discoverServices(discoveryRequest, fakeExecutor, discoveryListener));
+  }
+
   @Test
   public void getDiscoveryListeners_getsCorrectListener() {
     // First register for service discovery.
     String serviceType = "foo.bar";
 
     nsdManager.discoverServices(serviceType, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+
+    // Discovery started but nothing discovered yet.
+    verify(discoveryListener).onDiscoveryStarted(serviceType);
+    verify(discoveryListener, never()).onServiceFound(any());
+
+    // Now try to fetch the same listener.
+    DiscoveryListener listener = shadowNsdManager.getDiscoveryListeners(serviceType).get(0);
+    // Perform fake discovery callback.
+    listener.onServiceFound(createTestServiceInfo());
+    verify(discoveryListener).onServiceFound(any());
+  }
+
+  @Config(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
+  @Test
+  public void getDiscoveryListeners_withDiscoveryRequest_getsCorrectListener() {
+    // First register for service discovery.
+    String serviceType = "foo.bar";
+
+    DiscoveryRequest discoveryRequest = new DiscoveryRequest.Builder(serviceType).build();
+    nsdManager.discoverServices(discoveryRequest, fakeExecutor, discoveryListener);
+    // run the callback.
+    fakeExecutor.command.run();
 
     // Discovery started but nothing discovered yet.
     verify(discoveryListener).onDiscoveryStarted(serviceType);
@@ -372,6 +427,23 @@ public final class ShadowNsdManagerTest {
         .isEqualTo(serviceInfo);
     // Now remove the listener.
     shadowNsdManager.removeServiceInfoCallback(serviceInfoCallback);
+    assertThat(shadowNsdManager.getServiceInfoCallbacks(serviceInfo)).isEmpty();
+    assertThat(shadowNsdManager.getServiceInfoCallbackServiceInfo(serviceInfoCallback)).isNull();
+  }
+
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @Test
+  public void removeServiceInfoCallback_unregisteredCallback_removesCallback() {
+    ServiceInfoCallback serviceInfoCallback = mock(ServiceInfoCallback.class);
+    // First register for service resolution.
+    NsdServiceInfo serviceInfo = createTestServiceInfo();
+    nsdManager.registerServiceInfoCallback(serviceInfo, fakeExecutor, serviceInfoCallback);
+    assertThat(shadowNsdManager.getServiceInfoCallbacks(serviceInfo))
+        .containsExactly(serviceInfoCallback);
+    assertThat(shadowNsdManager.getServiceInfoCallbackServiceInfo(serviceInfoCallback))
+        .isEqualTo(serviceInfo);
+    // Now remove the listener.
+    shadowNsdManager.unregisterServiceInfoCallback(serviceInfoCallback);
     assertThat(shadowNsdManager.getServiceInfoCallbacks(serviceInfo)).isEmpty();
     assertThat(shadowNsdManager.getServiceInfoCallbackServiceInfo(serviceInfoCallback)).isNull();
   }
