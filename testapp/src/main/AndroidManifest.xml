@@ -20,5 +20,9 @@
           android:theme="@style/Theme.AnotherTheme" android:exported="true"/>
       <activity android:name=".ActivityWithoutTheme" android:exported="true"/>
 
+      <!-- Configuration change test activities -->
+      <activity android:name=".ConfigChangeTestActivity" android:exported="true"/>
+      <activity android:name=".StatefulActivity" android:exported="true"/>
+
     </application>
 </manifest>
