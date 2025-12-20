@@ -1,36 +1,35 @@
 package org.robolectric.gradle
 
 import java.io.File
+import java.lang.Boolean.getBoolean
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.VersionCatalog
-import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
-class RoboJavaModulePlugin : Plugin<Project> {
+class RoboKotlinModulePlugin : Plugin<Project> {
   override fun apply(project: Project) {
-    project.pluginManager.apply("java-library")
     project.pluginManager.apply("org.robolectric.gradle.AarDepsPlugin")
+    project.pluginManager.apply("org.jetbrains.kotlin.jvm")
 
-    val skipErrorProne = System.getenv("SKIP_ERRORPRONE") == "true"
-    if (!skipErrorProne) {
-      project.pluginManager.apply("net.ltgt.errorprone")
-      project.dependencies.add("errorprone", project.libs.findLibrary("error-prone-core").get())
+    project.tasks.withType<KotlinJvmCompile>().configureEach {
+      // Some libraries like junit platform engine requires JDK 17.
+      compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
     }
 
     project.tasks.withType<JavaCompile>().configureEach {
-      sourceCompatibility = JavaVersion.VERSION_11.toString()
-      targetCompatibility = JavaVersion.VERSION_11.toString()
+      sourceCompatibility = JavaVersion.VERSION_17.toString()
+      targetCompatibility = JavaVersion.VERSION_17.toString()
 
       // Show all warnings except boot classpath
-      if (System.getProperty("lint") != null && System.getProperty("lint") != "false") {
+      if (getBoolean("lint")) {
         options.compilerArgs.add("-Xlint:all") // Turn on all warnings
       }
 
@@ -51,12 +50,9 @@ class RoboJavaModulePlugin : Plugin<Project> {
       dependsOn(provideBuildClasspath)
 
       // Otherwise Gradle runs static inner classes like TestRunnerSequenceTest$SimpleTest
-      exclude("**/*\$*")
+      exclude("**/*$*")
 
       configureTestTask()
     }
   }
-
-  private val Project.libs: VersionCatalog
-    get() = extensions.getByType<VersionCatalogsExtension>().named("libs")
 }
