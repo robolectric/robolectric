@@ -24,6 +24,10 @@ gradlePlugin {
       id = "org.robolectric.gradle.RoboJavaModulePlugin"
       implementationClass = "org.robolectric.gradle.RoboJavaModulePlugin"
     }
+    register("RoboKotlinModulePlugin") {
+      id = "org.robolectric.gradle.RoboKotlinModulePlugin"
+      implementationClass = "org.robolectric.gradle.RoboKotlinModulePlugin"
+    }
     register("SpotlessPlugin") {
       id = "org.robolectric.gradle.SpotlessPlugin"
       implementationClass = "org.robolectric.gradle.SpotlessPlugin"
