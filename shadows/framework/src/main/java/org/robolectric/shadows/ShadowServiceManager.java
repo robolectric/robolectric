@@ -281,7 +281,12 @@ public class ShadowServiceManager {
     addBinderService(binderServices, Context.JOB_SCHEDULER_SERVICE, IJobScheduler.class);
     addBinderService(binderServices, Context.NETWORK_SCORE_SERVICE, INetworkScoreService.class);
     addBinderService(binderServices, Context.USAGE_STATS_SERVICE, IUsageStatsManager.class);
-    addBinderService(binderServices, Context.MEDIA_ROUTER_SERVICE, IMediaRouterService.class);
+    addBinderService(
+        binderServices,
+        Context.MEDIA_ROUTER_SERVICE,
+        IMediaRouterService.class,
+        BinderType.DELEGATING_PROXY,
+        new MediaRouterServiceDelegate());
     addBinderService(
         binderServices,
         Context.MEDIA_SESSION_SERVICE,
