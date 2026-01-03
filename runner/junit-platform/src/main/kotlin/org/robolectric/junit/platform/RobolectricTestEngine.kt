@@ -19,6 +19,7 @@ import org.junit.platform.engine.support.descriptor.EngineDescriptor
 import org.robolectric.internal.AndroidSandbox
 import org.robolectric.runner.common.ClassLifecycleManager
 import org.robolectric.runner.common.DiscoveryHelpers
+import org.robolectric.runner.common.ExecutionResult
 import org.robolectric.runner.common.ExperimentalRunnerApi
 import org.robolectric.runner.common.LifecycleHelper
 import org.robolectric.runner.common.ParameterResolutionHelper
@@ -309,11 +310,11 @@ class RobolectricTestEngine : TestEngine {
             RunnerLogger.logTestEnd(testClass.simpleName, descriptor.method.name, duration, true)
             RunnerMetrics.recordTestExecution(true)
             RunnerMetrics.recordTiming(RunnerMetrics.PHASE_TEST_EXECUTION, duration)
-            RobolectricSandboxExecutor.ExecutionResult.success()
+            ExecutionResult.success()
           } catch (e: Throwable) {
             RunnerLogger.logTestEnd(testClass.simpleName, descriptor.method.name, 0, false)
             RunnerMetrics.recordTestExecution(false)
-            RobolectricSandboxExecutor.ExecutionResult.failure(e)
+            ExecutionResult.failure(e)
           }
         } else {
           // Use per-test sandbox with the specific SDK from the descriptor
@@ -327,7 +328,7 @@ class RobolectricTestEngine : TestEngine {
         if (executionResult.isSuccess) {
           TestExecutionResult.successful()
         } else {
-          TestExecutionResult.failed(executionResult.error)
+          TestExecutionResult.failed((executionResult as ExecutionResult.Failure).error)
         }
 
       listener.executionFinished(descriptor, result)
@@ -366,11 +367,11 @@ class RobolectricTestEngine : TestEngine {
             RunnerLogger.logTestEnd(testClass.simpleName, descriptor.method.name, duration, true)
             RunnerMetrics.recordTestExecution(true)
             RunnerMetrics.recordTiming(RunnerMetrics.PHASE_TEST_EXECUTION, duration)
-            RobolectricSandboxExecutor.ExecutionResult.success()
+            ExecutionResult.success()
           } catch (e: Throwable) {
             RunnerLogger.logTestEnd(testClass.simpleName, descriptor.method.name, 0, false)
             RunnerMetrics.recordTestExecution(false)
-            RobolectricSandboxExecutor.ExecutionResult.failure(e)
+            ExecutionResult.failure(e)
           }
         } else {
           // Use centralized sandbox executor (per-test sandbox)
@@ -383,7 +384,7 @@ class RobolectricTestEngine : TestEngine {
         if (executionResult.isSuccess) {
           TestExecutionResult.successful()
         } else {
-          TestExecutionResult.failed(executionResult.error)
+          TestExecutionResult.failed((executionResult as ExecutionResult.Failure).error)
         }
 
       listener.executionFinished(descriptor, result)

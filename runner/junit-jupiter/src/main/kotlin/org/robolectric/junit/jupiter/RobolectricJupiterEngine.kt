@@ -215,7 +215,9 @@ class RobolectricJupiterEngine : TestEngine {
       if (executionResult.isSuccess) {
         TestExecutionResult.successful()
       } else {
-        TestExecutionResult.failed(executionResult.error)
+        TestExecutionResult.failed(
+          (executionResult as org.robolectric.runner.common.ExecutionResult.Failure).error
+        )
       }
 
     listener.executionFinished(descriptor, result)
