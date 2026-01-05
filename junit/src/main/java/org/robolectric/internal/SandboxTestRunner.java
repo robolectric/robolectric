@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 
 import com.google.common.base.Splitter;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -52,6 +53,7 @@ import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.sandbox.ShadowMatcher;
+import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.ReflectionHelpers;
@@ -99,6 +101,29 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     shadowProviders = injector.getInstance(ShadowProviders.class);
     classHandlerBuilder = injector.getInstance(ClassHandlerBuilder.class);
     perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
+
+    // Print necessary warning logs when trying to use JUnit5 with Robolectric.
+    // The computeTestMethods is not a good place to do following validation
+    // as it will be called multiple twice, and one calling is from parent class'
+    // constructor.
+    try {
+      Class<?> junit5TestClass = Class.forName("org.junit.jupiter.api.Test");
+      if (junit5TestClass.isAnnotation()) {
+        @SuppressWarnings("unchecked")
+        List<FrameworkMethod> junit5TestMethods =
+            getTestClass().getAnnotatedMethods((Class<? extends Annotation>) junit5TestClass);
+        if (!junit5TestMethods.isEmpty()) {
+          Logger.error(
+              "You're using JUnit5 with Robolectric, and it might have compatibility"
+                  + " issues that cause strange problems.");
+          Logger.error(
+              "You can try https://github.com/apter-tech/junit5-robolectric-extension if you want"
+                  + " to use JUnit5 and Robolectric, and omit this message if you're using it.");
+        }
+      }
+    } catch (ClassNotFoundException e) {
+      // Do nothing
+    }
   }
 
   @Nonnull
