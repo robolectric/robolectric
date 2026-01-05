@@ -153,6 +153,7 @@ public class ShadowApplicationTest {
   }
 
   @Test
+  @Config(maxSdk = BAKLAVA)
   public void shouldProvideServicesIntroducedMarshmallow() {
     assertThat(context.getSystemService(Context.FINGERPRINT_SERVICE))
         .isInstanceOf(FingerprintManager.class);
