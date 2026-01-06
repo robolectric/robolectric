@@ -136,8 +136,7 @@ public class ShadowBiometricManager {
 
   /** Gets the last authentication time set by {@link #setLastAuthenticationTime(long)}. */
   @Implementation(minSdk = VANILLA_ICE_CREAM)
-  protected long getLastAuthenticationTime(
-      @BiometricManager.Authenticators.Types int authenticators) {
+  protected long getLastAuthenticationTime(int authenticators) {
     return lastAuthenticationTime;
   }
 
