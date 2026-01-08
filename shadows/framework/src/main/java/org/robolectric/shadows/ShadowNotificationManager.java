@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 
 import android.app.AutomaticZenRule;
 import android.app.Notification;
@@ -17,6 +18,7 @@ import android.app.NotificationManager.Policy;
 import android.content.ComponentName;
 import android.os.Build;
 import android.os.Parcel;
+import android.service.notification.Condition;
 import android.service.notification.StatusBarNotification;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -53,6 +55,7 @@ public class ShadowNotificationManager {
   private static final Map<String, NotificationChannel> deletedNotificationChannels =
       new ConcurrentHashMap<>();
   private static final Map<String, AutomaticZenRule> automaticZenRules = new ConcurrentHashMap<>();
+  private static final Map<String, Condition> automaticZenRuleStates = new ConcurrentHashMap<>();
   private static final Map<String, Boolean> listenerAccessGrantedComponents =
       new ConcurrentHashMap<>();
   private static final Set<String> canNotifyOnBehalfPackages = Sets.newConcurrentHashSet();
@@ -73,6 +76,7 @@ public class ShadowNotificationManager {
     notificationChannelGroups.clear();
     deletedNotificationChannels.clear();
     automaticZenRules.clear();
+    automaticZenRuleStates.clear();
     listenerAccessGrantedComponents.clear();
     canNotifyOnBehalfPackages.clear();
     currentInterruptionFilter = INTERRUPTION_FILTER_ALL;
@@ -340,6 +344,7 @@ public class ShadowNotificationManager {
     isNotificationPolicyAccessGranted = granted;
     if (!granted) {
       automaticZenRules.clear();
+      automaticZenRuleStates.clear();
     }
   }
 
@@ -411,6 +416,25 @@ public class ShadowNotificationManager {
     Objects.requireNonNull(id);
     enforcePolicyAccess();
     return automaticZenRules.remove(id) != null;
+  }
+
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
+  protected int getAutomaticZenRuleState(String id) {
+    Objects.requireNonNull(id);
+    enforcePolicyAccess();
+
+    if (!automaticZenRuleStates.containsKey(id)) {
+      return Condition.STATE_UNKNOWN;
+    }
+    return automaticZenRuleStates.get(id).state;
+  }
+
+  @Implementation(minSdk = Q)
+  protected void setAutomaticZenRuleState(String id, Condition condition) {
+    Objects.requireNonNull(id);
+    enforcePolicyAccess();
+
+    automaticZenRuleStates.put(id, condition);
   }
 
   @Implementation(minSdk = Q)

@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -22,6 +23,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
+import android.service.notification.Condition;
 import android.service.notification.StatusBarNotification;
 import android.service.notification.ZenPolicy;
 import androidx.test.core.app.ApplicationProvider;
@@ -271,6 +273,28 @@ public class ShadowNotificationManagerTest {
 
     assertThat(notificationManager.getAutomaticZenRule(id)).isNull();
     assertThat(notificationManager.getAutomaticZenRules()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.VANILLA_ICE_CREAM)
+  public void
+      setNotificationPolicyAccessGranted_temporarilyDenyAccess_shouldClearAutomaticZenRuleStates() {
+    shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
+    Uri uri = Uri.parse("condition://id");
+    AutomaticZenRule rule =
+        new AutomaticZenRule(
+            "name",
+            new ComponentName("pkg", "cls"),
+            uri,
+            NotificationManager.INTERRUPTION_FILTER_PRIORITY,
+            /* enabled= */ true);
+    String id = notificationManager.addAutomaticZenRule(rule);
+    notificationManager.setAutomaticZenRuleState(id, new Condition(uri, "", Condition.STATE_TRUE));
+
+    shadowOf(notificationManager).setNotificationPolicyAccessGranted(false);
+    shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
+
+    assertThat(notificationManager.getAutomaticZenRuleState(id)).isEqualTo(Condition.STATE_UNKNOWN);
   }
 
   @Test
@@ -594,6 +618,82 @@ public class ShadowNotificationManagerTest {
     assertThat(notificationManager.getAutomaticZenRule(id1)).isNull();
     assertThat(notificationManager.getAutomaticZenRule(id2)).isEqualTo(rule2);
     assertThat(notificationManager.getAutomaticZenRules()).containsExactly(id2, rule2);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.VANILLA_ICE_CREAM)
+  public void getAutomaticZenRuleState_notificationAccessDenied_shouldThrowSecurityException() {
+    assertThrows(
+        SecurityException.class, () -> notificationManager.getAutomaticZenRuleState("some_id"));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.VANILLA_ICE_CREAM)
+  public void getAutomaticZenRuleState_nonexistentId_shouldReturnUnknown() {
+    shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
+    Uri uri = Uri.parse("condition://id");
+    AutomaticZenRule rule =
+        new AutomaticZenRule(
+            "name",
+            new ComponentName("pkg", "cls"),
+            uri,
+            NotificationManager.INTERRUPTION_FILTER_PRIORITY,
+            /* enabled= */ true);
+    String id = notificationManager.addAutomaticZenRule(rule);
+    notificationManager.setAutomaticZenRuleState(id, new Condition(uri, "", Condition.STATE_TRUE));
+
+    String nonexistentId = "id_different_from_" + id;
+    assertThat(notificationManager.getAutomaticZenRuleState(nonexistentId))
+        .isEqualTo(Condition.STATE_UNKNOWN);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.VANILLA_ICE_CREAM)
+  public void getAutomaticZenRuleState_correctId_shouldReturnCorrectState() {
+    shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
+    Uri uri = Uri.parse("condition://id");
+    int state = Condition.STATE_TRUE;
+    AutomaticZenRule rule =
+        new AutomaticZenRule(
+            "name",
+            new ComponentName("pkg", "cls"),
+            uri,
+            NotificationManager.INTERRUPTION_FILTER_PRIORITY,
+            /* enabled= */ true);
+    String id = notificationManager.addAutomaticZenRule(rule);
+    notificationManager.setAutomaticZenRuleState(id, new Condition(uri, "", Condition.STATE_TRUE));
+
+    assertThat(notificationManager.getAutomaticZenRuleState(id)).isEqualTo(state);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.VANILLA_ICE_CREAM)
+  public void getAutomaticZenRuleState_reset_shouldReturnUnknown() {
+    shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
+    Uri uri = Uri.parse("condition://id");
+    AutomaticZenRule rule =
+        new AutomaticZenRule(
+            "name",
+            new ComponentName("pkg", "cls"),
+            uri,
+            NotificationManager.INTERRUPTION_FILTER_PRIORITY,
+            /* enabled= */ true);
+    String id = notificationManager.addAutomaticZenRule(rule);
+    notificationManager.setAutomaticZenRuleState(id, new Condition(uri, "", Condition.STATE_TRUE));
+    ShadowNotificationManager.reset();
+    shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
+
+    assertThat(notificationManager.getAutomaticZenRuleState(id)).isEqualTo(Condition.STATE_UNKNOWN);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void setAutomaticZenRuleState_notificationAccessDenied_shouldThrowSecurityException() {
+    assertThrows(
+        SecurityException.class,
+        () ->
+            notificationManager.setAutomaticZenRuleState(
+                "any_id", new Condition(Uri.parse("condition://id"), "", Condition.STATE_TRUE)));
   }
 
   @Test
