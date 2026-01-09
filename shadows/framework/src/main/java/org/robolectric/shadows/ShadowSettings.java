@@ -16,7 +16,10 @@ import android.location.LocationManager;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.text.TextUtils;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Table;
+import com.google.common.collect.Tables;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,7 +45,8 @@ public class ShadowSettings {
   public static class ShadowSystem {
     private static final ImmutableMap<String, Optional<Object>> DEFAULTS =
         ImmutableMap.of(Settings.System.ANIMATOR_DURATION_SCALE, Optional.of(1.0f));
-    private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>(DEFAULTS);
+    private static final Table<Integer, String, Optional<Object>> settingsByUser =
+        Tables.synchronizedTable(HashBasedTable.<Integer, String, Optional<Object>>create());
 
     @Implementation
     protected static boolean putString(ContentResolver cr, String name, String value) {
@@ -52,14 +56,17 @@ public class ShadowSettings {
     @Implementation
     protected static boolean putStringForUser(
         ContentResolver cr, String name, String value, int userHandle) {
-      return put(cr, name, value);
+      return put(cr, name, value, userHandle);
     }
 
     @Implementation
     protected static String getStringForUser(ContentResolver cr, String name, int userHandle) {
       // In real Android, all settings types are stored as Strings.
-      Optional<Object> optionalValue = settings.getOrDefault(name, Optional.empty());
-      if (!optionalValue.isPresent()) {
+      Optional<Object> optionalValue = settingsByUser.get(userHandle, name);
+      if (optionalValue == null) {
+        optionalValue = DEFAULTS.get(name);
+      }
+      if (optionalValue == null || !optionalValue.isPresent()) {
         return null;
       }
       return String.valueOf(optionalValue.get());
@@ -74,9 +81,10 @@ public class ShadowSettings {
       return result;
     }
 
-    private static boolean put(ContentResolver cr, String name, Object value) {
+    private static boolean put(ContentResolver cr, String name, Object value, int userHandle) {
       if (!Objects.equals(
-          settings.put(name, Optional.ofNullable(value)), Optional.ofNullable(value))) {
+          settingsByUser.put(userHandle, name, Optional.ofNullable(value)),
+          Optional.ofNullable(value))) {
         if (cr != null) {
           cr.notifyChange(Settings.System.getUriFor(name), null);
         }
@@ -86,8 +94,7 @@ public class ShadowSettings {
 
     @Resetter
     public static void reset() {
-      settings.clear();
-      settings.putAll(DEFAULTS);
+      settingsByUser.clear();
     }
   }
 
