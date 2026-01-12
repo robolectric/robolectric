@@ -30,6 +30,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.android.Registries;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -95,6 +96,7 @@ public abstract class BaseMemoryLeaksTest {
           ActivityController<Activity> ac = Robolectric.buildActivity(Activity.class).setup();
           Activity activity = ac.get();
           ac.pause().stop().destroy();
+          ShadowLooper.idleMainLooper();
           return activity;
         });
   }
@@ -112,6 +114,7 @@ public abstract class BaseMemoryLeaksTest {
                   ? Configuration.ORIENTATION_PORTRAIT
                   : Configuration.ORIENTATION_LANDSCAPE;
           ac.configurationChange(newConfiguration);
+          ShadowLooper.idleMainLooper();
           return activity;
         });
   }
