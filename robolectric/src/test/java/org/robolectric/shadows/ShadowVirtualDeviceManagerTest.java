@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.input.VirtualKeyEvent.ACTION_DOWN;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
@@ -67,7 +68,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowVirtualDeviceManager.ShadowVirtualDevice;
 
 /** Unit test for ShadowVirtualDeviceManager and ShadowVirtualDevice. */
-@Config(minSdk = UPSIDE_DOWN_CAKE)
+@Config(minSdk = UPSIDE_DOWN_CAKE, maxSdk = BAKLAVA)
 @RunWith(RobolectricTestRunner.class)
 public class ShadowVirtualDeviceManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
