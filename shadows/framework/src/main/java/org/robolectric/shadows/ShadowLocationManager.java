@@ -963,6 +963,9 @@ public class ShadowLocationManager {
       boolean wakeOnFifoFull,
       @ClassName("android.location.BatchedLocationCallback") Object callback,
       Handler handler) {
+    if (handler == null) {
+      handler = new Handler();
+    }
     getOrCreateProviderEntry(GPS_PROVIDER)
         .setLegacyBatchedListener(
             callback, new HandlerExecutor(handler), gnssBatchSize, wakeOnFifoFull);
