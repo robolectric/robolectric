@@ -9,7 +9,8 @@ import org.robolectric.annotation.Implements;
 @Implements(
     className = "android.hardware.input.VirtualInputDevice",
     isInAndroidSdk = false,
-    minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+    minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE,
+    maxSdk = VERSION_CODES.BAKLAVA)
 public class ShadowVirtualInputDevice {
 
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
