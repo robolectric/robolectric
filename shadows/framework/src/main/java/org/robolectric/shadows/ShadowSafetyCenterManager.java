@@ -13,6 +13,7 @@ import android.safetycenter.SafetyCenterManager.OnSafetyCenterDataChangedListene
 import android.safetycenter.SafetyEvent;
 import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceErrorDetails;
+import android.util.Log;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +35,7 @@ import org.robolectric.util.reflector.ForType;
     isInAndroidSdk = false)
 public class ShadowSafetyCenterManager {
 
+  private static final String TAG = "ShadowSafetyCenterManager";
   private static final Object lock = new Object();
 
   @GuardedBy("lock")
@@ -168,6 +170,15 @@ public class ShadowSafetyCenterManager {
     }
   }
 
+  /**
+   * Sets the {@link SafetyCenterData} that will be returned by {@link #getSafetyCenterData()} and
+   * notifies listeners.
+   *
+   * <p>In production, {@link SafetyCenterData} is constructed based on system configurations and
+   * data provided by safety sources, and is never null. This shadow does not replicate that logic,
+   * so for {@link #getSafetyCenterData()} to return a non-null value, test cases should call this
+   * method to set the desired {@link SafetyCenterData}.
+   */
   public void setSafetyCenterData(@Nonnull SafetyCenterData safetyCenterDataInput) {
     synchronized (lock) {
       safetyCenterData = safetyCenterDataInput;
@@ -178,8 +189,21 @@ public class ShadowSafetyCenterManager {
   @Implementation
   protected void addOnSafetyCenterDataChangedListener(
       @Nonnull Executor executor, @Nonnull OnSafetyCenterDataChangedListener listener) {
+    SafetyCenterData currentData;
     synchronized (lock) {
       listeners.put(listener, executor);
+      currentData = safetyCenterData;
+    }
+    if (currentData != null) {
+      executor.execute(
+          () -> {
+            listener.onSafetyCenterDataChanged(currentData);
+          });
+    } else {
+      Log.d(
+          TAG,
+          "OnSafetyCenterDataChangedListener added, but no data available, so listener will not"
+              + " be notified");
     }
   }
 
