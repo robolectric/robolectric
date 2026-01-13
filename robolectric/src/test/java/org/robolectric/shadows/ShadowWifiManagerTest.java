@@ -327,6 +327,19 @@ public class ShadowWifiManagerTest {
 
   @Test
   @Config(minSdk = S)
+  public void addNetworkPrivileged_setAddNetworkPrivilegedResult_shouldReturnResult() {
+    AddNetworkResult expectedResult =
+        new AddNetworkResult(
+            AddNetworkResult.STATUS_INVALID_CONFIGURATION_ENTERPRISE, /* networkId= */ -1);
+    shadowOf(wifiManager).setAddNetworkPrivilegedResult(expectedResult);
+
+    AddNetworkResult addNetworkResult = wifiManager.addNetworkPrivileged(new WifiConfiguration());
+
+    assertThat(addNetworkResult).isEqualTo(expectedResult);
+  }
+
+  @Test
+  @Config(minSdk = S)
   public void addNetwork_nonNullConfig_shouldNotReturnInvalidNetworkId() {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
     int networkId = wifiManager.addNetwork(wifiConfiguration);
