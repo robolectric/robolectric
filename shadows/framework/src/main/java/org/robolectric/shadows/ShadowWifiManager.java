@@ -84,6 +84,7 @@ public class ShadowWifiManager {
   private boolean isWpa3SuiteBSupported = false;
   private boolean doesCallerHavePermissionForGetPrivilegedConfiguredNetworks = true;
   private boolean returnAddNetworkFailure = false;
+  private AddNetworkResult addNetworkPrivilegedResult = null;
   private final AtomicInteger activeLockCount = new AtomicInteger(0);
   private final BitSet readOnlyNetworkIds = new BitSet();
   private final ConcurrentHashMap<WifiManager.OnWifiUsabilityStatsListener, Executor>
@@ -336,12 +337,23 @@ public class ShadowWifiManager {
   }
 
   /**
+   * Sets the result of {@link #addNetworkPrivileged(WifiConfiguration)}. Subsequent calls to
+   * addNetworkPrivileged() will return this value.
+   */
+  public void setAddNetworkPrivilegedResult(AddNetworkResult result) {
+    this.addNetworkPrivilegedResult = result;
+  }
+
+  /**
    * The new version of {@link #addNetwork(WifiConfiguration)} which returns a more detailed failure
    * codes. The original implementation of this API is limited to Device Owner (DO), Profile Owner
    * (PO), system app, and privileged apps but this shadow can be called by all apps.
    */
   @Implementation(minSdk = S)
   protected AddNetworkResult addNetworkPrivileged(WifiConfiguration config) {
+    if (addNetworkPrivilegedResult != null) {
+      return addNetworkPrivilegedResult;
+    }
     if (config == null) {
       throw new IllegalArgumentException("config cannot be null");
     }
