@@ -1,9 +1,10 @@
 package org.robolectric.shadows;
 
-import static com.google.common.base.Preconditions.checkArgument;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
+import com.google.common.base.Preconditions;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import javax.annotation.Nonnull;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -15,31 +16,45 @@ public class SensorEventBuilder {
   private long timestampNs = 0;
   private Sensor sourceSensor = null;
 
-  private SensorEventBuilder() {}
-
-  public static SensorEventBuilder newBuilder() {
-    return new SensorEventBuilder();
-  }
-
-  public SensorEventBuilder setValues(@Nonnull float[] value) {
-    values = value;
-    return this;
+  private SensorEventBuilder(Sensor sourceSensor, float[] values) {
+    this.sourceSensor = sourceSensor;
+    this.values = values;
   }
 
   /**
-   * If the 'type' property of Sensor is all that is important to your use case, an instance of from
-   * ShadowSensor.newInstance(sensorType) should suffice.
+   * @deprecated Use {@link #newBuilder(Sensor, float[])} instead.
    */
+  @Deprecated
+  public static SensorEventBuilder newBuilder() {
+    return new SensorEventBuilder(null, null);
+  }
+
+  public static SensorEventBuilder newBuilder(Sensor sensor, float[] values) {
+    Preconditions.checkNotNull(sensor, "sensor cannot be null");
+    Preconditions.checkNotNull(values, "values cannot be null");
+    Preconditions.checkArgument(values.length > 0, "values cannot be empty");
+    return new SensorEventBuilder(sensor, values);
+  }
+
+  @CanIgnoreReturnValue
+  public SensorEventBuilder setValues(@Nonnull float[] values) {
+    this.values = values;
+    return this;
+  }
+
+  @CanIgnoreReturnValue
   public SensorEventBuilder setSensor(@Nonnull Sensor value) {
     sourceSensor = value;
     return this;
   }
 
+  @CanIgnoreReturnValue
   public SensorEventBuilder setTimestamp(long value) {
     timestampNs = value;
     return this;
   }
 
+  @CanIgnoreReturnValue
   public SensorEventBuilder setAccuracy(int value) {
     accuracy = value;
     return this;
@@ -47,8 +62,9 @@ public class SensorEventBuilder {
 
   public SensorEvent build() {
     // SensorEvent values and a source Sensor object need be set.
-    checkArgument(values != null && values.length > 0);
-    checkArgument(sourceSensor != null);
+    Preconditions.checkArgument(
+        values != null && values.length > 0, "values cannot be null or empty");
+    Preconditions.checkArgument(sourceSensor != null, "sensor cannot be null");
 
     SensorEvent sensorEvent =
         ReflectionHelpers.callConstructor(
