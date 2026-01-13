@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -8,27 +7,25 @@ import android.annotation.RequiresApi;
 import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.view.Window;
+import com.android.internal.policy.PhoneWindow;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.ForType;
 
-/** Shadow for PhoneWindow for APIs 23+ */
-@Implements(
-    className = "com.android.internal.policy.PhoneWindow",
-    isInAndroidSdk = false,
-    minSdk = M)
+/** Shadow for PhoneWindow */
+@Implements(value = PhoneWindow.class, isInAndroidSdk = false)
 public class ShadowPhoneWindow extends ShadowWindow {
   protected @RealObject Window realWindow;
   protected boolean decorFitsSystemWindows = true;
 
-  @Implementation(minSdk = M)
+  @Implementation
   public void setTitle(CharSequence title) {
     this.title = title;
     reflector(DirectPhoneWindowReflector.class, realWindow).setTitle(title);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   public void setBackgroundDrawable(Drawable drawable) {
     this.backgroundDrawable = drawable;
     reflector(DirectPhoneWindowReflector.class, realWindow).setBackgroundDrawable(drawable);
@@ -55,7 +52,7 @@ public class ShadowPhoneWindow extends ShadowWindow {
     return decorFitsSystemWindows;
   }
 
-  @ForType(className = "com.android.internal.policy.PhoneWindow", direct = true)
+  @ForType(value = PhoneWindow.class, direct = true)
   interface DirectPhoneWindowReflector {
 
     void setTitle(CharSequence title);
