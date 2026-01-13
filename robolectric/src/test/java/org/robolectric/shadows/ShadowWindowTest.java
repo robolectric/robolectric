@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
@@ -137,14 +136,6 @@ public class ShadowWindowTest {
     window.setSoftInputMode(7);
 
     assertThat(shadowWindow.getSoftInputMode()).isEqualTo(7);
-  }
-
-  @Test
-  @Config(minSdk = M)
-  public void forM_create_shouldCreatePhoneWindow() throws Exception {
-    assertThat(
-            ShadowWindow.create(ApplicationProvider.getApplicationContext()).getClass().getName())
-        .isEqualTo("com.android.internal.policy.PhoneWindow");
   }
 
   @Test

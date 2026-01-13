@@ -1,10 +1,8 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
@@ -13,14 +11,13 @@ import android.os.Handler;
 import android.view.FrameMetrics;
 import android.view.Window;
 import android.view.Window.OnFrameMetricsAvailableListener;
+import com.android.internal.policy.PhoneWindow;
 import java.util.HashSet;
 import java.util.Set;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -37,15 +34,8 @@ public class ShadowWindow {
   private final Set<OnFrameMetricsAvailableListener> onFrameMetricsAvailableListeners =
       new HashSet<>();
 
-  public static Window create(Context context) throws ClassNotFoundException {
-    String className =
-        getApiLevel() >= M
-            ? "com.android.internal.policy.PhoneWindow"
-            : "com.android.internal.policy.impl.PhoneWindow";
-    Class<? extends Window> phoneWindowClass =
-        (Class<? extends Window>) Window.class.getClassLoader().loadClass(className);
-    return ReflectionHelpers.callConstructor(
-        phoneWindowClass, ClassParameter.from(Context.class, context));
+  public static Window create(Context context) {
+    return new PhoneWindow(context);
   }
 
   @Implementation
