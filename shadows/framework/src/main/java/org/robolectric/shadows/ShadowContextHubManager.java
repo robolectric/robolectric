@@ -229,6 +229,10 @@ public class ShadowContextHubManager {
     return ImmutableList.copyOf(contextHubClientWithPendingIntentList);
   }
 
+  public List<ContextHubClient> getContextHubClientsWithCallback() {
+    return ImmutableList.copyOf(contextHubClientCallbacks.keySet());
+  }
+
   public void resetContextHub() {
     for (Map.Entry<ContextHubClient, ContextHubClientCallbackDetails> entry :
         contextHubClientCallbacks.entrySet()) {
