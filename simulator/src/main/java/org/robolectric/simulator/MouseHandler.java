@@ -37,7 +37,18 @@ public class MouseHandler extends MouseAdapter implements MouseWheelListener {
   private final JPopupMenu rightClickMenu;
   private Component previouslyFocusedComponent;
 
+  private final int scrolling;
+  // Scrolling moves the content (i.e. moving the wheel up moves the page up).
+  private static final int NATURAL_SCROLLING = 1;
+  // Scrolling moves the view (i.e. moving the wheel up moves the page down).
+  private static final int TRADITIONAL_SCROLLING = -1;
+
   public MouseHandler() {
+    this.scrolling =
+        System.getProperty("robolectric.scrollWheel", "traditional").equals("traditional")
+            ? TRADITIONAL_SCROLLING
+            : NATURAL_SCROLLING;
+
     rightClickMenu = new JPopupMenu();
 
     rightClickMenu.addPopupMenuListener(
@@ -165,7 +176,7 @@ public class MouseHandler extends MouseAdapter implements MouseWheelListener {
     MotionEvent.PointerCoords[] pointerCoords = {new MotionEvent.PointerCoords()};
     pointerCoords[0].x = e.getX();
     pointerCoords[0].y = e.getY();
-    pointerCoords[0].setAxisValue(MotionEvent.AXIS_VSCROLL, e.getWheelRotation());
+    pointerCoords[0].setAxisValue(MotionEvent.AXIS_VSCROLL, scrolling * e.getWheelRotation());
     MotionEvent motionEvent =
         MotionEvent.obtain(
             downTime,
