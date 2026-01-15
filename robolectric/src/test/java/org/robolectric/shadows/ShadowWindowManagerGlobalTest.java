@@ -6,7 +6,6 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertThrows;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.shadows.ShadowLooper.idleMainLooper;
 import static org.robolectric.shadows.SystemUi.STANDARD_STATUS_BAR;
@@ -19,24 +18,13 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
-import android.view.ViewConfiguration;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowManager;
-import android.window.BackEvent;
-import android.window.OnBackAnimationCallback;
-import android.window.OnBackInvokedDispatcher;
-import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import java.util.ArrayList;
-import java.util.List;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Rule;
@@ -87,155 +75,6 @@ public class ShadowWindowManagerGlobalTest {
     assertThat(decorView.getWindowVisibility()).isEqualTo(View.VISIBLE);
   }
 
-  @SuppressWarnings("MemberName") // In lieu of parameterization.
-  private void startPredictiveBackGesture_callsBackCallbackMethods(@BackEvent.SwipeEdge int edge) {
-    ShadowApplication.setEnableOnBackInvokedCallback(true);
-    float touchSlop =
-        ViewConfiguration.get(ApplicationProvider.getApplicationContext()).getScaledTouchSlop();
-    try (ActivityController<ActivityWithBackCallback> controller =
-        Robolectric.buildActivity(ActivityWithBackCallback.class)) {
-      Activity activity = controller.setup().get();
-      TestBackAnimationCallback backInvokedCallback = new TestBackAnimationCallback();
-      activity
-          .getOnBackInvokedDispatcher()
-          .registerOnBackInvokedCallback(
-              OnBackInvokedDispatcher.PRIORITY_DEFAULT, backInvokedCallback);
-
-      float moveByX = (edge == BackEvent.EDGE_LEFT ? 1 : -1) * touchSlop * 2;
-      try (ShadowWindowManagerGlobal.PredictiveBackGesture backGesture =
-          ShadowWindowManagerGlobal.startPredictiveBackGesture(edge)) {
-        backGesture.moveBy(moveByX, 0f);
-      }
-
-      assertThat(backInvokedCallback.onBackStarted).isNotNull();
-      assertThat(backInvokedCallback.onBackProgressed).isNotEmpty();
-      assertThat(Iterables.getLast(backInvokedCallback.onBackProgressed).getTouchX())
-          .isEqualTo(backInvokedCallback.onBackStarted.getTouchX() + moveByX);
-      assertThat(Iterables.getLast(backInvokedCallback.onBackProgressed).getProgress())
-          .isGreaterThan(0);
-      assertThat(backInvokedCallback.onBackInvokedCalled).isTrue();
-    }
-  }
-
-  @Test
-  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
-  public void startPredictiveBackGesture_leftEdge_callsBackCallbackMethods() {
-    startPredictiveBackGesture_callsBackCallbackMethods(BackEvent.EDGE_LEFT);
-  }
-
-  @Test
-  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
-  public void startPredictiveBackGesture_rightEdge_callsBackCallbackMethods() {
-    startPredictiveBackGesture_callsBackCallbackMethods(BackEvent.EDGE_RIGHT);
-  }
-
-  @Test
-  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
-  public void startPredictiveBackGesture_cancel_callbackIsCancelled() {
-    ShadowApplication.setEnableOnBackInvokedCallback(true);
-    try (ActivityController<ActivityWithBackCallback> controller =
-        Robolectric.buildActivity(ActivityWithBackCallback.class)) {
-      Activity activity = controller.setup().get();
-      TestBackAnimationCallback backInvokedCallback = new TestBackAnimationCallback();
-      activity
-          .getOnBackInvokedDispatcher()
-          .registerOnBackInvokedCallback(
-              OnBackInvokedDispatcher.PRIORITY_DEFAULT, backInvokedCallback);
-
-      try (ShadowWindowManagerGlobal.PredictiveBackGesture backGesture =
-          ShadowWindowManagerGlobal.startPredictiveBackGesture(BackEvent.EDGE_LEFT)) {
-        backGesture.cancel();
-      }
-
-      assertThat(backInvokedCallback.onBackStarted).isNotNull();
-      assertThat(backInvokedCallback.onBackCancelledCalled).isTrue();
-    }
-  }
-
-  @Test
-  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
-  public void startPredictiveBackGesture_withExclusion_isNotCalled() {
-    ShadowApplication.setEnableOnBackInvokedCallback(true);
-    Display display = ShadowDisplay.getDefaultDisplay();
-    try (ActivityController<ActivityWithBackCallback> controller =
-        Robolectric.buildActivity(ActivityWithBackCallback.class)) {
-      Activity activity = controller.setup().get();
-      TestBackAnimationCallback backInvokedCallback = new TestBackAnimationCallback();
-      activity
-          .getOnBackInvokedDispatcher()
-          .registerOnBackInvokedCallback(
-              OnBackInvokedDispatcher.PRIORITY_DEFAULT, backInvokedCallback);
-      // Exclude the entire display.
-      activity
-          .findViewById(android.R.id.content)
-          .setSystemGestureExclusionRects(
-              ImmutableList.of(new Rect(0, 0, display.getWidth(), display.getHeight())));
-
-      ShadowWindowManagerGlobal.PredictiveBackGesture backGesture =
-          ShadowWindowManagerGlobal.startPredictiveBackGesture(BackEvent.EDGE_LEFT);
-
-      assertThat(backGesture).isNull();
-      assertThat(backInvokedCallback.onBackStarted).isNull();
-    }
-  }
-
-  @Test
-  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
-  public void startPredictiveBackGesture_cancelledTouchEventsDispatchedToWindow() {
-    ShadowApplication.setEnableOnBackInvokedCallback(true);
-    try (ActivityController<ActivityWithBackCallback> controller =
-        Robolectric.buildActivity(ActivityWithBackCallback.class)) {
-      Activity activity = controller.setup().get();
-      List<MotionEvent> touchEvents = new ArrayList<>();
-      activity
-          .getOnBackInvokedDispatcher()
-          .registerOnBackInvokedCallback(
-              OnBackInvokedDispatcher.PRIORITY_DEFAULT, new TestBackAnimationCallback());
-      activity
-          .findViewById(android.R.id.content)
-          .setOnTouchListener(
-              (v, event) -> {
-                touchEvents.add(event);
-                return true;
-              });
-
-      ShadowWindowManagerGlobal.startPredictiveBackGesture(BackEvent.EDGE_LEFT).close();
-
-      assertThat(touchEvents).isNotEmpty();
-      assertThat(touchEvents.get(0).getAction()).isEqualTo(MotionEvent.ACTION_DOWN);
-      assertThat(Iterables.getLast(touchEvents).getAction()).isEqualTo(MotionEvent.ACTION_CANCEL);
-    }
-  }
-
-  @Test
-  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
-  public void startPredictiveBackGesture_invalidPosition_throwsIllegalArgumentException() {
-    ShadowApplication.setEnableOnBackInvokedCallback(true);
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> ShadowWindowManagerGlobal.startPredictiveBackGesture(BackEvent.EDGE_LEFT, -1f));
-  }
-
-  @Test
-  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
-  public void startPredictiveBackGesture_alreadyOngoing_throwsIllegalStateException() {
-    ShadowApplication.setEnableOnBackInvokedCallback(true);
-    try (ActivityController<ActivityWithBackCallback> controller =
-        Robolectric.buildActivity(ActivityWithBackCallback.class)) {
-      Activity activity = controller.setup().get();
-      activity
-          .getOnBackInvokedDispatcher()
-          .registerOnBackInvokedCallback(
-              OnBackInvokedDispatcher.PRIORITY_DEFAULT, new TestBackAnimationCallback());
-
-      ShadowWindowManagerGlobal.startPredictiveBackGesture(BackEvent.EDGE_LEFT);
-
-      assertThrows(
-          IllegalStateException.class,
-          () -> ShadowWindowManagerGlobal.startPredictiveBackGesture(BackEvent.EDGE_LEFT));
-    }
-  }
-
   static final class DragActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle bundle) {
@@ -255,35 +94,6 @@ public class ShadowWindowManagerGlobalTest {
             return true;
           });
       setContentView(contentView);
-    }
-  }
-
-  public static final class ActivityWithBackCallback extends Activity {}
-
-  private static final class TestBackAnimationCallback implements OnBackAnimationCallback {
-    @Nullable public BackEvent onBackStarted;
-    public List<BackEvent> onBackProgressed = new ArrayList<>();
-    public boolean onBackInvokedCalled = false;
-    public boolean onBackCancelledCalled = false;
-
-    @Override
-    public void onBackStarted(@Nonnull BackEvent backEvent) {
-      onBackStarted = backEvent;
-    }
-
-    @Override
-    public void onBackProgressed(@Nonnull BackEvent backEvent) {
-      onBackProgressed.add(backEvent);
-    }
-
-    @Override
-    public void onBackInvoked() {
-      onBackInvokedCalled = true;
-    }
-
-    @Override
-    public void onBackCancelled() {
-      onBackCancelledCalled = true;
     }
   }
 

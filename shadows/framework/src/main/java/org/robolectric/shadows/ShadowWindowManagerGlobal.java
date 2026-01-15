@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -16,10 +15,7 @@ import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static android.view.WindowInsets.Type.navigationBars;
 import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowInsets.Type.systemBars;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static java.lang.Math.max;
-import static java.lang.Math.round;
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
@@ -29,7 +25,6 @@ import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.FloatRange;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -41,8 +36,6 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
-import android.os.SystemClock;
-import android.util.Log;
 import android.util.MergedConfiguration;
 import android.view.DisplayCutout;
 import android.view.DisplayInfo;
@@ -53,24 +46,16 @@ import android.view.IWindowSession;
 import android.view.InsetsSource;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
-import android.view.MotionEvent;
-import android.view.RemoteAnimationTarget;
 import android.view.SurfaceControl;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.WindowManagerGlobal;
 import android.view.WindowRelayoutResult;
 import android.window.ActivityWindowInfo;
-import android.window.BackEvent;
-import android.window.BackMotionEvent;
 import android.window.ClientWindowFrames;
-import android.window.OnBackInvokedCallbackInfo;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import java.io.Closeable;
 import java.lang.reflect.Array;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,7 +74,6 @@ import org.robolectric.shadows.ShadowInsetsState.InsetsStateReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -97,8 +81,8 @@ import org.robolectric.util.reflector.Static;
 @SuppressWarnings("unused") // Unused params are implementations of Android SDK methods.
 @Implements(value = WindowManagerGlobal.class, isInAndroidSdk = false)
 public class ShadowWindowManagerGlobal {
-  private static WindowSessionDelegate windowSessionDelegate = new WindowSessionDelegate();
-  private static IWindowSession windowSession;
+  protected static WindowSessionDelegate windowSessionDelegate = new WindowSessionDelegate();
+  protected static IWindowSession windowSession;
 
   @Resetter
   public static void reset() {
@@ -137,250 +121,56 @@ public class ShadowWindowManagerGlobal {
     windowSessionDelegate.lastDragClipData = null;
   }
 
-  /**
-   * Ongoing predictive back gesture.
-   *
-   * <p>Start a predictive back gesture by calling {@link
-   * ShadowWindowManagerGlobal#startPredictiveBackGesture}. One or more drag progress events can be
-   * dispatched by calling {@link #moveBy}. The gesture must be ended by either calling {@link
-   * #cancel()} or {@link #close()}, if {@link #cancel()} is called a subsequent call to {@link
-   * #close()} will do nothing to allow using the gesture in a try with resources statement:
-   *
-   * <pre>
-   * try (PredictiveBackGesture backGesture =
-   *     ShadowWindowManagerGlobal.startPredictiveBackGesture(BackEvent.EDGE_LEFT)) {
-   *   backGesture.moveBy(10, 10);
-   * }
-   * </pre>
-   */
-  public static final class PredictiveBackGesture implements Closeable {
-    @BackEvent.SwipeEdge private final int edge;
-    private final int displayWidth;
-    private final float startTouchX;
-    private final float progressThreshold;
-    private float touchX;
-    private float touchY;
-    private boolean isCancelled;
-    private boolean isFinished;
-
-    private PredictiveBackGesture(
-        @BackEvent.SwipeEdge int edge, int displayWidth, float touchX, float touchY) {
-      this.edge = edge;
-      this.displayWidth = displayWidth;
-      this.progressThreshold =
-          ViewConfiguration.get(RuntimeEnvironment.getApplication()).getScaledTouchSlop();
-      this.startTouchX = touchX;
-      this.touchX = touchX;
-      this.touchY = touchY;
-    }
-
-    /** Dispatches drag progress for a predictive back gesture. */
-    public void moveBy(float dx, float dy) {
-      checkState(!isCancelled && !isFinished);
-      try {
-        touchX += dx;
-        touchY += dy;
-        ShadowWindowManagerGlobal.windowSessionDelegate
-            .onBackInvokedCallbackInfo
-            .getCallback()
-            .onBackProgressed(
-                BackMotionEvents.newBackMotionEvent(edge, touchX, touchY, calculateProgress()));
-        ShadowLooper.idleMainLooper();
-      } catch (RemoteException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    /** Cancels the back gesture. */
-    public void cancel() {
-      checkState(!isCancelled && !isFinished);
-      isCancelled = true;
-      try {
-        ShadowWindowManagerGlobal.windowSessionDelegate
-            .onBackInvokedCallbackInfo
-            .getCallback()
-            .onBackCancelled();
-        ShadowWindowManagerGlobal.windowSessionDelegate.currentPredictiveBackGesture = null;
-        ShadowLooper.idleMainLooper();
-      } catch (RemoteException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    /**
-     * Ends the back gesture. If the back gesture has not been cancelled by calling {@link
-     * #cancel()} then the back handler is invoked.
-     *
-     * <p>Callers should always call either {@link #cancel()} or {@link #close()}. It is recommended
-     * to use the result of {@link ShadowWindowManagerGlobal#startPredictiveBackGesture} in a try
-     * with resources.
-     */
-    @Override
-    public void close() {
-      checkState(!isFinished);
-      isFinished = true;
-      if (!isCancelled) {
-        try {
-          ShadowWindowManagerGlobal.windowSessionDelegate
-              .onBackInvokedCallbackInfo
-              .getCallback()
-              .onBackInvoked();
-          ShadowWindowManagerGlobal.windowSessionDelegate.currentPredictiveBackGesture = null;
-          ShadowLooper.idleMainLooper();
-        } catch (RemoteException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    }
-
-    private float calculateProgress() {
-      // The real implementation anchors the progress on the start x and resets it each time the
-      // threshold is lost, it also calculates a linear and non linear progress area. This
-      // implementation is much simpler.
-      int direction = (edge == BackEvent.EDGE_LEFT ? 1 : -1);
-      float draggableWidth =
-          (edge == BackEvent.EDGE_LEFT ? displayWidth - startTouchX : startTouchX)
-              - progressThreshold;
-      return max((((touchX - startTouchX) * direction) - progressThreshold) / draggableWidth, 0f);
-    }
-  }
-
-  /**
-   * Starts a predictive back gesture in the center of the edge. See {@link
-   * #startPredictiveBackGesture(int, float)}.
-   */
-  @Nullable
-  public static PredictiveBackGesture startPredictiveBackGesture(@BackEvent.SwipeEdge int edge) {
-    return startPredictiveBackGesture(edge, 0.5f);
-  }
-
-  /**
-   * Starts a predictive back gesture.
-   *
-   * <p>If no active activity with a back pressed callback that supports animations is registered
-   * then null will be returned. See {@link PredictiveBackGesture}.
-   *
-   * <p>See {@link ShadowApplication#setEnableOnBackInvokedCallback}.
-   *
-   * @param position The position on edge of the window
-   */
-  @Nullable
-  public static PredictiveBackGesture startPredictiveBackGesture(
-      @BackEvent.SwipeEdge int edge, @FloatRange(from = 0f, to = 1f) float position) {
-    checkArgument(position >= 0f && position <= 1f, "Invalid position: %s.", position);
-    checkState(
-        windowSessionDelegate.currentPredictiveBackGesture == null,
-        "Current predictive back gesture in progress.");
-    if (windowSessionDelegate.onBackInvokedCallbackInfo == null
-        || !windowSessionDelegate.onBackInvokedCallbackInfo.isAnimationCallback()) {
-      return null;
-    } else {
-      try {
-        // Exclusion rects are sent to the window session by posting so idle the looper first.
-        ShadowLooper.idleMainLooper();
-        int touchSlop =
-            ViewConfiguration.get(RuntimeEnvironment.getApplication()).getScaledTouchSlop();
-        int displayWidth = ShadowDisplay.getDefaultDisplay().getWidth();
-        float deltaX = (edge == BackEvent.EDGE_LEFT ? 1 : -1) * touchSlop / 2f;
-        float downX = (edge == BackEvent.EDGE_LEFT ? 0 : displayWidth) + deltaX;
-        float downY = ShadowDisplay.getDefaultDisplay().getHeight() * position;
-        if (windowSessionDelegate.systemGestureExclusionRects != null) {
-          // TODO: The rects should be offset based on the window's position in the display, most
-          //  windows should be full screen which makes this naive logic work ok.
-          for (Rect rect : windowSessionDelegate.systemGestureExclusionRects) {
-            if (rect.contains(round(downX), round(downY))) {
-              return null;
-            }
-          }
-        }
-        // A predictive back gesture starts as a user swipe which the window will receive the start
-        // of the gesture before it gets intercepted by the window manager.
-        MotionEvent downEvent =
-            MotionEvent.obtain(
-                /* downTime= */ SystemClock.uptimeMillis(),
-                /* eventTime= */ SystemClock.uptimeMillis(),
-                MotionEvent.ACTION_DOWN,
-                downX,
-                downY,
-                /* metaState= */ 0);
-        MotionEvent moveEvent = MotionEvent.obtain(downEvent);
-        moveEvent.setAction(MotionEvent.ACTION_MOVE);
-        moveEvent.offsetLocation(deltaX, 0);
-        MotionEvent cancelEvent = MotionEvent.obtain(moveEvent);
-        cancelEvent.setAction(MotionEvent.ACTION_CANCEL);
-        ShadowUiAutomation.injectInputEvent(downEvent);
-        ShadowUiAutomation.injectInputEvent(moveEvent);
-        ShadowUiAutomation.injectInputEvent(cancelEvent);
-        windowSessionDelegate
-            .onBackInvokedCallbackInfo
-            .getCallback()
-            .onBackStarted(
-                BackMotionEvents.newBackMotionEvent(
-                    edge, downX + 2 * deltaX, downY, /* progress= */ 0));
-        ShadowLooper.idleMainLooper();
-        PredictiveBackGesture backGesture =
-            new PredictiveBackGesture(edge, displayWidth, downX + 2 * deltaX, downY);
-        windowSessionDelegate.currentPredictiveBackGesture = backGesture;
-        return backGesture;
-      } catch (RemoteException e) {
-        Log.e("ShadowWindowManagerGlobal", "Failed to start back gesture", e);
-        return null;
-      }
-    }
-  }
-
-  @SuppressWarnings("unchecked") // Cast args to IWindowSession methods
   @Implementation
   protected static synchronized IWindowSession getWindowSession() {
     if (windowSession == null) {
-      // Use Proxy.newProxyInstance instead of ReflectionHelpers.createDelegatingProxy as there are
-      // too many variants of 'add', 'addToDisplay', and 'addToDisplayAsUser', some of which have
-      // arg types that don't exist any more.
-      windowSession =
-          (IWindowSession)
-              Proxy.newProxyInstance(
-                  IWindowSession.class.getClassLoader(),
-                  new Class<?>[] {IWindowSession.class},
-                  (proxy, method, args) -> {
-                    String methodName = method.getName();
-                    switch (methodName) {
-                      case "add": // SDK 16
-                      case "addToDisplay": // SDK 17-29
-                      case "addToDisplayAsUser": // SDK 30+
-                        return windowSessionDelegate.addToDisplay(args);
-                      case "remove":
-                        windowSessionDelegate.remove(args);
-                        return null;
-                      case "relayout":
-                        return windowSessionDelegate.relayout(args);
-                      case "getInTouchMode":
-                        return windowSessionDelegate.getInTouchMode();
-                      case "performDrag":
-                        return windowSessionDelegate.performDrag(args);
-                      case "prepareDrag":
-                        return windowSessionDelegate.prepareDrag();
-                      case "setInTouchMode":
-                        windowSessionDelegate.setInTouchMode((boolean) args[0]);
-                        return null;
-                      case "setOnBackInvokedCallbackInfo":
-                        windowSessionDelegate.onBackInvokedCallbackInfo =
-                            (OnBackInvokedCallbackInfo) args[1];
-                        return null;
-                      case "reportSystemGestureExclusionChanged":
-                        windowSessionDelegate.systemGestureExclusionRects = (List<Rect>) args[1];
-                        return null;
-                      case "insetsModified":
-                      case "updateRequestedVisibilities":
-                      case "updateRequestedVisibleTypes":
-                        windowSessionDelegate.updateInsets(args);
-                        return null;
-                      default:
-                        return ReflectionHelpers.defaultValueForType(
-                            method.getReturnType().getName());
-                    }
-                  });
+      windowSession = createWindowSession();
     }
     return windowSession;
+  }
+
+  @SuppressWarnings("unchecked") // Cast args to IWindowSession methods
+  protected static IWindowSession createWindowSession() {
+    // Use Proxy.newProxyInstance instead of ReflectionHelpers.createDelegatingProxy as there are
+    // too many variants of 'add', 'addToDisplay', and 'addToDisplayAsUser', some of which have
+    // arg types that don't exist any more.
+    return (IWindowSession)
+        Proxy.newProxyInstance(
+            IWindowSession.class.getClassLoader(),
+            new Class<?>[] {IWindowSession.class},
+            (proxy, method, args) -> {
+              String methodName = method.getName();
+              switch (methodName) {
+                case "add": // SDK 16
+                case "addToDisplay": // SDK 17-29
+                case "addToDisplayAsUser": // SDK 30+
+                  return windowSessionDelegate.addToDisplay(args);
+                case "remove":
+                  windowSessionDelegate.remove(args);
+                  return null;
+                case "relayout":
+                  return windowSessionDelegate.relayout(args);
+                case "getInTouchMode":
+                  return windowSessionDelegate.getInTouchMode();
+                case "performDrag":
+                  return windowSessionDelegate.performDrag(args);
+                case "prepareDrag":
+                  return windowSessionDelegate.prepareDrag();
+                case "setInTouchMode":
+                  windowSessionDelegate.setInTouchMode((boolean) args[0]);
+                  return null;
+                case "reportSystemGestureExclusionChanged":
+                  windowSessionDelegate.systemGestureExclusionRects = (List<Rect>) args[1];
+                  return null;
+                case "insetsModified":
+                case "updateRequestedVisibilities":
+                case "updateRequestedVisibleTypes":
+                  windowSessionDelegate.updateInsets(args);
+                  return null;
+                default:
+                  return ReflectionHelpers.defaultValueForType(method.getReturnType().getName());
+              }
+            });
   }
 
   @Implementation
@@ -418,7 +208,11 @@ public class ShadowWindowManagerGlobal {
     List<View> getWindowViews();
   }
 
-  private static class WindowSessionDelegate {
+  /**
+   * Delegate for {@link IWindowSession} that contains methods to intercept calls to the underlying
+   * {@link IWindowSession} and track window state.
+   */
+  protected static class WindowSessionDelegate {
     private final LinkedHashMap<IWindow, WindowInfo> windows = new LinkedHashMap<>();
 
     // From WindowManagerGlobal (was WindowManagerImpl in JB).
@@ -429,9 +223,7 @@ public class ShadowWindowManagerGlobal {
     // TODO: Default to touch mode always.
     private boolean inTouchMode = useRealGraphics();
     @Nullable protected ClipData lastDragClipData;
-    @Nullable private OnBackInvokedCallbackInfo onBackInvokedCallbackInfo;
-    @Nullable private List<Rect> systemGestureExclusionRects;
-    @Nullable private PredictiveBackGesture currentPredictiveBackGesture;
+    @Nullable public List<Rect> systemGestureExclusionRects;
 
     protected int addToDisplay(Object[] args) {
       int sdk = getApiLevel();
@@ -925,107 +717,9 @@ public class ShadowWindowManagerGlobal {
     }
   }
 
-  @ForType(BackMotionEvent.class)
-  interface BackMotionEventReflector {
-    @Constructor
-    BackMotionEvent newBackMotionEvent(
-        float touchX,
-        float touchY,
-        float progress,
-        float velocityX,
-        float velocityY,
-        int swipeEdge,
-        RemoteAnimationTarget departingAnimationTarget);
-
-    @Constructor
-    BackMotionEvent newBackMotionEventV(
-        float touchX,
-        float touchY,
-        float progress,
-        float velocityX,
-        float velocityY,
-        boolean triggerBack,
-        int swipeEdge,
-        RemoteAnimationTarget departingAnimationTarget);
-
-    @Constructor
-    BackMotionEvent newBackMotionEventB(
-        float touchX,
-        float touchY,
-        long frameTime,
-        float progress,
-        boolean triggerBack,
-        int swipeEdge,
-        RemoteAnimationTarget departingAnimationTarget);
-
-    @Constructor
-    BackMotionEvent newBackMotionEventPostB(
-        float touchX,
-        float touchY,
-        long frameTime,
-        float progress,
-        boolean triggerBack,
-        int swipeEdge);
-  }
-
   @ForType(className = "android.view.InsetsVisibilities")
   interface InsetsVisibilitiesReflector {
     boolean getVisibility(int type);
   }
 
-  private static class BackMotionEvents {
-    private BackMotionEvents() {}
-
-    static BackMotionEvent newBackMotionEvent(
-        @BackEvent.SwipeEdge int edge, float touchX, float touchY, float progress) {
-      if (getApiLevel() <= UPSIDE_DOWN_CAKE) {
-        return reflector(BackMotionEventReflector.class)
-            .newBackMotionEvent(
-                touchX, touchY, progress, 0f, // velocity x
-                0f, // velocity y
-                edge, // swipe edge
-                null);
-      } else if (getApiLevel() <= VANILLA_ICE_CREAM) {
-        return reflector(BackMotionEventReflector.class)
-            .newBackMotionEventV(
-                touchX,
-                touchY,
-                progress,
-                0f, // velocity x
-                0f, // velocity y
-                Boolean.FALSE, // trigger back
-                edge, // swipe edge
-                null);
-      } else if (getApiLevel() <= BAKLAVA) {
-        return reflector(BackMotionEventReflector.class)
-            .newBackMotionEventB(
-                touchX,
-                touchY,
-                SystemClock.uptimeMillis(), /* frameTime */
-                progress,
-                Boolean.FALSE, // trigger back
-                edge,
-                null); // swipe edge
-      } else {
-        return reflector(BackMotionEventReflector.class)
-            .newBackMotionEventPostB(
-                touchX,
-                touchY,
-                SystemClock.uptimeMillis(), /* frameTime */
-                progress,
-                Boolean.FALSE, // trigger back
-                edge); // swipe edge
-      }
-    }
-
-    private static java.lang.reflect.Constructor<?> findPublicConstructor() {
-      for (java.lang.reflect.Constructor<?> constructor :
-          BackMotionEvent.class.getDeclaredConstructors()) {
-        if (constructor.getParameterCount() > 0 && Modifier.isPublic(constructor.getModifiers())) {
-          return constructor;
-        }
-      }
-      throw new IllegalStateException("Could not find a BackMotionEvent constructor");
-    }
-  }
 }
