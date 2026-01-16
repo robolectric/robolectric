@@ -8,6 +8,7 @@ import android.os.HandlerThread;
 import android.window.SurfaceSyncGroup;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
@@ -33,6 +34,12 @@ public class ShadowSurfaceSyncGroup {
       }
     }
   }
+
+  // The real implementation will add post a delayed-by-1s Runnable to its HandlerThread.
+  // This Runnable will have hard references to SurfaceSyncGroup.mAddedToSyncListener ->
+  // ViewRootImpl which will prevent garbage collection
+  @Implementation
+  protected void addTimeout() {}
 
   @ForType(SurfaceSyncGroup.class)
   private interface SurfaceSyncGroupReflector {

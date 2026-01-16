@@ -284,6 +284,11 @@ public class ShadowWindowManagerGlobal {
       if (useRealGraphics()
           || "true".equals(System.getProperty("robolectric.areWindowsMarkedVisible", "false"))) {
         res |= ADD_FLAG_APP_VISIBLE;
+        if (getApiLevel() >= TIRAMISU && getApiLevel() <= UPSIDE_DOWN_CAKE) {
+          // real draw support in Robolectric requires BLAST, but its only enabled by default in
+          // in VANILLA_ICE_CREAM. Turn on the flag to enable it
+          res |= 0x8 /* ADD_FLAG_USE_BLAST */;
+        }
       }
       res |= inTouchMode ? ADD_FLAG_IN_TOUCH_MODE : 0;
       return res;
