@@ -371,4 +371,16 @@ public class ShadowLogTest {
       ShadowLog.stream = old;
     }
   }
+
+  @Test
+  public void captureLogs_disabled() {
+    ShadowLog.setCaptureLogsEnabled(false);
+    try {
+      // verify logging to stream still works
+      shouldLogToProvidedStream();
+      assertThrows(IllegalStateException.class, () -> ShadowLog.getLogs());
+    } finally {
+      ShadowLog.setCaptureLogsEnabled(true);
+    }
+  }
 }

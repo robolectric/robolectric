@@ -16,13 +16,18 @@ import android.bluetooth.IBluetoothManagerCallback;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.util.Log;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for the IBluetoothManager stub system service */
@@ -30,6 +35,13 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowIBluetoothManager {
 
   private IBluetoothGatt iBluetoothGatt;
+  private static final Object messengerLock = new Object();
+
+  @GuardedBy("messengerLock")
+  private static Messenger serviceMessenger = null;
+
+  @GuardedBy("messengerLock")
+  private static HandlerThread messengerThread = null;
 
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected IBluetoothGatt getBluetoothGatt() {
@@ -89,8 +101,54 @@ public class ShadowIBluetoothManager {
 
   @Implementation(minSdk = POST_BAKLAVA)
   protected android.os.Messenger getServiceMessenger() {
-    // just return a non-null Messenger. This will be unused
-    return new Messenger(Handler.getMain());
+    synchronized (messengerLock) {
+      if (serviceMessenger == null) {
+        messengerThread = new HandlerThread("BluetoothSystemServerMessenger");
+        messengerThread.start();
+        Looper looper = messengerThread.getLooper();
+
+        Handler handler =
+            new Handler(
+                looper,
+                msg -> {
+                  if (msg.replyTo == null) {
+                    return true;
+                  }
+                  try {
+                    Object data = msg.obj;
+                    String requestClassName = data.getClass().getName();
+                    // SystemServiceMessage classes are not public, so we can't import them.
+                    // Instead, we rely on the naming convention of the reply class.
+                    Class<?> replyClass = Class.forName(requestClassName + "$Reply");
+                    Object replyData = replyClass.getConstructor().newInstance();
+
+                    // The default constructor will leave the IBluetooth field as null,
+                    // which simulates the Bluetooth-off state.
+
+                    android.os.Message replyMsg = android.os.Message.obtain();
+                    replyMsg.obj = replyData;
+                    msg.replyTo.send(replyMsg);
+                  } catch (ReflectiveOperationException | RemoteException e) {
+                    // Don't crash the test host.
+                    Log.w("ShadowIBluetoothManager", "failed serviceMessenger transaction", e);
+                  }
+                  return true;
+                });
+        serviceMessenger = new Messenger(handler);
+      }
+      return serviceMessenger;
+    }
+  }
+
+  @Resetter
+  public static void reset() {
+    synchronized (messengerLock) {
+      if (messengerThread != null) {
+        messengerThread.quit();
+        messengerThread = null;
+        serviceMessenger = null;
+      }
+    }
   }
 
   @ForType(className = "android.bluetooth.IBluetoothProfileServiceConnection")

@@ -359,19 +359,19 @@ public class ShadowSettingsTest {
   /** These are not public APIs, but they may be used by system apps in the Android platform. */
   @Test
   public void putStringForUser_variants() throws Exception {
-    boolean success = Settings.Secure.putStringForUser(contentResolver, "property", "value", 1);
+    boolean success = Settings.Secure.putStringForUser(contentResolver, "property", "value", 0);
     assertThat(success).isTrue();
-    assertThat(Settings.Secure.getStringForUser(contentResolver, "property", 1)).isEqualTo("value");
+    assertThat(Settings.Secure.getStringForUser(contentResolver, "property", 0)).isEqualTo("value");
     assertThat(Settings.Secure.getString(contentResolver, "property")).isEqualTo("value");
 
-    success = Settings.System.putStringForUser(contentResolver, "property", "value", 1);
+    success = Settings.System.putStringForUser(contentResolver, "property", "value", 0);
     assertThat(success).isTrue();
-    assertThat(Settings.System.getStringForUser(contentResolver, "property", 1)).isEqualTo("value");
+    assertThat(Settings.System.getStringForUser(contentResolver, "property", 0)).isEqualTo("value");
     assertThat(Settings.System.getString(contentResolver, "property")).isEqualTo("value");
 
-    success = Settings.Global.putStringForUser(contentResolver, "property", "value", 1);
+    success = Settings.Global.putStringForUser(contentResolver, "property", "value", 0);
     assertThat(success).isTrue();
-    assertThat(Settings.Global.getStringForUser(contentResolver, "property", 1)).isEqualTo("value");
+    assertThat(Settings.Global.getStringForUser(contentResolver, "property", 0)).isEqualTo("value");
     assertThat(Settings.Global.getString(contentResolver, "property")).isEqualTo("value");
   }
 
@@ -413,5 +413,18 @@ public class ShadowSettingsTest {
     Settings.Secure.putString(contentResolver, "property", "2");
     assertThat(Settings.Secure.getInt(contentResolver, "property", -1)).isEqualTo(2);
     assertThat(Settings.Secure.getIntForUser(contentResolver, "property", -1, 0)).isEqualTo(2);
+  }
+
+  @Test
+  public void settingsSystem_areScopedByUser() throws Exception {
+    boolean success = Settings.System.putIntForUser(contentResolver, "property", 1, 0);
+    assertThat(success).isTrue();
+    assertThat(Settings.System.getIntForUser(contentResolver, "property", 0, 0)).isEqualTo(1);
+    assertThat(Settings.System.getIntForUser(contentResolver, "property", 0, 1)).isEqualTo(0);
+
+    success = Settings.System.putIntForUser(contentResolver, "property", 2, 1);
+    assertThat(success).isTrue();
+    assertThat(Settings.System.getIntForUser(contentResolver, "property", 0, 0)).isEqualTo(1);
+    assertThat(Settings.System.getIntForUser(contentResolver, "property", 0, 1)).isEqualTo(2);
   }
 }

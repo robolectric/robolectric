@@ -42,4 +42,11 @@ public class SensorEventBuilderTest {
         IllegalArgumentException.class,
         () -> SensorEventBuilder.newBuilder().setValues(new float[] {1f, 2f, 3f}).build());
   }
+
+  @Test
+  public void createSensorEvent_twoArgBuilderConstructor() {
+    Sensor testSensor = ShadowSensor.newInstance(TYPE_ACCELEROMETER);
+    SensorEvent event = SensorEventBuilder.newBuilder(testSensor, new float[] {1f, 2f, 3f}).build();
+    assertThat(event.sensor).isEqualTo(testSensor);
+  }
 }

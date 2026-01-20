@@ -16,7 +16,6 @@ import android.os.Build.VERSION_CODES;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.security.Signature;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,21 +31,14 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowFingerprintManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
-  private FingerprintManager manager;
-  private ShadowFingerprintManager shadowFingerprintManager;
-
-  @Before
-  public void setUp() {
-    manager =
+  @Test
+  public void authenticate_success() {
+    FingerprintManager manager =
         (FingerprintManager)
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.FINGERPRINT_SERVICE);
 
-    shadowFingerprintManager = Shadow.extract(manager);
-  }
-
-  @Test
-  public void authenticate_success() {
+    ShadowFingerprintManager shadowFingerprintManager = Shadow.extract(manager);
 
     AuthenticationCallback mockCallback = mock(AuthenticationCallback.class);
 
@@ -65,6 +57,12 @@ public class ShadowFingerprintManagerTest {
 
   @Test
   public void authenticate_failure() {
+    FingerprintManager manager =
+        (FingerprintManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.FINGERPRINT_SERVICE);
+
+    ShadowFingerprintManager shadowFingerprintManager = Shadow.extract(manager);
 
     AuthenticationCallback mockCallback = mock(AuthenticationCallback.class);
 
@@ -79,6 +77,12 @@ public class ShadowFingerprintManagerTest {
 
   @Test
   public void hasEnrolledFingerprints() {
+    FingerprintManager manager =
+        (FingerprintManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.FINGERPRINT_SERVICE);
+
+    ShadowFingerprintManager shadowFingerprintManager = Shadow.extract(manager);
     assertThat(manager.hasEnrolledFingerprints()).isFalse();
 
     shadowFingerprintManager.setHasEnrolledFingerprints(true);
@@ -88,6 +92,12 @@ public class ShadowFingerprintManagerTest {
 
   @Test
   public void setDefaultFingerprints() {
+    FingerprintManager manager =
+        (FingerprintManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.FINGERPRINT_SERVICE);
+
+    ShadowFingerprintManager shadowFingerprintManager = Shadow.extract(manager);
     assertThat(shadowFingerprintManager.getEnrolledFingerprints()).isEmpty();
 
     shadowFingerprintManager.setDefaultFingerprints(1);
@@ -104,6 +114,12 @@ public class ShadowFingerprintManagerTest {
 
   @Test
   public void setHasEnrolledFingerprints_shouldSetNumberOfFingerprints() {
+    FingerprintManager manager =
+        (FingerprintManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.FINGERPRINT_SERVICE);
+
+    ShadowFingerprintManager shadowFingerprintManager = Shadow.extract(manager);
     assertThat(shadowFingerprintManager.getEnrolledFingerprints()).isEmpty();
 
     shadowFingerprintManager.setHasEnrolledFingerprints(true);
@@ -118,6 +134,12 @@ public class ShadowFingerprintManagerTest {
 
   @Test
   public void isHardwareDetected() {
+    FingerprintManager manager =
+        (FingerprintManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.FINGERPRINT_SERVICE);
+
+    ShadowFingerprintManager shadowFingerprintManager = Shadow.extract(manager);
     assertThat(manager.isHardwareDetected()).isFalse();
 
     shadowFingerprintManager.setIsHardwareDetected(true);
@@ -128,6 +150,11 @@ public class ShadowFingerprintManagerTest {
   @Test
   @Config(sdk = VERSION_CODES.S)
   public void getSensorPropertiesInternal_notNull() {
+    FingerprintManager manager =
+        (FingerprintManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.FINGERPRINT_SERVICE);
+
     assertThat(manager.getSensorPropertiesInternal()).isNotNull();
   }
 

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
@@ -547,6 +548,40 @@ public final class ShadowSafetyCenterManagerTest {
 
   @Test
   @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void addOnSafetyCenterDataChangedListener_whenDataIsSet_listenerIsCalledImmediately()
+      throws Exception {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
+
+    SafetyCenterData expectedData = (SafetyCenterData) createSafetyCenterData();
+    shadowSafetyCenterManager.setSafetyCenterData(expectedData);
+
+    OnSafetyCenterDataChangedListener mockListener = mock(OnSafetyCenterDataChangedListener.class);
+    ArgumentCaptor<SafetyCenterData> dataCaptor = ArgumentCaptor.forClass(SafetyCenterData.class);
+
+    safetyCenterManager.addOnSafetyCenterDataChangedListener(directExecutor(), mockListener);
+
+    verify(mockListener, times(1)).onSafetyCenterDataChanged(dataCaptor.capture());
+    SafetyCenterData capturedData = dataCaptor.getValue();
+    assertThat(capturedData).isEqualTo(expectedData);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void addOnSafetyCenterDataChangedListener_whenNoData_listenerIsNotCalledImmediately()
+      throws Exception {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    OnSafetyCenterDataChangedListener mockListener = mock(OnSafetyCenterDataChangedListener.class);
+
+    safetyCenterManager.addOnSafetyCenterDataChangedListener(directExecutor(), mockListener);
+
+    verify(mockListener, times(0)).onSafetyCenterDataChanged(any());
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   public void addOnSafetyCenterDataChangedListener_whenDataChanges_listenerIsCalled()
       throws Exception {
     SafetyCenterManager safetyCenterManager =
@@ -616,13 +651,17 @@ public final class ShadowSafetyCenterManagerTest {
     ArgumentCaptor<SafetyCenterData> dataCaptor = ArgumentCaptor.forClass(SafetyCenterData.class);
 
     shadowSafetyCenterManager.addOnSafetyCenterDataChangedListener(directExecutor(), mockListener);
+    // Listener called once immediately with dataWithIssue
     safetyCenterManager.dismissSafetyCenterIssue("id1");
+    // Listener called a second time with updated data
 
-    verify(mockListener).onSafetyCenterDataChanged(dataCaptor.capture());
+    verify(mockListener, times(2)).onSafetyCenterDataChanged(dataCaptor.capture());
 
-    SafetyCenterData capturedData = dataCaptor.getValue();
+    // The second captured value is the one after dismissal
+    SafetyCenterData capturedData = dataCaptor.getAllValues().get(1);
     assertThat(capturedData.getIssues()).isEmpty();
     assertThat(capturedData.getDismissedIssues()).hasSize(1);
+    assertThat(capturedData.getDismissedIssues().get(0).getId()).isEqualTo("id1");
   }
 
   private Object createSafetyCenterData() {

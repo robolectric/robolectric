@@ -305,7 +305,7 @@ public class ShadowCompanionDeviceManager {
     return getAssociationInfos();
   }
 
-  private List<AssociationInfo> getAssociationInfos() {
+  protected List<AssociationInfo> getAssociationInfos() {
     return this.associations.stream()
         .map(this::createAssociationInfo)
         .collect(toCollection(ArrayList::new));

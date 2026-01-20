@@ -4,6 +4,9 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static com.google.common.base.Preconditions.checkState;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -88,6 +91,7 @@ public class ShadowView {
   private final ArrayList<Animation> animations = new ArrayList<>();
   private AnimationRunner animationRunner;
   private static final AtomicBoolean useRealViewAnimations = new AtomicBoolean(false);
+  private static final AtomicBoolean useRealDrawTraversals = new AtomicBoolean(false);
 
   /**
    * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are
@@ -148,7 +152,7 @@ public class ShadowView {
 
   static int[] getLocationInSurfaceCompat(View view) {
     int[] locationInSurface = new int[2];
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
+    if (getApiLevel() >= Build.VERSION_CODES.Q) {
       view.getLocationInSurface(locationInSurface);
     } else {
       view.getLocationInWindow(locationInSurface);
@@ -489,7 +493,7 @@ public class ShadowView {
    */
   @Implementation(minSdk = R)
   public View.OnLongClickListener getOnLongClickListener() {
-    if (RuntimeEnvironment.getApiLevel() >= R) {
+    if (getApiLevel() >= R) {
       return reflector(ViewReflector.class, realView).getOnLongClickListener();
     } else {
       return onLongClickListener;
@@ -969,7 +973,7 @@ public class ShadowView {
    */
   @Implementation(minSdk = Q)
   public int getSourceLayoutResId() {
-    if (RuntimeEnvironment.getApiLevel() >= Q) {
+    if (getApiLevel() >= Q) {
       return reflector(ViewReflector.class, realView).getSourceLayoutResId();
     } else {
       return ShadowResources.getAttributeSetSourceResId(attributeSet);
@@ -1032,7 +1036,7 @@ public class ShadowView {
   @Beta
   public static boolean useRealGraphics() {
     GraphicsMode.Mode graphicsMode = ConfigurationRegistry.get(GraphicsMode.Mode.class);
-    return graphicsMode == Mode.NATIVE && RuntimeEnvironment.getApiLevel() >= O;
+    return graphicsMode == Mode.NATIVE && getApiLevel() >= O;
   }
 
   /**
@@ -1070,5 +1074,30 @@ public class ShadowView {
   /** Returns whether real Android View animation logic is being used. */
   static boolean useRealViewAnimations() {
     return useRealViewAnimations.get();
+  }
+
+  /**
+   * Experimental method that allows tests to opt-in to use the real ViewRootImpl drawing traversal
+   * code.
+   *
+   * <p>Robolectric historically by default would only perform a subset of the ViewRootImpl drawing
+   * logic. Notably animation interpolation and draw listener callbacks would not be invoked.
+   *
+   * <p>Ths method facilitates logic that properly setups Robolectric to perform the real drawing
+   * logic when performing traversals.
+   *
+   * <p>It is strongly recommended to also enable <code></code>setUseRealViewAnimations(true)</code>
+   * when enabling real drawing.
+   *
+   * <p>This mode is only supported in APIs >= TIRAMISU and when using real native graphics.
+   */
+  public static void setUseRealDrawTraversals(boolean value) {
+    checkState(getApiLevel() >= TIRAMISU, "real drawing is only supported on APIs >= 33");
+    checkState(useRealGraphics(), "real graphics must be enabled to use real drawing");
+    useRealDrawTraversals.set(value);
+  }
+
+  static boolean useRealDrawTraversals() {
+    return useRealDrawTraversals.get();
   }
 }

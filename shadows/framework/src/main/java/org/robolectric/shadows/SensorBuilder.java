@@ -1,0 +1,109 @@
+package org.robolectric.shadows;
+
+import android.hardware.Sensor;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import org.robolectric.util.ReflectionHelpers;
+
+/** Builder for {@link Sensor}. */
+public class SensorBuilder {
+
+  private static final int SENSOR_FLAG_WAKE_UP_SENSOR = 1;
+
+  private int type;
+  private int flags;
+  private float maximumRange;
+  private int minDelay;
+  private int maxDelay;
+  private String name;
+  private int fifoMaxEventCount;
+  private int fifoReservedEventCount;
+
+  private SensorBuilder() {}
+
+  public static SensorBuilder newBuilder() {
+    return new SensorBuilder();
+  }
+
+  @CanIgnoreReturnValue
+  public SensorBuilder setType(int type) {
+    this.type = type;
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public SensorBuilder setWakeUpFlag(boolean wakeUpFlag) {
+    if (wakeUpFlag) {
+      this.flags |= SENSOR_FLAG_WAKE_UP_SENSOR;
+    } else {
+      this.flags &= ~SENSOR_FLAG_WAKE_UP_SENSOR;
+    }
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public SensorBuilder setMaximumRange(float maximumRange) {
+    this.maximumRange = maximumRange;
+    return this;
+  }
+
+  /**
+   * Sets the minimum delay in microseconds for this sensor.
+   *
+   * <p>This is the minimum time between samples when the sensor is in continuous mode.
+   *
+   * @param minDelay minimum delay in microseconds
+   * @see <a
+   *     href="https://developer.android.com/reference/android/hardware/Sensor#getMinDelay()">Sensor.getMinDelay()</a>
+   */
+  @CanIgnoreReturnValue
+  public SensorBuilder setMinDelay(int minDelay) {
+    this.minDelay = minDelay;
+    return this;
+  }
+
+  /**
+   * Sets the maximum delay in microseconds for this sensor.
+   *
+   * <p>This is the maximum time between samples when the sensor is in continuous mode.
+   *
+   * @param maxDelay maximum delay in microseconds
+   * @see <a
+   *     href="https://developer.android.com/reference/android/hardware/Sensor#getMaxDelay()">Sensor.getMaxDelay()</a>
+   */
+  @CanIgnoreReturnValue
+  public SensorBuilder setMaxDelay(int maxDelay) {
+    this.maxDelay = maxDelay;
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public SensorBuilder setName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public SensorBuilder setFifoMaxEventCount(int fifoMaxEventCount) {
+    this.fifoMaxEventCount = fifoMaxEventCount;
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public SensorBuilder setFifoReservedEventCount(int fifoReservedEventCount) {
+    this.fifoReservedEventCount = fifoReservedEventCount;
+    return this;
+  }
+
+  public Sensor build() {
+    Sensor sensor = ReflectionHelpers.callConstructor(Sensor.class);
+    ReflectionHelpers.setField(sensor, "mType", type);
+    ReflectionHelpers.setField(sensor, "mMaxRange", maximumRange);
+    ReflectionHelpers.setField(sensor, "mMinDelay", minDelay);
+    ReflectionHelpers.setField(sensor, "mMaxDelay", maxDelay);
+    ReflectionHelpers.setField(sensor, "mName", name);
+    ReflectionHelpers.setField(sensor, "mFlags", flags);
+    ReflectionHelpers.setField(sensor, "mFifoMaxEventCount", fifoMaxEventCount);
+    ReflectionHelpers.setField(sensor, "mFifoReservedEventCount", fifoReservedEventCount);
+    return sensor;
+  }
+}

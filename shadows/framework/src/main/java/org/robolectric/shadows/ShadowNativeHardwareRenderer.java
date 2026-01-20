@@ -472,6 +472,21 @@ public class ShadowNativeHardwareRenderer {
             : ActivityInfo.COLOR_MODE_DEFAULT);
   }
 
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)
+  protected static void nSetTargetSdrHdrRatio(long nativeProxy, float ratio) {
+    // nSetTargetSdrHdrRatio not supported in host graphics on U, so just no-op it for now
+  }
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)
+  protected static void nNotifyExpensiveFrame(long nativeProxy) {
+    // nNotifyExpensiveFrame not supported in host graphics on U, so just no-op it for now
+  }
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)
+  protected static void nNotifyCallbackPending(long nativeProxy) {
+    // nNotifyCallbackPending not supported in host graphics on U, so just no-op it for now
+  }
+
   @ForType(HardwareRenderer.class)
   interface HardwareRendererReflector {
     void setWideGamut(boolean isWideColorGamut);

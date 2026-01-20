@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.util.Log;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -39,6 +41,9 @@ public class ShadowLog {
   private static final Map<String, Queue<LogItem>> logsByTag =
       Collections.synchronizedMap(new HashMap<>());
   private static final Queue<LogItem> logs = new ConcurrentLinkedQueue<>();
+
+  private static final AtomicBoolean logCaptureEnabled = new AtomicBoolean(true);
+
   private static final Map<String, Integer> tagToLevel =
       Collections.synchronizedMap(new HashMap<>());
 
@@ -178,6 +183,9 @@ public class ShadowLog {
     if (stream != null) {
       logToStream(stream, timeString, level, tag, msg, throwable);
     }
+    if (!logCaptureEnabled.get()) {
+      return 0;
+    }
 
     LogItem item = new LogItem(timeString, level, tag, msg, throwable);
     Queue<LogItem> itemList;
@@ -241,11 +249,34 @@ public class ShadowLog {
   }
 
   /**
+   * By default this Shadow will capture all logs in memory in order to facilitate the {@link
+   * #getLogs()} and {@link #getLogsForTag(String)} APIs. This is wasteful if these APIs are not
+   * actually used by tests.
+   *
+   * <p>This API allows disabling this behavior.
+   *
+   * <p>If log capturing is disabled, {@link #getLogs()} and {@link #getLogsForTag(String)} will
+   * throw if called.
+   *
+   * @param isEnabled
+   */
+  public static void setCaptureLogsEnabled(boolean isEnabled) {
+    boolean previous = logCaptureEnabled.getAndSet(isEnabled);
+    if (previous && !isEnabled) {
+      logs.clear();
+      logsByTag.clear();
+    }
+  }
+
+  /**
    * Returns ordered list of all log entries.
    *
    * @return List of log items
    */
   public static ImmutableList<LogItem> getLogs() {
+    checkState(
+        logCaptureEnabled.get(),
+        "Log capturing is disabled. Use ShadowLog.setCaptureLogsEnabled(true) to enable.");
     return ImmutableList.copyOf(logs);
   }
 
@@ -256,6 +287,9 @@ public class ShadowLog {
    * @return The list of log items for the tag or an empty list if no logs for that tag exist.
    */
   public static ImmutableList<LogItem> getLogsForTag(String tag) {
+    checkState(
+        logCaptureEnabled.get(),
+        "Log capturing is disabled. Use ShadowLog.setCaptureLogsEnabled(true) to enable.");
     Queue<LogItem> logs = logsByTag.get(tag);
     return logs == null ? ImmutableList.of() : ImmutableList.copyOf(logs);
   }

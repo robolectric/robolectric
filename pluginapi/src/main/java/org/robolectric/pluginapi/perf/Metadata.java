@@ -1,17 +1,15 @@
 package org.robolectric.pluginapi.perf;
 
-import java.util.HashMap;
-import java.util.Map;
-
-/** Metadata for perf stats collection. */
+/** Environment metadata for perf stats collection. */
 public class Metadata {
-  private final Map<Class<?>, Object> metadata;
+  private final int sdk;
 
-  public Metadata(Map<Class<?>, Object> metadata) {
-    this.metadata = new HashMap<>(metadata);
+  public Metadata(int sdk) {
+    this.sdk = sdk;
   }
 
-  public <T> T get(Class<T> metadataClass) {
-    return metadataClass.cast(metadata.get(metadataClass));
+  /** Get the Android SDK API level the performance stats apply to. */
+  public int getSdk() {
+    return sdk;
   }
 }

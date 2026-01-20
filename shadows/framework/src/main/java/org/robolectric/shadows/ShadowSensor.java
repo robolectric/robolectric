@@ -5,7 +5,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.hardware.Sensor;
 import android.os.Build.VERSION_CODES;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
@@ -13,21 +12,35 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
+/**
+ * Shadow for {@link Sensor}.
+ *
+ * @deprecated Use {@link SensorBuilder} instead.
+ */
+@Deprecated
 @Implements(Sensor.class)
 public class ShadowSensor {
 
   @RealObject private Sensor realSensor;
 
-  private float maximumRange = 0;
-
-  /** Constructs a {@link Sensor} with a given type. */
+  /**
+   * Constructs a {@link Sensor} with a given type.
+   *
+   * @deprecated Use {@link SensorBuilder} instead.
+   */
+  @Deprecated
   public static Sensor newInstance(int type) {
     Sensor sensor = Shadow.newInstanceOf(Sensor.class);
     reflector(SensorReflector.class, sensor).setTypeCompat(type);
     return sensor;
   }
 
-  /** Controls the return value of {@link Sensor#isWakeUpSensor()}. */
+  /**
+   * Controls the return value of {@link Sensor#isWakeUpSensor()}.
+   *
+   * @deprecated Use {@link SensorBuilder} instead.
+   */
+  @Deprecated
   public void setWakeUpFlag(boolean wakeup) {
     int wakeUpSensorMask = reflector(SensorReflector.class).getWakeUpSensorFlag();
 
@@ -38,17 +51,22 @@ public class ShadowSensor {
     }
   }
 
-  /** Sets the return value for {@link Sensor#getMaximumRange}. */
+  /**
+   * Sets the return value for {@link Sensor#getMaximumRange}.
+   *
+   * @deprecated Use {@link SensorBuilder} instead.
+   */
+  @Deprecated
   public void setMaximumRange(float range) {
-    maximumRange = range;
+    reflector(SensorReflector.class, realSensor).setMaxRange(range);
   }
 
-  @Implementation
-  protected float getMaximumRange() {
-    return maximumRange;
-  }
-
-  /** Sets the return value for {@link Sensor#getMinDelay}. */
+  /**
+   * Sets the return value for {@link Sensor#getMinDelay}.
+   *
+   * @deprecated Use {@link SensorBuilder} instead.
+   */
+  @Deprecated
   public void setMinDelay(int delay) {
     reflector(SensorReflector.class, realSensor).setMinDelay(delay);
   }
@@ -96,6 +114,9 @@ public class ShadowSensor {
 
     @Accessor("mMinDelay")
     void setMinDelay(int minDelay);
+
+    @Accessor("mMaxRange")
+    void setMaxRange(float maximumRange);
 
     @Static
     @Accessor("SENSOR_FLAG_WAKE_UP_SENSOR")

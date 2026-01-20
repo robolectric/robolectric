@@ -55,7 +55,11 @@ public class ShadowViewRootImpl {
   }
 
   @Implementation(minSdk = TIRAMISU)
-  protected void updateBlastSurfaceIfNeeded() {}
+  protected void updateBlastSurfaceIfNeeded() {
+    if (ShadowView.useRealDrawTraversals()) {
+      reflector(ViewRootImplReflector.class, realObject).updateBlastSurfaceIfNeeded();
+    }
+  }
 
   @Resetter
   public static void reset() {
@@ -143,5 +147,8 @@ public class ShadowViewRootImpl {
     // SDK >= M
     @Direct
     WindowInsets getWindowInsets(boolean forceConstruct);
+
+    @Direct
+    void updateBlastSurfaceIfNeeded();
   }
 }

@@ -1,5 +1,6 @@
 package android.app;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
@@ -70,6 +71,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.testapp.TestActivity;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -516,6 +518,7 @@ public class ContextTest {
   }
 
   @Test
+  @Config(maxSdk = BAKLAVA)
   public void fingerprintManager_applicationInstance_isNotSameAsActivityInstance() {
     FingerprintManager applicationFingerprintManager =
         (FingerprintManager) application.getSystemService(Context.FINGERPRINT_SERVICE);
@@ -531,6 +534,7 @@ public class ContextTest {
   }
 
   @Test
+  @Config(maxSdk = BAKLAVA)
   public void fingerprintManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
       scenario.onActivity(
@@ -546,6 +550,7 @@ public class ContextTest {
   }
 
   @Test
+  @Config(maxSdk = BAKLAVA)
   public void fingerprintManager_instance_hasConsistentFingerprintState() {
     FingerprintManager applicationFingerprintManager =
         (FingerprintManager) application.getSystemService(Context.FINGERPRINT_SERVICE);
