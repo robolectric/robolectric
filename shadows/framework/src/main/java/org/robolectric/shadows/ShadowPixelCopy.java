@@ -7,8 +7,13 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.HardwareRenderer;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.media.Image;
+import android.media.Image.Plane;
+import android.media.ImageReader;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.PixelCopy;
@@ -19,6 +24,7 @@ import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.Window;
 import android.view.WindowManagerGlobal;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
@@ -103,14 +109,20 @@ public class ShadowPixelCopy {
     }
 
     View view = findViewForSurface(requireNonNull(source));
-    Rect adjustedSrcRect = null;
-    if (srcRect != null) {
-      adjustedSrcRect = new Rect(srcRect);
-      int[] locationInSurface = ShadowView.getLocationInSurfaceCompat(view);
-      // offset the srcRect by the decor view's location in the surface
-      adjustedSrcRect.offset(-locationInSurface[0], -locationInSurface[1]);
+    if (ShadowView.useRealDrawTraversals()) {
+      // If real draw traversals are enabled, there is no need to adjust the source rect, because
+      // we assume the provided source rect is relative to the view's surface.
+      takeScreenshot(view, dest, srcRect);
+    } else {
+      Rect adjustedSrcRect = null;
+      if (srcRect != null) {
+        adjustedSrcRect = new Rect(srcRect);
+        int[] locationInSurface = ShadowView.getLocationInSurfaceCompat(view);
+        // offset the srcRect by the decor view's location in the surface
+        adjustedSrcRect.offset(-locationInSurface[0], -locationInSurface[1]);
+      }
+      takeScreenshot(view, dest, adjustedSrcRect);
     }
-    takeScreenshot(view, dest, adjustedSrcRect);
     alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
   }
 
@@ -157,31 +169,53 @@ public class ShadowPixelCopy {
         "Could not find view for surface. Is it attached to a window?");
   }
 
-  private static void takeScreenshot(View view, Bitmap screenshot, @Nullable Rect srcRect) {
+  private static void takeScreenshot(View viewRoot, Bitmap screenshot, @Nullable Rect srcRect) {
     validateBitmap(screenshot);
 
-    Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+    Rect surfaceInsets = new Rect();
+    if (ShadowView.useRealDrawTraversals()) {
+      surfaceInsets = getSurfaceInsets(viewRoot);
+    }
+    Bitmap bitmap =
+        Bitmap.createBitmap(
+            viewRoot.getWidth() + surfaceInsets.left,
+            viewRoot.getHeight() + surfaceInsets.top,
+            Bitmap.Config.ARGB_8888);
 
-    if (HardwareRenderingScreenshot.canTakeScreenshot(view)) {
+    if (HardwareRenderingScreenshot.canTakeScreenshot(viewRoot)) {
       PerfStatsCollector.getInstance()
           .measure(
               "ShadowPixelCopy-Hardware",
-              () -> HardwareRenderingScreenshot.takeScreenshot(view, bitmap));
+              () -> {
+                if (ShadowView.useRealDrawTraversals()) {
+                  takeHardwareScreenshot(viewRoot, bitmap);
+                } else {
+                  HardwareRenderingScreenshot.takeScreenshot(viewRoot, bitmap);
+                }
+              });
     } else {
       PerfStatsCollector.getInstance()
           .measure(
               "ShadowPixelCopy-Software",
               () -> {
                 Canvas screenshotCanvas = new Canvas(bitmap);
-                view.draw(screenshotCanvas);
+                viewRoot.draw(screenshotCanvas);
               });
     }
 
     Rect dst = new Rect(0, 0, screenshot.getWidth(), screenshot.getHeight());
-
     Canvas resizingCanvas = new Canvas(screenshot);
     Paint paint = new Paint();
     resizingCanvas.drawBitmap(bitmap, srcRect, dst, paint);
+  }
+
+  private static Rect getSurfaceInsets(View decorView) {
+    final Rect insets = new Rect();
+    final ViewRootImpl root = decorView.getViewRootImpl();
+    if (root != null) {
+      insets.set(root.mWindowAttributes.surfaceInsets);
+    }
+    return insets;
   }
 
   private static void alertFinished(
@@ -204,6 +238,29 @@ public class ShadowPixelCopy {
       throw new IllegalArgumentException("Bitmap is immutable");
     }
     return bitmap;
+  }
+
+  /**
+   * This is similar to HardwareRenderingScreenshot.takeScreenshot, but does not replace the content
+   * root, and it always extracts the hardware renderer from the ViewRootImpl.
+   */
+  static void takeHardwareScreenshot(View decorView, Bitmap destBitmap) {
+    int imageWidth = destBitmap.getWidth();
+    int imageHeight = destBitmap.getHeight();
+    try (ImageReader imageReader =
+        ImageReader.newInstance(imageWidth, imageHeight, PixelFormat.RGBA_8888, 1)) {
+      ViewRootImpl viewRootImpl = decorView.getViewRootImpl();
+      Objects.requireNonNull(viewRootImpl, "View not attached");
+      Surface surface = imageReader.getSurface();
+      ShadowViewRootImpl shadowViewRootImpl = Shadow.extract(viewRootImpl);
+      HardwareRenderer renderer = shadowViewRootImpl.getThreadedRenderer();
+      renderer.setSurface(surface);
+      renderer.createRenderRequest().syncAndDraw();
+      Image nativeImage = imageReader.acquireNextImage();
+      Plane[] planes = nativeImage.getPlanes();
+      destBitmap.copyPixelsFromBuffer(planes[0].getBuffer());
+      surface.release();
+    }
   }
 
   @Implements(
