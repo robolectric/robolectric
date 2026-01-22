@@ -9,6 +9,12 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
+/**
+ * Shadow for {@link WifiP2pGroup}.
+ *
+ * @deprecated Use {@link WifiP2pGroupBuilder} instead. This shadows a class that is pure Java code.
+ */
+@Deprecated
 @Implements(WifiP2pGroup.class)
 public class ShadowWifiP2pGroup {
 
