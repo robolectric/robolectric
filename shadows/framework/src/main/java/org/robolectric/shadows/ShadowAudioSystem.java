@@ -1,10 +1,14 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static java.util.Objects.requireNonNull;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
@@ -15,6 +19,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Implementation;
@@ -132,6 +137,7 @@ public class ShadowAudioSystem {
       @Nonnull AudioFormat format, @Nonnull AudioAttributes attr, int offloadSupport) {
     requireNonNull(format, "Illegal null AudioFormat");
     requireNonNull(attr, "Illegal null AudioAttributes");
+    if (getApiLevel() <= BAKLAVA) {
     offloadPlaybackSupportTable.put(
         new OffloadSupportFormat(
             format.getEncoding(),
@@ -140,6 +146,15 @@ public class ShadowAudioSystem {
             format.getChannelIndexMask()),
         attr.getVolumeControlStream(),
         offloadSupport);
+    } else {
+      offloadPlaybackSupportTable.put(
+          new OffloadSupportFormat(
+              format.getEncoding(),
+              format.getSampleRate(),
+              reflector(ShadowAudioTrack.AudioFormatReflector.class, format).getChannelMasks()),
+          attr.getVolumeControlStream(),
+          offloadSupport);
+    }
   }
 
   /**
@@ -152,12 +167,21 @@ public class ShadowAudioSystem {
    */
   public static void setOffloadSupported(
       @Nonnull AudioFormat format, @Nonnull AudioAttributes attr, boolean supported) {
-    OffloadSupportFormat offloadSupportFormat =
-        new OffloadSupportFormat(
-            format.getEncoding(),
-            format.getSampleRate(),
-            format.getChannelMask(),
-            format.getChannelIndexMask());
+    OffloadSupportFormat offloadSupportFormat;
+    if (getApiLevel() <= BAKLAVA) {
+      offloadSupportFormat =
+          new OffloadSupportFormat(
+              format.getEncoding(),
+              format.getSampleRate(),
+              format.getChannelMask(),
+              format.getChannelIndexMask());
+    } else {
+      offloadSupportFormat =
+          new OffloadSupportFormat(
+              format.getEncoding(),
+              format.getSampleRate(),
+              reflector(ShadowAudioTrack.AudioFormatReflector.class, format).getChannelMasks());
+    }
     if (supported) {
       offloadSupportedMap.put(offloadSupportFormat, attr.getVolumeControlStream());
     } else {
@@ -172,13 +196,22 @@ public class ShadowAudioSystem {
         new OffloadSupportFormat(encoding, sampleRate, channelMask, channelIndexMask), streamType);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = BAKLAVA)
   protected static int native_get_offload_support(
       int encoding, int sampleRate, int channelMask, int channelIndexMask, int streamType) {
     return Optional.ofNullable(
             offloadPlaybackSupportTable.get(
                 new OffloadSupportFormat(encoding, sampleRate, channelMask, channelIndexMask),
                 streamType))
+        .orElse(AudioSystem.OFFLOAD_NOT_SUPPORTED);
+  }
+
+  @Implementation(minSdk = POST_BAKLAVA)
+  protected static int native_get_offload_support(
+      int encoding, int sampleRate, Object channelMasks, int streamType) {
+    return Optional.ofNullable(
+            offloadPlaybackSupportTable.get(
+                new OffloadSupportFormat(encoding, sampleRate, channelMasks), streamType))
         .orElse(AudioSystem.OFFLOAD_NOT_SUPPORTED);
   }
 
@@ -196,8 +229,11 @@ public class ShadowAudioSystem {
   private static class OffloadSupportFormat {
     public final int encoding;
     public final int sampleRate;
+    // only used on <= Baklava
     public final int channelMask;
     public final int channelIndexMask;
+    // only used on > Baklava
+    Object channelMasks = null;
 
     public OffloadSupportFormat(
         int encoding, int sampleRate, int channelMask, int channelIndexMask) {
@@ -205,6 +241,11 @@ public class ShadowAudioSystem {
       this.sampleRate = sampleRate;
       this.channelMask = channelMask;
       this.channelIndexMask = channelIndexMask;
+    }
+
+    public OffloadSupportFormat(int encoding, int sampleRate, Object channelMasks) {
+      this(encoding, sampleRate, 0, 0);
+      this.channelMasks = channelMasks;
     }
 
     @Override
@@ -219,16 +260,13 @@ public class ShadowAudioSystem {
       return encoding == that.encoding
           && sampleRate == that.sampleRate
           && channelMask == that.channelMask
-          && channelIndexMask == that.channelIndexMask;
+          && channelIndexMask == that.channelIndexMask
+          && Objects.equals(channelMasks, that.channelMasks);
     }
 
     @Override
     public int hashCode() {
-      int result = encoding;
-      result = 31 * result + sampleRate;
-      result = 31 * result + channelMask;
-      result = 31 * result + channelIndexMask;
-      return result;
+      return Objects.hash(encoding, sampleRate, channelMask, channelIndexMask, channelMasks);
     }
   }
 }
