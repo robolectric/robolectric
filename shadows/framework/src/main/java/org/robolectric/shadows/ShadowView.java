@@ -1098,6 +1098,8 @@ public class ShadowView {
   }
 
   static boolean useRealDrawTraversals() {
-    return useRealDrawTraversals.get();
+    return getApiLevel() >= TIRAMISU
+        && useRealGraphics()
+        && (useRealDrawTraversals.get() || Boolean.getBoolean("robolectric.useRealDrawTraversals"));
   }
 }
