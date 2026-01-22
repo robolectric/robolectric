@@ -13,7 +13,9 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.annotation.RequiresApi;
@@ -44,6 +46,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.reflector.ForType;
 
 /**
  * Implementation of a couple methods in {@link AudioTrack}. Only a couple methods are supported,
@@ -137,6 +140,7 @@ public class ShadowAudioTrack {
     requireNonNull(attr);
     checkArgument(!isPcm(format.getEncoding()));
 
+    if (getApiLevel() <= BAKLAVA) {
     directSupportedFormats.put(
         new AudioFormatInfo(
             format.getEncoding(),
@@ -144,6 +148,14 @@ public class ShadowAudioTrack {
             format.getChannelMask(),
             format.getChannelIndexMask()),
         new AudioAttributesInfo(attr.getContentType(), attr.getUsage(), attr.getFlags()));
+    } else {
+      directSupportedFormats.put(
+          new AudioFormatInfo(
+              format.getEncoding(),
+              format.getSampleRate(),
+              reflector(AudioFormatReflector.class, format).getChannelMasks()),
+          new AudioAttributesInfo(attr.getContentType(), attr.getUsage(), attr.getFlags()));
+    }
   }
 
   /**
@@ -197,7 +209,7 @@ public class ShadowAudioTrack {
     return 8;
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = BAKLAVA)
   protected static boolean native_is_direct_output_supported(
       int encoding,
       int sampleRate,
@@ -208,6 +220,19 @@ public class ShadowAudioTrack {
       int flags) {
     return directSupportedFormats.containsEntry(
         new AudioFormatInfo(encoding, sampleRate, channelMask, channelIndexMask),
+        new AudioAttributesInfo(contentType, usage, flags));
+  }
+
+  @Implementation(minSdk = POST_BAKLAVA)
+  protected static boolean native_is_direct_output_supported(
+      int encoding,
+      int sampleRate,
+      Object /* AudioFormat$ChannelMasks"*/ channelMasks,
+      int contentType,
+      int usage,
+      int flags) {
+    return directSupportedFormats.containsEntry(
+        new AudioFormatInfo(encoding, sampleRate, channelMasks),
         new AudioAttributesInfo(contentType, usage, flags));
   }
 
@@ -364,8 +389,7 @@ public class ShadowAudioTrack {
       Object /*WeakReference<AudioTrack>*/ audioTrack,
       Object /*AudioAttributes*/ attributes,
       int[] sampleRate,
-      int channelMask,
-      int channelIndexMask,
+      Object /* AudioFormat$ChannelMasks */ channelMasks,
       int audioFormat,
       int buffSizeInBytes,
       int mode,
@@ -381,8 +405,8 @@ public class ShadowAudioTrack {
         audioTrack,
         attributes,
         sampleRate,
-        channelMask,
-        channelIndexMask,
+        0 /* channelMask - unused */,
+        0 /* channelIndexMask - unused */,
         audioFormat,
         buffSizeInBytes,
         mode,
@@ -638,14 +662,22 @@ public class ShadowAudioTrack {
   private static class AudioFormatInfo {
     private final int encoding;
     private final int sampleRate;
+    // only used on <= Baklava
     private final int channelMask;
     private final int channelIndexMask;
+    // only used on > Baklava
+    private Object channelMasks = null;
 
     public AudioFormatInfo(int encoding, int sampleRate, int channelMask, int channelIndexMask) {
       this.encoding = encoding;
       this.sampleRate = sampleRate;
       this.channelMask = channelMask;
       this.channelIndexMask = channelIndexMask;
+    }
+
+    public AudioFormatInfo(int encoding, int sampleRate, Object channelMasks) {
+      this(encoding, sampleRate, 0, 0);
+      this.channelMasks = channelMasks;
     }
 
     @Override
@@ -661,16 +693,13 @@ public class ShadowAudioTrack {
       return encoding == other.encoding
           && sampleRate == other.sampleRate
           && channelMask == other.channelMask
-          && channelIndexMask == other.channelIndexMask;
+          && channelIndexMask == other.channelIndexMask
+          && Objects.equals(channelMasks, other.channelMasks);
     }
 
     @Override
     public int hashCode() {
-      int result = encoding;
-      result = 31 * result + sampleRate;
-      result = 31 * result + channelMask;
-      result = 31 * result + channelIndexMask;
-      return result;
+      return Objects.hash(encoding, sampleRate, channelMask, channelIndexMask, channelMasks);
     }
   }
 
@@ -727,5 +756,11 @@ public class ShadowAudioTrack {
     public void callListener() {
       handler.post(() -> listener.onRoutingChanged(audioTrack));
     }
+  }
+
+  @ForType(AudioFormat.class)
+  interface AudioFormatReflector {
+
+    Object getChannelMasks();
   }
 }
