@@ -79,7 +79,8 @@ public class AppLoader implements Runnable {
     List<ResolveInfo> resolveInfoList =
         application.getPackageManager().queryIntentActivities(intent, 0);
 
-    Preconditions.checkArgument(!resolveInfoList.isEmpty());
+    Preconditions.checkArgument(
+        !resolveInfoList.isEmpty(), "Could not find a launcher Activity in provided manifest");
 
     ResolveInfo resolveInfo = resolveInfoList.get(0);
     ActivityInfo activityInfo = resolveInfo.activityInfo;
