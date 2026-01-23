@@ -7,9 +7,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.HardwareRenderer;
 import android.graphics.Paint;
-import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.media.Image;
 import android.media.Image.Plane;
@@ -18,13 +16,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.PixelCopy;
 import android.view.PixelCopy.OnPixelCopyFinishedListener;
+import android.view.PixelCopy.Request;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.Window;
 import android.view.WindowManagerGlobal;
-import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
@@ -37,6 +35,7 @@ import org.robolectric.shadows.ShadowWindowManagerGlobal.WindowManagerGlobalRefl
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -56,8 +55,14 @@ public class ShadowPixelCopy {
       @Nonnull Bitmap dest,
       @Nonnull OnPixelCopyFinishedListener listener,
       @Nonnull Handler listenerThread) {
-    takeScreenshot(source, dest, null);
-    alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
+    if (ShadowView.useRealDrawTraversals()) {
+      // when realViewDrawTraversals are on, the view will be backed by a valid Surface.
+      // so just use that
+      reflector(PixelCopyReflector.class).request(source, dest, listener, listenerThread);
+    } else {
+      takeScreenshot(source, dest, null);
+      alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
+    }
   }
 
   @Implementation
@@ -67,11 +72,17 @@ public class ShadowPixelCopy {
       @Nonnull Bitmap dest,
       @Nonnull OnPixelCopyFinishedListener listener,
       @Nonnull Handler listenerThread) {
-    if (srcRect != null && srcRect.isEmpty()) {
-      throw new IllegalArgumentException("sourceRect is empty");
+    if (ShadowView.useRealDrawTraversals()) {
+      // when realViewDrawTraversals are on, the view will be backed by a valid Surface.
+      // so just use that
+      reflector(PixelCopyReflector.class).request(source, srcRect, dest, listener, listenerThread);
+    } else {
+      if (srcRect != null && srcRect.isEmpty()) {
+        throw new IllegalArgumentException("sourceRect is empty");
+      }
+      takeScreenshot(source, dest, srcRect);
+      alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
     }
-    takeScreenshot(source, dest, srcRect);
-    alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
   }
 
   @Implementation
@@ -90,11 +101,17 @@ public class ShadowPixelCopy {
       @Nonnull Bitmap dest,
       @Nonnull OnPixelCopyFinishedListener listener,
       @Nonnull Handler listenerThread) {
-    if (srcRect != null && srcRect.isEmpty()) {
-      throw new IllegalArgumentException("sourceRect is empty");
+    if (ShadowView.useRealDrawTraversals()) {
+      // when realViewDrawTraversals are on, the view will be backed by a valid Surface.
+      // so just use that
+      reflector(PixelCopyReflector.class).request(source, srcRect, dest, listener, listenerThread);
+    } else {
+      if (srcRect != null && srcRect.isEmpty()) {
+        throw new IllegalArgumentException("sourceRect is empty");
+      }
+      takeScreenshot(source.getDecorView(), dest, srcRect);
+      alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
     }
-    takeScreenshot(source.getDecorView(), dest, srcRect);
-    alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
   }
 
   @Implementation
@@ -107,13 +124,11 @@ public class ShadowPixelCopy {
     if (srcRect != null && srcRect.isEmpty()) {
       throw new IllegalArgumentException("sourceRect is empty");
     }
-
-    View view = findViewForSurface(requireNonNull(source));
     if (ShadowView.useRealDrawTraversals()) {
-      // If real draw traversals are enabled, there is no need to adjust the source rect, because
-      // we assume the provided source rect is relative to the view's surface.
-      takeScreenshot(view, dest, srcRect);
+      takeScreenshot(source, dest, srcRect);
     } else {
+      View view = findViewForSurface(requireNonNull(source));
+
       Rect adjustedSrcRect = null;
       if (srcRect != null) {
         adjustedSrcRect = new Rect(srcRect);
@@ -169,39 +184,22 @@ public class ShadowPixelCopy {
         "Could not find view for surface. Is it attached to a window?");
   }
 
-  private static void takeScreenshot(View viewRoot, Bitmap screenshot, @Nullable Rect srcRect) {
+  /**
+   * The takeScreenshot method when using real View draw traversals. This method just takes the
+   * image already produced by the draw traversal as opposed to doing a re-draw.
+   */
+  private static void takeScreenshot(Surface surface, Bitmap screenshot, @Nullable Rect srcRect) {
     validateBitmap(screenshot);
 
-    Rect surfaceInsets = new Rect();
-    if (ShadowView.useRealDrawTraversals()) {
-      surfaceInsets = getSurfaceInsets(viewRoot);
-    }
+    ShadowNativeSurface shadowSurface = Shadow.extract(surface);
+    ImageReader imageReader = shadowSurface.getContainerImageReader();
     Bitmap bitmap =
         Bitmap.createBitmap(
-            viewRoot.getWidth() + surfaceInsets.left,
-            viewRoot.getHeight() + surfaceInsets.top,
-            Bitmap.Config.ARGB_8888);
+            imageReader.getWidth(), imageReader.getHeight(), Bitmap.Config.ARGB_8888);
 
-    if (HardwareRenderingScreenshot.canTakeScreenshot(viewRoot)) {
-      PerfStatsCollector.getInstance()
-          .measure(
-              "ShadowPixelCopy-Hardware",
-              () -> {
-                if (ShadowView.useRealDrawTraversals()) {
-                  takeHardwareScreenshot(viewRoot, bitmap);
-                } else {
-                  HardwareRenderingScreenshot.takeScreenshot(viewRoot, bitmap);
-                }
-              });
-    } else {
-      PerfStatsCollector.getInstance()
-          .measure(
-              "ShadowPixelCopy-Software",
-              () -> {
-                Canvas screenshotCanvas = new Canvas(bitmap);
-                viewRoot.draw(screenshotCanvas);
-              });
-    }
+    Image nativeImage = imageReader.acquireNextImage();
+    Plane[] planes = nativeImage.getPlanes();
+    bitmap.copyPixelsFromBuffer(planes[0].getBuffer());
 
     Rect dst = new Rect(0, 0, screenshot.getWidth(), screenshot.getHeight());
     Canvas resizingCanvas = new Canvas(screenshot);
@@ -209,13 +207,31 @@ public class ShadowPixelCopy {
     resizingCanvas.drawBitmap(bitmap, srcRect, dst, paint);
   }
 
-  private static Rect getSurfaceInsets(View decorView) {
-    final Rect insets = new Rect();
-    final ViewRootImpl root = decorView.getViewRootImpl();
-    if (root != null) {
-      insets.set(root.mWindowAttributes.surfaceInsets);
+  private static void takeScreenshot(View view, Bitmap screenshot, @Nullable Rect srcRect) {
+    validateBitmap(screenshot);
+
+    Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+
+    if (HardwareRenderingScreenshot.canTakeScreenshot(view)) {
+      PerfStatsCollector.getInstance()
+          .measure(
+              "ShadowPixelCopy-Hardware",
+              () -> HardwareRenderingScreenshot.takeScreenshot(view, bitmap));
+    } else {
+      PerfStatsCollector.getInstance()
+          .measure(
+              "ShadowPixelCopy-Software",
+              () -> {
+                Canvas screenshotCanvas = new Canvas(bitmap);
+                view.draw(screenshotCanvas);
+              });
     }
-    return insets;
+
+    Rect dst = new Rect(0, 0, screenshot.getWidth(), screenshot.getHeight());
+
+    Canvas resizingCanvas = new Canvas(screenshot);
+    Paint paint = new Paint();
+    resizingCanvas.drawBitmap(bitmap, srcRect, dst, paint);
   }
 
   private static void alertFinished(
@@ -240,29 +256,6 @@ public class ShadowPixelCopy {
     return bitmap;
   }
 
-  /**
-   * This is similar to HardwareRenderingScreenshot.takeScreenshot, but does not replace the content
-   * root, and it always extracts the hardware renderer from the ViewRootImpl.
-   */
-  static void takeHardwareScreenshot(View decorView, Bitmap destBitmap) {
-    int imageWidth = destBitmap.getWidth();
-    int imageHeight = destBitmap.getHeight();
-    try (ImageReader imageReader =
-        ImageReader.newInstance(imageWidth, imageHeight, PixelFormat.RGBA_8888, 1)) {
-      ViewRootImpl viewRootImpl = decorView.getViewRootImpl();
-      Objects.requireNonNull(viewRootImpl, "View not attached");
-      Surface surface = imageReader.getSurface();
-      ShadowViewRootImpl shadowViewRootImpl = Shadow.extract(viewRootImpl);
-      HardwareRenderer renderer = shadowViewRootImpl.getThreadedRenderer();
-      renderer.setSurface(surface);
-      renderer.createRenderRequest().syncAndDraw();
-      Image nativeImage = imageReader.acquireNextImage();
-      Plane[] planes = nativeImage.getPlanes();
-      destBitmap.copyPixelsFromBuffer(planes[0].getBuffer());
-      surface.release();
-    }
-  }
-
   @Implements(
       value = PixelCopy.Request.Builder.class,
       minSdk = UPSIDE_DOWN_CAKE,
@@ -273,18 +266,22 @@ public class ShadowPixelCopy {
     // for now, this copies Android implementation and just omits the valid surface check
     @Implementation
     protected static PixelCopy.Request.Builder ofWindow(View source) {
-      if (source == null || !source.isAttachedToWindow()) {
-        throw new IllegalArgumentException("View must not be null & must be attached to window");
+      if (ShadowView.useRealDrawTraversals()) {
+        return reflector(BuilderReflector.class).ofWindow(source);
+      } else {
+        if (source == null || !source.isAttachedToWindow()) {
+          throw new IllegalArgumentException("View must not be null & must be attached to window");
+        }
+        final Rect insets = new Rect();
+        Surface surface = null;
+        final ViewRootImpl root = source.getViewRootImpl();
+        if (root != null) {
+          surface = root.mSurface;
+          insets.set(root.mWindowAttributes.surfaceInsets);
+        }
+        PixelCopy.Request request = reflector(RequestReflector.class).newRequest(surface, insets);
+        return reflector(BuilderReflector.class).newBuilder(request);
       }
-      final Rect insets = new Rect();
-      Surface surface = null;
-      final ViewRootImpl root = source.getViewRootImpl();
-      if (root != null) {
-        surface = root.mSurface;
-        insets.set(root.mWindowAttributes.surfaceInsets);
-      }
-      PixelCopy.Request request = reflector(RequestReflector.class).newRequest(surface, insets);
-      return reflector(BuilderReflector.class).newBuilder(request);
     }
   }
 
@@ -292,12 +289,42 @@ public class ShadowPixelCopy {
   private interface PixelCopyReflector {
     @Static
     Rect adjustSourceRectForInsets(Rect insets, Rect srcRect);
+
+    @Static
+    @Direct
+    void request(
+        SurfaceView source,
+        Bitmap dest,
+        OnPixelCopyFinishedListener listener,
+        Handler listenerThread);
+
+    @Static
+    @Direct
+    void request(
+        SurfaceView source,
+        Rect srcRect,
+        Bitmap dest,
+        OnPixelCopyFinishedListener listener,
+        Handler listenerThread);
+
+    @Static
+    @Direct
+    void request(
+        Window source,
+        Rect srcRect,
+        Bitmap dest,
+        OnPixelCopyFinishedListener listener,
+        Handler listenerThread);
   }
 
   @ForType(PixelCopy.Request.Builder.class)
   private interface BuilderReflector {
     @Constructor
     PixelCopy.Request.Builder newBuilder(PixelCopy.Request request);
+
+    @Static
+    @Direct
+    Request.Builder ofWindow(View source);
   }
 
   @ForType(PixelCopy.Request.class)
