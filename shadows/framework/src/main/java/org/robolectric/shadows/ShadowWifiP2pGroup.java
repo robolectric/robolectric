@@ -35,6 +35,12 @@ public class ShadowWifiP2pGroup {
     reflector(WifiP2pGroupReflector.class, realObject).setNetworkName(networkName);
   }
 
+  @SuppressWarnings("ProtectedImplementationLintCheck")
+  @Implementation
+  public void setIsGroupOwner(boolean isGroupOwner) {
+    reflector(WifiP2pGroupReflector.class, realObject).setIsGroupOwner(isGroupOwner);
+  }
+
   @ForType(WifiP2pGroup.class)
   interface WifiP2pGroupReflector {
 
@@ -46,5 +52,8 @@ public class ShadowWifiP2pGroup {
 
     @Direct
     void setNetworkName(String networkName);
+
+    @Direct
+    void setIsGroupOwner(boolean isGroupOwner);
   }
 }
