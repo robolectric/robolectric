@@ -211,4 +211,27 @@ public class IntentsTest {
         ActivityNotFoundException.class,
         () -> getApplicationContext().startActivity(browserIntent));
   }
+
+  @Test
+  public void browserIntentResolved() {
+    Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+    browserIntent.setData(Uri.parse("http://www.robolectric.org"));
+    browserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    // verify this does not throw
+    getApplicationContext().startActivity(browserIntent);
+  }
+
+  /**
+   * Fixture Activity that is listed in manifest with basic filter.
+   *
+   * <p>Done to ensure tests that send an implicit action VIEW Intent resolve to an Activity.
+   */
+  public static class ActivityWithViewFilter extends Activity {}
+
+  /**
+   * Fixture Activity that is listed in manifest with basic filter.
+   *
+   * <p>Done to ensure tests that send an implicit action VIEW Intent resolve to an Activity.
+   */
+  public static class ActivityWithMainFilter extends Activity {}
 }

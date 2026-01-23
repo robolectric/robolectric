@@ -3,6 +3,7 @@ package org.robolectric.integrationtests.axt;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeTrue;
 
 import android.app.Activity;
 import android.app.AppComponentFactory;
@@ -10,6 +11,7 @@ import android.app.UiAutomation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Process;
@@ -29,7 +31,6 @@ import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 /**
  * Integration tests for {@link ActivityScenario} that verify it behaves consistently on device and
@@ -100,7 +101,7 @@ public class ActivityScenarioTest {
     }
   }
 
-  private static class OnCreatePackageNameActivity extends Activity {
+  public static class OnCreatePackageNameActivity extends Activity {
 
     private String callingPackageOnCreate;
 
@@ -391,8 +392,8 @@ public class ActivityScenarioTest {
   }
 
   @Test
-  @Config(minSdk = P)
   public void launchActivityWithCustomConstructor() {
+    assumeTrue(VERSION.SDK_INT >= P);
     try (ActivityScenario<ActivityWithCustomConstructor> activityScenario =
         ActivityScenario.launch(ActivityWithCustomConstructor.class)) {
       assertThat(activityScenario.getState()).isEqualTo(State.RESUMED);
