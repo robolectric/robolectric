@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
@@ -37,7 +39,7 @@ import org.robolectric.annotation.Resetter;
 @Implements(AccountManager.class)
 public class ShadowAccountManager {
 
-  private final List<Account> accounts = new ArrayList<>();
+  private final List<Account> accounts = new CopyOnWriteArrayList<>();
   private final Map<Account, Map<String, String>> authTokens = new HashMap<>();
   private final Map<String, AuthenticatorDescription> authenticators = new LinkedHashMap<>();
 
@@ -46,10 +48,11 @@ public class ShadowAccountManager {
    * to accounts of any type. Otherwise, the listener is only notified of changes to accounts of the
    * given type.
    */
-  private final Map<OnAccountsUpdateListener, Set<String>> listeners = new LinkedHashMap<>();
+  private final Map<OnAccountsUpdateListener, Set<String>> listeners =
+      Collections.synchronizedMap(new HashMap<>());
 
   private final Map<Account, Map<String, String>> userData = new HashMap<>();
-  private final Map<Account, String> passwords = new HashMap<>();
+  private final Map<Account, String> passwords = new ConcurrentHashMap<>();
   private final Map<Account, Set<String>> accountFeatures = new HashMap<>();
   private final Map<Account, Set<String>> packageVisibleAccounts = new HashMap<>();
 
@@ -224,6 +227,9 @@ public class ShadowAccountManager {
 
   @Implementation
   protected boolean removeAccountExplicitly(Account account) {
+    if (account == null) {
+      return false;
+    }
     passwords.remove(account);
     userData.remove(account);
     if (accounts.remove(account)) {
@@ -479,11 +485,13 @@ public class ShadowAccountManager {
 
   private void notifyListeners(Account changedAccount) {
     Account[] accounts = getAccounts();
-    for (Map.Entry<OnAccountsUpdateListener, Set<String>> entry : listeners.entrySet()) {
-      OnAccountsUpdateListener listener = entry.getKey();
-      Set<String> types = entry.getValue();
-      if (types == null || types.contains(changedAccount.type)) {
-        notifyListener(listener, types, accounts);
+    synchronized (listeners) {
+      for (Map.Entry<OnAccountsUpdateListener, Set<String>> entry : listeners.entrySet()) {
+        OnAccountsUpdateListener listener = entry.getKey();
+        Set<String> types = entry.getValue();
+        if (types == null || types.contains(changedAccount.type)) {
+          notifyListener(listener, types, accounts);
+        }
       }
     }
   }
