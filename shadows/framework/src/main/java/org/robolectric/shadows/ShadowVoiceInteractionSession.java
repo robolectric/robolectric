@@ -69,6 +69,7 @@ public class ShadowVoiceInteractionSession {
    * VoiceInteractionSession#startAssistantActivity(Intent)} or {@code null} if there wasn't any.
    */
   @Nullable
+  @SuppressWarnings("NullArgumentForNonNullParameter")
   public Intent getLastAssistantActivityIntent() {
     return Iterables.getLast(assistantActivityIntents, /* defaultValue= */ null);
   }
@@ -86,6 +87,7 @@ public class ShadowVoiceInteractionSession {
    * VoiceInteractionSession#startVoiceActivity(Intent)} or {@code null} if there wasn't any.
    */
   @Nullable
+  @SuppressWarnings("NullArgumentForNonNullParameter")
   public Intent getLastVoiceActivityIntent() {
     return Iterables.getLast(voiceActivityIntents, /* defaultValue= */ null);
   }

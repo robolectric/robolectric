@@ -7,6 +7,7 @@ import android.content.Intent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("NewApi")
 public class TestAppComponentFactory extends AppComponentFactory {
 
   @Override
