@@ -78,6 +78,7 @@ public class ShadowVoiceInteractionService extends ShadowService {
    * wasn't any.
    */
   @Nullable
+  @SuppressWarnings("NullArgumentForNonNullParameter")
   public Bundle getLastSessionBundle() {
     return Iterables.getLast(sessionBundles, null);
   }
