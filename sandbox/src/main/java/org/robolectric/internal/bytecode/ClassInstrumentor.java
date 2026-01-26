@@ -277,6 +277,7 @@ public class ClassInstrumentor {
    * Adds a call $$robo$init, which instantiates a shadow object if required. This is to support
    * custom shadows for Jacoco-instrumented classes (except constructor shadows).
    */
+  @SuppressWarnings("NullArgumentForNonNullParameter")
   protected void addCallToRoboInit(MutableClass mutableClass, MethodNode ctor) {
     AbstractInsnNode returnNode =
         Iterables.find(
@@ -446,6 +447,7 @@ public class ClassInstrumentor {
    * Checks to see if there are instructions after RETURN. If there are, it will check to see if
    * they belong in the call-to-super, or the shadowable part of the constructor.
    */
+  @SuppressWarnings("NullArgumentForNonNullParameter")
   private InsnList extractInstructionsAfterReturn(MethodNode method, MethodNode initMethodNode) {
     InsnList removedInstructions = new InsnList();
     AbstractInsnNode returnNode =
