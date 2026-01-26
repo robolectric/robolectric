@@ -18,7 +18,7 @@ class GradleManagedDevicePlugin : Plugin<Project> {
       return
     }
 
-    androidExtension.testOptions {
+    androidExtension.testOptions.apply {
       animationsDisabled = true
 
       managedDevices {
