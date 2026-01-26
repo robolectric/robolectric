@@ -1,7 +1,7 @@
 plugins { alias(libs.plugins.android.library) }
 
 android {
-  compileSdk = 36
+  compileSdk = 30
   namespace = "org.robolectric.testapp"
 
   defaultConfig {
@@ -10,8 +10,5 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
-  lint {
-    abortOnError = false
-    targetSdk = 34
-  }
+  lint { abortOnError = false }
 }
