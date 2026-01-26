@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -125,7 +126,7 @@ public class ShadowPixelCopy {
       throw new IllegalArgumentException("sourceRect is empty");
     }
     if (ShadowView.useRealDrawTraversals()) {
-      takeScreenshot(source, dest, srcRect);
+      captureImageFromSurface(source, dest, srcRect);
     } else {
       View view = findViewForSurface(requireNonNull(source));
 
@@ -185,11 +186,12 @@ public class ShadowPixelCopy {
   }
 
   /**
-   * The takeScreenshot method when using real View draw traversals. This method just takes the
+   * Method to obtain a Bitmap when using real View draw traversals. This method just takes the
    * image already produced by the draw traversal as opposed to doing a re-draw.
    */
-  private static void takeScreenshot(Surface surface, Bitmap screenshot, @Nullable Rect srcRect) {
+  static void captureImageFromSurface(Surface surface, Bitmap screenshot, @Nullable Rect srcRect) {
     validateBitmap(screenshot);
+    checkState(Looper.getMainLooper().isCurrentThread());
 
     ShadowNativeSurface shadowSurface = Shadow.extract(surface);
     ImageReader imageReader = shadowSurface.getContainerImageReader();
@@ -197,9 +199,10 @@ public class ShadowPixelCopy {
         Bitmap.createBitmap(
             imageReader.getWidth(), imageReader.getHeight(), Bitmap.Config.ARGB_8888);
 
-    Image nativeImage = imageReader.acquireNextImage();
-    Plane[] planes = nativeImage.getPlanes();
-    bitmap.copyPixelsFromBuffer(planes[0].getBuffer());
+    try (Image nativeImage = imageReader.acquireNextImage()) {
+      Plane[] planes = nativeImage.getPlanes();
+      bitmap.copyPixelsFromBuffer(planes[0].getBuffer());
+    }
 
     Rect dst = new Rect(0, 0, screenshot.getWidth(), screenshot.getHeight());
     Canvas resizingCanvas = new Canvas(screenshot);
