@@ -24,6 +24,9 @@
     <activity-alias
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTestAlias"
         android:targetActivity="org.robolectric.integrationtests.axt.ActivityScenarioTest$TranscriptActivity" />
+    <activity
+        android:name="org.robolectric.integrationtests.axt.ActivityScenarioTest$UninstanitableActivity"
+        android:exported = "true"/>
   </application>
 
   <instrumentation

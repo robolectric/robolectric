@@ -12,6 +12,22 @@
         android:name="org.robolectric.integrationtests.axt.IntentsTest$ResultCapturingActivity"
         android:exported="true">
         </activity>
+    <activity
+      android:name="org.robolectric.integrationtests.axt.IntentsTest$ActivityWithViewFilter"
+        android:exported = "true">
+      <intent-filter>
+      <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+      </intent-filter>
+    </activity>
+    <activity
+        android:name="org.robolectric.integrationtests.axt.IntentsTest$ActivityWithMainFilter"
+        android:exported = "true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.DEFAULT" />
+      </intent-filter>
+    </activity>
   </application>
 
   <instrumentation
