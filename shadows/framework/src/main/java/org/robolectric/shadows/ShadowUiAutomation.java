@@ -25,7 +25,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.provider.Settings;
@@ -34,7 +33,6 @@ import android.view.InputDevice;
 import android.view.InputEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
@@ -125,18 +123,6 @@ public class ShadowUiAutomation {
   @Implementation
   protected void throwIfNotConnectedLocked() {}
 
-  /**
-   * Real Android will via a series of IPCs that eventually obtain an image from SurfaceFlinger.
-   *
-   * <p>Since Robolectric doesn't run any of those backend services, this shadow simulates the
-   * result by capturing an image from each active Window listed in WindowManager, and stiches them
-   * together into a resuting image.
-   *
-   * <p>Also unlike real Android, this method can be called from on and outside the main Looper
-   * thread.
-   *
-   * @return a Bitmap of the display
-   */
   @Implementation
   protected Bitmap takeScreenshot() throws Exception {
     if (!ShadowView.useRealGraphics()) {
@@ -164,11 +150,7 @@ public class ShadowUiAutomation {
                 Bitmap window =
                     Bitmap.createBitmap(
                         rootView.getWidth(), rootView.getHeight(), Bitmap.Config.ARGB_8888);
-                if (ShadowView.useRealDrawTraversals()) {
-                  Surface surface = root.impl.mSurface;
-                  ShadowPixelCopy.captureImageFromSurface(
-                      surface, window, getBoundsInSurface(rootView));
-                } else if (HardwareRenderingScreenshot.canTakeScreenshot(rootView)) {
+                if (HardwareRenderingScreenshot.canTakeScreenshot(rootView)) {
                   HardwareRenderingScreenshot.takeScreenshot(rootView, window);
                 } else {
                   Canvas windowCanvas = new Canvas(window);
@@ -182,15 +164,6 @@ public class ShadowUiAutomation {
 
     ShadowInstrumentation.runOnMainSyncNoIdle(screenshotTask);
     return screenshotTask.get();
-  }
-
-  private static Rect getBoundsInSurface(View view) {
-    int[] locationInSurface = new int[2];
-    view.getLocationInSurface(locationInSurface);
-
-    int x = locationInSurface[0];
-    int y = locationInSurface[1];
-    return new Rect(x, y, x + view.getWidth(), y + view.getHeight());
   }
 
   /**
