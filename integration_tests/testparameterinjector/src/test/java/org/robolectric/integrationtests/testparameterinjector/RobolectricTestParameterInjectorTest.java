@@ -5,8 +5,10 @@ import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build.VERSION;
+import android.util.Size;
 import com.google.testing.junit.testparameterinjector.TestParameter;
 import java.util.ArrayList;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -247,5 +249,40 @@ public class RobolectricTestParameterInjectorTest {
     runner.run(runNotifier);
 
     assertThat(runner.testCount()).isEqualTo(1);
+  }
+
+  @Ignore
+  @Config(sdk = Config.NEWEST_SDK)
+  public static class InjectedAndroidObject {
+    @SuppressWarnings({"ImmutableEnum", "ImmutableEnumChecker"})
+    public enum SizeTestCase {
+      EMPTY(() -> new Size(0, 0)),
+      SQUARE(() -> new Size(100, 100));
+
+      final Supplier<Size> sizeSupplier;
+
+      SizeTestCase(Supplier<Size> sizeSupplier) {
+        this.sizeSupplier = sizeSupplier;
+      }
+    }
+
+    @Test
+    public void test(@TestParameter SizeTestCase sizeTestCase) {
+      Size actualSize = sizeTestCase.sizeSupplier.get();
+      assertThat(actualSize).isNotNull();
+    }
+  }
+
+  @Test
+  public void injectedAndroidObject() throws Exception {
+    Runner runner = new RobolectricTestParameterInjector(InjectedAndroidObject.class);
+
+    runner.run(runNotifier);
+
+    assertThat(runner.testCount()).isEqualTo(2);
+
+    ArrayList<Description> descriptions = runner.getDescription().getChildren();
+    assertThat(descriptions.get(0).getMethodName()).isEqualTo("test[EMPTY]");
+    assertThat(descriptions.get(1).getMethodName()).isEqualTo("test[SQUARE]");
   }
 }
