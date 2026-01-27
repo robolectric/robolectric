@@ -286,7 +286,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
                     target, requestCode, ar.getResultCode(), ar.getResultData()));
   }
 
-  private ActivityResult stubResultFor(Intent intent) {
+  protected ActivityResult stubResultFor(Intent intent) {
     if (!IntentStubberRegistry.isLoaded()) {
       return null;
     }
