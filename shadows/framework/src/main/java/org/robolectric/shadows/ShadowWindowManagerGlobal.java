@@ -81,18 +81,17 @@ import org.robolectric.util.reflector.Static;
 @SuppressWarnings("unused") // Unused params are implementations of Android SDK methods.
 @Implements(value = WindowManagerGlobal.class, isInAndroidSdk = false)
 public class ShadowWindowManagerGlobal {
-  protected static WindowSessionDelegate windowSessionDelegate = new WindowSessionDelegate();
+  protected WindowSessionDelegate windowSessionDelegate = new WindowSessionDelegate();
   protected static IWindowSession windowSession;
 
   @Resetter
   public static void reset() {
     reflector(WindowManagerGlobalReflector.class).setDefaultWindowManager(null);
-    windowSessionDelegate = new WindowSessionDelegate();
     windowSession = null;
   }
 
   public static boolean getInTouchMode() {
-    return windowSessionDelegate.getInTouchMode();
+    return getWindowSessionDelegate().getInTouchMode();
   }
 
   /**
@@ -100,11 +99,11 @@ public class ShadowWindowManagerGlobal {
    * Instrumentation#setInTouchMode(boolean)} to modify this from a test.
    */
   static void setInTouchMode(boolean inTouchMode) {
-    windowSessionDelegate.setInTouchMode(inTouchMode);
+    getWindowSessionDelegate().setInTouchMode(inTouchMode);
   }
 
   static void notifyResize(IWindow window) {
-    windowSessionDelegate.sendResize(window);
+    getWindowSessionDelegate().sendResize(window);
   }
 
   /**
@@ -113,12 +112,12 @@ public class ShadowWindowManagerGlobal {
    */
   @Nullable
   public static ClipData getLastDragClipData() {
-    return windowSessionDelegate.lastDragClipData;
+    return getWindowSessionDelegate().lastDragClipData;
   }
 
   /** Clears the data returned by {@link #getLastDragClipData()}. */
   public static void clearLastDragClipData() {
-    windowSessionDelegate.lastDragClipData = null;
+    getWindowSessionDelegate().lastDragClipData = null;
   }
 
   @Implementation
@@ -134,6 +133,7 @@ public class ShadowWindowManagerGlobal {
     // Use Proxy.newProxyInstance instead of ReflectionHelpers.createDelegatingProxy as there are
     // too many variants of 'add', 'addToDisplay', and 'addToDisplayAsUser', some of which have
     // arg types that don't exist any more.
+    WindowSessionDelegate windowSessionDelegate = getWindowSessionDelegate();
     return (IWindowSession)
         Proxy.newProxyInstance(
             IWindowSession.class.getClassLoader(),
@@ -702,6 +702,11 @@ public class ShadowWindowManagerGlobal {
 
   private static <T> T[] findAll(Class<T> type, Object[] args) {
     return stream(args).filter(type::isInstance).toArray(len -> (T[]) Array.newInstance(type, len));
+  }
+
+  protected static WindowSessionDelegate getWindowSessionDelegate() {
+    return ((ShadowWindowManagerGlobal) Shadow.extract(WindowManagerGlobal.getInstance()))
+        .windowSessionDelegate;
   }
 
   private static final class ClassParameterBuilder {
