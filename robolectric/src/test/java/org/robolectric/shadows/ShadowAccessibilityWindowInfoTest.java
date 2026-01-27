@@ -2,9 +2,12 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.graphics.Rect;
+import android.graphics.Region;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -75,5 +78,15 @@ public class ShadowAccessibilityWindowInfoTest {
     assertThat(shadow.getChild(0)).isEqualTo(window2);
     window.recycle();
     assertThat(shadow.getChild(0)).isNull();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void testGetRegionInScreen() {
+    Rect bounds = new Rect(0, 0, 100, 100);
+    shadow.setBoundsInScreen(bounds);
+    Region outRegion = new Region();
+    window.getRegionInScreen(outRegion);
+    assertThat(outRegion).isEqualTo(new Region(bounds));
   }
 }
