@@ -81,7 +81,8 @@ import org.robolectric.util.reflector.Static;
 @SuppressWarnings("unused") // Unused params are implementations of Android SDK methods.
 @Implements(value = WindowManagerGlobal.class, isInAndroidSdk = false)
 public class ShadowWindowManagerGlobal {
-  protected WindowSessionDelegate windowSessionDelegate = new WindowSessionDelegate();
+  protected WindowSessionDelegate windowSessionDelegate = createWindowSessionDelegate();
+
   protected static IWindowSession windowSession;
 
   @Resetter
@@ -702,6 +703,10 @@ public class ShadowWindowManagerGlobal {
 
   private static <T> T[] findAll(Class<T> type, Object[] args) {
     return stream(args).filter(type::isInstance).toArray(len -> (T[]) Array.newInstance(type, len));
+  }
+
+  protected WindowSessionDelegate createWindowSessionDelegate() {
+    return new WindowSessionDelegate();
   }
 
   protected static WindowSessionDelegate getWindowSessionDelegate() {
