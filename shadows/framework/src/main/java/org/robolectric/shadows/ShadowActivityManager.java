@@ -26,13 +26,16 @@ import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.SparseIntArray;
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.Ints;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
@@ -328,6 +331,14 @@ public class ShadowActivityManager {
     importanceListeners.add(new ImportanceListener(listener, importanceCutpoint));
   }
 
+  @Implementation(minSdk = VERSION_CODES.BAKLAVA)
+  protected void addOnUidImportanceListener(
+      @ClassName("android.app.ActivityManager$OnUidImportanceListener") Object listener,
+      int importanceCutpoint,
+      int[] uids) {
+    importanceListeners.add(new ImportanceListener(listener, importanceCutpoint, uids));
+  }
+
   @Implementation(minSdk = O)
   protected void removeOnUidImportanceListener(
       @ClassName("android.app.ActivityManager$OnUidImportanceListener") Object listener) {
@@ -589,6 +600,7 @@ public class ShadowActivityManager {
 
     private final ActivityManager.OnUidImportanceListener listener;
     private final int importanceCutpoint;
+    private final Set<Integer> uids;
 
     private final ArrayMap<Integer, Boolean> lastAboveCuts = new ArrayMap<>();
 
@@ -599,9 +611,19 @@ public class ShadowActivityManager {
     ImportanceListener(Object listener, int importanceCutpoint) {
       this.listener = (ActivityManager.OnUidImportanceListener) listener;
       this.importanceCutpoint = importanceCutpoint;
+      this.uids = null;
+    }
+
+    ImportanceListener(Object listener, int importanceCutpoint, int[] uids) {
+      this.listener = (ActivityManager.OnUidImportanceListener) listener;
+      this.importanceCutpoint = importanceCutpoint;
+      this.uids = new HashSet<>(Ints.asList(uids));
     }
 
     void onUidImportanceChanged(int uid, int importance) {
+      if (uids != null && !uids.contains(uid)) {
+        return;
+      }
       Boolean isAboveCut = importance > importanceCutpoint;
       if (!isAboveCut.equals(lastAboveCuts.get(uid))) {
         lastAboveCuts.put(uid, isAboveCut);

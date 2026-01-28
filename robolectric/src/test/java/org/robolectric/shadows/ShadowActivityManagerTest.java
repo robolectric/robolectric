@@ -276,6 +276,35 @@ public class ShadowActivityManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.BAKLAVA)
+  public void onUidImportanceListener_withUids_shouldOnlyNotifySpecifiedUids() {
+    int otherUid = Process.myUid() + 1000;
+    ActivityManager.OnUidImportanceListener listener =
+        mock(ActivityManager.OnUidImportanceListener.class);
+    InOrder inOrder = inOrder(listener);
+
+    activityManager.addOnUidImportanceListener(
+        listener, IMPORTANCE_FOREGROUND_SERVICE, new int[] {Process.myUid()});
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_FOREGROUND);
+    inOrder.verify(listener).onUidImportance(Process.myUid(), IMPORTANCE_FOREGROUND);
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_VISIBLE);
+    inOrder.verify(listener).onUidImportance(Process.myUid(), IMPORTANCE_VISIBLE);
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_FOREGROUND_SERVICE);
+    inOrder.verify(listener).onUidImportance(Process.myUid(), IMPORTANCE_FOREGROUND_SERVICE);
+
+    shadowOf(activityManager).setUidImportance(otherUid, IMPORTANCE_FOREGROUND);
+    inOrder.verifyNoMoreInteractions();
+
+    activityManager.removeOnUidImportanceListener(listener);
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_VISIBLE);
+    inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
   @Config(minSdk = O)
   public void getUidImportance() {
     assertThat(activityManager.getUidImportance(Process.myUid())).isEqualTo(IMPORTANCE_GONE);
