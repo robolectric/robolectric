@@ -19,7 +19,7 @@ public interface ScreenRecorder {
   /** Start the screen recorder. */
   void start(Path output, int width, int height, FrameRate frameRate);
 
-  /** Record a frame. */
+  /** Record a frame. The implementation should call frame.recycle(). */
   void recordFrame(Bitmap frame);
 
   /** Stop the screen recorder. */
