@@ -197,9 +197,10 @@ public class ShadowPixelCopy {
         Bitmap.createBitmap(
             imageReader.getWidth(), imageReader.getHeight(), Bitmap.Config.ARGB_8888);
 
-    Image nativeImage = imageReader.acquireNextImage();
-    Plane[] planes = nativeImage.getPlanes();
-    bitmap.copyPixelsFromBuffer(planes[0].getBuffer());
+    try (Image nativeImage = imageReader.acquireNextImage()) {
+      Plane[] planes = nativeImage.getPlanes();
+      bitmap.copyPixelsFromBuffer(planes[0].getBuffer());
+    }
 
     Rect dst = new Rect(0, 0, screenshot.getWidth(), screenshot.getHeight());
     Canvas resizingCanvas = new Canvas(screenshot);
