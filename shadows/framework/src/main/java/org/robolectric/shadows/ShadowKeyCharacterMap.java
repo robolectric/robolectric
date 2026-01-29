@@ -193,6 +193,26 @@ public class ShadowKeyCharacterMap {
   }
 
   @Implementation
+  protected static char nativeGetMatch(long ptr, int keyCode, char[] chars, int metaState) {
+    // Imitating KeyCharacterMap::getMatch in frameworks/native/libs/input/KeyCharacterMap.cpp.
+    if (chars.length == 0) {
+      return 0;
+    }
+    String constraints = new String(chars);
+    boolean metaShiftOn = (metaState & KeyEvent.META_SHIFT_ON) != 0;
+    Character character = KEY_CODE_TO_CHAR.get(keyCode);
+    if (character == null) {
+      return 0;
+    } else if (metaShiftOn) {
+      character = KEY_CODE_TO_CHAR_SHIFT_ON.getOrDefault(keyCode, character);
+    }
+    if (constraints.indexOf(character) < 0) {
+      return 0;
+    }
+    return character;
+  }
+
+  @Implementation
   protected static int nativeGetKeyboardType(long ptr) {
     return KeyCharacterMap.FULL;
   }

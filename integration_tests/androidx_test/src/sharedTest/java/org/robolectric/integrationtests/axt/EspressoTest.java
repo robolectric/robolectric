@@ -24,7 +24,6 @@ import androidx.test.espresso.Espresso;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -132,7 +131,6 @@ public final class EspressoTest {
 
   /** use typeText with a inputType number */
   @Test
-  @Ignore // TODO(#5110): fails
   public void typeText_number() {
     onView(withId(R.id.edit_text_number)).perform(typeText("411"));
 
