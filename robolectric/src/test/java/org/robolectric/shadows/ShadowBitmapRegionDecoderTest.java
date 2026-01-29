@@ -21,7 +21,10 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.annotation.GraphicsMode.Mode;
 
+@GraphicsMode(Mode.LEGACY)
 @RunWith(AndroidJUnit4.class)
 @Config(qualifiers = "hdpi")
 public class ShadowBitmapRegionDecoderTest {
