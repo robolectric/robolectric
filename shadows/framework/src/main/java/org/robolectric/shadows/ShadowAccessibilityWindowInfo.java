@@ -3,11 +3,13 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.shadows.ShadowAccessibilityNodeInfo.checkRealAniDisabled;
 import static org.robolectric.shadows.ShadowAccessibilityNodeInfo.useRealAni;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Rect;
+import android.graphics.Region;
 import android.os.Build.VERSION_CODES;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
@@ -127,6 +129,16 @@ public class ShadowAccessibilityWindowInfo {
           .getBoundsInScreen(outBounds);
     } else {
       outBounds.set(boundsInScreenOverride);
+    }
+  }
+
+  @Implementation(minSdk = R)
+  protected void getRegionInScreen(Region outRegion) {
+    if (useRealAni() || boundsInScreenOverride == null) {
+      reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+          .getRegionInScreen(outRegion);
+    } else {
+      outRegion.set(new Region(boundsInScreenOverride));
     }
   }
 
@@ -260,6 +272,9 @@ public class ShadowAccessibilityWindowInfo {
 
     @Direct
     void getBoundsInScreen(Rect outBounds);
+
+    @Direct
+    void getRegionInScreen(Region outRegion);
 
     @Direct
     int getChildCount();
