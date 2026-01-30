@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -1411,7 +1412,9 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = TIRAMISU)
+  // TODO(brettchabot): Add a variant for POST_BAKALVA that uses new AudioFormat.Build channel mask
+  // API
+  @Config(minSdk = TIRAMISU, maxSdk = BAKLAVA)
   public void getDirectPlaybackSupport_withSetDirectPlaybackSupport_returnsOffloadSupported() {
     AudioFormat audioFormat =
         new AudioFormat.Builder()

@@ -4,6 +4,7 @@ import static android.media.AudioAttributes.USAGE_MEDIA;
 import static android.media.AudioTrack.ERROR_BAD_VALUE;
 import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.media.AudioTrack.WRITE_NON_BLOCKING;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
@@ -403,7 +404,9 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = TIRAMISU)
+  // TODO(brettchabot): Add a variant for POST_BAKALVA that uses new AudioFormat.Build channel mask
+  // API
+  @Config(minSdk = TIRAMISU, maxSdk = BAKLAVA)
   public void createInstance_withOffloadAndGetDirectPlaybackSupport() {
     AudioFormat audioFormat =
         new AudioFormat.Builder()
@@ -756,7 +759,9 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = TIRAMISU)
+  // TODO(brettchabot): Add a variant for POST_BAKALVA that uses new AudioFormat.Build channel mask
+  // API
+  @Config(minSdk = TIRAMISU, maxSdk = BAKLAVA)
   public void getBufferSizeInFrames_withOffloadPostApi31_returnsBufferSizeInBytes() {
     ShadowAudioTrack.addAllowedNonPcmEncoding(AudioFormat.ENCODING_AC3);
     AudioFormat audioFormat =
