@@ -14,9 +14,12 @@ import android.view.Surface;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
@@ -76,6 +79,8 @@ final class SystemUi {
   public static final NavigationBarBehavior THREE_BUTTON_NAVIGATION =
       new ButtonNavigationBarBehavior();
 
+  private static final Map<Integer, SystemUi> systemUis = new HashMap<>();
+
   private final int displayId;
   private final StatusBar statusBar;
   private final NavigationBar navigationBar;
@@ -93,9 +98,13 @@ final class SystemUi {
   }
 
   /** Returns the {@link SystemUi} for the given display. */
-  public static SystemUi systemUiForDisplay(int displayId) {
-    return Shadow.<ShadowDisplayManagerGlobal>extract(DisplayManagerGlobal.getInstance())
-        .getSystemUi(displayId);
+  public static synchronized SystemUi systemUiForDisplay(int displayId) {
+    Preconditions.checkArgument(
+        DisplayManagerGlobal.getInstance().getDisplayInfo(displayId) != null,
+        "No display with id %s exists.",
+        displayId);
+
+    return systemUis.computeIfAbsent(displayId, SystemUi::new);
   }
 
   SystemUi(int displayId) {
