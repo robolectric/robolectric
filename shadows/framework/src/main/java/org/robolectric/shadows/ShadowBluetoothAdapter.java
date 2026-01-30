@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.bluetooth.BluetoothAdapter.STATE_ON;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
@@ -15,6 +16,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
+import android.app.ActivityThread;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.bluetooth.BluetoothAdapter;
@@ -58,6 +60,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -165,8 +168,26 @@ public class ShadowBluetoothAdapter {
     isDistanceMeasurementSupported = supported;
   }
 
+  private void checkForBluetoothPrivilegedPermission() {
+    if (!checkPermission(android.Manifest.permission.BLUETOOTH_PRIVILEGED)) {
+      throw new SecurityException("Bluetooth privileged permission required.");
+    }
+  }
+
+  static ShadowInstrumentation getShadowInstrumentation() {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    return Shadow.extract(activityThread.getInstrumentation());
+  }
+
+  static boolean checkPermission(String permission) {
+    return getShadowInstrumentation()
+            .checkPermission(permission, android.os.Process.myPid(), android.os.Process.myUid())
+        == PERMISSION_GRANTED;
+  }
+
   @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected int isDistanceMeasurementSupported() {
+    checkForBluetoothPrivilegedPermission();
     return isDistanceMeasurementSupported;
   }
 
