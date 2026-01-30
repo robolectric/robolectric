@@ -974,6 +974,9 @@ public class ShadowBluetoothAdapterTest {
   @Config(minSdk = UPSIDE_DOWN_CAKE)
   @Test
   public void canGetAndSetDistanceMeasurementSupport() {
+    shadowOf((Application) getApplicationContext())
+        .grantPermissions(permission.BLUETOOTH_PRIVILEGED);
+
     // By default distance measurement is not supported
     assertThat(bluetoothAdapter.isDistanceMeasurementSupported())
         .isEqualTo(BluetoothStatusCodes.FEATURE_NOT_SUPPORTED);
