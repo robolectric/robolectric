@@ -4,7 +4,6 @@ plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.detekt)
-  alias(libs.plugins.kotlin.android)
   alias(libs.plugins.robolectric.android.project)
   alias(libs.plugins.robolectric.spotless)
 }
