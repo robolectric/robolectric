@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.detekt)
-  alias(libs.plugins.kotlin.android)
   alias(libs.plugins.robolectric.android.project)
   alias(libs.plugins.robolectric.spotless)
 }

@@ -13,8 +13,6 @@ plugins {
   alias(libs.plugins.detekt) apply false
   alias(libs.plugins.error.prone)
   alias(libs.plugins.idea)
-  alias(libs.plugins.kotlin.android) apply false
-  alias(libs.plugins.kotlin.jvm) apply false
   alias(libs.plugins.robolectric.spotless)
   alias(libs.plugins.robolectric.javadoc)
   alias(libs.plugins.roborazzi) apply false

@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
+  kotlin("jvm")
   alias(libs.plugins.detekt)
-  alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.robolectric.java.module)
   alias(libs.plugins.robolectric.spotless)
 }
