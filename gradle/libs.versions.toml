@@ -79,7 +79,7 @@ junit4 = "4.13.2"
 junit-jupiter = "6.0.2"
 
 # https://github.com/google/libphonenumber/releases
-libphonenumber = "9.0.22"
+libphonenumber = "9.0.23"
 
 # https://github.com/mockito/mockito/releases
 mockito = "5.21.0"
