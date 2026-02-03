@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -27,7 +28,6 @@ import android.media.PlayerBase;
 import android.media.audiopolicy.AudioPolicy;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
-import android.os.Parcel;
 import android.view.KeyEvent;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -243,7 +242,7 @@ public class ShadowAudioManager {
     }
     int previousMode = ShadowAudioManager.mode;
     ShadowAudioManager.mode = mode;
-    if (RuntimeEnvironment.getApiLevel() >= S && mode != previousMode) {
+    if (getApiLevel() >= S && mode != previousMode) {
       dispatchModeChangedListeners(mode);
     }
   }
@@ -831,10 +830,9 @@ public class ShadowAudioManager {
   @RequiresApi(VERSION_CODES.O)
   public void setActivePlaybackConfigurationsFor(
       List<AudioAttributes> audioAttributes, boolean notifyCallbackListeners) {
-    if (RuntimeEnvironment.getApiLevel() < O) {
+    if (getApiLevel() < O) {
       throw new UnsupportedOperationException(
-          "setActivePlaybackConfigurationsFor is not supported on API "
-              + RuntimeEnvironment.getApiLevel());
+          "setActivePlaybackConfigurationsFor is not supported on API " + getApiLevel());
     }
     activePlaybackConfigurations = new ArrayList<>(audioAttributes.size());
     for (AudioAttributes audioAttribute : audioAttributes) {
@@ -851,7 +849,7 @@ public class ShadowAudioManager {
   protected AudioPlaybackConfiguration createAudioPlaybackConfiguration(
       AudioAttributes audioAttributes) {
     // use reflection to call package private APIs
-    if (RuntimeEnvironment.getApiLevel() >= S) {
+    if (getApiLevel() >= S) {
       PlayerBase.PlayerIdCard playerIdCard =
           ReflectionHelpers.callConstructor(
               PlayerBase.PlayerIdCard.class,
@@ -957,22 +955,21 @@ public class ShadowAudioManager {
    */
   public AudioRecordingConfiguration createActiveRecordingConfiguration(
       int sessionId, int audioSource, String clientPackageName) {
-    Parcel p = Parcel.obtain();
-    p.writeInt(sessionId); // mSessionId
-    p.writeInt(audioSource); // mClientSource
-    writeMono16BitAudioFormatToParcel(p); // mClientFormat
-    writeMono16BitAudioFormatToParcel(p); // mDeviceFormat
-    p.writeInt(INVALID_PATCH_HANDLE); // mPatchHandle
-    p.writeString(clientPackageName); // mClientPackageName
-    p.writeInt(0); // mClientUid
-
-    p.setDataPosition(0);
-
-    AudioRecordingConfiguration configuration =
-        AudioRecordingConfiguration.CREATOR.createFromParcel(p);
-    p.recycle();
-
-    return configuration;
+    AudioFormat audioFormat = createMono16BitAudioFormat();
+    if (getApiLevel() <= O) {
+      return reflector(AudioRecordingConfigurationReflector.class)
+          .createO(sessionId, audioSource, audioFormat, audioFormat, INVALID_PATCH_HANDLE);
+    } else {
+      return reflector(AudioRecordingConfigurationReflector.class)
+          .create(
+              0,
+              sessionId,
+              audioSource,
+              audioFormat,
+              audioFormat,
+              INVALID_PATCH_HANDLE,
+              clientPackageName);
+    }
   }
 
   /**
@@ -1076,15 +1073,12 @@ public class ShadowAudioManager {
     return Integer.toString(System.identityHashCode(audioPolicy));
   }
 
-  private static void writeMono16BitAudioFormatToParcel(Parcel p) {
-    p.writeInt(
-        AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_ENCODING
-            + AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_SAMPLE_RATE
-            + AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_MASK); // mPropertySetMask
-    p.writeInt(AudioFormat.ENCODING_PCM_16BIT); // mEncoding
-    p.writeInt(16000); // mSampleRate
-    p.writeInt(AudioFormat.CHANNEL_OUT_MONO); // mChannelMask
-    p.writeInt(0); // mChannelIndexMask
+  private static AudioFormat createMono16BitAudioFormat() {
+    return new AudioFormat.Builder()
+        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+        .setSampleRate(16000)
+        .build();
   }
 
   /**
@@ -1184,5 +1178,22 @@ public class ShadowAudioManager {
     public void setFlag(int flag) {
       this.flag = flag;
     }
+  }
+
+  @ForType(AudioRecordingConfiguration.class)
+  private interface AudioRecordingConfigurationReflector {
+    @Constructor
+    AudioRecordingConfiguration create(
+        int uid,
+        int session,
+        int source,
+        AudioFormat clientFormat,
+        AudioFormat devFormat,
+        int patchHandle,
+        String packageName);
+
+    @Constructor
+    AudioRecordingConfiguration createO(
+        int session, int source, AudioFormat clientFormat, AudioFormat devFormat, int patchHandle);
   }
 }
