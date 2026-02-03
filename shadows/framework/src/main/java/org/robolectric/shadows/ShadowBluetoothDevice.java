@@ -4,6 +4,7 @@ import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 import static android.bluetooth.BluetoothDevice.BOND_BONDING;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -92,6 +93,7 @@ public class ShadowBluetoothDevice {
   private int connectCount = 0;
   @Nullable private BluetoothGattConnectionInterceptor bluetoothGattConnectionInterceptor = null;
   private final Map<Integer, Integer> connectionHandlesByTransportType = new HashMap<>();
+  private BluetoothDevice.BluetoothAddress identityAddressWithType;
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -514,6 +516,41 @@ public class ShadowBluetoothDevice {
     this.isConnected = isConnected;
   }
 
+  /**
+   * Returns the identity address of the device. By default, this will be the address set when
+   * creating the device.
+   *
+   * <p>Note that in Android, this is a hidden system API.
+   */
+  @Implementation(minSdk = BAKLAVA)
+  protected String getIdentityAddress() {
+    checkForBluetoothConnectPermission();
+    checkForBluetoothPrivilegedPermission();
+    if (identityAddressWithType == null) {
+      return realBluetoothDevice.getAddress();
+    }
+    return identityAddressWithType.getAddress();
+  }
+
+  /**
+   * Returns the identity address of the device. By default, this will be the address set when
+   * creating the device, and the type will be {@link BluetoothDevice#ADDRESS_TYPE_PUBLIC}.
+   */
+  @Implementation(minSdk = BAKLAVA)
+  protected BluetoothDevice.BluetoothAddress getIdentityAddressWithType() {
+    checkForBluetoothConnectPermission();
+    checkForBluetoothPrivilegedPermission();
+    if (identityAddressWithType == null) {
+      return new BluetoothDevice.BluetoothAddress(
+          realBluetoothDevice.getAddress(), BluetoothDevice.ADDRESS_TYPE_PUBLIC);
+    }
+    return identityAddressWithType;
+  }
+
+  public void setIdentityAddressWithType(BluetoothDevice.BluetoothAddress identityAddressWithType) {
+    this.identityAddressWithType = identityAddressWithType;
+  }
+
   @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected int getConnectionHandle(int transport) {
     if (!connectionHandlesByTransportType.containsKey(transport)) {
@@ -565,6 +602,13 @@ public class ShadowBluetoothDevice {
         && VERSION.SDK_INT >= S
         && !checkPermission(android.Manifest.permission.BLUETOOTH_CONNECT)) {
       throw new SecurityException("Bluetooth connect permission required.");
+    }
+  }
+
+  private void checkForBluetoothPrivilegedPermission() {
+    if (shouldThrowSecurityExceptions
+        && !checkPermission(android.Manifest.permission.BLUETOOTH_PRIVILEGED)) {
+      throw new SecurityException("Bluetooth privileged permission required.");
     }
   }
 
