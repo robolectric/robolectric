@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static androidx.test.InstrumentationRegistry.getTargetContext;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
@@ -675,5 +676,20 @@ public class BitmapTest {
   @Test
   public void null_bitmapConfig_throwsNPE() {
     assertThrows(NullPointerException.class, () -> Bitmap.createBitmap(100, 100, null));
+  }
+
+  // Weirdly, earlier versions of Android (24, 25, 28, 29) seem to support BitmapRegionDecoder with
+  // ALPHA_8.
+  // TODO(hoisie): Update this test when RNG supports BitmapRegionDecoder for SDK < V.
+  @Test
+  public void bitmapRegionDecoder_alpha8_throwsException() {
+    assume().that(Build.VERSION.SDK_INT).isAtLeast(VANILLA_ICE_CREAM);
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ALPHA_8);
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos);
+    byte[] bitmapData = bos.toByteArray();
+    assertThrows(
+        IOException.class,
+        () -> BitmapRegionDecoder.newInstance(new ByteArrayInputStream(bitmapData), false));
   }
 }
