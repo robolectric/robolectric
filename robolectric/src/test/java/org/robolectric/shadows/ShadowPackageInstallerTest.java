@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.truth.Truth.assertThat;
@@ -372,6 +373,18 @@ public class ShadowPackageInstallerTest {
   public void nothingUninstalled() {
     assertThat(shadowOf(packageInstaller).getLastUninstalledVersion("packageName")).isNull();
     assertThat(shadowOf(packageInstaller).getLastUninstalledStatusReceiver("packageName")).isNull();
+  }
+
+  @Config(sdk = TIRAMISU)
+  @Test
+  public void createSession_withPackageSource_androidTiramisu_setsValue() throws Exception {
+    SessionParams params = createSessionParams("packageName");
+    params.setPackageSource(PackageInstaller.PACKAGE_SOURCE_STORE);
+
+    int sessionId = packageInstaller.createSession(params);
+
+    assertThat(packageInstaller.getSessionInfo(sessionId).getPackageSource())
+        .isEqualTo(PackageInstaller.PACKAGE_SOURCE_STORE);
   }
 
   private static Intent getOnlyBroadcastIntent() {

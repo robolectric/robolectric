@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -113,6 +114,10 @@ public class ShadowPackageInstaller {
     sessionInfo.appIcon = params.appIcon;
     if (VERSION.SDK_INT >= P) {
       sessionInfo.installerPackageName = params.installerPackageName;
+    }
+
+    if (VERSION.SDK_INT >= TIRAMISU) {
+      sessionInfo.packageSource = params.packageSource;
     }
 
     sessionInfos.put(sessionInfo.getSessionId(), sessionInfo);
