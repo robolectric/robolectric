@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.Bitmap;
@@ -19,7 +19,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(minSdk = VANILLA_ICE_CREAM)
+@Config(minSdk = O)
 public class ShadowNativeBitmapRegionDecoderTest {
   @Test
   public void decodeRegion_extractsCorrectColor() throws IOException {
