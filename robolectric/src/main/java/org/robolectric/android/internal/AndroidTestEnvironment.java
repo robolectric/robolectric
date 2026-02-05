@@ -1,5 +1,6 @@
 package org.robolectric.android.internal;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
@@ -33,6 +34,7 @@ import android.provider.FontsContract;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import androidx.test.platform.app.InstrumentationRegistry;
+import com.android.internal.os.ApplicationSharedMemory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -220,6 +222,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
 
     preloadClasses(apiLevel);
+
+    // ApplicationSharedMemory is required by some classes in Baklava and above.
+    // In real Android, this is set in ActivityThread#bindApplication
+    if (apiLevel >= BAKLAVA) {
+      ApplicationSharedMemory.setInstance(ApplicationSharedMemory.create());
+    }
 
     RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
     Bootstrap.setDisplayConfiguration(androidConfiguration, displayMetrics);
