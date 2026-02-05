@@ -110,11 +110,24 @@ public class SandboxClassLoader extends URLClassLoader {
     if (config.shouldAcquireResource(name)) {
       return getResourceUrl(name);
     }
+
+    // Some tools (e.g. Android Studio Coverage) load Android class files as resources to perform
+    // instrumentation on them. If this occurs, we want to ensure to use the classes in android-all.
+    // See https://github.com/robolectric/robolectric/issues/3023 for more details.
+    URL fromLocal = getResourceUrl(name);
+    if (fromLocal != null && name.endsWith(".class")) {
+      // Remove the ".class" suffix and convert to fully qualified name.
+      String className = name.substring(0, name.length() - 6).replace('/', '.');
+      if (config.shouldAcquire(className)) {
+        return fromLocal;
+      }
+    }
+
     URL fromParent = super.getResource(name);
     if (fromParent != null) {
       return fromParent;
     }
-    return getResourceUrl(name);
+    return fromLocal;
   }
 
   protected URL getResourceUrl(String name) {
