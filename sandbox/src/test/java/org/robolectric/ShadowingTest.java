@@ -11,8 +11,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.ClassName;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.bytecode.SandboxConfig;
@@ -244,5 +247,279 @@ public class ShadowingTest {
   public void shouldInstrumentPackageIfAddedToConfig() throws Exception {
     Class<?> clazz = Class.forName(AnUninstrumentedClass.class.getName());
     assertFalse(Modifier.isFinal(clazz.getModifiers()));
+  }
+
+  @Test
+  @SandboxConfig(shadows = {ShadowClassWithInstanceFilterIgnoringReturn.class})
+  public void testInstanceFilterIgnoringReturn() {
+    ClassWithFilter instance = new ClassWithFilter();
+    String result = instance.doSomething("foo");
+    assertThat(result).isEqualTo("foo"); // Original value preserved
+    assertThat(ShadowClassWithInstanceFilterIgnoringReturn.filterCalled).isTrue();
+  }
+
+  @Implements(ClassWithFilter.class)
+  public static class ShadowClassWithInstanceFilterIgnoringReturn {
+    public static boolean filterCalled = false;
+
+    @Filter
+    protected void doSomething(String input) {
+      filterCalled = true;
+    }
+  }
+
+  @Test
+  @SandboxConfig(shadows = {ShadowClassWithStaticFilterIgnoringReturn.class})
+  public void testStaticFilterIgnoringReturn() {
+    ClassWithFilter instance = new ClassWithFilter();
+    String result = instance.doSomething("foo");
+    assertThat(result).isEqualTo("foo"); // Original value preserved
+    assertThat(ShadowClassWithStaticFilterIgnoringReturn.filterCalled).isTrue();
+  }
+
+  @Implements(ClassWithFilter.class)
+  public static class ShadowClassWithStaticFilterIgnoringReturn {
+    public static boolean filterCalled = false;
+
+    @Filter
+    protected static void doSomething(String input) {
+      filterCalled = true;
+    }
+  }
+
+  @Test
+  @SandboxConfig(shadows = {ShadowClassWithStaticFilterOnStaticMethodIgnoringReturn.class})
+  public void testStaticFilterOnStaticMethodIgnoringReturn() {
+    String result = ClassWithStaticFilter.doSomethingStatic("foo");
+    assertThat(result).isEqualTo("foo"); // Original value preserved
+    assertThat(ShadowClassWithStaticFilterOnStaticMethodIgnoringReturn.filterCalled).isTrue();
+  }
+
+  @Implements(ClassWithStaticFilter.class)
+  public static class ShadowClassWithStaticFilterOnStaticMethodIgnoringReturn {
+    public static boolean filterCalled = false;
+
+    @Filter
+    protected static void doSomethingStatic(String input) {
+      filterCalled = true;
+    }
+  }
+
+  @Test
+  @SandboxConfig(shadows = {ShadowClassWithFilter.class})
+  public void testFilterMethodIsCalled() {
+    ShadowClassWithFilter.reset();
+    ClassWithFilter instance = new ClassWithFilter();
+    String result = instance.doSomething("foo");
+    assertThat(result).isEqualTo("foo"); // Original code executed
+    assertThat(ShadowClassWithFilter.filterCalled).isTrue();
+    assertThat(ShadowClassWithFilter.capturedReturnValue).isEqualTo("foo");
+    assertThat(ShadowClassWithFilter.capturedInput).isEqualTo("foo");
+  }
+
+  @Test
+  @SandboxConfig(shadows = {ShadowClassWithFilterChangingReturn.class})
+  public void testFilterMethodCanChangeReturn() {
+    ClassWithFilter instance = new ClassWithFilter();
+    String result = instance.doSomething("foo");
+    assertThat(result).isEqualTo("hooked: foo");
+  }
+
+  @Test
+  @SandboxConfig(shadows = {ShadowClassWithVoidFilter.class})
+  public void testVoidFilterPreservesReturnValue() {
+    ClassWithFilter instance = new ClassWithFilter();
+    String result = instance.doSomething("foo");
+    assertThat(result).isEqualTo("foo"); // Original value preserved
+    assertThat(ShadowClassWithVoidFilter.filterCalled).isTrue();
+  }
+
+  @Implements(ClassWithFilter.class)
+  public static class ShadowClassWithVoidFilter {
+    public static boolean filterCalled = false;
+
+    @Filter
+    protected static void doSomething(String returnValue, String input) {
+      filterCalled = true;
+    }
+  }
+
+  @Test
+  @SandboxConfig(shadows = {ShadowClassWithFilterUsingClassName.class})
+  public void testFilterWithClassName() {
+    ClassWithFilter instance = new ClassWithFilter();
+    String result = instance.doSomething("foo");
+    assertThat(result).isEqualTo("hooked: foo");
+    assertThat(ShadowClassWithFilterUsingClassName.filterCalled).isTrue();
+  }
+
+  @Implements(ClassWithFilter.class)
+  public static class ShadowClassWithFilterUsingClassName {
+    public static boolean filterCalled = false;
+
+    @Filter
+    protected static String doSomething(
+        String returnValue, @ClassName("java.lang.String") Object input) {
+      filterCalled = true;
+      return "hooked: " + returnValue;
+    }
+  }
+
+  @Test
+  @SandboxConfig(shadows = {ShadowClassWithFilterUsingMethodName.class})
+  public void testFilterWithMethodName() {
+    ClassWithFilter instance = new ClassWithFilter();
+    String result = instance.doSomething("foo");
+    assertThat(result).isEqualTo("hooked: foo");
+    assertThat(ShadowClassWithFilterUsingMethodName.filterCalled).isTrue();
+  }
+
+  @Test
+  @SandboxConfig(shadows = {ShadowClassWithInstanceFilterNonVoid.class})
+  public void testInstanceFilterOnNonVoidMethod() {
+    ClassWithFilter instance = new ClassWithFilter();
+    String result = instance.doSomething("foo");
+    assertThat(result).isEqualTo("hooked: foo");
+    assertThat(ShadowClassWithInstanceFilterNonVoid.filterCalled).isTrue();
+  }
+
+  @Implements(ClassWithFilter.class)
+  public static class ShadowClassWithInstanceFilterNonVoid {
+    public static boolean filterCalled = false;
+
+    @Filter
+    protected String doSomething(String returnValue, String input) {
+      filterCalled = true;
+      return "hooked: " + returnValue;
+    }
+  }
+
+  @Implements(ClassWithFilter.class)
+  public static class ShadowClassWithFilterUsingMethodName {
+    public static boolean filterCalled = false;
+
+    @Filter(methodName = "doSomething")
+    protected static String myFilterMethod(String returnValue, String input) {
+      filterCalled = true;
+      return "hooked: " + returnValue;
+    }
+  }
+
+  @Instrument
+  public static class ClassWithFilter {
+    public String doSomething(String input) {
+      return input;
+    }
+  }
+
+  @Implements(ClassWithFilter.class)
+  public static class ShadowClassWithFilter {
+    public static boolean filterCalled = false;
+    public static String capturedReturnValue;
+    public static ClassWithFilter capturedReal;
+    public static String capturedInput;
+
+    public static void reset() {
+      filterCalled = false;
+      capturedReturnValue = null;
+      capturedReal = null;
+      capturedInput = null;
+    }
+
+    @Filter
+    protected static void doSomething(String returnValue, String input) {
+      filterCalled = true;
+      capturedReturnValue = returnValue;
+      capturedInput = input;
+    }
+  }
+
+  @Implements(ClassWithFilter.class)
+  public static class ShadowClassWithFilterChangingReturn {
+    @Filter
+    protected static String doSomething(String returnValue, String input) {
+      return "hooked: " + returnValue;
+    }
+  }
+
+  @Test
+  @SandboxConfig(shadows = {ShadowClassWithConstructorFilter.class})
+  public void testConstructorFilter() {
+    ShadowClassWithConstructorFilter.reset();
+    ClassWithConstructorFilter instance = new ClassWithConstructorFilter("bar");
+    assertThat(instance.name).isEqualTo("hooked: bar"); // Modified by hook
+    assertThat(ShadowClassWithConstructorFilter.filterCalled).isTrue();
+    assertThat(ShadowClassWithConstructorFilter.capturedReal).isEqualTo(instance);
+    assertThat(ShadowClassWithConstructorFilter.capturedInput).isEqualTo("bar");
+  }
+
+  @Instrument
+  public static class ClassWithConstructorFilter {
+    public String name;
+
+    public ClassWithConstructorFilter(String name) {
+      this.name = name;
+    }
+  }
+
+  @Implements(ClassWithConstructorFilter.class)
+  public static class ShadowClassWithConstructorFilter {
+    @RealObject ClassWithConstructorFilter real;
+    public static boolean filterCalled = false;
+    public static ClassWithConstructorFilter capturedReal;
+    public static String capturedInput;
+
+    public static void reset() {
+      filterCalled = false;
+      capturedReal = null;
+      capturedInput = null;
+    }
+
+    @Filter
+    protected void __constructor__(String name) {
+      filterCalled = true;
+      capturedReal = real;
+      capturedInput = name;
+      real.name = "hooked: " + name;
+    }
+  }
+
+  @Test
+  @SandboxConfig(shadows = {ShadowClassWithStaticFilter.class})
+  public void testStaticMethodFilter() {
+    ShadowClassWithStaticFilter.reset();
+    String result = ClassWithStaticFilter.doSomethingStatic("foo");
+    assertThat(result).isEqualTo("hooked: foo");
+    assertThat(ShadowClassWithStaticFilter.filterCalled).isTrue();
+    assertThat(ShadowClassWithStaticFilter.capturedReturnValue).isEqualTo("foo");
+    assertThat(ShadowClassWithStaticFilter.capturedInput).isEqualTo("foo");
+  }
+
+  @Instrument
+  public static class ClassWithStaticFilter {
+    public static String doSomethingStatic(String input) {
+      return input;
+    }
+  }
+
+  @Implements(ClassWithStaticFilter.class)
+  public static class ShadowClassWithStaticFilter {
+    public static boolean filterCalled = false;
+    public static String capturedReturnValue;
+    public static String capturedInput;
+
+    public static void reset() {
+      filterCalled = false;
+      capturedReturnValue = null;
+      capturedInput = null;
+    }
+
+    @Filter
+    protected static String doSomethingStatic(String returnValue, String input) {
+      filterCalled = true;
+      capturedReturnValue = returnValue;
+      capturedInput = input;
+      return "hooked: " + returnValue;
+    }
   }
 }
