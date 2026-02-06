@@ -182,6 +182,7 @@ icu4j = { module = "com.ibm.icu:icu4j", version.ref = "icu4j" }
 junit4 = { module = "junit:junit", version.ref = "junit4" }
 junit-jupiter-bom = { module = "org.junit:junit-bom", version.ref = "junit-jupiter" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-engine = { module = "org.junit.platform:junit-platform-engine" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 junit-vintage = { module = "org.junit.vintage:junit-vintage-engine" }
 
@@ -281,6 +282,7 @@ robolectric-android-project = { id = "org.robolectric.gradle.AndroidProjectConfi
 robolectric-deployed-java-module = { id = "org.robolectric.gradle.DeployedRoboJavaModulePlugin" }
 robolectric-gradle-managed-device = { id = "org.robolectric.gradle.GradleManagedDevicePlugin" }
 robolectric-java-module = { id = "org.robolectric.gradle.RoboJavaModulePlugin" }
+robolectric-kotlin-module = { id = "org.robolectric.gradle.RoboKotlinModulePlugin" }
 robolectric-spotless = { id = "org.robolectric.gradle.SpotlessPlugin" }
 robolectric-shadows = { id = "org.robolectric.gradle.ShadowsPlugin" }
 robolectric-javadoc = { id = "org.robolectric.gradle.AggregateJavadocPlugin" }
