@@ -20,6 +20,7 @@ import org.robolectric.annotation.processing.generator.Generator;
 import org.robolectric.annotation.processing.generator.JavadocJsonGenerator;
 import org.robolectric.annotation.processing.generator.ServiceLoaderGenerator;
 import org.robolectric.annotation.processing.generator.ShadowProviderGenerator;
+import org.robolectric.annotation.processing.validator.FilterValidator;
 import org.robolectric.annotation.processing.validator.ImplementationValidator;
 import org.robolectric.annotation.processing.validator.ImplementsValidator;
 import org.robolectric.annotation.processing.validator.ImplementsValidator.SdkCheckMode;
@@ -104,6 +105,7 @@ public class RobolectricProcessor extends AbstractProcessor {
         new SdkStore(sdksFile, validateCompiledSdk, overrideSdkLocation, overrideSdkInfo);
 
     addValidator(new ImplementationValidator(modelBuilder, environment));
+    addValidator(new FilterValidator(modelBuilder, environment));
     addValidator(
         new ImplementsValidator(
             modelBuilder, environment, sdkCheckMode, sdkStore, allowInDev, allowLooseSignatures));
