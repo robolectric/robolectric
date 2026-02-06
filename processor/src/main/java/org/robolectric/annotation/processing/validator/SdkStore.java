@@ -293,10 +293,7 @@ public class SdkStore {
      * @return a string describing any problems with this method, or null if it checks out.
      */
     public String verifyMethod(
-        String sdkClassName,
-        ExecutableElement methodElement,
-        boolean looseSignatures,
-        boolean allowInDev) {
+        String sdkClassName, ExecutableElement methodElement, boolean allowInDev) {
       ClassInfo classInfo = getClassInfo(sdkClassName);
 
       // Probably should not be reachable
@@ -305,7 +302,7 @@ public class SdkStore {
         return null;
       }
 
-      MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement, looseSignatures);
+      MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement);
       if (sdkMethod == null && !suppressWarnings(methodElement, null, allowInDev)) {
         return "No method " + methodElement + " in " + sdkClassName;
       }
@@ -322,18 +319,13 @@ public class SdkStore {
                 + " unlike the SDK method";
           }
           if (!implMethod.returnType.equals(sdkMethod.returnType)) {
-            if ((looseSignatures && typeIsOkForLooseSignatures(implMethod, sdkMethod))
-                || (looseSignatures && implMethod.returnType.equals("java.lang.Object[]"))) {
-              return null;
-            } else {
-              return "@Implementation for "
-                  + methodElement.getSimpleName()
-                  + " has a return type of "
-                  + implMethod.returnType
-                  + ", not "
-                  + sdkMethod.returnType
-                  + " as in the SDK method";
-            }
+            return "@Implementation for "
+                + methodElement.getSimpleName()
+                + " has a return type of "
+                + implMethod.returnType
+                + ", not "
+                + sdkMethod.returnType
+                + " as in the SDK method";
           }
         }
       }
@@ -366,15 +358,6 @@ public class SdkStore {
       return allowInDev && inDev.length > 0 && !sdkInfo.isReleased;
     }
 
-    private static boolean typeIsOkForLooseSignatures(
-        MethodExtraInfo implMethod, MethodExtraInfo sdkMethod) {
-      return
-      // loose signatures allow a return type of Object...
-      implMethod.returnType.equals("java.lang.Object")
-          // or Object[] for arrays...
-          || (implMethod.returnType.equals("java.lang.Object[]")
-              && sdkMethod.returnType.endsWith("[]"));
-    }
 
     /**
      * Load and analyze bytecode for the specified class, with caching.
@@ -490,7 +473,6 @@ public class SdkStore {
 
   static class ClassInfo {
     private final Map<MethodInfo, MethodExtraInfo> methods = new HashMap<>();
-    private final Map<MethodInfo, MethodExtraInfo> erasedParamTypesMethods = new HashMap<>();
     private final String signature;
 
     private ClassInfo() {
@@ -509,7 +491,6 @@ public class SdkStore {
         MethodInfo methodInfo = new MethodInfo(method);
         MethodExtraInfo methodExtraInfo = new MethodExtraInfo(method);
         methods.put(methodInfo, methodExtraInfo);
-        erasedParamTypesMethods.put(methodInfo.erase(), methodExtraInfo);
       }
     }
 
@@ -538,13 +519,10 @@ public class SdkStore {
       return "";
     }
 
-    MethodExtraInfo findMethod(ExecutableElement methodElement, boolean looseSignatures) {
+    MethodExtraInfo findMethod(ExecutableElement methodElement) {
       MethodInfo methodInfo = new MethodInfo(methodElement);
 
       MethodExtraInfo methodExtraInfo = methods.get(methodInfo);
-      if (looseSignatures && methodExtraInfo == null) {
-        methodExtraInfo = erasedParamTypesMethods.get(methodInfo);
-      }
       return methodExtraInfo;
     }
 
@@ -565,13 +543,6 @@ public class SdkStore {
       }
     }
 
-    /** Create a MethodInfo with all Object params (for looseSignatures=true). */
-    public MethodInfo(String name, int size) {
-      this.name = name;
-      for (int i = 0; i < size; i++) {
-        paramTypes.add("java.lang.Object");
-      }
-    }
 
     /** Create a MethodInfo from AST (an @Implementation method in a shadow class). */
     public MethodInfo(ExecutableElement methodElement) {
@@ -625,9 +596,6 @@ public class SdkStore {
       }
     }
 
-    public MethodInfo erase() {
-      return new MethodInfo(name, paramTypes.size());
-    }
 
     @Override
     public boolean equals(Object o) {

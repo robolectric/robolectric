@@ -235,15 +235,13 @@ public class ShadowMap {
         String realClassName,
         String shadowClassName,
         boolean callThroughByDefault,
-        boolean callNativeMethodsByDefault,
-        boolean looseSignatures) {
+        boolean callNativeMethodsByDefault) {
       addShadowInfo(
           new ShadowInfo(
               realClassName,
               shadowClassName,
               callThroughByDefault,
               callNativeMethodsByDefault,
-              looseSignatures,
               -1,
               -1,
               null));

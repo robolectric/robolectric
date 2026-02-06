@@ -45,7 +45,6 @@ public class ImplementsValidator extends Validator {
   private final Kind checkKind;
   private final SdkStore sdkStore;
   private final boolean allowInDev;
-  private final boolean allowLooseSignatures;
 
   /** Supported modes for validation of {@link Implementation} methods against SDKs. */
   public enum SdkCheckMode {
@@ -59,8 +58,7 @@ public class ImplementsValidator extends Validator {
       ProcessingEnvironment env,
       SdkCheckMode sdkCheckMode,
       SdkStore sdkStore,
-      boolean allowInDev,
-      boolean allowLooseSignatures) {
+      boolean allowInDev) {
     super(modelBuilder, env, IMPLEMENTS_CLASS);
 
     this.env = env;
@@ -68,7 +66,6 @@ public class ImplementsValidator extends Validator {
     this.checkKind = sdkCheckMode == SdkCheckMode.WARN ? Kind.WARNING : Kind.ERROR;
     this.sdkStore = sdkStore;
     this.allowInDev = allowInDev;
-    this.allowLooseSignatures = allowLooseSignatures;
   }
 
   private TypeElement getClassNameTypeElement(AnnotationValue cv) {
@@ -110,6 +107,8 @@ public class ImplementsValidator extends Validator {
     int maxSdk = maxSdkVal == null ? -1 : Helpers.getAnnotationIntValue(maxSdkVal);
 
     AnnotationValue shadowPickerValue = Helpers.getAnnotationTypeMirrorValue(am, "shadowPicker");
+    AnnotationValue isInAndroidSdkVal = Helpers.getAnnotationTypeMirrorValue(am, "isInAndroidSdk");
+    boolean isInAndroidSdk = isInAndroidSdkVal == null || (boolean) isInAndroidSdkVal.getValue();
 
     TypeElement shadowPickerTypeElement =
         shadowPickerValue == null
@@ -147,17 +146,10 @@ public class ImplementsValidator extends Validator {
       modelBuilder.addShadowType(shadowType, actualType, shadowPickerTypeElement);
     }
 
-    AnnotationValue looseSignaturesAttr =
-        Helpers.getAnnotationTypeMirrorValue(am, "looseSignatures");
-    boolean looseSignatures =
-        looseSignaturesAttr != null && (Boolean) looseSignaturesAttr.getValue();
-    if (looseSignatures && !allowLooseSignatures) {
-      error(
-          "looseSignatures is no longer allowed. Please use @ClassName or"
-              + " @Implementation(methodName = ...) instead.");
-    }
     String sdkClassNameFq = sdkClassNameFq(av, cv);
-    validateShadow(sdkClassNameFq, shadowType, minSdk, maxSdk, looseSignatures, allowInDev);
+    if (isInAndroidSdk) {
+      validateShadow(sdkClassNameFq, shadowType, minSdk, maxSdk, allowInDev);
+    }
 
     return null;
   }
@@ -207,7 +199,6 @@ public class ImplementsValidator extends Validator {
       TypeElement shadowClassElem,
       int classMinSdk,
       int classMaxSdk,
-      boolean looseSignatures,
       boolean allowInDev) {
     Problems problems = new Problems(this.checkKind);
     if (sdkCheckMode != SdkCheckMode.OFF) {
@@ -223,8 +214,8 @@ public class ImplementsValidator extends Validator {
           helpers.appendParameterList(builder, shadowClassElem.getTypeParameters());
           String shadowParams = builder.toString();
           if (!classInfo.getSignature().equals(shadowParams)
-              && !sdk.suppressWarnings(shadowClassElem, "robolectric.mismatchedTypes", allowInDev)
-              && !looseSignatures) {
+              && !sdk.suppressWarnings(
+                  shadowClassElem, "robolectric.mismatchedTypes", allowInDev)) {
             problems.add(
                 "Shadow type is mismatched, expected "
                     + shadowParams
@@ -244,11 +235,11 @@ public class ImplementsValidator extends Validator {
         continue;
       }
 
-      verifySdkMethod(shadowedClassName, methodElement, classMinSdk, classMaxSdk, looseSignatures);
+      verifySdkMethod(shadowedClassName, methodElement, classMinSdk, classMaxSdk);
       if (shadowClassElem.getQualifiedName().toString().startsWith("org.robolectric")
           && !methodElement.getModifiers().contains(Modifier.ABSTRACT)) {
         checkForMissingImplementationAnnotation(
-            shadowedClassName, methodElement, classMinSdk, classMaxSdk, looseSignatures);
+            shadowedClassName, methodElement, classMinSdk, classMaxSdk);
       }
 
       String methodName = methodElement.getSimpleName().toString();
@@ -264,11 +255,7 @@ public class ImplementsValidator extends Validator {
   }
 
   private void verifySdkMethod(
-      String sdkClassName,
-      ExecutableElement methodElement,
-      int classMinSdk,
-      int classMaxSdk,
-      boolean looseSignatures) {
+      String sdkClassName, ExecutableElement methodElement, int classMinSdk, int classMaxSdk) {
     if (sdkCheckMode == SdkCheckMode.OFF) {
       return;
     }
@@ -278,7 +265,7 @@ public class ImplementsValidator extends Validator {
       Problems problems = new Problems(this.checkKind);
 
       for (SdkStore.Sdk sdk : sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk)) {
-        String problem = sdk.verifyMethod(sdkClassName, methodElement, looseSignatures, allowInDev);
+        String problem = sdk.verifyMethod(sdkClassName, methodElement, allowInDev);
         if (problem != null) {
           problems.add(problem, sdk.sdkInfo.apiLevel);
         }
@@ -295,11 +282,7 @@ public class ImplementsValidator extends Validator {
    * Implementation} tag but is missing one
    */
   private void checkForMissingImplementationAnnotation(
-      String sdkClassName,
-      ExecutableElement methodElement,
-      int classMinSdk,
-      int classMaxSdk,
-      boolean looseSignatures) {
+      String sdkClassName, ExecutableElement methodElement, int classMinSdk, int classMaxSdk) {
 
     if (sdkCheckMode == SdkCheckMode.OFF) {
       return;
@@ -311,7 +294,7 @@ public class ImplementsValidator extends Validator {
       Problems problems = new Problems(kind);
 
       for (SdkStore.Sdk sdk : sdkStore.sdksMatching(null, classMinSdk, classMaxSdk)) {
-        String problem = sdk.verifyMethod(sdkClassName, methodElement, looseSignatures, allowInDev);
+        String problem = sdk.verifyMethod(sdkClassName, methodElement, allowInDev);
         if (problem == null && sdk.getClassInfo(sdkClassName) != null) {
           problems.add(
               "Missing @Implementation on method " + methodElement.getSimpleName(),

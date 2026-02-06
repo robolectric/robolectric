@@ -337,11 +337,6 @@ public class ShadowWranglerIntegrationTest {
   @Implements(AClassWithDefaultConstructor.class)
   public static class ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate {}
 
-  @SandboxConfig(shadows = ShadowAClassWithDifficultArgs.class)
-  @Test
-  public void shouldAllowLooseSignatureMatches() {
-    assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("abc");
-  }
 
   @Instrument
   public static class AClassWithDifficultArgs {
@@ -365,13 +360,6 @@ public class ShadowWranglerIntegrationTest {
     }
   }
 
-  @Implements(value = AClassWithDifficultArgs.class, looseSignatures = true)
-  public static class ShadowAClassWithDifficultArgs {
-    @Implementation
-    protected Object aMethod(Object s) {
-      return "a" + s;
-    }
-  }
 
   @SandboxConfig(shadows = ShadowAClassWithDifficultArgsWithMethodRename.class)
   @Test

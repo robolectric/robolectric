@@ -13,7 +13,6 @@ public class ShadowInfo {
   public final boolean callThroughByDefault;
   public final boolean callNativeMethodsByDefault;
 
-  public final boolean looseSignatures;
   private final int minSdk;
   private final int maxSdk;
   private final Class<? extends ShadowPicker<?>> shadowPickerClass;
@@ -23,7 +22,6 @@ public class ShadowInfo {
       String shadowClassName,
       boolean callThroughByDefault,
       boolean callNativeMethodsByDefault,
-      boolean looseSignatures,
       int minSdk,
       int maxSdk,
       Class<? extends ShadowPicker<?>> shadowPickerClass) {
@@ -31,7 +29,6 @@ public class ShadowInfo {
     this.shadowClassName = shadowClassName;
     this.callThroughByDefault = callThroughByDefault;
     this.callNativeMethodsByDefault = callNativeMethodsByDefault;
-    this.looseSignatures = looseSignatures;
     this.minSdk = minSdk;
     this.maxSdk = maxSdk;
     this.shadowPickerClass =
@@ -44,7 +41,6 @@ public class ShadowInfo {
         shadowClassName,
         annotation.callThroughByDefault(),
         annotation.callNativeMethodsByDefault(),
-        annotation.looseSignatures(),
         annotation.minSdk(),
         annotation.maxSdk(),
         annotation.shadowPicker());
@@ -76,7 +72,6 @@ public class ShadowInfo {
     }
     ShadowInfo that = (ShadowInfo) o;
     return callThroughByDefault == that.callThroughByDefault
-        && looseSignatures == that.looseSignatures
         && minSdk == that.minSdk
         && maxSdk == that.maxSdk
         && Objects.equals(shadowedClassName, that.shadowedClassName)
@@ -90,7 +85,6 @@ public class ShadowInfo {
         shadowedClassName,
         shadowClassName,
         callThroughByDefault,
-        looseSignatures,
         minSdk,
         maxSdk,
         shadowPickerClass);
