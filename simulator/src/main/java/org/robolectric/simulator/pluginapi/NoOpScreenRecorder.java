@@ -16,7 +16,7 @@ public final class NoOpScreenRecorder implements ScreenRecorder {
 
   @Override
   public void recordFrame(Bitmap frame) {
-    // Do nothing
+    frame.recycle();
   }
 
   @Override

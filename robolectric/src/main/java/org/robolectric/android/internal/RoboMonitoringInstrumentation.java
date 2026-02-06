@@ -80,6 +80,11 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
     super.onCreate(arguments);
   }
 
+  /** Allow subclasses that override execStartActivity to signal the intent monitor. */
+  protected void signalIntentMonitor(Intent intent) {
+    intentMonitor.signalIntent(intent);
+  }
+
   @Override
   public void waitForIdleSync() {
     shadowOf(Looper.getMainLooper()).idle();
@@ -281,7 +286,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
                     target, requestCode, ar.getResultCode(), ar.getResultData()));
   }
 
-  private ActivityResult stubResultFor(Intent intent) {
+  protected ActivityResult stubResultFor(Intent intent) {
     if (!IntentStubberRegistry.isLoaded()) {
       return null;
     }

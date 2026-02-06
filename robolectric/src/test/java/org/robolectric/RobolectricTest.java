@@ -1,7 +1,9 @@
 package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -26,13 +28,17 @@ import android.view.View.OnClickListener;
 import android.view.ViewParent;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.objectweb.asm.ClassReader;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.internal.bytecode.ShadowedObject;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.ReflectionHelpers;
@@ -135,6 +141,34 @@ public class RobolectricTest {
     AttributeSet emptySet = Robolectric.getAttributeSetFromXml(R.xml.empty);
     assertThat(emptySet).isNotNull();
     assertThat(emptySet.getAttributeCount()).isEqualTo(0);
+  }
+
+  /* This captures a bug in the Android Studio Coverage tool, but is also a test of a
+   * Robolectric class loader feature. The Android Studio Coverage tool loads Android class files
+   * as resources to instrument them. We should return the android-all classes, not stubs jar
+   * classes.
+   */
+  @Test
+  public void getResource_colorStateList_shouldBeInstrumented() throws Exception {
+    String className = "android.content.res.ColorStateList";
+    String resourceName = className.replace('.', '/') + ".class";
+
+    ClassLoader loader = android.content.res.ColorStateList.class.getClassLoader();
+    URL resource = loader.getResource(resourceName);
+    assertThat(resource).isNotNull();
+
+    byte[] bytes;
+    try (InputStream is = resource.openStream()) {
+      bytes = is.readAllBytes();
+    }
+
+    ClassReader classReader = new ClassReader(bytes);
+    assertThat(asList(classReader.getInterfaces()))
+        .contains(ShadowedObject.class.getName().replace('.', '/'));
+
+    if (RuntimeEnvironment.getApiLevel() >= N) {
+      assertThat(classReader.getSuperName()).isEqualTo("android/content/res/ComplexColor");
+    }
   }
 
   @Implements(View.class)

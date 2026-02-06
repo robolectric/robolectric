@@ -9,6 +9,12 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
+/**
+ * Shadow for {@link WifiP2pGroup}.
+ *
+ * @deprecated Use {@link WifiP2pGroupBuilder} instead. This shadows a class that is pure Java code.
+ */
+@Deprecated
 @Implements(WifiP2pGroup.class)
 public class ShadowWifiP2pGroup {
 
@@ -29,6 +35,12 @@ public class ShadowWifiP2pGroup {
     reflector(WifiP2pGroupReflector.class, realObject).setNetworkName(networkName);
   }
 
+  @SuppressWarnings("ProtectedImplementationLintCheck")
+  @Implementation
+  public void setIsGroupOwner(boolean isGroupOwner) {
+    reflector(WifiP2pGroupReflector.class, realObject).setIsGroupOwner(isGroupOwner);
+  }
+
   @ForType(WifiP2pGroup.class)
   interface WifiP2pGroupReflector {
 
@@ -40,5 +52,8 @@ public class ShadowWifiP2pGroup {
 
     @Direct
     void setNetworkName(String networkName);
+
+    @Direct
+    void setIsGroupOwner(boolean isGroupOwner);
   }
 }

@@ -17,7 +17,10 @@ android {
 
   testOptions {
     targetSdk = 36
-    unitTests.isIncludeAndroidResources = true
+    unitTests {
+      isIncludeAndroidResources = true
+      all { it.systemProperty("robolectric.graphicsMode", "NATIVE") }
+    }
   }
 
   compileOptions {

@@ -148,11 +148,22 @@ public final class Simulator {
     final Bitmap bitmap =
         InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
     if (!headless) {
-      SwingUtilities.invokeLater(() -> simulatorFrame.getCanvas().drawBitmap(bitmap));
+      SwingUtilities.invokeLater(
+          () -> {
+            simulatorFrame.getCanvas().drawBitmap(bitmap);
+            sendToScreenRecorder(bitmap);
+          });
+    } else {
+      sendToScreenRecorder(bitmap);
     }
+  }
+
+  private void sendToScreenRecorder(Bitmap bitmap) {
     writingFrame.acquireUninterruptibly();
     if (screenRecorder != null) {
       screenRecorder.recordFrame(bitmap);
+    } else {
+      bitmap.recycle();
     }
     writingFrame.release();
   }

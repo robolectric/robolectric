@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -76,6 +77,8 @@ public class ShadowDistanceMeasurementManagerTest {
 
   @Before
   public void setUp() {
+    shadowOf((Application) context)
+        .grantPermissions(android.Manifest.permission.BLUETOOTH_PRIVILEGED);
     shadowOf(adapter).setDistanceMeasurementSupported(BluetoothStatusCodes.FEATURE_SUPPORTED);
     distanceMeasurementManager = adapter.getDistanceMeasurementManager();
     shadowDistanceMeasurementManager = Shadow.extract(distanceMeasurementManager);

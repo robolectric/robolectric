@@ -1,18 +1,26 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pGroup;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.net.wifi.p2p.WifiP2pManager.WifiP2pListener;
 import android.os.Build;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.net.InetAddress;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.Before;
@@ -61,6 +69,15 @@ public class ShadowWifiP2pManagerTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void createGroup_withConfig_success() {
+    TestActionListener testListener = new TestActionListener();
+    manager.createGroup(channel, new WifiP2pConfig(), testListener);
+    shadowMainLooper().idle();
+    assertThat(testListener.success).isTrue();
+  }
+
+  @Test
   public void createGroup_nullListener() {
     manager.createGroup(channel, null);
 
@@ -76,6 +93,28 @@ public class ShadowWifiP2pManagerTest {
     shadowManager.setNextActionFailure(WifiP2pManager.BUSY);
     manager.createGroup(channel, testListener);
 
+    shadowMainLooper().idle();
+
+    assertThat(testListener.success).isFalse();
+    assertThat(testListener.reason).isEqualTo(WifiP2pManager.BUSY);
+  }
+
+  @Test
+  public void connect_success() {
+    TestActionListener testListener = new TestActionListener();
+
+    manager.connect(channel, new WifiP2pConfig(), testListener);
+    shadowMainLooper().idle();
+
+    assertThat(testListener.success).isTrue();
+  }
+
+  @Test
+  public void connect_fail() {
+    TestActionListener testListener = new TestActionListener();
+    shadowManager.setNextActionFailure(WifiP2pManager.BUSY);
+
+    manager.connect(channel, new WifiP2pConfig(), testListener);
     shadowMainLooper().idle();
 
     assertThat(testListener.success).isFalse();
@@ -131,6 +170,7 @@ public class ShadowWifiP2pManagerTest {
     shadowOf(wifiP2pGroup).setInterface("ssid");
     shadowOf(wifiP2pGroup).setPassphrase("passphrase");
     shadowOf(wifiP2pGroup).setNetworkName("networkname");
+    shadowOf(wifiP2pGroup).setIsGroupOwner(true);
 
     shadowManager.setGroupInfo(channel, wifiP2pGroup);
 
@@ -140,6 +180,7 @@ public class ShadowWifiP2pManagerTest {
     assertThat(listener.group.getNetworkName()).isEqualTo(wifiP2pGroup.getNetworkName());
     assertThat(listener.group.getInterface()).isEqualTo(wifiP2pGroup.getInterface());
     assertThat(listener.group.getPassphrase()).isEqualTo(wifiP2pGroup.getPassphrase());
+    assertThat(listener.group.isGroupOwner()).isEqualTo(wifiP2pGroup.isGroupOwner());
   }
 
   @Test
@@ -175,6 +216,72 @@ public class ShadowWifiP2pManagerTest {
     public void onGroupInfoAvailable(WifiP2pGroup group) {
       this.group = group;
     }
+  }
+
+  @Test
+  public void requestConnectionInfo() throws Exception {
+    TestConnectionInfoListener listener = new TestConnectionInfoListener();
+    WifiP2pInfo wifiP2pInfo = new WifiP2pInfo();
+    wifiP2pInfo.groupOwnerAddress = InetAddress.getLoopbackAddress();
+
+    shadowManager.setConnectionInfo(channel, wifiP2pInfo);
+
+    manager.requestConnectionInfo(channel, listener);
+    shadowMainLooper().idle();
+
+    assertThat(listener.info.groupOwnerAddress).isEqualTo(wifiP2pInfo.groupOwnerAddress);
+  }
+
+  @Test
+  public void requestConnectionInfo_noConnectionInfoSet() throws Exception {
+    TestConnectionInfoListener listener = new TestConnectionInfoListener();
+
+    manager.requestConnectionInfo(channel, listener);
+    shadowMainLooper().idle();
+
+    assertThat(listener.info.groupOwnerAddress).isNull();
+  }
+
+  @Test
+  public void requestConnectionInfo_nullListener() {
+    WifiP2pInfo wifiP2pInfo = new WifiP2pInfo();
+    shadowManager.setConnectionInfo(channel, wifiP2pInfo);
+
+    manager.requestConnectionInfo(channel, null);
+
+    // Should not fail with a null listener
+  }
+
+  private static class TestConnectionInfoListener implements WifiP2pManager.ConnectionInfoListener {
+    private WifiP2pInfo info;
+
+    @Override
+    public void onConnectionInfoAvailable(WifiP2pInfo info) {
+      this.info = info;
+    }
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void registerWifiP2pListener() throws Exception {
+    WifiP2pListener listener = new WifiP2pListener() {};
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+    manager.registerWifiP2pListener(executorService, listener);
+
+    assertThat(shadowManager.getWifiP2pListeners()).containsExactly(listener);
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void unregisterWifiP2pListener() throws Exception {
+    WifiP2pListener listener = new WifiP2pListener() {};
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
+    manager.registerWifiP2pListener(executorService, listener);
+
+    manager.unregisterWifiP2pListener(listener);
+
+    assertThat(shadowManager.getWifiP2pListeners()).isEmpty();
   }
 
   @Test

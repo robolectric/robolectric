@@ -1,6 +1,5 @@
 package org.robolectric.util;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -44,23 +43,25 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
       }
     }
 
-    System.out.println("Name\tSDK\tResources\tSuccess\tCount\tMin ms\tMax ms\tAvg ms\tTotal ms");
+    AsciiTable table = new AsciiTable();
+    table.addRow("Name", "SDK", "Success", "Count", "Min ms", "Max ms", "Avg ms", "Total ms");
+
     for (Entry<MetricKey, MetricValue> entry : mergedMetrics.entrySet()) {
       MetricKey key = entry.getKey();
+
       MetricValue value = entry.getValue();
 
-      System.out.println(
-          MessageFormat.format(
-              "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}",
-              key.name,
-              key.sdkLevel,
-              key.success,
-              value.count,
-              (int) (value.minNs / 1000000),
-              (int) (value.maxNs / 1000000),
-              (int) (value.elapsedNs / 1000000 / value.count),
-              (int) (value.elapsedNs / 1000000)));
+      table.addRow(
+          key.name,
+          key.sdkLevel,
+          key.success,
+          value.count,
+          (int) (value.minNs / 1000000),
+          (int) (value.maxNs / 1000000),
+          (int) (value.elapsedNs / 1000000 / value.count),
+          (int) (value.elapsedNs / 1000000));
     }
+    table.print();
   }
 
   private static class Data {

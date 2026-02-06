@@ -100,6 +100,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
           new String[] {
             "android.graphics.Bitmap",
             "android.graphics.BitmapFactory",
+            "android.graphics.BitmapRegionDecoder",
             "android.graphics.ByteBufferStreamAdaptor",
             "android.graphics.Camera",
             "android.graphics.Canvas",

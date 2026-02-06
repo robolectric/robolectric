@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Rect;
@@ -14,10 +16,15 @@ import android.view.SurfaceControl;
 import android.view.ThreadedRenderer;
 import android.view.View;
 import android.view.ViewRootImpl;
+import android.view.ViewTreeObserver.OnDrawListener;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.window.SurfaceSyncGroup;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -37,6 +44,8 @@ public class ShadowViewRootImpl {
       ReflectionHelpers.setStaticField(ViewRootImpl.class, "sNewInsetsMode", 2);
     }
   }
+
+  private static final List<OnDrawListener> globalDrawListeners = new CopyOnWriteArrayList<>();
 
   @RealObject protected ViewRootImpl realObject;
 
@@ -59,6 +68,43 @@ public class ShadowViewRootImpl {
     if (ShadowView.useRealDrawTraversals()) {
       reflector(ViewRootImplReflector.class, realObject).updateBlastSurfaceIfNeeded();
     }
+  }
+
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
+  protected boolean draw(
+      boolean fullRedrawNeeded,
+      @ClassName("android.window.SurfaceSyncGroup") Object activeSyncGroupObj,
+      boolean syncBuffer) {
+    boolean result =
+        reflector(ViewRootImplVICReflector.class, realObject)
+            .draw(fullRedrawNeeded, (SurfaceSyncGroup) activeSyncGroupObj, syncBuffer);
+    if (result) {
+      for (OnDrawListener listener : globalDrawListeners) {
+        listener.onDraw();
+      }
+    }
+    return result;
+  }
+
+  @Implementation(minSdk = TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
+  protected boolean draw(boolean fullRedrawNeeded, boolean forceDraw) {
+    boolean result =
+        reflector(ViewRootImplReflector.class, realObject).draw(fullRedrawNeeded, forceDraw);
+    if (result) {
+      for (OnDrawListener listener : globalDrawListeners) {
+        listener.onDraw();
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Internal use only. This API may be removed at any time.
+   *
+   * <p>Register a listener for draw events on any ViewRootImpl.
+   */
+  public static void internalRegisterGlobalOnDrawListener(OnDrawListener listener) {
+    globalDrawListeners.add(listener);
   }
 
   @Resetter
@@ -150,5 +196,16 @@ public class ShadowViewRootImpl {
 
     @Direct
     void updateBlastSurfaceIfNeeded();
+
+    @Direct
+    boolean draw(boolean fullRedrawNeeded, boolean forceDraw);
+  }
+
+  /** this interface is kept separate to avoid references to SurfaceSyncGroup on older SDKs */
+  @ForType(ViewRootImpl.class)
+  protected interface ViewRootImplVICReflector {
+
+    @Direct
+    boolean draw(boolean fullRedrawNeeded, SurfaceSyncGroup activeSyncGroup, boolean syncBuffer);
   }
 }
