@@ -40,12 +40,12 @@ android {
       }
     }
   }
+}
 
-  androidComponents {
-    beforeVariants { variantBuilder ->
-      // Roborazzi does not support AndroidTest.
-      variantBuilder.enableAndroidTest = false
-    }
+androidComponents {
+  beforeVariants { variantBuilder ->
+    // Roborazzi does not support AndroidTest.
+    variantBuilder.enableAndroidTest = false
   }
 }
 

@@ -22,12 +22,12 @@ android {
     targetSdk = 36
     unitTests.isIncludeAndroidResources = true
   }
+}
 
-  androidComponents {
-    beforeVariants { variantBuilder ->
-      // sparsearray does not support AndroidTest.
-      variantBuilder.enableAndroidTest = false
-    }
+androidComponents {
+  beforeVariants { variantBuilder ->
+    // sparsearray does not support AndroidTest.
+    variantBuilder.enableAndroidTest = false
   }
 }
 
