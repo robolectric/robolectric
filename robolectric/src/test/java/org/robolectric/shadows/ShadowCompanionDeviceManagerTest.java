@@ -567,16 +567,22 @@ public class ShadowCompanionDeviceManagerTest {
     TestCdmListener listener = new TestCdmListener();
     byte[] data = new byte[] {0x01};
     int messageType = 100;
-    int id = 10;
+    int selfId = 10;
+    int targetId = 20;
+    shadowCompanionDeviceManager.setSelfAssociation(
+        AssociationInfoBuilder.newBuilder().setDisplayName("self").setId(selfId).build());
     shadowCompanionDeviceManager.addAssociation(
-        AssociationInfoBuilder.newBuilder().setDeviceMacAddress(MAC_ADDRESS).setId(id).build());
+        AssociationInfoBuilder.newBuilder()
+            .setDeviceMacAddress(MAC_ADDRESS)
+            .setId(targetId)
+            .build());
 
     companionDeviceManager.addOnMessageReceivedListener(executorService, messageType, listener);
 
-    companionDeviceManager.sendMessage(messageType, data, new int[] {0, 1, 2});
+    companionDeviceManager.sendMessage(messageType, data, new int[] {0, targetId});
 
     assertThat(listener.awaitInvocation()).isTrue();
-    assertThat(listener.receivedId).isEqualTo(id);
+    assertThat(listener.receivedId).isEqualTo(selfId);
     assertThat(listener.receivedData).isEqualTo(data);
   }
 
@@ -586,14 +592,20 @@ public class ShadowCompanionDeviceManagerTest {
     TestCdmListener listener = new TestCdmListener();
     byte[] data = new byte[] {0x01};
     int messageType = 100;
-    int id = 10;
+    int selfId = 10;
+    int targetId = 20;
+    shadowCompanionDeviceManager.setSelfAssociation(
+        AssociationInfoBuilder.newBuilder().setDisplayName("self").setId(selfId).build());
     shadowCompanionDeviceManager.addAssociation(
-        AssociationInfoBuilder.newBuilder().setDeviceMacAddress(MAC_ADDRESS).setId(id).build());
+        AssociationInfoBuilder.newBuilder()
+            .setDeviceMacAddress(MAC_ADDRESS)
+            .setId(targetId)
+            .build());
     companionDeviceManager.addOnMessageReceivedListener(executorService, messageType, listener);
 
     companionDeviceManager.removeOnMessageReceivedListener(messageType, listener);
 
-    companionDeviceManager.sendMessage(messageType, data, new int[] {0, 1, 2});
+    companionDeviceManager.sendMessage(messageType, data, new int[] {0, targetId});
 
     executorService.shutdown();
     assertThat(executorService.awaitTermination(100, MILLISECONDS)).isTrue();
