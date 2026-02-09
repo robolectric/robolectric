@@ -25,12 +25,12 @@ android {
     targetSdk = 36
     unitTests.isIncludeAndroidResources = true
   }
+}
 
-  androidComponents {
-    beforeVariants { variantBuilder ->
-      // composeui does not support AndroidTest now.
-      variantBuilder.enableAndroidTest = false
-    }
+androidComponents {
+  beforeVariants { variantBuilder ->
+    // composeui does not support AndroidTest now.
+    variantBuilder.enableAndroidTest = false
   }
 }
 
