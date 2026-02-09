@@ -18,12 +18,12 @@ android {
     targetSdk = 36
     unitTests.isIncludeAndroidResources = true
   }
+}
 
-  androidComponents {
-    beforeVariants { variantBuilder ->
-      // room does not support AndroidTest.
-      variantBuilder.enableAndroidTest = false
-    }
+androidComponents {
+  beforeVariants { variantBuilder ->
+    // room does not support AndroidTest.
+    variantBuilder.enableAndroidTest = false
   }
 }
 

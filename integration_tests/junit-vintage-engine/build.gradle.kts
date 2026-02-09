@@ -22,12 +22,12 @@ android {
     targetSdk = 36
     unitTests.isIncludeAndroidResources = true
   }
+}
 
-  androidComponents {
-    beforeVariants { variantBuilder ->
-      // junit-vintage-engine test module does not support AndroidTest now.
-      variantBuilder.enableAndroidTest = false
-    }
+androidComponents {
+  beforeVariants { variantBuilder ->
+    // junit-vintage-engine test module does not support AndroidTest now.
+    variantBuilder.enableAndroidTest = false
   }
 }
 
