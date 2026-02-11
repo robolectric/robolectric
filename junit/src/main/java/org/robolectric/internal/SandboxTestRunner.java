@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -101,6 +102,58 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
   }
 
+  /**
+   * An interface used by {@link #mapChildrenInSandbox(List, SandboxChildMapper)} to map a list of
+   * {@link FrameworkMethod}s within a specific {@link Sandbox}.
+   */
+  protected interface SandboxChildMapper {
+    List<FrameworkMethod> map(Sandbox sandbox, List<FrameworkMethod> methods);
+  }
+
+  /**
+   * Provides a mechanism for test runners to perform test discovery or other operations within the
+   * context of each test's {@link Sandbox}. This is particularly useful for runners that need
+   * access to the Android environment during test discovery, such as parameterizing runners that
+   * invoke methods on the test class to generate test cases.
+   *
+   * <p>The method groups the given {@code children} by their associated {@link Sandbox}, and then
+   * applies the provided {@link SandboxChildMapper} to each group within the context of its
+   * respective sandbox.
+   *
+   * @param children The list of {@link FrameworkMethod}s to be mapped.
+   * @param mapper The {@link SandboxChildMapper} to apply to each group of methods.
+   * @return An {@link ImmutableList} containing the results of the mapping.
+   */
+  protected ImmutableList<FrameworkMethod> mapChildrenInSandbox(
+      List<FrameworkMethod> children, SandboxChildMapper mapper) {
+    Map<Sandbox, List<FrameworkMethod>> methodsBySandbox = new LinkedHashMap<>();
+    for (FrameworkMethod method : children) {
+      if (!isIgnored(method)) {
+        methodsBySandbox
+            .computeIfAbsent(getSandbox(method), unused -> new ArrayList<>())
+            .add(method);
+      }
+    }
+
+    ImmutableList.Builder<FrameworkMethod> result = ImmutableList.builder();
+    for (Map.Entry<Sandbox, List<FrameworkMethod>> entry : methodsBySandbox.entrySet()) {
+      List<FrameworkMethod> methods = entry.getValue();
+      Sandbox sandbox = ensureSandboxIsAlive(entry.getKey(), methods.get(0));
+      configureSandbox(sandbox, methods.get(0));
+      sandbox.runOnMainThreadWithClassLoader(
+          () -> {
+            result.addAll(
+                (List<FrameworkMethod>)
+                    runInSandbox(
+                        sandbox,
+                        methods.get(0),
+                        /* invokeBeforeClass= */ false,
+                        unused -> mapper.map(sandbox, methods)));
+          });
+    }
+    return result.build();
+  }
+
   @Nonnull
   protected Collection<Interceptor> findInterceptors() {
     return Collections.emptyList();
@@ -154,13 +207,9 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       public void evaluate() throws Throwable {
         // generating nested statement for all the tests in each sandboxes
         for (Map.Entry<Sandbox, List<FrameworkMethod>> entry : methodsBySandbox.entrySet()) {
-          Sandbox sandbox = entry.getKey();
           FrameworkMethod firstMethod = entry.getValue().get(0);
+          Sandbox sandbox = ensureSandboxIsAlive(entry.getKey(), firstMethod);
 
-          // Recreate the sandbox if the stored sandbox is removed from the cache
-          if (sandbox.isShutdown()) {
-            sandbox = getSandbox(firstMethod);
-          }
           Statement statement = childrenInvoker(entry.getValue(), notifier);
 
           Class<?> bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
@@ -196,17 +245,12 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
           base.evaluate();
           for (Map.Entry<Class<?>, Sandbox> entry : loadedTestClasses.entrySet()) {
             Sandbox sandbox = entry.getValue();
-            sandbox.runOnMainThread(
+            sandbox.runOnMainThreadWithClassLoader(
                 () -> {
-                  ClassLoader priorContextClassLoader =
-                      Thread.currentThread().getContextClassLoader();
-                  Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
                   try {
                     invokeAfterClass(entry.getKey());
                   } catch (Throwable throwable) {
                     throw Util.sneakyThrow(throwable);
-                  } finally {
-                    Thread.currentThread().setContextClassLoader(priorContextClassLoader);
                   }
                 });
           }
@@ -308,17 +352,12 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         // not available once we install the Robolectric class loader.
         configureSandbox(sandbox, firstMethod);
 
-        sandbox.runOnMainThread(
+        sandbox.runOnMainThreadWithClassLoader(
             () -> {
-              ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
-              Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
-
               try {
                 base.evaluate();
               } catch (Throwable throwable) {
                 throw Util.sneakyThrow(throwable);
-              } finally {
-                Thread.currentThread().setContextClassLoader(priorContextClassLoader);
               }
             });
       }
@@ -342,6 +381,17 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   protected Sandbox getSandbox(FrameworkMethod method) {
     InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
     return new Sandbox(instrumentationConfiguration, new UrlResourceProvider(), classInstrumentor);
+  }
+
+  /** Returns a sandbox for the given method. If the sandbox is shutdown, returns a new sandbox. */
+  // TODO: Evicting sandboxes in these use cases is inefficient seeing as we are retaining the
+  //  sandboxes in the methodsBySandox map, seems like it would be better to first group by key
+  //  rather than creating the sandbox?
+  private Sandbox ensureSandboxIsAlive(Sandbox sandbox, FrameworkMethod method) {
+    if (sandbox.isShutdown()) {
+      return getSandbox(method);
+    }
+    return sandbox;
   }
 
   /**
@@ -460,26 +510,50 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     HelperTestRunner helperTestRunner = getCachedHelperTestRunner(bootstrappedTestClass);
     helperTestRunner.frameworkMethod = method;
 
+    try {
+      runInSandbox(
+          sandbox,
+          method,
+          /* invokeBeforeClass= */ USE_LEGACY_SANDBOX_FLOW,
+          bootstrappedMethod -> {
+            initialization.finished();
+
+            Statement statement =
+                helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
+            try {
+              statement.evaluate();
+            } catch (Throwable t) {
+              throw Util.sneakyThrow(t);
+            }
+            return null;
+          });
+    } finally {
+      if (USE_LEGACY_SANDBOX_FLOW) {
+        Thread.currentThread().setContextClassLoader(priorContextClassLoader);
+      }
+      reportPerfStats(perfStatsCollector);
+      perfStatsCollector.reset();
+    }
+  }
+
+  private interface SandboxCallable<T> {
+    T call(Method bootstrappedMethod) throws Throwable;
+  }
+
+  private <T> T runInSandbox(
+      Sandbox sandbox,
+      FrameworkMethod method,
+      boolean invokeBeforeClass,
+      SandboxCallable<T> callable) {
+    Class<?> bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
     // The method class may be different than the test class if the method annotated @Test
     // is declared on a superclass of the test.
-    Class<?> bootstrappedMethodClass =
-        sandbox.bootstrappedClass(method.getMethod().getDeclaringClass());
-    final Method bootstrappedMethod;
-    try {
-      Class<?>[] parameterTypes =
-          stream(method.getMethod().getParameterTypes())
-              .map(type -> type.isPrimitive() ? type : sandbox.bootstrappedClass(type))
-              .toArray(Class[]::new);
-      bootstrappedMethod =
-          bootstrappedMethodClass.getMethod(method.getMethod().getName(), parameterTypes);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    }
+    Method bootstrappedMethod = getBootstrappedMethod(sandbox, method);
 
+    T result = null;
     Queue<Throwable> thrown = new ArrayDeque<>();
-
     try {
-      if (USE_LEGACY_SANDBOX_FLOW) {
+      if (invokeBeforeClass) {
         // Only invoke @BeforeClass once per class
         invokeBeforeClass(bootstrappedTestClass);
 
@@ -488,10 +562,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       }
       beforeTest(sandbox, method, bootstrappedMethod);
 
-      initialization.finished();
-
-      Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
-      statement.evaluate();
+      result = callable.call(bootstrappedMethod);
     } catch (Throwable throwable) {
       thrown.add(throwable);
     }
@@ -503,12 +574,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
 
     try {
-      if (USE_LEGACY_SANDBOX_FLOW) {
-        Thread.currentThread().setContextClassLoader(priorContextClassLoader);
-      }
       finallyAfterTest(method);
-      reportPerfStats(perfStatsCollector);
-      perfStatsCollector.reset();
     } catch (Throwable throwable) {
       thrown.add(throwable);
     }
@@ -524,6 +590,34 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         first.addSuppressed(thrown.remove());
       }
       throw Util.sneakyThrow(first);
+    }
+    return result;
+  }
+
+  /**
+   * Retrieves the sandboxed version of a test method.
+   *
+   * <p>When running tests in a sandbox, the classes are loaded by a special class loader. This
+   * method takes a {@link FrameworkMethod} from the original class loader and returns the
+   * corresponding {@link Method} instance loaded within the provided {@link Sandbox}.
+   *
+   * @param sandbox The {@link Sandbox} in which the method should be loaded.
+   * @param method The JUnit {@link FrameworkMethod} from the original class loader.
+   * @return The {@link Method} instance representing the same method within the sandbox's class
+   *     loader.
+   * @throws RuntimeException if the method cannot be found in the bootstrapped class.
+   */
+  protected static Method getBootstrappedMethod(Sandbox sandbox, FrameworkMethod method) {
+    Class<?> bootstrappedMethodClass =
+        sandbox.bootstrappedClass(method.getMethod().getDeclaringClass());
+    try {
+      Class<?>[] parameterTypes =
+          stream(method.getMethod().getParameterTypes())
+              .map(type -> type.isPrimitive() ? type : sandbox.bootstrappedClass(type))
+              .toArray(Class[]::new);
+      return bootstrappedMethodClass.getMethod(method.getMethod().getName(), parameterTypes);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
     }
   }
 
