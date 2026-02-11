@@ -23,8 +23,8 @@ jobs:
       fail-fast: false
       matrix:
         device: [
-          macos-13, # Tests Mac x86_64
-          macos-14, # Tests Mac arm64
+          macos-15-intel, # Tests Mac x86_64
+          macos-latest, # Tests Mac arm64
           ubuntu-latest, # Tests Linux x86_64
           windows-2022, # Tests Windows x86_64
         ]
