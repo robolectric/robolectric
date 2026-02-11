@@ -20,6 +20,7 @@ import android.view.MotionEvent;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
+import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -48,6 +49,7 @@ import org.robolectric.util.inject.Injector;
 public final class Simulator {
 
   private SimulatorFrame simulatorFrame;
+  private SimulatorPanel simulatorPanel;
   private boolean headless = false;
   private float displayWidth;
   private float displayHeight;
@@ -64,6 +66,7 @@ public final class Simulator {
   public Simulator(Class<? extends Activity> activityClassToLaunch) {
     this.activityClassToLaunch = activityClassToLaunch;
     this.headless = GraphicsEnvironment.isHeadless();
+    this.simulatorPanel = new SimulatorPanel();
   }
 
   public void start() {
@@ -126,6 +129,7 @@ public final class Simulator {
     Display display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
     this.displayWidth = display.getWidth();
     this.displayHeight = display.getHeight();
+    simulatorPanel.setPreferredSize(new Dimension((int) displayWidth, (int) displayHeight));
     if (headless) {
       return;
     }
@@ -138,7 +142,8 @@ public final class Simulator {
     SwingUtilities.invokeLater(
         () -> {
           simulatorFrame =
-              new SimulatorFrame((int) this.displayWidth, (int) this.displayHeight, apiLevel);
+              new SimulatorFrame(
+                  simulatorPanel, (int) this.displayWidth, (int) this.displayHeight, apiLevel);
           simulatorFrame.setVisible(true);
           simulatorFrame.toFront();
         });
@@ -147,15 +152,11 @@ public final class Simulator {
   private void captureScreen() {
     final Bitmap bitmap =
         InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
-    if (!headless) {
-      SwingUtilities.invokeLater(
-          () -> {
-            simulatorFrame.getCanvas().drawBitmap(bitmap);
-            sendToScreenRecorder(bitmap);
-          });
-    } else {
-      sendToScreenRecorder(bitmap);
-    }
+    SwingUtilities.invokeLater(
+        () -> {
+          simulatorPanel.drawBitmap(bitmap);
+          sendToScreenRecorder(bitmap);
+        });
   }
 
   private void sendToScreenRecorder(Bitmap bitmap) {
