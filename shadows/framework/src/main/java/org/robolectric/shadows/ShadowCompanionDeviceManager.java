@@ -18,6 +18,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Ascii;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.InputStream;
@@ -50,8 +51,8 @@ public class ShadowCompanionDeviceManager {
   private final Set<Integer> specifiedRemovableIds = new HashSet<>();
   private final Map<Integer, InputStream> attachedInputStreams = new ConcurrentHashMap<>();
   private final Map<Integer, OutputStream> attachedOutputStreams = new ConcurrentHashMap<>();
-  private final Map<Integer, Set<BiConsumer<Integer, byte[]>>> messageReceivedListeners =
-      new ConcurrentHashMap<>();
+  private final HashMultimap<Integer, BiConsumer<Integer, byte[]>> messageReceivedListeners =
+      HashMultimap.create();
   private final Map<Integer, Integer> systemDataSyncFlags = new ConcurrentHashMap<>();
   private int lastRemoveBondAssociationId = -1;
   private ComponentName lastRequestedNotificationAccess;
@@ -308,7 +309,7 @@ public class ShadowCompanionDeviceManager {
 
   protected List<AssociationInfo> getAssociationInfos() {
     return this.associations.stream()
-        .map(this::createAssociationInfo)
+        .map(ShadowCompanionDeviceManager::createAssociationInfo)
         .collect(toCollection(ArrayList::new));
   }
 
@@ -369,22 +370,19 @@ public class ShadowCompanionDeviceManager {
    * {@code messageType}.
    */
   public ImmutableSet<BiConsumer<Integer, byte[]>> getMessageReceivedListeners(int messageType) {
-    return ImmutableSet.copyOf(messageReceivedListeners.getOrDefault(messageType, new HashSet<>()));
+    return ImmutableSet.copyOf(messageReceivedListeners.get(messageType));
   }
 
   @Implementation(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
   protected void addOnMessageReceivedListener(
       Executor executor, int messageType, BiConsumer<Integer, byte[]> listener) {
-    messageReceivedListeners.putIfAbsent(messageType, new HashSet<>());
-    messageReceivedListeners.get(messageType).add(listener);
+    messageReceivedListeners.put(messageType, listener);
   }
 
   @Implementation(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
   protected void removeOnMessageReceivedListener(
       int messageType, BiConsumer<Integer, byte[]> listener) {
-    if (messageReceivedListeners.containsKey(messageType)) {
-      messageReceivedListeners.get(messageType).remove(listener);
-    }
+    messageReceivedListeners.remove(messageType, listener);
   }
 
   @Implementation(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
@@ -401,7 +399,7 @@ public class ShadowCompanionDeviceManager {
   }
 
   /** Convert {@link RoboAssociationInfo} to actual {@link AssociationInfo}. */
-  private AssociationInfo createAssociationInfo(RoboAssociationInfo info) {
+  private static AssociationInfo createAssociationInfo(RoboAssociationInfo info) {
     AssociationInfoBuilder aiBuilder =
         AssociationInfoBuilder.newBuilder()
             .setId(info.id())
@@ -437,7 +435,7 @@ public class ShadowCompanionDeviceManager {
     return aiBuilder.build();
   }
 
-  private RoboAssociationInfo createShadowAssociationInfo(AssociationInfo info) {
+  private static RoboAssociationInfo createShadowAssociationInfo(AssociationInfo info) {
     Object associatedDevice = null;
     int systemDataSyncFlags = DEFAULT_SYSTEMDATASYNCFLAGS;
     if (ReflectionHelpers.hasField(AssociationInfo.class, "mAssociatedDevice")) {
