@@ -269,6 +269,7 @@ sqlite4java-native = ["sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java
 
 [plugins]
 android-library = { id = "com.android.library", version.ref = "android-gradle" }
+android-legacy-kapt = { id = "com.android.legacy-kapt", version.ref = "android-gradle" }
 application = { id = "application" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt-gradle" }
 error-prone = { id = "net.ltgt.errorprone", version.ref = "error-prone-gradle" }
