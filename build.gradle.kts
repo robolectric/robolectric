@@ -22,6 +22,20 @@ plugins {
 allprojects {
   group = "org.robolectric"
   version = thisVersion
+
+  // Upgrade com.google.testing.platform from 0.0.9-alpha03 to 0.0.9-alpha04 to fix
+  // security issues. AGP 9.0.0 pins UTP to 0.0.9-alpha03 which
+  // transitively depends on vulnerable protobuf-kotlin:3.24.4. The alpha04 release
+  // upgrades to protobuf 4.28.3 which includes the fix.
+  // Remove it after newer AGP depends on alpha04 or newer version.
+  configurations.configureEach {
+    resolutionStrategy.eachDependency {
+      if (requested.group == "com.google.testing.platform") {
+        useVersion("0.0.9-alpha04")
+        because("alpha03 depends on vulnerable protobuf < 3.25.5")
+      }
+    }
+  }
 }
 
 project.afterEvaluate {
