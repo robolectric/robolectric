@@ -21,6 +21,7 @@ import com.google.common.base.Ascii;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.primitives.Ints;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -54,6 +55,13 @@ public class ShadowCompanionDeviceManager {
   private final HashMultimap<Integer, BiConsumer<Integer, byte[]>> messageReceivedListeners =
       HashMultimap.create();
   private final Map<Integer, Integer> systemDataSyncFlags = new ConcurrentHashMap<>();
+
+  /**
+   * The current device's association info, to be used with {@link #sendMessage}. This is evaluated
+   * lazily since it cannot be constructed on older SDKs.
+   */
+  @Nullable private AssociationInfo selfAssociation;
+
   private int lastRemoveBondAssociationId = -1;
   private ComponentName lastRequestedNotificationAccess;
   private AssociationRequest lastAssociationRequest;
@@ -387,15 +395,27 @@ public class ShadowCompanionDeviceManager {
 
   @Implementation(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
   protected void sendMessage(int messageType, byte[] data, int[] associationIds) {
-    if (!messageReceivedListeners.containsKey(messageType) || associations.isEmpty()) {
-      return;
-    }
+    // Use a default self association if not set.
+    AssociationInfo selfAssociation =
+        this.selfAssociation != null
+            ? this.selfAssociation
+            : createAssociationInfo(RoboAssociationInfo.builder().setDisplayName("self").build());
 
     for (BiConsumer<Integer, byte[]> listener : messageReceivedListeners.get(messageType)) {
       for (RoboAssociationInfo association : associations) {
-        listener.accept(association.id(), data);
+        if (Ints.contains(associationIds, association.id())) {
+          listener.accept(selfAssociation.getId(), data);
+        }
       }
     }
+  }
+
+  /**
+   * Sets the self association for the device. This will influence the association ID sent to
+   * listeners when calling {@code sendMessage}.
+   */
+  public void setSelfAssociation(AssociationInfo association) {
+    selfAssociation = association;
   }
 
   /** Convert {@link RoboAssociationInfo} to actual {@link AssociationInfo}. */
