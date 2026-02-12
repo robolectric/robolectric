@@ -39,6 +39,7 @@ include(
   ":integration_tests:play_services",
   ":integration_tests:powermock",
   ":integration_tests:rap",
+  ":integration_tests:rap_kotlin",
   ":integration_tests:roborazzi",
   ":integration_tests:room",
   ":integration_tests:sdkcompat",
