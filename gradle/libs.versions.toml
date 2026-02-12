@@ -28,7 +28,7 @@ error-prone = "2.47.0"
 error-prone-gradle = "5.0.0"
 
 # https://kotlinlang.org/docs/releases.html#release-details
-kotlin = "2.2.21"
+kotlin = "2.3.10"
 
 # https://github.com/Kotlin/kotlinx.coroutines/releases/
 kotlinx-coroutines = '1.10.2'
