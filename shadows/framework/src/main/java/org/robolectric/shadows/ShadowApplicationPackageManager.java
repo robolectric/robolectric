@@ -746,7 +746,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
             // Check if the explicit intent matches filters on the target component for T+
             boolean matchFound = false;
             for (IntentFilter filter : componentFilters) {
-              if (matchIntentFilter(intent, filter) > 0) {
+              if (matchIntentFilter(intent, filter, getContext()) > 0) {
                 matchFound = true;
                 break;
               }
@@ -776,7 +776,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
             filtersForPackage.entrySet()) {
           ComponentName componentName = componentEntry.getKey();
           for (IntentFilter filter : componentEntry.getValue()) {
-            int match = matchIntentFilter(intent, filter);
+            int match = matchIntentFilter(intent, filter, getContext());
             if (match > 0) {
               PackageInfo packageInfo = packageInfos.get(componentName.getPackageName());
               I[] componentInfoArray = componentsInPackage.apply(packageInfo);
@@ -952,10 +952,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return queryBroadcastReceivers(intent, (int) ((ResolveInfoFlags) flags).getValue());
   }
 
-  private static int matchIntentFilter(Intent intent, IntentFilter intentFilter) {
+  private static int matchIntentFilter(Intent intent, IntentFilter intentFilter, Context context) {
     return intentFilter.match(
         intent.getAction(),
-        intent.getType(),
+        intent.getData() == null && intent.getType() == null
+            ? intent.resolveTypeIfNeeded(context.getContentResolver())
+            : intent.getType(),
         intent.getScheme(),
         intent.getData(),
         intent.getCategories(),
