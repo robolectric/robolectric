@@ -1,6 +1,7 @@
 package org.robolectric.annotation.processing;
 
 import static com.google.testing.compile.JavaFileObjects.forResource;
+import static com.google.testing.compile.JavaFileObjects.forSourceString;
 import static org.robolectric.annotation.processing.RobolectricProcessor.JSON_DOCS_DIR;
 import static org.robolectric.annotation.processing.RobolectricProcessor.PACKAGE_OPT;
 import static org.robolectric.annotation.processing.RobolectricProcessor.SDK_CHECK_MODE;
@@ -8,11 +9,21 @@ import static org.robolectric.annotation.processing.RobolectricProcessor.SDK_CHE
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import javax.tools.JavaFileObject;
 
 public class Utils {
+
+  public static JavaFileObject sourceResource(String name) {
+    try {
+      String simpleName = name.substring(name.lastIndexOf('/') + 1, name.lastIndexOf('.'));
+      return forSourceString(simpleName, forResource(name).getCharContent(true).toString());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   public static final ImmutableMap<String, String> DEFAULT_OPTS =
       ImmutableMap.of(
