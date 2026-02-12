@@ -9,6 +9,10 @@ val configAnnotationProcessing by project.extra(emptyList<Project>())
 val thisVersion: String by project
 
 plugins {
+  // Define versions for plugins used in subprojects. 'apply false' is used to load the plugin
+  // into the root classpath without applying it to the root project, which ensures
+  // consistent versioning and compatibility across subprojects.
+  alias(libs.plugins.android.application) apply false
   alias(libs.plugins.android.library) apply false
   alias(libs.plugins.detekt) apply false
   alias(libs.plugins.error.prone)

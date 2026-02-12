@@ -41,6 +41,8 @@ include(
   ":integration_tests:room",
   ":integration_tests:sdkcompat",
   ":integration_tests:securityproviders",
+  ":integration_tests:simulator:app",
+  ":integration_tests:simulator:test",
   ":integration_tests:sparsearray",
   ":integration_tests:testparameterinjector",
   ":integration_tests:versioning",

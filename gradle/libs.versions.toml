@@ -257,6 +257,7 @@ powermock = ["powermock-module-junit4-rule", "powermock-api-mockito2", "powermoc
 sqlite4java-native = ["sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86"]
 
 [plugins]
+android-application = { id = "com.android.application", version.ref = "android-gradle" }
 android-library = { id = "com.android.library", version.ref = "android-gradle" }
 application = { id = "application" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt-gradle" }

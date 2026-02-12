@@ -119,7 +119,9 @@ public final class SandboxBuilder {
       builder.addInterceptedMethod(methodRef);
     }
 
-    builder.doNotAcquireClass("org.robolectric.shadow.api.ShadowPicker");
+    builder
+        .doNotAcquireClass("org.robolectric.shadow.api.ShadowPicker")
+        .doNotAcquireClass("org.robolectric.simulator.SimulatorPanelRegistry");
 
     builder
         .doNotAcquirePackage("org.bouncycastle.")

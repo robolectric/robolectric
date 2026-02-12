@@ -130,14 +130,13 @@ public final class Simulator {
     this.displayWidth = display.getWidth();
     this.displayHeight = display.getHeight();
     simulatorPanel.setPreferredSize(new Dimension((int) displayWidth, (int) displayHeight));
-    if (headless) {
-      return;
-    }
-    try {
-      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    if (!headless) {
+      try {
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+
     final int apiLevel = RuntimeEnvironment.getApiLevel();
     SwingUtilities.invokeLater(
         () -> {
@@ -147,6 +146,7 @@ public final class Simulator {
           simulatorFrame.setVisible(true);
           simulatorFrame.toFront();
         });
+    }
   }
 
   private void captureScreen() {
@@ -156,6 +156,7 @@ public final class Simulator {
         () -> {
           simulatorPanel.drawBitmap(bitmap);
           sendToScreenRecorder(bitmap);
+          SimulatorPanelRegistry.register(simulatorPanel);
         });
   }
 
