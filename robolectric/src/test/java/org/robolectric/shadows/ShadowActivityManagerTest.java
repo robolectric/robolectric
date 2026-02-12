@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -19,6 +20,7 @@ import android.app.ActivityManager.AppTask;
 import android.app.ActivityManager.RecentTaskInfo;
 import android.app.Application;
 import android.app.ApplicationExitInfo;
+import android.app.ApplicationStartInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
@@ -466,6 +468,147 @@ public class ShadowActivityManagerTest {
     assertThat(applicationExitInfoList.get(1).getTimestamp()).isEqualTo(123);
   }
 
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  @Test
+  public void getHistoricalProcessStartReasons_noRecord_emptyListReturned() {
+    List<ApplicationStartInfo> applicationStartInfoList =
+        activityManager.getHistoricalProcessStartReasons(0);
+
+    assertThat(applicationStartInfoList).isEmpty();
+  }
+
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  @Test
+  public void getHistoricalProcessStartReasons_recordsReturnedInCorrectOrder() {
+    addApplicationStartInfo(/* pid= */ 1);
+    addApplicationStartInfo(/* pid= */ 2);
+    addApplicationStartInfo(/* pid= */ 3);
+
+    List<ApplicationStartInfo> applicationStartInfoList =
+        activityManager.getHistoricalProcessStartReasons(0);
+
+    assertThat(applicationStartInfoList).hasSize(3);
+    assertThat(applicationStartInfoList.get(0).getPid()).isEqualTo(3);
+    assertThat(applicationStartInfoList.get(1).getPid()).isEqualTo(2);
+    assertThat(applicationStartInfoList.get(2).getPid()).isEqualTo(1);
+  }
+
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  @Test
+  public void getHistoricalProcessStartReasons_maxNumSpecified_correctNumberOfRecordsReturned() {
+    addApplicationStartInfo(/* pid= */ 1);
+    addApplicationStartInfo(/* pid= */ 2);
+    addApplicationStartInfo(/* pid= */ 3);
+
+    List<ApplicationStartInfo> applicationStartInfoList =
+        activityManager.getHistoricalProcessStartReasons(2);
+
+    assertThat(applicationStartInfoList).hasSize(2);
+    assertThat(applicationStartInfoList.get(0).getPid()).isEqualTo(3);
+    assertThat(applicationStartInfoList.get(1).getPid()).isEqualTo(2);
+  }
+
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  @Test
+  public void addApplicationStartInfo_reasonSet() {
+    addApplicationStartInfo(
+        /* pid= */ 1, ApplicationStartInfo.START_REASON_ALARM, /* timestamp= */ 0);
+    addApplicationStartInfo(
+        /* pid= */ 2, ApplicationStartInfo.START_REASON_JOB, /* timestamp= */ 0);
+
+    List<ApplicationStartInfo> applicationStartInfoList =
+        activityManager.getHistoricalProcessStartReasons(0);
+
+    assertThat(applicationStartInfoList).hasSize(2);
+    assertThat(applicationStartInfoList.get(0).getReason())
+        .isEqualTo(ApplicationStartInfo.START_REASON_JOB);
+    assertThat(applicationStartInfoList.get(1).getReason())
+        .isEqualTo(ApplicationStartInfo.START_REASON_ALARM);
+  }
+
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  @Test
+  public void addApplicationStartInfo_processNameSet() {
+    addApplicationStartInfo(/* pid= */ 1);
+
+    List<ApplicationStartInfo> applicationStartInfoList =
+        activityManager.getHistoricalProcessStartReasons(0);
+
+    assertThat(applicationStartInfoList).hasSize(1);
+    assertThat(applicationStartInfoList.get(0).getProcessName()).isEqualTo(PROCESS_NAME);
+  }
+
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  @Test
+  public void addApplicationStartInfo_timestampSet() {
+    shadowActivityManager.addApplicationStartInfo(
+        ShadowActivityManager.ApplicationStartInfoBuilder.newBuilder()
+            .addStartupTimestamp(ApplicationStartInfo.START_TIMESTAMP_LAUNCH, 123)
+            .build());
+    shadowActivityManager.addApplicationStartInfo(
+        ShadowActivityManager.ApplicationStartInfoBuilder.newBuilder()
+            .addStartupTimestamp(ApplicationStartInfo.START_TIMESTAMP_LAUNCH, 456)
+            .build());
+
+    List<ApplicationStartInfo> applicationStartInfoList =
+        activityManager.getHistoricalProcessStartReasons(0);
+
+    assertThat(applicationStartInfoList).hasSize(2);
+    assertThat(
+            applicationStartInfoList
+                .get(0)
+                .getStartupTimestamps()
+                .get(ApplicationStartInfo.START_TIMESTAMP_LAUNCH))
+        .isEqualTo(456);
+    assertThat(
+            applicationStartInfoList
+                .get(1)
+                .getStartupTimestamps()
+                .get(ApplicationStartInfo.START_TIMESTAMP_LAUNCH))
+        .isEqualTo(123);
+  }
+
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  @Test
+  public void addApplicationStartInfo_startTypeSet() {
+    shadowActivityManager.addApplicationStartInfo(
+        ShadowActivityManager.ApplicationStartInfoBuilder.newBuilder()
+            .setStartType(ApplicationStartInfo.START_TYPE_COLD)
+            .build());
+    shadowActivityManager.addApplicationStartInfo(
+        ShadowActivityManager.ApplicationStartInfoBuilder.newBuilder()
+            .setStartType(ApplicationStartInfo.START_TYPE_WARM)
+            .build());
+
+    List<ApplicationStartInfo> applicationStartInfoList =
+        activityManager.getHistoricalProcessStartReasons(0);
+
+    assertThat(applicationStartInfoList).hasSize(2);
+    assertThat(applicationStartInfoList.get(0).getStartType())
+        .isEqualTo(ApplicationStartInfo.START_TYPE_WARM);
+    assertThat(applicationStartInfoList.get(1).getStartType())
+        .isEqualTo(ApplicationStartInfo.START_TYPE_COLD);
+  }
+
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  @Test
+  public void addApplicationStartInfo_uidSet() {
+    shadowActivityManager.addApplicationStartInfo(
+        ShadowActivityManager.ApplicationStartInfoBuilder.newBuilder()
+            .setDefiningUid(1)
+            .setPackageUid(2)
+            .setRealUid(3)
+            .build());
+
+    List<ApplicationStartInfo> applicationStartInfoList =
+        activityManager.getHistoricalProcessStartReasons(0);
+
+    assertThat(applicationStartInfoList).hasSize(1);
+    assertThat(applicationStartInfoList.get(0).getDefiningUid()).isEqualTo(1);
+    assertThat(applicationStartInfoList.get(0).getPackageUid()).isEqualTo(2);
+    assertThat(applicationStartInfoList.get(0).getRealUid()).isEqualTo(3);
+  }
+
   @Test
   public void getDeviceConfigurationInfo_returnsValueSet() {
     ConfigurationInfo configurationInfo = new ConfigurationInfo();
@@ -511,6 +654,20 @@ public class ShadowActivityManagerTest {
             .setPid(pid)
             .setReason(reason)
             .setStatus(status)
+            .build());
+  }
+
+  private void addApplicationStartInfo(int pid) {
+    addApplicationStartInfo(pid, 0, 0);
+  }
+
+  private void addApplicationStartInfo(int pid, int reason, long timestamp) {
+    shadowActivityManager.addApplicationStartInfo(
+        ShadowActivityManager.ApplicationStartInfoBuilder.newBuilder()
+            .setProcessName(PROCESS_NAME)
+            .setPid(pid)
+            .setReason(reason)
+            .addStartupTimestamp(ApplicationStartInfo.START_TIMESTAMP_LAUNCH, timestamp)
             .build());
   }
 
