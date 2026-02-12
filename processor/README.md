@@ -79,6 +79,26 @@ kapt {
 }
 ```
 
+### KSP processor module
+
+Robolectric also provides a KSP processor module for Kotlin shadow packages:
+
+```kotlin
+plugins {
+  id("com.android.library")
+  id("com.google.devtools.ksp")
+}
+
+dependencies { ksp("org.robolectric:processor-ksp:<version>") }
+
+ksp {
+  arg(
+    "org.robolectric.annotation.processing.shadowPackage",
+    "com.example.shadows"
+  )
+}
+```
+
 ## Future enhancements
 
 In developing RAP I forsaw a number of enhancements that would be potentially useful:

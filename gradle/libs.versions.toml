@@ -30,6 +30,9 @@ error-prone-gradle = "5.0.0"
 # https://kotlinlang.org/docs/releases.html#release-details
 kotlin = "2.3.10"
 
+# https://github.com/google/ksp/releases
+ksp = "2.3.5"
+
 # https://github.com/Kotlin/kotlinx.coroutines/releases/
 kotlinx-coroutines = '1.10.2'
 
@@ -187,6 +190,7 @@ junit-vintage = { module = "org.junit.vintage:junit-vintage-engine" }
 
 javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javax-annotation-api" }
 javax-inject = { module = "javax.inject:javax.inject", version.ref = "javax-inject" }
+ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 
 libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version.ref = "libphonenumber" }
 
@@ -278,6 +282,7 @@ gradle-plugin-publish = { id = "com.gradle.plugin-publish", version.ref = "gradl
 jacoco = { id = "jacoco" }
 java = { id = "java" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 robolectric-android-project = { id = "org.robolectric.gradle.AndroidProjectConfigPlugin" }
 robolectric-deployed-java-module = { id = "org.robolectric.gradle.DeployedRoboJavaModulePlugin" }
 robolectric-gradle-managed-device = { id = "org.robolectric.gradle.GradleManagedDevicePlugin" }
