@@ -56,6 +56,49 @@ In this early stage, RAP is mostly targeted at those contributing to Robolectric
 
 However, with some few modifications some of the features (such as the constraint enforcement, or custom <code>shadowOf()</code>/global <code>reset()</code> methods) could also be of benefit to users of Robolectric who are developing their own custom shadows. This feature may be added in a future version
 
+### AGP 9 and built-in Kotlin
+
+With Android Gradle Plugin 9 and `android.buildInKotlin`, the `kotlin-kapt` plugin is not available.
+If your custom shadows are written in Kotlin, apply `com.android.legacy-kapt` and configure RAP through `kapt`:
+
+```kotlin
+plugins {
+  id("com.android.library")
+  id("com.android.legacy-kapt")
+}
+
+dependencies { kapt("org.robolectric:processor:<version>") }
+
+kapt {
+  arguments {
+    arg(
+      "org.robolectric.annotation.processing.shadowPackage",
+      "com.example.shadows"
+    )
+  }
+}
+```
+
+### KSP processor module
+
+Robolectric also provides a KSP processor module for Kotlin shadow packages:
+
+```kotlin
+plugins {
+  id("com.android.library")
+  id("com.google.devtools.ksp")
+}
+
+dependencies { ksp("org.robolectric:processor-ksp:<version>") }
+
+ksp {
+  arg(
+    "org.robolectric.annotation.processing.shadowPackage",
+    "com.example.shadows"
+  )
+}
+```
+
 ## Future enhancements
 
 In developing RAP I forsaw a number of enhancements that would be potentially useful:
