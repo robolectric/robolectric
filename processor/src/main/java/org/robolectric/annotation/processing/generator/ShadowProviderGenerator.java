@@ -110,8 +110,15 @@ public class ShadowProviderGenerator extends Generator {
     writer.println("  }");
     writer.println();
 
+    // Generate shadowOf methods.
     for (ShadowInfo shadowInfo : model.getVisibleShadowTypes()) {
-      if (!shadowInfo.actualIsPublic()) {
+      // ShadowWindowManager is a special case. It's an empty class and the shadowed class,
+      // WindowManager, is an interface. ShadowWindowManager only exists to provide
+      // shadowOf(WindowManager), which returns a ShadowWindowManagerImpl. This will be removed in a
+      // future version of Robolectric.
+      if (!shadowInfo.actualIsPublic()
+          || (!shadowInfo.hasPublicMethods()
+              && !shadowInfo.getShadowName().endsWith("ShadowWindowManager"))) {
         continue;
       }
 
@@ -138,7 +145,9 @@ public class ShadowProviderGenerator extends Generator {
 
     // this sucks, kill:
     for (ShadowInfo shadowInfo : model.getShadowPickers().values()) {
-      if (!shadowInfo.actualIsPublic() || !shadowInfo.isInAndroidSdk()) {
+      if (!shadowInfo.actualIsPublic()
+          || !shadowInfo.isInAndroidSdk()
+          || !shadowInfo.hasPublicMethods()) {
         continue;
       }
 

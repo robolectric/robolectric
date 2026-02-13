@@ -27,14 +27,6 @@ public class Shadows implements ShadowProvider {
     SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>("com.example.objects.ParameterizedDummy", "org.robolectric.annotation.processing.shadows.ShadowParameterizedDummy"));
   }
 
-  public static ShadowDummy shadowOf(Dummy actual) {
-    return Shadow.extract(actual);
-  }
-
-  public static <T,N extends Number> ShadowParameterizedDummy<T,N> shadowOf(ParameterizedDummy<T,N> actual) {
-    return Shadow.extract(actual);
-  }
-
   @Override
   public void reset() {
     ShadowDummy.resetter_method();

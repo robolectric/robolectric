@@ -29,10 +29,6 @@ public class Shadows implements ShadowProvider {
             "org.robolectric.annotation.processing.shadows.ShadowInnerDummyWithPicker$ShadowInnerDummyWithPicker3"));
   }
 
-  public static ShadowInnerDummyWithPicker shadowOf(InnerDummy actual) {
-    return Shadow.extract(actual);
-  }
-
   @Override
   public void reset() {}
 

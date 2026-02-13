@@ -31,22 +31,6 @@ public class Shadows implements ShadowProvider {
     SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>("com.example.objects.innerpackage.InnerPackageDummy", "org.robolectric.annotation.processing.shadows.ShadowInnerPackageDummy"));
   }
 
-  public static ShadowClassNameOnly shadowOf(AnyObject actual) {
-    return Shadow.extract(actual);
-  }
-
-  public static ShadowDummy shadowOf(com.example.objects.Dummy actual) {
-    return Shadow.extract(actual);
-  }
-
-  public static ShadowDummy2 shadowOf(org.example.objects.Dummy actual) {
-    return Shadow.extract(actual);
-  }
-
-  public static ShadowInnerPackageDummy shadowOf(InnerPackageDummy actual) {
-    return Shadow.extract(actual);
-  }
-
   @Override
   public void reset() {
     ShadowClassNameOnly.anotherResetter();
@@ -61,8 +45,8 @@ public class Shadows implements ShadowProvider {
   @Override
   public String[] getProvidedPackageNames() {
     return new String[] {
-        "com.example.objects",
-        "org.example.objects"
+      "com.example.objects",
+      "org.example.objects"
     };
   }
 

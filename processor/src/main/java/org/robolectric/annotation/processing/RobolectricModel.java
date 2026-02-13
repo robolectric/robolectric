@@ -27,8 +27,10 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVisitor;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.SimpleElementVisitor8;
 import javax.lang.model.util.SimpleTypeVisitor8;
 import org.robolectric.annotation.Implements;
@@ -390,6 +392,7 @@ public class RobolectricModel {
     private String shadowBinaryName;
     private String shadowPickerBinaryName;
     private String shadowBaseName;
+    private boolean hasPublicMethods;
 
     ShadowInfo(
         TypeElement shadowType,
@@ -440,6 +443,36 @@ public class RobolectricModel {
       shadowBinaryName = helpers.getBinaryName(shadowType);
       shadowPickerBinaryName = helpers.getBinaryName(shadowPickerType);
       shadowBaseName = referentResolver.getReferentFor(shadowBaseClass);
+      this.hasPublicMethods = calculateHasPublicMethods(helpers);
+    }
+
+    private boolean calculateHasPublicMethods(Helpers helpers) {
+      TypeElement currentShadowType = shadowType;
+      while (currentShadowType != null) {
+        for (ExecutableElement method :
+            ElementFilter.methodsIn(currentShadowType.getEnclosedElements())) {
+          if (method.getModifiers().contains(Modifier.PUBLIC)
+              && !method.getModifiers().contains(Modifier.STATIC)
+              && !method.getSimpleName().contentEquals("<init>")) {
+            return true;
+          }
+        }
+        TypeMirror superclass = currentShadowType.getSuperclass();
+        if (superclass.getKind() == TypeKind.DECLARED) {
+          Element superclassElement = helpers.asElement(superclass);
+          if (superclassElement instanceof TypeElement) {
+            currentShadowType = (TypeElement) superclassElement;
+            if (currentShadowType.getQualifiedName().contentEquals("java.lang.Object")) {
+              break;
+            }
+          } else {
+            break;
+          }
+        } else {
+          break;
+        }
+      }
+      return false;
     }
 
     public String getActualBinaryName() {
@@ -451,6 +484,7 @@ public class RobolectricModel {
     }
 
     public boolean isInAndroidSdk() {
+
       return shadowType.getAnnotation(Implements.class).isInAndroidSdk();
     }
 
@@ -496,6 +530,10 @@ public class RobolectricModel {
 
     public String getShadowBaseName() {
       return shadowBaseName;
+    }
+
+    public boolean hasPublicMethods() {
+      return hasPublicMethods;
     }
   }
 

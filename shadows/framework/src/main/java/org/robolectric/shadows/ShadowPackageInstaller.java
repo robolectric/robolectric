@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -291,7 +290,7 @@ public class ShadowPackageInstaller {
    */
   private void sendPreapprovalUpdate(int sessionId, int status)
       throws IntentSender.SendIntentException {
-    ShadowSession shadowSession = shadowOf(sessions.get(sessionId));
+    ShadowSession shadowSession = Shadow.extract(sessions.get(sessionId));
     Intent fillIn = new Intent();
     fillIn.putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId);
     fillIn.putExtra(PackageInstaller.EXTRA_STATUS, status);
