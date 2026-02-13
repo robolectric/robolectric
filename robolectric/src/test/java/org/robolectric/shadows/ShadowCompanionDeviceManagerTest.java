@@ -567,37 +567,52 @@ public class ShadowCompanionDeviceManagerTest {
     TestCdmListener listener = new TestCdmListener();
     byte[] data = new byte[] {0x01};
     int messageType = 100;
-    int id = 10;
-    shadowCompanionDeviceManager.addAssociation(
-        AssociationInfoBuilder.newBuilder().setDeviceMacAddress(MAC_ADDRESS).setId(id).build());
-
+    int receiverId = 10;
+    shadowCompanionDeviceManager.setSelfAssociationInfo(
+        AssociationInfoBuilder.newBuilder().setDisplayName("self").setId(receiverId).build());
     companionDeviceManager.addOnMessageReceivedListener(executorService, messageType, listener);
 
-    companionDeviceManager.sendMessage(messageType, data, new int[] {0, 1, 2});
+    int senderId = 20;
+    shadowCompanionDeviceManager.setSelfAssociationInfo(
+        AssociationInfoBuilder.newBuilder()
+            .setDeviceMacAddress(MAC_ADDRESS)
+            .setId(senderId)
+            .build());
+
+    companionDeviceManager.sendMessage(messageType, data, new int[] {0, receiverId});
 
     assertThat(listener.awaitInvocation()).isTrue();
-    assertThat(listener.receivedId).isEqualTo(id);
+    assertThat(listener.receivedId).isEqualTo(senderId);
     assertThat(listener.receivedData).isEqualTo(data);
   }
 
   @Test
   @Config(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
   public void testRemoveOnMessageReceivedListener_noLongerReceivesMessages() throws Exception {
-    TestCdmListener listener = new TestCdmListener();
+    TestCdmListener listener1 = new TestCdmListener();
+    TestCdmListener listener2 = new TestCdmListener();
     byte[] data = new byte[] {0x01};
     int messageType = 100;
-    int id = 10;
-    shadowCompanionDeviceManager.addAssociation(
-        AssociationInfoBuilder.newBuilder().setDeviceMacAddress(MAC_ADDRESS).setId(id).build());
-    companionDeviceManager.addOnMessageReceivedListener(executorService, messageType, listener);
+    int listenerId = 10;
+    shadowCompanionDeviceManager.setSelfAssociationInfo(
+        AssociationInfoBuilder.newBuilder().setDisplayName("self").setId(listenerId).build());
+    companionDeviceManager.addOnMessageReceivedListener(executorService, messageType, listener1);
+    companionDeviceManager.addOnMessageReceivedListener(executorService, messageType, listener2);
+    companionDeviceManager.removeOnMessageReceivedListener(messageType, listener1);
 
-    companionDeviceManager.removeOnMessageReceivedListener(messageType, listener);
+    int senderId = 20;
+    shadowCompanionDeviceManager.setSelfAssociationInfo(
+        AssociationInfoBuilder.newBuilder()
+            .setDeviceMacAddress(MAC_ADDRESS)
+            .setId(senderId)
+            .build());
 
-    companionDeviceManager.sendMessage(messageType, data, new int[] {0, 1, 2});
+    companionDeviceManager.sendMessage(messageType, data, new int[] {0, listenerId});
 
     executorService.shutdown();
     assertThat(executorService.awaitTermination(100, MILLISECONDS)).isTrue();
-    assertThat(listener.hasInvocation()).isFalse();
+    assertThat(listener1.hasInvocation()).isFalse();
+    assertThat(listener2.hasInvocation()).isTrue();
   }
 
   @Test

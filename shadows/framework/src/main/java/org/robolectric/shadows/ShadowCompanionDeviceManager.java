@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 
@@ -18,9 +19,9 @@ import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Ascii;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.primitives.Ints;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -51,8 +52,14 @@ public class ShadowCompanionDeviceManager {
   private final Set<Integer> specifiedRemovableIds = new HashSet<>();
   private final Map<Integer, InputStream> attachedInputStreams = new ConcurrentHashMap<>();
   private final Map<Integer, OutputStream> attachedOutputStreams = new ConcurrentHashMap<>();
-  private final HashMultimap<Integer, BiConsumer<Integer, byte[]>> messageReceivedListeners =
-      HashMultimap.create();
+  private final List<MessageListenerRecord> messageListenerRecords = new ArrayList<>();
+
+  /**
+   * The association info assigned to the current device. This should be accessed indirectly via
+   * {@link #getCurrentAssociation()}, which provides a fallback lazily.
+   */
+  @Nullable private AssociationInfo selfAssociationInfo;
+
   private final Map<Integer, Integer> systemDataSyncFlags = new ConcurrentHashMap<>();
   private int lastRemoveBondAssociationId = -1;
   private ComponentName lastRequestedNotificationAccess;
@@ -71,8 +78,8 @@ public class ShadowCompanionDeviceManager {
         associations.stream().map(RoboAssociationInfo::deviceMacAddress).collect(toList()));
   }
 
-  public void addAssociation(String newAssociation) {
-    associations.add(RoboAssociationInfo.builder().setDeviceMacAddress(newAssociation).build());
+  public void addAssociation(String deviceMacAddress) {
+    associations.add(RoboAssociationInfo.builder().setDeviceMacAddress(deviceMacAddress).build());
   }
 
   public void addAssociation(AssociationInfo info) {
@@ -365,37 +372,67 @@ public class ShadowCompanionDeviceManager {
   }
 
   /**
+   * Sets the current association info for the current device.
+   *
+   * <p>Any listener registered with {@link #addOnMessageReceivedListener(Executor, int,
+   * BiConsumer)} after this call is eligible for invocation via {@link #sendMessage(int, byte[],
+   * int[])} calls referencing the same association ID in {@link #selfAssociationInfo}.
+   */
+  public final void setSelfAssociationInfo(AssociationInfo selfAssociationInfo) {
+    this.selfAssociationInfo = selfAssociationInfo;
+  }
+
+  /**
+   * Loads the association info for the current device lazily, since building AssociationInfo is
+   * unsupported in older API levels.
+   */
+  private AssociationInfo getCurrentAssociation() {
+    return selfAssociationInfo != null
+        ? selfAssociationInfo
+        : createAssociationInfo(RoboAssociationInfo.builder().setDisplayName("self").build());
+  }
+
+  /**
    * This method will return the registered listeners passed to {@code
    * CompanionDeviceManager#addOnMessageReceivedListener(Executor, int, BiConsumer)} for the given
    * {@code messageType}.
    */
   public ImmutableSet<BiConsumer<Integer, byte[]>> getMessageReceivedListeners(int messageType) {
-    return ImmutableSet.copyOf(messageReceivedListeners.get(messageType));
+    return messageListenerRecords.stream()
+        .filter(record -> record.messageType == messageType)
+        .map(record -> record.listener)
+        .collect(toImmutableSet());
   }
 
   @Implementation(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
   protected void addOnMessageReceivedListener(
       Executor executor, int messageType, BiConsumer<Integer, byte[]> listener) {
-    messageReceivedListeners.put(messageType, listener);
+    int receiverAssociationId = getCurrentAssociation().getId();
+    messageListenerRecords.add(
+        new MessageListenerRecord(receiverAssociationId, messageType, listener, executor));
   }
 
   @Implementation(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
   protected void removeOnMessageReceivedListener(
       int messageType, BiConsumer<Integer, byte[]> listener) {
-    messageReceivedListeners.remove(messageType, listener);
+    // This performs a linear search for the sake of implementation simplicity, since performance is
+    // usually not critical in Robolectric tests.
+    messageListenerRecords.removeIf(
+        record -> record.messageType == messageType && record.listener.equals(listener));
   }
 
   @Implementation(minSdk = VERSION_CODES.VANILLA_ICE_CREAM)
   protected void sendMessage(int messageType, byte[] data, int[] associationIds) {
-    if (!messageReceivedListeners.containsKey(messageType) || associations.isEmpty()) {
-      return;
-    }
+    int senderId = getCurrentAssociation().getId();
 
-    for (BiConsumer<Integer, byte[]> listener : messageReceivedListeners.get(messageType)) {
-      for (RoboAssociationInfo association : associations) {
-        listener.accept(association.id(), data);
-      }
-    }
+    // This performs a linear search for the sake of implementation simplicity, since performance is
+    // usually not critical in Robolectric tests.
+    messageListenerRecords.stream()
+        .filter(
+            record ->
+                record.messageType == messageType
+                    && Ints.contains(associationIds, record.receiverAssociationId))
+        .forEach(record -> record.executor.execute(() -> record.listener.accept(senderId, data)));
   }
 
   /** Convert {@link RoboAssociationInfo} to actual {@link AssociationInfo}. */
@@ -475,6 +512,24 @@ public class ShadowCompanionDeviceManager {
     return shadowInstrumentation.checkPermission(
             permission, android.os.Process.myPid(), android.os.Process.myUid())
         == PERMISSION_GRANTED;
+  }
+
+  private static final class MessageListenerRecord {
+    private final int receiverAssociationId;
+    private final int messageType;
+    private final BiConsumer<Integer, byte[]> listener;
+    private final Executor executor;
+
+    MessageListenerRecord(
+        int receiverAssociationId,
+        int messageType,
+        BiConsumer<Integer, byte[]> listener,
+        Executor executor) {
+      this.receiverAssociationId = receiverAssociationId;
+      this.messageType = messageType;
+      this.listener = listener;
+      this.executor = executor;
+    }
   }
 
   /**
