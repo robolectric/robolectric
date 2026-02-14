@@ -20,19 +20,17 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import org.robolectric.shadows.ShadowUiAutomation;
 import org.robolectric.simulator.pluginapi.MenuCustomizer;
 import org.robolectric.util.inject.Injector;
 
 /** A {@link MouseAdapter} that triggers Android {@link MotionEvent}s when the mouse is pressed. */
 public class MouseHandler extends MouseAdapter implements MouseWheelListener {
-  private final UiAutomation uiAutomation =
-      InstrumentationRegistry.getInstrumentation().getUiAutomation();
-
   private boolean isPressed;
   private Instant downTime;
 
   private final Handler handler = new Handler(Looper.getMainLooper());
+  private final UiAutomation uiAutomation =
+      InstrumentationRegistry.getInstrumentation().getUiAutomation();
 
   private final JPopupMenu rightClickMenu;
   private Component previouslyFocusedComponent;
@@ -72,7 +70,9 @@ public class MouseHandler extends MouseAdapter implements MouseWheelListener {
           private void restoreFocus() {
             SwingUtilities.invokeLater(
                 () -> {
-                  previouslyFocusedComponent.requestFocusInWindow();
+                  if (previouslyFocusedComponent != null) {
+                    previouslyFocusedComponent.requestFocusInWindow();
+                  }
                 });
           }
         });
@@ -100,7 +100,7 @@ public class MouseHandler extends MouseAdapter implements MouseWheelListener {
                           KeyEvent.KEYCODE_BACK,
                           /* repeat= */ 0,
                           0);
-                  ShadowUiAutomation.injectInputEvent(backKeyDown);
+                  uiAutomation.injectInputEvent(backKeyDown, true);
 
                   KeyEvent backKeyUp =
                       new KeyEvent(
@@ -110,7 +110,7 @@ public class MouseHandler extends MouseAdapter implements MouseWheelListener {
                           KeyEvent.KEYCODE_BACK,
                           /* repeat= */ 0,
                           0);
-                  ShadowUiAutomation.injectInputEvent(backKeyUp);
+                  uiAutomation.injectInputEvent(backKeyUp, true);
                 }));
 
     return sendBackMenuItem;
@@ -153,13 +153,16 @@ public class MouseHandler extends MouseAdapter implements MouseWheelListener {
   }
 
   private MotionEvent obtainMotionEvent(MouseEvent mouseEvent, int action) {
-    return MotionEvent.obtain(
-        downTime.toEpochMilli(),
-        SystemClock.uptimeMillis(),
-        action,
-        mouseEvent.getX(),
-        mouseEvent.getY(),
-        /* metaState= */ 0);
+    MotionEvent event =
+        MotionEvent.obtain(
+            downTime.toEpochMilli(),
+            SystemClock.uptimeMillis(),
+            action,
+            mouseEvent.getX(),
+            mouseEvent.getY(),
+            /* metaState= */ 0);
+    event.setSource(InputDevice.SOURCE_TOUCHSCREEN);
+    return event;
   }
 
   @Override
