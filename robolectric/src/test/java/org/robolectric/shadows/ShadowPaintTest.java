@@ -180,4 +180,12 @@ public class ShadowPaintTest {
     assertThat(paint.isFilterBitmap()).isFalse();
     assertThat(paint.getFlags() & Paint.FILTER_BITMAP_FLAG).isEqualTo(0);
   }
+
+  @Test
+  public void testStrokeCapDefaults() {
+    Paint paint = new Paint();
+    assertThat(paint.getStrokeCap()).isEqualTo(Paint.Cap.BUTT);
+    assertThat(paint.getStrokeJoin()).isEqualTo(Paint.Join.MITER);
+    assertThat(paint.getStyle()).isEqualTo(Paint.Style.FILL);
+  }
 }
