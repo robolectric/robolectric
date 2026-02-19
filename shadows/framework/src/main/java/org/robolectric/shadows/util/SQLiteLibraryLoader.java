@@ -72,7 +72,7 @@ public class SQLiteLibraryLoader {
   }
 
   private void log(final String message) {
-    org.robolectric.util.Logger.debug(message);
+    org.robolectric.util.Logger.error(message);
   }
 
   @VisibleForTesting
