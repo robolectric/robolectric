@@ -109,6 +109,7 @@ import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.statusbar.IStatusBar;
 import com.android.internal.telephony.ITelephony;
 import com.android.internal.telephony.ITelephonyRegistry;
+import com.android.internal.textservice.ITextServicesManager;
 import com.android.internal.view.IInputMethodManager;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -253,7 +254,8 @@ public class ShadowServiceManager {
     addBinderService(binderServices, Context.WINDOW_SERVICE, IWindowManager.class);
     addBinderService(binderServices, Context.NFC_SERVICE, INfcAdapter.class, BinderType.DEEP_PROXY);
     addBinderService(binderServices, Context.USER_SERVICE, IUserManager.class);
-
+    addBinderService(
+        binderServices, Context.TEXT_SERVICES_MANAGER_SERVICE, ITextServicesManager.class);
     if (RuntimeEnvironment.getApiLevel() >= Q) {
       // use the android-generated 'Default' stub implementation of the IBluetoothManager system
       // service. The advantage of doing this is it can be shadowed to add functionality.

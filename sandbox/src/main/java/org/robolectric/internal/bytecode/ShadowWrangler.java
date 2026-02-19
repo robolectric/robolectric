@@ -119,8 +119,7 @@ public class ShadowWrangler implements ClassHandler {
       Method method =
           pickShadowMethod(clazz, ShadowConstants.STATIC_INITIALIZER_METHOD_NAME, NO_ARGS);
 
-      // if we got back DO_NOTHING_METHOD that means the shadow is {@code callThroughByDefault =
-      // false};
+      // if we got back DO_NOTHING_METHOD that means the shadow has no implementation;
       // for backwards compatibility we'll still perform static initialization though for now.
       if (method == DO_NOTHING_METHOD) {
         method = null;
@@ -229,7 +228,7 @@ public class ShadowWrangler implements ClassHandler {
 
       Method method = findShadowMethod(definingClass, name, paramTypes, shadowInfo, shadowClass);
       if (method == null) {
-        return shadowInfo.callThroughByDefault ? CALL_REAL_CODE : DO_NOTHING_METHOD;
+        return CALL_REAL_CODE;
       } else {
         return method;
       }

@@ -232,19 +232,9 @@ public class ShadowMap {
     }
 
     Builder addShadowClass(
-        String realClassName,
-        String shadowClassName,
-        boolean callThroughByDefault,
-        boolean callNativeMethodsByDefault) {
+        String realClassName, String shadowClassName, boolean callNativeMethodsByDefault) {
       addShadowInfo(
-          new ShadowInfo(
-              realClassName,
-              shadowClassName,
-              callThroughByDefault,
-              callNativeMethodsByDefault,
-              -1,
-              -1,
-              null));
+          new ShadowInfo(realClassName, shadowClassName, callNativeMethodsByDefault, -1, -1, null));
       return this;
     }
 

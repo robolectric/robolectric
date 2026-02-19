@@ -20,7 +20,7 @@ public class InvokeDynamicTest {
   @Config(shadows = {DoNothingShadow.class})
   public void doNothing() {
     DoNothing nothing = new DoNothing();
-    assertThat(nothing.identity(5)).isEqualTo(0);
+    assertThat(nothing.identity(5)).isEqualTo(5);
   }
 
   @Test
@@ -113,6 +113,6 @@ public class InvokeDynamicTest {
     }
   }
 
-  @Implements(value = DoNothing.class, callThroughByDefault = false)
+  @Implements(value = DoNothing.class)
   public static class DoNothingShadow {}
 }

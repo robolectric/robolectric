@@ -39,12 +39,6 @@ public @interface Implements {
    */
   boolean isInAndroidSdk() default true;
 
-  /**
-   * If true, Robolectric will invoke the actual Android code for any method that isn't shadowed.
-   *
-   * @return True to invoke the underlying method.
-   */
-  boolean callThroughByDefault() default true;
 
 
   /** If specified, the shadow class will be applied only for this SDK or greater. */
@@ -61,12 +55,9 @@ public @interface Implements {
   Class<? extends ShadowPicker<?>> shadowPicker() default DefaultShadowPicker.class;
 
   /**
-   * If set to true, Robolectric will invoke the native method variant instead of the no-op variant.
-   * This requires the native method to be bound, or an {@link UnsatisfiedLinkError} will occur.
-   *
-   * <p>This method has precedence over {@link Implements#callThroughByDefault()}. For instance, if
-   * both this method and {@link Implements#callThroughByDefault()} are true, the native method
-   * variant will be preferred over the no-op native variant.
+   * This method has precedence over the default behavior of calling through to real code. For
+   * instance, if this method is true, the native method variant will be preferred over the no-op
+   * native variant.
    */
   boolean callNativeMethodsByDefault() default false;
 
