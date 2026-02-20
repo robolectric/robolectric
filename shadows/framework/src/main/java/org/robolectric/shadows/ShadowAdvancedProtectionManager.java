@@ -20,7 +20,7 @@ import org.robolectric.annotation.Implements;
 /** Shadow for the AdvancedProtectionManager framework class. */
 @Implements(value = AdvancedProtectionManager.class, minSdk = BAKLAVA, isInAndroidSdk = false)
 public class ShadowAdvancedProtectionManager {
-  private final Object lock = new Object();
+  protected final Object lock = new Object();
 
   @GuardedBy("lock")
   private boolean isAdvancedProtectionEnabled = false;
@@ -30,7 +30,7 @@ public class ShadowAdvancedProtectionManager {
       new HashMap<>();
 
   @GuardedBy("lock")
-  private final List<AdvancedProtectionFeature> features = new ArrayList<>();
+  protected final List<AdvancedProtectionFeature> features = new ArrayList<>();
 
   @Implementation
   protected void registerAdvancedProtectionCallback(
@@ -83,7 +83,7 @@ public class ShadowAdvancedProtectionManager {
   @Implementation
   protected List<AdvancedProtectionFeature> getAdvancedProtectionFeatures() {
     synchronized (lock) {
-      return features;
+      return new ArrayList<>(features);
     }
   }
 
@@ -96,6 +96,7 @@ public class ShadowAdvancedProtectionManager {
       features.addAll(availableFeatures);
     }
   }
+
 
   // Invoke all the callbacks that were registered, using the executors they registered with.
   public void triggerListeners(

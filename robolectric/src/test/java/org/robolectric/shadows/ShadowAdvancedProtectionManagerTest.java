@@ -132,6 +132,26 @@ public class ShadowAdvancedProtectionManagerTest {
     assertThat(features3).isEmpty();
   }
 
+  @Test
+  public void getAdvancedProtectionFeatures_returnsCopy() {
+    AdvancedProtectionManager advancedProtectionManager = getManager();
+    ShadowAdvancedProtectionManager shadow = Shadow.extract(advancedProtectionManager);
+
+    List<AdvancedProtectionFeature> features =
+        Arrays.asList(
+            new AdvancedProtectionFeature(
+                AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G));
+    shadow.setAdvancedProtectionFeatures(features);
+
+    List<AdvancedProtectionFeature> features1 =
+        advancedProtectionManager.getAdvancedProtectionFeatures();
+    List<AdvancedProtectionFeature> features2 =
+        advancedProtectionManager.getAdvancedProtectionFeatures();
+
+    assertThat(features1).isNotSameInstanceAs(features2);
+    assertThat(features1).isEqualTo(features2);
+  }
+
   private AdvancedProtectionManager getManager() {
     return (AdvancedProtectionManager)
         getApplicationContext().getSystemService(Context.ADVANCED_PROTECTION_SERVICE);
