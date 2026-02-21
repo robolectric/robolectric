@@ -2,7 +2,8 @@
 <!--
   Manifest for ATSL integration tests
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" >
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
@@ -37,11 +38,14 @@
             android:exported="true"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity android:name="org.robolectric.integrationtests.axt.ActivityTestRuleTest$TranscriptActivity"
-            android:exported="true" />
+            android:exported="true"
+            tools:ignore="MissingClass" />
         <activity android:name="org.robolectric.integrationtests.axt.IntentsTest$ResultCapturingActivity"
-            android:exported="true" />
+            android:exported="true"
+            tools:ignore="MissingClass" />
         <activity android:name="org.robolectric.integrationtests.axt.IntentsTest$DummyActivity"
-            android:exported="true" />
+            android:exported="true"
+            tools:ignore="MissingClass" />
         <activity android:name="org.robolectric.integrationtests.axt.ActivityWithSwitchCompat"
             android:exported="true"
             android:theme="@style/Theme.AppCompat" />
