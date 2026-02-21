@@ -32,6 +32,10 @@ jobs:
         with:
           distribution: 'adopt'
           java-version-file: .github/.java-version
+      
+      - name: Check Android Lint
+        run: |
+          ./gradlew lint --continue
 
       - name: Download google-java-format
         run: |
