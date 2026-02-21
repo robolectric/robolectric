@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="org.robolectric.integrationtests.axt">
 
   <uses-sdk
@@ -10,7 +11,8 @@
   <application>
     <activity
         android:name="org.robolectric.integrationtests.axt.IntentsTest$ResultCapturingActivity"
-        android:exported="true">
+        android:exported="true"
+        tools:ignore="MissingClass">
         </activity>
     <activity
       android:name="org.robolectric.integrationtests.axt.IntentsTest$ActivityWithViewFilter"
