@@ -49,7 +49,7 @@ public class ShadowAbsSpinner extends ShadowAdapterView {
    *       visible.
    * </ol>
    *
-   * <p>Long-term we want to eliminate this broken shadow method, but in the mean time the real
+   * <p>Long-term we want to eliminate this broken shadow method, but in the meantime the real
    * scrolling behavior is only enabled if a system property is set, due to tests depending on the
    * broken behavior.
    */

@@ -2195,7 +2195,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     // Note that this ignores the UserHandle parameter
     synchronized (lock) {
       if (!packageInfos.containsKey(packageName)) {
-        // Match Android behaviour of returning true if package isn't found
+        // Match Android behavior of returning true if package isn't found
         return true;
       }
       return hiddenPackages.contains(packageName);
