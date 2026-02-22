@@ -208,7 +208,7 @@ public class ShadowActivityThread {
   /**
    * internal, do not use
    *
-   * @param androidConfiguration
+   * @param androidConfiguration Android Configuration to be set.
    */
   public void setCompatConfiguration(Configuration androidConfiguration) {
     if (RuntimeEnvironment.getApiLevel() >= S) {

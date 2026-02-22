@@ -31,15 +31,12 @@ public final class InstrumentationTest {
     mainHandler.post(() -> events.add("before runOnMainSync"));
     getInstrumentation()
         .runOnMainSync(
-            new Runnable() {
-              @Override
-              public void run() {
-                events.add("in runOnMainSync");
-                // as expected, on device tests become flaky and fail deterministically on
-                // Robolectric with this line, as runOnMainSync does not drain the main looper
-                // after runnable executes
-                // mainHandler.post(() -> events.add("post from runOnMainSync"));
-              }
+            () -> {
+              events.add("in runOnMainSync");
+              // as expected, on device tests become flaky and fail deterministically on
+              // Robolectric with this line, as runOnMainSync does not drain the main looper
+              // after runnable executes
+              // mainHandler.post(() -> events.add("post from runOnMainSync"));
             });
 
     assertThat(events).containsExactly("before runOnMainSync", "in runOnMainSync").inOrder();
