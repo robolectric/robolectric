@@ -96,7 +96,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * Sets whether or not calls to unbindService should call onServiceDisconnected().
+   * Sets whether calls to unbindService should call onServiceDisconnected().
    *
    * <p>The default for this is currently {@code true} because that is the historical behavior.
    * However, this does not correctly mirror Android's actual behavior. This value will eventually

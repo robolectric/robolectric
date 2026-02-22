@@ -25,7 +25,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowMessage.MessageReflector;
-import org.robolectric.shadows.ShadowPausedSystemClock.Listener;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -75,28 +74,25 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     long ptr = nativeQueueRegistry.register(this);
     reflector(MessageQueueReflector.class, realQueue).setPtr(ptr);
     clockListener =
-        new Listener() {
-          @Override
-          public void onClockAdvanced(Duration advancedBy) {
-            synchronized (poller) {
-              if (isPolling) {
-                pollTimeout -= advancedBy.toMillis();
-                // only wake up the Looper thread if needed to reduce contention if many
-                // Looper threads are active
-                if (pollTimeout <= 0) {
-                  nativeWake(ptr);
-                }
-              } else {
-                // There can be a race condition between the clock advances and a new delayed
-                // message getting posted.
-                // To protect against this, ensure the next call to nativePollOnce does not block.
-                // In the worst case this will just result in an extra no-op loopOnce for the Looper
-                // thread
-                pendingWake = true;
+        advancedBy -> {
+          synchronized (poller) {
+            if (isPolling) {
+              pollTimeout -= advancedBy.toMillis();
+              // only wake up the Looper thread if needed to reduce contention if many
+              // Looper threads are active
+              if (pollTimeout <= 0) {
+                nativeWake(ptr);
               }
+            } else {
+              // There can be a race condition between the clock advances and a new delayed
+              // message getting posted.
+              // To protect against this, ensure the next call to nativePollOnce does not block.
+              // In the worst case this will just result in an extra no-op loopOnce for the Looper
+              // thread
+              pendingWake = true;
             }
-            updateListener();
           }
+          updateListener();
         };
 
     ShadowPausedSystemClock.addStaticListener(clockListener);

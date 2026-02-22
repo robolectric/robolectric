@@ -17,7 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.MethodRule;
 import org.junit.rules.TestRule;
-import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
@@ -239,39 +238,33 @@ public class TestRunnerSequenceTest {
   public static class SimpleTest {
     @ClassRule
     public static TestRule rule =
-        new TestRule() {
-          @Override
-          public Statement apply(final Statement base, Description description) {
-            add("@ClassRule apply");
-            return new Statement() {
-              @Override
-              public void evaluate() throws Throwable {
-                try {
-                  add("@ClassRule before");
-                  base.evaluate();
-                } finally {
-                  add("@ClassRule after");
-                }
+        (base, description) -> {
+          add("@ClassRule apply");
+          return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+              try {
+                add("@ClassRule before");
+                base.evaluate();
+              } finally {
+                add("@ClassRule after");
               }
-            };
-          }
+            }
+          };
         };
 
     @Rule
     public MethodRule junitRule =
-        new MethodRule() {
-          @Override
-          public Statement apply(final Statement base, FrameworkMethod method, Object target) {
-            add("@Rule apply");
-            return new Statement() {
-              @Override
-              public void evaluate() throws Throwable {
-                add("@Rule before");
-                base.evaluate();
-                add("@Rule after");
-              }
-            };
-          }
+        (base, method, target) -> {
+          add("@Rule apply");
+          return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+              add("@Rule before");
+              base.evaluate();
+              add("@Rule after");
+            }
+          };
         };
 
     @BeforeClass
