@@ -54,6 +54,8 @@ public class ShadowBluetoothGatt {
   private int rssi = -50;
   private int txPhy = BluetoothDevice.PHY_LE_1M;
   private int rxPhy = BluetoothDevice.PHY_LE_1M;
+  private boolean beginReliableWriteResult = true;
+  private boolean requestConnectionPriorityResult = true;
 
   // TODO: ShadowBluetoothGatt.services should be removed in favor of just using the real
   // BluetoothGatt.mServices.
@@ -180,6 +182,11 @@ public class ShadowBluetoothGatt {
     this.isConnected = false;
   }
 
+  /** Sets the return value for {@link BluetoothGatt#requestConnectionPriority(int)}. */
+  public void setRequestConnectionPriorityResult(boolean requestConnectionPriorityResult) {
+    this.requestConnectionPriorityResult = requestConnectionPriorityResult;
+  }
+
   /**
    * Request a connection parameter update.
    *
@@ -191,6 +198,9 @@ public class ShadowBluetoothGatt {
    */
   @Implementation(minSdk = O)
   protected boolean requestConnectionPriority(int priority) {
+    if (!requestConnectionPriorityResult) {
+      return false;
+    }
     if (priority == BluetoothGatt.CONNECTION_PRIORITY_HIGH
         || priority == BluetoothGatt.CONNECTION_PRIORITY_BALANCED
         || priority == BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER) {
@@ -364,9 +374,13 @@ public class ShadowBluetoothGatt {
     return true;
   }
 
+  public void setBeginReliableWriteResult(boolean beginReliableWriteResult) {
+    this.beginReliableWriteResult = beginReliableWriteResult;
+  }
+
   @Implementation(minSdk = O)
   protected boolean beginReliableWrite() {
-    return true;
+    return beginReliableWriteResult;
   }
 
   @Implementation(minSdk = O)

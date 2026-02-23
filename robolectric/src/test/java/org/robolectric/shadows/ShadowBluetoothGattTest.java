@@ -334,6 +334,14 @@ public class ShadowBluetoothGattTest {
 
   @Test
   @Config(minSdk = O)
+  public void requestConnectionPriority_returnsFalse_whenSetToFail() {
+    shadowOf(bluetoothGatt).setRequestConnectionPriorityResult(false);
+    assertThat(bluetoothGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH))
+        .isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
   public void requestMtu_failsBeforeCallbackSet() {
     assertThat(bluetoothGatt.requestMtu(1)).isFalse();
   }
@@ -1189,6 +1197,13 @@ public class ShadowBluetoothGattTest {
   @Config(minSdk = O)
   public void beginReliableWrite_success() {
     assertThat(bluetoothGatt.beginReliableWrite()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void beginReliableWrite_returnsFalse_whenSetToFail() {
+    shadowOf(bluetoothGatt).setBeginReliableWriteResult(false);
+    assertThat(bluetoothGatt.beginReliableWrite()).isFalse();
   }
 
   @Test
