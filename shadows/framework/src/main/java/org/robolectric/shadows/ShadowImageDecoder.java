@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.content.res.AssetManager;
 import android.content.res.AssetManager.AssetInputStream;
@@ -378,7 +380,7 @@ public class ShadowImageDecoder {
         desiredColorSpace);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = BAKLAVA)
   protected static Bitmap nDecodeBitmap(
       long nativePtr,
       ImageDecoder decoder,
@@ -393,6 +395,38 @@ public class ShadowImageDecoder {
       boolean decodeAsAlphaMask,
       long desiredColorSpace,
       boolean extended)
+      throws IOException {
+    return ImageDecoder_nDecodeBitmap(
+        nativePtr,
+        decoder,
+        doPostProcess,
+        width,
+        height,
+        cropRect,
+        mutable,
+        allocator,
+        unpremulRequired,
+        conserveMemory,
+        decodeAsAlphaMask,
+        null);
+  }
+
+  @Implementation(minSdk = POST_BAKLAVA)
+  protected static Bitmap nDecodeBitmap(
+      long nativePtr,
+      ImageDecoder decoder,
+      boolean doPostProcess,
+      int width,
+      int height,
+      Rect cropRect,
+      boolean mutable,
+      int allocator,
+      boolean unpremulRequired,
+      boolean conserveMemory,
+      boolean decodeAsAlphaMask,
+      long desiredColorSpace,
+      boolean extended,
+      long allocationLimit)
       throws IOException {
     return ImageDecoder_nDecodeBitmap(
         nativePtr,
