@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+  compileOnly(libs.guava)
   compileOnly(libs.findbugs.jsr305)
   compileOnly(libs.javax.annotation.api)
   compileOnly(AndroidSdk.MAX_SDK.coordinates)
