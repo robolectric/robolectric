@@ -328,6 +328,21 @@ public class ShadowContextImplTest {
 
   @Test
   @Config(minSdk = TIRAMISU)
+  public void sendBroadcastAsUserWithBundle_sendBroadcast() {
+    UserHandle userHandle = Process.myUserHandle();
+    String action = "foo-action";
+    Bundle options = new Bundle();
+    Intent intent = new Intent(action);
+    context.sendBroadcastAsUser(intent, userHandle, null, options);
+
+    assertThat(shadowOf(context).getBroadcastIntents().get(0).getAction()).isEqualTo(action);
+    assertThat(shadowOf(context).getBroadcastIntentsForUser(userHandle).get(0).getAction())
+        .isEqualTo(action);
+    assertThat(shadowOf(context).getBroadcastOptions(intent)).isEqualTo(options);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
   public void sendBroadcastWithBundle_sendBroadcast() {
     String action = "foo-action";
     Bundle options = new Bundle();

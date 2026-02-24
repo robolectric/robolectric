@@ -194,6 +194,18 @@ public class ShadowContextImpl {
         .sendBroadcastWithPermission(intent, user, receiverPermission, realContextImpl);
   }
 
+  @Implementation(minSdk = TIRAMISU)
+  @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
+  protected void sendBroadcastAsUser(
+      @RequiresPermission Intent intent,
+      UserHandle user,
+      @Nullable String receiverPermission,
+      @Nullable Bundle options) {
+    getShadowInstrumentation()
+        .sendBroadcastWithPermission(
+            intent, user, receiverPermission, realContextImpl, options, /* resultCode= */ 0);
+  }
+
   @Implementation
   protected void sendOrderedBroadcast(Intent intent, String receiverPermission) {
     getShadowInstrumentation()
