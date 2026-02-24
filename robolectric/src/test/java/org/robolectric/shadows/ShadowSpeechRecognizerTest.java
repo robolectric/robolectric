@@ -119,6 +119,33 @@ public class ShadowSpeechRecognizerTest {
     assertThat(listener.rmsDbReceived).isEqualTo(1.0f);
   }
 
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void onSegmentResultsCalled() {
+    startListening();
+    Bundle expectedBundle = new Bundle();
+    ArrayList<String> results = new ArrayList<>();
+    String result = "onSegmentResult";
+    results.add(result);
+    expectedBundle.putStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION, results);
+
+    shadowOf(speechRecognizer).triggerOnSegmentResults(expectedBundle);
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(listener.bundleReceived).isEqualTo(expectedBundle);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void onEndOfSegmentedSessionCalled() {
+    startListening();
+
+    shadowOf(speechRecognizer).triggerOnEndOfSegmentedSession();
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(listener.endOfSegmentedSessionCalled).isTrue();
+  }
+
   @Test
   public void startAndStopListening() {
     startListening();
@@ -204,6 +231,7 @@ public class ShadowSpeechRecognizerTest {
     Bundle bundleReceived;
     float rmsDbReceived;
     boolean endofSpeechCalled = false;
+    boolean endOfSegmentedSessionCalled = false;
 
     @Override
     public void onBeginningOfSpeech() {}
@@ -242,6 +270,16 @@ public class ShadowSpeechRecognizerTest {
     @Override
     public void onRmsChanged(float rmsdB) {
       rmsDbReceived = rmsdB;
+    }
+
+    @Override
+    public void onSegmentResults(Bundle bundle) {
+      bundleReceived = bundle;
+    }
+
+    @Override
+    public void onEndOfSegmentedSession() {
+      endOfSegmentedSessionCalled = true;
     }
   }
 

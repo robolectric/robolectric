@@ -184,6 +184,16 @@ public class ShadowSpeechRecognizer {
   }
 
   @RequiresApi(api = VERSION_CODES.TIRAMISU)
+  public void triggerOnSegmentResults(Bundle bundle) {
+    getState().recognitionListener.onSegmentResults(bundle);
+  }
+
+  @RequiresApi(api = VERSION_CODES.TIRAMISU)
+  public void triggerOnEndOfSegmentedSession() {
+    getState().recognitionListener.onEndOfSegmentedSession();
+  }
+
+  @RequiresApi(api = VERSION_CODES.TIRAMISU)
   @Implementation(minSdk = VERSION_CODES.TIRAMISU, maxSdk = UPSIDE_DOWN_CAKE)
   protected void checkRecognitionSupport(
       @Nonnull Intent recognizerIntent,
