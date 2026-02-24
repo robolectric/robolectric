@@ -31,7 +31,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.Function;
 import org.robolectric.util.PerfStatsCollector;
 
 /**
@@ -51,21 +50,7 @@ import org.robolectric.util.PerfStatsCollector;
 @AutoService(ClassHandler.class)
 @Priority(Integer.MIN_VALUE)
 public class ShadowWrangler implements ClassHandler {
-  public static final Function<Object, Object> DO_NOTHING_HANDLER =
-      (theClass, value, params) -> null;
   public static final Method CALL_REAL_CODE = null;
-  public static final MethodHandle DO_NOTHING =
-      constant(Void.class, null).asType(methodType(void.class));
-  public static final Method DO_NOTHING_METHOD;
-
-  static {
-    try {
-      DO_NOTHING_METHOD = ShadowWrangler.class.getDeclaredMethod("doNothing");
-      DO_NOTHING_METHOD.setAccessible(true);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
@@ -121,12 +106,6 @@ public class ShadowWrangler implements ClassHandler {
     try {
       Method method =
           pickShadowMethod(clazz, ShadowConstants.STATIC_INITIALIZER_METHOD_NAME, NO_ARGS);
-
-      // if we got back DO_NOTHING_METHOD that means the shadow has no implementation;
-      // for backwards compatibility we'll still perform static initialization though for now.
-      if (method == DO_NOTHING_METHOD) {
-        method = null;
-      }
 
       if (method != null) {
         if (!Modifier.isStatic(method.getModifiers())) {
@@ -186,8 +165,6 @@ public class ShadowWrangler implements ClassHandler {
                   }
                 }
                 return null;
-              } else if (shadowMethod.equals(DO_NOTHING_METHOD)) {
-                return DO_NOTHING;
               }
 
               if (shadowMethod.isAnnotationPresent(Filter.class)) {
@@ -439,8 +416,7 @@ public class ShadowWrangler implements ClassHandler {
         if (implementation == null) {
           continue;
         }
-        String mappedMethodName = implementation.methodName();
-        mappedMethodName = mappedMethodName == null ? "" : mappedMethodName.trim();
+        String mappedMethodName = implementation.methodName().trim();
         if (mappedMethodName.isEmpty() || !mappedMethodName.equals(methodName)) {
           continue;
         }
@@ -468,8 +444,7 @@ public class ShadowWrangler implements ClassHandler {
       return false;
     }
 
-    String filterMethodName = filter.methodName();
-    filterMethodName = filterMethodName == null ? "" : filterMethodName.trim();
+    String filterMethodName = filter.methodName().trim();
     if (filterMethodName.isEmpty()) {
       filterMethodName = method.getName();
     }

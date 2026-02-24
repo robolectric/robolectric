@@ -35,16 +35,6 @@ public class ShadowWranglerUnitTest {
   }
 
   @Test
-  public void
-      getInterceptionHandler_whenInterceptingElderOnLinkedHashMap_shouldReturnNonDoNothingHandler() {
-    MethodSignature methodSignature =
-        MethodSignature.parse("java/util/LinkedHashMap/eldest()Ljava/lang/Object;");
-    Function<Object, Object> handler = interceptors.getInterceptionHandler(methodSignature);
-
-    assertThat(handler).isNotSameInstanceAs(ShadowWrangler.DO_NOTHING_HANDLER);
-  }
-
-  @Test
   public void intercept_elderOnLinkedHashMapHandler_shouldReturnEldestMemberOfLinkedHashMap()
       throws Throwable {
     LinkedHashMap<Integer, String> map = new LinkedHashMap<>(2);

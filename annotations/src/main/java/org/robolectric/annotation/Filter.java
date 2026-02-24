@@ -6,7 +6,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Indicates that a method declaration is intended to be called after the original method with the
@@ -28,8 +27,8 @@ public @interface Filter {
   /**
    * The filtered method name.
    *
-   * @return The expected filtered method name. If it is empty/null, the Robolectric will use the
-   *     method's name that is marked by @Filter as the filtered method name.
+   * @return The expected filtered method name. If it is empty, the Robolectric will use the method
+   *     name that is marked by @Filter.
    */
-  @Nullable String methodName() default "";
+  String methodName() default "";
 }
