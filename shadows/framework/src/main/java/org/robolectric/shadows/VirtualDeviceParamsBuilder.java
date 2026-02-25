@@ -15,12 +15,24 @@ public class VirtualDeviceParamsBuilder {
 
   private final VirtualDeviceParams.Builder builder = new VirtualDeviceParams.Builder();
 
+  /**
+   * Deprecated constructor.
+   *
+   * @deprecated Use {@link #newBuilder()} instead.
+   */
+  @Deprecated
+  public VirtualDeviceParamsBuilder() {}
+
+  public static VirtualDeviceParamsBuilder newBuilder() {
+    return new VirtualDeviceParamsBuilder();
+  }
+
   public VirtualDeviceParamsBuilder setName(String name) {
     builder.setName(name);
     return this;
   }
 
-  public VirtualDeviceParams build() {
+  public /* VirtualDeviceParams */ Object build() {
     return builder.build();
   }
 }

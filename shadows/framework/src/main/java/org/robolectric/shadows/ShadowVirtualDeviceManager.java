@@ -71,9 +71,10 @@ public class ShadowVirtualDeviceManager {
 
   @SuppressWarnings("ProtectedImplementationLintCheck")
   @Implementation
-  public VirtualDeviceManager.VirtualDevice createVirtualDevice(
-      int associationId,
-      @ClassName("android.companion.virtual.VirtualDeviceParams") Object params) {
+  public @ClassName("android.companion.virtual.VirtualDeviceManager$VirtualDevice") Object
+      createVirtualDevice(
+          int associationId,
+          @ClassName("android.companion.virtual.VirtualDeviceParams") Object params) {
     VirtualDeviceManager.VirtualDevice device =
         ReflectionHelpers.callConstructor(
             VirtualDeviceManager.VirtualDevice.class,
@@ -116,7 +117,7 @@ public class ShadowVirtualDeviceManager {
                     reflector(DeviceManagerVirtualDeviceReflector.class, virtualDevice);
                 return accessor.newInstanceV(
                     ReflectionHelpers.createDelegatingProxy(
-                        IVirtualDevice.class, (VirtualDeviceDelagate) () -> displayIds),
+                        IVirtualDevice.class, (VirtualDeviceDelegate) () -> displayIds),
                     virtualDevice.getDeviceId(),
                     virtualDeviceReflector.getPersistentDeviceId(),
                     deviceName);
@@ -514,7 +515,7 @@ public class ShadowVirtualDeviceManager {
     void onVirtualDeviceClosed(int deviceId);
   }
 
-  private interface VirtualDeviceDelagate {
+  private interface VirtualDeviceDelegate {
     int[] getDisplayIds();
   }
 }
