@@ -81,6 +81,11 @@ public class ShadowSurfaceControl {
     return nativeObject.incrementAndGet();
   }
 
+  @Implementation
+  protected static long nativeCopyFromSurfaceControl(long origNativePtr) {
+    return nativeObject.incrementAndGet();
+  }
+
   void initializeNativeObject() {
     surfaceControlReflector.setNativeObject(nativeObject.incrementAndGet());
     if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.view.SurfaceControl;
@@ -73,5 +74,20 @@ public class ShadowSurfaceControlTest {
         new SurfaceControl.Builder(new SurfaceSession()).setName("surface_control_name").build();
 
     assertThat(surfaceControl.isValid()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void copyFrom_isValid() {
+    SurfaceControl surfaceControl =
+        new SurfaceControl.Builder(new SurfaceSession()).setName("surface_control_name").build();
+
+    assertThat(surfaceControl.isValid()).isTrue();
+
+    SurfaceControl newSurfaceControl = new SurfaceControl();
+    assertThat(newSurfaceControl.isValid()).isFalse();
+
+    newSurfaceControl.copyFrom(surfaceControl, "copyFrom_isValid");
+    assertThat(newSurfaceControl.isValid()).isTrue();
   }
 }
