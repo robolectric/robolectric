@@ -42,6 +42,7 @@ include(
   ":integration_tests:sdkcompat",
   ":integration_tests:securityproviders",
   ":integration_tests:sparsearray",
+  ":integration_tests:split-apk",
   ":integration_tests:testparameterinjector",
   ":integration_tests:versioning",
   ":junit",
