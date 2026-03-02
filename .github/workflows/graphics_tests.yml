@@ -56,7 +56,7 @@ jobs:
           "-Dorg.gradle.workers.max=2"
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test_results_${{ matrix.device }}
