@@ -54,4 +54,16 @@ public class PreciseDataConnectionStateBuilderTest {
     assertThat(state.getLastCauseCode()).isEqualTo(DataFailCause.IMEI_NOT_ACCEPTED);
     assertThat(state.getApnSetting()).isNull();
   }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.VANILLA_ICE_CREAM)
+  public void build_withNetworkValidationStatusSdk35() {
+    PreciseDataConnectionState state =
+        PreciseDataConnectionStateBuilder.newBuilder()
+            .setNetworkValidationStatus(PreciseDataConnectionState.NETWORK_VALIDATION_SUCCESS)
+            .build();
+
+    assertThat(state.getNetworkValidationStatus())
+        .isEqualTo(PreciseDataConnectionState.NETWORK_VALIDATION_SUCCESS);
+  }
 }
