@@ -11,6 +11,8 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageInstaller.SessionInfo;
 import android.content.pm.PackageManager;
@@ -313,11 +315,64 @@ public class ShadowPackageInstaller {
     PackageInstaller.Session session = sessions.get(sessionId);
     ShadowSession shadowSession = Shadow.extract(session);
     if (success) {
+      installCommittedSession(sessionId, shadowSession);
       try {
         shadowSession.statusReceiver.sendIntent(
             RuntimeEnvironment.getApplication(), 0, null, null, null, null);
       } catch (SendIntentException e) {
         throw new RuntimeException(e);
+      }
+    }
+  }
+
+  /**
+   * When a session succeeds, automatically installs the written APKs into {@link
+   * ShadowPackageManager}. The base APK (base.apk / base-master.apk) is used to establish the
+   * package; all other written APKs are registered as split names (with the ".apk" suffix
+   * stripped).
+   */
+  private void installCommittedSession(int sessionId, ShadowSession shadowSession) {
+    PackageInstaller.SessionInfo info = sessionInfos.get(sessionId);
+    if (info == null || info.appPackageName == null) {
+      return;
+    }
+
+    List<String> writtenApkNames = shadowSession.getWrittenSplitNames();
+    if (writtenApkNames.isEmpty()) {
+      return;
+    }
+
+    String packageName = info.appPackageName;
+
+    List<String> splitNameList = new ArrayList<>();
+    for (String apkName : writtenApkNames) {
+      if (apkName.equals("base.apk") || apkName.equals("base-master.apk")) {
+        continue;
+      }
+      splitNameList.add(
+          apkName.endsWith(".apk") ? apkName.substring(0, apkName.length() - 4) : apkName);
+    }
+    String[] splitNames = splitNameList.toArray(new String[0]);
+
+    android.content.pm.PackageManager pm = RuntimeEnvironment.getApplication().getPackageManager();
+    ShadowPackageManager shadowPM = (ShadowPackageManager) Shadow.extract(pm);
+    PackageInfo existing = shadowPM.getInternalMutablePackageInfo(packageName);
+
+    if (existing == null) {
+      PackageInfo newPkg = new PackageInfo();
+      newPkg.packageName = packageName;
+      newPkg.applicationInfo = new ApplicationInfo();
+      newPkg.applicationInfo.packageName = packageName;
+      if (splitNames.length > 0 && RuntimeEnvironment.getApiLevel() >= O) {
+        shadowPM.installPackageWithSplits(newPkg, splitNames);
+      } else {
+        shadowPM.installPackage(newPkg);
+      }
+    } else if (splitNames.length > 0 && RuntimeEnvironment.getApiLevel() >= O) {
+      for (String splitName : splitNames) {
+        String splitApkPath =
+            ShadowPackageManager.createSplitApkWithAssets(splitName, new HashMap<>());
+        shadowPM.addSplitToInstalledPackage(packageName, splitName, splitApkPath);
       }
     }
   }
@@ -328,11 +383,13 @@ public class ShadowPackageInstaller {
 
     private OutputStream outputStream;
     private boolean outputStreamOpen;
+    private boolean committed = false;
     private IntentSender statusReceiver;
     private IntentSender preapprovalStatusReceiver;
     private int sessionId;
     private ShadowPackageInstaller shadowPackageInstaller;
     private PersistableBundle appMetadata = new PersistableBundle();
+    private final List<String> writtenSplitNames = new ArrayList<>();
 
     @Implementation(minSdk = UPSIDE_DOWN_CAKE)
     protected void requestUserPreapproval(
@@ -357,6 +414,10 @@ public class ShadowPackageInstaller {
     @Nonnull
     protected OutputStream openWrite(@Nonnull String name, long offsetBytes, long lengthBytes)
         throws IOException {
+      // Track the name of the written APK.
+      if (name != null && !name.isEmpty()) {
+        writtenSplitNames.add(name);
+      }
       outputStream =
           new OutputStream() {
             @Override
@@ -380,8 +441,13 @@ public class ShadowPackageInstaller {
       if (outputStreamOpen) {
         throw new SecurityException("OutputStream still open");
       }
-
+      this.committed = true;
       shadowPackageInstaller.setSessionSucceeds(sessionId);
+    }
+
+    /** Returns {@code true} if {@link #commit} has been called on this session. */
+    public boolean isCommitted() {
+      return committed;
     }
 
     @Implementation
@@ -390,6 +456,14 @@ public class ShadowPackageInstaller {
     @Implementation
     protected void abandon() {
       shadowPackageInstaller.abandonSession(sessionId);
+    }
+
+    /**
+     * Returns the list of split names that were written to this session via {@link
+     * #openWrite(String, long, long)}.
+     */
+    public List<String> getWrittenSplitNames() {
+      return ImmutableList.copyOf(writtenSplitNames);
     }
 
     private void setShadowPackageInstaller(

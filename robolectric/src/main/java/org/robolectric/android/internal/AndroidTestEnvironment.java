@@ -655,6 +655,10 @@ public class AndroidTestEnvironment implements TestEnvironment {
       applicationInfo.credentialProtectedDataDir = createTempDir("userDataDir");
       applicationInfo.deviceProtectedDataDir = createTempDir("deviceDataDir");
     }
+
+    // Set up split APK storage if the parsed package has split names.
+    // Delegates to ShadowPackageManager.setUpSplitApkStorage to avoid duplication.
+    ShadowPackageManager.setUpSplitApkStorage(applicationInfo);
   }
 
   private String createTempDir(String name) {
