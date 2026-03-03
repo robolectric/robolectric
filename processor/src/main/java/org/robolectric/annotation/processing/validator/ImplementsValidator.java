@@ -26,6 +26,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.processing.DocumentedMethod;
 import org.robolectric.annotation.processing.Helpers;
@@ -255,9 +256,12 @@ public class ImplementsValidator extends Validator {
       if (methodName.equals(CONSTRUCTOR_METHOD_NAME)
           || methodName.equals(STATIC_INITIALIZER_METHOD_NAME)) {
         Implementation implementation = memberElement.getAnnotation(Implementation.class);
-        if (implementation == null) {
+        Filter filter = memberElement.getAnnotation(Filter.class);
+        if (implementation == null && filter == null) {
           messager.printMessage(
-              Kind.ERROR, "Shadow methods must be annotated @Implementation", methodElement);
+              Kind.ERROR,
+              "Shadow methods must be annotated @Implementation or @Filter",
+              methodElement);
         }
       }
     }
@@ -306,7 +310,8 @@ public class ImplementsValidator extends Validator {
     }
 
     Implementation implementation = methodElement.getAnnotation(Implementation.class);
-    if (implementation == null) {
+    Filter filter = methodElement.getAnnotation(Filter.class);
+    if (implementation == null && filter == null) {
       Kind kind = sdkCheckMode == SdkCheckMode.WARN ? Kind.WARNING : Kind.ERROR;
       Problems problems = new Problems(kind);
 
