@@ -366,10 +366,6 @@ public class ShadowWrangler implements ClassHandler {
     Method foundMethod = null;
     Method[] methods = shadowClass.getDeclaredMethods();
     for (Method method : methods) {
-      if (!method.getName().equals(methodName)) {
-        continue;
-      }
-
       if (!Modifier.isPublic(method.getModifiers())
           && !Modifier.isProtected(method.getModifiers())) {
         continue;
@@ -379,12 +375,30 @@ public class ShadowWrangler implements ClassHandler {
         continue;
       }
 
-      if (method.isAnnotationPresent(Implementation.class)
-          && method.isAnnotationPresent(Filter.class)) {
+      Filter filter = method.getAnnotation(Filter.class);
+      Implementation implementation = method.getAnnotation(Implementation.class);
+
+      if (filter != null && implementation != null) {
         throw new IllegalStateException(
             "Method "
                 + method.getName()
                 + " cannot be annotated with both @Implementation and @Filter");
+      }
+
+      boolean nameMatches = method.getName().equals(methodName);
+
+      if (!nameMatches && filter != null) {
+        String mappedMethodName = filter.methodName().trim();
+        nameMatches = !mappedMethodName.isEmpty() && mappedMethodName.equals(methodName);
+      }
+
+      if (!nameMatches && implementation != null) {
+        String mappedMethodName = implementation.methodName().trim();
+        nameMatches = !mappedMethodName.isEmpty() && mappedMethodName.equals(methodName);
+      }
+
+      if (!nameMatches) {
+        continue;
       }
 
       if (Arrays.equals(method.getParameterTypes(), paramClasses)) {
@@ -400,64 +414,12 @@ public class ShadowWrangler implements ClassHandler {
       }
     }
 
-    if (foundMethod == null) {
-      for (Method method : methods) {
-        if (isFilterMatch(method, methodName, paramClasses)) {
-          foundMethod = method;
-          break;
-        }
-      }
-    }
-
-    if (foundMethod == null) {
-      // Try to find shadow method with Implementation#methodName's mapping name
-      for (Method method : methods) {
-        Implementation implementation = method.getAnnotation(Implementation.class);
-        if (implementation == null) {
-          continue;
-        }
-        String mappedMethodName = implementation.methodName().trim();
-        if (mappedMethodName.isEmpty() || !mappedMethodName.equals(methodName)) {
-          continue;
-        }
-        if (!shadowMatcher.matches(method)) {
-          continue;
-        }
-        if (parametersMatch(method.getParameters(), paramClasses)) {
-          foundMethod = method;
-          break;
-        }
-      }
-    }
-
     if (foundMethod != null) {
       foundMethod.setAccessible(true);
       return foundMethod;
     } else {
       return null;
     }
-  }
-
-  private boolean isFilterMatch(Method method, String methodName, Class<?>[] paramClasses) {
-    Filter filter = method.getAnnotation(Filter.class);
-    if (filter == null) {
-      return false;
-    }
-
-    String filterMethodName = filter.methodName().trim();
-    if (filterMethodName.isEmpty()) {
-      filterMethodName = method.getName();
-    }
-
-    if (!filterMethodName.equals(methodName)) {
-      return false;
-    }
-
-    if (!shadowMatcher.matches(method)) {
-      return false;
-    }
-
-    return parametersMatch(method.getParameters(), paramClasses);
   }
 
   private boolean parametersMatch(Parameter[] params, Class<?>[] expectedTypes) {
