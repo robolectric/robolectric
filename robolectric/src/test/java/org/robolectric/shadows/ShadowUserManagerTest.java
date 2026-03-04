@@ -303,6 +303,16 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void isAdminUser_withSetter() {
+    shadowOf(userManager).setIsAdminUser(false);
+    assertThat(userManager.isAdminUser()).isFalse();
+
+    shadowOf(userManager).setIsAdminUser(true);
+    assertThat(userManager.isAdminUser()).isTrue();
+  }
+
+  @Test
   public void enforcePermissionChecks() {
     shadowOf(userManager).enforcePermissionChecks(true);
 

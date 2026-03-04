@@ -843,6 +843,19 @@ public class ShadowUserManager {
   }
 
   /**
+   * Sets that the current user is an admin user; controls the return value of {@link
+   * UserManager#isAdminUser()}.
+   */
+  public void setIsAdminUser(boolean isAdminUser) {
+    UserInfo userInfo = getUserInfo(UserHandle.myUserId());
+    if (isAdminUser) {
+      userInfo.flags |= UserInfo.FLAG_ADMIN;
+    } else {
+      userInfo.flags &= ~UserInfo.FLAG_ADMIN;
+    }
+  }
+
+  /**
    * Sets that the current user is the guest user; controls the return value of {@link
    * UserManager#isGuestUser()}.
    *
