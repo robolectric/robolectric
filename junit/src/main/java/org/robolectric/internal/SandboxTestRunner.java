@@ -5,9 +5,7 @@ import static java.util.Arrays.stream;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,8 +21,6 @@ import java.util.Queue;
 import java.util.WeakHashMap;
 import javax.annotation.Nonnull;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.internal.runners.statements.FailOnTimeout;
 import org.junit.rules.RunRules;
@@ -85,9 +81,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   private final HashMap<Class<?>, HelperTestRunner> helperRunners = new HashMap<>();
   private final WeakHashMap<Sandbox, LinkageError> firstLinkageErrors = new WeakHashMap<>();
 
-  private static final boolean USE_LEGACY_SANDBOX_FLOW =
-      Boolean.getBoolean("robolectric.useLegacySandboxFlow");
-
   public SandboxTestRunner(Class<?> klass) throws InitializationError {
     this(klass, DEFAULT_INJECTOR);
   }
@@ -147,7 +140,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
                     runInSandbox(
                         sandbox,
                         methods.get(0),
-                        /* invokeBeforeClass= */ false,
                         unused -> mapper.map(sandbox, methods)));
           });
     }
@@ -166,19 +158,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   @Override
   protected Statement classBlock(RunNotifier notifier) {
-    if (USE_LEGACY_SANDBOX_FLOW) {
-      return legacyClassBlock(notifier);
-    }
     return sandboxGroupingClassBlock(notifier);
-  }
-
-  private Statement legacyClassBlock(RunNotifier notifier) {
-    Statement statement = childrenInvoker(notifier);
-    statement = withAfterClassesInSandbox(statement);
-    if (hasClassRules(getTestClass().getJavaClass())) {
-      statement = withClassRulesInSandbox(statement);
-    }
-    return statement;
   }
 
   private Statement sandboxGroupingClassBlock(RunNotifier notifier) {
@@ -228,15 +208,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     };
   }
 
-  private static boolean hasClassRules(Class<?> testClass) {
-    for (Field field : testClass.getDeclaredFields()) {
-      if (Modifier.isStatic(field.getModifiers()) && field.isAnnotationPresent(ClassRule.class)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   private Statement withAfterClassesInSandbox(Statement base) {
     return new Statement() {
       @Override
@@ -280,29 +251,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     };
   }
 
-  private Statement withClassRulesInSandbox(Statement statement) {
-    for (FrameworkMethod frameworkMethod : getChildren()) {
-      Sandbox sandbox = getSandbox(frameworkMethod);
-      Class<?> bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
-
-      if (!loadedTestClasses.containsKey(bootstrappedTestClass)) {
-        loadedTestClasses.put(bootstrappedTestClass, sandbox);
-
-        // Configure sandbox *BEFORE* setting the ClassLoader. This is necessary because
-        // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
-        // not available once we install the Robolectric class loader.
-        configureSandbox(sandbox, frameworkMethod);
-
-        HelperTestRunner helperTestRunner = getCachedHelperTestRunner(bootstrappedTestClass);
-        List<TestRule> classRules = helperTestRunner.classRules();
-        for (TestRule classRule : classRules) {
-          statement = applyRuleInSandbox(classRule, sandbox, statement, getDescription());
-        }
-      }
-    }
-    return statement;
-  }
-
   private Statement applyRuleInSandbox(
       TestRule rule, Sandbox sandbox, Statement base, Description description) {
     return new Statement() {
@@ -319,18 +267,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         }
       }
     };
-  }
-
-  private void invokeBeforeClass(final Class<?> clazz) throws Throwable {
-    if (!invokedBeforeClasses.contains(clazz)) {
-      invokedBeforeClasses.add(clazz);
-
-      final TestClass testClass = new TestClass(clazz);
-      final List<FrameworkMethod> befores = testClass.getAnnotatedMethods(BeforeClass.class);
-      for (FrameworkMethod before : befores) {
-        before.invokeExplosively(null);
-      }
-    }
   }
 
   private static void invokeAfterClass(final Class<?> clazz) throws Throwable {
@@ -481,16 +417,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
         // not available once we install the Robolectric class loader.
         configureSandbox(sandbox, method);
-
-        if (USE_LEGACY_SANDBOX_FLOW) {
-          final PerfStatsCollector finalPerfStatsCollector = perfStatsCollector;
-          final Event finalInitialization = initialization;
-          sandbox.runOnMainThread(
-              () ->
-                  executeInSandbox(sandbox, method, finalPerfStatsCollector, finalInitialization));
-        } else {
-          executeInSandbox(sandbox, method, perfStatsCollector, initialization);
-        }
+        executeInSandbox(sandbox, method, perfStatsCollector, initialization);
       }
     };
   }
@@ -500,12 +427,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       final FrameworkMethod method,
       PerfStatsCollector perfStatsCollector,
       Event initialization) {
-    ClassLoader priorContextClassLoader = null;
-    if (USE_LEGACY_SANDBOX_FLOW) {
-      priorContextClassLoader = Thread.currentThread().getContextClassLoader();
-      Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
-    }
-
     Class<?> bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
     HelperTestRunner helperTestRunner = getCachedHelperTestRunner(bootstrappedTestClass);
     helperTestRunner.frameworkMethod = method;
@@ -514,7 +435,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       runInSandbox(
           sandbox,
           method,
-          /* invokeBeforeClass= */ USE_LEGACY_SANDBOX_FLOW,
           bootstrappedMethod -> {
             initialization.finished();
 
@@ -528,9 +448,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
             return null;
           });
     } finally {
-      if (USE_LEGACY_SANDBOX_FLOW) {
-        Thread.currentThread().setContextClassLoader(priorContextClassLoader);
-      }
       reportPerfStats(perfStatsCollector);
       perfStatsCollector.reset();
     }
@@ -543,9 +460,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   private <T> T runInSandbox(
       Sandbox sandbox,
       FrameworkMethod method,
-      boolean invokeBeforeClass,
       SandboxCallable<T> callable) {
-    Class<?> bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
     // The method class may be different than the test class if the method annotated @Test
     // is declared on a superclass of the test.
     Method bootstrappedMethod = getBootstrappedMethod(sandbox, method);
@@ -553,13 +468,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     T result = null;
     Queue<Throwable> thrown = new ArrayDeque<>();
     try {
-      if (invokeBeforeClass) {
-        // Only invoke @BeforeClass once per class
-        invokeBeforeClass(bootstrappedTestClass);
-
-        // When there is no class rules in the test class, loadedTestClasses should be updated here.
-        loadedTestClasses.putIfAbsent(bootstrappedTestClass, sandbox);
-      }
       beforeTest(sandbox, method, bootstrappedMethod);
 
       result = callable.call(bootstrappedMethod);
