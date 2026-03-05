@@ -5,7 +5,6 @@ import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.sandbox.ShadowMatcher;
-import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Android-specific rules for matching shadow classes and methods by SDK level. */
@@ -40,9 +39,6 @@ public class AndroidSdkShadowMatcher implements ShadowMatcher {
       return null;
     }
     Implementation implementation = method.getAnnotation(Implementation.class);
-    if (implementation == null) {
-      Logger.warn("No @Implementation or @Filter annotation on " + method);
-    }
     return implementation == null ? IMPLEMENTATION_DEFAULTS : implementation;
   }
 }
