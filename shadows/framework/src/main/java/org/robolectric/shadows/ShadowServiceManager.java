@@ -16,6 +16,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
+import android.app.IGrammaticalInflectionManager;
 import android.app.ILocaleManager;
 import android.app.INotificationManager;
 import android.app.ISearchManager;
@@ -384,6 +385,10 @@ public class ShadowServiceManager {
       addBinderService(binderServices, Context.CREDENTIAL_SERVICE, ICredentialManager.class);
       addBinderService(
           binderServices, Context.WEARABLE_SENSING_SERVICE, IWearableSensingManager.class);
+      addBinderService(
+          binderServices,
+          Context.GRAMMATICAL_INFLECTION_SERVICE,
+          IGrammaticalInflectionManager.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM) {
       // TODO: replace strings with references once compiling against V
@@ -392,11 +397,6 @@ public class ShadowServiceManager {
           "sensitive_content_protection_service" /* Context.SENSITIVE_CONTENT_PROTECTION_SERVICE */,
           "android.view.ISensitiveContentProtectionManager"
           /*ISensitiveContentProtectionManager.class*/ );
-
-      addBinderService(
-          binderServices,
-          "grammatical_inflection" /* Context.GRAMMATICAL_INFLECTION_SERVICE */,
-          "android.app.IGrammaticalInflectionManager" /* IGrammaticalInflectionManager.class */);
 
       addBinderServiceIfClassExists(
           binderServices,

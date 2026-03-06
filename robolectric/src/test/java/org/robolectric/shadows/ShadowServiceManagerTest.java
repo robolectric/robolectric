@@ -32,6 +32,12 @@ public final class ShadowServiceManagerTest {
   }
 
   @Test
+  @Config(sdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void getGrammaticalInflectionService_notNull() {
+    assertThat(ServiceManager.getService(Context.GRAMMATICAL_INFLECTION_SERVICE)).isNotNull();
+  }
+
+  @Test
   @Config(sdk = VANILLA_ICE_CREAM)
   public void getSensitiveContentProtectionManager_returnsSomething() {
     // TODO: replace with Context.SENSITIVE_CONTENT_PROTECTION_SERVICE once this test compiles
