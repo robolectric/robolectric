@@ -80,4 +80,7 @@
     <attr name="snail" format="reference"/>
     <attr name="altTitle" format="reference|string"/>
   </declare-styleable>
+
+  <attr name="colorReference" format="reference|color" />
+
 </resources>

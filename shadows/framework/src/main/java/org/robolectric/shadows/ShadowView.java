@@ -44,6 +44,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
@@ -166,13 +168,71 @@ public class ShadowView {
     return locationInSurface;
   }
 
-  /* Note: maxSdk is R because capturing `attributeSet` is not needed any more after R. */
-  @Implementation(maxSdk = R)
+  @Implementation
   protected void __constructor__(
       Context context, AttributeSet attributeSet, int defStyleAttr, int defStyleRes) {
-    this.attributeSet = attributeSet;
-    reflector(ViewReflector.class, realView)
-        .__constructor__(context, attributeSet, defStyleAttr, defStyleRes);
+    // Note: capturing `attributeSet` is not needed any more after R.
+    if (RuntimeEnvironment.getApiLevel() <= R) {
+      this.attributeSet = attributeSet;
+    }
+    try {
+      reflector(ViewReflector.class, realView)
+          .__constructor__(context, attributeSet, defStyleAttr, defStyleRes);
+    } catch (RuntimeException e) {
+      maybeAugmentTypedArrayErrors(e);
+      throw e;
+    }
+  }
+
+  private static final Pattern TYPED_ARRAY_ERROR_PATTERN =
+      Pattern.compile(
+          "Failed to resolve attribute at index \\d+: TypedValue\\{t=0x2/d=(0x[0-9a-f]+)");
+
+  /**
+   * Augments the given exception with suppressed exceptions for any typed array errors. This
+   * provides a more helpful error message and resource name for the attribute that failed to
+   * resolve.
+   *
+   * @param t The exception to augment.
+   */
+  private void maybeAugmentTypedArrayErrors(Throwable t) {
+    Throwable cause = t;
+    while (cause != null) {
+      String message = cause.getMessage();
+      if (message != null) {
+        Matcher matcher = TYPED_ARRAY_ERROR_PATTERN.matcher(message);
+        if (matcher.find()) {
+          String hexId = matcher.group(1);
+          int resId = Integer.parseInt(hexId.substring(2), 16);
+          String resourceName = null;
+          try {
+            resourceName =
+                RuntimeEnvironment.getApplication().getResources().getResourceName(resId);
+          } catch (RuntimeException e) {
+            // ignore
+          }
+          if (resourceName != null) {
+            t.addSuppressed(new TypedArrayException(resourceName));
+          }
+        }
+      }
+      cause = cause.getCause();
+    }
+  }
+
+  static final class TypedArrayException extends Exception {
+    TypedArrayException(String resourceName) {
+      super(
+          "Failed to resolve attribute "
+              + resourceName
+              + ". Ensure that the Activity has the correct theme.");
+    }
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+      setStackTrace(new StackTraceElement[0]);
+      return this;
+    }
   }
 
   @Implementation

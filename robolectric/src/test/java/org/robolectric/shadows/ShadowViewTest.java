@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -28,6 +29,7 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.HapticFeedbackConstants;
+import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -47,6 +49,7 @@ import android.widget.TextView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -1127,6 +1130,23 @@ public class ShadowViewTest {
     View view = LayoutInflater.from(context).inflate(R.layout.edit_text, null, false);
 
     assertThat(shadowOf(view).getSourceLayoutResId()).isEqualTo(R.layout.edit_text);
+  }
+
+  @Test
+  public void testWithThemeError() {
+    Context context = ApplicationProvider.getApplicationContext();
+    InflateException e =
+        assertThrows(
+            InflateException.class,
+            () -> LayoutInflater.from(context).inflate(R.layout.missing_theme_reference, null));
+
+    InvocationTargetException innerCause = (InvocationTargetException) e.getCause().getCause();
+
+    Throwable suppressed = innerCause.getTargetException().getSuppressed()[0];
+    assertThat(suppressed).isInstanceOf(ShadowView.TypedArrayException.class);
+    assertThat(suppressed)
+        .hasMessageThat()
+        .contains("Failed to resolve attribute org.robolectric:attr/colorReference");
   }
 
   public static class MyActivity extends Activity {
