@@ -181,7 +181,10 @@ public class ShadowLog {
     }
 
     if (stream != null) {
-      logToStream(stream, timeString, level, tag, msg, throwable);
+      Integer minLevel = tagToLevel.get(tag);
+      if (minLevel == null || level >= minLevel) {
+        logToStream(stream, timeString, level, tag, msg, throwable);
+      }
     }
     if (!logCaptureEnabled.get()) {
       return 0;
