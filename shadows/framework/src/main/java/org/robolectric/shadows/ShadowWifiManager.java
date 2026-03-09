@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -13,6 +14,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
 import android.net.NetworkInfo;
+import android.net.wifi.BlockingOption;
 import android.net.wifi.ScanResult;
 import android.net.wifi.SoftApConfiguration;
 import android.net.wifi.WifiConfiguration;
@@ -99,6 +101,7 @@ public class ShadowWifiManager {
   private ImmutableList<WifiNetworkSuggestion> lastAddedSuggestions = ImmutableList.of();
   private int addNetworkSuggestionsResult;
 
+  private final List<BlockingOption> disallowedBlockingOptions = new ArrayList<>();
   private final ConcurrentMap<LocalOnlyConnectionFailureListener, Executor>
       localOnlyConnectionFailureListenerExecutorMap = new ConcurrentHashMap<>();
 
@@ -759,6 +762,19 @@ public class ShadowWifiManager {
                 }
               });
     }
+  }
+
+  @Implementation(minSdk = BAKLAVA /* BAKLAVA */)
+  protected void disallowCurrentSuggestedNetwork(BlockingOption blockingOption) {
+    disallowedBlockingOptions.add(blockingOption);
+  }
+
+  /**
+   * Returns the list of {@link BlockingOption}s passed to {@link
+   * #disallowCurrentSuggestedNetwork(BlockingOption)}.
+   */
+  public List<BlockingOption> getDisallowedBlockingOptions() {
+    return disallowedBlockingOptions;
   }
 
   private Context getContext() {

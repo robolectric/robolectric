@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.net.wifi.WifiManager.SCAN_RESULTS_AVAILABLE_ACTION;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -28,6 +29,7 @@ import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
 import android.net.MacAddress;
 import android.net.NetworkInfo;
+import android.net.wifi.BlockingOption;
 import android.net.wifi.ScanResult;
 import android.net.wifi.SoftApConfiguration;
 import android.net.wifi.WifiConfiguration;
@@ -1458,6 +1460,21 @@ public class ShadowWifiManagerTest {
         .isEqualTo(WifiManager.STATUS_NETWORK_SUGGESTIONS_ERROR_APP_DISALLOWED);
 
     assertThat(wifiManager.getNetworkSuggestions()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void disallowCurrentSuggestedNetwork_addsBlockingOptions() {
+    BlockingOption blockingOption1 =
+        new BlockingOption.Builder(10).setBlockingBssidOnly(true).build();
+    BlockingOption blockingOption2 =
+        new BlockingOption.Builder(20).setBlockingBssidOnly(false).build();
+
+    wifiManager.disallowCurrentSuggestedNetwork(blockingOption1);
+    wifiManager.disallowCurrentSuggestedNetwork(blockingOption2);
+
+    assertThat(shadowOf(wifiManager).getDisallowedBlockingOptions())
+        .containsExactly(blockingOption1, blockingOption2);
   }
 
   private static final class IncomingFailure {
