@@ -33,7 +33,7 @@ public class ShadowBlastBufferQueue {
    */
   @Implementation
   protected Surface createSurfaceWithHandle() {
-    if (ShadowView.useRealDrawTraversals()) {
+    if (ShadowView.areRealDrawTraversalsEnabled()) {
       checkState(width > 0);
       checkState(height > 0);
       ImageReader imageReader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 1);

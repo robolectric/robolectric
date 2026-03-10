@@ -65,7 +65,7 @@ public class ShadowViewRootImpl {
 
   @Implementation(minSdk = TIRAMISU)
   protected void updateBlastSurfaceIfNeeded() {
-    if (ShadowView.useRealDrawTraversals()) {
+    if (ShadowView.areRealDrawTraversalsEnabled()) {
       reflector(ViewRootImplReflector.class, realObject).updateBlastSurfaceIfNeeded();
     }
   }

@@ -10,6 +10,7 @@ import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -25,6 +26,7 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Choreographer;
 import android.view.IWindowFocusObserver;
 import android.view.IWindowId;
@@ -1209,9 +1211,12 @@ public class ShadowView {
     useRealViewAnimations.set(value);
   }
 
-  /** Returns whether real Android View animation logic is being used. */
+  /**
+   * Returns whether real Android View animation logic is being used. This is automatically true if
+   * areRealDrawTraversalsEnabled is true.
+   */
   static boolean useRealViewAnimations() {
-    return useRealViewAnimations.get();
+    return useRealViewAnimations.get() || areRealDrawTraversalsEnabled();
   }
 
   /**
@@ -1233,11 +1238,24 @@ public class ShadowView {
     checkState(getApiLevel() >= TIRAMISU, "real drawing is only supported on APIs >= 33");
     checkState(useRealGraphics(), "real graphics must be enabled to use real drawing");
     useRealDrawTraversals.set(value);
+    if (!value && getApiLevel() >= POST_BAKLAVA) {
+      Log.w(
+          "ShadowView",
+          "ignoring setUseRealDrawTraversals(false) since it cannot be turned off on SDK "
+              + getApiLevel());
+    }
   }
 
-  static boolean useRealDrawTraversals() {
-    return getApiLevel() >= TIRAMISU
-        && useRealGraphics()
-        && (useRealDrawTraversals.get() || Boolean.getBoolean("robolectric.useRealDrawTraversals"));
+  static boolean areRealDrawTraversalsEnabled() {
+    if (useRealGraphics()) {
+      // real draw traversals supported by default in upcoming SDK
+      if (getApiLevel() >= POST_BAKLAVA) {
+        return true;
+      } else if (getApiLevel() >= TIRAMISU) {
+        return useRealDrawTraversals.get()
+            || Boolean.getBoolean("robolectric.useRealDrawTraversals");
+      }
+    }
+    return false;
   }
 }

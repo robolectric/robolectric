@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assume.assumeFalse;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -30,6 +31,7 @@ import org.robolectric.annotation.GraphicsMode.Mode;
 public class ViewAnimationTest {
   @Test
   public void viewAnimations_interpolateWhenDrawIsCalled() {
+    assumeFalse(ShadowView.areRealDrawTraversalsEnabled());
     try {
       ShadowView.setUseRealViewAnimations(true);
       Activity activity = Robolectric.setupActivity(Activity.class);
@@ -47,7 +49,6 @@ public class ViewAnimationTest {
       view.startAnimation(animation);
 
       shadowOf(Looper.getMainLooper()).idleFor(500, TimeUnit.MILLISECONDS);
-      // on >= TIRAMISU, real draws are performed
 
       UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
       Bitmap bitmap = uiAutomation.takeScreenshot();

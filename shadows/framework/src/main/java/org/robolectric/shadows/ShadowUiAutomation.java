@@ -164,7 +164,7 @@ public class ShadowUiAutomation {
                 Bitmap window =
                     Bitmap.createBitmap(
                         rootView.getWidth(), rootView.getHeight(), Bitmap.Config.ARGB_8888);
-                if (ShadowView.useRealDrawTraversals()) {
+                if (ShadowView.areRealDrawTraversalsEnabled()) {
                   Surface surface = root.impl.mSurface;
                   ShadowPixelCopy.captureImageFromSurface(
                       surface, window, getBoundsInSurface(rootView));

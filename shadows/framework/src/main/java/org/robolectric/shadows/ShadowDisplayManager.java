@@ -23,6 +23,7 @@ import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
 import com.google.auto.value.AutoBuilder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
@@ -176,6 +177,9 @@ public class ShadowDisplayManager {
     displayInfo.physicalYDpi = displayMetrics.densityDpi;
     displayInfo.state = Display.STATE_ON;
     displayInfo.type = displayType;
+    if (ReflectionHelpers.hasField(DisplayInfo.class, "frameRateVelocityMapping")) {
+      ReflectionHelpers.setField(displayInfo, "frameRateVelocityMapping", new ArrayList<>());
+    }
 
     return displayInfo;
   }
