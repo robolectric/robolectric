@@ -1,5 +1,6 @@
 package org.robolectric.simulator;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.nio.charset.StandardCharsets;
@@ -104,7 +105,8 @@ public final class SandboxBuilder {
 
     AndroidSdkShadowMatcher shadowMatcher = new AndroidSdkShadowMatcher(chosenSdk.getApiLevel());
 
-    ClassHandler classHandler = classHandlerBuilder.build(shadowMap, shadowMatcher, interceptors);
+    ClassHandler classHandler =
+        classHandlerBuilder.build(shadowMap, shadowMatcher, interceptors, ImmutableList.of());
 
     androidSandbox.configure(classHandler, interceptors);
 

@@ -46,6 +46,7 @@ import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.pluginapi.MethodHandleDecorator;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.config.ConfigurationStrategy;
@@ -158,10 +159,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    */
   @Override
   @Nonnull
-  protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
+  protected ClassHandler createClassHandler(
+      ShadowMap shadowMap, Sandbox sandbox, List<MethodHandleDecorator> decorators) {
     int apiLevel = ((AndroidSandbox) sandbox).getSdk().getApiLevel();
     AndroidSdkShadowMatcher shadowMatcher = new AndroidSdkShadowMatcher(apiLevel);
-    return classHandlerBuilder.build(shadowMap, shadowMatcher, getInterceptors());
+    return classHandlerBuilder.build(shadowMap, shadowMatcher, getInterceptors(), decorators);
   }
 
   @Override

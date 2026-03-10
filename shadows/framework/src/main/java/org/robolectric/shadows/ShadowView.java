@@ -19,6 +19,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.SystemClock;
@@ -31,6 +32,7 @@ import android.view.MotionEvent;
 import android.view.ThreadedRenderer;
 import android.view.View;
 import android.view.ViewParent;
+import android.view.ViewRootImpl.CalledFromWrongThreadException;
 import android.view.WindowId;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
@@ -40,12 +42,15 @@ import java.io.PrintStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
@@ -94,6 +99,73 @@ public class ShadowView {
   private AnimationRunner animationRunner;
   private static final AtomicBoolean useRealViewAnimations = new AtomicBoolean(false);
   private static final AtomicBoolean useRealDrawTraversals = new AtomicBoolean(false);
+
+  @GuardedBy("threadErrors")
+  private static final Map<String, RuntimeException> threadErrors = new LinkedHashMap<>();
+
+  /**
+   * Returns all unique exceptions detected when View methods are called from a background thread.
+   */
+  public static ImmutableList<RuntimeException> getAndClear() {
+    synchronized (threadErrors) {
+      ImmutableList<RuntimeException> errors = ImmutableList.copyOf(threadErrors.values());
+      threadErrors.clear();
+      return errors;
+    }
+  }
+
+  /**
+   * Checks if the current thread is the thread associated with the given view. If not, it captures
+   * an exception for later reporting.
+   */
+  public static void checkThread(Object target) {
+    View view;
+    if (target instanceof ShadowView) {
+      view = ((ShadowView) target).realView;
+    } else if (target instanceof View) {
+      view = (View) target;
+    } else {
+      // This might be a custom shadow, just exit.
+      return;
+    }
+    Object attachInfo = reflector(ViewReflector.class, view).getAttachInfo();
+    if (attachInfo == null) {
+      return;
+    }
+
+    Handler handler = reflector(AttachInfoReflector.class, attachInfo).getHandler();
+    if (handler == null || handler.getLooper() == null) {
+      return;
+    }
+
+    Thread expected = handler.getLooper().getThread();
+    Thread current = Thread.currentThread();
+    if (current != expected) {
+      String message =
+          String.format(
+              "Only the original thread that created a view hierarchy can touch its views. "
+                  + "Expected: %s, Current: %s",
+              expected.getName(), current.getName());
+      RuntimeException exception = new CalledFromWrongThreadException(message);
+
+      StackTraceElement[] fullStackTrace = exception.getStackTrace();
+      StringBuilder dedupeKey = new StringBuilder();
+      boolean foundEntry = false;
+      for (StackTraceElement element : fullStackTrace) {
+        String className = element.getClassName();
+        if (!foundEntry) {
+          if (className.startsWith("android.view.") || className.startsWith("org.robolectric.")) {
+            continue;
+          }
+          foundEntry = true;
+        }
+        dedupeKey.append(element.toString()).append("\n");
+      }
+      synchronized (threadErrors) {
+        threadErrors.putIfAbsent(dedupeKey.toString(), exception);
+      }
+    }
+  }
 
   /**
    * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are
@@ -388,6 +460,9 @@ public class ShadowView {
   public static void reset() {
     ShadowView.globalClickListeners.clear();
     ShadowView.globalLongClickListeners.clear();
+    synchronized (ShadowView.threadErrors) {
+      ShadowView.threadErrors.clear();
+    }
   }
 
   public boolean didRequestLayout() {
@@ -1085,6 +1160,9 @@ public class ShadowView {
 
     @Accessor("mThreadedRenderer")
     ThreadedRenderer getThreadedRenderer();
+
+    @Accessor("mHandler")
+    Handler getHandler();
   }
 
   /**

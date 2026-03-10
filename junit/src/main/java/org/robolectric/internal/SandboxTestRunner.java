@@ -42,6 +42,7 @@ import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowProviders;
 import org.robolectric.internal.bytecode.UrlResourceProvider;
+import org.robolectric.pluginapi.MethodHandleDecorator;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
@@ -70,6 +71,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   private final Interceptors interceptors;
   private final ShadowProviders shadowProviders;
   protected final ClassHandlerBuilder classHandlerBuilder;
+  protected final List<MethodHandleDecorator> decorators;
 
   private final List<PerfStatsReporter> perfStatsReporters;
 
@@ -88,6 +90,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     shadowProviders = injector.getInstance(ShadowProviders.class);
     classHandlerBuilder = injector.getInstance(ClassHandlerBuilder.class);
     perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
+    decorators = Arrays.asList(injector.getInstance(MethodHandleDecorator[].class));
   }
 
   /**
@@ -341,7 +344,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     ShadowMap shadowMap = builder.build();
     sandbox.replaceShadowMap(shadowMap);
 
-    sandbox.configure(createClassHandler(shadowMap, sandbox), getInterceptors());
+    sandbox.configure(createClassHandler(shadowMap, sandbox, decorators), getInterceptors());
   }
 
   @Override
@@ -648,8 +651,9 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   @Nonnull
-  protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return classHandlerBuilder.build(shadowMap, ShadowMatcher.MATCH_ALL, interceptors);
+  protected ClassHandler createClassHandler(
+      ShadowMap shadowMap, Sandbox sandbox, List<MethodHandleDecorator> decorators) {
+    return classHandlerBuilder.build(shadowMap, ShadowMatcher.MATCH_ALL, interceptors, decorators);
   }
 
   /**

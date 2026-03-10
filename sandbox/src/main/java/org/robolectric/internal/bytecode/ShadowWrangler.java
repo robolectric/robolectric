@@ -29,6 +29,7 @@ import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
+import org.robolectric.pluginapi.MethodHandleDecorator;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.PerfStatsCollector;
@@ -61,6 +62,7 @@ public class ShadowWrangler implements ClassHandler {
   private final Interceptors interceptors;
   private final ShadowMatcher shadowMatcher;
   private final MethodHandle reflectorHandle;
+  private final List<MethodHandleDecorator> decorators;
 
   /** key is instrumented class */
   private final ClassValueMap<ShadowInfo> cachedShadowInfos =
@@ -82,10 +84,14 @@ public class ShadowWrangler implements ClassHandler {
       };
 
   public ShadowWrangler(
-      ShadowMap shadowMap, ShadowMatcher shadowMatcher, Interceptors interceptors) {
+      ShadowMap shadowMap,
+      ShadowMatcher shadowMatcher,
+      Interceptors interceptors,
+      List<MethodHandleDecorator> decorators) {
     this.shadowMap = shadowMap;
     this.shadowMatcher = shadowMatcher;
     this.interceptors = interceptors;
+    this.decorators = decorators;
     try {
       this.reflectorHandle =
           LOOKUP
@@ -151,6 +157,7 @@ public class ShadowWrangler implements ClassHandler {
 
               Method shadowMethod = pickShadowMethod(definingClass, name, paramTypes);
 
+              MethodHandle mh = null;
               if (shadowMethod == null) {
                 ShadowInfo shadowInfo = getExactShadowInfo(definingClass);
                 if (isNative && shadowInfo != null && shadowInfo.callNativeMethodsByDefault) {
@@ -159,44 +166,47 @@ public class ShadowWrangler implements ClassHandler {
                         definingClass.getDeclaredMethod(
                             ShadowConstants.ROBO_PREFIX + name + "$nativeBinding", paramTypes);
                     method.setAccessible(true);
-                    return LOOKUP.unreflect(method);
+                    mh = LOOKUP.unreflect(method);
                   } catch (NoSuchMethodException e) {
                     throw new LinkageError("Missing native binding method", e);
                   }
                 }
-                return null;
-              }
+              } else if (shadowMethod.isAnnotationPresent(Filter.class)) {
+                mh = getFilterMethodHandle(shadowMethod, name, paramTypes, definingClass, isStatic);
+              } else {
+                shadowMethod.setAccessible(true);
 
-              if (shadowMethod.isAnnotationPresent(Filter.class)) {
-                return getFilterMethodHandle(
-                    shadowMethod, name, paramTypes, definingClass, isStatic);
-              }
-
-              shadowMethod.setAccessible(true);
-
-              MethodHandle mh;
-              if (name.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME)) {
-                if (Modifier.isStatic(shadowMethod.getModifiers())) {
-                  throw new UnsupportedOperationException(
-                      "static __constructor__ shadow methods are not supported");
+                if (name.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME)) {
+                  if (Modifier.isStatic(shadowMethod.getModifiers())) {
+                    throw new UnsupportedOperationException(
+                        "static __constructor__ shadow methods are not supported");
+                  }
+                  // Use invokespecial to call constructor shadow methods. If invokevirtual is used,
+                  // the wrong constructor may be called in situations where constructors with
+                  // identical signatures are shadowed in object hierarchies.
+                  mh =
+                      MethodHandles.privateLookupIn(shadowMethod.getDeclaringClass(), LOOKUP)
+                          .unreflectSpecial(shadowMethod, shadowMethod.getDeclaringClass());
+                } else {
+                  mh = LOOKUP.unreflect(shadowMethod);
                 }
-                // Use invokespecial to call constructor shadow methods. If invokevirtual is used,
-                // the wrong constructor may be called in situations where constructors with
-                // identical signatures are shadowed in object hierarchies.
-                mh =
-                    MethodHandles.privateLookupIn(shadowMethod.getDeclaringClass(), LOOKUP)
-                        .unreflectSpecial(shadowMethod, shadowMethod.getDeclaringClass());
-              } else {
-                mh = LOOKUP.unreflect(shadowMethod);
+
+                // Robolectric doesn't actually look for static, this for example happens
+                // in MessageQueue.nativeInit() which used to be void non-static in 4.2.
+                if (!isStatic && Modifier.isStatic(shadowMethod.getModifiers())) {
+                  mh = dropArguments(mh, 0, Object.class);
+                }
               }
 
-              // Robolectric doesn't actually look for static, this for example happens
-              // in MessageQueue.nativeInit() which used to be void non-static in 4.2.
-              if (!isStatic && Modifier.isStatic(shadowMethod.getModifiers())) {
-                return dropArguments(mh, 0, Object.class);
-              } else {
-                return mh;
+              for (MethodHandleDecorator decorator : decorators) {
+                MethodHandle decorated =
+                    decorator.decorate(definingClass, name, methodType, isStatic, mh);
+                if (decorated != null) {
+                  mh = decorated;
+                }
               }
+
+              return mh;
             });
   }
 

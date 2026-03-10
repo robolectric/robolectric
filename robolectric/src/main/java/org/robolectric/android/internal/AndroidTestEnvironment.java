@@ -39,6 +39,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
 import java.security.Security;
 import java.security.cert.Certificate;
@@ -546,11 +547,23 @@ public class AndroidTestEnvironment implements TestEnvironment {
     return androidInstrumentation;
   }
 
+  private static RuntimeException combineThreadErrors(List<RuntimeException> errors) {
+    RuntimeException first = errors.get(0);
+    for (int i = 1; i < errors.size(); i++) {
+      first.addSuppressed(errors.get(i));
+    }
+    return first;
+  }
+
   @Override
   public void tearDownApplication() {
     if (RuntimeEnvironment.application != null) {
       ShadowInstrumentation.runOnMainSyncNoIdle(RuntimeEnvironment.getApplication()::onTerminate);
       ShadowInstrumentation.getInstrumentation().finish(1, new Bundle());
+    }
+    ImmutableList<RuntimeException> errors = ShadowView.getAndClear();
+    if (!errors.isEmpty()) {
+      throw combineThreadErrors(errors);
     }
   }
 
@@ -573,10 +586,15 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
   @Override
   public void checkStateAfterTestFailure(Throwable t) throws Throwable {
+    ImmutableList<RuntimeException> errors = ShadowView.getAndClear();
+    if (!errors.isEmpty()) {
+      for (RuntimeException error : errors) {
+        t.addSuppressed(error);
+      }
+    }
     if (hasUnexecutedRunnables()) {
       t.addSuppressed(new UnExecutedRunnablesException());
     }
-    throw t;
   }
 
   private static final class UnExecutedRunnablesException extends Exception {
