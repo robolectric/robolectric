@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +19,6 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.WeakHashMap;
 import javax.annotation.Nonnull;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.internal.runners.statements.FailOnTimeout;
 import org.junit.rules.RunRules;
@@ -32,7 +30,6 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
-import org.junit.runners.model.TestClass;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.ClassHandlerBuilder;
 import org.robolectric.internal.bytecode.ClassInstrumentor;
@@ -75,8 +72,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   protected final ClassHandlerBuilder classHandlerBuilder;
 
   private final List<PerfStatsReporter> perfStatsReporters;
-  private final HashMap<Class<?>, Sandbox> loadedTestClasses = new HashMap<>();
-  private final HashSet<Class<?>> invokedBeforeClasses = new HashSet<>();
 
   private final HashMap<Class<?>, HelperTestRunner> helperRunners = new HashMap<>();
   private final WeakHashMap<Sandbox, LinkageError> firstLinkageErrors = new WeakHashMap<>();
@@ -208,31 +203,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     };
   }
 
-  private Statement withAfterClassesInSandbox(Statement base) {
-    return new Statement() {
-      @Override
-      public void evaluate() throws Throwable {
-        try {
-          base.evaluate();
-          for (Map.Entry<Class<?>, Sandbox> entry : loadedTestClasses.entrySet()) {
-            Sandbox sandbox = entry.getValue();
-            sandbox.runOnMainThreadWithClassLoader(
-                () -> {
-                  try {
-                    invokeAfterClass(entry.getKey());
-                  } catch (Throwable throwable) {
-                    throw Util.sneakyThrow(throwable);
-                  }
-                });
-          }
-        } finally {
-          afterClass();
-          loadedTestClasses.clear();
-        }
-      }
-    };
-  }
-
   private Statement withClassRules(Statement statement, Class<?> bootstrappedTestClass) {
     HelperTestRunner helperTestRunner = getCachedHelperTestRunner(bootstrappedTestClass);
     return new Statement() {
@@ -249,32 +219,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         }
       }
     };
-  }
-
-  private Statement applyRuleInSandbox(
-      TestRule rule, Sandbox sandbox, Statement base, Description description) {
-    return new Statement() {
-      @Override
-      public void evaluate() throws Throwable {
-        ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
-        try {
-          rule.apply(base, description).evaluate();
-        } catch (Throwable throwable) {
-          throw Util.sneakyThrow(throwable);
-        } finally {
-          Thread.currentThread().setContextClassLoader(priorContextClassLoader);
-        }
-      }
-    };
-  }
-
-  private static void invokeAfterClass(final Class<?> clazz) throws Throwable {
-    final TestClass testClass = new TestClass(clazz);
-    final List<FrameworkMethod> afters = testClass.getAnnotatedMethods(AfterClass.class);
-    for (FrameworkMethod after : afters) {
-      after.invokeExplosively(null);
-    }
   }
 
   // As the sandbox for all methods are the same, we can just use the first method to get the
