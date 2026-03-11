@@ -1,9 +1,15 @@
 import org.gradle.internal.jvm.Jvm
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-  alias(libs.plugins.robolectric.deployed.java.module)
+  alias(libs.plugins.detekt)
+  alias(libs.plugins.robolectric.deployed.kotlin.module)
   alias(libs.plugins.robolectric.java.module)
+  alias(libs.plugins.robolectric.spotless)
+  kotlin("jvm")
 }
+
+kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_11 } }
 
 abstract class GenerateSdksFileTask : DefaultTask() {
   @get:OutputFile abstract var outFile: File
@@ -42,11 +48,13 @@ dependencies {
   api(project(":shadowapi"))
 
   compileOnly(libs.findbugs.jsr305)
+  compileOnly(libs.ksp.api)
   api(libs.asm)
   api(libs.asm.util)
   api(libs.guava)
   api(libs.gson)
   implementation(libs.auto.common)
+  implementation(libs.kotlin.stdlib)
 
   val toolsJar: File? = Jvm.current().getToolsJar()
   toolsJar?.let { implementation(files(it)) }
@@ -56,4 +64,21 @@ dependencies {
   testImplementation(libs.mockito.subclass)
   testImplementation(libs.compile.testing)
   testImplementation(libs.truth)
+  testImplementation(libs.kctfork.core)
+  testImplementation(libs.kctfork.ksp)
+}
+
+tasks.withType<Test> {
+  jvmArgs(
+    "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.jvm=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+  )
 }

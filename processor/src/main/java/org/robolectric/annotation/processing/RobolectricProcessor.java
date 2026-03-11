@@ -30,15 +30,11 @@ import org.robolectric.annotation.processing.validator.Validator;
 import org.robolectric.versioning.VersionCalculator.SdkInfo;
 
 /** Annotation processor entry point for Robolectric annotations. */
-@SupportedOptions({
-  RobolectricProcessor.PACKAGE_OPT,
-  RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT
-})
+@SupportedOptions({ProcessorConstants.PACKAGE_OPT, ProcessorConstants.SHOULD_INSTRUMENT_PKG_OPT})
 @SupportedAnnotationTypes("org.robolectric.annotation.*")
 public class RobolectricProcessor extends AbstractProcessor {
-  static final String PACKAGE_OPT = "org.robolectric.annotation.processing.shadowPackage";
-  static final String SHOULD_INSTRUMENT_PKG_OPT =
-      "org.robolectric.annotation.processing.shouldInstrumentPackage";
+  static final String PACKAGE_OPT = ProcessorConstants.PACKAGE_OPT;
+  static final String SHOULD_INSTRUMENT_PKG_OPT = ProcessorConstants.SHOULD_INSTRUMENT_PKG_OPT;
   static final String JSON_DOCS_DIR = "org.robolectric.annotation.processing.jsonDocsDir";
   static final String JSON_DOCS_ENABLED = "org.robolectric.annotation.processing.jsonDocsEnabled";
   static final String SDK_CHECK_MODE = "org.robolectric.annotation.processing.sdkCheckMode";
@@ -52,7 +48,7 @@ public class RobolectricProcessor extends AbstractProcessor {
   private static final String VALIDATE_COMPILE_SDKS =
       "org.robolectric.annotation.processing.validateCompileSdk";
 
-  private static final String PRIORITY = "org.robolectric.annotation.processing.priority";
+  private static final String PRIORITY = ProcessorConstants.PRIORITY_OPT;
 
   private RobolectricModel.Builder modelBuilder;
   private String shadowPackage;
