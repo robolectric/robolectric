@@ -30,6 +30,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadows.ShadowView.AttachInfoReflector;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -76,8 +77,12 @@ public class ShadowViewRootImpl {
       @ClassName("android.window.SurfaceSyncGroup") Object activeSyncGroupObj,
       boolean syncBuffer) {
     boolean result =
-        reflector(ViewRootImplVICReflector.class, realObject)
-            .draw(fullRedrawNeeded, (SurfaceSyncGroup) activeSyncGroupObj, syncBuffer);
+        PerfStatsCollector.getInstance()
+            .measure(
+                "ViewRootImpl-draw",
+                () ->
+                    reflector(ViewRootImplVICReflector.class, realObject)
+                        .draw(fullRedrawNeeded, (SurfaceSyncGroup) activeSyncGroupObj, syncBuffer));
     if (result) {
       for (OnDrawListener listener : globalDrawListeners) {
         listener.onDraw();
