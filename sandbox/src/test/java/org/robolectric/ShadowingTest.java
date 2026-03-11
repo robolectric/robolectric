@@ -402,8 +402,19 @@ public class ShadowingTest {
   }
 
   @Test
+  @SandboxConfig(shadows = {ShadowClassWithConstructorFilterBefore.class})
+  public void testConstructorFilterBefore() {
+    ShadowClassWithConstructorFilterBefore.reset();
+    ClassWithConstructorFilter instance = new ClassWithConstructorFilter("bar");
+    assertThat(instance.name).isEqualTo("bar"); // Original constructor overwrites the hook
+    assertThat(ShadowClassWithConstructorFilterBefore.filterCalled).isTrue();
+    assertThat(ShadowClassWithConstructorFilterBefore.capturedReal).isEqualTo(instance);
+    assertThat(ShadowClassWithConstructorFilterBefore.capturedInput).isEqualTo("bar");
+  }
+
+  @Test
   @SandboxConfig(shadows = {ShadowClassWithConstructorFilter.class})
-  public void testConstructorFilter() {
+  public void testConstructorFilterAfter() {
     ShadowClassWithConstructorFilter.reset();
     ClassWithConstructorFilter instance = new ClassWithConstructorFilter("bar");
     assertThat(instance.name).isEqualTo("hooked: bar"); // Modified by hook
@@ -422,6 +433,28 @@ public class ShadowingTest {
   }
 
   @Implements(ClassWithConstructorFilter.class)
+  public static class ShadowClassWithConstructorFilterBefore {
+    @RealObject ClassWithConstructorFilter real;
+    public static boolean filterCalled = false;
+    public static ClassWithConstructorFilter capturedReal;
+    public static String capturedInput;
+
+    public static void reset() {
+      filterCalled = false;
+      capturedReal = null;
+      capturedInput = null;
+    }
+
+    @Filter(order = Filter.Order.BEFORE)
+    protected void __constructor__(String name) {
+      filterCalled = true;
+      capturedReal = real;
+      capturedInput = name;
+      real.name = "hooked: " + name;
+    }
+  }
+
+  @Implements(ClassWithConstructorFilter.class)
   public static class ShadowClassWithConstructorFilter {
     @RealObject ClassWithConstructorFilter real;
     public static boolean filterCalled = false;
@@ -434,7 +467,7 @@ public class ShadowingTest {
       capturedInput = null;
     }
 
-    @Filter
+    @Filter(order = Filter.Order.AFTER)
     protected void __constructor__(String name) {
       filterCalled = true;
       capturedReal = real;

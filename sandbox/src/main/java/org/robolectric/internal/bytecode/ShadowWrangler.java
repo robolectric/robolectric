@@ -238,7 +238,10 @@ public class ShadowWrangler implements ClassHandler {
     Class<?> returnType = original.type().returnType();
     boolean originalHasReturn = returnType != void.class;
 
-    if (originalHasReturn) {
+    Filter filterAnnotation = shadowMethod.getAnnotation(Filter.class);
+    Filter.Order order = filterAnnotation.order();
+
+    if (order == Filter.Order.AFTER && originalHasReturn) {
       foldType = foldType.insertParameterTypes(0, returnType);
     }
 
@@ -266,7 +269,7 @@ public class ShadowWrangler implements ClassHandler {
       }
     }
 
-    if (originalHasReturn) {
+    if (order == Filter.Order.AFTER && originalHasReturn) {
       adaptedFilter = dropArguments(adaptedFilter, 0, returnType);
     }
 
@@ -282,13 +285,17 @@ public class ShadowWrangler implements ClassHandler {
 
     adaptedFilter = adaptedFilter.asType(foldType.changeReturnType(void.class));
 
-    if (originalHasReturn) {
-      MethodHandle reserver =
-          dropArguments(identity(returnType), 1, original.type().parameterArray());
-      adaptedFilter = foldArguments(reserver, adaptedFilter);
-    }
+    if (order == Filter.Order.AFTER) {
+      if (originalHasReturn) {
+        MethodHandle reserver =
+            dropArguments(identity(returnType), 1, original.type().parameterArray());
+        adaptedFilter = foldArguments(reserver, adaptedFilter);
+      }
 
-    return foldArguments(adaptedFilter, original);
+      return foldArguments(adaptedFilter, original);
+    } else {
+      return foldArguments(original, adaptedFilter);
+    }
   }
 
   private void validateFilter(Method shadowMethod, String name, boolean isStatic) {

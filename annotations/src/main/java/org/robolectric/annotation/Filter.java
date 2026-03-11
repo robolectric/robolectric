@@ -8,8 +8,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that a method declaration is intended to be called after the original method with the
- * same signature on the associated Android class.
+ * Indicates that a method declaration is intended to be called before or after the original method
+ * with the same signature on the associated Android class.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -17,6 +17,17 @@ import java.lang.annotation.Target;
 @Beta
 public @interface Filter {
   int DEFAULT_SDK = -1;
+
+  /**
+   * Describes the order in which a filter method should be invoked relative to the original method.
+   */
+  enum Order {
+    BEFORE,
+    AFTER
+  }
+
+  /** The order in which the filter should be invoked. */
+  Order order() default Order.BEFORE;
 
   /** The annotated filter method will be invoked only for the specified SDK or greater. */
   int minSdk() default DEFAULT_SDK;
