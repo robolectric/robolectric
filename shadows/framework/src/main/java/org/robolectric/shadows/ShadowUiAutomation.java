@@ -176,6 +176,7 @@ public class ShadowUiAutomation {
                 }
                 screenshotCanvas.drawBitmap(
                     window, root.locationOnScreen.x, root.locationOnScreen.y, paint);
+                window.recycle();
               }
               return screenshot;
             });

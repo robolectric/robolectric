@@ -208,6 +208,7 @@ public class ShadowPixelCopy {
     Canvas resizingCanvas = new Canvas(screenshot);
     Paint paint = new Paint();
     resizingCanvas.drawBitmap(bitmap, srcRect, dst, paint);
+    bitmap.recycle();
   }
 
   private static void takeScreenshot(View view, Bitmap screenshot, @Nullable Rect srcRect) {
@@ -235,6 +236,7 @@ public class ShadowPixelCopy {
     Canvas resizingCanvas = new Canvas(screenshot);
     Paint paint = new Paint();
     resizingCanvas.drawBitmap(bitmap, srcRect, dst, paint);
+    bitmap.recycle();
   }
 
   private static void alertFinished(
