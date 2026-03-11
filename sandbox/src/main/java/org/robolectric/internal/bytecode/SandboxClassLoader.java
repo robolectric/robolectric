@@ -159,9 +159,12 @@ public class SandboxClassLoader extends URLClassLoader {
    * This exists to be overridden by the simulator class loader. It allows the simulator class
    * loader to prefer classes from the deploy jar (e.g. compiled resource jars) over classes from
    * the runtime classpath.
+   *
+   * <p>Framework integrations can also provide a thread-local byte source via ClassBytesSource so
+   * transformed test bytes can still be defined by this sandbox classloader.
    */
   protected InputStream getClassBytesFromAlternateClassLoader(String classResName) {
-    return null;
+    return ClassBytesSource.openClassBytes(classResName);
   }
 
   @Override
