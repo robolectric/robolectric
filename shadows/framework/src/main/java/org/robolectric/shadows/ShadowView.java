@@ -63,6 +63,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.config.ConfigurationRegistry;
+import org.robolectric.internal.bytecode.RobolectricInternals;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowViewRootImpl.ViewRootImplReflector;
 import org.robolectric.util.reflector.Accessor;
@@ -149,22 +150,33 @@ public class ShadowView {
                   + "Expected: %s, Current: %s",
               expected.getName(), current.getName());
       RuntimeException exception = new CalledFromWrongThreadException(message);
-
+      exception = (RuntimeException) RobolectricInternals.cleanStackTrace(exception);
       StackTraceElement[] fullStackTrace = exception.getStackTrace();
+      StackTraceElement[] trace = exception.getStackTrace();
       StringBuilder dedupeKey = new StringBuilder();
-      boolean foundEntry = false;
-      for (StackTraceElement element : fullStackTrace) {
+
+      for (int i = trace.length - 1; i >= 0; i--) {
+        StackTraceElement element = trace[i];
         String className = element.getClassName();
-        if (!foundEntry) {
-          if (className.startsWith("android.view.") || className.startsWith("org.robolectric.")) {
-            continue;
-          }
-          foundEntry = true;
+
+        String formatted =
+            String.format(
+                "%s.%s(%s)",
+                className,
+                element.getMethodName(),
+                element.getFileName() != null ? element.getFileName() : "Unknown Source");
+
+        dedupeKey.append(formatted).append("\n");
+
+        if (isViewOrShadowView(className)) {
+          break;
         }
-        dedupeKey.append(element.toString()).append("\n");
       }
+
+      String finalKey = dedupeKey.toString().trim();
+
       synchronized (threadErrors) {
-        threadErrors.putIfAbsent(dedupeKey.toString(), exception);
+        threadErrors.putIfAbsent(finalKey, exception);
       }
     }
   }
@@ -291,6 +303,15 @@ public class ShadowView {
         }
       }
       cause = cause.getCause();
+    }
+  }
+
+  private static boolean isViewOrShadowView(String className) {
+    try {
+      Class<?> clazz = Class.forName(className);
+      return View.class.isAssignableFrom(clazz) || ShadowView.class.isAssignableFrom(clazz);
+    } catch (ClassNotFoundException e) {
+      return false;
     }
   }
 
