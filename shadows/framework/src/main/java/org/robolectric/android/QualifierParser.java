@@ -12,7 +12,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
-/** Parser that converts a qualifier string to a Configuration and DisplayMetrics. */
+/**
+ * Parser that converts a qualifier string to a Configuration and DisplayMetrics.
+ *
+ * <p>This should closely match the logic in AOSP's
+ * frameworks/base/libs/androidfw/ConfigDescription.cpp
+ */
 class QualifierParser {
 
   private QualifierParser() {}
@@ -200,6 +205,10 @@ class QualifierParser {
       } else {
         locale = val.buildLocale();
       }
+    }
+
+    if (partIter.hasNext() && parseGrammaticalInflection(partIter.peek(), configOut)) {
+      partIter.next();
     }
 
     if (partIter.hasNext() && parseLayoutDirection(partIter.peek(), configOut)) {
@@ -762,6 +771,20 @@ class QualifierParser {
     Matcher matcher = MCC_PATTERN.matcher(name);
     if (matcher.matches()) {
       out.mcc = Integer.parseInt(matcher.group(1));
+      return true;
+    }
+    return false;
+  }
+
+  private static boolean parseGrammaticalInflection(String name, Configuration out) {
+    if (Objects.equals(name, "masculine")) {
+      out.setGrammaticalGender(Configuration.GRAMMATICAL_GENDER_MASCULINE);
+      return true;
+    } else if (Objects.equals(name, "feminine")) {
+      out.setGrammaticalGender(Configuration.GRAMMATICAL_GENDER_FEMININE);
+      return true;
+    } else if (Objects.equals(name, "neuter")) {
+      out.setGrammaticalGender(Configuration.GRAMMATICAL_GENDER_NEUTRAL);
       return true;
     }
     return false;
