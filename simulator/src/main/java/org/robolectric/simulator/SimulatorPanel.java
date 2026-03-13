@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import javax.swing.JPanel;
 
 /** A {@link JPanel} that draws screenshots taken with RNG. */
@@ -41,14 +42,11 @@ public class SimulatorPanel extends JPanel {
   public void drawBitmap(Bitmap bitmap) {
     int width = bitmap.getWidth();
     int height = bitmap.getHeight();
-    if (pixels == null || pixels.length != width * height) {
-      pixels = new int[width * height];
-    }
     if (image == null || image.getWidth() != width || image.getHeight() != height) {
       image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+      pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
     }
     bitmap.getPixels(pixels, /* offset= */ 0, /* stride= */ width, 0, 0, width, height);
-    image.setRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
     repaint();
   }
 }
