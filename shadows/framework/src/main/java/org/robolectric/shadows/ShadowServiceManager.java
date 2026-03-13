@@ -24,6 +24,7 @@ import android.app.IUiModeManager;
 import android.app.IWallpaperManager;
 import android.app.admin.IDevicePolicyManager;
 import android.app.ambientcontext.IAmbientContextManager;
+import android.app.appfunctions.IAppFunctionService;
 import android.app.job.IJobScheduler;
 import android.app.role.IRoleManager;
 import android.app.slice.ISliceManager;
@@ -134,7 +135,7 @@ public class ShadowServiceManager {
   protected static final Map<String, BinderService> binderServices = buildBinderServicesMap();
 
   @GuardedBy("ShadowServiceManager.class")
-  private static final Set<String> unavailableServices = new HashSet<>();
+  private static final Set<String> unavailableServices = buildUnavailableServices();
 
   @GuardedBy("ShadowServiceManager.class")
   private static final Set<String> declaredServices = new HashSet<>();
@@ -420,9 +421,18 @@ public class ShadowServiceManager {
           IRangingAdapter.class,
           BinderType.CONCRETE,
           new FakeRangingAdapter());
+      addBinderService(binderServices, Context.APP_FUNCTION_SERVICE, IAppFunctionService.class);
     }
 
     return binderServices;
+  }
+
+  private static Set<String> buildUnavailableServices() {
+    HashSet<String> unavailableServices = new HashSet<>();
+    // TODO: Enable AppFunctionService once the affected tests that rely on it being unavailable are
+    // fixed.
+    unavailableServices.add(Context.APP_FUNCTION_SERVICE);
+    return unavailableServices;
   }
 
   protected static void addBinderService(
@@ -613,6 +623,7 @@ public class ShadowServiceManager {
   @Resetter
   public static synchronized void reset() {
     unavailableServices.clear();
+    unavailableServices.addAll(buildUnavailableServices());
     waitingServices.clear();
     declaredServices.clear();
     for (BinderService service : binderServices.values()) {
