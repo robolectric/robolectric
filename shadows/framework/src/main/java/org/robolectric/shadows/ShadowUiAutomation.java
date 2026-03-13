@@ -66,6 +66,8 @@ public class ShadowUiAutomation {
       IS_FOCUSABLE.and(hasLayoutFlag(FLAG_NOT_TOUCH_MODAL).negate());
   private static final Predicate<Root> WATCH_TOUCH_OUTSIDE =
       IS_TOUCH_MODAL.negate().and(hasLayoutFlag(FLAG_WATCH_OUTSIDE_TOUCH));
+  private static final Predicate<Root> IS_VISIBLE =
+      root -> root.getRootView().getWidth() > 0 && root.getRootView().getHeight() > 0;
 
   /**
    * Sets the animation scale, see {@link UiAutomation#setAnimationScale(float)}. Provides backwards
@@ -146,34 +148,35 @@ public class ShadowUiAutomation {
     FutureTask<Bitmap> screenshotTask =
         new FutureTask<>(
             () -> {
+              List<Root> visibleRoots =
+                  getViewRoots().reverse().stream().filter(IS_VISIBLE).collect(toList());
               Point displaySize = new Point();
               ShadowDisplay.getDefaultDisplay().getRealSize(displaySize);
               Bitmap screenshot =
                   Bitmap.createBitmap(displaySize.x, displaySize.y, Bitmap.Config.ARGB_8888);
+
+              if (visibleRoots.isEmpty()) {
+                // short circuit, nothing to do
+                return screenshot;
+              } else if (visibleRoots.size() == 1
+                  && visibleRoots.getFirst().getRootView().getWidth() == displaySize.x
+                  && visibleRoots.getFirst().getRootView().getHeight() == displaySize.y) {
+                // optimized path - there is only a single full screen window. Just draw into
+                // screenshot and return
+                drawIntoBitmap(screenshot, visibleRoots.getFirst());
+                return screenshot;
+              }
+
+              // multiple windows, draw them independently
               Canvas screenshotCanvas = new Canvas(screenshot);
               Paint paint = new Paint();
-              long drawingTime = SystemClock.uptimeMillis();
-              for (Root root : getViewRoots().reverse()) {
-                View rootView = root.getRootView();
-                if (ShadowView.useRealViewAnimations()) {
-                  ((ShadowView) Shadow.extract(rootView)).setDrawingTime(drawingTime);
-                }
-                if (rootView.getWidth() <= 0 || rootView.getHeight() <= 0) {
-                  continue;
-                }
+              for (Root root : visibleRoots) {
                 Bitmap window =
                     Bitmap.createBitmap(
-                        rootView.getWidth(), rootView.getHeight(), Bitmap.Config.ARGB_8888);
-                if (ShadowView.areRealDrawTraversalsEnabled()) {
-                  Surface surface = root.impl.mSurface;
-                  ShadowPixelCopy.captureImageFromSurface(
-                      surface, window, getBoundsInSurface(rootView));
-                } else if (HardwareRenderingScreenshot.canTakeScreenshot(rootView)) {
-                  HardwareRenderingScreenshot.takeScreenshot(rootView, window);
-                } else {
-                  Canvas windowCanvas = new Canvas(window);
-                  rootView.draw(windowCanvas);
-                }
+                        root.getRootView().getWidth(),
+                        root.getRootView().getHeight(),
+                        Bitmap.Config.ARGB_8888);
+                drawIntoBitmap(window, root);
                 screenshotCanvas.drawBitmap(
                     window, root.locationOnScreen.x, root.locationOnScreen.y, paint);
                 window.recycle();
@@ -183,6 +186,22 @@ public class ShadowUiAutomation {
 
     ShadowInstrumentation.runOnMainSyncNoIdle(screenshotTask);
     return screenshotTask.get();
+  }
+
+  private static void drawIntoBitmap(Bitmap bitmap, Root root) {
+    View rootView = root.getRootView();
+    if (ShadowView.useRealViewAnimations()) {
+      ((ShadowView) Shadow.extract(rootView)).setDrawingTime(SystemClock.uptimeMillis());
+    }
+    if (ShadowView.areRealDrawTraversalsEnabled()) {
+      Surface surface = root.impl.mSurface;
+      ShadowPixelCopy.captureImageFromSurface(surface, bitmap, getBoundsInSurface(rootView));
+    } else if (HardwareRenderingScreenshot.canTakeScreenshot(rootView)) {
+      HardwareRenderingScreenshot.takeScreenshot(rootView, bitmap);
+    } else {
+      Canvas windowCanvas = new Canvas(bitmap);
+      rootView.draw(windowCanvas);
+    }
   }
 
   private static Rect getBoundsInSurface(View view) {
