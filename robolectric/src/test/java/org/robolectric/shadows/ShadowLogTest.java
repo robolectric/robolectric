@@ -303,6 +303,57 @@ public class ShadowLogTest {
   }
 
   @Test
+  public void setLoggable_suppressesStreamOutputBelowLevel() {
+    final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    PrintStream old = ShadowLog.stream;
+    try {
+      ShadowLog.stream = new PrintStream(bos, /* autoFlush= */ true);
+      ShadowLog.setLoggable("Foo", Log.ERROR);
+
+      Log.w("Foo", "suppressed warning");
+      assertThat(new String(bos.toByteArray(), UTF_8)).isEmpty();
+
+      Log.e("Foo", "visible error");
+      assertThat(new String(bos.toByteArray(), UTF_8)).contains("visible error");
+
+      // Logs are still captured in the buffer regardless of the level filter
+      assertThat(ShadowLog.getLogsForTag("Foo")).hasSize(2);
+    } finally {
+      ShadowLog.stream = old;
+    }
+  }
+
+  @Test
+  public void setLoggable_doesNotAffectOtherTags() {
+    final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    PrintStream old = ShadowLog.stream;
+    try {
+      ShadowLog.stream = new PrintStream(bos, /* autoFlush= */ true);
+      ShadowLog.setLoggable("Foo", Log.ERROR);
+
+      Log.w("Bar", "other tag warning");
+      assertThat(new String(bos.toByteArray(), UTF_8)).contains("other tag warning");
+    } finally {
+      ShadowLog.stream = old;
+    }
+  }
+
+  @Test
+  public void setLoggable_allowsMessagesAtExactConfiguredLevel() {
+    final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    PrintStream old = ShadowLog.stream;
+    try {
+      ShadowLog.stream = new PrintStream(bos, /* autoFlush= */ true);
+      ShadowLog.setLoggable("Foo", Log.ERROR);
+
+      Log.e("Foo", "exact level message");
+      assertThat(new String(bos.toByteArray(), UTF_8)).contains("exact level message");
+    } finally {
+      ShadowLog.stream = old;
+    }
+  }
+
+  @Test
   public void getLogs_shouldReturnCopy() {
     Log.d("tag1", "1");
     assertThat(ShadowLog.getLogs()).isNotSameInstanceAs(ShadowLog.getLogs());
