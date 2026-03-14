@@ -50,18 +50,6 @@ public class ShadowRenderNodeAnimator {
   }
 
   @Implementation
-  public void doStart() {
-    reflector(RenderNodeAnimatorReflector.class, realObject).doStart();
-  }
-
-  @Implementation
-  public void cancel() {
-    RenderNodeAnimatorReflector renderNodeReflector =
-        reflector(RenderNodeAnimatorReflector.class, realObject);
-    renderNodeReflector.cancel();
-  }
-
-  @Implementation
   public void end() {
     RenderNodeAnimatorReflector renderNodeReflector =
         reflector(RenderNodeAnimatorReflector.class, realObject);
@@ -126,12 +114,6 @@ public class ShadowRenderNodeAnimator {
     void setAnimationHelper(ThreadLocal<?> threadLocal);
 
     void onFinished();
-
-    @Direct
-    void doStart();
-
-    @Direct
-    void cancel();
 
     @Direct
     void moveToRunningState();
