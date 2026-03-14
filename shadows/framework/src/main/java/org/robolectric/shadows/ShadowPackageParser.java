@@ -6,6 +6,7 @@ import android.content.pm.PackageParser.Callback;
 import android.content.pm.PackageParser.Package;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -28,6 +29,14 @@ public class ShadowPackageParser {
   public static Package callParsePackage(Path apkFile) {
     PackageParser packageParser = new PackageParser();
 
+    // The deprecated PackageParser emits warnings for manifest elements it doesn't understand,
+    // such as <queries> (API 30) and <property> under <service> (API 33). These are valid
+    // manifest elements - the warnings are an artifact of using the deprecated parser.
+    // Suppress them to avoid spamming logs on every test class initialization.
+    // Note: this level intentionally persists for the duration of the test class.
+    // ShadowLog.reset() (called by @Resetter between test classes) restores the default.
+    ShadowLog.setLoggable("PackageParser", Log.ERROR);
+
     try {
       // TODO(christianw/brettchabot): workaround for NPE from probable bug in Q.
       // Can be removed when upstream properly handles a null callback
@@ -42,7 +51,13 @@ public class ShadowPackageParser {
         if (logItems.isEmpty()) {
           throw new RuntimeException("Failed to parse package " + apkFile);
         } else {
-          LogItem logItem = logItems.get(0);
+          // Prefer the first error-level log; fall back to the first entry if none found,
+          // since warnings (e.g. "Unknown element") may precede the actual parse failure.
+          LogItem logItem =
+              logItems.stream()
+                  .filter(i -> i.type >= Log.ERROR)
+                  .findFirst()
+                  .orElse(logItems.get(0));
           throw new RuntimeException(
               "Failed to parse package " + apkFile + ": " + logItem.msg, logItem.throwable);
         }
