@@ -30,7 +30,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -285,15 +284,6 @@ public class ShadowInputMethodManager {
 
   @ForType(InputMethodManager.class)
   interface InputMethodManagerReflector {
-
-    @Static
-    @Direct
-    InputMethodManager peekInstance();
-
-    @Static
-    @Accessor("mInstance")
-    void setMInstance(InputMethodManager instance);
-
     @Static
     @Accessor("sInstance")
     void setInstance(InputMethodManager instance);
