@@ -105,7 +105,7 @@ androidx-annotation = "1.9.1"
 androidx-appcompat = "1.7.1"
 androidx-biometric = "1.1.0"
 androidx-constraintlayout = "2.2.1"
-androidx-core = "1.17.0"
+androidx-core = "1.18.0"
 androidx-fragment = "1.8.9"
 androidx-window = "1.5.1"
 androidx-room = "2.8.4"
@@ -121,7 +121,7 @@ androidx-test-runner = "1.7.0"
 androidx-test-services = "1.6.0"
 
 # https://developer.android.com/jetpack/androidx/releases/compose
-androidx-compose-bom = "2026.02.01"
+androidx-compose-bom = "2026.03.00"
 
 # https://developers.google.com/android/guides/releases
 play-services-basement = "18.0.1"
