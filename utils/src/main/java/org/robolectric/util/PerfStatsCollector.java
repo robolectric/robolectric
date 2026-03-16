@@ -2,9 +2,11 @@ package org.robolectric.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
@@ -19,9 +21,9 @@ public class PerfStatsCollector {
   private static final PerfStatsCollector INSTANCE = new PerfStatsCollector();
 
   private final Clock clock;
-  private Metadata metadata = null;
-  private final Map<MetricKey, Metric> metricMap = new HashMap<>();
-  private boolean enabled = true;
+  private final AtomicReference<Metadata> metadata = new AtomicReference<>(null);
+  private final Map<MetricKey, Metric> metricMap = new ConcurrentHashMap<>();
+  private final AtomicBoolean enabled = new AtomicBoolean(true);
 
   public PerfStatsCollector() {
     this(System::nanoTime);
@@ -37,7 +39,7 @@ public class PerfStatsCollector {
 
   /** If not enabled, don't bother retaining perf stats, saving some memory and CPU cycles. */
   public void setEnabled(boolean isEnabled) {
-    this.enabled = isEnabled;
+    this.enabled.set(isEnabled);
   }
 
   public Event startEvent(String eventName) {
@@ -59,14 +61,16 @@ public class PerfStatsCollector {
   }
 
   public void incrementCount(String eventName) {
-    synchronized (PerfStatsCollector.this) {
-      MetricKey key = new MetricKey(eventName, true);
-      Metric metric = metricMap.get(key);
-      if (metric == null) {
-        metricMap.put(key, metric = new Metric(key.name, key.success));
-      }
-      metric.incrementCount();
+    if (!enabled.get()) {
+      return;
     }
+
+    MetricKey key = new MetricKey(eventName, true);
+    Metric metric = metricMap.get(key);
+    if (metric == null) {
+      metric = metricMap.computeIfAbsent(key, k -> new Metric(k.name, k.success));
+    }
+    metric.incrementCount();
   }
 
   /** Supplier that throws an exception. */
@@ -95,24 +99,24 @@ public class PerfStatsCollector {
     void run() throws F;
   }
 
-  public synchronized Collection<Metric> getMetrics() {
+  public Collection<Metric> getMetrics() {
     return new ArrayList<>(metricMap.values());
   }
 
-  public synchronized void putMetadata(Metadata metadata) {
-    if (!enabled) {
+  public void putMetadata(Metadata metadata) {
+    if (!enabled.get()) {
       return;
     }
 
-    this.metadata = metadata;
+    this.metadata.set(metadata);
   }
 
-  public synchronized Metadata getMetadata() {
-    return metadata;
+  public Metadata getMetadata() {
+    return metadata.get();
   }
 
   public void reset() {
-    metadata = null;
+    metadata.set(null);
     metricMap.clear();
   }
 
@@ -131,18 +135,16 @@ public class PerfStatsCollector {
     }
 
     public void finished(boolean success) {
-      if (!enabled) {
+      if (!enabled.get()) {
         return;
       }
 
-      synchronized (PerfStatsCollector.this) {
-        MetricKey key = new MetricKey(name, success);
-        Metric metric = metricMap.get(key);
-        if (metric == null) {
-          metricMap.put(key, metric = new Metric(key.name, key.success));
-        }
-        metric.record(clock.nanoTime() - startTimeNs);
+      MetricKey key = new MetricKey(name, success);
+      Metric metric = metricMap.get(key);
+      if (metric == null) {
+        metric = metricMap.computeIfAbsent(key, k -> new Metric(k.name, k.success));
       }
+      metric.record(clock.nanoTime() - startTimeNs);
     }
   }
 
