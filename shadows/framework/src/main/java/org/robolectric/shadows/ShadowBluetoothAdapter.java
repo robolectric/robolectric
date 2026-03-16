@@ -696,7 +696,7 @@ public class ShadowBluetoothAdapter {
     }
   }
 
-  @Implementation(minSdk = VANILLA_ICE_CREAM)
+  @Implementation(minSdk = VANILLA_ICE_CREAM, maxSdk = BAKLAVA)
   protected IBinder getProfile(int profile) {
     if (isEnabled()) {
       IInterface localProxy = createBinderProfileProxy(profile);
