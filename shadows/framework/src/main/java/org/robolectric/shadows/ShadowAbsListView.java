@@ -3,11 +3,10 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.widget.AbsListView;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(AbsListView.class)
@@ -18,22 +17,15 @@ public class ShadowAbsListView extends ShadowAdapterView {
   private int lastSmoothScrollByDistance;
   private int lastSmoothScrollByDuration;
 
-  @Implementation
-  protected void setOnScrollListener(AbsListView.OnScrollListener l) {
-    reflector(AbsListViewReflector.class, realAbsListView).setOnScrollListener(l);
-  }
-
-  @Implementation
+  @Filter
   protected void smoothScrollToPosition(int position) {
     smoothScrolledPosition = position;
-    reflector(AbsListViewReflector.class, realAbsListView).smoothScrollToPosition(position);
   }
 
-  @Implementation
+  @Filter
   protected void smoothScrollBy(int distance, int duration) {
     this.lastSmoothScrollByDistance = distance;
     this.lastSmoothScrollByDuration = duration;
-    reflector(AbsListViewReflector.class, realAbsListView).smoothScrollBy(distance, duration);
   }
 
   /**
@@ -74,15 +66,6 @@ public class ShadowAbsListView extends ShadowAdapterView {
 
   @ForType(AbsListView.class)
   interface AbsListViewReflector {
-    @Direct
-    void setOnScrollListener(AbsListView.OnScrollListener l);
-
-    @Direct
-    void smoothScrollToPosition(int position);
-
-    @Direct
-    void smoothScrollBy(int distance, int duration);
-
     @Accessor("mOnScrollListener")
     AbsListView.OnScrollListener getOnScrollListener();
   }
