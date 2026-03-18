@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
@@ -33,6 +36,9 @@ import javax.swing.UIManager;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode.Mode;
+import org.robolectric.pluginapi.perf.Metadata;
+import org.robolectric.pluginapi.perf.Metric;
+import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowChoreographer;
 import org.robolectric.shadows.ShadowLog;
@@ -42,6 +48,7 @@ import org.robolectric.shadows.ShadowSystemClock;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.simulator.pluginapi.RemoteControl;
 import org.robolectric.simulator.pluginapi.ScreenRecorder;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.inject.Injector;
 
 /** The main entry point for the Robolectric Simulator for use in existing Robolectric tests. */
@@ -58,6 +65,9 @@ public final class Simulator {
   private final Semaphore writingFrame = new Semaphore(1);
 
   private final Class<? extends Activity> activityClassToLaunch;
+  private Injector injector;
+  private PerfStatsCollector perfStatsCollector;
+  private List<PerfStatsReporter> perfStatsReporters;
 
   public Simulator() {
     this(null);
@@ -67,6 +77,7 @@ public final class Simulator {
     this.activityClassToLaunch = activityClassToLaunch;
     this.headless = GraphicsEnvironment.isHeadless();
     this.simulatorPanel = new SimulatorPanel();
+    this.injector = new Injector.Builder(Looper.class.getClassLoader()).build();
   }
 
   public void start() {
@@ -77,6 +88,8 @@ public final class Simulator {
     ShadowChoreographer.setPaused(true);
     ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
     ShadowLog.setCaptureLogsEnabled(false);
+
+    setupPerfStats();
 
     if (this.activityClassToLaunch != null) {
       System.err.println("Launching " + this.activityClassToLaunch.getName());
@@ -137,15 +150,15 @@ public final class Simulator {
         throw new RuntimeException(e);
       }
 
-    final int apiLevel = RuntimeEnvironment.getApiLevel();
-    SwingUtilities.invokeLater(
-        () -> {
-          simulatorFrame =
-              new SimulatorFrame(
-                  simulatorPanel, (int) this.displayWidth, (int) this.displayHeight, apiLevel);
-          simulatorFrame.setVisible(true);
-          simulatorFrame.toFront();
-        });
+      final int apiLevel = RuntimeEnvironment.getApiLevel();
+      SwingUtilities.invokeLater(
+          () -> {
+            simulatorFrame =
+                new SimulatorFrame(
+                    simulatorPanel, (int) this.displayWidth, (int) this.displayHeight, apiLevel);
+            simulatorFrame.setVisible(true);
+            simulatorFrame.toFront();
+          });
     }
   }
 
@@ -187,7 +200,6 @@ public final class Simulator {
 
   private void connectRemoteControl() {
     // The default RemoteControl is a no-op stub.
-    Injector injector = new Injector.Builder(Looper.class.getClassLoader()).build();
     remoteControl = injector.getInstance(RemoteControl.class);
     remoteControl.connect(
         InstrumentationRegistry.getInstrumentation()
@@ -218,7 +230,6 @@ public final class Simulator {
       return;
     }
     // Use the class loader for an Android class.
-    Injector injector = new Injector.Builder(Looper.class.getClassLoader()).build();
     screenRecorder = injector.getInstance(ScreenRecorder.class);
     screenRecorder.start(
         videoPath,
@@ -238,10 +249,45 @@ public final class Simulator {
                 }));
   }
 
+  private void setupPerfStats() {
+    perfStatsCollector = PerfStatsCollector.getInstance();
+    perfStatsCollector.putMetadata(new Metadata(RuntimeEnvironment.getApiLevel()));
+    perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
+    boolean enabled = !perfStatsReporters.isEmpty();
+    perfStatsCollector.setEnabled(enabled);
+
+    if (enabled) {
+      Runtime.getRuntime()
+          .addShutdownHook(
+              new Thread(
+                  () -> {
+                    reportPerfStats(perfStatsCollector);
+                    perfStatsCollector.reset();
+                  }));
+    }
+  }
+
   private static class SimulatorFrameCallback implements Choreographer.FrameCallback {
     @Override
     public void doFrame(long frameTimeNanos) {
       Choreographer.getInstance().postFrameCallback(this);
+    }
+  }
+
+  private void reportPerfStats(PerfStatsCollector perfStatsCollector) {
+    if (perfStatsReporters.isEmpty()) {
+      return;
+    }
+
+    Metadata metadata = perfStatsCollector.getMetadata();
+    Collection<Metric> metrics = perfStatsCollector.getMetrics();
+
+    for (PerfStatsReporter perfStatsReporter : perfStatsReporters) {
+      try {
+        perfStatsReporter.report(metadata, metrics);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
   }
 }
