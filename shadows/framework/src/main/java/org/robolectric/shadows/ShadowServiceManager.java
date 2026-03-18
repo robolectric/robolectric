@@ -26,6 +26,7 @@ import android.app.admin.IDevicePolicyManager;
 import android.app.ambientcontext.IAmbientContextManager;
 import android.app.appfunctions.IAppFunctionService;
 import android.app.job.IJobScheduler;
+import android.app.ondeviceintelligence.IOnDeviceIntelligenceManager;
 import android.app.role.IRoleManager;
 import android.app.slice.ISliceManager;
 import android.app.supervision.ISupervisionManager;
@@ -404,6 +405,11 @@ public class ShadowServiceManager {
           "protolog_configuration" /* Context.PROTOLOG_CONFIGURATION_SERVICE, */,
           "com.android.internal.protolog.ProtoLogConfigurationService"
           /* new ProtoLogConfigurationServiceImpl.class */ );
+
+      addBinderService(
+          binderServices,
+          Context.ON_DEVICE_INTELLIGENCE_SERVICE,
+          IOnDeviceIntelligenceManager.class.getName());
     }
     if (RuntimeEnvironment.getApiLevel() >= BAKLAVA) {
       addBinderService(
