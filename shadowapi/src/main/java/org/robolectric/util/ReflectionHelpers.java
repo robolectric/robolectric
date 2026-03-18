@@ -14,7 +14,11 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.ClassName;
 
-/** Collection of helper methods for calling methods and accessing fields reflectively. */
+/**
+ * Collection of helper methods for calling methods and accessing fields reflectively.
+ *
+ * <p>For uses within Robolectric, reflector methods are generally preferred over these helpers.
+ */
 @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals", "NewApi"})
 public class ReflectionHelpers {
 
