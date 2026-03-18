@@ -68,6 +68,7 @@ public class ViewAnimationTest {
       // If Choreographer is not paused and real drawing is supported, the animation will advance
       // to the end
       ShadowPausedChoreographer.setPaused(true);
+      long frameDelayMs = ShadowPausedChoreographer.getFrameDelay().toMillis();
       Activity activity = Robolectric.setupActivity(Activity.class);
       View view = new View(activity);
       ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(100, 100);
@@ -79,13 +80,14 @@ public class ViewAnimationTest {
       long startTime = SystemClock.uptimeMillis();
 
       final TestTranslateAnimation animation = new TestTranslateAnimation(0, 100, 0, 0);
-      animation.setDuration(1000);
+      // use a duration exactly divisible by frame delay so the animation timing matches up
+      animation.setDuration(frameDelayMs * 100);
       view.startAnimation(animation);
 
-      shadowOf(Looper.getMainLooper()).idleFor(500, TimeUnit.MILLISECONDS);
+      shadowOf(Looper.getMainLooper()).idleFor(frameDelayMs * 50, TimeUnit.MILLISECONDS);
 
       // notably: skip the taking screenshot step as real drawing is enabled
-      assertThat(animation.lastAnimationTimeUptimeMs).isEqualTo(startTime + 500);
+      assertThat(animation.lastAnimationTimeUptimeMs).isEqualTo(startTime + frameDelayMs * 50);
     } finally {
       ShadowView.setUseRealViewAnimations(false);
       ShadowPausedChoreographer.setPaused(false);

@@ -46,7 +46,10 @@ import org.robolectric.util.reflector.WithType;
  * the next frame will only trigger when the clock is advance manually or via the {@link
  * ShadowLooper}.
  */
-@Implements(className = "android.view.DisplayEventReceiver", isInAndroidSdk = false)
+@Implements(
+    className = "android.view.DisplayEventReceiver",
+    isInAndroidSdk = false,
+    maxSdk = BAKLAVA)
 public class ShadowDisplayEventReceiver {
 
   private static final NativeObjRegistry<NativeDisplayEventReceiver> nativeObjRegistry =

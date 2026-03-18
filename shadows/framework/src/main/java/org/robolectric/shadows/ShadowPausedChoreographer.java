@@ -23,7 +23,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowDisplayEventReceiver.DisplayEventReceiverReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -115,8 +114,10 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
     }
     DisplayEventReceiver receiver =
         reflector(ChoreographerReflector.class, realObject).getReceiver();
-    ShadowDisplayEventReceiver shadowReceiver = Shadow.extract(receiver);
-    shadowReceiver.resetState();
+    if (receiver != null) {
+      ShadowDisplayEventReceiver shadowReceiver = Shadow.extract(receiver);
+      shadowReceiver.resetState();
+    }
   }
 
   /**
@@ -126,8 +127,6 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
    */
   @VisibleForTesting
   boolean isInitialized() {
-    DisplayEventReceiver receiver =
-        reflector(ChoreographerReflector.class, realObject).getReceiver();
-    return reflector(DisplayEventReceiverReflector.class, receiver).getReceiverPtr() != 0;
+    return activeChoreographers.contains(realChoreographer);
   }
 }

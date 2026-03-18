@@ -4,6 +4,8 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.base.Preconditions.checkState;
+import static dalvik.annotation.compat.VersionCodes.BAKLAVA;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
 import static org.robolectric.util.reflector.Reflector.reflector;
 import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
@@ -13,7 +15,6 @@ import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
 import android.view.DisplayEventReceiver;
 import java.time.Duration;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -55,6 +56,17 @@ public abstract class ShadowChoreographer {
 
     public Picker() {
       super(ShadowLegacyChoreographer.class, ShadowPausedChoreographer.class);
+    }
+
+    @Override
+    @SuppressWarnings("deprecation") // This is Robolectric library code
+    public Class<? extends ShadowChoreographer> pickShadowClass() {
+      if (getApiLevel() > BAKLAVA) {
+        // legacy LooperMode is not supported on > BAKLAVA, so just use
+        // ShadowPausedNoVsyncChoreographer
+        return ShadowPausedNoVsyncChoreographer.class;
+      }
+      return super.pickShadowClass();
     }
   }
 
@@ -213,7 +225,7 @@ public abstract class ShadowChoreographer {
     nextVsyncTimeNanos = 0;
     isPaused = false;
     frameDelay = Duration.ofMillis(getDefaultFrameDelay());
-    if (RuntimeEnvironment.getApiLevel() >= N) {
+    if (getApiLevel() >= N) {
       ShadowBackdropFrameRenderer.reset();
     }
   }
