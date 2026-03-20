@@ -3,19 +3,17 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.renderscript.RenderScript;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 /**
  * Shadow for {@link RenderScript}. The main purpose of this shadow is to allow creation of
@@ -110,20 +108,12 @@ public class ShadowRenderScript {
     return 1;
   }
 
-  @Implementation
+  @Filter
   protected void destroy() {
     isDestroyed = true;
-
-    reflector(RenderScriptReflector.class, realRenderScript).destroy();
   }
 
   public boolean isDestroyed() {
     return isDestroyed;
-  }
-
-  @ForType(RenderScript.class)
-  interface RenderScriptReflector {
-    @Direct
-    void destroy();
   }
 }

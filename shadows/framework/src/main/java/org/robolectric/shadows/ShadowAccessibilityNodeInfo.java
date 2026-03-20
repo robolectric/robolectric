@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -281,10 +283,8 @@ public class ShadowAccessibilityNodeInfo {
     this.refreshReturnValue = refreshReturnValue;
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void setText(CharSequence t) {
-    // Call the original method to set the underlying fields.
-    accessibilityNodeInfoReflector.setText(t);
     if (!useRealAni()) {
       text = t;
     }
@@ -493,17 +493,15 @@ public class ShadowAccessibilityNodeInfo {
     this.traversalBefore = obtain(info);
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void setSource(View source) {
-    accessibilityNodeInfoReflector.setSource(source);
     if (!useRealAni()) {
       this.view = source;
     }
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void setSource(View root, int virtualDescendantId) {
-    accessibilityNodeInfoReflector.setSource(root, virtualDescendantId);
     if (!useRealAni()) {
       this.view = root;
     }
@@ -595,18 +593,16 @@ public class ShadowAccessibilityNodeInfo {
     shadowAccessibilityNodeInfo.parent = realAccessibilityNodeInfo;
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void addChild(View child) {
-    accessibilityNodeInfoReflector.addChild(child);
     if (!useRealAni()) {
       AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(child);
       addChild(node);
     }
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void addChild(View root, int virtualDescendantId) {
-    accessibilityNodeInfoReflector.addChild(root, virtualDescendantId);
     if (!useRealAni()) {
       AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(root, virtualDescendantId);
       addChild(node);
@@ -647,9 +643,8 @@ public class ShadowAccessibilityNodeInfo {
    * will have direct access to the real {@link AccessibilityNodeInfo} hierarchy, so we want all
    * future interactions with ANI to use the real object.
    */
-  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  @Filter(minSdk = UPSIDE_DOWN_CAKE, order = Order.AFTER)
   protected void setQueryFromAppProcessEnabled(View view, boolean enabled) {
-    accessibilityNodeInfoReflector.setQueryFromAppProcessEnabled(view, enabled);
     if (enabled) {
       queryFromAppProcessWasEnabled = true;
     }
@@ -703,9 +698,6 @@ public class ShadowAccessibilityNodeInfo {
     boolean refresh();
 
     @Direct
-    void setText(CharSequence t);
-
-    @Direct
     CharSequence getText();
 
     @Direct
@@ -733,12 +725,6 @@ public class ShadowAccessibilityNodeInfo {
     void setTraversalBefore(View info, int virtualDescendantId);
 
     @Direct
-    void setSource(View source);
-
-    @Direct
-    void setSource(View root, int virtualDescendantId);
-
-    @Direct
     AccessibilityWindowInfo getWindow();
 
     @Direct
@@ -758,12 +744,6 @@ public class ShadowAccessibilityNodeInfo {
     @Direct
     int hashCode();
 
-    @Direct
-    void addChild(View child);
-
-    @Direct
-    void addChild(View child, int id);
-
     @Override
     @Direct
     String toString();
@@ -772,9 +752,6 @@ public class ShadowAccessibilityNodeInfo {
     AccessibilityNodeInfo newInstance(AccessibilityNodeInfo other);
 
     void init(AccessibilityNodeInfo other);
-
-    @Direct
-    void setQueryFromAppProcessEnabled(View view, boolean enabled);
   }
 
   static boolean useRealAni() {

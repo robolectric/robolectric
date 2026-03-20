@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.util.reflector.Reflector.reflector;
-
 import android.app.PendingIntent;
 import android.media.MediaMetadata;
 import android.media.Rating;
@@ -15,13 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 /** Implementation of {@link android.media.session.MediaController}. */
 @Implements(MediaController.class)
@@ -139,21 +136,18 @@ public class ShadowMediaController {
    * Register callback and store it in the shadow to make it easier to check the state of the
    * registered callbacks. Handler is just passed on to the real class.
    */
-  @Implementation
+  @Filter
   protected void registerCallback(@Nonnull Callback callback, @Nullable Handler handler) {
     callbacks.add(callback);
-    reflector(MediaControllerReflector.class, realMediaController)
-        .registerCallback(callback, handler);
   }
 
   /**
    * Unregister callback and remove it from the shadow to make it easier to check the state of the
    * registered callbacks.
    */
-  @Implementation
+  @Filter
   protected void unregisterCallback(@Nonnull Callback callback) {
     callbacks.remove(callback);
-    reflector(MediaControllerReflector.class, realMediaController).unregisterCallback(callback);
   }
 
   /** Gets the callbacks registered to MediaController. */
@@ -200,15 +194,5 @@ public class ShadowMediaController {
         ClassParameter.from(int.class, messageId),
         ClassParameter.from(Object.class, metadata),
         ClassParameter.from(Bundle.class, new Bundle()));
-  }
-
-  @ForType(MediaController.class)
-  interface MediaControllerReflector {
-
-    @Direct
-    void registerCallback(@Nonnull Callback callback, @Nullable Handler handler);
-
-    @Direct
-    void unregisterCallback(@Nonnull Callback callback);
   }
 }

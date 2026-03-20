@@ -4,18 +4,17 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.AnimatedVectorDrawable.VectorDrawableAnimatorRT;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.nativeruntime.AnimatedVectorDrawableNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.shadows.ShadowNativeAnimatedVectorDrawable.Picker;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link AnimatedVectorDrawable} that is backed by native code */
 @Implements(
@@ -29,15 +28,13 @@ public class ShadowNativeAnimatedVectorDrawable extends ShadowDrawable {
 
   private boolean startInitiated;
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void start() {
-    reflector(AnimatedVectorDrawableReflector.class, realAnimatedVectorDrawable).start();
     startInitiated = true;
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void stop() {
-    reflector(AnimatedVectorDrawableReflector.class, realAnimatedVectorDrawable).stop();
     startInitiated = false;
   }
 
@@ -149,15 +146,5 @@ public class ShadowNativeAnimatedVectorDrawable extends ShadowDrawable {
     public Picker() {
       super(null, ShadowNativeAnimatedVectorDrawable.class);
     }
-  }
-
-  /** Accessor interface for {@link AnimatedVectorDrawable} internals. */
-  @ForType(AnimatedVectorDrawable.class)
-  private interface AnimatedVectorDrawableReflector {
-    @Direct
-    void start();
-
-    @Direct
-    void stop();
   }
 }

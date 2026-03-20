@@ -19,16 +19,15 @@ import android.graphics.RectF;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 /**
  * Broken. This implementation is very specific to the application for which it was developed. Todo:
@@ -42,7 +41,6 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
       new NativeObjRegistry<>(NativeCanvas.class);
 
   @RealObject protected Canvas realCanvas;
-  @ReflectorObject protected CanvasReflector canvasReflector;
 
   private final List<RoundRectPaintHistoryEvent> roundRectPaintEvents = new ArrayList<>();
   private final List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<>();
@@ -61,9 +59,8 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
   private int height;
   private int width;
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void __constructor__(Bitmap bitmap) {
-    canvasReflector.__constructor__(bitmap);
     this.targetBitmap = bitmap;
   }
 
@@ -471,10 +468,9 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
     getNativeCanvas().restoreToCount(saveCount);
   }
 
-  @Implementation
+  @Filter
   protected void release() {
     nativeObjectRegistry.unregister(getNativeId());
-    canvasReflector.release();
   }
 
   @Implementation(minSdk = M, maxSdk = N_MR1)
@@ -561,16 +557,6 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
   @Resetter
   public static void reset() {
     nativeObjectRegistry.clear();
-  }
-
-  @SuppressWarnings("MemberName")
-  @ForType(Canvas.class)
-  private interface CanvasReflector {
-    @Direct
-    void __constructor__(Bitmap bitmap);
-
-    @Direct
-    void release();
   }
 
   private static class NativeCanvas {

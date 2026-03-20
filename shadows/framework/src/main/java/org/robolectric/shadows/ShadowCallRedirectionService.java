@@ -13,20 +13,17 @@ import android.telecom.PhoneAccountHandle;
 import com.android.internal.telecom.ICallRedirectionAdapter;
 import com.android.internal.telecom.ICallRedirectionService;
 import java.util.Optional;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Robolectric shadow to support {@link CallRedirectionService}. */
 @Implements(value = CallRedirectionService.class, minSdk = Q)
 public class ShadowCallRedirectionService {
   @RealObject CallRedirectionService callRedirectionService;
-  @ReflectorObject protected CallRedirectionServiceReflector callRedirectionServiceReflector;
 
   private static Optional<RedirectionResult> lastRedirectionResult = Optional.empty();
 
@@ -74,42 +71,25 @@ public class ShadowCallRedirectionService {
     lastRedirectionResult = Optional.empty();
   }
 
-  @Implementation
+  @Filter
   protected void redirectCall(
       Uri handle, PhoneAccountHandle initialPhoneAccount, boolean isInteractiveResponseAllowed) {
     setRedirectionResult(
         new RedirectionResult(
             new RedirectionResult.RedirectCallArgs(
                 handle, initialPhoneAccount, isInteractiveResponseAllowed)));
-    callRedirectionServiceReflector.redirectCall(
-        handle, initialPhoneAccount, isInteractiveResponseAllowed);
   }
 
-  @Implementation
+  @Filter
   protected void placeCallUnmodified() {
     setRedirectionResult(
         new RedirectionResult(RedirectionResult.RedirectionResultType.PLACE_CALL_UNMODIFIED));
-    callRedirectionServiceReflector.placeCallUnmodified();
   }
 
-  @Implementation
+  @Filter
   protected void cancelCall() {
     setRedirectionResult(
         new RedirectionResult(RedirectionResult.RedirectionResultType.CANCEL_CALL));
-    callRedirectionServiceReflector.cancelCall();
-  }
-
-  @ForType(CallRedirectionService.class)
-  private interface CallRedirectionServiceReflector {
-    @Direct
-    void redirectCall(
-        Uri handle, PhoneAccountHandle initialPhoneAccount, boolean isInteractiveResponseAllowed);
-
-    @Direct
-    void placeCallUnmodified();
-
-    @Direct
-    void cancelCall();
   }
 
   @ForType(ICallRedirectionService.class)

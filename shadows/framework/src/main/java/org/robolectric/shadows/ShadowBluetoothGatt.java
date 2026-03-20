@@ -27,6 +27,8 @@ import java.util.UUID;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -35,7 +37,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Constructor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
@@ -164,9 +165,8 @@ public class ShadowBluetoothGatt {
   /**
    * Disconnects an established connection, or cancels a connection attempt currently in progress.
    */
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void disconnect() {
-    bluetoothGattReflector.disconnect();
     if (this.isCallbackAppropriate()) {
       bluetoothGattCallback.onConnectionStateChange(
           this.realBluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_DISCONNECTED);
@@ -175,9 +175,8 @@ public class ShadowBluetoothGatt {
   }
 
   /** Close this Bluetooth GATT client. */
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void close() {
-    bluetoothGattReflector.close();
     this.isClosed = true;
     this.isConnected = false;
   }
@@ -635,12 +634,6 @@ public class ShadowBluetoothGatt {
             Object gattConnectionSettings,
         @WithType("android.bluetooth.BluetoothGattCallback") Object callback,
         Executor executor);
-
-    @Direct
-    void disconnect();
-
-    @Direct
-    void close();
   }
 
   @ForType(className = "android.bluetooth.BluetoothGattConnectionSettings$Builder")

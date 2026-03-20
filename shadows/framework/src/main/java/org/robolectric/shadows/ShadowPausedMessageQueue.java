@@ -19,6 +19,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.concurrent.GuardedBy;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -70,9 +72,8 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   // shadow constructor instead of nativeInit because nativeInit signature has changed across SDK
   // versions
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void __constructor__(boolean quitAllowed) {
-    reflector(MessageQueueReflector.class, realQueue).__constructor__(quitAllowed);
     long ptr = nativeQueueRegistry.register(this);
     reflector(MessageQueueReflector.class, realQueue).setPtr(ptr);
     clockListener =
@@ -236,15 +237,13 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     }
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void quit(boolean allowed) {
-    reflector(MessageQueueReflector.class, realQueue).quit(allowed);
     ShadowPausedSystemClock.removeListener(clockListener);
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void removeSyncBarrier(int token) {
-    reflector(MessageQueueReflector.class, realQueue).removeSyncBarrier(token);
     updateListener();
   }
 
@@ -394,8 +393,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   /** Accessor interface for {@link MessageQueue}'s internals. */
   @ForType(MessageQueue.class)
   private interface MessageQueueReflector {
-    @Direct
-    void __constructor__(boolean quitAllowed);
 
     @Direct
     boolean enqueueMessage(Message msg, long when);
@@ -418,9 +415,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     @Accessor("mPtr")
     void setPtr(long ptr);
 
-    @Direct
-    void quit(boolean b);
-
     @Accessor("mLast")
     void setLast(Message msg);
 
@@ -436,9 +430,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
     @Direct
     Message peekLastMessageForTest();
-
-    @Direct
-    void removeSyncBarrier(int token);
 
     @Direct
     Long peekWhenForTest();

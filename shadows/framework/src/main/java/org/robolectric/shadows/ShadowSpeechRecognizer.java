@@ -24,6 +24,7 @@ import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.ClassName;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -115,10 +116,9 @@ public class ShadowSpeechRecognizer {
     return getState().isRecognizerDestroyed;
   }
 
-  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
+  @Filter(maxSdk = UPSIDE_DOWN_CAKE)
   protected void destroy() {
     getState().isRecognizerDestroyed = true;
-    getDirectAccessors().destroy();
   }
 
   /** Returns the argument passed to the last call to {@link SpeechRecognizer#startListening}. */
@@ -323,10 +323,6 @@ public class ShadowSpeechRecognizer {
     @Static
     @Direct
     SpeechRecognizer createOnDeviceSpeechRecognizer(Context context);
-
-    @Direct
-    @Override
-    void destroy();
 
     @Accessor("mService")
     @Override

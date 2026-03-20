@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -15,11 +14,9 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 /** Shadow implementation of {@link android.service.voice.VoiceInteractionService}. */
 @Implements(VoiceInteractionService.class)
@@ -27,7 +24,6 @@ public class ShadowVoiceInteractionService extends ShadowService {
 
   private final List<Bundle> hintBundles = Collections.synchronizedList(new ArrayList<>());
   private final List<Bundle> sessionBundles = Collections.synchronizedList(new ArrayList<>());
-  @RealObject private VoiceInteractionService realVic;
 
   /**
    * Sets return value for {@link VoiceInteractionService#isActiveService(Context context,
@@ -40,15 +36,13 @@ public class ShadowVoiceInteractionService extends ShadowService {
         activeService == null ? "" : activeService.flattenToString());
   }
 
-  @Implementation(minSdk = Q)
+  @Filter(order = Order.AFTER, minSdk = Q)
   protected void setUiHints(Bundle hints) {
-    reflector(VoiceInteractionServiceReflector.class, realVic).setUiHints(hints);
     hintBundles.add(hints);
   }
 
-  @Implementation(minSdk = M)
+  @Filter(order = Order.AFTER, minSdk = M)
   protected void showSession(Bundle args, int flags) {
-    reflector(VoiceInteractionServiceReflector.class, realVic).showSession(args, flags);
     sessionBundles.add(args);
   }
 
@@ -80,16 +74,5 @@ public class ShadowVoiceInteractionService extends ShadowService {
   @Nullable
   public Bundle getLastSessionBundle() {
     return Iterables.getLast(sessionBundles, null);
-  }
-
-  /** Accessor interface for VoiceInteractionService's internals. */
-  @ForType(VoiceInteractionService.class)
-  interface VoiceInteractionServiceReflector {
-
-    @Direct
-    void showSession(Bundle args, int flags);
-
-    @Direct
-    void setUiHints(Bundle hints);
   }
 }

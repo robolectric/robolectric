@@ -40,6 +40,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -49,7 +51,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
@@ -62,11 +63,10 @@ public class ShadowVirtualDeviceManager {
   private static IVirtualDeviceManager service;
   @RealObject VirtualDeviceManager realObject;
 
-  @Implementation
+  @Filter
   protected void __constructor__(IVirtualDeviceManager service, Context context) {
     this.context = context;
     ShadowVirtualDeviceManager.service = service;
-    reflector(VirtualDeviceManagerReflector.class, realObject).__constructor__(service, context);
   }
 
   @SuppressWarnings("ProtectedImplementationLintCheck")
@@ -163,26 +163,17 @@ public class ShadowVirtualDeviceManager {
     private Integer pendingIntentResultCode = LAUNCH_SUCCESS;
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private Context context;
-    private int associationId;
     private final List<Integer> displayIds = new ArrayList<>();
 
-    @Implementation
+    @Filter(order = Order.AFTER)
     protected void __constructor__(
         IVirtualDeviceManager service,
         Context context,
         int associationId,
         VirtualDeviceParams params) {
-      Shadow.invokeConstructor(
-          VirtualDeviceManager.VirtualDevice.class,
-          realVirtualDevice,
-          ClassParameter.from(IVirtualDeviceManager.class, service),
-          ClassParameter.from(Context.class, context),
-          ClassParameter.from(int.class, associationId),
-          ClassParameter.from(VirtualDeviceParams.class, params));
       this.params = params;
       this.deviceId = nextDeviceId.getAndIncrement();
       this.context = context;
-      this.associationId = associationId;
       this.persistentDeviceId = "companion:" + associationId;
     }
 
@@ -498,9 +489,6 @@ public class ShadowVirtualDeviceManager {
 
   @ForType(VirtualDeviceManager.class)
   private interface VirtualDeviceManagerReflector {
-
-    @Direct
-    void __constructor__(IVirtualDeviceManager service, Context context);
 
     @Accessor("mVirtualDeviceListeners")
     List<?> getVirtualDeviceListeners();

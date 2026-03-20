@@ -1,16 +1,12 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N_MR1;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Bundle;
 import android.telecom.Connection;
 import java.util.Optional;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 /**
  * Shadow for {@link Connection} that represents a phone call or connection to a remote endpoint
@@ -19,21 +15,18 @@ import org.robolectric.util.reflector.ForType;
 @Implements(value = Connection.class, minSdk = N_MR1)
 public class ShadowConnection {
 
-  @RealObject private Connection connection;
   private String mostRecentEvent;
   private boolean destroyed = false;
 
   /** Records the event sent through sendConnectionEvent to be accessed later by tests. */
-  @Implementation
+  @Filter
   protected void sendConnectionEvent(String event, Bundle extras) {
     this.mostRecentEvent = event;
   }
 
-  @Implementation
+  @Filter
   protected void destroy() {
     this.destroyed = true;
-
-    reflector(ConnectionReflector.class, connection).destroy();
   }
 
   public Optional<String> getLastConnectionEvent() {
@@ -42,11 +35,5 @@ public class ShadowConnection {
 
   public boolean isDestroyed() {
     return destroyed;
-  }
-
-  @ForType(Connection.class)
-  interface ConnectionReflector {
-    @Direct
-    void destroy();
   }
 }

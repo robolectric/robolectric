@@ -11,6 +11,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -36,10 +37,9 @@ public class ShadowTextView extends ShadowView {
   private int compoundDrawablesWithIntrinsicBoundsRight;
   private int compoundDrawablesWithIntrinsicBoundsBottom;
 
-  @Implementation
+  @Filter
   protected void setTextAppearance(Context context, int resid) {
     textAppearanceId = resid;
-    reflector(TextViewReflector.class, realTextView).setTextAppearance(context, resid);
   }
 
   @Implementation
@@ -79,16 +79,14 @@ public class ShadowTextView extends ShadowView {
     return textAppearanceId;
   }
 
-  @Implementation
+  @Filter
   protected void addTextChangedListener(TextWatcher watcher) {
     this.watchers.add(watcher);
-    reflector(TextViewReflector.class, realTextView).addTextChangedListener(watcher);
   }
 
-  @Implementation
+  @Filter
   protected void removeTextChangedListener(TextWatcher watcher) {
     this.watchers.remove(watcher);
-    reflector(TextViewReflector.class, realTextView).removeTextChangedListener(watcher);
   }
 
   /**
@@ -113,24 +111,21 @@ public class ShadowTextView extends ShadowView {
     }
   }
 
-  @Implementation
+  @Filter
   protected void setOnEditorActionListener(TextView.OnEditorActionListener l) {
     this.onEditorActionListener = l;
-    reflector(TextViewReflector.class, realTextView).setOnEditorActionListener(l);
   }
 
   public TextView.OnEditorActionListener getOnEditorActionListener() {
     return onEditorActionListener;
   }
 
-  @Implementation
+  @Filter
   protected void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
     this.compoundDrawablesWithIntrinsicBoundsLeft = left;
     this.compoundDrawablesWithIntrinsicBoundsTop = top;
     this.compoundDrawablesWithIntrinsicBoundsRight = right;
     this.compoundDrawablesWithIntrinsicBoundsBottom = bottom;
-    reflector(TextViewReflector.class, realTextView)
-        .setCompoundDrawablesWithIntrinsicBounds(left, top, right, bottom);
   }
 
   public int getCompoundDrawablesWithIntrinsicBoundsLeft() {
@@ -153,24 +148,9 @@ public class ShadowTextView extends ShadowView {
   interface TextViewReflector {
 
     @Direct
-    void setTextAppearance(Context context, int resid);
-
-    @Direct
     boolean onKeyDown(int keyCode, KeyEvent event);
 
     @Direct
     boolean onKeyUp(int keyCode, KeyEvent event);
-
-    @Direct
-    void addTextChangedListener(TextWatcher watcher);
-
-    @Direct
-    void removeTextChangedListener(TextWatcher watcher);
-
-    @Direct
-    void setOnEditorActionListener(TextView.OnEditorActionListener l);
-
-    @Direct
-    void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom);
   }
 }

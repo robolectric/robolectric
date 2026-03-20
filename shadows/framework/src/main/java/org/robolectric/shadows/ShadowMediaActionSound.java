@@ -1,18 +1,17 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.media.MediaActionSound;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 /** A shadow implementation of {@link android.media.MediaActionSound}. */
 @Implements(MediaActionSound.class)
@@ -63,22 +62,13 @@ public class ShadowMediaActionSound {
   }
 
   /** Instrumented call to {@link android.media.MediaActionSound#play} */
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void play(int soundName) {
-    reflector(MediaActionSoundReflector.class, realObject).play(soundName);
-
     playCount.get(soundName).incrementAndGet();
   }
 
   @Implementation(minSdk = TIRAMISU)
   protected static boolean mustPlayShutterSound() {
     return mustPlayShutterSoundInternal;
-  }
-
-  @ForType(MediaActionSound.class)
-  interface MediaActionSoundReflector {
-
-    @Direct
-    void play(int soundName);
   }
 }

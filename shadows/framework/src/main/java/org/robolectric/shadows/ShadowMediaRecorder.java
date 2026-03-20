@@ -8,11 +8,12 @@ import android.media.MediaRecorder;
 import android.view.Surface;
 import com.google.common.base.Preconditions;
 import java.io.FileDescriptor;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(MediaRecorder.class)
@@ -113,9 +114,8 @@ public class ShadowMediaRecorder {
     state = STATE_DATA_SOURCE_CONFIGURED;
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void setOutputFile(FileDescriptor fileDescriptor) {
-    reflector(MediaRecorderReflector.class, realMediaRecorder).setOutputFile(fileDescriptor);
     state = STATE_DATA_SOURCE_CONFIGURED;
   }
 
@@ -299,8 +299,6 @@ public class ShadowMediaRecorder {
 
   @ForType(MediaRecorder.class)
   interface MediaRecorderReflector {
-    @Direct
-    void setOutputFile(FileDescriptor fileDescriptor);
 
     @Accessor("mFd")
     FileDescriptor getFileDescriptor();

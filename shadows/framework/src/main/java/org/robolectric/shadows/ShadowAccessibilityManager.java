@@ -36,6 +36,7 @@ import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.ClassName;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -45,7 +46,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(AccessibilityManager.class)
@@ -228,13 +228,11 @@ public class ShadowAccessibilityManager {
     }
   }
 
-  @Implementation
+  @Filter
   protected void sendAccessibilityEvent(AccessibilityEvent event) {
     synchronized (sLock) {
       sentAccessibilityEvents.add(event);
     }
-    reflector(AccessibilityManagerReflector.class, realAccessibilityManager)
-        .sendAccessibilityEvent(event);
   }
 
   /**
@@ -363,9 +361,6 @@ public class ShadowAccessibilityManager {
 
   @ForType(AccessibilityManager.class)
   interface AccessibilityManagerReflector {
-
-    @Direct
-    void sendAccessibilityEvent(AccessibilityEvent event);
 
     @Accessor("mTouchExplorationStateChangeListeners")
     ArrayMap<TouchExplorationStateChangeListener, Handler>

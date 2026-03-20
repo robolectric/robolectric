@@ -4,6 +4,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -20,23 +21,20 @@ public class ShadowGradientDrawable extends ShadowDrawable {
   private int strokeColor;
   private int strokeWidth;
 
-  @Implementation
+  @Filter
   protected void setColor(int color) {
     this.color = color;
-    reflector(GradientDrawableReflector.class, realGradientDrawable).setColor(color);
   }
 
-  @Implementation
+  @Filter
   protected void setShape(int shape) {
     this.shape = shape;
-    reflector(GradientDrawableReflector.class, realGradientDrawable).setShape(shape);
   }
 
-  @Implementation
+  @Filter
   protected void setStroke(int width, int color) {
     this.strokeWidth = width;
     this.strokeColor = color;
-    reflector(GradientDrawableReflector.class, realGradientDrawable).setStroke(width, color);
   }
 
   /**
@@ -71,14 +69,5 @@ public class ShadowGradientDrawable extends ShadowDrawable {
 
     @Direct
     int getShape();
-
-    @Direct
-    void setColor(int color);
-
-    @Direct
-    void setShape(int shape);
-
-    @Direct
-    void setStroke(int width, int color);
   }
 }

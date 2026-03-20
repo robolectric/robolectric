@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -371,25 +373,22 @@ public final class ShadowPausedLooper extends ShadowLooper {
     looperControlService.reset();
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected static void prepareMainLooper() {
-    reflector(LooperReflector.class).prepareMainLooper();
     ShadowPausedLooper pausedLooper = Shadow.extract(Looper.getMainLooper());
     pausedLooper.looperControlService.reset();
   }
 
-  @Implementation
+  @Filter
   protected void quit() {
     looperControlService.shutdown();
     loopingLoopers.remove(realLooper);
-    reflector(LooperReflector.class, realLooper).quit();
   }
 
-  @Implementation
+  @Filter
   protected void quitSafely() {
     looperControlService.shutdown();
     loopingLoopers.remove(realLooper);
-    reflector(LooperReflector.class, realLooper).quitSafely();
   }
 
   @Override
@@ -631,12 +630,6 @@ public final class ShadowPausedLooper extends ShadowLooper {
     @Static
     @Direct
     void prepareMainLooper();
-
-    @Direct
-    void quit();
-
-    @Direct
-    void quitSafely();
 
     @Direct
     void loop();

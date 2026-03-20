@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.widget.NumberPicker;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -33,9 +35,8 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
     }
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void setOnValueChangedListener(NumberPicker.OnValueChangeListener listener) {
-    reflector(NumberPickerReflector.class, realNumberPicker).setOnValueChangedListener(listener);
     this.onValueChangeListener = listener;
   }
 
@@ -45,9 +46,6 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
 
   @ForType(NumberPicker.class)
   interface NumberPickerReflector {
-
-    @Direct
-    void setOnValueChangedListener(NumberPicker.OnValueChangeListener listener);
 
     @Direct
     void setDisplayedValues(String[] displayedValues);

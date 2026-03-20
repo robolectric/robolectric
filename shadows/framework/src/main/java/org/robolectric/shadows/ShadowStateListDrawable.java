@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.util.reflector.Reflector.reflector;
-
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.util.StateSet;
@@ -9,11 +7,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 @Implements(StateListDrawable.class)
 public class ShadowStateListDrawable extends ShadowDrawable {
@@ -22,10 +18,9 @@ public class ShadowStateListDrawable extends ShadowDrawable {
 
   private final Map<List<Integer>, Drawable> stateToDrawable = new HashMap<>();
 
-  @Implementation
+  @Filter
   protected void addState(int[] stateSet, Drawable drawable) {
     stateToDrawable.put(createStateList(stateSet), drawable);
-    reflector(StateListDrawableReflector.class, realStateListDrawable).addState(stateSet, drawable);
   }
 
   /**
@@ -49,11 +44,5 @@ public class ShadowStateListDrawable extends ShadowDrawable {
     }
 
     return stateList;
-  }
-
-  @ForType(StateListDrawable.class)
-  interface StateListDrawableReflector {
-    @Direct
-    void addState(int[] stateSet, Drawable drawable);
   }
 }

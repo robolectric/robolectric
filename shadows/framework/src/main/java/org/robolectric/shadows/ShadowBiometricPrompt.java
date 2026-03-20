@@ -3,10 +3,8 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.CallbackExecutor;
-import android.annotation.NonNull;
 import android.hardware.biometrics.BiometricPrompt;
 import android.hardware.biometrics.BiometricPrompt.AuthenticationCallback;
 import android.hardware.biometrics.BiometricPrompt.AuthenticationResult;
@@ -16,14 +14,13 @@ import android.os.CancellationSignal;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 /** Provides testing APIs for {@link BiometricPrompt} */
 @Implements(
@@ -98,27 +95,23 @@ public class ShadowBiometricPrompt {
     requireCurrentSession().failOnce();
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void authenticate(
       CancellationSignal cancel,
       @CallbackExecutor Executor executor,
       AuthenticationCallback callback) {
-    reflector(BiometricPromptReflector.class, realBiometricPrompt)
-        .authenticate(cancel, executor, callback);
     synchronized (lock) {
       currentAuthenticateSession =
           new AuthenticateSession(realBiometricPrompt, callback, cancel, executor);
     }
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void authenticate(
       CryptoObject crypto,
       CancellationSignal cancel,
       @CallbackExecutor Executor executor,
       AuthenticationCallback callback) {
-    reflector(BiometricPromptReflector.class, realBiometricPrompt)
-        .authenticate(crypto, cancel, executor, callback);
     synchronized (lock) {
       currentAuthenticateSession =
           new AuthenticateSession(realBiometricPrompt, callback, cancel, executor);
@@ -232,21 +225,5 @@ public class ShadowBiometricPrompt {
         }
       }
     }
-  }
-
-  @ForType(BiometricPrompt.class)
-  interface BiometricPromptReflector {
-    @Direct
-    void authenticate(
-        @NonNull CancellationSignal cancel,
-        @NonNull @CallbackExecutor Executor executor,
-        @NonNull AuthenticationCallback callback);
-
-    @Direct
-    void authenticate(
-        @NonNull CryptoObject crypto,
-        @NonNull CancellationSignal cancel,
-        @NonNull @CallbackExecutor Executor executor,
-        @NonNull AuthenticationCallback callback);
   }
 }

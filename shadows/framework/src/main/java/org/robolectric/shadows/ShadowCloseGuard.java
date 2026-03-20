@@ -9,13 +9,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /**
@@ -31,23 +29,19 @@ public class ShadowCloseGuard {
       Collections.synchronizedSet(new HashSet<>());
 
   @RealObject private CloseGuard realCloseGuard;
-  @ReflectorObject private CloseGuardReflector closeGuardReflector;
 
-  @Implementation
+  @Filter
   protected void open(String closer) {
-    closeGuardReflector.open(closer);
     openCloseGuards.add(realCloseGuard);
   }
 
-  @Implementation
+  @Filter
   protected void close() {
-    closeGuardReflector.close();
     openCloseGuards.remove(realCloseGuard);
   }
 
-  @Implementation
+  @Filter
   protected void warnIfOpen() {
-    closeGuardReflector.warnIfOpen();
     if (openCloseGuards.contains(realCloseGuard)) {
       warnedThrowables.add(createThrowableFromCloseGuard(realCloseGuard));
     }
@@ -89,15 +83,6 @@ public class ShadowCloseGuard {
 
   @ForType(CloseGuard.class)
   interface CloseGuardReflector {
-
-    @Direct
-    void open(String closer);
-
-    @Direct
-    void close();
-
-    @Direct
-    void warnIfOpen();
 
     // For API 29+
     @Accessor("closerNameOrAllocationInfo")

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.app.AlarmManager.RTC_WAKEUP;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.AlarmManager;
 import android.app.AlarmManager.AlarmClockInfo;
@@ -25,12 +24,10 @@ import java.util.concurrent.RejectedExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link android.app.AlarmManager}. */
 @Implements(AlarmManager.class)
@@ -48,8 +45,6 @@ public class ShadowAlarmManager {
 
   @GuardedBy("scheduledAlarms")
   private final PriorityQueue<InternalScheduledAlarm> scheduledAlarms = new PriorityQueue<>();
-
-  @RealObject private AlarmManager realObject;
 
   @Resetter
   public static void reset() {
@@ -341,10 +336,8 @@ public class ShadowAlarmManager {
     }
   }
 
-  @Implementation
+  @Filter(order = Filter.Order.AFTER)
   protected void setTimeZone(String timeZone) {
-    // Do the real check first
-    reflector(AlarmManagerReflector.class, realObject).setTimeZone(timeZone);
     // Then do the right side effect
     TimeZone.setDefault(TimeZone.getTimeZone(timeZone));
   }
@@ -768,12 +761,5 @@ public class ShadowAlarmManager {
         throw new RejectedExecutionException(handler + " is shutting down");
       }
     }
-  }
-
-  @ForType(AlarmManager.class)
-  interface AlarmManagerReflector {
-
-    @Direct
-    void setTimeZone(String timeZone);
   }
 }

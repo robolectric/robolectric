@@ -16,6 +16,7 @@ import android.view.accessibility.AccessibilityWindowInfo;
 import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -142,9 +143,8 @@ public class ShadowAccessibilityWindowInfo {
     }
   }
 
-  @Implementation
+  @Filter(order = Filter.Order.AFTER)
   protected void recycle() {
-    reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo).recycle();
     // Clear shadow fields.
     children = null;
     parent = null;
@@ -290,9 +290,6 @@ public class ShadowAccessibilityWindowInfo {
 
     @Direct
     AccessibilityNodeInfo getAnchor();
-
-    @Direct
-    void recycle();
 
     @Direct
     @Static

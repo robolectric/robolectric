@@ -10,11 +10,11 @@ import android.bluetooth.le.AdvertisingSetParameters;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.PeriodicAdvertisingParameters;
 import java.util.Map;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow implementation of {@link BluetoothLeAdvertiser}. */
@@ -34,14 +34,13 @@ public class ShadowBluetoothLeAdvertiser {
     return bluetoothLeAdvertiserReflector.getAdvertisingSets().size();
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void startAdvertising(
       AdvertiseSettings settings, AdvertiseData advertiseData, AdvertiseCallback callback) {
-    bluetoothLeAdvertiserReflector.startAdvertising(settings, advertiseData, callback);
     this.lastAdvertiseData = advertiseData;
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void startAdvertisingSet(
       AdvertisingSetParameters parameters,
       AdvertiseData advertiseData,
@@ -49,8 +48,6 @@ public class ShadowBluetoothLeAdvertiser {
       PeriodicAdvertisingParameters periodicParameters,
       AdvertiseData periodicData,
       AdvertisingSetCallback callback) {
-    bluetoothLeAdvertiserReflector.startAdvertisingSet(
-        parameters, advertiseData, scanResponse, periodicParameters, periodicData, callback);
     this.lastAdvertiseData = advertiseData;
   }
 
@@ -65,18 +62,5 @@ public class ShadowBluetoothLeAdvertiser {
 
     @Accessor("mAdvertisingSets")
     Map<?, ?> getAdvertisingSets();
-
-    @Direct
-    void startAdvertisingSet(
-        AdvertisingSetParameters parameters,
-        AdvertiseData advertiseData,
-        AdvertiseData scanResponse,
-        PeriodicAdvertisingParameters periodicParameters,
-        AdvertiseData periodicData,
-        AdvertisingSetCallback callback);
-
-    @Direct
-    void startAdvertising(
-        AdvertiseSettings settings, AdvertiseData advertiseData, AdvertiseCallback callback);
   }
 }
