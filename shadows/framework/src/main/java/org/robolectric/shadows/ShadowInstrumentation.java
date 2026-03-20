@@ -74,7 +74,7 @@ import org.robolectric.util.reflector.WithType;
 @Implements(Instrumentation.class)
 public class ShadowInstrumentation {
 
-  @RealObject private Instrumentation realObject;
+  @RealObject protected Instrumentation realObject;
 
   private final List<Intent> startedActivities = Collections.synchronizedList(new ArrayList<>());
   private final List<IntentForResult> startedActivitiesForResults =
@@ -106,7 +106,7 @@ public class ShadowInstrumentation {
   private final Map<Intent.FilterComparison, ServiceConnectionDataWrapper>
       serviceConnectionDataForIntent = Collections.synchronizedMap(new HashMap<>());
   // default values for bindService
-  private ServiceConnectionDataWrapper defaultServiceConnectionData =
+  protected ServiceConnectionDataWrapper defaultServiceConnectionData =
       new ServiceConnectionDataWrapper(null, null);
   private final List<String> unbindableActions = Collections.synchronizedList(new ArrayList<>());
   private final List<ComponentName> unbindableComponents =
@@ -687,7 +687,7 @@ public class ShadowInstrumentation {
     }
     final Intent.FilterComparison filterComparison = new Intent.FilterComparison(intent);
     final ServiceConnectionDataWrapper serviceConnectionDataWrapper =
-        serviceConnectionDataForIntent.getOrDefault(filterComparison, defaultServiceConnectionData);
+        getServiceConnectionDataWrapper(intent);
     if (unbindableActions.contains(intent.getAction())
         || unbindableComponents.contains(intent.getComponent())
         || unbindableComponents.contains(
@@ -710,6 +710,11 @@ public class ShadowInstrumentation {
       serviceCallbackScheduler.schedule(onServiceConnectedRunnable);
     }
     return true;
+  }
+
+  protected ServiceConnectionDataWrapper getServiceConnectionDataWrapper(Intent intent) {
+    return serviceConnectionDataForIntent.getOrDefault(
+        new Intent.FilterComparison(intent), defaultServiceConnectionData);
   }
 
   protected void setUnbindServiceCallsOnServiceDisconnected(boolean flag) {
@@ -1109,11 +1114,12 @@ public class ShadowInstrumentation {
     }
   }
 
-  private static class ServiceConnectionDataWrapper {
+  /** Contains the necessary information for imitating proper Android service binding. */
+  protected static class ServiceConnectionDataWrapper {
     public final ComponentName componentNameForBindService;
     public final IBinder binderForBindService;
 
-    private ServiceConnectionDataWrapper(
+    public ServiceConnectionDataWrapper(
         ComponentName componentNameForBindService, IBinder binderForBindService) {
       this.componentNameForBindService = componentNameForBindService;
       this.binderForBindService = binderForBindService;
