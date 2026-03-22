@@ -33,7 +33,7 @@ import org.robolectric.annotation.Resetter;
     minSdk = VANILLA_ICE_CREAM,
     isInAndroidSdk = false)
 @SuppressWarnings("NonFinalStaticField") // Need shadow members to be non-final to allow resetting.
-public class ShadowOnDeviceSandboxedInferenceService {
+public class ShadowOnDeviceSandboxedInferenceService extends ShadowService {
 
   public static final Bundle DUMMY_BUNDLE = new Bundle();
 

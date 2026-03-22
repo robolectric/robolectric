@@ -25,7 +25,7 @@ import org.robolectric.annotation.Resetter;
     minSdk = VANILLA_ICE_CREAM,
     isInAndroidSdk = false)
 @SuppressWarnings("NonFinalStaticField") // Need shadow members to be non-final to allow resetting.
-public class ShadowOnDeviceIntelligenceService {
+public class ShadowOnDeviceIntelligenceService extends ShadowService {
 
   public static final PersistableBundle DUMMY_BUNDLE = new PersistableBundle();
 
