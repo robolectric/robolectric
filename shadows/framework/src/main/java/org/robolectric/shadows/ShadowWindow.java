@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -14,12 +13,11 @@ import android.view.Window.OnFrameMetricsAvailableListener;
 import com.android.internal.policy.PhoneWindow;
 import java.util.HashSet;
 import java.util.Set;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Window.class)
@@ -38,30 +36,26 @@ public class ShadowWindow {
     return new PhoneWindow(context);
   }
 
-  @Implementation
+  @Filter
   protected void setFlags(int flags, int mask) {
     this.flags = (this.flags & ~mask) | (flags & mask);
-    reflector(WindowReflector.class, realWindow).setFlags(flags, mask);
   }
 
-  @Implementation(minSdk = Q)
+  @Filter(minSdk = Q)
   @HiddenApi
   protected void addSystemFlags(int flags) {
     this.privateFlags |= flags;
-    reflector(WindowReflector.class, realWindow).addSystemFlags(flags);
   }
 
-  @Implementation(maxSdk = R)
+  @Filter(maxSdk = R)
   @HiddenApi
   protected void addPrivateFlags(int flags) {
     this.privateFlags |= flags;
-    reflector(WindowReflector.class, realWindow).addPrivateFlags(flags);
   }
 
-  @Implementation
+  @Filter
   protected void setSoftInputMode(int softInputMode) {
     this.softInputMode = softInputMode;
-    reflector(WindowReflector.class, realWindow).setSoftInputMode(softInputMode);
   }
 
   public boolean getFlag(int flag) {
@@ -126,21 +120,5 @@ public class ShadowWindow {
     for (OnFrameMetricsAvailableListener listener : onFrameMetricsAvailableListeners) {
       listener.onFrameMetricsAvailable(realWindow, frameMetrics, dropCountSinceLastInvocation);
     }
-  }
-
-  @ForType(Window.class)
-  interface WindowReflector {
-
-    @Direct
-    void setFlags(int flags, int mask);
-
-    @Direct
-    void addSystemFlags(int flags);
-
-    @Direct
-    void addPrivateFlags(int flags);
-
-    @Direct
-    void setSoftInputMode(int softInputMode);
   }
 }
