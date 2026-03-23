@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.WallpaperInfo;
 import android.app.WallpaperManager;
+import android.app.wallpaper.WallpaperDescription;
 import android.content.ComponentName;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -21,6 +22,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
+import android.util.SparseArray;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.io.ByteStreams;
@@ -57,6 +59,10 @@ public class ShadowWallpaperManagerTest {
   private static final Rect TEST_VISIBLE_CROP_HINT_1 = new Rect(1, 2, 3, 4);
 
   private static final Rect TEST_VISIBLE_CROP_HINT_2 = new Rect(5, 6, 7, 8);
+
+  private static final Rect TEST_VISIBLE_CROP_HINT_3 = new Rect(11, 22, 33, 44);
+
+  private static final Rect TEST_VISIBLE_CROP_HINT_4 = new Rect(55, 66, 77, 88);
 
   private static final int UNSUPPORTED_FLAG = 0x100; // neither FLAG_SYSTEM nor FLAG_LOCK
 
@@ -345,6 +351,43 @@ public class ShadowWallpaperManagerTest {
 
   @Test
   @Config(minSdk = BAKLAVA)
+  public void
+      setBitmapWithDescription_multipleCropHintsWithFlagLock_shouldCacheMutipleCropHintsInMemory()
+          throws Exception {
+    // create crop hints map
+    SparseArray<Rect> cropMap = new SparseArray<>();
+    cropMap.put(WallpaperManager.ORIENTATION_PORTRAIT, TEST_VISIBLE_CROP_HINT_1);
+    cropMap.put(WallpaperManager.ORIENTATION_LANDSCAPE, TEST_VISIBLE_CROP_HINT_2);
+    cropMap.put(WallpaperManager.ORIENTATION_SQUARE_PORTRAIT, TEST_VISIBLE_CROP_HINT_3);
+    cropMap.put(WallpaperManager.ORIENTATION_SQUARE_LANDSCAPE, TEST_VISIBLE_CROP_HINT_4);
+    WallpaperDescription description =
+        new WallpaperDescription.Builder().setCropHints(cropMap).build();
+
+    int result =
+        manager.setBitmapWithDescription(
+            TEST_IMAGE_1, description, /* allowBackup= */ false, WallpaperManager.FLAG_LOCK);
+
+    assertThat(result).isEqualTo(1);
+    assertThat(shadowOf(manager).getDescription(WallpaperManager.FLAG_LOCK)).isEqualTo(description);
+    SparseArray<Rect> flagLockCropHints =
+        shadowOf(manager).getCropHints(WallpaperManager.FLAG_LOCK);
+    SparseArray<Rect> flagSystemCropHints =
+        shadowOf(manager).getCropHints(WallpaperManager.FLAG_SYSTEM);
+    assertThat(flagLockCropHints).isNotNull();
+    assertThat(flagLockCropHints.get(WallpaperManager.ORIENTATION_PORTRAIT))
+        .isEqualTo(TEST_VISIBLE_CROP_HINT_1);
+    assertThat(flagLockCropHints.get(WallpaperManager.ORIENTATION_LANDSCAPE))
+        .isEqualTo(TEST_VISIBLE_CROP_HINT_2);
+    assertThat(flagLockCropHints.get(WallpaperManager.ORIENTATION_SQUARE_PORTRAIT))
+        .isEqualTo(TEST_VISIBLE_CROP_HINT_3);
+    assertThat(flagLockCropHints.get(WallpaperManager.ORIENTATION_SQUARE_LANDSCAPE))
+        .isEqualTo(TEST_VISIBLE_CROP_HINT_4);
+    assertThat(flagSystemCropHints).isNull();
+    cropMap.clear();
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
   public void setBitmap_shouldUpdateBackupEligibility() throws Exception {
     manager.setBitmap(
         TEST_IMAGE_1,
@@ -567,6 +610,46 @@ public class ShadowWallpaperManagerTest {
 
     assertThat(manager.isWallpaperBackupEligible(WallpaperManager.FLAG_SYSTEM)).isTrue();
     assertThat(manager.isWallpaperBackupEligible(WallpaperManager.FLAG_LOCK)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void
+      setStreamWithDescription_multipleCropHintsWithFlagLock_shouldCacheMutipleCropHintsInMemory()
+          throws Exception {
+    // create crop hints map
+    SparseArray<Rect> cropMap = new SparseArray<>();
+    cropMap.put(WallpaperManager.ORIENTATION_PORTRAIT, TEST_VISIBLE_CROP_HINT_1);
+    cropMap.put(WallpaperManager.ORIENTATION_LANDSCAPE, TEST_VISIBLE_CROP_HINT_2);
+    cropMap.put(WallpaperManager.ORIENTATION_SQUARE_PORTRAIT, TEST_VISIBLE_CROP_HINT_3);
+    cropMap.put(WallpaperManager.ORIENTATION_SQUARE_LANDSCAPE, TEST_VISIBLE_CROP_HINT_4);
+    WallpaperDescription description =
+        new WallpaperDescription.Builder().setCropHints(cropMap).build();
+
+    int result =
+        manager.setStreamWithDescription(
+            new ByteArrayInputStream(getBytesFromBitmap(TEST_IMAGE_1)),
+            description,
+            /* allowBackup= */ false,
+            WallpaperManager.FLAG_LOCK);
+
+    assertThat(result).isEqualTo(1);
+    assertThat(shadowOf(manager).getDescription(WallpaperManager.FLAG_LOCK)).isEqualTo(description);
+    SparseArray<Rect> flagLockCropHints =
+        shadowOf(manager).getCropHints(WallpaperManager.FLAG_LOCK);
+    SparseArray<Rect> flagSystemCropHints =
+        shadowOf(manager).getCropHints(WallpaperManager.FLAG_SYSTEM);
+    assertThat(flagLockCropHints).isNotNull();
+    assertThat(flagLockCropHints.get(WallpaperManager.ORIENTATION_PORTRAIT))
+        .isEqualTo(TEST_VISIBLE_CROP_HINT_1);
+    assertThat(flagLockCropHints.get(WallpaperManager.ORIENTATION_LANDSCAPE))
+        .isEqualTo(TEST_VISIBLE_CROP_HINT_2);
+    assertThat(flagLockCropHints.get(WallpaperManager.ORIENTATION_SQUARE_PORTRAIT))
+        .isEqualTo(TEST_VISIBLE_CROP_HINT_3);
+    assertThat(flagLockCropHints.get(WallpaperManager.ORIENTATION_SQUARE_LANDSCAPE))
+        .isEqualTo(TEST_VISIBLE_CROP_HINT_4);
+    assertThat(flagSystemCropHints).isNull();
+    cropMap.clear();
   }
 
   @Test

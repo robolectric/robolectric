@@ -11,6 +11,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.app.WallpaperInfo;
 import android.app.WallpaperManager;
+import android.app.wallpaper.WallpaperDescription;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -23,6 +24,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.util.MathUtils;
+import android.util.SparseArray;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -46,6 +48,8 @@ public class ShadowWallpaperManager {
   private static Bitmap homeScreenImage = null;
   private static Rect lockScreenVisibleCropHint = null;
   private static Rect homeScreenVisibleCropHint = null;
+  private static WallpaperDescription lockScreenDescription = null;
+  private static WallpaperDescription homeScreenDescription = null;
   private static boolean lockScreenAllowBackup = false;
   private static boolean homeScreenAllowBackup = false;
   private static boolean isWallpaperAllowed = true;
@@ -109,6 +113,75 @@ public class ShadowWallpaperManager {
   }
 
   /**
+   * Caches {@code fullImage} and {@code description} in the memory based on {@code which}.
+   *
+   * <p>After a success call, any previously set live wallpaper is removed,
+   *
+   * @param fullImage the bitmap image to be cached in the memory
+   * @param description the wallpaper description to be cached in the memory
+   * @param allowBackup whether the wallpaper is backup eligible
+   * @param which flag indicating which wallpaper to configure with the new bitmap, either {@link
+   *     WallpaperManager#FLAG_LOCK} or {@link WallpaperManager#FLAG_SYSTEM} are valid
+   * @throws exception if any of the rect in {@code description.getCropHints()} is not valid or
+   *     fullImage is null
+   * @return 0 if fails to cache. Otherwise, 1.
+   */
+  @Implementation(minSdk = BAKLAVA)
+  protected int setBitmapWithDescription(
+      Bitmap fullImage, WallpaperDescription description, boolean allowBackup, int which)
+      throws IOException {
+    if (fullImage == null) {
+      throw new IllegalArgumentException("Bitmap cannot be null");
+    }
+    for (int i = 0; i < description.getCropHints().size(); i++) {
+      validateRect(description.getCropHints().valueAt(i));
+    }
+    if ((which & (WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK)) == 0) {
+      return 0;
+    }
+    setBitmapInfo(fullImage, allowBackup, which);
+    setDescription(description, which);
+    return 1;
+  }
+
+  /**
+   * Caches {@code bitmapData} and {@code description} in the memory based on {@code which}.
+   *
+   * <p>After a success call, any previously set live wallpaper is removed,
+   *
+   * @param bitmapData the input stream which contains a bitmap image to be cached in the memory
+   * @param description the wallpaper description to be cached in the memory
+   * @param allowBackup whether the wallpaper is backup eligible
+   * @param which flag indicating which wallpaper to configure with the input stream, either {@link
+   *     WallpaperManager#FLAG_LOCK} or {@link WallpaperManager#FLAG_SYSTEM} are valid
+   * @throws exception if any of the rect in {@code description.getCropHints()} is not valid
+   * @return 0 if fails to cache. Otherwise, 1.
+   */
+  @Implementation(minSdk = BAKLAVA)
+  protected int setStreamWithDescription(
+      InputStream bitmapData, WallpaperDescription description, boolean allowBackup, int which)
+      throws IOException {
+    for (int i = 0; i < description.getCropHints().size(); i++) {
+      validateRect(description.getCropHints().valueAt(i));
+    }
+    if ((which & (WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK)) == 0) {
+      return 0;
+    }
+    setStreamInfo(bitmapData, allowBackup, which);
+    setDescription(description, which);
+    return 1;
+  }
+
+  private static void setDescription(WallpaperDescription description, int which) {
+    if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
+      lockScreenDescription = description;
+    }
+    if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
+      homeScreenDescription = description;
+    }
+  }
+
+  /**
    * Caches {@code fullImage} in the memory based on {@code which}.
    *
    * <p>After a success call, any previously set live wallpaper is removed,
@@ -124,9 +197,14 @@ public class ShadowWallpaperManager {
     if ((which & (WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK)) == 0) {
       return 0;
     }
+    setBitmapInfo(fullImage, allowBackup, which);
+    setVisibleCropHint(visibleCropHint, which);
+    return 1;
+  }
+
+  private static void setBitmapInfo(Bitmap fullImage, boolean allowBackup, int which) {
     if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
       lockScreenImage = fullImage;
-      lockScreenVisibleCropHint = visibleCropHint;
       lockScreenId =
           ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM)
               ? -1
@@ -137,18 +215,25 @@ public class ShadowWallpaperManager {
 
     if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
       homeScreenImage = fullImage;
-      homeScreenVisibleCropHint = visibleCropHint;
       homeScreenId = wallpaperId.incrementAndGet();
       homeScreenAllowBackup = allowBackup;
       wallpaperInfo = null;
     }
-    return 1;
+  }
+
+  private static void setVisibleCropHint(Rect visibleCropHint, int which) {
+    if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
+      lockScreenVisibleCropHint = visibleCropHint;
+    }
+    if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
+      homeScreenVisibleCropHint = visibleCropHint;
+    }
   }
 
   /**
    * Returns the memory cached {@link Bitmap} associated with {@code which}.
    *
-   * @param which either {@link WallpaperManager#FLAG_LOCK} or {WallpaperManager#FLAG_SYSTEM}.
+   * @param which either {@link WallpaperManager#FLAG_LOCK} or {@link WallpaperManager#FLAG_SYSTEM}.
    * @return The memory cached {@link Bitmap} associated with {@code which}. {@code null} if no
    *     bitmap was set.
    */
@@ -163,8 +248,11 @@ public class ShadowWallpaperManager {
   }
 
   /**
-   * Returns the last visibleCropHint {@link Rect} provided to {@link WallpaperManager#setBitmap}
-   * associated with {@code which}.
+   * Returns the memory cached {@link Rect} associated with {@code which}.
+   *
+   * @param which either {@link WallpaperManager#FLAG_LOCK} or {@link WallpaperManager#FLAG_SYSTEM}.
+   * @return The memory cached {@link Rect} associated with {@code which}. {@code null} if no rect
+   *     was set.
    */
   @Nullable
   public Rect getVisibleCropHint(int which) {
@@ -172,6 +260,57 @@ public class ShadowWallpaperManager {
       return lockScreenVisibleCropHint;
     } else if (which == WallpaperManager.FLAG_SYSTEM) {
       return homeScreenVisibleCropHint;
+    }
+    return null;
+  }
+
+  /**
+   * Returns the memory cached {@link SparseArray<Rect>} associated with {@code which}.
+   *
+   * @param which either {@link WallpaperManager#FLAG_LOCK} or {WallpaperManager#FLAG_SYSTEM}.
+   * @return The memory cached {@link SparseArray<Rect>} associated with {@code which}. {@code null}
+   *     if no sparse array was set.
+   */
+  @Nullable
+  public SparseArray<Rect> getCropHints(int which) {
+    if (which == WallpaperManager.FLAG_LOCK && lockScreenDescription != null) {
+      return lockScreenDescription.getCropHints();
+    } else if (which == WallpaperManager.FLAG_SYSTEM && homeScreenDescription != null) {
+      return homeScreenDescription.getCropHints();
+    }
+    return null;
+  }
+
+  /**
+   * Returns the memory cached {@link WallpaperDescription} associated with {@code which}.
+   *
+   * @param which either {@link WallpaperManager#FLAG_LOCK} or {@link WallpaperManager#FLAG_SYSTEM}.
+   * @return The memory cached {@link WallpaperDescription} associated with {@code which}. {@code
+   *     null} if no wallpaper description was set.
+   */
+  @Nullable
+  public WallpaperDescription getDescription(int which) {
+    if (which == WallpaperManager.FLAG_LOCK) {
+      return lockScreenDescription;
+    } else if (which == WallpaperManager.FLAG_SYSTEM) {
+      return homeScreenDescription;
+    }
+    return null;
+  }
+
+  /**
+   * Returns the memory cached {@link WallpaperDescription} associated with {@code which}.
+   *
+   * @param which either {@link WallpaperManager#FLAG_LOCK} or {@link WallpaperManager#FLAG_SYSTEM}.
+   * @return The memory cached {@link WallpaperDescription} associated with {@code which}. {@code
+   *     null} if no wallpaper description was set.
+   */
+  @Nullable
+  public WallpaperDescription getWallpaperDescription(int which) {
+    if (which == WallpaperManager.FLAG_LOCK) {
+      return lockScreenDescription;
+    } else if (which == WallpaperManager.FLAG_SYSTEM) {
+      return homeScreenDescription;
     }
     return null;
   }
@@ -265,18 +404,34 @@ public class ShadowWallpaperManager {
     if ((which & (WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK)) == 0) {
       return 0;
     }
-    if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
-      lockScreenImage = BitmapFactory.decodeStream(bitmapData);
-      lockScreenVisibleCropHint = visibleCropHint;
-      lockScreenAllowBackup = allowBackup;
-    }
-
-    if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
-      homeScreenImage = BitmapFactory.decodeStream(bitmapData);
-      homeScreenVisibleCropHint = visibleCropHint;
-      homeScreenAllowBackup = allowBackup;
-    }
+    setStreamInfo(bitmapData, allowBackup, which);
+    setVisibleCropHint(visibleCropHint, which);
     return 1;
+  }
+
+  private static void setStreamInfo(InputStream bitmapData, boolean allowBackup, int which) {
+    Bitmap decoded = BitmapFactory.decodeStream(bitmapData);
+    if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
+      lockScreenImage = decoded;
+      lockScreenId =
+          ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM)
+              ? -1
+              : wallpaperId.incrementAndGet();
+      lockScreenAllowBackup = allowBackup;
+      wallpaperInfo = null;
+    }
+    if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
+      homeScreenImage = decoded;
+      homeScreenId = wallpaperId.incrementAndGet();
+      homeScreenAllowBackup = allowBackup;
+      wallpaperInfo = null;
+    }
+  }
+
+  private static void validateRect(Rect rect) {
+    if (rect != null && rect.isEmpty()) {
+      throw new IllegalArgumentException("visibleCrop rectangle must be valid and non-empty");
+    }
   }
 
   /**
@@ -408,6 +563,14 @@ public class ShadowWallpaperManager {
     homeScreenImage = null;
     lockScreenVisibleCropHint = null;
     homeScreenVisibleCropHint = null;
+    if (lockScreenDescription != null) {
+      lockScreenDescription.getCropHints().clear();
+      lockScreenDescription = null;
+    }
+    if (homeScreenDescription != null) {
+      homeScreenDescription.getCropHints().clear();
+      homeScreenDescription = null;
+    }
     isWallpaperAllowed = true;
     isWallpaperSupported = true;
     wallpaperInfo = null;
