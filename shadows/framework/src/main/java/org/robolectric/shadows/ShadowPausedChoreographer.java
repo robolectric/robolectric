@@ -41,7 +41,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowPausedChoreographer extends ShadowChoreographer {
 
   // keep track of all active Choreographers so they can be selectively reset
-  private static final Set<Choreographer> activeChoreographers = new CopyOnWriteArraySet<>();
+  protected static final Set<Choreographer> activeChoreographers = new CopyOnWriteArraySet<>();
 
   @RealObject private Choreographer realChoreographer;
 
