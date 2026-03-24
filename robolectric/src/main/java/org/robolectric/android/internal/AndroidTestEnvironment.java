@@ -95,10 +95,13 @@ import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.Util;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 import org.robolectric.versioning.AndroidVersions;
 
 @SuppressLint("NewApi")
@@ -129,7 +132,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     this.shadowProviders = shadowProviders;
     this.testEnvironmentLifecyclePlugins = lifecyclePlugins;
 
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
+    reflector(RuntimeEnvironmentReflector.class).setApiLevel(apiLevel);
   }
 
   @Override
@@ -317,7 +320,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     ComponentName actualComponentName =
         new ComponentName(
             applicationInfo.packageName, androidInstrumentation.getClass().getSimpleName());
-    ReflectionHelpers.setField(androidInstrumentation, "mComponent", actualComponentName);
+    reflector(InstrumentationReflector.class, androidInstrumentation)
+        .setComponent(actualComponentName);
 
     // unclear why, but prior to P the processName wasn't set
     if (apiLevel < P && applicationInfo.processName == null) {
@@ -392,15 +396,10 @@ public class AndroidTestEnvironment implements TestEnvironment {
     // Circumvent the 'No Compatibility callbacks set!' log. See #8509
     if (apiLevel >= VANILLA_ICE_CREAM) {
       // Adds loggableChanges parameter.
-      ReflectionHelpers.callStaticMethod(
-          AppCompatCallbacks.class,
-          "install",
-          ClassParameter.from(long[].class, new long[0]),
-          ClassParameter.from(long[].class, new long[0]));
+      reflector(AppCompatCallbacksReflector.class).install(new long[0], new long[0]);
     } else if (apiLevel >= AndroidVersions.R.SDK_INT) {
       // Invoke the previous version.
-      ReflectionHelpers.callStaticMethod(
-          AppCompatCallbacks.class, "install", ClassParameter.from(long[].class, new long[0]));
+      reflector(AppCompatCallbacksReflector.class).install(new long[0]);
     }
 
     if (RuntimeEnvironment.getApiLevel() >= Q
@@ -523,9 +522,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
     Instrumentation androidInstrumentation = pickInstrumentation();
     androidInstrumentation.runOnMainSync(
         () -> {
-          ActivityThread activityThread = ReflectionHelpers.callConstructor(ActivityThread.class);
-          ReflectionHelpers.setStaticField(
-              ActivityThread.class, "sMainThreadHandler", new Handler(Looper.getMainLooper()));
+          ActivityThread activityThread = reflector(ActivityThreadReflector.class).newInstance();
+          reflector(ActivityThreadReflector.class)
+              .setMainThreadHandler(new Handler(Looper.getMainLooper()));
           reflector(ActivityThreadReflector.class, activityThread)
               .setInstrumentation(androidInstrumentation);
           RuntimeEnvironment.setActivityThread(activityThread);
@@ -720,5 +719,27 @@ public class AndroidTestEnvironment implements TestEnvironment {
         application.registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
       }
     }
+  }
+
+  @ForType(RuntimeEnvironment.class)
+  interface RuntimeEnvironmentReflector {
+    @Static
+    @Accessor("apiLevel")
+    void setApiLevel(int apiLevel);
+  }
+
+  @ForType(Application.class)
+  interface ApplicationReflector {
+    @Constructor
+    Application newInstance();
+  }
+
+  @ForType(AppCompatCallbacks.class)
+  interface AppCompatCallbacksReflector {
+    @Static
+    void install(long[] loggableChanges);
+
+    @Static
+    void install(long[] loggableChanges, long[] loggableChanges2);
   }
 }

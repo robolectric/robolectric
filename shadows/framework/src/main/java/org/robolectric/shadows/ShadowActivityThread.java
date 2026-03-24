@@ -22,6 +22,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ComponentInfoFlags;
 import android.content.res.Configuration;
+import android.os.Handler;
 import android.os.IBinder;
 import com.android.internal.content.ReferrerIntent;
 import java.lang.reflect.Proxy;
@@ -38,8 +39,10 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Reflector;
+import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link ActivityThread}. */
 @Implements(value = ActivityThread.class, isInAndroidSdk = false)
@@ -176,7 +179,7 @@ public class ShadowActivityThread {
     if (RuntimeEnvironment.getApiLevel() >= P) {
       record = new ActivityClientRecord();
     } else {
-      record = ReflectionHelpers.callConstructor(ActivityClientRecord.class);
+      record = reflector(ActivityClientRecordReflector.class).newInstance();
     }
     ActivityClientRecordReflector recordReflector =
         reflector(ActivityClientRecordReflector.class, record);
@@ -259,11 +262,26 @@ public class ShadowActivityThread {
 
     @Accessor("mActivities")
     Map<IBinder, ActivityClientRecord> getActivities();
+
+    @Accessor("mConfigurationController")
+    void setConfigurationController(Object configurationController);
+
+    @Accessor("mConfigurationController")
+    Object getConfigurationController();
+
+    @Constructor
+    ActivityThread newInstance();
+
+    @Static
+    @Accessor("sMainThreadHandler")
+    void setMainThreadHandler(Handler handler);
   }
 
   /** Accessor interface for {@link ActivityThread.AppBindData}'s internals. */
   @ForType(className = "android.app.ActivityThread$AppBindData")
   public interface AppBindDataReflector {
+    @Constructor
+    Object newInstance();
 
     @Accessor("appInfo")
     void setAppInfo(ApplicationInfo applicationInfo);
@@ -274,6 +292,9 @@ public class ShadowActivityThread {
 
   @ForType(ActivityClientRecord.class)
   private interface ActivityClientRecordReflector {
+    @Constructor
+    ActivityClientRecord newInstance();
+
     @Accessor("activity")
     void setActivity(Activity activity);
 

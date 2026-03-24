@@ -66,7 +66,8 @@ import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowApplication.Wrapper;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
@@ -229,12 +230,10 @@ public class ShadowInstrumentation {
       // automation connection and to the accessibility service, neither of which exist in
       // Robolectric.
       uiAutomation =
-          ReflectionHelpers.callConstructor(
-              UiAutomation.class,
-              ClassParameter.from(Looper.class, Looper.getMainLooper()),
-              ClassParameter.from(
-                  IUiAutomationConnection.class,
-                  ReflectionHelpers.createNullProxy(IUiAutomationConnection.class)));
+          reflector(UiAutomationReflector.class)
+              .newInstance(
+                  Looper.getMainLooper(),
+                  ReflectionHelpers.createNullProxy(IUiAutomationConnection.class));
     }
     return uiAutomation;
   }
@@ -1068,6 +1067,9 @@ public class ShadowInstrumentation {
         @WithType("android.app.IInstrumentationWatcher") Object watcher,
         @WithType("android.app.IUiAutomationConnection") Object uiAutomationConnection);
 
+    @Accessor("mComponent")
+    void setComponent(ComponentName component);
+
     @Direct
     ActivityResult execStartActivity(
         Context who,
@@ -1188,5 +1190,12 @@ public class ShadowInstrumentation {
     } else {
       runnable.run();
     }
+  }
+
+  @ForType(UiAutomation.class)
+  interface UiAutomationReflector {
+    @Constructor
+    UiAutomation newInstance(
+        Looper looper, @WithType("android.app.IUiAutomationConnection") Object connection);
   }
 }
