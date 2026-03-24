@@ -74,6 +74,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
@@ -173,6 +174,7 @@ public class ShadowTelephonyManager {
   private int simCarrierId = TelephonyManager.UNKNOWN_CARRIER_ID;
   private int simSpecificCarrierId = TelephonyManager.UNKNOWN_CARRIER_ID;
   private CharSequence simCarrierIdName;
+  private Supplier<CharSequence> simCarrierIdNameSupplier;
   private int carrierIdFromSimMccMnc;
   private String subscriberId;
   private static volatile /*UiccSlotInfo[]*/ Object uiccSlotInfos;
@@ -1441,12 +1443,24 @@ public class ShadowTelephonyManager {
 
   @Implementation(minSdk = P)
   protected CharSequence getSimCarrierIdName() {
+    if (simCarrierIdNameSupplier != null) {
+      return simCarrierIdNameSupplier.get();
+    }
     return simCarrierIdName;
   }
 
   /** Sets the value to be returned by {@link #getSimCarrierIdName()}. */
   public void setSimCarrierIdName(CharSequence simCarrierIdName) {
     this.simCarrierIdName = simCarrierIdName;
+    this.simCarrierIdNameSupplier = null;
+  }
+
+  /**
+   * Sets the supplier to be used for {@link #getSimCarrierIdName()}. This allows for dynamic return
+   * values on subsequent calls.
+   */
+  public void setSimCarrierIdNameSupplier(Supplier<CharSequence> simCarrierIdNameSupplier) {
+    this.simCarrierIdNameSupplier = simCarrierIdNameSupplier;
   }
 
   @Implementation
