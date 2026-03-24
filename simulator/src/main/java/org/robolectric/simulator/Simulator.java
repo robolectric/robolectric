@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,7 +36,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.pluginapi.perf.Metadata;
-import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowChoreographer;
@@ -49,6 +47,7 @@ import org.robolectric.shadows.ShadowView;
 import org.robolectric.simulator.pluginapi.RemoteControl;
 import org.robolectric.simulator.pluginapi.ScreenRecorder;
 import org.robolectric.util.PerfStatsCollector;
+import org.robolectric.util.PerfStatsPublisher;
 import org.robolectric.util.inject.Injector;
 
 /** The main entry point for the Robolectric Simulator for use in existing Robolectric tests. */
@@ -67,7 +66,7 @@ public final class Simulator {
   private final Class<? extends Activity> activityClassToLaunch;
   private Injector injector;
   private PerfStatsCollector perfStatsCollector;
-  private List<PerfStatsReporter> perfStatsReporters;
+  private PerfStatsPublisher perfStatsPublisher;
 
   public Simulator() {
     this(null);
@@ -252,42 +251,47 @@ public final class Simulator {
   private void setupPerfStats() {
     perfStatsCollector = PerfStatsCollector.getInstance();
     perfStatsCollector.putMetadata(new Metadata(RuntimeEnvironment.getApiLevel()));
-    perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
-    boolean enabled = !perfStatsReporters.isEmpty();
-    perfStatsCollector.setEnabled(enabled);
+    List<PerfStatsReporter> perfStatsReporters =
+        Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
+    perfStatsPublisher = new PerfStatsPublisher(perfStatsReporters);
+    perfStatsPublisher.doFinalReportOnShutdown(
+        () -> {
+          // Reuse the shutdown hook to logMemoryAndCpu, otherwise output of perfstats can collide
+          // with
+          // logMemoryAndCpu if they both log to System.err
+          logMemoryAndCpu();
+          System.err.println();
+          // there is no test runner reporting the data, so report first here before the finalReport
+          // runs
+          perfStatsPublisher.report(perfStatsCollector);
+        });
 
-    if (enabled) {
-      Runtime.getRuntime()
-          .addShutdownHook(
-              new Thread(
-                  () -> {
-                    reportPerfStats(perfStatsCollector);
-                    perfStatsCollector.reset();
-                  }));
+    if (perfStatsReporters.isEmpty()) {
+      // there won't be a perf stats shutdown hook - add our own here to log memory and CPU
+      Runtime.getRuntime().addShutdownHook(new Thread(Simulator::logMemoryAndCpu));
     }
+  }
+
+  private static void logMemoryAndCpu() {
+    System.err.println();
+    System.err.printf(
+        "Java heap info: totalMemory %dm, maxMemory %dm%n",
+        (Runtime.getRuntime().totalMemory() / 1024 / 1024),
+        (Runtime.getRuntime().maxMemory() / 1024 / 1024));
+    ProcessHandle.current()
+        .info()
+        .totalCpuDuration()
+        .ifPresent(
+            duration -> {
+              System.err.printf(
+                  "Java process total CPU time: %.1fs%n", duration.toMillis() / 1000.0);
+            });
   }
 
   private static class SimulatorFrameCallback implements Choreographer.FrameCallback {
     @Override
     public void doFrame(long frameTimeNanos) {
       Choreographer.getInstance().postFrameCallback(this);
-    }
-  }
-
-  private void reportPerfStats(PerfStatsCollector perfStatsCollector) {
-    if (perfStatsReporters.isEmpty()) {
-      return;
-    }
-
-    Metadata metadata = perfStatsCollector.getMetadata();
-    Collection<Metric> metrics = perfStatsCollector.getMetrics();
-
-    for (PerfStatsReporter perfStatsReporter : perfStatsReporters) {
-      try {
-        perfStatsReporter.report(metadata, metrics);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
     }
   }
 }

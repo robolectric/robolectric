@@ -43,12 +43,11 @@ import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowProviders;
 import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.MethodHandleDecorator;
-import org.robolectric.pluginapi.perf.Metadata;
-import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
+import org.robolectric.util.PerfStatsPublisher;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
 import org.robolectric.util.inject.Injector;
@@ -73,7 +72,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   protected final ClassHandlerBuilder classHandlerBuilder;
   protected final List<MethodHandleDecorator> decorators;
 
-  private final List<PerfStatsReporter> perfStatsReporters;
+  private final PerfStatsPublisher perfStatsPublisher;
 
   private final HashMap<Class<?>, HelperTestRunner> helperRunners = new HashMap<>();
   private final WeakHashMap<Sandbox, LinkageError> firstLinkageErrors = new WeakHashMap<>();
@@ -89,7 +88,10 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     interceptors = new Interceptors(findInterceptors());
     shadowProviders = injector.getInstance(ShadowProviders.class);
     classHandlerBuilder = injector.getInstance(ClassHandlerBuilder.class);
-    perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
+    List<PerfStatsReporter> reporters =
+        Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
+    perfStatsPublisher = new PerfStatsPublisher(reporters);
+    PerfStatsCollector.getInstance().setEnabled(!reporters.isEmpty());
     decorators = Arrays.asList(injector.getInstance(MethodHandleDecorator[].class));
   }
 
@@ -354,7 +356,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       @Override
       public void evaluate() throws Throwable {
         PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
-        perfStatsCollector.setEnabled(!perfStatsReporters.isEmpty());
 
         Event initialization = perfStatsCollector.startEvent("initialization");
 
@@ -395,7 +396,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
             return null;
           });
     } finally {
-      reportPerfStats(perfStatsCollector);
+      perfStatsPublisher.report(perfStatsCollector);
       perfStatsCollector.reset();
     }
   }
@@ -509,24 +510,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       }
     }
     return false;
-  }
-
-  @SuppressWarnings("CatchAndPrintStackTrace")
-  private void reportPerfStats(PerfStatsCollector perfStatsCollector) {
-    if (perfStatsReporters.isEmpty()) {
-      return;
-    }
-
-    Metadata metadata = perfStatsCollector.getMetadata();
-    Collection<Metric> metrics = perfStatsCollector.getMetrics();
-
-    for (PerfStatsReporter perfStatsReporter : perfStatsReporters) {
-      try {
-        perfStatsReporter.report(metadata, metrics);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
   }
 
   protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod)

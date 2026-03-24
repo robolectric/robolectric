@@ -11,7 +11,6 @@ import org.robolectric.internal.AndroidSandbox;
 public final class SimulatorMain {
 
   public static void main(String[] args) {
-    Runtime.getRuntime().addShutdownHook(new Thread(SimulatorMain::logMemoryAndCpu));
     if (args.length < 1) {
       System.err.println("Command-line usage: SimulatorLauncher <apk> [extra_jars]");
       System.exit(1);
@@ -51,22 +50,6 @@ public final class SimulatorMain {
       t.printStackTrace();
       System.exit(1);
     }
-  }
-
-  private static void logMemoryAndCpu() {
-    System.err.println();
-    System.err.printf(
-        "Java heap info: totalMemory %dm, maxMemory %dm%n",
-        (Runtime.getRuntime().totalMemory() / 1024 / 1024),
-        (Runtime.getRuntime().maxMemory() / 1024 / 1024));
-    ProcessHandle.current()
-        .info()
-        .totalCpuDuration()
-        .ifPresent(
-            duration -> {
-              System.err.printf(
-                  "Java process total CPU time: %.1fs%n", duration.toMillis() / 1000.0);
-            });
   }
 
   private static int getSdkVersion() {

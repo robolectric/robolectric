@@ -22,10 +22,7 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
     perfStatsData.add(new Data(metadata, metrics));
   }
 
-  public void register() {
-    Runtime.getRuntime().addShutdownHook(new Thread(this::finalReport));
-  }
-
+  @Override
   @SuppressWarnings("AndroidJdkLibsChecker)")
   public synchronized void finalReport() {
     Map<MetricKey, MetricValue> mergedMetrics = new TreeMap<>();

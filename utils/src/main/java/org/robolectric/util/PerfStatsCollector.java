@@ -37,9 +37,21 @@ public class PerfStatsCollector {
     return INSTANCE;
   }
 
-  /** If not enabled, don't bother retaining perf stats, saving some memory and CPU cycles. */
+  /**
+   * Call to explicitly disable perf stats collection.
+   *
+   * <p>By default, the test runner will disable perf stats collection if there are no registered
+   * perf stats reporters.
+   *
+   * <p>Users can call this method to control perf stats collection regardless of the presence of
+   * perf stats reporters.
+   */
   public void setEnabled(boolean isEnabled) {
     this.enabled.set(isEnabled);
+  }
+
+  public boolean isEnabled() {
+    return enabled.get();
   }
 
   public Event startEvent(String eventName) {
