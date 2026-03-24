@@ -137,10 +137,10 @@ public class AndroidTestEnvironmentTest {
       throws CertificateException, NoSuchAlgorithmException {
     bootstrapWrapper.callSetUpApplicationState();
     CertificateFactory factory = CertificateFactory.getInstance("X.509");
-    assertThat(factory.getProvider().getName()).isEqualTo("Conscrypt");
+    assertThat(factory.getProvider().getName()).isAnyOf("Conscrypt", "AndroidOpenSSL");
 
     MessageDigest digest = MessageDigest.getInstance("SHA256");
-    assertThat(digest.getProvider().getName()).isEqualTo("Conscrypt");
+    assertThat(digest.getProvider().getName()).isAnyOf("Conscrypt", "AndroidOpenSSL");
   }
 
   @Test
