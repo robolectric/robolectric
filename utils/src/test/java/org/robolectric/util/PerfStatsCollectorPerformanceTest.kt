@@ -32,7 +32,7 @@ class PerfStatsCollectorPerformanceTest {
       }
     }
 
-    latch.await(10, TimeUnit.SECONDS)
+    assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue()
     val end = System.nanoTime()
     executor.shutdown()
 
@@ -65,7 +65,7 @@ class PerfStatsCollectorPerformanceTest {
       }
     }
 
-    latch.await(10, TimeUnit.SECONDS)
+    assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue()
     val end = System.nanoTime()
     executor.shutdown()
 

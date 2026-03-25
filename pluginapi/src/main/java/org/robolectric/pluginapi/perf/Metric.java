@@ -26,19 +26,19 @@ public class Metric {
     return name;
   }
 
-  public int getCount() {
+  public synchronized int getCount() {
     return count;
   }
 
-  public long getElapsedNs() {
+  public synchronized long getElapsedNs() {
     return elapsedNs;
   }
 
-  public long getMinNs() {
+  public synchronized long getMinNs() {
     return minNs;
   }
 
-  public long getMaxNs() {
+  public synchronized long getMaxNs() {
     return maxNs;
   }
 
