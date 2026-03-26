@@ -91,6 +91,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     List<PerfStatsReporter> reporters =
         Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
     perfStatsPublisher = new PerfStatsPublisher(reporters);
+    perfStatsPublisher.doFinalReportOnShutdown();
     PerfStatsCollector.getInstance().setEnabled(!reporters.isEmpty());
     decorators = Arrays.asList(injector.getInstance(MethodHandleDecorator[].class));
   }
