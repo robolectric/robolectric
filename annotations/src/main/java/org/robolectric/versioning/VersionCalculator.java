@@ -50,9 +50,9 @@ public class VersionCalculator {
   }
 
   public Integer getApiLevelForCodeName(String codename) {
-    // support tests within android platform that still use codename Baklava as alias for running
-    // on current SDK
-    // TODO: remove this logic, or at minimum, move to an android-platform specific extension
-    return "Baklava".equalsIgnoreCase(codename) ? POST_BAKLAVA : null;
+    // Tests within android platform can use unreleased codenames as targetSdkVersion
+    // For consistency with PackageManager, treat all String target SDK versions as the unreleased
+    // version
+    return POST_BAKLAVA;
   }
 }
