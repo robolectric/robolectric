@@ -82,10 +82,15 @@ public class SandboxClassLoader extends URLClassLoader {
   }
 
   private static URL[] getClassPathUrls(ClassLoader classloader) {
+    URL[] urls = null;
     if (classloader instanceof URLClassLoader) {
-      return ((URLClassLoader) classloader).getURLs();
+      urls = ((URLClassLoader) classloader).getURLs();
+    } else {
+      urls = parseJavaClassPath();
     }
-    return parseJavaClassPath();
+    PerfStatsCollector.getInstance()
+        .recordCount("SandboxClassLoader.getClassPathUrls", urls.length);
+    return urls;
   }
 
   // TODO(https://github.com/google/guava/issues/2956): Use a public API once one is available.

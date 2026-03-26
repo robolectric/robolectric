@@ -64,6 +64,11 @@ public class Metric {
     this.count++;
   }
 
+  /** Sets the count to the given value, overwriting any previous count. */
+  public synchronized void recordCount(int count) {
+    this.count = count;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

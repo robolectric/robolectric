@@ -85,6 +85,25 @@ public class PerfStatsCollector {
     metric.incrementCount();
   }
 
+  /**
+   * Records a precise count for the given event.
+   *
+   * <p>Unlike {@link #incrementCount(String)}, this method explicitly sets the count to the given
+   * value, overwriting any previous count.
+   */
+  public void recordCount(String eventName, int count) {
+    if (!enabled.get()) {
+      return;
+    }
+
+    MetricKey key = new MetricKey(eventName, true);
+    Metric metric = metricMap.get(key);
+    if (metric == null) {
+      metric = metricMap.computeIfAbsent(key, k -> new Metric(k.name, k.success));
+    }
+    metric.recordCount(count);
+  }
+
   /** Supplier that throws an exception. */
   // @FunctionalInterface -- not available on Android yet...
   public interface ThrowingSupplier<T, F extends Exception> {

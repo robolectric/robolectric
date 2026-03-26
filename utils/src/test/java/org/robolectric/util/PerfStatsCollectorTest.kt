@@ -107,6 +107,19 @@ class PerfStatsCollectorTest {
     assertThat(collector.metrics).isEmpty()
   }
 
+  @Test
+  fun shouldRecordCount() {
+    collector.recordCount("recorded event", 42)
+    assertThat(collector.metrics).containsExactly(Metric("recorded event", 42, 0, true))
+  }
+
+  @Test
+  fun shouldOverwriteCount() {
+    collector.recordCount("changing event", 3)
+    collector.recordCount("changing event", 7)
+    assertThat(collector.metrics).containsExactly(Metric("changing event", 7, 0, true))
+  }
+
   private class FakeClock : Clock {
     private var timeNs = 0
 
