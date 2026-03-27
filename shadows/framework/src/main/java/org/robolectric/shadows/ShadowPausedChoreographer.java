@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -45,22 +47,18 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
 
   @RealObject private Choreographer realChoreographer;
 
-  @Implementation(maxSdk = N_MR1)
+  @Filter(maxSdk = N_MR1, order = Order.AFTER)
   protected void __constructor__(Looper looper) {
-    reflector(ChoreographerReflector.class, realChoreographer).__constructor__(looper);
     activeChoreographers.add(realChoreographer);
   }
 
-  @Implementation(minSdk = O, maxSdk = TIRAMISU)
+  @Filter(minSdk = O, maxSdk = TIRAMISU, order = Order.AFTER)
   protected void __constructor__(Looper looper, int vsyncSource) {
-    reflector(ChoreographerReflector.class, realChoreographer).__constructor__(looper, vsyncSource);
     activeChoreographers.add(realChoreographer);
   }
 
-  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  @Filter(minSdk = UPSIDE_DOWN_CAKE, order = Order.AFTER)
   protected void __constructor__(Looper looper, int vsyncSource, long layerHandle) {
-    reflector(ChoreographerReflector.class, realChoreographer)
-        .__constructor__(looper, vsyncSource, layerHandle);
     activeChoreographers.add(realChoreographer);
   }
 

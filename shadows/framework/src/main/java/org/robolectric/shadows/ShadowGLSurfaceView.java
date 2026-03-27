@@ -7,13 +7,13 @@ import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Fake implementation of GLSurfaceView */
@@ -24,15 +24,13 @@ public class ShadowGLSurfaceView extends ShadowSurfaceView {
 
   @RealObject private GLSurfaceView realSurfaceView;
 
-  @Implementation
+  @Filter(order = Filter.Order.AFTER)
   protected void __constructor__(Context context) {
-    reflector(GLSurfaceViewReflector.class, realSurfaceView).__constructor__(context);
     surfaceViews.add(new WeakReference<>(realSurfaceView));
   }
 
-  @Implementation
+  @Filter(order = Filter.Order.AFTER)
   protected void __constructor__(Context context, AttributeSet attrs) {
-    reflector(GLSurfaceViewReflector.class, realSurfaceView).__constructor__(context, attrs);
     surfaceViews.add(new WeakReference<>(realSurfaceView));
   }
 
@@ -64,11 +62,5 @@ public class ShadowGLSurfaceView extends ShadowSurfaceView {
   interface GLSurfaceViewReflector {
     @Accessor("mGLThread")
     Object getGLThread();
-
-    @Direct
-    void __constructor__(Context context);
-
-    @Direct
-    void __constructor__(Context context, AttributeSet attrs);
   }
 }
