@@ -253,7 +253,8 @@ public final class Simulator {
     perfStatsCollector.putMetadata(new Metadata(RuntimeEnvironment.getApiLevel()));
     List<PerfStatsReporter> perfStatsReporters =
         Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
-    perfStatsPublisher = new PerfStatsPublisher(perfStatsReporters);
+    perfStatsPublisher = PerfStatsPublisher.getInstance();
+    perfStatsPublisher.addReporters(perfStatsReporters);
     perfStatsPublisher.doFinalReportOnShutdown(
         () -> {
           // Reuse the shutdown hook to logMemoryAndCpu, otherwise output of perfstats can collide

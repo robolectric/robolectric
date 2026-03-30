@@ -1,8 +1,9 @@
 package org.robolectric.util;
 
-import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
@@ -11,17 +12,23 @@ import org.robolectric.pluginapi.perf.PerfStatsReporter;
 /** Helper class used by the test runner to manage PerfStatsReporters and publish data */
 public class PerfStatsPublisher {
 
-  private final ImmutableList<PerfStatsReporter> perfStatsReporters;
+  private static final PerfStatsPublisher instance = new PerfStatsPublisher();
+
+  private Set<PerfStatsReporter> perfStatsReporters = new CopyOnWriteArraySet<>();
   private final AtomicBoolean shutdownRegistered = new AtomicBoolean(false);
 
-  public PerfStatsPublisher(List<PerfStatsReporter> reporters) {
-    perfStatsReporters = ImmutableList.copyOf(reporters);
+  private PerfStatsPublisher() {}
+
+  public static PerfStatsPublisher getInstance() {
+    return instance;
+  }
+
+  public void addReporters(List<PerfStatsReporter> reporters) {
+    perfStatsReporters.addAll(reporters);
   }
 
   /**
    * Register a JVM shutdown hook that calls PerfStatsReporter#finalReport on all reporters
-   *
-   * @throws IllegalStateException if this method has already been called
    */
   public void doFinalReportOnShutdown() {
     doFinalReportOnShutdown(() -> {});
@@ -30,12 +37,10 @@ public class PerfStatsPublisher {
   /**
    * A variant of {@link #doFinalReportOnShutdown} that allows running a task before finalReport is
    * called
-   *
-   * @throws IllegalStateException if this method has already been called
    */
   public void doFinalReportOnShutdown(Runnable preFinalReportTask) {
     if (shutdownRegistered.getAndSet(true)) {
-      throw new IllegalStateException("shutdown already registered");
+      return;
     }
     if (perfStatsReporters.isEmpty()) {
       // ignore
