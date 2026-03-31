@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.Display;
 import android.view.HandlerActionQueue;
 import android.view.IWindow;
@@ -87,6 +88,13 @@ public class ShadowViewRootImpl {
       for (OnDrawListener listener : globalDrawListeners) {
         listener.onDraw();
       }
+    } else if (!globalDrawListeners.isEmpty() && !realObject.isHardwareEnabled()) {
+      Log.w(
+          "ShadowViewRootImpl",
+          "global draw listeners are attached but hardware acceleration is disabled for the current"
+              + " root! If you are running in a simulator, screen contents are likely inaccurate."
+              + " Double check your application targetSdkVersion is >= 14 and hardwareAcceleration"
+              + " is not set to 'false' in the manifest.");
     }
     return result;
   }
