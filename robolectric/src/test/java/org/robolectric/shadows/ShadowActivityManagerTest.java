@@ -176,6 +176,29 @@ public class ShadowActivityManagerTest {
   }
 
   @Test
+  public void forceStopPackage_shouldRecordPackageAsStopped() {
+    String packageName = "com.foo.bar";
+    assertThat(shadowActivityManager.isPackageForceStopped(packageName)).isFalse();
+
+    activityManager.forceStopPackage(packageName);
+    assertThat(shadowActivityManager.isPackageForceStopped(packageName)).isTrue();
+  }
+
+  @Test
+  public void forceStopPackage_shouldBeScopedToCurrentUser() {
+    String packageName = "com.foo.bar";
+    shadowOf(application).setSystemService(Context.USER_SERVICE, userManager);
+    shadowOf(userManager).addUser(10, "user-10", 0);
+    shadowOf(userManager).addUser(11, "user-11", 0);
+
+    activityManager.switchUser(10);
+    activityManager.forceStopPackage(packageName);
+
+    assertThat(shadowActivityManager.isPackageForceStoppedAsUser(packageName, 10)).isTrue();
+    assertThat(shadowActivityManager.isPackageForceStoppedAsUser(packageName, 11)).isFalse();
+  }
+
+  @Test
   public void getLauncherLargeIconDensity_shouldWork() {
     assertThat(activityManager.getLauncherLargeIconDensity()).isGreaterThan(0);
   }

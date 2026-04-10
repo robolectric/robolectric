@@ -35,7 +35,9 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
@@ -64,6 +66,7 @@ public class ShadowActivityManager {
       new CopyOnWriteArrayList<>();
   private static final List<ActivityManager.RunningAppProcessInfo> processes =
       new CopyOnWriteArrayList<>();
+  private static final Map<Integer, Set<String>> forceStoppedPackages = new ConcurrentHashMap<>();
   private static final List<ImportanceListener> importanceListeners = new CopyOnWriteArrayList<>();
   private static final SparseIntArray uidImportances = new SparseIntArray();
   @RealObject private ActivityManager realObject;
@@ -214,6 +217,45 @@ public class ShadowActivityManager {
   @Implementation
   protected void killBackgroundProcesses(String packageName) {
     backgroundPackage = packageName;
+  }
+
+  @Implementation
+  protected void forceStopPackage(String packageName) {
+    forceStopPackageAsUser(packageName, UserHandle.myUserId());
+  }
+
+  /**
+   * Returns {@code true} if package has been force stopped for the calling user.
+   *
+   * @param packageName The name of the package to check
+   */
+  public boolean isPackageForceStopped(String packageName) {
+    return isPackageForceStoppedAsUser(packageName, UserHandle.myUserId());
+  }
+
+  /**
+   * Force stop package for a given user.
+   *
+   * @param packageName The name of the package to stop
+   * @param userId The user to stop the package for
+   */
+  @HiddenApi
+  @Implementation
+  protected void forceStopPackageAsUser(String packageName, int userId) {
+    forceStoppedPackages
+        .computeIfAbsent(userId, k -> ConcurrentHashMap.newKeySet())
+        .add(packageName);
+  }
+
+  /**
+   * Returns {@code true} if package has been force stopped for the given user.
+   *
+   * @param packageName The name of the package to check
+   * @param userId The user to check for
+   */
+  public boolean isPackageForceStoppedAsUser(String packageName, int userId) {
+    Set<String> packages = forceStoppedPackages.get(userId);
+    return packages != null && packages.contains(packageName);
   }
 
   @Implementation
@@ -394,6 +436,7 @@ public class ShadowActivityManager {
     tasks.clear();
     services.clear();
     processes.clear();
+    forceStoppedPackages.clear();
     importanceListeners.clear();
     uidImportances.clear();
     appExitInfoList.clear();
