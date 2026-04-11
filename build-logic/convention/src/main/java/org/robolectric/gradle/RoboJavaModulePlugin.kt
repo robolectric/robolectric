@@ -1,6 +1,5 @@
 package org.robolectric.gradle
 
-import ProvideBuildClasspathTask
 import java.io.File
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin

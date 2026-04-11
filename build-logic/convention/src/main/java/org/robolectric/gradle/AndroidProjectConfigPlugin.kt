@@ -1,6 +1,5 @@
 package org.robolectric.gradle
 
-import ProvideBuildClasspathTask
 import com.android.SdkConstants.FD_GENERATED
 import com.android.build.api.dsl.LibraryExtension
 import java.io.File
