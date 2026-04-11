@@ -1,3 +1,5 @@
+package org.robolectric.gradle
+
 import java.io.File
 import java.util.Properties
 import org.gradle.api.DefaultTask
