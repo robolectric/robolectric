@@ -40,6 +40,7 @@ include(
   ":integration_tests:powermock",
   ":integration_tests:rap",
   ":integration_tests:rap-kotlin",
+  ":integration_tests:rap-ksp",
   ":integration_tests:roborazzi",
   ":integration_tests:room",
   ":integration_tests:sdkcompat",
