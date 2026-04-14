@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.media.AudioAttributes;
 import android.media.AudioSystem;
@@ -10,10 +10,10 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Minimal shadow for {@link AudioProductStrategy} native implementation. */
-@Implements(value = AudioProductStrategy.class, minSdk = POST_BAKLAVA, isInAndroidSdk = false)
+@Implements(value = AudioProductStrategy.class, minSdk = CINNAMON_BUN, isInAndroidSdk = false)
 public class ShadowAudioProductStrategy {
 
-  @Implementation(minSdk = POST_BAKLAVA)
+  @Implementation(minSdk = CINNAMON_BUN)
   protected static int native_get_legacy_stream_for_audio_attributes(
       AudioAttributes audioAttributes) {
     Objects.requireNonNull(audioAttributes, "AudioAttributes must not be null");

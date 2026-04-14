@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.content.res.ApkAssets;
 import android.content.res.AssetManager;
@@ -10,7 +11,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.versioning.AndroidVersions.PostBaklava;
 
 // transliterated from
 // https://android.googlesource.com/platform/frameworks/base/+/android-10.0.0_r47/core/jni/android_util_AssetManager.cpp
@@ -130,7 +130,7 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
         majorVersion);
   }
 
-  @Implementation(minSdk = PostBaklava.SDK_INT)
+  @Implementation(minSdk = CINNAMON_BUN)
   protected static void nativeSetConfiguration(
       long ptr,
       int mcc,

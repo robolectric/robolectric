@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static org.robolectric.annotation.Filter.Order.BEFORE;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.os.Looper;
 import android.os.SystemClock;
@@ -43,7 +43,7 @@ import org.robolectric.util.reflector.ForType;
 @Implements(
     value = Choreographer.class,
     isInAndroidSdk = false,
-    minSdk = POST_BAKLAVA,
+    minSdk = CINNAMON_BUN,
     shadowPicker = ShadowChoreographer.Picker.class)
 public class ShadowPausedNoVsyncChoreographer extends ShadowPausedChoreographer {
 

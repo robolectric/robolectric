@@ -5,7 +5,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.content.res.AssetManager;
 import android.content.res.AssetManager.AssetInputStream;
@@ -411,7 +411,7 @@ public class ShadowImageDecoder {
         null);
   }
 
-  @Implementation(minSdk = POST_BAKLAVA)
+  @Implementation(minSdk = CINNAMON_BUN)
   protected static Bitmap nDecodeBitmap(
       long nativePtr,
       ImageDecoder decoder,

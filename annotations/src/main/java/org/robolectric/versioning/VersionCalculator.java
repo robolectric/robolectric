@@ -15,13 +15,19 @@ import java.util.zip.ZipEntry;
 public class VersionCalculator {
 
   /**
+   * A temporary alias to {@link * android.os.Build.VERSION_CODES.CINNAMON_BUN}. This will be
+   * removed when Robolectric shadows compile against the CINNAMON_BUN SDK
+   */
+  public static final int CINNAMON_BUN = 37;
+
+  /**
    * Placeholder constant for the next major SDK int after {@link
-   * android.os.Build.VERSION_CODES.BAKLAVA}.
+   * android.os.Build.VERSION_CODES.CINNAMON_BUN}.
    *
    * <p>This constant is intended to be used in Shadows @Implementation sdk clauses to provide
    * preliminary support for the next major SDK.
    */
-  public static final int POST_BAKLAVA = CUR_DEVELOPMENT;
+  public static final int POST_CINNAMON_BUN = CUR_DEVELOPMENT;
 
   public static class SdkInfo {
     public final int apiLevel;
@@ -53,6 +59,6 @@ public class VersionCalculator {
     // Tests within android platform can use unreleased codenames as targetSdkVersion
     // For consistency with PackageManager, treat all String target SDK versions as the unreleased
     // version
-    return POST_BAKLAVA;
+    return CUR_DEVELOPMENT;
   }
 }

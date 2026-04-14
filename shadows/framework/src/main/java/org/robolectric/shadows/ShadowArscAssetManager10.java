@@ -24,7 +24,7 @@ import static org.robolectric.res.android.Util.JNI_FALSE;
 import static org.robolectric.res.android.Util.JNI_TRUE;
 import static org.robolectric.res.android.Util.isTruthy;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.AnyRes;
 import android.annotation.ArrayRes;
@@ -1331,7 +1331,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     return array;
   }
 
-  @Implementation(minSdk = POST_BAKLAVA)
+  @Implementation(minSdk = CINNAMON_BUN)
   protected static @Nullable Configuration[] nativeGetResourceConfigurations(long ptr) {
     return nativeGetSizeConfigurations(ptr);
   }

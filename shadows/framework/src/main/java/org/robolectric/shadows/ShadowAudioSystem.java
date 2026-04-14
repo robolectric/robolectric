@@ -8,7 +8,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
@@ -206,7 +206,7 @@ public class ShadowAudioSystem {
         .orElse(AudioSystem.OFFLOAD_NOT_SUPPORTED);
   }
 
-  @Implementation(minSdk = POST_BAKLAVA)
+  @Implementation(minSdk = CINNAMON_BUN)
   protected static int native_get_offload_support(
       int encoding, int sampleRate, Object channelMasks, int streamType) {
     return Optional.ofNullable(

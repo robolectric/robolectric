@@ -16,7 +16,7 @@ import static java.util.Objects.requireNonNull;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.RequiresApi;
 import android.media.AudioAttributes;
@@ -223,7 +223,7 @@ public class ShadowAudioTrack {
         new AudioAttributesInfo(contentType, usage, flags));
   }
 
-  @Implementation(minSdk = POST_BAKLAVA)
+  @Implementation(minSdk = CINNAMON_BUN)
   protected static boolean native_is_direct_output_supported(
       int encoding,
       int sampleRate,
@@ -384,7 +384,7 @@ public class ShadowAudioTrack {
     return AudioTrack.SUCCESS;
   }
 
-  @Implementation(minSdk = POST_BAKLAVA)
+  @Implementation(minSdk = CINNAMON_BUN)
   protected int native_setup(
       Object /*WeakReference<AudioTrack>*/ audioTrack,
       Object /*AudioAttributes*/ attributes,

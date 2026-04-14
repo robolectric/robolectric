@@ -3,6 +3,7 @@ package org.robolectric.android.internal;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
@@ -102,7 +103,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions;
 
 @SuppressLint("NewApi")
 public class AndroidTestEnvironment implements TestEnvironment {
@@ -397,7 +397,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     if (apiLevel >= VANILLA_ICE_CREAM) {
       // Adds loggableChanges parameter.
       reflector(AppCompatCallbacksReflector.class).install(new long[0], new long[0]);
-    } else if (apiLevel >= AndroidVersions.R.SDK_INT) {
+    } else if (apiLevel >= R) {
       // Invoke the previous version.
       reflector(AppCompatCallbacksReflector.class).install(new long[0]);
     }

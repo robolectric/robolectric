@@ -8,7 +8,7 @@ import static dalvik.annotation.compat.VersionCodes.BAKLAVA;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.os.Looper;
 import android.view.Choreographer;
@@ -230,7 +230,7 @@ public abstract class ShadowChoreographer {
     }
   }
 
-  @Implementation(minSdk = POST_BAKLAVA)
+  @Implementation(minSdk = CINNAMON_BUN)
   protected static long getDefaultFrameDelay() {
     // Uses 15ms to approximate 60fps.
     return Integer.getInteger("robolectric.defaultFrameDelayMs", 15);

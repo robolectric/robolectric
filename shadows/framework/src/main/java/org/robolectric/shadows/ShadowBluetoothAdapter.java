@@ -14,7 +14,7 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.app.ActivityThread;
 import android.app.PendingIntent;
@@ -709,7 +709,7 @@ public class ShadowBluetoothAdapter {
     return null;
   }
 
-  @Implementation(minSdk = POST_BAKLAVA)
+  @Implementation(minSdk = CINNAMON_BUN)
   protected void getProfile(
       int profile, @ClassName("android.bluetooth.IBluetoothProfileCallback") Object callback) {
     IBinder binder = getProfile(profile);

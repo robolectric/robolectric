@@ -10,7 +10,7 @@ import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -1169,7 +1169,7 @@ public class ShadowView {
     checkState(getApiLevel() >= TIRAMISU, "real drawing is only supported on APIs >= 33");
     checkState(useRealGraphics(), "real graphics must be enabled to use real drawing");
     useRealDrawTraversals.set(value);
-    if (!value && getApiLevel() >= POST_BAKLAVA) {
+    if (!value && getApiLevel() >= CINNAMON_BUN) {
       Log.w(
           "ShadowView",
           "ignoring setUseRealDrawTraversals(false) since it cannot be turned off on SDK "
@@ -1180,7 +1180,7 @@ public class ShadowView {
   static boolean areRealDrawTraversalsEnabled() {
     if (useRealGraphics()) {
       // real draw traversals supported by default in upcoming SDK
-      if (getApiLevel() >= POST_BAKLAVA) {
+      if (getApiLevel() >= CINNAMON_BUN) {
         return true;
       } else if (getApiLevel() >= TIRAMISU) {
         return useRealDrawTraversals.get()
