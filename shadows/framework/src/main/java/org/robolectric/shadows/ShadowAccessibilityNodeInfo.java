@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -14,7 +15,9 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
@@ -62,6 +65,8 @@ public class ShadowAccessibilityNodeInfo {
 
   private CharSequence text;
 
+  private Object selection;
+
   private boolean refreshReturnValue = true;
 
   private AccessibilityWindowInfo accessibilityWindowInfo;
@@ -98,6 +103,34 @@ public class ShadowAccessibilityNodeInfo {
     final ShadowAccessibilityNodeInfo shadowInfo = Shadow.extract(info);
     newShadow.mOriginNodeId = shadowInfo.mOriginNodeId;
     newShadow.text = shadowInfo.text;
+    if (RuntimeEnvironment.getApiLevel() >= CINNAMON_BUN) {
+      if (shadowInfo.selection != null
+          && shadowInfo
+              .selection
+              .getClass()
+              .getName()
+              .equals("android.view.accessibility.AccessibilityNodeInfo$Selection")) {
+        Object selectionToCopy = shadowInfo.selection;
+        Object start = ReflectionHelpers.callInstanceMethod(selectionToCopy, "getStart");
+        Object end = ReflectionHelpers.callInstanceMethod(selectionToCopy, "getEnd");
+
+        AccessibilityNodeInfo startNodeFromSelection =
+            ReflectionHelpers.callInstanceMethod(start, "getNode");
+        AccessibilityNodeInfo endNodeFromSelection =
+            ReflectionHelpers.callInstanceMethod(end, "getNode");
+        int startOffset = ReflectionHelpers.callInstanceMethod(start, "getOffset");
+        int endOffset = ReflectionHelpers.callInstanceMethod(end, "getOffset");
+
+        AccessibilityNodeInfo startNode =
+            Objects.equals(startNodeFromSelection, info) ? newInfo : startNodeFromSelection;
+        AccessibilityNodeInfo endNode =
+            Objects.equals(endNodeFromSelection, info) ? newInfo : endNodeFromSelection;
+
+        newShadow.selection = createSelection(startNode, startOffset, endNode, endOffset);
+      } else {
+        newShadow.selection = null;
+      }
+    }
     newShadow.performedActionAndArgsList = shadowInfo.performedActionAndArgsList;
     newShadow.parent = shadowInfo.parent;
     newShadow.labelFor = (shadowInfo.labelFor == null) ? null : obtain(shadowInfo.labelFor);
@@ -296,6 +329,73 @@ public class ShadowAccessibilityNodeInfo {
       return accessibilityNodeInfoReflector.getText();
     }
     return text;
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected int getTextSelectionStart() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getTextSelectionStart();
+    }
+    if (selection != null
+        && selection
+            .getClass()
+            .getName()
+            .equals("android.view.accessibility.AccessibilityNodeInfo$Selection")) {
+      Object start = ReflectionHelpers.callInstanceMethod(selection, "getStart");
+      return ReflectionHelpers.callInstanceMethod(start, "getOffset");
+    }
+    return -1;
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected int getTextSelectionEnd() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getTextSelectionEnd();
+    }
+    if (selection != null
+        && selection
+            .getClass()
+            .getName()
+            .equals("android.view.accessibility.AccessibilityNodeInfo$Selection")) {
+      Object end = ReflectionHelpers.callInstanceMethod(selection, "getEnd");
+      return ReflectionHelpers.callInstanceMethod(end, "getOffset");
+    }
+    return -1;
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected void setTextSelection(int start, int end) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.setTextSelection(start, end);
+      return;
+    }
+    setSelection(createSelection(realAccessibilityNodeInfo, start, realAccessibilityNodeInfo, end));
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected void setSelection(
+      @ClassName("android.view.accessibility.AccessibilityNodeInfo$Selection") Object selection) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.setSelection(selection);
+      return;
+    }
+    this.selection = selection;
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected @ClassName("android.view.accessibility.AccessibilityNodeInfo$Selection") Object
+      getSelection() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getSelection();
+    }
+    if (selection != null
+        && selection
+            .getClass()
+            .getName()
+            .equals("android.view.accessibility.AccessibilityNodeInfo$Selection")) {
+      return selection;
+    }
+    return null;
   }
 
   @Implementation
@@ -736,6 +836,21 @@ public class ShadowAccessibilityNodeInfo {
     @Direct
     boolean performAction(int action, Bundle arguments);
 
+    @Direct
+    int getTextSelectionStart();
+
+    @Direct
+    int getTextSelectionEnd();
+
+    @Direct
+    void setTextSelection(int start, int end);
+
+    @Direct
+    Object getSelection();
+
+    @Direct
+    void setSelection(Object selection);
+
     @Override
     @Direct
     boolean equals(Object object);
@@ -768,5 +883,81 @@ public class ShadowAccessibilityNodeInfo {
         Boolean.parseBoolean(System.getProperty("robolectric.useRealAni", "false"));
     Preconditions.checkState(
         !useRealAni, "This API is not supported when 'robolectric.useRealAni' is true");
+  }
+
+  private static Object createSelection(
+      AccessibilityNodeInfo startNode,
+      int startOffset,
+      AccessibilityNodeInfo endNode,
+      int endOffset) {
+    Class<?> selectionClass =
+        ReflectionHelpers.loadClass(
+            ShadowAccessibilityNodeInfo.class.getClassLoader(),
+            "android.view.accessibility.AccessibilityNodeInfo$Selection");
+    Class<?> selectionPositionClass =
+        ReflectionHelpers.loadClass(
+            ShadowAccessibilityNodeInfo.class.getClassLoader(),
+            "android.view.accessibility.AccessibilityNodeInfo$SelectionPosition");
+
+    Object startPosition =
+        ReflectionHelpers.callConstructor(
+            selectionPositionClass,
+            ReflectionHelpers.ClassParameter.from(AccessibilityNodeInfo.class, startNode),
+            ReflectionHelpers.ClassParameter.from(int.class, startOffset));
+    Object endPosition =
+        ReflectionHelpers.callConstructor(
+            selectionPositionClass,
+            ReflectionHelpers.ClassParameter.from(AccessibilityNodeInfo.class, endNode),
+            ReflectionHelpers.ClassParameter.from(int.class, endOffset));
+
+    return ReflectionHelpers.callConstructor(
+        selectionClass,
+        ReflectionHelpers.ClassParameter.from(selectionPositionClass, startPosition),
+        ReflectionHelpers.ClassParameter.from(selectionPositionClass, endPosition));
+  }
+
+  /** Shadow class for android.view.accessibility.AccessibilityNodeInfo$SelectionPosition}. */
+  @Implements(
+      className = "android.view.accessibility.AccessibilityNodeInfo$SelectionPosition",
+      minSdk = CINNAMON_BUN,
+      isInAndroidSdk = false)
+  public static class ShadowSelectionPosition {
+    private AccessibilityNodeInfo node;
+    private int offset;
+
+    @Implementation
+    protected void __constructor__(AccessibilityNodeInfo node, int offset) {
+      this.node = node;
+      this.offset = offset;
+    }
+
+    @Implementation
+    protected AccessibilityNodeInfo getNode() {
+      return node;
+    }
+
+    @Implementation
+    protected int getOffset() {
+      return offset;
+    }
+
+    @SuppressWarnings({"EqualsHashCode", "ProtectedImplementationLintCheck"})
+    @Implementation
+    @Override
+    public boolean equals(Object other) {
+      if (other == this) {
+        return true;
+      }
+      if (other == null
+          || !other
+              .getClass()
+              .getName()
+              .equals("android.view.accessibility.AccessibilityNodeInfo$SelectionPosition")) {
+        return false;
+      }
+      AccessibilityNodeInfo otherNode = ReflectionHelpers.callInstanceMethod(other, "getNode");
+      int otherOffset = ReflectionHelpers.callInstanceMethod(other, "getOffset");
+      return Objects.equals(getNode(), otherNode) && offset == otherOffset;
+    }
   }
 }
