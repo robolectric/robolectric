@@ -233,6 +233,8 @@ public class ShadowTelephonyManager {
    */
   private Object callback;
 
+  private Uri lastNafId;
+
   private static volatile /*PhoneCapability*/ Object phoneCapability;
 
   static {
@@ -291,6 +293,10 @@ public class ShadowTelephonyManager {
     return callback;
   }
 
+  public Uri getLastNafId() {
+    return lastNafId;
+  }
+
   @Implementation(minSdk = S)
   @HiddenApi
   public void bootstrapAuthenticationRequest(
@@ -301,6 +307,7 @@ public class ShadowTelephonyManager {
       Executor e,
       @ClassName("android.telephony.TelephonyManager$BootstrapAuthenticationCallback")
           Object callback) {
+    this.lastNafId = nafId;
     this.callback = callback;
   }
 

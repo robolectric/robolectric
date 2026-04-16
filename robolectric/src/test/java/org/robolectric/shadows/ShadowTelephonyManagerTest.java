@@ -1790,6 +1790,22 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = S)
+  public void getLastNafId() {
+    Uri nafId = Uri.parse("tel:test-uri");
+
+    telephonyManager.bootstrapAuthenticationRequest(
+        TelephonyManager.APPTYPE_ISIM,
+        nafId,
+        new UaSecurityProtocolIdentifier.Builder().build(),
+        true,
+        directExecutor(),
+        mock(BootstrapAuthenticationCallback.class));
+
+    assertThat(shadowTelephonyManager.getLastNafId()).isEqualTo(nafId);
+  }
+
+  @Test
+  @Config(minSdk = S)
   public void setPhoneCapability_returnsPhoneCapability() {
     PhoneCapability phoneCapability = PhoneCapabilityFactory.create(2, 1, false, new int[0]);
 
