@@ -5,8 +5,10 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
@@ -61,6 +63,10 @@ public class ShadowPackageInstaller {
   private final Map<Integer, PackageInstaller.Session> sessions = new HashMap<>();
   private final Set<CallbackInfo> callbackInfos = Collections.synchronizedSet(new HashSet<>());
   private final Map<String, UninstalledPackage> uninstalledPackages = new HashMap<>();
+
+  private int verificationPolicy = 0;
+  @Nullable private ComponentName developerVerificationServiceProvider = null;
+  @Nullable private String developerVerificationPolicyDelegatePackage = null;
 
   private static class CallbackInfo {
     PackageInstaller.SessionCallback callback;
@@ -233,6 +239,41 @@ public class ShadowPackageInstaller {
 
   public List<PackageInstaller.SessionCallback> getAllSessionCallbacks() {
     return ImmutableList.copyOf(callbackInfos.stream().map(info -> info.callback).iterator());
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected final int getDeveloperVerificationPolicy() {
+    return verificationPolicy;
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected final boolean setDeveloperVerificationPolicy(int policy) {
+    this.verificationPolicy = policy;
+    return true;
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  @Nullable
+  protected final ComponentName getDeveloperVerificationServiceProvider() {
+    return developerVerificationServiceProvider;
+  }
+
+  /** Sets the developer verification service provider. */
+  public void setDeveloperVerificationServiceProvider(
+      @Nullable ComponentName developerVerificationServiceProvider) {
+    this.developerVerificationServiceProvider = developerVerificationServiceProvider;
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  @Nullable
+  protected final String getDeveloperVerificationPolicyDelegatePackage() {
+    return developerVerificationPolicyDelegatePackage;
+  }
+
+  /** Sets the developer verification policy delegate package. */
+  public void setDeveloperVerificationPolicyDelegatePackage(
+      @Nullable String developerVerificationPolicyDelegatePackage) {
+    this.developerVerificationPolicyDelegatePackage = developerVerificationPolicyDelegatePackage;
   }
 
   public void setSessionProgress(final int sessionId, final float progress) {

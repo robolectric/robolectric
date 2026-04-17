@@ -12,9 +12,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
+import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.app.Application;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.IIntentSender;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -36,6 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.ForType;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowPackageInstallerTest {
@@ -385,6 +389,83 @@ public class ShadowPackageInstallerTest {
 
     assertThat(packageInstaller.getSessionInfo(sessionId).getPackageSource())
         .isEqualTo(PackageInstaller.PACKAGE_SOURCE_STORE);
+  }
+
+  @Config(minSdk = CINNAMON_BUN)
+  @Test
+  public void getVerificationPolicy_returnsZeroByDefault() throws Exception {
+    int result =
+        reflector(PackageInstallerReflector.class, packageInstaller)
+            .getDeveloperVerificationPolicy();
+    assertThat(result).isEqualTo(0);
+  }
+
+  @Config(minSdk = CINNAMON_BUN)
+  @Test
+  public void setVerificationPolicy_returnsTrueAndSetsCorrectValue() throws Exception {
+    int expectedPolicy = 2;
+    boolean result =
+        reflector(PackageInstallerReflector.class, packageInstaller)
+            .setDeveloperVerificationPolicy(expectedPolicy);
+    assertThat(result).isTrue();
+    int actualPolicy =
+        reflector(PackageInstallerReflector.class, packageInstaller)
+            .getDeveloperVerificationPolicy();
+    assertThat(actualPolicy).isEqualTo(expectedPolicy);
+  }
+
+  @Config(minSdk = CINNAMON_BUN)
+  @Test
+  public void getDeveloperVerificationServiceProvider_returnsNullByDefault() throws Exception {
+    assertThat(
+            reflector(PackageInstallerReflector.class, packageInstaller)
+                .getDeveloperVerificationServiceProvider())
+        .isNull();
+  }
+
+  @Config(minSdk = CINNAMON_BUN)
+  @Test
+  public void setDeveloperVerificationServiceProvider_setsCorrectValue() throws Exception {
+    ComponentName expectedServiceProvider = new ComponentName("some.package", "some.class");
+    shadowOf(packageInstaller).setDeveloperVerificationServiceProvider(expectedServiceProvider);
+    assertThat(
+            reflector(PackageInstallerReflector.class, packageInstaller)
+                .getDeveloperVerificationServiceProvider())
+        .isEqualTo(expectedServiceProvider);
+  }
+
+  @Config(minSdk = CINNAMON_BUN)
+  @Test
+  public void getDeveloperVerificationPolicyDelegatePackage_returnsNullByDefault()
+      throws Exception {
+    assertThat(
+            reflector(PackageInstallerReflector.class, packageInstaller)
+                .getDeveloperVerificationPolicyDelegatePackage())
+        .isNull();
+  }
+
+  @Config(minSdk = CINNAMON_BUN)
+  @Test
+  public void setDeveloperVerificationPolicyDelegatePackage_setsCorrectValue() throws Exception {
+    String expectedDelegatePackage = "some.package";
+    shadowOf(packageInstaller)
+        .setDeveloperVerificationPolicyDelegatePackage(expectedDelegatePackage);
+    assertThat(
+            reflector(PackageInstallerReflector.class, packageInstaller)
+                .getDeveloperVerificationPolicyDelegatePackage())
+        .isEqualTo(expectedDelegatePackage);
+  }
+
+  /** Reflector interface for {@link PackageInstaller}'s internals. */
+  @ForType(PackageInstaller.class)
+  interface PackageInstallerReflector {
+    int getDeveloperVerificationPolicy();
+
+    boolean setDeveloperVerificationPolicy(int policy);
+
+    ComponentName getDeveloperVerificationServiceProvider();
+
+    String getDeveloperVerificationPolicyDelegatePackage();
   }
 
   private static Intent getOnlyBroadcastIntent() {
