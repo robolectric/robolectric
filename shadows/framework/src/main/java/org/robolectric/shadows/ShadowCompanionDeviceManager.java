@@ -2,9 +2,14 @@ package org.robolectric.shadows;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.Manifest.permission;
 import android.app.ActivityThread;
@@ -25,6 +30,7 @@ import com.google.common.primitives.Ints;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,11 +42,12 @@ import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow for CompanionDeviceManager. */
 @Implements(value = CompanionDeviceManager.class, minSdk = VERSION_CODES.O)
@@ -53,6 +60,8 @@ public class ShadowCompanionDeviceManager {
   private final Map<Integer, InputStream> attachedInputStreams = new ConcurrentHashMap<>();
   private final Map<Integer, OutputStream> attachedOutputStreams = new ConcurrentHashMap<>();
   private final List<MessageListenerRecord> messageListenerRecords = new ArrayList<>();
+  private final Map<String, ListenerHolder> listeners = new HashMap<>();
+  private final Set<RequestedAction> requestedActions = new HashSet<>();
 
   /**
    * The association info assigned to the current device. This should be accessed indirectly via
@@ -451,41 +460,28 @@ public class ShadowCompanionDeviceManager {
             .setApprovedMs(info.timeApprovedMs())
             .setLastTimeConnectedMs(info.lastTimeConnectedMs());
 
-    if (ReflectionHelpers.hasField(AssociationInfo.class, "mTag")) {
-      ReflectionHelpers.callInstanceMethod(
-          aiBuilder, "setTag", ClassParameter.from(String.class, info.tag()));
+    if (getApiLevel() == VANILLA_ICE_CREAM) {
+      aiBuilder.setTag(info.tag());
     }
-    if (ReflectionHelpers.hasField(AssociationInfo.class, "mAssociatedDevice")) {
-      ReflectionHelpers.callInstanceMethod(
-          aiBuilder,
-          "setAssociatedDevice",
-          ClassParameter.from(Object.class, info.associatedDevice()));
-      ReflectionHelpers.callInstanceMethod(
-          aiBuilder,
-          "setSystemDataSyncFlags",
-          ClassParameter.from(int.class, info.systemDataSyncFlags()));
-    }
-    if (ReflectionHelpers.hasField(AssociationInfo.class, "mRevoked")) {
-      ReflectionHelpers.callInstanceMethod(
-          aiBuilder, "setRevoked", ClassParameter.from(boolean.class, info.revoked()));
-    }
+    aiBuilder.setAssociatedDevice(info.associatedDevice());
+    aiBuilder.setSystemDataSyncFlags(info.systemDataSyncFlags());
+    aiBuilder.setRevoked(info.revoked());
     return aiBuilder.build();
   }
 
   private static RoboAssociationInfo createShadowAssociationInfo(AssociationInfo info) {
     Object associatedDevice = null;
     int systemDataSyncFlags = DEFAULT_SYSTEMDATASYNCFLAGS;
-    if (ReflectionHelpers.hasField(AssociationInfo.class, "mAssociatedDevice")) {
-      associatedDevice = ReflectionHelpers.callInstanceMethod(info, "getAssociatedDevice");
-      systemDataSyncFlags = ReflectionHelpers.callInstanceMethod(info, "getSystemDataSyncFlags");
-    }
     boolean revoked = false;
-    if (ReflectionHelpers.hasField(AssociationInfo.class, "mRevoked")) {
-      revoked = ReflectionHelpers.callInstanceMethod(info, "isRevoked");
-    }
     String tag = "";
-    if (ReflectionHelpers.hasField(AssociationInfo.class, "mTag")) {
-      tag = ReflectionHelpers.callInstanceMethod(info, "getTag");
+    if (getApiLevel() > TIRAMISU) {
+      associatedDevice = reflector(AssociationInfoReflector.class, info).getAssociatedDevice();
+      systemDataSyncFlags =
+          reflector(AssociationInfoReflector.class, info).getSystemDataSyncFlags();
+      revoked = reflector(AssociationInfoReflector.class, info).isRevoked();
+    }
+    if (getApiLevel() == VANILLA_ICE_CREAM) {
+      tag = reflector(AssociationInfoReflector.class, info).getTag();
     }
     return RoboAssociationInfo.create(
         info.getId(),
@@ -514,6 +510,59 @@ public class ShadowCompanionDeviceManager {
         == PERMISSION_GRANTED;
   }
 
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected List<AssociationInfo> getTrustedAssociations() {
+    return getAssociationInfos();
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected boolean isSystemDataTransportAttached(int associationId) {
+    return getAttachedInputStream(associationId) != null
+        && getAttachedOutputStream(associationId) != null;
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected void requestAction(
+      @ClassName("android.companion.ActionRequest") Object request,
+      String serviceName,
+      int[] associationIds) {
+    int action = reflector(ActionRequestReflector.class, request).getAction();
+    for (int associationId : associationIds) {
+      requestedActions.add(RequestedAction.create(serviceName, associationId, action));
+    }
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected void setOnActionResultListener(
+      int[] associationIds,
+      String serviceName,
+      Executor executor,
+      BiConsumer<Integer, Object> listener) {
+    listeners.put(
+        serviceName,
+        ListenerHolder.create(
+            java.util.Arrays.stream(associationIds).boxed().collect(toImmutableSet()),
+            executor,
+            listener));
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected void clearOnActionResultListener(String serviceName) {
+    listeners.remove(serviceName);
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected void notifyActionResult(
+      int associationId, @ClassName("android.companion.ActionResult") Object result) {
+    requestedActions.stream()
+        .filter(request -> request.isInterested(associationId, result))
+        .map(RequestedAction::serviceName)
+        .distinct()
+        .map(serviceName -> listeners.get(serviceName))
+        .filter(listener -> listener != null && listener.isInterested(associationId))
+        .forEach(listener -> listener.notifyActionResult(associationId, result));
+  }
+
   private static final class MessageListenerRecord {
     private final int receiverAssociationId;
     private final int messageType;
@@ -529,6 +578,52 @@ public class ShadowCompanionDeviceManager {
       this.messageType = messageType;
       this.listener = listener;
       this.executor = executor;
+    }
+  }
+
+  /** A listener holder than emulates the behavior of the real implementation. */
+  @AutoValue
+  abstract static class ListenerHolder {
+    abstract ImmutableSet<Integer> associationIds();
+
+    abstract Executor executor();
+
+    abstract BiConsumer<Integer, Object> listener();
+
+    static ListenerHolder create(
+        ImmutableSet<Integer> associationIds,
+        Executor executor,
+        BiConsumer<Integer, Object> listener) {
+      return new AutoValue_ShadowCompanionDeviceManager_ListenerHolder(
+          associationIds, executor, listener);
+    }
+
+    boolean isInterested(int associationId) {
+      return associationIds().contains(associationId);
+    }
+
+    void notifyActionResult(int associationId, Object result) {
+      executor().execute(() -> listener().accept(associationId, result));
+    }
+  }
+
+  /** A requested action that emulates the behavior of the real implementation. */
+  @AutoValue
+  abstract static class RequestedAction {
+    abstract String serviceName();
+
+    abstract int requestedAssociationId();
+
+    abstract int action();
+
+    static RequestedAction create(String serviceName, int requestedAssociationId, int action) {
+      return new AutoValue_ShadowCompanionDeviceManager_RequestedAction(
+          serviceName, requestedAssociationId, action);
+    }
+
+    boolean isInterested(int associationId, /* ActionResult */ Object result) {
+      int resultAction = reflector(ActionResultReflector.class, result).getAction();
+      return requestedAssociationId() == associationId && action() == resultAction;
     }
   }
 
@@ -651,5 +746,26 @@ public class ShadowCompanionDeviceManager {
 
       public abstract RoboAssociationInfo build();
     }
+  }
+
+  @ForType(AssociationInfo.class)
+  private interface AssociationInfoReflector {
+    Object getAssociatedDevice();
+
+    int getSystemDataSyncFlags();
+
+    boolean isRevoked();
+
+    String getTag();
+  }
+
+  @ForType(className = "android.companion.ActionRequest")
+  interface ActionRequestReflector {
+    int getAction();
+  }
+
+  @ForType(className = "android.companion.ActionResult")
+  interface ActionResultReflector {
+    int getAction();
   }
 }
