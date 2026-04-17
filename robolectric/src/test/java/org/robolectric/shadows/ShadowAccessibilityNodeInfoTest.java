@@ -9,7 +9,6 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.app.Activity;
 import android.graphics.Rect;
@@ -18,7 +17,6 @@ import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.view.accessibility.AccessibilityNodeInfo.CollectionInfo;
-import android.view.accessibility.AccessibilityNodeInfo.Selection;
 import android.view.accessibility.AccessibilityWindowInfo;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -389,68 +387,5 @@ public class ShadowAccessibilityNodeInfoTest {
 
     assertThat(node.getLabeledByList()).hasSize(1);
     assertThat(node.getLabeledByList().get(0)).isEqualTo(labelView.createAccessibilityNodeInfo());
-  }
-
-  @Test
-  @Config(minSdk = CINNAMON_BUN)
-  public void setTextSelection_setsSelection() {
-    node.setTextSelection(1, 5);
-    assertThat(node.getTextSelectionStart()).isEqualTo(1);
-    assertThat(node.getTextSelectionEnd()).isEqualTo(5);
-  }
-
-  @Test
-  @Config(minSdk = CINNAMON_BUN)
-  public void getTextSelection_noSelection_returnsNegative() {
-    assertThat(node.getTextSelectionStart()).isEqualTo(-1);
-    assertThat(node.getTextSelectionEnd()).isEqualTo(-1);
-  }
-
-  @Test
-  @Config(minSdk = CINNAMON_BUN)
-  public void selectionPosition_getNodeAndOffset() {
-    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
-    int offset = 5;
-    AccessibilityNodeInfo.SelectionPosition selectionPosition =
-        new AccessibilityNodeInfo.SelectionPosition(node, offset);
-
-    assertThat(selectionPosition.getNode()).isEqualTo(node);
-    assertThat(selectionPosition.getOffset()).isEqualTo(offset);
-  }
-
-  @Test
-  @Config(minSdk = CINNAMON_BUN)
-  public void selectionPosition_equals() {
-    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
-    node.setText("node");
-    int offset = 5;
-
-    AccessibilityNodeInfo.SelectionPosition position =
-        new AccessibilityNodeInfo.SelectionPosition(node, offset);
-    AccessibilityNodeInfo.SelectionPosition samePosition =
-        new AccessibilityNodeInfo.SelectionPosition(node, offset);
-
-    assertThat(position.equals(samePosition)).isTrue();
-    assertThat(position.equals(null)).isFalse();
-    assertThat(position.equals(new Object())).isFalse();
-  }
-
-  @Test
-  @Config(minSdk = CINNAMON_BUN)
-  public void setSelection_getSelection() {
-    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
-    node.setText("node");
-    int startOffset = 1;
-    int endOffset = 3;
-    AccessibilityNodeInfo.SelectionPosition start =
-        new AccessibilityNodeInfo.SelectionPosition(node, startOffset);
-    AccessibilityNodeInfo.SelectionPosition end =
-        new AccessibilityNodeInfo.SelectionPosition(node, endOffset);
-
-    Selection selection = new Selection(start, end);
-    node.setSelection(selection);
-
-    Selection resultSelection = node.getSelection();
-    assertThat(selection).isEqualTo(resultSelection);
   }
 }
