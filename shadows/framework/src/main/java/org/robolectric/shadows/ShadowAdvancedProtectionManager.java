@@ -1,6 +1,9 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static java.util.stream.Collectors.toCollection;
+import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
@@ -8,6 +11,7 @@ import android.security.advancedprotection.AdvancedProtectionFeature;
 import android.security.advancedprotection.AdvancedProtectionManager;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +20,10 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /** Shadow for the AdvancedProtectionManager framework class. */
 @Implements(value = AdvancedProtectionManager.class, minSdk = BAKLAVA, isInAndroidSdk = false)
@@ -112,5 +120,114 @@ public class ShadowAdvancedProtectionManager {
       Executor executor,
       boolean advancedProtectionState) {
     executor.execute(() -> callback.onAdvancedProtectionChanged(advancedProtectionState));
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected List<AdvancedProtectionFeature> updateAdvancedProtectionFeaturesProvisioning(
+      int[] featuresToProvision, int[] featuresToDeprovision) {
+    synchronized (lock) {
+      Set<Integer> provisionedFeatures = convertToSet(featuresToProvision);
+      Set<Integer> deprovisionedFeatures = convertToSet(featuresToDeprovision);
+      Set<Integer> featureIdsToUpdate = new HashSet<>();
+
+      Set<Integer> allFeatureIds =
+          reflector(AdvancedProtectionManagerReflector.class).getAllFeatureIds();
+
+      for (int featureId : provisionedFeatures) {
+        if (!allFeatureIds.contains(featureId)) {
+          throw new IllegalArgumentException(
+              "Feature " + featureId + " is not a valid feature ID.");
+        }
+        featureIdsToUpdate.add(featureId);
+      }
+      for (int featureId : deprovisionedFeatures) {
+        if (!allFeatureIds.contains(featureId)) {
+          throw new IllegalArgumentException(
+              "Feature " + featureId + " is not a valid feature ID.");
+        }
+        if (featureIdsToUpdate.contains(featureId)) {
+          throw new IllegalArgumentException(
+              "Feature " + featureId + " cannot be both provisioned and deprovisioned");
+        }
+        featureIdsToUpdate.add(featureId);
+      }
+
+      List<AdvancedProtectionFeature> updatedFeatures = new ArrayList<>();
+      for (AdvancedProtectionFeature feature : features) {
+        updatedFeatures.add(
+            updateProvisioning(feature, provisionedFeatures, deprovisionedFeatures));
+      }
+
+      features.clear();
+      features.addAll(updatedFeatures);
+
+      return features.stream()
+          .filter(feature -> featureIdsToUpdate.contains(feature.getId()))
+          .collect(toCollection(ArrayList::new));
+    }
+  }
+
+  private AdvancedProtectionFeature updateProvisioning(
+      AdvancedProtectionFeature feature,
+      Set<Integer> featuresToProvision,
+      Set<Integer> featuresToDeprovision) {
+    int provisioningMode =
+        determineProvisioningMode(feature, featuresToProvision, featuresToDeprovision);
+
+    int currentMode =
+        reflector(AdvancedProtectionFeatureReflector.class, feature).getProvisioningMode();
+    if (provisioningMode == currentMode) {
+      return feature;
+    }
+
+    boolean isEnabled = reflector(AdvancedProtectionFeatureReflector.class, feature).isEnabled();
+
+    return reflector(AdvancedProtectionFeatureReflector.class)
+        .newInstance(feature.getId(), isEnabled, provisioningMode);
+  }
+
+  private int determineProvisioningMode(
+      AdvancedProtectionFeature feature,
+      Set<Integer> featuresToProvision,
+      Set<Integer> featuresToDeprovision) {
+    if (featuresToProvision.contains(feature.getId())) {
+      return reflector(AdvancedProtectionFeatureReflector.class).getModeProvisionedByFeatureAdmin();
+    } else if (featuresToDeprovision.contains(feature.getId())) {
+      return reflector(AdvancedProtectionFeatureReflector.class)
+          .getModeDeprovisionedByFeatureAdmin();
+    } else {
+      return reflector(AdvancedProtectionFeatureReflector.class, feature).getProvisioningMode();
+    }
+  }
+
+  private Set<Integer> convertToSet(int[] features) {
+    return features == null
+        ? new HashSet<>()
+        : Arrays.stream(features).boxed().collect(toCollection(HashSet::new));
+  }
+
+  @ForType(AdvancedProtectionManager.class)
+  private interface AdvancedProtectionManagerReflector {
+    @Accessor("ALL_FEATURE_IDS")
+    @Static
+    Set<Integer> getAllFeatureIds();
+  }
+
+  @ForType(AdvancedProtectionFeature.class)
+  private interface AdvancedProtectionFeatureReflector {
+    @Accessor("PROVISIONING_MODE_PROVISIONED_BY_FEATURE_ADMIN")
+    @Static
+    int getModeProvisionedByFeatureAdmin();
+
+    @Accessor("PROVISIONING_MODE_DEPROVISIONED_BY_FEATURE_ADMIN")
+    @Static
+    int getModeDeprovisionedByFeatureAdmin();
+
+    int getProvisioningMode();
+
+    boolean isEnabled();
+
+    @Constructor
+    AdvancedProtectionFeature newInstance(int id, boolean isEnabled, int provisioningMode);
   }
 }
