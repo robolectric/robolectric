@@ -13,6 +13,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static java.util.Objects.requireNonNull;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
@@ -429,7 +430,13 @@ public class ShadowServiceManager {
           new FakeRangingAdapter());
       addBinderService(binderServices, Context.APP_FUNCTION_SERVICE, IAppFunctionService.class);
     }
-
+    if (RuntimeEnvironment.getApiLevel() >= CINNAMON_BUN) {
+      addBinderService(binderServices, "npu", "android.npumanager.INpuManagerService");
+      addBinderService(
+          binderServices,
+          "personal_context",
+          "android.service.personalcontext.IPersonalContextManager");
+    }
     return binderServices;
   }
 
