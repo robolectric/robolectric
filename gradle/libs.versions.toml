@@ -13,7 +13,7 @@ androidstubs = "36"
 conscrypt = "2.5.2"
 
 # https://github.com/bcgit/bc-java/tags
-bouncycastle = "1.83"
+bouncycastle = "1.84"
 
 # https://github.com/findbugsproject/findbugs/tags
 findbugs-jsr305 = "3.0.2"
