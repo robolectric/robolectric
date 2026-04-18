@@ -182,6 +182,8 @@ public class ShadowSubscriptionManagerTest {
     shadowOf(subscriptionManager)
         .addOnSubscriptionsChangedListener(new Handler(Looper.getMainLooper())::post, listener);
 
+    ShadowLooper.idleMainLooper();
+
     assertThat(listener.subscriptionChangedCount).isEqualTo(1);
   }
 
@@ -194,6 +196,8 @@ public class ShadowSubscriptionManagerTest {
     shadowOf(subscriptionManager)
         .setActiveSubscriptionInfos(
             SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo());
+
+    ShadowLooper.idleMainLooper();
 
     assertThat(listener.subscriptionChangedCount).isEqualTo(2);
   }
