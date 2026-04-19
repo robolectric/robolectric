@@ -1,3 +1,5 @@
+package org.robolectric.gradle
+
 class AndroidSdk(
   val apiLevel: Int,
   val androidVersion: String,
