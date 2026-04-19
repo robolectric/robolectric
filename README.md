@@ -14,7 +14,7 @@ To use Robolectric in your project, simply add the necessary dependencies to you
 
 ```groovy
 testImplementation("junit:junit:4.13.2")
-testImplementation("org.robolectric:robolectric:4.16")
+testImplementation("org.robolectric:robolectric:4.16.1")
 testImplementation("androidx.test.ext:junit:1.3.0")
 ```
 
