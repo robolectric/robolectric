@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.robolectric.gradle.AndroidSdk
 
 plugins {
   alias(libs.plugins.android.library)
