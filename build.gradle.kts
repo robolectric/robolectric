@@ -1,5 +1,6 @@
 import groovy.util.Node
 import org.gradle.plugins.ide.idea.model.IdeaModel
+import org.robolectric.gradle.AndroidSdk
 import org.robolectric.gradle.ShadowsPlugin.ShadowsPluginExtension
 
 // For use of external initialization scripts...
