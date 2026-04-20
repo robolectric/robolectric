@@ -1486,15 +1486,26 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getPackageUid(packageName, (int) ((PackageInfoFlags) flags).getValue());
   }
 
+  @Implementation(minSdk = TIRAMISU)
+  protected int getPackageUidAsUser(
+      String packageName,
+      @ClassName("android.content.pm.PackageManager$PackageInfoFlags") Object flags,
+      int userId)
+      throws NameNotFoundException {
+    // UserId is ignored because we don't currently support multi-profile calls.
+    return getPackageUidAsUser(packageName, (int) ((PackageInfoFlags) flags).getValue());
+  }
+
   @Implementation(minSdk = N)
   protected int getPackageUidAsUser(String packageName, int userId) throws NameNotFoundException {
-    return 0;
+    return getPackageUidAsUser(packageName, /* flags= */ 0, userId);
   }
 
   @Implementation(minSdk = N)
   protected int getPackageUidAsUser(String packageName, int flags, int userId)
       throws NameNotFoundException {
-    return 0;
+    // UserId is ignored because we don't currently support multi-profile calls.
+    return getPackageUid(packageName, flags);
   }
 
   /**
@@ -1976,7 +1987,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       throws NameNotFoundException {
     return getResourcesForApplication(activityName.getPackageName());
   }
-
 
   @Implementation
   protected Resources getResourcesForApplicationAsUser(String appPackageName, int userId)

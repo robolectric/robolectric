@@ -2941,6 +2941,20 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPackageUidForUser() throws NameNotFoundException {
+    int otherUserHandleId = 10;
+    int packageUid = 1;
+    // This setter makes no distinction of which UserHandle the package uids are for.
+    shadowOf(packageManager).setPackagesForUid(packageUid, "a_name");
+    // Pull the package uid for UserHandle 10.
+    int uid =
+        packageManager.getPackageUidAsUser("a_name", PackageInfoFlags.of(0), otherUserHandleId);
+    // For now, returns the packageUid irrespective of the UserHandle.
+    assertThat(uid).isEqualTo(packageUid);
+  }
+
+  @Test
   public void getPackagesForUid_shouldReturnSetPackageName() {
     shadowOf(packageManager).setPackagesForUid(10, "a_name");
     assertThat(packageManager.getPackagesForUid(10)).asList().containsExactly("a_name");
@@ -4030,7 +4044,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  
   public void setUnbadgedApplicationIcon() throws Exception {
     String packageName = context.getPackageName();
     Drawable d = new BitmapDrawable();
