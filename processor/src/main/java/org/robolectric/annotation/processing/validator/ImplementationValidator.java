@@ -1,5 +1,7 @@
 package org.robolectric.annotation.processing.validator;
 
+import static com.google.auto.common.MoreTypes.asTypeElement;
+
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -33,7 +35,9 @@ public class ImplementationValidator extends FoundOnImplementsValidator {
     boolean hasFilterAnnotation = false;
 
     for (AnnotationMirror mirror : elem.getAnnotationMirrors()) {
-      if (mirror.getAnnotationType().toString().equals("org.robolectric.annotation.Filter")) {
+      if (asTypeElement(mirror.getAnnotationType())
+          .getQualifiedName()
+          .contentEquals("org.robolectric.annotation.Filter")) {
         hasFilterAnnotation = true;
       }
     }
