@@ -27,7 +27,6 @@ import java.io.FileDescriptor;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -79,7 +78,6 @@ public class ShadowMediaMetadataRetrieverTest {
     assertBitmapEquals(retriever.getFrameAtTime(), bitmap);
   }
 
-  @Ignore("Currently, the same bitmap is returned.")
   @Test
   public void getFrameAtTime_copy() {
     addFrame(path, 1, bitmap);
@@ -87,7 +85,6 @@ public class ShadowMediaMetadataRetrieverTest {
     assertThat(retriever.getFrameAtTime()).isNotSameInstanceAs(bitmap);
   }
 
-  @Ignore("Currently, the same bitmap is returned.")
   @Test
   @Config(minSdk = O_MR1)
   public void getScaledFrameAtTime_copy() {
