@@ -115,9 +115,25 @@ public class ShadowAudioSystem {
    * @param attr the {@link AudioAttributes} to be used for playback
    * @return the level of direct playback playback support for the format and attributes.
    */
-  @Implementation(minSdk = TIRAMISU)
+  @Implementation(minSdk = TIRAMISU, maxSdk = BAKLAVA)
   protected static int getDirectPlaybackSupport(
       @Nonnull AudioFormat format, @Nonnull AudioAttributes attr) {
+    return getDirectPlaybackSupport(format, attr, /* uid= */ 0);
+  }
+
+  /**
+   * Retrieves the stored direct playback support for the {@link AudioFormat} and {@link
+   * AudioAttributes} ({@code uid} is ignored). If no value was stored for the key-pair then {@link
+   * AudioSystem#DIRECT_NOT_SUPPORTED} is returned.
+   *
+   * @param format the audio format (codec, sample rate, channels) to be used for playback
+   * @param attr the {@link AudioAttributes} to be used for playback
+   * @param uid the uid of the client to be used for playback (ignored by this shadow)
+   * @return the level of direct playback playback support for the format and attributes.
+   */
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected static int getDirectPlaybackSupport(
+      @Nonnull AudioFormat format, @Nonnull AudioAttributes attr, int uid) {
     return Optional.ofNullable(directPlaybackSupportTable.get(format, attr.getUsage()))
         .orElse(AudioSystem.DIRECT_NOT_SUPPORTED);
   }
