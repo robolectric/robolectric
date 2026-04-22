@@ -17,8 +17,8 @@ public class ShadowAudioProductStrategy {
   protected static int native_get_legacy_stream_for_audio_attributes(
       AudioAttributes audioAttributes) {
     Objects.requireNonNull(audioAttributes, "AudioAttributes must not be null");
-    // this method's java equivalent would always return STREAM_MUSIC since Robolectric has no audio
-    // product strategies
-    return AudioSystem.STREAM_MUSIC;
+    // The real native method would return STREAM_DEFAULT since Robolectric has no audio product
+    // strategies.
+    return AudioSystem.STREAM_DEFAULT;
   }
 }
