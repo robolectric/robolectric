@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -14,7 +15,9 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
@@ -28,6 +31,7 @@ import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.util.reflector.WithType;
 
 /**
  * Properties of {@link android.view.accessibility.AccessibilityNodeInfo} that are normally locked
@@ -61,6 +65,8 @@ public class ShadowAccessibilityNodeInfo {
   private View view;
 
   private CharSequence text;
+
+  private Object selection;
 
   private boolean refreshReturnValue = true;
 
@@ -98,6 +104,9 @@ public class ShadowAccessibilityNodeInfo {
     final ShadowAccessibilityNodeInfo shadowInfo = Shadow.extract(info);
     newShadow.mOriginNodeId = shadowInfo.mOriginNodeId;
     newShadow.text = shadowInfo.text;
+    if (RuntimeEnvironment.getApiLevel() >= CINNAMON_BUN) {
+      newShadow.selection = SelectionAdapter.copySelection(shadowInfo.selection, info, newInfo);
+    }
     newShadow.performedActionAndArgsList = shadowInfo.performedActionAndArgsList;
     newShadow.parent = shadowInfo.parent;
     newShadow.labelFor = (shadowInfo.labelFor == null) ? null : obtain(shadowInfo.labelFor);
@@ -296,6 +305,50 @@ public class ShadowAccessibilityNodeInfo {
       return accessibilityNodeInfoReflector.getText();
     }
     return text;
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected int getTextSelectionStart() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getTextSelectionStart();
+    }
+    return SelectionAdapter.getSelectionStart(selection);
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected int getTextSelectionEnd() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getTextSelectionEnd();
+    }
+    return SelectionAdapter.getSelectionEnd(selection);
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected void setTextSelection(int start, int end) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.setTextSelection(start, end);
+      return;
+    }
+    setSelection(SelectionAdapter.createSelection(realAccessibilityNodeInfo, start, end));
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected void setSelection(
+      @ClassName("android.view.accessibility.AccessibilityNodeInfo$Selection") Object selection) {
+    if (useRealAni()) {
+      accessibilityNodeInfoReflector.setSelection(selection);
+      return;
+    }
+    this.selection = selection;
+  }
+
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected @ClassName("android.view.accessibility.AccessibilityNodeInfo$Selection") Object
+      getSelection() {
+    if (useRealAni()) {
+      return accessibilityNodeInfoReflector.getSelection();
+    }
+    return selection;
   }
 
   @Implementation
@@ -736,6 +789,23 @@ public class ShadowAccessibilityNodeInfo {
     @Direct
     boolean performAction(int action, Bundle arguments);
 
+    @Direct
+    int getTextSelectionStart();
+
+    @Direct
+    int getTextSelectionEnd();
+
+    @Direct
+    void setTextSelection(int start, int end);
+
+    @Direct
+    @ClassName("android.view.accessibility.AccessibilityNodeInfo$Selection")
+    Object getSelection();
+
+    @Direct
+    void setSelection(
+        @WithType("android.view.accessibility.AccessibilityNodeInfo$Selection") Object selection);
+
     @Override
     @Direct
     boolean equals(Object object);
@@ -768,5 +838,97 @@ public class ShadowAccessibilityNodeInfo {
         Boolean.parseBoolean(System.getProperty("robolectric.useRealAni", "false"));
     Preconditions.checkState(
         !useRealAni, "This API is not supported when 'robolectric.useRealAni' is true");
+  }
+
+  /** Shadow class for android.view.accessibility.AccessibilityNodeInfo$SelectionPosition. */
+  @Implements(
+      className = "android.view.accessibility.AccessibilityNodeInfo$SelectionPosition",
+      minSdk = CINNAMON_BUN,
+      isInAndroidSdk = false)
+  public static class ShadowSelectionPosition {
+    private AccessibilityNodeInfo node;
+    private int offset;
+
+    @Implementation
+    protected void __constructor__(AccessibilityNodeInfo node, int offset) {
+      this.node = node;
+      this.offset = offset;
+    }
+
+    @Implementation
+    protected AccessibilityNodeInfo getNode() {
+      return node;
+    }
+
+    @Implementation
+    protected int getOffset() {
+      return offset;
+    }
+
+    @SuppressWarnings({"EqualsHashCode", "ProtectedImplementationLintCheck"})
+    @Implementation
+    @Override
+    public boolean equals(Object other) {
+      if (other == this) {
+        return true;
+      }
+      return SelectionAdapter.isSelectionPosition(other)
+          && Objects.equals(getNode(), SelectionAdapter.getSelectionPositionNode(other))
+          && offset == SelectionAdapter.getSelectionPositionOffset(other);
+    }
+  }
+
+  private static class SelectionAdapter {
+    static int getSelectionStart(Object selection) {
+      if (selection instanceof AccessibilityNodeInfo.Selection) {
+        return ((AccessibilityNodeInfo.Selection) selection).getStart().getOffset();
+      }
+      return -1;
+    }
+
+    static int getSelectionEnd(Object selection) {
+      if (selection instanceof AccessibilityNodeInfo.Selection) {
+        return ((AccessibilityNodeInfo.Selection) selection).getEnd().getOffset();
+      }
+      return -1;
+    }
+
+    static Object createSelection(AccessibilityNodeInfo node, int start, int end) {
+      return new AccessibilityNodeInfo.Selection(
+          new AccessibilityNodeInfo.SelectionPosition(node, start),
+          new AccessibilityNodeInfo.SelectionPosition(node, end));
+    }
+
+    static Object copySelection(
+        Object selection, AccessibilityNodeInfo info, AccessibilityNodeInfo newInfo) {
+      if (selection instanceof AccessibilityNodeInfo.Selection) {
+        AccessibilityNodeInfo.Selection selectionToCopy =
+            (AccessibilityNodeInfo.Selection) selection;
+        AccessibilityNodeInfo.SelectionPosition start = selectionToCopy.getStart();
+        AccessibilityNodeInfo.SelectionPosition end = selectionToCopy.getEnd();
+
+        AccessibilityNodeInfo startNode =
+            Objects.equals(start.getNode(), info) ? newInfo : start.getNode();
+        AccessibilityNodeInfo endNode =
+            Objects.equals(end.getNode(), info) ? newInfo : end.getNode();
+
+        return new AccessibilityNodeInfo.Selection(
+            new AccessibilityNodeInfo.SelectionPosition(startNode, start.getOffset()),
+            new AccessibilityNodeInfo.SelectionPosition(endNode, end.getOffset()));
+      }
+      return null;
+    }
+
+    static boolean isSelectionPosition(Object o) {
+      return o instanceof AccessibilityNodeInfo.SelectionPosition;
+    }
+
+    static AccessibilityNodeInfo getSelectionPositionNode(Object o) {
+      return ((AccessibilityNodeInfo.SelectionPosition) o).getNode();
+    }
+
+    static int getSelectionPositionOffset(Object o) {
+      return ((AccessibilityNodeInfo.SelectionPosition) o).getOffset();
+    }
   }
 }
