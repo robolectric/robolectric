@@ -252,6 +252,16 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @Override
   @Nonnull
   protected AndroidSandbox getSandbox(FrameworkMethod method) {
+    return getAndroidSandbox(method, /* verifySdk= */ true);
+  }
+
+  @Override
+  @Nonnull
+  protected AndroidSandbox getSandboxForSandboxMapping(FrameworkMethod method) {
+    return getAndroidSandbox(method, /* verifySdk= */ false);
+  }
+
+  private AndroidSandbox getAndroidSandbox(FrameworkMethod method, boolean verifySdk) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     Sdk sdk = roboMethod.getSdk();
 
@@ -261,7 +271,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     SQLiteMode.Mode sqliteMode = roboMethod.configuration.get(SQLiteMode.Mode.class);
     GraphicsMode.Mode graphicsMode = roboMethod.configuration.get(GraphicsMode.Mode.class);
 
-    sdk.verifySupportedSdk(method.getDeclaringClass().getName());
+    if (verifySdk) {
+      sdk.verifySupportedSdk(method.getDeclaringClass().getName());
+    }
     return sandboxManager.getAndroidSandbox(
         classLoaderConfig, sdk, resourcesMode, looperMode, sqliteMode, graphicsMode);
   }

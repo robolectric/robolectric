@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.WeakHashMap;
 import javax.annotation.Nonnull;
+import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.internal.runners.statements.FailOnTimeout;
 import org.junit.rules.RunRules;
@@ -125,7 +126,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     for (FrameworkMethod method : children) {
       if (!isIgnored(method)) {
         methodsBySandbox
-            .computeIfAbsent(getSandbox(method), unused -> new ArrayList<>())
+            .computeIfAbsent(getSandboxForSandboxMapping(method), unused -> new ArrayList<>())
             .add(method);
       }
     }
@@ -146,6 +147,10 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
           });
     }
     return result.build();
+  }
+
+  protected Sandbox getSandboxForSandboxMapping(FrameworkMethod method) {
+    return getSandbox(method);
   }
 
   @Nonnull
@@ -177,6 +182,10 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         } catch (IllegalArgumentException e) {
           notifier.fireTestStarted(description);
           notifier.fireTestFailure(new Failure(description, e));
+          notifier.fireTestFinished(description);
+        } catch (AssumptionViolatedException e) {
+          notifier.fireTestStarted(description);
+          notifier.fireTestAssumptionFailed(new Failure(description, e));
           notifier.fireTestFinished(description);
         }
       } else {
