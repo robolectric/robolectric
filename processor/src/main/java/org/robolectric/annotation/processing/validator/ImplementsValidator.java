@@ -148,9 +148,7 @@ public class ImplementsValidator extends Validator {
     }
 
     String sdkClassNameFq = sdkClassNameFq(av, cv);
-    if (isInAndroidSdk) {
-      validateShadow(sdkClassNameFq, shadowType, minSdk, maxSdk, allowInDev);
-    }
+    validateShadow(sdkClassNameFq, shadowType, minSdk, maxSdk, allowInDev);
 
     return null;
   }

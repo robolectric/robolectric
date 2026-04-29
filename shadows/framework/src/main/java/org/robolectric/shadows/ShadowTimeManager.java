@@ -255,19 +255,19 @@ public class ShadowTimeManager {
     lastExternalTimeSuggestion = timeSuggestion;
   }
 
-  @Implementation
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected @ClassName("android.app.time.TimeState") Object getTimeState() {
     return timeState;
   }
 
-  @Implementation
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected boolean confirmTime(@ClassName("android.app.time.UnixEpochTime") Object unixEpochTime) {
     Objects.requireNonNull(unixEpochTime);
     lastConfirmedTime = unixEpochTime;
     return true;
   }
 
-  @Implementation
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected boolean setManualTime(
       @ClassName("android.app.time.UnixEpochTime") Object unixEpochTime) {
     Objects.requireNonNull(unixEpochTime);
@@ -275,19 +275,19 @@ public class ShadowTimeManager {
     return true;
   }
 
-  @Implementation
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected @ClassName("android.app.time.TimeZoneState") Object getTimeZoneState() {
     return timeZoneState;
   }
 
-  @Implementation
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected boolean confirmTimeZone(String timeZoneId) {
     Objects.requireNonNull(timeZoneId);
     lastConfirmedTimeZone = timeZoneId;
     return true;
   }
 
-  @Implementation
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected boolean setManualTimeZone(String timeZoneId) {
     Objects.requireNonNull(timeZoneId);
     lastManualTimeZone = timeZoneId;
