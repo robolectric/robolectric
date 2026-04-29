@@ -10,7 +10,10 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.graphics.Bitmap;
 import android.graphics.ColorSpace;
@@ -26,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -40,6 +42,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link Bitmap} that is backed by native code */
+// Force recompilation of ShadowNativeBitmap 2
 @Implements(
     value = Bitmap.class,
     minSdk = O,
@@ -379,7 +382,11 @@ public class ShadowNativeBitmap extends ShadowBitmap {
   protected void writeToParcel(Parcel p, int flags) {
     // Modeled after
     // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r1:frameworks/base/libs/hwui/jni/Bitmap.cpp;l=872.
-    reflector(BitmapReflector.class, realBitmap).checkRecycled("Can't parcel a recycled bitmap");
+    BitmapReflector bitmapReflector = reflector(BitmapReflector.class, realBitmap);
+    bitmapReflector.checkRecycled("Can't parcel a recycled bitmap");
+    if (getApiLevel() > CINNAMON_BUN) {
+      p.writeLong(bitmapReflector.getId());
+    }
     int width = realBitmap.getWidth();
     int height = realBitmap.getHeight();
     p.writeInt(width);
@@ -398,7 +405,7 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     realBitmap.getPixels(pixels, 0, width, 0, 0, width, height);
     p.writeIntArray(pixels);
 
-    if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
+    if (getApiLevel() >= UPSIDE_DOWN_CAKE) {
       Object gainmap = reflector(BitmapReflector.class, realBitmap).getGainmap();
       if (gainmap != null) {
         p.writeBoolean(true);
@@ -409,7 +416,12 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     }
   }
 
-  @Implementation
+  @Implementation(minSdk = POST_CINNAMON_BUN)
+  protected static Bitmap nativeCreateFromParcel(Parcel p, long sourceId) {
+    return nativeCreateFromParcel(p);
+  }
+
+  @Implementation(maxSdk = CINNAMON_BUN)
   protected static Bitmap nativeCreateFromParcel(Parcel p) {
     int parceledWidth = p.readInt();
     int parceledHeight = p.readInt();
@@ -421,7 +433,7 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     if (hasColorSpace) {
       String colorSpaceName = p.readString();
       ColorSpace[] namedColorSpaces;
-      if (RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM) {
+      if (getApiLevel() >= VANILLA_ICE_CREAM) {
         // Starting Android V, we need to access the color space map to get all supported color
         // spaces.
         Map<Integer, ColorSpace> namedColorSpaceMap =

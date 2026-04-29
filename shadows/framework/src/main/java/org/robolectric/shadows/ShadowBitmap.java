@@ -161,6 +161,9 @@ public abstract class ShadowBitmap {
 
     @Direct
     Object getGainmap();
+
+    @Accessor("mId")
+    long getId();
   }
 
   /** Shadow picker for {@link Bitmap}. */

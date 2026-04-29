@@ -10,6 +10,8 @@ import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.graphics.Bitmap;
 import android.graphics.ColorSpace;
@@ -290,7 +292,12 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
     return scaledBitmap;
   }
 
-  @Implementation
+  @Implementation(minSdk = POST_CINNAMON_BUN)
+  protected static Bitmap nativeCreateFromParcel(Parcel p, long sourceId) {
+    return nativeCreateFromParcel(p);
+  }
+
+  @Implementation(maxSdk = CINNAMON_BUN)
   protected static Bitmap nativeCreateFromParcel(Parcel p) {
     int parceledWidth = p.readInt();
     int parceledHeight = p.readInt();
@@ -674,6 +681,9 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
 
   @Implementation
   protected void writeToParcel(Parcel p, int flags) {
+    if (org.robolectric.RuntimeEnvironment.getApiLevel() > CINNAMON_BUN) {
+      p.writeLong(reflector(BitmapReflector.class, realBitmap).getId());
+    }
     p.writeInt(width);
     p.writeInt(height);
     p.writeSerializable(config);

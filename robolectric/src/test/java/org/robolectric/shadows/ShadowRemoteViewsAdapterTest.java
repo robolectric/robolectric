@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
+@Config(maxSdk = CINNAMON_BUN)
 public class ShadowRemoteViewsAdapterTest {
 
   private static final ImmutableList<String> LIST_ITEMS = ImmutableList.of("one", "two", "three");
