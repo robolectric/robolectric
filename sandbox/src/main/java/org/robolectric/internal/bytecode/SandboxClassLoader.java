@@ -148,8 +148,13 @@ public class SandboxClassLoader extends URLClassLoader {
     InputStream fromUrlsClassLoader = resourceProvider.getResourceAsStream(resName);
     if (fromUrlsClassLoader != null) {
       if (LOG_RESOURCE_USAGE) {
+        String packageName = className.replace('/', '.');
+        int lastDotIndex = packageName.lastIndexOf('.');
+        if (lastDotIndex != -1) {
+          packageName = packageName.substring(0, lastDotIndex);
+        }
         PerfStatsCollector.getInstance()
-            .incrementCount("SandboxClassLoader.classResourceLoaded " + className);
+            .incrementCount("SandboxClassLoader.packageLoaded " + packageName);
       }
       return fromUrlsClassLoader;
     }
