@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -7,6 +8,7 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.graphics.FrameInfo;
 import android.os.Build.VERSION_CODES;
@@ -57,8 +59,13 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
     activeChoreographers.add(realChoreographer);
   }
 
-  @Filter(minSdk = UPSIDE_DOWN_CAKE, order = Order.AFTER)
+  @Filter(minSdk = UPSIDE_DOWN_CAKE, maxSdk = BAKLAVA, order = Order.AFTER)
   protected void __constructor__(Looper looper, int vsyncSource, long layerHandle) {
+    activeChoreographers.add(realChoreographer);
+  }
+
+  @Filter(minSdk = CINNAMON_BUN, order = Order.AFTER)
+  protected void __constructor__(Looper looper, long layerHandle) {
     activeChoreographers.add(realChoreographer);
   }
 

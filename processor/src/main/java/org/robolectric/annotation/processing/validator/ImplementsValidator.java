@@ -108,8 +108,6 @@ public class ImplementsValidator extends Validator {
     int maxSdk = maxSdkVal == null ? -1 : Helpers.getAnnotationIntValue(maxSdkVal);
 
     AnnotationValue shadowPickerValue = Helpers.getAnnotationTypeMirrorValue(am, "shadowPicker");
-    AnnotationValue isInAndroidSdkVal = Helpers.getAnnotationTypeMirrorValue(am, "isInAndroidSdk");
-    boolean isInAndroidSdk = isInAndroidSdkVal == null || (boolean) isInAndroidSdkVal.getValue();
 
     TypeElement shadowPickerTypeElement =
         shadowPickerValue == null
@@ -264,10 +262,19 @@ public class ImplementsValidator extends Validator {
     }
 
     Implementation implementation = methodElement.getAnnotation(Implementation.class);
-    if (implementation != null) {
-      Problems problems = new Problems(this.checkKind);
+    Filter filter = methodElement.getAnnotation(Filter.class);
 
-      for (SdkStore.Sdk sdk : sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk)) {
+    if (implementation != null || filter != null) {
+      Problems problems = new Problems(this.checkKind);
+      List<SdkStore.Sdk> sdks;
+
+      if (implementation != null) {
+        sdks = sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk);
+      } else {
+        sdks = sdkStore.sdksMatching(filter, classMinSdk, classMaxSdk);
+      }
+
+      for (SdkStore.Sdk sdk : sdks) {
         String problem = sdk.verifyMethod(sdkClassName, methodElement, allowInDev);
         if (problem != null) {
           problems.add(problem, sdk.sdkInfo.apiLevel);
@@ -297,7 +304,8 @@ public class ImplementsValidator extends Validator {
       Kind kind = sdkCheckMode == SdkCheckMode.WARN ? Kind.WARNING : Kind.ERROR;
       Problems problems = new Problems(kind);
 
-      for (SdkStore.Sdk sdk : sdkStore.sdksMatching(null, classMinSdk, classMaxSdk)) {
+      for (SdkStore.Sdk sdk :
+          sdkStore.sdksMatching((Implementation) null, classMinSdk, classMaxSdk)) {
         String problem = sdk.verifyMethod(sdkClassName, methodElement, allowInDev);
         if (problem == null && sdk.getClassInfo(sdkClassName) != null) {
           problems.add(
