@@ -247,10 +247,11 @@ public class ShadowUsageStatsManager {
     long beginTime = query.getBeginTimeMillis();
     long endTime = query.getEndTimeMillis();
     int[] eventTypes = query.getEventTypes();
+    boolean includeAllEventTypes = eventTypes.length == 0;
     ImmutableSet<Integer> eventTypesSet = ImmutableSet.copyOf(Ints.asList(eventTypes));
     List<Event> results = new ArrayList<>();
     for (Event event : Iterables.concat(eventsByTimeStamp.subMap(beginTime, endTime).values())) {
-      if (eventTypesSet.contains(event.getEventType())) {
+      if (includeAllEventTypes || eventTypesSet.contains(event.getEventType())) {
         results.add(event);
       }
     }

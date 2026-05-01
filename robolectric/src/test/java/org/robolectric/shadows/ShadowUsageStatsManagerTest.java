@@ -1146,4 +1146,53 @@ public class ShadowUsageStatsManagerTest {
 
     assertThat(events.hasNextEvent()).isFalse();
   }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testQueryEvents_newApiV_noEventTypesSpecified_shouldReturnAllEventTypes() {
+    // These events should be returned.
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(1000L)
+                .setPackage(TEST_PACKAGE_NAME1)
+                .setEventType(Event.MOVE_TO_BACKGROUND)
+                .build());
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(1001L)
+                .setPackage(TEST_PACKAGE_NAME2)
+                .setEventType(Event.SYSTEM_INTERACTION)
+                .build());
+
+    // This event should be filtered out, as too late.
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(3000L)
+                .setPackage(TEST_PACKAGE_NAME1)
+                .setEventType(Event.MOVE_TO_BACKGROUND)
+                .build());
+
+    UsageEvents events =
+        // No event types specified on query.
+        usageStatsManager.queryEvents(new UsageEventsQuery.Builder(1000L, 2000L).build());
+
+    Event event = new Event();
+
+    assertThat(events.hasNextEvent()).isTrue();
+    assertThat(events.getNextEvent(event)).isTrue();
+    assertThat(event.getPackageName()).isEqualTo(TEST_PACKAGE_NAME1);
+    assertThat(event.getTimeStamp()).isEqualTo(1000L);
+    assertThat(event.getEventType()).isEqualTo(Event.MOVE_TO_BACKGROUND);
+
+    assertThat(events.hasNextEvent()).isTrue();
+    assertThat(events.getNextEvent(event)).isTrue();
+    assertThat(event.getPackageName()).isEqualTo(TEST_PACKAGE_NAME2);
+    assertThat(event.getTimeStamp()).isEqualTo(1001L);
+    assertThat(event.getEventType()).isEqualTo(Event.SYSTEM_INTERACTION);
+
+    assertThat(events.hasNextEvent()).isFalse();
+  }
 }
