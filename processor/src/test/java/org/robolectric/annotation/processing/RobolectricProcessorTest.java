@@ -10,6 +10,7 @@ import static org.robolectric.annotation.processing.RobolectricProcessor.JSON_DO
 import static org.robolectric.annotation.processing.RobolectricProcessor.PACKAGE_OPT;
 import static org.robolectric.annotation.processing.RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT;
 import static org.robolectric.annotation.processing.Utils.DEFAULT_OPTS;
+import static org.robolectric.annotation.processing.Utils.SHADOW_CLASSTRACKER_SOURCE;
 import static org.robolectric.annotation.processing.Utils.SHADOW_EXTRACTOR_SOURCE;
 import static org.robolectric.annotation.processing.Utils.SHADOW_PROVIDER_SOURCE;
 
@@ -47,6 +48,7 @@ public class RobolectricProcessorTest {
             .withProcessors(new RobolectricProcessor(DEFAULT_OPTS))
             .compile(
                 SHADOW_PROVIDER_SOURCE,
+                SHADOW_CLASSTRACKER_SOURCE,
                 SHADOW_EXTRACTOR_SOURCE,
                 forSourceString("HelloWorld", "final class HelloWorld {}"));
     assertThat(compilation).succeeded();
@@ -61,6 +63,7 @@ public class RobolectricProcessorTest {
             .withProcessors(new RobolectricProcessor(DEFAULT_OPTS))
             .compile(
                 SHADOW_PROVIDER_SOURCE,
+                SHADOW_CLASSTRACKER_SOURCE,
                 SHADOW_EXTRACTOR_SOURCE,
                 forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"),
                 forResource("org/robolectric/annotation/processing/shadows/ShadowOuterDummy.java"),
@@ -80,6 +83,7 @@ public class RobolectricProcessorTest {
             .withProcessors(new RobolectricProcessor(DEFAULT_OPTS))
             .compile(
                 SHADOW_PROVIDER_SOURCE,
+                SHADOW_CLASSTRACKER_SOURCE,
                 SHADOW_EXTRACTOR_SOURCE,
                 forResource("org/robolectric/annotation/processing/shadows/ShadowPrivate.java"),
                 forResource("org/robolectric/annotation/processing/shadows/ShadowOuterDummy2.java"),
@@ -98,6 +102,7 @@ public class RobolectricProcessorTest {
             .withProcessors(new RobolectricProcessor(DEFAULT_OPTS))
             .compile(
                 SHADOW_PROVIDER_SOURCE,
+                SHADOW_CLASSTRACKER_SOURCE,
                 SHADOW_EXTRACTOR_SOURCE,
                 forResource(
                     "org/robolectric/annotation/processing/shadows/ShadowOuterDummyWithErrs.java"));
@@ -112,6 +117,7 @@ public class RobolectricProcessorTest {
             .withProcessors(new RobolectricProcessor(DEFAULT_OPTS))
             .compile(
                 SHADOW_PROVIDER_SOURCE,
+                SHADOW_CLASSTRACKER_SOURCE,
                 SHADOW_EXTRACTOR_SOURCE,
                 forResource(
                     "org/robolectric/annotation/processing/shadows/ShadowClassNameOnly.java"),
@@ -130,6 +136,7 @@ public class RobolectricProcessorTest {
             .withProcessors(new RobolectricProcessor(DEFAULT_OPTS))
             .compile(
                 SHADOW_PROVIDER_SOURCE,
+                SHADOW_CLASSTRACKER_SOURCE,
                 SHADOW_EXTRACTOR_SOURCE,
                 forResource(
                     "org/robolectric/annotation/processing/shadows/ShadowExcludedFromAndroidSdk.java"));
@@ -165,6 +172,7 @@ public class RobolectricProcessorTest {
             .withProcessors(new RobolectricProcessor(opts))
             .compile(
                 SHADOW_PROVIDER_SOURCE,
+                SHADOW_CLASSTRACKER_SOURCE,
                 SHADOW_EXTRACTOR_SOURCE,
                 forResource(
                     "org/robolectric/annotation/processing/shadows/ShadowClassNameOnly.java"),
@@ -182,6 +190,7 @@ public class RobolectricProcessorTest {
             .withProcessors(new RobolectricProcessor(DEFAULT_OPTS))
             .compile(
                 SHADOW_PROVIDER_SOURCE,
+                SHADOW_CLASSTRACKER_SOURCE,
                 SHADOW_EXTRACTOR_SOURCE,
                 forResource(
                     "org/robolectric/annotation/processing/shadows/ShadowClassNameOnly.java"),
@@ -204,6 +213,7 @@ public class RobolectricProcessorTest {
             .withProcessors(new RobolectricProcessor(DEFAULT_OPTS))
             .compile(
                 SHADOW_PROVIDER_SOURCE,
+                SHADOW_CLASSTRACKER_SOURCE,
                 SHADOW_EXTRACTOR_SOURCE,
                 forResource("org/robolectric/annotation/TestWithUnrecognizedAnnotation.java"));
     assertThat(compilation).succeeded();
@@ -216,6 +226,7 @@ public class RobolectricProcessorTest {
             .withProcessors(new RobolectricProcessor(DEFAULT_OPTS))
             .compile(
                 SHADOW_PROVIDER_SOURCE,
+                SHADOW_CLASSTRACKER_SOURCE,
                 SHADOW_EXTRACTOR_SOURCE,
                 forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"),
                 forResource(
@@ -237,6 +248,7 @@ public class RobolectricProcessorTest {
             .withProcessors(new RobolectricProcessor(options))
             .compile(
                 SHADOW_PROVIDER_SOURCE,
+                SHADOW_CLASSTRACKER_SOURCE,
                 SHADOW_EXTRACTOR_SOURCE,
                 forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"));
     assertThat(compilation).succeeded();
@@ -256,6 +268,7 @@ public class RobolectricProcessorTest {
             .withProcessors(new RobolectricProcessor(options))
             .compile(
                 SHADOW_PROVIDER_SOURCE,
+                SHADOW_CLASSTRACKER_SOURCE,
                 SHADOW_EXTRACTOR_SOURCE,
                 forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"),
                 forResource("org/robolectric/annotation/processing/shadows/ShadowDummy2.java"),
@@ -280,6 +293,7 @@ public class RobolectricProcessorTest {
             .withProcessors(new RobolectricProcessor(options))
             .compile(
                 SHADOW_PROVIDER_SOURCE,
+                SHADOW_CLASSTRACKER_SOURCE,
                 SHADOW_EXTRACTOR_SOURCE,
                 forResource(
                     "org/robolectric/annotation/processing/shadows/ShadowInnerDummyWithPicker.java"));

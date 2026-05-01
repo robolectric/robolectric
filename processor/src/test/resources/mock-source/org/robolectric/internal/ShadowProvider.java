@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface ShadowProvider {
 
-  void reset();
+  void reset(ClassTracker classTracker);
 
   String[] getProvidedPackageNames();
 

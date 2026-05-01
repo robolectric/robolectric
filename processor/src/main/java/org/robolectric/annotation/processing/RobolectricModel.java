@@ -243,7 +243,8 @@ public class RobolectricModel {
       imports.add("java.util.HashMap");
       imports.add("java.util.List");
       imports.add("java.util.Map");
-      imports.add("javax.annotation.Generated");
+      imports.add("java.util.Set");
+      imports.add("java.util.HashSet");
       imports.add("org.robolectric.internal.ShadowProvider");
       imports.add("org.robolectric.shadow.api.Shadow");
 
@@ -260,7 +261,23 @@ public class RobolectricModel {
             }
           };
       shadowTypes.values().forEach(shadowInfo -> shadowInfo.prepare(referentResolver, helpers));
-      resetterMap.values().forEach(resetterInfo -> resetterInfo.prepare(referentResolver));
+      resetterMap
+          .values()
+          .forEach(
+              resetterInfo -> {
+                ShadowInfo si =
+                    shadowTypes.get(resetterInfo.shadowType.getQualifiedName().toString());
+                String actualBinaryName = si != null ? si.getActualBinaryName() : null;
+                if (actualBinaryName == null) {
+                  actualBinaryName =
+                      extraShadowTypes.get(helpers.getBinaryName(resetterInfo.shadowType));
+                }
+                if (actualBinaryName == null) {
+                  actualBinaryName =
+                      extraShadowTypes.get(resetterInfo.shadowType.getQualifiedName().toString());
+                }
+                resetterInfo.prepare(referentResolver, helpers, actualBinaryName);
+              });
     }
 
     private void registerType(TypeElement type) {
@@ -542,14 +559,18 @@ public class RobolectricModel {
     private final TypeElement shadowType;
     private final ExecutableElement executableElement;
     private String shadowTypeReferent;
+    private String shadowBinaryName;
+    private String actualBinaryName;
 
     ResetterInfo(TypeElement shadowType, ExecutableElement executableElement) {
       this.shadowType = shadowType;
       this.executableElement = executableElement;
     }
 
-    void prepare(ReferentResolver referentResolver) {
+    void prepare(ReferentResolver referentResolver, Helpers helpers, String actualBinaryName) {
       shadowTypeReferent = referentResolver.getReferentFor(shadowType);
+      shadowBinaryName = helpers.getBinaryName(shadowType);
+      this.actualBinaryName = actualBinaryName;
     }
 
     private Implements getImplementsAnnotation() {
@@ -558,6 +579,14 @@ public class RobolectricModel {
 
     public String getMethodCall() {
       return shadowTypeReferent + "." + executableElement.getSimpleName() + "();";
+    }
+
+    public String getShadowClassName() {
+      return shadowBinaryName;
+    }
+
+    public String getActualBinaryName() {
+      return actualBinaryName;
     }
 
     public int getMinSdk() {

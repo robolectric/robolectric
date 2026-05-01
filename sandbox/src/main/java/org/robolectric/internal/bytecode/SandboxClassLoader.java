@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
+import org.robolectric.internal.ClassTracker;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 
@@ -26,7 +27,7 @@ import org.robolectric.util.PerfStatsCollector;
  * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's
  * shadow classes.
  */
-public class SandboxClassLoader extends URLClassLoader {
+public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
   // The directory where instrumented class files will be dumped
   private static final String DUMP_CLASSES_PROPERTY = "robolectric.dumpClassesDirectory";
 
@@ -198,6 +199,14 @@ public class SandboxClassLoader extends URLClassLoader {
 
       return loadedClass;
     }
+  }
+
+  @Override
+  public boolean isClassLoaded(String className) {
+    if (className == null) {
+      return false;
+    }
+    return findLoadedClass(className) != null;
   }
 
   private Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {

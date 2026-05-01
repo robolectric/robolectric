@@ -160,6 +160,21 @@ public class SandboxClassLoaderTest {
   }
 
   @Test
+  public void isClassLoaded() throws Exception {
+    SandboxClassLoader classLoader =
+        new SandboxClassLoader(
+            configureBuilder().build(),
+            new UrlResourceProvider(),
+            new ClassInstrumentor(new ShadowDecorator()));
+
+    assertThat(classLoader.isClassLoaded(AnExampleClass.class.getName())).isFalse();
+
+    classLoader.loadClass(AnExampleClass.class.getName());
+
+    assertThat(classLoader.isClassLoaded(AnExampleClass.class.getName())).isTrue();
+  }
+
+  @Test
   public void callingNormalMethodShouldInvokeClassHandler() throws Exception {
     Class<?> exampleClass = loadClass(AnExampleClass.class);
     Method normalMethod = exampleClass.getMethod("normalMethod", String.class, int.class);

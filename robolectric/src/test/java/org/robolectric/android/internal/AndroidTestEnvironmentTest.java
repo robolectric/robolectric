@@ -53,6 +53,7 @@ import org.robolectric.annotation.ConscryptMode;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
+import org.robolectric.internal.ClassTracker;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
@@ -404,7 +405,7 @@ public class AndroidTestEnvironmentTest {
 
   private static class ThrowingShadowProvider implements ShadowProvider {
     @Override
-    public void reset() {
+    public void reset(ClassTracker classTracker) {
       throw new RuntimeException("Reset failed");
     }
 
@@ -423,7 +424,7 @@ public class AndroidTestEnvironmentTest {
     public boolean wasReset = false;
 
     @Override
-    public void reset() {
+    public void reset(ClassTracker classTracker) {
       wasReset = true;
     }
 

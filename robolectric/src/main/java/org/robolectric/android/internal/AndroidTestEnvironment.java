@@ -68,6 +68,7 @@ import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.fakes.FakeMediaProvider;
+import org.robolectric.internal.ClassTracker;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.TestEnvironment;
 import org.robolectric.manifest.AndroidManifest;
@@ -299,6 +300,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
       ActivityThreadReflector activityThreadReflector,
       Instrumentation androidInstrumentation) {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+
+    // Starting in Android V and above, the native runtime does not support begin lazy-loaded, it
+    // must be loaded upfront.
+    if (shouldLoadNativeRuntime() && RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM) {
+      DefaultNativeRuntimeLoader.injectAndLoad();
+    }
 
     Context systemContextImpl =
         reflector(ContextImplReflector.class).createSystemContext(activityThread);
@@ -627,7 +634,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     List<Throwable> exceptions = new ArrayList<>();
     for (ShadowProvider provider : shadowProviders) {
       try {
-        provider.reset();
+        provider.reset((ClassTracker) Instrumentation.class.getClassLoader());
       } catch (Throwable e) {
         exceptions.add(e);
       }

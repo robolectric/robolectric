@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.android.AndroidSdkShadowMatcher;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.ClassTracker;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.shadow.api.ShadowPicker;
@@ -43,7 +44,7 @@ public class ShadowMapTest {
         Collections.singletonList(
             new ShadowProvider() {
               @Override
-              public void reset() {}
+              public void reset(ClassTracker classTracker) {}
 
               @Override
               public String[] getProvidedPackageNames() {
@@ -126,7 +127,7 @@ public class ShadowMapTest {
         ImmutableList.of(
             new ShadowProvider() {
               @Override
-              public void reset() {}
+              public void reset(ClassTracker classTracker) {}
 
               @Override
               public String[] getProvidedPackageNames() {
@@ -157,7 +158,7 @@ public class ShadowMapTest {
         ImmutableList.of(
             new ShadowProvider() {
               @Override
-              public void reset() {}
+              public void reset(ClassTracker classTracker) {}
 
               @Override
               public String[] getProvidedPackageNames() {
