@@ -30,6 +30,7 @@ import static org.robolectric.fakes.MediaUriMatcher.VIDEO_THUMBNAILS_ID;
 
 import android.content.ClipDescription;
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
@@ -38,6 +39,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Build.VERSION_CODES;
+import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
@@ -61,6 +63,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.Collator;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -125,7 +128,20 @@ public final class FakeMediaProvider extends ContentProvider {
       String[] selectionArgs,
       String sortOrder,
       CancellationSignal cancellationSignal) {
+    Bundle queryArgs = new Bundle();
+    queryArgs.putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection);
+    queryArgs.putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs);
+    queryArgs.putString(ContentResolver.QUERY_ARG_SQL_SORT_ORDER, sortOrder);
+    return query(uri, projection, queryArgs, cancellationSignal);
+  }
+
+  @Override
+  public Cursor query(
+      Uri uri, String[] projection, Bundle queryArgs, CancellationSignal cancellationSignal) {
     requireNonNull(uri);
+    if (queryArgs == null) {
+      queryArgs = new Bundle();
+    }
     final SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
 
     qb.setTables(TABLE_NAME);
@@ -146,20 +162,80 @@ public final class FakeMediaProvider extends ContentProvider {
       default:
         break;
     }
-
+    resolveSortOrder(queryArgs);
+    resolveLimit(queryArgs);
+    // Modified version of android.providers.media.util.SQLiteQueryBuilder#query
+    String selection = queryArgs.getString(ContentResolver.QUERY_ARG_SQL_SELECTION);
+    String[] selectionArgs = queryArgs.getStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS);
+    String groupBy = queryArgs.getString(ContentResolver.QUERY_ARG_SQL_GROUP_BY);
+    String having = queryArgs.getString(ContentResolver.QUERY_ARG_SQL_HAVING);
+    String sortOrder = queryArgs.getString(ContentResolver.QUERY_ARG_SQL_SORT_ORDER);
+    String limit = queryArgs.getString(ContentResolver.QUERY_ARG_SQL_LIMIT);
     Cursor cursor =
         qb.query(
             dbSupplier.get(),
             projection,
             selection,
             selectionArgs,
-            null,
-            null,
+            groupBy,
+            having,
             sortOrder,
-            null,
+            limit,
             cancellationSignal);
     cursor.setNotificationUri(getContext().getContentResolver(), uri);
     return cursor;
+  }
+
+  private static void resolveSortOrder(Bundle queryArgs) {
+    // Modified version of ContentResolver#createSqlSortClause
+    if (queryArgs.containsKey(ContentResolver.QUERY_ARG_SQL_SORT_ORDER)) {
+      return;
+    }
+    if (!queryArgs.containsKey(ContentResolver.QUERY_ARG_SORT_COLUMNS)) {
+      return;
+    }
+    String[] columns = queryArgs.getStringArray(ContentResolver.QUERY_ARG_SORT_COLUMNS);
+    if (columns.length == 0) {
+      return;
+    }
+    String query = TextUtils.join(", ", columns);
+    int collation = queryArgs.getInt(ContentResolver.QUERY_ARG_SORT_COLLATION, Collator.IDENTICAL);
+    if (collation == Collator.PRIMARY || collation == Collator.SECONDARY) {
+      query += " COLLATE NOCASE";
+    }
+
+    int sortDir = queryArgs.getInt(ContentResolver.QUERY_ARG_SORT_DIRECTION, Integer.MIN_VALUE);
+    if (sortDir != Integer.MIN_VALUE) {
+      switch (sortDir) {
+        case ContentResolver.QUERY_SORT_DIRECTION_ASCENDING:
+          query += " ASC";
+          break;
+        case ContentResolver.QUERY_SORT_DIRECTION_DESCENDING:
+          query += " DESC";
+          break;
+        default:
+          throw new IllegalArgumentException(
+              "Unsupported sort direction value."
+                  + " See ContentResolver documentation for details.");
+      }
+    }
+    queryArgs.putString(ContentResolver.QUERY_ARG_SQL_SORT_ORDER, query);
+  }
+
+  private static void resolveLimit(Bundle queryArgs) {
+    // Modified version of com.android.providers.media.util.DatabaseUtils#resolveLimit
+    if (queryArgs.containsKey(ContentResolver.QUERY_ARG_SQL_LIMIT)) {
+      return;
+    }
+    final int limit = queryArgs.getInt(ContentResolver.QUERY_ARG_LIMIT, Integer.MIN_VALUE);
+    if (limit != Integer.MIN_VALUE) {
+      String limitString = Integer.toString(limit);
+      final int offset = queryArgs.getInt(ContentResolver.QUERY_ARG_OFFSET, Integer.MIN_VALUE);
+      if (offset != Integer.MIN_VALUE) {
+        limitString += " OFFSET " + offset;
+      }
+      queryArgs.putString(ContentResolver.QUERY_ARG_SQL_LIMIT, limitString);
+    }
   }
 
   @Override
@@ -560,7 +636,6 @@ public final class FakeMediaProvider extends ContentProvider {
         + "image_id INTEGER"
         + ")";
   }
-
 
   @Override
   public void shutdown() {
