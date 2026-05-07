@@ -32,6 +32,7 @@ import android.net.NetworkInfo;
 import android.net.wifi.BlockingOption;
 import android.net.wifi.ScanResult;
 import android.net.wifi.SoftApConfiguration;
+import android.net.wifi.WifiAvailableChannel;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -41,6 +42,7 @@ import android.net.wifi.WifiManager.MulticastLock;
 import android.net.wifi.WifiManager.PnoScanResultsCallback;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.net.wifi.WifiNetworkSuggestion;
+import android.net.wifi.WifiScanner;
 import android.net.wifi.WifiSsid;
 import android.net.wifi.WifiUsabilityStatsEntry;
 import android.util.Pair;
@@ -1475,6 +1477,17 @@ public class ShadowWifiManagerTest {
 
     assertThat(shadowOf(wifiManager).getDisallowedBlockingOptions())
         .containsExactly(blockingOption1, blockingOption2);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getUsableChannels_returnsChannelsSet() {
+    shadowOf(wifiManager).setUsableChannels(Collections.singletonList(5180));
+    List<WifiAvailableChannel> channels =
+        wifiManager.getUsableChannels(
+            WifiScanner.WIFI_BAND_5_GHZ, WifiAvailableChannel.OP_MODE_STA);
+    assertThat(channels).hasSize(1);
+    assertThat(channels.get(0).getFrequencyMhz()).isEqualTo(5180);
   }
 
   private static final class IncomingFailure {
