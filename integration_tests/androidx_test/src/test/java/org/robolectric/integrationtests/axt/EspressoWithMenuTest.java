@@ -37,4 +37,14 @@ public class EspressoWithMenuTest {
       scenario.onActivity(activity -> assertThat(activity.menuClicked).isTrue());
     }
   }
+
+  @Test
+  public void popupWindowClick() {
+    try (ActivityScenario<ActivityWithPopupWindow> scenario =
+        ActivityScenario.launch(ActivityWithPopupWindow.class)) {
+      onView(withText("popup_item")).perform(click());
+
+      scenario.onActivity(activity -> assertThat(activity.popupClicked).isTrue());
+    }
+  }
 }

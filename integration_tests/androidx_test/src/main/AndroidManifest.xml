@@ -33,6 +33,9 @@
         <activity android:name="org.robolectric.integrationtests.axt.ActivityWithAppCompatMenu"
             android:exported="true"
             android:theme="@style/Theme.AppCompat" />
+                <activity android:name="org.robolectric.integrationtests.axt.ActivityWithPopupWindow"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat" />    
         <activity android:name="org.robolectric.integrationtests.axt.AppCompatActivityWithToolbarMenu"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
