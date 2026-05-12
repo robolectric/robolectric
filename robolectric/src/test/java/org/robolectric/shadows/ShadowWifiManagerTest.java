@@ -1490,6 +1490,17 @@ public class ShadowWifiManagerTest {
     assertThat(channels.get(0).getFrequencyMhz()).isEqualTo(5180);
   }
 
+  @Test
+  @Config(minSdk = S)
+  public void getUsableChannels_notSupported_throwsUnsupportedOperationException() {
+    shadowOf(wifiManager).setGetUsableChannelsSupported(false);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () ->
+            wifiManager.getUsableChannels(
+                WifiScanner.WIFI_BAND_5_GHZ, WifiAvailableChannel.OP_MODE_STA));
+  }
+
   private static final class IncomingFailure {
     private final WifiNetworkSpecifier wifiNetworkSpecifier;
     private final int failureReason;

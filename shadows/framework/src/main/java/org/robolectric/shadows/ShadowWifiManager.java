@@ -101,6 +101,7 @@ public class ShadowWifiManager {
   private ImmutableList<WifiNetworkSuggestion> lastAddedSuggestions = ImmutableList.of();
   private int addNetworkSuggestionsResult;
 
+  private boolean isGetUsableChannelsSupported = true;
   private List<WifiAvailableChannel> usableChannels = new ArrayList<>();
   private final List<BlockingOption> disallowedBlockingOptions = new ArrayList<>();
   private final ConcurrentMap<LocalOnlyConnectionFailureListener, Executor>
@@ -731,9 +732,21 @@ public class ShadowWifiManager {
             .collect(ImmutableList.toImmutableList());
   }
 
+  /**
+   * Sets whether {@link #getUsableChannels(int, int)} is supported. If not, it will throw an {@link
+   * UnsupportedOperationException} when called.
+   */
+  public void setGetUsableChannelsSupported(boolean isSupported) {
+    this.isGetUsableChannelsSupported = isSupported;
+  }
+
   @Implementation(minSdk = S)
   protected List<WifiAvailableChannel> getUsableChannels(int band, int mode) {
-    return usableChannels;
+    if (isGetUsableChannelsSupported) {
+      return usableChannels;
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   /**
