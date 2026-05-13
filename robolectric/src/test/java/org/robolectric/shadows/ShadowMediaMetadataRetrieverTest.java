@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_TITLE;
+import static android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION;
 import static android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -248,6 +249,21 @@ public class ShadowMediaMetadataRetrieverTest {
     assertWithMessage("Stack trace should originate in Shadow")
         .that(expected.getStackTrace()[0].getClassName())
         .isEqualTo(ShadowMediaMetadataRetriever.class.getName());
+  }
+
+  @Test
+  public void extractMetadata_videoRotation_returnsDefaultZero() {
+    String rotation = retriever.extractMetadata(METADATA_KEY_VIDEO_ROTATION);
+    assertThat(rotation).isEqualTo("0");
+  }
+
+  @Test
+  public void extractMetadata_videoRotation_returnsExplicitValue() {
+    addMetadata(path, METADATA_KEY_VIDEO_ROTATION, "90");
+    retriever.setDataSource(path);
+
+    String rotation = retriever.extractMetadata(METADATA_KEY_VIDEO_ROTATION);
+    assertThat(rotation).isEqualTo("90");
   }
 
   private static void assertBitmapEquals(Bitmap actual, Bitmap expected) {

@@ -63,7 +63,13 @@ public class ShadowMediaMetadataRetriever {
   @Implementation
   protected String extractMetadata(int keyCode) {
     if (metadata.containsKey(dataSource)) {
-      return metadata.get(dataSource).get(keyCode);
+      String value = metadata.get(dataSource).get(keyCode);
+      if (value != null) {
+        return value;
+      }
+    }
+    if (keyCode == MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION) {
+      return "0";
     }
     return null;
   }
