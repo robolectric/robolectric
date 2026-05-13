@@ -386,6 +386,7 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     bitmapReflector.checkRecycled("Can't parcel a recycled bitmap");
     if (getApiLevel() > CINNAMON_BUN) {
       p.writeLong(bitmapReflector.getId());
+      p.writeBoolean(hasGainmap());
     }
     int width = realBitmap.getWidth();
     int height = realBitmap.getHeight();
@@ -405,7 +406,12 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     realBitmap.getPixels(pixels, 0, width, 0, 0, width, height);
     p.writeIntArray(pixels);
 
-    if (getApiLevel() >= UPSIDE_DOWN_CAKE) {
+    if (getApiLevel() > CINNAMON_BUN) {
+      Object gainmap = reflector(BitmapReflector.class, realBitmap).getGainmap();
+      if (gainmap != null) {
+        p.writeTypedObject((Parcelable) gainmap, flags);
+      }
+    } else if (getApiLevel() >= UPSIDE_DOWN_CAKE) {
       Object gainmap = reflector(BitmapReflector.class, realBitmap).getGainmap();
       if (gainmap != null) {
         p.writeBoolean(true);
