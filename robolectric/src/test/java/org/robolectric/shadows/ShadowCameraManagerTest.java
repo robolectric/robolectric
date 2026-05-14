@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.junit.Rule;
@@ -293,6 +294,37 @@ public class ShadowCameraManagerTest {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
     shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
     cameraManager.registerAvailabilityCallback(mockCallback, /* handler= */ null);
+    cameraManager.unregisterAvailabilityCallback(mockCallback);
+
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    verify(mockCallback, never()).onCameraAvailable(CAMERA_ID_0);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void registerCallbackAvailable_withExecutor() {
+    CameraManager.AvailabilityCallback mockCallback =
+        mock(CameraManager.AvailabilityCallback.class);
+    Executor executor = Runnable::run;
+
+    cameraManager.registerAvailabilityCallback(executor, mockCallback);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    verify(mockCallback).onCameraAvailable(CAMERA_ID_0);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void unregisterCallbackAvailable_withExecutor() {
+    CameraManager.AvailabilityCallback mockCallback =
+        mock(CameraManager.AvailabilityCallback.class);
+    Executor executor = Runnable::run;
+
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+
+    cameraManager.registerAvailabilityCallback(executor, mockCallback);
     cameraManager.unregisterAvailabilityCallback(mockCallback);
 
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);

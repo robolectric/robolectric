@@ -276,6 +276,13 @@ public class ShadowCameraManager {
     registeredCallbacks.add(callback);
   }
 
+  @Implementation(minSdk = VERSION_CODES.P)
+  protected void registerAvailabilityCallback(
+      Executor executor, CameraManager.AvailabilityCallback callback) {
+    Objects.requireNonNull(callback);
+    registeredCallbacks.add(callback);
+  }
+
   @Implementation
   protected void unregisterAvailabilityCallback(CameraManager.AvailabilityCallback callback) {
     Objects.requireNonNull(callback);
