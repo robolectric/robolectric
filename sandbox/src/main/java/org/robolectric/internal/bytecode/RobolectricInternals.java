@@ -8,13 +8,13 @@ import java.lang.reflect.Method;
 public class RobolectricInternals {
 
   @SuppressWarnings("UnusedDeclaration")
-  private static ClassHandler classHandler; // initialized via magic by AndroidSandbox
+  private static volatile ClassHandler classHandler; // initialized via magic by AndroidSandbox
 
   @SuppressWarnings("UnusedDeclaration")
-  private static ShadowInvalidator shadowInvalidator;
+  private static volatile ShadowInvalidator shadowInvalidator;
 
   @SuppressWarnings("UnusedDeclaration")
-  private static ClassLoader classLoader;
+  private static volatile ClassLoader classLoader;
 
   @SuppressWarnings("UnusedDeclaration")
   public static void classInitializing(Class<?> clazz) {
