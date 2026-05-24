@@ -11,6 +11,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.annotation.TextLayoutMode.Mode.REALISTIC;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
@@ -27,6 +28,8 @@ import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Paint.class)
@@ -608,5 +611,25 @@ public class ShadowPaint {
       boolean isRtl,
       int offset) {
     return nGetRunAdvance(0, text, start, end, contextStart, contextEnd, isRtl, offset);
+  }
+
+  @Implementation(minSdk = O)
+  protected boolean setFontVariationSettings(String fontVariationSettings) {
+    // Legacy graphics mode has no native typeface backend, so the upstream implementation
+    // cannot run: both the axis-filtering path (Typeface.isSupportedAxes) and the clearing
+    // path (Typeface.createFromTypefaceWithVariation) require native code. Manage the field
+    // directly so getFontVariationSettings() round-trips what was set.
+    String settings =
+        (fontVariationSettings == null || fontVariationSettings.isEmpty())
+            ? null
+            : fontVariationSettings;
+    reflector(PaintReflector.class, paint).setFontVariationSettingsField(settings);
+    return true;
+  }
+
+  @ForType(Paint.class)
+  interface PaintReflector {
+    @Accessor("mFontVariationSettings")
+    void setFontVariationSettingsField(String settings);
   }
 }
