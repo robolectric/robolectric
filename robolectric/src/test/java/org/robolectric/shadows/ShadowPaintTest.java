@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -10,6 +11,7 @@ import android.graphics.Paint;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
 
@@ -179,5 +181,37 @@ public class ShadowPaintTest {
     paint.setFilterBitmap(false);
     assertThat(paint.isFilterBitmap()).isFalse();
     assertThat(paint.getFlags() & Paint.FILTER_BITMAP_FLAG).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void testGetFontVariationSettings_returnsValueSetByDefaultTypeface() {
+    Paint paint = new Paint();
+    paint.setFontVariationSettings("'wght' 250");
+    assertThat(paint.getFontVariationSettings()).isEqualTo("'wght' 250");
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void testGetFontVariationSettings_returnsNullByDefault() {
+    assertThat(new Paint().getFontVariationSettings()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void testGetFontVariationSettings_returnsNullAfterClearingWithNull() {
+    Paint paint = new Paint();
+    paint.setFontVariationSettings("'wght' 250");
+    paint.setFontVariationSettings(null);
+    assertThat(paint.getFontVariationSettings()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void testGetFontVariationSettings_returnsNullAfterClearingWithEmpty() {
+    Paint paint = new Paint();
+    paint.setFontVariationSettings("'wght' 250");
+    paint.setFontVariationSettings("");
+    assertThat(paint.getFontVariationSettings()).isNull();
   }
 }

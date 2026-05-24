@@ -1251,7 +1251,37 @@ public class ShadowNativePaintTest {
 
   @Test
   public void testSetFontVariationSettings_defaultTypeface() {
-    new Paint().setFontVariationSettings("'wght' 400");
+    Paint paint = new Paint();
+    paint.setFontVariationSettings("'wght' 400");
+    assertThat(paint.getFontVariationSettings()).isEqualTo("'wght' 400");
+  }
+
+  @Test
+  public void testGetFontVariationSettings_returnsValueSetByDefaultTypeface() {
+    Paint paint = new Paint();
+    paint.setFontVariationSettings("'wght' 250");
+    assertThat(paint.getFontVariationSettings()).isEqualTo("'wght' 250");
+  }
+
+  @Test
+  public void testGetFontVariationSettings_returnsNullByDefault() {
+    assertThat(new Paint().getFontVariationSettings()).isNull();
+  }
+
+  @Test
+  public void testGetFontVariationSettings_returnsNullAfterClearingWithNull() {
+    Paint paint = new Paint();
+    paint.setFontVariationSettings("'wght' 250");
+    paint.setFontVariationSettings(null);
+    assertThat(paint.getFontVariationSettings()).isNull();
+  }
+
+  @Test
+  public void testGetFontVariationSettings_returnsNullAfterClearingWithEmpty() {
+    Paint paint = new Paint();
+    paint.setFontVariationSettings("'wght' 250");
+    paint.setFontVariationSettings("");
+    assertThat(paint.getFontVariationSettings()).isNull();
   }
 
   @Test
