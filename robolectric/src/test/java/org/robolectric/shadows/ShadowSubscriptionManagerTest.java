@@ -14,6 +14,8 @@ import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.app.Activity;
 import android.app.Application;
@@ -38,6 +40,7 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.ShadowSubscriptionManager.SubscriptionInfoBuilder;
+import org.robolectric.util.reflector.ForType;
 
 /** Test for {@link ShadowSubscriptionManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -691,6 +694,32 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
+  @Config(minSdk = CINNAMON_BUN)
+  public void setIsPrivateNetwork_shouldReturnFalse() {
+    SubscriptionInfo sub =
+        ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+            .setIsPrivateNetwork(false)
+            .buildSubscriptionInfo();
+
+    boolean result = reflector(SubscriptionInfoReflector.class, sub).isPrivateNetwork();
+
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = CINNAMON_BUN)
+  public void setIsPrivateNetwork_shouldReturnTrue() {
+    SubscriptionInfo sub =
+        ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+            .setIsPrivateNetwork(true)
+            .buildSubscriptionInfo();
+
+    boolean result = reflector(SubscriptionInfoReflector.class, sub).isPrivateNetwork();
+
+    assertThat(result).isTrue();
+  }
+
+  @Test
   @Config(minSdk = Q)
   public void
       setOpportunistic_activeSubscription_isNotOpportunistic_shouldUpdateSubscriptionInfo() {
@@ -908,5 +937,10 @@ public class ShadowSubscriptionManagerTest {
 
       assertThat(applicationDefaultSubscriptionInfo).isEqualTo(activityDefaultSubscriptionInfo);
     }
+  }
+
+  @ForType(SubscriptionInfo.class)
+  private interface SubscriptionInfoReflector {
+    boolean isPrivateNetwork();
   }
 }

@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.telephony.SubscriptionManager.INVALID_SIM_SLOT_INDEX;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.RequiresApi;
 import android.content.Intent;
@@ -836,6 +837,12 @@ public class ShadowSubscriptionManager {
 
     public SubscriptionInfoBuilder setIsOpportunistic(boolean isOpportunistic) {
       ReflectionHelpers.setField(subscriptionInfo, "mIsOpportunistic", isOpportunistic);
+      return this;
+    }
+
+    @RequiresApi(CINNAMON_BUN)
+    public SubscriptionInfoBuilder setIsPrivateNetwork(boolean isPrivateNetwork) {
+      ReflectionHelpers.setField(subscriptionInfo, "mIsPrivateNetwork", isPrivateNetwork);
       return this;
     }
 
