@@ -1,11 +1,15 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.app.PendingIntent;
+import android.content.Context;
 import android.media.MediaMetadata;
 import android.media.Rating;
 import android.media.session.MediaController;
 import android.media.session.MediaController.Callback;
 import android.media.session.MediaController.PlaybackInfo;
+import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +23,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /** Implementation of {@link android.media.session.MediaController}. */
 @Implements(MediaController.class)
@@ -38,9 +45,24 @@ public class ShadowMediaController {
 
   private final List<Callback> callbacks = new ArrayList<>();
 
+  @Implementation
+  protected void __constructor__(Context context, MediaSession.Token token) {
+    reflector(MediaControllerReflector.class, realMediaController).__constructor__(context, token);
+    if (token != null) {
+      String pkg = ShadowMediaSession.getPackageNameForToken(token);
+      if (pkg != null) {
+        setPackageName(pkg);
+      }
+    }
+    if (reflector(MediaControllerReflector.class, realMediaController).getPackageName() == null
+        && context != null) {
+      setPackageName(context.getPackageName());
+    }
+  }
+
   /** Saves the package name for use inside the shadow. */
   public void setPackageName(String packageName) {
-    ReflectionHelpers.setField(realMediaController, "mPackageName", packageName);
+    reflector(MediaControllerReflector.class, realMediaController).setPackageName(packageName);
   }
 
   /**
@@ -194,5 +216,17 @@ public class ShadowMediaController {
         ClassParameter.from(int.class, messageId),
         ClassParameter.from(Object.class, metadata),
         ClassParameter.from(Bundle.class, new Bundle()));
+  }
+
+  @ForType(MediaController.class)
+  interface MediaControllerReflector {
+    @Direct
+    void __constructor__(Context context, MediaSession.Token token);
+
+    @Accessor("mPackageName")
+    String getPackageName();
+
+    @Accessor("mPackageName")
+    void setPackageName(String packageName);
   }
 }

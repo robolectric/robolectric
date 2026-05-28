@@ -239,6 +239,14 @@ public final class ShadowMediaControllerTest {
     verify(mockCallback, times(1)).onSessionDestroyed();
   }
 
+  @Test
+  public void getPackageName_fromSessionToken() {
+    Context context = ApplicationProvider.getApplicationContext();
+    MediaSession session = new MediaSession(context, "test");
+    MediaController controller = new MediaController(context, session.getSessionToken());
+    assertThat(controller.getPackageName()).isEqualTo(context.getPackageName());
+  }
+
   private static PlaybackState createPlaybackState() {
     return new PlaybackState.Builder().setState(PlaybackState.STATE_PLAYING, 0L, 0f).build();
   }
