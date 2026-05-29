@@ -260,13 +260,24 @@ public class ShadowActivityManager {
     return packages != null && packages.contains(packageName);
   }
 
-  @Implementation
+  @Implementation(maxSdk = VERSION_CODES.TIRAMISU)
   protected void getMemoryInfo(ActivityManager.MemoryInfo outInfo) {
     if (memoryInfo != null) {
       outInfo.availMem = memoryInfo.availMem;
       outInfo.lowMemory = memoryInfo.lowMemory;
       outInfo.threshold = memoryInfo.threshold;
       outInfo.totalMem = memoryInfo.totalMem;
+    }
+  }
+
+  @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE, methodName = "getMemoryInfo")
+  protected void getMemoryInfoU(ActivityManager.MemoryInfo outInfo) {
+    if (memoryInfo != null) {
+      outInfo.availMem = memoryInfo.availMem;
+      outInfo.lowMemory = memoryInfo.lowMemory;
+      outInfo.threshold = memoryInfo.threshold;
+      outInfo.totalMem = memoryInfo.totalMem;
+      outInfo.advertisedMem = memoryInfo.advertisedMem;
     }
   }
 

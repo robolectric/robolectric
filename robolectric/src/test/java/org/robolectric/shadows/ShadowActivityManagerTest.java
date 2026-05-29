@@ -83,6 +83,25 @@ public class ShadowActivityManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void getMemoryInfo_canGetAdvertisedMem() {
+    ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+    memoryInfo.availMem = 12345;
+    memoryInfo.lowMemory = true;
+    memoryInfo.threshold = 10000;
+    memoryInfo.totalMem = 55555;
+    memoryInfo.advertisedMem = 66666;
+    shadowActivityManager.setMemoryInfo(memoryInfo);
+    ActivityManager.MemoryInfo fetchedMemoryInfo = new ActivityManager.MemoryInfo();
+    activityManager.getMemoryInfo(fetchedMemoryInfo);
+    assertThat(fetchedMemoryInfo.availMem).isEqualTo(12345);
+    assertThat(fetchedMemoryInfo.lowMemory).isTrue();
+    assertThat(fetchedMemoryInfo.threshold).isEqualTo(10000);
+    assertThat(fetchedMemoryInfo.totalMem).isEqualTo(55555);
+    assertThat(fetchedMemoryInfo.advertisedMem).isEqualTo(66666);
+  }
+
+  @Test
   public void getMemoryInfo_canGetMemoryInfoEvenWhenWeDidNotSetIt() {
     ActivityManager.MemoryInfo fetchedMemoryInfo = new ActivityManager.MemoryInfo();
     activityManager.getMemoryInfo(fetchedMemoryInfo);
