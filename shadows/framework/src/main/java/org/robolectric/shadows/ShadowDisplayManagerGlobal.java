@@ -203,22 +203,15 @@ public class ShadowDisplayManagerGlobal {
       this.callbacks.add(iDisplayManagerCallback);
     }
 
+    @SuppressWarnings("unused")
     public void registerCallbackWithEventMask(
         IDisplayManagerCallback iDisplayManagerCallback, long ignoredEventsMask)
         throws RemoteException {
       registerCallback(iDisplayManagerCallback);
     }
 
-    // for android R+ (SDK 30+)
-    // Use Object here instead of VirtualDisplayConfig to avoid breaking projects that still
-    // compile against SDKs < R
-    public int createVirtualDisplay(
-        @ClassName("android.hardware.display.VirtualDisplayConfig")
-            Object virtualDisplayConfigObject,
-        IVirtualDisplayCallback callbackWrapper,
-        IMediaProjection projectionToken,
-        String packageName) {
-      VirtualDisplayConfig config = (VirtualDisplayConfig) virtualDisplayConfigObject;
+    private int createVirtualDisplayInternal(
+        VirtualDisplayConfig config, IVirtualDisplayCallback callbackWrapper, String packageName) {
       DisplayInfo displayInfo = new DisplayInfo();
       displayInfo.flags = config.getFlags();
       displayInfo.type = Display.TYPE_VIRTUAL;
@@ -237,7 +230,38 @@ public class ShadowDisplayManagerGlobal {
       return id;
     }
 
+    // for android R+ (SDK 30+)
+    // Use Object here instead of VirtualDisplayConfig to avoid breaking projects that still
+    // compile against SDKs < R
+    // ReflectionHelpers.createDelegatingProxy requires delegate methods to be public,
+    // but the delegate class is private, triggering the EffectivelyPrivate warning.
+    @SuppressWarnings({"EffectivelyPrivate", "unused"})
+    public int createVirtualDisplay(
+        @ClassName("android.hardware.display.VirtualDisplayConfig")
+            Object virtualDisplayConfigObject,
+        IVirtualDisplayCallback callbackWrapper,
+        IMediaProjection projectionToken,
+        String packageName) {
+      VirtualDisplayConfig config = (VirtualDisplayConfig) virtualDisplayConfigObject;
+      return createVirtualDisplayInternal(config, callbackWrapper, packageName);
+    }
+
+    // for android T+ (SDK 33+) VDM path
+    // ReflectionHelpers.createDelegatingProxy requires delegate methods to be public,
+    // but the delegate class is private, triggering the EffectivelyPrivate warning.
+    @SuppressWarnings({"EffectivelyPrivate", "unused"})
+    public int createVirtualDisplay(
+        @ClassName("android.hardware.display.VirtualDisplayConfig")
+            Object virtualDisplayConfigObject,
+        IVirtualDisplayCallback callbackWrapper,
+        @ClassName("android.companion.virtual.IVirtualDevice") Object virtualDeviceToken,
+        String packageName) {
+      VirtualDisplayConfig config = (VirtualDisplayConfig) virtualDisplayConfigObject;
+      return createVirtualDisplayInternal(config, callbackWrapper, packageName);
+    }
+
     // for android Q (SDK 29) and below
+    @SuppressWarnings("unused")
     public int createVirtualDisplay(
         IVirtualDisplayCallback callbackWrapper,
         IMediaProjection projectionToken,
@@ -268,6 +292,7 @@ public class ShadowDisplayManagerGlobal {
     }
 
     // for android U
+    @SuppressWarnings("unused")
     public void resizeVirtualDisplay(
         IVirtualDisplayCallback token, int width, int height, int densityDpi) {
       Integer id = virtualDisplayIds.get(token);
@@ -282,6 +307,7 @@ public class ShadowDisplayManagerGlobal {
     }
 
     // for android U
+    @SuppressWarnings("unused")
     public void releaseVirtualDisplay(IVirtualDisplayCallback token) {
       if (virtualDisplayIds.containsKey(token)) {
         removeDisplay(virtualDisplayIds.remove(token));
@@ -300,6 +326,7 @@ public class ShadowDisplayManagerGlobal {
       }
     }
 
+    @SuppressWarnings("unused")
     public void setVirtualDisplaySurface(IVirtualDisplayCallback token, Surface surface) {
       // in post android V, the setVirtualDisplayState has been removed and the virtual device
       // state is propagated from system service
