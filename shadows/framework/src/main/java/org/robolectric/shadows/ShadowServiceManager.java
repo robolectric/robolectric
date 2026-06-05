@@ -53,6 +53,7 @@ import android.credentials.ICredentialManager;
 import android.hardware.ISensorPrivacyManager;
 import android.hardware.biometrics.IAuthService;
 import android.hardware.biometrics.IBiometricService;
+import android.hardware.devicestate.IDeviceStateManager;
 import android.hardware.display.IColorDisplayManager;
 import android.hardware.fingerprint.IFingerprintService;
 import android.hardware.input.IInputManager;
@@ -411,6 +412,7 @@ public class ShadowServiceManager {
           binderServices,
           Context.ON_DEVICE_INTELLIGENCE_SERVICE,
           IOnDeviceIntelligenceManager.class.getName());
+      addBinderService(binderServices, Context.DEVICE_STATE_SERVICE, IDeviceStateManager.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= BAKLAVA) {
       addBinderService(
