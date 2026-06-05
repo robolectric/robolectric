@@ -17,6 +17,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
@@ -28,6 +30,19 @@ public class ShadowBluetoothSocket {
   private final PipedInputStream outputStreamSink = new PipedInputStream();
   private OutputStream outputStream;
   private final InputStream inputStream;
+
+  @RealObject private BluetoothSocket realBluetoothSocket;
+
+  private static @Nullable SocketInterceptor staticInterceptor = null;
+
+  @Resetter
+  public static void reset() {
+    staticInterceptor = null;
+  }
+
+  public static void setStaticInterceptor(@Nullable SocketInterceptor interceptor) {
+    staticInterceptor = interceptor;
+  }
 
   // One permit allows connect() without a prior blockConnect() to complete immediately.
   private final Semaphore connectSemaphore = new Semaphore(1);
@@ -132,6 +147,10 @@ public class ShadowBluetoothSocket {
 
   @Implementation
   protected void connect() throws IOException {
+    if (staticInterceptor != null) {
+      staticInterceptor.interceptConnect(realBluetoothSocket);
+    }
+
     // If already closed, throw immediately. The state cannot become CONNECTED again.
     throwIfClosed();
 
@@ -192,5 +211,12 @@ public class ShadowBluetoothSocket {
 
     @Accessor("mDevice")
     void setDevice(BluetoothDevice device);
+  }
+
+  /** Interceptor interface to inject failures into Socket operations. */
+  public interface SocketInterceptor {
+    default void interceptConnect(BluetoothSocket socket) throws IOException {
+      // no-op
+    }
   }
 }
