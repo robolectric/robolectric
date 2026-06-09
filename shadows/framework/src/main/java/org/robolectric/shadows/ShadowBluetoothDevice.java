@@ -29,11 +29,12 @@ import android.os.Build.VERSION;
 import android.os.Handler;
 import android.os.ParcelUuid;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -64,12 +65,17 @@ public class ShadowBluetoothDevice {
         BluetoothDevice.class, ReflectionHelpers.ClassParameter.from(String.class, address));
   }
 
+  private static final Object socketLock = new Object();
+  private static BluetoothSocket bluetoothSocket = null;
+  @Nullable private static volatile IOException nextSocketConnectException;
+
   @Resetter
   public static void reset() {
-    bluetoothSocket = null;
+    synchronized (socketLock) {
+      bluetoothSocket = null;
+      nextSocketConnectException = null;
+    }
   }
-
-  private static BluetoothSocket bluetoothSocket = null;
 
   @RealObject private BluetoothDevice realBluetoothDevice;
   private String name;
@@ -79,7 +85,7 @@ public class ShadowBluetoothDevice {
   private boolean fetchUuidsWithSdpResult = false;
   private int fetchUuidsWithSdpCount = 0;
   private int type = BluetoothDevice.DEVICE_TYPE_UNKNOWN;
-  private final List<BluetoothGatt> bluetoothGatts = new ArrayList<>();
+  private final List<BluetoothGatt> bluetoothGatts = new CopyOnWriteArrayList<>();
   private Boolean pairingConfirmation = null;
   private byte[] pin = null;
   private String alias;
@@ -91,9 +97,19 @@ public class ShadowBluetoothDevice {
   private boolean isInSilenceMode = false;
   private boolean isConnected = false;
   private int connectCount = 0;
-  @Nullable private BluetoothGattConnectionInterceptor bluetoothGattConnectionInterceptor = null;
+  @Nullable private volatile BluetoothGattConnectionInterceptor bluetoothGattConnectionInterceptor;
   private final Map<Integer, Integer> connectionHandlesByTransportType = new HashMap<>();
   private BluetoothDevice.BluetoothAddress identityAddressWithType;
+
+  public void setNextSocketConnectException(@Nullable IOException exception) {
+    synchronized (socketLock) {
+      nextSocketConnectException = exception;
+      if (bluetoothSocket != null) {
+        ShadowBluetoothSocket shadowSocket = Shadow.extract(bluetoothSocket);
+        shadowSocket.setConnectException(exception);
+      }
+    }
+  }
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -106,7 +122,7 @@ public class ShadowBluetoothDevice {
     // capability.
     try {
       return reflector(BluetoothDeviceReflector.class).getService();
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       // No-op.
     }
     return null;
@@ -353,15 +369,31 @@ public class ShadowBluetoothDevice {
     return pairingConfirmation;
   }
 
-  @Implementation
-  protected BluetoothSocket createRfcommSocketToServiceRecord(UUID uuid) throws IOException {
-    checkForBluetoothConnectPermission();
-    synchronized (ShadowBluetoothDevice.class) {
+  private BluetoothSocket getOrCreateBluetoothSocket() {
+    synchronized (socketLock) {
       if (bluetoothSocket == null) {
         bluetoothSocket = Shadow.newInstanceOf(BluetoothSocket.class);
       }
+      if (nextSocketConnectException != null) {
+        ShadowBluetoothSocket shadowSocket = Shadow.extract(bluetoothSocket);
+        shadowSocket.setConnectException(nextSocketConnectException);
+        nextSocketConnectException = null;
+      }
+      return bluetoothSocket;
     }
-    return bluetoothSocket;
+  }
+
+  @Implementation
+  protected BluetoothSocket createRfcommSocketToServiceRecord(UUID uuid) throws IOException {
+    checkForBluetoothConnectPermission();
+    return getOrCreateBluetoothSocket();
+  }
+
+  @Implementation
+  protected BluetoothSocket createInsecureRfcommSocketToServiceRecord(UUID uuid)
+      throws IOException {
+    checkForBluetoothConnectPermission();
+    return getOrCreateBluetoothSocket();
   }
 
   /** Sets value of the return result for {@link BluetoothDevice#fetchUuidsWithSdp}. */
@@ -431,8 +463,9 @@ public class ShadowBluetoothDevice {
     ShadowBluetoothGatt shadowBluetoothGatt = Shadow.extract(bluetoothGatt);
     shadowBluetoothGatt.setGattCallback(callback);
 
-    if (bluetoothGattConnectionInterceptor != null) {
-      bluetoothGattConnectionInterceptor.onNewGattConnection(bluetoothGatt);
+    BluetoothGattConnectionInterceptor interceptor = bluetoothGattConnectionInterceptor;
+    if (interceptor != null) {
+      interceptor.onNewGattConnection(bluetoothGatt);
     }
 
     return bluetoothGatt;
@@ -443,11 +476,13 @@ public class ShadowBluetoothDevice {
    * ShadowBluetoothDevice#connectGatt}.
    */
   public List<BluetoothGatt> getBluetoothGatts() {
-    return bluetoothGatts;
+    return Collections.unmodifiableList(bluetoothGatts);
   }
 
   /**
-   * Causes {@link BluetoothGattCallback#onConnectionStateChange to be called for every GATT client.
+   * Causes {@link BluetoothGattCallback#onConnectionStateChange} to be called for every GATT
+   * client.
+   *
    * @param status Status of the GATT operation
    * @param newState The new state of the GATT profile
    */

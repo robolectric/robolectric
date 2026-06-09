@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -12,9 +13,12 @@ import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothStatusCodes;
 import android.content.Context;
 import androidx.test.core.app.ApplicationProvider;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,10 +38,10 @@ public class ShadowBluetoothGattServerTest {
   private static final String ACTION_CHARACTERISTIC_WRITE = "WRITE";
   private static final String ACTION_CHARACTERISTIC_WRITE_NO_RESPONSE = "WRITE_NO_RESPONSE";
   private static final String MOCK_MAC_ADDRESS = "00:11:22:33:AA:BB";
-  private static final byte[] PAYLOAD = new byte[] {'m', 'm', 'e'};
-  private static final byte[] PAYLOAD2 = new byte[] {'c', 'd', 'i'};
-  private static final byte[] RESPONSE_VALUE1 = new byte[] {'a', 'b', 'c'};
-  private static final byte[] RESPONSE_VALUE2 = new byte[] {'1', '2', '3'};
+  private static final byte[] payload = new byte[] {'m', 'm', 'e'};
+  private static final byte[] payload2 = new byte[] {'c', 'd', 'i'};
+  private static final byte[] responseValue1 = new byte[] {'a', 'b', 'c'};
+  private static final byte[] responseValue2 = new byte[] {'1', '2', '3'};
   private static final BluetoothGattCharacteristic characteristicWithWriteProperty =
       new BluetoothGattCharacteristic(
           UUID.fromString("00000000-0000-0000-0000-0000000000A1"),
@@ -93,7 +97,7 @@ public class ShadowBluetoothGattServerTest {
       };
 
   @Before
-  @Config()
+  @Config
   public void setUp() {
     Context context = ApplicationProvider.getApplicationContext();
     BluetoothManager manager =
@@ -136,29 +140,29 @@ public class ShadowBluetoothGattServerTest {
 
   @Test
   public void test_getResponses_afterSendResponses() {
-    shadowOf(server).sendResponse(device, 0, 0, 0, RESPONSE_VALUE1);
+    shadowOf(server).sendResponse(device, 0, 0, 0, responseValue1);
     assertThat(shadowOf(server).getResponses()).hasSize(1);
-    shadowOf(server).sendResponse(device, 0, 0, 0, RESPONSE_VALUE2);
+    shadowOf(server).sendResponse(device, 0, 0, 0, responseValue2);
     assertThat(shadowOf(server).getResponses()).hasSize(2);
-    assertThat(shadowOf(server).getResponses().get(0)).isEqualTo(RESPONSE_VALUE1);
-    assertThat(shadowOf(server).getResponses().get(1)).isEqualTo(RESPONSE_VALUE2);
+    assertThat(shadowOf(server).getResponses().get(0)).isEqualTo(responseValue1);
+    assertThat(shadowOf(server).getResponses().get(1)).isEqualTo(responseValue2);
   }
 
   @Test
   public void test_getResponses_afterClearResponses() {
-    shadowOf(server).sendResponse(device, 0, 0, 0, RESPONSE_VALUE1);
-    shadowOf(server).sendResponse(device, 0, 0, 0, RESPONSE_VALUE2);
+    shadowOf(server).sendResponse(device, 0, 0, 0, responseValue1);
+    shadowOf(server).sendResponse(device, 0, 0, 0, responseValue2);
     shadowOf(server).clearResponses();
     assertThat(shadowOf(server).getResponses()).isEmpty();
   }
 
   @Test
   public void test_getResponses_acceptsNull() {
-    shadowOf(server).sendResponse(device, 0, 0, 0, RESPONSE_VALUE1);
+    shadowOf(server).sendResponse(device, 0, 0, 0, responseValue1);
     assertThat(shadowOf(server).getResponses()).hasSize(1);
     shadowOf(server).sendResponse(device, 0, 0, 0, null);
     assertThat(shadowOf(server).getResponses()).hasSize(2);
-    assertThat(shadowOf(server).getResponses().get(0)).isEqualTo(RESPONSE_VALUE1);
+    assertThat(shadowOf(server).getResponses().get(0)).isEqualTo(responseValue1);
     assertThat(shadowOf(server).getResponses().get(1)).isEqualTo(null);
   }
 
@@ -179,7 +183,7 @@ public class ShadowBluetoothGattServerTest {
                     false,
                     false,
                     OFFSET,
-                    PAYLOAD))
+                    payload))
         .isTrue();
     assertThat(shadowOf(server).getWrittenBytes()).hasSize(1);
     assertThat(
@@ -191,11 +195,11 @@ public class ShadowBluetoothGattServerTest {
                     false,
                     false,
                     OFFSET,
-                    PAYLOAD2))
+                    payload2))
         .isTrue();
     assertThat(shadowOf(server).getWrittenBytes()).hasSize(2);
-    assertThat(shadowOf(server).getWrittenBytes().get(0)).isEqualTo(PAYLOAD);
-    assertThat(shadowOf(server).getWrittenBytes().get(1)).isEqualTo(PAYLOAD2);
+    assertThat(shadowOf(server).getWrittenBytes().get(0)).isEqualTo(payload);
+    assertThat(shadowOf(server).getWrittenBytes().get(1)).isEqualTo(payload2);
   }
 
   @Test
@@ -209,7 +213,7 @@ public class ShadowBluetoothGattServerTest {
                     false,
                     false,
                     OFFSET,
-                    PAYLOAD))
+                    payload))
         .isTrue();
     shadowOf(server).clearWrittenBytes();
     assertThat(shadowOf(server).getWrittenBytes()).isEmpty();
@@ -226,7 +230,7 @@ public class ShadowBluetoothGattServerTest {
                     false,
                     false,
                     OFFSET,
-                    PAYLOAD))
+                    payload))
         .isTrue();
     assertThat(shadowOf(server).getWrittenBytes()).hasSize(1);
     assertThat(
@@ -241,7 +245,7 @@ public class ShadowBluetoothGattServerTest {
                     null))
         .isTrue();
     assertThat(shadowOf(server).getWrittenBytes()).hasSize(2);
-    assertThat(shadowOf(server).getWrittenBytes().get(0)).isEqualTo(PAYLOAD);
+    assertThat(shadowOf(server).getWrittenBytes().get(0)).isEqualTo(payload);
     assertThat(shadowOf(server).getWrittenBytes().get(1)).isEqualTo(null);
   }
 
@@ -317,7 +321,7 @@ public class ShadowBluetoothGattServerTest {
                     false,
                     false,
                     OFFSET,
-                    PAYLOAD))
+                    payload))
         .isFalse();
   }
 
@@ -333,7 +337,7 @@ public class ShadowBluetoothGattServerTest {
                     false,
                     false,
                     OFFSET,
-                    PAYLOAD))
+                    payload))
         .isFalse();
     assertThat(resultAction).isNull();
   }
@@ -350,7 +354,7 @@ public class ShadowBluetoothGattServerTest {
                     false,
                     false,
                     OFFSET,
-                    PAYLOAD))
+                    payload))
         .isTrue();
     assertThat(resultAction).isEqualTo(ACTION_CHARACTERISTIC_WRITE);
   }
@@ -367,7 +371,7 @@ public class ShadowBluetoothGattServerTest {
                     false,
                     false,
                     OFFSET,
-                    PAYLOAD))
+                    payload))
         .isTrue();
     assertThat(resultAction).isEqualTo(ACTION_CHARACTERISTIC_WRITE_NO_RESPONSE);
   }
@@ -449,5 +453,63 @@ public class ShadowBluetoothGattServerTest {
     server.addService(service);
     server.clearServices();
     assertThat(shadowOf(server).getService(service.getUuid())).isNull();
+  }
+
+  @Test
+  public void test_notifyCharacteristicChanged_invokesNotificationListener() {
+    AtomicReference<BluetoothDevice> notifiedDevice = new AtomicReference<>();
+    AtomicReference<BluetoothGattCharacteristic> notifiedCharacteristic = new AtomicReference<>();
+    AtomicBoolean notifiedConfirm = new AtomicBoolean();
+    AtomicReference<byte[]> notifiedValue = new AtomicReference<>();
+
+    shadowOf(server)
+        .setNotificationListener(
+            (dev, characteristic, confirm, val) -> {
+              notifiedDevice.set(dev);
+              notifiedCharacteristic.set(characteristic);
+              notifiedConfirm.set(confirm);
+              notifiedValue.set(val);
+            });
+
+    byte[] charValue = new byte[] {4, 5, 6};
+    characteristicWithReadProperty.setValue(charValue);
+    boolean success =
+        server.notifyCharacteristicChanged(device, characteristicWithReadProperty, true);
+
+    assertThat(success).isTrue();
+    assertThat(notifiedDevice.get()).isEqualTo(device);
+    assertThat(notifiedCharacteristic.get()).isEqualTo(characteristicWithReadProperty);
+    assertThat(notifiedConfirm.get()).isTrue();
+    assertThat(notifiedValue.get()).isEqualTo(charValue);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void test_notifyCharacteristicChanged_tiramisu_invokesNotificationListener() {
+    AtomicReference<BluetoothDevice> notifiedDevice = new AtomicReference<>();
+    AtomicReference<BluetoothGattCharacteristic> notifiedCharacteristic = new AtomicReference<>();
+    AtomicBoolean notifiedConfirm = new AtomicBoolean();
+    AtomicReference<byte[]> notifiedValue = new AtomicReference<>();
+
+    shadowOf(server)
+        .setNotificationListener(
+            (dev, characteristic, confirm, val) -> {
+              notifiedDevice.set(dev);
+              notifiedCharacteristic.set(characteristic);
+              notifiedConfirm.set(confirm);
+              notifiedValue.set(val);
+            });
+
+    byte[] charValue = new byte[] {7, 8, 9};
+    int result =
+        server.notifyCharacteristicChanged(
+            device, characteristicWithReadProperty, false, charValue);
+
+    assertThat(result).isEqualTo(BluetoothStatusCodes.SUCCESS);
+    assertThat(notifiedDevice.get()).isEqualTo(device);
+    assertThat(notifiedCharacteristic.get()).isEqualTo(characteristicWithReadProperty);
+    assertThat(notifiedConfirm.get()).isFalse();
+    assertThat(notifiedValue.get()).isEqualTo(charValue);
+    assertThat(characteristicWithReadProperty.getValue()).isEqualTo(charValue);
   }
 }

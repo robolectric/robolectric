@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -19,6 +20,8 @@ import android.content.ComponentName;
 import android.content.IntentSender;
 import android.net.MacAddress;
 import android.os.Build.VERSION_CODES;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,8 +30,10 @@ import java.io.OutputStream;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import javax.annotation.Nonnull;
 import org.junit.After;
@@ -679,5 +684,210 @@ public class ShadowCompanionDeviceManagerTest {
     private boolean hasInvocation() {
       return countDownLatch.getCount() == 0;
     }
+  }
+
+  @Test
+  public void testAssociate_failureOverride() {
+    AssociationRequest request = new AssociationRequest.Builder().build();
+    String failureMessage = "failure message";
+    shadowCompanionDeviceManager.setAutoTriggerAssociationCallback(true);
+    shadowCompanionDeviceManager.setAssociateFailureOverride(failureMessage);
+
+    AtomicReference<CharSequence> receivedFailure = new AtomicReference<>();
+    CompanionDeviceManager.Callback callback =
+        new CompanionDeviceManager.Callback() {
+          @Override
+          public void onDeviceFound(@Nonnull IntentSender chooserLauncher) {}
+
+          @Override
+          public void onFailure(CharSequence error) {
+            receivedFailure.set(error);
+          }
+        };
+
+    companionDeviceManager.associate(request, callback, null);
+    assertThat(receivedFailure.get()).isNotNull();
+    assertThat(receivedFailure.get().toString()).isEqualTo(failureMessage);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testAssociate_createdOverride() {
+    AssociationRequest request = new AssociationRequest.Builder().build();
+    AssociationInfo associationInfo =
+        AssociationInfoBuilder.newBuilder().setId(100).setDeviceMacAddress(MAC_ADDRESS).build();
+    shadowCompanionDeviceManager.setAutoTriggerAssociationCallback(true);
+    shadowCompanionDeviceManager.setAssociateCreatedOverride(associationInfo);
+
+    AtomicReference<AssociationInfo> receivedInfo = new AtomicReference<>();
+    CompanionDeviceManager.Callback callback =
+        new CompanionDeviceManager.Callback() {
+          @Override
+          public void onDeviceFound(@Nonnull IntentSender chooserLauncher) {}
+
+          @Override
+          public void onFailure(CharSequence error) {}
+
+          @Override
+          public void onAssociationCreated(AssociationInfo associationInfo) {
+            receivedInfo.set(associationInfo);
+          }
+        };
+
+    companionDeviceManager.associate(request, callback, null);
+    assertThat(receivedInfo.get()).isEqualTo(associationInfo);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testAssociate_failureOverride_withExecutor() throws Exception {
+    AssociationRequest request = new AssociationRequest.Builder().build();
+    String failureMessage = "failure message";
+    shadowCompanionDeviceManager.setAutoTriggerAssociationCallback(true);
+    shadowCompanionDeviceManager.setAssociateFailureOverride(failureMessage);
+
+    CountDownLatch latch = new CountDownLatch(1);
+    AtomicReference<CharSequence> receivedFailure = new AtomicReference<>();
+    AtomicReference<Thread> callbackThread = new AtomicReference<>();
+    CompanionDeviceManager.Callback callback =
+        new CompanionDeviceManager.Callback() {
+          @Override
+          public void onDeviceFound(@Nonnull IntentSender chooserLauncher) {}
+
+          @Override
+          public void onFailure(CharSequence error) {
+            receivedFailure.set(error);
+            callbackThread.set(Thread.currentThread());
+            latch.countDown();
+          }
+        };
+
+    Thread testThread = Thread.currentThread();
+    // Use an executor that runs on a background thread to verify the executor is respected
+    Executor backgroundExecutor = command -> new Thread(command).start();
+
+    companionDeviceManager.associate(request, backgroundExecutor, callback);
+
+    assertThat(latch.await(5, SECONDS)).isTrue();
+
+    assertThat(receivedFailure.get()).isNotNull();
+    assertThat(receivedFailure.get().toString()).isEqualTo(failureMessage);
+    assertThat(callbackThread.get()).isNotEqualTo(testThread);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testAssociate_createdOverride_withExecutor() throws Exception {
+    AssociationRequest request = new AssociationRequest.Builder().build();
+    AssociationInfo associationInfo =
+        AssociationInfoBuilder.newBuilder().setId(100).setDeviceMacAddress(MAC_ADDRESS).build();
+    shadowCompanionDeviceManager.setAutoTriggerAssociationCallback(true);
+    shadowCompanionDeviceManager.setAssociateCreatedOverride(associationInfo);
+
+    CountDownLatch latch = new CountDownLatch(1);
+    AtomicReference<AssociationInfo> receivedInfo = new AtomicReference<>();
+    AtomicReference<Thread> callbackThread = new AtomicReference<>();
+    CompanionDeviceManager.Callback callback =
+        new CompanionDeviceManager.Callback() {
+          @Override
+          public void onDeviceFound(@Nonnull IntentSender chooserLauncher) {}
+
+          @Override
+          public void onFailure(CharSequence error) {}
+
+          @Override
+          public void onAssociationCreated(AssociationInfo info) {
+            receivedInfo.set(info);
+            callbackThread.set(Thread.currentThread());
+            latch.countDown();
+          }
+        };
+
+    Thread testThread = Thread.currentThread();
+    Executor backgroundExecutor = command -> new Thread(command).start();
+
+    companionDeviceManager.associate(request, backgroundExecutor, callback);
+
+    assertThat(latch.await(5, SECONDS)).isTrue();
+
+    assertThat(receivedInfo.get()).isEqualTo(associationInfo);
+    assertThat(callbackThread.get()).isNotEqualTo(testThread);
+  }
+
+  @Test
+  public void testAssociate_failureOverride_withHandler() {
+    AssociationRequest request = new AssociationRequest.Builder().build();
+    String failureMessage = "failure message";
+    shadowCompanionDeviceManager.setAutoTriggerAssociationCallback(true);
+    shadowCompanionDeviceManager.setAssociateFailureOverride(failureMessage);
+
+    AtomicReference<CharSequence> receivedFailure = new AtomicReference<>();
+    CompanionDeviceManager.Callback callback =
+        new CompanionDeviceManager.Callback() {
+          @Override
+          public void onDeviceFound(@Nonnull IntentSender chooserLauncher) {}
+
+          @Override
+          public void onFailure(CharSequence error) {
+            receivedFailure.set(error);
+          }
+        };
+
+    Handler handler = new Handler(Looper.getMainLooper());
+    companionDeviceManager.associate(request, callback, handler);
+
+    // Callback should be posted to handler, so not run immediately
+    assertThat(receivedFailure.get()).isNull();
+
+    // Idle looper to run the posted runnable
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(receivedFailure.get()).isNotNull();
+    assertThat(receivedFailure.get().toString()).isEqualTo(failureMessage);
+  }
+
+  @Test
+  public void testAssociate_noAutoTrigger_callbackNotCalled() {
+    AssociationRequest request = new AssociationRequest.Builder().build();
+    shadowCompanionDeviceManager.setAutoTriggerAssociationCallback(false); // Default
+    shadowCompanionDeviceManager.setAssociateFailureOverride("failure");
+
+    AtomicReference<CharSequence> receivedFailure = new AtomicReference<>();
+    CompanionDeviceManager.Callback callback =
+        new CompanionDeviceManager.Callback() {
+          @Override
+          public void onDeviceFound(@Nonnull IntentSender chooserLauncher) {}
+
+          @Override
+          public void onFailure(CharSequence error) {
+            receivedFailure.set(error);
+          }
+        };
+
+    companionDeviceManager.associate(request, callback, null);
+    assertThat(receivedFailure.get()).isNull();
+  }
+
+  @Test
+  public void testAssociate_autoTriggerTrueButNoOverrides_callbackNotCalled() {
+    AssociationRequest request = new AssociationRequest.Builder().build();
+    shadowCompanionDeviceManager.setAutoTriggerAssociationCallback(true);
+    shadowCompanionDeviceManager.setAssociateFailureOverride(null);
+    shadowCompanionDeviceManager.setAssociateCreatedOverride(null);
+
+    AtomicReference<CharSequence> receivedFailure = new AtomicReference<>();
+    CompanionDeviceManager.Callback callback =
+        new CompanionDeviceManager.Callback() {
+          @Override
+          public void onDeviceFound(@Nonnull IntentSender chooserLauncher) {}
+
+          @Override
+          public void onFailure(CharSequence error) {
+            receivedFailure.set(error);
+          }
+        };
+
+    companionDeviceManager.associate(request, callback, null);
+    assertThat(receivedFailure.get()).isNull();
   }
 }
