@@ -41,7 +41,7 @@ public class ShadowBluetoothManagerTest {
   private static final int PROFILE_GATT_SERVER = BluetoothProfile.GATT_SERVER;
   private static final int PROFILE_STATE_CONNECTED = BluetoothProfile.STATE_CONNECTED;
   private static final int PROFILE_STATE_CONNECTING = BluetoothProfile.STATE_CONNECTING;
-  private static final int[] CONNECTED_STATES = new int[] {PROFILE_STATE_CONNECTED};
+  private static final int[] connectedStates = new int[] {PROFILE_STATE_CONNECTED};
   private static final BluetoothGattServerCallback callback = new BluetoothGattServerCallback() {};
 
   private BluetoothManager manager;
@@ -66,7 +66,7 @@ public class ShadowBluetoothManagerTest {
   public void getDevicesMatchingConnectionStates_invalidProfile_throwsIllegalArgumentException() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> manager.getDevicesMatchingConnectionStates(INVALID_PROFILE, CONNECTED_STATES));
+        () -> manager.getDevicesMatchingConnectionStates(INVALID_PROFILE, connectedStates));
   }
 
   @Test
@@ -76,8 +76,7 @@ public class ShadowBluetoothManagerTest {
 
   @Test
   public void getDevicesMatchingConnectionStates_noDevicesRegistered_returnsEmptyList() {
-    assertThat(manager.getDevicesMatchingConnectionStates(PROFILE_GATT, CONNECTED_STATES))
-        .isEmpty();
+    assertThat(manager.getDevicesMatchingConnectionStates(PROFILE_GATT, connectedStates)).isEmpty();
   }
 
   @Test
@@ -97,7 +96,7 @@ public class ShadowBluetoothManagerTest {
 
     assertThrows(
         IllegalArgumentException.class,
-        () -> manager.getDevicesMatchingConnectionStates(INVALID_PROFILE, CONNECTED_STATES));
+        () -> manager.getDevicesMatchingConnectionStates(INVALID_PROFILE, connectedStates));
   }
 
   @Test
@@ -111,7 +110,7 @@ public class ShadowBluetoothManagerTest {
     ImmutableList<BluetoothDevice> expected = ImmutableList.of(match);
 
     List<BluetoothDevice> result =
-        manager.getDevicesMatchingConnectionStates(PROFILE_GATT, CONNECTED_STATES);
+        manager.getDevicesMatchingConnectionStates(PROFILE_GATT, connectedStates);
 
     assertThat(result).containsExactlyElementsIn(expected);
   }
@@ -140,7 +139,7 @@ public class ShadowBluetoothManagerTest {
     ImmutableList<BluetoothDevice> expected = ImmutableList.of(match1, match2);
 
     List<BluetoothDevice> result =
-        manager.getDevicesMatchingConnectionStates(PROFILE_GATT_SERVER, CONNECTED_STATES);
+        manager.getDevicesMatchingConnectionStates(PROFILE_GATT_SERVER, connectedStates);
 
     assertThat(result).containsExactlyElementsIn(expected);
   }
@@ -184,6 +183,47 @@ public class ShadowBluetoothManagerTest {
       BluetoothAdapter activityAdapter = activityBluetoothManager.getAdapter();
 
       assertThat(applicationAdapter).isEqualTo(activityAdapter);
+    }
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void openGattServer_addsServerToGattServers() {
+    ShadowBluetoothManager.reset();
+    assertThat(ShadowBluetoothManager.getGattServers()).isEmpty();
+
+    BluetoothGattServer gattServer = manager.openGattServer(context, callback, 0);
+
+    assertThat(ShadowBluetoothManager.getGattServers()).containsExactly(gattServer);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void openGattServer_s_addsServerToGattServers() {
+    ShadowBluetoothManager.reset();
+    assertThat(ShadowBluetoothManager.getGattServers()).isEmpty();
+
+    BluetoothGattServer gattServer = manager.openGattServer(context, callback, 0, true);
+
+    assertThat(ShadowBluetoothManager.getGattServers()).containsExactly(gattServer);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void reset_clearsGattServers() {
+    ShadowBluetoothManager.reset();
+    BluetoothGattServer unusedLegacy = manager.openGattServer(context, callback, 0);
+    assertThat(ShadowBluetoothManager.getGattServers()).hasSize(1);
+
+    ShadowBluetoothManager.reset();
+    assertThat(ShadowBluetoothManager.getGattServers()).isEmpty();
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      BluetoothGattServer unusedS = manager.openGattServer(context, callback, 0, true);
+      assertThat(ShadowBluetoothManager.getGattServers()).hasSize(1);
+
+      ShadowBluetoothManager.reset();
+      assertThat(ShadowBluetoothManager.getGattServers()).isEmpty();
     }
   }
 }

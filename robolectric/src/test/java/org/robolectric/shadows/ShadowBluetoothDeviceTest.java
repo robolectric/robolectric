@@ -28,10 +28,12 @@ import android.os.Handler;
 import android.os.ParcelUuid;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -380,7 +382,7 @@ public class ShadowBluetoothDeviceTest {
       @Nullable private BluetoothGatt interceptedGatt = null;
 
       @Nullable
-      public BluetoothGatt getInterceptedGatt() {
+      BluetoothGatt getInterceptedGatt() {
         return interceptedGatt;
       }
 
@@ -419,7 +421,7 @@ public class ShadowBluetoothDeviceTest {
 
     // getAlias is accessed by reflection
     try {
-      Method getAliasName = android.bluetooth.BluetoothDevice.class.getMethod("getAlias");
+      Method getAliasName = BluetoothDevice.class.getMethod("getAlias");
       assertThat((String) getAliasName.invoke(device)).isEqualTo(aliasName);
     } catch (ReflectiveOperationException e) {
       throw new LinkageError("Failure accessing getAlias via reflection", e);
@@ -435,7 +437,7 @@ public class ShadowBluetoothDeviceTest {
 
     // getAliasName is accessed by reflection
     try {
-      Method getAliasName = android.bluetooth.BluetoothDevice.class.getMethod("getAliasName");
+      Method getAliasName = BluetoothDevice.class.getMethod("getAliasName");
       assertThat((String) getAliasName.invoke(device)).isEqualTo(aliasName);
     } catch (ReflectiveOperationException e) {
       throw new LinkageError("Failure accessing getAliasName via reflection", e);
@@ -613,7 +615,7 @@ public class ShadowBluetoothDeviceTest {
 
     // getAliasName is accessed by reflection
     try {
-      Method getAliasName = android.bluetooth.BluetoothDevice.class.getMethod("getAliasName");
+      Method getAliasName = BluetoothDevice.class.getMethod("getAliasName");
       // Expect the name if alias is null.
       assertThat((String) getAliasName.invoke(device)).isEqualTo(deviceName);
     } catch (ReflectiveOperationException e) {
@@ -868,5 +870,73 @@ public class ShadowBluetoothDeviceTest {
     shadowOf(device).setShouldThrowSecurityExceptions(true);
 
     assertThrows(SecurityException.class, device::getIdentityAddressWithType);
+  }
+
+  @Test
+  public void createRfcommSocket_propagatesConnectException() throws Exception {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+    ShadowBluetoothDevice shadowDevice = shadowOf(device);
+
+    IOException customException = new IOException("custom exception");
+    shadowDevice.setNextSocketConnectException(customException);
+
+    BluetoothSocket socket = device.createRfcommSocketToServiceRecord(UUID.randomUUID());
+
+    // Verify exception was propagated
+    IOException thrownException = assertThrows(IOException.class, () -> socket.connect());
+    assertThat(thrownException).isSameInstanceAs(customException);
+  }
+
+  @Test
+  public void createInsecureRfcommSocket_propagatesConnectException() throws Exception {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+    ShadowBluetoothDevice shadowDevice = shadowOf(device);
+
+    IOException customException = new IOException("custom exception");
+    shadowDevice.setNextSocketConnectException(customException);
+
+    BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(UUID.randomUUID());
+
+    // Verify exception was propagated
+    IOException thrownException = assertThrows(IOException.class, () -> socket.connect());
+    assertThat(thrownException).isSameInstanceAs(customException);
+  }
+
+  @Test
+  public void connectGatt_triggersInterceptor() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+    ShadowBluetoothDevice shadowDevice = shadowOf(device);
+
+    AtomicReference<BluetoothGatt> interceptedGatt = new AtomicReference<>();
+    shadowDevice.setGattConnectionInterceptor(interceptedGatt::set);
+
+    BluetoothGatt gatt = device.connectGatt(application, false, new BluetoothGattCallback() {});
+    assertThat(interceptedGatt.get()).isSameInstanceAs(gatt);
+  }
+
+  @Test
+  public void connectGatt_multipleDevices_interceptorIsIsolated() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device1 =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+    BluetoothDevice device2 =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice("00:11:22:33:44:55");
+
+    AtomicReference<BluetoothGatt> interceptedGatt1 = new AtomicReference<>();
+    shadowOf(device1).setGattConnectionInterceptor(interceptedGatt1::set);
+
+    // Connect on device2, should NOT trigger device1's interceptor
+    device2.connectGatt(application, false, new BluetoothGattCallback() {});
+    assertThat(interceptedGatt1.get()).isNull();
+
+    // Connect on device1, SHOULD trigger device1's interceptor
+    BluetoothGatt gatt1 = device1.connectGatt(application, false, new BluetoothGattCallback() {});
+    assertThat(interceptedGatt1.get()).isSameInstanceAs(gatt1);
   }
 }

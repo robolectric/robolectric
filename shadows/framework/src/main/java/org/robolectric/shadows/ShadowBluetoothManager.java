@@ -17,7 +17,9 @@ import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.ImmutableIntArray;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -38,10 +40,16 @@ public class ShadowBluetoothManager {
           BluetoothProfile.STATE_DISCONNECTING);
 
   private static final ArrayList<BleDevice> bleDevices = new ArrayList<>();
+  private static final List<BluetoothGattServer> gattServers = new CopyOnWriteArrayList<>();
+
+  public static List<BluetoothGattServer> getGattServers() {
+    return Collections.unmodifiableList(gattServers);
+  }
 
   @Resetter
   public static void reset() {
     bleDevices.clear();
+    gattServers.clear();
   }
 
   /** Used for storing registered {@link BluetoothDevice} with the specified profile and state. */
@@ -164,6 +172,7 @@ public class ShadowBluetoothManager {
     PerfStatsCollector.getInstance().incrementCount("constructShadowBluetoothGattServer");
     ShadowBluetoothGattServer shadowBluetoothGattServer = Shadow.extract(gattServer);
     shadowBluetoothGattServer.setGattServerCallback(callback);
+    gattServers.add(gattServer);
     return gattServer;
   }
 }
