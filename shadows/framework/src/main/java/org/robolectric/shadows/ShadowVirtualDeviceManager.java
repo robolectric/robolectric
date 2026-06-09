@@ -119,7 +119,7 @@ public class ShadowVirtualDeviceManager {
                     virtualDeviceReflector.getPersistentDeviceId(),
                     deviceName);
               } else {
-                return accessor.newInstancePostB(
+                return accessor.newInstanceC(
                     ReflectionHelpers.createDelegatingProxy(
                         IVirtualDevice.class, (VirtualDeviceDelegate) () -> displayIds),
                     virtualDevice.getDeviceId(),
@@ -273,10 +273,9 @@ public class ShadowVirtualDeviceManager {
         return accessor.newInstanceV(
             config, ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
       } else {
-        return accessor.newInstancePostB(
+        return accessor.newInstanceC(
             config,
-            ReflectionHelpers.createNullProxy(
-                loadClass("android.hardware.input.IVirtualInputDevice")));
+            ReflectionHelpers.createNullProxy(loadClass("android.hardware.input.IVirtualMouse")));
       }
     }
 
@@ -324,10 +323,10 @@ public class ShadowVirtualDeviceManager {
         return accessor.newInstanceV(
             config, ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
       } else {
-        return accessor.newInstancePostB(
+        return accessor.newInstanceC(
             config,
             ReflectionHelpers.createNullProxy(
-                loadClass("android.hardware.input.IVirtualInputDevice")));
+                loadClass("android.hardware.input.IVirtualTouchscreen")));
       }
     }
 
@@ -342,10 +341,10 @@ public class ShadowVirtualDeviceManager {
         return accessor.newInstanceV(
             config, ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
       } else {
-        return accessor.newInstancePostB(
+        return accessor.newInstanceC(
             config,
             ReflectionHelpers.createNullProxy(
-                loadClass("android.hardware.input.IVirtualInputDevice")));
+                loadClass("android.hardware.input.IVirtualKeyboard")));
       }
     }
 
@@ -440,9 +439,9 @@ public class ShadowVirtualDeviceManager {
         VirtualMouseConfig config, IVirtualDevice virtualDevice, IBinder token);
 
     @Constructor
-    VirtualMouse newInstancePostB(
+    VirtualMouse newInstanceC(
         VirtualMouseConfig config,
-        @WithType("android.hardware.input.IVirtualInputDevice") Object virtualDevice);
+        @WithType("android.hardware.input.IVirtualMouse") Object virtualDevice);
 
     @Constructor
     VirtualMouse newInstance(IVirtualDevice virtualDevice, IBinder token);
@@ -455,9 +454,9 @@ public class ShadowVirtualDeviceManager {
         VirtualTouchscreenConfig config, IVirtualDevice virtualDevice, IBinder token);
 
     @Constructor
-    VirtualTouchscreen newInstancePostB(
+    VirtualTouchscreen newInstanceC(
         VirtualTouchscreenConfig config,
-        @WithType("android.hardware.input.IVirtualInputDevice") Object virtualDevice);
+        @WithType("android.hardware.input.IVirtualTouchscreen") Object virtualDevice);
 
     @Constructor
     VirtualTouchscreen newInstance(IVirtualDevice virtualDevice, IBinder token);
@@ -470,9 +469,9 @@ public class ShadowVirtualDeviceManager {
         VirtualKeyboardConfig config, IVirtualDevice virtualDevice, IBinder token);
 
     @Constructor
-    VirtualKeyboard newInstancePostB(
+    VirtualKeyboard newInstanceC(
         VirtualKeyboardConfig config,
-        @WithType("android.hardware.input.IVirtualInputDevice") Object virtualDevice);
+        @WithType("android.hardware.input.IVirtualKeyboard") Object virtualDevice);
 
     @Constructor
     VirtualKeyboard newInstance(IVirtualDevice virtualDevice, IBinder token);
@@ -485,7 +484,7 @@ public class ShadowVirtualDeviceManager {
         IVirtualDevice virtualDevice, int id, String persistentId, String name);
 
     @Constructor
-    VirtualDevice newInstancePostB(
+    VirtualDevice newInstanceC(
         IVirtualDevice virtualDevice,
         int id,
         int profileId,
