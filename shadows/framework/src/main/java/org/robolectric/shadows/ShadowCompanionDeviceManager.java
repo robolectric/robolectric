@@ -30,14 +30,14 @@ import com.google.common.primitives.Ints;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
@@ -53,15 +53,15 @@ import org.robolectric.util.reflector.ForType;
 @Implements(value = CompanionDeviceManager.class, minSdk = VERSION_CODES.O)
 public class ShadowCompanionDeviceManager {
 
-  private final Set<RoboAssociationInfo> associations = new HashSet<>();
-  private final Set<Object> observingAssociationsIds = new HashSet<>();
-  private final Set<ComponentName> hasNotificationAccess = new HashSet<>();
-  private final Set<Integer> specifiedRemovableIds = new HashSet<>();
+  private final Set<RoboAssociationInfo> associations = ConcurrentHashMap.newKeySet();
+  private final Set<Object> observingAssociationsIds = ConcurrentHashMap.newKeySet();
+  private final Set<ComponentName> hasNotificationAccess = ConcurrentHashMap.newKeySet();
+  private final Set<Integer> specifiedRemovableIds = ConcurrentHashMap.newKeySet();
   private final Map<Integer, InputStream> attachedInputStreams = new ConcurrentHashMap<>();
   private final Map<Integer, OutputStream> attachedOutputStreams = new ConcurrentHashMap<>();
-  private final List<MessageListenerRecord> messageListenerRecords = new ArrayList<>();
-  private final Map<String, ListenerHolder> listeners = new HashMap<>();
-  private final Set<RequestedAction> requestedActions = new HashSet<>();
+  private final List<MessageListenerRecord> messageListenerRecords = new CopyOnWriteArrayList<>();
+  private final Map<String, ListenerHolder> listeners = new ConcurrentHashMap<>();
+  private final Set<RequestedAction> requestedActions = ConcurrentHashMap.newKeySet();
 
   /**
    * The association info assigned to the current device. This should be accessed indirectly via
@@ -72,11 +72,27 @@ public class ShadowCompanionDeviceManager {
   private final Map<Integer, Integer> systemDataSyncFlags = new ConcurrentHashMap<>();
   private int lastRemoveBondAssociationId = -1;
   private ComponentName lastRequestedNotificationAccess;
-  private AssociationRequest lastAssociationRequest;
+  private volatile AssociationRequest lastAssociationRequest;
   private MacAddress lastSystemApiAssociationMacAddress;
-  private CompanionDeviceManager.Callback lastAssociationCallback;
+  private volatile CompanionDeviceManager.Callback lastAssociationCallback;
   private String lastObservingDevicePresenceDeviceAddress;
   private int lastObservingDevicePresenceRequestAssociationId = -1;
+
+  private volatile boolean autoTriggerAssociationCallback;
+  @Nullable private volatile CharSequence associateFailureOverride;
+  @Nullable private volatile AssociationInfo associateCreatedOverride;
+
+  public void setAutoTriggerAssociationCallback(boolean autoTrigger) {
+    this.autoTriggerAssociationCallback = autoTrigger;
+  }
+
+  public void setAssociateFailureOverride(CharSequence failure) {
+    this.associateFailureOverride = failure;
+  }
+
+  public void setAssociateCreatedOverride(AssociationInfo associationInfo) {
+    this.associateCreatedOverride = associationInfo;
+  }
 
   private static final int DEFAULT_SYSTEMDATASYNCFLAGS = -1;
 
@@ -137,30 +153,45 @@ public class ShadowCompanionDeviceManager {
     lastRequestedNotificationAccess = component;
   }
 
+  private void associate(
+      AssociationRequest request,
+      CompanionDeviceManager.Callback callback,
+      @Nullable Handler handler,
+      @Nullable Executor executor) {
+    lastAssociationRequest = request;
+    lastAssociationCallback = callback;
+    if (autoTriggerAssociationCallback) {
+      Runnable action = null;
+      CharSequence localFailureOverride = associateFailureOverride;
+      AssociationInfo localCreatedOverride = associateCreatedOverride;
+      if (localFailureOverride != null) {
+        action = () -> callback.onFailure(localFailureOverride);
+      } else if (localCreatedOverride != null && getApiLevel() >= TIRAMISU) {
+        action = () -> callback.onAssociationCreated(localCreatedOverride);
+      }
+
+      if (action != null) {
+        if (executor != null) {
+          executor.execute(action);
+        } else if (handler != null) {
+          handler.post(action);
+        } else {
+          action.run();
+        }
+      }
+    }
+  }
+
   @Implementation
   protected void associate(
       AssociationRequest request, CompanionDeviceManager.Callback callback, Handler handler) {
-    lastAssociationRequest = request;
-    lastAssociationCallback = callback;
-  }
-
-  @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
-  protected void attachSystemDataTransport(
-      int associationId, InputStream inputStream, OutputStream outputStream) {
-    attachedInputStreams.put(associationId, inputStream);
-    attachedOutputStreams.put(associationId, outputStream);
-  }
-
-  @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
-  protected void detachSystemDataTransport(int associationId) {
-    attachedInputStreams.remove(associationId);
-    attachedOutputStreams.remove(associationId);
+    associate(request, callback, handler, /* executor= */ null);
   }
 
   @Implementation(minSdk = VERSION_CODES.TIRAMISU)
   protected void associate(
       AssociationRequest request, Executor executor, CompanionDeviceManager.Callback callback) {
-    associate(request, callback, /* handler= */ null);
+    associate(request, callback, /* handler= */ null, executor);
   }
 
   @Implementation(minSdk = VERSION_CODES.TIRAMISU)
@@ -179,6 +210,19 @@ public class ShadowCompanionDeviceManager {
     }
     associations.add(
         RoboAssociationInfo.builder().setDeviceMacAddress(macAddress.toString()).build());
+  }
+
+  @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  protected void attachSystemDataTransport(
+      int associationId, InputStream inputStream, OutputStream outputStream) {
+    attachedInputStreams.put(associationId, inputStream);
+    attachedOutputStreams.put(associationId, outputStream);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  protected void detachSystemDataTransport(int associationId) {
+    attachedInputStreams.remove(associationId);
+    attachedOutputStreams.remove(associationId);
   }
 
   @Implementation(minSdk = VERSION_CODES.TIRAMISU)
@@ -541,9 +585,7 @@ public class ShadowCompanionDeviceManager {
     listeners.put(
         serviceName,
         ListenerHolder.create(
-            java.util.Arrays.stream(associationIds).boxed().collect(toImmutableSet()),
-            executor,
-            listener));
+            Arrays.stream(associationIds).boxed().collect(toImmutableSet()), executor, listener));
   }
 
   @Implementation(minSdk = CINNAMON_BUN)
