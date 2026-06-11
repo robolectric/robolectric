@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
 import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.content.res.AssetManager;
 import android.content.res.AssetManager.AssetInputStream;
@@ -29,8 +30,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 
 // transliterated from
@@ -105,13 +106,40 @@ public class ShadowImageDecoder {
   private static ImageDecoder jniCreateDecoder(ImgStream imgStream) {
     CppImageDecoder cppImageDecoder = new CppImageDecoder(imgStream);
     long cppImageDecoderPtr = NATIVE_IMAGE_DECODER_REGISTRY.register(cppImageDecoder);
-    return ReflectionHelpers.callConstructor(
+
+    if (ReflectionHelpers.hasConstructor(
         ImageDecoder.class,
-        ClassParameter.from(long.class, cppImageDecoderPtr),
-        ClassParameter.from(int.class, imgStream.getWidth()),
-        ClassParameter.from(int.class, imgStream.getHeight()),
-        ClassParameter.from(boolean.class, imgStream.isAnimated()),
-        ClassParameter.from(boolean.class, imgStream.isNinePatch()));
+        long.class,
+        int.class,
+        int.class,
+        boolean.class,
+        boolean.class,
+        String.class,
+        ColorSpace.class,
+        Rect.class)) {
+      Rect padding = null;
+      if (imgStream.isNinePatch()) {
+        padding = new Rect(0, 0, 0, 0);
+      }
+      return reflector(ImageDecoderReflector.class)
+          .newImageDecoder(
+              cppImageDecoderPtr,
+              imgStream.getWidth(),
+              imgStream.getHeight(),
+              imgStream.isAnimated(),
+              imgStream.isNinePatch(),
+              imgStream.mimeType(),
+              ColorSpace.get(ColorSpace.Named.SRGB),
+              padding);
+    } else {
+      return reflector(ImageDecoderReflector.class)
+          .newImageDecoder(
+              cppImageDecoderPtr,
+              imgStream.getWidth(),
+              imgStream.getHeight(),
+              imgStream.isAnimated(),
+              imgStream.isNinePatch());
+    }
   }
 
   protected static ImageDecoder ImageDecoder_nCreateFd(
@@ -411,7 +439,7 @@ public class ShadowImageDecoder {
         null);
   }
 
-  @Implementation(minSdk = CINNAMON_BUN)
+  @Implementation(minSdk = CINNAMON_BUN, maxSdk = CINNAMON_BUN)
   protected static Bitmap nDecodeBitmap(
       long nativePtr,
       ImageDecoder decoder,
@@ -443,12 +471,39 @@ public class ShadowImageDecoder {
         null);
   }
 
+  @Implementation(minSdk = POST_CINNAMON_BUN)
+  protected static Bitmap nDecodeBitmap(
+      long nativePtr,
+      ImageDecoder decoder,
+      int width,
+      int height,
+      Rect cropRect,
+      int allocator,
+      int flags,
+      long desiredColorSpace,
+      long allocationLimit)
+      throws IOException {
+    return ImageDecoder_nDecodeBitmap(
+        nativePtr,
+        decoder,
+        /* doPostProcess= */ false,
+        width,
+        height,
+        cropRect,
+        /* mutable= */ false,
+        allocator,
+        /* unpremulRequired= */ false,
+        /* conserveMemory= */ false,
+        /* decodeAsAlphaMask= */ false,
+        null);
+  }
+
   @Implementation
   protected static Size nGetSampledSize(long nativePtr, int sampleSize) {
     return ImageDecoder_nGetSampledSize(nativePtr, sampleSize);
   }
 
-  @Implementation
+  @Implementation(maxSdk = CINNAMON_BUN)
   protected static void nGetPadding(long nativePtr, Rect outRect) {
     ImageDecoder_nGetPadding(nativePtr, outRect);
   }
@@ -458,12 +513,12 @@ public class ShadowImageDecoder {
     ImageDecoder_nClose(nativePtr);
   }
 
-  @Implementation
+  @Implementation(maxSdk = CINNAMON_BUN)
   protected static String nGetMimeType(long nativePtr) {
     return ImageDecoder_nGetMimeType(nativePtr);
   }
 
-  @Implementation
+  @Implementation(maxSdk = CINNAMON_BUN)
   protected static ColorSpace nGetColorSpace(long nativePtr) {
     return ImageDecoder_nGetColorSpace(nativePtr);
   }
@@ -475,5 +530,20 @@ public class ShadowImageDecoder {
 
     @Accessor("mOwnsInputStream")
     void setOwnsInputStream(boolean value);
+
+    @Constructor
+    ImageDecoder newImageDecoder(
+        long nativePtr, int width, int height, boolean animated, boolean isNinePatch);
+
+    @Constructor
+    ImageDecoder newImageDecoder(
+        long nativePtr,
+        int width,
+        int height,
+        boolean animated,
+        boolean isNinePatch,
+        String mimeType,
+        ColorSpace defaultColorSpace,
+        Rect padding);
   }
 }

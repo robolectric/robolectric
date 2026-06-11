@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.annotation.Filter.Order.BEFORE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
@@ -12,6 +13,7 @@ import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
@@ -65,9 +67,20 @@ public class ShadowPausedNoVsyncChoreographer extends ShadowPausedChoreographer 
     ChoreographerMainReflector choreographerReflector =
         reflector(ChoreographerMainReflector.class, realChoreographer);
     if (!choreographerReflector.getFrameScheduled()) {
+      ChoreographerReflector parentReflector =
+          reflector(ChoreographerReflector.class, realChoreographer);
+      long lastFrameNanos;
+      if (getApiLevel() > CINNAMON_BUN && parentReflector.isNoMoreResyncFlagEnabled()) {
+        lastFrameNanos =
+            ReflectionHelpers.callInstanceMethod(
+                parentReflector.getAnimationTime(), "getLastVsyncNanos");
+      } else {
+        lastFrameNanos = choreographerReflector.getLastFrameTimeNanos();
+      }
+
       final long nextFrameTimeMs =
           Math.max(
-              choreographerReflector.getLastFrameTimeNanos() / TimeUnit.MILLISECONDS.toNanos(1)
+              lastFrameNanos / TimeUnit.MILLISECONDS.toNanos(1)
                   + ShadowChoreographer.getFrameDelay().toMillis(),
               now);
       // nextVsyncTime is not optimally named , since this is explictly not using vsync

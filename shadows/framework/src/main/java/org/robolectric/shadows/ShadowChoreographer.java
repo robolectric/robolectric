@@ -282,7 +282,7 @@ public abstract class ShadowChoreographer {
 
     @Direct
     void __constructor__(Looper looper, int vsyncSource);
-
+    
     @Direct
     void __constructor__(Looper looper, long layerHandle);
 
@@ -294,6 +294,12 @@ public abstract class ShadowChoreographer {
 
     @Accessor("mFrameInfo")
     Object /* FrameInfo */ getFrameInfo();
+
+    @Accessor("mAnimationTime")
+    Object /* AnimationTime */ getAnimationTime();
+
+    @Direct
+    boolean isNoMoreResyncFlagEnabled();
   }
 
   /** Accessor interface for {@link Choreographer}'s CallbackQueue internals */
