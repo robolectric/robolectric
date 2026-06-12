@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.annotation.SystemApi;
 import android.app.time.Capabilities;
@@ -9,17 +10,16 @@ import android.app.time.ExternalTimeSuggestion;
 import android.app.time.TimeCapabilities;
 import android.app.time.TimeConfiguration;
 import android.app.time.TimeManager;
-import android.app.time.TimeState;
 import android.app.time.TimeZoneCapabilities;
 import android.app.time.TimeZoneCapabilitiesAndConfig;
 import android.app.time.TimeZoneConfiguration;
-import android.app.time.TimeZoneState;
 import android.os.Build.VERSION_CODES;
 import android.os.UserHandle;
 import com.google.errorprone.annotations.InlineMe;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import org.robolectric.RuntimeEnvironment;
@@ -57,6 +57,8 @@ public class ShadowTimeManager {
   public static final String SET_MANUAL_TIME_CAPABILITY = "set_manual_time_capability";
   private static TimeZoneCapabilities timeZoneCapabilities = createDefaultTimeZoneCapabilities();
   private static TimeZoneConfiguration timeZoneConfiguration;
+
+  private static TimeZone homeTimeZone;
   private static TimeCapabilities timeCapabilities = createDefaultTimeCapabilities();
   private static TimeConfiguration timeConfiguration;
   private static ExternalTimeSuggestion lastExternalTimeSuggestion;
@@ -287,6 +289,15 @@ public class ShadowTimeManager {
     return true;
   }
 
+  @Implementation(minSdk = POST_CINNAMON_BUN)
+  protected TimeZone getHomeTimeZone() {
+    return homeTimeZone;
+  }
+
+  public void setHomeTimeZone(TimeZone timeZone) {
+    homeTimeZone = timeZone;
+  }
+
   @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected boolean setManualTimeZone(String timeZoneId) {
     Objects.requireNonNull(timeZoneId);
@@ -370,6 +381,7 @@ public class ShadowTimeManager {
   public static void reset() {
     timeZoneCapabilities = createDefaultTimeZoneCapabilities();
     timeZoneConfiguration = null;
+    homeTimeZone = null;
     timeCapabilities = createDefaultTimeCapabilities();
     timeConfiguration = null;
     timeState = null;

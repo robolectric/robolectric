@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.app.Activity;
 import android.app.time.Capabilities;
@@ -15,6 +16,7 @@ import android.app.time.TimeZoneConfiguration;
 import android.os.Build;
 import android.os.UserHandle;
 import androidx.test.core.app.ApplicationProvider;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Assume;
 import org.junit.Rule;
@@ -36,6 +38,45 @@ public final class ShadowTimeManagerTest {
   private static final int CAPABILITY_SUPPORTED = 4;
 
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+
+  @Test
+  @Config(minSdk = POST_CINNAMON_BUN)
+  public void getHomeTimeZone_returnsConfiguredTimeZone() {
+    TimeManager timeManager =
+        ApplicationProvider.getApplicationContext().getSystemService(TimeManager.class);
+    Assume.assumeNotNull(timeManager);
+
+    ShadowTimeManager shadowTimeManager = Shadow.extract(timeManager);
+
+    TimeZone defaultHomeTimeZone = getHomeTimeZoneThroughReflection(timeManager);
+    assertThat(defaultHomeTimeZone).isNull();
+
+    TimeZone timeZone = TimeZone.getTimeZone("America/Los_Angeles");
+    shadowTimeManager.setHomeTimeZone(timeZone);
+
+    TimeZone homeTimeZone = getHomeTimeZoneThroughReflection(timeManager);
+    assertThat(homeTimeZone).isEqualTo(timeZone);
+  }
+
+  @Test
+  @Config(minSdk = POST_CINNAMON_BUN)
+  public void reset_clearsHomeTimeZone() {
+    TimeManager timeManager =
+        ApplicationProvider.getApplicationContext().getSystemService(TimeManager.class);
+    ShadowTimeManager shadowTimeManager = Shadow.extract(timeManager);
+
+    shadowTimeManager.setHomeTimeZone(TimeZone.getTimeZone("America/Los_Angeles"));
+    ShadowTimeManager.reset();
+
+    TimeZone homeTimeZone = getHomeTimeZoneThroughReflection(timeManager);
+    assertThat(homeTimeZone).isNull();
+  }
+
+  private TimeZone getHomeTimeZoneThroughReflection(TimeManager timeManager) {
+    // TODO: Eliminate reflection once this test compiles against a POST_CINNAMON_BUN
+    // SDK
+    return ReflectionHelpers.callInstanceMethod(timeManager, "getHomeTimeZone");
+  }
 
   @Test
   public void registeredAsSystemService() {
