@@ -36,7 +36,9 @@ class PerfStatsCollectorPerformanceTest {
     val end = System.nanoTime()
     executor.shutdown()
 
-    println("Took ${TimeUnit.NANOSECONDS.toMillis(end - start)} ms for ${threadCount * incrementsPerThread} increments across $threadCount threads (different metrics)")
+    println(
+      "Took ${TimeUnit.NANOSECONDS.toMillis(end - start)} ms for ${threadCount * incrementsPerThread} increments across $threadCount threads (different metrics)"
+    )
 
     val metrics = collector.metrics
     assertThat(metrics).hasSize(threadCount)
@@ -69,7 +71,9 @@ class PerfStatsCollectorPerformanceTest {
     val end = System.nanoTime()
     executor.shutdown()
 
-    println("Took ${TimeUnit.NANOSECONDS.toMillis(end - start)} ms for ${threadCount * incrementsPerThread} increments across $threadCount threads (same metric)")
+    println(
+      "Took ${TimeUnit.NANOSECONDS.toMillis(end - start)} ms for ${threadCount * incrementsPerThread} increments across $threadCount threads (same metric)"
+    )
 
     val metrics = collector.metrics
     assertThat(metrics).hasSize(1)
