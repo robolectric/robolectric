@@ -34,6 +34,7 @@ import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.content.res.Configuration.UI_MODE_TYPE_NORMAL;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.view.Surface.ROTATION_0;
 import static android.view.Surface.ROTATION_90;
 import static com.google.common.truth.Truth.assertThat;
@@ -308,6 +309,47 @@ public class BootstrapTest {
 
     assertThat(configuration.locale.getScript()).isEqualTo("Latn");
     assertThat(outQualifiers).contains("b+sr+Latn");
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void applyQualifiers_withGrammaticalGender_shouldUpdateGrammaticalGender() {
+    Bootstrap.applyQualifiers(
+        "pt-rBR-feminine", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    assertThat(configuration.getGrammaticalGender())
+        .isEqualTo(Configuration.GRAMMATICAL_GENDER_FEMININE);
+
+    Bootstrap.applyQualifiers(
+        "pt-rBR-masculine", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    assertThat(configuration.getGrammaticalGender())
+        .isEqualTo(Configuration.GRAMMATICAL_GENDER_MASCULINE);
+
+    Bootstrap.applyQualifiers(
+        "pt-rBR-neuter", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    assertThat(configuration.getGrammaticalGender())
+        .isEqualTo(Configuration.GRAMMATICAL_GENDER_NEUTRAL);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void applyQualifiers_withGrammaticalGender_shouldUpdateQualifiers() {
+    Bootstrap.applyQualifiers(
+        "fr-rCA-feminine", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    String outQualifiers = RuntimeEnvironment.getQualifiers(configuration, displayMetrics);
+
+    assertThat(outQualifiers).contains("feminine");
+
+    Bootstrap.applyQualifiers(
+        "fr-rCA-masculine", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    outQualifiers = RuntimeEnvironment.getQualifiers(configuration, displayMetrics);
+
+    assertThat(outQualifiers).contains("masculine");
+
+    Bootstrap.applyQualifiers(
+        "fr-rCA-neuter", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+    outQualifiers = RuntimeEnvironment.getQualifiers(configuration, displayMetrics);
+
+    assertThat(outQualifiers).contains("neuter");
   }
 
   @Test

@@ -291,4 +291,20 @@ public class ShadowContextHubManagerTest {
     shadowManager.unloadNanoApp(contextHubInfoList.get(0), nanoAppId);
     assertThat(shadowManager.nanoAppIsLoaded(nanoAppId)).isFalse();
   }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.P)
+  public void getContextHubClientsWithCallback_returnsCorrectClients() {
+    ContextHubManager contextHubManager = context.getSystemService(ContextHubManager.class);
+    ContextHubClientCallback callback = mock(ContextHubClientCallback.class);
+
+    ContextHubClient client1 = contextHubManager.createClient(new ContextHubInfo(), callback);
+    ContextHubClient client2 = contextHubManager.createClient(new ContextHubInfo(), null);
+
+    ShadowContextHubManager shadowManager = Shadow.extract(contextHubManager);
+    List<ContextHubClient> clientsWithCallback = shadowManager.getContextHubClientsWithCallback();
+
+    assertThat(clientsWithCallback).containsExactly(client1);
+    assertThat(clientsWithCallback).doesNotContain(client2);
+  }
 }

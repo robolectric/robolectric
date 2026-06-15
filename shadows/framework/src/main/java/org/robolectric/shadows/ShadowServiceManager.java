@@ -13,9 +13,11 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static java.util.Objects.requireNonNull;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
+import android.app.IGrammaticalInflectionManager;
 import android.app.ILocaleManager;
 import android.app.INotificationManager;
 import android.app.ISearchManager;
@@ -23,7 +25,9 @@ import android.app.IUiModeManager;
 import android.app.IWallpaperManager;
 import android.app.admin.IDevicePolicyManager;
 import android.app.ambientcontext.IAmbientContextManager;
+import android.app.appfunctions.IAppFunctionService;
 import android.app.job.IJobScheduler;
+import android.app.ondeviceintelligence.IOnDeviceIntelligenceManager;
 import android.app.role.IRoleManager;
 import android.app.slice.ISliceManager;
 import android.app.supervision.ISupervisionManager;
@@ -49,6 +53,7 @@ import android.credentials.ICredentialManager;
 import android.hardware.ISensorPrivacyManager;
 import android.hardware.biometrics.IAuthService;
 import android.hardware.biometrics.IBiometricService;
+import android.hardware.devicestate.IDeviceStateManager;
 import android.hardware.display.IColorDisplayManager;
 import android.hardware.fingerprint.IFingerprintService;
 import android.hardware.input.IInputManager;
@@ -109,6 +114,7 @@ import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.statusbar.IStatusBar;
 import com.android.internal.telephony.ITelephony;
 import com.android.internal.telephony.ITelephonyRegistry;
+import com.android.internal.textservice.ITextServicesManager;
 import com.android.internal.view.IInputMethodManager;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -132,7 +138,7 @@ public class ShadowServiceManager {
   protected static final Map<String, BinderService> binderServices = buildBinderServicesMap();
 
   @GuardedBy("ShadowServiceManager.class")
-  private static final Set<String> unavailableServices = new HashSet<>();
+  private static final Set<String> unavailableServices = buildUnavailableServices();
 
   @GuardedBy("ShadowServiceManager.class")
   private static final Set<String> declaredServices = new HashSet<>();
@@ -253,7 +259,8 @@ public class ShadowServiceManager {
     addBinderService(binderServices, Context.WINDOW_SERVICE, IWindowManager.class);
     addBinderService(binderServices, Context.NFC_SERVICE, INfcAdapter.class, BinderType.DEEP_PROXY);
     addBinderService(binderServices, Context.USER_SERVICE, IUserManager.class);
-
+    addBinderService(
+        binderServices, Context.TEXT_SERVICES_MANAGER_SERVICE, ITextServicesManager.class);
     if (RuntimeEnvironment.getApiLevel() >= Q) {
       // use the android-generated 'Default' stub implementation of the IBluetoothManager system
       // service. The advantage of doing this is it can be shadowed to add functionality.
@@ -382,6 +389,10 @@ public class ShadowServiceManager {
       addBinderService(binderServices, Context.CREDENTIAL_SERVICE, ICredentialManager.class);
       addBinderService(
           binderServices, Context.WEARABLE_SENSING_SERVICE, IWearableSensingManager.class);
+      addBinderService(
+          binderServices,
+          Context.GRAMMATICAL_INFLECTION_SERVICE,
+          IGrammaticalInflectionManager.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM) {
       // TODO: replace strings with references once compiling against V
@@ -391,16 +402,17 @@ public class ShadowServiceManager {
           "android.view.ISensitiveContentProtectionManager"
           /*ISensitiveContentProtectionManager.class*/ );
 
-      addBinderService(
-          binderServices,
-          "grammatical_inflection" /* Context.GRAMMATICAL_INFLECTION_SERVICE */,
-          "android.app.IGrammaticalInflectionManager" /* IGrammaticalInflectionManager.class */);
-
       addBinderServiceIfClassExists(
           binderServices,
           "protolog_configuration" /* Context.PROTOLOG_CONFIGURATION_SERVICE, */,
           "com.android.internal.protolog.ProtoLogConfigurationService"
           /* new ProtoLogConfigurationServiceImpl.class */ );
+
+      addBinderService(
+          binderServices,
+          Context.ON_DEVICE_INTELLIGENCE_SERVICE,
+          IOnDeviceIntelligenceManager.class.getName());
+      addBinderService(binderServices, Context.DEVICE_STATE_SERVICE, IDeviceStateManager.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= BAKLAVA) {
       addBinderService(
@@ -418,9 +430,24 @@ public class ShadowServiceManager {
           IRangingAdapter.class,
           BinderType.CONCRETE,
           new FakeRangingAdapter());
+      addBinderService(binderServices, Context.APP_FUNCTION_SERVICE, IAppFunctionService.class);
     }
-
+    if (RuntimeEnvironment.getApiLevel() >= CINNAMON_BUN) {
+      addBinderService(binderServices, "npu", "android.npumanager.INpuManagerService");
+      addBinderService(
+          binderServices,
+          "personal_context",
+          "android.service.personalcontext.IPersonalContextManager");
+    }
     return binderServices;
+  }
+
+  private static Set<String> buildUnavailableServices() {
+    HashSet<String> unavailableServices = new HashSet<>();
+    // TODO: Enable AppFunctionService once the affected tests that rely on it being unavailable are
+    // fixed.
+    unavailableServices.add(Context.APP_FUNCTION_SERVICE);
+    return unavailableServices;
   }
 
   protected static void addBinderService(
@@ -611,6 +638,7 @@ public class ShadowServiceManager {
   @Resetter
   public static synchronized void reset() {
     unavailableServices.clear();
+    unavailableServices.addAll(buildUnavailableServices());
     waitingServices.clear();
     declaredServices.clear();
     for (BinderService service : binderServices.values()) {

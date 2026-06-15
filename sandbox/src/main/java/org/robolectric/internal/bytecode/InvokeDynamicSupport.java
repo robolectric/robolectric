@@ -187,9 +187,6 @@ public class InvokeDynamicSupport {
     if (mh == null) {
       // call original code
       mh = site.getOriginal();
-    } else if (mh == ShadowWrangler.DO_NOTHING) {
-      // no-op
-      mh = dropArguments(mh, 0, site.type().parameterList());
     } else if (!site.isStatic()) {
       // drop arg 0 (this) for static methods
       Class<?> mhType = mh.type().parameterType(0);

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.CountDownTimer;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -28,11 +29,9 @@ public class ShadowCountDownTimer {
     }
   }
 
-  @Implementation
+  @Filter
   protected synchronized void cancel() {
     started = false;
-
-    reflector(CountDownTimerReflector.class, realCountDownTimer).cancel();
   }
 
   public void invokeTick(long millisUntilFinished) {
@@ -75,9 +74,6 @@ public class ShadowCountDownTimer {
   interface CountDownTimerReflector {
     @Direct
     CountDownTimer start();
-
-    @Direct
-    void cancel();
 
     @Accessor("mCancelled")
     boolean getCancelled();

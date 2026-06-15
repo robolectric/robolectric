@@ -45,4 +45,15 @@ public class ImplementationValidatorTest {
             "@Implementation methods should be protected (preferred) or public (deprecated)")
         .onLine(34);
   }
+
+  @Test
+  public void implementationAndFilterBothPresent_shouldNotCompile() {
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowWithConflictingAnnotations";
+    assertAbout(singleClass())
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining("@Implementation and @Filter cannot be present on the same method")
+        .onLine(9);
+  }
 }

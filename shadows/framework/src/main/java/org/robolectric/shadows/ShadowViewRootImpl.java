@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.Display;
 import android.view.HandlerActionQueue;
 import android.view.IWindow;
@@ -30,6 +31,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadows.ShadowView.AttachInfoReflector;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -65,7 +67,7 @@ public class ShadowViewRootImpl {
 
   @Implementation(minSdk = TIRAMISU)
   protected void updateBlastSurfaceIfNeeded() {
-    if (ShadowView.useRealDrawTraversals()) {
+    if (ShadowView.areRealDrawTraversalsEnabled()) {
       reflector(ViewRootImplReflector.class, realObject).updateBlastSurfaceIfNeeded();
     }
   }
@@ -76,12 +78,23 @@ public class ShadowViewRootImpl {
       @ClassName("android.window.SurfaceSyncGroup") Object activeSyncGroupObj,
       boolean syncBuffer) {
     boolean result =
-        reflector(ViewRootImplVICReflector.class, realObject)
-            .draw(fullRedrawNeeded, (SurfaceSyncGroup) activeSyncGroupObj, syncBuffer);
+        PerfStatsCollector.getInstance()
+            .measure(
+                "ViewRootImpl-draw",
+                () ->
+                    reflector(ViewRootImplVICReflector.class, realObject)
+                        .draw(fullRedrawNeeded, (SurfaceSyncGroup) activeSyncGroupObj, syncBuffer));
     if (result) {
       for (OnDrawListener listener : globalDrawListeners) {
         listener.onDraw();
       }
+    } else if (!globalDrawListeners.isEmpty() && !realObject.isHardwareEnabled()) {
+      Log.w(
+          "ShadowViewRootImpl",
+          "global draw listeners are attached but hardware acceleration is disabled for the current"
+              + " root! If you are running in a simulator, screen contents are likely inaccurate."
+              + " Double check your application targetSdkVersion is >= 14 and hardwareAcceleration"
+              + " is not set to 'false' in the manifest.");
     }
     return result;
   }

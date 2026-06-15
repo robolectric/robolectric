@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
+import android.os.Build.VERSION_CODES;
 import android.os.Parcel;
 import android.view.SurfaceControl;
 import android.view.SurfaceSession;
@@ -78,6 +79,11 @@ public class ShadowSurfaceControl {
       Parcel metadata) {
     // Return a non-zero value otherwise constructing a SurfaceControl fails with
     // OutOfResourcesException.
+    return nativeObject.incrementAndGet();
+  }
+
+  @Implementation(minSdk = VERSION_CODES.R)
+  protected static long nativeCopyFromSurfaceControl(long origNativePtr) {
     return nativeObject.incrementAndGet();
   }
 

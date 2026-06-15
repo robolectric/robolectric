@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
+import org.robolectric.internal.ClassTracker;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 
@@ -26,7 +27,7 @@ import org.robolectric.util.PerfStatsCollector;
  * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's
  * shadow classes.
  */
-public class SandboxClassLoader extends URLClassLoader {
+public class SandboxClassLoader extends URLClassLoader implements ClassTracker {
   // The directory where instrumented class files will be dumped
   private static final String DUMP_CLASSES_PROPERTY = "robolectric.dumpClassesDirectory";
 
@@ -82,10 +83,15 @@ public class SandboxClassLoader extends URLClassLoader {
   }
 
   private static URL[] getClassPathUrls(ClassLoader classloader) {
+    URL[] urls = null;
     if (classloader instanceof URLClassLoader) {
-      return ((URLClassLoader) classloader).getURLs();
+      urls = ((URLClassLoader) classloader).getURLs();
+    } else {
+      urls = parseJavaClassPath();
     }
-    return parseJavaClassPath();
+    PerfStatsCollector.getInstance()
+        .recordCount("SandboxClassLoader.getClassPathUrls", urls.length);
+    return urls;
   }
 
   // TODO(https://github.com/google/guava/issues/2956): Use a public API once one is available.
@@ -143,8 +149,13 @@ public class SandboxClassLoader extends URLClassLoader {
     InputStream fromUrlsClassLoader = resourceProvider.getResourceAsStream(resName);
     if (fromUrlsClassLoader != null) {
       if (LOG_RESOURCE_USAGE) {
+        String packageName = className.replace('/', '.');
+        int lastDotIndex = packageName.lastIndexOf('.');
+        if (lastDotIndex != -1) {
+          packageName = packageName.substring(0, lastDotIndex);
+        }
         PerfStatsCollector.getInstance()
-            .incrementCount("SandboxClassLoader.classResourceLoaded " + className);
+            .incrementCount("SandboxClassLoader.packageLoaded " + packageName);
       }
       return fromUrlsClassLoader;
     }
@@ -188,6 +199,14 @@ public class SandboxClassLoader extends URLClassLoader {
 
       return loadedClass;
     }
+  }
+
+  @Override
+  public boolean isClassLoaded(String className) {
+    if (className == null) {
+      return false;
+    }
+    return findLoadedClass(className) != null;
   }
 
   private Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {

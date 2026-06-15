@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -13,6 +12,8 @@ import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -29,28 +30,24 @@ public class ShadowRegion {
 
   public static long nextId = 1;
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void __constructor__() {
     area = new Area();
-    reflector(RegionReflector.class, realRegion).__constructor__();
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void __constructor__(Region src) {
     area = new Area(getAwtArea(src));
-    reflector(RegionReflector.class, realRegion).__constructor__(src);
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void __constructor__(Rect r) {
     area = new Area(new Rectangle2D.Double(r.left, r.top, r.width(), r.height()));
-    reflector(RegionReflector.class, realRegion).__constructor__(r);
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void __constructor__(int left, int top, int right, int bottom) {
     area = new Area(new Rectangle2D.Double(left, top, right - left, bottom - top));
-    reflector(RegionReflector.class, realRegion).__constructor__(left, top, right, bottom);
   }
 
   /**
@@ -306,18 +303,6 @@ public class ShadowRegion {
     @Override
     @Direct
     boolean equals(Object obj);
-
-    @Direct
-    void __constructor__();
-
-    @Direct
-    void __constructor__(Region src);
-
-    @Direct
-    void __constructor__(Rect r);
-
-    @Direct
-    void __constructor__(int left, int top, int right, int bottom);
   }
 
 }

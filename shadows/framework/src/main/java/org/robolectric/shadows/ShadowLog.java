@@ -20,7 +20,6 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -29,7 +28,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.AndroidVersions.L;
 
 /** Controls the behavior of {@link android.util.Log} and provides access to log messages. */
 @Implements(Log.class)
@@ -127,12 +125,7 @@ public class ShadowLog {
       Util.sneakyThrow(terribleFailure);
     }
     TerribleFailureHandler terribleFailureHandler = reflector(LogReflector.class).getWtfHandler();
-    if (RuntimeEnvironment.getApiLevel() >= L.SDK_INT) {
-      terribleFailureHandler.onTerribleFailure(tag, (TerribleFailure) terribleFailure, false);
-    } else {
-      reflector(TerribleFailureHandlerReflector.class, terribleFailureHandler)
-          .onTerribleFailure(tag, (TerribleFailure) terribleFailure);
-    }
+    terribleFailureHandler.onTerribleFailure(tag, (TerribleFailure) terribleFailure, false);
     return 0;
   }
 

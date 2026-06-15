@@ -2,6 +2,8 @@ package org.robolectric.android;
 
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.android.DeviceConfig.getUiModeNight;
@@ -382,6 +384,39 @@ public class DeviceConfigTest {
     assertThat(getUiModeNight(configuration)).isEqualTo(Configuration.UI_MODE_NIGHT_YES);
     applyQualifiers("notnight");
     assertThat(getUiModeNight(configuration)).isEqualTo(Configuration.UI_MODE_NIGHT_NO);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void applyQualifiers_withGrammaticalGender_updatesConfiguration() {
+    assertThat(configuration.getGrammaticalGender())
+        .isEqualTo(Configuration.GRAMMATICAL_GENDER_NOT_SPECIFIED);
+    applyQualifiers("masculine");
+    assertThat(configuration.getGrammaticalGender())
+        .isEqualTo(Configuration.GRAMMATICAL_GENDER_MASCULINE);
+    applyQualifiers("feminine");
+    assertThat(configuration.getGrammaticalGender())
+        .isEqualTo(Configuration.GRAMMATICAL_GENDER_FEMININE);
+    applyQualifiers("neuter");
+    assertThat(configuration.getGrammaticalGender())
+        .isEqualTo(Configuration.GRAMMATICAL_GENDER_NEUTRAL);
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void applyQualifiers_withPlus_updatesConfigurationDoesNotResetGrammaticalGender() {
+    assertThat(configuration.getGrammaticalGender())
+        .isEqualTo(Configuration.GRAMMATICAL_GENDER_NOT_SPECIFIED);
+    applyQualifiers("masculine");
+    assertThat(configuration.getGrammaticalGender())
+        .isEqualTo(Configuration.GRAMMATICAL_GENDER_MASCULINE);
+
+    // This should update the language, but not overwrite the grammatical gender
+    // Only API 35+ supports this type of qualifier update.
+    applyQualifiers("+fr-rCA");
+    assertThat(configuration.getLocales().get(0).toLanguageTag()).isEqualTo("fr-CA");
+    assertThat(configuration.getGrammaticalGender())
+        .isEqualTo(Configuration.GRAMMATICAL_GENDER_MASCULINE);
   }
 
   //////////////////////////

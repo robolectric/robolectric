@@ -1,15 +1,11 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.util.reflector.Reflector.reflector;
-
 import android.widget.PopupMenu;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 @Implements(PopupMenu.class)
 public class ShadowPopupMenu {
@@ -19,23 +15,20 @@ public class ShadowPopupMenu {
   private boolean isShowing;
   private PopupMenu.OnMenuItemClickListener onMenuItemClickListener;
 
-  @Implementation
+  @Filter
   protected void show() {
     this.isShowing = true;
     setLatestPopupMenu(this);
-    reflector(PopupMenuReflector.class, realPopupMenu).show();
   }
 
-  @Implementation
+  @Filter
   protected void dismiss() {
     this.isShowing = false;
-    reflector(PopupMenuReflector.class, realPopupMenu).dismiss();
   }
 
-  @Implementation
+  @Filter
   protected void setOnMenuItemClickListener(PopupMenu.OnMenuItemClickListener listener) {
     this.onMenuItemClickListener = listener;
-    reflector(PopupMenuReflector.class, realPopupMenu).setOnMenuItemClickListener(listener);
   }
 
   public boolean isShowing() {
@@ -55,18 +48,5 @@ public class ShadowPopupMenu {
 
   public PopupMenu.OnMenuItemClickListener getOnMenuItemClickListener() {
     return onMenuItemClickListener;
-  }
-
-  @ForType(PopupMenu.class)
-  interface PopupMenuReflector {
-
-    @Direct
-    void show();
-
-    @Direct
-    void dismiss();
-
-    @Direct
-    void setOnMenuItemClickListener(PopupMenu.OnMenuItemClickListener listener);
   }
 }

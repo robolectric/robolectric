@@ -6,7 +6,8 @@ import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = WebViewDatabase.class, callThroughByDefault = false)
+/** Shadow for {@link WebViewDatabase}. */
+@Implements(value = WebViewDatabase.class)
 public class ShadowWebViewDatabase {
   private static RoboWebViewDatabase webViewDatabase;
 

@@ -2,15 +2,16 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build.VERSION_CODES;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
-import android.widget.RemoteViewsAdapter;
-import android.widget.RemoteViewsAdapter.RemoteAdapterConnectionCallback;
 import android.widget.RemoteViewsService;
 import android.widget.RemoteViewsService.RemoteViewsFactory;
 import android.widget.TextView;
@@ -21,8 +22,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.WithType;
 
 @RunWith(AndroidJUnit4.class)
+@Config(maxSdk = CINNAMON_BUN)
 public class ShadowRemoteViewsAdapterTest {
 
   private static final ImmutableList<String> LIST_ITEMS = ImmutableList.of("one", "two", "three");
@@ -43,16 +48,25 @@ public class ShadowRemoteViewsAdapterTest {
 
   @Test
   @Config(minSdk = VERSION_CODES.O)
-  public void getViewApi26AndLater_populatedWithExpectedItems() {
-    RemoteViewsAdapter adapter =
-        new RemoteViewsAdapter(
-            context, createTestIntent(), mock(RemoteAdapterConnectionCallback.class), false);
+  public void getViewApi26AndLater_populatedWithExpectedItems() throws Exception {
+    Class<?> callbackClass =
+        Class.forName("android.widget.RemoteViewsAdapter$RemoteAdapterConnectionCallback");
 
-    assertThat(adapter.getCount()).isEqualTo(3);
-    assertThat(((TextView) adapter.getView(0, null, parent)).getText().toString()).isEqualTo("one");
-    assertThat(((TextView) adapter.getView(1, null, parent)).getText().toString()).isEqualTo("two");
-    assertThat(((TextView) adapter.getView(2, null, parent)).getText().toString())
-        .isEqualTo("three");
+    Object adapter =
+        reflector(RemoteViewsAdapterReflector.class)
+            .newRemoteViewsAdapter(context, createTestIntent(), mock(callbackClass), false);
+
+    int count = reflector(RemoteViewsAdapterReflector.class, adapter).getCount();
+    assertThat(count).isEqualTo(3);
+
+    View view0 = reflector(RemoteViewsAdapterReflector.class, adapter).getView(0, null, parent);
+    assertThat(((TextView) view0).getText().toString()).isEqualTo("one");
+
+    View view1 = reflector(RemoteViewsAdapterReflector.class, adapter).getView(1, null, parent);
+    assertThat(((TextView) view1).getText().toString()).isEqualTo("two");
+
+    View view2 = reflector(RemoteViewsAdapterReflector.class, adapter).getView(2, null, parent);
+    assertThat(((TextView) view2).getText().toString()).isEqualTo("three");
   }
 
   @Test
@@ -121,5 +135,20 @@ public class ShadowRemoteViewsAdapterTest {
     public boolean hasStableIds() {
       return true;
     }
+  }
+
+  @ForType(className = "android.widget.RemoteViewsAdapter")
+  private interface RemoteViewsAdapterReflector {
+    @Constructor
+    Object newRemoteViewsAdapter(
+        Context context,
+        Intent intent,
+        @WithType("android.widget.RemoteViewsAdapter$RemoteAdapterConnectionCallback")
+            Object callback,
+        boolean useIpc);
+
+    int getCount();
+
+    View getView(int position, View convertView, ViewGroup parent);
   }
 }

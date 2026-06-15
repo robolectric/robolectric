@@ -63,7 +63,13 @@ public class ShadowMediaMetadataRetriever {
   @Implementation
   protected String extractMetadata(int keyCode) {
     if (metadata.containsKey(dataSource)) {
-      return metadata.get(dataSource).get(keyCode);
+      String value = metadata.get(dataSource).get(keyCode);
+      if (value != null) {
+        return value;
+      }
+    }
+    if (keyCode == MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION) {
+      return "0";
     }
     return null;
   }
@@ -76,7 +82,17 @@ public class ShadowMediaMetadataRetriever {
 
   @Implementation
   protected Bitmap getFrameAtTime(long timeUs, int option) {
-    return (frames.containsKey(dataSource) ? frames.get(dataSource).get(timeUs) : null);
+    Map<Long, Bitmap> dataSourceFrames = frames.get(dataSource);
+    if (dataSourceFrames == null) {
+      // Missing DataSource
+      return null;
+    }
+    Bitmap bmp = dataSourceFrames.get(timeUs);
+    if (bmp == null) {
+      // Missing frame at desired time
+      return null;
+    }
+    return bmp.copy(bmp.getConfig(), true);
   }
 
   @Implementation
@@ -86,9 +102,17 @@ public class ShadowMediaMetadataRetriever {
 
   @Implementation(minSdk = O_MR1)
   protected Bitmap getScaledFrameAtTime(long timeUs, int option, int dstWidth, int dstHeight) {
-    return (scaledFrames.containsKey(dataSource)
-        ? scaledFrames.get(dataSource).get(getScaledFrameKey(timeUs, dstWidth, dstHeight))
-        : null);
+    Map<String, Bitmap> dataSourceFrames = scaledFrames.get(dataSource);
+    if (dataSourceFrames == null) {
+      // Missing DataSource
+      return null;
+    }
+    Bitmap bmp = dataSourceFrames.get(getScaledFrameKey(timeUs, dstWidth, dstHeight));
+    if (bmp == null) {
+      // Missing frame at desired time, width, and height
+      return null;
+    }
+    return bmp.copy(bmp.getConfig(), true);
   }
 
   /**

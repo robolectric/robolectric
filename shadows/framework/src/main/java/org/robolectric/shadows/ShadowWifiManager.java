@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-import static java.util.stream.Collectors.toList;
 
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
@@ -13,8 +13,10 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
 import android.net.NetworkInfo;
+import android.net.wifi.BlockingOption;
 import android.net.wifi.ScanResult;
 import android.net.wifi.SoftApConfiguration;
+import android.net.wifi.WifiAvailableChannel;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -99,6 +101,9 @@ public class ShadowWifiManager {
   private ImmutableList<WifiNetworkSuggestion> lastAddedSuggestions = ImmutableList.of();
   private int addNetworkSuggestionsResult;
 
+  private boolean isGetUsableChannelsSupported = true;
+  private List<WifiAvailableChannel> usableChannels = new ArrayList<>();
+  private final List<BlockingOption> disallowedBlockingOptions = new ArrayList<>();
   private final ConcurrentMap<LocalOnlyConnectionFailureListener, Executor>
       localOnlyConnectionFailureListenerExecutorMap = new ConcurrentHashMap<>();
 
@@ -717,6 +722,34 @@ public class ShadowWifiManager {
   }
 
   /**
+   * Sets the list of usable channels for {@link #getUsableChannels(int, int)}. Accepts a list of
+   * frequencies for convenience.
+   */
+  public void setUsableChannels(List<Integer> frequencies) {
+    this.usableChannels =
+        frequencies.stream()
+            .map(frequency -> new WifiAvailableChannel(frequency, 0 /* operation mode */))
+            .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Sets whether {@link #getUsableChannels(int, int)} is supported. If not, it will throw an {@link
+   * UnsupportedOperationException} when called.
+   */
+  public void setGetUsableChannelsSupported(boolean isSupported) {
+    this.isGetUsableChannelsSupported = isSupported;
+  }
+
+  @Implementation(minSdk = S)
+  protected List<WifiAvailableChannel> getUsableChannels(int band, int mode) {
+    if (isGetUsableChannelsSupported) {
+      return usableChannels;
+    } else {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  /**
    * Returns wifi usability scores previous passed to {@link WifiManager#updateWifiUsabilityScore}
    */
   public List<WifiUsabilityScore> getUsabilityScores() {
@@ -759,6 +792,19 @@ public class ShadowWifiManager {
                 }
               });
     }
+  }
+
+  @Implementation(minSdk = BAKLAVA /* BAKLAVA */)
+  protected void disallowCurrentSuggestedNetwork(BlockingOption blockingOption) {
+    disallowedBlockingOptions.add(blockingOption);
+  }
+
+  /**
+   * Returns the list of {@link BlockingOption}s passed to {@link
+   * #disallowCurrentSuggestedNetwork(BlockingOption)}.
+   */
+  public List<BlockingOption> getDisallowedBlockingOptions() {
+    return disallowedBlockingOptions;
   }
 
   private Context getContext() {
@@ -993,7 +1039,9 @@ public class ShadowWifiManager {
         int uid) {
       this.ssids = List.copyOf(ssids);
       this.frequencies =
-          frequencies == null ? List.of() : Arrays.stream(frequencies).boxed().collect(toList());
+          frequencies == null
+              ? List.of()
+              : Arrays.stream(frequencies).boxed().collect(ImmutableList.toImmutableList());
       this.executor = executor;
       this.callback = callback;
       this.packageName = packageName;

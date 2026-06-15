@@ -1,7 +1,9 @@
 package org.robolectric.simulator;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -55,10 +57,13 @@ public final class SandboxBuilder {
   }
 
   public AndroidSandbox build() {
+    JarCollection jarCollection = new JarCollection(extraJars);
+    URLClassLoader classLoader =
+        new URLClassLoader(jarCollection.getUrls(), SandboxBuilder.class.getClassLoader());
     Injector injector =
-        new Injector.Builder()
+        new Injector.Builder(classLoader)
             .bind(Properties.class, System.getProperties())
-            .bind(JarCollection.class, new JarCollection(extraJars))
+            .bind(JarCollection.class, jarCollection)
             .build();
 
     SdkProvider sdkProvider = injector.getInstance(SdkProvider.class);
@@ -104,7 +109,8 @@ public final class SandboxBuilder {
 
     AndroidSdkShadowMatcher shadowMatcher = new AndroidSdkShadowMatcher(chosenSdk.getApiLevel());
 
-    ClassHandler classHandler = classHandlerBuilder.build(shadowMap, shadowMatcher, interceptors);
+    ClassHandler classHandler =
+        classHandlerBuilder.build(shadowMap, shadowMatcher, interceptors, ImmutableList.of());
 
     androidSandbox.configure(classHandler, interceptors);
 
@@ -119,7 +125,9 @@ public final class SandboxBuilder {
       builder.addInterceptedMethod(methodRef);
     }
 
-    builder.doNotAcquireClass("org.robolectric.shadow.api.ShadowPicker");
+    builder
+        .doNotAcquireClass("org.robolectric.shadow.api.ShadowPicker")
+        .doNotAcquireClass("org.robolectric.simulator.SimulatorPanelRegistry");
 
     builder
         .doNotAcquirePackage("org.bouncycastle.")

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
 
 import android.os.Build;
 import android.service.quicksettings.Tile;
@@ -22,7 +21,7 @@ public final class ShadowTileTest {
   @Before
   public void setUp() {
     tile = Shadow.newInstanceOf(Tile.class);
-    shadowTile = shadowOf(tile);
+    shadowTile = Shadow.extract(tile);
   }
 
   @Test

@@ -15,7 +15,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = HttpResponseCache.class, callThroughByDefault = false)
+@Implements(value = HttpResponseCache.class)
 public class ShadowHttpResponseCache {
   private static final Object LOCK = new Object();
 
@@ -100,5 +100,10 @@ public class ShadowHttpResponseCache {
   protected CacheRequest put(URI uri, URLConnection urlConnection) {
     // Do not cache any data. All requests will be a miss.
     return null;
+  }
+
+  @Implementation
+  protected void flush() {
+    // No-op as `mDelegate` is null.
   }
 }

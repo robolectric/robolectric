@@ -5,6 +5,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityRecord;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -24,30 +25,25 @@ public class ShadowAccessibilityRecord {
   private int virtualDescendantId;
   private AccessibilityNodeInfo sourceNode;
 
-  @Implementation
+  @Filter
   protected void init(AccessibilityRecord model) {
     // Copy shadow fields.
     ShadowAccessibilityRecord modelShadow = Shadow.extract(model);
     sourceRoot = modelShadow.sourceRoot;
     virtualDescendantId = modelShadow.virtualDescendantId;
     sourceNode = modelShadow.sourceNode;
-
-    // Copy realRecord fields.
-    reflector(AccessibilityRecordReflector.class, realRecord).init(model);
   }
 
-  @Implementation
+  @Filter
   protected void setSource(View root, int virtualDescendantId) {
     this.sourceRoot = root;
     this.virtualDescendantId = virtualDescendantId;
-    reflector(AccessibilityRecordReflector.class, realRecord).setSource(root, virtualDescendantId);
   }
 
-  @Implementation
+  @Filter
   protected void setSource(View root) {
     this.sourceRoot = root;
     this.virtualDescendantId = NO_VIRTUAL_ID;
-    reflector(AccessibilityRecordReflector.class, realRecord).setSource(root);
   }
 
   /**
@@ -90,16 +86,6 @@ public class ShadowAccessibilityRecord {
 
   @ForType(AccessibilityRecord.class)
   interface AccessibilityRecordReflector {
-
-    @Direct
-    void setSource(View root, int virtualDescendantId);
-
-    @Direct
-    void setSource(View root);
-
-    @Direct
-    void init(AccessibilityRecord model);
-
     @Direct
     void setWindowId(int id);
   }

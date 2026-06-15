@@ -17,6 +17,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.ReflectorObject;
@@ -36,9 +38,8 @@ public class ShadowBluetoothGattServer {
   @ReflectorObject protected BluetoothGattServerReflector bluetoothGattServerReflector;
 
   /** Close this GATT server instance. */
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void close() {
-    bluetoothGattServerReflector.close();
     this.isClosed = true;
   }
 
@@ -47,9 +48,8 @@ public class ShadowBluetoothGattServer {
    *
    * @param device Remote device
    */
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void cancelConnection(BluetoothDevice device) {
-    this.bluetoothGattServerReflector.cancelConnection(device);
     this.cancelledDevices.add(device);
   }
 
@@ -247,12 +247,6 @@ public class ShadowBluetoothGattServer {
 
   @ForType(BluetoothGattServer.class)
   private interface BluetoothGattServerReflector {
-
-    @Direct
-    void close();
-
-    @Direct
-    void cancelConnection(BluetoothDevice device);
 
     @Direct
     boolean sendResponse(

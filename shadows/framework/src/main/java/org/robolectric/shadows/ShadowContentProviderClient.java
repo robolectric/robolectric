@@ -24,7 +24,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(ContentProviderClient.class)
@@ -137,8 +136,6 @@ public class ShadowContentProviderClient {
 
   @ForType(ContentProviderClient.class)
   interface ContentProviderClientReflector {
-    @Direct
-    boolean release();
 
     @Accessor("mStable")
     boolean getStable();

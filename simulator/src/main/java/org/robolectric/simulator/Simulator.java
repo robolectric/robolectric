@@ -2,18 +2,17 @@ package org.robolectric.simulator;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.app.Activity;
 import android.app.Application;
 import android.app.UiAutomation;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.hardware.display.DisplayManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.Choreographer;
 import android.view.Display;
 import android.view.MotionEvent;
@@ -21,17 +20,15 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import java.awt.GraphicsEnvironment;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Duration;
-import java.util.concurrent.Semaphore;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode.Mode;
+import org.robolectric.pluginapi.perf.Metadata;
+import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowChoreographer;
 import org.robolectric.shadows.ShadowLog;
@@ -41,21 +38,22 @@ import org.robolectric.shadows.ShadowSystemClock;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.simulator.pluginapi.RemoteControl;
 import org.robolectric.simulator.pluginapi.ScreenRecorder;
+import org.robolectric.util.PerfStatsCollector;
+import org.robolectric.util.PerfStatsPublisher;
 import org.robolectric.util.inject.Injector;
 
 /** The main entry point for the Robolectric Simulator for use in existing Robolectric tests. */
 @Beta
 public final class Simulator {
 
-  private SimulatorFrame simulatorFrame;
   private boolean headless = false;
-  private float displayWidth;
-  private float displayHeight;
   private RemoteControl remoteControl = null;
-  private ScreenRecorder screenRecorder = null;
-  private final Semaphore writingFrame = new Semaphore(1);
 
   private final Class<? extends Activity> activityClassToLaunch;
+  private Injector injector;
+  private PerfStatsCollector perfStatsCollector;
+  private PerfStatsPublisher perfStatsPublisher;
+  private ScreenUpdateHandler screenUpdateHandler;
 
   public Simulator() {
     this(null);
@@ -64,6 +62,7 @@ public final class Simulator {
   public Simulator(Class<? extends Activity> activityClassToLaunch) {
     this.activityClassToLaunch = activityClassToLaunch;
     this.headless = GraphicsEnvironment.isHeadless();
+    this.injector = new Injector.Builder(Looper.class.getClassLoader()).build();
   }
 
   public void start() {
@@ -71,9 +70,21 @@ public final class Simulator {
     Preconditions.checkState(ShadowLooper.looperMode() != Mode.LEGACY);
     System.setProperty("java.awt.headless", headless ? "true" : "false");
     ShadowView.setUseRealViewAnimations(true);
+    ShadowView.setUseRealDrawTraversals(true);
     ShadowChoreographer.setPaused(true);
     ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
     ShadowLog.setCaptureLogsEnabled(false);
+
+    setupPerfStats();
+
+    Application application = RuntimeEnvironment.getApplication();
+    DisplayManager displayManager = application.getSystemService(DisplayManager.class);
+    Display display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
+    final int apiLevel = getApiLevel();
+    final int width = (int) display.getWidth();
+    final int height = (int) display.getHeight();
+
+    startUi(apiLevel, width, height);
 
     if (this.activityClassToLaunch != null) {
       System.err.println("Launching " + this.activityClassToLaunch.getName());
@@ -87,12 +98,10 @@ public final class Simulator {
         Robolectric.setupActivity(this.activityClassToLaunch);
       }
     }
-    // Inject an off-screen motion event to avoid a blank screen when the simulator first starts.
-    postMotionEvent();
 
-    startUi();
-    startScreenRecorder();
-    captureScreen();
+    // Inject an off-screen motion event to avoid a blank screen when the simulator first starts.
+    postMotionEvent(width, height);
+
     connectRemoteControl();
     loop();
   }
@@ -114,69 +123,35 @@ public final class Simulator {
       shadowLooper.poll(timeoutTime == 0 ? 0 : max(1, timeoutTime - SystemClock.uptimeMillis()));
       ShadowSystemClock.advanceBy(Duration.ofNanos(System.nanoTime() - currentSystemTime));
       shadowLooper.idle();
-      captureScreen();
       remoteControl.onCycle(SystemClock.uptimeNanos());
     }
   }
 
-  private void startUi() {
-    Application application = RuntimeEnvironment.getApplication();
-    DisplayManager displayManager =
-        (DisplayManager) application.getSystemService(Context.DISPLAY_SERVICE);
-    Display display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
-    this.displayWidth = display.getWidth();
-    this.displayHeight = display.getHeight();
-    if (headless) {
-      return;
-    }
-    try {
-      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-    final int apiLevel = RuntimeEnvironment.getApiLevel();
-    SwingUtilities.invokeLater(
-        () -> {
-          simulatorFrame =
-              new SimulatorFrame((int) this.displayWidth, (int) this.displayHeight, apiLevel);
-          simulatorFrame.setVisible(true);
-          simulatorFrame.toFront();
-        });
-  }
+  private void startUi(int apiLevel, int width, int height) {
+    FrameListener swingFrameListener = new SwingFrameListener(headless, apiLevel, width, height);
 
-  private void captureScreen() {
-    final Bitmap bitmap =
-        InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
-    if (!headless) {
-      SwingUtilities.invokeLater(
-          () -> {
-            simulatorFrame.getCanvas().drawBitmap(bitmap);
-            sendToScreenRecorder(bitmap);
-          });
-    } else {
-      sendToScreenRecorder(bitmap);
+    ScreenRecorderFrameListener screenRecorderFrameListener = null;
+    if (Boolean.parseBoolean(System.getProperty("robolectric.recordVideo", "false"))) {
+      screenRecorderFrameListener =
+          new ScreenRecorderFrameListener(
+              injector.getInstance(ScreenRecorder.class), width, height);
+    }
+    screenUpdateHandler =
+        ScreenUpdateHandler.create(screenRecorderFrameListener, swingFrameListener);
+    if (screenUpdateHandler != null) {
+      screenUpdateHandler.requestStartUi();
     }
   }
 
-  private void sendToScreenRecorder(Bitmap bitmap) {
-    writingFrame.acquireUninterruptibly();
-    if (screenRecorder != null) {
-      screenRecorder.recordFrame(bitmap);
-    } else {
-      bitmap.recycle();
-    }
-    writingFrame.release();
-  }
-
-  private void postMotionEvent() {
+  private void postMotionEvent(int width, int height) {
     UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
     MotionEvent androidEvent =
         MotionEvent.obtain(
             /* downTime= */ 0,
             /* eventTime= */ SystemClock.uptimeMillis(),
             /* action= */ MotionEvent.ACTION_MOVE,
-            /* x= */ this.displayWidth,
-            /* y= */ this.displayHeight,
+            /* x= */ width,
+            /* y= */ height,
             /* metaState= */ 0);
 
     new Handler(Looper.getMainLooper())
@@ -185,7 +160,6 @@ public final class Simulator {
 
   private void connectRemoteControl() {
     // The default RemoteControl is a no-op stub.
-    Injector injector = new Injector.Builder(Looper.class.getClassLoader()).build();
     remoteControl = injector.getInstance(RemoteControl.class);
     remoteControl.connect(
         InstrumentationRegistry.getInstrumentation()
@@ -193,47 +167,46 @@ public final class Simulator {
         Looper.getMainLooper());
   }
 
-  private Path getVideoPath() throws IOException {
-    if (System.getProperty("robolectric.videoPath") != null) {
-      Path videoPath = Path.of(System.getProperty("robolectric.videoPath"));
-      Files.createDirectories(videoPath.getParent());
-      return videoPath;
-    } else {
-      return Files.createTempFile(
-          "robolectric", System.getProperty("robolectric.videoExtension", "webm"));
+
+  private void setupPerfStats() {
+    perfStatsCollector = PerfStatsCollector.getInstance();
+    perfStatsCollector.putMetadata(new Metadata(RuntimeEnvironment.getApiLevel()));
+    List<PerfStatsReporter> perfStatsReporters =
+        Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
+    perfStatsPublisher = PerfStatsPublisher.getInstance();
+    perfStatsPublisher.addReporters(perfStatsReporters);
+    perfStatsPublisher.doFinalReportOnShutdown(
+        () -> {
+          // Reuse the shutdown hook to logMemoryAndCpu, otherwise output of perfstats can collide
+          // with
+          // logMemoryAndCpu if they both log to System.err
+          logMemoryAndCpu();
+          System.err.println();
+          // there is no test runner reporting the data, so report first here before the finalReport
+          // runs
+          perfStatsPublisher.report(perfStatsCollector);
+        });
+
+    if (perfStatsReporters.isEmpty()) {
+      // there won't be a perf stats shutdown hook - add our own here to log memory and CPU
+      Runtime.getRuntime().addShutdownHook(new Thread(Simulator::logMemoryAndCpu));
     }
   }
 
-  void startScreenRecorder() {
-    if (!Boolean.parseBoolean(System.getProperty("robolectric.recordVideo", "false"))) {
-      return;
-    }
-    Path videoPath;
-    try {
-      videoPath = getVideoPath();
-    } catch (IOException e) {
-      Log.i("Simulator", "Failed to get a path for screen recording!", e);
-      return;
-    }
-    // Use the class loader for an Android class.
-    Injector injector = new Injector.Builder(Looper.class.getClassLoader()).build();
-    screenRecorder = injector.getInstance(ScreenRecorder.class);
-    screenRecorder.start(
-        videoPath,
-        (int) this.displayWidth,
-        (int) this.displayHeight,
-        new ScreenRecorder.FrameRate(24, 1));
-
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(
-                () -> {
-                  // Make sure that we don't stop the screen recorder in the middle of a write!
-                  writingFrame.acquireUninterruptibly();
-                  screenRecorder.stop();
-                  screenRecorder = null;
-                  writingFrame.release();
-                }));
+  private static void logMemoryAndCpu() {
+    System.err.println();
+    System.err.printf(
+        "Java heap info: totalMemory %dm, maxMemory %dm%n",
+        (Runtime.getRuntime().totalMemory() / 1024 / 1024),
+        (Runtime.getRuntime().maxMemory() / 1024 / 1024));
+    ProcessHandle.current()
+        .info()
+        .totalCpuDuration()
+        .ifPresent(
+            duration -> {
+              System.err.printf(
+                  "Java process total CPU time: %.1fs%n", duration.toMillis() / 1000.0);
+            });
   }
 
   private static class SimulatorFrameCallback implements Choreographer.FrameCallback {

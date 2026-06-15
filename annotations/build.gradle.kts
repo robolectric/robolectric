@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+  compileOnly(libs.guava)
   compileOnly(libs.findbugs.jsr305)
   api(libs.jspecify)
   compileOnly(AndroidSdk.MAX_SDK.coordinates)

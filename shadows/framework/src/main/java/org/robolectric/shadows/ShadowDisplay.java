@@ -12,6 +12,8 @@ import android.view.Display;
 import android.view.Display.HdrCapabilities;
 import android.view.Surface;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -52,9 +54,8 @@ public class ShadowDisplay {
    * @deprecated This behavior is deprecated and will be removed in Robolectric 4.13.
    */
   @Deprecated
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void getMetrics(DisplayMetrics outMetrics) {
-    reflector(DisplayReflector.class, realObject).getMetrics(outMetrics);
     if (scaledDensity != null) {
       outMetrics.scaledDensity = scaledDensity;
     }
@@ -67,9 +68,8 @@ public class ShadowDisplay {
    * @deprecated This behavior is deprecated and will be removed in Robolectric 4.13.
    */
   @Deprecated
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void getRealMetrics(DisplayMetrics outMetrics) {
-    reflector(DisplayReflector.class, realObject).getRealMetrics(outMetrics);
     if (scaledDensity != null) {
       outMetrics.scaledDensity = scaledDensity;
     }
@@ -319,12 +319,6 @@ public class ShadowDisplay {
 
     @Accessor("mLastCachedAppSizeUpdate")
     void setLastCachedAppSizeUpdate(long time);
-
-    @Direct
-    void getMetrics(DisplayMetrics outMetrics);
-
-    @Direct
-    void getRealMetrics(DisplayMetrics outMetrics);
 
     @Direct
     float getRefreshRate();

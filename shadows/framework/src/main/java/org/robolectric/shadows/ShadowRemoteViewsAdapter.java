@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.RequiresApi;
 import android.app.ActivityThread;
@@ -16,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.RemoteViews;
-import android.widget.RemoteViewsAdapter;
 import android.widget.RemoteViewsService;
 import android.widget.RemoteViewsService.RemoteViewsFactory;
 import javax.annotation.Nullable;
@@ -29,8 +29,11 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
-/** Shadow class for {@link RemoteViewsAdapter}. */
-@Implements(value = RemoteViewsAdapter.class, isInAndroidSdk = false)
+/** Shadow class for {@code android.widget.RemoteViewsAdapter}. */
+@Implements(
+    className = "android.widget.RemoteViewsAdapter",
+    isInAndroidSdk = false,
+    maxSdk = CINNAMON_BUN)
 // The framework code for RemoteViewsAdapter does not work well in a Robolectric environment.
 // It uses multiple Handler threads and tries to bind to a service, none of which work well in
 // Robolectric.
@@ -38,7 +41,7 @@ public class ShadowRemoteViewsAdapter {
 
   private static final String TAG = "ShadowRemoteViewsAdapter";
 
-  @RealObject private RemoteViewsAdapter realRemoteViewsAdapter;
+  @RealObject private /* RemoteViewsAdapter */ Object realRemoteViewsAdapter;
 
   private BaseAdapter adapter;
   private boolean hasAttemptedToInitAdapter = false;
@@ -153,7 +156,10 @@ public class ShadowRemoteViewsAdapter {
       if (hasAttemptedToInitAdapter) {
         return null;
       } else {
-        adapter = createAdapterFromIntent(realRemoteViewsAdapter.getRemoteViewsServiceIntent());
+        adapter =
+            createAdapterFromIntent(
+                reflector(RemoteViewsAdapterReflector.class, realRemoteViewsAdapter)
+                    .getRemoteViewsServiceIntent());
         hasAttemptedToInitAdapter = true;
       }
     }
@@ -286,7 +292,7 @@ public class ShadowRemoteViewsAdapter {
         activityThread.getApplication().getApplicationInfo(), null, Context.CONTEXT_INCLUDE_CODE);
   }
 
-  @ForType(RemoteViewsAdapter.class)
+  @ForType(className = "android.widget.RemoteViewsAdapter")
   interface RemoteViewsAdapterReflector {
     @Direct
     boolean isDataReady();
@@ -317,5 +323,7 @@ public class ShadowRemoteViewsAdapter {
 
     @Direct
     void notifyDataSetChanged();
+
+    Intent getRemoteViewsServiceIntent();
   }
 }

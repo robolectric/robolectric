@@ -30,6 +30,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link android.telecom.InCallService}. */
 @Implements(value = InCallService.class, minSdk = M)
@@ -93,9 +94,21 @@ public class ShadowInCallService extends ShadowService {
    * in Robolectric, Telecom doesn't exist, so tests can invoke this to simulate Telecom's actions.
    */
   public void setPostDialWait(String callId, String remaining) {
-    SomeArgs args = SomeArgs.obtain();
-    args.arg1 = callId;
-    args.arg2 = remaining;
+    Object args;
+    // Due to repackaging of SomeArgs in the Telecom stack in higher SDKs (SDK 37), we need to use
+    // com.android.internal.telecom.jarjar.com.android.internal.os.SomeArgs in 37+ and use the
+    // standard SomeArgs in older SDKs.
+    if (VERSION.SDK_INT >= 37) {
+      args = reflector(ReflectorJarJarSomeArgs.class).obtain();
+      ReflectorJarJarSomeArgs reflector = reflector(ReflectorJarJarSomeArgs.class, args);
+      reflector.setArg1(callId);
+      reflector.setArg2(remaining);
+    } else {
+      SomeArgs standardSomeArgs = SomeArgs.obtain();
+      standardSomeArgs.arg1 = callId;
+      standardSomeArgs.arg2 = remaining;
+      args = standardSomeArgs;
+    }
     getHandler().obtainMessage(MSG_SET_POST_DIAL_WAIT, args).sendToTarget();
   }
 
@@ -104,10 +117,23 @@ public class ShadowInCallService extends ShadowService {
    * in Robolectric, Telecom doesn't exist, so tests can invoke this to simulate Telecom's actions.
    */
   public void onConnectionEvent(String callId, String event, Bundle extras) {
-    SomeArgs args = SomeArgs.obtain();
-    args.arg1 = callId;
-    args.arg2 = event;
-    args.arg3 = extras;
+    Object args;
+    // Due to repackaging of SomeArgs in the Telecom stack in higher SDKs (SDK 37), we need to use
+    // com.android.internal.telecom.jarjar.com.android.internal.os.SomeArgs in 37+ and use the
+    // standard SomeArgs in older SDKs.
+    if (VERSION.SDK_INT >= 37) {
+      args = reflector(ReflectorJarJarSomeArgs.class).obtain();
+      ReflectorJarJarSomeArgs reflector = reflector(ReflectorJarJarSomeArgs.class, args);
+      reflector.setArg1(callId);
+      reflector.setArg2(event);
+      reflector.setArg3(extras);
+    } else {
+      SomeArgs standardSomeArgs = SomeArgs.obtain();
+      standardSomeArgs.arg1 = callId;
+      standardSomeArgs.arg2 = event;
+      standardSomeArgs.arg3 = extras;
+      args = standardSomeArgs;
+    }
     getHandler().obtainMessage(MSG_ON_CONNECTION_EVENT, args).sendToTarget();
   }
 
@@ -254,5 +280,20 @@ public class ShadowInCallService extends ShadowService {
   interface ReflectorInCallAdapter {
     @Accessor("mAdapter")
     Object getInternalInCallAdapter();
+  }
+
+  @ForType(className = "com.android.internal.telecom.jarjar.com.android.internal.os.SomeArgs")
+  interface ReflectorJarJarSomeArgs {
+    @Static
+    Object obtain();
+
+    @Accessor("arg1")
+    void setArg1(Object arg1);
+
+    @Accessor("arg2")
+    void setArg2(Object arg2);
+
+    @Accessor("arg3")
+    void setArg3(Object arg3);
   }
 }

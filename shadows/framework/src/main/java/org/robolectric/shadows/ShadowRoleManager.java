@@ -15,11 +15,10 @@ import com.android.internal.util.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
@@ -68,11 +67,12 @@ public class ShadowRoleManager {
         ReflectionHelpers.ClassParameter.from(IRoleManager.class, service));
   }
 
-  private static final Map<UserHandle, RoleUserState> userStates = new HashMap<>();
+  private static final Map<UserHandle, RoleUserState> userStates = new ConcurrentHashMap<>();
 
   private static class RoleUserState {
-    final Map<String, Set<String>> roleHolders = new HashMap<>();
-    final Map<OnRoleHoldersChangedListener, Executor> roleHoldersListener = new HashMap<>();
+    final Map<String, Set<String>> roleHolders = new ConcurrentHashMap<>();
+    final Map<OnRoleHoldersChangedListener, Executor> roleHoldersListener =
+        new ConcurrentHashMap<>();
     final UserHandle user;
 
     RoleUserState(UserHandle u) {
@@ -80,7 +80,8 @@ public class ShadowRoleManager {
     }
 
     void addRoleHolder(String roleName, String roleHolder) {
-      Set<String> holders = roleHolders.computeIfAbsent(roleName, (String k) -> new HashSet<>());
+      Set<String> holders =
+          roleHolders.computeIfAbsent(roleName, (String k) -> ConcurrentHashMap.newKeySet());
       if (!roleHolder.isEmpty()) {
         holders.add(roleHolder);
       }
@@ -89,19 +90,23 @@ public class ShadowRoleManager {
     }
 
     void removeRoleHolder(String roleName, String roleHolder) {
-      Preconditions.checkArgument(
-          roleHolders.get(roleName) != null, "the supplied roleName was never added for this user");
-      Preconditions.checkArgument(
-          roleHolder.isEmpty() || roleHolders.get(roleName).contains(roleHolder),
-          "the supplied roleHolder does not hold this role for this user.");
+      boolean[] found = {false};
+      roleHolders.computeIfPresent(
+          roleName,
+          (key, holders) -> {
+            found[0] = true;
+            Preconditions.checkArgument(
+                roleHolder.isEmpty() || holders.contains(roleHolder),
+                "the supplied roleHolder does not hold this role for this user.");
 
-      if (!roleHolder.isEmpty()) {
-        roleHolders.get(roleName).remove(roleHolder);
-      }
+            if (!roleHolder.isEmpty()) {
+              holders.remove(roleHolder);
+            }
 
-      if (roleHolders.get(roleName).isEmpty()) {
-        roleHolders.remove(roleName);
-      }
+            return holders.isEmpty() ? null : holders;
+          });
+
+      Preconditions.checkArgument(found[0], "the supplied roleName was never added for this user");
 
       broadcastRoleHoldersChanged(roleName);
     }
@@ -149,9 +154,6 @@ public class ShadowRoleManager {
     requireNonNull(roleHolder);
     requireNonNull(user);
     Preconditions.checkArgument(user.getIdentifier() >= UserHandle.USER_SYSTEM, "Invalid user");
-    Preconditions.checkArgument(
-        RoleUserState.getUserState(user).roleHolders.containsKey(roleName),
-        "the supplied roleName was never added.");
 
     RoleUserState.getUserState(user).removeRoleHolder(roleName, roleHolder);
   }

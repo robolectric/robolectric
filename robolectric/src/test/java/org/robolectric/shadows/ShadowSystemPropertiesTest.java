@@ -22,6 +22,11 @@ public class ShadowSystemPropertiesTest {
   }
 
   @Test
+  public void getWithNullDefault_returnsEmptyString() {
+    assertThat(SystemProperties.get("non_existent_key", null)).isEmpty();
+  }
+
+  @Test
   public void getBoolean() {
     ShadowSystemProperties.override("false_1", "0");
     ShadowSystemProperties.override("false_2", "n");

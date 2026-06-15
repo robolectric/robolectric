@@ -28,6 +28,7 @@ import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
@@ -36,9 +37,9 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowPaint {
 
   private int color;
-  private Paint.Style style;
-  private Paint.Cap cap;
-  private Paint.Join join;
+  private Paint.Style style = Paint.Style.FILL;
+  private Paint.Cap cap = Paint.Cap.BUTT;
+  private Paint.Join join = Paint.Join.MITER;
   private float width;
   private float shadowRadius;
   private float shadowDx;

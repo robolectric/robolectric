@@ -83,6 +83,10 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
       ImmutableList.copyOf(
           new String[] {
             "android.animation.PropertyValuesHolder",
+            "android.content.res.ApkAssets",
+            "android.content.res.AssetManager",
+            "android.content.res.StringBlock",
+            "android.content.res.XmlBlock",
             "android.database.CursorWindow",
             "android.database.sqlite.SQLiteConnection",
             "android.database.sqlite.SQLiteRawStatement",

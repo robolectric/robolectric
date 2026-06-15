@@ -7,6 +7,8 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.database.sqlite.SQLiteAbortException;
 import android.database.sqlite.SQLiteAccessPermException;
@@ -113,9 +115,14 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
     CONNECTIONS.close(connectionPtr);
   }
 
-  @Implementation
+  @Implementation(maxSdk = CINNAMON_BUN)
   protected static void nativeFinalizeStatement(long connectionPtr, long statementPtr) {
     CONNECTIONS.finalizeStmt(connectionPtr, statementPtr);
+  }
+
+  @Implementation(minSdk = POST_CINNAMON_BUN)
+  protected static void nativeFinalizeStatement(long statementPtr) {
+    CONNECTIONS.finalizeStmt(statementPtr);
   }
 
   @Implementation
@@ -407,6 +414,32 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
       synchronized (lock) {
         final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
         statementsMap.remove(statementPtr);
+
+        execute(
+            () -> {
+              statement.dispose();
+              return null;
+            });
+      }
+    }
+
+    void finalizeStmt(final long statementPtr) {
+      if (statementPtr == IGNORED_REINDEX_STMT) {
+        return;
+      }
+
+      synchronized (lock) {
+        final SQLiteStatement statement = statementsMap.get(statementPtr);
+        if (statement == null) {
+          return;
+        }
+        statementsMap.remove(statementPtr);
+
+        for (List<Long> list : statementPtrsForConnection.values()) {
+          if (list.remove(statementPtr)) {
+            break;
+          }
+        }
 
         execute(
             () -> {

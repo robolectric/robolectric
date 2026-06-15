@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assume.assumeFalse;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -30,6 +31,7 @@ import org.robolectric.annotation.GraphicsMode.Mode;
 public class ViewAnimationTest {
   @Test
   public void viewAnimations_interpolateWhenDrawIsCalled() {
+    assumeFalse(ShadowView.areRealDrawTraversalsEnabled());
     try {
       ShadowView.setUseRealViewAnimations(true);
       Activity activity = Robolectric.setupActivity(Activity.class);
@@ -47,7 +49,6 @@ public class ViewAnimationTest {
       view.startAnimation(animation);
 
       shadowOf(Looper.getMainLooper()).idleFor(500, TimeUnit.MILLISECONDS);
-      // on >= TIRAMISU, real draws are performed
 
       UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
       Bitmap bitmap = uiAutomation.takeScreenshot();
@@ -67,6 +68,7 @@ public class ViewAnimationTest {
       // If Choreographer is not paused and real drawing is supported, the animation will advance
       // to the end
       ShadowPausedChoreographer.setPaused(true);
+      long frameDelayMs = ShadowPausedChoreographer.getFrameDelay().toMillis();
       Activity activity = Robolectric.setupActivity(Activity.class);
       View view = new View(activity);
       ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(100, 100);
@@ -78,13 +80,14 @@ public class ViewAnimationTest {
       long startTime = SystemClock.uptimeMillis();
 
       final TestTranslateAnimation animation = new TestTranslateAnimation(0, 100, 0, 0);
-      animation.setDuration(1000);
+      // use a duration exactly divisible by frame delay so the animation timing matches up
+      animation.setDuration(frameDelayMs * 100);
       view.startAnimation(animation);
 
-      shadowOf(Looper.getMainLooper()).idleFor(500, TimeUnit.MILLISECONDS);
+      shadowOf(Looper.getMainLooper()).idleFor(frameDelayMs * 50, TimeUnit.MILLISECONDS);
 
       // notably: skip the taking screenshot step as real drawing is enabled
-      assertThat(animation.lastAnimationTimeUptimeMs).isEqualTo(startTime + 500);
+      assertThat(animation.lastAnimationTimeUptimeMs).isEqualTo(startTime + frameDelayMs * 50);
     } finally {
       ShadowView.setUseRealViewAnimations(false);
       ShadowPausedChoreographer.setPaused(false);

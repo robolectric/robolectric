@@ -247,6 +247,8 @@ public final class ShadowStatsLogTest {
 
   @Test
   public void testReset() {
+    // log events get written by the framework, so clear them before the test starts
+    ShadowStatsLog.reset();
     final StatsEvent statsEvent = StatsEvent.newBuilder().usePooledBuffer().build();
     StatsLog.write(statsEvent);
 

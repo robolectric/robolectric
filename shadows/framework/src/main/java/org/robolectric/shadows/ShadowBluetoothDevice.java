@@ -408,6 +408,17 @@ public class ShadowBluetoothDevice {
       boolean autoConnect,
       BluetoothGattCallback callback,
       int transport,
+      int phy) {
+    checkForBluetoothConnectPermission();
+    return connectGatt(callback);
+  }
+
+  @Implementation(minSdk = O)
+  protected BluetoothGatt connectGatt(
+      Context context,
+      boolean autoConnect,
+      BluetoothGattCallback callback,
+      int transport,
       int phy,
       Handler handler) {
     checkForBluetoothConnectPermission();

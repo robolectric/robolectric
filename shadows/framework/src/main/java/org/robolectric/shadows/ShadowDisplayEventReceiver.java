@@ -20,6 +20,7 @@ import java.lang.reflect.Array;
 import java.time.Duration;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -29,7 +30,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
@@ -46,7 +46,10 @@ import org.robolectric.util.reflector.WithType;
  * the next frame will only trigger when the clock is advance manually or via the {@link
  * ShadowLooper}.
  */
-@Implements(className = "android.view.DisplayEventReceiver", isInAndroidSdk = false)
+@Implements(
+    className = "android.view.DisplayEventReceiver",
+    isInAndroidSdk = false,
+    maxSdk = BAKLAVA)
 public class ShadowDisplayEventReceiver {
 
   private static final NativeObjRegistry<NativeDisplayEventReceiver> nativeObjRegistry =
@@ -106,14 +109,13 @@ public class ShadowDisplayEventReceiver {
     return nativeObjRegistry.getNativeObject(receiverPtr).getLatestVsyncEventData();
   }
 
-  @Implementation(maxSdk = R)
+  @Filter(maxSdk = R)
   protected void dispose(boolean finalized) {
     CloseGuard closeGuard = displayEventReceiverReflector.getCloseGuard();
     // Suppresses noisy CloseGuard warning
     if (closeGuard != null) {
       closeGuard.close();
     }
-    displayEventReceiverReflector.dispose(finalized);
   }
 
   protected void onVsync(long frameTimeNanos, int frame, Object vsyncEventData) {
@@ -280,9 +282,6 @@ public class ShadowDisplayEventReceiver {
   /** Reflector interface for {@link DisplayEventReceiver}'s internals. */
   @ForType(DisplayEventReceiver.class)
   protected interface DisplayEventReceiverReflector {
-
-    @Direct
-    void dispose(boolean finalized);
 
     void onVsync(long timestampNanos, int frame);
 

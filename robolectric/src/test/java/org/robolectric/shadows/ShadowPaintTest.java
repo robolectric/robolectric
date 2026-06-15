@@ -184,6 +184,14 @@ public class ShadowPaintTest {
   }
 
   @Test
+  public void testStrokeCapDefaults() {
+    Paint paint = new Paint();
+    assertThat(paint.getStrokeCap()).isEqualTo(Paint.Cap.BUTT);
+    assertThat(paint.getStrokeJoin()).isEqualTo(Paint.Join.MITER);
+    assertThat(paint.getStyle()).isEqualTo(Paint.Style.FILL);
+  }
+
+  @Test
   @Config(minSdk = O)
   public void testGetFontVariationSettings_returnsValueSetByDefaultTypeface() {
     Paint paint = new Paint();

@@ -2,6 +2,7 @@ package org.robolectric.internal.bytecode;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.Before;
@@ -23,7 +24,7 @@ public class ShadowWranglerUnitTest {
   @Before
   public void setup() throws Exception {
     interceptors = new Interceptors(AndroidInterceptors.all());
-    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY, sdk23, interceptors);
+    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY, sdk23, interceptors, ImmutableList.of());
   }
 
   @Test
@@ -32,16 +33,6 @@ public class ShadowWranglerUnitTest {
     Function<Object, Object> handler = interceptors.getInterceptionHandler(methodSignature);
 
     assertThat(handler.call(null, null, new Object[0])).isNull();
-  }
-
-  @Test
-  public void
-      getInterceptionHandler_whenInterceptingElderOnLinkedHashMap_shouldReturnNonDoNothingHandler() {
-    MethodSignature methodSignature =
-        MethodSignature.parse("java/util/LinkedHashMap/eldest()Ljava/lang/Object;");
-    Function<Object, Object> handler = interceptors.getInterceptionHandler(methodSignature);
-
-    assertThat(handler).isNotSameInstanceAs(ShadowWrangler.DO_NOTHING_HANDLER);
   }
 
   @Test

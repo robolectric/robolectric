@@ -100,6 +100,17 @@ containing a value of this type.
 or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
          */
         public static final int circularReference=0x7f01001c;
+
+    /**
+     * May be a reference to another resource, in the form "<code>
+     * @[+][<i>package</i>:]<i>type</i>:<i>name</i></code>" or to a theme attribute in the form "
+     * <code>?[<i>package</i>:][<i>type</i>:]<i>name</i></code>".
+     *
+     * <p>May be a color value, in the form of "<code>#<i>rgb</i></code>", "<code>#<i>argb</i>
+     * </code>", "<code>#<i>rrggbb</i></code>", or "<code>#<i>aarrggbb</i></code>".
+     */
+    public static final int colorReference = 0x7f010027;
+
         /** <p>Must be one or more (separated by '|') of the following constant values.</p>
 <table>
 <colgroup align="left" />
@@ -498,29 +509,30 @@ containing a value of this type.
         public static final int layout_320_smallest_width=0x7f040012;
         public static final int layout_smallest_width=0x7f040013;
         public static final int main=0x7f040014;
-        public static final int main_layout=0x7f04002a;
+    public static final int main_layout = 0x7f04002b;
         public static final int mapview=0x7f040015;
         public static final int media=0x7f040016;
-        public static final int multi_orientation=0x7f040017;
-        public static final int multiline_layout=0x7f04002b;
-        public static final int ordinal_scrollbar=0x7f040018;
-        public static final int outer=0x7f040019;
-        public static final int override_include=0x7f04001a;
-        public static final int progress_bar=0x7f04001b;
-        public static final int remote_views=0x7f04001c;
-        public static final int remote_views_alt=0x7f04001d;
-        public static final int remote_views_bad=0x7f04001e;
-        public static final int request_focus=0x7f04001f;
-        public static final int request_focus_with_two_edit_texts=0x7f040020;
-        public static final int snippet=0x7f040021;
-        public static final int styles_button_layout=0x7f040022;
-        public static final int styles_button_with_style_layout=0x7f040023;
-        public static final int tab_activity=0x7f040024;
-        public static final int text_views=0x7f040025;
-        public static final int text_views_hints=0x7f040026;
-        public static final int toplevel_merge=0x7f040027;
-        public static final int webview_holder=0x7f040028;
-        public static final int with_invalid_onclick=0x7f040029;
+    public static final int missing_theme_reference = 0x7f040017;
+    public static final int multi_orientation = 0x7f040018;
+    public static final int multiline_layout = 0x7f04002c;
+    public static final int ordinal_scrollbar = 0x7f040019;
+    public static final int outer = 0x7f04001a;
+    public static final int override_include = 0x7f04001b;
+    public static final int progress_bar = 0x7f04001c;
+    public static final int remote_views = 0x7f04001d;
+    public static final int remote_views_alt = 0x7f04001e;
+    public static final int remote_views_bad = 0x7f04001f;
+    public static final int request_focus = 0x7f040020;
+    public static final int request_focus_with_two_edit_texts = 0x7f040021;
+    public static final int snippet = 0x7f040022;
+    public static final int styles_button_layout = 0x7f040023;
+    public static final int styles_button_with_style_layout = 0x7f040024;
+    public static final int tab_activity = 0x7f040025;
+    public static final int text_views = 0x7f040026;
+    public static final int text_views_hints = 0x7f040027;
+    public static final int toplevel_merge = 0x7f040028;
+    public static final int webview_holder = 0x7f040029;
+    public static final int with_invalid_onclick = 0x7f04002a;
     }
     public static final class menu {
         public static final int action_menu=0x7f130000;

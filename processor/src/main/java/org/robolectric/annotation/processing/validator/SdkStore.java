@@ -1,5 +1,6 @@
 package org.robolectric.annotation.processing.validator;
 
+import static com.google.auto.common.MoreElements.isAnnotationPresent;
 import static org.robolectric.annotation.Implementation.DEFAULT_SDK;
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.CONSTRUCTOR_METHOD_NAME;
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.STATIC_INITIALIZER_METHOD_NAME;
@@ -47,6 +48,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.TraceSignatureVisitor;
 import org.robolectric.annotation.ClassName;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.InDevelopment;
 import org.robolectric.versioning.VersionCalculator;
@@ -97,8 +99,19 @@ public class SdkStore {
 
   List<Sdk> sdksMatching(Implementation implementation, int classMinSdk, int classMaxSdk) {
     loadSdksOnce();
-
     int minSdk = implementation == null ? DEFAULT_SDK : implementation.minSdk();
+    int maxSdk = implementation == null ? -1 : implementation.maxSdk();
+    return sdksMatching(minSdk, maxSdk, classMinSdk, classMaxSdk);
+  }
+
+  List<Sdk> sdksMatching(Filter filter, int classMinSdk, int classMaxSdk) {
+    loadSdksOnce();
+    int minSdk = filter == null ? DEFAULT_SDK : filter.minSdk();
+    int maxSdk = filter == null ? -1 : filter.maxSdk();
+    return sdksMatching(minSdk, maxSdk, classMinSdk, classMaxSdk);
+  }
+
+  private List<Sdk> sdksMatching(int minSdk, int maxSdk, int classMinSdk, int classMaxSdk) {
     if (minSdk == DEFAULT_SDK) {
       minSdk = 0;
     }
@@ -106,7 +119,6 @@ public class SdkStore {
       minSdk = classMinSdk;
     }
 
-    int maxSdk = implementation == null ? -1 : implementation.maxSdk();
     if (maxSdk == -1) {
       maxSdk = Integer.MAX_VALUE;
     }
@@ -292,10 +304,7 @@ public class SdkStore {
      * @return a string describing any problems with this method, or null if it checks out.
      */
     public String verifyMethod(
-        String sdkClassName,
-        ExecutableElement methodElement,
-        boolean looseSignatures,
-        boolean allowInDev) {
+        String sdkClassName, ExecutableElement methodElement, boolean allowInDev) {
       ClassInfo classInfo = getClassInfo(sdkClassName);
 
       // Probably should not be reachable
@@ -304,7 +313,7 @@ public class SdkStore {
         return null;
       }
 
-      MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement, looseSignatures);
+      MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement);
       if (sdkMethod == null && !suppressWarnings(methodElement, null, allowInDev)) {
         return "No method " + methodElement + " in " + sdkClassName;
       }
@@ -313,19 +322,23 @@ public class SdkStore {
         if (!sdkMethod.equals(implMethod)
             && !suppressWarnings(
                 methodElement, "robolectric.ShadowReturnTypeMismatch", allowInDev)) {
+          String annotationName =
+              isAnnotationPresent(methodElement, Filter.class) ? "@Filter" : "@Implementation";
           if (implMethod.isStatic != sdkMethod.isStatic) {
-            return "@Implementation for "
+            return annotationName
+                + " for "
                 + methodElement.getSimpleName()
                 + " is "
                 + (implMethod.isStatic ? "static" : "not static")
                 + " unlike the SDK method";
           }
           if (!implMethod.returnType.equals(sdkMethod.returnType)) {
-            if ((looseSignatures && typeIsOkForLooseSignatures(implMethod, sdkMethod))
-                || (looseSignatures && implMethod.returnType.equals("java.lang.Object[]"))) {
-              return null;
+            if (isAnnotationPresent(methodElement, Filter.class)
+                && Objects.equals(implMethod.returnType, "void")) {
+              // @Filter methods are allowed to return void regardless of SDK return type.
             } else {
-              return "@Implementation for "
+              return annotationName
+                  + " for "
                   + methodElement.getSimpleName()
                   + " has a return type of "
                   + implMethod.returnType
@@ -365,15 +378,6 @@ public class SdkStore {
       return allowInDev && inDev.length > 0 && !sdkInfo.isReleased;
     }
 
-    private static boolean typeIsOkForLooseSignatures(
-        MethodExtraInfo implMethod, MethodExtraInfo sdkMethod) {
-      return
-      // loose signatures allow a return type of Object...
-      implMethod.returnType.equals("java.lang.Object")
-          // or Object[] for arrays...
-          || (implMethod.returnType.equals("java.lang.Object[]")
-              && sdkMethod.returnType.endsWith("[]"));
-    }
 
     /**
      * Load and analyze bytecode for the specified class, with caching.
@@ -489,7 +493,6 @@ public class SdkStore {
 
   static class ClassInfo {
     private final Map<MethodInfo, MethodExtraInfo> methods = new HashMap<>();
-    private final Map<MethodInfo, MethodExtraInfo> erasedParamTypesMethods = new HashMap<>();
     private final String signature;
 
     private ClassInfo() {
@@ -508,7 +511,6 @@ public class SdkStore {
         MethodInfo methodInfo = new MethodInfo(method);
         MethodExtraInfo methodExtraInfo = new MethodExtraInfo(method);
         methods.put(methodInfo, methodExtraInfo);
-        erasedParamTypesMethods.put(methodInfo.erase(), methodExtraInfo);
       }
     }
 
@@ -537,13 +539,10 @@ public class SdkStore {
       return "";
     }
 
-    MethodExtraInfo findMethod(ExecutableElement methodElement, boolean looseSignatures) {
+    MethodExtraInfo findMethod(ExecutableElement methodElement) {
       MethodInfo methodInfo = new MethodInfo(methodElement);
 
       MethodExtraInfo methodExtraInfo = methods.get(methodInfo);
-      if (looseSignatures && methodExtraInfo == null) {
-        methodExtraInfo = erasedParamTypesMethods.get(methodInfo);
-      }
       return methodExtraInfo;
     }
 
@@ -564,13 +563,6 @@ public class SdkStore {
       }
     }
 
-    /** Create a MethodInfo with all Object params (for looseSignatures=true). */
-    public MethodInfo(String name, int size) {
-      this.name = name;
-      for (int i = 0; i < size; i++) {
-        paramTypes.add("java.lang.Object");
-      }
-    }
 
     /** Create a MethodInfo from AST (an @Implementation method in a shadow class). */
     public MethodInfo(ExecutableElement methodElement) {
@@ -614,7 +606,13 @@ public class SdkStore {
         return "<clinit>";
       } else {
         Implementation implementation = methodElement.getAnnotation(Implementation.class);
-        String methodName = implementation == null ? "" : implementation.methodName();
+        Filter filter = methodElement.getAnnotation(Filter.class);
+        String methodName = "";
+        if (implementation != null) {
+          methodName = implementation.methodName();
+        } else if (filter != null) {
+          methodName = filter.methodName();
+        }
         methodName = methodName == null ? "" : methodName.trim();
         if (methodName.isEmpty()) {
           return name;
@@ -624,9 +622,6 @@ public class SdkStore {
       }
     }
 
-    public MethodInfo erase() {
-      return new MethodInfo(name, paramTypes.size());
-    }
 
     @Override
     public boolean equals(Object o) {

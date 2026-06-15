@@ -3,11 +3,13 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.PendingIntent;
+import android.content.Context;
 import android.media.MediaMetadata;
 import android.media.Rating;
 import android.media.session.MediaController;
 import android.media.session.MediaController.Callback;
 import android.media.session.MediaController.PlaybackInfo;
+import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,11 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -41,9 +45,24 @@ public class ShadowMediaController {
 
   private final List<Callback> callbacks = new ArrayList<>();
 
+  @Implementation
+  protected void __constructor__(Context context, MediaSession.Token token) {
+    reflector(MediaControllerReflector.class, realMediaController).__constructor__(context, token);
+    if (token != null) {
+      String pkg = ShadowMediaSession.getPackageNameForToken(token);
+      if (pkg != null) {
+        setPackageName(pkg);
+      }
+    }
+    if (reflector(MediaControllerReflector.class, realMediaController).getPackageName() == null
+        && context != null) {
+      setPackageName(context.getPackageName());
+    }
+  }
+
   /** Saves the package name for use inside the shadow. */
   public void setPackageName(String packageName) {
-    ReflectionHelpers.setField(realMediaController, "mPackageName", packageName);
+    reflector(MediaControllerReflector.class, realMediaController).setPackageName(packageName);
   }
 
   /**
@@ -139,21 +158,18 @@ public class ShadowMediaController {
    * Register callback and store it in the shadow to make it easier to check the state of the
    * registered callbacks. Handler is just passed on to the real class.
    */
-  @Implementation
+  @Filter
   protected void registerCallback(@Nonnull Callback callback, @Nullable Handler handler) {
     callbacks.add(callback);
-    reflector(MediaControllerReflector.class, realMediaController)
-        .registerCallback(callback, handler);
   }
 
   /**
    * Unregister callback and remove it from the shadow to make it easier to check the state of the
    * registered callbacks.
    */
-  @Implementation
+  @Filter
   protected void unregisterCallback(@Nonnull Callback callback) {
     callbacks.remove(callback);
-    reflector(MediaControllerReflector.class, realMediaController).unregisterCallback(callback);
   }
 
   /** Gets the callbacks registered to MediaController. */
@@ -204,11 +220,13 @@ public class ShadowMediaController {
 
   @ForType(MediaController.class)
   interface MediaControllerReflector {
-
     @Direct
-    void registerCallback(@Nonnull Callback callback, @Nullable Handler handler);
+    void __constructor__(Context context, MediaSession.Token token);
 
-    @Direct
-    void unregisterCallback(@Nonnull Callback callback);
+    @Accessor("mPackageName")
+    String getPackageName();
+
+    @Accessor("mPackageName")
+    void setPackageName(String packageName);
   }
 }

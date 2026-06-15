@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 public interface ShadowProvider {
 
   /** Reset the static state of all shadows provided by this package. */
-  void reset();
+  void reset(ClassTracker classTracker);
 
   /**
    * Array of Java package names that are shadowed by this package.

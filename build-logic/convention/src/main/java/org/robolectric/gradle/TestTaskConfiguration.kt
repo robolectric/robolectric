@@ -31,7 +31,13 @@ fun Test.configureTestTask() {
     showExceptions = true
     showStackTraces = true
     showStandardStreams = true
-    events = setOf(TestLogEvent.FAILED, TestLogEvent.SKIPPED)
+    events =
+      setOf(
+        TestLogEvent.FAILED,
+        TestLogEvent.SKIPPED,
+        TestLogEvent.STANDARD_OUT,
+        TestLogEvent.STANDARD_ERROR,
+      )
   }
 
   minHeapSize = "2g"

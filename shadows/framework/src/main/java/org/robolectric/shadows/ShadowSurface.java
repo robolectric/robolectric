@@ -12,6 +12,7 @@ import dalvik.system.CloseGuard;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -68,10 +69,9 @@ public class ShadowSurface {
     return valid.get();
   }
 
-  @Implementation
+  @Filter
   protected void release() {
     valid.set(false);
-    surfaceReflector.release();
   }
 
   private void checkNotReleased() {
@@ -153,9 +153,6 @@ public class ShadowSurface {
 
     @Direct
     void finalize();
-
-    @Direct
-    void release();
 
     @Direct
     Canvas lockHardwareCanvas();

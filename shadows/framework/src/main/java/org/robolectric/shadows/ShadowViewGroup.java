@@ -7,6 +7,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import java.io.PrintStream;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode.Mode;
@@ -81,10 +83,8 @@ public class ShadowViewGroup extends ShadowView {
     }
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-    reflector(ViewGroupReflector.class, realViewGroup)
-        .requestDisallowInterceptTouchEvent(disallowIntercept);
     disallowInterceptTouchEvent = disallowIntercept;
   }
 
@@ -114,8 +114,5 @@ public class ShadowViewGroup extends ShadowView {
 
     @Direct
     void addView(View child, int index, ViewGroup.LayoutParams params);
-
-    @Direct
-    void requestDisallowInterceptTouchEvent(boolean disallowIntercept);
   }
 }

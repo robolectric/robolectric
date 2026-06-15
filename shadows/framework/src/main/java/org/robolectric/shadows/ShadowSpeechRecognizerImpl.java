@@ -16,11 +16,11 @@ import java.util.Queue;
 import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.ClassName;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /**
@@ -63,7 +63,7 @@ public class ShadowSpeechRecognizerImpl extends ShadowSpeechRecognizer {
     return super.getState();
   }
 
-  @Implementation
+  @Filter
   @Override
   protected void destroy() {
     super.destroy();
@@ -100,9 +100,6 @@ public class ShadowSpeechRecognizerImpl extends ShadowSpeechRecognizer {
   /** Reflector interface for {@link android.speech.SpeechRecognizerImpl}'s internals. */
   @ForType(className = CLASS_NAME)
   interface SpeechRecognizerImplReflector extends ShadowSpeechRecognizerDirectAccessors {
-    @Direct
-    @Override
-    void destroy();
 
     @Accessor("mService")
     @Override

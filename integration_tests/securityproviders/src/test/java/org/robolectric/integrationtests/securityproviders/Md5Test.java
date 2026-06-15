@@ -17,6 +17,14 @@ public class Md5Test {
   public void md5Benchmark() throws Exception {
     Random random = new Random(100);
     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+    System.err.println("Using MessageDigest class " + messageDigest.getClass().getName());
+    System.err.println(
+        "Using Provider: "
+            + messageDigest.getProvider().getName()
+            + " ("
+            + messageDigest.getProvider().getClass().getName()
+            + ")");
+
     for (int i = 0; i < 5_000_000; i++) {
       byte[] bytes = new byte[1024];
       random.nextBytes(bytes);

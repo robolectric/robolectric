@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.bluetooth.IBluetoothGattServerCallback;
 import android.bluetooth.le.AdvertiseData;
@@ -51,7 +51,7 @@ class BluetoothAdvertiseProxyDelegate {
       IAdvertisingSetCallback callback,
       AttributionSource attributionSource) {
 
-    if (RuntimeEnvironment.getApiLevel() >= POST_BAKLAVA) {
+    if (RuntimeEnvironment.getApiLevel() >= CINNAMON_BUN) {
       reflector(IAdvertisingSetCallbackReflectorPostB.class, callback)
           .onAdvertisingSetStarted(
               0, parameters.getTxPowerLevel(), AdvertisingSetCallback.ADVERTISE_SUCCESS);

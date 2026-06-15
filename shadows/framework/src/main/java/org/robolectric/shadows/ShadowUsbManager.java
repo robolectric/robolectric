@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.getStaticField;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.RequiresApi;
 import android.content.Intent;
@@ -134,6 +135,8 @@ public class ShadowUsbManager {
    * Revokes permission to a USB device granted to a package. This method does nothing if the
    * package doesn't have permission to access the device.
    */
+  @Implementation(minSdk = CINNAMON_BUN)
+  @SuppressWarnings("ProtectedImplementationLintCheck")
   public void revokePermission(UsbDevice device, String packageName) {
     List<UsbDevice> usbDevices = grantedDevicePermissions.get(packageName);
     if (usbDevices != null) {

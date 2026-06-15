@@ -4,6 +4,7 @@ import static android.companion.virtual.VirtualDeviceManager.LAUNCH_SUCCESS;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.PendingIntent;
@@ -38,8 +39,9 @@ import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -49,7 +51,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
@@ -62,18 +63,18 @@ public class ShadowVirtualDeviceManager {
   private static IVirtualDeviceManager service;
   @RealObject VirtualDeviceManager realObject;
 
-  @Implementation
+  @Filter
   protected void __constructor__(IVirtualDeviceManager service, Context context) {
     this.context = context;
     ShadowVirtualDeviceManager.service = service;
-    reflector(VirtualDeviceManagerReflector.class, realObject).__constructor__(service, context);
   }
 
   @SuppressWarnings("ProtectedImplementationLintCheck")
   @Implementation
-  public VirtualDeviceManager.VirtualDevice createVirtualDevice(
-      int associationId,
-      @ClassName("android.companion.virtual.VirtualDeviceParams") Object params) {
+  public @ClassName("android.companion.virtual.VirtualDeviceManager$VirtualDevice") Object
+      createVirtualDevice(
+          int associationId,
+          @ClassName("android.companion.virtual.VirtualDeviceParams") Object params) {
     VirtualDeviceManager.VirtualDevice device =
         ReflectionHelpers.callConstructor(
             VirtualDeviceManager.VirtualDevice.class,
@@ -106,19 +107,25 @@ public class ShadowVirtualDeviceManager {
                   ((ShadowVirtualDevice) Shadow.extract(virtualDevice)).getParams().getName();
               int[] displayIds =
                   ((ShadowVirtualDevice) Shadow.extract(virtualDevice)).getDisplayIds();
-              try {
-                // check if VirtualDevice has the U and before constructor
-                VirtualDevice.class.getDeclaredConstructor(int.class, String.class);
+              DeviceManagerVirtualDeviceReflector virtualDeviceReflector =
+                  reflector(DeviceManagerVirtualDeviceReflector.class, virtualDevice);
+              if (getApiLevel() <= UPSIDE_DOWN_CAKE) {
                 return accessor.newInstance(virtualDevice.getDeviceId(), deviceName);
-              } catch (NoSuchMethodException e) {
-                // Use the new constructor when the old constructor does not exist
-                DeviceManagerVirtualDeviceReflector virtualDeviceReflector =
-                    reflector(DeviceManagerVirtualDeviceReflector.class, virtualDevice);
+              } else if (getApiLevel() <= BAKLAVA) {
                 return accessor.newInstanceV(
                     ReflectionHelpers.createDelegatingProxy(
                         IVirtualDevice.class, (VirtualDeviceDelegate) () -> displayIds),
                     virtualDevice.getDeviceId(),
                     virtualDeviceReflector.getPersistentDeviceId(),
+                    deviceName);
+              } else {
+                return accessor.newInstanceC(
+                    ReflectionHelpers.createDelegatingProxy(
+                        IVirtualDevice.class, (VirtualDeviceDelegate) () -> displayIds),
+                    virtualDevice.getDeviceId(),
+                    0, /* profile */
+                    virtualDeviceReflector.getPersistentDeviceId(),
+                    deviceName,
                     deviceName);
               }
             })
@@ -162,26 +169,17 @@ public class ShadowVirtualDeviceManager {
     private Integer pendingIntentResultCode = LAUNCH_SUCCESS;
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private Context context;
-    private int associationId;
     private final List<Integer> displayIds = new ArrayList<>();
 
-    @Implementation
+    @Filter(order = Order.AFTER)
     protected void __constructor__(
         IVirtualDeviceManager service,
         Context context,
         int associationId,
         VirtualDeviceParams params) {
-      Shadow.invokeConstructor(
-          VirtualDeviceManager.VirtualDevice.class,
-          realVirtualDevice,
-          ClassParameter.from(IVirtualDeviceManager.class, service),
-          ClassParameter.from(Context.class, context),
-          ClassParameter.from(int.class, associationId),
-          ClassParameter.from(VirtualDeviceParams.class, params));
       this.params = params;
       this.deviceId = nextDeviceId.getAndIncrement();
       this.context = context;
-      this.associationId = associationId;
       this.persistentDeviceId = "companion:" + associationId;
     }
 
@@ -269,16 +267,15 @@ public class ShadowVirtualDeviceManager {
       IBinder token =
           new Binder("android.hardware.input.VirtualMouse:" + config.getInputDeviceName());
       VirtualMouseReflector accessor = reflector(VirtualMouseReflector.class);
-      if (RuntimeEnvironment.getApiLevel() <= UPSIDE_DOWN_CAKE) {
+      if (getApiLevel() <= UPSIDE_DOWN_CAKE) {
         return accessor.newInstance(ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
-      } else if (RuntimeEnvironment.getApiLevel() <= BAKLAVA) {
+      } else if (getApiLevel() <= BAKLAVA) {
         return accessor.newInstanceV(
             config, ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
       } else {
-        return accessor.newInstancePostB(
+        return accessor.newInstanceC(
             config,
-            ReflectionHelpers.createNullProxy(
-                loadClass("android.hardware.input.IVirtualInputDevice")));
+            ReflectionHelpers.createNullProxy(loadClass("android.hardware.input.IVirtualMouse")));
       }
     }
 
@@ -320,16 +317,16 @@ public class ShadowVirtualDeviceManager {
       IBinder token =
           new Binder("android.hardware.input.VirtualTouchscreen:" + config.getInputDeviceName());
       VirtualTouchscreenReflector accessor = reflector(VirtualTouchscreenReflector.class);
-      if (RuntimeEnvironment.getApiLevel() <= UPSIDE_DOWN_CAKE) {
+      if (getApiLevel() <= UPSIDE_DOWN_CAKE) {
         return accessor.newInstance(ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
-      } else if (RuntimeEnvironment.getApiLevel() <= BAKLAVA) {
+      } else if (getApiLevel() <= BAKLAVA) {
         return accessor.newInstanceV(
             config, ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
       } else {
-        return accessor.newInstancePostB(
+        return accessor.newInstanceC(
             config,
             ReflectionHelpers.createNullProxy(
-                loadClass("android.hardware.input.IVirtualInputDevice")));
+                loadClass("android.hardware.input.IVirtualTouchscreen")));
       }
     }
 
@@ -338,16 +335,16 @@ public class ShadowVirtualDeviceManager {
       IBinder token =
           new Binder("android.hardware.input.VirtualKeyboard:" + config.getInputDeviceName());
       VirtualKeyboardReflector accessor = reflector(VirtualKeyboardReflector.class);
-      if (RuntimeEnvironment.getApiLevel() <= UPSIDE_DOWN_CAKE) {
+      if (getApiLevel() <= UPSIDE_DOWN_CAKE) {
         return accessor.newInstance(ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
-      } else if (RuntimeEnvironment.getApiLevel() <= BAKLAVA) {
+      } else if (getApiLevel() <= BAKLAVA) {
         return accessor.newInstanceV(
             config, ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
       } else {
-        return accessor.newInstancePostB(
+        return accessor.newInstanceC(
             config,
             ReflectionHelpers.createNullProxy(
-                loadClass("android.hardware.input.IVirtualInputDevice")));
+                loadClass("android.hardware.input.IVirtualKeyboard")));
       }
     }
 
@@ -408,7 +405,7 @@ public class ShadowVirtualDeviceManager {
 
   private static void maybeNotifyVirtualDeviceListeners(
       Context context, int deviceId, boolean isClosing) {
-    if (RuntimeEnvironment.getApiLevel() > UPSIDE_DOWN_CAKE) {
+    if (getApiLevel() > UPSIDE_DOWN_CAKE) {
       VirtualDeviceManager vdm = context.getSystemService(VirtualDeviceManager.class);
       List<?> listeners =
           reflector(VirtualDeviceManagerReflector.class, vdm).getVirtualDeviceListeners();
@@ -442,9 +439,9 @@ public class ShadowVirtualDeviceManager {
         VirtualMouseConfig config, IVirtualDevice virtualDevice, IBinder token);
 
     @Constructor
-    VirtualMouse newInstancePostB(
+    VirtualMouse newInstanceC(
         VirtualMouseConfig config,
-        @WithType("android.hardware.input.IVirtualInputDevice") Object virtualDevice);
+        @WithType("android.hardware.input.IVirtualMouse") Object virtualDevice);
 
     @Constructor
     VirtualMouse newInstance(IVirtualDevice virtualDevice, IBinder token);
@@ -457,9 +454,9 @@ public class ShadowVirtualDeviceManager {
         VirtualTouchscreenConfig config, IVirtualDevice virtualDevice, IBinder token);
 
     @Constructor
-    VirtualTouchscreen newInstancePostB(
+    VirtualTouchscreen newInstanceC(
         VirtualTouchscreenConfig config,
-        @WithType("android.hardware.input.IVirtualInputDevice") Object virtualDevice);
+        @WithType("android.hardware.input.IVirtualTouchscreen") Object virtualDevice);
 
     @Constructor
     VirtualTouchscreen newInstance(IVirtualDevice virtualDevice, IBinder token);
@@ -472,9 +469,9 @@ public class ShadowVirtualDeviceManager {
         VirtualKeyboardConfig config, IVirtualDevice virtualDevice, IBinder token);
 
     @Constructor
-    VirtualKeyboard newInstancePostB(
+    VirtualKeyboard newInstanceC(
         VirtualKeyboardConfig config,
-        @WithType("android.hardware.input.IVirtualInputDevice") Object virtualDevice);
+        @WithType("android.hardware.input.IVirtualKeyboard") Object virtualDevice);
 
     @Constructor
     VirtualKeyboard newInstance(IVirtualDevice virtualDevice, IBinder token);
@@ -487,6 +484,15 @@ public class ShadowVirtualDeviceManager {
         IVirtualDevice virtualDevice, int id, String persistentId, String name);
 
     @Constructor
+    VirtualDevice newInstanceC(
+        IVirtualDevice virtualDevice,
+        int id,
+        int profileId,
+        String persistentId,
+        String name,
+        CharSequence displayName);
+
+    @Constructor
     VirtualDevice newInstance(int id, String name);
   }
 
@@ -497,9 +503,6 @@ public class ShadowVirtualDeviceManager {
 
   @ForType(VirtualDeviceManager.class)
   private interface VirtualDeviceManagerReflector {
-
-    @Direct
-    void __constructor__(IVirtualDeviceManager service, Context context);
 
     @Accessor("mVirtualDeviceListeners")
     List<?> getVirtualDeviceListeners();
