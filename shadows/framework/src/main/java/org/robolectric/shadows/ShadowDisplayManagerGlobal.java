@@ -169,6 +169,7 @@ public class ShadowDisplayManagerGlobal {
    *
    * @see ReflectionHelpers#createDelegatingProxy(Class, Object)
    */
+  @SuppressWarnings("unused")
   private static class DisplayManagerProxyDelegate {
     private final TreeMap<Integer, DisplayInfo> displayInfos = new TreeMap<>();
     private int nextDisplayId = 0;
@@ -209,16 +210,8 @@ public class ShadowDisplayManagerGlobal {
       registerCallback(iDisplayManagerCallback);
     }
 
-    // for android R+ (SDK 30+)
-    // Use Object here instead of VirtualDisplayConfig to avoid breaking projects that still
-    // compile against SDKs < R
-    public int createVirtualDisplay(
-        @ClassName("android.hardware.display.VirtualDisplayConfig")
-            Object virtualDisplayConfigObject,
-        IVirtualDisplayCallback callbackWrapper,
-        IMediaProjection projectionToken,
-        String packageName) {
-      VirtualDisplayConfig config = (VirtualDisplayConfig) virtualDisplayConfigObject;
+    private int createVirtualDisplayInternal(
+        VirtualDisplayConfig config, IVirtualDisplayCallback callbackWrapper, String packageName) {
       DisplayInfo displayInfo = new DisplayInfo();
       displayInfo.flags = config.getFlags();
       displayInfo.type = Display.TYPE_VIRTUAL;
@@ -235,6 +228,32 @@ public class ShadowDisplayManagerGlobal {
       int id = addDisplay(displayInfo);
       virtualDisplayIds.put(callbackWrapper, id);
       return id;
+    }
+
+    // for android R+ (SDK 30+)
+    // Use Object here instead of VirtualDisplayConfig to avoid breaking projects that still
+    // compile against SDKs < R
+    @SuppressWarnings("EffectivelyPrivate")
+    public int createVirtualDisplay(
+        @ClassName("android.hardware.display.VirtualDisplayConfig")
+            Object virtualDisplayConfigObject,
+        IVirtualDisplayCallback callbackWrapper,
+        IMediaProjection projectionToken,
+        String packageName) {
+      VirtualDisplayConfig config = (VirtualDisplayConfig) virtualDisplayConfigObject;
+      return createVirtualDisplayInternal(config, callbackWrapper, packageName);
+    }
+
+    // for android T+ (SDK 33+) VDM path
+    @SuppressWarnings("EffectivelyPrivate")
+    public int createVirtualDisplay(
+        @ClassName("android.hardware.display.VirtualDisplayConfig")
+            Object virtualDisplayConfigObject,
+        IVirtualDisplayCallback callbackWrapper,
+        @ClassName("android.companion.virtual.IVirtualDevice") Object virtualDeviceToken,
+        String packageName) {
+      VirtualDisplayConfig config = (VirtualDisplayConfig) virtualDisplayConfigObject;
+      return createVirtualDisplayInternal(config, callbackWrapper, packageName);
     }
 
     // for android Q (SDK 29) and below
