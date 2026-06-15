@@ -72,7 +72,7 @@ public final class ShadowTimeManagerTest {
     assertThat(homeTimeZone).isNull();
   }
 
-  private TimeZone getHomeTimeZoneThroughReflection(TimeManager timeManager) {
+  private TimeZone getHomeTimeZoneThroughReflection(Object timeManager) {
     // TODO: Eliminate reflection once this test compiles against a POST_CINNAMON_BUN
     // SDK
     return ReflectionHelpers.callInstanceMethod(timeManager, "getHomeTimeZone");
