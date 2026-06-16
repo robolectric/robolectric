@@ -79,6 +79,7 @@ public final class ShadowDeviceStateManager {
     synchronized (lock) {
       callbacks.clear();
     }
+    properties.clear();
   }
 
   @ForType(DeviceStateManagerGlobal.class)
