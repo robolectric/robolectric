@@ -683,7 +683,6 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
   protected void writeToParcel(Parcel p, int flags) {
     if (RuntimeEnvironment.getApiLevel() > CINNAMON_BUN) {
       p.writeLong(reflector(BitmapReflector.class, realBitmap).getId());
-      p.writeBoolean(hasGainmap());
     }
     p.writeInt(width);
     p.writeInt(height);
@@ -692,15 +691,10 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
     getPixels(pixels, 0, width, 0, 0, width, height);
     p.writeIntArray(pixels);
 
-    if (RuntimeEnvironment.getApiLevel() > CINNAMON_BUN) {
-      Object gainmap = reflector(BitmapReflector.class, realBitmap).getGainmap();
-      if (gainmap != null) {
-        p.writeTypedObject((Parcelable) gainmap, flags);
-      }
-    } else if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
-      Object gainmap = reflector(BitmapReflector.class, realBitmap).getGainmap();
-      if (gainmap != null) {
+    if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
+      if (hasGainmap()) {
         p.writeBoolean(true);
+        Object gainmap = reflector(BitmapReflector.class, realBitmap).getGainmap();
         p.writeTypedObject((Parcelable) gainmap, flags);
       } else {
         p.writeBoolean(false);
