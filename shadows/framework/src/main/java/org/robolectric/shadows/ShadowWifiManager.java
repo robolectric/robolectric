@@ -749,6 +749,11 @@ public class ShadowWifiManager {
     }
   }
 
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected List<WifiAvailableChannel> getAllowedChannels(int band, int mode) {
+    return getUsableChannels(band, mode);
+  }
+
   /**
    * Returns wifi usability scores previous passed to {@link WifiManager#updateWifiUsabilityScore}
    */

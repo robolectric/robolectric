@@ -1501,6 +1501,37 @@ public class ShadowWifiManagerTest {
                 WifiScanner.WIFI_BAND_5_GHZ, WifiAvailableChannel.OP_MODE_STA));
   }
 
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getAllowedChannels_returnsChannelsSet() {
+    shadowOf(wifiManager).setUsableChannels(List.of(5180));
+    List<WifiAvailableChannel> channels =
+        wifiManager.getAllowedChannels(
+            WifiScanner.WIFI_BAND_5_GHZ, WifiAvailableChannel.OP_MODE_STA);
+    assertThat(channels).hasSize(1);
+    assertThat(channels.get(0).getFrequencyMhz()).isEqualTo(5180);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getAllowedChannels_default_returnsEmptyList() {
+    List<WifiAvailableChannel> channels =
+        wifiManager.getAllowedChannels(
+            WifiScanner.WIFI_BAND_5_GHZ, WifiAvailableChannel.OP_MODE_STA);
+    assertThat(channels).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getAllowedChannels_notSupported_throwsUnsupportedOperationException() {
+    shadowOf(wifiManager).setGetUsableChannelsSupported(false);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () ->
+            wifiManager.getAllowedChannels(
+                WifiScanner.WIFI_BAND_5_GHZ, WifiAvailableChannel.OP_MODE_STA));
+  }
+
   private static final class IncomingFailure {
     private final WifiNetworkSpecifier wifiNetworkSpecifier;
     private final int failureReason;
