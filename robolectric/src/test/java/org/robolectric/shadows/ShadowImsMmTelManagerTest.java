@@ -559,4 +559,74 @@ public class ShadowImsMmTelManagerTest {
   public void getSubscriptionId() {
     assertThat(shadowImsMmTelManager.getSubscriptionId()).isEqualTo(SUBSCRIPTION_ID);
   }
+
+  @Test
+  public void isVoWiFiSettingEnabled_defaultFalse() {
+    ImsMmTelManager imsMmTelManager = ImsMmTelManager.createForSubscriptionId(SUBSCRIPTION_ID);
+    assertThat(imsMmTelManager.isVoWiFiSettingEnabled()).isFalse();
+  }
+
+  @Test
+  public void setVoWiFiSettingEnabled_updatesState() {
+    ImsMmTelManager imsMmTelManager = ImsMmTelManager.createForSubscriptionId(SUBSCRIPTION_ID);
+    imsMmTelManager.setVoWiFiSettingEnabled(true);
+    assertThat(imsMmTelManager.isVoWiFiSettingEnabled()).isTrue();
+  }
+
+  @Test
+  public void static_setVoWiFiSettingEnabled_updatesState() {
+    ShadowImsMmTelManager.setVoWiFiSettingEnabled(SUBSCRIPTION_ID, true);
+    ImsMmTelManager imsMmTelManager = ImsMmTelManager.createForSubscriptionId(SUBSCRIPTION_ID);
+    assertThat(imsMmTelManager.isVoWiFiSettingEnabled()).isTrue();
+  }
+
+  @Test
+  public void getVoWiFiModeSetting_defaultUnknown() {
+    ImsMmTelManager imsMmTelManager = ImsMmTelManager.createForSubscriptionId(SUBSCRIPTION_ID);
+    assertThat(imsMmTelManager.getVoWiFiModeSetting()).isEqualTo(ImsMmTelManager.WIFI_MODE_UNKNOWN);
+  }
+
+  @Test
+  public void setVoWiFiModeSetting_updatesState() {
+    ImsMmTelManager imsMmTelManager = ImsMmTelManager.createForSubscriptionId(SUBSCRIPTION_ID);
+    imsMmTelManager.setVoWiFiModeSetting(ImsMmTelManager.WIFI_MODE_WIFI_PREFERRED);
+    assertThat(imsMmTelManager.getVoWiFiModeSetting())
+        .isEqualTo(ImsMmTelManager.WIFI_MODE_WIFI_PREFERRED);
+  }
+
+  @Test
+  public void static_setVoWiFiModeSetting_updatesState() {
+    ShadowImsMmTelManager.setVoWiFiModeSetting(
+        SUBSCRIPTION_ID, ImsMmTelManager.WIFI_MODE_WIFI_PREFERRED);
+    ImsMmTelManager imsMmTelManager = ImsMmTelManager.createForSubscriptionId(SUBSCRIPTION_ID);
+    assertThat(imsMmTelManager.getVoWiFiModeSetting())
+        .isEqualTo(ImsMmTelManager.WIFI_MODE_WIFI_PREFERRED);
+  }
+
+  @Test
+  public void wfcSettings_isolatedBySubscriptionId() {
+    ImsMmTelManager imsMmTelManager1 = ImsMmTelManager.createForSubscriptionId(1);
+    ImsMmTelManager imsMmTelManager2 = ImsMmTelManager.createForSubscriptionId(2);
+
+    imsMmTelManager1.setVoWiFiSettingEnabled(true);
+    imsMmTelManager1.setVoWiFiModeSetting(ImsMmTelManager.WIFI_MODE_WIFI_ONLY);
+
+    assertThat(imsMmTelManager2.isVoWiFiSettingEnabled()).isFalse();
+    assertThat(imsMmTelManager2.getVoWiFiModeSetting())
+        .isEqualTo(ImsMmTelManager.WIFI_MODE_UNKNOWN);
+  }
+
+  @Test
+  public void clearExistingInstancesAndStates_wfcStatesAreCleared() {
+    ImsMmTelManager imsMmTelManager = ImsMmTelManager.createForSubscriptionId(SUBSCRIPTION_ID);
+    imsMmTelManager.setVoWiFiSettingEnabled(true);
+    imsMmTelManager.setVoWiFiModeSetting(ImsMmTelManager.WIFI_MODE_WIFI_PREFERRED);
+
+    ShadowImsMmTelManager.clearExistingInstancesAndStates();
+
+    ImsMmTelManager newImsMmTelManager = ImsMmTelManager.createForSubscriptionId(SUBSCRIPTION_ID);
+    assertThat(newImsMmTelManager.isVoWiFiSettingEnabled()).isFalse();
+    assertThat(newImsMmTelManager.getVoWiFiModeSetting())
+        .isEqualTo(ImsMmTelManager.WIFI_MODE_UNKNOWN);
+  }
 }

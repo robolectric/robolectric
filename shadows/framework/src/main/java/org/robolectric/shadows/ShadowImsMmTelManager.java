@@ -46,6 +46,8 @@ public class ShadowImsMmTelManager {
   private static final Map<Integer, ImsMmTelManager> existingInstances = new ArrayMap<>();
   private static final Map<Integer, Integer> subIdToRegistrationTransportTypeMap = new ArrayMap<>();
   private static final Map<Integer, Integer> subIdToRegistrationStateMap = new ArrayMap<>();
+  private static final Map<Integer, Boolean> subIdToVoWiFiSettingEnabledMap = new ArrayMap<>();
+  private static final Map<Integer, Integer> subIdToVoWiFiModeSettingMap = new ArrayMap<>();
 
   private final Map<ImsMmTelManager.RegistrationCallback, Executor>
       registrationCallbackExecutorMap = new ArrayMap<>();
@@ -308,11 +310,46 @@ public class ShadowImsMmTelManager {
     return imsMmTelManager;
   }
 
+  @Implementation
+  @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
+  protected boolean isVoWiFiSettingEnabled() {
+    return subIdToVoWiFiSettingEnabledMap.getOrDefault(getSubscriptionId(), false);
+  }
+
+  @Implementation
+  @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
+  protected void setVoWiFiSettingEnabled(boolean isEnabled) {
+    subIdToVoWiFiSettingEnabledMap.put(getSubscriptionId(), isEnabled);
+  }
+
+  @Implementation
+  @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
+  protected int getVoWiFiModeSetting() {
+    return subIdToVoWiFiModeSettingMap.getOrDefault(
+        getSubscriptionId(), ImsMmTelManager.WIFI_MODE_UNKNOWN);
+  }
+
+  @Implementation
+  @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
+  protected void setVoWiFiModeSetting(int mode) {
+    subIdToVoWiFiModeSettingMap.put(getSubscriptionId(), mode);
+  }
+
+  public static void setVoWiFiSettingEnabled(int subId, boolean isEnabled) {
+    subIdToVoWiFiSettingEnabledMap.put(subId, isEnabled);
+  }
+
+  public static void setVoWiFiModeSetting(int subId, int mode) {
+    subIdToVoWiFiModeSettingMap.put(subId, mode);
+  }
+
   @Resetter
   public static void clearExistingInstancesAndStates() {
     existingInstances.clear();
     subIdToRegistrationTransportTypeMap.clear();
     subIdToRegistrationStateMap.clear();
+    subIdToVoWiFiSettingEnabledMap.clear();
+    subIdToVoWiFiModeSettingMap.clear();
   }
 
   @ForType(ImsMmTelManager.class)
