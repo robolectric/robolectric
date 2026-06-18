@@ -20,14 +20,11 @@ import android.content.AttributionSource;
 import android.content.Context;
 import android.os.Build;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
-import java.util.function.BooleanSupplier;
-import java.util.function.IntSupplier;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Filter;
@@ -49,234 +46,24 @@ public class ShadowBluetoothGatt {
 
   private static final String NULL_CALLBACK_MSG = "BluetoothGattCallback can not be null.";
 
-  private volatile BluetoothGattCallback bluetoothGattCallback;
-  private volatile int connectionPriority = BluetoothGatt.CONNECTION_PRIORITY_BALANCED;
-  private volatile boolean isConnected = false;
-  private volatile boolean isClosed = false;
-  private volatile byte[] writtenBytes;
-  private volatile BluetoothGattWriteListener writeListener;
-  private volatile byte[] readBytes;
+  private BluetoothGattCallback bluetoothGattCallback;
+  private int connectionPriority = BluetoothGatt.CONNECTION_PRIORITY_BALANCED;
+  private boolean isConnected = false;
+  private boolean isClosed = false;
+  private byte[] writtenBytes;
+  private byte[] readBytes;
   private int rssi = -50;
   private int txPhy = BluetoothDevice.PHY_LE_1M;
   private int rxPhy = BluetoothDevice.PHY_LE_1M;
   private boolean beginReliableWriteResult = true;
-
-  private volatile BooleanSupplier discoverServicesResult = () -> true;
-  private volatile IntSupplier discoverServicesStatus = () -> BluetoothGatt.GATT_SUCCESS;
-
-  private volatile BooleanSupplier readCharacteristicResult = () -> true;
-  private volatile IntSupplier readCharacteristicStatus = () -> BluetoothGatt.GATT_SUCCESS;
-
-  private volatile BooleanSupplier writeCharacteristicResult = () -> true;
-  private volatile IntSupplier writeCharacteristicStatus = () -> BluetoothGatt.GATT_SUCCESS;
-
-  private volatile BooleanSupplier readDescriptorResult = () -> true;
-  private volatile IntSupplier readDescriptorStatus = () -> BluetoothGatt.GATT_SUCCESS;
-
-  private volatile BooleanSupplier writeDescriptorResult = () -> true;
-  private volatile IntSupplier writeDescriptorStatus = () -> BluetoothGatt.GATT_SUCCESS;
-
-  private volatile BooleanSupplier requestMtuResult = () -> true;
-  private volatile IntSupplier requestMtuStatus = () -> BluetoothGatt.GATT_SUCCESS;
-
-  private volatile BooleanSupplier readRemoteRssiResult = () -> true;
-  private volatile IntSupplier readRemoteRssiStatus = () -> BluetoothGatt.GATT_SUCCESS;
-
-  private volatile IntSupplier readPhyStatus = () -> BluetoothGatt.GATT_SUCCESS;
-  private volatile IntSupplier setPreferredPhyStatus = () -> BluetoothGatt.GATT_SUCCESS;
-
-  private volatile BooleanSupplier requestConnectionPriorityResult = () -> true;
-  private volatile IntSupplier requestConnectionPriorityStatus = () -> BluetoothGatt.GATT_SUCCESS;
-
-  private volatile IntSupplier connectStatus = () -> BluetoothGatt.GATT_SUCCESS;
-  private volatile IntSupplier disconnectStatus = () -> BluetoothGatt.GATT_SUCCESS;
-
-  private volatile BooleanSupplier requestSubrateModeResult = () -> true;
-  private volatile IntSupplier requestSubrateModeStatus = () -> BluetoothGatt.GATT_SUCCESS;
-
-  public void setDiscoverServicesResult(BooleanSupplier result) {
-    this.discoverServicesResult = result == null ? () -> true : result;
-  }
-
-  public void setDiscoverServicesResult(boolean result) {
-    this.discoverServicesResult = () -> result;
-  }
-
-  public void setDiscoverServicesStatus(IntSupplier status) {
-    this.discoverServicesStatus = status == null ? () -> BluetoothGatt.GATT_SUCCESS : status;
-  }
-
-  public void setDiscoverServicesStatus(int status) {
-    this.discoverServicesStatus = () -> status;
-  }
-
-  public void setReadCharacteristicResult(BooleanSupplier result) {
-    this.readCharacteristicResult = result == null ? () -> true : result;
-  }
-
-  public void setReadCharacteristicResult(boolean result) {
-    this.readCharacteristicResult = () -> result;
-  }
-
-  public void setReadCharacteristicStatus(IntSupplier status) {
-    this.readCharacteristicStatus = status == null ? () -> BluetoothGatt.GATT_SUCCESS : status;
-  }
-
-  public void setReadCharacteristicStatus(int status) {
-    this.readCharacteristicStatus = () -> status;
-  }
-
-  public void setWriteCharacteristicResult(BooleanSupplier result) {
-    this.writeCharacteristicResult = result == null ? () -> true : result;
-  }
-
-  public void setWriteCharacteristicResult(boolean result) {
-    this.writeCharacteristicResult = () -> result;
-  }
-
-  public void setWriteCharacteristicStatus(IntSupplier status) {
-    this.writeCharacteristicStatus = status == null ? () -> BluetoothGatt.GATT_SUCCESS : status;
-  }
-
-  public void setWriteCharacteristicStatus(int status) {
-    this.writeCharacteristicStatus = () -> status;
-  }
-
-  public void setReadDescriptorResult(BooleanSupplier result) {
-    this.readDescriptorResult = result == null ? () -> true : result;
-  }
-
-  public void setReadDescriptorResult(boolean result) {
-    this.readDescriptorResult = () -> result;
-  }
-
-  public void setReadDescriptorStatus(IntSupplier status) {
-    this.readDescriptorStatus = status == null ? () -> BluetoothGatt.GATT_SUCCESS : status;
-  }
-
-  public void setReadDescriptorStatus(int status) {
-    this.readDescriptorStatus = () -> status;
-  }
-
-  public void setWriteDescriptorResult(BooleanSupplier result) {
-    this.writeDescriptorResult = result == null ? () -> true : result;
-  }
-
-  public void setWriteDescriptorResult(boolean result) {
-    this.writeDescriptorResult = () -> result;
-  }
-
-  public void setWriteDescriptorStatus(IntSupplier status) {
-    this.writeDescriptorStatus = status == null ? () -> BluetoothGatt.GATT_SUCCESS : status;
-  }
-
-  public void setWriteDescriptorStatus(int status) {
-    this.writeDescriptorStatus = () -> status;
-  }
-
-  public void setRequestMtuResult(BooleanSupplier result) {
-    this.requestMtuResult = result == null ? () -> true : result;
-  }
-
-  public void setRequestMtuResult(boolean result) {
-    this.requestMtuResult = () -> result;
-  }
-
-  public void setRequestMtuStatus(IntSupplier status) {
-    this.requestMtuStatus = status == null ? () -> BluetoothGatt.GATT_SUCCESS : status;
-  }
-
-  public void setRequestMtuStatus(int status) {
-    this.requestMtuStatus = () -> status;
-  }
-
-  public void setReadRemoteRssiResult(BooleanSupplier result) {
-    this.readRemoteRssiResult = result == null ? () -> true : result;
-  }
-
-  public void setReadRemoteRssiResult(boolean result) {
-    this.readRemoteRssiResult = () -> result;
-  }
-
-  public void setReadRemoteRssiStatus(IntSupplier status) {
-    this.readRemoteRssiStatus = status == null ? () -> BluetoothGatt.GATT_SUCCESS : status;
-  }
-
-  public void setReadRemoteRssiStatus(int status) {
-    this.readRemoteRssiStatus = () -> status;
-  }
-
-  public void setReadPhyStatus(IntSupplier status) {
-    this.readPhyStatus = status == null ? () -> BluetoothGatt.GATT_SUCCESS : status;
-  }
-
-  public void setReadPhyStatus(int status) {
-    this.readPhyStatus = () -> status;
-  }
-
-  public void setPreferredPhyStatus(IntSupplier status) {
-    this.setPreferredPhyStatus = status == null ? () -> BluetoothGatt.GATT_SUCCESS : status;
-  }
-
-  public void setPreferredPhyStatus(int status) {
-    this.setPreferredPhyStatus = () -> status;
-  }
-
-  public void setRequestConnectionPriorityResult(BooleanSupplier result) {
-    this.requestConnectionPriorityResult = result == null ? () -> true : result;
-  }
-
-  public void setRequestConnectionPriorityResult(boolean result) {
-    this.requestConnectionPriorityResult = () -> result;
-  }
-
-  public void setRequestConnectionPriorityStatus(IntSupplier status) {
-    this.requestConnectionPriorityStatus =
-        status == null ? () -> BluetoothGatt.GATT_SUCCESS : status;
-  }
-
-  public void setRequestConnectionPriorityStatus(int status) {
-    this.requestConnectionPriorityStatus = () -> status;
-  }
-
-  public void setConnectStatus(IntSupplier status) {
-    this.connectStatus = status == null ? () -> BluetoothGatt.GATT_SUCCESS : status;
-  }
-
-  public void setConnectStatus(int status) {
-    this.connectStatus = () -> status;
-  }
-
-  public void setDisconnectStatus(IntSupplier status) {
-    this.disconnectStatus = status == null ? () -> BluetoothGatt.GATT_SUCCESS : status;
-  }
-
-  public void setDisconnectStatus(int status) {
-    this.disconnectStatus = () -> status;
-  }
-
-  public void setRequestSubrateModeResult(BooleanSupplier result) {
-    this.requestSubrateModeResult = result == null ? () -> true : result;
-  }
-
-  public void setRequestSubrateModeResult(boolean result) {
-    this.requestSubrateModeResult = () -> result;
-  }
-
-  public void setRequestSubrateModeStatus(IntSupplier status) {
-    this.requestSubrateModeStatus = status == null ? () -> BluetoothGatt.GATT_SUCCESS : status;
-  }
-
-  public void setRequestSubrateModeStatus(int status) {
-    this.requestSubrateModeStatus = () -> status;
-  }
+  private boolean requestConnectionPriorityResult = true;
 
   // TODO: ShadowBluetoothGatt.services should be removed in favor of just using the real
   // BluetoothGatt.mServices.
-  private final Set<BluetoothGattService> discoverableServices = ConcurrentHashMap.newKeySet();
-  private final List<BluetoothGattService> services = new CopyOnWriteArrayList<>();
+  private final Set<BluetoothGattService> discoverableServices = new HashSet<>();
+  private final ArrayList<BluetoothGattService> services = new ArrayList<>();
   private final Set<BluetoothGattCharacteristic> characteristicNotificationEnableSet =
-      ConcurrentHashMap.newKeySet();
+      new HashSet<>();
 
   @RealObject private BluetoothGatt realBluetoothGatt;
   @ReflectorObject protected BluetoothGattReflector bluetoothGattReflector;
@@ -367,11 +154,9 @@ public class ShadowBluetoothGatt {
   @Implementation
   protected boolean connect() {
     if (bluetoothGattCallback != null) {
-      int status = connectStatus.getAsInt();
-      this.isConnected = (status == BluetoothGatt.GATT_SUCCESS);
-      int state =
-          this.isConnected ? BluetoothProfile.STATE_CONNECTED : BluetoothProfile.STATE_DISCONNECTED;
-      bluetoothGattCallback.onConnectionStateChange(this.realBluetoothGatt, status, state);
+      this.isConnected = true;
+      bluetoothGattCallback.onConnectionStateChange(
+          this.realBluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED);
       return true;
     }
     return false;
@@ -382,13 +167,11 @@ public class ShadowBluetoothGatt {
    */
   @Filter(order = Order.AFTER)
   protected void disconnect() {
-    boolean callbackAppropriate = this.isCallbackAppropriate();
-    this.isConnected = false;
-    if (callbackAppropriate) {
-      int status = disconnectStatus.getAsInt();
+    if (this.isCallbackAppropriate()) {
       bluetoothGattCallback.onConnectionStateChange(
-          this.realBluetoothGatt, status, BluetoothProfile.STATE_DISCONNECTED);
+          this.realBluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_DISCONNECTED);
     }
+    this.isConnected = false;
   }
 
   /** Close this Bluetooth GATT client. */
@@ -396,6 +179,11 @@ public class ShadowBluetoothGatt {
   protected void close() {
     this.isClosed = true;
     this.isConnected = false;
+  }
+
+  /** Sets the return value for {@link BluetoothGatt#requestConnectionPriority(int)}. */
+  public void setRequestConnectionPriorityResult(boolean requestConnectionPriorityResult) {
+    this.requestConnectionPriorityResult = requestConnectionPriorityResult;
   }
 
   /**
@@ -409,7 +197,7 @@ public class ShadowBluetoothGatt {
    */
   @Implementation(minSdk = O)
   protected boolean requestConnectionPriority(int priority) {
-    if (!requestConnectionPriorityResult.getAsBoolean()) {
+    if (!requestConnectionPriorityResult) {
       return false;
     }
     if (priority == BluetoothGatt.CONNECTION_PRIORITY_HIGH
@@ -422,9 +210,8 @@ public class ShadowBluetoothGatt {
         int interval = 0;
         int latency = 0;
         int timeout = 0;
-        int status = requestConnectionPriorityStatus.getAsInt();
         bluetoothGattCallback.onConnectionUpdated(
-            this.realBluetoothGatt, interval, latency, timeout, status);
+            this.realBluetoothGatt, interval, latency, timeout, BluetoothGatt.GATT_SUCCESS);
       }
       return true;
     }
@@ -437,15 +224,11 @@ public class ShadowBluetoothGatt {
    */
   @Implementation(minSdk = O)
   protected boolean requestMtu(int mtu) {
-    if (!requestMtuResult.getAsBoolean()) {
-      return false;
-    }
     if (bluetoothGattCallback == null) {
       return false;
     }
 
-    int status = requestMtuStatus.getAsInt();
-    bluetoothGattCallback.onMtuChanged(this.realBluetoothGatt, mtu, status);
+    bluetoothGattCallback.onMtuChanged(this.realBluetoothGatt, mtu, BluetoothGatt.GATT_SUCCESS);
     return true;
   }
 
@@ -459,8 +242,8 @@ public class ShadowBluetoothGatt {
       return;
     }
 
-    int status = setPreferredPhyStatus.getAsInt();
-    bluetoothGattCallback.onPhyUpdate(this.realBluetoothGatt, txPhy, rxPhy, status);
+    bluetoothGattCallback.onPhyUpdate(
+        this.realBluetoothGatt, txPhy, rxPhy, BluetoothGatt.GATT_SUCCESS);
   }
 
   /**
@@ -473,8 +256,8 @@ public class ShadowBluetoothGatt {
       return;
     }
 
-    int status = readPhyStatus.getAsInt();
-    bluetoothGattCallback.onPhyRead(this.realBluetoothGatt, txPhy, rxPhy, status);
+    bluetoothGattCallback.onPhyRead(
+        this.realBluetoothGatt, txPhy, rxPhy, BluetoothGatt.GATT_SUCCESS);
   }
 
   /** Sets the values to be returned by {@link BluetoothGatt#readPhy()} */
@@ -491,17 +274,14 @@ public class ShadowBluetoothGatt {
    */
   @Implementation(minSdk = O)
   protected boolean discoverServices() {
-    if (!discoverServicesResult.getAsBoolean()) {
-      return false;
-    }
     this.services.clear();
     if (!this.discoverableServices.isEmpty()) {
-      int status = discoverServicesStatus.getAsInt();
-      if (status == BluetoothGatt.GATT_SUCCESS) {
-        this.services.addAll(this.discoverableServices);
-      }
+      // TODO: Don't store the services in the shadow.
+      this.services.addAll(this.discoverableServices);
+
       if (bluetoothGattCallback != null) {
-        bluetoothGattCallback.onServicesDiscovered(this.realBluetoothGatt, status);
+        bluetoothGattCallback.onServicesDiscovered(
+            this.realBluetoothGatt, BluetoothGatt.GATT_SUCCESS);
         return true;
       }
     }
@@ -550,9 +330,6 @@ public class ShadowBluetoothGatt {
 
   @Implementation(minSdk = O)
   protected boolean readDescriptor(BluetoothGattDescriptor descriptor) {
-    if (!readDescriptorResult.getAsBoolean()) {
-      return false;
-    }
     if (bluetoothGattCallback == null) {
       throw new IllegalStateException(NULL_CALLBACK_MSG);
     }
@@ -567,12 +344,12 @@ public class ShadowBluetoothGatt {
     if (this.readBytes == null) {
       return false;
     }
-    int status = readDescriptorStatus.getAsInt();
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
       bluetoothGattCallback.onDescriptorRead(
-          this.realBluetoothGatt, descriptor, status, this.readBytes);
+          this.realBluetoothGatt, descriptor, BluetoothGatt.GATT_SUCCESS, this.readBytes);
     } else {
-      bluetoothGattCallback.onDescriptorRead(this.realBluetoothGatt, descriptor, status);
+      bluetoothGattCallback.onDescriptorRead(
+          this.realBluetoothGatt, descriptor, BluetoothGatt.GATT_SUCCESS);
     }
     return true;
   }
@@ -588,14 +365,11 @@ public class ShadowBluetoothGatt {
 
   @Implementation(minSdk = O)
   protected boolean readRemoteRssi() {
-    if (!readRemoteRssiResult.getAsBoolean()) {
-      return false;
-    }
     if (bluetoothGattCallback == null) {
       return false;
     }
-    int status = readRemoteRssiStatus.getAsInt();
-    bluetoothGattCallback.onReadRemoteRssi(this.realBluetoothGatt, rssi, status);
+    bluetoothGattCallback.onReadRemoteRssi(
+        this.realBluetoothGatt, rssi, BluetoothGatt.GATT_SUCCESS);
     return true;
   }
 
@@ -625,26 +399,28 @@ public class ShadowBluetoothGatt {
 
   @Implementation(minSdk = BAKLAVA)
   protected int requestSubrateMode(int subrateMode) {
-    if (!requestSubrateModeResult.getAsBoolean()) {
-      return BluetoothStatusCodes.ERROR_UNKNOWN;
-    }
     if (bluetoothGattCallback == null) {
-      return BluetoothStatusCodes.ERROR_UNKNOWN;
+      return BluetoothGatt.GATT_FAILURE;
     }
     int latency = 0;
     int contNum = 0;
     int timeout = 0;
-    int status = requestSubrateModeStatus.getAsInt();
     try {
       reflector(BluetoothGattCallbackReflector.class, bluetoothGattCallback)
-          .onSubrateChange(realBluetoothGatt, subrateMode, status);
+          .onSubrateChange(realBluetoothGatt, subrateMode, BluetoothGatt.GATT_SUCCESS);
     } catch (IllegalStateException | AssertionError e) {
       // This method was overloaded before being made public. Calling the above method on previous
       // versions of Robolectric will throw an exception, so we rely on this one instead. Do not
       // rely on this method in production code as it is deprecated, not public, and will not be
       // supported by client applications in the future.
       reflector(BluetoothGattCallbackReflector.class, bluetoothGattCallback)
-          .onSubrateChange(realBluetoothGatt, subrateMode, latency, contNum, timeout, status);
+          .onSubrateChange(
+              realBluetoothGatt,
+              subrateMode,
+              latency,
+              contNum,
+              timeout,
+              BluetoothGatt.GATT_SUCCESS);
     }
     return BluetoothStatusCodes.SUCCESS;
   }
@@ -654,18 +430,7 @@ public class ShadowBluetoothGatt {
     return writeDescriptorInternal(descriptor);
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.TIRAMISU)
-  protected int writeDescriptor(BluetoothGattDescriptor descriptor, byte[] value) {
-    descriptor.setValue(value);
-    return writeDescriptor(descriptor)
-        ? BluetoothGatt.GATT_SUCCESS
-        : BluetoothStatusCodes.ERROR_UNKNOWN;
-  }
-
   private boolean writeDescriptorInternal(BluetoothGattDescriptor descriptor) {
-    if (!writeDescriptorResult.getAsBoolean()) {
-      return false;
-    }
     if (bluetoothGattCallback == null) {
       throw new IllegalStateException(NULL_CALLBACK_MSG);
     }
@@ -674,9 +439,15 @@ public class ShadowBluetoothGatt {
       return false;
     }
     writtenBytes = descriptor.getValue();
-    int status = writeDescriptorStatus.getAsInt();
-    bluetoothGattCallback.onDescriptorWrite(realBluetoothGatt, descriptor, status);
+    bluetoothGattCallback.onDescriptorWrite(
+        realBluetoothGatt, descriptor, BluetoothGatt.GATT_SUCCESS);
     return true;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.TIRAMISU)
+  protected int writeDescriptor(BluetoothGattDescriptor descriptor, byte[] value) {
+    descriptor.setValue(value);
+    return writeDescriptor(descriptor) ? BluetoothGatt.GATT_SUCCESS : BluetoothGatt.GATT_FAILURE;
   }
 
   @Implementation(minSdk = O)
@@ -692,13 +463,15 @@ public class ShadowBluetoothGatt {
     if (writeSuccessCode) {
       return BluetoothGatt.GATT_SUCCESS;
     }
-    return BluetoothStatusCodes.ERROR_UNKNOWN;
+    return BluetoothGatt.GATT_FAILURE;
   }
 
   @Implementation(minSdk = O)
   protected boolean readCharacteristic(BluetoothGattCharacteristic characteristic) {
     return readIncomingCharacteristic(characteristic);
   }
+
+
 
   /**
    * Reads bytes from incoming characteristic if properties are valid and callback is set. Callback
@@ -711,9 +484,6 @@ public class ShadowBluetoothGatt {
    *     ShadowBluetoothGatt#setGattCallback}
    */
   public boolean writeIncomingCharacteristic(BluetoothGattCharacteristic characteristic) {
-    if (!writeCharacteristicResult.getAsBoolean()) {
-      return false;
-    }
     if (bluetoothGattCallback == null) {
       throw new IllegalStateException(NULL_CALLBACK_MSG);
     }
@@ -725,12 +495,8 @@ public class ShadowBluetoothGatt {
       return false;
     }
     this.writtenBytes = characteristic.getValue();
-    BluetoothGattWriteListener listener = this.writeListener;
-    if (listener != null) {
-      listener.onCharacteristicWrite(characteristic, this.writtenBytes);
-    }
-    int status = writeCharacteristicStatus.getAsInt();
-    bluetoothGattCallback.onCharacteristicWrite(this.realBluetoothGatt, characteristic, status);
+    bluetoothGattCallback.onCharacteristicWrite(
+        this.realBluetoothGatt, characteristic, BluetoothGatt.GATT_SUCCESS);
     return true;
   }
 
@@ -744,10 +510,7 @@ public class ShadowBluetoothGatt {
    *     ShadowBluetoothGatt#setGattCallback}
    */
   public boolean readIncomingCharacteristic(BluetoothGattCharacteristic characteristic) {
-    if (!readCharacteristicResult.getAsBoolean()) {
-      return false;
-    }
-    if (!isCharacteristicValidForRead(characteristic)) {
+    if (!isCharactersiticValidForRead(characteristic)) {
       return false;
     }
 
@@ -756,12 +519,12 @@ public class ShadowBluetoothGatt {
       return true;
     }
 
-    int status = readCharacteristicStatus.getAsInt();
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
       bluetoothGattCallback.onCharacteristicRead(
-          this.realBluetoothGatt, characteristic, this.readBytes, status);
+          this.realBluetoothGatt, characteristic, this.readBytes, BluetoothGatt.GATT_SUCCESS);
     } else {
-      bluetoothGattCallback.onCharacteristicRead(this.realBluetoothGatt, characteristic, status);
+      bluetoothGattCallback.onCharacteristicRead(
+          this.realBluetoothGatt, characteristic, BluetoothGatt.GATT_SUCCESS);
     }
 
     return true;
@@ -824,15 +587,11 @@ public class ShadowBluetoothGatt {
    * @param remoteAddress address of Gatt client
    */
   public void notifyConnection(String remoteAddress) {
-    int status = connectStatus.getAsInt();
-    this.isConnected = (status == BluetoothGatt.GATT_SUCCESS);
-    if (this.isConnected) {
-      BluetoothConnectionManager.getInstance().registerGattClientConnection(remoteAddress);
-    }
-    if (bluetoothGattCallback != null) {
-      int state =
-          this.isConnected ? BluetoothProfile.STATE_CONNECTED : BluetoothProfile.STATE_DISCONNECTED;
-      bluetoothGattCallback.onConnectionStateChange(this.realBluetoothGatt, status, state);
+    BluetoothConnectionManager.getInstance().registerGattClientConnection(remoteAddress);
+    this.isConnected = true;
+    if (this.isCallbackAppropriate()) {
+      bluetoothGattCallback.onConnectionStateChange(
+          this.realBluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothGatt.STATE_CONNECTED);
     }
   }
 
@@ -844,20 +603,18 @@ public class ShadowBluetoothGatt {
    */
   public void notifyDisconnection(String remoteAddress) {
     BluetoothConnectionManager.getInstance().unregisterGattClientConnection(remoteAddress);
-    boolean callbackAppropriate = this.isCallbackAppropriate();
-    this.isConnected = false;
-    if (callbackAppropriate) {
-      int status = disconnectStatus.getAsInt();
+    if (this.isCallbackAppropriate()) {
       bluetoothGattCallback.onConnectionStateChange(
-          this.realBluetoothGatt, status, BluetoothProfile.STATE_DISCONNECTED);
+          this.realBluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_DISCONNECTED);
     }
+    this.isConnected = false;
   }
 
   private boolean isCallbackAppropriate() {
     return bluetoothGattCallback != null && this.isConnected;
   }
 
-  private boolean isCharacteristicValidForRead(BluetoothGattCharacteristic characteristic) {
+  private boolean isCharactersiticValidForRead(BluetoothGattCharacteristic characteristic) {
     if (bluetoothGattCallback == null) {
       throw new IllegalStateException(NULL_CALLBACK_MSG);
     }
@@ -898,25 +655,5 @@ public class ShadowBluetoothGatt {
     @Deprecated(since = "Baklava")
     void onSubrateChange(
         BluetoothGatt gatt, int subrateFactor, int latency, int contNum, int timeout, int status);
-  }
-
-  /** Listener for characteristic write events. */
-  public interface BluetoothGattWriteListener {
-    void onCharacteristicWrite(BluetoothGattCharacteristic characteristic, byte[] value);
-  }
-
-  public void setWriteListener(BluetoothGattWriteListener listener) {
-    this.writeListener = listener;
-  }
-
-  public void notifyCharacteristicChanged(BluetoothGattCharacteristic characteristic) {
-    if (bluetoothGattCallback != null) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        bluetoothGattCallback.onCharacteristicChanged(
-            this.realBluetoothGatt, characteristic, characteristic.getValue());
-      } else {
-        bluetoothGattCallback.onCharacteristicChanged(this.realBluetoothGatt, characteristic);
-      }
-    }
   }
 }
