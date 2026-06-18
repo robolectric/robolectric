@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 
 import android.app.AutomaticZenRule;
@@ -16,6 +17,7 @@ import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.app.NotificationManager.Policy;
 import android.content.ComponentName;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Parcel;
 import android.service.notification.Condition;
@@ -47,6 +49,7 @@ public class ShadowNotificationManager {
   private static boolean mAreNotificationsEnabled = true;
   private static boolean isNotificationPolicyAccessGranted = false;
   private static boolean enforceMaxNotificationLimit = false;
+  private static boolean matchesCallFilter = false;
   private static final Map<Key, PostedNotification> notifications = new ConcurrentHashMap<>();
   private static final Map<String, NotificationChannel> notificationChannels =
       new ConcurrentHashMap<>();
@@ -71,6 +74,7 @@ public class ShadowNotificationManager {
     mAreNotificationsEnabled = true;
     isNotificationPolicyAccessGranted = false;
     enforceMaxNotificationLimit = false;
+    matchesCallFilter = false;
     notifications.clear();
     notificationChannels.clear();
     notificationChannelGroups.clear();
@@ -131,6 +135,32 @@ public class ShadowNotificationManager {
 
   public void setImportance(int importance) {
     ShadowNotificationManager.importance = importance;
+  }
+
+  /**
+   * @return {@code false} by default, or the value specified via {@link
+   *     #setMatchesCallFilter(boolean)}
+   *     <p>This implementation differs from the real Android behavior in that it does not evaluate
+   *     the provided {@link android.net.Uri} against the current {@link
+   *     android.app.NotificationManager.Policy} or Zen Mode state at a per-call level. It does not
+   *     simulate the complex coordination between these policies and their application to specific
+   *     callers, but instead returns a manually set value for testing predictability.
+   */
+  @Implementation(minSdk = TIRAMISU)
+  protected boolean matchesCallFilter(Uri uri) {
+    return matchesCallFilter;
+  }
+
+  /**
+   * Sets the value to be returned by {@link #matchesCallFilter(Uri)}.
+   *
+   * <p>Currently does not support simulating the coordination between notification policies and
+   * their application at the level of individual calls.
+   *
+   * @see NotificationManager#matchesCallFilter(android.net.Uri)
+   */
+  public void setMatchesCallFilter(boolean matchesCallFilter) {
+    ShadowNotificationManager.matchesCallFilter = matchesCallFilter;
   }
 
   @Implementation(minSdk = M)

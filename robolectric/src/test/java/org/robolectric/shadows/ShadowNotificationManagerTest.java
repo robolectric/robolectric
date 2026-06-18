@@ -4,6 +4,7 @@ import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
 import static android.app.NotificationManager.INTERRUPTION_FILTER_PRIORITY;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -952,5 +953,32 @@ public class ShadowNotificationManagerTest {
 
       assertThat(activityChannel).isEqualTo(applicationChannel);
     }
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void matchesCallFilter_uri_defaultIsFalse() {
+    assertThat(notificationManager.matchesCallFilter(Uri.parse("tel:123456"))).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void setMatchesCallFilter_worksAsExpected() {
+    shadowOf(notificationManager).setMatchesCallFilter(true);
+    assertThat(notificationManager.matchesCallFilter(Uri.parse("tel:123456"))).isTrue();
+
+    shadowOf(notificationManager).setMatchesCallFilter(false);
+    assertThat(notificationManager.matchesCallFilter(Uri.parse("tel:123456"))).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void matchesCallFilter_reset_returnsFalse() {
+    shadowOf(notificationManager).setMatchesCallFilter(true);
+    assertThat(notificationManager.matchesCallFilter(Uri.parse("tel:123456"))).isTrue();
+
+    ShadowNotificationManager.reset();
+
+    assertThat(notificationManager.matchesCallFilter(Uri.parse("tel:123456"))).isFalse();
   }
 }
