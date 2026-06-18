@@ -36,6 +36,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -122,6 +123,66 @@ public class ShadowDisplayManagerGlobalTest {
 
     assertThat(virtualDisplay.getDisplay().getState()).isEqualTo(Display.STATE_OFF);
     verify(listener).onDisplayChanged(virtualDisplay.getDisplay().getDisplayId());
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void testVirtualDisplay_vdmPath() throws Exception {
+    ShadowDisplayManagerGlobal shadow = Shadow.extract(DisplayManagerGlobal.getInstance());
+    Object mDm = ReflectionHelpers.getField(shadow, "mDm");
+
+    VirtualDisplayConfig config = createConfig(null);
+
+    Class<?> callbackClass = Class.forName("android.hardware.display.IVirtualDisplayCallback");
+    Object callback = ReflectionHelpers.createNullProxy(callbackClass);
+
+    Class<?> virtualDeviceClass = Class.forName("android.companion.virtual.IVirtualDevice");
+    Object virtualDevice = ReflectionHelpers.createNullProxy(virtualDeviceClass);
+
+    String packageName = "test.package";
+
+    int displayId =
+        ReflectionHelpers.callInstanceMethod(
+            mDm,
+            "createVirtualDisplay",
+            ClassParameter.from(Object.class, config),
+            ClassParameter.from(callbackClass, callback),
+            ClassParameter.from(Object.class, virtualDevice),
+            ClassParameter.from(String.class, packageName));
+
+    assertThat(DisplayManagerGlobal.getInstance().getDisplayInfo(displayId)).isNotNull();
+    assertThat(DisplayManagerGlobal.getInstance().getDisplayInfo(displayId).ownerPackageName)
+        .isEqualTo(packageName);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void testVirtualDisplay_rPath() throws Exception {
+    ShadowDisplayManagerGlobal shadow = Shadow.extract(DisplayManagerGlobal.getInstance());
+    Object mDm = ReflectionHelpers.getField(shadow, "mDm");
+
+    VirtualDisplayConfig config = createConfig(null);
+
+    Class<?> callbackClass = Class.forName("android.hardware.display.IVirtualDisplayCallback");
+    Object callback = ReflectionHelpers.createNullProxy(callbackClass);
+
+    Class<?> mediaProjectionClass = Class.forName("android.media.projection.IMediaProjection");
+    Object mediaProjection = ReflectionHelpers.createNullProxy(mediaProjectionClass);
+
+    String packageName = "test.package";
+
+    int displayId =
+        ReflectionHelpers.callInstanceMethod(
+            mDm,
+            "createVirtualDisplay",
+            ClassParameter.from(Object.class, config),
+            ClassParameter.from(callbackClass, callback),
+            ClassParameter.from(mediaProjectionClass, mediaProjection),
+            ClassParameter.from(String.class, packageName));
+
+    assertThat(DisplayManagerGlobal.getInstance().getDisplayInfo(displayId)).isNotNull();
+    assertThat(DisplayManagerGlobal.getInstance().getDisplayInfo(displayId).ownerPackageName)
+        .isEqualTo(packageName);
   }
 
   private VirtualDisplay createVirtualDisplay(@Nullable Surface surface) {
