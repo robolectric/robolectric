@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
 import org.robolectric.annotation.Implementation;
@@ -167,80 +168,64 @@ public class ShadowView {
   }
 
   /* Note: maxSdk is R because capturing `attributeSet` is not needed any more after R. */
-  @Implementation(maxSdk = R)
+  @Filter(maxSdk = R)
   protected void __constructor__(
       Context context, AttributeSet attributeSet, int defStyleAttr, int defStyleRes) {
     this.attributeSet = attributeSet;
-    reflector(ViewReflector.class, realView)
-        .__constructor__(context, attributeSet, defStyleAttr, defStyleRes);
   }
 
-  @Implementation
+  @Filter
   protected void setLayerType(int layerType, Paint paint) {
     this.layerType = layerType;
-    reflector(ViewReflector.class, realView).setLayerType(layerType, paint);
   }
 
-  @Implementation
+  @Filter
   protected void setOnFocusChangeListener(View.OnFocusChangeListener l) {
     onFocusChangeListener = l;
-    reflector(ViewReflector.class, realView).setOnFocusChangeListener(l);
   }
 
-  @Implementation
+  @Filter
   protected void setOnClickListener(View.OnClickListener onClickListener) {
     this.onClickListener = onClickListener;
-    reflector(ViewReflector.class, realView).setOnClickListener(onClickListener);
   }
 
-  @Implementation
+  @Filter
   protected void setOnLongClickListener(View.OnLongClickListener onLongClickListener) {
     this.onLongClickListener = onLongClickListener;
-    reflector(ViewReflector.class, realView).setOnLongClickListener(onLongClickListener);
   }
 
-  @Implementation
+  @Filter
   protected void setOnSystemUiVisibilityChangeListener(
       View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener) {
     this.onSystemUiVisibilityChangeListener = onSystemUiVisibilityChangeListener;
-    reflector(ViewReflector.class, realView)
-        .setOnSystemUiVisibilityChangeListener(onSystemUiVisibilityChangeListener);
   }
 
-  @Implementation
+  @Filter
   protected void setOnCreateContextMenuListener(
       View.OnCreateContextMenuListener onCreateContextMenuListener) {
     this.onCreateContextMenuListener = onCreateContextMenuListener;
-    reflector(ViewReflector.class, realView)
-        .setOnCreateContextMenuListener(onCreateContextMenuListener);
   }
 
-  @Implementation
+  @Filter
   protected void addOnAttachStateChangeListener(
       View.OnAttachStateChangeListener onAttachStateChangeListener) {
     onAttachStateChangeListeners.add(onAttachStateChangeListener);
-    reflector(ViewReflector.class, realView)
-        .addOnAttachStateChangeListener(onAttachStateChangeListener);
   }
 
-  @Implementation
+  @Filter
   protected void removeOnAttachStateChangeListener(
       View.OnAttachStateChangeListener onAttachStateChangeListener) {
     onAttachStateChangeListeners.remove(onAttachStateChangeListener);
-    reflector(ViewReflector.class, realView)
-        .removeOnAttachStateChangeListener(onAttachStateChangeListener);
   }
 
-  @Implementation
+  @Filter
   protected void addOnLayoutChangeListener(View.OnLayoutChangeListener onLayoutChangeListener) {
     onLayoutChangeListeners.add(onLayoutChangeListener);
-    reflector(ViewReflector.class, realView).addOnLayoutChangeListener(onLayoutChangeListener);
   }
 
-  @Implementation
+  @Filter
   protected void removeOnLayoutChangeListener(View.OnLayoutChangeListener onLayoutChangeListener) {
     onLayoutChangeListeners.remove(onLayoutChangeListener);
-    reflector(ViewReflector.class, realView).removeOnLayoutChangeListener(onLayoutChangeListener);
   }
 
   @Implementation
@@ -256,28 +241,25 @@ public class ShadowView {
     reflector(ViewReflector.class, realView).draw(canvas);
   }
 
-  @Implementation
+  @Filter
   protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
     onLayoutWasCalled = true;
-    reflector(ViewReflector.class, realView).onLayout(changed, left, top, right, bottom);
   }
 
   public boolean onLayoutWasCalled() {
     return onLayoutWasCalled;
   }
 
-  @Implementation
+  @Filter
   protected void requestLayout() {
     didRequestLayout = true;
-    reflector(ViewReflector.class, realView).requestLayout();
   }
 
-  @Implementation
-  protected boolean performClick() {
+  @Filter
+  protected void performClick() {
     for (View.OnClickListener listener : globalClickListeners) {
       listener.onClick(realView);
     }
-    return reflector(ViewReflector.class, realView).performClick();
   }
 
   /**
@@ -298,12 +280,11 @@ public class ShadowView {
     ShadowView.globalClickListeners.remove(listener);
   }
 
-  @Implementation
-  protected boolean performLongClick() {
+  @Filter
+  protected void performLongClick() {
     for (View.OnLongClickListener listener : globalLongClickListeners) {
       listener.onLongClick(realView);
     }
-    return reflector(ViewReflector.class, realView).performLongClick();
   }
 
   /**
@@ -344,22 +325,19 @@ public class ShadowView {
     }
   }
 
-  @Implementation
+  @Filter
   protected void invalidate() {
     wasInvalidated = true;
-    reflector(ViewReflector.class, realView).invalidate();
   }
 
-  @Implementation
-  protected boolean onTouchEvent(MotionEvent event) {
+  @Filter
+  protected void onTouchEvent(MotionEvent event) {
     lastTouchEvent = event;
-    return reflector(ViewReflector.class, realView).onTouchEvent(event);
   }
 
-  @Implementation
+  @Filter
   protected void setOnTouchListener(View.OnTouchListener onTouchListener) {
     this.onTouchListener = onTouchListener;
-    reflector(ViewReflector.class, realView).setOnTouchListener(onTouchListener);
   }
 
   public MotionEvent getLastTouchEvent() {
@@ -642,9 +620,8 @@ public class ShadowView {
     animations.clear();
   }
 
-  @Implementation
+  @Filter
   protected void setAnimation(final Animation animation) {
-    reflector(ViewReflector.class, realView).setAnimation(animation);
     if (!useRealViewAnimations()) {
       if (animation != null) {
         animations.add(animation);
@@ -657,10 +634,8 @@ public class ShadowView {
     }
   }
 
-  @Implementation
+  @Filter
   protected void clearAnimation() {
-    reflector(ViewReflector.class, realView).clearAnimation();
-
     if (!useRealViewAnimations()) {
       if (animationRunner != null) {
         animationRunner.cancel();
@@ -770,65 +745,10 @@ public class ShadowView {
     @Direct
     void draw(Canvas canvas);
 
-    @Direct
-    void onLayout(boolean changed, int left, int top, int right, int bottom);
-
     void assignParent(ViewParent viewParent);
 
     @Direct
-    void setOnFocusChangeListener(View.OnFocusChangeListener l);
-
-    @Direct
-    void setLayerType(int layerType, Paint paint);
-
-    @Direct
-    void setOnClickListener(View.OnClickListener onClickListener);
-
-    @Direct
-    void setOnLongClickListener(View.OnLongClickListener onLongClickListener);
-
-    @Direct
     View.OnLongClickListener getOnLongClickListener();
-
-    @Direct
-    void setOnSystemUiVisibilityChangeListener(
-        View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener);
-
-    @Direct
-    void setOnCreateContextMenuListener(
-        View.OnCreateContextMenuListener onCreateContextMenuListener);
-
-    @Direct
-    void addOnAttachStateChangeListener(
-        View.OnAttachStateChangeListener onAttachStateChangeListener);
-
-    @Direct
-    void removeOnAttachStateChangeListener(
-        View.OnAttachStateChangeListener onAttachStateChangeListener);
-
-    @Direct
-    void addOnLayoutChangeListener(View.OnLayoutChangeListener onLayoutChangeListener);
-
-    @Direct
-    void removeOnLayoutChangeListener(View.OnLayoutChangeListener onLayoutChangeListener);
-
-    @Direct
-    void requestLayout();
-
-    @Direct
-    boolean performClick();
-
-    @Direct
-    boolean performLongClick();
-
-    @Direct
-    void invalidate();
-
-    @Direct
-    boolean onTouchEvent(MotionEvent event);
-
-    @Direct
-    void setOnTouchListener(View.OnTouchListener onTouchListener);
 
     @Direct
     boolean post(Runnable action);
@@ -841,12 +761,6 @@ public class ShadowView {
 
     @Direct
     boolean removeCallbacks(Runnable callback);
-
-    @Direct
-    void setAnimation(final Animation animation);
-
-    @Direct
-    void clearAnimation();
 
     @Direct
     boolean getGlobalVisibleRect(Rect rect, Point globalOffset);
@@ -889,10 +803,6 @@ public class ShadowView {
 
     @Direct
     void setScrollY(int value);
-
-    @Direct
-    void __constructor__(
-        Context context, AttributeSet attributeSet, int defStyleAttr, int defStyleRes);
   }
 
   public void callOnAttachedToWindow() {
