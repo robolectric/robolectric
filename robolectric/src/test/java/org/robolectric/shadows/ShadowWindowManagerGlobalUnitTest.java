@@ -18,7 +18,7 @@ public class ShadowWindowManagerGlobalUnitTest {
     assertThat(FailureListener.runTests(DummyTest.class)).isEmpty();
   }
 
-  @Config(sdk = 23)
+  @Config(sdk = Config.OLDEST_SDK)
   public static class DummyTest {
     @Test
     public void first() {

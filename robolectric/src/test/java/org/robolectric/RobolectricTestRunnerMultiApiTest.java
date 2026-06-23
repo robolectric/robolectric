@@ -1,9 +1,9 @@
 package org.robolectric;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -38,7 +38,7 @@ import org.robolectric.util.inject.Injector;
 @RunWith(JUnit4.class)
 public class RobolectricTestRunnerMultiApiTest {
 
-  private static final int[] APIS_FOR_TEST = {M, N, N_MR1, O, P};
+  private static final int[] APIS_FOR_TEST = {N, N_MR1, O, O_MR1, P};
 
   private static SdkPicker delegateSdkPicker;
   private static final Injector INJECTOR =
@@ -69,7 +69,7 @@ public class RobolectricTestRunnerMultiApiTest {
   @Test
   public void createChildrenForEachSupportedApi() throws Throwable {
     runner = runnerOf(TestWithNoConfig.class);
-    assertThat(apisFor(runner.getChildren())).containsExactly(M, N, N_MR1, O, P);
+    assertThat(apisFor(runner.getChildren())).containsExactly(N, N_MR1, O, O_MR1, P);
   }
 
   @Test
@@ -88,7 +88,7 @@ public class RobolectricTestRunnerMultiApiTest {
       assertThat(e.getMessage())
           .contains(
               "sdk and minSdk/maxSdk may not be specified together"
-                  + " (sdk=[23], minSdk=23, maxSdk=24)");
+                  + " (sdk=[24], minSdk=24, maxSdk=25)");
     }
   }
 
@@ -103,14 +103,14 @@ public class RobolectricTestRunnerMultiApiTest {
   @Test
   public void shouldAddApiLevelToNameOfAllButHighestNumberedMethodName() throws Throwable {
     runner = runnerOf(TestMethodUpToAndIncludingN.class);
-    assertThat(runner.getChildren().get(0).getName()).isEqualTo("testSomeApiLevel[23]");
+    assertThat(runner.getChildren().get(0).getName()).isEqualTo("testSomeApiLevel[24]");
     assertThat(runner.getChildren().get(1).getName()).isEqualTo("testSomeApiLevel");
   }
 
   @Test
   public void noConfig() throws Throwable {
     runner = runnerOf(TestWithNoConfig.class);
-    assertThat(apisFor(runner.getChildren())).containsExactly(M, N, N_MR1, O, P);
+    assertThat(apisFor(runner.getChildren())).containsExactly(N, N_MR1, O, O_MR1, P);
     runner.run(runNotifier);
 
     assertThat(runListener.ignored).isEmpty();
@@ -120,7 +120,7 @@ public class RobolectricTestRunnerMultiApiTest {
   @Test
   public void classConfigWithSdkGroup() throws Throwable {
     runner = runnerOf(TestClassConfigWithSdkGroup.class);
-    assertThat(apisFor(runner.getChildren())).containsExactly(M, N);
+    assertThat(apisFor(runner.getChildren())).containsExactly(N, N_MR1);
 
     runner.run(runNotifier);
 
@@ -132,7 +132,7 @@ public class RobolectricTestRunnerMultiApiTest {
   @Test
   public void methodConfigWithSdkGroup() throws Throwable {
     runner = runnerOf(TestMethodConfigWithSdkGroup.class);
-    assertThat(apisFor(runner.getChildren())).containsExactly(M, N);
+    assertThat(apisFor(runner.getChildren())).containsExactly(N, N_MR1);
 
     runner.run(runNotifier);
 
@@ -144,7 +144,7 @@ public class RobolectricTestRunnerMultiApiTest {
   @Test
   public void classConfigMinSdk() throws Throwable {
     runner = runnerOf(TestClassNAndUp.class);
-    assertThat(apisFor(runner.getChildren())).containsExactly(N, N_MR1, O, P);
+    assertThat(apisFor(runner.getChildren())).containsExactly(N_MR1, O, O_MR1, P);
 
     runner.run(runNotifier);
 
@@ -156,7 +156,7 @@ public class RobolectricTestRunnerMultiApiTest {
   @Test
   public void classConfigMaxSdk() throws Throwable {
     runner = runnerOf(TestClassUpToAndIncludingN.class);
-    assertThat(apisFor(runner.getChildren())).containsExactly(M, N);
+    assertThat(apisFor(runner.getChildren())).containsExactly(N, N_MR1);
 
     runner.run(runNotifier);
 
@@ -168,7 +168,7 @@ public class RobolectricTestRunnerMultiApiTest {
   @Test
   public void classConfigWithMinSdkAndMaxSdk() throws Throwable {
     runner = runnerOf(TestClassBetweenLollipopMr1AndN.class);
-    assertThat(apisFor(runner.getChildren())).containsExactly(M, N);
+    assertThat(apisFor(runner.getChildren())).containsExactly(N, N_MR1);
 
     runner.run(runNotifier);
 
@@ -181,7 +181,7 @@ public class RobolectricTestRunnerMultiApiTest {
   @Test
   public void methodConfigMinSdk() throws Throwable {
     runner = runnerOf(TestMethodNAndUp.class);
-    assertThat(apisFor(runner.getChildren())).containsExactly(N, N_MR1, O, P);
+    assertThat(apisFor(runner.getChildren())).containsExactly(N_MR1, O, O_MR1, P);
 
     runner.run(runNotifier);
 
@@ -193,7 +193,7 @@ public class RobolectricTestRunnerMultiApiTest {
   @Test
   public void methodConfigMaxSdk() throws Throwable {
     runner = runnerOf(TestMethodUpToAndIncludingN.class);
-    assertThat(apisFor(runner.getChildren())).containsExactly(M, N);
+    assertThat(apisFor(runner.getChildren())).containsExactly(N, N_MR1);
 
     runner.run(runNotifier);
 
@@ -205,7 +205,7 @@ public class RobolectricTestRunnerMultiApiTest {
   @Test
   public void methodConfigWithMinSdkAndMaxSdk() throws Throwable {
     runner = runnerOf(TestMethodBetweenLollipopMr1AndN.class);
-    assertThat(apisFor(runner.getChildren())).containsExactly(M, N);
+    assertThat(apisFor(runner.getChildren())).containsExactly(N, N_MR1);
 
     runner.run(runNotifier);
 
@@ -227,71 +227,71 @@ public class RobolectricTestRunnerMultiApiTest {
     public void test() {}
   }
 
-  @Config(sdk = {M, N})
+  @Config(sdk = {N, N_MR1})
   public static class TestClassConfigWithSdkGroup {
     @Test
     public void testShouldRunApi18() {
-      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(M, N));
+      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(N, N_MR1));
     }
   }
 
   @Config(sdk = Config.ALL_SDKS)
   public static class TestMethodConfigWithSdkGroup {
-    @Config(sdk = {M, N})
+    @Config(sdk = {N, N_MR1})
     @Test
     public void testShouldRunApi16() {
-      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(M, N));
+      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(N, N_MR1));
     }
   }
 
-  @Config(minSdk = N)
+  @Config(minSdk = N_MR1)
   public static class TestClassNAndUp {
     @Test
     public void testSomeApiLevel() {
-      assertThat(Build.VERSION.SDK_INT).isAtLeast(N);
+      assertThat(Build.VERSION.SDK_INT).isAtLeast(N_MR1);
     }
   }
 
-  @Config(maxSdk = N)
+  @Config(maxSdk = N_MR1)
   public static class TestClassUpToAndIncludingN {
     @Test
     public void testSomeApiLevel() {
-      assertThat(Build.VERSION.SDK_INT).isAtMost(N);
+      assertThat(Build.VERSION.SDK_INT).isAtMost(N_MR1);
     }
   }
 
-  @Config(minSdk = M, maxSdk = N)
+  @Config(minSdk = N, maxSdk = N_MR1)
   public static class TestClassBetweenLollipopMr1AndN {
     @Test
     public void testSomeApiLevel() {
-      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(M, N));
+      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(N, N_MR1));
     }
   }
 
   @Config(sdk = Config.ALL_SDKS)
   public static class TestMethodNAndUp {
-    @Config(minSdk = N)
+    @Config(minSdk = N_MR1)
     @Test
     public void testSomeApiLevel() {
-      assertThat(Build.VERSION.SDK_INT).isAtLeast(N);
+      assertThat(Build.VERSION.SDK_INT).isAtLeast(N_MR1);
     }
   }
 
   @Config(sdk = Config.ALL_SDKS)
   public static class TestMethodUpToAndIncludingN {
-    @Config(maxSdk = N)
+    @Config(maxSdk = N_MR1)
     @Test
     public void testSomeApiLevel() {
-      assertThat(Build.VERSION.SDK_INT).isAtMost(N);
+      assertThat(Build.VERSION.SDK_INT).isAtMost(N_MR1);
     }
   }
 
   @Config(sdk = Config.ALL_SDKS)
   public static class TestMethodBetweenLollipopMr1AndN {
-    @Config(minSdk = M, maxSdk = N)
+    @Config(minSdk = N, maxSdk = N_MR1)
     @Test
     public void testSomeApiLevel() {
-      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(M, N));
+      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(N, N_MR1));
     }
   }
 
@@ -305,10 +305,10 @@ public class RobolectricTestRunnerMultiApiTest {
 
   @Config(sdk = Config.ALL_SDKS)
   public static class TestMethodWithSdkAndMinMax {
-    @Config(sdk = M, minSdk = M, maxSdk = N)
+    @Config(sdk = N, minSdk = N, maxSdk = N_MR1)
     @Test
     public void testWithSdkRange() {
-      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(M, N));
+      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(N, N_MR1));
     }
   }
 

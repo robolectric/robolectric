@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.L;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -28,7 +26,6 @@ import android.content.pm.LauncherActivityInfoInternal;
 import android.content.pm.LauncherApps;
 import android.content.pm.LauncherApps.ShortcutQuery;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.pm.ResolveInfo;
 import android.content.pm.ShortcutInfo;
 import android.os.Bundle;
 import android.os.Handler;
@@ -160,24 +157,7 @@ public class ShadowLauncherAppsTest {
         .containsExactly(launcherActivityInfo1, launcherActivityInfo2);
   }
 
-  @Test
-  @Config(minSdk = L, maxSdk = M)
-  public void testGetActivityListPreN() {
-    assertThat(launcherApps.getActivityList(TEST_PACKAGE_NAME, USER_HANDLE)).isEmpty();
 
-    ResolveInfo info =
-        ShadowResolveInfo.newResolveInfo(TEST_PACKAGE_NAME, TEST_PACKAGE_NAME, TEST_PACKAGE_NAME);
-    LauncherActivityInfo launcherActivityInfo =
-        ReflectionHelpers.callConstructor(
-            LauncherActivityInfo.class,
-            ClassParameter.from(Context.class, ApplicationProvider.getApplicationContext()),
-            ClassParameter.from(ResolveInfo.class, info),
-            ClassParameter.from(UserHandle.class, USER_HANDLE),
-            ClassParameter.from(long.class, System.currentTimeMillis()));
-    shadowOf(launcherApps).addActivity(USER_HANDLE, launcherActivityInfo);
-    assertThat(launcherApps.getActivityList(TEST_PACKAGE_NAME, USER_HANDLE))
-        .contains(launcherActivityInfo);
-  }
 
   @Test
   @Config(minSdk = N)
