@@ -6,9 +6,11 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.shadows.ShadowDisplayManager.createDefaultDisplay;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.WindowConfiguration;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -23,6 +25,7 @@ import android.hardware.display.WifiDisplayStatus;
 import android.media.projection.IMediaProjection;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.util.DisplayMetrics;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -36,7 +39,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.Nullable;
-import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -78,6 +80,14 @@ public class ShadowDisplayManagerGlobal {
     // referencing the ColorSpace named constants, making application creation around 0.75s faster.
   }
 
+  // internal - do not use
+  public static synchronized void resetInstance(
+      Configuration configuration, DisplayMetrics displayMetrics) {
+    instance = null;
+    ShadowDisplayManagerGlobal shadowInstance = Shadow.extract(getInstance());
+    shadowInstance.addDisplay(createDefaultDisplay(configuration, displayMetrics));
+  }
+
   @Implementation
   public static synchronized DisplayManagerGlobal getInstance() {
     if (instance == null) {
@@ -88,7 +98,6 @@ public class ShadowDisplayManagerGlobal {
       instance = newDisplayManagerGlobal(proxy);
       ShadowDisplayManagerGlobal shadow = Shadow.extract(instance);
       shadow.mDm = displayManagerProxyDelegate;
-      Bootstrap.setUpDisplay();
     }
     return instance;
   }

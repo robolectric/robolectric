@@ -110,38 +110,22 @@ public class ShadowDisplayManager {
     return addDisplayInternal(qualifiersStr, displayName, DEFAULT_DISPLAY_TYPE);
   }
 
-  static IllegalStateException configureDefaultDisplayCallstack;
-
-  /** internal only */
-  public static void configureDefaultDisplay(
-      Configuration configuration, DisplayMetrics displayMetrics) {
-    ShadowDisplayManagerGlobal shadowDisplayManagerGlobal = getShadowDisplayManagerGlobal();
-    if (DisplayManagerGlobal.getInstance().getDisplayIds().length == 0) {
-      configureDefaultDisplayCallstack =
-          new IllegalStateException("configureDefaultDisplay should only be called once");
-    } else {
-      configureDefaultDisplayCallstack.initCause(
-          new IllegalStateException(
-              "configureDefaultDisplay was called a second time",
-              configureDefaultDisplayCallstack));
-      throw configureDefaultDisplayCallstack;
-    }
-
-    shadowDisplayManagerGlobal.addDisplay(
-        createDisplayInfo(
-            configuration,
-            displayMetrics,
-            /* isNaturallyPortrait= */ true,
-            DEFAULT_DISPLAY_NAME,
-            DEFAULT_DISPLAY_TYPE));
-  }
-
   private static int addDisplayInternal(String qualifiersStr, String displayName, int displayType) {
     int id =
         getShadowDisplayManagerGlobal()
             .addDisplay(createDisplayInfo(qualifiersStr, null, displayName, displayType));
     shadowMainLooper().idle();
     return id;
+  }
+
+  static DisplayInfo createDefaultDisplay(
+      Configuration configuration, DisplayMetrics displayMetrics) {
+    return createDisplayInfo(
+        configuration,
+        displayMetrics,
+        /* isNaturallyPortrait= */ true,
+        DEFAULT_DISPLAY_NAME,
+        DEFAULT_DISPLAY_TYPE);
   }
 
   private static DisplayInfo createDisplayInfo(

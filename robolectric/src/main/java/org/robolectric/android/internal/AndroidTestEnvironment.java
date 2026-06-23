@@ -351,7 +351,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
     android.content.res.Configuration androidConfiguration = Bootstrap.getConfiguration();
     shadowActivityThread.setCompatConfiguration(androidConfiguration);
 
-    Bootstrap.setUpDisplay();
     activityThread.applyConfigurationToResources(androidConfiguration);
 
     Application application = ReflectionHelpers.callConstructor(applicationClass);
@@ -587,7 +586,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
     RuntimeEnvironment.setActivityThread(null);
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.systemContext = null;
-    Bootstrap.resetDisplayConfiguration();
   }
 
   @Override

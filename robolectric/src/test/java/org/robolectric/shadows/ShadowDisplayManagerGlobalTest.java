@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 
 import android.annotation.RequiresApi;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.display.DisplayManager;
@@ -25,17 +26,20 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.util.concurrent.MoreExecutors;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.experimental.LazyApplication;
-import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -48,12 +52,43 @@ public class ShadowDisplayManagerGlobalTest {
   private static final int DISPLAY_HEIGHT = 1280;
   private static final int DISPLAY_DPI = 160;
 
-  @LazyApplication(LazyLoad.ON)
   @Test
-  public void testDisplayManagerGlobalIsLazyLoaded() {
-    assertThat(ShadowDisplayManagerGlobal.getGlobalInstance()).isNull();
-    assertThat(DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY))
-        .isNotNull();
+  public void testDisplayManagerGlobal_backgroundThreadRaceCondition() throws Exception {
+    // Simulate the end of a test / resetting DisplayManagerGlobal
+    ShadowDisplayManagerGlobal.reset();
+
+    AtomicReference<DisplayInfo> bgDisplayInfo = new AtomicReference<>();
+    CountDownLatch latch = new CountDownLatch(1);
+
+    Thread bgThread =
+        new Thread(
+            () -> {
+              bgDisplayInfo.set(
+                  DisplayManagerGlobal.getInstance().getDisplayInfo(Display.DEFAULT_DISPLAY));
+              latch.countDown();
+            });
+    bgThread.start();
+    latch.await(5, TimeUnit.SECONDS);
+
+    // In the old implementation, calling getInstance() on a background thread before
+    // setDisplayConfiguration was called would incorrectly cache Display 0 with 0 density.
+    // In the new implementation, it returns null until configureDefaultDisplay is called.
+    if (bgDisplayInfo.get() != null) {
+      assertThat(bgDisplayInfo.get().logicalDensityDpi).isGreaterThan(0);
+    }
+
+    // Now simulate the main thread setting up the display configuration for a new test
+    Configuration configuration = new Configuration();
+    DisplayMetrics displayMetrics = new DisplayMetrics();
+    displayMetrics.densityDpi = DISPLAY_DPI;
+    displayMetrics.widthPixels = DISPLAY_WIDTH;
+    displayMetrics.heightPixels = DISPLAY_HEIGHT;
+    Bootstrap.setDisplayConfiguration(configuration, displayMetrics);
+
+    DisplayInfo displayInfo =
+        DisplayManagerGlobal.getInstance().getDisplayInfo(Display.DEFAULT_DISPLAY);
+    assertThat(displayInfo).isNotNull();
+    assertThat(displayInfo.logicalDensityDpi).isEqualTo(DISPLAY_DPI);
   }
 
   @Test
