@@ -238,6 +238,17 @@ public class ShadowRoleManager {
     Preconditions.checkArgument(
         DEFAULT_APPLICATION_ROLES.contains(roleName),
         "the supplied roleName in not a default app.");
+    if (packageName == null) {
+      if (isRoleAvailable(roleName)) {
+        RoleUserState.getUserState(context.getUser())
+            .roleHolders
+            .put(roleName, ConcurrentHashMap.newKeySet());
+        executor.execute(() -> callback.accept(true));
+        return;
+      }
+      executor.execute(() -> callback.accept(false));
+      return;
+    }
     try {
       context.getPackageManager().getPackageInfo(packageName, 0);
       if (isRoleAvailable(roleName)) {
