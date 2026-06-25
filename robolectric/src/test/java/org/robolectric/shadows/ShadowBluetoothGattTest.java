@@ -1229,4 +1229,35 @@ public class ShadowBluetoothGattTest {
   public void requestSubrateMode_returnsFailure_whenCallbackIsNull() {
     assertThat(bluetoothGatt.requestSubrateMode(1)).isEqualTo(BluetoothGatt.GATT_FAILURE);
   }
+
+  @Test
+  public void serviceBuilder_setInstanceId_success() {
+    BluetoothGattService service =
+        BluetoothGattServiceBuilder.newBuilder()
+            .setUuid(UUID.fromString("00000000-0000-0000-0000-0000000000A1"))
+            .setServiceType(BluetoothGattService.SERVICE_TYPE_SECONDARY)
+            .setInstanceId(42)
+            .build();
+    assertThat(service.getUuid())
+        .isEqualTo(UUID.fromString("00000000-0000-0000-0000-0000000000A1"));
+    assertThat(service.getType()).isEqualTo(BluetoothGattService.SERVICE_TYPE_SECONDARY);
+    assertThat(service.getInstanceId()).isEqualTo(42);
+  }
+
+  @Test
+  public void characteristicBuilder_setInstanceId_success() {
+    BluetoothGattCharacteristic characteristic =
+        BluetoothGattCharacteristicBuilder.newBuilder()
+            .setUuid(UUID.fromString("00000000-0000-0000-0000-0000000000B1"))
+            .setProperties(BluetoothGattCharacteristic.PROPERTY_READ)
+            .setPermissions(BluetoothGattCharacteristic.PERMISSION_READ)
+            .setInstanceId(101)
+            .build();
+    assertThat(characteristic.getUuid())
+        .isEqualTo(UUID.fromString("00000000-0000-0000-0000-0000000000B1"));
+    assertThat(characteristic.getProperties()).isEqualTo(BluetoothGattCharacteristic.PROPERTY_READ);
+    assertThat(characteristic.getPermissions())
+        .isEqualTo(BluetoothGattCharacteristic.PERMISSION_READ);
+    assertThat(characteristic.getInstanceId()).isEqualTo(101);
+  }
 }
