@@ -30,6 +30,7 @@ import android.hardware.input.VirtualTouchscreen;
 import android.hardware.input.VirtualTouchscreenConfig;
 import android.os.Binder;
 import android.os.IBinder;
+import android.view.Surface;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -181,6 +182,19 @@ public class ShadowVirtualDeviceManager {
       this.deviceId = nextDeviceId.getAndIncrement();
       this.context = context;
       this.persistentDeviceId = "companion:" + associationId;
+      Object internalDevice =
+          ReflectionHelpers.getField(realVirtualDevice, "mVirtualDeviceInternal");
+      if (internalDevice != null) {
+        try {
+          java.lang.reflect.Field field =
+              internalDevice.getClass().getDeclaredField("mVirtualDevice");
+          field.setAccessible(true);
+          Object proxy = ReflectionHelpers.createNullProxy(IVirtualDevice.class);
+          field.set(internalDevice, proxy);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
     }
 
     @Implementation
@@ -369,6 +383,23 @@ public class ShadowVirtualDeviceManager {
       return display;
     }
 
+    @Implementation
+    protected VirtualDisplay createVirtualDisplay(
+        int width,
+        int height,
+        int densityDpi,
+        Surface surface,
+        int flags,
+        Executor executor,
+        VirtualDisplay.Callback callback) {
+      VirtualDisplayConfig config =
+          new VirtualDisplayConfig.Builder("VirtualDisplay-" + deviceId, width, height, densityDpi)
+              .setFlags(flags)
+              .setSurface(surface)
+              .build();
+      return createVirtualDisplay(config, executor, callback);
+    }
+
     public void setPendingIntentCallbackResultCode(int resultCode) {
       this.pendingIntentResultCode = resultCode;
     }
@@ -518,6 +549,7 @@ public class ShadowVirtualDeviceManager {
   }
 
   private interface VirtualDeviceDelegate {
+    @SuppressWarnings("unused")
     int[] getDisplayIds();
   }
 }
