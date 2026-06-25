@@ -23,9 +23,7 @@ class PerfStatsCollectorPerformanceTest {
     for (i in 0 until threadCount) {
       executor.execute {
         try {
-          for (j in 0 until incrementsPerThread) {
-            collector.incrementCount("metric_$i")
-          }
+          repeat(incrementsPerThread) { collector.incrementCount("metric_$i") }
         } finally {
           latch.countDown()
         }
@@ -37,7 +35,9 @@ class PerfStatsCollectorPerformanceTest {
     executor.shutdown()
 
     println(
-      "Took ${TimeUnit.NANOSECONDS.toMillis(end - start)} ms for ${threadCount * incrementsPerThread} increments across $threadCount threads (different metrics)"
+      "Took ${TimeUnit.NANOSECONDS.toMillis(end - start)} ms for " +
+        "${threadCount * incrementsPerThread} increments across $threadCount " +
+        "threads (different metrics)"
     )
 
     val metrics = collector.metrics
@@ -58,9 +58,7 @@ class PerfStatsCollectorPerformanceTest {
     for (i in 0 until threadCount) {
       executor.execute {
         try {
-          for (j in 0 until incrementsPerThread) {
-            collector.incrementCount("same_metric")
-          }
+          repeat(incrementsPerThread) { collector.incrementCount("same_metric") }
         } finally {
           latch.countDown()
         }
@@ -72,7 +70,9 @@ class PerfStatsCollectorPerformanceTest {
     executor.shutdown()
 
     println(
-      "Took ${TimeUnit.NANOSECONDS.toMillis(end - start)} ms for ${threadCount * incrementsPerThread} increments across $threadCount threads (same metric)"
+      "Took ${TimeUnit.NANOSECONDS.toMillis(end - start)} ms for " +
+        "${threadCount * incrementsPerThread} increments across $threadCount " +
+        "threads (same metric)"
     )
 
     val metrics = collector.metrics
