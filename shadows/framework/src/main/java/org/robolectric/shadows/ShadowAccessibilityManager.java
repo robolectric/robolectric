@@ -36,16 +36,15 @@ import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.ClassName;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(AccessibilityManager.class)
@@ -96,16 +95,11 @@ public class ShadowAccessibilityManager {
 
   private static AccessibilityManager createInstance(Context context) {
     AccessibilityManager accessibilityManager =
-        Shadow.newInstance(
-            AccessibilityManager.class,
-            new Class[] {Context.class, IAccessibilityManager.class, int.class},
-            new Object[] {
-              context, ReflectionHelpers.createNullProxy(IAccessibilityManager.class), 0
-            });
-    ReflectionHelpers.setField(
-        accessibilityManager,
-        "mHandler",
-        new MyHandler(context.getMainLooper(), accessibilityManager));
+        reflector(AccessibilityManagerReflector.class)
+            .newInstance(
+                context, ReflectionHelpers.createNullProxy(IAccessibilityManager.class), 0);
+    reflector(AccessibilityManagerReflector.class, accessibilityManager)
+        .setHandler(new MyHandler(context.getMainLooper(), accessibilityManager));
     return accessibilityManager;
   }
 
@@ -142,13 +136,13 @@ public class ShadowAccessibilityManager {
   }
 
   public void setInteractiveUiTimeout(int interactiveUiTimeoutMillis) {
-    ReflectionHelpers.setField(
-        realAccessibilityManager, "mInteractiveUiTimeout", interactiveUiTimeoutMillis);
+    reflector(AccessibilityManagerReflector.class, realAccessibilityManager)
+        .setInteractiveUiTimeout(interactiveUiTimeoutMillis);
   }
 
   public void setNonInteractiveUiTimeout(int nonInteractiveUiTimeoutMillis) {
-    ReflectionHelpers.setField(
-        realAccessibilityManager, "mNonInteractiveUiTimeout", nonInteractiveUiTimeoutMillis);
+    reflector(AccessibilityManagerReflector.class, realAccessibilityManager)
+        .setNonInteractiveUiTimeout(nonInteractiveUiTimeoutMillis);
   }
 
   public void setAccessibilityServiceList(List<ServiceInfo> accessibilityServiceList) {
@@ -228,13 +222,11 @@ public class ShadowAccessibilityManager {
     }
   }
 
-  @Implementation
+  @Filter
   protected void sendAccessibilityEvent(AccessibilityEvent event) {
     synchronized (sLock) {
       sentAccessibilityEvents.add(event);
     }
-    reflector(AccessibilityManagerReflector.class, realAccessibilityManager)
-        .sendAccessibilityEvent(event);
   }
 
   /**
@@ -258,7 +250,8 @@ public class ShadowAccessibilityManager {
     HashMap<AccessibilityStateChangeListener, Handler> onAccessibilityStateChangeListeners;
     synchronized (sLock) {
       ShadowAccessibilityManager.enabled = enabled;
-      ReflectionHelpers.setField(realAccessibilityManager, "mIsEnabled", enabled);
+      reflector(AccessibilityManagerReflector.class, realAccessibilityManager)
+          .setIsEnabled(enabled);
       onAccessibilityStateChangeListeners =
           new HashMap<>(ShadowAccessibilityManager.onAccessibilityStateChangeListeners);
     }
@@ -353,8 +346,7 @@ public class ShadowAccessibilityManager {
     @Override
     public void handleMessage(@Nonnull Message message) {
       if (message.what == DO_SET_STATE) {
-        ReflectionHelpers.callInstanceMethod(
-            accessibilityManager, "setState", ClassParameter.from(int.class, message.arg1));
+        reflector(AccessibilityManagerReflector.class, accessibilityManager).setState(message.arg1);
       } else {
         Log.w("AccessibilityManager", "Unknown message type: " + message.what);
       }
@@ -363,9 +355,8 @@ public class ShadowAccessibilityManager {
 
   @ForType(AccessibilityManager.class)
   interface AccessibilityManagerReflector {
-
-    @Direct
-    void sendAccessibilityEvent(AccessibilityEvent event);
+    @Constructor
+    AccessibilityManager newInstance(Context context, IAccessibilityManager service, int userId);
 
     @Accessor("mTouchExplorationStateChangeListeners")
     ArrayMap<TouchExplorationStateChangeListener, Handler>
@@ -373,6 +364,20 @@ public class ShadowAccessibilityManager {
 
     @Accessor("mServicesStateChangeListeners") // Only available on O+
     ArrayMap<AccessibilityServicesStateChangeListener, Executor> getServicesStateChangeListeners();
+
+    @Accessor("mHandler")
+    void setHandler(Handler handler);
+
+    @Accessor("mInteractiveUiTimeout")
+    void setInteractiveUiTimeout(int timeout);
+
+    @Accessor("mNonInteractiveUiTimeout")
+    void setNonInteractiveUiTimeout(int timeout);
+
+    @Accessor("mIsEnabled")
+    void setIsEnabled(boolean enabled);
+
+    void setState(int state);
   }
 
   @ForType(AccessibilityManager.class)

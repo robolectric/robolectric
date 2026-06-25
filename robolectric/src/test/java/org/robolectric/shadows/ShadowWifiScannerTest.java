@@ -104,6 +104,19 @@ public class ShadowWifiScannerTest {
     assertThat(scanner.getSingleScanResults()).containsExactlyElementsIn(SCAN_RESULTS);
   }
 
+  /** Verifies that WifiScanner#getAvailableChannels returns the latest available channels. */
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void getAvailableChannels_returnsChannels() {
+    ImmutableList<Integer> availableChannels = ImmutableList.of(2412, 5180, 5745);
+    WifiScanner scanner =
+        (WifiScanner)
+            RuntimeEnvironment.getApplication().getSystemService(Context.WIFI_SCANNING_SERVICE);
+    ((ShadowWifiScanner) extract(scanner)).setAvailableChannels(availableChannels);
+    assertThat(scanner.getAvailableChannels(WifiScanner.WIFI_BAND_BOTH_WITH_DFS))
+        .containsExactlyElementsIn(availableChannels);
+  }
+
   private static ImmutableList<ScanResult> createFakeScanResults() {
     ScanResult scanResult;
 

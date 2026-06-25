@@ -8,7 +8,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
@@ -115,9 +115,25 @@ public class ShadowAudioSystem {
    * @param attr the {@link AudioAttributes} to be used for playback
    * @return the level of direct playback playback support for the format and attributes.
    */
-  @Implementation(minSdk = TIRAMISU)
+  @Implementation(minSdk = TIRAMISU, maxSdk = BAKLAVA)
   protected static int getDirectPlaybackSupport(
       @Nonnull AudioFormat format, @Nonnull AudioAttributes attr) {
+    return getDirectPlaybackSupport(format, attr, /* uid= */ 0);
+  }
+
+  /**
+   * Retrieves the stored direct playback support for the {@link AudioFormat} and {@link
+   * AudioAttributes} ({@code uid} is ignored). If no value was stored for the key-pair then {@link
+   * AudioSystem#DIRECT_NOT_SUPPORTED} is returned.
+   *
+   * @param format the audio format (codec, sample rate, channels) to be used for playback
+   * @param attr the {@link AudioAttributes} to be used for playback
+   * @param uid the uid of the client to be used for playback (ignored by this shadow)
+   * @return the level of direct playback playback support for the format and attributes.
+   */
+  @Implementation(minSdk = CINNAMON_BUN)
+  protected static int getDirectPlaybackSupport(
+      @Nonnull AudioFormat format, @Nonnull AudioAttributes attr, int uid) {
     return Optional.ofNullable(directPlaybackSupportTable.get(format, attr.getUsage()))
         .orElse(AudioSystem.DIRECT_NOT_SUPPORTED);
   }
@@ -206,7 +222,7 @@ public class ShadowAudioSystem {
         .orElse(AudioSystem.OFFLOAD_NOT_SUPPORTED);
   }
 
-  @Implementation(minSdk = POST_BAKLAVA)
+  @Implementation(minSdk = CINNAMON_BUN)
   protected static int native_get_offload_support(
       int encoding, int sampleRate, Object channelMasks, int streamType) {
     return Optional.ofNullable(

@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.telephony.SubscriptionManager.INVALID_SIM_SLOT_INDEX;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.RequiresApi;
 import android.content.Intent;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -211,10 +213,34 @@ public class ShadowSubscriptionManager {
   private List<SubscriptionInfo> availableSubscriptionList = new ArrayList<>();
 
   /**
+   * Wrapper to attach an app-specified executor to a registered {@link
+   * OnSubscriptionsChangedListener}.
+   */
+  private static class OnSubscriptionsChangedListenerWrapper {
+    private final OnSubscriptionsChangedListener listener;
+    private final Executor executor;
+
+    OnSubscriptionsChangedListenerWrapper(
+        OnSubscriptionsChangedListener listener, @Nullable Executor executor) {
+      this.listener = listener;
+      this.executor = executor;
+    }
+
+    void dispatch() {
+      if (executor != null) {
+        executor.execute(listener::onSubscriptionsChanged);
+      } else {
+        // Inline dispatch when the app doesn't specify an executor
+        listener.onSubscriptionsChanged();
+      }
+    }
+  }
+
+  /**
    * List of listeners to be notified if the list of {@link SubscriptionInfo} changes. Managed by
    * {@link #addOnSubscriptionsChangedListener} and {@link #removeOnSubscriptionsChangedListener}.
    */
-  private final List<OnSubscriptionsChangedListener> listeners = new ArrayList<>();
+  private final List<OnSubscriptionsChangedListenerWrapper> listeners = new ArrayList<>();
 
   /**
    * Cache of subscription ids used by {@link #isNetworkRoaming}. Managed by {@link
@@ -440,8 +466,10 @@ public class ShadowSubscriptionManager {
    */
   @Implementation
   protected void addOnSubscriptionsChangedListener(OnSubscriptionsChangedListener listener) {
-    listeners.add(listener);
-    listener.onSubscriptionsChanged();
+    OnSubscriptionsChangedListenerWrapper wrapper =
+        new OnSubscriptionsChangedListenerWrapper(listener, /* executor= */ null);
+    listeners.add(wrapper);
+    wrapper.dispatch();
   }
 
   /**
@@ -451,8 +479,10 @@ public class ShadowSubscriptionManager {
   @Implementation(minSdk = R)
   protected void addOnSubscriptionsChangedListener(
       Executor executor, OnSubscriptionsChangedListener listener) {
-    listeners.add(listener);
-    listener.onSubscriptionsChanged();
+    OnSubscriptionsChangedListenerWrapper wrapper =
+        new OnSubscriptionsChangedListenerWrapper(listener, executor);
+    listeners.add(wrapper);
+    wrapper.dispatch();
   }
 
   /**
@@ -461,7 +491,7 @@ public class ShadowSubscriptionManager {
    */
   @Implementation
   protected void removeOnSubscriptionsChangedListener(OnSubscriptionsChangedListener listener) {
-    listeners.remove(listener);
+    listeners.removeIf(wrapper -> listener.equals(wrapper.listener));
   }
 
   /**
@@ -471,7 +501,7 @@ public class ShadowSubscriptionManager {
    * @return boolean True if the listener already added, otherwise false.
    */
   public boolean hasOnSubscriptionsChangedListener(OnSubscriptionsChangedListener listener) {
-    return listeners.contains(listener);
+    return listeners.stream().anyMatch(wrapper -> listener.equals(wrapper.listener));
   }
 
   /** Returns subscription Ids that were set via {@link #setActiveSubscriptionInfoList}. */
@@ -494,8 +524,8 @@ public class ShadowSubscriptionManager {
    * SubscriptionInfo} has been updated.
    */
   private void dispatchOnSubscriptionsChanged() {
-    for (OnSubscriptionsChangedListener listener : listeners) {
-      listener.onSubscriptionsChanged();
+    for (OnSubscriptionsChangedListenerWrapper listener : listeners) {
+      listener.dispatch();
     }
   }
 
@@ -807,6 +837,12 @@ public class ShadowSubscriptionManager {
 
     public SubscriptionInfoBuilder setIsOpportunistic(boolean isOpportunistic) {
       ReflectionHelpers.setField(subscriptionInfo, "mIsOpportunistic", isOpportunistic);
+      return this;
+    }
+
+    @RequiresApi(CINNAMON_BUN)
+    public SubscriptionInfoBuilder setIsPrivateNetwork(boolean isPrivateNetwork) {
+      ReflectionHelpers.setField(subscriptionInfo, "mIsPrivateNetwork", isPrivateNetwork);
       return this;
     }
 

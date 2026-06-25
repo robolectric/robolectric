@@ -337,6 +337,24 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void connectGatt_withTransportPhy_setsBluetoothGattCallback() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(FAKE_PUBLIC_ADDRESS);
+    BluetoothGattCallback callback = new BluetoothGattCallback() {};
+
+    BluetoothGatt bluetoothGatt =
+        device.connectGatt(
+            application,
+            false,
+            callback,
+            BluetoothDevice.TRANSPORT_LE,
+            BluetoothDevice.PHY_LE_1M_MASK);
+
+    assertThat(shadowOf(bluetoothGatt).getGattCallback()).isEqualTo(callback);
+  }
+
+  @Test
   public void canSimulateGattConnectionChange() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = ShadowBluetoothDevice.newInstance(FAKE_PUBLIC_ADDRESS);

@@ -3,6 +3,7 @@ package org.robolectric.android.internal;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
@@ -39,6 +40,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
 import java.security.Security;
 import java.security.cert.Certificate;
@@ -66,6 +68,7 @@ import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.fakes.FakeMediaProvider;
+import org.robolectric.internal.ClassTracker;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.TestEnvironment;
 import org.robolectric.manifest.AndroidManifest;
@@ -94,11 +97,13 @@ import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.Util;
-import org.robolectric.versioning.AndroidVersions;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @SuppressLint("NewApi")
 public class AndroidTestEnvironment implements TestEnvironment {
@@ -128,7 +133,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     this.shadowProviders = shadowProviders;
     this.testEnvironmentLifecyclePlugins = lifecyclePlugins;
 
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
+    reflector(RuntimeEnvironmentReflector.class).setApiLevel(apiLevel);
   }
 
   @Override
@@ -296,6 +301,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
       Instrumentation androidInstrumentation) {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
 
+    // Starting in Android V and above, the native runtime does not support begin lazy-loaded, it
+    // must be loaded upfront.
+    if (shouldLoadNativeRuntime() && RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM) {
+      DefaultNativeRuntimeLoader.injectAndLoad();
+    }
+
     Context systemContextImpl =
         reflector(ContextImplReflector.class).createSystemContext(activityThread);
     RuntimeEnvironment.systemContext = systemContextImpl;
@@ -316,7 +327,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     ComponentName actualComponentName =
         new ComponentName(
             applicationInfo.packageName, androidInstrumentation.getClass().getSimpleName());
-    ReflectionHelpers.setField(androidInstrumentation, "mComponent", actualComponentName);
+    reflector(InstrumentationReflector.class, androidInstrumentation)
+        .setComponent(actualComponentName);
 
     // unclear why, but prior to P the processName wasn't set
     if (apiLevel < P && applicationInfo.processName == null) {
@@ -339,7 +351,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
     android.content.res.Configuration androidConfiguration = Bootstrap.getConfiguration();
     shadowActivityThread.setCompatConfiguration(androidConfiguration);
 
-    Bootstrap.setUpDisplay();
     activityThread.applyConfigurationToResources(androidConfiguration);
     RuntimeEnvironment.setConfiguredApplicationClass(applicationClass);
 
@@ -405,15 +416,10 @@ public class AndroidTestEnvironment implements TestEnvironment {
     // Circumvent the 'No Compatibility callbacks set!' log. See #8509
     if (apiLevel >= VANILLA_ICE_CREAM) {
       // Adds loggableChanges parameter.
-      ReflectionHelpers.callStaticMethod(
-          AppCompatCallbacks.class,
-          "install",
-          ClassParameter.from(long[].class, new long[0]),
-          ClassParameter.from(long[].class, new long[0]));
-    } else if (apiLevel >= AndroidVersions.R.SDK_INT) {
+      reflector(AppCompatCallbacksReflector.class).install(new long[0], new long[0]);
+    } else if (apiLevel >= R) {
       // Invoke the previous version.
-      ReflectionHelpers.callStaticMethod(
-          AppCompatCallbacks.class, "install", ClassParameter.from(long[].class, new long[0]));
+      reflector(AppCompatCallbacksReflector.class).install(new long[0]);
     }
 
     if (RuntimeEnvironment.getApiLevel() >= Q
@@ -536,9 +542,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
     Instrumentation androidInstrumentation = pickInstrumentation();
     androidInstrumentation.runOnMainSync(
         () -> {
-          ActivityThread activityThread = ReflectionHelpers.callConstructor(ActivityThread.class);
-          ReflectionHelpers.setStaticField(
-              ActivityThread.class, "sMainThreadHandler", new Handler(Looper.getMainLooper()));
+          ActivityThread activityThread = reflector(ActivityThreadReflector.class).newInstance();
+          reflector(ActivityThreadReflector.class)
+              .setMainThreadHandler(new Handler(Looper.getMainLooper()));
           reflector(ActivityThreadReflector.class, activityThread)
               .setInstrumentation(androidInstrumentation);
           RuntimeEnvironment.setActivityThread(activityThread);
@@ -560,11 +566,23 @@ public class AndroidTestEnvironment implements TestEnvironment {
     return androidInstrumentation;
   }
 
+  private static RuntimeException combineThreadErrors(List<RuntimeException> errors) {
+    RuntimeException first = errors.get(0);
+    for (int i = 1; i < errors.size(); i++) {
+      first.addSuppressed(errors.get(i));
+    }
+    return first;
+  }
+
   @Override
   public void tearDownApplication() {
     if (RuntimeEnvironment.application != null) {
       ShadowInstrumentation.runOnMainSyncNoIdle(RuntimeEnvironment.getApplication()::onTerminate);
       ShadowInstrumentation.getInstrumentation().finish(1, new Bundle());
+    }
+    ImmutableList<RuntimeException> errors = ShadowView.getAndClear();
+    if (!errors.isEmpty()) {
+      throw combineThreadErrors(errors);
     }
   }
 
@@ -582,15 +600,19 @@ public class AndroidTestEnvironment implements TestEnvironment {
     RuntimeEnvironment.setActivityThread(null);
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.systemContext = null;
-    Bootstrap.resetDisplayConfiguration();
   }
 
   @Override
   public void checkStateAfterTestFailure(Throwable t) throws Throwable {
+    ImmutableList<RuntimeException> errors = ShadowView.getAndClear();
+    if (!errors.isEmpty()) {
+      for (RuntimeException error : errors) {
+        t.addSuppressed(error);
+      }
+    }
     if (hasUnexecutedRunnables()) {
       t.addSuppressed(new UnExecutedRunnablesException());
     }
-    throw t;
   }
 
   private static final class UnExecutedRunnablesException extends Exception {
@@ -624,7 +646,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     List<Throwable> exceptions = new ArrayList<>();
     for (ShadowProvider provider : shadowProviders) {
       try {
-        provider.reset();
+        provider.reset((ClassTracker) Instrumentation.class.getClassLoader());
       } catch (Throwable e) {
         exceptions.add(e);
       }
@@ -716,5 +738,27 @@ public class AndroidTestEnvironment implements TestEnvironment {
         application.registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
       }
     }
+  }
+
+  @ForType(RuntimeEnvironment.class)
+  interface RuntimeEnvironmentReflector {
+    @Static
+    @Accessor("apiLevel")
+    void setApiLevel(int apiLevel);
+  }
+
+  @ForType(Application.class)
+  interface ApplicationReflector {
+    @Constructor
+    Application newInstance();
+  }
+
+  @ForType(AppCompatCallbacks.class)
+  interface AppCompatCallbacksReflector {
+    @Static
+    void install(long[] loggableChanges);
+
+    @Static
+    void install(long[] loggableChanges, long[] loggableChanges2);
   }
 }

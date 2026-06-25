@@ -24,7 +24,7 @@ import static org.robolectric.res.android.Util.JNI_FALSE;
 import static org.robolectric.res.android.Util.JNI_TRUE;
 import static org.robolectric.res.android.Util.isTruthy;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.AnyRes;
 import android.annotation.ArrayRes;
@@ -53,6 +53,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -100,7 +101,6 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   private static final int STYLE_RESOURCE_ID = 3;
   private static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   private static final int STYLE_DENSITY = 5;
-  private static final int STYLE_SOURCE_STYLE_RESOURCE_ID = 6;
 
   private static CppAssetManager2 systemCppAssetManager2;
   private static long systemCppAssetManager2Ref;
@@ -1331,7 +1331,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     return array;
   }
 
-  @Implementation(minSdk = POST_BAKLAVA)
+  @Implementation(minSdk = CINNAMON_BUN)
   protected static @Nullable Configuration[] nativeGetResourceConfigurations(long ptr) {
     return nativeGetSizeConfigurations(ptr);
   }
@@ -1571,10 +1571,9 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     Registries.NATIVE_THEME9_REGISTRY.unregister(theme_ptr);
   }
 
-  @Implementation(minSdk = S)
+  @Filter(minSdk = S)
   protected void releaseTheme(long ptr) {
     Registries.NATIVE_THEME9_REGISTRY.unregister(ptr);
-    reflector(AssetManagerReflector.class, realAssetManager).releaseTheme(ptr);
   }
 
   // static void NativeThemeApplyStyle(JNIEnv* env, jclass /*clazz*/, jlong ptr, jlong theme_ptr,

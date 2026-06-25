@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -13,6 +14,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
@@ -32,6 +34,10 @@ public class ShadowChoreographerTest {
   @Test
   public void setPaused_isPaused_doesntRun() {
     ShadowChoreographer.setPaused(true);
+    // post an initial callback which depending on API version may execute at current time
+    Choreographer.getInstance().postFrameCallback(frameTimeNanos -> {});
+    ShadowLooper.idleMainLooper();
+
     long startTime = ShadowSystem.nanoTime();
     AtomicBoolean didRun = new AtomicBoolean();
 
@@ -46,6 +52,10 @@ public class ShadowChoreographerTest {
   public void setPaused_isPaused_doesntRunWhenClockAdvancedLessThanFrameDelay() {
     ShadowChoreographer.setPaused(true);
     ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
+    // post an initial callback which depending on API version may execute at current time
+    Choreographer.getInstance().postFrameCallback(frameTimeNanos -> {});
+    ShadowLooper.idleMainLooper();
+
     AtomicBoolean didRun = new AtomicBoolean();
 
     Choreographer.getInstance().postFrameCallback(frameTimeNanos -> didRun.set(true));
@@ -71,9 +81,14 @@ public class ShadowChoreographerTest {
 
   /** Verify Choreographer + SystemClock use nano precision */
   @Test
+  @Config(
+      maxSdk =
+          BAKLAVA) // POST_BAKLAVA+ uses Choreographers non-vsync Looper-based timing, which has ms
+  // precision
   public void setPaused_isPaused_runsWhenClockAdvanced_nanos() {
     ShadowChoreographer.setPaused(true);
     ShadowChoreographer.setFrameDelay(Duration.ofNanos(15_100_000));
+
     long startTime = ShadowSystem.nanoTime();
     AtomicLong frameTimeNanos = new AtomicLong(-1);
 
@@ -91,6 +106,10 @@ public class ShadowChoreographerTest {
   public void setPaused_isNotPaused_advancesClockAndRuns() {
     ShadowChoreographer.setPaused(false);
     ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
+    // post an initial callback which depending on API version may execute at current time
+    Choreographer.getInstance().postFrameCallback(frameTimeNanos -> {});
+    ShadowLooper.idleMainLooper();
+
     long startTime = ShadowSystem.nanoTime();
     AtomicBoolean didRun = new AtomicBoolean();
 
@@ -105,6 +124,9 @@ public class ShadowChoreographerTest {
   public void setFrameDelay() {
     ShadowChoreographer.setPaused(false);
     ShadowChoreographer.setFrameDelay(Duration.ofMillis(30));
+    // post an initial callback which depending on API version may execute at current time
+    Choreographer.getInstance().postFrameCallback(frameTimeNanos -> {});
+    ShadowLooper.idleMainLooper();
     long startTime = ShadowSystem.nanoTime();
     AtomicBoolean didRun = new AtomicBoolean();
 
@@ -126,6 +148,20 @@ public class ShadowChoreographerTest {
     animator.start();
     shadowOf(Looper.getMainLooper()).runToEndOfTasks();
     assertThat(thing.getSetCount()).isWithin(5).of(67); // Should be ~ (1000 / 15) ~ 67
+  }
+
+  @Test
+  public void getNextVsyncTime() {
+    ShadowChoreographer.setPaused(true);
+    ShadowChoreographer.setFrameDelay(Duration.ofMillis(15));
+    // post an initial callback which depending on API version may execute at current time
+    Choreographer.getInstance().postFrameCallback(frameTimeNanos -> {});
+    ShadowLooper.idleMainLooper();
+    long uptimeMillis = ShadowSystem.currentTimeMillis();
+
+    Choreographer.getInstance().postFrameCallback(frameTimeNanos -> {});
+
+    assertThat(ShadowChoreographer.getNextVsyncTime()).isEqualTo(uptimeMillis + 15);
   }
 
   public static class ThingToAnimate {

@@ -56,7 +56,7 @@ public class ShadowPixelCopy {
       @Nonnull Bitmap dest,
       @Nonnull OnPixelCopyFinishedListener listener,
       @Nonnull Handler listenerThread) {
-    if (ShadowView.useRealDrawTraversals()) {
+    if (ShadowView.areRealDrawTraversalsEnabled()) {
       // when realViewDrawTraversals are on, the view will be backed by a valid Surface.
       // so just use that
       reflector(PixelCopyReflector.class).request(source, dest, listener, listenerThread);
@@ -73,7 +73,7 @@ public class ShadowPixelCopy {
       @Nonnull Bitmap dest,
       @Nonnull OnPixelCopyFinishedListener listener,
       @Nonnull Handler listenerThread) {
-    if (ShadowView.useRealDrawTraversals()) {
+    if (ShadowView.areRealDrawTraversalsEnabled()) {
       // when realViewDrawTraversals are on, the view will be backed by a valid Surface.
       // so just use that
       reflector(PixelCopyReflector.class).request(source, srcRect, dest, listener, listenerThread);
@@ -102,7 +102,7 @@ public class ShadowPixelCopy {
       @Nonnull Bitmap dest,
       @Nonnull OnPixelCopyFinishedListener listener,
       @Nonnull Handler listenerThread) {
-    if (ShadowView.useRealDrawTraversals()) {
+    if (ShadowView.areRealDrawTraversalsEnabled()) {
       // when realViewDrawTraversals are on, the view will be backed by a valid Surface.
       // so just use that
       reflector(PixelCopyReflector.class).request(source, srcRect, dest, listener, listenerThread);
@@ -125,7 +125,7 @@ public class ShadowPixelCopy {
     if (srcRect != null && srcRect.isEmpty()) {
       throw new IllegalArgumentException("sourceRect is empty");
     }
-    if (ShadowView.useRealDrawTraversals()) {
+    if (ShadowView.areRealDrawTraversalsEnabled()) {
       captureImageFromSurface(source, dest, srcRect);
     } else {
       View view = findViewForSurface(requireNonNull(source));
@@ -189,25 +189,66 @@ public class ShadowPixelCopy {
    * Method to obtain a Bitmap when using real View draw traversals. This method just takes the
    * image already produced by the draw traversal as opposed to doing a re-draw.
    */
-  static void captureImageFromSurface(Surface surface, Bitmap screenshot, @Nullable Rect srcRect) {
-    validateBitmap(screenshot);
+  static void captureImageFromSurface(Surface surface, Bitmap destBitmap, @Nullable Rect srcRect) {
+    validateBitmap(destBitmap);
     checkState(Looper.getMainLooper().isCurrentThread());
 
     ShadowNativeSurface shadowSurface = Shadow.extract(surface);
     ImageReader imageReader = shadowSurface.getContainerImageReader();
-    Bitmap bitmap =
-        Bitmap.createBitmap(
-            imageReader.getWidth(), imageReader.getHeight(), Bitmap.Config.ARGB_8888);
 
+    if (doDimensionsMatch(destBitmap, imageReader, srcRect)) {
+      // fast path, just copy to destination screenshot, no need to resize
+      copyFromImageReader(imageReader, destBitmap);
+    } else {
+      // need to resize bitmap
+      Bitmap intermediateBitmap =
+          Bitmap.createBitmap(
+              imageReader.getWidth(), imageReader.getHeight(), Bitmap.Config.ARGB_8888);
+
+      copyFromImageReader(imageReader, intermediateBitmap);
+      Rect dst = new Rect(0, 0, destBitmap.getWidth(), destBitmap.getHeight());
+      Canvas resizingCanvas = new Canvas(destBitmap);
+      Paint paint = new Paint();
+      resizingCanvas.drawBitmap(intermediateBitmap, srcRect, dst, paint);
+      intermediateBitmap.recycle();
+    }
+  }
+
+  /**
+   * Determine if the image reader dimensions exactly match the given bitmap and cropping srcRect
+   */
+  private static boolean doDimensionsMatch(
+      Bitmap destBitmap, ImageReader imageReader, Rect srcRect) {
+    if (destBitmap.getWidth() != imageReader.getWidth()) {
+      return false;
+    }
+    if (destBitmap.getHeight() != imageReader.getHeight()) {
+      return false;
+    }
+    if (srcRect == null) {
+      // abort - srcRect is null, dimensions match!
+      return true;
+    }
+    if (srcRect.left != 0) {
+      return false;
+    }
+    if (srcRect.top != 0) {
+      return false;
+    }
+    if (srcRect.right != imageReader.getWidth()) {
+      return false;
+    }
+    if (srcRect.bottom != imageReader.getHeight()) {
+      return false;
+    }
+    return true;
+  }
+
+  private static void copyFromImageReader(ImageReader imageReader, Bitmap bitmap) {
     try (Image nativeImage = imageReader.acquireNextImage()) {
       Plane[] planes = nativeImage.getPlanes();
       bitmap.copyPixelsFromBuffer(planes[0].getBuffer());
     }
-
-    Rect dst = new Rect(0, 0, screenshot.getWidth(), screenshot.getHeight());
-    Canvas resizingCanvas = new Canvas(screenshot);
-    Paint paint = new Paint();
-    resizingCanvas.drawBitmap(bitmap, srcRect, dst, paint);
   }
 
   private static void takeScreenshot(View view, Bitmap screenshot, @Nullable Rect srcRect) {
@@ -235,6 +276,7 @@ public class ShadowPixelCopy {
     Canvas resizingCanvas = new Canvas(screenshot);
     Paint paint = new Paint();
     resizingCanvas.drawBitmap(bitmap, srcRect, dst, paint);
+    bitmap.recycle();
   }
 
   private static void alertFinished(
@@ -269,7 +311,7 @@ public class ShadowPixelCopy {
     // for now, this copies Android implementation and just omits the valid surface check
     @Implementation
     protected static PixelCopy.Request.Builder ofWindow(View source) {
-      if (ShadowView.useRealDrawTraversals()) {
+      if (ShadowView.areRealDrawTraversalsEnabled()) {
         return reflector(BuilderReflector.class).ofWindow(source);
       } else {
         if (source == null || !source.isAttachedToWindow()) {

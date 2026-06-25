@@ -6,7 +6,6 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -19,9 +18,10 @@ import android.view.Surface.OutOfResourcesException;
 import android.view.animation.AnimationUtils;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
 import org.robolectric.nativeruntime.RecordingCanvasNatives;
@@ -30,7 +30,6 @@ import org.robolectric.nativeruntime.SurfaceNatives;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowNativeSurface.Picker;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link Surface} that is backed by native code */
@@ -41,8 +40,6 @@ import org.robolectric.util.reflector.ForType;
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
 public class ShadowNativeSurface {
-
-  @RealObject private Surface realSurface;
 
   // This field is populated when a Surface is created by an ImageReader. It is used to support
   // the ImageReader.OnImageAvailableListener callback and drawing.
@@ -167,9 +164,8 @@ public class ShadowNativeSurface {
         nativeObject, frameRate, compatibility, changeFrameRateStrategy);
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void transferFrom(Surface other) {
-    reflector(SurfaceReflector.class, realSurface).transferFrom(other);
     ShadowNativeSurface shadowNativeSurface = Shadow.extract(other);
     this.containerImageReader.set(shadowNativeSurface.containerImageReader.get());
   }
@@ -182,18 +178,16 @@ public class ShadowNativeSurface {
     this.containerImageReader.set(realImageReader);
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void unlockCanvasAndPost(Canvas canvas) {
-    reflector(SurfaceReflector.class, realSurface).unlockCanvasAndPost(canvas);
     ImageReader imageReader = containerImageReader.get();
     if (imageReader != null) {
       ShadowNativeImageReader.triggerOnImageAvailableCallbacks(imageReader);
     }
   }
 
-  @Implementation
+  @Filter(order = Order.AFTER)
   protected void release() {
-    reflector(SurfaceReflector.class, realSurface).release();
     // imageReader.close will also call Surface.release. So need to guard here against infinite
     // recursion
     ImageReader imageReader = containerImageReader.getAndSet(null);
@@ -261,17 +255,9 @@ public class ShadowNativeSurface {
 
   @ForType(Surface.class)
   interface SurfaceReflector {
-    @Direct
-    void unlockCanvasAndPost(Canvas canvas);
 
     @Accessor("mNativeObject")
     long getNativeObject();
-
-    @Direct
-    void transferFrom(Surface other);
-
-    @Direct
-    void release();
   }
 
   /** Shadow picker for {@link Surface}. */

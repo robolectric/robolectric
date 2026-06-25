@@ -5,7 +5,7 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.POST_BAKLAVA;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
@@ -155,7 +155,7 @@ public class ShadowCameraManager {
         cameraId, callback, executor, unusedClientUid, unusedOomScoreOffset);
   }
 
-  @Implementation(minSdk = POST_BAKLAVA)
+  @Implementation(minSdk = CINNAMON_BUN)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId,
       CameraDevice.StateCallback callback,
@@ -272,6 +272,13 @@ public class ShadowCameraManager {
   @Implementation
   protected void registerAvailabilityCallback(
       CameraManager.AvailabilityCallback callback, Handler handler) {
+    Objects.requireNonNull(callback);
+    registeredCallbacks.add(callback);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
+  protected void registerAvailabilityCallback(
+      Executor executor, CameraManager.AvailabilityCallback callback) {
     Objects.requireNonNull(callback);
     registeredCallbacks.add(callback);
   }

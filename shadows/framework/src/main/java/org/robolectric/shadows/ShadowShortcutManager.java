@@ -37,6 +37,7 @@ public class ShadowShortcutManager {
   private static final Map<String, ShortcutInfo> dynamicShortcuts = new HashMap<>();
   private static final Map<String, ShortcutInfo> activePinnedShortcuts = new HashMap<>();
   private static final Map<String, ShortcutInfo> disabledPinnedShortcuts = new HashMap<>();
+  private static final List<String> reportedShortcutsUsed = new ArrayList<>();
 
   private static List<ShortcutInfo> manifestShortcuts = ImmutableList.of();
 
@@ -50,6 +51,7 @@ public class ShadowShortcutManager {
     dynamicShortcuts.clear();
     activePinnedShortcuts.clear();
     disabledPinnedShortcuts.clear();
+    reportedShortcutsUsed.clear();
     manifestShortcuts = ImmutableList.of();
     isRequestPinShortcutSupported = true;
     maxShortcutCountPerActivity = 16;
@@ -199,7 +201,17 @@ public class ShadowShortcutManager {
   }
 
   @Implementation
-  protected void reportShortcutUsed(String shortcutId) {}
+  protected void reportShortcutUsed(String shortcutId) {
+    reportedShortcutsUsed.add(shortcutId);
+  }
+
+  /**
+   * Returns the list of shortcut IDs that have been reported as used via {@link
+   * #reportShortcutUsed(String)}.
+   */
+  public List<String> getReportedShortcutsUsed() {
+    return ImmutableList.copyOf(reportedShortcutsUsed);
+  }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
   protected boolean requestPinShortcut(ShortcutInfo shortcut, IntentSender resultIntent) {

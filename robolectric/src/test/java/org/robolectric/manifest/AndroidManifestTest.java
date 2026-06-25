@@ -256,15 +256,16 @@ public class AndroidManifestTest {
   }
 
   @Test
-  public void shouldReadUnknownSdkVersionFromAndroidManifestDefaultToM() throws Exception {
+  public void shouldReadUnknownSdkVersionFromAndroidManifestDefaultToCurDevelopment()
+      throws Exception {
     assertThat(
             newConfigWith("UnknownStringMinSdk.xml", "android:minSdkVersion=\"Unknown\"")
                 .getMinSdkVersion())
-        .isEqualTo(VERSION_CODES.M);
+        .isEqualTo(VERSION_CODES.CUR_DEVELOPMENT);
     assertThat(
             newConfigWith("UnknownStringTargetSdk.xml", "android:targetSdkVersion=\"Unknown\"")
                 .getTargetSdkVersion())
-        .isEqualTo(VERSION_CODES.M);
+        .isEqualTo(VERSION_CODES.CUR_DEVELOPMENT);
   }
 
   @Test

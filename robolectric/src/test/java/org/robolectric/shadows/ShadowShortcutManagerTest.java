@@ -346,6 +346,15 @@ public final class ShadowShortcutManagerTest {
         .isEqualTo("updated");
   }
 
+  @Test
+  public void reportShortcutUsed_addsToReportedList() {
+    shortcutManager.reportShortcutUsed("id1");
+    shortcutManager.reportShortcutUsed("id2");
+
+    ShadowShortcutManager shadowShortcutManager = Shadow.extract(shortcutManager);
+    assertThat(shadowShortcutManager.getReportedShortcutsUsed()).containsExactly("id1", "id2");
+  }
+
   private void createShortCuts(
       int manifestShortcutCount,
       int dynamicShortcutCount,

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -7,6 +8,7 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.graphics.FrameInfo;
 import android.os.Build.VERSION_CODES;
@@ -18,12 +20,13 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowDisplayEventReceiver.DisplayEventReceiverReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -42,26 +45,27 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowPausedChoreographer extends ShadowChoreographer {
 
   // keep track of all active Choreographers so they can be selectively reset
-  private static final Set<Choreographer> activeChoreographers = new CopyOnWriteArraySet<>();
+  protected static final Set<Choreographer> activeChoreographers = new CopyOnWriteArraySet<>();
 
   @RealObject private Choreographer realChoreographer;
 
-  @Implementation(maxSdk = N_MR1)
+  @Filter(maxSdk = N_MR1, order = Order.AFTER)
   protected void __constructor__(Looper looper) {
-    reflector(ChoreographerReflector.class, realChoreographer).__constructor__(looper);
     activeChoreographers.add(realChoreographer);
   }
 
-  @Implementation(minSdk = O, maxSdk = TIRAMISU)
+  @Filter(minSdk = O, maxSdk = TIRAMISU, order = Order.AFTER)
   protected void __constructor__(Looper looper, int vsyncSource) {
-    reflector(ChoreographerReflector.class, realChoreographer).__constructor__(looper, vsyncSource);
     activeChoreographers.add(realChoreographer);
   }
 
-  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  @Filter(minSdk = UPSIDE_DOWN_CAKE, maxSdk = BAKLAVA, order = Order.AFTER)
   protected void __constructor__(Looper looper, int vsyncSource, long layerHandle) {
-    reflector(ChoreographerReflector.class, realChoreographer)
-        .__constructor__(looper, vsyncSource, layerHandle);
+    activeChoreographers.add(realChoreographer);
+  }
+  
+  @Filter(minSdk = CINNAMON_BUN, order = Order.AFTER)
+  protected void __constructor__(Looper looper, long layerHandle) {
     activeChoreographers.add(realChoreographer);
   }
 
@@ -115,8 +119,15 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
     }
     DisplayEventReceiver receiver =
         reflector(ChoreographerReflector.class, realObject).getReceiver();
-    ShadowDisplayEventReceiver shadowReceiver = Shadow.extract(receiver);
-    shadowReceiver.resetState();
+    if (receiver != null) {
+      ShadowDisplayEventReceiver shadowReceiver = Shadow.extract(receiver);
+      shadowReceiver.resetState();
+    }
+
+    if (RuntimeEnvironment.getApiLevel() > CINNAMON_BUN
+        && choreographerReflector.isNoMoreResyncFlagEnabled()) {
+      ReflectionHelpers.callInstanceMethod(choreographerReflector.getAnimationTime(), "reset");
+    }
   }
 
   /**
@@ -126,8 +137,6 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
    */
   @VisibleForTesting
   boolean isInitialized() {
-    DisplayEventReceiver receiver =
-        reflector(ChoreographerReflector.class, realObject).getReceiver();
-    return reflector(DisplayEventReceiverReflector.class, receiver).getReceiverPtr() != 0;
+    return activeChoreographers.contains(realChoreographer);
   }
 }

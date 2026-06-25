@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
 import android.content.AttributionSource;
+import android.os.Binder;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.ranging.IRangingAdapter;
 import android.ranging.IRangingCallbacks;
@@ -53,6 +55,13 @@ class FakeRangingAdapter extends IRangingAdapter.Default implements ResettableSe
     if (rangingCapabilitiesCallback != null) {
       rangingCapabilitiesCallback.onRangingCapabilities(rangingCapabilities);
     }
+  }
+
+  private final IBinder binder = new Binder();
+
+  @Override
+  public IBinder asBinder() {
+    return binder;
   }
 
   @Override

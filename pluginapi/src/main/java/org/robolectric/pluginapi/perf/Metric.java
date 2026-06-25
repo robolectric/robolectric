@@ -26,19 +26,19 @@ public class Metric {
     return name;
   }
 
-  public int getCount() {
+  public synchronized int getCount() {
     return count;
   }
 
-  public long getElapsedNs() {
+  public synchronized long getElapsedNs() {
     return elapsedNs;
   }
 
-  public long getMinNs() {
+  public synchronized long getMinNs() {
     return minNs;
   }
 
-  public long getMaxNs() {
+  public synchronized long getMaxNs() {
     return maxNs;
   }
 
@@ -46,7 +46,7 @@ public class Metric {
     return success;
   }
 
-  public void record(long elapsedNs) {
+  public synchronized void record(long elapsedNs) {
     if (count == 0 || elapsedNs < minNs) {
       minNs = elapsedNs;
     }
@@ -60,8 +60,13 @@ public class Metric {
     count++;
   }
 
-  public void incrementCount() {
+  public synchronized void incrementCount() {
     this.count++;
+  }
+
+  /** Sets the count to the given value, overwriting any previous count. */
+  public synchronized void recordCount(int count) {
+    this.count = count;
   }
 
   @Override

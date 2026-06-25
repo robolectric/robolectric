@@ -67,7 +67,8 @@ import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowApplication.Wrapper;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
@@ -75,7 +76,7 @@ import org.robolectric.util.reflector.WithType;
 @Implements(Instrumentation.class)
 public class ShadowInstrumentation {
 
-  @RealObject private Instrumentation realObject;
+  @RealObject protected Instrumentation realObject;
 
   private final List<Intent> startedActivities = Collections.synchronizedList(new ArrayList<>());
   private final List<IntentForResult> startedActivitiesForResults =
@@ -107,7 +108,7 @@ public class ShadowInstrumentation {
   private final Map<Intent.FilterComparison, ServiceConnectionDataWrapper>
       serviceConnectionDataForIntent = Collections.synchronizedMap(new HashMap<>());
   // default values for bindService
-  private ServiceConnectionDataWrapper defaultServiceConnectionData =
+  protected ServiceConnectionDataWrapper defaultServiceConnectionData =
       new ServiceConnectionDataWrapper(null, null);
   private final List<String> unbindableActions = Collections.synchronizedList(new ArrayList<>());
   private final List<ComponentName> unbindableComponents =
@@ -230,12 +231,10 @@ public class ShadowInstrumentation {
       // automation connection and to the accessibility service, neither of which exist in
       // Robolectric.
       uiAutomation =
-          ReflectionHelpers.callConstructor(
-              UiAutomation.class,
-              ClassParameter.from(Looper.class, Looper.getMainLooper()),
-              ClassParameter.from(
-                  IUiAutomationConnection.class,
-                  ReflectionHelpers.createNullProxy(IUiAutomationConnection.class)));
+          reflector(UiAutomationReflector.class)
+              .newInstance(
+                  Looper.getMainLooper(),
+                  ReflectionHelpers.createNullProxy(IUiAutomationConnection.class));
     }
     return uiAutomation;
   }
@@ -685,7 +684,7 @@ public class ShadowInstrumentation {
     }
     final Intent.FilterComparison filterComparison = new Intent.FilterComparison(intent);
     final ServiceConnectionDataWrapper serviceConnectionDataWrapper =
-        serviceConnectionDataForIntent.getOrDefault(filterComparison, defaultServiceConnectionData);
+        getServiceConnectionDataWrapper(intent);
     if (unbindableActions.contains(intent.getAction())
         || unbindableComponents.contains(intent.getComponent())
         || unbindableComponents.contains(
@@ -708,6 +707,11 @@ public class ShadowInstrumentation {
       serviceCallbackScheduler.schedule(onServiceConnectedRunnable);
     }
     return true;
+  }
+
+  protected ServiceConnectionDataWrapper getServiceConnectionDataWrapper(Intent intent) {
+    return serviceConnectionDataForIntent.getOrDefault(
+        new Intent.FilterComparison(intent), defaultServiceConnectionData);
   }
 
   protected void setUnbindServiceCallsOnServiceDisconnected(boolean flag) {
@@ -1061,6 +1065,9 @@ public class ShadowInstrumentation {
         @WithType("android.app.IInstrumentationWatcher") Object watcher,
         @WithType("android.app.IUiAutomationConnection") Object uiAutomationConnection);
 
+    @Accessor("mComponent")
+    void setComponent(ComponentName component);
+
     @Direct
     ActivityResult execStartActivity(
         Context who,
@@ -1107,11 +1114,12 @@ public class ShadowInstrumentation {
     }
   }
 
-  private static class ServiceConnectionDataWrapper {
+  /** Contains the necessary information for imitating proper Android service binding. */
+  protected static class ServiceConnectionDataWrapper {
     public final ComponentName componentNameForBindService;
     public final IBinder binderForBindService;
 
-    private ServiceConnectionDataWrapper(
+    public ServiceConnectionDataWrapper(
         ComponentName componentNameForBindService, IBinder binderForBindService) {
       this.componentNameForBindService = componentNameForBindService;
       this.binderForBindService = binderForBindService;
@@ -1180,5 +1188,12 @@ public class ShadowInstrumentation {
     } else {
       runnable.run();
     }
+  }
+
+  @ForType(UiAutomation.class)
+  interface UiAutomationReflector {
+    @Constructor
+    UiAutomation newInstance(
+        Looper looper, @WithType("android.app.IUiAutomationConnection") Object connection);
   }
 }

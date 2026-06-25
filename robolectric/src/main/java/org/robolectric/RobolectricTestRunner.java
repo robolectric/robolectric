@@ -46,6 +46,7 @@ import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.pluginapi.MethodHandleDecorator;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.config.ConfigurationStrategy;
@@ -158,10 +159,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    */
   @Override
   @Nonnull
-  protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
+  protected ClassHandler createClassHandler(
+      ShadowMap shadowMap, Sandbox sandbox, List<MethodHandleDecorator> decorators) {
     int apiLevel = ((AndroidSandbox) sandbox).getSdk().getApiLevel();
     AndroidSdkShadowMatcher shadowMatcher = new AndroidSdkShadowMatcher(apiLevel);
-    return classHandlerBuilder.build(shadowMap, shadowMatcher, getInterceptors());
+    return classHandlerBuilder.build(shadowMap, shadowMatcher, getInterceptors(), decorators);
   }
 
   @Override
@@ -250,6 +252,16 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @Override
   @Nonnull
   protected AndroidSandbox getSandbox(FrameworkMethod method) {
+    return getAndroidSandbox(method, /* verifySdk= */ true);
+  }
+
+  @Override
+  @Nonnull
+  protected AndroidSandbox getSandboxForSandboxMapping(FrameworkMethod method) {
+    return getAndroidSandbox(method, /* verifySdk= */ false);
+  }
+
+  private AndroidSandbox getAndroidSandbox(FrameworkMethod method, boolean verifySdk) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     Sdk sdk = roboMethod.getSdk();
 
@@ -259,7 +271,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     SQLiteMode.Mode sqliteMode = roboMethod.configuration.get(SQLiteMode.Mode.class);
     GraphicsMode.Mode graphicsMode = roboMethod.configuration.get(GraphicsMode.Mode.class);
 
-    sdk.verifySupportedSdk(method.getDeclaringClass().getName());
+    if (verifySdk) {
+      sdk.verifySupportedSdk(method.getDeclaringClass().getName());
+    }
     return sandboxManager.getAndroidSandbox(
         classLoaderConfig, sdk, resourcesMode, looperMode, sqliteMode, graphicsMode);
   }

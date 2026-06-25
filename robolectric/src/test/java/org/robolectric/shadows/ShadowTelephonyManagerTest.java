@@ -1160,6 +1160,45 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = P)
+  public void shouldGetSimCarrierIdNameFromSupplier() {
+    AtomicInteger callCount = new AtomicInteger(0);
+    shadowOf(telephonyManager)
+        .setSimCarrierIdNameSupplier(
+            () -> {
+              int callCountCopy = callCount.getAndIncrement();
+              if (callCountCopy == 0) {
+                return "Fi";
+              }
+              return "Other";
+            });
+
+    // First call to getSimCarrierIdName() should return "Fi".
+    assertThat(telephonyManager.getSimCarrierIdName().toString()).isEqualTo("Fi");
+    // All subsequent calls to getSimCarrierIdName() should return "Other".
+    assertThat(telephonyManager.getSimCarrierIdName().toString()).isEqualTo("Other");
+    assertThat(telephonyManager.getSimCarrierIdName().toString()).isEqualTo("Other");
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void shouldGetSimCarrierIdNameAfterSettingSupplierThenSettingValue() {
+    shadowOf(telephonyManager).setSimCarrierIdNameSupplier(() -> "Fi");
+    shadowOf(telephonyManager).setSimCarrierIdName("Other");
+
+    assertThat(telephonyManager.getSimCarrierIdName().toString()).isEqualTo("Other");
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void shouldGetSimCarrierIdNameAfterSettingValueThenSettingSupplier() {
+    shadowOf(telephonyManager).setSimCarrierIdName("Other");
+    shadowOf(telephonyManager).setSimCarrierIdNameSupplier(() -> "Fi");
+
+    assertThat(telephonyManager.getSimCarrierIdName().toString()).isEqualTo("Fi");
+  }
+
+  @Test
   @Config(minSdk = Q)
   public void shouldGetCarrierIdFromSimMccMnc() {
     int expectedCarrierId = 419;
@@ -1747,6 +1786,22 @@ public class ShadowTelephonyManagerTest {
         callback);
 
     assertThat(shadowTelephonyManager.getBootstrapAuthenticationCallback()).isEqualTo(callback);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getLastNafId() {
+    Uri nafId = Uri.parse("tel:test-uri");
+
+    telephonyManager.bootstrapAuthenticationRequest(
+        TelephonyManager.APPTYPE_ISIM,
+        nafId,
+        new UaSecurityProtocolIdentifier.Builder().build(),
+        true,
+        directExecutor(),
+        mock(BootstrapAuthenticationCallback.class));
+
+    assertThat(shadowTelephonyManager.getLastNafId()).isEqualTo(nafId);
   }
 
   @Test

@@ -26,6 +26,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.processing.DocumentedMethod;
 import org.robolectric.annotation.processing.Helpers;
@@ -45,7 +46,6 @@ public class ImplementsValidator extends Validator {
   private final Kind checkKind;
   private final SdkStore sdkStore;
   private final boolean allowInDev;
-  private final boolean allowLooseSignatures;
 
   /** Supported modes for validation of {@link Implementation} methods against SDKs. */
   public enum SdkCheckMode {
@@ -59,8 +59,7 @@ public class ImplementsValidator extends Validator {
       ProcessingEnvironment env,
       SdkCheckMode sdkCheckMode,
       SdkStore sdkStore,
-      boolean allowInDev,
-      boolean allowLooseSignatures) {
+      boolean allowInDev) {
     super(modelBuilder, env, IMPLEMENTS_CLASS);
 
     this.env = env;
@@ -68,7 +67,6 @@ public class ImplementsValidator extends Validator {
     this.checkKind = sdkCheckMode == SdkCheckMode.WARN ? Kind.WARNING : Kind.ERROR;
     this.sdkStore = sdkStore;
     this.allowInDev = allowInDev;
-    this.allowLooseSignatures = allowLooseSignatures;
   }
 
   private TypeElement getClassNameTypeElement(AnnotationValue cv) {
@@ -147,17 +145,8 @@ public class ImplementsValidator extends Validator {
       modelBuilder.addShadowType(shadowType, actualType, shadowPickerTypeElement);
     }
 
-    AnnotationValue looseSignaturesAttr =
-        Helpers.getAnnotationTypeMirrorValue(am, "looseSignatures");
-    boolean looseSignatures =
-        looseSignaturesAttr != null && (Boolean) looseSignaturesAttr.getValue();
-    if (looseSignatures && !allowLooseSignatures) {
-      error(
-          "looseSignatures is no longer allowed. Please use @ClassName or"
-              + " @Implementation(methodName = ...) instead.");
-    }
     String sdkClassNameFq = sdkClassNameFq(av, cv);
-    validateShadow(sdkClassNameFq, shadowType, minSdk, maxSdk, looseSignatures, allowInDev);
+    validateShadow(sdkClassNameFq, shadowType, minSdk, maxSdk, allowInDev);
 
     return null;
   }
@@ -207,7 +196,7 @@ public class ImplementsValidator extends Validator {
       TypeElement shadowClassElem,
       int classMinSdk,
       int classMaxSdk,
-      boolean looseSignatures,
+
       boolean allowInDev) {
     Problems problems = new Problems(this.checkKind);
     if (sdkCheckMode != SdkCheckMode.OFF) {
@@ -223,8 +212,8 @@ public class ImplementsValidator extends Validator {
           helpers.appendParameterList(builder, shadowClassElem.getTypeParameters());
           String shadowParams = builder.toString();
           if (!classInfo.getSignature().equals(shadowParams)
-              && !sdk.suppressWarnings(shadowClassElem, "robolectric.mismatchedTypes", allowInDev)
-              && !looseSignatures) {
+              && !sdk.suppressWarnings(
+                  shadowClassElem, "robolectric.mismatchedTypes", allowInDev)) {
             problems.add(
                 "Shadow type is mismatched, expected "
                     + shadowParams
@@ -244,41 +233,49 @@ public class ImplementsValidator extends Validator {
         continue;
       }
 
-      verifySdkMethod(shadowedClassName, methodElement, classMinSdk, classMaxSdk, looseSignatures);
+      verifySdkMethod(shadowedClassName, methodElement, classMinSdk, classMaxSdk);
       if (shadowClassElem.getQualifiedName().toString().startsWith("org.robolectric")
           && !methodElement.getModifiers().contains(Modifier.ABSTRACT)) {
         checkForMissingImplementationAnnotation(
-            shadowedClassName, methodElement, classMinSdk, classMaxSdk, looseSignatures);
+            shadowedClassName, methodElement, classMinSdk, classMaxSdk);
       }
 
       String methodName = methodElement.getSimpleName().toString();
       if (methodName.equals(CONSTRUCTOR_METHOD_NAME)
           || methodName.equals(STATIC_INITIALIZER_METHOD_NAME)) {
         Implementation implementation = memberElement.getAnnotation(Implementation.class);
-        if (implementation == null) {
+        Filter filter = memberElement.getAnnotation(Filter.class);
+        if (implementation == null && filter == null) {
           messager.printMessage(
-              Kind.ERROR, "Shadow methods must be annotated @Implementation", methodElement);
+              Kind.ERROR,
+              "Shadow methods must be annotated @Implementation or @Filter",
+              methodElement);
         }
       }
     }
   }
 
   private void verifySdkMethod(
-      String sdkClassName,
-      ExecutableElement methodElement,
-      int classMinSdk,
-      int classMaxSdk,
-      boolean looseSignatures) {
+      String sdkClassName, ExecutableElement methodElement, int classMinSdk, int classMaxSdk) {
     if (sdkCheckMode == SdkCheckMode.OFF) {
       return;
     }
 
     Implementation implementation = methodElement.getAnnotation(Implementation.class);
-    if (implementation != null) {
-      Problems problems = new Problems(this.checkKind);
+    Filter filter = methodElement.getAnnotation(Filter.class);
 
-      for (SdkStore.Sdk sdk : sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk)) {
-        String problem = sdk.verifyMethod(sdkClassName, methodElement, looseSignatures, allowInDev);
+    if (implementation != null || filter != null) {
+      Problems problems = new Problems(this.checkKind);
+      List<SdkStore.Sdk> sdks;
+
+      if (implementation != null) {
+        sdks = sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk);
+      } else {
+        sdks = sdkStore.sdksMatching(filter, classMinSdk, classMaxSdk);
+      }
+
+      for (SdkStore.Sdk sdk : sdks) {
+        String problem = sdk.verifyMethod(sdkClassName, methodElement, allowInDev);
         if (problem != null) {
           problems.add(problem, sdk.sdkInfo.apiLevel);
         }
@@ -295,23 +292,21 @@ public class ImplementsValidator extends Validator {
    * Implementation} tag but is missing one
    */
   private void checkForMissingImplementationAnnotation(
-      String sdkClassName,
-      ExecutableElement methodElement,
-      int classMinSdk,
-      int classMaxSdk,
-      boolean looseSignatures) {
+      String sdkClassName, ExecutableElement methodElement, int classMinSdk, int classMaxSdk) {
 
     if (sdkCheckMode == SdkCheckMode.OFF) {
       return;
     }
 
     Implementation implementation = methodElement.getAnnotation(Implementation.class);
-    if (implementation == null) {
+    Filter filter = methodElement.getAnnotation(Filter.class);
+    if (implementation == null && filter == null) {
       Kind kind = sdkCheckMode == SdkCheckMode.WARN ? Kind.WARNING : Kind.ERROR;
       Problems problems = new Problems(kind);
 
-      for (SdkStore.Sdk sdk : sdkStore.sdksMatching(null, classMinSdk, classMaxSdk)) {
-        String problem = sdk.verifyMethod(sdkClassName, methodElement, looseSignatures, allowInDev);
+      for (SdkStore.Sdk sdk :
+          sdkStore.sdksMatching((Implementation) null, classMinSdk, classMaxSdk)) {
+        String problem = sdk.verifyMethod(sdkClassName, methodElement, allowInDev);
         if (problem == null && sdk.getClassInfo(sdkClassName) != null) {
           problems.add(
               "Missing @Implementation on method " + methodElement.getSimpleName(),
@@ -386,6 +381,7 @@ public class ImplementsValidator extends Validator {
   private static class Problems {
     private final Kind kind;
     private final Map<String, Set<Integer>> problems = new HashMap<>();
+
 
     public Problems(Kind kind) {
       this.kind = kind;

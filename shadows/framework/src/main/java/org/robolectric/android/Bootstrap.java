@@ -7,7 +7,6 @@ import android.util.DisplayMetrics;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.robolectric.shadows.ShadowDateUtils;
-import org.robolectric.shadows.ShadowDisplayManager;
 import org.robolectric.shadows.ShadowDisplayManagerGlobal;
 
 public class Bootstrap {
@@ -39,18 +38,8 @@ public class Bootstrap {
       Configuration configuration, DisplayMetrics displayMetrics) {
     Bootstrap.configuration = configuration;
     Bootstrap.displayMetrics = displayMetrics;
-  }
-
-  /** internal only */
-  public static void resetDisplayConfiguration() {
-    // This is called to avoid the configureDefaultDisplay should only be called once exception that
-    // occurs if ShadowDisplayManagerGlobal is not properly reset during resetter.
-    ShadowDisplayManagerGlobal.reset();
-
-    configuration = new Configuration();
-    displayMetrics = new DisplayMetrics();
-    displayResources = null;
-    displaySet = false;
+    Bootstrap.displayResources = null;
+    ShadowDisplayManagerGlobal.resetInstance(configuration, displayMetrics);
   }
 
   /** internal only */
@@ -64,13 +53,6 @@ public class Bootstrap {
     displayResources.updateConfiguration(configuration, displayMetrics);
   }
 
-  /** internal only */
-  public static void setUpDisplay() {
-    if (!displaySet) {
-      displaySet = true;
-      ShadowDisplayManager.configureDefaultDisplay(configuration, displayMetrics);
-    }
-  }
 
   public static void applyQualifiers(
       String qualifiersStrs,

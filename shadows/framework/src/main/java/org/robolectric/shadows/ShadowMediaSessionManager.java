@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.S;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static org.robolectric.util.ReflectionHelpers.createDeepProxy;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -28,6 +30,8 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowMediaSessionManager {
   private static final List<MediaController> controllers = new CopyOnWriteArrayList<>();
   private static final Set<OnActiveSessionsChangedListener> listeners = new CopyOnWriteArraySet<>();
+  private static final List<PackageListener> packageListeners = new CopyOnWriteArrayList<>();
+
   @RealObject MediaSessionManager realMediaSessionManager;
 
   @Implementation(minSdk = S)
@@ -41,6 +45,14 @@ public class ShadowMediaSessionManager {
   @Implementation
   protected List<MediaController> getActiveSessions(ComponentName ignoredNotificationListener) {
     return ImmutableList.copyOf(controllers);
+  }
+
+  @Implementation(minSdk = 37)
+  protected List<MediaController> getActiveSessionsForPackage(
+      String packageName, ComponentName notificationListener) {
+    return controllers.stream()
+        .filter(c -> c.getPackageName().equals(packageName))
+        .collect(toImmutableList());
   }
 
   @Implementation
@@ -62,6 +74,18 @@ public class ShadowMediaSessionManager {
     listeners.remove(listener);
   }
 
+  @Implementation(minSdk = 37)
+  protected void addOnActiveSessionsForPackageChangedListener(
+      String packageName, Executor executor, OnActiveSessionsChangedListener listener) {
+    packageListeners.add(new PackageListener(packageName, executor, listener));
+  }
+
+  @Implementation(minSdk = 37)
+  protected void removeOnActiveSessionsForPackageChangedListener(
+      OnActiveSessionsChangedListener listener) {
+    packageListeners.removeIf(p -> p.listener.equals(listener));
+  }
+
   /**
    * Adds a {@link MediaController} that will be returned when calling {@link
    * #getActiveSessions(ComponentName)}. This will trigger a callback on each {@link
@@ -73,6 +97,13 @@ public class ShadowMediaSessionManager {
     controllers.add(controller);
     for (OnActiveSessionsChangedListener listener : listeners) {
       listener.onActiveSessionsChanged(controllers);
+    }
+    for (PackageListener p : packageListeners) {
+      ImmutableList<MediaController> packageControllers =
+          controllers.stream()
+              .filter(c -> c.getPackageName().equals(p.packageName))
+              .collect(toImmutableList());
+      p.executor.execute(() -> p.listener.onActiveSessionsChanged(packageControllers));
     }
   }
 
@@ -86,12 +117,16 @@ public class ShadowMediaSessionManager {
     for (OnActiveSessionsChangedListener listener : listeners) {
       listener.onActiveSessionsChanged(controllers);
     }
+    for (PackageListener p : packageListeners) {
+      p.executor.execute(() -> p.listener.onActiveSessionsChanged(ImmutableList.of()));
+    }
   }
 
   @Resetter
   public static void reset() {
     controllers.clear();
     listeners.clear();
+    packageListeners.clear();
   }
 
   @ForType(MediaSessionManager.class)
@@ -102,5 +137,18 @@ public class ShadowMediaSessionManager {
 
     @Accessor("mService")
     void setService(ISessionManager service);
+  }
+
+  private static class PackageListener {
+    final String packageName;
+    final Executor executor;
+    final OnActiveSessionsChangedListener listener;
+
+    PackageListener(
+        String packageName, Executor executor, OnActiveSessionsChangedListener listener) {
+      this.packageName = packageName;
+      this.executor = executor;
+      this.listener = listener;
+    }
   }
 }

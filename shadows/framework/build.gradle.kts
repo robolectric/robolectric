@@ -56,7 +56,9 @@ dependencies {
   compileOnly(AndroidSdk.MAX_SDK.coordinates)
   api(libs.icu4j)
   api(libs.auto.value.annotations)
+  compileOnly(libs.auto.service.annotations)
   annotationProcessor(libs.auto.value)
+  annotationProcessor(libs.auto.service)
 
   sqlite4java(libs.bundles.sqlite4java.native)
 

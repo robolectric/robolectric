@@ -28,6 +28,7 @@ public class ShadowWifiScanner {
   @RealObject protected WifiScanner realWifiScanner;
 
   private List<ScanResult> scanResults = new ArrayList<>();
+  private List<Integer> availableChannels = new ArrayList<>();
 
   /**
    * This method sets the scanResults that are immediately passed to the listeners, or returned by
@@ -47,6 +48,16 @@ public class ShadowWifiScanner {
   @Implementation(minSdk = VERSION_CODES.R)
   protected List<ScanResult> getSingleScanResults() {
     return scanResults;
+  }
+
+  /** Sets the channels that are returned by getAvailableChannels(). */
+  public void setAvailableChannels(List<Integer> availableChannels) {
+    this.availableChannels = availableChannels;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.R)
+  protected List<Integer> getAvailableChannels(int band) {
+    return availableChannels;
   }
 
   private void notifyScanListenersU() {

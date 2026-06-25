@@ -1,16 +1,19 @@
 package org.robolectric.simulator;
 
+import android.app.UiAutomation;
 import android.os.Handler;
 import android.os.Looper;
+import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.collect.ImmutableMap;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import org.robolectric.shadows.ShadowUiAutomation;
 
-/** A {@link KeyListener} that forwards KeyEvents to Robolectric {@link ShadowUiAutomation}. */
+/** A {@link KeyListener} that forwards KeyEvents to Robolectric {@link UiAutomation}. */
 public final class KeyboardHandler implements KeyListener {
 
   private final Handler handler = new Handler(Looper.getMainLooper());
+  private final UiAutomation uiAutomation =
+      InstrumentationRegistry.getInstrumentation().getUiAutomation();
 
   // Map of AWT KeyEvent constants to Android KeyEvent constants
   private static final ImmutableMap<Integer, Integer> KEY_MAP;
@@ -121,22 +124,24 @@ public final class KeyboardHandler implements KeyListener {
             System.err.println("Unknown mapping for AWT key " + e.getKeyCode());
           } else {
             if (shiftKeyPressed) {
-              ShadowUiAutomation.injectInputEvent(
+              uiAutomation.injectInputEvent(
                   newAndroidKeyEvent(
                       android.view.KeyEvent.ACTION_DOWN,
                       android.view.KeyEvent.KEYCODE_SHIFT_LEFT,
                       android.view.KeyEvent.META_SHIFT_ON
-                          | android.view.KeyEvent.META_SHIFT_LEFT_ON));
+                          | android.view.KeyEvent.META_SHIFT_LEFT_ON),
+                  true);
             }
 
-            ShadowUiAutomation.injectInputEvent(
+            uiAutomation.injectInputEvent(
                 newAndroidKeyEvent(
                     android.view.KeyEvent.ACTION_DOWN,
                     KEY_MAP.get(e.getKeyCode()),
                     shiftKeyPressed
                         ? android.view.KeyEvent.META_SHIFT_ON
                             | android.view.KeyEvent.META_SHIFT_LEFT_ON
-                        : 0));
+                        : 0),
+                true);
           }
         });
   }
@@ -152,20 +157,20 @@ public final class KeyboardHandler implements KeyListener {
           if (!KEY_MAP.containsKey(e.getKeyCode())) {
             System.err.println("Unknown mapping for AWT key " + e.getKeyCode());
           } else {
-            ShadowUiAutomation.injectInputEvent(
+            uiAutomation.injectInputEvent(
                 newAndroidKeyEvent(
                     android.view.KeyEvent.ACTION_UP,
                     KEY_MAP.get(e.getKeyCode()),
                     shiftKeyPressed
                         ? android.view.KeyEvent.META_SHIFT_ON
                             | android.view.KeyEvent.META_SHIFT_LEFT_ON
-                        : 0));
+                        : 0),
+                true);
             if (shiftKeyPressed) {
-              ShadowUiAutomation.injectInputEvent(
+              uiAutomation.injectInputEvent(
                   newAndroidKeyEvent(
-                      android.view.KeyEvent.ACTION_UP,
-                      android.view.KeyEvent.KEYCODE_SHIFT_LEFT,
-                      0));
+                      android.view.KeyEvent.ACTION_UP, android.view.KeyEvent.KEYCODE_SHIFT_LEFT, 0),
+                  true);
             }
           }
         });

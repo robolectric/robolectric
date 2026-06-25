@@ -1068,6 +1068,10 @@ public abstract class Asset {
     //     virtual void close(void);
     //     virtual final void* getBuffer(boolean wordAligned);
 
+    private static boolean isEnabled() {
+      return Boolean.getBoolean("robolectric.supportsCompressedAssetFileData");
+    }
+
     @Override
     public long getLength() {
       return mUncompressedLen;
@@ -1080,7 +1084,10 @@ public abstract class Asset {
 
     @Override
     public File getFile() {
-      return null;
+      if (!isEnabled()) {
+        return null;
+      }
+      return mTempFile;
     }
 
     @Override
@@ -1091,7 +1098,25 @@ public abstract class Asset {
 
     @Override
     public FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength) {
-      return null;
+      if (!isEnabled()) {
+        return null;
+      }
+      byte[] buf = getBuffer(false);
+      if (buf == null) {
+        return null;
+      }
+      try {
+        Path tempFile = Files.createTempFile("robolectric-asset", ".bin");
+        File file = tempFile.toFile();
+        file.deleteOnExit();
+        mTempFile = file;
+        Files.write(tempFile, buf);
+        outStart.set(0L);
+        outLength.set((long) buf.length);
+        return new FileInputStream(file).getFD();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     @Override
@@ -1113,6 +1138,7 @@ public abstract class Asset {
 
     FileMap mMap; // for memory-mapped input
     int mFd; // for file input
+    File mTempFile;
 
     // class StreamingZipInflater mZipInflater;  // for streaming large compressed assets
 

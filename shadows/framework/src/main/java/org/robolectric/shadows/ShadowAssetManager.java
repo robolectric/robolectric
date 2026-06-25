@@ -112,9 +112,6 @@ public abstract class ShadowAssetManager {
     @Direct
     void createSystemAssetsInZygoteLocked();
 
-    @Direct
-    void releaseTheme(long ptr);
-
     @Accessor("mObject")
     long getObject();
 

@@ -24,7 +24,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -506,20 +505,6 @@ public class ShadowDisplayManagerTest {
     ShadowDisplayManager.setNaturallyPortrait(Display.DEFAULT_DISPLAY, false);
 
     assertThat(ShadowDisplay.getDefaultDisplay().getRotation()).isEqualTo(Surface.ROTATION_0);
-  }
-
-  @Test
-  public void configureDefaultDisplay_calledTwice_showsReasonableException() {
-    IllegalStateException e =
-        Assert.assertThrows(
-            IllegalStateException.class,
-            () -> ShadowDisplayManager.configureDefaultDisplay(null, null));
-
-    assertThat(e).hasMessageThat().contains("configureDefaultDisplay should only be called once");
-    assertThat(e)
-        .hasCauseThat()
-        .hasMessageThat()
-        .contains("configureDefaultDisplay was called a second time");
   }
 
   @Test

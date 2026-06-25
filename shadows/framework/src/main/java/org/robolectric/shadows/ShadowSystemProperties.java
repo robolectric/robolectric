@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 
 import android.os.SystemProperties;
+import com.google.common.base.Strings;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class ShadowSystemProperties {
   @Implementation
   protected static String native_get(String key, String def) {
     String value = getProperty(key);
-    return value == null ? def : value;
+    return value != null ? value : Strings.nullToEmpty(def);
   }
 
   @Implementation

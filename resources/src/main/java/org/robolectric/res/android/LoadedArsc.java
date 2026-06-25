@@ -113,9 +113,7 @@ public class LoadedArsc {
         return 0;
       }
 
-      // uint32_t* flags = reinterpret_cast<uint32_t*>(type_spec + 1);
-      int[] flags = type_spec.getSpecFlags();
-      return flags[entry_index];
+      return type_spec.getSpecFlag(entry_index);
     }
   }
 

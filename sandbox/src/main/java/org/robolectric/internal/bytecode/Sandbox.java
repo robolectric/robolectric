@@ -103,6 +103,20 @@ public class Sandbox {
         });
   }
 
+  public void runOnMainThreadWithClassLoader(Runnable runnable) {
+    runOnMainThread(
+        () -> {
+          ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
+          try {
+            Thread.currentThread().setContextClassLoader(getRobolectricClassLoader());
+            runnable.run();
+          } finally {
+            Thread.currentThread().setContextClassLoader(priorContextClassLoader);
+          }
+          return null;
+        });
+  }
+
   // check if the sandbox is shutdown
   public boolean isShutdown() {
     return executorService.isShutdown();

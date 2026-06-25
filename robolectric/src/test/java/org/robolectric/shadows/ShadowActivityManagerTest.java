@@ -83,6 +83,25 @@ public class ShadowActivityManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void getMemoryInfo_canGetAdvertisedMem() {
+    ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+    memoryInfo.availMem = 12345;
+    memoryInfo.lowMemory = true;
+    memoryInfo.threshold = 10000;
+    memoryInfo.totalMem = 55555;
+    memoryInfo.advertisedMem = 66666;
+    shadowActivityManager.setMemoryInfo(memoryInfo);
+    ActivityManager.MemoryInfo fetchedMemoryInfo = new ActivityManager.MemoryInfo();
+    activityManager.getMemoryInfo(fetchedMemoryInfo);
+    assertThat(fetchedMemoryInfo.availMem).isEqualTo(12345);
+    assertThat(fetchedMemoryInfo.lowMemory).isTrue();
+    assertThat(fetchedMemoryInfo.threshold).isEqualTo(10000);
+    assertThat(fetchedMemoryInfo.totalMem).isEqualTo(55555);
+    assertThat(fetchedMemoryInfo.advertisedMem).isEqualTo(66666);
+  }
+
+  @Test
   public void getMemoryInfo_canGetMemoryInfoEvenWhenWeDidNotSetIt() {
     ActivityManager.MemoryInfo fetchedMemoryInfo = new ActivityManager.MemoryInfo();
     activityManager.getMemoryInfo(fetchedMemoryInfo);
@@ -173,6 +192,29 @@ public class ShadowActivityManagerTest {
 
     activityManager.killBackgroundProcesses("org.robolectric");
     assertThat(shadowActivityManager.getBackgroundPackage()).isEqualTo("org.robolectric");
+  }
+
+  @Test
+  public void forceStopPackage_shouldRecordPackageAsStopped() {
+    String packageName = "com.foo.bar";
+    assertThat(shadowActivityManager.isPackageForceStopped(packageName)).isFalse();
+
+    activityManager.forceStopPackage(packageName);
+    assertThat(shadowActivityManager.isPackageForceStopped(packageName)).isTrue();
+  }
+
+  @Test
+  public void forceStopPackage_shouldBeScopedToCurrentUser() {
+    String packageName = "com.foo.bar";
+    shadowOf(application).setSystemService(Context.USER_SERVICE, userManager);
+    shadowOf(userManager).addUser(10, "user-10", 0);
+    shadowOf(userManager).addUser(11, "user-11", 0);
+
+    activityManager.switchUser(10);
+    activityManager.forceStopPackage(packageName);
+
+    assertThat(shadowActivityManager.isPackageForceStoppedAsUser(packageName, 10)).isTrue();
+    assertThat(shadowActivityManager.isPackageForceStoppedAsUser(packageName, 11)).isFalse();
   }
 
   @Test

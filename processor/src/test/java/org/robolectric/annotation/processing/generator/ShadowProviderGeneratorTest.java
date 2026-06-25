@@ -66,6 +66,7 @@ public class ShadowProviderGeneratorTest {
     when(resetterInfo.getMinSdk()).thenReturn(minSdk);
     when(resetterInfo.getMaxSdk()).thenReturn(maxSdk);
     when(resetterInfo.getMethodCall()).thenReturn(shadowName + "." + methodName + "();");
+    when(resetterInfo.getShadowClassName()).thenReturn(shadowName);
     return resetterInfo;
   }
 }

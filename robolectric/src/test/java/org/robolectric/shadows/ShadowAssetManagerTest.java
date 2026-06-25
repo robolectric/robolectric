@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
+import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -11,20 +12,23 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.ResourcesMode.Mode;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
 @ResourcesMode(Mode.BINARY)
 public class ShadowAssetManagerTest {
+
+  @Rule public final SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   private AssetManager assetManager;
   private Resources resources;
@@ -36,12 +40,21 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
-  public void openFd_shouldProvideFileDescriptorForDeflatedAsset() {
-    FileNotFoundException exception =
-        assertThrows(FileNotFoundException.class, () -> assetManager.openFd("deflatedAsset.xml"));
-    assertThat(exception)
-        .hasMessageThat()
-        .isEqualTo("This file can not be opened as a file descriptor; it is probably compressed");
+  public void openFd_shouldProvideFileDescriptorForDeflatedAsset() throws IOException {
+    setSystemPropertyRule.set("robolectric.supportsCompressedAssetFileData", "true");
+    AssetFileDescriptor assetFileDescriptor = assetManager.openFd("deflatedAsset.xml");
+    assertThat(assetFileDescriptor).isNotNull();
+    assertThat(assetFileDescriptor.getLength()).isEqualTo(13);
+    try (InputStream inputStream = assetFileDescriptor.createInputStream()) {
+      byte[] buf = new byte[13];
+      assertThat(inputStream.read(buf)).isEqualTo(13);
+    }
+  }
+
+  @Test
+  public void openFd_systemPropertyDisabled_shouldThrowException() throws IOException {
+    setSystemPropertyRule.set("robolectric.supportsCompressedAssetFileData", "false");
+    assertThrows(IOException.class, () -> assetManager.openFd("deflatedAsset.xml"));
   }
 
   @Test

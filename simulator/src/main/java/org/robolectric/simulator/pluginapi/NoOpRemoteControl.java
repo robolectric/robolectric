@@ -9,7 +9,12 @@ import javax.annotation.Priority;
 /** The default [RemoteControl]. */
 @Priority(Integer.MIN_VALUE)
 @AutoService(RemoteControl.class)
-final class NoOpRemoteControl implements RemoteControl {
+public final class NoOpRemoteControl implements RemoteControl {
+
+  public NoOpRemoteControl() {
+    // Required public no-arg constructor.
+  }
+
   @Override
   public void connect(UiAutomation uiAutomation, Looper looper) {
     // Do nothing

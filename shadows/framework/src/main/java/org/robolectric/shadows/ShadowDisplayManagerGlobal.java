@@ -6,9 +6,11 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.shadows.ShadowDisplayManager.createDefaultDisplay;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.WindowConfiguration;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -23,6 +25,7 @@ import android.hardware.display.WifiDisplayStatus;
 import android.media.projection.IMediaProjection;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.util.DisplayMetrics;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -36,7 +39,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.Nullable;
-import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -78,6 +80,14 @@ public class ShadowDisplayManagerGlobal {
     // referencing the ColorSpace named constants, making application creation around 0.75s faster.
   }
 
+  // internal - do not use
+  public static synchronized void resetInstance(
+      Configuration configuration, DisplayMetrics displayMetrics) {
+    instance = null;
+    ShadowDisplayManagerGlobal shadowInstance = Shadow.extract(getInstance());
+    shadowInstance.addDisplay(createDefaultDisplay(configuration, displayMetrics));
+  }
+
   @Implementation
   public static synchronized DisplayManagerGlobal getInstance() {
     if (instance == null) {
@@ -88,7 +98,6 @@ public class ShadowDisplayManagerGlobal {
       instance = newDisplayManagerGlobal(proxy);
       ShadowDisplayManagerGlobal shadow = Shadow.extract(instance);
       shadow.mDm = displayManagerProxyDelegate;
-      Bootstrap.setUpDisplay();
     }
     return instance;
   }
@@ -203,22 +212,15 @@ public class ShadowDisplayManagerGlobal {
       this.callbacks.add(iDisplayManagerCallback);
     }
 
+    @SuppressWarnings("unused")
     public void registerCallbackWithEventMask(
         IDisplayManagerCallback iDisplayManagerCallback, long ignoredEventsMask)
         throws RemoteException {
       registerCallback(iDisplayManagerCallback);
     }
 
-    // for android R+ (SDK 30+)
-    // Use Object here instead of VirtualDisplayConfig to avoid breaking projects that still
-    // compile against SDKs < R
-    public int createVirtualDisplay(
-        @ClassName("android.hardware.display.VirtualDisplayConfig")
-            Object virtualDisplayConfigObject,
-        IVirtualDisplayCallback callbackWrapper,
-        IMediaProjection projectionToken,
-        String packageName) {
-      VirtualDisplayConfig config = (VirtualDisplayConfig) virtualDisplayConfigObject;
+    private int createVirtualDisplayInternal(
+        VirtualDisplayConfig config, IVirtualDisplayCallback callbackWrapper, String packageName) {
       DisplayInfo displayInfo = new DisplayInfo();
       displayInfo.flags = config.getFlags();
       displayInfo.type = Display.TYPE_VIRTUAL;
@@ -237,7 +239,38 @@ public class ShadowDisplayManagerGlobal {
       return id;
     }
 
+    // for android R+ (SDK 30+)
+    // Use Object here instead of VirtualDisplayConfig to avoid breaking projects that still
+    // compile against SDKs < R
+    // ReflectionHelpers.createDelegatingProxy requires delegate methods to be public,
+    // but the delegate class is private, triggering the EffectivelyPrivate warning.
+    @SuppressWarnings({"EffectivelyPrivate", "unused"})
+    public int createVirtualDisplay(
+        @ClassName("android.hardware.display.VirtualDisplayConfig")
+            Object virtualDisplayConfigObject,
+        IVirtualDisplayCallback callbackWrapper,
+        IMediaProjection projectionToken,
+        String packageName) {
+      VirtualDisplayConfig config = (VirtualDisplayConfig) virtualDisplayConfigObject;
+      return createVirtualDisplayInternal(config, callbackWrapper, packageName);
+    }
+
+    // for android T+ (SDK 33+) VDM path
+    // ReflectionHelpers.createDelegatingProxy requires delegate methods to be public,
+    // but the delegate class is private, triggering the EffectivelyPrivate warning.
+    @SuppressWarnings({"EffectivelyPrivate", "unused"})
+    public int createVirtualDisplay(
+        @ClassName("android.hardware.display.VirtualDisplayConfig")
+            Object virtualDisplayConfigObject,
+        IVirtualDisplayCallback callbackWrapper,
+        @ClassName("android.companion.virtual.IVirtualDevice") Object virtualDeviceToken,
+        String packageName) {
+      VirtualDisplayConfig config = (VirtualDisplayConfig) virtualDisplayConfigObject;
+      return createVirtualDisplayInternal(config, callbackWrapper, packageName);
+    }
+
     // for android Q (SDK 29) and below
+    @SuppressWarnings("unused")
     public int createVirtualDisplay(
         IVirtualDisplayCallback callbackWrapper,
         IMediaProjection projectionToken,
@@ -268,6 +301,7 @@ public class ShadowDisplayManagerGlobal {
     }
 
     // for android U
+    @SuppressWarnings("unused")
     public void resizeVirtualDisplay(
         IVirtualDisplayCallback token, int width, int height, int densityDpi) {
       Integer id = virtualDisplayIds.get(token);
@@ -282,6 +316,7 @@ public class ShadowDisplayManagerGlobal {
     }
 
     // for android U
+    @SuppressWarnings("unused")
     public void releaseVirtualDisplay(IVirtualDisplayCallback token) {
       if (virtualDisplayIds.containsKey(token)) {
         removeDisplay(virtualDisplayIds.remove(token));
@@ -300,6 +335,7 @@ public class ShadowDisplayManagerGlobal {
       }
     }
 
+    @SuppressWarnings("unused")
     public void setVirtualDisplaySurface(IVirtualDisplayCallback token, Surface surface) {
       // in post android V, the setVirtualDisplayState has been removed and the virtual device
       // state is propagated from system service

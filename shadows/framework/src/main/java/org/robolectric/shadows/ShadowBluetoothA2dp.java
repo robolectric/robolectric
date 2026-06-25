@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
-import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.bluetooth.BluetoothA2dp;
@@ -17,8 +16,6 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.util.Log;
 import com.google.common.collect.ImmutableList;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,15 +25,12 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.versioning.AndroidVersions;
 
 /** Shadow of {@link BluetoothA2dp}. */
 @Implements(BluetoothA2dp.class)
 public class ShadowBluetoothA2dp {
   private static final String TAG = "BluetoothA2dp";
-  private static final boolean VERIFY_DEVICE_NOT_NULL_IS_STATIC = verifyDeviceNotNullIsStatic();
 
   @RealObject protected BluetoothA2dp realObject;
 
@@ -177,7 +171,7 @@ public class ShadowBluetoothA2dp {
   @Implementation(minSdk = R)
   @OptionalCodecsPreferenceStatus
   protected int isOptionalCodecsEnabled(BluetoothDevice device) {
-    verifyDeviceNotNull(device, "isOptionalCodecsEnabled");
+    checkDeviceNotNull(device, "isOptionalCodecsEnabled");
     if (optionalCodecPreferenceStatusMap.containsKey(device)) {
       return optionalCodecPreferenceStatusMap.get(device);
     } else {
@@ -188,7 +182,7 @@ public class ShadowBluetoothA2dp {
   @Implementation(minSdk = R)
   protected void setOptionalCodecsEnabled(
       BluetoothDevice device, @OptionalCodecsPreferenceStatus int value) {
-    verifyDeviceNotNull(device, "setOptionalCodecsEnabled");
+    checkDeviceNotNull(device, "setOptionalCodecsEnabled");
     if (value != BluetoothA2dp.OPTIONAL_CODECS_PREF_UNKNOWN
         && value != BluetoothA2dp.OPTIONAL_CODECS_PREF_DISABLED
         && value != BluetoothA2dp.OPTIONAL_CODECS_PREF_ENABLED) {
@@ -200,36 +194,15 @@ public class ShadowBluetoothA2dp {
 
   @ForType(BluetoothA2dp.class)
   private interface BluetoothA2dpReflector {
-    @Direct
     void verifyDeviceNotNull(BluetoothDevice device, String methodName);
   }
 
-  private static boolean verifyDeviceNotNullIsStatic() {
-    Method m = null;
-    try {
-      m =
-          BluetoothA2dp.class.getDeclaredMethod(
-              "verifyDeviceNotNull", BluetoothDevice.class, String.class);
-      return Modifier.isStatic(m.getModifiers());
-    } catch (NoSuchMethodException e) {
-      if (AndroidVersions.CURRENT.getSdkInt() >= AndroidVersions.R.SDK_INT) {
-        throw new RuntimeException("Method verifyDeviceNotNull not found in BluetoothA2dp", e);
-      }
-    }
-    return false; // never used since less than minSdk of R.
-  }
-
-  @Implementation(minSdk = R, maxSdk = VANILLA_ICE_CREAM, methodName = "verifyDeviceNotNull")
-  protected void verifyDeviceNotNull(BluetoothDevice device, String methodName) {
-    if (VERIFY_DEVICE_NOT_NULL_IS_STATIC) {
+  private void checkDeviceNotNull(BluetoothDevice device, String methodName) {
+    // BluetoothA2dp.verifyDeviceNotNull is a static method from SDK 36+
+    if (RuntimeEnvironment.getApiLevel() >= BAKLAVA) {
       reflector(BluetoothA2dpReflector.class).verifyDeviceNotNull(device, methodName);
     } else {
       reflector(BluetoothA2dpReflector.class, realObject).verifyDeviceNotNull(device, methodName);
     }
-  }
-
-  @Implementation(minSdk = BAKLAVA, methodName = "verifyDeviceNotNull")
-  protected static void verifyDeviceNotNullBaklava(BluetoothDevice device, String methodName) {
-    reflector(BluetoothA2dpReflector.class).verifyDeviceNotNull(device, methodName);
   }
 }

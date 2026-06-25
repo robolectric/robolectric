@@ -80,7 +80,7 @@ public class ShadowCountDownTimerTest {
     assertThat(timer).isNotNull();
     assertThat(shadowCountDownTimer.isCancelled()).isFalse();
     assertThat(shadowCountDownTimer.hasStarted()).isTrue();
-    shadowCountDownTimer.cancel();
+    timer.cancel();
     assertThat(shadowCountDownTimer.isCancelled()).isTrue();
     assertThat(shadowCountDownTimer.hasStarted()).isFalse();
   }

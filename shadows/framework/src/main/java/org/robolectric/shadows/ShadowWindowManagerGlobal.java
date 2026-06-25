@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -150,6 +151,7 @@ public class ShadowWindowManagerGlobal {
                   windowSessionDelegate.remove(args);
                   return null;
                 case "relayout":
+                case "relayout2":
                   return windowSessionDelegate.relayout(args);
                 case "getInTouchMode":
                   return windowSessionDelegate.getInTouchMode();
@@ -265,7 +267,7 @@ public class ShadowWindowManagerGlobal {
             windowInfo,
             /* inAttrs= */ (WindowManager.LayoutParams) args[1],
             /* requestedSize= */ null,
-            /* outFrame= */ null,
+            /* outFrame= */ layout.isPresent() ? layout.get().frames.frame : null,
             /* outContentInsets= */ null,
             /* outVisibleInsets= */ null,
             /* outStableInsets= */ null,
@@ -310,12 +312,15 @@ public class ShadowWindowManagerGlobal {
 
       // Simulate initializing the SurfaceControl member object, which happens during this method.
       if (sdk >= Q) {
-        SurfaceControl surfaceControl =
-            sdk >= VANILLA_ICE_CREAM
-                    && ReflectionHelpers.hasField(WindowRelayoutResult.class, "surfaceControl")
-                ? ReflectionHelpers.getField(windowLayoutResult, "surfaceControl")
-                : findFirst(SurfaceControl.class, args);
-        Shadow.<ShadowSurfaceControl>extract(surfaceControl).initializeNativeObject();
+        SurfaceControl surfaceControl = null;
+        if (sdk >= VANILLA_ICE_CREAM && sdk <= BAKLAVA && windowLayoutResult != null) {
+          surfaceControl = ReflectionHelpers.getField(windowLayoutResult, "surfaceControl");
+        } else {
+          surfaceControl = findFirstOpt(SurfaceControl.class, args).orElse(null);
+        }
+        if (surfaceControl != null) {
+          Shadow.<ShadowSurfaceControl>extract(surfaceControl).initializeNativeObject();
+        }
       }
 
       IWindow window = (IWindow) args[0];

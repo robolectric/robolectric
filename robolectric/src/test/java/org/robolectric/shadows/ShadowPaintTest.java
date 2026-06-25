@@ -214,4 +214,12 @@ public class ShadowPaintTest {
     paint.setFontVariationSettings("");
     assertThat(paint.getFontVariationSettings()).isNull();
   }
+
+  @Test
+  public void testStrokeCapDefaults() {
+    Paint paint = new Paint();
+    assertThat(paint.getStrokeCap()).isEqualTo(Paint.Cap.BUTT);
+    assertThat(paint.getStrokeJoin()).isEqualTo(Paint.Join.MITER);
+    assertThat(paint.getStyle()).isEqualTo(Paint.Style.FILL);
+  }
 }

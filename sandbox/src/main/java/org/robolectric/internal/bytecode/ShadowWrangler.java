@@ -2,6 +2,7 @@ package org.robolectric.internal.bytecode;
 
 import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
+import static java.lang.invoke.MethodHandles.filterArguments;
 import static java.lang.invoke.MethodHandles.foldArguments;
 import static java.lang.invoke.MethodHandles.identity;
 import static java.lang.invoke.MethodType.methodType;
@@ -24,11 +25,13 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
 import org.robolectric.annotation.ClassName;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
+import org.robolectric.pluginapi.MethodHandleDecorator;
 import org.robolectric.sandbox.ShadowMatcher;
-import org.robolectric.util.Function;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.PerfStatsCollector;
 
 /**
@@ -48,21 +51,7 @@ import org.robolectric.util.PerfStatsCollector;
 @AutoService(ClassHandler.class)
 @Priority(Integer.MIN_VALUE)
 public class ShadowWrangler implements ClassHandler {
-  public static final Function<Object, Object> DO_NOTHING_HANDLER =
-      (theClass, value, params) -> null;
   public static final Method CALL_REAL_CODE = null;
-  public static final MethodHandle DO_NOTHING =
-      constant(Void.class, null).asType(methodType(void.class));
-  public static final Method DO_NOTHING_METHOD;
-
-  static {
-    try {
-      DO_NOTHING_METHOD = ShadowWrangler.class.getDeclaredMethod("doNothing");
-      DO_NOTHING_METHOD.setAccessible(true);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
@@ -73,6 +62,7 @@ public class ShadowWrangler implements ClassHandler {
   private final Interceptors interceptors;
   private final ShadowMatcher shadowMatcher;
   private final MethodHandle reflectorHandle;
+  private final List<MethodHandleDecorator> decorators;
 
   /** key is instrumented class */
   private final ClassValueMap<ShadowInfo> cachedShadowInfos =
@@ -94,10 +84,14 @@ public class ShadowWrangler implements ClassHandler {
       };
 
   public ShadowWrangler(
-      ShadowMap shadowMap, ShadowMatcher shadowMatcher, Interceptors interceptors) {
+      ShadowMap shadowMap,
+      ShadowMatcher shadowMatcher,
+      Interceptors interceptors,
+      List<MethodHandleDecorator> decorators) {
     this.shadowMap = shadowMap;
     this.shadowMatcher = shadowMatcher;
     this.interceptors = interceptors;
+    this.decorators = decorators;
     try {
       this.reflectorHandle =
           LOOKUP
@@ -119,13 +113,6 @@ public class ShadowWrangler implements ClassHandler {
       Method method =
           pickShadowMethod(clazz, ShadowConstants.STATIC_INITIALIZER_METHOD_NAME, NO_ARGS);
 
-      // if we got back DO_NOTHING_METHOD that means the shadow is {@code callThroughByDefault =
-      // false};
-      // for backwards compatibility we'll still perform static initialization though for now.
-      if (method == DO_NOTHING_METHOD) {
-        method = null;
-      }
-
       if (method != null) {
         if (!Modifier.isStatic(method.getModifiers())) {
           throw new RuntimeException(
@@ -142,6 +129,17 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   @SuppressWarnings({"ReferenceEquality"})
+  private static final MethodHandle GET_SHADOW;
+
+  static {
+    try {
+      GET_SHADOW =
+          LOOKUP.findVirtual(ShadowedObject.class, "$$robo$getData", methodType(Object.class));
+    } catch (ReflectiveOperationException e) {
+      throw new LinkageError(e.getMessage(), e);
+    }
+  }
+
   @Override
   public MethodHandle findShadowMethodHandle(
       Class<?> definingClass,
@@ -159,7 +157,8 @@ public class ShadowWrangler implements ClassHandler {
 
               Method shadowMethod = pickShadowMethod(definingClass, name, paramTypes);
 
-              if (shadowMethod == CALL_REAL_CODE) {
+              MethodHandle mh = null;
+              if (shadowMethod == null) {
                 ShadowInfo shadowInfo = getExactShadowInfo(definingClass);
                 if (isNative && shadowInfo != null && shadowInfo.callNativeMethodsByDefault) {
                   try {
@@ -167,42 +166,153 @@ public class ShadowWrangler implements ClassHandler {
                         definingClass.getDeclaredMethod(
                             ShadowConstants.ROBO_PREFIX + name + "$nativeBinding", paramTypes);
                     method.setAccessible(true);
-                    return LOOKUP.unreflect(method);
+                    mh = LOOKUP.unreflect(method);
                   } catch (NoSuchMethodException e) {
                     throw new LinkageError("Missing native binding method", e);
                   }
                 }
-                return null;
-              } else if (shadowMethod == DO_NOTHING_METHOD) {
-                return DO_NOTHING;
-              }
+              } else if (shadowMethod.isAnnotationPresent(Filter.class)) {
+                mh = getFilterMethodHandle(shadowMethod, name, paramTypes, definingClass, isStatic);
+              } else {
+                shadowMethod.setAccessible(true);
 
-              shadowMethod.setAccessible(true);
-
-              MethodHandle mh;
-              if (name.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME)) {
-                if (Modifier.isStatic(shadowMethod.getModifiers())) {
-                  throw new UnsupportedOperationException(
-                      "static __constructor__ shadow methods are not supported");
+                if (name.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME)) {
+                  if (Modifier.isStatic(shadowMethod.getModifiers())) {
+                    throw new UnsupportedOperationException(
+                        "static __constructor__ shadow methods are not supported");
+                  }
+                  // Use invokespecial to call constructor shadow methods. If invokevirtual is used,
+                  // the wrong constructor may be called in situations where constructors with
+                  // identical signatures are shadowed in object hierarchies.
+                  mh =
+                      MethodHandles.privateLookupIn(shadowMethod.getDeclaringClass(), LOOKUP)
+                          .unreflectSpecial(shadowMethod, shadowMethod.getDeclaringClass());
+                } else {
+                  mh = LOOKUP.unreflect(shadowMethod);
                 }
-                // Use invokespecial to call constructor shadow methods. If invokevirtual is used,
-                // the wrong constructor may be called in situations where constructors with
-                // identical signatures are shadowed in object hierarchies.
-                mh =
-                    MethodHandles.privateLookupIn(shadowMethod.getDeclaringClass(), LOOKUP)
-                        .unreflectSpecial(shadowMethod, shadowMethod.getDeclaringClass());
-              } else {
-                mh = LOOKUP.unreflect(shadowMethod);
+
+                // Robolectric doesn't actually look for static, this for example happens
+                // in MessageQueue.nativeInit() which used to be void non-static in 4.2.
+                if (!isStatic && Modifier.isStatic(shadowMethod.getModifiers())) {
+                  mh = dropArguments(mh, 0, Object.class);
+                }
               }
 
-              // Robolectric doesn't actually look for static, this for example happens
-              // in MessageQueue.nativeInit() which used to be void non-static in 4.2.
-              if (!isStatic && Modifier.isStatic(shadowMethod.getModifiers())) {
-                return dropArguments(mh, 0, Object.class);
-              } else {
-                return mh;
+              for (MethodHandleDecorator decorator : decorators) {
+                MethodHandle decorated =
+                    decorator.decorate(definingClass, name, methodType, isStatic, mh);
+                if (decorated != null) {
+                  mh = decorated;
+                }
               }
+
+              return mh;
             });
+  }
+
+  private MethodHandle getFilterMethodHandle(
+      Method shadowMethod,
+      String name,
+      Class<?>[] paramTypes,
+      Class<?> definingClass,
+      boolean isStatic)
+      throws IllegalAccessException {
+    validateFilter(shadowMethod, name, isStatic);
+
+    shadowMethod.setAccessible(true);
+    MethodHandle filter = LOOKUP.unreflect(shadowMethod);
+
+    String originalName = Shadow.directMethodName(definingClass.getName(), name);
+    Method originalMethod;
+    try {
+      originalMethod = definingClass.getDeclaredMethod(originalName, paramTypes);
+    } catch (NoSuchMethodException e) {
+      throw new IllegalStateException(
+          "Failed to find original method for @Filter: " + originalName, e);
+    }
+    originalMethod.setAccessible(true);
+    MethodHandle original = LOOKUP.unreflect(originalMethod);
+
+    // [Real (Receiver)?], Args...
+    MethodType foldType = original.type();
+    Class<?> returnType = original.type().returnType();
+    boolean originalHasReturn = returnType != void.class;
+
+    Filter filterAnnotation = shadowMethod.getAnnotation(Filter.class);
+    Filter.Order order = filterAnnotation.order();
+
+    if (order == Filter.Order.AFTER && originalHasReturn) {
+      foldType = foldType.insertParameterTypes(0, returnType);
+    }
+
+    MethodHandle adaptedFilter = filter;
+
+    boolean filterIsStatic = Modifier.isStatic(shadowMethod.getModifiers());
+
+    if (!filterIsStatic) {
+      // Instance filter: (Shadow, [Args...])
+      // Convert Receiver: (Real (Receiver), [Args...])
+      adaptedFilter =
+          filterArguments(
+              adaptedFilter,
+              0,
+              GET_SHADOW.asType(methodType(shadowMethod.getDeclaringClass(), definingClass)));
+
+    } else {
+      // Static filter: ([Args...])
+      // foldType: ([Real (Receiver)?], Args...)
+
+      // If original is instance, foldType has the Real object as the receiver. The static filter
+      // method does not take the Real object.
+      if (!isStatic) {
+        adaptedFilter = dropArguments(adaptedFilter, 0, definingClass);
+      }
+    }
+
+    if (order == Filter.Order.AFTER && originalHasReturn) {
+      adaptedFilter = dropArguments(adaptedFilter, 0, returnType);
+    }
+
+    if (adaptedFilter.type().parameterCount() < foldType.parameterCount()) {
+      adaptedFilter =
+          dropArguments(
+              adaptedFilter,
+              adaptedFilter.type().parameterCount(),
+              foldType
+                  .parameterList()
+                  .subList(adaptedFilter.type().parameterCount(), foldType.parameterCount()));
+    }
+
+    adaptedFilter = adaptedFilter.asType(foldType.changeReturnType(void.class));
+
+    if (order == Filter.Order.AFTER) {
+      if (originalHasReturn) {
+        MethodHandle reserver =
+            dropArguments(identity(returnType), 1, original.type().parameterArray());
+        adaptedFilter = foldArguments(reserver, adaptedFilter);
+      }
+
+      return foldArguments(adaptedFilter, original);
+    } else {
+      return foldArguments(original, adaptedFilter);
+    }
+  }
+
+  private void validateFilter(Method shadowMethod, String name, boolean isStatic) {
+    if (shadowMethod.getReturnType() != void.class) {
+      throw new IllegalArgumentException(
+          "@Filter method must have void return type: " + shadowMethod);
+    }
+
+    if (name.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME)
+        && Modifier.isStatic(shadowMethod.getModifiers())) {
+      throw new UnsupportedOperationException(
+          "static __constructor__ shadow methods are not supported");
+    }
+
+    if (isStatic && !Modifier.isStatic(shadowMethod.getModifiers())) {
+      throw new UnsupportedOperationException("@Filter for static method must be static");
+    }
   }
 
   /**
@@ -227,9 +337,9 @@ public class ShadowWrangler implements ClassHandler {
         throw new IllegalStateException(e);
       }
 
-      Method method = findShadowMethod(definingClass, name, paramTypes, shadowInfo, shadowClass);
+      Method method = findShadowMethod(definingClass, name, paramTypes, shadowClass);
       if (method == null) {
-        return shadowInfo.callThroughByDefault ? CALL_REAL_CODE : DO_NOTHING_METHOD;
+        return CALL_REAL_CODE;
       } else {
         return method;
       }
@@ -239,21 +349,14 @@ public class ShadowWrangler implements ClassHandler {
   /**
    * Searches for an {@code @Implementation} method on a given shadow class.
    *
-   * <p>If the shadow class allows loose signatures, search for them.
-   *
    * <p>If the shadow class has function using @ClassName matches the requirement, return it
    *
    * <p>If the shadow class doesn't have such a method, but does have a superclass which implements
    * the same class as it, call ourself recursively with the shadow superclass.
    */
   private Method findShadowMethod(
-      Class<?> definingClass,
-      String name,
-      Class<?>[] types,
-      ShadowInfo shadowInfo,
-      Class<?> shadowClass) {
-    Method method =
-        findShadowMethodDeclaredOnClass(shadowClass, name, types, shadowInfo.looseSignatures);
+      Class<?> definingClass, String name, Class<?>[] types, Class<?> shadowClass) {
+    Method method = findShadowMethodDeclaredOnClass(shadowClass, name, types);
 
     if (method != null) {
       return method;
@@ -267,8 +370,7 @@ public class ShadowWrangler implements ClassHandler {
             && shadowSuperclassInfo.isShadowOf(definingClass)
             && shadowMatcher.matches(shadowSuperclassInfo)) {
 
-          method =
-              findShadowMethod(definingClass, name, types, shadowSuperclassInfo, shadowSuperclass);
+          method = findShadowMethod(definingClass, name, types, shadowSuperclass);
         }
       }
     }
@@ -277,16 +379,10 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   private Method findShadowMethodDeclaredOnClass(
-      Class<?> shadowClass, String methodName, Class<?>[] paramClasses, boolean looseSignatures) {
+      Class<?> shadowClass, String methodName, Class<?>[] paramClasses) {
     Method foundMethod = null;
-    // Try to find shadow method with exact method name and looseSignature.
     Method[] methods = shadowClass.getDeclaredMethods();
     for (Method method : methods) {
-      if (!method.getName().equals(methodName)
-          || method.getParameterCount() != paramClasses.length) {
-        continue;
-      }
-
       if (!Modifier.isPublic(method.getModifiers())
           && !Modifier.isProtected(method.getModifiers())) {
         continue;
@@ -296,53 +392,42 @@ public class ShadowWrangler implements ClassHandler {
         continue;
       }
 
+      Filter filter = method.getAnnotation(Filter.class);
+      Implementation implementation = method.getAnnotation(Implementation.class);
+
+      if (filter != null && implementation != null) {
+        throw new IllegalStateException(
+            "Method "
+                + method.getName()
+                + " cannot be annotated with both @Implementation and @Filter");
+      }
+
+      boolean nameMatches = method.getName().equals(methodName);
+
+      if (!nameMatches && filter != null) {
+        String mappedMethodName = filter.methodName().trim();
+        nameMatches = !mappedMethodName.isEmpty() && mappedMethodName.equals(methodName);
+      }
+
+      if (!nameMatches && implementation != null) {
+        String mappedMethodName = implementation.methodName().trim();
+        nameMatches = !mappedMethodName.isEmpty() && mappedMethodName.equals(methodName);
+      }
+
+      if (!nameMatches) {
+        continue;
+      }
+
       if (Arrays.equals(method.getParameterTypes(), paramClasses)) {
         // Found an exact match, we can exit early.
         foundMethod = method;
         break;
       }
 
-      if (looseSignatures) {
-        boolean allParameterTypesAreObject = true;
-        for (Class<?> paramClass : method.getParameterTypes()) {
-          if (!paramClass.equals(Object.class)) {
-            allParameterTypesAreObject = false;
-            break;
-          }
-        }
-        if (allParameterTypesAreObject) {
-          // Found a looseSignatures match, but continue looking for an exact match.
-          foundMethod = method;
-        }
-      } else {
-        // Or maybe support @ClassName.
-        if (parameterClassNameMatch(method, paramClasses)) {
-          // Found a @ClassName match, but continue looking for an exact match.
-          foundMethod = method;
-        }
-      }
-    }
-
-    if (foundMethod == null) {
-      // Try to find shadow method with Implementation#methodName's mapping name
-      for (Method method : methods) {
-        Implementation implementation = method.getAnnotation(Implementation.class);
-        if (implementation == null) {
-          continue;
-        }
-        String mappedMethodName = implementation.methodName();
-        mappedMethodName = mappedMethodName == null ? "" : mappedMethodName.trim();
-        if (mappedMethodName.isEmpty() || !mappedMethodName.equals(methodName)) {
-          continue;
-        }
-        if (!shadowMatcher.matches(method)) {
-          continue;
-        }
-        if (Arrays.equals(method.getParameterTypes(), paramClasses)
-            || parameterClassNameMatch(method, paramClasses)) {
-          foundMethod = method;
-          break;
-        }
+      // Or maybe support @ClassName.
+      if (parametersMatch(method.getParameters(), paramClasses)) {
+        // Found a @ClassName match, but continue looking for an exact match.
+        foundMethod = method;
       }
     }
 
@@ -354,30 +439,28 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
-  /**
-   * Check whether the parameters (which could be @ClassName annotated) of the {@code method}
-   * matches {@code paramClasses}.
-   */
-  private boolean parameterClassNameMatch(Method method, Class<?>[] paramClasses) {
-    Parameter[] params = method.getParameters();
-    if (params.length != paramClasses.length) {
+  private boolean parametersMatch(Parameter[] params, Class<?>[] expectedTypes) {
+    if (params.length != expectedTypes.length) {
       return false;
     }
 
-    for (int i = 0; i < params.length; ++i) {
-      if (params[i].getType().equals(paramClasses[i])) {
-        continue;
-      }
-      if (!params[i].getType().equals(Object.class)) {
-        return false; // @ClassName only applicable to parameter of Object type
-      }
-      ClassName className = params[i].getAnnotation(ClassName.class);
-      if (className == null || !className.value().equals(paramClasses[i].getName())) {
+    for (int i = 0; i < params.length; i++) {
+      if (!isParameterMatch(params[i], expectedTypes[i])) {
         return false;
       }
     }
-
     return true;
+  }
+
+  private boolean isParameterMatch(Parameter param, Class<?> expectedType) {
+    if (param.getType().equals(Object.class)) {
+      ClassName className = param.getAnnotation(ClassName.class);
+      if (className != null) {
+        return className.value().equals(expectedType.getName());
+      }
+    }
+
+    return param.getType().equals(expectedType);
   }
 
   @Override

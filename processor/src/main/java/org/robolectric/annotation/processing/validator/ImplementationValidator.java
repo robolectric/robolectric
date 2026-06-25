@@ -1,8 +1,11 @@
 package org.robolectric.annotation.processing.validator;
 
+import static com.google.auto.common.MoreTypes.asTypeElement;
+
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -27,6 +30,20 @@ public class ImplementationValidator extends FoundOnImplementsValidator {
             Kind.ERROR,
             "@Implementation methods should be protected (preferred) or public (deprecated)");
       }
+    }
+
+    boolean hasFilterAnnotation = false;
+
+    for (AnnotationMirror mirror : elem.getAnnotationMirrors()) {
+      if (asTypeElement(mirror.getAnnotationType())
+          .getQualifiedName()
+          .contentEquals("org.robolectric.annotation.Filter")) {
+        hasFilterAnnotation = true;
+      }
+    }
+
+    if (hasFilterAnnotation) {
+      message(Kind.ERROR, "@Implementation and @Filter cannot be present on the same method");
     }
 
     // TODO: Check that it has the right signature

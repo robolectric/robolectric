@@ -15,13 +15,19 @@ import java.util.zip.ZipEntry;
 public class VersionCalculator {
 
   /**
+   * A temporary alias to {@link * android.os.Build.VERSION_CODES.CINNAMON_BUN}. This will be
+   * removed when Robolectric shadows compile against the CINNAMON_BUN SDK
+   */
+  public static final int CINNAMON_BUN = 37;
+
+  /**
    * Placeholder constant for the next major SDK int after {@link
-   * android.os.Build.VERSION_CODES.BAKLAVA}.
+   * android.os.Build.VERSION_CODES.CINNAMON_BUN}.
    *
    * <p>This constant is intended to be used in Shadows @Implementation sdk clauses to provide
    * preliminary support for the next major SDK.
    */
-  public static final int POST_BAKLAVA = CUR_DEVELOPMENT;
+  public static final int POST_CINNAMON_BUN = CUR_DEVELOPMENT;
 
   public static class SdkInfo {
     public final int apiLevel;
@@ -50,9 +56,9 @@ public class VersionCalculator {
   }
 
   public Integer getApiLevelForCodeName(String codename) {
-    // support tests within android platform that still use codename Baklava as alias for running
-    // on current SDK
-    // TODO: remove this logic, or at minimum, move to an android-platform specific extension
-    return "Baklava".equalsIgnoreCase(codename) ? POST_BAKLAVA : null;
+    // Tests within android platform can use unreleased codenames as targetSdkVersion
+    // For consistency with PackageManager, treat all String target SDK versions as the unreleased
+    // version
+    return CUR_DEVELOPMENT;
   }
 }

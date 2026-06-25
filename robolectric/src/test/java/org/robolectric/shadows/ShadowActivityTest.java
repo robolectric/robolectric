@@ -1453,6 +1453,12 @@ public class ShadowActivityTest {
     ShadowActivity.PermissionsRequest request = shadowOf(activity).getLastRequestedPermission();
     assertThat(request.requestCode).isEqualTo(requestCode);
     assertThat(request.requestedPermissions).isEqualTo(permission);
+
+    Intent intent = shadowOf(activity).getNextStartedActivity();
+    assertThat(intent).isNotNull();
+    assertThat(intent.getAction()).isEqualTo("android.content.pm.action.REQUEST_PERMISSIONS");
+    assertThat(intent.getStringArrayExtra("android.content.pm.extra.REQUEST_PERMISSIONS_NAMES"))
+        .isEqualTo(permission);
   }
 
   @Test

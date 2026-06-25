@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow Implementation of {@link android.net.wifi.WifiConfiguration} */
@@ -29,9 +29,8 @@ public class ShadowWifiConfiguration {
     return new WifiConfiguration(realObject);
   }
 
-  @Implementation(minSdk = R, maxSdk = R)
+  @Filter(minSdk = R, maxSdk = R, order = Order.AFTER)
   protected void setSecurityParams(int securityType) {
-    reflector(WifiConfigurationReflector.class, realObject).setSecurityParams(securityType);
     this.securityType = securityType;
   }
 
@@ -52,8 +51,5 @@ public class ShadowWifiConfiguration {
   interface WifiConfigurationReflector {
     @Accessor("mSecurityParamsList")
     List<Object> getSecurityParams();
-
-    @Direct
-    void setSecurityParams(int securityType);
   }
 }

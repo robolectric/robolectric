@@ -20,6 +20,7 @@ import org.robolectric.annotation.processing.generator.Generator;
 import org.robolectric.annotation.processing.generator.JavadocJsonGenerator;
 import org.robolectric.annotation.processing.generator.ServiceLoaderGenerator;
 import org.robolectric.annotation.processing.generator.ShadowProviderGenerator;
+import org.robolectric.annotation.processing.validator.FilterValidator;
 import org.robolectric.annotation.processing.validator.ImplementationValidator;
 import org.robolectric.annotation.processing.validator.ImplementsValidator;
 import org.robolectric.annotation.processing.validator.ImplementsValidator.SdkCheckMode;
@@ -45,8 +46,6 @@ public class RobolectricProcessor extends AbstractProcessor {
   private static final String SDKS_FILE = "org.robolectric.annotation.processing.sdks";
   private static final String DISABLE_INDEVELOPMENT =
       "org.robolectric.annotation.processing.disableInDevelopment";
-  private static final String ALLOW_LOOSE_SIGNATURES =
-      "org.robolectric.annotation.processing.allowLooseSignatures";
 
   /** required for Android Development. */
   private static final String VALIDATE_COMPILE_SDKS =
@@ -70,7 +69,6 @@ public class RobolectricProcessor extends AbstractProcessor {
   private boolean allowInDev;
   private String overrideSdkLocation;
   private SdkInfo overrideSdkInfo;
-  private boolean allowLooseSignatures;
 
   /** Default constructor. */
   public RobolectricProcessor() {}
@@ -104,9 +102,9 @@ public class RobolectricProcessor extends AbstractProcessor {
         new SdkStore(sdksFile, validateCompiledSdk, overrideSdkLocation, overrideSdkInfo);
 
     addValidator(new ImplementationValidator(modelBuilder, environment));
+    addValidator(new FilterValidator(modelBuilder, environment));
     addValidator(
-        new ImplementsValidator(
-            modelBuilder, environment, sdkCheckMode, sdkStore, allowInDev, allowLooseSignatures));
+        new ImplementsValidator(modelBuilder, environment, sdkCheckMode, sdkStore, allowInDev));
     addValidator(new RealObjectValidator(modelBuilder, environment));
     addValidator(new ResetterValidator(modelBuilder, environment));
   }
@@ -161,8 +159,6 @@ public class RobolectricProcessor extends AbstractProcessor {
       this.priority = Integer.parseInt(options.getOrDefault(PRIORITY, "0"));
       this.allowInDev =
           !"true".equalsIgnoreCase(options.getOrDefault(DISABLE_INDEVELOPMENT, "false"));
-      this.allowLooseSignatures =
-          "true".equalsIgnoreCase(options.getOrDefault(ALLOW_LOOSE_SIGNATURES, "false"));
       if (this.shadowPackage == null) {
         throw new IllegalArgumentException("no package specified for " + PACKAGE_OPT);
       }

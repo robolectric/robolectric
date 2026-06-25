@@ -15,11 +15,14 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowBinder.CallingIdentity;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowBinderTest {
@@ -211,5 +214,134 @@ public class ShadowBinderTest {
     ShadowBinder.setCallingUserHandle(newUser);
     ShadowBinder.reset();
     assertThat(Binder.getCallingUserHandle()).isEqualTo(android.os.Process.myUserHandle());
+  }
+
+  @Test
+  public void testSetCallingIdentityForCurrentThread() throws Exception {
+    CallingIdentity identity = CallingIdentity.newBuilder().setUid(100).setPid(200).build();
+    ShadowBinder.setCallingIdentityForCurrentThread(identity);
+
+    assertThat(Binder.getCallingUid()).isEqualTo(100);
+    assertThat(Binder.getCallingPid()).isEqualTo(200);
+    // UserHandle should fall back to process default since it wasn't set in identity
+    assertThat(Binder.getCallingUserHandle()).isEqualTo(android.os.Process.myUserHandle());
+
+    Thread thread =
+        new Thread(
+            () -> {
+              // Other thread should see default process values
+              assertThat(Binder.getCallingUid()).isEqualTo(android.os.Process.myUid());
+              assertThat(Binder.getCallingPid()).isEqualTo(android.os.Process.myPid());
+
+              // Setting it here should not affect main thread
+              ShadowBinder.setCallingIdentityForCurrentThread(
+                  CallingIdentity.newBuilder().setUid(300).build());
+              assertThat(Binder.getCallingUid()).isEqualTo(300);
+            });
+    thread.start();
+    thread.join();
+
+    // Main thread should still see 100
+    assertThat(Binder.getCallingUid()).isEqualTo(100);
+  }
+
+  @Test
+  public void testThreadLocalIdentityPrecedence() {
+    ShadowBinder.setCallingUid(50);
+    ShadowBinder.setCallingPid(60);
+    ShadowBinder.setCallingIdentityForCurrentThread(
+        CallingIdentity.newBuilder().setUid(100).setPid(70).build());
+
+    // Thread-local should win entirely
+    assertThat(Binder.getCallingUid()).isEqualTo(100);
+    assertThat(Binder.getCallingPid()).isEqualTo(70);
+
+    ShadowBinder.setCallingIdentityForCurrentThread(null);
+    // Should fall back to global
+    assertThat(Binder.getCallingUid()).isEqualTo(50);
+    assertThat(Binder.getCallingPid()).isEqualTo(60);
+  }
+
+  @Test
+  public void testSetCallingIdentityForCurrentThread_nullClears() {
+    ShadowBinder.setCallingIdentityForCurrentThread(
+        CallingIdentity.newBuilder().setUid(100).build());
+    ShadowBinder.setCallingIdentityForCurrentThread(null);
+    assertThat(Binder.getCallingUid()).isEqualTo(android.os.Process.myUid());
+  }
+
+  @Test
+  public void testSetCallingIdentityForCurrentThread_returnsPreviousValue() {
+    CallingIdentity identity1 = CallingIdentity.newBuilder().setUid(100).build();
+    CallingIdentity identity2 = CallingIdentity.newBuilder().setUid(200).build();
+
+    // First set should return null (no previous override)
+    assertThat(ShadowBinder.setCallingIdentityForCurrentThread(identity1)).isNull();
+
+    // Second set should return identity1
+    assertThat(ShadowBinder.setCallingIdentityForCurrentThread(identity2)).isEqualTo(identity1);
+
+    // Setting null should return identity2
+    assertThat(ShadowBinder.setCallingIdentityForCurrentThread(null)).isEqualTo(identity2);
+  }
+
+  @Test
+  public void testResetClearsIdentityForAllThreads() throws Exception {
+    ShadowBinder.setCallingUid(50);
+    ShadowBinder.setCallingIdentityForCurrentThread(
+        CallingIdentity.newBuilder().setUid(100).build());
+
+    // Set identity on a background thread and keep it alive
+    CountDownLatch threadStarted = new CountDownLatch(1);
+    CountDownLatch resetDone = new CountDownLatch(1);
+    AtomicInteger bgUidBeforeReset = new AtomicInteger();
+    AtomicInteger bgUidAfterReset = new AtomicInteger();
+
+    Thread thread =
+        new Thread(
+            () -> {
+              ShadowBinder.setCallingIdentityForCurrentThread(
+                  CallingIdentity.newBuilder().setUid(200).build());
+              bgUidBeforeReset.set(Binder.getCallingUid());
+              threadStarted.countDown();
+              try {
+                resetDone.await();
+              } catch (InterruptedException e) {
+                // ignore
+              }
+              bgUidAfterReset.set(Binder.getCallingUid());
+            });
+    thread.start();
+    threadStarted.await();
+
+    assertThat(bgUidBeforeReset.get()).isEqualTo(200);
+
+    ShadowBinder.reset();
+
+    resetDone.countDown();
+    thread.join();
+
+    assertThat(Binder.getCallingUid()).isEqualTo(android.os.Process.myUid());
+    // Background thread identity should also be cleared after reset
+    assertThat(bgUidAfterReset.get()).isEqualTo(android.os.Process.myUid());
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void testGetCallingUidOrThrowWithIdentity() {
+    ShadowBinder.setCallingIdentityForCurrentThread(
+        CallingIdentity.newBuilder().setUid(123).build());
+    assertThat(Binder.getCallingUidOrThrow()).isEqualTo(123);
+  }
+
+  @Test
+  public void testIdentityBuilderReadModifyWrite() {
+    CallingIdentity identity = CallingIdentity.newBuilder().setUid(100).setPid(200).build();
+
+    // Modify it
+    CallingIdentity modified = identity.toBuilder().setUid(300).build();
+
+    assertThat(modified.getUid()).isEqualTo(300);
+    assertThat(modified.getPid()).isEqualTo(200); // preserved
   }
 }

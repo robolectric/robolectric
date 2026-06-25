@@ -10,6 +10,7 @@ import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -19,11 +20,13 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Choreographer;
 import android.view.IWindowFocusObserver;
 import android.view.IWindowId;
@@ -31,6 +34,7 @@ import android.view.MotionEvent;
 import android.view.ThreadedRenderer;
 import android.view.View;
 import android.view.ViewParent;
+import android.view.ViewRootImpl.CalledFromWrongThreadException;
 import android.view.WindowId;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
@@ -40,11 +44,17 @@ import java.io.PrintStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
 import org.robolectric.annotation.Implementation;
@@ -54,6 +64,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.config.ConfigurationRegistry;
+import org.robolectric.internal.bytecode.RobolectricInternals;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowViewRootImpl.ViewRootImplReflector;
 import org.robolectric.util.reflector.Accessor;
@@ -92,6 +103,82 @@ public class ShadowView {
   private AnimationRunner animationRunner;
   private static final AtomicBoolean useRealViewAnimations = new AtomicBoolean(false);
   private static final AtomicBoolean useRealDrawTraversals = new AtomicBoolean(false);
+
+  @GuardedBy("threadErrors")
+  private static final Map<String, RuntimeException> threadErrors = new LinkedHashMap<>();
+
+  /**
+   * Returns all unique exceptions detected when View methods are called from a background thread.
+   */
+  public static ImmutableList<RuntimeException> getAndClear() {
+    synchronized (threadErrors) {
+      ImmutableList<RuntimeException> errors = ImmutableList.copyOf(threadErrors.values());
+      threadErrors.clear();
+      return errors;
+    }
+  }
+
+  /**
+   * Checks if the current thread is the thread associated with the given view. If not, it captures
+   * an exception for later reporting.
+   */
+  public static void checkThread(Object target) {
+    View view;
+    if (target instanceof ShadowView) {
+      view = ((ShadowView) target).realView;
+    } else if (target instanceof View) {
+      view = (View) target;
+    } else {
+      // This might be a custom shadow, just exit.
+      return;
+    }
+    Object attachInfo = reflector(ViewReflector.class, view).getAttachInfo();
+    if (attachInfo == null) {
+      return;
+    }
+
+    Handler handler = reflector(AttachInfoReflector.class, attachInfo).getHandler();
+    if (handler == null || handler.getLooper() == null) {
+      return;
+    }
+
+    Thread expected = handler.getLooper().getThread();
+    Thread current = Thread.currentThread();
+    if (current != expected) {
+      String message =
+          String.format(
+              "Only the original thread that created a view hierarchy can touch its views. "
+                  + "Expected: %s, Current: %s",
+              expected.getName(), current.getName());
+      RuntimeException exception = new CalledFromWrongThreadException(message);
+      exception = (RuntimeException) RobolectricInternals.cleanStackTrace(exception);
+      StackTraceElement[] trace = exception.getStackTrace();
+      StringBuilder dedupeKey = new StringBuilder();
+
+      for (int i = trace.length - 1; i >= 0; i--) {
+        StackTraceElement element = trace[i];
+        String className = element.getClassName();
+        String formatted =
+            String.format(
+                "%s.%s(%s)",
+                className,
+                element.getMethodName(),
+                element.getFileName() != null ? element.getFileName() : "Unknown Source");
+
+        dedupeKey.append(formatted).append("\n");
+
+        if (isViewOrShadowView(className)) {
+          break;
+        }
+      }
+
+      String finalKey = dedupeKey.toString().trim();
+
+      synchronized (threadErrors) {
+        threadErrors.putIfAbsent(finalKey, exception);
+      }
+    }
+  }
 
   /**
    * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are
@@ -166,84 +253,137 @@ public class ShadowView {
     return locationInSurface;
   }
 
-  /* Note: maxSdk is R because capturing `attributeSet` is not needed any more after R. */
-  @Implementation(maxSdk = R)
+  @Implementation
   protected void __constructor__(
       Context context, AttributeSet attributeSet, int defStyleAttr, int defStyleRes) {
-    this.attributeSet = attributeSet;
-    reflector(ViewReflector.class, realView)
-        .__constructor__(context, attributeSet, defStyleAttr, defStyleRes);
+    // Note: capturing `attributeSet` is not needed any more after R.
+    if (RuntimeEnvironment.getApiLevel() <= R) {
+      this.attributeSet = attributeSet;
+    }
+    try {
+      reflector(ViewReflector.class, realView)
+          .__constructor__(context, attributeSet, defStyleAttr, defStyleRes);
+    } catch (RuntimeException e) {
+      maybeAugmentTypedArrayErrors(e);
+      throw e;
+    }
   }
 
-  @Implementation
+  private static final Pattern TYPED_ARRAY_ERROR_PATTERN =
+      Pattern.compile(
+          "Failed to resolve attribute at index \\d+: TypedValue\\{t=0x2/d=(0x[0-9a-f]+)");
+
+  /**
+   * Augments the given exception with suppressed exceptions for any typed array errors. This
+   * provides a more helpful error message and resource name for the attribute that failed to
+   * resolve.
+   *
+   * @param t The exception to augment.
+   */
+  private void maybeAugmentTypedArrayErrors(Throwable t) {
+    Throwable cause = t;
+    while (cause != null) {
+      String message = cause.getMessage();
+      if (message != null) {
+        Matcher matcher = TYPED_ARRAY_ERROR_PATTERN.matcher(message);
+        if (matcher.find()) {
+          String hexId = matcher.group(1);
+          int resId = Integer.parseInt(hexId.substring(2), 16);
+          String resourceName = null;
+          try {
+            resourceName =
+                RuntimeEnvironment.getApplication().getResources().getResourceName(resId);
+          } catch (RuntimeException e) {
+            // ignore
+          }
+          if (resourceName != null) {
+            t.addSuppressed(new TypedArrayException(resourceName));
+          }
+        }
+      }
+      cause = cause.getCause();
+    }
+  }
+
+  private static boolean isViewOrShadowView(String className) {
+    try {
+      Class<?> clazz = Class.forName(className);
+      return View.class.isAssignableFrom(clazz) || ShadowView.class.isAssignableFrom(clazz);
+    } catch (ClassNotFoundException e) {
+      return false;
+    }
+  }
+
+  static final class TypedArrayException extends Exception {
+    TypedArrayException(String resourceName) {
+      super(
+          "Failed to resolve attribute "
+              + resourceName
+              + ". Ensure that the Activity has the correct theme.");
+    }
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+      setStackTrace(new StackTraceElement[0]);
+      return this;
+    }
+  }
+
+  @Filter
   protected void setLayerType(int layerType, Paint paint) {
     this.layerType = layerType;
-    reflector(ViewReflector.class, realView).setLayerType(layerType, paint);
   }
 
-  @Implementation
+  @Filter
   protected void setOnFocusChangeListener(View.OnFocusChangeListener l) {
     onFocusChangeListener = l;
-    reflector(ViewReflector.class, realView).setOnFocusChangeListener(l);
   }
 
-  @Implementation
+  @Filter
   protected void setOnClickListener(View.OnClickListener onClickListener) {
     this.onClickListener = onClickListener;
-    reflector(ViewReflector.class, realView).setOnClickListener(onClickListener);
   }
 
-  @Implementation
+  @Filter
   protected void setOnLongClickListener(View.OnLongClickListener onLongClickListener) {
     this.onLongClickListener = onLongClickListener;
-    reflector(ViewReflector.class, realView).setOnLongClickListener(onLongClickListener);
   }
 
-  @Implementation
+  @Filter
   protected void setOnSystemUiVisibilityChangeListener(
       View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener) {
     this.onSystemUiVisibilityChangeListener = onSystemUiVisibilityChangeListener;
-    reflector(ViewReflector.class, realView)
-        .setOnSystemUiVisibilityChangeListener(onSystemUiVisibilityChangeListener);
   }
 
-  @Implementation
+  @Filter
   protected void setOnCreateContextMenuListener(
       View.OnCreateContextMenuListener onCreateContextMenuListener) {
     this.onCreateContextMenuListener = onCreateContextMenuListener;
-    reflector(ViewReflector.class, realView)
-        .setOnCreateContextMenuListener(onCreateContextMenuListener);
   }
 
-  @Implementation
+  @Filter
   protected void addOnAttachStateChangeListener(
       View.OnAttachStateChangeListener onAttachStateChangeListener) {
     onAttachStateChangeListeners.add(onAttachStateChangeListener);
-    reflector(ViewReflector.class, realView)
-        .addOnAttachStateChangeListener(onAttachStateChangeListener);
   }
 
-  @Implementation
+  @Filter
   protected void removeOnAttachStateChangeListener(
       View.OnAttachStateChangeListener onAttachStateChangeListener) {
     onAttachStateChangeListeners.remove(onAttachStateChangeListener);
-    reflector(ViewReflector.class, realView)
-        .removeOnAttachStateChangeListener(onAttachStateChangeListener);
   }
 
-  @Implementation
+  @Filter
   protected void addOnLayoutChangeListener(View.OnLayoutChangeListener onLayoutChangeListener) {
     onLayoutChangeListeners.add(onLayoutChangeListener);
-    reflector(ViewReflector.class, realView).addOnLayoutChangeListener(onLayoutChangeListener);
   }
 
-  @Implementation
+  @Filter
   protected void removeOnLayoutChangeListener(View.OnLayoutChangeListener onLayoutChangeListener) {
     onLayoutChangeListeners.remove(onLayoutChangeListener);
-    reflector(ViewReflector.class, realView).removeOnLayoutChangeListener(onLayoutChangeListener);
   }
 
-  @Implementation
+  @Filter
   protected void draw(Canvas canvas) {
     Drawable background = realView.getBackground();
     if (background != null && !useRealGraphics()) {
@@ -253,31 +393,27 @@ public class ShadowView {
         ((ShadowCanvas) shadowCanvas).appendDescription("background:");
       }
     }
-    reflector(ViewReflector.class, realView).draw(canvas);
   }
 
-  @Implementation
+  @Filter
   protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
     onLayoutWasCalled = true;
-    reflector(ViewReflector.class, realView).onLayout(changed, left, top, right, bottom);
   }
 
   public boolean onLayoutWasCalled() {
     return onLayoutWasCalled;
   }
 
-  @Implementation
+  @Filter
   protected void requestLayout() {
     didRequestLayout = true;
-    reflector(ViewReflector.class, realView).requestLayout();
   }
 
-  @Implementation
-  protected boolean performClick() {
+  @Filter
+  protected void performClick() {
     for (View.OnClickListener listener : globalClickListeners) {
       listener.onClick(realView);
     }
-    return reflector(ViewReflector.class, realView).performClick();
   }
 
   /**
@@ -298,12 +434,11 @@ public class ShadowView {
     ShadowView.globalClickListeners.remove(listener);
   }
 
-  @Implementation
-  protected boolean performLongClick() {
+  @Filter
+  protected void performLongClick() {
     for (View.OnLongClickListener listener : globalLongClickListeners) {
       listener.onLongClick(realView);
     }
-    return reflector(ViewReflector.class, realView).performLongClick();
   }
 
   /**
@@ -328,6 +463,9 @@ public class ShadowView {
   public static void reset() {
     ShadowView.globalClickListeners.clear();
     ShadowView.globalLongClickListeners.clear();
+    synchronized (ShadowView.threadErrors) {
+      ShadowView.threadErrors.clear();
+    }
   }
 
   public boolean didRequestLayout() {
@@ -344,22 +482,19 @@ public class ShadowView {
     }
   }
 
-  @Implementation
+  @Filter
   protected void invalidate() {
     wasInvalidated = true;
-    reflector(ViewReflector.class, realView).invalidate();
   }
 
-  @Implementation
-  protected boolean onTouchEvent(MotionEvent event) {
+  @Filter
+  protected void onTouchEvent(MotionEvent event) {
     lastTouchEvent = event;
-    return reflector(ViewReflector.class, realView).onTouchEvent(event);
   }
 
-  @Implementation
+  @Filter
   protected void setOnTouchListener(View.OnTouchListener onTouchListener) {
     this.onTouchListener = onTouchListener;
-    reflector(ViewReflector.class, realView).setOnTouchListener(onTouchListener);
   }
 
   public MotionEvent getLastTouchEvent() {
@@ -642,9 +777,8 @@ public class ShadowView {
     animations.clear();
   }
 
-  @Implementation
+  @Filter(order = Filter.Order.AFTER)
   protected void setAnimation(final Animation animation) {
-    reflector(ViewReflector.class, realView).setAnimation(animation);
     if (!useRealViewAnimations()) {
       if (animation != null) {
         animations.add(animation);
@@ -657,10 +791,8 @@ public class ShadowView {
     }
   }
 
-  @Implementation
+  @Filter(order = Filter.Order.AFTER)
   protected void clearAnimation() {
-    reflector(ViewReflector.class, realView).clearAnimation();
-
     if (!useRealViewAnimations()) {
       if (animationRunner != null) {
         animationRunner.cancel();
@@ -767,68 +899,10 @@ public class ShadowView {
   @ForType(View.class)
   private interface ViewReflector {
 
-    @Direct
-    void draw(Canvas canvas);
-
-    @Direct
-    void onLayout(boolean changed, int left, int top, int right, int bottom);
-
     void assignParent(ViewParent viewParent);
 
     @Direct
-    void setOnFocusChangeListener(View.OnFocusChangeListener l);
-
-    @Direct
-    void setLayerType(int layerType, Paint paint);
-
-    @Direct
-    void setOnClickListener(View.OnClickListener onClickListener);
-
-    @Direct
-    void setOnLongClickListener(View.OnLongClickListener onLongClickListener);
-
-    @Direct
     View.OnLongClickListener getOnLongClickListener();
-
-    @Direct
-    void setOnSystemUiVisibilityChangeListener(
-        View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener);
-
-    @Direct
-    void setOnCreateContextMenuListener(
-        View.OnCreateContextMenuListener onCreateContextMenuListener);
-
-    @Direct
-    void addOnAttachStateChangeListener(
-        View.OnAttachStateChangeListener onAttachStateChangeListener);
-
-    @Direct
-    void removeOnAttachStateChangeListener(
-        View.OnAttachStateChangeListener onAttachStateChangeListener);
-
-    @Direct
-    void addOnLayoutChangeListener(View.OnLayoutChangeListener onLayoutChangeListener);
-
-    @Direct
-    void removeOnLayoutChangeListener(View.OnLayoutChangeListener onLayoutChangeListener);
-
-    @Direct
-    void requestLayout();
-
-    @Direct
-    boolean performClick();
-
-    @Direct
-    boolean performLongClick();
-
-    @Direct
-    void invalidate();
-
-    @Direct
-    boolean onTouchEvent(MotionEvent event);
-
-    @Direct
-    void setOnTouchListener(View.OnTouchListener onTouchListener);
 
     @Direct
     boolean post(Runnable action);
@@ -841,12 +915,6 @@ public class ShadowView {
 
     @Direct
     boolean removeCallbacks(Runnable callback);
-
-    @Direct
-    void setAnimation(final Animation animation);
-
-    @Direct
-    void clearAnimation();
 
     @Direct
     boolean getGlobalVisibleRect(Rect rect, Point globalOffset);
@@ -1025,6 +1093,9 @@ public class ShadowView {
 
     @Accessor("mThreadedRenderer")
     ThreadedRenderer getThreadedRenderer();
+
+    @Accessor("mHandler")
+    Handler getHandler();
   }
 
   /**
@@ -1071,9 +1142,12 @@ public class ShadowView {
     useRealViewAnimations.set(value);
   }
 
-  /** Returns whether real Android View animation logic is being used. */
+  /**
+   * Returns whether real Android View animation logic is being used. This is automatically true if
+   * areRealDrawTraversalsEnabled is true.
+   */
   static boolean useRealViewAnimations() {
-    return useRealViewAnimations.get();
+    return useRealViewAnimations.get() || areRealDrawTraversalsEnabled();
   }
 
   /**
@@ -1095,11 +1169,24 @@ public class ShadowView {
     checkState(getApiLevel() >= TIRAMISU, "real drawing is only supported on APIs >= 33");
     checkState(useRealGraphics(), "real graphics must be enabled to use real drawing");
     useRealDrawTraversals.set(value);
+    if (!value && getApiLevel() >= CINNAMON_BUN) {
+      Log.w(
+          "ShadowView",
+          "ignoring setUseRealDrawTraversals(false) since it cannot be turned off on SDK "
+              + getApiLevel());
+    }
   }
 
-  static boolean useRealDrawTraversals() {
-    return getApiLevel() >= TIRAMISU
-        && useRealGraphics()
-        && (useRealDrawTraversals.get() || Boolean.getBoolean("robolectric.useRealDrawTraversals"));
+  static boolean areRealDrawTraversalsEnabled() {
+    if (useRealGraphics()) {
+      // real draw traversals supported by default in upcoming SDK
+      if (getApiLevel() >= CINNAMON_BUN) {
+        return true;
+      } else if (getApiLevel() >= TIRAMISU) {
+        return useRealDrawTraversals.get()
+            || Boolean.getBoolean("robolectric.useRealDrawTraversals");
+      }
+    }
+    return false;
   }
 }

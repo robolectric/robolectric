@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -16,12 +15,14 @@ import android.app.Application;
 import android.app.Instrumentation;
 import android.app.ResultInfo;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ComponentInfoFlags;
 import android.content.res.Configuration;
+import android.os.Handler;
 import android.os.IBinder;
 import com.android.internal.content.ReferrerIntent;
 import java.lang.reflect.Proxy;
@@ -38,8 +39,10 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Reflector;
+import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link ActivityThread}. */
 @Implements(value = ActivityThread.class, isInAndroidSdk = false)
@@ -145,7 +148,24 @@ public class ShadowActivityThread {
           if (method.getName().equals("getSplitPermissions")) {
             return Collections.emptyList();
           } else if (method.getName().equals("getPermissionRequestState")) {
-            return PERMISSION_GRANTED;
+            // See
+            // com.android.server.pm.permission.PermissionManagerService#getPermissionRequestState
+            // Returns intdef Context.PermissionRequestState
+            if (args != null
+                && args.length >= 2
+                && args[0] instanceof String
+                && args[1] instanceof String) {
+              String packageName = (String) args[0];
+              String permission = (String) args[1];
+              Application app = RuntimeEnvironment.getApplication();
+              if (app != null) {
+                int result = app.getPackageManager().checkPermission(permission, packageName);
+                return (result == PackageManager.PERMISSION_GRANTED)
+                    ? Context.PERMISSION_REQUEST_STATE_GRANTED
+                    : Context.PERMISSION_REQUEST_STATE_REQUESTABLE;
+              }
+            }
+            return Context.PERMISSION_REQUEST_STATE_REQUESTABLE;
           }
           return method.getDefaultValue();
         });
@@ -176,7 +196,7 @@ public class ShadowActivityThread {
     if (RuntimeEnvironment.getApiLevel() >= P) {
       record = new ActivityClientRecord();
     } else {
-      record = ReflectionHelpers.callConstructor(ActivityClientRecord.class);
+      record = reflector(ActivityClientRecordReflector.class).newInstance();
     }
     ActivityClientRecordReflector recordReflector =
         reflector(ActivityClientRecordReflector.class, record);
@@ -259,11 +279,26 @@ public class ShadowActivityThread {
 
     @Accessor("mActivities")
     Map<IBinder, ActivityClientRecord> getActivities();
+
+    @Accessor("mConfigurationController")
+    void setConfigurationController(Object configurationController);
+
+    @Accessor("mConfigurationController")
+    Object getConfigurationController();
+
+    @Constructor
+    ActivityThread newInstance();
+
+    @Static
+    @Accessor("sMainThreadHandler")
+    void setMainThreadHandler(Handler handler);
   }
 
   /** Accessor interface for {@link ActivityThread.AppBindData}'s internals. */
   @ForType(className = "android.app.ActivityThread$AppBindData")
   public interface AppBindDataReflector {
+    @Constructor
+    Object newInstance();
 
     @Accessor("appInfo")
     void setAppInfo(ApplicationInfo applicationInfo);
@@ -274,6 +309,9 @@ public class ShadowActivityThread {
 
   @ForType(ActivityClientRecord.class)
   private interface ActivityClientRecordReflector {
+    @Constructor
+    ActivityClientRecord newInstance();
+
     @Accessor("activity")
     void setActivity(Activity activity);
 

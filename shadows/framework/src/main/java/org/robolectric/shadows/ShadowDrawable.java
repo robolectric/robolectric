@@ -1,17 +1,13 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.util.reflector.Reflector.reflector;
-
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import java.io.InputStream;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Drawable.class)
@@ -47,10 +43,9 @@ public class ShadowDrawable {
     return createdFromInputStream;
   }
 
-  @Implementation
+  @Filter
   protected void invalidateSelf() {
     wasInvalidated = true;
-    reflector(DrawableReflector.class, realDrawable).invalidateSelf();
   }
 
   public int getCreatedFromResId() {
@@ -63,12 +58,5 @@ public class ShadowDrawable {
 
   public void validate() {
     wasInvalidated = false;
-  }
-
-  @ForType(Drawable.class)
-  interface DrawableReflector {
-
-    @Direct
-    void invalidateSelf();
   }
 }

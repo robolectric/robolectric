@@ -1,33 +1,27 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.util.reflector.Reflector.reflector;
-
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Filter;
+import org.robolectric.annotation.Filter.Order;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)
 public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
-  private static final int ignoreRowsAtEndOfList = 0;
 
   @RealObject private AdapterView<T> realAdapterView;
 
   private AdapterView.OnItemSelectedListener itemSelectedListener;
 
-  @Implementation
+  @Filter(order = Order.BEFORE)
   protected void setOnItemSelectedListener(
       AdapterView.OnItemSelectedListener itemSelectedListener) {
     this.itemSelectedListener = itemSelectedListener;
-    reflector(AdapterViewReflector.class, realAdapterView)
-        .setOnItemSelectedListener(itemSelectedListener);
   }
 
   public AdapterView.OnItemSelectedListener getItemSelectedListener() {
@@ -80,12 +74,5 @@ public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
   public void selectItemWithText(String s) {
     int itemIndex = findIndexOfItemContainingText(s);
     realAdapterView.setSelection(itemIndex);
-  }
-
-  @ForType(AdapterView.class)
-  interface AdapterViewReflector {
-
-    @Direct
-    void setOnItemSelectedListener(AdapterView.OnItemSelectedListener itemSelectedListener);
   }
 }

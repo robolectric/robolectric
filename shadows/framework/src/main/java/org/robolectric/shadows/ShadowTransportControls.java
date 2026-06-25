@@ -15,18 +15,15 @@ import static android.media.session.PlaybackState.ACTION_STOP;
 import static android.media.session.PlaybackState.STATE_NONE;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.media.Rating;
 import android.media.session.MediaController.TransportControls;
 import android.net.Uri;
 import android.os.Bundle;
 import javax.annotation.Nullable;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 /**
  * Shadow class for using {@link TransportControls} in tests.
@@ -58,91 +55,75 @@ public class ShadowTransportControls {
    */
   @Nullable private Uri uri;
 
-  @Implementation
+  @Filter
   protected void pause() {
     lastPerformedAction = ACTION_PAUSE;
-    reflector(TransportControlsReflector.class, realTransportControls).pause();
   }
 
-  @Implementation
+  @Filter
   protected void play() {
     lastPerformedAction = ACTION_PLAY;
-    reflector(TransportControlsReflector.class, realTransportControls).play();
   }
 
-  @Implementation
+  @Filter
   protected void playFromSearch(String query, Bundle extras) {
     lastPerformedAction = ACTION_PLAY_FROM_SEARCH;
-    reflector(TransportControlsReflector.class, realTransportControls)
-        .playFromSearch(query, extras);
   }
 
-  @Implementation(minSdk = M)
+  @Filter(minSdk = M)
   protected void playFromUri(Uri uri, Bundle extras) {
     lastPerformedAction = ACTION_PLAY_FROM_URI;
     this.uri = uri;
-    reflector(TransportControlsReflector.class, realTransportControls).playFromUri(uri, extras);
   }
 
-  @Implementation(minSdk = N)
+  @Filter(minSdk = N)
   protected void prepareFromSearch(String query, Bundle extras) {
     lastPerformedAction = ACTION_PREPARE_FROM_SEARCH;
-    reflector(TransportControlsReflector.class, realTransportControls)
-        .prepareFromSearch(query, extras);
   }
 
-  @Implementation(minSdk = N)
+  @Filter(minSdk = N)
   protected void prepareFromUri(Uri uri, Bundle extras) {
     lastPerformedAction = ACTION_PREPARE_FROM_URI;
     this.uri = uri;
-    reflector(TransportControlsReflector.class, realTransportControls).prepareFromUri(uri, extras);
   }
 
-  @Implementation
+  @Filter
   protected void seekTo(long pos) {
     lastPerformedAction = ACTION_SEEK_TO;
     seekToPositionMs = pos;
-    reflector(TransportControlsReflector.class, realTransportControls).seekTo(pos);
   }
 
-  @Implementation
+  @Filter
   protected void sendCustomAction(String action, Bundle args) {
     customAction = action;
     customActionArgs = args;
-    reflector(TransportControlsReflector.class, realTransportControls)
-        .sendCustomAction(action, args);
   }
 
-  @Implementation
+  @Filter
   protected void setRating(Rating rating) {
     lastPerformedAction = ACTION_SET_RATING;
     this.rating = rating;
-    reflector(TransportControlsReflector.class, realTransportControls).setRating(rating);
   }
 
-  @Implementation
+  @Filter
   protected void skipToNext() {
     lastPerformedAction = ACTION_SKIP_TO_NEXT;
-    reflector(TransportControlsReflector.class, realTransportControls).skipToNext();
   }
 
-  @Implementation
+  @Filter
   protected void skipToPrevious() {
     lastPerformedAction = ACTION_SKIP_TO_PREVIOUS;
-    reflector(TransportControlsReflector.class, realTransportControls).skipToPrevious();
   }
 
-  @Implementation
+  @Filter
   protected void skipToQueueItem(long id) {
     lastPerformedAction = ACTION_SKIP_TO_QUEUE_ITEM;
     queueItemId = id;
-    reflector(TransportControlsReflector.class, realTransportControls).skipToQueueItem(id);
   }
 
-  @Implementation
+  @Filter
   protected void stop() {
     lastPerformedAction = ACTION_STOP;
-    reflector(TransportControlsReflector.class, realTransportControls).stop();
   }
 
   public long getLastPerformedAction() {
@@ -175,47 +156,5 @@ public class ShadowTransportControls {
 
   public long getQueueItemId() {
     return queueItemId;
-  }
-
-  @ForType(TransportControls.class)
-  private interface TransportControlsReflector {
-    @Direct
-    void pause();
-
-    @Direct
-    void play();
-
-    @Direct
-    void playFromSearch(String query, Bundle extras);
-
-    @Direct
-    void playFromUri(Uri uri, Bundle extras);
-
-    @Direct
-    void prepareFromSearch(String query, Bundle extras);
-
-    @Direct
-    void prepareFromUri(Uri uri, Bundle extras);
-
-    @Direct
-    void seekTo(long pos);
-
-    @Direct
-    void sendCustomAction(String action, Bundle args);
-
-    @Direct
-    void setRating(Rating rating);
-
-    @Direct
-    void skipToNext();
-
-    @Direct
-    void skipToPrevious();
-
-    @Direct
-    void skipToQueueItem(long id);
-
-    @Direct
-    void stop();
   }
 }

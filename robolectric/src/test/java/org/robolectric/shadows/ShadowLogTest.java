@@ -18,10 +18,8 @@ import java.io.PrintStream;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog.LogItem;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.versioning.AndroidVersions.L;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowLogTest {
@@ -139,7 +137,6 @@ public class ShadowLogTest {
   }
 
   @Test
-  @Config(minSdk = L.SDK_INT)
   public void wtf_shouldLogAppropriately_withNewWtfHandler() {
     Throwable throwable = new Throwable();
 

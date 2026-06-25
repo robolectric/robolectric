@@ -18,6 +18,12 @@ import android.os.Build;
 import android.os.UserHandle;
 import androidx.test.core.content.pm.PackageInfoBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Rule;
 import org.junit.Test;
@@ -255,5 +261,70 @@ public final class ShadowRoleManagerTest {
     ShadowRoleManager.addRoleHolder(RoleManager.ROLE_SMS, roleHolder, user);
     assertThat(roleManager.getRoleHoldersAsUser(RoleManager.ROLE_SMS, user))
         .containsExactly(roleHolder);
+  }
+
+  @Test
+  public void concurrentAccess_shouldNotThrowConcurrentModificationException() throws Exception {
+    int numThreads = 50;
+    int iterations = 1000;
+    ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+    CountDownLatch latch = new CountDownLatch(/* count= */ 1);
+    List<Future<?>> futures = new ArrayList<>();
+
+    for (int t = 0; t < numThreads; t++) {
+      final int threadSeed = t;
+      futures.add(
+          executor.submit(
+              () -> {
+                try {
+                  latch.await();
+                  for (int i = 0; i < iterations; i++) {
+                    // Use many unique user IDs to force HashMap rehashing/resizing concurrently.
+                    UserHandle user = UserHandle.of((threadSeed * iterations + i) % 500);
+                    ShadowRoleManager.addRoleHolder("role_" + (i % 10), "app_" + i, user);
+                    boolean unused = roleManager.isRoleHeld("role_" + (i % 10));
+                  }
+                } catch (Exception e) {
+                  throw new RuntimeException(e);
+                }
+              }));
+    }
+
+    latch.countDown();
+    for (Future<?> future : futures) {
+      future.get();
+    }
+    executor.shutdown();
+  }
+
+  @Test
+  public void concurrentRemove_shouldNotThrowConcurrentModificationException() throws Exception {
+    UserHandle user = UserHandle.of(10);
+    ShadowRoleManager.addRoleHolder(RoleManager.ROLE_SMS, "test.app", user);
+    int numThreads = 10;
+    ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+    CountDownLatch latch = new CountDownLatch(1);
+    List<Future<?>> futures = new ArrayList<>();
+
+    for (int t = 0; t < numThreads; t++) {
+      futures.add(
+          executor.submit(
+              () -> {
+                try {
+                  latch.await();
+                  ShadowRoleManager.removeRoleHolder(RoleManager.ROLE_SMS, "test.app", user);
+                } catch (IllegalArgumentException e) {
+                  // Expected if another thread removed the role first.
+                } catch (Exception e) {
+                  throw new RuntimeException(e);
+                }
+              }));
+    }
+
+    latch.countDown();
+    for (Future<?> future : futures) {
+      future.get();
+    }
+    executor.shutdown();
   }
 }

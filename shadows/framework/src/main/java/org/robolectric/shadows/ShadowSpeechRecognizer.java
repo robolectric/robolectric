@@ -24,6 +24,7 @@ import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.ClassName;
+import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -115,10 +116,9 @@ public class ShadowSpeechRecognizer {
     return getState().isRecognizerDestroyed;
   }
 
-  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
+  @Filter(maxSdk = UPSIDE_DOWN_CAKE)
   protected void destroy() {
     getState().isRecognizerDestroyed = true;
-    getDirectAccessors().destroy();
   }
 
   /** Returns the argument passed to the last call to {@link SpeechRecognizer#startListening}. */
@@ -181,6 +181,16 @@ public class ShadowSpeechRecognizer {
 
   public void triggerOnRmsChanged(float rmsdB) {
     getState().recognitionListener.onRmsChanged(rmsdB);
+  }
+
+  @RequiresApi(api = VERSION_CODES.TIRAMISU)
+  public void triggerOnSegmentResults(Bundle bundle) {
+    getState().recognitionListener.onSegmentResults(bundle);
+  }
+
+  @RequiresApi(api = VERSION_CODES.TIRAMISU)
+  public void triggerOnEndOfSegmentedSession() {
+    getState().recognitionListener.onEndOfSegmentedSession();
   }
 
   @RequiresApi(api = VERSION_CODES.TIRAMISU)
@@ -313,10 +323,6 @@ public class ShadowSpeechRecognizer {
     @Static
     @Direct
     SpeechRecognizer createOnDeviceSpeechRecognizer(Context context);
-
-    @Direct
-    @Override
-    void destroy();
 
     @Accessor("mService")
     @Override

@@ -3,16 +3,19 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.view.DragEvent;
 import android.view.SurfaceControl;
-import com.android.internal.view.IDragAndDropPermissions;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
+import org.robolectric.util.reflector.WithType;
 
 /** Builder for {@link DragEvent}. */
 public class DragEventBuilder {
@@ -68,91 +71,139 @@ public class DragEventBuilder {
   public DragEvent build() {
     int api = RuntimeEnvironment.getApiLevel();
     if (api <= M) {
-      return ReflectionHelpers.callStaticMethod(
-          DragEvent.class,
-          "obtain",
-          ClassParameter.from(int.class, action),
-          ClassParameter.from(float.class, x),
-          ClassParameter.from(float.class, y),
-          ClassParameter.from(Object.class, localState),
-          ClassParameter.from(ClipDescription.class, clipDescription),
-          ClassParameter.from(ClipData.class, clipData),
-          ClassParameter.from(boolean.class, result));
+      return reflector(DragEventReflector.class)
+          .obtain(action, x, y, localState, clipDescription, clipData, result);
     } else if (api <= R) {
-      return ReflectionHelpers.callStaticMethod(
-          DragEvent.class,
-          "obtain",
-          ClassParameter.from(int.class, action),
-          ClassParameter.from(float.class, x),
-          ClassParameter.from(float.class, y),
-          ClassParameter.from(Object.class, localState),
-          ClassParameter.from(ClipDescription.class, clipDescription),
-          ClassParameter.from(ClipData.class, clipData),
-          ClassParameter.from(IDragAndDropPermissions.class, null),
-          ClassParameter.from(boolean.class, result));
+      return reflector(DragEventReflector.class)
+          .obtain(action, x, y, localState, clipDescription, clipData, null, result);
     } else if (api <= UPSIDE_DOWN_CAKE) {
-      return ReflectionHelpers.callStaticMethod(
-          DragEvent.class,
-          "obtain",
-          ClassParameter.from(int.class, action),
-          ClassParameter.from(float.class, x),
-          ClassParameter.from(float.class, y),
-          ClassParameter.from(float.class, 0),
-          ClassParameter.from(float.class, 0),
-          ClassParameter.from(Object.class, localState),
-          ClassParameter.from(ClipDescription.class, clipDescription),
-          ClassParameter.from(ClipData.class, clipData),
-          ClassParameter.from(SurfaceControl.class, null),
-          ClassParameter.from(IDragAndDropPermissions.class, null),
-          ClassParameter.from(boolean.class, result));
-    } else if (ReflectionHelpers.hasMethod(
-        DragEvent.class,
-        "obtain",
-        int.class,
-        float.class,
-        float.class,
-        float.class,
-        float.class,
-        int.class,
-        int.class,
-        Object.class,
-        ClipDescription.class,
-        ClipData.class,
-        SurfaceControl.class,
-        IDragAndDropPermissions.class,
-        boolean.class)) {
-      return ReflectionHelpers.callStaticMethod(
-          DragEvent.class,
-          "obtain",
-          ClassParameter.from(int.class, action),
-          ClassParameter.from(float.class, x),
-          ClassParameter.from(float.class, y),
-          ClassParameter.from(float.class, 0),
-          ClassParameter.from(float.class, 0),
-          ClassParameter.from(int.class, ShadowDisplay.getDefaultDisplay().getDisplayId()),
-          ClassParameter.from(int.class, 0),
-          ClassParameter.from(Object.class, localState),
-          ClassParameter.from(ClipDescription.class, clipDescription),
-          ClassParameter.from(ClipData.class, clipData),
-          ClassParameter.from(SurfaceControl.class, null),
-          ClassParameter.from(IDragAndDropPermissions.class, null),
-          ClassParameter.from(boolean.class, result));
+      return reflector(DragEventReflector.class)
+          .obtain(action, x, y, 0f, 0f, localState, clipDescription, clipData, null, null, result);
+    } else if (api <= VANILLA_ICE_CREAM) {
+      return reflector(DragEventReflector.class)
+          .obtain(
+              action, x, y, 0f, 0f, 0, localState, clipDescription, clipData, null, null, result);
+    } else if (api <= CINNAMON_BUN) {
+      return reflector(DragEventReflector.class)
+          .obtain(
+              action,
+              x,
+              y,
+              0f,
+              0f,
+              ShadowDisplay.getDefaultDisplay().getDisplayId(),
+              0,
+              localState,
+              clipDescription,
+              clipData,
+              null,
+              null,
+              result);
     } else {
-      return ReflectionHelpers.callStaticMethod(
-          DragEvent.class,
-          "obtain",
-          ClassParameter.from(int.class, action),
-          ClassParameter.from(float.class, x),
-          ClassParameter.from(float.class, y),
-          ClassParameter.from(float.class, 0),
-          ClassParameter.from(float.class, 0),
-          ClassParameter.from(int.class, 0),
-          ClassParameter.from(Object.class, localState),
-          ClassParameter.from(ClipDescription.class, clipDescription),
-          ClassParameter.from(ClipData.class, clipData),
-          ClassParameter.from(SurfaceControl.class, null),
-          ClassParameter.from(IDragAndDropPermissions.class, null),
-          ClassParameter.from(boolean.class, result));
+      return reflector(DragEventReflector.class)
+          .obtain(
+              action,
+              x,
+              y,
+              0f,
+              0f,
+              ShadowDisplay.getDefaultDisplay().getDisplayId(),
+              0,
+              0,
+              0,
+              localState,
+              clipDescription,
+              clipData,
+              null,
+              null,
+              result);
     }
+  }
+
+  @ForType(DragEvent.class)
+  interface DragEventReflector {
+    @Static
+    DragEvent obtain(
+        int action,
+        float x,
+        float y,
+        Object localState,
+        ClipDescription clipDescription,
+        ClipData clipData,
+        boolean result);
+
+    @Static
+    DragEvent obtain(
+        int action,
+        float x,
+        float y,
+        Object localState,
+        ClipDescription clipDescription,
+        ClipData clipData,
+        @WithType("com.android.internal.view.IDragAndDropPermissions") Object permissions,
+        boolean result);
+
+    @Static
+    DragEvent obtain(
+        int action,
+        float x,
+        float y,
+        float offsetX,
+        float offsetY,
+        Object localState,
+        ClipDescription clipDescription,
+        ClipData clipData,
+        SurfaceControl surfaceControl,
+        @WithType("com.android.internal.view.IDragAndDropPermissions") Object permissions,
+        boolean result);
+
+    @Static
+    DragEvent obtain(
+        int action,
+        float x,
+        float y,
+        float offsetX,
+        float offsetY,
+        int displayId,
+        Object localState,
+        ClipDescription clipDescription,
+        ClipData clipData,
+        SurfaceControl surfaceControl,
+        @WithType("com.android.internal.view.IDragAndDropPermissions") Object permissions,
+        boolean result);
+
+    @Static
+    DragEvent obtain(
+        int action,
+        float x,
+        float y,
+        float offsetX,
+        float offsetY,
+        int displayId,
+        int deviceId,
+        Object localState,
+        ClipDescription clipDescription,
+        ClipData clipData,
+        SurfaceControl surfaceControl,
+        @WithType("com.android.internal.view.IDragAndDropPermissions") Object permissions,
+        boolean result);
+
+    @Static
+    DragEvent obtain(
+        int action,
+        float x,
+        float y,
+        float offsetX,
+        float offsetY,
+        int displayId,
+        int deviceId,
+        int flag1,
+        int flag2,
+        Object localState,
+        ClipDescription clipDescription,
+        ClipData clipData,
+        SurfaceControl surfaceControl,
+        @WithType("com.android.internal.view.IDragAndDropPermissions") Object permissions,
+        boolean result);
   }
 }

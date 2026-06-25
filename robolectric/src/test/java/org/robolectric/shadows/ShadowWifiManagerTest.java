@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.net.wifi.WifiManager.SCAN_RESULTS_AVAILABLE_ACTION;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -28,8 +29,10 @@ import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
 import android.net.MacAddress;
 import android.net.NetworkInfo;
+import android.net.wifi.BlockingOption;
 import android.net.wifi.ScanResult;
 import android.net.wifi.SoftApConfiguration;
+import android.net.wifi.WifiAvailableChannel;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -39,6 +42,7 @@ import android.net.wifi.WifiManager.MulticastLock;
 import android.net.wifi.WifiManager.PnoScanResultsCallback;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.net.wifi.WifiNetworkSuggestion;
+import android.net.wifi.WifiScanner;
 import android.net.wifi.WifiSsid;
 import android.net.wifi.WifiUsabilityStatsEntry;
 import android.util.Pair;
@@ -1458,6 +1462,74 @@ public class ShadowWifiManagerTest {
         .isEqualTo(WifiManager.STATUS_NETWORK_SUGGESTIONS_ERROR_APP_DISALLOWED);
 
     assertThat(wifiManager.getNetworkSuggestions()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void disallowCurrentSuggestedNetwork_addsBlockingOptions() {
+    BlockingOption blockingOption1 =
+        new BlockingOption.Builder(10).setBlockingBssidOnly(true).build();
+    BlockingOption blockingOption2 =
+        new BlockingOption.Builder(20).setBlockingBssidOnly(false).build();
+
+    wifiManager.disallowCurrentSuggestedNetwork(blockingOption1);
+    wifiManager.disallowCurrentSuggestedNetwork(blockingOption2);
+
+    assertThat(shadowOf(wifiManager).getDisallowedBlockingOptions())
+        .containsExactly(blockingOption1, blockingOption2);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getUsableChannels_returnsChannelsSet() {
+    shadowOf(wifiManager).setUsableChannels(Collections.singletonList(5180));
+    List<WifiAvailableChannel> channels =
+        wifiManager.getUsableChannels(
+            WifiScanner.WIFI_BAND_5_GHZ, WifiAvailableChannel.OP_MODE_STA);
+    assertThat(channels).hasSize(1);
+    assertThat(channels.get(0).getFrequencyMhz()).isEqualTo(5180);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getUsableChannels_notSupported_throwsUnsupportedOperationException() {
+    shadowOf(wifiManager).setGetUsableChannelsSupported(false);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () ->
+            wifiManager.getUsableChannels(
+                WifiScanner.WIFI_BAND_5_GHZ, WifiAvailableChannel.OP_MODE_STA));
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getAllowedChannels_returnsChannelsSet() {
+    shadowOf(wifiManager).setUsableChannels(List.of(5180));
+    List<WifiAvailableChannel> channels =
+        wifiManager.getAllowedChannels(
+            WifiScanner.WIFI_BAND_5_GHZ, WifiAvailableChannel.OP_MODE_STA);
+    assertThat(channels).hasSize(1);
+    assertThat(channels.get(0).getFrequencyMhz()).isEqualTo(5180);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getAllowedChannels_default_returnsEmptyList() {
+    List<WifiAvailableChannel> channels =
+        wifiManager.getAllowedChannels(
+            WifiScanner.WIFI_BAND_5_GHZ, WifiAvailableChannel.OP_MODE_STA);
+    assertThat(channels).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getAllowedChannels_notSupported_throwsUnsupportedOperationException() {
+    shadowOf(wifiManager).setGetUsableChannelsSupported(false);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () ->
+            wifiManager.getAllowedChannels(
+                WifiScanner.WIFI_BAND_5_GHZ, WifiAvailableChannel.OP_MODE_STA));
   }
 
   private static final class IncomingFailure {

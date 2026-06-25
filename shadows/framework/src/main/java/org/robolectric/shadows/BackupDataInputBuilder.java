@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.backup.BackupDataInput;
@@ -8,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.FileDescriptor;
 import java.util.ArrayList;
 import java.util.List;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 
@@ -33,7 +33,8 @@ public class BackupDataInputBuilder {
   public BackupDataInput build() {
     BackupDataInput data =
         reflector(BackupDataInputReflector.class).newBackupDataInput(new FileDescriptor());
-    shadowOf(data).setEntities(ImmutableList.copyOf(entities));
+    ShadowBackupDataInput shadowBackupDataInput = Shadow.extract(data);
+    shadowBackupDataInput.setEntities(ImmutableList.copyOf(entities));
     return data;
   }
 
