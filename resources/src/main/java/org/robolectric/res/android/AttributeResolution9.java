@@ -4,7 +4,6 @@ import static org.robolectric.res.android.ApkAssetsCookie.K_INVALID_COOKIE;
 import static org.robolectric.res.android.ApkAssetsCookie.kInvalidCookie;
 import static org.robolectric.res.android.Util.ALOGI;
 
-import java.util.Arrays;
 import org.robolectric.res.android.CppAssetManager2.ResolvedBag;
 import org.robolectric.res.android.CppAssetManager2.ResolvedBag.Entry;
 import org.robolectric.res.android.CppAssetManager2.Theme;
@@ -74,16 +73,32 @@ public class AttributeResolution9 {
     }
 
     // Robolectric: unoptimized relative to Android impl
-    Entry Find(int ident) {
-      Entry needle = new Entry();
-      needle.key = ident;
 
+    Entry Find(int ident) {
       if (bagEntries == null) {
         return null;
       }
 
-      int i = Arrays.binarySearch(bagEntries, needle, (o1, o2) -> o1.key - o2.key);
-      return i < 0 ? null : bagEntries[i];
+      int low = 0;
+      int high = bagEntries.length - 1;
+
+      // Do a manual binary search for the attribute id in the bag entries. This is faster than
+      // Arrays.binarySearch() because it avoids a `needle` allocation and it avoids boxing the
+      // int keys.
+      while (low <= high) {
+        int mid = (low + high) >>> 1;
+        Entry midVal = bagEntries[mid];
+        int cmp = midVal.key - ident;
+
+        if (cmp < 0) {
+          low = mid + 1;
+        } else if (cmp > 0) {
+          high = mid - 1;
+        } else {
+          return midVal; // key found
+        }
+      }
+      return null; // key not found
     }
   }
 
