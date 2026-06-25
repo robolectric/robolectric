@@ -11,9 +11,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener;
@@ -66,6 +68,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowVirtualDeviceManager.ShadowVirtualDevice;
+import org.robolectric.util.ReflectionHelpers;
 
 /** Unit test for ShadowVirtualDeviceManager and ShadowVirtualDevice. */
 @Config(minSdk = UPSIDE_DOWN_CAKE, maxSdk = BAKLAVA)
@@ -103,6 +106,18 @@ public class ShadowVirtualDeviceManagerTest {
     }
     // When device is closed, it's removed from the list.
     assertThat(virtualDeviceManager.getVirtualDevices()).isEmpty();
+  }
+
+  @Test
+  public void testCreateVirtualDevice_setsVirtualDeviceProxy() {
+    try (VirtualDevice device =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      Object internalDevice = ReflectionHelpers.getField(device, "mVirtualDeviceInternal");
+      assertThat(internalDevice).isNotNull();
+      IVirtualDevice virtualDevice = ReflectionHelpers.getField(internalDevice, "mVirtualDevice");
+      assertThat(virtualDevice).isNotNull();
+    }
   }
 
   @Test
@@ -437,6 +452,113 @@ public class ShadowVirtualDeviceManagerTest {
       assertThat(virtualDisplay.getDisplay().getName()).isEqualTo("name");
       assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(123);
     }
+  }
+
+  @Test
+  public void testCreateVirtualDisplay_deprecatedSignature() {
+    try (VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+
+      Surface surface = new Surface(new SurfaceTexture(0));
+
+      // Call the deprecated signature via reflector to ensure it works even if hidden in SDK
+      VirtualDisplay virtualDisplay =
+          reflector(
+                  ShadowVirtualDeviceManager.DeviceManagerVirtualDeviceReflector.class,
+                  virtualDevice)
+              .createVirtualDisplay(
+                  DISPLAY_WIDTH,
+                  DISPLAY_HEIGHT,
+                  DISPLAY_DPI,
+                  surface,
+                  123,
+                  MoreExecutors.directExecutor(),
+                  mockDisplayCallback);
+
+      Rect size = new Rect();
+      assertThat(virtualDisplay).isNotNull();
+      virtualDisplay.getDisplay().getRectSize(size);
+      DisplayMetrics displayMetrics = new DisplayMetrics();
+      virtualDisplay.getDisplay().getMetrics(displayMetrics);
+
+      assertThat(displayMetrics.densityDpi).isEqualTo(DISPLAY_DPI);
+      assertThat(displayMetrics.heightPixels).isEqualTo(DISPLAY_HEIGHT);
+      assertThat(displayMetrics.widthPixels).isEqualTo(DISPLAY_WIDTH);
+      assertThat(size).isEqualTo(new Rect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT));
+
+      assertThat(virtualDisplay.getSurface()).isEqualTo(surface);
+      assertThat(virtualDisplay.getDisplay().getDisplayId()).isNotEqualTo(Display.DEFAULT_DISPLAY);
+      assertThat(virtualDisplay.getDisplay().getName())
+          .isEqualTo("VirtualDisplay-1"); // Default name format
+      assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(123);
+    }
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void testShadowConstructor_coversInternalDeviceSetup() {
+    try (VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      Object internalDevice =
+          reflector(
+                  ShadowVirtualDeviceManager.DeviceManagerVirtualDeviceReflector.class,
+                  virtualDevice)
+              .getVirtualDeviceInternal();
+      assertThat(internalDevice).isNotNull();
+      IVirtualDevice proxy =
+          reflector(ShadowVirtualDeviceManager.VirtualDeviceInternalReflector.class, internalDevice)
+              .getVirtualDevice();
+      assertThat(proxy).isNotNull();
+    }
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void testShadowConstructor_withNonNullInternalDevice() throws Exception {
+    ShadowVirtualDevice shadowDevice = new ShadowVirtualDevice();
+
+    VirtualDevice mockRealDevice = mock(VirtualDevice.class);
+    ReflectionHelpers.setField(shadowDevice, "realVirtualDevice", mockRealDevice);
+
+    Class<?> internalDeviceClass;
+    try {
+      internalDeviceClass = Class.forName("android.companion.virtual.VirtualDeviceInternal");
+    } catch (ClassNotFoundException e) {
+      return;
+    }
+    Object mockInternalDevice = mock(internalDeviceClass);
+    ReflectionHelpers.setField(mockRealDevice, "mVirtualDeviceInternal", mockInternalDevice);
+
+    shadowDevice.__constructor__(
+        /* service= */ null,
+        /* context= */ context,
+        /* associationId= */ 1,
+        /* params= */ new VirtualDeviceParams.Builder().setName("foo").build());
+
+    IVirtualDevice proxy =
+        reflector(
+                ShadowVirtualDeviceManager.VirtualDeviceInternalReflector.class, mockInternalDevice)
+            .getVirtualDevice();
+    assertThat(proxy).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void testShadowConstructor_withNullInternalDevice() throws Exception {
+    ShadowVirtualDevice shadowDevice = new ShadowVirtualDevice();
+
+    VirtualDevice mockRealDevice = mock(VirtualDevice.class);
+    ReflectionHelpers.setField(shadowDevice, "realVirtualDevice", mockRealDevice);
+
+    shadowDevice.__constructor__(
+        /* service= */ null,
+        /* context= */ context,
+        /* associationId= */ 1,
+        /* params= */ new VirtualDeviceParams.Builder().setName("foo").build());
+
+    // Should complete successfully without throwing
   }
 
   @Test
