@@ -1089,6 +1089,14 @@ public class ResourceTypes {
       }
       return ints;
     }
+
+    /**
+     * Reads a single spec-flag entry directly from the buffer. {@link #getSpecFlags()} allocates
+     * and copies the entire flags array.
+     */
+    public int getSpecFlag(int index) {
+      return myBuf().getInt(myOffset() + header.headerSize + index * 4);
+    }
   }
 
   /**
