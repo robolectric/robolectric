@@ -37,20 +37,31 @@ public class AttributeResolution10 {
 
   public static class XmlAttributeFinder {
 
-    private final ResXMLParser xmlParser;
+    private final int[] attrResIds;
 
     XmlAttributeFinder(ResXMLParser xmlParser) {
-      this.xmlParser = xmlParser;
+      if (xmlParser == null) {
+        this.attrResIds = null;
+      } else {
+        // Resolve each XML attribute's resource id exactly once. Caching the ids up front turns
+        // O(styleable * xmlAttrs) resolutions into O(xmlAttrs), leaving Find() as a cheap int scan.
+        int attributeCount = xmlParser.getAttributeCount();
+        int[] ids = new int[attributeCount];
+        for (int i = 0; i < attributeCount; i++) {
+          ids[i] = xmlParser.getAttributeNameResID(i);
+        }
+        this.attrResIds = ids;
+      }
     }
 
     public int Find(int curIdent) {
-      if (xmlParser == null) {
+      if (attrResIds == null) {
         return -1;
       }
 
-      int attributeCount = xmlParser.getAttributeCount();
-      for (int i = 0; i < attributeCount; i++) {
-        if (xmlParser.getAttributeNameResID(i) == curIdent) {
+      final int[] ids = attrResIds;
+      for (int i = 0; i < ids.length; i++) {
+        if (ids[i] == curIdent) {
           return i;
         }
       }
