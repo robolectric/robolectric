@@ -6,7 +6,6 @@ import static java.util.Arrays.stream;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -170,10 +169,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
           () -> {
             result.addAll(
                 (List<FrameworkMethod>)
-                    runInSandbox(
-                        sandbox,
-                        methods.get(0),
-                        unused -> mapper.map(sandbox, methods)));
+                    runInSandbox(sandbox, methods.get(0), unused -> mapper.map(sandbox, methods)));
           });
     }
     return result.build();
@@ -182,7 +178,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   protected Sandbox getSandboxForSandboxMapping(FrameworkMethod method) {
     return getSandbox(method);
   }
-
 
   @Nonnull
   protected Collection<Interceptor> findInterceptors() {
@@ -447,10 +442,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     T call(Method bootstrappedMethod) throws Throwable;
   }
 
-  private <T> T runInSandbox(
-      Sandbox sandbox,
-      FrameworkMethod method,
-      SandboxCallable<T> callable) {
+  private <T> T runInSandbox(Sandbox sandbox, FrameworkMethod method, SandboxCallable<T> callable) {
     // The method class may be different than the test class if the method annotated @Test
     // is declared on a superclass of the test.
     Method bootstrappedMethod = getBootstrappedMethod(sandbox, method);

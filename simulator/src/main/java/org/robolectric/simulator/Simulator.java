@@ -167,7 +167,6 @@ public final class Simulator {
         Looper.getMainLooper());
   }
 
-
   private void setupPerfStats() {
     perfStatsCollector = PerfStatsCollector.getInstance();
     perfStatsCollector.putMetadata(new Metadata(RuntimeEnvironment.getApiLevel()));

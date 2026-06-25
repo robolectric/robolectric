@@ -28,7 +28,6 @@ import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
