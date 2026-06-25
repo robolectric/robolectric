@@ -181,6 +181,19 @@ public class ShadowVirtualDeviceManager {
       this.deviceId = nextDeviceId.getAndIncrement();
       this.context = context;
       this.persistentDeviceId = "companion:" + associationId;
+      Object internalDevice =
+          ReflectionHelpers.getField(realVirtualDevice, "mVirtualDeviceInternal");
+      if (internalDevice != null) {
+        try {
+          java.lang.reflect.Field field =
+              internalDevice.getClass().getDeclaredField("mVirtualDevice");
+          field.setAccessible(true);
+          Object proxy = ReflectionHelpers.createNullProxy(IVirtualDevice.class);
+          field.set(internalDevice, proxy);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
     }
 
     @Implementation
@@ -367,6 +380,23 @@ public class ShadowVirtualDeviceManager {
               .createVirtualDisplay(context, null, config, callback, executor);
       displayIds.add(display.getDisplay().getDisplayId());
       return display;
+    }
+
+    @Implementation
+    protected VirtualDisplay createVirtualDisplay(
+        int width,
+        int height,
+        int densityDpi,
+        android.view.Surface surface,
+        int flags,
+        Executor executor,
+        VirtualDisplay.Callback callback) {
+      VirtualDisplayConfig config =
+          new VirtualDisplayConfig.Builder("VirtualDisplay-" + deviceId, width, height, densityDpi)
+              .setFlags(flags)
+              .setSurface(surface)
+              .build();
+      return createVirtualDisplay(config, executor, callback);
     }
 
     public void setPendingIntentCallbackResultCode(int resultCode) {
