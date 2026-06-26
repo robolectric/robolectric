@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-  compileSdk = 36
+  compileSdk = 37
   namespace = "org.robolectric.integration.roborazzi"
 
   defaultConfig { minSdk = 23 }

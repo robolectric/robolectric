@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-  compileSdk = 36
+  compileSdk = 37
   namespace = "org.robolectric.integrationtests.room"
 
   defaultConfig { minSdk = 23 }
