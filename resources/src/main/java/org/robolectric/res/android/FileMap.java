@@ -4,7 +4,7 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.res.android.Util.ALOGV;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import com.google.common.primitives.Shorts;
@@ -14,7 +14,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -206,8 +208,10 @@ public class FileMap {
     return true;
   }
 
-  static ImmutableMap<String, Long> guessDataOffsets(File zipFile, int length) {
-    HashMap<String, Long> result = new HashMap<>();
+  static Map<String, Long> guessDataOffsets(File zipFile, int length, int entryCount) {
+    // Presize to avoid repeated rehashing, framework jars may have ~100k entries.
+    HashMap<String, Long> result =
+        entryCount > 0 ? Maps.newHashMapWithExpectedSize(entryCount) : new HashMap<>();
 
     // Parse the zip file entry offsets from the central directory section.
     // See https://en.wikipedia.org/wiki/Zip_(file_format)
@@ -274,7 +278,9 @@ public class FileMap {
         offset += 46 + fileNameLength + extraLength + fieldCommentLength;
       }
 
-      return ImmutableMap.copyOf(result);
+      // Avoid ImmutableMap.copyOf() because it rehashes every entry and is expensive for large
+      // maps (e.g. framework jars have ~100k entries).
+      return Collections.unmodifiableMap(result);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

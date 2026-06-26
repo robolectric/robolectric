@@ -57,7 +57,8 @@ public class ZipFileRO {
       // central directory is being read twice
       ZipFile zipFile = new ZipFile(file);
       mHandle.set(
-          new ZipArchiveHandle(zipFile, FileMap.guessDataOffsets(file, (int) file.length())));
+          new ZipArchiveHandle(
+              zipFile, FileMap.guessDataOffsets(file, (int) file.length(), zipFile.size())));
       return NO_ERROR;
     } catch (IOException e) {
       return NAME_NOT_FOUND;
