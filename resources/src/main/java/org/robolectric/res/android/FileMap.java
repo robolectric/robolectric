@@ -271,16 +271,11 @@ public class FileMap {
           byte[] nameBytes = copyBytes(buffer, offset + 46, fileNameLength);
           Charset encoding = getEncoding(bitFlag);
           String fileName = new String(nameBytes, encoding);
-          byte[] localHeaderBuffer = new byte[30];
-          randomAccessFile.seek(relativeOffsetOfLocalFileHeader);
-          randomAccessFile.readFully(localHeaderBuffer);
-          // There are two extra field lengths stored in the zip - one in the central directory,
-          // one in the local header. And we should use the one in the local header to calculate the
-          // correct file content offset, because they are different sometimes.
-          int localHeaderExtraLength = readShort(localHeaderBuffer, 28);
-          int fileOffset =
-              relativeOffsetOfLocalFileHeader + 30 + fileNameLength + localHeaderExtraLength;
-          result.put(fileName, (long) fileOffset);
+          // Store the local file header offset only. The exact data offset requires reading the
+          // entry's local file header, so it is computed lazily in dataOffsetForLocalHeader.
+          // A typical test loads relatively few resources from the Android framework jars, so it is
+          // not worth the extra cost of seeking and reading the local header for all entries.
+          result.put(fileName, (long) relativeOffsetOfLocalFileHeader);
         }
         offset += 46 + fileNameLength + extraLength + fieldCommentLength;
       }
@@ -305,6 +300,25 @@ public class FileMap {
       }
     }
     return true;
+  }
+
+  /** Computes the exact offset of an entry's data given the offset of its local file header. */
+  static long dataOffsetForLocalHeader(RandomAccessFile randomAccessFile, long localHeaderOffset)
+      throws IOException {
+    // The ZIP local file header is 30 bytes long (excluding the variable-length file name and extra
+    // field). See the PKWARE ZIP File Format Specification, section 4.3.7:
+    // https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
+    byte[] localHeaderBuffer = new byte[30];
+    randomAccessFile.seek(localHeaderOffset);
+    randomAccessFile.readFully(localHeaderBuffer);
+    // Offset 26 is the 2-byte file name length field in the local file header.
+    int nameLength = readShort(localHeaderBuffer, 26);
+    // Offset 28 is the 2-byte extra field length field in the local file header.
+    int extraLength = readShort(localHeaderBuffer, 28);
+
+    // The actual data starts after the 30-byte fixed header, the variable-length file name, and
+    // the variable-length extra field.
+    return localHeaderOffset + 30 + nameLength + extraLength;
   }
 
   private static byte[] copyBytes(byte[] buffer, int offset, int length) {

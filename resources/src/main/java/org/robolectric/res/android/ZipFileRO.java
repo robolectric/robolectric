@@ -58,7 +58,7 @@ public class ZipFileRO {
       ZipFile zipFile = new ZipFile(file);
       mHandle.set(
           new ZipArchiveHandle(
-              zipFile, FileMap.guessDataOffsets(file, (int) file.length(), zipFile.size())));
+              zipFile, file, FileMap.guessDataOffsets(file, (int) file.length(), zipFile.size())));
       return NO_ERROR;
     } catch (IOException e) {
       return NAME_NOT_FOUND;
@@ -117,10 +117,11 @@ public class ZipFileRO {
     ZipEntryRO data = new ZipEntryRO();
     data.name = String(entryName);
 
-    if (mHandle.dataOffsets.get(entryName) == null) {
+    Long dataOffset = mHandle.dataOffset(entryName);
+    if (dataOffset == null) {
       return null;
     }
-    data.dataOffset = mHandle.dataOffsets.get(entryName);
+    data.dataOffset = dataOffset;
 
     final Ref<ZipEntry> zipEntryRef = new Ref<>(data.entry);
     final int error = FindEntry(mHandle, data.name, zipEntryRef);
