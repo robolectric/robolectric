@@ -26,6 +26,7 @@ import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_ref;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_span;
 import org.robolectric.res.android.ResourceTypes.WithOffset;
+import org.robolectric.util.PerfStatsCollector;
 
 /** Convenience class for accessing data in a ResStringPool resource. */
 @SuppressWarnings("NewApi")
@@ -279,24 +280,6 @@ public class ResStringPool {
       }
       mStylePoolSize = (mHeader.header.size - mHeader.stylesStart) /* / sizeof(uint32_t)*/;
 
-      //      if (notDeviceEndian) {
-      //        size_t i;
-      //        uint32_t* e = final_cast<uint32_t*>(mEntryStyles);
-      //        for (i=0; i<mHeader.styleCount; i++) {
-      //          e[i] = dtohl(mEntryStyles[i]);
-      //        }
-      //        uint32_t* s = final_cast<uint32_t*>(mStyles);
-      //        for (i=0; i<mStylePoolSize; i++) {
-      //          s[i] = dtohl(mStyles[i]);
-      //        }
-      //      }
-
-      //        final ResStringPool_span endSpan = {
-      //          { htodl(ResStringPool_span.END) },
-      //          htodl(ResStringPool_span.END), htodl(ResStringPool_span.END)
-      //      };
-      //      if (memcmp(&mStyles[mStylePoolSize-(sizeof(endSpan)/sizeof(uint32_t))],
-      //                   &endSpan, sizeof(endSpan)) != 0) {
       ResStringPool_span endSpan =
           new ResStringPool_span(
               buf,
@@ -333,6 +316,11 @@ public class ResStringPool {
   }
 
   public String stringAt(int idx) {
+    return PerfStatsCollector.getInstance()
+        .measure("ResStringPool stringAt", () -> stringAt_measured(idx));
+  }
+
+  private String stringAt_measured(int idx) {
     if (mError == NO_ERROR && idx < mHeader.stringCount) {
       final boolean isUTF8 = (mHeader.flags & ResStringPool_header.UTF8_FLAG) != 0;
       //        const uint32_t off = mEntries[idx]/(isUTF8?sizeof(uint8_t):sizeof(uint16_t));
@@ -345,101 +333,10 @@ public class ResStringPool {
           final int strings = mStrings;
           final int str = strings + off * 2;
           return decodeString(buf, bufOffset + str, ResourceString.Type.UTF16);
-          //          int u16len = decodeLengthUTF16(buf, bufOffset + str);
-          //          if ((str+u16len*2-strings) < mStringPoolSize) {
-          //            // Reject malformed (non null-terminated) strings
-          //            if (buf.getShort(bufOffset + str + u16len*2) != 0x0000) {
-          //              ALOGW("Bad string block: string #%d is not null-terminated",
-          //                  (int)idx);
-          //              return null;
-          //            }
-          //            byte[] bytes = new byte[u16len * 2];
-          //            buf.position(bufOffset + str);
-          //            buf.get(bytes);
-          //               // Reject malformed (non null-terminated) strings
-          //               if (str[encLen] != 0x00) {
-          //                   ALOGW("Bad string block: string #%d is not null-terminated",
-          //                         (int)idx);
-          //                   return NULL;
-          //               }
-          //            return new String(bytes, StandardCharsets.UTF_16);
-          //          } else {
-          //            ALOGW("Bad string block: string #%d extends to %d, past end at %d\n",
-          //                (int)idx, (int)(str+u16len-strings), (int)mStringPoolSize);
-          //          }
         } else {
           final int strings = mStrings;
           final int u8str = strings + off;
           return decodeString(buf, bufOffset + u8str, ResourceString.Type.UTF8);
-
-          //                *u16len = decodeLength(&u8str);
-          //          size_t u8len = decodeLength(&u8str);
-          //
-          //          // encLen must be less than 0x7FFF due to encoding.
-          //          if ((uint32_t)(u8str+u8len-strings) < mStringPoolSize) {
-          //            AutoMutex lock(mDecodeLock);
-          //
-          //            if (mCache != NULL && mCache[idx] != NULL) {
-          //              return mCache[idx];
-          //            }
-          //
-          //            // Retrieve the actual length of the utf8 string if the
-          //            // encoded length was truncated
-          //            if (stringDecodeAt(idx, u8str, u8len, &u8len) == NULL) {
-          //                return NULL;
-          //            }
-          //
-          //            // Since AAPT truncated lengths longer than 0x7FFF, check
-          //            // that the bits that remain after truncation at least match
-          //            // the bits of the actual length
-          //            ssize_t actualLen = utf8_to_utf16_length(u8str, u8len);
-          //            if (actualLen < 0 || ((size_t)actualLen & 0x7FFF) != *u16len) {
-          //              ALOGW("Bad string block: string #%lld decoded length is not correct "
-          //                  "%lld vs %llu\n",
-          //                  (long long)idx, (long long)actualLen, (long long)*u16len);
-          //              return NULL;
-          //            }
-          //
-          //            utf8_to_utf16(u8str, u8len, u16str, *u16len + 1);
-          //
-          //            if (mCache == NULL) {
-          // #ifndef __ANDROID__
-          //                if (kDebugStringPoolNoisy) {
-          //                    ALOGI("CREATING STRING CACHE OF %zu bytes",
-          //                          mHeader->stringCount*sizeof(char16_t**));
-          //                }
-          // #else
-          //                // We do not want to be in this case when actually running Android.
-          //                ALOGW("CREATING STRING CACHE OF %zu bytes",
-          //                        static_cast<size_t>(mHeader->stringCount*sizeof(char16_t**)));
-          // #endif
-          //                mCache = (char16_t**)calloc(mHeader->stringCount, sizeof(char16_t*));
-          //                if (mCache == NULL) {
-          //                    ALOGW("No memory trying to allocate decode cache table of %d
-          // bytes\n",
-          //                          (int)(mHeader->stringCount*sizeof(char16_t**)));
-          //                    return NULL;
-          //                }
-          //            }
-          //            *u16len = (size_t) actualLen;
-          //            char16_t *u16str = (char16_t *)calloc(*u16len+1, sizeof(char16_t));
-          //            if (!u16str) {
-          //              ALOGW("No memory when trying to allocate decode cache for string #%d\n",
-          //                  (int)idx);
-          //              return NULL;
-          //            }
-          //
-          //            if (kDebugStringPoolNoisy) {
-          //              ALOGI("Caching UTF8 string: %s", u8str);
-          //            }
-          //
-          //            mCache[idx] = u16str;
-          //            return u16str;
-          //          } else {
-          //            ALOGW("Bad string block: string #%lld extends to %lld, past end at %lld\n",
-          //                (long long)idx, (long long)(u8str+u8len-strings),
-          //                (long long)mStringPoolSize);
-          //          }
         }
       } else {
         ALOGW(
