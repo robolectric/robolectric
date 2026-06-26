@@ -60,6 +60,11 @@ public class PerfStatsCollector {
 
   public <T, E extends Exception> T measure(String eventName, ThrowingSupplier<T, E> supplier)
       throws E {
+    // Avoid Event overhead if disabled.
+    if (!enabled.get()) {
+      return supplier.get();
+    }
+
     boolean success = true;
     Event event = startEvent(eventName);
     try {
