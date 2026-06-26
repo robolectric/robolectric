@@ -14,7 +14,7 @@ import org.robolectric.shadow.api.Shadow;
 public final class ExtendedShadowApplicationTest {
   @Config(sdk = S)
   @Test
-  public void behaviorBeingTested_expectedResult() {
+  public void shadowExtract_returnsNonNullExtendedShadowApplication() {
     ExtendedShadowApplication application = Shadow.extract(RuntimeEnvironment.getApplication());
     assertThat(application).isNotNull();
   }
