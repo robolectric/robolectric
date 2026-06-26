@@ -41,6 +41,8 @@ public class FileMap {
   private static final int MAXIMUM_ZIP_EOCD_SIZE =
       MAX_COMMENT_SIZE + EOCD_SIZE + ZIP64_EOCD_SIZE + ZIP64_EOCD_LOCATOR_SIZE;
 
+  private static final byte[] DOT_CLASS = {'.', 'c', 'l', 'a', 's', 's'};
+
   private ZipFile zipFile;
   private ZipEntry zipEntry;
 
@@ -262,19 +264,24 @@ public class FileMap {
         int fieldCommentLength = readShort(buffer, offset + 32);
         int relativeOffsetOfLocalFileHeader = readInt(buffer, offset + 42);
 
-        byte[] nameBytes = copyBytes(buffer, offset + 46, fileNameLength);
-        Charset encoding = getEncoding(bitFlag);
-        String fileName = new String(nameBytes, encoding);
-        byte[] localHeaderBuffer = new byte[30];
-        randomAccessFile.seek(relativeOffsetOfLocalFileHeader);
-        randomAccessFile.readFully(localHeaderBuffer);
-        // There are two extra field lengths stored in the zip - one in the central directory,
-        // one in the local header. And we should use one in local header to calculate the
-        // correct file content offset, because they are different some times.
-        int localHeaderExtraLength = readShort(localHeaderBuffer, 28);
-        int fileOffset =
-            relativeOffsetOfLocalFileHeader + 30 + fileNameLength + localHeaderExtraLength;
-        result.put(fileName, (long) fileOffset);
+        // Ignore .class files; they are ~75% of the entries in a typical Android framework jar, and
+        // are not needed for the purposes of loading binary resources. They are also handled by
+        // SandboxClassLoaders.
+        if (!endsWithSuffix(buffer, offset + 46, fileNameLength, DOT_CLASS)) {
+          byte[] nameBytes = copyBytes(buffer, offset + 46, fileNameLength);
+          Charset encoding = getEncoding(bitFlag);
+          String fileName = new String(nameBytes, encoding);
+          byte[] localHeaderBuffer = new byte[30];
+          randomAccessFile.seek(relativeOffsetOfLocalFileHeader);
+          randomAccessFile.readFully(localHeaderBuffer);
+          // There are two extra field lengths stored in the zip - one in the central directory,
+          // one in the local header. And we should use the one in the local header to calculate the
+          // correct file content offset, because they are different sometimes.
+          int localHeaderExtraLength = readShort(localHeaderBuffer, 28);
+          int fileOffset =
+              relativeOffsetOfLocalFileHeader + 30 + fileNameLength + localHeaderExtraLength;
+          result.put(fileName, (long) fileOffset);
+        }
         offset += 46 + fileNameLength + extraLength + fieldCommentLength;
       }
 
@@ -284,6 +291,20 @@ public class FileMap {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static boolean endsWithSuffix(
+      byte[] buffer, int nameStart, int nameLength, byte[] suffix) {
+    if (nameLength < suffix.length) {
+      return false;
+    }
+    int start = nameStart + nameLength - suffix.length;
+    for (int i = 0; i < suffix.length; i++) {
+      if (buffer[start + i] != suffix[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static byte[] copyBytes(byte[] buffer, int offset, int length) {
