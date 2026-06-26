@@ -345,6 +345,9 @@ public class AttributeResolution9 {
     // Retrieve the XML attributes, if requested.
     XmlAttributeFinder xml_attr_finder = new XmlAttributeFinder(xml_parser);
 
+    final Ref<Integer> type_set_flags = new Ref<>(0);
+    final Ref<Integer> resId = new Ref<>(0);
+
     // Now iterate through all of the attributes that the client has requested,
     // filling in each with whatever data we can find.
     for (int ii = 0; ii < attrs_length; ii++) {
@@ -355,7 +358,7 @@ public class AttributeResolution9 {
       }
 
       ApkAssetsCookie cookie = K_INVALID_COOKIE;
-      final Ref<Integer> type_set_flags = new Ref<>(0);
+      type_set_flags.set(0);
 
       value.set(Res_value.NULL_VALUE);
       config.get().density = 0;
@@ -408,7 +411,7 @@ public class AttributeResolution9 {
         }
       }
 
-      final Ref<Integer> resId = new Ref<>(0);
+      resId.set(0);
       if (value.get().dataType != DataType.NULL.code()) {
         // Take care of resolving the found resource to its final value.
         ApkAssetsCookie new_cookie =
