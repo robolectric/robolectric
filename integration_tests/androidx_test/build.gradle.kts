@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-  compileSdk = 36
+  compileSdk = 37
   namespace = "org.robolectric.integration.axt"
 
   defaultConfig {

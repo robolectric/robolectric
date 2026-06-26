@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-  compileSdk = 36
+  compileSdk = 37
   namespace = "org.robolectric.rap"
 
   defaultConfig { minSdk = 23 }

@@ -35,7 +35,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.camera2.CameraManager;
-import android.hardware.fingerprint.FingerprintManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
@@ -517,16 +516,21 @@ public class ContextTest {
     }
   }
 
+  // FingerprintManager and Context.FINGERPRINT_SERVICE were removed in Android API 37. The service
+  // is referenced by its name and handled as a plain Object so the tests keep compiling against
+  // compileSdk 37, while still exercising the behavior on API <= 36 (@Config gates Robolectric runs
+  // and @SdkSuppress gates instrumented runs).
+  private static final String FINGERPRINT_SERVICE = "fingerprint";
+
   @Test
   @Config(maxSdk = BAKLAVA)
+  @SdkSuppress(maxSdkVersion = BAKLAVA)
   public void fingerprintManager_applicationInstance_isNotSameAsActivityInstance() {
-    FingerprintManager applicationFingerprintManager =
-        (FingerprintManager) application.getSystemService(Context.FINGERPRINT_SERVICE);
+    Object applicationFingerprintManager = application.getSystemService(FINGERPRINT_SERVICE);
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
       scenario.onActivity(
           activity -> {
-            FingerprintManager activityFingerprintManager =
-                (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);
+            Object activityFingerprintManager = activity.getSystemService(FINGERPRINT_SERVICE);
             assertThat(applicationFingerprintManager)
                 .isNotSameInstanceAs(activityFingerprintManager);
           });
@@ -535,14 +539,14 @@ public class ContextTest {
 
   @Test
   @Config(maxSdk = BAKLAVA)
+  @SdkSuppress(maxSdkVersion = BAKLAVA)
   public void fingerprintManager_activityInstance_isSameAsActivityInstance() {
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
       scenario.onActivity(
           activity -> {
-            FingerprintManager activityFingerprintManager =
-                (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);
-            FingerprintManager anotherActivityFingerprintManager =
-                (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);
+            Object activityFingerprintManager = activity.getSystemService(FINGERPRINT_SERVICE);
+            Object anotherActivityFingerprintManager =
+                activity.getSystemService(FINGERPRINT_SERVICE);
             assertThat(anotherActivityFingerprintManager)
                 .isSameInstanceAs(activityFingerprintManager);
           });
@@ -551,31 +555,39 @@ public class ContextTest {
 
   @Test
   @Config(maxSdk = BAKLAVA)
+  @SdkSuppress(maxSdkVersion = BAKLAVA)
   public void fingerprintManager_instance_hasConsistentFingerprintState() {
-    FingerprintManager applicationFingerprintManager =
-        (FingerprintManager) application.getSystemService(Context.FINGERPRINT_SERVICE);
+    Object applicationFingerprintManager = application.getSystemService(FINGERPRINT_SERVICE);
 
     try (ActivityScenario<TestActivity> scenario = ActivityScenario.launch(TestActivity.class)) {
       scenario.onActivity(
           activity -> {
-            FingerprintManager activityFingerprintManager =
-                (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);
+            Object activityFingerprintManager = activity.getSystemService(FINGERPRINT_SERVICE);
 
             boolean isApplicationFingerprintAvailable =
-                applicationFingerprintManager.isHardwareDetected();
+                invokeBooleanMethod(applicationFingerprintManager, "isHardwareDetected");
             boolean isActivityFingerprintAvailable =
-                activityFingerprintManager.isHardwareDetected();
+                invokeBooleanMethod(activityFingerprintManager, "isHardwareDetected");
 
             assertThat(isActivityFingerprintAvailable).isEqualTo(isApplicationFingerprintAvailable);
 
             boolean hasApplicationEnrolledFingerprints =
-                applicationFingerprintManager.hasEnrolledFingerprints();
+                invokeBooleanMethod(applicationFingerprintManager, "hasEnrolledFingerprints");
             boolean hasActivityEnrolledFingerprints =
-                activityFingerprintManager.hasEnrolledFingerprints();
+                invokeBooleanMethod(activityFingerprintManager, "hasEnrolledFingerprints");
 
             assertThat(hasActivityEnrolledFingerprints)
                 .isEqualTo(hasApplicationEnrolledFingerprints);
           });
+    }
+  }
+
+  /** Invokes a no-arg boolean method by name, used for APIs removed from newer compile SDKs. */
+  private static boolean invokeBooleanMethod(Object target, String methodName) {
+    try {
+      return (boolean) target.getClass().getMethod(methodName).invoke(target);
+    } catch (ReflectiveOperationException e) {
+      throw new RuntimeException(e);
     }
   }
 

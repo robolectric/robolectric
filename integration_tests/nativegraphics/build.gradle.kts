@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-  compileSdk = 36
+  compileSdk = 37
   namespace = "org.robolectric.shadows"
 
   defaultConfig { minSdk = 26 }
