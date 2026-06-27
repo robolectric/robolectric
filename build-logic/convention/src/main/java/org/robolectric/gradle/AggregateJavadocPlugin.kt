@@ -46,7 +46,8 @@ class AggregateJavadocPlugin : Plugin<Project> {
       .flatten()
       .filterIsInstance<Javadoc>()
       .filter {
-        it.project.pluginManager.hasPlugin("org.robolectric.gradle.DeployedRoboJavaModulePlugin")
+        it.project.plugins.hasPlugin(DeployedRoboJavaModulePlugin::class.java) ||
+          it.project.plugins.hasPlugin(DeployedRoboKotlinModulePlugin::class.java)
       }
       .toSet()
   }
