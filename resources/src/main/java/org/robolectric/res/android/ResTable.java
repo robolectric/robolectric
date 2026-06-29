@@ -438,6 +438,7 @@ public class ResTable {
     // Allow overriding density
     ResTable_config desiredConfig = mParams;
     if (density > 0) {
+      desiredConfig = new ResTable_config(mParams);
       desiredConfig.density = density;
     }
     Entry entry = new Entry();

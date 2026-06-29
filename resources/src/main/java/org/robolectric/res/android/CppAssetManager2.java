@@ -624,14 +624,14 @@ public class CppAssetManager2 {
     ATRACE_CALL();
 
     // Might use this if density_override != 0.
-    ResTable_config density_override_config;
+    ResTable_config densityOverrideConfig = null;
 
     // Select our configuration or generate a density override configuration.
     ResTable_config desired_config = configuration_;
     if (density_override != 0 && density_override != configuration_.density) {
-      density_override_config = configuration_;
-      density_override_config.density = density_override;
-      desired_config = density_override_config;
+      densityOverrideConfig = new ResTable_config(configuration_);
+      densityOverrideConfig.density = density_override;
+      desired_config = densityOverrideConfig;
     }
 
     if (!is_valid_resid(resid)) {

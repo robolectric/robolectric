@@ -366,7 +366,7 @@ containing a value of this type.
         public static final int an_image_or_vector=0x7f020001;
         public static final int an_other_image=0x7f020002;
         public static final int drawable_with_nine_patch=0x7f020003;
-        public static final int example_item_drawable=0x7f02001d;
+    public static final int example_item_drawable = 0x7f02001f;
         public static final int fourth_image=0x7f020004;
         public static final int image_background=0x7f020005;
         public static final int l0_red=0x7f020006;
@@ -386,12 +386,14 @@ containing a value of this type.
         public static final int rainbow=0x7f020014;
         public static final int robolectric=0x7f020015;
         public static final int state_drawable=0x7f020016;
-        public static final int test_jpeg=0x7f020017;
-        public static final int test_webp=0x7f020018;
-        public static final int test_webp_lossless=0x7f020019;
-        public static final int test_webp_lossy=0x7f02001a;
-        public static final int third_image=0x7f02001b;
-        public static final int vector=0x7f02001c;
+    public static final int test_density_mutation = 0x7f020017;
+    public static final int test_jpeg = 0x7f020018;
+    public static final int test_webp = 0x7f020019;
+    public static final int test_webp_lossless = 0x7f02001a;
+    public static final int test_webp_lossy = 0x7f02001b;
+    public static final int third_image = 0x7f02001c;
+    public static final int trigger_override = 0x7f02001d;
+    public static final int vector = 0x7f02001e;
     }
     public static final class fraction {
         public static final int fifth=0x7f0c0004;
