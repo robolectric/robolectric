@@ -31,8 +31,10 @@ import android.os.ParcelUuid;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
@@ -45,6 +47,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.VersionCalculator;
 
 /** Shadow for {@link BluetoothDevice}. */
 @Implements(BluetoothDevice.class)
@@ -93,6 +96,7 @@ public class ShadowBluetoothDevice {
   private int connectCount = 0;
   @Nullable private BluetoothGattConnectionInterceptor bluetoothGattConnectionInterceptor = null;
   private final Map<Integer, Integer> connectionHandlesByTransportType = new HashMap<>();
+  private final Set<Integer> connectedTransports = new HashSet<>();
   private BluetoothDevice.BluetoothAddress identityAddressWithType;
 
   /**
@@ -523,8 +527,25 @@ public class ShadowBluetoothDevice {
     return isConnected;
   }
 
+  @Implementation(minSdk = VersionCalculator.CINNAMON_BUN)
+  protected boolean isConnected(int transport) {
+    return connectedTransports.contains(transport);
+  }
+
   public void setConnected(boolean isConnected) {
     this.isConnected = isConnected;
+  }
+
+  public void setConnected(int transport, boolean isConnected) {
+    if (isConnected) {
+      connectedTransports.add(transport);
+      this.isConnected = true;
+    } else {
+      connectedTransports.remove(transport);
+      if (connectedTransports.isEmpty()) {
+        this.isConnected = false;
+      }
+    }
   }
 
   /**

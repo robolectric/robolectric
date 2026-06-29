@@ -15,6 +15,7 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
@@ -31,11 +32,15 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.VersionCalculator;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowBluetoothDeviceTest {
@@ -744,6 +749,129 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
+  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  public void setDeviceConnected_withTransport_isConnected() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, true);
+    // Reflection can be removed when the test compiles against a 37+ SDK
+    boolean isConnectedLe =
+        reflector(BluetoothDeviceCinnamonBunReflector.class, device)
+            .isConnected(BluetoothDevice.TRANSPORT_LE);
+    boolean isConnectedBredr =
+        reflector(BluetoothDeviceCinnamonBunReflector.class, device)
+            .isConnected(BluetoothDevice.TRANSPORT_BREDR);
+
+    assertThat(isConnectedLe).isTrue();
+    assertThat(isConnectedBredr).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  public void setDeviceDisconnected_withTransport_isNotConnected() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, true);
+
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, false);
+    // Reflection can be removed when the test compiles against a 37+ SDK
+    boolean isConnectedLe =
+        reflector(BluetoothDeviceCinnamonBunReflector.class, device)
+            .isConnected(BluetoothDevice.TRANSPORT_LE);
+    assertThat(isConnectedLe).isFalse();
+    assertThat(device.isConnected()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  public void setConnected_withTransportTrue_setsIsConnectedToTrue() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, true);
+
+    assertThat(device.isConnected()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  public void
+      setConnected_withTransportFalse_whenOtherTransportsRemain_doesNotSetIsConnectedToFalse() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, true);
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_BREDR, true);
+
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, false);
+
+    assertThat(device.isConnected()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  public void setConnected_withTransportFalse_whenNoTransportsRemain_setsIsConnectedToFalse() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, true);
+
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, false);
+
+    assertThat(device.isConnected()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  public void setConnected_withTransportTrue_addsToConnectedTransports() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, true);
+
+    Set<Integer> connectedTransports =
+        ReflectionHelpers.getField(shadowOf(device), "connectedTransports");
+    assertThat(connectedTransports).contains(BluetoothDevice.TRANSPORT_LE);
+  }
+
+  @Test
+  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  public void setConnected_withTransportFalse_removesFromConnectedTransports() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, true);
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, false);
+
+    Set<Integer> connectedTransports =
+        ReflectionHelpers.getField(shadowOf(device), "connectedTransports");
+    assertThat(connectedTransports).doesNotContain(BluetoothDevice.TRANSPORT_LE);
+  }
+
+  @Test
+  @Config(minSdk = VersionCalculator.CINNAMON_BUN)
+  public void setConnected_withTransportFalseAndNotConnected_connectedTransportsIsEmpty() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, false);
+
+    Set<Integer> connectedTransports =
+        ReflectionHelpers.getField(shadowOf(device), "connectedTransports");
+    assertThat(connectedTransports).isEmpty();
+    assertThat(device.isConnected()).isFalse();
+  }
+
+  @Test
   public void setDeviceNotConnected_isNotConnected() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device =
@@ -868,5 +996,28 @@ public class ShadowBluetoothDeviceTest {
     shadowOf(device).setShouldThrowSecurityExceptions(true);
 
     assertThrows(SecurityException.class, device::getIdentityAddressWithType);
+  }
+
+  @Test
+  public void setConnected_withTransport_updatesIsConnected_allApis() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device =
+        BluetoothAdapter.getDefaultAdapter().getRemoteDevice(FAKE_PUBLIC_ADDRESS);
+
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, true);
+    assertThat(device.isConnected()).isTrue();
+
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_BREDR, true);
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_LE, false);
+    assertThat(device.isConnected()).isTrue();
+
+    shadowOf(device).setConnected(BluetoothDevice.TRANSPORT_BREDR, false);
+    assertThat(device.isConnected()).isFalse();
+  }
+
+  // TODO: delete when this test compiles against 37+ (Cinnamon Bun) SDK
+  @ForType(BluetoothDevice.class)
+  interface BluetoothDeviceCinnamonBunReflector {
+    boolean isConnected(int transport);
   }
 }
