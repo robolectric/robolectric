@@ -157,6 +157,10 @@ public class AttributeResolution9 {
     }
     BagAttributeFinder def_style_attr_finder = new BagAttributeFinder(default_style_bag);
 
+    final Ref<Res_value> valueRef = new Ref<>(null);
+    final Ref<Integer> residRef = new Ref<>(0);
+    final Ref<Integer> typeSetFlagsRef = new Ref<>(0);
+    final Ref<ResTable_config> configRef = new Ref<>(null);
     // Now iterate through all of the attributes that the client has requested,
     // filling in each with whatever data we can find.
     int destOffset = 0;
@@ -196,33 +200,32 @@ public class AttributeResolution9 {
       }
 
       int resId = 0;
-      final Ref<Res_value> valueRef = new Ref<>(value);
-      final Ref<Integer> residRef = new Ref<>(resId);
-      final Ref<Integer> type_set_flagsRef = new Ref<>(type_set_flags);
-      final Ref<ResTable_config> configRef = new Ref<>(config);
+      valueRef.set(value);
+      residRef.set(resId);
+      typeSetFlagsRef.set(type_set_flags);
+      configRef.set(config);
       if (value.dataType != Res_value.TYPE_NULL) {
         // Take care of resolving the found resource to its final value.
-        ApkAssetsCookie new_cookie =
-            theme.ResolveAttributeReference(
-                cookie, valueRef, configRef, type_set_flagsRef, residRef);
-        if (new_cookie.intValue() != kInvalidCookie) {
-          cookie = new_cookie;
+        ApkAssetsCookie newCookie =
+            theme.ResolveAttributeReference(cookie, valueRef, configRef, typeSetFlagsRef, residRef);
+        if (newCookie.intValue() != kInvalidCookie) {
+          cookie = newCookie;
         }
         if (kDebugStyles) {
           ALOGI("-> Resolved attr: type=0x%x, data=0x%08x", value.dataType, value.data);
         }
       } else if (value.data != Res_value.DATA_NULL_EMPTY) {
         // If we still don't have a value for this attribute, try to find it in the theme!
-        ApkAssetsCookie new_cookie = theme.GetAttribute(cur_ident, valueRef, type_set_flagsRef);
-        if (new_cookie.intValue() != kInvalidCookie) {
+        ApkAssetsCookie newCookie = theme.GetAttribute(cur_ident, valueRef, typeSetFlagsRef);
+        if (newCookie.intValue() != kInvalidCookie) {
           if (kDebugStyles) {
             ALOGI("-> From theme: type=0x%x, data=0x%08x", value.dataType, value.data);
           }
-          new_cookie =
+          newCookie =
               assetManager.ResolveReference(
-                  new_cookie, valueRef, configRef, type_set_flagsRef, residRef);
-          if (new_cookie.intValue() != kInvalidCookie) {
-            cookie = new_cookie;
+                  newCookie, valueRef, configRef, typeSetFlagsRef, residRef);
+          if (newCookie.intValue() != kInvalidCookie) {
+            cookie = newCookie;
           }
           if (kDebugStyles) {
             ALOGI("-> Resolved theme: type=0x%x, data=0x%08x", value.dataType, value.data);
@@ -231,7 +234,7 @@ public class AttributeResolution9 {
       }
       value = valueRef.get();
       resId = residRef.get();
-      type_set_flags = type_set_flagsRef.get();
+      type_set_flags = typeSetFlagsRef.get();
       config = configRef.get();
 
       // Deal with the special @null value -- it turns back to TYPE_NULL.
