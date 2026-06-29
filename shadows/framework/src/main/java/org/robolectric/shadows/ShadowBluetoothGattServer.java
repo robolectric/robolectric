@@ -10,6 +10,8 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothStatusCodes;
+import android.os.Build;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
@@ -29,6 +31,7 @@ import org.robolectric.util.reflector.ForType;
 @Implements(value = BluetoothGattServer.class, minSdk = O)
 public class ShadowBluetoothGattServer {
   private BluetoothGattServerCallback callback;
+  private volatile BluetoothGattServerNotificationListener notificationListener;
   private final List<byte[]> responses = new ArrayList<>();
   private final List<byte[]> writtenBytes = new ArrayList<>();
   private final Set<BluetoothDevice> cancelledDevices = new HashSet<>();
@@ -254,5 +257,42 @@ public class ShadowBluetoothGattServer {
 
     @Direct
     boolean addService(BluetoothGattService service);
+  }
+
+  /** Listener for GATT server characteristic notification events. */
+  public interface BluetoothGattServerNotificationListener {
+    void onNotification(
+        BluetoothDevice device,
+        BluetoothGattCharacteristic characteristic,
+        boolean confirm,
+        byte[] value);
+  }
+
+  public void setNotificationListener(BluetoothGattServerNotificationListener listener) {
+    this.notificationListener = listener;
+  }
+
+  @Implementation
+  protected boolean notifyCharacteristicChanged(
+      BluetoothDevice device, BluetoothGattCharacteristic characteristic, boolean confirm) {
+    BluetoothGattServerNotificationListener listener = notificationListener;
+    if (listener != null) {
+      listener.onNotification(device, characteristic, confirm, characteristic.getValue());
+    }
+    return true;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.TIRAMISU)
+  protected int notifyCharacteristicChanged(
+      BluetoothDevice device,
+      BluetoothGattCharacteristic characteristic,
+      boolean confirm,
+      byte[] value) {
+    characteristic.setValue(value);
+    BluetoothGattServerNotificationListener listener = notificationListener;
+    if (listener != null) {
+      listener.onNotification(device, characteristic, confirm, value);
+    }
+    return BluetoothStatusCodes.SUCCESS;
   }
 }
