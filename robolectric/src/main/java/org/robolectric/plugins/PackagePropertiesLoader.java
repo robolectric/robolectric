@@ -19,14 +19,15 @@ import org.robolectric.pluginapi.config.Configurer;
 public class PackagePropertiesLoader {
 
   /**
-   * We should get very high cache hit rates even with a tiny cache if we're called sequentially by
-   * multiple {@link Configurer}s for the same package.
+   * Maps each robolectric.properties path to its loaded {@link Properties}, or {@code null} when no
+   * such resource exists on the classpath. This reduces the number of classpath scans looking for
+   * package-level robolectric.properties files.
    */
   private final Map<String, Properties> cache =
       new LinkedHashMap<String, Properties>() {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, Properties> eldest) {
-          return size() > 3;
+          return size() > 500;
         }
       };
 
@@ -37,20 +38,25 @@ public class PackagePropertiesLoader {
       buf.append('/');
     }
     String propsFile = buf + propFileName + ".properties";
-    return cache.computeIfAbsent(
-        propsFile,
-        s -> {
-          try (InputStream resourceAsStream = getResourceAsStream(propsFile)) {
-            if (resourceAsStream == null) {
-              return null;
-            }
-            Properties properties = new Properties();
-            properties.load(resourceAsStream);
-            return properties;
-          } catch (IOException e) {
-            throw new RuntimeException(e);
-          }
-        });
+    if (cache.containsKey(propsFile)) {
+      return cache.get(propsFile);
+    }
+    Properties properties = loadConfig(propsFile);
+    cache.put(propsFile, properties);
+    return properties;
+  }
+
+  private Properties loadConfig(String propsFile) {
+    try (InputStream resourceAsStream = getResourceAsStream(propsFile)) {
+      if (resourceAsStream == null) {
+        return null;
+      }
+      Properties properties = new Properties();
+      properties.load(resourceAsStream);
+      return properties;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
