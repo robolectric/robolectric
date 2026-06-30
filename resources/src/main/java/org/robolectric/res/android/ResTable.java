@@ -548,31 +548,6 @@ public class ResTable {
     return blockIndex;
   }
 
-  private interface Compare {
-    boolean compare(ResTable_sparseTypeEntry a, ResTable_sparseTypeEntry b);
-  }
-
-  ResTable_sparseTypeEntry lower_bound(
-      ResTable_sparseTypeEntry first,
-      ResTable_sparseTypeEntry last,
-      ResTable_sparseTypeEntry value,
-      Compare comparator) {
-    int count = (last.myOffset() - first.myOffset()) / ResTable_sparseTypeEntry.SIZEOF;
-    int itOffset;
-    int step;
-    while (count > 0) {
-      itOffset = first.myOffset();
-      step = count / 2;
-      itOffset += step * ResTable_sparseTypeEntry.SIZEOF;
-      if (comparator.compare(new ResTable_sparseTypeEntry(first.myBuf(), itOffset), value)) {
-        itOffset += ResTable_sparseTypeEntry.SIZEOF;
-        first = new ResTable_sparseTypeEntry(first.myBuf(), itOffset);
-      } else {
-        count = step;
-      }
-    }
-    return first;
-  }
 
   private int getEntry(
       final PackageGroup packageGroup,
@@ -687,26 +662,15 @@ public class ResTable {
         // Check if there is the desired entry in this type.
         if (isTruthy(thisType.flags & ResTable_type.FLAG_SPARSE)) {
           // This is encoded as a sparse map, so perform a binary search.
-          final ByteBuffer buf = thisType.myBuf();
-          ResTable_sparseTypeEntry sparseIndices = new ResTable_sparseTypeEntry(buf, eindex);
-          ResTable_sparseTypeEntry result =
-              lower_bound(
-                  sparseIndices,
-                  new ResTable_sparseTypeEntry(
-                      buf, sparseIndices.myOffset() + dtohl(thisType.entryCount)),
-                  new ResTable_sparseTypeEntry(buf, realEntryIndex),
-                  (a, b) -> dtohs(a.idx) < dtohs(b.idx));
-          //          if (result == sparseIndices + dtohl(thisType.entryCount)
-          //              || dtohs(result.idx) != realEntryIndex) {
-          if (result.myOffset() == sparseIndices.myOffset() + dtohl(thisType.entryCount)
-              || dtohs(result.idx) != realEntryIndex) {
-            // No entry found.
+          int entryCount = dtohl(thisType.entryCount);
+          int resultIdx =
+              Util.sparseEntryBinarySearch(thisType.myBuf(), eindex, entryCount, realEntryIndex);
+          if (resultIdx == -1) {
             continue;
           }
-          // Extract the offset from the entry. Each offset must be a multiple of 4
-          // so we store it as the real offset divided by 4.
-          //          thisOffset = dtohs(result->offset) * 4u;
-          thisOffset = dtohs(result.offset) * 4;
+          int entryPos = eindex + resultIdx * ResTable_sparseTypeEntry.SIZEOF;
+          short offset = thisType.myBuf().getShort(entryPos + 2);
+          thisOffset = Short.toUnsignedInt(dtohs(offset)) * 4;
         } else {
           if (realEntryIndex >= dtohl(thisType.entryCount)) {
             // Entry does not exist.

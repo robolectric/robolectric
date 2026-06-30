@@ -380,57 +380,40 @@ public class LoadedArsc {
     final Map<Integer, Integer> aliasIdMap = new HashMap<>();
 
     ResTable_entry GetEntry(ResTable_type type_chunk, short entry_index) {
-      int entry_offset = GetEntryOffset(type_chunk, entry_index);
-      if (entry_offset == ResTable_type.NO_ENTRY) {
+      int entryOffset = getEntryOffset(type_chunk, entry_index);
+      if (entryOffset == ResTable_type.NO_ENTRY) {
         return null;
       }
-      return GetEntryFromOffset(type_chunk, entry_offset);
+      return GetEntryFromOffset(type_chunk, entryOffset);
     }
 
-    static int GetEntryOffset(ResTable_type type_chunk, int entry_index) {
+    static int getEntryOffset(ResTable_type typeChunk, int entryIndex) {
       // The configuration matches and is better than the previous selection.
       // Find the entry value if it exists for this configuration.
-      int entry_count = dtohl(type_chunk.entryCount);
-      int offsets_offset = dtohs(type_chunk.header.headerSize);
+      int entryCount = dtohl(typeChunk.entryCount);
+      int offsetsOffset = dtohs(typeChunk.header.headerSize);
 
       // Check if there is the desired entry in this type.
 
-      if (isTruthy(type_chunk.flags & ResTable_type.FLAG_SPARSE)) {
+      if (isTruthy(typeChunk.flags & ResTable_type.FLAG_SPARSE)) {
         // This is encoded as a sparse map, so perform a binary search.
-        // ResTable_sparseTypeEntry sparse_indices =
-        //     reinterpret_cast<ResTable_sparseTypeEntry*>(
-        //         reinterpret_cast<uint8_t*>(type_chunk) + offsets_offset);
-        // ResTable_sparseTypeEntry* sparse_indices_end = sparse_indices + entry_count;
-        // ResTable_sparseTypeEntry* result =
-        //     std.lower_bound(sparse_indices, sparse_indices_end, entry_index,
-        //         [](ResTable_sparseTypeEntry& entry, short entry_idx) {
-        //   return dtohs(entry.idx) < entry_idx;
-        // });
-        ResTable_sparseTypeEntry result = null;
-        for (int i = 0; i < entry_count; i++) {
-          ResTable_sparseTypeEntry entry =
-              new ResTable_sparseTypeEntry(
-                  type_chunk.myBuf(),
-                  type_chunk.myOffset() + offsets_offset + i * ResTable_sparseTypeEntry.SIZEOF);
-          if (entry.idx >= entry_index) {
-            result = entry;
-            break;
-          }
-        }
+        int resultIdx =
+            Util.sparseEntryBinarySearch(
+                typeChunk.myBuf(), typeChunk.myOffset() + offsetsOffset, entryCount, entryIndex);
 
-        if (result == null || dtohs(result.idx) != entry_index) {
+        if (resultIdx == -1) {
           // No entry found.
           return ResTable_type.NO_ENTRY;
         }
 
-        // Extract the offset from the entry. Each offset must be a multiple of 4 so we store it as
-        // the real offset divided by 4.
-        // return int{dtohs(result.offset)} * 4u;
-        return dtohs(result.offset) * 4;
+        int entryPos =
+            typeChunk.myOffset() + offsetsOffset + resultIdx * ResTable_sparseTypeEntry.SIZEOF;
+        short offset = typeChunk.myBuf().getShort(entryPos + 2);
+        return Short.toUnsignedInt(dtohs(offset)) * 4;
       }
 
       // This type is encoded as a dense array.
-      if (entry_index >= entry_count) {
+      if (entryIndex >= entryCount) {
         // This entry cannot be here.
         return ResTable_type.NO_ENTRY;
       }
@@ -438,7 +421,7 @@ public class LoadedArsc {
       // int* entry_offsets = reinterpret_cast<int*>(
       //     reinterpret_cast<uint8_t*>(type_chunk) + offsets_offset);
       // return dtohl(entry_offsets[entry_index]);
-      return dtohl(type_chunk.entryOffset(entry_index));
+      return dtohl(typeChunk.entryOffset(entryIndex));
     }
 
     static ResTable_entry GetEntryFromOffset(ResTable_type type_chunk, int offset) {

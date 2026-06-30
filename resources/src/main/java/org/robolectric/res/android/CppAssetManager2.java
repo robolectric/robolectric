@@ -706,7 +706,7 @@ public class CppAssetManager2 {
             // The configuration matches and is better than the previous selection.
             // Find the entry value if it exists for this configuration.
             ResTable_type type_chunk = filtered_group.types.get(i);
-            int offset = LoadedPackage.GetEntryOffset(type_chunk, entry_idx);
+            int offset = LoadedPackage.getEntryOffset(type_chunk, entry_idx);
             if (offset == ResTable_type.NO_ENTRY) {
               continue;
             }
@@ -734,7 +734,7 @@ public class CppAssetManager2 {
                 || (package_is_overlay && this_config.compare(best_config) == 0)) {
               // The configuration matches and is better than the previous selection.
               // Find the entry value if it exists for this configuration.
-              int offset = LoadedPackage.GetEntryOffset(type, entry_idx);
+              int offset = LoadedPackage.getEntryOffset(type, entry_idx);
               if (offset == ResTable_type.NO_ENTRY) {
                 continue;
               }
