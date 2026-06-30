@@ -16,6 +16,7 @@
 
 package org.robolectric.res.android;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_16LE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -25,7 +26,6 @@ import com.google.common.primitives.UnsignedBytes;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 
 /** Provides utilities to decode/encode a String packed in an arsc resource file. */
 public final class ResourceString {
@@ -44,10 +44,6 @@ public final class ResourceString {
 
     public Charset charset() {
       return charset;
-    }
-
-    public CharsetDecoder decoder() {
-      return charset.newDecoder();
     }
   }
 
@@ -73,32 +69,47 @@ public final class ResourceString {
    */
   @SuppressWarnings("ByteBufferBackingArray")
   public static String decodeString(ByteBuffer buffer, int offset, Type type) {
-    int length;
+    // UTF-8 strings are prefixed by two lengths (character count, then byte count); UTF-16 strings
+    // by only one (character count).
     int characterCount = decodeLength(buffer, offset, type);
     offset += computeLengthOffset(characterCount, type);
-    // UTF-8 strings have 2 lengths: the number of characters, and then the encoding length.
-    // UTF-16 strings, however, only have 1 length: the number of characters.
+    int length;
     if (type == Type.UTF8) {
       length = decodeLength(buffer, offset, type);
       offset += computeLengthOffset(length, type);
     } else {
       length = characterCount * 2;
     }
-    ByteBuffer stringBuffer = ByteBuffer.wrap(buffer.array(), offset, length);
-    // Use normal UTF-8 and UTF-16 decoder to decode string
-    try {
-      return type.decoder().decode(stringBuffer).toString();
-    } catch (CharacterCodingException e) {
-      if (type == Type.UTF16) {
-        return null;
+
+    byte[] bytes = buffer.array();
+    if (type == Type.UTF8) {
+      // Fast path: most resource strings (e.g. element/attribute names) are pure ASCII, which is
+      // byte-identical in ISO-8859-1 and UTF-8, so a direct Latin-1 copy
+      // avoids the per-call CharsetDecoder/CharBuffer allocation.
+      if (isAscii(bytes, offset, length)) {
+        return new String(bytes, offset, length, ISO_8859_1);
+      }
+      // Otherwise decode as UTF-8, falling back to CESU-8/modified-UTF-8 (e.g. surrogate-encoded
+      // emoji). See https://source.android.com/devices/tech/dalvik/dex-format#mutf-8.
+      String decoded = decode(bytes, offset, length, UTF_8);
+      return decoded != null ? decoded : decode(bytes, offset, length, Type.CESU8.charset());
+    }
+    return decode(bytes, offset, length, type.charset());
+  }
+
+  private static boolean isAscii(byte[] bytes, int offset, int length) {
+    for (int i = offset, end = offset + length; i < end; i++) {
+      if (bytes[i] < 0) { // high bit set => non-ASCII
+        return false;
       }
     }
-    stringBuffer = ByteBuffer.wrap(buffer.array(), offset, length);
-    // Use CESU8 decoder to try decode failed UTF-8 string, especially modified UTF-8.
-    // See
-    // https://source.android.com/devices/tech/dalvik/dex-format?hl=hr-HR&skip_cache=true#mutf-8.
+    return true;
+  }
+
+  /** Decodes {@code bytes[offset, offset+length)} with {@code charset}, or null if malformed. */
+  private static String decode(byte[] bytes, int offset, int length, Charset charset) {
     try {
-      return Type.CESU8.decoder().decode(stringBuffer).toString();
+      return charset.newDecoder().decode(ByteBuffer.wrap(bytes, offset, length)).toString();
     } catch (CharacterCodingException e) {
       return null;
     }
