@@ -95,4 +95,24 @@ public final class SingleValueConfigurerTest {
     assertThat(reader.defaultConfig()).isEqualTo(Value.OFF);
     assertThat(reader.getConfigFor("foo")).isEqualTo(Value.ON);
   }
+
+  @Test
+  public void testCachesPackageInfo() {
+    SingleValueConfigurer.PACKAGE_INFO_CACHE.clear();
+
+    PackagePropertiesLoader ppl = new OverridePackagePropertiesLoader(new Properties());
+    ValueConfigReader reader = new ValueConfigReader(new Properties(), ppl, Value.ON);
+
+    String nonexistentPkg = "org.robolectric.nonexistent.pkg";
+    assertThat(SingleValueConfigurer.PACKAGE_INFO_CACHE.containsKey(nonexistentPkg)).isFalse();
+    reader.getConfigFor(nonexistentPkg);
+    assertThat(SingleValueConfigurer.PACKAGE_INFO_CACHE.containsKey(nonexistentPkg)).isTrue();
+    assertThat(SingleValueConfigurer.PACKAGE_INFO_CACHE.get(nonexistentPkg)).isNull();
+
+    String existingPkg = "org.robolectric.plugins.config";
+    assertThat(SingleValueConfigurer.PACKAGE_INFO_CACHE.containsKey(existingPkg)).isFalse();
+    reader.getConfigFor(existingPkg);
+    assertThat(SingleValueConfigurer.PACKAGE_INFO_CACHE.containsKey(existingPkg)).isTrue();
+    assertThat(SingleValueConfigurer.PACKAGE_INFO_CACHE.get(existingPkg)).isNotNull();
+  }
 }
