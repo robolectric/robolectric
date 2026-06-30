@@ -17,6 +17,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -210,7 +211,14 @@ public class FileMap {
     return true;
   }
 
+  private static final Map<String, Map<String, Long>> cache = new ConcurrentHashMap<>();
+
   static Map<String, Long> guessDataOffsets(File zipFile, int length, int entryCount) {
+    String key = zipFile.getPath() + ":" + length;
+    return cache.computeIfAbsent(key, k -> guessDataOffsetsImpl(zipFile, length, entryCount));
+  }
+
+  private static Map<String, Long> guessDataOffsetsImpl(File zipFile, int length, int entryCount) {
     // Presize to avoid repeated rehashing, framework jars may have ~100k entries.
     HashMap<String, Long> result =
         entryCount > 0 ? Maps.newHashMapWithExpectedSize(entryCount) : new HashMap<>();

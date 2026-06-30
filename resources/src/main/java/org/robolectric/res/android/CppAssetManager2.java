@@ -1563,8 +1563,7 @@ public class CppAssetManager2 {
             if (entry_idx < type.entry_count) {
               ThemeEntry entry = type.entries[entry_idx];
               if (entry == null) {
-                entry = new ThemeEntry();
-                entry.value = new Res_value();
+                return K_INVALID_COOKIE;
               }
               type_spec_flags |= entry.type_spec_flags;
 
@@ -1643,54 +1642,63 @@ public class CppAssetManager2 {
 
       boolean copy_only_system = asset_manager_ != o.asset_manager_;
 
-      // for (int p = 0; p < packages_.size(); p++) {
-      //   final Package package_ = o.packages_[p].get();
       for (int p = 0; p < packages_.length; p++) {
         ThemePackage package_ = o.packages_[p];
         if (package_ == null || (copy_only_system && p != 0x01)) {
-          // The other theme doesn't have this package, clear ours.
-          packages_[p] = new ThemePackage();
+          if (packages_[p] != null) {
+            for (int t = 0; t < packages_[p].types.length; t++) {
+              packages_[p].types[t] = null;
+            }
+          }
           continue;
         }
 
         if (packages_[p] == null) {
-          // The other theme has this package, but we don't. Make one.
           packages_[p] = new ThemePackage();
         }
 
-        // for (int t = 0; t < package_.types.size(); t++) {
-        // final Type type = package_.types[t].get();
+        ThemePackage myPackage = packages_[p];
+
         for (int t = 0; t < package_.types.length; t++) {
           ThemeType type = package_.types[t];
           if (type == null) {
-            // The other theme doesn't have this type, clear ours.
-            // packages_[p].types[t].reset();
+            myPackage.types[t] = null;
             continue;
           }
 
-          // Create a new type and update it to theirs.
-          // const size_t type_alloc_size = sizeof(ThemeType) + (type->entry_count *
-          // sizeof(ThemeEntry));
-          // void* copied_data = malloc(type_alloc_size);
-          ThemeType copied_data = new ThemeType();
-          copied_data.entry_count = type.entry_count;
-          // memcpy(copied_data, type, type_alloc_size);
-          ThemeEntry[] newEntries = copied_data.entries = new ThemeEntry[type.entry_count];
-          for (int i = 0; i < type.entry_count; i++) {
-            ThemeEntry entry = type.entries[i];
-            ThemeEntry newEntry = new ThemeEntry();
-            if (entry != null) {
-              newEntry.cookie = entry.cookie;
-              newEntry.type_spec_flags = entry.type_spec_flags;
-              newEntry.value = entry.value.copy();
-            } else {
-              newEntry.value = Res_value.NULL_VALUE;
-            }
-            newEntries[i] = newEntry;
+          ThemeType myType = myPackage.types[t];
+          if (myType == null) {
+            myType = new ThemeType();
+            myPackage.types[t] = myType;
           }
 
-          packages_[p].types[t] = copied_data;
-          // packages_[p].types[t].reset(reinterpret_cast<Type*>(copied_data));
+          myType.entry_count = type.entry_count;
+          if (myType.entries == null || myType.entries.length < type.entry_count) {
+            ThemeEntry[] newEntries = new ThemeEntry[type.entry_count];
+            if (myType.entries != null) {
+              System.arraycopy(myType.entries, 0, newEntries, 0, myType.entries.length);
+            }
+            myType.entries = newEntries;
+          }
+
+          for (int i = 0; i < type.entry_count; i++) {
+            ThemeEntry entry = type.entries[i];
+            ThemeEntry myEntry = myType.entries[i];
+            if (myEntry == null) {
+              myEntry = new ThemeEntry();
+              myType.entries[i] = myEntry;
+            }
+
+            if (entry != null) {
+              myEntry.cookie = entry.cookie;
+              myEntry.type_spec_flags = entry.type_spec_flags;
+              myEntry.value = entry.value;
+            } else {
+              myEntry.cookie = null;
+              myEntry.type_spec_flags = 0;
+              myEntry.value = Res_value.NULL_VALUE;
+            }
+          }
         }
       }
       return true;
