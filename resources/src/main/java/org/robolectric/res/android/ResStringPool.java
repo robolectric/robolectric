@@ -43,6 +43,7 @@ public class ResStringPool {
 
   private ResStringPool_header mHeader;
   private int mSize;
+  private String[] mCache;
   //    private mutable Mutex               mDecodeLock;
   //    const uint32_t*             mEntries;
   private IntArray mEntries;
@@ -296,6 +297,9 @@ public class ResStringPool {
       mStylePoolSize = 0;
     }
 
+    if (mHeader.stringCount > 0) {
+      mCache = new String[mHeader.stringCount];
+    }
     return (mError = NO_ERROR);
   }
 
@@ -313,6 +317,7 @@ public class ResStringPool {
   void uninit() {
     setError(NO_INIT);
     mHeader = null;
+    mCache = null;
   }
 
   public String stringAt(int idx) {
@@ -322,27 +327,35 @@ public class ResStringPool {
 
   private String stringAt_measured(int idx) {
     if (mError == NO_ERROR && idx < mHeader.stringCount) {
+      if (mCache != null && mCache[idx] != null) {
+        return mCache[idx];
+      }
       final boolean isUTF8 = (mHeader.flags & ResStringPool_header.UTF8_FLAG) != 0;
       //        const uint32_t off = mEntries[idx]/(isUTF8?sizeof(uint8_t):sizeof(uint16_t));
       ByteBuffer buf = mHeader.myBuf();
       int bufOffset = mHeader.myOffset();
       // const uint32_t off = mEntries[idx]/(isUTF8?sizeof(uint8_t):sizeof(uint16_t));
       final int off = mEntries.get(idx) / (isUTF8 ? 1 /*sizeof(uint8_t)*/ : 2 /*sizeof(uint16_t)*/);
+      String s = null;
       if (off < (mStringPoolSize - 1)) {
         if (!isUTF8) {
           final int strings = mStrings;
           final int str = strings + off * 2;
-          return decodeString(buf, bufOffset + str, ResourceString.Type.UTF16);
+          s = decodeString(buf, bufOffset + str, ResourceString.Type.UTF16);
         } else {
           final int strings = mStrings;
           final int u8str = strings + off;
-          return decodeString(buf, bufOffset + u8str, ResourceString.Type.UTF8);
+          s = decodeString(buf, bufOffset + u8str, ResourceString.Type.UTF8);
         }
       } else {
         ALOGW(
             "Bad string block: string #%d entry is at %d, past end at %d\n",
             idx, (off * 2 /*sizeof(uint16_t)*/), (mStringPoolSize * 2 /*sizeof(uint16_t)*/));
       }
+      if (mCache != null && s != null) {
+        mCache[idx] = s;
+      }
+      return s;
     }
     return null;
   }
