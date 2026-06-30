@@ -69,17 +69,11 @@ public class AttributeResolution10 {
   }
 
   public static class BagAttributeFinder {
-    private final Entry[] bagEntries;
-
-    BagAttributeFinder(ResolvedBag bag) {
-      this.bagEntries = bag == null ? null : bag.entries;
-    }
-
-    Entry Find(int ident) {
-      if (bagEntries == null) {
+    public static Entry find(ResolvedBag bag, int ident) {
+      if (bag == null || bag.entries == null) {
         return null;
       }
-
+      Entry[] bagEntries = bag.entries;
       int low = 0;
       int high = bagEntries.length - 1;
 
@@ -156,7 +150,6 @@ public class AttributeResolution10 {
         def_style_flags.set(def_style_flags.get() | default_style_bag.type_spec_flags);
       }
     }
-    BagAttributeFinder def_style_attr_finder = new BagAttributeFinder(default_style_bag);
 
     final Ref<Res_value> valueRef = new Ref<>(null);
     final Ref<Integer> residRef = new Ref<>(0);
@@ -189,7 +182,7 @@ public class AttributeResolution10 {
           ALOGI("-> From values: type=0x%x, data=0x%08x", value.dataType, value.data);
         }
       } else {
-        final Entry entry = def_style_attr_finder.Find(cur_ident);
+        final Entry entry = BagAttributeFinder.find(default_style_bag, cur_ident);
         if (entry != null) {
           cookie = entry.cookie;
           type_set_flags = def_style_flags.get();
@@ -333,7 +326,7 @@ public class AttributeResolution10 {
       }
     }
 
-    BagAttributeFinder def_style_attr_finder = new BagAttributeFinder(default_style_bag);
+
 
     // Retrieve the style class bag, if requested.
     ResolvedBag xml_style_bag = null;
@@ -344,7 +337,7 @@ public class AttributeResolution10 {
       }
     }
 
-    BagAttributeFinder xml_style_attr_finder = new BagAttributeFinder(xml_style_bag);
+
 
     // Retrieve the XML attributes, if requested.
     XmlAttributeFinder xml_attr_finder = new XmlAttributeFinder(xml_parser);
@@ -386,7 +379,7 @@ public class AttributeResolution10 {
       if (value.get().dataType == DataType.NULL.code()
           && value.get().data != Res_value.DATA_NULL_EMPTY) {
         // Walk through the style class values looking for the requested attribute.
-        Entry entry = xml_style_attr_finder.Find(cur_ident);
+        Entry entry = BagAttributeFinder.find(xml_style_bag, cur_ident);
         if (entry != null) {
           // We found the attribute we were looking for.
           cookie = entry.cookie;
@@ -404,7 +397,7 @@ public class AttributeResolution10 {
       if (value.get().dataType == DataType.NULL.code()
           && value.get().data != Res_value.DATA_NULL_EMPTY) {
         // Walk through the default style values looking for the requested attribute.
-        Entry entry = def_style_attr_finder.Find(cur_ident);
+        Entry entry = BagAttributeFinder.find(default_style_bag, cur_ident);
         if (entry != null) {
           // We found the attribute we were looking for.
           cookie = entry.cookie;
