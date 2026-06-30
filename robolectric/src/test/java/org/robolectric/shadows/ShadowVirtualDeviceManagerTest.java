@@ -11,9 +11,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener;
@@ -436,6 +438,66 @@ public class ShadowVirtualDeviceManagerTest {
       assertThat(virtualDisplay.getDisplay().getDisplayId()).isNotEqualTo(Display.DEFAULT_DISPLAY);
       assertThat(virtualDisplay.getDisplay().getName()).isEqualTo("name");
       assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(123);
+    }
+  }
+
+  @Test
+  public void testCreateVirtualDisplay_deprecatedSignature() {
+    try (VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+
+      Surface surface = new Surface(new SurfaceTexture(0));
+
+      // Call the deprecated signature via reflector to ensure it works even if hidden in SDK
+      VirtualDisplay virtualDisplay =
+          reflector(
+                  ShadowVirtualDeviceManager.DeviceManagerVirtualDeviceReflector.class,
+                  virtualDevice)
+              .createVirtualDisplay(
+                  DISPLAY_WIDTH,
+                  DISPLAY_HEIGHT,
+                  DISPLAY_DPI,
+                  surface,
+                  123,
+                  MoreExecutors.directExecutor(),
+                  mockDisplayCallback);
+
+      Rect size = new Rect();
+      assertThat(virtualDisplay).isNotNull();
+      virtualDisplay.getDisplay().getRectSize(size);
+      DisplayMetrics displayMetrics = new DisplayMetrics();
+      virtualDisplay.getDisplay().getMetrics(displayMetrics);
+
+      assertThat(displayMetrics.densityDpi).isEqualTo(DISPLAY_DPI);
+      assertThat(displayMetrics.heightPixels).isEqualTo(DISPLAY_HEIGHT);
+      assertThat(displayMetrics.widthPixels).isEqualTo(DISPLAY_WIDTH);
+      assertThat(size).isEqualTo(new Rect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT));
+
+      assertThat(virtualDisplay.getSurface()).isEqualTo(surface);
+      assertThat(virtualDisplay.getDisplay().getDisplayId()).isNotEqualTo(Display.DEFAULT_DISPLAY);
+      assertThat(virtualDisplay.getDisplay().getName())
+          .isEqualTo("VirtualDisplay-1"); // Default name format
+      assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(123);
+    }
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void testShadowConstructor_coversInternalDeviceSetup() {
+    try (VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      Object internalDevice =
+          reflector(
+                  ShadowVirtualDeviceManager.DeviceManagerVirtualDeviceReflector.class,
+                  virtualDevice)
+              .getVirtualDeviceInternal();
+      assertThat(internalDevice).isNotNull();
+      IVirtualDevice proxy =
+          reflector(ShadowVirtualDeviceManager.VirtualDeviceInternalReflector.class, internalDevice)
+              .getVirtualDevice();
+      assertThat(proxy).isNotNull();
     }
   }
 
