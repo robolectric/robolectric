@@ -1563,8 +1563,7 @@ public class CppAssetManager2 {
             if (entry_idx < type.entry_count) {
               ThemeEntry entry = type.entries[entry_idx];
               if (entry == null) {
-                entry = new ThemeEntry();
-                entry.value = new Res_value();
+                return K_INVALID_COOKIE;
               }
               type_spec_flags |= entry.type_spec_flags;
 
