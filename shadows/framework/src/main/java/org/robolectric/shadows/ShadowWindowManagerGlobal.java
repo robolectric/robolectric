@@ -77,6 +77,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.VersionCalculator;
 
 /** Shadow for {@link WindowManagerGlobal}. */
 @SuppressWarnings("unused") // Unused params are implementations of Android SDK methods.
@@ -211,6 +212,15 @@ public class ShadowWindowManagerGlobal {
     List<View> getWindowViews();
   }
 
+  @ForType(className = "android.view.AddWindowResult")
+  interface AddWindowResultReflector {
+    @Accessor("relayoutResult")
+    WindowRelayoutResult getRelayoutResult();
+
+    @Accessor("relayoutResult")
+    void setRelayoutResult(WindowRelayoutResult relayoutResult);
+  }
+
   /**
    * Delegate for {@link IWindowSession} that contains methods to intercept calls to the underlying
    * {@link IWindowSession} and track window state.
@@ -259,10 +269,18 @@ public class ShadowWindowManagerGlobal {
             /* outStableInsets= */ rects[rectIdx],
             /* outInsetsState= */ sdk >= Q ? findFirst(InsetsState.class, args) : null);
       } else { // post insets migration
-        Optional<WindowRelayoutResult> layout =
-            sdk >= VANILLA_ICE_CREAM
-                ? findFirstOpt(WindowRelayoutResult.class, args)
-                : Optional.empty();
+        Optional<WindowRelayoutResult> layout = Optional.empty();
+        if (sdk > VersionCalculator.CINNAMON_BUN) {
+          Object addWindowResult = findFirst("android.view.AddWindowResult", args);
+          AddWindowResultReflector reflector =
+              reflector(AddWindowResultReflector.class, addWindowResult);
+          if (reflector.getRelayoutResult() == null) {
+            reflector.setRelayoutResult(new WindowRelayoutResult());
+          }
+          layout = Optional.of(reflector.getRelayoutResult());
+        } else if (sdk >= VANILLA_ICE_CREAM) {
+          layout = findFirstOpt(WindowRelayoutResult.class, args);
+        }
         configureWindowFrames(
             windowInfo,
             /* inAttrs= */ (WindowManager.LayoutParams) args[1],
@@ -699,6 +717,15 @@ public class ShadowWindowManagerGlobal {
 
   private static <T> T findFirst(Class<T> type, Object[] args) {
     return type.cast(stream(args).filter(type::isInstance).findFirst().get());
+  }
+
+  private static Object findFirst(String typeClassName, Object[] args) {
+    for (Object arg : args) {
+      if (arg != null && arg.getClass().getName().equals(typeClassName)) {
+        return arg;
+      }
+    }
+    throw new IllegalStateException("Could not find arg of type " + typeClassName);
   }
 
   private static <T> Optional<T> findFirstOpt(Class<T> type, Object[] args) {
