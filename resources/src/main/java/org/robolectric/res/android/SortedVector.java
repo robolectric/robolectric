@@ -20,8 +20,11 @@ public class SortedVector<T extends Comparable<T>> {
   }
 
   public void add(T info) {
-    mStorage.add(info);
-    Collections.sort(mStorage, Comparable::compareTo);
+    int i = Collections.binarySearch(mStorage, info);
+    if (i < 0) {
+      i = ~i;
+    }
+    mStorage.add(i, info);
   }
 
   public int size() {

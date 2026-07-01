@@ -1,18 +1,14 @@
 plugins { alias(libs.plugins.android.library) }
 
 android {
-  compileSdk = 35
+  compileSdk = 30
   namespace = "org.robolectric.testapp"
 
   defaultConfig {
-    minSdk = 21
+    minSdk = 23
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    vectorDrawables.useSupportLibrary = true
   }
 
-  lint {
-    abortOnError = false
-    targetSdk = 34
-  }
+  lint { abortOnError = false }
 }

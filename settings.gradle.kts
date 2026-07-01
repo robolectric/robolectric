@@ -1,4 +1,5 @@
 pluginManagement {
+  includeBuild("build-logic")
   repositories {
     gradlePluginPortal()
     google()
@@ -25,7 +26,9 @@ include(
   ":integration_tests:composeui",
   ":integration_tests:ctesque",
   ":integration_tests:dependency-on-stubs",
+  ":integration_tests:firebase",
   ":integration_tests:jacoco-offline",
+  ":integration_tests:junit-vintage-engine",
   ":integration_tests:kotlin",
   ":integration_tests:libphonenumber",
   ":integration_tests:memoryleaks",
@@ -37,6 +40,7 @@ include(
   ":integration_tests:play_services",
   ":integration_tests:powermock",
   ":integration_tests:rap",
+  ":integration_tests:rap-kotlin",
   ":integration_tests:roborazzi",
   ":integration_tests:room",
   ":integration_tests:sdkcompat",

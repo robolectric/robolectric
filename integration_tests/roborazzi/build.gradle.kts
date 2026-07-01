@@ -3,25 +3,24 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.detekt)
-  alias(libs.plugins.kotlin.android)
   alias(libs.plugins.robolectric.android.project)
   alias(libs.plugins.robolectric.spotless)
   alias(libs.plugins.roborazzi)
 }
 
 android {
-  compileSdk = 35
+  compileSdk = 36
   namespace = "org.robolectric.integration.roborazzi"
 
-  defaultConfig { minSdk = 21 }
+  defaultConfig { minSdk = 23 }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
   }
 
   testOptions {
-    targetSdk = 35
+    targetSdk = 36
     unitTests {
       isIncludeAndroidResources = true
       all {
@@ -41,16 +40,16 @@ android {
       }
     }
   }
+}
 
-  androidComponents {
-    beforeVariants(selector().all()) { variantBuilder ->
-      // Roborazzi does not support AndroidTest.
-      variantBuilder.enableAndroidTest = false
-    }
+androidComponents {
+  beforeVariants { variantBuilder ->
+    // Roborazzi does not support AndroidTest.
+    variantBuilder.enableAndroidTest = false
   }
 }
 
-kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_1_8 } }
+kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_11 } }
 
 dependencies {
   api(project(":robolectric"))

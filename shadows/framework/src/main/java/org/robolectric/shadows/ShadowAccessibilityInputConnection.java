@@ -81,10 +81,7 @@ public class ShadowAccessibilityInputConnection {
 
   /** Sets the surrounding text to be returned by {@link #getSurroundingText(int, int, int)}. */
   public void setSurroundingText(SurroundingText surroundingText) {
-    setSurroundingTextCallback(
-        (beforeLength, afterLength, flags) -> {
-          return surroundingText;
-        });
+    setSurroundingTextCallback((beforeLength, afterLength, flags) -> surroundingText);
   }
 
   /**
@@ -103,7 +100,7 @@ public class ShadowAccessibilityInputConnection {
 
   /**
    * Returns the list of context menu actions performed on this input connection in the order they
-   * were received..
+   * were received.
    */
   public List<Integer> getContextMenuActions() {
     return getRemote().getContextMenuActions();

@@ -26,7 +26,7 @@ import org.robolectric.util.reflector.ForType;
 @RequiresApi(Q)
 public class NetworkRegistrationInfoTestBuilder {
 
-  private final NetworkRegistrationInfo.Builder buider = new NetworkRegistrationInfo.Builder();
+  private final NetworkRegistrationInfo.Builder builder = new NetworkRegistrationInfo.Builder();
 
   private VoiceSpecificRegistrationInfo voiceSpecificInfo;
   private DataSpecificRegistrationInfo dataSpecificInfo;
@@ -37,7 +37,7 @@ public class NetworkRegistrationInfoTestBuilder {
   }
 
   public NetworkRegistrationInfo build() {
-    NetworkRegistrationInfo networkRegistrationInfo = buider.build();
+    NetworkRegistrationInfo networkRegistrationInfo = builder.build();
     if (VERSION.SDK_INT < Q) {
       throw new IllegalStateException(
           "NetworkRegistrationInfo not available on SDK : " + RuntimeEnvironment.getApiLevel());
@@ -52,27 +52,27 @@ public class NetworkRegistrationInfoTestBuilder {
   }
 
   public NetworkRegistrationInfoTestBuilder setAccessNetworkTechnology(int value) {
-    buider.setAccessNetworkTechnology(value);
+    builder.setAccessNetworkTechnology(value);
     return this;
   }
 
   public NetworkRegistrationInfoTestBuilder setAvailableServices(List<Integer> value) {
-    buider.setAvailableServices(value);
+    builder.setAvailableServices(value);
     return this;
   }
 
   public NetworkRegistrationInfoTestBuilder setCellIdentity(CellIdentity value) {
-    buider.setCellIdentity(value);
+    builder.setCellIdentity(value);
     return this;
   }
 
   public NetworkRegistrationInfoTestBuilder setDomain(int value) {
-    buider.setDomain(value);
+    builder.setDomain(value);
     return this;
   }
 
   public NetworkRegistrationInfoTestBuilder setEmergencyOnly(boolean value) {
-    buider.setEmergencyOnly(value);
+    builder.setEmergencyOnly(value);
     return this;
   }
 
@@ -81,30 +81,30 @@ public class NetworkRegistrationInfoTestBuilder {
       throw new IllegalStateException(
           "Registered PLMN is not available on SDK : " + RuntimeEnvironment.getApiLevel());
     } else {
-      buider.setRegisteredPlmn(value);
+      builder.setRegisteredPlmn(value);
     }
     return this;
   }
 
   public NetworkRegistrationInfoTestBuilder setRegistrationState(int value) {
-    buider.setRegistrationState(value);
+    builder.setRegistrationState(value);
     return this;
   }
 
   public NetworkRegistrationInfoTestBuilder setRejectCause(int value) {
-    buider.setRejectCause(value);
+    builder.setRejectCause(value);
     return this;
   }
 
   public NetworkRegistrationInfoTestBuilder setTransportType(int value) {
-    buider.setTransportType(value);
+    builder.setTransportType(value);
     return this;
   }
 
   public NetworkRegistrationInfoTestBuilder setDataSpecificInfo(
       DataSpecificRegistrationInfo value) {
     if (VERSION.SDK_INT >= TIRAMISU) {
-      buider.setDataSpecificInfo(value);
+      builder.setDataSpecificInfo(value);
     } else {
       dataSpecificInfo = value;
     }
@@ -114,7 +114,7 @@ public class NetworkRegistrationInfoTestBuilder {
   public NetworkRegistrationInfoTestBuilder setVoiceSpecificInfo(
       VoiceSpecificRegistrationInfo value) {
     if (VERSION.SDK_INT >= TIRAMISU) {
-      buider.setVoiceSpecificInfo(value);
+      builder.setVoiceSpecificInfo(value);
     } else {
       voiceSpecificInfo = value;
     }

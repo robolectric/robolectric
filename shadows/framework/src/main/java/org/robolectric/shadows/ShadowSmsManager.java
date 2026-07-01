@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 
@@ -29,11 +28,10 @@ public class ShadowSmsManager {
   @Resetter
   public static void reset() {
 
-      Map<String, Object> sSubInstances =
-          ReflectionHelpers.getStaticField(SmsManager.class, "sSubInstances");
-      sSubInstances.clear();
-      defaultSmsSubscriptionId = -1;
-
+    Map<String, Object> sSubInstances =
+        ReflectionHelpers.getStaticField(SmsManager.class, "sSubInstances");
+    sSubInstances.clear();
+    defaultSmsSubscriptionId = -1;
   }
 
   // SMS functionality

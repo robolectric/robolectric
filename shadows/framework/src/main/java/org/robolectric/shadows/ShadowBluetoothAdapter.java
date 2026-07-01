@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.bluetooth.BluetoothAdapter.STATE_ON;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -32,7 +31,6 @@ import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.IBinder;
 import android.os.IInterface;
@@ -337,7 +335,7 @@ public class ShadowBluetoothAdapter {
   }
 
   /** When true, overrides the value of {@link #getLeState}. By default, this is false. */
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isBleScanAlwaysAvailable() {
     return isBleScanAlwaysAvailable;
   }
@@ -348,7 +346,7 @@ public class ShadowBluetoothAdapter {
    * <p>LE is enabled if either Bluetooth or BLE scans are enabled. LE is always off if Airplane
    * Mode is enabled.
    */
-  @Implementation(minSdk = M)
+  @Implementation
   public int getLeState() {
     if (isAirplaneMode()) {
       return BluetoothAdapter.STATE_OFF;
@@ -367,9 +365,7 @@ public class ShadowBluetoothAdapter {
 
   /**
    * True if either Bluetooth is enabled or BLE scanning is available. Always false if Airplane Mode
-   * is enabled. When false, BLE scans will fail. @Implementation(minSdk = M) protected boolean
-   * isLeEnabled() { if (isAirplaneMode()) { return false; } return isEnabled() ||
-   * isBleScanAlwaysAvailable(); }
+   * is enabled. When false, BLE scans will fail.
    */
   private static boolean isAirplaneMode() {
     Context context = RuntimeEnvironment.getApplication();
@@ -384,7 +380,7 @@ public class ShadowBluetoothAdapter {
 
   @Implementation
   protected boolean startLeScan(UUID[] serviceUuids, LeScanCallback callback) {
-    if (Build.VERSION.SDK_INT >= M && !realAdapter.isLeEnabled()) {
+    if (!realAdapter.isLeEnabled()) {
       return false;
     }
 

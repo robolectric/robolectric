@@ -1,5 +1,6 @@
 import groovy.util.Node
 import org.gradle.plugins.ide.idea.model.IdeaModel
+import org.robolectric.gradle.AndroidSdk
 import org.robolectric.gradle.ShadowsPlugin.ShadowsPluginExtension
 
 // For use of external initialization scripts...
@@ -17,8 +18,6 @@ plugins {
   alias(libs.plugins.detekt) apply false
   alias(libs.plugins.error.prone)
   alias(libs.plugins.idea)
-  alias(libs.plugins.kotlin.android) apply false
-  alias(libs.plugins.kotlin.jvm) apply false
   alias(libs.plugins.robolectric.spotless)
   alias(libs.plugins.robolectric.javadoc)
   alias(libs.plugins.roborazzi) apply false
@@ -114,11 +113,12 @@ gradle.projectsEvaluated {
 
         noTimestamp(true)
         links(
-          "https://docs.oracle.com/javase/8/docs/api/",
+          "https://docs.oracle.com/en/java/javase/11/docs/api/",
           "https://developer.android.com/reference/",
         )
         // Set Javadoc source to JDK 8 to avoid unnamed module problem
-        // when running 'aggregateJavadocs' with OpenJDK 13+.
+        // when running 'aggregateJavadocs' with OpenJDK 13+, although
+        // the source/target version has changed to JDK11.
         source("8")
         header = headerHtml
         footer = headerHtml
@@ -141,35 +141,33 @@ gradle.projectsEvaluated {
 
 val aggregateDocs by tasks.registering { dependsOn(":aggregateJavadocs", ":aggregateJsondocs") }
 
-val prefetchSdks by
-  tasks.registering {
-    allSdks.forEach { androidSdk ->
-      doLast {
-        prefetchSdk(
-          apiLevel = androidSdk.apiLevel,
-          coordinates = androidSdk.coordinates,
-          groupId = androidSdk.groupId,
-          artifactId = androidSdk.artifactId,
-          version = androidSdk.version,
-        )
-      }
+val prefetchSdks by tasks.registering {
+  allSdks.forEach { androidSdk ->
+    doLast {
+      prefetchSdk(
+        apiLevel = androidSdk.apiLevel,
+        coordinates = androidSdk.coordinates,
+        groupId = androidSdk.groupId,
+        artifactId = androidSdk.artifactId,
+        version = androidSdk.version,
+      )
     }
   }
+}
 
-val prefetchInstrumentedSdks by
-  tasks.registering {
-    allSdks.forEach { androidSdk ->
-      doLast {
-        prefetchSdk(
-          apiLevel = androidSdk.apiLevel,
-          coordinates = androidSdk.preinstrumentedCoordinates,
-          groupId = androidSdk.groupId,
-          artifactId = androidSdk.preinstrumentedArtifactId,
-          version = androidSdk.preinstrumentedVersion,
-        )
-      }
+val prefetchInstrumentedSdks by tasks.registering {
+  allSdks.forEach { androidSdk ->
+    doLast {
+      prefetchSdk(
+        apiLevel = androidSdk.apiLevel,
+        coordinates = androidSdk.preinstrumentedCoordinates,
+        groupId = androidSdk.groupId,
+        artifactId = androidSdk.preinstrumentedArtifactId,
+        version = androidSdk.preinstrumentedVersion,
+      )
     }
   }
+}
 
 fun prefetchSdk(
   apiLevel: Int,
@@ -200,26 +198,25 @@ fun prefetchSdk(
   config.files
 }
 
-val prefetchDependencies by
-  tasks.registering {
-    doLast {
-      allprojects.forEach { p ->
-        p.configurations.forEach { config ->
-          // Causes dependencies to be resolved:
-          if (config.isCanBeResolved) {
-            try {
-              config.files
-            } catch (e: ResolveException) {
-              // Ignore resolution issues for the ':integration_tests' and ':testapp' projects, sigh
-              if (!p.path.startsWith(":integration_tests:") && !p.path.startsWith(":testapp")) {
-                throw e
-              }
+val prefetchDependencies by tasks.registering {
+  doLast {
+    allprojects.forEach { p ->
+      p.configurations.forEach { config ->
+        // Causes dependencies to be resolved:
+        if (config.isCanBeResolved) {
+          try {
+            config.files
+          } catch (e: ResolveException) {
+            // Ignore resolution issues for the ':integration_tests' and ':testapp' projects, sigh
+            if (!p.path.startsWith(":integration_tests:") && !p.path.startsWith(":testapp")) {
+              throw e
             }
-          } // End config resolution
-        } // End configurations
-      } // End allprojects
-    } // End doLast
-  } // End task registration
+          }
+        } // End config resolution
+      } // End configurations
+    } // End allprojects
+  } // End doLast
+} // End task registration
 
 // The following line sets the CodeQL GitHub Action to use JDK 21:
 // languageVersion = JavaLanguageVersion.of(21)

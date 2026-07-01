@@ -4,7 +4,6 @@ import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.SdkSuppress;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -63,8 +62,6 @@ public class DateFormatTest {
         .isEqualTo("Nov 25, 2000");
   }
 
-  @SdkSuppress(minSdkVersion = 23)
-  @Config(minSdk = 23)
   @Test
   public void getDateFormat() {
     assertThat(DateFormat.getDateFormat(getApplicationContext()).format(dateAM))

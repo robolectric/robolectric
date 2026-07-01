@@ -25,10 +25,8 @@ public final class ClassRuleInvocationTest {
 
   @ClassRule
   public static final TestRule TEMP_FOLDER_RULE =
-      new TestRule() {
-        @Override
-        public Statement apply(Statement base, Description description) {
-          return new Statement() {
+      (base, description) ->
+          new Statement() {
             @Override
             public void evaluate() throws Throwable {
               // Set the tempFolder
@@ -36,8 +34,6 @@ public final class ClassRuleInvocationTest {
               base.evaluate();
             }
           };
-        }
-      };
 
   @ClassRule public static final SdkCheckClassRule sdkCheckClassRule = new SdkCheckClassRule();
 

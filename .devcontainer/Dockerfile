@@ -7,7 +7,7 @@ ENV DEVCONTAINER="true"
 RUN apt clean && apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y upgrade \
     && apt-get -y install clang cmake ninja-build pkg-config \
-    && apt-get -y install openjdk-17-jdk \
+    && apt-get -y install openjdk-21-jdk \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
@@ -21,9 +21,8 @@ ENV ANDROID_HOME=/home/$USERNAME/Android/Sdk
 ENV ANDROID_SDK_ROOT=/home/$USERNAME/Android/Sdk
 ENV CMDLINE_HOME="${HOME}/Android/Sdk/cmdline-tools"
 ENV CMDLINE="${HOME}/Android/Sdk/cmdline-tools/cmdline-tools/bin"
-ENV ANDROID_SDK_ZIP_FILE_VERSION=11076708
+ENV ANDROID_SDK_ZIP_FILE_VERSION=13114758
 
-# setup flutter sdk
 ENV PATH=${PATH}:${ANDROID_HOME}/platform-tools
 ENV PATH=${PATH}:${ANDROID_HOME}/platforms
 ENV PATH=${PATH}:${ANDROID_HOME}/emulators
@@ -38,9 +37,8 @@ RUN ls -la ${HOME}/ && ls -la ${CMDLINE_HOME} && echo ${CMDLINE_HOME} && chown -
 RUN chmod +r+w+x -Rv ${HOME}/Android/Sdk
 
 RUN yes | sdkmanager --licenses
-RUN yes | sdkmanager --install "build-tools;34.0.0"
-RUN yes | sdkmanager --install "platforms;android-21"
-RUN yes | sdkmanager --install "platforms;android-22"
+RUN yes | sdkmanager --install "build-tools;35.0.0"
+RUN yes | sdkmanager --install "build-tools;36.0.0"
 RUN yes | sdkmanager --install "platforms;android-23"
 RUN yes | sdkmanager --install "platforms;android-24"
 RUN yes | sdkmanager --install "platforms;android-25"
@@ -54,5 +52,6 @@ RUN yes | sdkmanager --install "platforms;android-32"
 RUN yes | sdkmanager --install "platforms;android-33"
 RUN yes | sdkmanager --install "platforms;android-34"
 RUN yes | sdkmanager --install "platforms;android-35"
+RUN yes | sdkmanager --install "platforms;android-36"
 RUN yes | sdkmanager --install "cmdline-tools;latest"
 RUN yes | sdkmanager --install "platform-tools"

@@ -7,7 +7,8 @@
       tools:replace="android:appComponentFactory">
     <activity
         android:name="org.robolectric.integrationtests.axt.ActivityTestRuleTest$TranscriptActivity"
-        android:exported="true"/>
+        android:exported="true"
+        tools:ignore="MissingClass"/>
     <activity
         android:name="org.robolectric.integrationtests.axt.EspressoActivity"
         android:exported="true"/>
@@ -33,7 +34,8 @@
         android:targetActivity="org.robolectric.integrationtests.axt.ActivityScenarioTest$TranscriptActivity" />
     <activity
         android:name="org.robolectric.integrationtests.axt.IntentsTest$ResultCapturingActivity"
-        android:exported="true"/>
+        android:exported="true"
+        tools:ignore="MissingClass"/>
     <activity
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTest$OnCreatePackageNameActivity"
         android:exported="true"/>
