@@ -624,14 +624,14 @@ public class CppAssetManager2 {
     ATRACE_CALL();
 
     // Might use this if density_override != 0.
-    ResTable_config density_override_config;
+    ResTable_config densityOverrideConfig = null;
 
     // Select our configuration or generate a density override configuration.
     ResTable_config desired_config = configuration_;
     if (density_override != 0 && density_override != configuration_.density) {
-      density_override_config = configuration_;
-      density_override_config.density = density_override;
-      desired_config = density_override_config;
+      densityOverrideConfig = new ResTable_config(configuration_);
+      densityOverrideConfig.density = density_override;
+      desired_config = densityOverrideConfig;
     }
 
     if (!is_valid_resid(resid)) {
@@ -706,7 +706,7 @@ public class CppAssetManager2 {
             // The configuration matches and is better than the previous selection.
             // Find the entry value if it exists for this configuration.
             ResTable_type type_chunk = filtered_group.types.get(i);
-            int offset = LoadedPackage.GetEntryOffset(type_chunk, entry_idx);
+            int offset = LoadedPackage.getEntryOffset(type_chunk, entry_idx);
             if (offset == ResTable_type.NO_ENTRY) {
               continue;
             }
@@ -734,7 +734,7 @@ public class CppAssetManager2 {
                 || (package_is_overlay && this_config.compare(best_config) == 0)) {
               // The configuration matches and is better than the previous selection.
               // Find the entry value if it exists for this configuration.
-              int offset = LoadedPackage.GetEntryOffset(type, entry_idx);
+              int offset = LoadedPackage.getEntryOffset(type, entry_idx);
               if (offset == ResTable_type.NO_ENTRY) {
                 continue;
               }
@@ -1563,8 +1563,7 @@ public class CppAssetManager2 {
             if (entry_idx < type.entry_count) {
               ThemeEntry entry = type.entries[entry_idx];
               if (entry == null) {
-                entry = new ThemeEntry();
-                entry.value = new Res_value();
+                return K_INVALID_COOKIE;
               }
               type_spec_flags |= entry.type_spec_flags;
 

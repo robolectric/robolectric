@@ -2,6 +2,7 @@ package org.robolectric.res.android;
 
 import com.google.errorprone.annotations.FormatMethod;
 import com.google.errorprone.annotations.FormatString;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class Util {
@@ -116,5 +117,26 @@ public class Util {
       --len;
     }
     return strBuf.toString();
+  }
+
+  // Returns the index of the entry in the sparse table, or -1 if not found.
+  static int sparseEntryBinarySearch(ByteBuffer buf, int eindex, int entryCount, int target) {
+    int low = 0;
+    int high = entryCount - 1;
+
+    while (low <= high) {
+      int mid = (low + high) >>> 1;
+      int entryPos = eindex + mid * ResourceTypes.ResTable_sparseTypeEntry.SIZEOF;
+      int midIdx = Short.toUnsignedInt(dtohs(buf.getShort(entryPos)));
+
+      if (midIdx < target) {
+        low = mid + 1;
+      } else if (midIdx > target) {
+        high = mid - 1;
+      } else {
+        return mid;
+      }
+    }
+    return -1;
   }
 }

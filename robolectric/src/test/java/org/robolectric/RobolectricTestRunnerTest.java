@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.spi.FileSystemProvider;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.Description;
+import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
@@ -595,5 +597,38 @@ public class RobolectricTestRunnerTest {
     assertThat(events)
         .containsExactly("ignored: ignoredTest", "started: test", "finished: test")
         .inOrder();
+  }
+
+  @Ignore("Enable this when doing performance analysis")
+  @Test
+  @Config(sdk = Config.NEWEST_SDK)
+  public void testsPerSecondBenchmark() throws Exception {
+    SingleSdkRobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(NoOpTest.class);
+
+    // Warm up: build the sandbox + class loader once and let the lifecycle code JIT-compile.
+    for (int i = 0; i < 10; i++) {
+      new JUnitCore().run(runner);
+    }
+
+    int lifecycles = 0;
+    int failures = 0;
+    long end = System.nanoTime() + Duration.ofSeconds(1).toNanos();
+    while (System.nanoTime() < end) {
+      Result result = new JUnitCore().run(runner);
+      failures += result.getFailureCount();
+      lifecycles++;
+    }
+    assertThat(failures).isEqualTo(0);
+    assertThat(lifecycles).isGreaterThan(0);
+    System.out.println("lifecycles = " + lifecycles);
+  }
+
+  /** A trivial test whose execution exercises a full per-test environment setUp + tearDown. */
+  @Ignore
+  public static class NoOpTest {
+    @Test
+    public void noop() {
+      assertThat(RuntimeEnvironment.getApplication()).isNotNull();
+    }
   }
 }

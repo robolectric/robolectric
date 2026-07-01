@@ -3,7 +3,9 @@ package org.robolectric.plugins.config;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.robolectric.pluginapi.config.Configurer;
@@ -27,6 +29,10 @@ public abstract class SingleValueConfigurer<A extends Annotation, T extends Enum
     implements Configurer<T> {
 
   private static final String PROPERTY_CONTAINER = "robolectric";
+
+  /** Shared cache of resolved {@code package-info} packages, keyed by package name. */
+  static final Map<String, Package> PACKAGE_INFO_CACHE = new HashMap<>();
+
   private final Class<A> configurationAnnotation;
   private final Class<T> configurationType;
   private final T defaultValue;
@@ -85,20 +91,37 @@ public abstract class SingleValueConfigurer<A extends Annotation, T extends Enum
 
   @Override
   public T getConfigFor(@Nonnull String packageName) {
-    try {
-      Package pkg = Class.forName(packageName + ".package-info").getPackage();
+    Package pkg = resolvePackageInfo(packageName);
+    if (pkg != null) {
       A annotation = pkg.getAnnotation(configurationAnnotation);
       if (annotation != null) {
         return valueFrom(annotation);
       }
-    } catch (ClassNotFoundException e) {
-      // package annotation not found, instead read property file.
     }
     Properties props = propertiesLoader.getConfigProperties(packageName);
     if (props != null) {
       return valueFrom(props.getProperty(this.propertyName));
     }
     return null;
+  }
+
+  /**
+   * Resolves the {@code package-info} {@link Package} for the given package name, or {@code null}
+   * if it has none. The result is cached (including the absent case) and shared across all
+   * configurers. This avoids repeated classpath scans for the same package-info.
+   */
+  private static Package resolvePackageInfo(String packageName) {
+    if (PACKAGE_INFO_CACHE.containsKey(packageName)) {
+      return PACKAGE_INFO_CACHE.get(packageName);
+    }
+    Package pkg = null;
+    try {
+      pkg = Class.forName(packageName + ".package-info").getPackage();
+    } catch (ClassNotFoundException e) {
+      // Ignore.
+    }
+    PACKAGE_INFO_CACHE.put(packageName, pkg);
+    return pkg;
   }
 
   @Override

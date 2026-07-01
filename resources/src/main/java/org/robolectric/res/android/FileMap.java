@@ -4,7 +4,7 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.res.android.Util.ALOGV;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import com.google.common.primitives.Shorts;
@@ -14,7 +14,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -38,6 +40,8 @@ public class FileMap {
   /** the maximum size of the end of central directory sections in bytes */
   private static final int MAXIMUM_ZIP_EOCD_SIZE =
       MAX_COMMENT_SIZE + EOCD_SIZE + ZIP64_EOCD_SIZE + ZIP64_EOCD_LOCATOR_SIZE;
+
+  private static final byte[] DOT_CLASS = {'.', 'c', 'l', 'a', 's', 's'};
 
   private ZipFile zipFile;
   private ZipEntry zipEntry;
@@ -206,8 +210,10 @@ public class FileMap {
     return true;
   }
 
-  static ImmutableMap<String, Long> guessDataOffsets(File zipFile, int length) {
-    HashMap<String, Long> result = new HashMap<>();
+  static Map<String, Long> guessDataOffsets(File zipFile, int length, int entryCount) {
+    // Presize to avoid repeated rehashing, framework jars may have ~100k entries.
+    HashMap<String, Long> result =
+        entryCount > 0 ? Maps.newHashMapWithExpectedSize(entryCount) : new HashMap<>();
 
     // Parse the zip file entry offsets from the central directory section.
     // See https://en.wikipedia.org/wiki/Zip_(file_format)
@@ -258,26 +264,61 @@ public class FileMap {
         int fieldCommentLength = readShort(buffer, offset + 32);
         int relativeOffsetOfLocalFileHeader = readInt(buffer, offset + 42);
 
-        byte[] nameBytes = copyBytes(buffer, offset + 46, fileNameLength);
-        Charset encoding = getEncoding(bitFlag);
-        String fileName = new String(nameBytes, encoding);
-        byte[] localHeaderBuffer = new byte[30];
-        randomAccessFile.seek(relativeOffsetOfLocalFileHeader);
-        randomAccessFile.readFully(localHeaderBuffer);
-        // There are two extra field lengths stored in the zip - one in the central directory,
-        // one in the local header. And we should use one in local header to calculate the
-        // correct file content offset, because they are different some times.
-        int localHeaderExtraLength = readShort(localHeaderBuffer, 28);
-        int fileOffset =
-            relativeOffsetOfLocalFileHeader + 30 + fileNameLength + localHeaderExtraLength;
-        result.put(fileName, (long) fileOffset);
+        // Ignore .class files; they are ~75% of the entries in a typical Android framework jar, and
+        // are not needed for the purposes of loading binary resources. They are also handled by
+        // SandboxClassLoaders.
+        if (!endsWithSuffix(buffer, offset + 46, fileNameLength, DOT_CLASS)) {
+          byte[] nameBytes = copyBytes(buffer, offset + 46, fileNameLength);
+          Charset encoding = getEncoding(bitFlag);
+          String fileName = new String(nameBytes, encoding);
+          // Store the local file header offset only. The exact data offset requires reading the
+          // entry's local file header, so it is computed lazily in dataOffsetForLocalHeader.
+          // A typical test loads relatively few resources from the Android framework jars, so it is
+          // not worth the extra cost of seeking and reading the local header for all entries.
+          result.put(fileName, (long) relativeOffsetOfLocalFileHeader);
+        }
         offset += 46 + fileNameLength + extraLength + fieldCommentLength;
       }
 
-      return ImmutableMap.copyOf(result);
+      // Avoid ImmutableMap.copyOf() because it rehashes every entry and is expensive for large
+      // maps (e.g. framework jars have ~100k entries).
+      return Collections.unmodifiableMap(result);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static boolean endsWithSuffix(
+      byte[] buffer, int nameStart, int nameLength, byte[] suffix) {
+    if (nameLength < suffix.length) {
+      return false;
+    }
+    int start = nameStart + nameLength - suffix.length;
+    for (int i = 0; i < suffix.length; i++) {
+      if (buffer[start + i] != suffix[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** Computes the exact offset of an entry's data given the offset of its local file header. */
+  static long dataOffsetForLocalHeader(RandomAccessFile randomAccessFile, long localHeaderOffset)
+      throws IOException {
+    // The ZIP local file header is 30 bytes long (excluding the variable-length file name and extra
+    // field). See the PKWARE ZIP File Format Specification, section 4.3.7:
+    // https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
+    byte[] localHeaderBuffer = new byte[30];
+    randomAccessFile.seek(localHeaderOffset);
+    randomAccessFile.readFully(localHeaderBuffer);
+    // Offset 26 is the 2-byte file name length field in the local file header.
+    int nameLength = readShort(localHeaderBuffer, 26);
+    // Offset 28 is the 2-byte extra field length field in the local file header.
+    int extraLength = readShort(localHeaderBuffer, 28);
+
+    // The actual data starts after the 30-byte fixed header, the variable-length file name, and
+    // the variable-length extra field.
+    return localHeaderOffset + 30 + nameLength + extraLength;
   }
 
   private static byte[] copyBytes(byte[] buffer, int offset, int length) {

@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Named;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -109,6 +110,11 @@ import org.robolectric.util.reflector.Static;
 public class AndroidTestEnvironment implements TestEnvironment {
 
   private static final String CONSCRYPT_PROVIDER = "Conscrypt";
+  private static final BouncyCastleProvider BOUNCY_CASTLE_PROVIDER = new BouncyCastleProvider();
+  // Cache the Conscrypt provider to avoid creating it multiple times across tests. Note Conscrypt
+  // is not supported in Mac Arm64, so it cannot be eagerly initialized.
+  private static final AtomicReference<OpenSSLProvider> cachedConscryptProvider =
+      new AtomicReference<>();
 
   private final Sdk compileSdk;
 
@@ -174,7 +180,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
       Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
       if (Security.getProvider(CONSCRYPT_PROVIDER) == null) {
-        Security.insertProviderAt(new OpenSSLProvider(), 1);
+        OpenSSLProvider conscryptProvider = cachedConscryptProvider.get();
+        if (conscryptProvider == null) {
+          conscryptProvider = new OpenSSLProvider();
+          cachedConscryptProvider.set(conscryptProvider);
+        }
+        Security.insertProviderAt(conscryptProvider, 1);
       }
 
       HttpsURLConnection.setDefaultHostnameVerifier(
@@ -196,7 +207,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-      Security.addProvider(new BouncyCastleProvider());
+      Security.addProvider(BOUNCY_CASTLE_PROVIDER);
     }
 
     android.content.res.Configuration androidConfiguration =

@@ -4,7 +4,6 @@ import static org.robolectric.res.android.ApkAssetsCookie.K_INVALID_COOKIE;
 import static org.robolectric.res.android.ApkAssetsCookie.kInvalidCookie;
 import static org.robolectric.res.android.Util.ALOGI;
 
-import java.util.Arrays;
 import org.robolectric.res.android.CppAssetManager2.ResolvedBag;
 import org.robolectric.res.android.CppAssetManager2.ResolvedBag.Entry;
 import org.robolectric.res.android.CppAssetManager2.Theme;
@@ -70,23 +69,31 @@ public class AttributeResolution10 {
   }
 
   public static class BagAttributeFinder {
-    private final Entry[] bagEntries;
-
-    BagAttributeFinder(ResolvedBag bag) {
-      this.bagEntries = bag == null ? null : bag.entries;
-    }
-
-    // Robolectric: unoptimized relative to Android impl
-    Entry Find(int ident) {
-      Entry needle = new Entry();
-      needle.key = ident;
-
-      if (bagEntries == null) {
+    public static Entry find(ResolvedBag bag, int ident) {
+      if (bag == null || bag.entries == null) {
         return null;
       }
+      Entry[] bagEntries = bag.entries;
+      int low = 0;
+      int high = bagEntries.length - 1;
 
-      int i = Arrays.binarySearch(bagEntries, needle, (o1, o2) -> o1.key - o2.key);
-      return i < 0 ? null : bagEntries[i];
+      // Do a manual binary search for the attribute id in the bag entries. This is faster than
+      // Arrays.binarySearch() because it avoids a `needle` allocation and it avoids boxing the
+      // int keys.
+      while (low <= high) {
+        int mid = (low + high) >>> 1;
+        Entry midVal = bagEntries[mid];
+        int cmp = midVal.key - ident;
+
+        if (cmp < 0) {
+          low = mid + 1;
+        } else if (cmp > 0) {
+          high = mid - 1;
+        } else {
+          return midVal;
+        }
+      }
+      return null;
     }
   }
 
@@ -143,8 +150,11 @@ public class AttributeResolution10 {
         def_style_flags.set(def_style_flags.get() | default_style_bag.type_spec_flags);
       }
     }
-    BagAttributeFinder def_style_attr_finder = new BagAttributeFinder(default_style_bag);
 
+    final Ref<Res_value> valueRef = new Ref<>(null);
+    final Ref<Integer> residRef = new Ref<>(0);
+    final Ref<Integer> typeSetFlagsRef = new Ref<>(0);
+    final Ref<ResTable_config> configRef = new Ref<>(null);
     // Now iterate through all of the attributes that the client has requested,
     // filling in each with whatever data we can find.
     int destOffset = 0;
@@ -172,7 +182,7 @@ public class AttributeResolution10 {
           ALOGI("-> From values: type=0x%x, data=0x%08x", value.dataType, value.data);
         }
       } else {
-        final Entry entry = def_style_attr_finder.Find(cur_ident);
+        final Entry entry = BagAttributeFinder.find(default_style_bag, cur_ident);
         if (entry != null) {
           cookie = entry.cookie;
           type_set_flags = def_style_flags.get();
@@ -184,33 +194,32 @@ public class AttributeResolution10 {
       }
 
       int resId = 0;
-      final Ref<Res_value> valueRef = new Ref<>(value);
-      final Ref<Integer> residRef = new Ref<>(resId);
-      final Ref<Integer> type_set_flagsRef = new Ref<>(type_set_flags);
-      final Ref<ResTable_config> configRef = new Ref<>(config);
+      valueRef.set(value);
+      residRef.set(resId);
+      typeSetFlagsRef.set(type_set_flags);
+      configRef.set(config);
       if (value.dataType != Res_value.TYPE_NULL) {
         // Take care of resolving the found resource to its final value.
-        ApkAssetsCookie new_cookie =
-            theme.ResolveAttributeReference(
-                cookie, valueRef, configRef, type_set_flagsRef, residRef);
-        if (new_cookie.intValue() != kInvalidCookie) {
-          cookie = new_cookie;
+        ApkAssetsCookie newCookie =
+            theme.ResolveAttributeReference(cookie, valueRef, configRef, typeSetFlagsRef, residRef);
+        if (newCookie.intValue() != kInvalidCookie) {
+          cookie = newCookie;
         }
         if (kDebugStyles) {
           ALOGI("-> Resolved attr: type=0x%x, data=0x%08x", value.dataType, value.data);
         }
       } else if (value.data != Res_value.DATA_NULL_EMPTY) {
         // If we still don't have a value for this attribute, try to find it in the theme!
-        ApkAssetsCookie new_cookie = theme.GetAttribute(cur_ident, valueRef, type_set_flagsRef);
-        if (new_cookie.intValue() != kInvalidCookie) {
+        ApkAssetsCookie newCookie = theme.GetAttribute(cur_ident, valueRef, typeSetFlagsRef);
+        if (newCookie.intValue() != kInvalidCookie) {
           if (kDebugStyles) {
             ALOGI("-> From theme: type=0x%x, data=0x%08x", value.dataType, value.data);
           }
-          new_cookie =
+          newCookie =
               assetManager.ResolveReference(
-                  new_cookie, valueRef, configRef, type_set_flagsRef, residRef);
-          if (new_cookie.intValue() != kInvalidCookie) {
-            cookie = new_cookie;
+                  newCookie, valueRef, configRef, typeSetFlagsRef, residRef);
+          if (newCookie.intValue() != kInvalidCookie) {
+            cookie = newCookie;
           }
           if (kDebugStyles) {
             ALOGI("-> Resolved theme: type=0x%x, data=0x%08x", value.dataType, value.data);
@@ -219,7 +228,7 @@ public class AttributeResolution10 {
       }
       value = valueRef.get();
       resId = residRef.get();
-      type_set_flags = type_set_flagsRef.get();
+      type_set_flags = typeSetFlagsRef.get();
       config = configRef.get();
 
       // Deal with the special @null value -- it turns back to TYPE_NULL.
@@ -317,7 +326,7 @@ public class AttributeResolution10 {
       }
     }
 
-    BagAttributeFinder def_style_attr_finder = new BagAttributeFinder(default_style_bag);
+
 
     // Retrieve the style class bag, if requested.
     ResolvedBag xml_style_bag = null;
@@ -328,10 +337,13 @@ public class AttributeResolution10 {
       }
     }
 
-    BagAttributeFinder xml_style_attr_finder = new BagAttributeFinder(xml_style_bag);
+
 
     // Retrieve the XML attributes, if requested.
     XmlAttributeFinder xml_attr_finder = new XmlAttributeFinder(xml_parser);
+
+    final Ref<Integer> type_set_flags = new Ref<>(0);
+    final Ref<Integer> resId = new Ref<>(0);
 
     // Now iterate through all of the attributes that the client has requested,
     // filling in each with whatever data we can find.
@@ -343,7 +355,7 @@ public class AttributeResolution10 {
       }
 
       ApkAssetsCookie cookie = K_INVALID_COOKIE;
-      final Ref<Integer> type_set_flags = new Ref<>(0);
+      type_set_flags.set(0);
 
       value.set(Res_value.NULL_VALUE);
       config.get().density = 0;
@@ -367,7 +379,7 @@ public class AttributeResolution10 {
       if (value.get().dataType == DataType.NULL.code()
           && value.get().data != Res_value.DATA_NULL_EMPTY) {
         // Walk through the style class values looking for the requested attribute.
-        Entry entry = xml_style_attr_finder.Find(cur_ident);
+        Entry entry = BagAttributeFinder.find(xml_style_bag, cur_ident);
         if (entry != null) {
           // We found the attribute we were looking for.
           cookie = entry.cookie;
@@ -385,7 +397,7 @@ public class AttributeResolution10 {
       if (value.get().dataType == DataType.NULL.code()
           && value.get().data != Res_value.DATA_NULL_EMPTY) {
         // Walk through the default style values looking for the requested attribute.
-        Entry entry = def_style_attr_finder.Find(cur_ident);
+        Entry entry = BagAttributeFinder.find(default_style_bag, cur_ident);
         if (entry != null) {
           // We found the attribute we were looking for.
           cookie = entry.cookie;
@@ -401,7 +413,7 @@ public class AttributeResolution10 {
         }
       }
 
-      final Ref<Integer> resId = new Ref<>(0);
+      resId.set(0);
       if (value.get().dataType != DataType.NULL.code()) {
         // Take care of resolving the found resource to its final value.
         ApkAssetsCookie new_cookie =
