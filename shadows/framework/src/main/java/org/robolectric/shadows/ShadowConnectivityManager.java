@@ -16,6 +16,7 @@ import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.net.ProxyInfo;
 import android.os.Handler;
+import android.util.Log;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -46,6 +47,13 @@ public class ShadowConnectivityManager {
       ConcurrentHashMap.newKeySet();
   private static final HashSet<PendingIntent> networkCallbackPendingIntents = new HashSet<>();
 
+  // Tracks callbacks that were registered at least once, to distinguish "never registered" from
+  // "already unregistered" in strict mode.
+  private static final Set<ConnectivityManager.NetworkCallback> historicallyRegisteredCallbacks =
+      ConcurrentHashMap.newKeySet();
+  private static final Set<PendingIntent> historicallyRegisteredPendingIntents =
+      ConcurrentHashMap.newKeySet();
+
   private static final Map<Integer, Network> netIdToNetwork = new HashMap<>();
   private static final Map<Integer, NetworkInfo> netIdToNetworkInfo = new HashMap<>();
   private static Network processBoundNetwork;
@@ -57,6 +65,7 @@ public class ShadowConnectivityManager {
   private static String captivePortalServerUrl = "http://10.0.0.2";
   private static final Map<Network, LinkProperties> linkPropertiesMap = new HashMap<>();
   private static final Map<Network, ProxyInfo> proxyInfoMap = new HashMap<>();
+  private static boolean strictUnregistration = false;
 
   static {
     resetNetworkDefaults();
@@ -105,12 +114,15 @@ public class ShadowConnectivityManager {
 
     networkCallbacks.clear();
     networkCallbackPendingIntents.clear();
+    historicallyRegisteredCallbacks.clear();
+    historicallyRegisteredPendingIntents.clear();
     onNetworkActiveListeners.clear();
     reportedNetworkConnectivity.clear();
     linkPropertiesMap.clear();
     proxyInfoMap.clear();
     processBoundNetwork = null;
     captivePortalServerUrl = "http://10.0.0.2";
+    strictUnregistration = false;
   }
 
   @Resetter
@@ -124,6 +136,10 @@ public class ShadowConnectivityManager {
    */
   public void setNetworkCallbacksEnabled(boolean enabled) {
     networkCallbacksEnabled = enabled;
+  }
+
+  public void setStrictUnregistration(boolean strictUnregistration) {
+    ShadowConnectivityManager.strictUnregistration = strictUnregistration;
   }
 
   public Set<ConnectivityManager.NetworkCallback> getNetworkCallbacks() {
@@ -154,11 +170,13 @@ public class ShadowConnectivityManager {
       ConnectivityManager.NetworkCallback networkCallback,
       Handler handler) {
     networkCallbacks.add(networkCallback);
+    historicallyRegisteredCallbacks.add(networkCallback);
   }
 
   @Implementation(minSdk = M)
   protected void registerNetworkCallback(NetworkRequest request, PendingIntent pendingIntent) {
     networkCallbackPendingIntents.add(pendingIntent);
+    historicallyRegisteredPendingIntents.add(pendingIntent);
   }
 
   @Implementation
@@ -194,12 +212,14 @@ public class ShadowConnectivityManager {
   protected void registerDefaultNetworkCallback(
       ConnectivityManager.NetworkCallback networkCallback) {
     networkCallbacks.add(networkCallback);
+    historicallyRegisteredCallbacks.add(networkCallback);
   }
 
   @Implementation(minSdk = O)
   protected void registerDefaultNetworkCallback(
       ConnectivityManager.NetworkCallback networkCallback, Handler handler) {
     networkCallbacks.add(networkCallback);
+    historicallyRegisteredCallbacks.add(networkCallback);
   }
 
   @Implementation(minSdk = S)
@@ -208,6 +228,7 @@ public class ShadowConnectivityManager {
       ConnectivityManager.NetworkCallback networkCallback,
       Handler handler) {
     networkCallbacks.add(networkCallback);
+    historicallyRegisteredCallbacks.add(networkCallback);
   }
 
   @Implementation
@@ -215,7 +236,15 @@ public class ShadowConnectivityManager {
     if (networkCallback == null) {
       throw new IllegalArgumentException("Invalid NetworkCallback");
     }
-    networkCallbacks.remove(networkCallback);
+    if (networkCallbacks.contains(networkCallback)) {
+      networkCallbacks.remove(networkCallback);
+    } else if (strictUnregistration) {
+      if (historicallyRegisteredCallbacks.contains(networkCallback)) {
+        Log.d("ShadowConnectivityManager", "NetworkCallback was already unregistered");
+      } else {
+        throw new IllegalArgumentException("NetworkCallback was not registered");
+      }
+    }
   }
 
   @Implementation(minSdk = M)
@@ -223,7 +252,15 @@ public class ShadowConnectivityManager {
     if (pendingIntent == null) {
       throw new IllegalArgumentException("Invalid NetworkCallback");
     }
-    networkCallbackPendingIntents.remove(pendingIntent);
+    if (networkCallbackPendingIntents.contains(pendingIntent)) {
+      networkCallbackPendingIntents.remove(pendingIntent);
+    } else if (strictUnregistration) {
+      if (historicallyRegisteredPendingIntents.contains(pendingIntent)) {
+        Log.d("ShadowConnectivityManager", "NetworkCallback was already unregistered");
+      } else {
+        throw new IllegalArgumentException("NetworkCallback was not registered");
+      }
+    }
   }
 
   @Implementation
