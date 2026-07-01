@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
 
+
 import android.util.StatsEvent;
 import android.util.StatsLog;
 import com.google.auto.value.AutoValue;

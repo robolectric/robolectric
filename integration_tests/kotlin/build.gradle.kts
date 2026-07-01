@@ -1,14 +1,13 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.robolectric.gradle.AndroidSdk
 
 plugins {
   alias(libs.plugins.detekt)
+  alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.robolectric.java.module)
   alias(libs.plugins.robolectric.spotless)
-  kotlin("jvm")
 }
 
-kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_11 } }
+kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_1_8 } }
 
 dependencies {
   api(project(":robolectric"))

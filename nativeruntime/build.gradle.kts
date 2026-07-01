@@ -1,5 +1,4 @@
 import java.net.URI
-import org.robolectric.gradle.AndroidSdk
 import org.robolectric.gradle.PUBLISH_URL
 
 plugins {

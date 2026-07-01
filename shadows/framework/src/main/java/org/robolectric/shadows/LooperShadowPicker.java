@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import org.jspecify.annotations.Nullable;
 import org.robolectric.shadow.api.ShadowPicker;
 
 public class LooperShadowPicker<T> implements ShadowPicker<T> {
@@ -16,7 +15,7 @@ public class LooperShadowPicker<T> implements ShadowPicker<T> {
 
   @Override
   @SuppressWarnings("deprecation") // This is Robolectric library code
-  public @Nullable Class<? extends T> pickShadowClass() {
+  public Class<? extends T> pickShadowClass() {
     switch (ShadowLooper.looperMode()) {
       case LEGACY:
         return legacyShadowClass;

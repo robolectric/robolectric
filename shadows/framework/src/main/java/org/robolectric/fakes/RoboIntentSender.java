@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.IIntentSender;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.os.Bundle;
 import android.os.Handler;
 import java.util.Objects;
 
@@ -45,10 +46,18 @@ public class RoboIntentSender extends IntentSender {
           context,
           code,
           intent,
-          (PendingIntent.OnFinished)
-              (pendingIntent, intent1, resultCode, resultData, resultExtras) ->
-                  onFinished.onSendFinished(
-                      RoboIntentSender.this, intent1, resultCode, resultData, resultExtras),
+          new PendingIntent.OnFinished() {
+            @Override
+            public void onSendFinished(
+                PendingIntent pendingIntent,
+                Intent intent,
+                int resultCode,
+                String resultData,
+                Bundle resultExtras) {
+              onFinished.onSendFinished(
+                  RoboIntentSender.this, intent, resultCode, resultData, resultExtras);
+            }
+          },
           handler,
           requiredPermission);
     } catch (PendingIntent.CanceledException e) {

@@ -34,12 +34,10 @@ final class TestLooperManagerCompat implements AutoCloseable {
     this.queue = queue;
     this.delegate = null;
   }
-
   private TestLooperManagerCompat(TestLooperManager testLooperManager) {
     this.queue = null;
     this.delegate = testLooperManager;
   }
-
   static TestLooperManagerCompat acquire(Looper looper) {
     if (getApiLevel() >= BAKLAVA) {
       TestLooperManager testLooperManager = new TestLooperManager(looper);

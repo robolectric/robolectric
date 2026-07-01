@@ -1,7 +1,5 @@
 package org.robolectric.shadow.api;
 
-import org.jspecify.annotations.Nullable;
-
 // TODO: move this to org.robolectric.annotation
 public interface ShadowPicker<T> {
 
@@ -11,5 +9,5 @@ public interface ShadowPicker<T> {
    *
    * @return the shadow class to be used
    */
-  @Nullable Class<? extends T> pickShadowClass();
+  Class<? extends T> pickShadowClass();
 }

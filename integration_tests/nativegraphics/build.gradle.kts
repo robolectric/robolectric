@@ -1,5 +1,3 @@
-import org.robolectric.gradle.AndroidSdk
-
 plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.robolectric.android.project)
@@ -12,7 +10,7 @@ android {
   defaultConfig { minSdk = 26 }
 
   testOptions {
-    targetSdk = 36
+    targetSdk = 35
     unitTests {
       isIncludeAndroidResources = true
       all { it.systemProperty("robolectric.graphicsMode", "NATIVE") }

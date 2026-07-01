@@ -4,7 +4,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Parameters, function return with types that can't be resolved at compile time may be annotated
@@ -39,5 +38,5 @@ public @interface ClassName {
    * <p>Use the value as returned from {@link Class#getName()}, not {@link
    * Class#getCanonicalName()}; e.g. {@code Foo$Bar} instead of {@code Foo.Bar}.
    */
-  @NonNull String value();
+  String value();
 }

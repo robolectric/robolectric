@@ -1,12 +1,11 @@
-<a name="README"></a>
-[![robolectric logo](https://raw.githubusercontent.com/robolectric/robolectric/master/images/robolectric-horizontal.png)](https://robolectric.org)
+<a name="README">[<img src="https://rawgithub.com/robolectric/robolectric/master/images/robolectric-horizontal.png"/>](https://robolectric.org)</a>
 
 [![Build Status](https://github.com/robolectric/robolectric/actions/workflows/tests.yml/badge.svg)](https://github.com/robolectric/robolectric/actions?query=workflow%3Atests)
 [![GitHub release](https://img.shields.io/github/release/robolectric/robolectric.svg?maxAge=60)](https://github.com/robolectric/robolectric/releases)
 
 Robolectric is the industry-standard unit testing framework for Android. With Robolectric, your tests run in a simulated Android environment inside a JVM, without the overhead and flakiness of an emulator. Robolectric tests routinely run 10x faster than those on cold-started emulators.
 
-Robolectric supports running unit tests for *14* different versions of Android, ranging from M (API level 23) to Baklava (API level 36).
+Robolectric supports running unit tests for *13* different versions of Android, ranging from M (API level 23) to V (API level 35).
 
 ## Usage
 
@@ -14,8 +13,8 @@ To use Robolectric in your project, simply add the necessary dependencies to you
 
 ```groovy
 testImplementation("junit:junit:4.13.2")
-testImplementation("org.robolectric:robolectric:4.16.1")
-testImplementation("androidx.test.ext:junit:1.3.0")
+testImplementation("org.robolectric:robolectric:4.15.1")
+testImplementation("androidx.test.ext:junit:1.2.1")
 ```
 
 Then you can write your tests using Robolectric, like the following example:
@@ -74,11 +73,6 @@ GitHub branches.
 Although complex, this distributed development model enables Android developers
 in different environments to use and contribute to Robolectric, while allowing
 changes to eventually make their way to public Robolectric releases.
-
-> [!TIP]
-> You can trigger the
-> [`sync_google_master`](https://github.com/robolectric/robolectric/actions/workflows/sync_google_master.yml)
-> workflow to create a PR to sync the `google` branch into `master`.
 
 ## Using Snapshots
 

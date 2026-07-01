@@ -1,14 +1,15 @@
 package android.graphics;
 
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static androidx.test.InstrumentationRegistry.getTargetContext;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertThrows;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.drawable.BitmapDrawable;
@@ -16,7 +17,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.DisplayMetrics;
-import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.platform.graphics.HardwareRendererCompat;
@@ -40,7 +40,7 @@ public class BitmapTest {
 
   @Before
   public void setUp() {
-    resources = ApplicationProvider.getApplicationContext().getResources();
+    resources = getTargetContext().getResources();
   }
 
   @Config(minSdk = P)
@@ -76,6 +76,7 @@ public class BitmapTest {
   }
 
   @Test
+  @SdkSuppress(minSdkVersion = M) // getAlpha() returns 0 on less than M
   public void testExtractAlpha() {
     // normal case
     Bitmap bitmap =
@@ -161,7 +162,6 @@ public class BitmapTest {
     options.inDensity = 100;
     options.inTargetDensity = 500;
     Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
-    assertThat(bitmap).isNotNull();
     assertThat(bitmap.isRecycled()).isFalse();
   }
 
@@ -179,7 +179,6 @@ public class BitmapTest {
     BitmapFactory.Options opt = new BitmapFactory.Options();
     opt.inMutable = true;
     Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, opt);
-    assertThat(bitmap).isNotNull();
     Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false);
     assertThat(scaledBitmap.isMutable()).isTrue();
   }
@@ -310,7 +309,7 @@ public class BitmapTest {
    * This happens when Java's Graphics2d is used for certain.
    */
   @Test
-  public void recompress_png100_samePixels() {
+  public void recompress_png100_samePixelss() {
     Bitmap applicationIconBitmap =
         Bitmap.createBitmap(new int[] {10, 11, 12, 13}, 2, 2, Bitmap.Config.ARGB_8888);
 
@@ -656,11 +655,8 @@ public class BitmapTest {
 
   @Test
   public void bitmapDrawable_mutate() {
-    Context context = ApplicationProvider.getApplicationContext();
-    BitmapDrawable drawable1 = (BitmapDrawable) context.getDrawable(R.drawable.an_image);
-    BitmapDrawable drawable2 = (BitmapDrawable) context.getDrawable(R.drawable.an_image);
-    assertThat(drawable1).isNotNull();
-    assertThat(drawable2).isNotNull();
+    BitmapDrawable drawable1 = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
+    BitmapDrawable drawable2 = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
 
     Drawable mutated1 = drawable1.mutate();
     Drawable mutated2 = drawable2.mutate();

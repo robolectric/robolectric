@@ -26,12 +26,12 @@ jobs:
           macos-15-intel, # Tests Mac x86_64
           macos-latest, # Tests Mac arm64
           ubuntu-latest, # Tests Linux x86_64
-          windows-latest, # Tests Windows x86_64
+          windows-2022, # Tests Windows x86_64
         ]
     runs-on: ${{ matrix.device }}
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -39,7 +39,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
+      - uses: gradle/actions/setup-gradle@v4
 
       - name: Show runner info
         run: uname -a
@@ -56,7 +56,7 @@ jobs:
           "-Dorg.gradle.workers.max=2"
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test_results_${{ matrix.device }}

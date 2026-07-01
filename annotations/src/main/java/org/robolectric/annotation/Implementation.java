@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Indicates that a method declaration is intended to shadow a method with the same signature on the
@@ -35,5 +34,5 @@ public @interface Implementation {
    * @return The expected implemented method name. If it is empty/null, the Robolectric will uses
    *     the method's name that marked by @Implementation as the implemented method name.
    */
-  @Nullable String methodName() default "";
+  String methodName() default "";
 }

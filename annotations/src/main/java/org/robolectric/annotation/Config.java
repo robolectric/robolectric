@@ -14,8 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+import javax.annotation.Nonnull;
 
 /** Configuration settings that can be used on a per-class or per-test basis. */
 @Documented
@@ -46,7 +45,7 @@ public @interface Config {
   int NEWEST_SDK = -5;
 
   /** The Android SDK level to emulate. This value will also be set as Build.VERSION.SDK_INT. */
-  int @NonNull [] sdk() default {}; // DEFAULT_SDK
+  int[] sdk() default {}; // DEFAULT_SDK
 
   /** The minimum Android SDK level to emulate when running tests on multiple API versions. */
   int minSdk() default -1;
@@ -75,7 +74,7 @@ public @interface Config {
    * @return The Android manifest file to load.
    */
   @Deprecated
-  @NonNull String manifest() default DEFAULT_VALUE_STRING;
+  String manifest() default DEFAULT_VALUE_STRING;
 
   /**
    * The {@link android.app.Application} class to use in the test, this takes precedence over any
@@ -83,7 +82,7 @@ public @interface Config {
    *
    * @return The {@link android.app.Application} class to use in the test.
    */
-  @Nullable Class<? extends Application> application() default
+  Class<? extends Application> application() default
       DefaultApplication.class; // DEFAULT_APPLICATION
 
   /**
@@ -96,34 +95,34 @@ public @interface Config {
    *     details.
    * @return Qualifiers used for device configuration and resource resolution.
    */
-  @NonNull String qualifiers() default DEFAULT_QUALIFIERS;
+  String qualifiers() default DEFAULT_QUALIFIERS;
 
   /**
    * A list of shadow classes to enable, in addition to those that are already present.
    *
    * @return A list of additional shadow classes to enable.
    */
-  @NonNull Class<?> @NonNull [] shadows() default {}; // DEFAULT_SHADOWS
+  Class<?>[] shadows() default {}; // DEFAULT_SHADOWS
 
   /**
    * A list of instrumented packages, in addition to those that are already instrumented.
    *
    * @return A list of additional instrumented packages.
    */
-  @NonNull String @NonNull [] instrumentedPackages() default {}; // DEFAULT_INSTRUMENTED_PACKAGES
+  String[] instrumentedPackages() default {}; // DEFAULT_INSTRUMENTED_PACKAGES
 
   class Implementation implements Config {
-    private final int @NonNull [] sdk;
+    private final int[] sdk;
     private final int minSdk;
     private final int maxSdk;
     private final float fontScale;
-    private final @NonNull String manifest;
-    private final @NonNull String qualifiers;
-    private final @NonNull Class<?> @NonNull [] shadows;
-    private final @NonNull String @NonNull [] instrumentedPackages;
-    private final @Nullable Class<? extends Application> application;
+    private final String manifest;
+    private final String qualifiers;
+    private final Class<?>[] shadows;
+    private final String[] instrumentedPackages;
+    private final Class<? extends Application> application;
 
-    public static @Nullable Config fromProperties(@Nullable Properties properties) {
+    public static Config fromProperties(Properties properties) {
       if (properties == null || properties.isEmpty()) return null;
       return new Implementation(
           parseSdkArrayProperty(properties.getProperty("sdk", "")),
@@ -138,7 +137,7 @@ public @interface Config {
               properties.getProperty("application", DEFAULT_APPLICATION.getCanonicalName())));
     }
 
-    private static @Nullable Class<?> parseClass(@NonNull String className) {
+    private static Class<?> parseClass(String className) {
       if (className.isEmpty()) return null;
       try {
         return Implementation.class.getClassLoader().loadClass(className);
@@ -147,7 +146,7 @@ public @interface Config {
       }
     }
 
-    private static @NonNull Class<?> @NonNull [] parseClasses(@NonNull String input) {
+    private static Class<?>[] parseClasses(String input) {
       if (input.isEmpty()) return new Class[0];
       final String[] classNames = input.split("[, ]+", 0);
       final Class<?>[] classes = new Class[classNames.length];
@@ -158,17 +157,16 @@ public @interface Config {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends Application> @Nullable Class<T> parseApplication(
-        @NonNull String className) {
+    private static <T extends Application> Class<T> parseApplication(String className) {
       return (Class<T>) parseClass(className);
     }
 
-    private static @NonNull String @NonNull [] parseStringArrayProperty(@NonNull String property) {
+    private static String[] parseStringArrayProperty(String property) {
       if (property.isEmpty()) return new String[0];
       return property.split("[, ]+");
     }
 
-    private static int @NonNull [] parseSdkArrayProperty(@NonNull String property) {
+    private static int[] parseSdkArrayProperty(String property) {
       String[] parts = parseStringArrayProperty(property);
       int[] result = new int[parts.length];
       for (int i = 0; i < parts.length; i++) {
@@ -178,7 +176,7 @@ public @interface Config {
       return result;
     }
 
-    private static int parseSdkInt(@NonNull String part) {
+    private static int parseSdkInt(String part) {
       String spec = part.trim();
       switch (spec) {
         case "ALL_SDKS":
@@ -194,7 +192,7 @@ public @interface Config {
       }
     }
 
-    private static void validate(@NonNull Config config) {
+    private static void validate(Config config) {
       //noinspection ConstantConditions
       if (config.sdk() != null
           && config.sdk().length > 0
@@ -224,15 +222,15 @@ public @interface Config {
     }
 
     public Implementation(
-        int @NonNull [] sdk,
+        int[] sdk,
         int minSdk,
         int maxSdk,
-        @NonNull String manifest,
-        @NonNull String qualifiers,
+        String manifest,
+        String qualifiers,
         float fontScale,
-        @NonNull Class<?> @NonNull [] shadows,
-        @NonNull String @NonNull [] instrumentedPackages,
-        @Nullable Class<? extends Application> application) {
+        Class<?>[] shadows,
+        String[] instrumentedPackages,
+        Class<? extends Application> application) {
       this.sdk = sdk;
       this.minSdk = minSdk;
       this.maxSdk = maxSdk;
@@ -247,7 +245,7 @@ public @interface Config {
     }
 
     @Override
-    public int @NonNull [] sdk() {
+    public int[] sdk() {
       return sdk;
     }
 
@@ -262,7 +260,7 @@ public @interface Config {
     }
 
     @Override
-    public @NonNull String manifest() {
+    public String manifest() {
       return manifest;
     }
 
@@ -272,32 +270,33 @@ public @interface Config {
     }
 
     @Override
-    public @Nullable Class<? extends Application> application() {
+    public Class<? extends Application> application() {
       return application;
     }
 
     @Override
-    public @NonNull String qualifiers() {
+    public String qualifiers() {
       return qualifiers;
     }
 
     @Override
-    public @NonNull Class<?> @NonNull [] shadows() {
+    public Class<?>[] shadows() {
       return shadows;
     }
 
     @Override
-    public @NonNull String @NonNull [] instrumentedPackages() {
+    public String[] instrumentedPackages() {
       return instrumentedPackages;
     }
 
+    @Nonnull
     @Override
-    public @NonNull Class<? extends Annotation> annotationType() {
+    public Class<? extends Annotation> annotationType() {
       return Config.class;
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
       return "Implementation{"
           + "sdk="
           + Arrays.toString(sdk)
@@ -322,19 +321,19 @@ public @interface Config {
   }
 
   class Builder {
-    protected int @NonNull [] sdk = new int[0];
+    protected int[] sdk = new int[0];
     protected int minSdk = -1;
     protected int maxSdk = -1;
     protected float fontScale = 1.0f;
-    protected @NonNull String manifest = Config.DEFAULT_VALUE_STRING;
-    protected @NonNull String qualifiers = Config.DEFAULT_QUALIFIERS;
-    protected @NonNull Class<?> @NonNull [] shadows = new Class[0];
-    protected @NonNull String @NonNull [] instrumentedPackages = new String[0];
-    protected @Nullable Class<? extends Application> application = DEFAULT_APPLICATION;
+    protected String manifest = Config.DEFAULT_VALUE_STRING;
+    protected String qualifiers = Config.DEFAULT_QUALIFIERS;
+    protected Class<?>[] shadows = new Class[0];
+    protected String[] instrumentedPackages = new String[0];
+    protected Class<? extends Application> application = DEFAULT_APPLICATION;
 
     public Builder() {}
 
-    public Builder(@NonNull Config config) {
+    public Builder(Config config) {
       sdk = config.sdk();
       minSdk = config.minSdk();
       maxSdk = config.maxSdk();
@@ -346,47 +345,47 @@ public @interface Config {
       application = config.application();
     }
 
-    public @NonNull Builder setSdk(int... sdk) {
+    public Builder setSdk(int... sdk) {
       this.sdk = sdk;
       return this;
     }
 
-    public @NonNull Builder setMinSdk(int minSdk) {
+    public Builder setMinSdk(int minSdk) {
       this.minSdk = minSdk;
       return this;
     }
 
-    public @NonNull Builder setMaxSdk(int maxSdk) {
+    public Builder setMaxSdk(int maxSdk) {
       this.maxSdk = maxSdk;
       return this;
     }
 
-    public @NonNull Builder setManifest(@NonNull String manifest) {
+    public Builder setManifest(String manifest) {
       this.manifest = manifest;
       return this;
     }
 
-    public @NonNull Builder setQualifiers(@NonNull String qualifiers) {
+    public Builder setQualifiers(String qualifiers) {
       this.qualifiers = qualifiers;
       return this;
     }
 
-    public @NonNull Builder setFontScale(float fontScale) {
+    public Builder setFontScale(float fontScale) {
       this.fontScale = fontScale;
       return this;
     }
 
-    public @NonNull Builder setShadows(@NonNull Class<?>... shadows) {
+    public Builder setShadows(Class<?>... shadows) {
       this.shadows = shadows;
       return this;
     }
 
-    public @NonNull Builder setInstrumentedPackages(@NonNull String... instrumentedPackages) {
+    public Builder setInstrumentedPackages(String... instrumentedPackages) {
       this.instrumentedPackages = instrumentedPackages;
       return this;
     }
 
-    public @NonNull Builder setApplication(@Nullable Class<? extends Application> application) {
+    public Builder setApplication(Class<? extends Application> application) {
       this.application = application;
       return this;
     }
@@ -395,11 +394,11 @@ public @interface Config {
      * This returns actual default values where they exist, in the sense that we could use the
      * values, rather than markers like {@code -1} or {@code --default}.
      */
-    public static @NonNull Builder defaults() {
+    public static Builder defaults() {
       return new Builder().setManifest(DEFAULT_MANIFEST_NAME);
     }
 
-    public @NonNull Builder overlay(@NonNull Config overlayConfig) {
+    public Builder overlay(Config overlayConfig) {
       int[] overlaySdk = overlayConfig.sdk();
       int overlayMinSdk = overlayConfig.minSdk();
       int overlayMaxSdk = overlayConfig.maxSdk();
@@ -424,9 +423,9 @@ public @interface Config {
       this.fontScale = pick(this.fontScale, overlayFontScale, DEFAULT_FONT_SCALE);
 
       String qualifiersOverlayValue = overlayConfig.qualifiers();
-      if (!qualifiersOverlayValue.isEmpty()) {
+      if (qualifiersOverlayValue != null && !qualifiersOverlayValue.isEmpty()) {
         if (qualifiersOverlayValue.startsWith("+")) {
-          this.qualifiers += " " + qualifiersOverlayValue;
+          this.qualifiers = this.qualifiers + " " + qualifiersOverlayValue;
         } else {
           this.qualifiers = qualifiersOverlayValue;
         }
@@ -445,19 +444,17 @@ public @interface Config {
       return this;
     }
 
-    private <T> @Nullable T pick(
-        @Nullable T baseValue, @Nullable T overlayValue, @NonNull T nullValue) {
+    private <T> T pick(T baseValue, T overlayValue, T nullValue) {
       return overlayValue != null
           ? (overlayValue.equals(nullValue) ? baseValue : overlayValue)
           : null;
     }
 
-    private int[] pickSdk(
-        int @NonNull [] baseValue, int @NonNull [] overlayValue, int @NonNull [] nullValue) {
+    private int[] pickSdk(int[] baseValue, int[] overlayValue, int[] nullValue) {
       return Arrays.equals(overlayValue, nullValue) ? baseValue : overlayValue;
     }
 
-    public @NonNull Implementation build() {
+    public Implementation build() {
       return new Implementation(
           sdk,
           minSdk,
@@ -470,7 +467,7 @@ public @interface Config {
           application);
     }
 
-    public static boolean isDefaultApplication(@Nullable Class<? extends Application> clazz) {
+    public static boolean isDefaultApplication(Class<? extends Application> clazz) {
       return clazz == null
           || clazz.getCanonicalName().equals(DEFAULT_APPLICATION.getCanonicalName());
     }

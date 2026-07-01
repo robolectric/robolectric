@@ -708,7 +708,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           iterator.remove();
         }
       }
-      result.sort(new ResolveInfoComparator());
+      Collections.sort(result, new ResolveInfoComparator());
       return result;
     }
   }
@@ -2205,7 +2205,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     // Note that this ignores the UserHandle parameter
     synchronized (lock) {
       if (!packageInfos.containsKey(packageName)) {
-        // Match Android behavior of returning true if package isn't found
+        // Match Android behaviour of returning true if package isn't found
         return true;
       }
       return hiddenPackages.contains(packageName);

@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.jspecify.annotations.NonNull;
 
 /**
  * A {@link org.robolectric.pluginapi.config.Configurer} annotation for controlling Robolectric's
@@ -36,5 +35,5 @@ public @interface ResourcesMode {
   }
 
   /** Set the Resources mode. */
-  @NonNull Mode value();
+  ResourcesMode.Mode value();
 }

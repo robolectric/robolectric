@@ -4,8 +4,8 @@
     package="org.robolectric.integrationtests.axt">
 
   <uses-sdk
-      android:minSdkVersion="23"
-      android:targetSdkVersion="36"/>
+      android:minSdkVersion="21"
+      android:targetSdkVersion="35"/>
 
   <application
         android:appComponentFactory="org.robolectric.integrationtests.axt.ActivityScenarioTest$CustomAppComponentFactory">
@@ -14,13 +14,13 @@
         android:exported="true"/>
     <activity
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTest$TranscriptActivity"
-        android:exported="true"/>
+        android:exported = "true"/>
     <activity
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTest$ActivityWithCustomConstructor"
         android:exported="true"/>
     <activity
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTest$OnCreatePackageNameActivity"
-        android:exported="true"/>
+        android:exported = "true"/>
     <activity-alias
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTestAlias"
         android:targetActivity="org.robolectric.integrationtests.axt.ActivityScenarioTest$TranscriptActivity" />

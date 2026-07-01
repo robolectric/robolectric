@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
@@ -504,14 +505,14 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     event.setAction(action);
   }
 
-  @Implementation
+  @Implementation(minSdk = M)
   @HiddenApi
   protected static int nativeGetActionButton(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getActionButton();
   }
 
-  @Implementation
+  @Implementation(minSdk = M)
   @HiddenApi
   protected static void nativeSetActionButton(long nativePtr, int button) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
@@ -567,7 +568,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     return event.getButtonState();
   }
 
-  @Implementation
+  @Implementation(minSdk = M)
   @HiddenApi
   protected static void nativeSetButtonState(long nativePtr, int buttonState) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);

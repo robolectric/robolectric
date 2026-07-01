@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -218,7 +219,7 @@ public class ShadowLauncherApps {
     return enabledPackages.get(user).contains(packageName);
   }
 
-  @Implementation
+  @Implementation(minSdk = L)
   protected List<LauncherActivityInfo> getActivityList(String packageName, UserHandle user) {
     // Take a snapshot to avoid concurrent modification exceptions.
     ImmutableSet<LauncherActivityInfo> activityInfosSnapshot =
@@ -281,7 +282,7 @@ public class ShadowLauncherApps {
         "This method is not currently supported in Robolectric.");
   }
 
-  @Implementation
+  @Implementation(minSdk = L)
   protected boolean isActivityEnabled(ComponentName component, UserHandle user) {
     return enabledActivities.containsEntry(user, component);
   }

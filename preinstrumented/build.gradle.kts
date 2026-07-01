@@ -1,5 +1,4 @@
 import java.net.URI
-import org.robolectric.gradle.AndroidSdk
 import org.robolectric.gradle.PUBLISH_URL
 
 plugins {
@@ -12,8 +11,8 @@ val javaMainClass = "org.robolectric.preinstrumented.JarInstrumentor"
 application { mainClass.set(javaMainClass) }
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 dependencies {
@@ -25,30 +24,31 @@ dependencies {
   testImplementation(libs.mockito.subclass)
 }
 
-val instrumentAll by tasks.registering {
-  dependsOn(":prefetchSdks", "build")
+val instrumentAll by
+  tasks.registering {
+    dependsOn(":prefetchSdks", "build")
 
-  doLast {
-    val androidAllMavenLocal =
-      "${System.getProperty("user.home")}/.m2/repository/org/robolectric/android-all"
-    sdksToInstrument().forEach { androidSdk ->
-      logger.debug("Instrumenting ${androidSdk.coordinates}")
+    doLast {
+      val androidAllMavenLocal =
+        "${System.getProperty("user.home")}/.m2/repository/org/robolectric/android-all"
+      sdksToInstrument().forEach { androidSdk ->
+        logger.debug("Instrumenting ${androidSdk.coordinates}")
 
-      val inputPath = "$androidAllMavenLocal/${androidSdk.version}/${androidSdk.jarFileName}"
-      val outputPath =
-        layout.buildDirectory.file(androidSdk.preinstrumentedJarFileName).get().asFile.path
+        val inputPath = "$androidAllMavenLocal/${androidSdk.version}/${androidSdk.jarFileName}"
+        val outputPath =
+          layout.buildDirectory.file(androidSdk.preinstrumentedJarFileName).get().asFile.path
 
-      providers
-        .javaexec {
-          classpath = sourceSets.getByName("main").runtimeClasspath
-          mainClass.set(javaMainClass)
-          args = listOf(inputPath, outputPath)
-        }
-        .result
-        .get()
+        providers
+          .javaexec {
+            classpath = sourceSets.getByName("main").runtimeClasspath
+            mainClass.set(javaMainClass)
+            args = listOf(inputPath, outputPath)
+          }
+          .result
+          .get()
+      }
     }
   }
-}
 
 val emptySourcesJar by tasks.registering(Jar::class) { archiveClassifier.set("sources") }
 
