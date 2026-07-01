@@ -65,17 +65,17 @@ public class ShadowIBluetoothManager {
       int bluetoothProfile,
       String serviceName,
       @ClassName("android.bluetooth.IBluetoothProfileServiceConnection") Object proxy) {
-      if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-        return false;
-      }
-      try {
+    if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+      return false;
+    }
+    try {
 
       reflector(IBluetoothProfileServiceConnectionReflector.class, proxy)
           .onServiceConnected(null, null);
-      } catch (RemoteException e) {
-        return false;
-      }
-      return true;
+    } catch (RemoteException e) {
+      return false;
+    }
+    return true;
     }
 
   /**
@@ -86,12 +86,12 @@ public class ShadowIBluetoothManager {
   protected void unbindBluetoothProfileService(
       int bluetoothProfile,
       @ClassName("android.bluetooth.IBluetoothProfileServiceConnection") Object proxy) {
-      try {
+    try {
       reflector(IBluetoothProfileServiceConnectionReflector.class, proxy)
           .onServiceDisconnected(null);
-      } catch (RemoteException e) {
-        // nothing to do
-      }
+    } catch (RemoteException e) {
+      // nothing to do
+    }
   }
 
   @ForType(className = "android.bluetooth.IBluetoothProfileServiceConnection")

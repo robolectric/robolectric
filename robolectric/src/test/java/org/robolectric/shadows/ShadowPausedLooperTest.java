@@ -898,5 +898,4 @@ public class ShadowPausedLooperTest {
     Handler handler = new Handler(getMainLooper());
     handler.post(() -> {});
   }
-
 }

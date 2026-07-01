@@ -5,6 +5,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A {@link org.robolectric.pluginapi.config.Configurer} annotation for controlling how Robolectric
@@ -35,11 +36,11 @@ public @interface GetInstallerPackageNameMode {
     REALISTIC,
   }
 
-  Mode value();
+  @NonNull Mode value();
 
   /**
    * Optional string for storing the issue / bug id tracking the fixing of the affected tests and
    * thus removal of this annotation.
    */
-  String issueId() default "";
+  @NonNull String issueId() default "";
 }

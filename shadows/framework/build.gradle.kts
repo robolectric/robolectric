@@ -1,3 +1,5 @@
+import org.robolectric.gradle.AndroidSdk
+
 plugins {
   alias(libs.plugins.robolectric.deployed.java.module)
   alias(libs.plugins.robolectric.java.module)
@@ -43,14 +45,12 @@ dependencies {
   api(project(":annotations"))
   api(project(":nativeruntime"))
   api(project(":resources"))
-  api(project(":pluginapi"))
   api(project(":sandbox"))
   api(project(":shadowapi"))
   api(project(":utils"))
   api(project(":utils:reflector"))
 
   api(variantOf(libs.androidx.test.monitor) { artifactType("aar") })
-  implementation(libs.error.prone.annotations)
   compileOnly(libs.findbugs.jsr305)
   api(libs.sqlite4java)
   compileOnly(AndroidSdk.MAX_SDK.coordinates)

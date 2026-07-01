@@ -5,23 +5,23 @@ plugins {
 }
 
 android {
-  compileSdk = 35
+  compileSdk = 36
   namespace = "org.robolectric.integration.axt"
 
   defaultConfig {
     testApplicationId = "org.robolectric.integrationtests.axt"
-    minSdk = 21
+    minSdk = 23
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     testInstrumentationRunnerArguments["useTestStorageService"] = "true"
   }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
   }
 
   testOptions {
-    targetSdk = 35
+    targetSdk = 36
     unitTests.isIncludeAndroidResources = true
   }
 

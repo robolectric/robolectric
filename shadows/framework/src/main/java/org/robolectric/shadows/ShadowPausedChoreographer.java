@@ -63,7 +63,7 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
   protected void __constructor__(Looper looper, int vsyncSource, long layerHandle) {
     activeChoreographers.add(realChoreographer);
   }
-  
+
   @Filter(minSdk = CINNAMON_BUN, order = Order.AFTER)
   protected void __constructor__(Looper looper, long layerHandle) {
     activeChoreographers.add(realChoreographer);

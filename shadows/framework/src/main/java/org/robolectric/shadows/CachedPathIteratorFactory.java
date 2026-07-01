@@ -10,8 +10,8 @@ import java.util.ArrayList;
  * Class that returns iterators for a given path. These iterators are lightweight and can be reused
  * multiple times to iterate over the path.
  *
- * <p>copied from
- * https://github.com/aosp-mirror/platform_frameworks_base/blob/oreo-release/tools/layoutlib/bridge/src/com/android/layoutlib/bridge/util/CachedPathIteratorFactory.java
+ * <p>copied from <a
+ * href="https://github.com/aosp-mirror/platform_frameworks_base/blob/oreo-release/tools/layoutlib/bridge/src/com/android/layoutlib/bridge/util/CachedPathIteratorFactory.java">...</a>
  */
 public class CachedPathIteratorFactory {
   /*
@@ -402,7 +402,7 @@ public class CachedPathIteratorFactory {
               estimatedPoint);
 
           // This segment makes us go further than length so we go back one step,
-          // set a moveto and offset the length of the next segment by the length
+          // set a SEG_MOVETO and offset the length of the next segment by the length
           // of this segment that we've already used.
           mCurrentType = PathIterator.SEG_MOVETO;
           mCurrentCoords[0] = estimatedPoint[0];

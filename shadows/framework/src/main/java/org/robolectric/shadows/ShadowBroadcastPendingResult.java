@@ -18,16 +18,16 @@ public final class ShadowBroadcastPendingResult {
       int resultCode, String resultData, Bundle resultExtras, boolean ordered) {
     try {
 
-        return new BroadcastReceiver.PendingResult(
-            resultCode,
-            resultData,
-            resultExtras,
-            0 /* type */,
-            ordered,
-            false /*sticky*/,
-            null /* ibinder token */,
-            0 /* userid */,
-            0 /* flags */);
+      return new BroadcastReceiver.PendingResult(
+          resultCode,
+          resultData,
+          resultExtras,
+          0 /* type */,
+          ordered,
+          false /*sticky*/,
+          null /* ibinder token */,
+          0 /* userid */,
+          0 /* flags */);
 
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -36,16 +36,16 @@ public final class ShadowBroadcastPendingResult {
 
   static BroadcastReceiver.PendingResult createSticky(Intent intent) {
     try {
-        return new BroadcastReceiver.PendingResult(
-            0 /*resultCode*/,
-            intent.getDataString(),
-            intent.getExtras(),
-            0 /* type */,
-            false /*ordered*/,
-            true /*sticky*/,
-            null /* ibinder token */,
-            0 /* userid */,
-            0 /* flags */);
+      return new BroadcastReceiver.PendingResult(
+          0 /*resultCode*/,
+          intent.getDataString(),
+          intent.getExtras(),
+          0 /* type */,
+          false /*ordered*/,
+          true /*sticky*/,
+          null /* ibinder token */,
+          0 /* userid */,
+          0 /* flags */);
 
     } catch (Exception e) {
       throw new RuntimeException(e);

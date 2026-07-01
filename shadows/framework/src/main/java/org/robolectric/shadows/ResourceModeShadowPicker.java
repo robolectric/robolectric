@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
+import org.jspecify.annotations.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.ResourcesMode.Mode;
@@ -51,7 +52,7 @@ public class ResourceModeShadowPicker<T> implements ShadowPicker<T> {
   }
 
   @Override
-  public Class<? extends T> pickShadowClass() {
+  public @Nullable Class<? extends T> pickShadowClass() {
     if (RuntimeEnvironment.getApiLevel() > VANILLA_ICE_CREAM
         && nativeShadowClass != null
         && ConfigurationRegistry.get(ResourcesMode.Mode.class) == Mode.NATIVE) {

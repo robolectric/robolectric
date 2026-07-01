@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="org.robolectric.integrationtests.axt">
 
   <uses-sdk
-      android:minSdkVersion="21"
-      android:targetSdkVersion="35"/>
+      android:minSdkVersion="23"
+      android:targetSdkVersion="36"/>
 
   <application>
     <activity
         android:name="org.robolectric.integrationtests.axt.ActivityTestRuleTest$TranscriptActivity"
-        android:exported="true"/>
+        android:exported="true"
+        tools:ignore="MissingClass"/>
   </application>
 
   <instrumentation

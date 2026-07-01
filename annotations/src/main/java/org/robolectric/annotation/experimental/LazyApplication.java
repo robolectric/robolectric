@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A {@link org.robolectric.pluginapi.config.Configurer} annotation that dictates whether or not
@@ -20,7 +21,7 @@ import java.lang.annotation.Target;
 public @interface LazyApplication {
 
   /** Whether or not the Application should be lazily loaded */
-  LazyLoad value();
+  @NonNull LazyLoad value();
 
   /** Whether or not the Application should be lazily loaded */
   enum LazyLoad {

@@ -37,7 +37,9 @@ import org.apache.http.client.methods.HttpRequestBase;
  * Redirect request (can be either GET or HEAD).
  *
  * @since 4.0
+ * @deprecated Apache HTTP client is deprecated in Android. Please migrate to an other solution
  */
+@Deprecated
 class HttpRedirect extends HttpRequestBase {
 
   private final String method;
