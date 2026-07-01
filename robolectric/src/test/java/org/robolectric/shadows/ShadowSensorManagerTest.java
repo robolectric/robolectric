@@ -2,10 +2,10 @@ package org.robolectric.shadows;
 
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.Sensor.TYPE_ALL;
-import static android.hardware.Sensor.TYPE_GRAVITY;
 import static android.hardware.Sensor.TYPE_GYROSCOPE;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -133,7 +133,7 @@ public class ShadowSensorManagerTest {
     TestSensorEventListener listener = new TestSensorEventListener();
     Sensor sensor = sensorManager.getDefaultSensor(SensorManager.SENSOR_ACCELEROMETER);
     sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
-    SensorEvent event = generateTestGravitySensorEvent();
+    SensorEvent event = shadow.createSensorEvent();
     // Confirm that the listener has received no events yet.
     assertThat(listener.getLatestSensorEvent()).isAbsent();
 
@@ -151,7 +151,7 @@ public class ShadowSensorManagerTest {
     Sensor sensor = sensorManager.getDefaultSensor(SensorManager.SENSOR_ACCELEROMETER);
     sensorManager.registerListener(listener1, sensor, SensorManager.SENSOR_DELAY_NORMAL);
     sensorManager.registerListener(listener2, sensor, SensorManager.SENSOR_DELAY_NORMAL);
-    SensorEvent event = generateTestGravitySensorEvent();
+    SensorEvent event = shadow.createSensorEvent();
 
     shadow.sendSensorEventToListeners(event);
 
@@ -176,7 +176,7 @@ public class ShadowSensorManagerTest {
         };
     Sensor sensor = sensorManager.getDefaultSensor(SensorManager.SENSOR_ACCELEROMETER);
     sensorManager.registerListener(listener1, sensor, SensorManager.SENSOR_DELAY_NORMAL);
-    SensorEvent event = generateTestGravitySensorEvent();
+    SensorEvent event = shadow.createSensorEvent();
 
     shadow.sendSensorEventToListeners(event);
 
@@ -187,7 +187,7 @@ public class ShadowSensorManagerTest {
   public void shouldNotSendSensorEventIfNoRegisteredListeners() {
     // Create a listener but don't register it.
     TestSensorEventListener listener = new TestSensorEventListener();
-    SensorEvent event = generateTestGravitySensorEvent();
+    SensorEvent event = shadow.createSensorEvent();
 
     shadow.sendSensorEventToListeners(event);
 
@@ -196,21 +196,31 @@ public class ShadowSensorManagerTest {
 
   @Test
   public void shouldCreateSensorEvent() {
-    assertThat(generateTestGravitySensorEvent()).isNotNull();
+    assertThat(shadow.createSensorEvent()).isNotNull();
   }
 
   @Test
   public void shouldCreateSensorEventWithValueArray() {
-    SensorEvent event = generateTestGravitySensorEvent();
+    SensorEvent event = ShadowSensorManager.createSensorEvent(3);
     assertThat(event.values.length).isEqualTo(3);
   }
 
   @Test
   public void shouldCreateSensorEventWithValueArrayAndSensorType() {
-    SensorEvent event = generateTestGravitySensorEvent();
+    SensorEvent event = ShadowSensorManager.createSensorEvent(3, Sensor.TYPE_GRAVITY);
     assertThat(event.values.length).isEqualTo(3);
     assertThat(event.sensor).isNotNull();
     assertThat(event.sensor.getType()).isEqualTo(Sensor.TYPE_GRAVITY);
+  }
+
+  @Test
+  public void createSensorEvent_shouldThrowExceptionWhenValueLessThan1() {
+    try {
+      ShadowSensorManager.createSensorEvent(/* valueArraySize= */ 0);
+      fail("Expected IllegalArgumentException not thrown");
+    } catch (Exception e) {
+      assertThat(e).isInstanceOf(IllegalArgumentException.class);
+    }
   }
 
   @Test
@@ -398,14 +408,5 @@ public class ShadowSensorManagerTest {
         assertThat(appSensor.getMinDelay()).isEqualTo(actSensor.getMinDelay());
       }
     }
-  }
-
-  private static SensorEvent generateTestGravitySensorEvent() {
-    Sensor testSensor = ShadowSensor.newInstance(TYPE_GRAVITY);
-
-    return SensorEventBuilder.newBuilder()
-        .setValues(new float[] {1f, 2f, 3f})
-        .setSensor(testSensor)
-        .build();
   }
 }

@@ -282,7 +282,7 @@ public abstract class ShadowChoreographer {
 
     @Direct
     void __constructor__(Looper looper, int vsyncSource);
-
+    
     @Direct
     void __constructor__(Looper looper, long layerHandle);
 

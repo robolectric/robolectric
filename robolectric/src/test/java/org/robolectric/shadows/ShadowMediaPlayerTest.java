@@ -1664,9 +1664,12 @@ public class ShadowMediaPlayerTest {
             .get();
     AtomicBoolean ran = new AtomicBoolean(false);
     shadowMediaPlayer.postEvent(
-        (mp, smp) -> {
-          assertThat(Looper.myLooper()).isSameInstanceAs(Looper.getMainLooper());
-          ran.set(true);
+        new MediaEvent() {
+          @Override
+          public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
+            assertThat(Looper.myLooper()).isSameInstanceAs(Looper.getMainLooper());
+            ran.set(true);
+          }
         });
     shadowMainLooper().idle();
     assertThat(ran.get()).isTrue();

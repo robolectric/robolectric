@@ -6,6 +6,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
@@ -42,7 +43,7 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
    */
   @Override
   public List<String> getPreOperations() {
-    return List.copyOf(preOps);
+    return Collections.unmodifiableList(new ArrayList<>(preOps));
   }
 
   /**
@@ -53,7 +54,7 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
    */
   @Override
   public List<String> getPostOperations() {
-    return List.copyOf(postOps);
+    return Collections.unmodifiableList(new ArrayList<>(postOps));
   }
 
   /**

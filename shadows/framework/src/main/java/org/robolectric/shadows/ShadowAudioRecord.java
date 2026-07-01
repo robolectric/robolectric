@@ -78,6 +78,7 @@ public final class ShadowAudioRecord {
     return AudioSystem.SUCCESS;
   }
 
+
   @Implementation(minSdk = M)
   protected int native_read_in_byte_array(
       byte[] audioData, int offsetInBytes, int sizeInBytes, boolean isBlocking) {
@@ -98,6 +99,7 @@ public final class ShadowAudioRecord {
     return getAudioRecordSource()
         .readInFloatArray(audioData, offsetInFloats, sizeInFloats, isBlocking);
   }
+
 
   @Implementation(minSdk = M)
   protected int native_read_in_direct_buffer(Object jBuffer, int sizeInBytes, boolean isBlocking) {

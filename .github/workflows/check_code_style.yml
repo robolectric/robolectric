@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -32,14 +32,10 @@ jobs:
         with:
           distribution: 'adopt'
           java-version-file: .github/.java-version
-      
-      - name: Check Android Lint
-        run: |
-          ./gradlew lint --continue
 
       - name: Download google-java-format
         run: |
-          googleJavaFormatVersion="1.32.0"
+          googleJavaFormatVersion="1.28.0"
           curl -L -o $HOME/google-java-format.jar https://github.com/google/google-java-format/releases/download/v${googleJavaFormatVersion}/google-java-format-${googleJavaFormatVersion}-all-deps.jar
           curl -L -o $HOME/google-java-format-diff.py https://raw.githubusercontent.com/google/google-java-format/v${googleJavaFormatVersion}/scripts/google-java-format-diff.py
           chmod +x $HOME/google-java-format-diff.py

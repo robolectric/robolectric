@@ -131,7 +131,6 @@ final class LooperControlService {
 
   private static class PauseStartedNotifier extends AbstractFuture<Void>
       implements CancelableRunnableFuture {
-    @SuppressWarnings("NullArgumentForNonNullParameter")
     boolean markDone() {
       return super.set(null);
     }
@@ -293,7 +292,6 @@ final class LooperControlService {
       this.cancelable = cancelable;
     }
 
-    @SuppressWarnings("NullArgumentForNonNullParameter")
     static PropagatingRunnableFuture create(Runnable runnable, boolean cancelable) {
       return new PropagatingRunnableFuture(ListenableFutureTask.create(runnable, null), cancelable);
     }

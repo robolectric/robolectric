@@ -5,7 +5,6 @@ import static java.util.Arrays.stream;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -47,7 +46,6 @@ import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.MethodHandleDecorator;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.sandbox.ShadowMatcher;
-import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.PerfStatsPublisher;
@@ -56,7 +54,7 @@ import org.robolectric.util.Util;
 import org.robolectric.util.inject.Injector;
 
 /**
- * Sandbox test runner that runs each test in a sandboxed class loader environment. Typically, this
+ * Sandbox test runner that runs each test in a sandboxed class loader environment. Typically this
  * runner should not be directly accessed, use {@link org.robolectric.RobolectricTestRunner}
  * instead.
  */
@@ -64,7 +62,6 @@ import org.robolectric.util.inject.Injector;
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
-  public static final String CLASS_NAME_JUNIT_JUPITER_TEST = "org.junit.jupiter.api.Test";
 
   protected static Injector.Builder defaultInjector() {
     return new Injector.Builder();
@@ -99,32 +96,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     perfStatsPublisher.doFinalReportOnShutdown();
     PerfStatsCollector.getInstance().setEnabled(!reporters.isEmpty());
     decorators = Arrays.asList(injector.getInstance(MethodHandleDecorator[].class));
-
-    // The computeTestMethods is not a good place to do following validation as it will be called
-    // multiple times, and one calling is from parent class' constructor.
-    warnWhenMixingJUnitJupiterUsage();
-  }
-
-  /** Print necessary warning logs when trying to use JUnit5 with Robolectric. */
-  private void warnWhenMixingJUnitJupiterUsage() {
-    try {
-      Class<?> junit5TestClass = Class.forName(CLASS_NAME_JUNIT_JUPITER_TEST);
-      if (junit5TestClass.isAnnotation()) {
-        @SuppressWarnings("unchecked")
-        List<FrameworkMethod> junit5TestMethods =
-            getTestClass().getAnnotatedMethods((Class<? extends Annotation>) junit5TestClass);
-        if (!junit5TestMethods.isEmpty()) {
-          Logger.warn(
-              "You're using JUnit5 with Robolectric, and it might have compatibility"
-                  + " issues that cause strange problems.");
-          Logger.warn(
-              "You can try https://github.com/apter-tech/junit5-robolectric-extension if you want"
-                  + " to use JUnit5 and Robolectric, and omit this message if you're using it.");
-        }
-      }
-    } catch (ClassNotFoundException ignored) {
-      // Do nothing
-    }
   }
 
   /**
@@ -169,7 +140,10 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
           () -> {
             result.addAll(
                 (List<FrameworkMethod>)
-                    runInSandbox(sandbox, methods.get(0), unused -> mapper.map(sandbox, methods)));
+                    runInSandbox(
+                        sandbox,
+                        methods.get(0),
+                        unused -> mapper.map(sandbox, methods)));
           });
     }
     return result.build();
@@ -442,7 +416,10 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     T call(Method bootstrappedMethod) throws Throwable;
   }
 
-  private <T> T runInSandbox(Sandbox sandbox, FrameworkMethod method, SandboxCallable<T> callable) {
+  private <T> T runInSandbox(
+      Sandbox sandbox,
+      FrameworkMethod method,
+      SandboxCallable<T> callable) {
     // The method class may be different than the test class if the method annotated @Test
     // is declared on a superclass of the test.
     Method bootstrappedMethod = getBootstrappedMethod(sandbox, method);

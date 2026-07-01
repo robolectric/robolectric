@@ -1,5 +1,3 @@
-import org.robolectric.gradle.AndroidSdk
-
 plugins {
   alias(libs.plugins.robolectric.deployed.java.module)
   alias(libs.plugins.robolectric.java.module)

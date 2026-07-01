@@ -213,7 +213,16 @@ public class MotionEventTest {
   public void actionButton() {
     MotionEvent event =
         MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, X_3F, Y_4F, META_STATE);
-    assertThat(event).hasActionButton(0);
+    if (Build.VERSION.SDK_INT < VERSION_CODES.M) {
+      try {
+        assertThat(event).hasActionButton(0);
+        fail("IllegalStateException not thrown");
+      } catch (IllegalStateException e) {
+        // expected
+      }
+    } else {
+      assertThat(event).hasActionButton(0);
+    }
   }
 
   @Test

@@ -27,7 +27,9 @@ public class PerfStatsPublisher {
     perfStatsReporters.addAll(reporters);
   }
 
-  /** Register a JVM shutdown hook that calls PerfStatsReporter#finalReport on all reporters */
+  /**
+   * Register a JVM shutdown hook that calls PerfStatsReporter#finalReport on all reporters
+   */
   public void doFinalReportOnShutdown() {
     doFinalReportOnShutdown(() -> {});
   }

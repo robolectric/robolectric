@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import com.google.common.collect.ImmutableSet;
-import org.jspecify.annotations.Nullable;
 import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.SQLiteMode.Mode;
 import org.robolectric.config.ConfigurationRegistry;
@@ -23,7 +22,7 @@ public class SQLiteShadowPicker<T> implements ShadowPicker<T> {
   }
 
   @Override
-  public @Nullable Class<? extends T> pickShadowClass() {
+  public Class<? extends T> pickShadowClass() {
     if (ConfigurationRegistry.get(SQLiteMode.Mode.class) == Mode.NATIVE) {
       return nativeShadowClass;
     } else {

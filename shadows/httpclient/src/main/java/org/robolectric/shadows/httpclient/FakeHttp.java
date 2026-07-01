@@ -5,12 +5,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 
-/**
- * Collection of static methods used interact with HTTP requests / responses.
- *
- * @deprecated Apache HTTP client is deprecated in Android. Please migrate to an other solution
- */
-@Deprecated
+/** Collection of static methods used interact with HTTP requests / responses. */
 public class FakeHttp {
   private static FakeHttpLayer instance = new FakeHttpLayer();
 

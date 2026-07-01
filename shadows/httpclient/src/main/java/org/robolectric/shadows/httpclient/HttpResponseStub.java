@@ -9,10 +9,6 @@ import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.params.HttpParams;
 
-/**
- * @deprecated Apache HTTP client is deprecated in Android. Please migrate to an other solution
- */
-@Deprecated
 public class HttpResponseStub implements HttpResponse {
   @Override
   public StatusLine getStatusLine() {

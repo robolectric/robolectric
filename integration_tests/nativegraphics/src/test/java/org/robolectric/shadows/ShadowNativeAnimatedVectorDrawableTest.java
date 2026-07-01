@@ -36,6 +36,7 @@ public class ShadowNativeAnimatedVectorDrawableTest {
   private static final int IMAGE_WIDTH = 64;
   private static final int IMAGE_HEIGHT = 64;
 
+
   private static final int RES_ID = R.drawable.animation_vector_drawable_grouping_1;
 
   private Resources resources;

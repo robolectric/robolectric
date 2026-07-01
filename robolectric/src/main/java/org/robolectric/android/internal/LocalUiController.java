@@ -32,9 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLooper;
@@ -45,23 +43,10 @@ import org.robolectric.shadows.ShadowUiAutomation;
 public class LocalUiController implements UiController {
 
   private static final String TAG = "LocalUiController";
-  private static final String THREAD_NAME_PREFIX = "LocalUiController-";
 
   private static long idlingResourceErrorTimeoutMs = SECONDS.toMillis(26);
   private final HashSet<IdlingResourceProxyImpl> syncedIdlingResources = new HashSet<>();
-  private final ExecutorService looperIdlingExecutor =
-      Executors.newCachedThreadPool(
-          new ThreadFactory() {
-            private final AtomicInteger count = new AtomicInteger(1);
-            private final ThreadFactory defaultFactory = Executors.defaultThreadFactory();
-
-            @Override
-            public Thread newThread(Runnable r) {
-              Thread thread = defaultFactory.newThread(r);
-              thread.setName(THREAD_NAME_PREFIX + count.getAndIncrement());
-              return thread;
-            }
-          });
+  private final ExecutorService looperIdlingExecutor = Executors.newCachedThreadPool();
 
   /**
    * Sets the error timeout for idling resources.

@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -117,11 +118,11 @@ public class ShadowAppOpsManager {
    * modification will still be applied.
    *
    * <p>This method is public for testing {@link #checkOpNoThrow}. If {@link #checkOpNoThrow} is
-   * called afterward with the {@code op}, {@code uid}, and {@code packageName} provided, it will
+   * called afterwards with the {@code op}, {@code uid}, and {@code packageName} provided, it will
    * return the {@code mode} set here.
    *
-   * <p>The mode set by this method takes precedence over the mode set by {@link
-   * AppOpsManager#setMode(String, int, String, int)}. This may not reflect the true implementation.
+   * <p>The mode set by this method takes precedence over the mode set by {@link #setMode(String,
+   * int, String, int)}. This may not reflect the true implementation.
    *
    * @param op The operation to modify. One of the OPSTR_* constants.
    * @param uid The user id of the application whose mode will be changed.
@@ -139,7 +140,7 @@ public class ShadowAppOpsManager {
    * Int version of {@link #setMode(String, int, String, int)}.
    *
    * <p>This method is public for testing {@link #checkOpNoThrow}. If {@link #checkOpNoThrow} is
-   * called afterward with the {@code op}, {@code uid}, and {@code packageName} provided, it will
+   * called afterwards with the {@code op}, {@code uid}, and {@code packageName} provided, it will
    * return the {@code mode} set here.
    */
   @Implementation
@@ -164,7 +165,7 @@ public class ShadowAppOpsManager {
    * Change the operating mode for the given op in the given uid space.
    *
    * <p>This method is public for testing {@link #checkOpNoThrow}. If {@link #checkOpNoThrow} is
-   * called afterward with the {@code op} and {@code uid} provided, and any {@code packageName}, it
+   * called afterwards with the {@code op} and {@code uid} provided, and any {@code packageName}, it
    * will return the {@code mode} set here.
    *
    * <p>The mode set by {@link #setMode(String, int, String, int)} takes precedence over the mode
@@ -185,7 +186,7 @@ public class ShadowAppOpsManager {
    * Int version of {@link #setUidMode(String, int, int)}.
    *
    * <p>This method is public for testing {@link #checkOpNoThrow}. If {@link #checkOpNoThrow} is
-   * called afterward with the {@code op}, {@code ui}, and {@code packageName} provided, it will
+   * called afterwards with the {@code op}, {@code ui}, and {@code packageName} provided, it will
    * return the {@code mode} set here.
    */
   @Implementation(minSdk = M)
@@ -233,7 +234,8 @@ public class ShadowAppOpsManager {
     List<PackageOps> result;
 
     if (ops == null) {
-      result = getPackagesForOps((int[]) null);
+      int[] intOps = null;
+      result = getPackagesForOps(intOps);
     } else {
       List<Integer> intOpsList = new ArrayList<>();
       for (String op : ops) {
@@ -508,7 +510,8 @@ public class ShadowAppOpsManager {
   @RequiresPermission(android.Manifest.permission.GET_APP_OPS_STATS)
   protected List<PackageOps> getOpsForPackage(int uid, String packageName, String[] ops) {
     if (ops == null) {
-      return getOpsForPackage(uid, packageName, (int[]) null);
+      int[] intOps = null;
+      return getOpsForPackage(uid, packageName, intOps);
     }
     Map<String, Integer> strOpToIntOp =
         ReflectionHelpers.getStaticField(AppOpsManager.class, "sOpStrToOp");
@@ -603,7 +606,10 @@ public class ShadowAppOpsManager {
         Executor executor =
             reflector(OnOpNotedCallbackReflector.class, callback).getAsyncExecutor();
         if (executor != null) {
-          executor.execute(() -> callback.onAsyncNoted(asyncOp));
+          executor.execute(
+              () -> {
+                callback.onAsyncNoted(asyncOp);
+              });
         }
       }
     }
@@ -710,7 +716,9 @@ public class ShadowAppOpsManager {
     public ModeAndException(int mode, String[] exceptionPackages) {
       this.mode = mode;
       this.exceptionPackages =
-          exceptionPackages == null ? Collections.emptyList() : List.of(exceptionPackages);
+          exceptionPackages == null
+              ? Collections.emptyList()
+              : Collections.unmodifiableList(Arrays.asList(exceptionPackages));
     }
   }
 

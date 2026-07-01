@@ -1,38 +1,38 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.robolectric.gradle.AndroidSdk
 
 plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.detekt)
+  alias(libs.plugins.kotlin.android)
   alias(libs.plugins.robolectric.android.project)
   alias(libs.plugins.robolectric.spotless)
 }
 
 android {
-  compileSdk = 36
+  compileSdk = 35
   namespace = "org.robolectric.sparsearray"
 
-  defaultConfig { minSdk = 23 }
+  defaultConfig { minSdk = 21 }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
   }
 
   testOptions {
-    targetSdk = 36
+    targetSdk = 35
     unitTests.isIncludeAndroidResources = true
   }
-}
 
-androidComponents {
-  beforeVariants { variantBuilder ->
-    // sparsearray does not support AndroidTest.
-    variantBuilder.enableAndroidTest = false
+  androidComponents {
+    beforeVariants(selector().all()) { variantBuilder ->
+      // sparsearray does not support AndroidTest.
+      variantBuilder.enableAndroidTest = false
+    }
   }
 }
 
-kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_11 } }
+kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_1_8 } }
 
 dependencies {
   compileOnly(AndroidSdk.MAX_SDK.coordinates)

@@ -33,6 +33,8 @@ public class ShadowBluetoothSocket {
   private final Semaphore connectSemaphore = new Semaphore(1);
   private final AtomicBoolean wasBlockRequested = new AtomicBoolean(false);
 
+
+
   private enum SocketState {
     INIT,
     CONNECTED,

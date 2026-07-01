@@ -4,15 +4,16 @@ plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.detekt)
+  alias(libs.plugins.kotlin.android)
   alias(libs.plugins.robolectric.android.project)
   alias(libs.plugins.robolectric.spotless)
 }
 
 android {
   namespace = "org.robolectric.integrationtests.composeui"
-  compileSdk = 36
+  compileSdk = 35
 
-  defaultConfig { minSdk = 23 }
+  defaultConfig { minSdk = 21 }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -22,15 +23,15 @@ android {
   buildFeatures { compose = true }
 
   testOptions {
-    targetSdk = 36
-    unitTests.isIncludeAndroidResources = true
+    targetSdk = 35
+    unitTests { isIncludeAndroidResources = true }
   }
-}
 
-androidComponents {
-  beforeVariants { variantBuilder ->
-    // composeui does not support AndroidTest now.
-    variantBuilder.enableAndroidTest = false
+  androidComponents {
+    beforeVariants(selector().all()) { variantBuilder ->
+      // composeui does not support AndroidTest now.
+      variantBuilder.enableAndroidTest = false
+    }
   }
 }
 

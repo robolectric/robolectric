@@ -61,7 +61,6 @@ public class MavenArtifactFetcher {
     this.executorService = executorService;
   }
 
-  @SuppressWarnings({"FutureTransformAsync", "NullArgumentForNonNullParameter"})
   public void fetchArtifact(MavenJarArtifact artifact) {
     // Assume that if the file exists in the local repository, it has been fetched successfully.
     if (new File(localRepositoryDir, artifact.jarPath()).exists()) {
@@ -230,7 +229,6 @@ public class MavenArtifactFetcher {
 
     @Nonnull
     @Override
-    @SuppressWarnings("NullArgumentForNonNullParameter")
     public ListenableFuture<Void> call() throws Exception {
       URLConnection connection;
       if (this.proxyHost != null && !this.proxyHost.isEmpty() && this.proxyPort > 0) {

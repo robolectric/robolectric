@@ -43,7 +43,6 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -534,8 +533,11 @@ public class ShadowInstrumentation {
   }
 
   private void sortByPriority(List<Wrapper> wrappers) {
-    wrappers.sort(
-        Comparator.<Wrapper>comparingInt(w -> w.getIntentFilter().getPriority()).reversed());
+    Collections.sort(
+        wrappers,
+        (o1, o2) ->
+            Integer.compare(
+                o2.getIntentFilter().getPriority(), o1.getIntentFilter().getPriority()));
   }
 
   List<Intent> getBroadcastIntents() {
