@@ -79,6 +79,12 @@ kapt {
 }
 ```
 
+### KSP processor module
+
+For Kotlin shadow packages, Robolectric provides a separate KSP processor in the `processor-ksp`
+module so that this (javac) `processor` artifact stays free of any Kotlin/KSP dependency. See
+[`processor-ksp/README.md`](../processor-ksp/README.md).
+
 ## Future enhancements
 
 In developing RAP I forsaw a number of enhancements that would be potentially useful:

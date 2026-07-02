@@ -16,6 +16,10 @@ gradlePlugin {
       id = "org.robolectric.gradle.DeployedRoboJavaModulePlugin"
       implementationClass = "org.robolectric.gradle.DeployedRoboJavaModulePlugin"
     }
+    register("DeployedRoboKotlinModulePlugin") {
+      id = "org.robolectric.gradle.DeployedRoboKotlinModulePlugin"
+      implementationClass = "org.robolectric.gradle.DeployedRoboKotlinModulePlugin"
+    }
     register("GradleManagedDevicePlugin") {
       id = "org.robolectric.gradle.GradleManagedDevicePlugin"
       implementationClass = "org.robolectric.gradle.GradleManagedDevicePlugin"
