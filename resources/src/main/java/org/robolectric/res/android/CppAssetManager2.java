@@ -18,7 +18,6 @@ import static org.robolectric.res.android.Util.isTruthy;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1442,10 +1441,10 @@ public class CppAssetManager2 {
       // Merge the flags from this style.
       type_spec_flags_ |= bag.type_spec_flags;
 
-      int last_type_idx = -1;
-      int last_package_idx = -1;
-      ThemePackage last_package = null;
-      ThemeType last_type = null;
+      int lastTypeIdx = -1;
+      int lastPackageIdx = -1;
+      ThemePackage lastPackage = null;
+      ThemeType lastType = null;
 
       // Iterate backwards, because each bag is sorted in ascending key ID order, meaning we will
       // only
@@ -1454,16 +1453,16 @@ public class CppAssetManager2 {
       // const auto bag_iter_end = reverse_bag_iterator(begin(bag));
       //     for (auto bag_iter = reverse_bag_iterator(end(bag)); bag_iter != bag_iter_end;
       // ++bag_iter) {
-      List<Entry> bagEntries = new ArrayList<>(Arrays.asList(bag.entries));
-      Collections.reverse(bagEntries);
-      for (ResolvedBag.Entry bag_iter : bagEntries) {
+      ResolvedBag.Entry[] bagEntries = bag.entries;
+      for (int i = bagEntries.length - 1; i >= 0; i--) {
+        ResolvedBag.Entry bagIter = bagEntries[i];
         //   final int attr_resid = bag_iter.key;
-        final int attr_resid = bag_iter == null ? 0 : bag_iter.key;
+        final int attrResid = bagIter == null ? 0 : bagIter.key;
 
         // If the resource ID passed in is not a style, the key can be some other identifier that is
         // not
         // a resource ID. We should fail fast instead of operating with strange resource IDs.
-        if (!is_valid_resid(attr_resid)) {
+        if (!is_valid_resid(attrResid)) {
           return false;
         }
 
@@ -1471,62 +1470,62 @@ public class CppAssetManager2 {
         // upon lookup. Instead, we keep space for the type ID 0 in our data structures. Since
         // the construction of this type is guarded with a resource ID check, it will never be
         // populated, and querying type ID 0 will always fail.
-        int package_idx = get_package_id(attr_resid);
-        int type_idx = get_type_id(attr_resid);
-        int entry_idx = get_entry_id(attr_resid);
+        int packageIdx = get_package_id(attrResid);
+        int typeIdx = get_type_id(attrResid);
+        int entryIdx = get_entry_id(attrResid);
 
-        if (last_package_idx != package_idx) {
-          ThemePackage package_ = packages_[package_idx];
-          if (package_ == null) {
-            package_ = packages_[package_idx] = new ThemePackage();
+        if (lastPackageIdx != packageIdx) {
+          ThemePackage themePackage = packages_[packageIdx];
+          if (themePackage == null) {
+            themePackage = packages_[packageIdx] = new ThemePackage();
           }
-          last_package_idx = package_idx;
-          last_package = package_;
-          last_type_idx = -1;
+          lastPackageIdx = packageIdx;
+          lastPackage = themePackage;
+          lastTypeIdx = -1;
         }
 
-        if (last_type_idx != type_idx) {
-          ThemeType type = last_package.types[type_idx];
+        if (lastTypeIdx != typeIdx) {
+          ThemeType type = lastPackage.types[typeIdx];
           if (type == null) {
-            // Allocate enough memory to contain this entry_idx. Since we're iterating in reverse
+            // Allocate enough memory to contain this entryIdx. Since we're iterating in reverse
             // over
             // a sorted list of attributes, this shouldn't be resized again during this method call.
             // type.reset(reinterpret_cast<ThemeType*>(
-            //     calloc(sizeof(ThemeType) + (entry_idx + 1) * sizeof(ThemeEntry), 1)));
-            type = last_package.types[type_idx] = new ThemeType();
-            type.entries = new ThemeEntry[entry_idx + 1];
-            type.entry_count = entry_idx + 1;
-          } else if (entry_idx >= type.entry_count) {
-            // Reallocate the memory to contain this entry_idx. Since we're iterating in reverse
+            //     calloc(sizeof(ThemeType) + (entryIdx + 1) * sizeof(ThemeEntry), 1)));
+            type = lastPackage.types[typeIdx] = new ThemeType();
+            type.entries = new ThemeEntry[entryIdx + 1];
+            type.entry_count = entryIdx + 1;
+          } else if (entryIdx >= type.entry_count) {
+            // Reallocate the memory to contain this entryIdx. Since we're iterating in reverse
             // over
             // a sorted list of attributes, this shouldn't be resized again during this method call.
-            int new_count = entry_idx + 1;
+            int newCount = entryIdx + 1;
             // type.reset(reinterpret_cast<ThemeType*>(
             //     realloc(type.release(), sizeof(ThemeType) + (new_count * sizeof(ThemeEntry)))));
             ThemeEntry[] oldEntries = type.entries;
-            type.entries = new ThemeEntry[new_count];
+            type.entries = new ThemeEntry[newCount];
             System.arraycopy(oldEntries, 0, type.entries, 0, oldEntries.length);
 
             // Clear out the newly allocated space (which isn't zeroed).
             // memset(type.entries + type.entry_count, 0,
             //     (new_count - type.entry_count) * sizeof(ThemeEntry));
-            type.entry_count = new_count;
+            type.entry_count = newCount;
           }
-          last_type_idx = type_idx;
-          last_type = type;
+          lastTypeIdx = typeIdx;
+          lastType = type;
         }
 
-        ThemeEntry entry = last_type.entries[entry_idx];
+        ThemeEntry entry = lastType.entries[entryIdx];
         if (entry == null) {
-          entry = last_type.entries[entry_idx] = new ThemeEntry();
+          entry = lastType.entries[entryIdx] = new ThemeEntry();
           entry.value = new Res_value();
         }
         if (force
             || (entry.value.dataType == Res_value.TYPE_NULL
                 && entry.value.data != Res_value.DATA_NULL_EMPTY)) {
-          entry.cookie = bag_iter.cookie;
+          entry.cookie = bagIter.cookie;
           entry.type_spec_flags |= bag.type_spec_flags;
-          entry.value = bag_iter.value;
+          entry.value = bagIter.value;
         }
       }
       return true;
@@ -1677,15 +1676,13 @@ public class CppAssetManager2 {
           ThemeEntry[] newEntries = copied_data.entries = new ThemeEntry[type.entry_count];
           for (int i = 0; i < type.entry_count; i++) {
             ThemeEntry entry = type.entries[i];
-            ThemeEntry newEntry = new ThemeEntry();
             if (entry != null) {
+              ThemeEntry newEntry = new ThemeEntry();
               newEntry.cookie = entry.cookie;
               newEntry.type_spec_flags = entry.type_spec_flags;
               newEntry.value = entry.value.copy();
-            } else {
-              newEntry.value = Res_value.NULL_VALUE;
+              newEntries[i] = newEntry;
             }
-            newEntries[i] = newEntry;
           }
 
           packages_[p].types[t] = copied_data;

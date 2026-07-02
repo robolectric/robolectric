@@ -26,7 +26,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
-import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_header;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
 
@@ -226,20 +225,20 @@ public class ResXMLTree {
 
       final short headerSize = dtohs(node.header.headerSize);
       final int size = dtohl(node.header.size);
-      //        final ResXMLTree_attrExt attrExt = (final ResXMLTree_attrExt*)
-      //      (((final uint8_t*)node) + headerSize);
-      ResXMLTree_attrExt attrExt =
-          new ResXMLTree_attrExt(mBuffer.buf, node.myOffset() + headerSize);
+      int attrExtOffset = node.myOffset() + headerSize;
       // check for sensical values pulled out of the stream so far...
-      if ((size >= headerSize + SIZEOF_RESXMLTREE_ATTR_EXT /*sizeof(ResXMLTree_attrExt)*/)
-          && (attrExt.myOffset() > node.myOffset())) {
-        final int attrSize = ((int) dtohs(attrExt.attributeSize)) * dtohs(attrExt.attributeCount);
-        if ((dtohs(attrExt.attributeStart) + attrSize) <= (size - headerSize)) {
+      if ((size >= headerSize + SIZEOF_RESXMLTREE_ATTR_EXT) && (attrExtOffset > node.myOffset())) {
+        ByteBuffer buf = mBuffer.buf;
+        short attributeStart = dtohs(buf.getShort(attrExtOffset + 8));
+        short attributeSize = dtohs(buf.getShort(attrExtOffset + 10));
+        short attributeCount = dtohs(buf.getShort(attrExtOffset + 12));
+        final int attrSize = ((int) attributeSize) * attributeCount;
+        if ((attributeStart + attrSize) <= (size - headerSize)) {
           return NO_ERROR;
         }
         ALOGW(
             "Bad XML block: node attributes use 0x%x bytes, only have 0x%x bytes\n",
-            (dtohs(attrExt.attributeStart) + attrSize), (size - headerSize));
+            (attributeStart + attrSize), (size - headerSize));
       } else {
         ALOGW("Bad XML start block: node header size 0x%x, size 0x%x\n", (int) headerSize, size);
       }
