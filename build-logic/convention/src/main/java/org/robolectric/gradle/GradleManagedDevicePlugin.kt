@@ -1,6 +1,8 @@
 package org.robolectric.gradle
 
 import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.ManagedVirtualDevice.PageAlignment.DEFAULT_FOR_SDK_VERSION
+import com.android.build.api.dsl.ManagedVirtualDevice.PageAlignment.FORCE_16KB_PAGES
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.findByType
@@ -22,13 +24,14 @@ class GradleManagedDevicePlugin : Plugin<Project> {
       animationsDisabled = true
 
       managedDevices {
-        // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi`ExpectedApiLevelDebugAndroidTest
+        // ./gradlew -Pandroid.sdk.channel=3 nexusOneApiExpectedApiLevelDebugAndroidTest
         // e.g. ./gradlew -Pandroid.sdk.channel=3 nexusOneApi36DebugAndroidTest
         API_LEVELS.forEach { apiLevel ->
           localDevices.register("nexusOneApi$apiLevel") {
             device = "Nexus One"
             this.apiLevel = apiLevel
-            systemImageSource = "aosp-atd"
+            systemImageSource = if (apiLevel == 37) "google" else "aosp-atd"
+            pageAlignment = if (apiLevel == 37) FORCE_16KB_PAGES else DEFAULT_FOR_SDK_VERSION
           }
         }
         // ./gradlew -Pandroid.sdk.channel=3 nexusOneIntegrationTestGroupDebugAndroidTest
@@ -40,6 +43,6 @@ class GradleManagedDevicePlugin : Plugin<Project> {
   } // apply
 
   private companion object {
-    private val API_LEVELS = 30..36
+    private val API_LEVELS = 30..37
   }
 }
