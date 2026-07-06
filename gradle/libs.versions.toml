@@ -28,7 +28,7 @@ error-prone = "2.50.0"
 error-prone-gradle = "5.1.0"
 
 # https://kotlinlang.org/docs/releases.html#release-details
-kotlin = "2.3.21"
+kotlin = "2.4.0"
 
 # https://github.com/google/ksp/releases
 ksp = "2.3.10"
