@@ -141,13 +141,13 @@ public class ShadowAudioTrack {
     checkArgument(!isPcm(format.getEncoding()));
 
     if (getApiLevel() <= BAKLAVA) {
-    directSupportedFormats.put(
-        new AudioFormatInfo(
-            format.getEncoding(),
-            format.getSampleRate(),
-            format.getChannelMask(),
-            format.getChannelIndexMask()),
-        new AudioAttributesInfo(attr.getContentType(), attr.getUsage(), attr.getFlags()));
+      directSupportedFormats.put(
+          new AudioFormatInfo(
+              format.getEncoding(),
+              format.getSampleRate(),
+              format.getChannelMask(),
+              format.getChannelIndexMask()),
+          new AudioAttributesInfo(attr.getContentType(), attr.getUsage(), attr.getFlags()));
     } else {
       directSupportedFormats.put(
           new AudioFormatInfo(

@@ -76,7 +76,7 @@ public class ShadowIBluetoothManager {
       return false;
     }
     return true;
-    }
+  }
 
   /**
    * Allows the internal BluetoothProfileConnector associated with a {@link BluetoothProfile} to
@@ -107,4 +107,3 @@ public class ShadowIBluetoothManager {
     void onBluetoothServiceUp(IBluetooth bluetoothService);
   }
 }
-

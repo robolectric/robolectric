@@ -40,8 +40,6 @@ public @interface Implements {
    */
   boolean isInAndroidSdk() default true;
 
-
-
   /** If specified, the shadow class will be applied only for this SDK or greater. */
   int minSdk() default -1;
 

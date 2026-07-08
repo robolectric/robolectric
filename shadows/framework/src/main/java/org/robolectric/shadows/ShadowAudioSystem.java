@@ -154,14 +154,14 @@ public class ShadowAudioSystem {
     requireNonNull(format, "Illegal null AudioFormat");
     requireNonNull(attr, "Illegal null AudioAttributes");
     if (getApiLevel() <= BAKLAVA) {
-    offloadPlaybackSupportTable.put(
-        new OffloadSupportFormat(
-            format.getEncoding(),
-            format.getSampleRate(),
-            format.getChannelMask(),
-            format.getChannelIndexMask()),
-        attr.getVolumeControlStream(),
-        offloadSupport);
+      offloadPlaybackSupportTable.put(
+          new OffloadSupportFormat(
+              format.getEncoding(),
+              format.getSampleRate(),
+              format.getChannelMask(),
+              format.getChannelIndexMask()),
+          attr.getVolumeControlStream(),
+          offloadSupport);
     } else {
       offloadPlaybackSupportTable.put(
           new OffloadSupportFormat(

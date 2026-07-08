@@ -12,26 +12,25 @@ public class UnsafeAccess {
   private static final Method defineClassMethod;
 
   static {
-      try {
-        privateLookupInMethod =
-            MethodHandles.class.getMethod(
-                "privateLookupIn", Class.class, MethodHandles.Lookup.class);
-        defineClassMethod = MethodHandles.Lookup.class.getMethod("defineClass", byte[].class);
-      } catch (NoSuchMethodException e) {
-        throw new LinkageError("Failed to find defineClass method", e);
-      }
+    try {
+      privateLookupInMethod =
+          MethodHandles.class.getMethod("privateLookupIn", Class.class, MethodHandles.Lookup.class);
+      defineClassMethod = MethodHandles.Lookup.class.getMethod("defineClass", byte[].class);
+    } catch (NoSuchMethodException e) {
+      throw new LinkageError("Failed to find defineClass method", e);
     }
+  }
 
   public static <T> Class<?> defineClass(
       Class<T> iClass, String reflectorClassName, byte[] bytecode) {
-      MethodHandles.Lookup lookup = MethodHandles.lookup();
+    MethodHandles.Lookup lookup = MethodHandles.lookup();
 
-      try {
-        MethodHandles.Lookup privateLookup =
-            (Lookup) privateLookupInMethod.invoke(lookup, iClass, lookup);
-        return (Class<?>) defineClassMethod.invoke(privateLookup, bytecode);
-      } catch (IllegalAccessException | InvocationTargetException e) {
-        throw new AssertionError(e);
-      }
+    try {
+      MethodHandles.Lookup privateLookup =
+          (Lookup) privateLookupInMethod.invoke(lookup, iClass, lookup);
+      return (Class<?>) defineClassMethod.invoke(privateLookup, bytecode);
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw new AssertionError(e);
     }
+  }
 }

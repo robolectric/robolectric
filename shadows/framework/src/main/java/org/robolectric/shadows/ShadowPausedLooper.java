@@ -614,7 +614,6 @@ public final class ShadowPausedLooper extends ShadowLooper {
     }
   }
 
-
   static Handler createAsyncHandler(Looper looper) {
     if (RuntimeEnvironment.getApiLevel() >= 28) {
       // createAsync is only available in API 28+

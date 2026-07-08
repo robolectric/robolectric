@@ -382,7 +382,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     if (uncaughtException != null) {
       throw new IllegalStateException(
           "Looper thread has died due to an uncaught exception", uncaughtException);
-      }
+    }
   }
 
   /** Accessor interface for {@link MessageQueue}'s internals. */

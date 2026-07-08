@@ -768,5 +768,4 @@ public class ShadowWindowManagerGlobal {
   interface InsetsVisibilitiesReflector {
     boolean getVisibility(int type);
   }
-
 }
