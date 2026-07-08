@@ -19,14 +19,14 @@ permissions:
   contents: read
 
 env:
-  cache-version: v2
+  cache-version: v3
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -34,7 +34,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Build
         run: |
@@ -47,10 +47,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-versions: [ '23,24,25', '26,27,28', '29,30,31', '32,33', '34,35,36' ]
+        api-versions: [ '23,24,25', '26,27,28', '29,30,31', '32,33,34', '35,36' ]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -58,7 +58,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Run unit tests
         run: |
@@ -71,7 +71,7 @@ jobs:
           -x :integration_tests:roborazzi:test
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test_results_${{ matrix.api-versions }}
@@ -86,7 +86,7 @@ jobs:
       # Allow tests to continue on other devices if they fail on one device.
       fail-fast: false
       matrix:
-        api-level: [ 29, 35 ]
+        api-level: [ 30, 36 ]
 
     steps:
       - name: Free disk space
@@ -95,7 +95,7 @@ jobs:
           tool-cache: true
           android: false
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -103,7 +103,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Enable KVM group perms
         run: |
@@ -114,14 +114,11 @@ jobs:
       - name: Determine emulator target
         id: determine-target
         run: |
-          TARGET="google_apis"
-          if [[ ${{ matrix.api-level }} -ge 34 ]]; then
-            TARGET="aosp_atd"
-          fi
+          TARGET="aosp_atd"
           echo "TARGET=$TARGET" >> $GITHUB_OUTPUT
 
       - name: AVD cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: avd-cache
         with:
           path: |
@@ -136,6 +133,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           target: ${{ steps.determine-target.outputs.TARGET }}
           arch: x86_64
+          channel: canary
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
@@ -149,6 +147,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           target: ${{ steps.determine-target.outputs.TARGET }}
           arch: x86_64
+          channel: canary
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
@@ -159,7 +158,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.api-level }}-${{ steps.determine-target.outputs.TARGET }}-${{ matrix.shard }}
           path: |
@@ -174,7 +173,7 @@ jobs:
     needs: unit-tests
     if: github.repository == 'robolectric/robolectric' && github.ref == 'refs/heads/master'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -182,7 +181,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Publish
         run: ./gradlew publish --stacktrace

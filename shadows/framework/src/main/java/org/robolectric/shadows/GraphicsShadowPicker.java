@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 
+import org.jspecify.annotations.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
@@ -21,7 +22,7 @@ public class GraphicsShadowPicker<T> implements ShadowPicker<T> {
   }
 
   @Override
-  public Class<? extends T> pickShadowClass() {
+  public @Nullable Class<? extends T> pickShadowClass() {
     if (RuntimeEnvironment.getApiLevel() >= getMinApiLevel()
         && ConfigurationRegistry.get(GraphicsMode.Mode.class) == Mode.NATIVE) {
       return nativeShadowClass;

@@ -1,4 +1,5 @@
 import org.gradle.internal.jvm.Jvm
+import org.robolectric.gradle.AndroidSdk
 
 plugins {
   alias(libs.plugins.robolectric.deployed.java.module)
@@ -48,12 +49,9 @@ dependencies {
   api(libs.gson)
   implementation(libs.auto.common)
 
-  val toolsJar = Jvm.current().getToolsJar()
-  if (toolsJar != null) {
-    implementation(files(toolsJar))
-  }
+  val toolsJar: File? = Jvm.current().getToolsJar()
+  toolsJar?.let { implementation(files(it)) }
 
-  testImplementation(libs.javax.annotation.api)
   testImplementation(libs.junit4)
   testImplementation(libs.mockito)
   testImplementation(libs.mockito.subclass)

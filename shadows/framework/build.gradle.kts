@@ -1,3 +1,5 @@
+import org.robolectric.gradle.AndroidSdk
+
 plugins {
   alias(libs.plugins.robolectric.deployed.java.module)
   alias(libs.plugins.robolectric.java.module)
@@ -9,18 +11,19 @@ shadows {
   sdkCheckMode = "ERROR"
 }
 
-val sqlite4java = configurations.create("sqlite4java")
-val sqlite4javaVersion = libs.versions.sqlite4java.get()
+val sqlite4java = configurations.register("sqlite4java")
+val sqlite4javaVersion = libs.versions.sqlite4java
 
-val copySqliteNatives by
-  tasks.registering(Copy::class) {
+val copySqliteNatives =
+  tasks.register<Copy>("copySqliteNatives") {
     from(sqlite4java) {
       include("**/*.dll")
       include("**/*.so")
       include("**/*.dylib")
 
+      val sqliteVersion = sqlite4javaVersion.get()
       rename { filename ->
-        val filenameMatch = "^([^\\-]+)-(.+)-${sqlite4javaVersion}\\.(.+)".toRegex().find(filename)
+        val filenameMatch = "^([^\\-]+)-(.+)-$sqliteVersion\\.(.+)".toRegex().find(filename)
         if (filenameMatch != null) {
           val platformFilename = filenameMatch.groupValues[1]
           val platformFolder = filenameMatch.groupValues[2]
@@ -32,7 +35,7 @@ val copySqliteNatives by
         }
       }
     }
-    into(project.file(layout.buildDirectory.dir("resources/main/sqlite4java")))
+    into(project.layout.buildDirectory.dir("resources/main/sqlite4java"))
   }
 
 tasks.jar.configure { dependsOn(copySqliteNatives) }
@@ -43,14 +46,12 @@ dependencies {
   api(project(":annotations"))
   api(project(":nativeruntime"))
   api(project(":resources"))
-  api(project(":pluginapi"))
   api(project(":sandbox"))
   api(project(":shadowapi"))
   api(project(":utils"))
   api(project(":utils:reflector"))
 
   api(variantOf(libs.androidx.test.monitor) { artifactType("aar") })
-  implementation(libs.error.prone.annotations)
   compileOnly(libs.findbugs.jsr305)
   api(libs.sqlite4java)
   compileOnly(AndroidSdk.MAX_SDK.coordinates)

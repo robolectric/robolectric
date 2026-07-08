@@ -207,8 +207,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       reflector(ContextImplReflector.class, activityContext).setOuterContext(realActivity);
       // This is not what the SDK does but for backwards compatibility with previous versions of
       // robolectric, which did not use a separate activity context, move the theme from the
-      // application context (previously tests would configure the theme on the application context
-      // with the expectation that it modify the activity).
+      // application context. (Previously tests would configure the theme on the application context
+      // with the expectation that it modify the activity.)
       if (baseContext.getThemeResId() != 0) {
         activityContext.setTheme(baseContext.getThemeResId());
       }
@@ -886,8 +886,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   /**
    * Starts a lock task.
    *
-   * <p>The status of the lock task can be verified using {@link #isLockTask} method. Otherwise this
-   * implementation has no effect.
+   * <p>The status of the lock task can be verified using {@link #isLockTask} method. Otherwise,
+   * this implementation has no effect.
    */
   @Implementation
   protected void startLockTask() {
@@ -898,8 +898,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   /**
    * Stops a lock task.
    *
-   * <p>The status of the lock task can be verified using {@link #isLockTask} method. Otherwise this
-   * implementation has no effect.
+   * <p>The status of the lock task can be verified using {@link #isLockTask} method. Otherwise,
+   * this implementation has no effect.
    */
   @Implementation
   protected void stopLockTask() {

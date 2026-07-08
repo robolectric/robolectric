@@ -1,5 +1,6 @@
 import groovy.util.Node
 import org.gradle.plugins.ide.idea.model.IdeaModel
+import org.robolectric.gradle.AndroidSdk
 import org.robolectric.gradle.ShadowsPlugin.ShadowsPluginExtension
 
 // For use of external initialization scripts...
@@ -17,8 +18,6 @@ plugins {
   alias(libs.plugins.detekt) apply false
   alias(libs.plugins.error.prone)
   alias(libs.plugins.idea)
-  alias(libs.plugins.kotlin.android) apply false
-  alias(libs.plugins.kotlin.jvm) apply false
   alias(libs.plugins.robolectric.spotless)
   alias(libs.plugins.robolectric.javadoc)
   alias(libs.plugins.roborazzi) apply false
@@ -114,11 +113,12 @@ gradle.projectsEvaluated {
 
         noTimestamp(true)
         links(
-          "https://docs.oracle.com/javase/8/docs/api/",
+          "https://docs.oracle.com/en/java/javase/11/docs/api/",
           "https://developer.android.com/reference/",
         )
         // Set Javadoc source to JDK 8 to avoid unnamed module problem
-        // when running 'aggregateJavadocs' with OpenJDK 13+.
+        // when running 'aggregateJavadocs' with OpenJDK 13+, although
+        // the source/target version has changed to JDK11.
         source("8")
         header = headerHtml
         footer = headerHtml

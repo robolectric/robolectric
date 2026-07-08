@@ -6,6 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.time.Duration;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A {@link org.robolectric.pluginapi.config.Configurer} annotation for controlling Robolectric's
@@ -141,5 +142,5 @@ public @interface LooperMode {
   }
 
   /** Set the Looper mode. */
-  Mode value();
+  @NonNull Mode value();
 }

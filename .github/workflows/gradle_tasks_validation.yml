@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -31,13 +31,14 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Run aggregateDocs
-        run: ./gradlew clean aggregateDocs
+        # Disable parallel as a workaround for Gradle 9's concurrent model.
+        run: ./gradlew clean aggregateDocs --no-parallel
 
       - name: Upload docs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: robolectric-javadoc-artifacts
           path: build/docs
@@ -46,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -54,7 +55,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Run javadocJar
         run: ./gradlew clean javadocJar
@@ -64,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -72,22 +73,22 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Run :preinstrumented:instrumentAll
         run: ./gradlew :preinstrumented:instrumentAll
 
-      - name: Run :preinstrumented:instrumentAll with SDK 33
-        run: PREINSTRUMENTED_SDK_VERSIONS=33 ./gradlew :preinstrumented:instrumentAll
+      - name: Run :preinstrumented:instrumentAll with SDK 36
+        run: PREINSTRUMENTED_SDK_VERSIONS=36 ./gradlew :preinstrumented:instrumentAll
 
-      - name: Run :preinstrumented:publishToMavenLocal with SDK 33
-        run: PREINSTRUMENTED_SDK_VERSIONS=33 PUBLISH_PREINSTRUMENTED_JARS=true ./gradlew :preinstrumented:publishToMavenLocal
+      - name: Run :preinstrumented:publishToMavenLocal with SDK 36
+        run: PREINSTRUMENTED_SDK_VERSIONS=36 PUBLISH_PREINSTRUMENTED_JARS=true ./gradlew :preinstrumented:publishToMavenLocal
 
   run_publishToMavenLocal:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -95,7 +96,7 @@ jobs:
           distribution: 'adopt'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Publish to Maven local
         run: ./gradlew publishToMavenLocal

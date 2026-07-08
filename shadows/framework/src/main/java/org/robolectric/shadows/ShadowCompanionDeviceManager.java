@@ -81,7 +81,6 @@ public class ShadowCompanionDeviceManager {
   private static final int DEFAULT_SYSTEMDATASYNCFLAGS = -1;
 
   @Implementation
-  @SuppressWarnings("JdkCollectors") // toImmutableList is only supported in Java 8+.
   protected List<String> getAssociations() {
     return ImmutableList.copyOf(
         associations.stream().map(RoboAssociationInfo::deviceMacAddress).collect(toList()));

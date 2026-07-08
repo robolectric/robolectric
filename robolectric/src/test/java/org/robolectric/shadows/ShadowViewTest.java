@@ -27,7 +27,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.view.ContextMenu;
 import android.view.HapticFeedbackConstants;
 import android.view.InflateException;
 import android.view.LayoutInflater;
@@ -907,11 +906,7 @@ public class ShadowViewTest {
   @Test
   public void capturesOnSystemUiVisibilityChangeListener() {
     TestView testView = new TestView(buildActivity(Activity.class).create().get());
-    View.OnSystemUiVisibilityChangeListener changeListener =
-        new View.OnSystemUiVisibilityChangeListener() {
-          @Override
-          public void onSystemUiVisibilityChange(int i) {}
-        };
+    View.OnSystemUiVisibilityChangeListener changeListener = i -> {};
     testView.setOnSystemUiVisibilityChangeListener(changeListener);
 
     assertThat(changeListener)
@@ -923,12 +918,7 @@ public class ShadowViewTest {
     TestView testView = new TestView(buildActivity(Activity.class).create().get());
     assertThat(shadowOf(testView).getOnCreateContextMenuListener()).isNull();
 
-    View.OnCreateContextMenuListener createListener =
-        new View.OnCreateContextMenuListener() {
-          @Override
-          public void onCreateContextMenu(
-              ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {}
-        };
+    View.OnCreateContextMenuListener createListener = (contextMenu, view, contextMenuInfo) -> {};
 
     testView.setOnCreateContextMenuListener(createListener);
     assertThat(shadowOf(testView).getOnCreateContextMenuListener()).isEqualTo(createListener);

@@ -1,4 +1,5 @@
 import java.net.URI
+import org.robolectric.gradle.AndroidSdk
 import org.robolectric.gradle.PUBLISH_URL
 
 plugins {
@@ -11,8 +12,8 @@ val javaMainClass = "org.robolectric.preinstrumented.JarInstrumentor"
 application { mainClass.set(javaMainClass) }
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
+  sourceCompatibility = JavaVersion.VERSION_11
+  targetCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {

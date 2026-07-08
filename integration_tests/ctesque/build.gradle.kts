@@ -5,18 +5,18 @@ plugins {
 }
 
 android {
-  compileSdk = 35
+  compileSdk = 37
   namespace = "org.robolectric.integrationtests.ctesque"
 
   defaultConfig {
-    minSdk = 21
+    minSdk = 23
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
   lint { abortOnError = false }
 
   testOptions {
-    targetSdk = 35
+    targetSdk = 36
     unitTests {
       isIncludeAndroidResources = true
       all { it.systemProperty("robolectric.graphicsMode", "NATIVE") }
@@ -24,8 +24,8 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
   }
 
   androidResources { noCompress.add("txt") }
