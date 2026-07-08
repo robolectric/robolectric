@@ -378,7 +378,6 @@ public class SdkStore {
       return allowInDev && inDev.length > 0 && !sdkInfo.isReleased;
     }
 
-
     /**
      * Load and analyze bytecode for the specified class, with caching.
      *
@@ -563,7 +562,6 @@ public class SdkStore {
       }
     }
 
-
     /** Create a MethodInfo from AST (an @Implementation method in a shadow class). */
     public MethodInfo(ExecutableElement methodElement) {
       this.name = cleanMethodName(methodElement);
@@ -621,7 +619,6 @@ public class SdkStore {
         }
       }
     }
-
 
     @Override
     public boolean equals(Object o) {

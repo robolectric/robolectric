@@ -326,8 +326,6 @@ public class AttributeResolution10 {
       }
     }
 
-
-
     // Retrieve the style class bag, if requested.
     ResolvedBag xml_style_bag = null;
     if (style_res_id != 0) {
@@ -336,8 +334,6 @@ public class AttributeResolution10 {
         style_flags.set(style_flags.get() | xml_style_bag.type_spec_flags);
       }
     }
-
-
 
     // Retrieve the XML attributes, if requested.
     XmlAttributeFinder xml_attr_finder = new XmlAttributeFinder(xml_parser);
