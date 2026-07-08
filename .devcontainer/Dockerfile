@@ -21,7 +21,7 @@ ENV ANDROID_HOME=/home/$USERNAME/Android/Sdk
 ENV ANDROID_SDK_ROOT=/home/$USERNAME/Android/Sdk
 ENV CMDLINE_HOME="${HOME}/Android/Sdk/cmdline-tools"
 ENV CMDLINE="${HOME}/Android/Sdk/cmdline-tools/cmdline-tools/bin"
-ENV ANDROID_SDK_ZIP_FILE_VERSION=14742923
+ENV ANDROID_SDK_ZIP_FILE_VERSION=13114758
 
 ENV PATH=${PATH}:${ANDROID_HOME}/platform-tools
 ENV PATH=${PATH}:${ANDROID_HOME}/platforms
@@ -39,7 +39,6 @@ RUN chmod +r+w+x -Rv ${HOME}/Android/Sdk
 RUN yes | sdkmanager --licenses
 RUN yes | sdkmanager --install "build-tools;35.0.0"
 RUN yes | sdkmanager --install "build-tools;36.0.0"
-RUN yes | sdkmanager --install "build-tools;37.0.0"
 RUN yes | sdkmanager --install "platforms;android-23"
 RUN yes | sdkmanager --install "platforms;android-24"
 RUN yes | sdkmanager --install "platforms;android-25"
@@ -54,6 +53,5 @@ RUN yes | sdkmanager --install "platforms;android-33"
 RUN yes | sdkmanager --install "platforms;android-34"
 RUN yes | sdkmanager --install "platforms;android-35"
 RUN yes | sdkmanager --install "platforms;android-36"
-RUN yes | sdkmanager --install "platforms;android-37.0"
 RUN yes | sdkmanager --install "cmdline-tools;latest"
 RUN yes | sdkmanager --install "platform-tools"
