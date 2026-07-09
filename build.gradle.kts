@@ -64,7 +64,7 @@ project.afterEvaluate {
         "option",
         mapOf(
           "name" to "org.robolectric.annotation.processing.shadowPackage",
-          "value" to project.extensions.getByType<ShadowsPluginExtension>().packageName,
+          "value" to subproject.extensions.getByType<ShadowsPluginExtension>().packageName.get(),
         ),
       )
       profileNode.appendNode(
