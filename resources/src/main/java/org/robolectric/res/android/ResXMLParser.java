@@ -26,9 +26,9 @@ import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
 import static org.robolectric.res.android.Util.isTruthy;
 
+import java.nio.ByteBuffer;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_attrExt;
-import org.robolectric.res.android.ResourceTypes.ResXMLTree_attribute;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_endElementExt;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
 import org.robolectric.res.android.ResourceTypes.Res_value;
@@ -40,6 +40,22 @@ public class ResXMLParser {
   static final int SIZEOF_RESXMLTREE_ATTR_EXT = 20;
   static final int SIZEOF_RESXMLTREE_CDATA_EXT = 4 + ResourceTypes.Res_value.SIZEOF;
   static final int SIZEOF_CHAR = 2;
+
+  // Byte offsets within a ResXMLTree_attrExt struct. This makes it possible to access the
+  // underlying data without having to allocate ResXMLTree_attrExt and ResXMLTree_attribute
+  // objects.
+  private static final int ATTR_EXT_ATTRIBUTE_START = 8; // short
+  private static final int ATTR_EXT_ATTRIBUTE_SIZE = 10; // short
+  private static final int ATTR_EXT_ATTRIBUTE_COUNT = 12; // short
+
+  // Byte offsets within a ResXMLTree_attribute struct.
+  private static final int ATTRIBUTE_NAME = 4; // ResStringPool_ref (int)
+  private static final int ATTRIBUTE_RAW_VALUE = 8; // ResStringPool_ref (int)
+  private static final int ATTRIBUTE_TYPED_VALUE = 12; // Res_value
+
+  // Byte offsets within a Res_value struct.
+  private static final int RES_VALUE_DATATYPE = 3; // byte (after size:2, res0:1)
+  private static final int RES_VALUE_DATA = 4; // int
 
   public static class event_code_t {
     public static final int BAD_DOCUMENT = -1;
@@ -183,24 +199,36 @@ public class ResXMLParser {
 
   public int getAttributeCount() {
     if (mEventCode == START_TAG) {
-      return dtohs(new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt).attributeCount);
+      return dtohs(mTree.mBuffer.buf.getShort(mCurExt + ATTR_EXT_ATTRIBUTE_COUNT));
     }
     return 0;
   }
 
-  public int getAttributeNamespaceID(int idx) {
-    if (mEventCode == START_TAG) {
-      ResXMLTree_attrExt tag = new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt);
-      if (idx < dtohs(tag.attributeCount)) {
-        //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
-        //        (((final int8_t*)tag)
-        //        + dtohs(tag.attributeStart())
-        //            + (dtohs(tag.attributeSize())*idx));
-        ResXMLTree_attribute attr = tag.attributeAt(idx);
-        return dtohl(attr.ns.index);
-      }
+  /**
+   * Returns the absolute buffer offset of attribute {@code idx} of the current START_TAG, or -1 if
+   * the current event is not a START_TAG or {@code idx} is out of range. This avoids allocating
+   * ResXMLTree_attrExt/ResXMLTree_attribute objects in the hot attribute accessors.
+   */
+  private int attributeOffset(int idx) {
+    if (mEventCode != START_TAG) {
+      return -1;
     }
-    return -2;
+    ByteBuffer buf = mTree.mBuffer.buf;
+    final int attributeCount = dtohs(buf.getShort(mCurExt + ATTR_EXT_ATTRIBUTE_COUNT));
+    if (idx < 0 || idx >= attributeCount) {
+      return -1;
+    }
+    final int attributeStart = dtohs(buf.getShort(mCurExt + ATTR_EXT_ATTRIBUTE_START));
+    final int attributeSize = dtohs(buf.getShort(mCurExt + ATTR_EXT_ATTRIBUTE_SIZE));
+    return mCurExt + attributeStart + attributeSize * idx;
+  }
+
+  public int getAttributeNamespaceID(int idx) {
+    final int attrOff = attributeOffset(idx);
+    if (attrOff < 0) {
+      return -2;
+    }
+    return dtohl(mTree.mBuffer.buf.getInt(attrOff));
   }
 
   final String getAttributeNamespace(int idx, Ref<Integer> outLen) {
@@ -222,18 +250,11 @@ public class ResXMLParser {
   }
 
   public int getAttributeNameID(int idx) {
-    if (mEventCode == START_TAG) {
-      ResXMLTree_attrExt tag = new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt);
-      if (idx < dtohs(tag.attributeCount)) {
-        //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
-        //        (((final int8_t*)tag)
-        //        + dtohs(tag.attributeStart())
-        //            + (dtohs(tag.attributeSize())*idx));
-        ResXMLTree_attribute attr = tag.attributeAt(idx);
-        return dtohl(attr.name.index);
-      }
+    final int attrOff = attributeOffset(idx);
+    if (attrOff < 0) {
+      return -1;
     }
-    return -1;
+    return dtohl(mTree.mBuffer.buf.getInt(attrOff + ATTRIBUTE_NAME));
   }
 
   final String getAttributeName(int idx, Ref<Integer> outLen) {
@@ -269,18 +290,11 @@ public class ResXMLParser {
   }
 
   public int getAttributeValueStringID(int idx) {
-    if (mEventCode == START_TAG) {
-      ResXMLTree_attrExt tag = new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt);
-      if (idx < dtohs(tag.attributeCount)) {
-        //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
-        //        (((final int8_t*)tag)
-        //        + dtohs(tag.attributeStart())
-        //            + (dtohs(tag.attributeSize())*idx));
-        ResXMLTree_attribute attr = tag.attributeAt(idx);
-        return dtohl(attr.rawValue.index);
-      }
+    final int attrOff = attributeOffset(idx);
+    if (attrOff < 0) {
+      return -1;
     }
-    return -1;
+    return dtohl(mTree.mBuffer.buf.getInt(attrOff + ATTRIBUTE_RAW_VALUE));
   }
 
   final String getAttributeStringValue(int idx, Ref<Integer> outLen) {
@@ -292,68 +306,51 @@ public class ResXMLParser {
   }
 
   public int getAttributeDataType(int idx) {
-    if (mEventCode == START_TAG) {
-      final ResXMLTree_attrExt tag = new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt);
-      if (idx < dtohs(tag.attributeCount)) {
-        //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
-        //        (((final int8_t*)tag)
-        //        + dtohs(tag.attributeStart())
-        //            + (dtohs(tag.attributeSize())*idx));
-        ResXMLTree_attribute attr = tag.attributeAt(idx);
-        int type = attr.typedValue.dataType;
-        if (type != DataType.DYNAMIC_REFERENCE.code()) {
-          return type;
-        }
-
-        // This is a dynamic reference. We adjust those references
-        // to regular references at this level, so lie to the caller.
-        return DataType.REFERENCE.code();
-      }
+    final int attrOff = attributeOffset(idx);
+    if (attrOff < 0) {
+      return DataType.NULL.code();
     }
-    return DataType.NULL.code();
+    int type = mTree.mBuffer.buf.get(attrOff + ATTRIBUTE_TYPED_VALUE + RES_VALUE_DATATYPE);
+    if (type != DataType.DYNAMIC_REFERENCE.code()) {
+      return type;
+    }
+
+    // This is a dynamic reference. We adjust those references
+    // to regular references at this level, so lie to the caller.
+    return DataType.REFERENCE.code();
   }
 
   public int getAttributeData(int idx) {
-    if (mEventCode == START_TAG) {
-      ResXMLTree_attrExt tag = new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt);
-      if (idx < dtohs(tag.attributeCount)) {
-        //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
-        //        (((final int8_t*)tag)
-        //        + dtohs(tag.attributeStart)
-        //            + (dtohs(tag.attributeSize)*idx));
-        ResXMLTree_attribute attr = tag.attributeAt(idx);
-        if (attr.typedValue.dataType != DataType.DYNAMIC_REFERENCE.code()
-            || mTree.mDynamicRefTable == null) {
-          return dtohl(attr.typedValue.data);
-        }
+    final int attrOff = attributeOffset(idx);
+    if (attrOff < 0) {
+      return 0;
+    }
+    final ByteBuffer buf = mTree.mBuffer.buf;
+    final int dataType = buf.get(attrOff + ATTRIBUTE_TYPED_VALUE + RES_VALUE_DATATYPE);
+    final int dataValue = dtohl(buf.getInt(attrOff + ATTRIBUTE_TYPED_VALUE + RES_VALUE_DATA));
+    if (dataType != DataType.DYNAMIC_REFERENCE.code() || mTree.mDynamicRefTable == null) {
+      return dataValue;
+    }
 
-        final Ref<Integer> data = new Ref<>(dtohl(attr.typedValue.data));
-        if (mTree.mDynamicRefTable.lookupResourceId(data) == NO_ERROR) {
-          return data.get();
-        }
-      }
+    final Ref<Integer> data = new Ref<>(dataValue);
+    if (mTree.mDynamicRefTable.lookupResourceId(data) == NO_ERROR) {
+      return data.get();
     }
     return 0;
   }
 
   public int getAttributeValue(int idx, Ref<Res_value> outValue) {
-    if (mEventCode == START_TAG) {
-      ResXMLTree_attrExt tag = new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt);
-      if (idx < dtohs(tag.attributeCount)) {
-        //            final ResXMLTree_attribute attr = (ResXMLTree_attribute)
-        //        (((final int8_t*)tag)
-        //        + dtohs(tag.attributeStart())
-        //            + (dtohs(tag.attributeSize())*idx));
-        ResXMLTree_attribute attr = tag.attributeAt(idx);
-        outValue.set(attr.typedValue);
-        if (mTree.mDynamicRefTable != null
-            && mTree.mDynamicRefTable.lookupResourceValue(outValue) != NO_ERROR) {
-          return BAD_TYPE;
-        }
-        return ResourceTypes.Res_value.SIZEOF /* sizeof(Res_value) */;
-      }
+    final int attrOff = attributeOffset(idx);
+    if (attrOff < 0) {
+      return BAD_TYPE;
     }
-    return BAD_TYPE;
+    outValue.set(new Res_value(mTree.mBuffer.buf, attrOff + ATTRIBUTE_TYPED_VALUE));
+    if (mTree.mDynamicRefTable != null
+        && mTree.mDynamicRefTable.lookupResourceValue(outValue) != NO_ERROR) {
+      return BAD_TYPE;
+    }
+
+    return ResourceTypes.Res_value.SIZEOF /* sizeof(Res_value) */;
   }
 
   int indexOfAttribute(final String ns, final String attr) {

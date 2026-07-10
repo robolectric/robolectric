@@ -2,6 +2,8 @@ package org.robolectric;
 
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,6 +70,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
   private static final ImmutableList<RunListener> RUN_LISTENERS = loadRunListeners();
+
+  // Cache for build system API properties. This never changes between tests.
+  private static final Supplier<Properties> buildSystemApiPropertiesSupplier =
+      Suppliers.memoize(RobolectricTestRunner::loadBuildSystemApiProperties);
 
   static {
     // This starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric
@@ -391,10 +397,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   protected Properties getBuildSystemApiProperties() {
-    return staticGetBuildSystemApiProperties();
+    return buildSystemApiPropertiesSupplier.get();
   }
 
-  protected static Properties staticGetBuildSystemApiProperties() {
+  protected static Properties loadBuildSystemApiProperties() {
     try (InputStream resourceAsStream =
         RobolectricTestRunner.class.getResourceAsStream(
             "/com/android/tools/test_config.properties")) {

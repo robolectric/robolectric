@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -23,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 /** Tests for {@link ShadowMediaRouter2}. */
 @RunWith(AndroidJUnit4.class)
@@ -262,5 +264,63 @@ public final class ShadowMediaRouter2Test {
         MediaRouter2.getInstance(ApplicationProvider.getApplicationContext());
 
     mediaRouter2.registerTransferCallback(new Handler()::post, new TransferCallback() {});
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.VANILLA_ICE_CREAM)
+  public void requestScan_savesRequest() {
+    MediaRouter2 mediaRouter2 =
+        MediaRouter2.getInstance(ApplicationProvider.getApplicationContext());
+    MediaRouter2.ScanRequest request = new MediaRouter2.ScanRequest.Builder().build();
+
+    MediaRouter2.ScanToken token = mediaRouter2.requestScan(request);
+
+    assertThat(token).isNotNull();
+    ShadowMediaRouter2 shadowMediaRouter2 = shadowOf(mediaRouter2);
+    assertThat(shadowMediaRouter2.getScanRequests()).containsExactly(request);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.VANILLA_ICE_CREAM)
+  public void cancelScanRequest_savesCancelledToken() {
+    MediaRouter2 mediaRouter2 =
+        MediaRouter2.getInstance(ApplicationProvider.getApplicationContext());
+    MediaRouter2.ScanRequest request = new MediaRouter2.ScanRequest.Builder().build();
+    MediaRouter2.ScanToken token = mediaRouter2.requestScan(request);
+
+    mediaRouter2.cancelScanRequest(token);
+
+    ShadowMediaRouter2 shadowMediaRouter2 = shadowOf(mediaRouter2);
+    assertThat(shadowMediaRouter2.getCancelledScanTokens()).containsExactly(token);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.VANILLA_ICE_CREAM)
+  public void requestScan_throwsSecurityException_whenConfigured() {
+    MediaRouter2 mediaRouter2 =
+        MediaRouter2.getInstance(ApplicationProvider.getApplicationContext());
+    ShadowMediaRouter2 shadowMediaRouter2 = shadowOf(mediaRouter2);
+    SecurityException exception = new SecurityException("No permission");
+    shadowMediaRouter2.setScanSecurityException(exception);
+    MediaRouter2.ScanRequest request = new MediaRouter2.ScanRequest.Builder().build();
+
+    SecurityException thrown =
+        assertThrows(SecurityException.class, () -> mediaRouter2.requestScan(request));
+    assertThat(thrown).isSameInstanceAs(exception);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.VANILLA_ICE_CREAM)
+  public void cancelScanRequest_throwsSecurityException_whenConfigured() {
+    MediaRouter2 mediaRouter2 =
+        MediaRouter2.getInstance(ApplicationProvider.getApplicationContext());
+    ShadowMediaRouter2 shadowMediaRouter2 = shadowOf(mediaRouter2);
+    SecurityException exception = new SecurityException("No permission");
+    shadowMediaRouter2.setScanSecurityException(exception);
+    MediaRouter2.ScanToken token = ReflectionHelpers.callConstructor(MediaRouter2.ScanToken.class);
+
+    SecurityException thrown =
+        assertThrows(SecurityException.class, () -> mediaRouter2.cancelScanRequest(token));
+    assertThat(thrown).isSameInstanceAs(exception);
   }
 }

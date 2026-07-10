@@ -471,6 +471,72 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
+  public void
+      unregisterCallback_strictUnregistrationDisabled_shouldNotThrowForUnregisteredCallback() {
+    shadowOf(connectivityManager).setStrictUnregistration(false);
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
+
+    // Should not throw even though callback is not registered
+    connectivityManager.unregisterNetworkCallback(callback);
+  }
+
+  @Test
+  public void unregisterCallback_strictUnregistrationEnabled_shouldThrowForUnregisteredCallback() {
+    shadowOf(connectivityManager).setStrictUnregistration(true);
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> connectivityManager.unregisterNetworkCallback(callback));
+  }
+
+  @Test
+  public void unregisterCallback_strictUnregistrationEnabled_doubleUnregisterShouldLog() {
+    shadowOf(connectivityManager).setStrictUnregistration(true);
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
+
+    connectivityManager.registerNetworkCallback(builder.build(), callback);
+    connectivityManager.unregisterNetworkCallback(callback); // First unregister should succeed
+
+    ShadowLog.clear();
+    // Second unregister should not throw but log a warning
+    connectivityManager.unregisterNetworkCallback(callback);
+
+    assertThat(ShadowLog.getLogsForTag("ShadowConnectivityManager")).isNotEmpty();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void
+      unregisterCallback_withPendingIntent_strictUnregistrationEnabled_neverRegisteredShouldThrow() {
+    shadowOf(connectivityManager).setStrictUnregistration(true);
+    PendingIntent pendingIntent = createSimplePendingIntent();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> connectivityManager.unregisterNetworkCallback(pendingIntent));
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void
+      unregisterCallback_withPendingIntent_strictUnregistrationEnabled_doubleUnregisterShouldLog() {
+    shadowOf(connectivityManager).setStrictUnregistration(true);
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    PendingIntent pendingIntent = createSimplePendingIntent();
+
+    connectivityManager.registerNetworkCallback(builder.build(), pendingIntent);
+    connectivityManager.unregisterNetworkCallback(pendingIntent); // First unregister should succeed
+
+    ShadowLog.clear();
+    // Second unregister should not throw but log a warning
+    connectivityManager.unregisterNetworkCallback(pendingIntent);
+
+    assertThat(ShadowLog.getLogsForTag("ShadowConnectivityManager")).isNotEmpty();
+  }
+
+  @Test
   public void isActiveNetworkMetered_defaultsToTrue() {
     assertThat(connectivityManager.isActiveNetworkMetered()).isTrue();
   }

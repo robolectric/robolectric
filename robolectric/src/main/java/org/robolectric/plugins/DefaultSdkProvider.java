@@ -14,6 +14,7 @@ import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import com.google.auto.service.AutoService;
 import java.net.URL;
@@ -77,6 +78,7 @@ public class DefaultSdkProvider implements SdkProvider {
     knownSdks.put(
         VANILLA_ICE_CREAM, new DefaultSdk(VANILLA_ICE_CREAM, "15", "13954326", "REL", 17));
     knownSdks.put(BAKLAVA, new DefaultSdk(BAKLAVA, "16", "13921718", "REL", 21));
+    knownSdks.put(CINNAMON_BUN, new DefaultSdk(CINNAMON_BUN, "17", "15733970", "REL", 21));
   }
 
   @Override

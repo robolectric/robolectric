@@ -28,13 +28,13 @@ error-prone = "2.50.0"
 error-prone-gradle = "5.1.0"
 
 # https://kotlinlang.org/docs/releases.html#release-details
-kotlin = "2.4.0"
+kotlin = "2.3.21"
 
 # https://github.com/Kotlin/kotlinx.coroutines/releases/
 kotlinx-coroutines = '1.11.0'
 
 # https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
-spotless-gradle = "8.8.0"
+spotless-gradle = "8.7.0"
 
 # https://detekt.dev/changelog
 detekt-gradle = "1.23.8"
@@ -88,7 +88,7 @@ mockito = "5.23.0"
 mockk = "1.14.11"
 
 # https://github.com/takahirom/roborazzi/releases
-roborazzi = "1.65.0"
+roborazzi = "1.64.0"
 
 # https://square.github.io/okhttp/changelogs/changelog/
 okhttp = "5.4.0"
@@ -121,7 +121,7 @@ androidx-test-runner = "1.7.0"
 androidx-test-services = "1.6.0"
 
 # https://developer.android.com/jetpack/androidx/releases/compose
-androidx-compose-bom = "2026.06.01"
+androidx-compose-bom = "2026.06.00"
 
 # https://developers.google.com/android/guides/releases
 play-services-basement = "18.0.1"

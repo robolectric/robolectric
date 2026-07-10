@@ -16,10 +16,11 @@ import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.SIZEOF_INT;
 import static org.robolectric.res.android.Util.isTruthy;
 
+import com.google.common.collect.Maps;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Objects;
+import java.util.Map;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
@@ -44,6 +45,8 @@ public class ResStringPool {
   private ResStringPool_header mHeader;
   private int mSize;
   private String[] mCache;
+  private Map<String, Integer> unsortedIndex;
+
   //    private mutable Mutex               mDecodeLock;
   //    const uint32_t*             mEntries;
   private IntArray mEntries;
@@ -318,6 +321,7 @@ public class ResStringPool {
     setError(NO_INIT);
     mHeader = null;
     mCache = null;
+    unsortedIndex = null;
   }
 
   public String stringAt(int idx) {
@@ -431,25 +435,30 @@ public class ResStringPool {
         }
       }
     } else {
-      // It is unusual to get the ID from an unsorted string block...
-      // most often this happens because we want to get IDs for style
-      // span tags; since those always appear at the end of the string
-      // block, start searching at the back.
-      for (int i = mHeader.stringCount; i >= 0; i--) {
-        String s = stringAt(i);
-        if (kDebugStringPoolNoisy) {
-          ALOGI("Looking at %s, i=%d\n", s, i);
-        }
-        if (Objects.equals(s, str)) {
-          if (kDebugStringPoolNoisy) {
-            ALOGI("MATCH!");
-          }
-          return i;
-        }
+      Map<String, Integer> index = unsortedIndex;
+      if (index == null) {
+        index = buildUnsortedIndex();
+        unsortedIndex = index;
+      }
+      Integer found = index.get(str);
+      if (found != null) {
+        return found;
       }
     }
 
     return NAME_NOT_FOUND;
+  }
+
+  private Map<String, Integer> buildUnsortedIndex() {
+    int count = mHeader.stringCount;
+    Map<String, Integer> index = Maps.newHashMapWithExpectedSize(count);
+    for (int i = 0; i < count; i++) {
+      String s = stringAt(i);
+      if (s != null) {
+        index.put(s, i);
+      }
+    }
+    return index;
   }
 
   //

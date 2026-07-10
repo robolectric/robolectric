@@ -111,3 +111,5 @@ build_signed_packages
 mavenize
 
 echo "Done generating bundle ${TEMP_DIR}/android-all-${AA_VERSION}-bundle.zip"
+echo "Save the temp directory:"
+echo "export BUNDLE_TEMP_DIR=${TEMP_DIR}"
