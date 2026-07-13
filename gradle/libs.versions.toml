@@ -10,7 +10,7 @@ android-tools-common = "32.2.1"
 androidstubs = "36"
 
 # https://github.com/google/conscrypt/tags
-conscrypt = "2.5.2"
+conscrypt = "2.6.0"
 
 # https://github.com/bcgit/bc-java/tags
 bouncycastle = "1.84"
