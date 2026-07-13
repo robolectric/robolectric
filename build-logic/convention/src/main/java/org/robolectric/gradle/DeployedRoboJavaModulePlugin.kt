@@ -78,9 +78,13 @@ class DeployedRoboJavaModulePlugin : Plugin<Project> {
         sonatypeRepositories(isSnapshotVersion)
 
         project.extensions.configure<SigningExtension> {
-          setRequired { !isSnapshotVersion && project.gradle.taskGraph.hasTask("uploadArchives") }
+          setRequired {
+            !isSnapshotVersion &&
+              (project.gradle.taskGraph.hasTask("uploadArchives") ||
+                project.gradle.taskGraph.hasTask("publish"))
+          }
 
-          sign(publications.getByName("mavenJava"))
+          sign(publications)
         }
       }
     }
