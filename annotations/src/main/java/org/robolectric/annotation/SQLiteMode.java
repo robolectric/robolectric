@@ -40,6 +40,7 @@ public @interface SQLiteMode {
      *
      * @deprecated {@code NATIVE} is the default mode and does not need to be stated explicitly.
      */
+    @Deprecated
     NATIVE,
   }
 
