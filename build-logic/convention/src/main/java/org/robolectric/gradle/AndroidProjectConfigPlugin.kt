@@ -22,7 +22,7 @@ class AndroidProjectConfigPlugin : Plugin<Project> {
       outFile = File(outDir, "robolectric-deps.properties")
 
       project.extensions.configure<LibraryExtension> {
-        sourceSets.getByName("test").resources.srcDir(outDir)
+        sourceSets.getByName("test").resources.directories.add(outDir.absolutePath)
       }
     }
 

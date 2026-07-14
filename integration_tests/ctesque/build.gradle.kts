@@ -35,13 +35,13 @@ android {
     val sharedTestSourceDir = sharedTestDir + "java"
     val sharedTestResourceDir = sharedTestDir + "resources"
 
-    val test by getting
-    test.resources.srcDirs(sharedTestResourceDir)
-    test.java.srcDirs(sharedTestSourceDir)
+    val test = getByName("test")
+    test.resources.directories.add(sharedTestResourceDir)
+    test.java.directories.add(sharedTestSourceDir)
 
-    val androidTest by getting
-    androidTest.resources.srcDirs(sharedTestResourceDir)
-    androidTest.java.srcDirs(sharedTestSourceDir)
+    val androidTest = getByName("androidTest")
+    androidTest.resources.directories.add(sharedTestResourceDir)
+    androidTest.java.directories.add(sharedTestSourceDir)
   }
 }
 

@@ -25,8 +25,8 @@ dependencies {
   testImplementation(libs.mockito.subclass)
 }
 
-val instrumentAll by
-  tasks.registering {
+val instrumentAll =
+  tasks.register("instrumentAll") {
     dependsOn(":prefetchSdks", "build")
 
     doLast {
@@ -51,9 +51,9 @@ val instrumentAll by
     }
   }
 
-val emptySourcesJar by tasks.registering(Jar::class) { archiveClassifier.set("sources") }
+val emptySourcesJar = tasks.register<Jar>("emptySourcesJar") { archiveClassifier.set("sources") }
 
-val emptyJavadocJar by tasks.registering(Jar::class) { archiveClassifier.set("javadoc") }
+val emptyJavadocJar = tasks.register<Jar>("emptyJavadocJar") { archiveClassifier.set("javadoc") }
 
 // Avoid publishing the preinstrumented jars by default. They are published
 // manually when the instrumentation configuration changes to maximize Gradle

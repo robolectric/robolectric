@@ -31,14 +31,14 @@ android {
     val sharedTestResourceDir = sharedTestDir + "resources"
     val sharedAndroidManifest = sharedTestDir + "AndroidManifest.xml"
 
-    val test by getting
-    test.resources.srcDirs(sharedTestResourceDir)
-    test.java.srcDirs(sharedTestSourceDir)
+    val test = getByName("test")
+    test.resources.directories.add(sharedTestResourceDir)
+    test.java.directories.add(sharedTestSourceDir)
     test.manifest.srcFile(sharedAndroidManifest)
 
-    val androidTest by getting
-    androidTest.resources.srcDirs(sharedTestResourceDir)
-    androidTest.java.srcDirs(sharedTestSourceDir)
+    val androidTest = getByName("androidTest")
+    androidTest.resources.directories.add(sharedTestResourceDir)
+    androidTest.java.directories.add(sharedTestSourceDir)
     androidTest.manifest.srcFile(sharedAndroidManifest)
   }
 }

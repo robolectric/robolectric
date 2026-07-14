@@ -33,7 +33,7 @@ dependencies {
   testImplementation(AndroidSdk.MAX_SDK.coordinates)
 }
 
-// httpcore needs to come before android-all on runtime classpath; the gradle IntelliJ plugin
+// httpcore needs to come before android-all on runtime classpath; the Gradle IntelliJ plugin
 //   needs the compileClasspath order patched too (bug?)
 val mainSourceSet = sourceSets.getByName("main")
 

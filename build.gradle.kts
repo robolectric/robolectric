@@ -9,10 +9,11 @@ import org.robolectric.gradle.AndroidSdk
 import org.robolectric.gradle.ShadowsPlugin.ShadowsPluginExtension
 
 // For use of external initialization scripts...
-val allSdks by project.extra(AndroidSdk.ALL_SDKS)
-val configAnnotationProcessing by project.extra(emptyList<Project>())
+project.extra["allSdks"] = AndroidSdk.ALL_SDKS
 
-val thisVersion: String by project
+project.extra["configAnnotationProcessing"] = emptyList<Project>()
+
+val thisVersion = project.property("thisVersion") as String
 
 plugins {
   // Define versions for plugins used in subprojects. 'apply false' is used to load the plugin
@@ -35,6 +36,8 @@ allprojects {
 }
 
 project.afterEvaluate {
+  @Suppress("UNCHECKED_CAST")
+  val configAnnotationProcessing = project.extra["configAnnotationProcessing"] as List<Project>
   val ideaProject = rootProject.extensions.getByType<IdeaModel>().project
   ideaProject.ipr.withXml {
     val compilerConfiguration =
@@ -131,20 +134,22 @@ gradle.projectsEvaluated {
     }
   }
 
-  val aggregateJsondocs by
-    tasks.registering(Copy::class) {
-      project.subprojects
-        .filter { it.pluginManager.hasPlugin(libs.plugins.robolectric.shadows.get().pluginId) }
-        .forEach { subproject ->
-          dependsOn(subproject.tasks.named("compileJava"))
-          from(subproject.layout.buildDirectory.dir("docs/json"))
-        }
+  tasks.register<Copy>("aggregateJsondocs") {
+    project.subprojects
+      .filter { it.pluginManager.hasPlugin(libs.plugins.robolectric.shadows.get().pluginId) }
+      .forEach { subproject ->
+        dependsOn(subproject.tasks.named("compileJava"))
+        from(subproject.layout.buildDirectory.dir("docs/json"))
+      }
 
-      into(layout.buildDirectory.dir("docs/json"))
-    }
+    into(layout.buildDirectory.dir("docs/json"))
+  }
 }
 
-val aggregateDocs by tasks.registering { dependsOn(":aggregateJavadocs", ":aggregateJsondocs") }
+val aggregateDocs =
+  tasks.register("aggregateDocs") { dependsOn(":aggregateJavadocs", ":aggregateJsondocs") }
+
+@Suppress("UNCHECKED_CAST") val allSdks = project.extra["allSdks"] as List<AndroidSdk>
 
 val prefetchSdkTasks =
   allSdks.map { androidSdk ->
@@ -236,8 +241,8 @@ abstract class PrefetchSdkTask : DefaultTask() {
   }
 }
 
-val prefetchDependencies by
-  tasks.registering {
+val prefetchDependencies =
+  tasks.register("prefetchDependencies") {
     doLast {
       allprojects.forEach { p ->
         p.configurations.forEach { config ->

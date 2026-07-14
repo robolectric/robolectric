@@ -22,7 +22,7 @@ class SpotlessPlugin : Plugin<Project> {
         ktfmt("0.49").googleStyle()
       }
 
-      // Only apply yaml and json formatting for root project
+      // Only apply YAML and JSON formatting for root project
       // to avoid some files are added into multiple project's spotless targets.
       if (project.rootProject == project) {
         // Add configurations for JSON files
