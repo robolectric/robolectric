@@ -10,10 +10,10 @@ android-tools-common = "32.2.1"
 androidstubs = "36"
 
 # https://github.com/google/conscrypt/tags
-conscrypt = "2.5.2"
+conscrypt = "2.6.0"
 
 # https://github.com/bcgit/bc-java/tags
-bouncycastle = "1.84"
+bouncycastle = "1.85"
 
 # https://github.com/findbugsproject/findbugs/tags
 findbugs-jsr305 = "3.0.2"
@@ -34,7 +34,7 @@ kotlin = "2.3.21"
 kotlinx-coroutines = '1.11.0'
 
 # https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
-spotless-gradle = "8.7.0"
+spotless-gradle = "8.8.0"
 
 # https://detekt.dev/changelog
 detekt-gradle = "1.23.8"
@@ -76,7 +76,7 @@ javax-inject = "1"
 # https://junit.org/junit4/
 junit4 = "4.13.2"
 # https://github.com/junit-team/junit-framework/releases
-junit-jupiter = "6.1.1"
+junit-jupiter = "6.1.2"
 
 # https://github.com/google/libphonenumber/releases
 libphonenumber = "9.0.34"
@@ -121,7 +121,7 @@ androidx-test-runner = "1.7.0"
 androidx-test-services = "1.6.0"
 
 # https://developer.android.com/jetpack/androidx/releases/compose
-androidx-compose-bom = "2026.06.00"
+androidx-compose-bom = "2026.06.01"
 
 # https://developers.google.com/android/guides/releases
 play-services-basement = "18.0.1"
