@@ -23,7 +23,6 @@ import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.named
-import org.gradle.kotlin.dsl.provideDelegate
 import org.gradle.kotlin.dsl.withType
 import org.gradle.process.CommandLineArgumentProvider
 
@@ -33,7 +32,10 @@ class ShadowsPlugin : Plugin<Project> {
 
     val shadows = project.extensions.create<ShadowsPluginExtension>("shadows")
 
-    project.dependencies.add("annotationProcessor", project.project(":processor"))
+    project.dependencies.add(
+      "annotationProcessor",
+      project.dependencyFactory.createProjectDependency(":processor"),
+    )
 
     // Write generated Java into its own dir. See https://github.com/gradle/gradle/issues/4956
     val generatedSrcDir =
@@ -80,8 +82,10 @@ class ShadowsPlugin : Plugin<Project> {
       }
     }
 
-    var configAnnotationProcessing: List<Project> by project.rootProject.extra
-    configAnnotationProcessing += project
+    @Suppress("UNCHECKED_CAST")
+    val configAnnotationProcessing =
+      project.rootProject.extra["configAnnotationProcessing"] as List<Project>
+    project.rootProject.extra["configAnnotationProcessing"] = configAnnotationProcessing + project
 
     // Prevents sporadic compilation error:
     // 'Bad service configuration file, or exception thrown while constructing

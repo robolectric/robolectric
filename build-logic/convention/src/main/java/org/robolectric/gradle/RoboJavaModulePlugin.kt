@@ -51,7 +51,7 @@ class RoboJavaModulePlugin : Plugin<Project> {
       dependsOn(provideBuildClasspath)
 
       // Otherwise Gradle runs static inner classes like TestRunnerSequenceTest$SimpleTest
-      exclude("**/*\$*")
+      exclude("**/*$*")
 
       configureTestTask()
     }
