@@ -977,7 +977,7 @@ public class ResourceTypes {
    * ResTable_typeSpec structures containing the entry values for each resource type.
    */
   static class ResTable_package extends WithOffset {
-    public static final int SIZEOF = ResChunk_header.SIZEOF + 4 + 128 + 20;
+    public static final int SIZEOF = ResChunk_header.SIZEOF + 4 + 128 * SIZEOF_SHORT + 20;
 
     final ResChunk_header header;
 
