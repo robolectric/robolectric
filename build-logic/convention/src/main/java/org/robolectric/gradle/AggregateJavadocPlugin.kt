@@ -40,7 +40,15 @@ class AggregateJavadocPlugin : Plugin<Project> {
   }
 
   private fun getJavadocTasks(project: Project): Set<Javadoc> {
-    return project.getAllTasks(true).values.flatten().filterIsInstance<Javadoc>().toSet()
+    return project
+      .getAllTasks(true)
+      .values
+      .flatten()
+      .filterIsInstance<Javadoc>()
+      .filter {
+        it.project.pluginManager.hasPlugin("org.robolectric.gradle.DeployedRoboJavaModulePlugin")
+      }
+      .toSet()
   }
 
   private companion object {
