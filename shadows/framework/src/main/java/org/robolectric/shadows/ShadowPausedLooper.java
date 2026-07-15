@@ -106,6 +106,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void idleFor(Duration idleForDuration) {
+    long maxRemainingNanos = Long.MAX_VALUE - ShadowPausedSystemClock.uptimeNanos();
+    Duration maxRemainingDuration = Duration.ofNanos(maxRemainingNanos);
+    if (idleForDuration.compareTo(maxRemainingDuration) > 0) {
+      idleForDuration = maxRemainingDuration;
+    }
     looperControlService.executeControlTask(new IdleForRunnable(idleForDuration));
   }
 
