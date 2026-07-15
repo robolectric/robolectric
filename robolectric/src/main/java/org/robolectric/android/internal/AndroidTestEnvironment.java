@@ -318,6 +318,13 @@ public class AndroidTestEnvironment implements TestEnvironment {
       DefaultNativeRuntimeLoader.injectAndLoad();
     }
 
+    // Bootstrap.getConfiguration gets any potential updates to configuration via
+    // RuntimeEnvironment.setQualifiers.
+    android.content.res.Configuration androidConfiguration = Bootstrap.getConfiguration();
+    shadowActivityThread.setCompatConfiguration(androidConfiguration);
+
+    activityThread.applyConfigurationToResources(androidConfiguration);
+
     Context systemContextImpl =
         reflector(ContextImplReflector.class).createSystemContext(activityThread);
     RuntimeEnvironment.systemContext = systemContextImpl;
@@ -357,12 +364,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
     // code in there that can be reusable, e.g: the XxxxIntentResolver code.
     ShadowActivityThread.setApplicationInfo(applicationInfo);
 
-    // Bootstrap.getConfiguration gets any potential updates to configuration via
-    // RuntimeEnvironment.setQualifiers.
-    android.content.res.Configuration androidConfiguration = Bootstrap.getConfiguration();
-    shadowActivityThread.setCompatConfiguration(androidConfiguration);
-
-    activityThread.applyConfigurationToResources(androidConfiguration);
     RuntimeEnvironment.setConfiguredApplicationClass(applicationClass);
 
     final Class<?> appBindDataClass;
