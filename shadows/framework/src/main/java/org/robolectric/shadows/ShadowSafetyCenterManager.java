@@ -1,9 +1,15 @@
 package org.robolectric.shadows;
 
+import static android.Manifest.permission.MANAGE_SAFETY_CENTER;
+import static android.Manifest.permission.READ_SAFETY_CENTER_STATUS;
+import static android.Manifest.permission.SEND_SAFETY_CENTER_UPDATE;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.Manifest.permission;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build.VERSION_CODES;
 import android.os.UserHandle;
 import android.safetycenter.SafetyCenterData;
@@ -15,6 +21,7 @@ import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceErrorDetails;
 import android.util.Log;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -22,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -59,8 +67,12 @@ public class ShadowSafetyCenterManager {
   @GuardedBy("lock")
   private static final Map<OnSafetyCenterDataChangedListener, Executor> listeners = new HashMap<>();
 
+  @GuardedBy("lock")
+  private static boolean enforcePermissions = false;
+
   @Implementation
   protected boolean isSafetyCenterEnabled() {
+    requirePermission(READ_SAFETY_CENTER_STATUS, SEND_SAFETY_CENTER_UPDATE);
     synchronized (lock) {
       return enabled;
     }
@@ -71,6 +83,7 @@ public class ShadowSafetyCenterManager {
       @Nonnull String safetySourceId,
       @Nullable SafetySourceData safetySourceData,
       @Nonnull SafetyEvent safetyEvent) {
+    requireSendPermission();
     synchronized (lock) {
       if (!isSafetyCenterEnabled()) {
         return;
@@ -83,6 +96,7 @@ public class ShadowSafetyCenterManager {
 
   @Implementation
   protected SafetySourceData getSafetySourceData(@Nonnull String safetySourceId) {
+    requireSendPermission();
     synchronized (lock) {
       if (!isSafetyCenterEnabled()) {
         return null;
@@ -95,6 +109,7 @@ public class ShadowSafetyCenterManager {
   @Implementation
   protected void reportSafetySourceError(
       @Nonnull String safetySourceId, @Nonnull SafetySourceErrorDetails safetySourceErrorDetails) {
+    requireSendPermission();
     synchronized (lock) {
       if (!isSafetyCenterEnabled()) {
         return;
@@ -127,6 +142,16 @@ public class ShadowSafetyCenterManager {
   public void throwOnSafetySourceId(@Nonnull String safetySourceId) {
     synchronized (lock) {
       throwForId.add(safetySourceId);
+    }
+  }
+
+  /**
+   * Sets whether the shadow should enforce permissions as the real {@link SafetyCenterManager}
+   * would.
+   */
+  public void setEnforcePermissions(boolean enforcePermissions) {
+    synchronized (lock) {
+      ShadowSafetyCenterManager.enforcePermissions = enforcePermissions;
     }
   }
 
@@ -165,6 +190,7 @@ public class ShadowSafetyCenterManager {
 
   @Implementation
   protected SafetyCenterData getSafetyCenterData() {
+    requireManagePermission();
     synchronized (lock) {
       return safetyCenterData;
     }
@@ -189,6 +215,7 @@ public class ShadowSafetyCenterManager {
   @Implementation
   protected void addOnSafetyCenterDataChangedListener(
       @Nonnull Executor executor, @Nonnull OnSafetyCenterDataChangedListener listener) {
+    requireManagePermission();
     SafetyCenterData currentData;
     synchronized (lock) {
       listeners.put(listener, executor);
@@ -210,6 +237,7 @@ public class ShadowSafetyCenterManager {
   @Implementation
   protected void removeOnSafetyCenterDataChangedListener(
       @Nonnull OnSafetyCenterDataChangedListener listener) {
+    requireManagePermission();
     synchronized (lock) {
       listeners.remove(listener);
     }
@@ -217,6 +245,7 @@ public class ShadowSafetyCenterManager {
 
   @Implementation
   protected void dismissSafetyCenterIssue(@Nonnull String safetyCenterIssueId) {
+    requireManagePermission();
     synchronized (lock) {
       if (safetyCenterData == null) {
         return;
@@ -254,6 +283,42 @@ public class ShadowSafetyCenterManager {
           () -> {
             listener.onSafetyCenterDataChanged(safetyCenterData);
           });
+    }
+  }
+
+  /**
+   * Throws a {@link SecurityException} if the caller does not have the {@link
+   * permission.SEND_SAFETY_CENTER_UPDATE} permission.
+   */
+  private void requireSendPermission() {
+    requirePermission(SEND_SAFETY_CENTER_UPDATE);
+  }
+
+  /**
+   * Throws a {@link SecurityException} if the caller does not have the {@link
+   * permission.MANAGE_SAFETY_CENTER} permission.
+   */
+  private void requireManagePermission() {
+    requirePermission(MANAGE_SAFETY_CENTER);
+  }
+
+  /**
+   * Throws a {@link SecurityException} if the caller does not have any of the given permissions.
+   */
+  private void requirePermission(String... permissions) {
+    Context context = RuntimeEnvironment.getApplication();
+    boolean hasPermission = false;
+    for (String permission : permissions) {
+      hasPermission |=
+          context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
+              || context.getPackageManager().checkPermission(permission, context.getPackageName())
+                  == PackageManager.PERMISSION_GRANTED;
+    }
+    synchronized (lock) {
+      if (!hasPermission && enforcePermissions) {
+        throw new SecurityException(
+            "Requires one of these permissions: " + Arrays.toString(permissions));
+      }
     }
   }
 
