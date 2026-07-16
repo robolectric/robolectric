@@ -149,10 +149,8 @@ fun sdksToInstrument(): List<AndroidSdk> {
   return AndroidSdk.ALL_SDKS
 }
 
-tasks.named("clean") {
-  doFirst {
-    AndroidSdk.ALL_SDKS.forEach { androidSdk ->
-      delete(layout.buildDirectory.file(androidSdk.preinstrumentedJarFileName))
-    }
+tasks.named<Delete>("clean") {
+  AndroidSdk.ALL_SDKS.forEach { androidSdk ->
+    delete(layout.buildDirectory.file(androidSdk.preinstrumentedJarFileName))
   }
 }
