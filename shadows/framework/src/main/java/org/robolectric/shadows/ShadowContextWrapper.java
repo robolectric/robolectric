@@ -1,10 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+
 import android.app.ActivityThread;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Process;
 import android.os.UserHandle;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
@@ -135,12 +138,27 @@ public class ShadowContextWrapper {
 
   /** Grant the given permissions for the current process and user. */
   public void grantPermissions(String... permissionNames) {
-    getShadowInstrumentation().grantPermissions(permissionNames);
+    int deviceId = Context.DEVICE_ID_DEFAULT;
+    if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
+      deviceId = realContextWrapper.getDeviceId();
+    }
+    getShadowInstrumentation()
+        .grantPermissions(deviceId, Process.myPid(), Process.myUid(), permissionNames);
   }
 
   /** Grant the given permissions for the given process and user. */
   public void grantPermissions(int pid, int uid, String... permissions) {
-    getShadowInstrumentation().grantPermissions(pid, uid, permissions);
+    int deviceId = Context.DEVICE_ID_DEFAULT;
+    if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
+      deviceId = realContextWrapper.getDeviceId();
+    }
+    getShadowInstrumentation().grantPermissions(deviceId, pid, uid, permissions);
+  }
+
+  /** Grant the given permissions for the given device, current process, and current user. */
+  public void grantPermissions(int deviceId, String... permissionNames) {
+    getShadowInstrumentation()
+        .grantPermissions(deviceId, Process.myPid(), Process.myUid(), permissionNames);
   }
 
   /**
@@ -149,12 +167,27 @@ public class ShadowContextWrapper {
    * <p>Has no effect if permissions were not previously granted.
    */
   public void denyPermissions(String... permissionNames) {
-    getShadowInstrumentation().denyPermissions(permissionNames);
+    int deviceId = Context.DEVICE_ID_DEFAULT;
+    if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
+      deviceId = realContextWrapper.getDeviceId();
+    }
+    getShadowInstrumentation()
+        .denyPermissions(deviceId, Process.myPid(), Process.myUid(), permissionNames);
   }
 
   /** Revoke the given permissions for the given process and user. */
   public void denyPermissions(int pid, int uid, String... permissions) {
-    getShadowInstrumentation().denyPermissions(pid, uid, permissions);
+    int deviceId = Context.DEVICE_ID_DEFAULT;
+    if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
+      deviceId = realContextWrapper.getDeviceId();
+    }
+    getShadowInstrumentation().denyPermissions(deviceId, pid, uid, permissions);
+  }
+
+  /** Revoke the given permissions for the given device, current process, and current user. */
+  public void denyPermissions(int deviceId, String... permissionNames) {
+    getShadowInstrumentation()
+        .denyPermissions(deviceId, Process.myPid(), Process.myUid(), permissionNames);
   }
 
   static ShadowInstrumentation getShadowInstrumentation() {
