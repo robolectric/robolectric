@@ -24,8 +24,6 @@ public class ManifestFactoryTest {
     final Properties properties = new Properties();
     properties.setProperty("android_sdk_home", "");
     properties.setProperty("android_merged_manifest", "/path/to/MergedManifest.xml");
-    properties.setProperty("android_merged_resources", "/path/to/merged-resources");
-    properties.setProperty("android_merged_assets", "/path/to/merged-assets");
 
     RobolectricTestRunner testRunner =
         new RobolectricTestRunner(ManifestFactoryTest.class) {
@@ -41,8 +39,6 @@ public class ManifestFactoryTest {
     ManifestIdentifier manifestIdentifier = manifestFactory.identify(config);
     assertThat(manifestIdentifier.getManifestFile())
         .isEqualTo(Paths.get("/path/to/MergedManifest.xml"));
-    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("/path/to/merged-resources"));
-    assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Paths.get("/path/to/merged-assets"));
     assertThat(manifestIdentifier.getLibraries()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isNull();
 
@@ -50,8 +46,6 @@ public class ManifestFactoryTest {
         RobolectricTestRunner.createAndroidManifest(manifestIdentifier);
     assertThat(androidManifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("/path/to/MergedManifest.xml"));
-    assertThat(androidManifest.getResDirectory()).isEqualTo(Paths.get("/path/to/merged-resources"));
-    assertThat(androidManifest.getAssetsDirectory()).isEqualTo(Paths.get("/path/to/merged-assets"));
   }
 
   @Test
@@ -59,8 +53,6 @@ public class ManifestFactoryTest {
     final Properties properties = new Properties();
     properties.setProperty("android_sdk_home", "");
     properties.setProperty("android_merged_manifest", "/path/to/MergedManifest.xml");
-    properties.setProperty("android_merged_resources", "/path/to/merged-resources");
-    properties.setProperty("android_merged_assets", "/path/to/merged-assets");
 
     RobolectricTestRunner testRunner =
         new RobolectricTestRunner(ManifestFactoryTest.class) {
@@ -77,8 +69,6 @@ public class ManifestFactoryTest {
     ManifestIdentifier manifestIdentifier = manifestFactory.identify(config);
     URL expectedUrl = getClass().getClassLoader().getResource("TestAndroidManifest.xml");
     assertThat(manifestIdentifier.getManifestFile()).isEqualTo(Fs.fromUrl(expectedUrl));
-    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("/path/to/merged-resources"));
-    assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Paths.get("/path/to/merged-assets"));
     assertThat(manifestIdentifier.getLibraries()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isNull();
   }
