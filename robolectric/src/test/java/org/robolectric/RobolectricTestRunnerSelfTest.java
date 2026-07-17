@@ -74,10 +74,10 @@ public class RobolectricTestRunnerSelfTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.M)
+  @Config(sdk = Build.VERSION_CODES.N)
   public void testVersionConfiguration() {
-    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.M);
-    assertThat(Build.VERSION.RELEASE).isEqualTo("6.0.1");
+    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.N);
+    assertThat(Build.VERSION.RELEASE).isEqualTo("7.0");
   }
 
   @Test
