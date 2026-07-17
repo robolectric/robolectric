@@ -111,8 +111,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
   private static final String CONSCRYPT_PROVIDER = "Conscrypt";
   private static final BouncyCastleProvider BOUNCY_CASTLE_PROVIDER = new BouncyCastleProvider();
-  // Cache the Conscrypt provider to avoid creating it multiple times across tests. Note Conscrypt
-  // is not supported in Mac Arm64, so it cannot be eagerly initialized.
+  // Cache the Conscrypt provider to avoid creating it multiple times across tests. It is
+  // initialized lazily as some platforms may not support it.
   private static final AtomicReference<OpenSSLProvider> cachedConscryptProvider =
       new AtomicReference<>();
 
@@ -182,7 +182,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
       if (Security.getProvider(CONSCRYPT_PROVIDER) == null) {
         OpenSSLProvider conscryptProvider = cachedConscryptProvider.get();
         if (conscryptProvider == null) {
-          conscryptProvider = new OpenSSLProvider();
+          conscryptProvider = createConscryptProvider();
           cachedConscryptProvider.set(conscryptProvider);
         }
         Security.insertProviderAt(conscryptProvider, 1);
@@ -267,6 +267,16 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
   }
 
+  // Remove XDH KeyPairGenerator from Conscrypt to prevent handshake failures
+  // in the JVM's TLS stack (https://github.com/robolectric/robolectric/issues/11345).
+  // Let XDH key generation fall back to the JDK, which interoperates fine with Conscrypt.
+  // TODO(hoisie): Remove when https://github.com/google/conscrypt/issues/1299 is fixed.
+  private static OpenSSLProvider createConscryptProvider() {
+    OpenSSLProvider provider = new OpenSSLProvider();
+    provider.remove("KeyPairGenerator.XDH");
+    return provider;
+  }
+
   // If certain Android classes are required to be loaded in a particular order, do so here.
   // Android's Zygote has a class preloading mechanism, and there have been obscure crashes caused
   // by Android bugs requiring a specific initialization order.
@@ -318,6 +328,13 @@ public class AndroidTestEnvironment implements TestEnvironment {
       DefaultNativeRuntimeLoader.injectAndLoad();
     }
 
+    // Bootstrap.getConfiguration gets any potential updates to configuration via
+    // RuntimeEnvironment.setQualifiers.
+    android.content.res.Configuration androidConfiguration = Bootstrap.getConfiguration();
+    shadowActivityThread.setCompatConfiguration(androidConfiguration);
+
+    activityThread.applyConfigurationToResources(androidConfiguration);
+
     Context systemContextImpl =
         reflector(ContextImplReflector.class).createSystemContext(activityThread);
     RuntimeEnvironment.systemContext = systemContextImpl;
@@ -357,12 +374,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
     // code in there that can be reusable, e.g: the XxxxIntentResolver code.
     ShadowActivityThread.setApplicationInfo(applicationInfo);
 
-    // Bootstrap.getConfiguration gets any potential updates to configuration via
-    // RuntimeEnvironment.setQualifiers.
-    android.content.res.Configuration androidConfiguration = Bootstrap.getConfiguration();
-    shadowActivityThread.setCompatConfiguration(androidConfiguration);
-
-    activityThread.applyConfigurationToResources(androidConfiguration);
     RuntimeEnvironment.setConfiguredApplicationClass(applicationClass);
 
     final Class<?> appBindDataClass;

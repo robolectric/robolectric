@@ -289,6 +289,18 @@ public class AndroidTestEnvironmentTest {
   }
 
   @Test
+  @Config(fontScale = 1.3f)
+  public void setFontScale_updatesSystemFontScale() {
+    bootstrapWrapper.callSetUpApplicationState();
+    // Trigger application creation to run installAndCreateApplication
+    ApplicationProvider.getApplicationContext();
+
+    DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
+    assertThat(Resources.getSystem().getConfiguration().fontScale).isEqualTo(1.3f);
+    assertThat(displayMetrics.scaledDensity).isEqualTo(displayMetrics.density * 1.3f);
+  }
+
+  @Test
   public void fontScaleNotSet_stillSetToDefault() {
     bootstrapWrapper.callSetUpApplicationState();
 

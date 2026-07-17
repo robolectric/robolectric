@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.Manifest.permission.MANAGE_SAFETY_CENTER;
+import static android.Manifest.permission.READ_SAFETY_CENTER_STATUS;
+import static android.Manifest.permission.SEND_SAFETY_CENTER_UPDATE;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
@@ -9,8 +12,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.os.Build.VERSION_CODES;
 import android.safetycenter.SafetyCenterData;
@@ -38,13 +43,38 @@ import org.robolectric.shadow.api.Shadow;
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = VERSION_CODES.TIRAMISU)
 public final class ShadowSafetyCenterManagerTest {
+
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   @Before
   public void setUp() {
+    shadowOf((Application) getApplicationContext())
+        .grantPermissions(
+            READ_SAFETY_CENTER_STATUS, SEND_SAFETY_CENTER_UPDATE, MANAGE_SAFETY_CENTER);
     ((ShadowSafetyCenterManager)
             Shadow.extract(getApplicationContext().getSystemService(SafetyCenterManager.class)))
         .setSafetyCenterEnabled(true);
+  }
+
+  @Test
+  @SuppressWarnings("Convert2Lambda")
+  public void isSafetyCenterEnabled_withoutPermission_throwsSecurityException() {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager =
+        Shadow.extract(getApplicationContext().getSystemService(SafetyCenterManager.class));
+    shadowSafetyCenterManager.setEnforcePermissions(true);
+    shadowOf((Application) getApplicationContext())
+        .denyPermissions(READ_SAFETY_CENTER_STATUS, SEND_SAFETY_CENTER_UPDATE);
+
+    assertThrows(
+        SecurityException.class,
+        new ThrowingRunnable() {
+          @Override
+          public void run() throws Throwable {
+            safetyCenterManager.isSafetyCenterEnabled();
+          }
+        });
   }
 
   @Test
@@ -72,6 +102,26 @@ public final class ShadowSafetyCenterManagerTest {
   }
 
   @Test
+  @SuppressWarnings("Convert2Lambda")
+  public void getSafetySourceData_withoutPermission_throwsSecurityException() {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager =
+        Shadow.extract(getApplicationContext().getSystemService(SafetyCenterManager.class));
+    shadowSafetyCenterManager.setEnforcePermissions(true);
+    shadowOf((Application) getApplicationContext()).denyPermissions(SEND_SAFETY_CENTER_UPDATE);
+
+    assertThrows(
+        SecurityException.class,
+        new ThrowingRunnable() {
+          @Override
+          public void run() throws Throwable {
+            safetyCenterManager.getSafetySourceData("id1");
+          }
+        });
+  }
+
+  @Test
   public void getSafetySourceData_whenSetSafetySourceDataNeverCalled_returnsNull() {
     SafetyCenterManager safetyCenterManager =
         getApplicationContext().getSystemService(SafetyCenterManager.class);
@@ -83,7 +133,6 @@ public final class ShadowSafetyCenterManagerTest {
   public void getSafetySourceData_whenDataOnlySetForAnotherId_returnsNull() {
     SafetyCenterManager safetyCenterManager =
         getApplicationContext().getSystemService(SafetyCenterManager.class);
-
     safetyCenterManager.setSafetySourceData(
         "anotherId",
         new SafetySourceData.Builder().build(),
@@ -173,6 +222,31 @@ public final class ShadowSafetyCenterManagerTest {
 
     assertThat(safetyCenterManager.getSafetySourceData("id1")).isSameInstanceAs(data1);
     assertThat(safetyCenterManager.getSafetySourceData("id2")).isSameInstanceAs(data2);
+  }
+
+  @Test
+  @SuppressWarnings("Convert2Lambda")
+  public void setSafetySourceData_withoutPermission_throwsSecurityException() {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager =
+        Shadow.extract(getApplicationContext().getSystemService(SafetyCenterManager.class));
+    shadowSafetyCenterManager.setEnforcePermissions(true);
+    shadowOf((Application) getApplicationContext()).denyPermissions(SEND_SAFETY_CENTER_UPDATE);
+    SafetySourceData data = new SafetySourceData.Builder().build();
+    SafetyEvent event =
+        new SafetyEvent.Builder(SafetyEvent.SAFETY_EVENT_TYPE_REFRESH_REQUESTED)
+            .setRefreshBroadcastId("id")
+            .build();
+
+    assertThrows(
+        SecurityException.class,
+        new ThrowingRunnable() {
+          @Override
+          public void run() throws Throwable {
+            safetyCenterManager.setSafetySourceData("id1", data, event);
+          }
+        });
   }
 
   @Test
@@ -535,6 +609,27 @@ public final class ShadowSafetyCenterManagerTest {
 
   @Test
   @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @SuppressWarnings("Convert2Lambda")
+  public void getSafetyCenterData_withoutPermission_throwsSecurityException() {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager =
+        Shadow.extract(getApplicationContext().getSystemService(SafetyCenterManager.class));
+    shadowSafetyCenterManager.setEnforcePermissions(true);
+    shadowOf((Application) getApplicationContext()).denyPermissions(MANAGE_SAFETY_CENTER);
+
+    assertThrows(
+        SecurityException.class,
+        new ThrowingRunnable() {
+          @Override
+          public void run() throws Throwable {
+            safetyCenterManager.getSafetyCenterData();
+          }
+        });
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   public void getSafetyCenterData_whenDataSetByShadow_returnsThatData() {
     SafetyCenterManager safetyCenterManager =
         getApplicationContext().getSystemService(SafetyCenterManager.class);
@@ -544,6 +639,28 @@ public final class ShadowSafetyCenterManagerTest {
     shadowSafetyCenterManager.setSafetyCenterData(safetyCenterData);
 
     assertThat(safetyCenterManager.getSafetyCenterData()).isEqualTo(safetyCenterData);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @SuppressWarnings("Convert2Lambda")
+  public void addOnSafetyCenterDataChangedListener_withoutPermission_throwsSecurityException() {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
+    shadowSafetyCenterManager.setEnforcePermissions(true);
+    shadowOf((Application) getApplicationContext()).denyPermissions(MANAGE_SAFETY_CENTER);
+    OnSafetyCenterDataChangedListener mockListener = mock(OnSafetyCenterDataChangedListener.class);
+
+    assertThrows(
+        SecurityException.class,
+        new ThrowingRunnable() {
+          @Override
+          public void run() throws Throwable {
+            safetyCenterManager.addOnSafetyCenterDataChangedListener(
+                directExecutor(), mockListener);
+          }
+        });
   }
 
   @Test
@@ -601,6 +718,27 @@ public final class ShadowSafetyCenterManagerTest {
 
   @Test
   @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @SuppressWarnings("Convert2Lambda")
+  public void removeOnSafetyCenterDataChangedListener_withoutPermission_throwsSecurityException() {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
+    shadowSafetyCenterManager.setEnforcePermissions(true);
+    shadowOf((Application) getApplicationContext()).denyPermissions(MANAGE_SAFETY_CENTER);
+    OnSafetyCenterDataChangedListener mockListener = mock(OnSafetyCenterDataChangedListener.class);
+
+    assertThrows(
+        SecurityException.class,
+        new ThrowingRunnable() {
+          @Override
+          public void run() throws Throwable {
+            safetyCenterManager.removeOnSafetyCenterDataChangedListener(mockListener);
+          }
+        });
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   public void removeOnSafetyCenterDataChangedListener_listenerIsNotCalled() throws Exception {
     SafetyCenterManager safetyCenterManager =
         getApplicationContext().getSystemService(SafetyCenterManager.class);
@@ -612,6 +750,30 @@ public final class ShadowSafetyCenterManagerTest {
     shadowSafetyCenterManager.setSafetyCenterData((SafetyCenterData) createSafetyCenterData());
 
     verify(mockListener, never()).onSafetyCenterDataChanged(any());
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @SuppressWarnings("Convert2Lambda")
+  public void dismissSafetyCenterIssue_withoutPermission_throwsSecurityException() {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager = Shadow.extract(safetyCenterManager);
+    shadowSafetyCenterManager.setEnforcePermissions(true);
+    shadowOf((Application) getApplicationContext()).denyPermissions(MANAGE_SAFETY_CENTER);
+    SafetyCenterIssue issue =
+        ShadowSafetyCenterManager.newSafetyCenterIssueBuilder("id1", "title", "summary").build();
+    SafetyCenterData dataWithIssue = (SafetyCenterData) createSafetyCenterDataWithIssue(issue);
+    shadowSafetyCenterManager.setSafetyCenterData(dataWithIssue);
+
+    assertThrows(
+        SecurityException.class,
+        new ThrowingRunnable() {
+          @Override
+          public void run() throws Throwable {
+            safetyCenterManager.dismissSafetyCenterIssue("id1");
+          }
+        });
   }
 
   @Test

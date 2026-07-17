@@ -16,6 +16,9 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import android.app.Activity;
 import android.app.Application;
 import android.appwidget.AppWidgetProvider;
+import android.companion.virtual.VirtualDeviceManager;
+import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
+import android.companion.virtual.VirtualDeviceParams;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -754,6 +757,55 @@ public class ShadowContextWrapperTest {
     shadowContextWrapper.denyPermissions(1, 1, "MY_PERMISSION");
 
     assertThat(contextWrapper.checkPermission("MY_PERMISSION", 1, 1))
+        .isEqualTo(PackageManager.PERMISSION_DENIED);
+  }
+
+  private Context createVirtualDeviceContext(String name) {
+    VirtualDeviceManager virtualDeviceManager =
+        contextWrapper.getSystemService(VirtualDeviceManager.class);
+    VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            /* associationId= */ 0, new VirtualDeviceParams.Builder().setName(name).build());
+    return contextWrapper.createDeviceContext(virtualDevice.getDeviceId());
+  }
+
+  @Test
+  @Config(minSdk = 34)
+  public void checkPermission_defaultDevice_doesNotAffectVirtualDevice() {
+    Context deviceContext = createVirtualDeviceContext("Test Device");
+
+    shadowContextWrapper.grantPermissions("MY_PERMISSION");
+
+    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSION"))
+        .isEqualTo(PackageManager.PERMISSION_GRANTED);
+    assertThat(deviceContext.checkSelfPermission("MY_PERMISSION"))
+        .isEqualTo(PackageManager.PERMISSION_DENIED);
+  }
+
+  @Test
+  @Config(minSdk = 34)
+  public void checkPermission_virtualDevice_doesNotAffectDefaultDevice() {
+    Context deviceContext = createVirtualDeviceContext("Test Device");
+
+    shadowContextWrapper.grantPermissions(deviceContext.getDeviceId(), "MY_PERMISSION");
+
+    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSION"))
+        .isEqualTo(PackageManager.PERMISSION_DENIED);
+    assertThat(deviceContext.checkSelfPermission("MY_PERMISSION"))
+        .isEqualTo(PackageManager.PERMISSION_GRANTED);
+  }
+
+  @Test
+  @Config(minSdk = 34)
+  public void checkPermission_multipleVirtualDevices_areIndependent() {
+    Context deviceContext1 = createVirtualDeviceContext("Device 1");
+    Context deviceContext2 = createVirtualDeviceContext("Device 2");
+
+    shadowContextWrapper.grantPermissions(deviceContext1.getDeviceId(), "MY_PERMISSION");
+
+    assertThat(deviceContext1.checkSelfPermission("MY_PERMISSION"))
+        .isEqualTo(PackageManager.PERMISSION_GRANTED);
+    assertThat(deviceContext2.checkSelfPermission("MY_PERMISSION"))
         .isEqualTo(PackageManager.PERMISSION_DENIED);
   }
 

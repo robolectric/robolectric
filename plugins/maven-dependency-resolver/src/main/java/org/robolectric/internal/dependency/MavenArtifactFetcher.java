@@ -30,8 +30,7 @@ import org.robolectric.util.Logger;
 
 /**
  * Class responsible for fetching artifacts from Maven. This uses a thread pool of size two in order
- * to parallelize downloads. It uses the Sun JSSE provider for downloading due to its seamless
- * integration with HTTPUrlConnection.
+ * to parallelize downloads.
  */
 @SuppressWarnings("UnstableApiUsage")
 public class MavenArtifactFetcher {

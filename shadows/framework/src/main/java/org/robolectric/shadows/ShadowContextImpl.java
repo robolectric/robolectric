@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -291,7 +292,11 @@ public class ShadowContextImpl {
 
   @Implementation
   protected int checkPermission(String permission, int pid, int uid) {
-    return getShadowInstrumentation().checkPermission(permission, pid, uid);
+    int deviceId = Context.DEVICE_ID_DEFAULT;
+    if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
+      deviceId = realContextImpl.getDeviceId();
+    }
+    return getShadowInstrumentation().checkPermission(permission, pid, uid, deviceId);
   }
 
   @Implementation

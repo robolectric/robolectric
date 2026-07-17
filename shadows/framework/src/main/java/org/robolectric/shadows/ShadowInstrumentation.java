@@ -37,7 +37,7 @@ import android.os.Looper;
 import android.os.Process;
 import android.os.UserHandle;
 import android.text.TextUtils;
-import android.util.Pair;
+import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -99,8 +99,8 @@ public class ShadowInstrumentation {
   @GuardedBy("itself")
   private final List<Wrapper> registeredReceivers = new ArrayList<>();
 
-  // map of pid+uid to granted permissions
-  private final Map<Pair<Integer, Integer>, Set<String>> grantedPermissionsMap =
+  // map of PermissionKey to granted permissions
+  private final Map<PermissionKey, Set<String>> grantedPermissionsMap =
       Collections.synchronizedMap(new HashMap<>());
   private boolean unbindServiceShouldThrowIllegalArgument = false;
   private SecurityException exceptionForBindService = null;
@@ -1005,44 +1005,57 @@ public class ShadowInstrumentation {
   }
 
   int checkPermission(String permission, int pid, int uid) {
+    return checkPermission(permission, pid, uid, Context.DEVICE_ID_DEFAULT);
+  }
+
+  int checkPermission(String permission, int pid, int uid, int deviceId) {
     if (pid == -1) {
-      for (Map.Entry<Pair<Integer, Integer>, Set<String>> entry :
-          grantedPermissionsMap.entrySet()) {
-        if (entry.getKey().second == uid && entry.getValue().contains(permission)) {
+      for (Map.Entry<PermissionKey, Set<String>> entry : grantedPermissionsMap.entrySet()) {
+        if (entry.getKey().deviceId() == deviceId
+            && entry.getKey().uid() == uid
+            && entry.getValue().contains(permission)) {
           return PERMISSION_GRANTED;
         }
       }
       return PERMISSION_DENIED;
     } else {
-      Set<String> grantedPermissionsForPidUid = grantedPermissionsMap.get(new Pair<>(pid, uid));
-      return grantedPermissionsForPidUid != null && grantedPermissionsForPidUid.contains(permission)
+      Set<String> grantedPermissions =
+          grantedPermissionsMap.get(PermissionKey.create(deviceId, pid, uid));
+      return grantedPermissions != null && grantedPermissions.contains(permission)
           ? PERMISSION_GRANTED
           : PERMISSION_DENIED;
     }
   }
 
   void grantPermissions(String... permissionNames) {
-    grantPermissions(Process.myPid(), Process.myUid(), permissionNames);
+    grantPermissions(Context.DEVICE_ID_DEFAULT, Process.myPid(), Process.myUid(), permissionNames);
   }
 
   void grantPermissions(int pid, int uid, String... permissions) {
-    Set<String> grantedPermissionsForPidUid = grantedPermissionsMap.get(new Pair<>(pid, uid));
-    if (grantedPermissionsForPidUid == null) {
-      grantedPermissionsForPidUid = new HashSet<>();
-      grantedPermissionsMap.put(new Pair<>(pid, uid), grantedPermissionsForPidUid);
-    }
-    Collections.addAll(grantedPermissionsForPidUid, permissions);
+    grantPermissions(Context.DEVICE_ID_DEFAULT, pid, uid, permissions);
+  }
+
+  void grantPermissions(int deviceId, int pid, int uid, String... permissions) {
+    PermissionKey key = PermissionKey.create(deviceId, pid, uid);
+    Set<String> grantedPermissions =
+        grantedPermissionsMap.computeIfAbsent(key, k -> new HashSet<>());
+    Collections.addAll(grantedPermissions, permissions);
   }
 
   void denyPermissions(String... permissionNames) {
-    denyPermissions(Process.myPid(), Process.myUid(), permissionNames);
+    denyPermissions(Context.DEVICE_ID_DEFAULT, Process.myPid(), Process.myUid(), permissionNames);
   }
 
   void denyPermissions(int pid, int uid, String... permissions) {
-    Set<String> grantedPermissionsForPidUid = grantedPermissionsMap.get(new Pair<>(pid, uid));
-    if (grantedPermissionsForPidUid != null) {
+    denyPermissions(Context.DEVICE_ID_DEFAULT, pid, uid, permissions);
+  }
+
+  void denyPermissions(int deviceId, int pid, int uid, String... permissions) {
+    PermissionKey key = PermissionKey.create(deviceId, pid, uid);
+    Set<String> grantedPermissions = grantedPermissionsMap.get(key);
+    if (grantedPermissions != null) {
       for (String permissionName : permissions) {
-        grantedPermissionsForPidUid.remove(permissionName);
+        grantedPermissions.remove(permissionName);
       }
     }
   }
@@ -1195,5 +1208,18 @@ public class ShadowInstrumentation {
     @Constructor
     UiAutomation newInstance(
         Looper looper, @WithType("android.app.IUiAutomationConnection") Object connection);
+  }
+
+  @AutoValue
+  abstract static class PermissionKey {
+    abstract int deviceId();
+
+    abstract int pid();
+
+    abstract int uid();
+
+    static PermissionKey create(int deviceId, int pid, int uid) {
+      return new AutoValue_ShadowInstrumentation_PermissionKey(deviceId, pid, uid);
+    }
   }
 }
