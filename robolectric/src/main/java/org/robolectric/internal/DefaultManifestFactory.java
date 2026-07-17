@@ -20,8 +20,6 @@ public class DefaultManifestFactory implements ManifestFactory {
   @Override
   public ManifestIdentifier identify(Config config) {
     Path manifestFile = getFileFromProperty("android_merged_manifest");
-    Path resourcesDir = getFileFromProperty("android_merged_resources");
-    Path assetsDir = getFileFromProperty("android_merged_assets");
     Path apkFile = getFileFromProperty("android_resource_apk");
     String packageName = properties.getProperty("android_custom_package");
 
@@ -33,8 +31,7 @@ public class DefaultManifestFactory implements ManifestFactory {
       manifestFile = getResource(manifestConfig);
     }
 
-    return new ManifestIdentifier(
-        packageName, manifestFile, resourcesDir, assetsDir, emptyList(), apkFile);
+    return new ManifestIdentifier(packageName, manifestFile, null, null, emptyList(), apkFile);
   }
 
   private Path getResource(String pathStr) {
