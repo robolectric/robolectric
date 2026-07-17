@@ -182,7 +182,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
       if (Security.getProvider(CONSCRYPT_PROVIDER) == null) {
         OpenSSLProvider conscryptProvider = cachedConscryptProvider.get();
         if (conscryptProvider == null) {
-          conscryptProvider = new OpenSSLProvider();
+          conscryptProvider = createConscryptProvider();
           cachedConscryptProvider.set(conscryptProvider);
         }
         Security.insertProviderAt(conscryptProvider, 1);
@@ -265,6 +265,16 @@ public class AndroidTestEnvironment implements TestEnvironment {
       // force eager load of the application
       RuntimeEnvironment.getApplication();
     }
+  }
+
+  // Remove XDH KeyPairGenerator from Conscrypt to prevent handshake failures
+  // in the JVM's TLS stack (https://github.com/robolectric/robolectric/issues/11345).
+  // Let XDH key generation fall back to the JDK, which interoperates fine with Conscrypt.
+  // TODO(hoisie): Remove when https://github.com/google/conscrypt/issues/1299 is fixed.
+  private static OpenSSLProvider createConscryptProvider() {
+    OpenSSLProvider provider = new OpenSSLProvider();
+    provider.remove("KeyPairGenerator.XDH");
+    return provider;
   }
 
   // If certain Android classes are required to be loaded in a particular order, do so here.
