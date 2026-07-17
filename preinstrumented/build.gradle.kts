@@ -1,4 +1,5 @@
 import java.net.URI
+import org.gradle.api.DefaultTask
 import org.robolectric.gradle.AndroidSdk
 import org.robolectric.gradle.PUBLISH_URL
 
@@ -7,9 +8,7 @@ plugins {
   alias(libs.plugins.java)
 }
 
-val javaMainClass = "org.robolectric.preinstrumented.JarInstrumentor"
-
-application { mainClass.set(javaMainClass) }
+application { mainClass = "org.robolectric.preinstrumented.JarInstrumentor" }
 
 java {
   sourceCompatibility = JavaVersion.VERSION_11
@@ -25,31 +24,60 @@ dependencies {
   testImplementation(libs.mockito.subclass)
 }
 
-val instrumentAll =
-  tasks.register("instrumentAll") {
-    dependsOn(":prefetchSdks", "build")
+val androidAllMavenLocal =
+  providers.systemProperty("user.home").map { "$it/.m2/repository/org/robolectric/android-all" }
+val instrumentTasks =
+  sdksToInstrument().map { androidSdk ->
+    tasks.register<InstrumentTask>("instrumentSdk${androidSdk.apiLevel}") {
+      description =
+        "Create the preinstrumented Android JAR file for API level ${androidSdk.apiLevel}"
+      group = "robolectric"
 
-    doLast {
-      val androidAllMavenLocal =
-        "${System.getProperty("user.home")}/.m2/repository/org/robolectric/android-all"
-      sdksToInstrument().forEach { androidSdk ->
-        logger.debug("Instrumenting ${androidSdk.coordinates}")
+      dependsOn(":prefetchSdk${androidSdk.apiLevel}")
 
-        val inputPath = "$androidAllMavenLocal/${androidSdk.version}/${androidSdk.jarFileName}"
-        val outputPath =
-          layout.buildDirectory.file(androidSdk.preinstrumentedJarFileName).get().asFile.path
+      androidAllJarFile =
+        layout.projectDirectory.file(
+          androidAllMavenLocal.map { "$it/${androidSdk.version}/${androidSdk.jarFileName}" }
+        )
+      preinstrumentedJarFile = layout.buildDirectory.file(androidSdk.preinstrumentedJarFileName)
+      runtimeClasspath.from(sourceSets.named("main").map { it.runtimeClasspath })
+      mainClassName = application.mainClass
 
-        providers
-          .javaexec {
-            classpath = sourceSets.getByName("main").runtimeClasspath
-            mainClass.set(javaMainClass)
-            args = listOf(inputPath, outputPath)
-          }
-          .result
-          .get()
-      }
+      doFirst { logger.debug("Instrumenting ${androidSdk.coordinates}") }
     }
   }
+
+val instrumentAll =
+  tasks.register("instrumentAll") {
+    description = "Create the preinstrumented Android JAR file for the requested API levels"
+    group = "robolectric"
+
+    dependsOn("build", instrumentTasks)
+  }
+
+@CacheableTask
+abstract class InstrumentTask : DefaultTask() {
+  @get:InputFile
+  @get:PathSensitive(PathSensitivity.NONE)
+  abstract val androidAllJarFile: RegularFileProperty
+  @get:OutputFile abstract val preinstrumentedJarFile: RegularFileProperty
+  @get:Classpath abstract val runtimeClasspath: ConfigurableFileCollection
+  @get:Input abstract val mainClassName: Property<String>
+
+  @get:Inject abstract val execOperations: ExecOperations
+
+  @TaskAction
+  fun instrument() {
+    execOperations
+      .javaexec {
+        classpath = runtimeClasspath
+        mainClass = mainClassName
+        args = listOf(androidAllJarFile, preinstrumentedJarFile).map { it.get().asFile.path }
+      }
+      .rethrowFailure()
+      .assertNormalExitValue()
+  }
+}
 
 val emptySourcesJar = tasks.register<Jar>("emptySourcesJar") { archiveClassifier.set("sources") }
 
