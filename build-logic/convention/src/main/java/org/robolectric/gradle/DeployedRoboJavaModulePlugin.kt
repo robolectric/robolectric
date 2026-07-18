@@ -9,6 +9,7 @@ import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.signing.SigningExtension
@@ -77,14 +78,19 @@ class DeployedRoboJavaModulePlugin : Plugin<Project> {
 
         sonatypeRepositories(isSnapshotVersion)
 
-        project.extensions.configure<SigningExtension> {
-          setRequired {
-            !isSnapshotVersion &&
-              (project.gradle.taskGraph.hasTask("uploadArchives") ||
-                project.gradle.taskGraph.hasTask("publish"))
-          }
+        project.afterEvaluate {
+          project.extensions.configure<SigningExtension> {
+            setRequired {
+              !isSnapshotVersion &&
+                project.gradle.taskGraph.allTasks.any {
+                  it.name == "publish" ||
+                    it.name == "uploadArchives" ||
+                    it.name.startsWith("publish")
+                }
+            }
 
-          sign(publications)
+            sign(project.extensions.getByType<PublishingExtension>().publications)
+          }
         }
       }
     }
