@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 env:
-  cache-version: v3
+  cache-version: v4
 
 jobs:
   build:
@@ -81,6 +81,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     needs: build
+
+    env:
+      # The emulator hard-kills itself 20 seconds (default) after a shutdown request. Writing the
+      # first-boot AVD snapshot in the caching step takes longer than that on GitHub's 2-core
+      # runners, so the snapshot was truncated mid-write and every later run booted the corrupt
+      # cached snapshot. Give the emulator enough time to shut down (and save) gracefully.
+      ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 120
 
     strategy:
       # Allow tests to continue on other devices if they fail on one device.
