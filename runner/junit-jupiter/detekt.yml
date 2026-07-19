@@ -1,0 +1,25 @@
+# Extends the default-config test-folder excludes to this module's additional test source sets
+# (src/jupiterExtensionTest, src/engineFixtures), which detekt's stock '**/test/**' globs do not
+# match. Only the excludes lists are overridden; all other rule settings stay at their defaults
+# via buildUponDefaultConfig.
+naming:
+  FunctionNaming:
+    excludes: &testFolders
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+      - '**/jupiterExtensionTest/**'
+      - '**/engineFixtures/**'
+
+style:
+  MagicNumber:
+    excludes: *testFolders
+
+complexity:
+  TooManyFunctions:
+    excludes: *testFolders
