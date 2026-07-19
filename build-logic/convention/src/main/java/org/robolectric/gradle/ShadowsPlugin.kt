@@ -28,6 +28,10 @@ import org.gradle.process.CommandLineArgumentProvider
 
 class ShadowsPlugin : Plugin<Project> {
   override fun apply(project: Project) {
+    if (project.path != ":processor") {
+      project.evaluationDependsOn(":processor")
+    }
+
     project.pluginManager.apply("idea")
 
     val shadows = project.extensions.create<ShadowsPluginExtension>("shadows")
