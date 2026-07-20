@@ -175,7 +175,8 @@ error-prone-check-api = { module = "com.google.errorprone:error_prone_check_api"
 error-prone-test-helpers = { module = "com.google.errorprone:error_prone_test_helpers", version.ref = "error-prone" }
 
 conscrypt-openjdk-uber = { module = "org.conscrypt:conscrypt-openjdk-uber", version.ref = "conscrypt" }
-bcprov-jdk18on = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+bc-jdk18on-bom = { module = "org.bouncycastle:bc-jdk18on-bom" version.ref = "bouncycastle" }
+bcprov-jdk18on = { module = "org.bouncycastle:bcprov-jdk18on" }
 findbugs-jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "findbugs-jsr305" }
 
 guava = { module = "com.google.guava:guava", version.ref = "guava-jre" }
