@@ -28,6 +28,7 @@ dependencies {
   implementation(libs.conscrypt.openjdk.uber)
   implementation(libs.snakeyaml)
 
+  api(platform(libs.bc.jdk18on.bom))
   api(libs.bcprov.jdk18on)
   compileOnly(libs.findbugs.jsr305)
 
