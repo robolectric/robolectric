@@ -96,10 +96,6 @@ project.afterEvaluate {
   }
 }
 
-rootProject.gradle.projectsEvaluated {
-  rootProject.tasks.named<Javadoc>("aggregateJavadocs").configure { isFailOnError = false }
-}
-
 gradle.projectsEvaluated {
   val headerHtml =
     """
@@ -133,17 +129,17 @@ gradle.projectsEvaluated {
       }
     }
   }
+}
 
-  tasks.register<Copy>("aggregateJsondocs") {
-    project.subprojects
-      .filter { it.pluginManager.hasPlugin(libs.plugins.robolectric.shadows.get().pluginId) }
-      .forEach { subproject ->
-        dependsOn(subproject.tasks.named("compileJava"))
-        from(subproject.layout.buildDirectory.dir("docs/json"))
-      }
+tasks.register<Copy>("aggregateJsondocs") {
+  project.subprojects
+    .filter { it.pluginManager.hasPlugin(libs.plugins.robolectric.shadows.get().pluginId) }
+    .forEach { subproject ->
+      dependsOn(subproject.tasks.named("compileJava"))
+      from(subproject.layout.buildDirectory.dir("docs/json"))
+    }
 
-    into(layout.buildDirectory.dir("docs/json"))
-  }
+  into(layout.buildDirectory.dir("docs/json"))
 }
 
 val aggregateDocs =

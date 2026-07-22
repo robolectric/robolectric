@@ -20,21 +20,20 @@ class AggregateJavadocPlugin : Plugin<Project> {
       return
     }
 
-    rootProject.gradle.projectsEvaluated {
+    rootProject.tasks.register<Javadoc>(AGGREGATE_JAVADOCS_TASK_NAME) {
       val javadocTasks = getJavadocTasks(rootProject)
       if (javadocTasks.isNotEmpty()) {
-        rootProject.tasks.register<Javadoc>(AGGREGATE_JAVADOCS_TASK_NAME) {
-          description = "Aggregates Javadoc API documentation of all subprojects."
-          group = JavaBasePlugin.DOCUMENTATION_GROUP
+        description = "Aggregates Javadoc API documentation of all subprojects."
+        group = JavaBasePlugin.DOCUMENTATION_GROUP
 
-          dependsOn(javadocTasks)
-          source(javadocTasks.map { it.source })
+        dependsOn(javadocTasks)
+        source(javadocTasks.map { it.source })
 
-          val javadocDirectory = rootProject.layout.buildDirectory.dir("docs/javadoc").get().asFile
+        val javadocDirectory = rootProject.layout.buildDirectory.dir("docs/javadoc").get().asFile
 
-          destinationDir = javadocDirectory
-          classpath = rootProject.files(javadocTasks.map { it.classpath })
-        }
+        destinationDir = javadocDirectory
+        classpath = rootProject.files(javadocTasks.map { it.classpath })
+        isFailOnError = false
       }
     }
   }
