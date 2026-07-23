@@ -4,6 +4,7 @@ import java.io.File
 import java.util.Properties
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.tasks.Input
@@ -18,7 +19,7 @@ abstract class ProvideBuildClasspathTask : DefaultTask() {
   @get:Input abstract val sdkCoordinates: ListProperty<String>
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.NONE)
-  abstract val sdkFiles: ListProperty<Set<File>>
+  abstract val sdkFiles: ListProperty<FileCollection>
 
   @get:OutputFile abstract val outFile: RegularFileProperty
 
@@ -30,7 +31,7 @@ abstract class ProvideBuildClasspathTask : DefaultTask() {
     val sdkFiles = sdkFiles.get()
 
     sdkCoordinates.forEachIndexed { index, coordinates ->
-      props.setProperty(coordinates, sdkFiles[index].joinToString(File.pathSeparator))
+      props.setProperty(coordinates, sdkFiles[index].files.joinToString(File.pathSeparator))
     }
 
     val outFile = outFile.get().asFile
@@ -61,10 +62,12 @@ abstract class ProvideBuildClasspathTask : DefaultTask() {
           val coordinates =
             if (usePreinstrumentedJars) androidSdk.preinstrumentedCoordinates
             else androidSdk.coordinates
-          val configuration = project.configurations.maybeCreate("sdk${androidSdk.apiLevel}")
-          project.dependencies.add(configuration.name, coordinates)
+          val configuration =
+            project.configurations.register("sdk${androidSdk.apiLevel}") {
+              dependencies.add(project.dependencies.create(coordinates))
+            }
           sdkCoordinates.add(coordinates)
-          sdkFiles.add(configuration.files)
+          sdkFiles.add(configuration)
         }
       }
     }
