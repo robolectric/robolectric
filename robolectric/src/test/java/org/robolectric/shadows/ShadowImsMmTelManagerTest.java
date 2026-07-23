@@ -629,4 +629,20 @@ public class ShadowImsMmTelManagerTest {
     assertThat(newImsMmTelManager.getVoWiFiModeSetting())
         .isEqualTo(ImsMmTelManager.WIFI_MODE_UNKNOWN);
   }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void isCrossSimCallingEnabled_defaultFalse() throws Exception {
+    ImsMmTelManager imsMmTelManager = ImsMmTelManager.createForSubscriptionId(SUBSCRIPTION_ID);
+    assertThat(imsMmTelManager.isCrossSimCallingEnabled()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void setCrossSimCallingEnabled_updatesState() throws Exception {
+    ImsMmTelManager imsMmTelManager = ImsMmTelManager.createForSubscriptionId(SUBSCRIPTION_ID);
+    imsMmTelManager.setCrossSimCallingEnabled(true);
+    assertThat(imsMmTelManager.isCrossSimCallingEnabled()).isTrue();
+  }
 }
+

@@ -48,6 +48,7 @@ public class ShadowImsMmTelManager {
   private static final Map<Integer, Integer> subIdToRegistrationStateMap = new ArrayMap<>();
   private static final Map<Integer, Boolean> subIdToVoWiFiSettingEnabledMap = new ArrayMap<>();
   private static final Map<Integer, Integer> subIdToVoWiFiModeSettingMap = new ArrayMap<>();
+  private static final Map<Integer, Boolean> subIdToCrossSimCallingEnabledMap = new ArrayMap<>();
 
   private final Map<ImsMmTelManager.RegistrationCallback, Executor>
       registrationCallbackExecutorMap = new ArrayMap<>();
@@ -343,6 +344,24 @@ public class ShadowImsMmTelManager {
     subIdToVoWiFiModeSettingMap.put(subId, mode);
   }
 
+  @Implementation(minSdk = VERSION_CODES.S)
+  protected boolean isCrossSimCallingEnabled() throws ImsException {
+    return subIdToCrossSimCallingEnabledMap.getOrDefault(getSubscriptionId(), false);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.S)
+  protected void setCrossSimCallingEnabled(boolean isEnabled) throws ImsException {
+    subIdToCrossSimCallingEnabledMap.put(getSubscriptionId(), isEnabled);
+  }
+
+  public static void setCrossSimCallingEnabled(int subId, boolean isEnabled) {
+    subIdToCrossSimCallingEnabledMap.put(subId, isEnabled);
+  }
+
+  public static boolean getCrossSimCallingEnabled(int subId) {
+    return subIdToCrossSimCallingEnabledMap.getOrDefault(subId, false);
+  }
+
   @Resetter
   public static void clearExistingInstancesAndStates() {
     existingInstances.clear();
@@ -350,6 +369,7 @@ public class ShadowImsMmTelManager {
     subIdToRegistrationStateMap.clear();
     subIdToVoWiFiSettingEnabledMap.clear();
     subIdToVoWiFiModeSettingMap.clear();
+    subIdToCrossSimCallingEnabledMap.clear();
   }
 
   @ForType(ImsMmTelManager.class)
