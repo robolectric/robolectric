@@ -48,8 +48,10 @@ public class ShadowImsMmTelManager {
   private static final Map<Integer, Integer> subIdToRegistrationStateMap = new ArrayMap<>();
   private static final Map<Integer, Boolean> subIdToVoWiFiSettingEnabledMap = new ArrayMap<>();
   private static final Map<Integer, Integer> subIdToVoWiFiModeSettingMap = new ArrayMap<>();
+  private static final Map<Integer, Boolean> subIdToCrossSimCallingEnabledMap = new ArrayMap<>();
 
   private final Map<ImsMmTelManager.RegistrationCallback, Executor>
+
       registrationCallbackExecutorMap = new ArrayMap<>();
   private final Map<RegistrationManager.RegistrationCallback, Executor>
       registrationManagerCallbackExecutorMap = new ArrayMap<>();
@@ -343,6 +345,26 @@ public class ShadowImsMmTelManager {
     subIdToVoWiFiModeSettingMap.put(subId, mode);
   }
 
+  @Implementation(minSdk = VERSION_CODES.S)
+  @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
+  protected boolean isCrossSimCallingEnabled() {
+    return subIdToCrossSimCallingEnabledMap.getOrDefault(getSubscriptionId(), false);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.S)
+  @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
+  protected void setCrossSimCallingEnabled(boolean isEnabled) {
+    subIdToCrossSimCallingEnabledMap.put(getSubscriptionId(), isEnabled);
+  }
+
+  public static void setCrossSimCallingEnabled(int subId, boolean isEnabled) {
+    subIdToCrossSimCallingEnabledMap.put(subId, isEnabled);
+  }
+
+  public static boolean getCrossSimCallingEnabled(int subId) {
+    return subIdToCrossSimCallingEnabledMap.getOrDefault(subId, false);
+  }
+
   @Resetter
   public static void clearExistingInstancesAndStates() {
     existingInstances.clear();
@@ -350,9 +372,11 @@ public class ShadowImsMmTelManager {
     subIdToRegistrationStateMap.clear();
     subIdToVoWiFiSettingEnabledMap.clear();
     subIdToVoWiFiModeSettingMap.clear();
+    subIdToCrossSimCallingEnabledMap.clear();
   }
 
   @ForType(ImsMmTelManager.class)
+
   interface ImsMmTelManagerReflector {
 
     @Accessor("mSubId")
