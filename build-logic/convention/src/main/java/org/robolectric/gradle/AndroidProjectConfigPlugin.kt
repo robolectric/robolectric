@@ -2,7 +2,6 @@ package org.robolectric.gradle
 
 import com.android.SdkConstants.FD_GENERATED
 import com.android.build.api.dsl.LibraryExtension
-import java.io.File
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
@@ -16,15 +15,22 @@ class AndroidProjectConfigPlugin : Plugin<Project> {
 
     project.tasks.withType<Test>().configureEach { configureTestTask() }
 
-    project.tasks.register<ProvideBuildClasspathTask>("provideBuildClasspath") {
-      val outDir = project.layout.buildDirectory.dir("$FD_GENERATED/robolectric").get().asFile
+    val provideBuildClasspath =
+      project.tasks.register<ProvideBuildClasspathTask>("provideBuildClasspath") {
+        val outDirProvider = project.layout.buildDirectory.dir("$FD_GENERATED/robolectric")
 
-      outFile = File(outDir, "robolectric-deps.properties")
+        outFile.set(outDirProvider.map { it.file("robolectric-deps.properties") })
 
-      project.extensions.configure<LibraryExtension> {
-        sourceSets.getByName("test").resources.directories.add(outDir.absolutePath)
+        project.extensions.configure<LibraryExtension> {
+          sourceSets
+            .getByName("test")
+            .resources
+            .directories
+            .add(outDirProvider.get().asFile.absolutePath)
+        }
       }
-    }
+
+    ProvideBuildClasspathTask.configure(project, provideBuildClasspath)
 
     project.afterEvaluate {
       project.tasks.forEach { task ->

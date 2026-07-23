@@ -43,9 +43,11 @@ class RoboJavaModulePlugin : Plugin<Project> {
         project.extensions.configure<JavaPluginExtension> {
           val outDir = sourceSets.getByName("test").output.resourcesDir
 
-          outFile = File(outDir, "robolectric-deps.properties")
+          outFile.set(File(outDir, "robolectric-deps.properties"))
         }
       }
+
+    ProvideBuildClasspathTask.configure(project, provideBuildClasspath)
 
     project.tasks.withType<Test>().configureEach {
       dependsOn(provideBuildClasspath)
