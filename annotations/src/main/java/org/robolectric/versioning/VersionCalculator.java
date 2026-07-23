@@ -15,8 +15,8 @@ import java.util.zip.ZipEntry;
 public class VersionCalculator {
 
   /**
-   * A temporary alias to {@link * android.os.Build.VERSION_CODES.CINNAMON_BUN}. This will be
-   * removed when Robolectric shadows compile against the CINNAMON_BUN SDK
+   * A temporary alias to {@link android.os.Build.VERSION_CODES.CINNAMON_BUN}. This will be removed
+   * when Robolectric shadows compile against the CINNAMON_BUN SDK
    */
   public static final int CINNAMON_BUN = 37;
 
