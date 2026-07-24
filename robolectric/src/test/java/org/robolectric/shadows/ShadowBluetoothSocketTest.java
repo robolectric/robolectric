@@ -24,7 +24,7 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowBluetoothSocketTest {
   BluetoothSocket bluetoothSocket;
 
-  private static final byte[] DATA = new byte[] {1, 2, 3, 42, 96, 127};
+  private static final byte[] data = new byte[] {1, 2, 3, 42, 96, 127};
 
   @Before
   public void setUp() throws Exception {
@@ -33,21 +33,21 @@ public class ShadowBluetoothSocketTest {
 
   @Test
   public void getInputStreamFeeder() throws Exception {
-    shadowOf(bluetoothSocket).getInputStreamFeeder().write(DATA);
+    shadowOf(bluetoothSocket).getInputStreamFeeder().write(data);
 
     InputStream inputStream = bluetoothSocket.getInputStream();
     byte[] b = new byte[1024];
     int len = inputStream.read(b);
-    assertThat(Arrays.copyOf(b, len)).isEqualTo(DATA);
+    assertThat(Arrays.copyOf(b, len)).isEqualTo(data);
   }
 
   @Test
   public void getOutputStreamSink() throws Exception {
-    bluetoothSocket.getOutputStream().write(DATA);
+    bluetoothSocket.getOutputStream().write(data);
 
     byte[] b = new byte[1024];
     int len = shadowOf(bluetoothSocket).getOutputStreamSink().read(b);
-    assertThat(Arrays.copyOf(b, len)).isEqualTo(DATA);
+    assertThat(Arrays.copyOf(b, len)).isEqualTo(data);
   }
 
   private static class SocketVerifier extends PipedOutputStream {
@@ -64,7 +64,7 @@ public class ShadowBluetoothSocketTest {
     SocketVerifier socketVerifier = new SocketVerifier();
     shadowOf(bluetoothSocket).setOutputStream(socketVerifier);
 
-    bluetoothSocket.getOutputStream().write(DATA);
+    bluetoothSocket.getOutputStream().write(data);
 
     assertThat(socketVerifier.success).isTrue();
   }
@@ -74,24 +74,28 @@ public class ShadowBluetoothSocketTest {
     bluetoothSocket.close();
 
     assertThrows(IOException.class, () -> bluetoothSocket.connect());
+    assertThat(bluetoothSocket.isConnected()).isFalse();
   }
 
   @Test
   public void unblockConnect_withoutBlocking_throws() throws Exception {
-    assertThrows(IllegalStateException.class, () -> shadowOf(bluetoothSocket).unblockConnect());
+    ShadowBluetoothSocket shadowBluetoothSocket = shadowOf(bluetoothSocket);
+    assertThrows(IllegalStateException.class, () -> shadowBluetoothSocket.unblockConnect());
   }
 
   @Test
   public void blockConnect_afterAlreadyBlocking_throws() throws Exception {
     shadowOf(bluetoothSocket).blockConnect();
-    assertThrows(IllegalStateException.class, () -> shadowOf(bluetoothSocket).blockConnect());
+    ShadowBluetoothSocket shadowBluetoothSocket = shadowOf(bluetoothSocket);
+    assertThrows(IllegalStateException.class, () -> shadowBluetoothSocket.blockConnect());
   }
 
   @Test
   public void blockConnect_afterUnblocked_throws() throws Exception {
     shadowOf(bluetoothSocket).blockConnect();
     shadowOf(bluetoothSocket).unblockConnect();
-    assertThrows(IllegalStateException.class, () -> shadowOf(bluetoothSocket).blockConnect());
+    ShadowBluetoothSocket shadowBluetoothSocket = shadowOf(bluetoothSocket);
+    assertThrows(IllegalStateException.class, () -> shadowBluetoothSocket.blockConnect());
   }
 
   @Test
@@ -196,5 +200,31 @@ public class ShadowBluetoothSocketTest {
     IOException thrownException = assertThrows(IOException.class, () -> bluetoothSocket.connect());
 
     assertThat(thrownException).isSameInstanceAs(customException);
+    assertThat(bluetoothSocket.isConnected()).isFalse();
+  }
+
+  @Test
+  public void connect_customException_throwsWithoutClose() throws Exception {
+    IOException customException = new IOException("custom exception");
+    shadowOf(bluetoothSocket).setConnectException(customException);
+
+    IOException thrownException = assertThrows(IOException.class, () -> bluetoothSocket.connect());
+
+    assertThat(thrownException).isSameInstanceAs(customException);
+    assertThat(bluetoothSocket.isConnected()).isFalse();
+  }
+
+  @Test
+  public void connect_customException_isPersistent() throws Exception {
+    IOException customException = new IOException("custom exception");
+    shadowOf(bluetoothSocket).setConnectException(customException);
+
+    IOException thrownException1 = assertThrows(IOException.class, () -> bluetoothSocket.connect());
+    assertThat(thrownException1).isSameInstanceAs(customException);
+    assertThat(bluetoothSocket.isConnected()).isFalse();
+
+    IOException thrownException2 = assertThrows(IOException.class, () -> bluetoothSocket.connect());
+    assertThat(thrownException2).isSameInstanceAs(customException);
+    assertThat(bluetoothSocket.isConnected()).isFalse();
   }
 }
