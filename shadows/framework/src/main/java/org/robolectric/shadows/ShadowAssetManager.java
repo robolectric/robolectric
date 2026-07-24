@@ -62,6 +62,31 @@ public abstract class ShadowAssetManager {
     return cachedResourcesMode;
   }
 
+  /**
+   * Adds a split APK path to the given {@link AssetManager}, making its assets and resources
+   * available for loading. This simulates what Android's SplitCompat does at runtime when a dynamic
+   * feature module is installed.
+   *
+   * <p>The {@code splitApkPath} must point to a valid APK (ZIP) file. It may contain {@code
+   * assets/} entries (accessible via {@link AssetManager#open}) and/or a {@code resources.arsc}
+   * (making compiled resources available).
+   *
+   * @param assetManager the AssetManager to add the split to
+   * @param splitApkPath absolute path to the split APK file
+   * @return the cookie assigned to the added asset path, or 0 on failure
+   */
+  public static int addSplitAssetPath(AssetManager assetManager, String splitApkPath) {
+    try {
+      java.lang.reflect.Method addAssetPath =
+          AssetManager.class.getDeclaredMethod("addAssetPath", String.class);
+      addAssetPath.setAccessible(true);
+      Object result = addAssetPath.invoke(assetManager, splitApkPath);
+      return result instanceof Integer ? (Integer) result : 0;
+    } catch (ReflectiveOperationException e) {
+      throw new RuntimeException("Failed to add split asset path: " + splitApkPath, e);
+    }
+  }
+
   abstract Collection<Path> getAllAssetDirs();
 
   @VisibleForTesting
