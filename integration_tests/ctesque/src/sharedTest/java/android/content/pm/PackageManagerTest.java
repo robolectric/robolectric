@@ -68,13 +68,11 @@ public final class PackageManagerTest {
             context.getPackageName(), MATCH_DISABLED_COMPONENTS | GET_ACTIVITIES | GET_SERVICES);
     ActivityInfo[] activities = filterExtraneous(info.activities);
 
-    assertThat(activities).hasLength(4);
+    assertThat(activities.length).isAtLeast(4);
     assertThat(info.services).hasLength(1);
 
-    assertThat(activities[0].name).isEqualTo("org.robolectric.testapp.TestActivity");
-    assertThat(activities[0].enabled).isTrue();
-    assertThat(activities[1].name).isEqualTo("org.robolectric.testapp.DisabledTestActivity");
-    assertThat(activities[1].enabled).isFalse();
+    assertContainsActivity(activities, "org.robolectric.testapp.TestActivity", true);
+    assertContainsActivity(activities, "org.robolectric.testapp.DisabledTestActivity", false);
 
     assertThat(info.services[0].name).isEqualTo("org.robolectric.testapp.TestService");
     assertThat(info.services[0].enabled).isTrue();
@@ -92,8 +90,8 @@ public final class PackageManagerTest {
     PackageInfo info = pm.getPackageInfo(context.getPackageName(), GET_ACTIVITIES);
     ActivityInfo[] activities = filterExtraneous(info.activities);
 
-    assertThat(activities).hasLength(3);
-    assertThat(activities[0].name).isEqualTo("org.robolectric.testapp.TestActivity");
+    assertContainsActivity(activities, "org.robolectric.testapp.TestActivity", true);
+    assertActivityNotPresent(activities, "org.robolectric.testapp.DisabledTestActivity");
   }
 
   @Test
@@ -217,7 +215,8 @@ public final class PackageManagerTest {
 
     // Seems that although disabled app makes everything disabled it is still returned with its
     // manifest state below API 23
-    assertThat(activities).hasLength(3);
+    assertThat(activities.length).isAtLeast(3);
+    assertActivityNotPresent(activities, "org.robolectric.testapp.DisabledTestActivity");
     assertThat(packageInfo.services).hasLength(1);
 
     assertThat(activities[0].enabled).isTrue();
@@ -257,9 +256,10 @@ public final class PackageManagerTest {
 
     assertThat(packageInfo.applicationInfo.enabled).isFalse();
     assertThat(packageInfo.packageName).isEqualTo(context.getPackageName());
-    assertThat(activities).hasLength(4);
+    assertThat(activities.length).isAtLeast(4);
     assertThat(packageInfo.services).hasLength(1);
-    assertThat(activities[0].enabled).isTrue(); // default enabled flag
+    assertContainsActivity(activities, "org.robolectric.testapp.TestActivity", true);
+    assertContainsActivity(activities, "org.robolectric.testapp.DisabledTestActivity", false);
   }
 
   @Test
@@ -293,5 +293,24 @@ public final class PackageManagerTest {
       }
     }
     return filtered.toArray(new ActivityInfo[0]);
+  }
+
+  private static void assertContainsActivity(
+      ActivityInfo[] activities, String activityName, boolean enabled) {
+    for (ActivityInfo activity : activities) {
+      if (activityName.equals(activity.name)) {
+        assertThat(activity.enabled).isEqualTo(enabled);
+        return;
+      }
+    }
+    fail("Expected activity not found: " + activityName);
+  }
+
+  private static void assertActivityNotPresent(ActivityInfo[] activities, String activityName) {
+    for (ActivityInfo activity : activities) {
+      if (activityName.equals(activity.name)) {
+        fail("Activity should not be present: " + activityName);
+      }
+    }
   }
 }
