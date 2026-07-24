@@ -13,8 +13,6 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
-  lint { abortOnError = false }
-
   testOptions {
     targetSdk = 36
     unitTests {
