@@ -1,0 +1,2218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 9.2.1" type="baseline" client="gradle" dependencies="false" name="AGP (9.2.1)" variant="all" version="9.2.1">
+
+    <issue
+        id="OnClick"
+        message="Corresponding method handler &apos;`public void onButtonClick(android.view.View)`&apos; not found"
+        errorLine1="      android:onClick=&quot;onButtonClick&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/main.xml"
+            line="94"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="OnClick"
+        message="Corresponding method handler &apos;`public void someInvalidMethod(android.view.View)`&apos; not found"
+        errorLine1="    android:onClick=&quot;someInvalidMethod&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/with_invalid_onclick.xml"
+            line="7"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="MissingClass"
+        message="Class referenced in the layout file, `org.robolectric.android.CustomView`, was not found in the project or the libraries"
+        errorLine1="&lt;org.robolectric.android.CustomView"
+        errorLine2="^">
+        <location
+            file="src/main/res/layout/custom_layout.xml"
+            line="3"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="MissingClass"
+        message="Class referenced in the layout file, `org.robolectric.android.CustomView2`, was not found in the project or the libraries"
+        errorLine1="&lt;org.robolectric.android.CustomView2"
+        errorLine2="^">
+        <location
+            file="src/main/res/layout/custom_layout2.xml"
+            line="3"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="MissingClass"
+        message="Class referenced in the layout file, `org.robolectric.android.CustomView2`, was not found in the project or the libraries"
+        errorLine1="  &lt;org.robolectric.android.CustomView2"
+        errorLine2="  ^">
+        <location
+            file="src/main/res/layout/custom_layout2.xml"
+            line="8"
+            column="3"/>
+    </issue>
+
+    <issue
+        id="MissingClass"
+        message="Class referenced in the layout file, `org.robolectric.shadows.ShadowLayoutInflaterTest$CustomView3`, was not found in the project or the libraries"
+        errorLine1="&lt;view class=&quot;org.robolectric.shadows.ShadowLayoutInflaterTest$CustomView3&quot; android:text=&quot;Hello bonjour&quot;"
+        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/custom_layout3.xml"
+            line="3"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="MissingClass"
+        message="Class referenced in the layout file, `org.robolectric.android.CustomView`, was not found in the project or the libraries"
+        errorLine1="  &lt;org.robolectric.android.CustomView"
+        errorLine2="  ^">
+        <location
+            file="src/main/res/layout/custom_layout4.xml"
+            line="8"
+            column="3"/>
+    </issue>
+
+    <issue
+        id="MissingClass"
+        message="Class referenced in the layout file, `org.robolectric.android.CustomView`, was not found in the project or the libraries"
+        errorLine1="&lt;org.robolectric.android.CustomView"
+        errorLine2="^">
+        <location
+            file="src/main/res/layout/custom_layout5.xml"
+            line="3"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="MissingClass"
+        message="Class referenced in the layout file, `org.robolectric.android.CustomStateView`, was not found in the project or the libraries"
+        errorLine1="&lt;org.robolectric.android.CustomStateView"
+        errorLine2="^">
+        <location
+            file="src/main/res/layout/custom_layout6.xml"
+            line="3"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="MissingClass"
+        message="Class referenced in the layout file, `org.robolectric.util.CustomFragment`, was not found in the project or the libraries"
+        errorLine1="      android:name=&quot;org.robolectric.util.CustomFragment&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/fragment.xml"
+            line="4"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="MissingClass"
+        message="Class referenced in the layout file, `org.robolectric.shadows.TestFragment`, was not found in the project or the libraries"
+        errorLine1="      android:name=&quot;org.robolectric.shadows.TestFragment&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/fragment_activity.xml"
+            line="15"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="MissingClass"
+        message="Class referenced in the layout file, `com.google.android.maps.MapView`, was not found in the project or the libraries"
+        errorLine1="  &lt;com.google.android.maps.MapView"
+        errorLine2="  ^">
+        <location
+            file="src/main/res/layout/mapview.xml"
+            line="10"
+            column="3"/>
+    </issue>
+
+    <issue
+        id="DuplicateIds"
+        message="Duplicate id `@+id/test_menu_2`, already defined earlier in this layout"
+        errorLine1="      &lt;item android:id=&quot;@+id/test_menu_2&quot; android:title=&quot;Test menu item 2&quot; />"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/menu/test_withchilds.xml"
+            line="10"
+            column="13"/>
+        <location
+            file="src/main/res/menu/test_withchilds.xml"
+            line="5"
+            column="11"
+            message="Duplicate id `@+id/test_menu_2` originally defined here"/>
+    </issue>
+
+    <issue
+        id="DuplicateIds"
+        message="Duplicate id `@+id/test_menu_3`, already defined earlier in this layout"
+        errorLine1="      &lt;item android:id=&quot;@+id/test_menu_3&quot; android:title=&quot;Test menu item 3&quot; />"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/menu/test_withchilds.xml"
+            line="11"
+            column="13"/>
+        <location
+            file="src/main/res/menu/test_withchilds.xml"
+            line="6"
+            column="11"
+            message="Duplicate id `@+id/test_menu_3` originally defined here"/>
+    </issue>
+
+    <issue
+        id="WebViewLayout"
+        message="Placing a `&lt;WebView>` in a parent element that uses a `wrap_content layout_height` can lead to subtle bugs; use `match_parent` instead"
+        errorLine1="  &lt;WebView"
+        errorLine2="   ~~~~~~~">
+        <location
+            file="src/main/res/layout/webview_holder.xml"
+            line="10"
+            column="4"/>
+        <location
+            file="src/main/res/layout/webview_holder.xml"
+            line="7"
+            column="5"
+            message="`wrap_content` here may not work well with WebView below"/>
+    </issue>
+
+    <issue
+        id="MissingDefaultResource"
+        message="The bool &quot;value_only_present_in_w320dp&quot; in values-w320dp has no declaration in the base `values` folder; this can lead to crashes when the resource is queried in a configuration that does not match this qualifier"
+        errorLine1="  &lt;bool name=&quot;value_only_present_in_w320dp&quot;>true&lt;/bool>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values-w320dp/bools.xml"
+            line="3"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="MissingDefaultResource"
+        message="The layout &quot;layout_320_smallest_width&quot; in layout-sw320dp has no declaration in the base `layout` folder; this can lead to crashes when the resource is queried in a configuration that does not match this qualifier"
+        errorLine1="&lt;LinearLayout"
+        errorLine2=" ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout-sw320dp/layout_320_smallest_width.xml"
+            line="3"
+            column="2"/>
+    </issue>
+
+    <issue
+        id="MissingDefaultResource"
+        message="The layout &quot;layout_smallest_width&quot; in layout-sw320dp has no declaration in the base `layout` folder; this can lead to crashes when the resource is queried in a configuration that does not match this qualifier"
+        errorLine1="&lt;LinearLayout"
+        errorLine2=" ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout-sw320dp/layout_smallest_width.xml"
+            line="3"
+            column="2"/>
+    </issue>
+
+    <issue
+        id="MissingDefaultResource"
+        message="The layout &quot;layout_smallest_width&quot; in layout-sw720dp has no declaration in the base `layout` folder; this can lead to crashes when the resource is queried in a configuration that does not match this qualifier"
+        errorLine1="&lt;LinearLayout"
+        errorLine2=" ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout-sw720dp/layout_smallest_width.xml"
+            line="3"
+            column="2"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `fontProviderAuthority` is only used in API level 26 and higher (current min is 23)"
+        errorLine1="    android:fontProviderAuthority=&quot;com.example.fontprovider.authority&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/font/downloadable.xml"
+            line="5"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `fontProviderPackage` is only used in API level 26 and higher (current min is 23)"
+        errorLine1="    android:fontProviderPackage=&quot;com.example.fontprovider&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/font/downloadable.xml"
+            line="6"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `fontProviderQuery` is only used in API level 26 and higher (current min is 23)"
+        errorLine1="    android:fontProviderQuery=&quot;example font&quot;/>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/font/downloadable.xml"
+            line="7"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetLeft` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetLeft=&quot;1px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable.xml"
+            line="19"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetTop` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetTop=&quot;2px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable.xml"
+            line="20"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetRight` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetRight=&quot;3px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable.xml"
+            line="21"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetBottom` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetBottom=&quot;4px&quot;>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable.xml"
+            line="22"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetLeft` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetLeft=&quot;1px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle.xml"
+            line="19"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetTop` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetTop=&quot;2px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle.xml"
+            line="20"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetRight` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetRight=&quot;3px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle.xml"
+            line="21"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetBottom` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetBottom=&quot;4px&quot;>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle.xml"
+            line="22"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetLeft` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetLeft=&quot;1px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_135.xml"
+            line="19"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetTop` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetTop=&quot;2px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_135.xml"
+            line="20"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetRight` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetRight=&quot;3px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_135.xml"
+            line="21"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetBottom` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetBottom=&quot;4px&quot;>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_135.xml"
+            line="22"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetLeft` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetLeft=&quot;1px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_180.xml"
+            line="19"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetTop` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetTop=&quot;2px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_180.xml"
+            line="20"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetRight` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetRight=&quot;3px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_180.xml"
+            line="21"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetBottom` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetBottom=&quot;4px&quot;>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_180.xml"
+            line="22"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetLeft` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetLeft=&quot;1px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_225.xml"
+            line="19"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetTop` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetTop=&quot;2px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_225.xml"
+            line="20"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetRight` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetRight=&quot;3px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_225.xml"
+            line="21"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetBottom` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetBottom=&quot;4px&quot;>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_225.xml"
+            line="22"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetLeft` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetLeft=&quot;1px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_270.xml"
+            line="19"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetTop` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetTop=&quot;2px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_270.xml"
+            line="20"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetRight` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetRight=&quot;3px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_270.xml"
+            line="21"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetBottom` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetBottom=&quot;4px&quot;>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_270.xml"
+            line="22"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetLeft` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetLeft=&quot;1px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_315.xml"
+            line="19"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetTop` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetTop=&quot;2px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_315.xml"
+            line="20"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetRight` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetRight=&quot;3px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_315.xml"
+            line="21"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetBottom` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetBottom=&quot;4px&quot;>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_315.xml"
+            line="22"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetLeft` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetLeft=&quot;1px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_360.xml"
+            line="19"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetTop` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetTop=&quot;2px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_360.xml"
+            line="20"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetRight` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetRight=&quot;3px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_360.xml"
+            line="21"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetBottom` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetBottom=&quot;4px&quot;>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_360.xml"
+            line="22"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetLeft` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetLeft=&quot;1px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_45.xml"
+            line="19"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetTop` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetTop=&quot;2px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_45.xml"
+            line="20"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetRight` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetRight=&quot;3px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_45.xml"
+            line="21"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetBottom` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetBottom=&quot;4px&quot;>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_45.xml"
+            line="22"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetLeft` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetLeft=&quot;1px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_90.xml"
+            line="19"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetTop` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetTop=&quot;2px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_90.xml"
+            line="20"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetRight` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetRight=&quot;3px&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_90.xml"
+            line="21"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `opticalInsetBottom` is only used in API level 29 and higher (current min is 23)"
+        errorLine1="    android:opticalInsetBottom=&quot;4px&quot;>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/drawable/gradientdrawable_negative_angle_90.xml"
+            line="22"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `fontStyle` is only used in API level 26 and higher (current min is 23)"
+        errorLine1="      android:fontStyle=&quot;normal&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/font/vt323.xml"
+            line="4"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `fontWeight` is only used in API level 26 and higher (current min is 23)"
+        errorLine1="      android:fontWeight=&quot;400&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/font/vt323.xml"
+            line="5"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `font` is only used in API level 26 and higher (current min is 23)"
+        errorLine1="      android:font=&quot;@font/vt323_regular&quot; />"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/font/vt323.xml"
+            line="6"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `fontStyle` is only used in API level 26 and higher (current min is 23)"
+        errorLine1="      android:fontStyle=&quot;normal&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/font/vt323.xml"
+            line="8"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `fontWeight` is only used in API level 26 and higher (current min is 23)"
+        errorLine1="      android:fontWeight=&quot;700&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/font/vt323.xml"
+            line="9"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `font` is only used in API level 26 and higher (current min is 23)"
+        errorLine1="      android:font=&quot;@font/vt323_bold&quot; />"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/font/vt323.xml"
+            line="10"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of `compileSdk` than 30 is available: 37"
+        errorLine1="  compileSdk = 30"
+        errorLine2="  ~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="4"
+            column="3"/>
+    </issue>
+
+    <issue
+        id="InOrMmUsage"
+        message="Avoid using &quot;`mm`&quot; as units (it does not work accurately on all devices); use &quot;`dp`&quot; instead"
+        errorLine1="  &lt;dimen name=&quot;test_mm_dimen&quot;>42mm&lt;/dimen>"
+        errorLine2="                              ~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="8"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="InOrMmUsage"
+        message="Avoid using &quot;`in`&quot; as units (it does not work accurately on all devices); use &quot;`dp`&quot; instead"
+        errorLine1="  &lt;dimen name=&quot;test_in_dimen&quot;>99in&lt;/dimen>"
+        errorLine2="                              ~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="9"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="SpUsage"
+        message="Should use &quot;`sp`&quot; instead of &quot;`dp`&quot; for text sizes"
+        errorLine1="      android:textSize=&quot;14dip&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/main.xml"
+            line="22"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="SpUsage"
+        message="Should use &quot;`sp`&quot; instead of &quot;`dp`&quot; for text sizes"
+        errorLine1="      android:textSize=&quot;18dip&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/main.xml"
+            line="37"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="SpUsage"
+        message="Should use &quot;`sp`&quot; instead of &quot;`dp`&quot; for text sizes"
+        errorLine1="      android:textSize=&quot;14dip&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/main.xml"
+            line="53"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="SpUsage"
+        message="Should use &quot;`sp`&quot; instead of &quot;`dp`&quot; for text sizes"
+        errorLine1="      android:textSize=&quot;14dip&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/media.xml"
+            line="22"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="SpUsage"
+        message="Should use &quot;`sp`&quot; instead of &quot;`dp`&quot; for text sizes"
+        errorLine1="      android:textSize=&quot;18dip&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/media.xml"
+            line="34"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="SpUsage"
+        message="Should use &quot;`sp`&quot; instead of &quot;`dp`&quot; for text sizes"
+        errorLine1="      android:textSize=&quot;14dip&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/media.xml"
+            line="45"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="SpUsage"
+        message="Should use &quot;`sp`&quot; instead of &quot;`dp`&quot; for text sizes"
+        errorLine1="      android:textSize=&quot;14dip&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/multi_orientation.xml"
+            line="21"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="Orientation"
+        message="No orientation specified, and the default is horizontal. This is a common source of bugs when children are added dynamically."
+        errorLine1="  &lt;LinearLayout"
+        errorLine2="   ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/fragment_activity.xml"
+            line="18"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="Orientation"
+        message="Wrong orientation? No orientation specified, and the default is horizontal, yet this layout has multiple children where at least one has `layout_width=&quot;match_parent&quot;`"
+        errorLine1="&lt;LinearLayout"
+        errorLine2=" ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/request_focus.xml"
+            line="3"
+            column="2"/>
+    </issue>
+
+    <issue
+        id="Orientation"
+        message="Wrong orientation? No orientation specified, and the default is horizontal, yet this layout has multiple children where at least one has `layout_width=&quot;match_parent&quot;`"
+        errorLine1="&lt;LinearLayout"
+        errorLine2=" ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/request_focus_with_two_edit_texts.xml"
+            line="3"
+            column="2"/>
+    </issue>
+
+    <issue
+        id="PxUsage"
+        message="Avoid using `&quot;px&quot;` as units; use `&quot;dp&quot;` instead"
+        errorLine1="  &lt;dimen name=&quot;test_px_dimen&quot;>15px&lt;/dimen>"
+        errorLine2="                              ~~~~">
+        <location
+            file="src/main/res/values/dimens.xml"
+            line="6"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="PxUsage"
+        message="Avoid using `&quot;px&quot;` as units; use `&quot;dp&quot;` instead"
+        errorLine1="    &lt;item name=&quot;android:layout_width&quot;>42px&lt;/item>"
+        errorLine2="                                      ~~~~">
+        <location
+            file="src/main/res/values/themes.xml"
+            line="79"
+            column="39"/>
+    </issue>
+
+    <issue
+        id="PxUsage"
+        message="Avoid using `&quot;px&quot;` as units; use `&quot;dp&quot;` instead"
+        errorLine1="    &lt;item name=&quot;android:layout_height&quot;>42px&lt;/item>"
+        errorLine2="                                       ~~~~">
+        <location
+            file="src/main/res/values/themes.xml"
+            line="80"
+            column="40"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;test_non_integer&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;test_non_integer&quot;>This is not an integer&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/integer.xml"
+            line="3"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;beer&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;plurals name=&quot;beer&quot;>"
+        errorLine2="           ~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/plurals.xml"
+            line="3"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;minute&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;plurals name=&quot;minute&quot;>"
+        errorLine2="           ~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/plurals.xml"
+            line="11"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;greeting&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;greeting&quot;>@string/howdy&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="3"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;howdy&quot; is not translated in &quot;de&quot; (German) or &quot;fr&quot; (French)"
+        errorLine1="  &lt;string name=&quot;howdy&quot;>Howdy&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="4"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;hello&quot; is not translated in &quot;de&quot; (German)"
+        errorLine1="  &lt;string name=&quot;hello&quot;>Hello&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="5"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;some_html&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;some_html&quot;>&lt;b>Hello, &lt;i>world&lt;/i>&lt;/b>&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="6"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;copy&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;copy&quot;>Local Copy&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="11"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;not_in_the_r_file&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;not_in_the_r_file&quot;>Proguarded Out Probably&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="12"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;only_in_main&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;only_in_main&quot;>from main&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="13"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;in_all_libs&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;in_all_libs&quot;>from main&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="14"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;in_main_and_lib1&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;in_main_and_lib1&quot;>from main&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="15"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;ok&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;ok&quot;>@string/ok2&lt;/string>"
+        errorLine2="          ~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="16"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;ok2&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;ok2&quot;>ok yup!&lt;/string>"
+        errorLine2="          ~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="17"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;interpolate&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;interpolate&quot;>Here is a %s!&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="18"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;surrounding_quotes&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;surrounding_quotes&quot;>&quot;This&apos;ll work&quot;&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="19"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;escaped_apostrophe&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;escaped_apostrophe&quot;>This\&apos;ll also work&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="20"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;escaped_quotes&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;escaped_quotes&quot;>Click \&quot;OK\&quot;&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="21"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;leading_and_trailing_new_lines&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;leading_and_trailing_new_lines&quot;>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="22"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;new_lines_and_tabs&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;new_lines_and_tabs&quot;>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="25"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;non_breaking_space&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;non_breaking_space&quot;>Closing soon:\u00A05pm&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="28"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;space&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;space&quot;>Closing soon:\u00205pm&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="29"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;app_name&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;app_name&quot;>Testing App&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="30"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;activity_name&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;activity_name&quot;>Testing App Activity&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="31"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;minute_singular&quot; is not translated in &quot;fr&quot; (French) or &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;minute_singular&quot;>minute&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="32"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;minute_plural&quot; is not translated in &quot;fr&quot; (French) or &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;minute_plural&quot;>minutes&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="33"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;str_int&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;str_int&quot;>123456&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="34"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;preference_resource_key&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;preference_resource_key&quot;>preference_resource_key_value&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="35"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;preference_resource_title&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;preference_resource_title&quot;>preference_resource_title_value&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="36"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;preference_resource_summary&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;preference_resource_summary&quot;>preference_resource_summary_value&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="37"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;preference_resource_default_value&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;preference_resource_default_value&quot;>preference_resource_default_value&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="38"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;test_menu_2&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;test_menu_2&quot;>Test menu item 2&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="39"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;say_it_with_item&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;item name=&quot;say_it_with_item&quot; type=&quot;string&quot;>flowers&lt;/item>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="40"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;typed_array_a&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;typed_array_a&quot;>apple&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="41"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;typed_array_b&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;typed_array_b&quot;>banana&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="42"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;test_permission_description&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;test_permission_description&quot;>permission string&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="43"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;test_permission_label&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;test_permission_label&quot;>permission label&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="44"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;string_with_spaces&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;string_with_spaces&quot;>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="45"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;internal_whitespace_blocks&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;internal_whitespace_blocks&quot;>Whitespace     in     the          middle&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="49"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;internal_newlines&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;internal_newlines&quot;>Some"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="50"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;font_tag_with_attribute&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;font_tag_with_attribute&quot;>This string &lt;font size=&quot;16&quot;>has a font tag&lt;/font>&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="55"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;link_tag_with_attribute&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;link_tag_with_attribute&quot;>This string &lt;a href=&quot;http://robolectric.org&quot;>has a link tag&lt;/a>&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="56"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;bad_example&quot; is not translated in &quot;de&quot; (German), &quot;fr&quot; (French), &quot;sr&quot; (Serbian)"
+        errorLine1="  &lt;string name=&quot;bad_example&quot;>This is a &quot;bad string&quot;.&lt;/string>"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="61"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="Typos"
+        message="&quot;ok&quot; is usually capitalized as &quot;OK&quot;"
+        errorLine1="  &lt;string name=&quot;ok2&quot;>ok yup!&lt;/string>"
+        errorLine2="                     ~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="17"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="ExportedService"
+        message="Exported service does not require permission"
+        errorLine1="      &lt;service android:name=&quot;.TestService&quot; android:exported=&quot;true&quot;/>"
+        errorLine2="       ~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="16"
+            column="8"/>
+    </issue>
+
+    <issue
+        id="ObsoleteLayoutParam"
+        message="Invalid layout param in a `RelativeLayout`: `layout_weight`"
+        errorLine1="        android:layout_weight=&quot;1&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/ordinal_scrollbar.xml"
+            line="11"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseCompoundDrawables"
+        message="This tag and its children can be replaced by one `&lt;TextView/>` and a compound drawable"
+        errorLine1="&lt;LinearLayout xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;"
+        errorLine2=" ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_list_item.xml"
+            line="1"
+            column="2"/>
+    </issue>
+
+    <issue
+        id="UselessLeaf"
+        message="This `HorizontalScrollView` view is unnecessary (no children, no `background`, no `id`, no `style`)"
+        errorLine1="  &lt;HorizontalScrollView"
+        errorLine2="   ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/main.xml"
+            line="98"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="UselessParent"
+        message="This `LinearLayout` layout or its `RelativeLayout` parent is possibly unnecessary"
+        errorLine1="    &lt;LinearLayout"
+        errorLine2="     ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_main_1.xml"
+            line="5"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="IconXmlAndPng"
+        message="The following images appear both as density independent `.xml` files and as bitmap files: src/main/res/drawable-anydpi/an_image_or_vector.xml, src/main/res/drawable/an_image_or_vector.png">
+        <location
+            file="src/main/res/drawable/an_image_or_vector.png"/>
+        <location
+            file="src/main/res/drawable-anydpi/an_image_or_vector.xml"/>
+    </issue>
+
+    <issue
+        id="GifUsage"
+        message="Using the `.gif` format for bitmaps is discouraged">
+        <location
+            file="src/main/res/drawable/an_other_image.gif"/>
+    </issue>
+
+    <issue
+        id="IconDuplicatesConfig"
+        message="The `an_image.png` icon has identical contents in the following configuration folders: drawable-hdpi, drawable">
+        <location
+            file="src/main/res/drawable/an_image.png"/>
+        <location
+            file="src/main/res/drawable-hdpi/an_image.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicatesConfig"
+        message="The `robolectric.png` icon has identical contents in the following configuration folders: drawable-hdpi, mipmap">
+        <location
+            file="src/main/res/mipmap/robolectric.png"/>
+        <location
+            file="src/main/res/drawable-hdpi/robolectric.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/an_image.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/an_image.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/an_image_or_vector.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/an_image_or_vector.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/an_other_image.gif` in densityless folder">
+        <location
+            file="src/main/res/drawable/an_other_image.gif"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/fourth_image.jpg` in densityless folder">
+        <location
+            file="src/main/res/drawable/fourth_image.jpg"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/image_background.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/image_background.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/l0_red.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/l0_red.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/l1_orange.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/l1_orange.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/l2_yellow.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/l2_yellow.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/l3_green.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/l3_green.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/l4_blue.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/l4_blue.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/l5_indigo.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/l5_indigo.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/l6_violet.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/l6_violet.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/l7_white.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/l7_white.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/nine_patch_drawable.9.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/nine_patch_drawable.9.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/third_image.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/third_image.png"/>
+    </issue>
+
+    <issue
+        id="IconDensities"
+        message="Missing the following drawables in `drawable-mdpi`: an_image.png (found in drawable-hdpi)">
+        <location
+            file="src/main/res/drawable-mdpi"/>
+    </issue>
+
+    <issue
+        id="IconMissingDensityFolder"
+        message="Missing density variation folders in `src/main/res`: drawable-xhdpi, drawable-xxhdpi">
+        <location
+            file="src/main/res"/>
+    </issue>
+
+    <issue
+        id="MenuTitle"
+        message="Menu items should specify a `title`"
+        errorLine1="    &lt;item android:id=&quot;@+id/action_search&quot;"
+        errorLine2="     ~~~~">
+        <location
+            file="src/main/res/menu/action_menu.xml"
+            line="2"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="MenuTitle"
+        message="Menu items should specify a `title`"
+        errorLine1="  &lt;item android:id=&quot;@+id/test_submenu_1&quot;>"
+        errorLine2="   ~~~~">
+        <location
+            file="src/main/res/menu/test_withchilds.xml"
+            line="8"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="TextFields"
+        message="This text field does not specify an `inputType`"
+        errorLine1="&lt;EditText"
+        errorLine2=" ~~~~~~~~">
+        <location
+            file="src/main/res/layout/edit_text.xml"
+            line="3"
+            column="2"/>
+    </issue>
+
+    <issue
+        id="TextFields"
+        message="This text field does not specify an `inputType`"
+        errorLine1="  &lt;EditText"
+        errorLine2="   ~~~~~~~~">
+        <location
+            file="src/main/res/layout/request_focus.xml"
+            line="8"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="TextFields"
+        message="This text field does not specify an `inputType`"
+        errorLine1="  &lt;EditText"
+        errorLine2="   ~~~~~~~~">
+        <location
+            file="src/main/res/layout/request_focus_with_two_edit_texts.xml"
+            line="8"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="TextFields"
+        message="This text field does not specify an `inputType`"
+        errorLine1="  &lt;EditText"
+        errorLine2="   ~~~~~~~~">
+        <location
+            file="src/main/res/layout/request_focus_with_two_edit_texts.xml"
+            line="13"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="Autofill"
+        message="Missing `autofillHints` attribute"
+        errorLine1="&lt;EditText"
+        errorLine2=" ~~~~~~~~">
+        <location
+            file="src/main/res/layout/edit_text.xml"
+            line="3"
+            column="2"/>
+    </issue>
+
+    <issue
+        id="Autofill"
+        message="Missing `autofillHints` attribute"
+        errorLine1="  &lt;EditText"
+        errorLine2="   ~~~~~~~~">
+        <location
+            file="src/main/res/layout/request_focus.xml"
+            line="8"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="Autofill"
+        message="Missing `autofillHints` attribute"
+        errorLine1="  &lt;EditText"
+        errorLine2="   ~~~~~~~~">
+        <location
+            file="src/main/res/layout/request_focus_with_two_edit_texts.xml"
+            line="8"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="Autofill"
+        message="Missing `autofillHints` attribute"
+        errorLine1="  &lt;EditText"
+        errorLine2="   ~~~~~~~~">
+        <location
+            file="src/main/res/layout/request_focus_with_two_edit_texts.xml"
+            line="13"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="ContentDescription"
+        message="Missing `contentDescription` attribute on image"
+        errorLine1="  &lt;ImageView android:id=&quot;@+id/icon&quot;"
+        errorLine2="   ~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_list_item.xml"
+            line="9"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="ContentDescription"
+        message="Missing `contentDescription` attribute on image"
+        errorLine1="  &lt;ImageView"
+        errorLine2="   ~~~~~~~~~">
+        <location
+            file="src/main/res/layout/main.xml"
+            line="75"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="ContentDescription"
+        message="Missing `contentDescription` attribute on image"
+        errorLine1="    &lt;ImageView"
+        errorLine2="     ~~~~~~~~~">
+        <location
+            file="src/main/res/layout/main.xml"
+            line="83"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="ContentDescription"
+        message="Missing `contentDescription` attribute on image"
+        errorLine1="    &lt;ImageView"
+        errorLine2="     ~~~~~~~~~">
+        <location
+            file="src/main/res/layout/remote_views.xml"
+            line="13"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="KeyboardInaccessibleWidget"
+        message="&apos;clickable&apos; attribute found, please also add &apos;focusable&apos;"
+        errorLine1="      android:clickable=&quot;true&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/mapview.xml"
+            line="14"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="LabelFor"
+        message="Missing accessibility label: provide either a view with an `android:labelFor` that references this view or provide an `android:hint`"
+        errorLine1="  &lt;EditText"
+        errorLine2="   ~~~~~~~~">
+        <location
+            file="src/main/res/layout/request_focus.xml"
+            line="8"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="LabelFor"
+        message="Missing accessibility label: provide either a view with an `android:labelFor` that references this view or provide an `android:hint`"
+        errorLine1="  &lt;EditText"
+        errorLine2="   ~~~~~~~~">
+        <location
+            file="src/main/res/layout/request_focus_with_two_edit_texts.xml"
+            line="8"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="LabelFor"
+        message="Missing accessibility label: provide either a view with an `android:labelFor` that references this view or provide an `android:hint`"
+        errorLine1="  &lt;EditText"
+        errorLine2="   ~~~~~~~~">
+        <location
+            file="src/main/res/layout/request_focus_with_two_edit_texts.xml"
+            line="13"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;hello&quot;, should use `@string` resource"
+        errorLine1="        android:text=&quot;hello&quot; />"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_main.xml"
+            line="9"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;hello&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;hello&quot; />"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_main_1.xml"
+            line="15"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;world&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;world&quot; />"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_main_1.xml"
+            line="21"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Hello bonjour&quot;, should use `@string` resource"
+        errorLine1="&lt;view class=&quot;org.robolectric.shadows.ShadowLayoutInflaterTest$CustomView3&quot; android:text=&quot;Hello bonjour&quot;"
+        errorLine2="                                                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/custom_layout3.xml"
+            line="3"
+            column="76"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Some text&quot;, should use `@string` resource"
+        errorLine1="    android:text=&quot;Some text&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/custom_layout6.xml"
+            line="5"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;default&quot;, should use `@string` resource"
+        errorLine1="    android:text=&quot;default&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/different_screen_sizes.xml"
+            line="10"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;land&quot;, should use `@string` resource"
+        errorLine1="    android:text=&quot;land&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout-land/different_screen_sizes.xml"
+            line="10"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;xlarge&quot;, should use `@string` resource"
+        errorLine1="    android:text=&quot;xlarge&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout-xlarge/different_screen_sizes.xml"
+            line="10"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Hello, Hint&quot;, should use `@string` resource"
+        errorLine1="  android:hint=&quot;Hello, Hint&quot;"
+        errorLine2="  ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/edit_text.xml"
+            line="5"
+            column="3"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;TACOS&quot;, should use `@string` resource"
+        errorLine1="      android:text=&quot;TACOS&quot;/>"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/fragment_contents.xml"
+            line="12"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;BURRITOS&quot;, should use `@string` resource"
+        errorLine1="      android:text=&quot;BURRITOS&quot;/>"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/fragment_contents.xml"
+            line="17"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;320&quot;, should use `@string` resource"
+        errorLine1="                  android:text=&quot;320&quot;/>"
+        errorLine2="                  ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout-sw320dp/layout_smallest_width.xml"
+            line="11"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;720&quot;, should use `@string` resource"
+        errorLine1="                  android:text=&quot;720&quot;/>"
+        errorLine2="                  ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout-sw720dp/layout_smallest_width.xml"
+            line="11"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Main Layout&quot;, should use `@string` resource"
+        errorLine1="      android:text=&quot;Main Layout&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/main.xml"
+            line="36"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Media Layout&quot;, should use `@string` resource"
+        errorLine1="      android:text=&quot;Media Layout&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/media.xml"
+            line="24"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Landscape!&quot;, should use `@string` resource"
+        errorLine1="      android:text=&quot;Landscape!&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout-land/multi_orientation.xml"
+            line="19"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;I&apos;m a Portrait Layout!&quot;, should use `@string` resource"
+        errorLine1="      android:text=&quot;I&apos;m a Portrait Layout!&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/multi_orientation.xml"
+            line="23"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Test menu item 1&quot;, should use `@string` resource"
+        errorLine1="    android:title=&quot;Test menu item 1&quot; />"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/menu/test.xml"
+            line="3"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Test menu item 1&quot;, should use `@string` resource"
+        errorLine1="  &lt;item android:id=&quot;@+id/test_menu_1&quot; android:title=&quot;Test menu item 1&quot;>"
+        errorLine2="                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/menu/test_withchilds.xml"
+            line="2"
+            column="39"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Test menu item 2&quot;, should use `@string` resource"
+        errorLine1="    &lt;item android:id=&quot;@+id/test_menu_2&quot; android:title=&quot;Test menu item 2&quot; />"
+        errorLine2="                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/menu/test_withchilds.xml"
+            line="5"
+            column="41"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Test menu item 3&quot;, should use `@string` resource"
+        errorLine1="    &lt;item android:id=&quot;@+id/test_menu_3&quot; android:title=&quot;Test menu item 3&quot; />"
+        errorLine2="                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/menu/test_withchilds.xml"
+            line="6"
+            column="41"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Test menu item 2&quot;, should use `@string` resource"
+        errorLine1="      &lt;item android:id=&quot;@+id/test_menu_2&quot; android:title=&quot;Test menu item 2&quot; />"
+        errorLine2="                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/menu/test_withchilds.xml"
+            line="10"
+            column="43"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Test menu item 3&quot;, should use `@string` resource"
+        errorLine1="      &lt;item android:id=&quot;@+id/test_menu_3&quot; android:title=&quot;Test menu item 3&quot; />"
+        errorLine2="                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/menu/test_withchilds.xml"
+            line="11"
+            column="43"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Test menu item 2&quot;, should use `@string` resource"
+        errorLine1="        android:title=&quot;Test menu item 2&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/menu/test_withorder.xml"
+            line="4"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Test menu item 1&quot;, should use `@string` resource"
+        errorLine1="        android:title=&quot;Test menu item 1&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/menu/test_withorder.xml"
+            line="7"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Black Text&quot;, should use `@string` resource"
+        errorLine1="      android:text=&quot;Black Text&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/text_views.xml"
+            line="13"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;White Text&quot;, should use `@string` resource"
+        errorLine1="      android:text=&quot;White Text&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/text_views.xml"
+            line="21"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Grey Text&quot;, should use `@string` resource"
+        errorLine1="      android:text=&quot;Grey Text&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/text_views.xml"
+            line="29"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Black Hint&quot;, should use `@string` resource"
+        errorLine1="      android:hint=&quot;Black Hint&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/text_views_hints.xml"
+            line="12"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;White Hint&quot;, should use `@string` resource"
+        errorLine1="      android:hint=&quot;White Hint&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/text_views_hints.xml"
+            line="20"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Grey Hint&quot;, should use `@string` resource"
+        errorLine1="      android:hint=&quot;Grey Hint&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/text_views_hints.xml"
+            line="28"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="RtlSymmetry"
+        message="When you define `paddingLeft` you should probably also define `paddingRight` for right-to-left symmetry"
+        errorLine1="    android:paddingLeft=&quot;6dip&quot; />"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_list_item.xml"
+            line="17"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        message="Consider replacing `android:paddingLeft` with `android:paddingStart=&quot;6dip&quot;` to better support right-to-left layouts"
+        errorLine1="    android:paddingLeft=&quot;6dip&quot; />"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_list_item.xml"
+            line="17"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        message="Consider replacing `android:drawableRight` with `android:drawableEnd=&quot;@drawable/an_other_image&quot;` to better support right-to-left layouts"
+        errorLine1="      android:drawableRight=&quot;@drawable/an_other_image&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/main.xml"
+            line="41"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        message="Consider replacing `android:drawableLeft` with `android:drawableStart=&quot;@drawable/fourth_image&quot;` to better support right-to-left layouts"
+        errorLine1="      android:drawableLeft=&quot;@drawable/fourth_image&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/main.xml"
+            line="43"
+            column="7"/>
+    </issue>
+
+</issues>

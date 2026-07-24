@@ -10,5 +10,5 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
-  lint { abortOnError = false }
+  lint { baseline = layout.projectDirectory.file("lint-baseline.xml").asFile }
 }
