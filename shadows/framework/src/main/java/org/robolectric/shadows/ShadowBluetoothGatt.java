@@ -33,6 +33,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -45,6 +46,17 @@ import org.robolectric.util.reflector.WithType;
 public class ShadowBluetoothGatt {
 
   private static final String NULL_CALLBACK_MSG = "BluetoothGattCallback can not be null.";
+
+  private static @Nullable GattInterceptor staticInterceptor = null;
+
+  @Resetter
+  public static void reset() {
+    staticInterceptor = null;
+  }
+
+  public static void setStaticInterceptor(@Nullable GattInterceptor interceptor) {
+    staticInterceptor = interceptor;
+  }
 
   private BluetoothGattCallback bluetoothGattCallback;
   private int connectionPriority = BluetoothGatt.CONNECTION_PRIORITY_BALANCED;
@@ -153,10 +165,19 @@ public class ShadowBluetoothGatt {
    */
   @Implementation
   protected boolean connect() {
+    if (staticInterceptor != null) {
+      if (staticInterceptor.interceptConnect(realBluetoothGatt)) {
+        return false;
+      }
+    }
     if (bluetoothGattCallback != null) {
       this.isConnected = true;
+      int status =
+          (staticInterceptor != null)
+              ? staticInterceptor.getConnectStatus(realBluetoothGatt)
+              : BluetoothGatt.GATT_SUCCESS;
       bluetoothGattCallback.onConnectionStateChange(
-          this.realBluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED);
+          this.realBluetoothGatt, status, BluetoothProfile.STATE_CONNECTED);
       return true;
     }
     return false;
@@ -168,8 +189,12 @@ public class ShadowBluetoothGatt {
   @Filter(order = Order.AFTER)
   protected void disconnect() {
     if (this.isCallbackAppropriate()) {
+      int status =
+          (staticInterceptor != null)
+              ? staticInterceptor.getDisconnectStatus(realBluetoothGatt)
+              : BluetoothGatt.GATT_SUCCESS;
       bluetoothGattCallback.onConnectionStateChange(
-          this.realBluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_DISCONNECTED);
+          this.realBluetoothGatt, status, BluetoothProfile.STATE_DISCONNECTED);
     }
     this.isConnected = false;
   }
@@ -177,6 +202,9 @@ public class ShadowBluetoothGatt {
   /** Close this Bluetooth GATT client. */
   @Filter(order = Order.AFTER)
   protected void close() {
+    if (staticInterceptor != null) {
+      staticInterceptor.interceptClose(realBluetoothGatt);
+    }
     this.isClosed = true;
     this.isConnected = false;
   }
@@ -197,6 +225,11 @@ public class ShadowBluetoothGatt {
    */
   @Implementation(minSdk = O)
   protected boolean requestConnectionPriority(int priority) {
+    if (staticInterceptor != null) {
+      if (staticInterceptor.interceptRequestConnectionPriority(realBluetoothGatt, priority)) {
+        return false;
+      }
+    }
     if (!requestConnectionPriorityResult) {
       return false;
     }
@@ -210,8 +243,12 @@ public class ShadowBluetoothGatt {
         int interval = 0;
         int latency = 0;
         int timeout = 0;
+        int status =
+            (staticInterceptor != null)
+                ? staticInterceptor.getRequestConnectionPriorityStatus(realBluetoothGatt, priority)
+                : BluetoothGatt.GATT_SUCCESS;
         bluetoothGattCallback.onConnectionUpdated(
-            this.realBluetoothGatt, interval, latency, timeout, BluetoothGatt.GATT_SUCCESS);
+            this.realBluetoothGatt, interval, latency, timeout, status);
       }
       return true;
     }
@@ -224,11 +261,20 @@ public class ShadowBluetoothGatt {
    */
   @Implementation(minSdk = O)
   protected boolean requestMtu(int mtu) {
+    if (staticInterceptor != null) {
+      if (staticInterceptor.interceptRequestMtu(realBluetoothGatt, mtu)) {
+        return false;
+      }
+    }
     if (bluetoothGattCallback == null) {
       return false;
     }
 
-    bluetoothGattCallback.onMtuChanged(this.realBluetoothGatt, mtu, BluetoothGatt.GATT_SUCCESS);
+    int status =
+        (staticInterceptor != null)
+            ? staticInterceptor.getRequestMtuStatus(realBluetoothGatt, mtu)
+            : BluetoothGatt.GATT_SUCCESS;
+    bluetoothGattCallback.onMtuChanged(this.realBluetoothGatt, mtu, status);
     return true;
   }
 
@@ -238,12 +284,20 @@ public class ShadowBluetoothGatt {
    */
   @Implementation(minSdk = O)
   protected void setPreferredPhy(int txPhy, int rxPhy, int phyOptions) {
+    if (staticInterceptor != null) {
+      if (staticInterceptor.interceptSetPreferredPhy(realBluetoothGatt, txPhy, rxPhy, phyOptions)) {
+        return;
+      }
+    }
     if (bluetoothGattCallback == null) {
       return;
     }
 
-    bluetoothGattCallback.onPhyUpdate(
-        this.realBluetoothGatt, txPhy, rxPhy, BluetoothGatt.GATT_SUCCESS);
+    int status =
+        (staticInterceptor != null)
+            ? staticInterceptor.getSetPreferredPhyStatus(realBluetoothGatt, txPhy, rxPhy)
+            : BluetoothGatt.GATT_SUCCESS;
+    bluetoothGattCallback.onPhyUpdate(this.realBluetoothGatt, txPhy, rxPhy, status);
   }
 
   /**
@@ -252,12 +306,20 @@ public class ShadowBluetoothGatt {
    */
   @Implementation(minSdk = O)
   protected void readPhy() {
+    if (staticInterceptor != null) {
+      if (staticInterceptor.interceptReadPhy(realBluetoothGatt)) {
+        return;
+      }
+    }
     if (bluetoothGattCallback == null) {
       return;
     }
 
-    bluetoothGattCallback.onPhyRead(
-        this.realBluetoothGatt, txPhy, rxPhy, BluetoothGatt.GATT_SUCCESS);
+    int status =
+        (staticInterceptor != null)
+            ? staticInterceptor.getReadPhyStatus(realBluetoothGatt)
+            : BluetoothGatt.GATT_SUCCESS;
+    bluetoothGattCallback.onPhyRead(this.realBluetoothGatt, txPhy, rxPhy, status);
   }
 
   /** Sets the values to be returned by {@link BluetoothGatt#readPhy()} */
@@ -274,14 +336,22 @@ public class ShadowBluetoothGatt {
    */
   @Implementation(minSdk = O)
   protected boolean discoverServices() {
+    if (staticInterceptor != null) {
+      if (staticInterceptor.interceptDiscoverServices(realBluetoothGatt)) {
+        return false;
+      }
+    }
     this.services.clear();
     if (!this.discoverableServices.isEmpty()) {
       // TODO: Don't store the services in the shadow.
       this.services.addAll(this.discoverableServices);
 
       if (bluetoothGattCallback != null) {
-        bluetoothGattCallback.onServicesDiscovered(
-            this.realBluetoothGatt, BluetoothGatt.GATT_SUCCESS);
+        int status =
+            (staticInterceptor != null)
+                ? staticInterceptor.getDiscoverServicesStatus(realBluetoothGatt)
+                : BluetoothGatt.GATT_SUCCESS;
+        bluetoothGattCallback.onServicesDiscovered(this.realBluetoothGatt, status);
         return true;
       }
     }
@@ -330,6 +400,11 @@ public class ShadowBluetoothGatt {
 
   @Implementation(minSdk = O)
   protected boolean readDescriptor(BluetoothGattDescriptor descriptor) {
+    if (staticInterceptor != null) {
+      if (staticInterceptor.interceptReadDescriptor(realBluetoothGatt, descriptor)) {
+        return false;
+      }
+    }
     if (bluetoothGattCallback == null) {
       throw new IllegalStateException(NULL_CALLBACK_MSG);
     }
@@ -344,12 +419,15 @@ public class ShadowBluetoothGatt {
     if (this.readBytes == null) {
       return false;
     }
+    int status =
+        (staticInterceptor != null)
+            ? staticInterceptor.getReadDescriptorStatus(realBluetoothGatt, descriptor)
+            : BluetoothGatt.GATT_SUCCESS;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
       bluetoothGattCallback.onDescriptorRead(
-          this.realBluetoothGatt, descriptor, BluetoothGatt.GATT_SUCCESS, this.readBytes);
+          this.realBluetoothGatt, descriptor, status, this.readBytes);
     } else {
-      bluetoothGattCallback.onDescriptorRead(
-          this.realBluetoothGatt, descriptor, BluetoothGatt.GATT_SUCCESS);
+      bluetoothGattCallback.onDescriptorRead(this.realBluetoothGatt, descriptor, status);
     }
     return true;
   }
@@ -365,11 +443,19 @@ public class ShadowBluetoothGatt {
 
   @Implementation(minSdk = O)
   protected boolean readRemoteRssi() {
+    if (staticInterceptor != null) {
+      if (staticInterceptor.interceptReadRemoteRssi(realBluetoothGatt)) {
+        return false;
+      }
+    }
     if (bluetoothGattCallback == null) {
       return false;
     }
-    bluetoothGattCallback.onReadRemoteRssi(
-        this.realBluetoothGatt, rssi, BluetoothGatt.GATT_SUCCESS);
+    int status =
+        (staticInterceptor != null)
+            ? staticInterceptor.getReadRemoteRssiStatus(realBluetoothGatt)
+            : BluetoothGatt.GATT_SUCCESS;
+    bluetoothGattCallback.onReadRemoteRssi(this.realBluetoothGatt, rssi, status);
     return true;
   }
 
@@ -399,28 +485,31 @@ public class ShadowBluetoothGatt {
 
   @Implementation(minSdk = BAKLAVA)
   protected int requestSubrateMode(int subrateMode) {
+    if (staticInterceptor != null) {
+      if (staticInterceptor.interceptRequestSubrateMode(realBluetoothGatt, subrateMode)) {
+        return BluetoothGatt.GATT_FAILURE;
+      }
+    }
     if (bluetoothGattCallback == null) {
       return BluetoothGatt.GATT_FAILURE;
     }
     int latency = 0;
     int contNum = 0;
     int timeout = 0;
+    int status =
+        (staticInterceptor != null)
+            ? staticInterceptor.getRequestSubrateModeStatus(realBluetoothGatt, subrateMode)
+            : BluetoothGatt.GATT_SUCCESS;
     try {
       reflector(BluetoothGattCallbackReflector.class, bluetoothGattCallback)
-          .onSubrateChange(realBluetoothGatt, subrateMode, BluetoothGatt.GATT_SUCCESS);
+          .onSubrateChange(realBluetoothGatt, subrateMode, status);
     } catch (IllegalStateException | AssertionError e) {
       // This method was overloaded before being made public. Calling the above method on previous
       // versions of Robolectric will throw an exception, so we rely on this one instead. Do not
       // rely on this method in production code as it is deprecated, not public, and will not be
       // supported by client applications in the future.
       reflector(BluetoothGattCallbackReflector.class, bluetoothGattCallback)
-          .onSubrateChange(
-              realBluetoothGatt,
-              subrateMode,
-              latency,
-              contNum,
-              timeout,
-              BluetoothGatt.GATT_SUCCESS);
+          .onSubrateChange(realBluetoothGatt, subrateMode, latency, contNum, timeout, status);
     }
     return BluetoothStatusCodes.SUCCESS;
   }
@@ -431,6 +520,11 @@ public class ShadowBluetoothGatt {
   }
 
   private boolean writeDescriptorInternal(BluetoothGattDescriptor descriptor) {
+    if (staticInterceptor != null) {
+      if (staticInterceptor.interceptWriteDescriptor(realBluetoothGatt, descriptor)) {
+        return false;
+      }
+    }
     if (bluetoothGattCallback == null) {
       throw new IllegalStateException(NULL_CALLBACK_MSG);
     }
@@ -439,8 +533,11 @@ public class ShadowBluetoothGatt {
       return false;
     }
     writtenBytes = descriptor.getValue();
-    bluetoothGattCallback.onDescriptorWrite(
-        realBluetoothGatt, descriptor, BluetoothGatt.GATT_SUCCESS);
+    int status =
+        (staticInterceptor != null)
+            ? staticInterceptor.getWriteDescriptorStatus(realBluetoothGatt, descriptor)
+            : BluetoothGatt.GATT_SUCCESS;
+    bluetoothGattCallback.onDescriptorWrite(realBluetoothGatt, descriptor, status);
     return true;
   }
 
@@ -484,6 +581,11 @@ public class ShadowBluetoothGatt {
    *     ShadowBluetoothGatt#setGattCallback}
    */
   public boolean writeIncomingCharacteristic(BluetoothGattCharacteristic characteristic) {
+    if (staticInterceptor != null) {
+      if (staticInterceptor.interceptWriteCharacteristic(realBluetoothGatt, characteristic)) {
+        return false;
+      }
+    }
     if (bluetoothGattCallback == null) {
       throw new IllegalStateException(NULL_CALLBACK_MSG);
     }
@@ -495,8 +597,11 @@ public class ShadowBluetoothGatt {
       return false;
     }
     this.writtenBytes = characteristic.getValue();
-    bluetoothGattCallback.onCharacteristicWrite(
-        this.realBluetoothGatt, characteristic, BluetoothGatt.GATT_SUCCESS);
+    int status =
+        (staticInterceptor != null)
+            ? staticInterceptor.getWriteCharacteristicStatus(realBluetoothGatt, characteristic)
+            : BluetoothGatt.GATT_SUCCESS;
+    bluetoothGattCallback.onCharacteristicWrite(this.realBluetoothGatt, characteristic, status);
     return true;
   }
 
@@ -510,6 +615,11 @@ public class ShadowBluetoothGatt {
    *     ShadowBluetoothGatt#setGattCallback}
    */
   public boolean readIncomingCharacteristic(BluetoothGattCharacteristic characteristic) {
+    if (staticInterceptor != null) {
+      if (staticInterceptor.interceptReadCharacteristic(realBluetoothGatt, characteristic)) {
+        return false;
+      }
+    }
     if (!isCharactersiticValidForRead(characteristic)) {
       return false;
     }
@@ -519,12 +629,15 @@ public class ShadowBluetoothGatt {
       return true;
     }
 
+    int status =
+        (staticInterceptor != null)
+            ? staticInterceptor.getReadCharacteristicStatus(realBluetoothGatt, characteristic)
+            : BluetoothGatt.GATT_SUCCESS;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
       bluetoothGattCallback.onCharacteristicRead(
-          this.realBluetoothGatt, characteristic, this.readBytes, BluetoothGatt.GATT_SUCCESS);
+          this.realBluetoothGatt, characteristic, this.readBytes, status);
     } else {
-      bluetoothGattCallback.onCharacteristicRead(
-          this.realBluetoothGatt, characteristic, BluetoothGatt.GATT_SUCCESS);
+      bluetoothGattCallback.onCharacteristicRead(this.realBluetoothGatt, characteristic, status);
     }
 
     return true;
@@ -554,6 +667,9 @@ public class ShadowBluetoothGatt {
 
   public void setGattCallback(BluetoothGattCallback bluetoothGattCallback) {
     this.bluetoothGattCallback = bluetoothGattCallback;
+    if (staticInterceptor != null) {
+      staticInterceptor.onSetGattCallback(realBluetoothGatt, bluetoothGattCallback);
+    }
   }
 
   public boolean isConnected() {
@@ -655,5 +771,119 @@ public class ShadowBluetoothGatt {
     @Deprecated(since = "Baklava")
     void onSubrateChange(
         BluetoothGatt gatt, int subrateFactor, int latency, int contNum, int timeout, int status);
+  }
+
+  /** Interceptor interface to inject failures into GATT operations. */
+  public interface GattInterceptor {
+    default int getConnectStatus(BluetoothGatt gatt) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+
+    default boolean interceptConnect(BluetoothGatt gatt) {
+      return false;
+    }
+
+    default int getDisconnectStatus(BluetoothGatt gatt) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+
+    default boolean interceptDiscoverServices(BluetoothGatt gatt) {
+      return false;
+    }
+
+    default int getDiscoverServicesStatus(BluetoothGatt gatt) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+
+    default boolean interceptReadCharacteristic(
+        BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+      return false;
+    }
+
+    default int getReadCharacteristicStatus(
+        BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+
+    default boolean interceptWriteCharacteristic(
+        BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+      return false;
+    }
+
+    default int getWriteCharacteristicStatus(
+        BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+
+    default boolean interceptReadDescriptor(
+        BluetoothGatt gatt, BluetoothGattDescriptor descriptor) {
+      return false;
+    }
+
+    default int getReadDescriptorStatus(BluetoothGatt gatt, BluetoothGattDescriptor descriptor) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+
+    default boolean interceptWriteDescriptor(
+        BluetoothGatt gatt, BluetoothGattDescriptor descriptor) {
+      return false;
+    }
+
+    default int getWriteDescriptorStatus(BluetoothGatt gatt, BluetoothGattDescriptor descriptor) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+
+    default boolean interceptRequestMtu(BluetoothGatt gatt, int mtu) {
+      return false;
+    }
+
+    default int getRequestMtuStatus(BluetoothGatt gatt, int mtu) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+
+    default boolean interceptReadRemoteRssi(BluetoothGatt gatt) {
+      return false;
+    }
+
+    default int getReadRemoteRssiStatus(BluetoothGatt gatt) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+
+    default boolean interceptReadPhy(BluetoothGatt gatt) {
+      return false;
+    }
+
+    default int getReadPhyStatus(BluetoothGatt gatt) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+
+    default boolean interceptSetPreferredPhy(
+        BluetoothGatt gatt, int txPhy, int rxPhy, int phyOptions) {
+      return false;
+    }
+
+    default int getSetPreferredPhyStatus(BluetoothGatt gatt, int txPhy, int rxPhy) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+
+    default boolean interceptRequestConnectionPriority(BluetoothGatt gatt, int priority) {
+      return false;
+    }
+
+    default int getRequestConnectionPriorityStatus(BluetoothGatt gatt, int priority) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+
+    default boolean interceptRequestSubrateMode(BluetoothGatt gatt, int subrateMode) {
+      return false;
+    }
+
+    default int getRequestSubrateModeStatus(BluetoothGatt gatt, int subrateMode) {
+      return BluetoothStatusCodes.SUCCESS;
+    }
+
+    default void interceptClose(BluetoothGatt gatt) {}
+
+    default void onSetGattCallback(BluetoothGatt gatt, BluetoothGattCallback callback) {}
   }
 }
