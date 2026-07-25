@@ -21,6 +21,7 @@
   ],
   "ignoreDeps": [
     "com.google.android.gms:play-services-basement",
+    "org.conscrypt:conscrypt-openjdk-uber",
     "org.apache.httpcomponents:httpclient",
     "org.apache.httpcomponents:httpcore",
     "org.robolectric:nativeruntime-dist-compat",
