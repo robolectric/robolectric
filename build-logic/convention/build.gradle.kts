@@ -56,3 +56,8 @@ java {
 }
 
 kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_17 } }
+
+tasks.validatePlugins {
+  failOnWarning = true
+  enableStricterValidation = true
+}
