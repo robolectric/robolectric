@@ -1,8 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.os.Build;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -13,6 +16,9 @@ import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @Implements(android.os.Process.class)
 public class ShadowProcess {
@@ -154,6 +160,9 @@ public class ShadowProcess {
     // android.os.Process.myUid(), which persists between tests.
     ShadowProcess.uidOverride = null;
     ShadowProcess.processName = "";
+    if (Build.VERSION.SDK_INT >= N) {
+      reflector(ProcessReflector.class).setStartElapsedRealtime(0L);
+    }
   }
 
   static int getRandomApplicationUid() {
@@ -203,5 +212,17 @@ public class ShadowProcess {
   /** Sets the current uid to be an isolated uid. */
   public static void setIsIsolated() {
     setIsolatedUid();
+  }
+
+  /** Sets the value returned by {@link android.os.Process#getStartElapsedRealtime}. */
+  public static void setStartElapsedRealtime(long startElapsedRealtime) {
+    reflector(ProcessReflector.class).setStartElapsedRealtime(startElapsedRealtime);
+  }
+
+  @ForType(value = android.os.Process.class, direct = true)
+  interface ProcessReflector {
+    @Static
+    @Accessor("sStartElapsedRealtime")
+    void setStartElapsedRealtime(long startElapsedRealtime);
   }
 }
