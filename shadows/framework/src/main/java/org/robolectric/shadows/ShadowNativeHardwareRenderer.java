@@ -7,10 +7,12 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.FrameInfo;
 import android.graphics.HardwareRenderer;
 import android.graphics.HardwareRenderer.ASurfaceTransactionCallback;
 import android.graphics.HardwareRenderer.FrameCompleteCallback;
@@ -27,9 +29,11 @@ import java.io.FileDescriptor;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
 import org.robolectric.shadows.ShadowNativeHardwareRenderer.Picker;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link HardwareRenderer} that is backed by native code */
@@ -39,6 +43,8 @@ import org.robolectric.util.reflector.ForType;
     shadowPicker = Picker.class,
     callNativeMethodsByDefault = true)
 public class ShadowNativeHardwareRenderer {
+  @RealObject private HardwareRenderer realHardwareRenderer;
+
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void disableVsync() {
     HardwareRendererNatives.disableVsync();
@@ -185,9 +191,85 @@ public class ShadowNativeHardwareRenderer {
     HardwareRendererNatives.nSetIsHighEndGfx(isHighEndGfx);
   }
 
+  // Indices of timestamps in the frameInfo array that need clock translation.
+  // These correspond to FrameInfoIndex enum in AOSP frameworks/base/libs/hwui/FrameInfo.h.
+  // We explicitly list them because the array also contains flags, IDs, and durations
+  // (like FrameInterval, DequeueBufferDuration) which must NOT be adjusted.
+  private static final int[] TIMESTAMPS_TO_ADJUST = {
+    2, // IntendedVsync
+    5, // HandleInputStart
+    6, // AnimationStart
+    7, // PerformTraversalsStart
+    8, // DrawStart
+    9, // FrameDeadline
+    10, // FrameStartTime
+    12, // SyncQueued
+    13, // SyncStart
+    14, // IssueDrawCommandsStart
+    15, // SwapBuffers
+    16, // FrameCompleted
+    19, // GpuCompleted
+    20, // SwapBuffersCompleted
+    21, // DisplayPresentTime
+    22, // CommandSubmissionCompleted
+  };
+
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nSyncAndDrawFrame(long nativeProxy, long[] frameInfo, int size) {
     return HardwareRendererNatives.nSyncAndDrawFrame(nativeProxy, frameInfo, size);
+  }
+
+  @Implementation
+  protected int syncAndDrawFrame(FrameInfo frameInfo) {
+
+    // 'offset' represents the difference between the host's real monotonic clock
+    // (System.nanoTime())
+    // and Robolectric's simulated clock (ShadowPausedSystemClock.uptimeNanos()).
+    // offset = HostTime - RoboTime.
+    long offset = System.nanoTime() - ShadowPausedSystemClock.uptimeNanos();
+
+    // Before calling native, convert Java-populated timestamps (indices 2-10, except Vsync) from
+    // Robolectric time to host time. This ensures that the native JankTracker (which runs during
+    // this call and uses the host clock) calculates correct frame durations instead of flagging
+    // massive jank (Davey).
+    //
+    // We explicitly exclude Vsync (index 3) from adjustment because passing large host-time vsync
+    // values to the native rendering pipeline causes visual differences in some screenshot tests
+    // (e.g. HyphenationScreenshotTest), likely due to float precision loss when the native
+    // renderer
+    // processes large timestamps.
+    adjustFrameInfoTimes(frameInfo.frameInfo, offset);
+
+    int result =
+        reflector(HardwareRendererReflector.class, realHardwareRenderer)
+            .syncAndDrawFrame(frameInfo);
+
+    if (offset != 0) {
+      // After native completes:
+      // 1. Convert Java-populated timestamps back to Robolectric time so Java-side remains
+      // consistent.
+      // 2. Convert newly populated native timestamps (indices 12+, e.g. FrameCompleted) from host
+      // time
+      //    to Robolectric time (by subtracting the offset) so they align with Robolectric's clock
+      // domain
+      //    when read by Java-side APIs like FrameMetrics.
+      adjustFrameInfoTimes(frameInfo.frameInfo, -offset);
+    }
+    return result;
+  }
+
+  private static void adjustFrameInfoTimes(long[] frameInfo, long offset) {
+    for (int index : TIMESTAMPS_TO_ADJUST) {
+      adjustTime(frameInfo, index, offset);
+    }
+  }
+
+  private static void adjustTime(long[] frameInfo, int index, long offset) {
+    // Only adjust if the index is valid for this array, the timestamp is set (> 0),
+    // and it is not a placeholder value (Long.MAX_VALUE).
+    if (index < frameInfo.length && frameInfo[index] > 0 && frameInfo[index] != Long.MAX_VALUE) {
+      frameInfo[index] += offset;
+    }
   }
 
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
@@ -492,6 +574,9 @@ public class ShadowNativeHardwareRenderer {
     void setWideGamut(boolean isWideColorGamut);
 
     void setSurface(Surface surface);
+
+    @Direct
+    int syncAndDrawFrame(FrameInfo frameInfo);
   }
 
   /** Shadow picker for {@link HardwareRenderer}. */
