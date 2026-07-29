@@ -442,7 +442,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
   protected static void loop() {
     try {
       reflector(LooperReflector.class).loop();
-    } catch (Exception e) {
+    } catch (Throwable e) {
       Looper realLooper = Objects.requireNonNull(Looper.myLooper());
       ShadowPausedMessageQueue shadowQueue = Shadow.extract(realLooper.getQueue());
       if (!ignoreUncaughtExceptions) {
