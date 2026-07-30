@@ -1,5 +1,18 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "google/google-java-format",
+      "managerFilePatterns": [
+        "^\\.github/workflows/check_code_style\\.yml$"
+      ],
+      "matchStrings": [
+        "googleJavaFormatVersion\u003d\"(?\u003ccurrentValue\u003e[^\\\"]+)\""
+      ]
+    }
+  ],
   "extends": [
     "config:recommended",
     ":disableDependencyDashboard",
