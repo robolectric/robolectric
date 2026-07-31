@@ -9,11 +9,14 @@ import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.os.Build;
+import android.os.LocaleList;
 import android.text.format.DateUtils;
 import android.util.DisplayMetrics;
 import android.view.Surface;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
@@ -169,4 +172,35 @@ public class RuntimeEnvironmentTest {
                 .orientation)
         .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
   }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.N)
+  public void setQualifiers_setsDefaultLocaleListOnNOrAbove() {
+    RuntimeEnvironment.setQualifiers("ja");
+    assertThat(LocaleList.getDefault()).isEqualTo(LocaleList.forLanguageTags("ja"));
+    assertThat(Locale.getDefault()).isEqualTo(Locale.JAPANESE);
+  }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.M)
+  public void setQualifiers_setsDefaultLocaleOnPreN() {
+    RuntimeEnvironment.setQualifiers("ja");
+    assertThat(Locale.getDefault()).isEqualTo(Locale.JAPANESE);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.N)
+  public void setQualifiers_withPlusPrefix_setsDefaultLocaleListOnNOrAbove() {
+    RuntimeEnvironment.setQualifiers("+ja");
+    assertThat(LocaleList.getDefault()).isEqualTo(LocaleList.forLanguageTags("ja"));
+    assertThat(Locale.getDefault()).isEqualTo(Locale.JAPANESE);
+  }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.M)
+  public void setQualifiers_withPlusPrefix_setsDefaultLocaleOnPreN() {
+    RuntimeEnvironment.setQualifiers("+ja");
+    assertThat(Locale.getDefault()).isEqualTo(Locale.JAPANESE);
+  }
 }
+
