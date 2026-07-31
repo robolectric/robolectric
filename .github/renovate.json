@@ -5,11 +5,12 @@
       "customType": "regex",
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "google/google-java-format",
+      "extractVersionTemplate": "^v(?\u003cversion\u003e.*)$",
       "managerFilePatterns": [
-        "^\\.github/workflows/check_code_style\\.yml$"
+        "/^\\.github/workflows/check_code_style\\.yml$/"
       ],
       "matchStrings": [
-        "googleJavaFormatVersion\u003d\"(?\u003ccurrentValue\u003e[^\\\"]+)\""
+        "googleJavaFormatVersion\u003d\"(?\u003ccurrentValue\u003e.*)\""
       ]
     }
   ],
