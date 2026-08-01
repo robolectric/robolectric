@@ -60,7 +60,8 @@ public class ShadowPausedLooperTest {
   @After
   public void quitHandlerThread() throws Exception {
     handlerThread.quit();
-    handlerThread.join();
+    handlerThread.join(SECONDS.toMillis(5));
+    assertThat(handlerThread.isAlive()).isFalse();
   }
 
   @Test
