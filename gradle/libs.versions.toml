@@ -145,7 +145,7 @@ gradle-plugin-publish = "2.1.1"
 legacy-apache-http-client = "1.0"
 
 # https://github.com/jspecify/jspecify/releases
-jspecify = "1.0.0"
+jspecify = "1.0.1"
 
 [libraries]
 android-gradle-api = { module = "com.android.tools.build:gradle-api", version.ref = "android-gradle" }
