@@ -36,7 +36,8 @@ public class SortedVector<T extends Comparable<T>> {
   }
 
   public int indexOf(T tmpInfo) {
-    return mStorage.indexOf(tmpInfo);
+    int i = Collections.binarySearch(mStorage, tmpInfo);
+    return i >= 0 ? i : -1;
   }
 
   public void removeAt(int matchIdx) {
