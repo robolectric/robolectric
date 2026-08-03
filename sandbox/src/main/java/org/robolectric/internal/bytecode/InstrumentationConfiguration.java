@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.robolectric.annotation.internal.DoNotInstrument;
@@ -20,6 +21,9 @@ import org.robolectric.shadow.api.Shadow;
 
 /** Configuration rules for {@link SandboxClassLoader}. */
 public class InstrumentationConfiguration {
+
+  private static final Pattern ANDROID_R_PATTERN =
+      Pattern.compile("(android|com\\.android\\.internal)\\.R(\\$.+)?");
 
   public static Builder newBuilder() {
     return new Builder();
@@ -53,6 +57,7 @@ public class InstrumentationConfiguration {
   private final Set<String> instrumentedClasses;
   private final Set<String> classesToNotInstrument;
   private final String classesToNotInstrumentRegex;
+  private final Pattern classesToNotInstrumentPattern;
   private final Map<String, String> classNameTranslations;
   private final Set<MethodRef> interceptedMethods;
   private final Set<String> classesToNotAcquire;
@@ -82,6 +87,8 @@ public class InstrumentationConfiguration {
     this.classesToNotInstrument = ImmutableSet.copyOf(classesToNotInstrument);
     this.packagesToNotInstrument = ImmutableSet.copyOf(packagesToNotInstrument);
     this.classesToNotInstrumentRegex = classesToNotInstrumentRegex;
+    this.classesToNotInstrumentPattern =
+        classesToNotInstrumentRegex == null ? null : Pattern.compile(classesToNotInstrumentRegex);
     this.cachedHashCode = 0;
 
     this.typeMapper = new TypeMapper(classNameTranslations());
@@ -109,7 +116,8 @@ public class InstrumentationConfiguration {
   }
 
   private boolean classMatchesExclusionRegex(String className) {
-    return classesToNotInstrumentRegex != null && className.matches(classesToNotInstrumentRegex);
+    return classesToNotInstrumentPattern != null
+        && classesToNotInstrumentPattern.matcher(className).matches();
   }
 
   /**
@@ -128,7 +136,7 @@ public class InstrumentationConfiguration {
     }
 
     // android.R and com.android.internal.R classes must be loaded from the framework jar
-    if (name.matches("(android|com\\.android\\.internal)\\.R(\\$.+)?")) {
+    if (ANDROID_R_PATTERN.matcher(name).matches()) {
       return true;
     }
 
