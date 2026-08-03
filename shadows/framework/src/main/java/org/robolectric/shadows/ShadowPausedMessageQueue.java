@@ -47,7 +47,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   private static final NativeObjRegistry<ShadowPausedMessageQueue> nativeQueueRegistry =
       new NativeObjRegistry<>(ShadowPausedMessageQueue.class);
   private ShadowPausedSystemClock.Listener clockListener;
-  private final AtomicReference<Exception> uncaughtExceptionRef = new AtomicReference<>(null);
+  private final AtomicReference<Throwable> uncaughtExceptionRef = new AtomicReference<>(null);
 
   private final Object poller = new Object();
 
@@ -373,12 +373,12 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
    * instead an uncaught exception puts the message queue into an error state, where any future
    * interaction will rethrow the exception.
    */
-  void setUncaughtException(Exception e) {
+  void setUncaughtException(Throwable e) {
     this.uncaughtExceptionRef.set(e);
   }
 
   void checkQueueState() {
-    Exception uncaughtException = uncaughtExceptionRef.get();
+    Throwable uncaughtException = uncaughtExceptionRef.get();
     if (uncaughtException != null) {
       throw new IllegalStateException(
           "Looper thread has died due to an uncaught exception", uncaughtException);
