@@ -177,10 +177,15 @@ public class XmlResourceParserImpl implements XmlResourceParser {
 
   /*package*/
   public boolean isWhitespace(String text) {
-    if (text == null) {
+    if (text == null || text.isEmpty()) {
       return false;
     }
-    return text.split("\\s").length == 0;
+    for (int i = 0; i < text.length(); i++) {
+      if (!Character.isWhitespace(text.charAt(i))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
