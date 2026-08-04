@@ -541,6 +541,16 @@ public class ShadowActivityManagerTest {
     assertThat(shadowActivityManager.getDeviceLocales().get(0)).isEqualTo(Locale.CANADA);
   }
 
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void testAppNotResponding() {
+    assertThat(shadowActivityManager.getAppNotRespondingReason()).isNull();
+
+    shadowActivityManager.appNotResponding("Operation takes too long");
+    assertThat(shadowActivityManager.getAppNotRespondingReason())
+        .isEqualTo("Operation takes too long");
+  }
+
   private void addApplicationExitInfo(int pid) {
     addApplicationExitInfo(
         /* pid= */ pid, ApplicationExitInfo.REASON_SIGNALED, /* status= */ OsConstants.SIGKILL);
