@@ -72,3 +72,7 @@ fun androidStubsJar(): ConfigurableFileCollection {
 
   return files(androidJarPath)
 }
+
+tasks.withType<Test>().configureEach {
+  systemProperty("robolectric.enableFrameInfoVsyncOffsetFix", "true")
+}
