@@ -1,6 +1,7 @@
 package org.robolectric.util.inject;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Array;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;

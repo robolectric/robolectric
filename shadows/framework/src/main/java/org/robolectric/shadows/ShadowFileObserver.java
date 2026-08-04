@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.Q;
 
 import android.os.FileObserver;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -18,7 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

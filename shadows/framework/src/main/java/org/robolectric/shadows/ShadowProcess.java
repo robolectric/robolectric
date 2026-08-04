@@ -6,13 +6,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
