@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -41,8 +40,6 @@ public class CompositingLayerViewTest {
     runCompositingSimulation();
   }
 
-  // TODO(hoisie): fix this test on SDK 37+
-  @Config(maxSdk = BAKLAVA)
   @Test
   public void test2_drawsCompositingLayerAgain() {
     runCompositingSimulation();
