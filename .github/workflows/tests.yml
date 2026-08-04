@@ -31,7 +31,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version-file: .github/.java-version
 
       - uses: gradle/actions/setup-gradle@v6
@@ -55,7 +55,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version-file: .github/.java-version
 
       - uses: gradle/actions/setup-gradle@v6
@@ -107,7 +107,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version-file: .github/.java-version
 
       - uses: gradle/actions/setup-gradle@v6
@@ -185,7 +185,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version-file: .github/.java-version
 
       - uses: gradle/actions/setup-gradle@v6
