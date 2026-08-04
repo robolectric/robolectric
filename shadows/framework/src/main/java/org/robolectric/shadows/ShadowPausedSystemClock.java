@@ -4,11 +4,11 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
 
 import android.os.SystemClock;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.time.DateTimeException;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
