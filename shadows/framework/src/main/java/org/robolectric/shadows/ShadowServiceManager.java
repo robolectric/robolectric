@@ -444,9 +444,6 @@ public class ShadowServiceManager {
 
   private static Set<String> buildUnavailableServices() {
     HashSet<String> unavailableServices = new HashSet<>();
-    // TODO: Enable AppFunctionService once the affected tests that rely on it being unavailable are
-    // fixed.
-    unavailableServices.add(Context.APP_FUNCTION_SERVICE);
     return unavailableServices;
   }
 

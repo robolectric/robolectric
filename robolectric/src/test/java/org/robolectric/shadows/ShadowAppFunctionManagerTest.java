@@ -22,19 +22,19 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowAppFunctionManagerTest {
 
   @Test
-  public void appFunctionManager_nullByDefault() {
-    AppFunctionManager appFunctionManager = getManager();
-
-    assertThat(appFunctionManager).isNull();
-  }
-
-  @Test
-  public void appFunctionManager_enableService_returnsManager() {
-    ShadowServiceManager.setServiceAvailability(
-        Context.APP_FUNCTION_SERVICE, /* available= */ true);
+  public void appFunctionManager_nonNullByDefault() {
     AppFunctionManager appFunctionManager = getManager();
 
     assertThat(appFunctionManager).isNotNull();
+  }
+
+  @Test
+  public void appFunctionManager_disableService_returnsNull() {
+    ShadowServiceManager.setServiceAvailability(
+        Context.APP_FUNCTION_SERVICE, /* available= */ false);
+    AppFunctionManager appFunctionManager = getManager();
+
+    assertThat(appFunctionManager).isNull();
   }
 
   @Test
