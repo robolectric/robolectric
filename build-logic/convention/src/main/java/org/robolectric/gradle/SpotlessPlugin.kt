@@ -10,6 +10,17 @@ class SpotlessPlugin : Plugin<Project> {
     project.pluginManager.apply("com.diffplug.spotless")
 
     project.extensions.configure<SpotlessExtension> {
+      // Add configuration for Java files
+      java {
+        googleJavaFormat("1.36.1")
+        target("**/*.java")
+        targetExclude(
+          "processor/src/test/resources/org/robolectric/**/*.java",
+          "robolectric/src/test/java/org/robolectric/Manifest.java",
+          "robolectric/src/test/java/org/robolectric/R.java",
+        )
+      }
+
       // Add configurations for Kotlin files
       kotlin {
         target("**/*.kt")
