@@ -32,11 +32,11 @@ jobs:
           distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - name: Check Android Lint
-        run: ./gradlew lint --continue
-
       - name: Check Java and Kotlin Formatting
         run: ./gradlew spotlessCheck
 
       - name: Check Kotlin Quality
         run: ./gradlew detekt
+
+      - name: Check Android Lint
+        run: ./gradlew lint --continue
