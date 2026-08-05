@@ -147,42 +147,40 @@ val aggregateDocs =
 
 @Suppress("UNCHECKED_CAST") val allSdks = project.extra["allSdks"] as List<AndroidSdk>
 
-val prefetchSdkTasks =
-  allSdks.map { androidSdk ->
-    val configuration = configurations.register("sdk${androidSdk.apiLevel}")
-    dependencies.add(configuration.name, androidSdk.coordinates)
+val prefetchSdkTasks = allSdks.map { androidSdk ->
+  val configuration = configurations.register("sdk${androidSdk.apiLevel}")
+  dependencies.add(configuration.name, androidSdk.coordinates)
 
-    tasks.register<PrefetchSdkTask>("prefetchSdk${androidSdk.apiLevel}") {
-      description = "Prefetch the 'android-all' artifact for API level ${androidSdk.apiLevel}"
-      group = "robolectric"
+  tasks.register<PrefetchSdkTask>("prefetchSdk${androidSdk.apiLevel}") {
+    description = "Prefetch the 'android-all' artifact for API level ${androidSdk.apiLevel}"
+    group = "robolectric"
 
-      apiLevel = androidSdk.apiLevel
-      coordinates = androidSdk.coordinates
-      groupId = androidSdk.groupId
-      artifactId = androidSdk.artifactId
-      version = androidSdk.version
-      sdkFiles.from(configuration)
-    }
+    apiLevel = androidSdk.apiLevel
+    coordinates = androidSdk.coordinates
+    groupId = androidSdk.groupId
+    artifactId = androidSdk.artifactId
+    version = androidSdk.version
+    sdkFiles.from(configuration)
   }
+}
 
-val prefetchInstrumentedSdkTasks =
-  allSdks.map { androidSdk ->
-    val configuration = configurations.register("sdkInstrumented${androidSdk.apiLevel}")
-    dependencies.add(configuration.name, androidSdk.preinstrumentedCoordinates)
+val prefetchInstrumentedSdkTasks = allSdks.map { androidSdk ->
+  val configuration = configurations.register("sdkInstrumented${androidSdk.apiLevel}")
+  dependencies.add(configuration.name, androidSdk.preinstrumentedCoordinates)
 
-    tasks.register<PrefetchSdkTask>("prefetchInstrumentedSdk${androidSdk.apiLevel}") {
-      description =
-        "Prefetch the 'android-all-instrumented' artifact for API level ${androidSdk.apiLevel}"
-      group = "robolectric"
+  tasks.register<PrefetchSdkTask>("prefetchInstrumentedSdk${androidSdk.apiLevel}") {
+    description =
+      "Prefetch the 'android-all-instrumented' artifact for API level ${androidSdk.apiLevel}"
+    group = "robolectric"
 
-      apiLevel = androidSdk.apiLevel
-      coordinates = androidSdk.preinstrumentedCoordinates
-      groupId = androidSdk.groupId
-      artifactId = androidSdk.preinstrumentedArtifactId
-      version = androidSdk.preinstrumentedVersion
-      sdkFiles.from(configuration)
-    }
+    apiLevel = androidSdk.apiLevel
+    coordinates = androidSdk.preinstrumentedCoordinates
+    groupId = androidSdk.groupId
+    artifactId = androidSdk.preinstrumentedArtifactId
+    version = androidSdk.preinstrumentedVersion
+    sdkFiles.from(configuration)
   }
+}
 
 val prefetchSdks =
   tasks.register("prefetchSdks") {
