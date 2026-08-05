@@ -22,6 +22,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build.VERSION;
+import android.os.DeadObjectException;
 import android.os.Handler;
 import android.os.Looper;
 import android.telephony.SubscriptionInfo;
@@ -937,6 +938,56 @@ public class ShadowSubscriptionManagerTest {
 
       assertThat(applicationDefaultSubscriptionInfo).isEqualTo(activityDefaultSubscriptionInfo);
     }
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPhoneNumber_shouldThrowCustomException() {
+    ShadowSubscriptionManager shadowSubscriptionManager = shadowOf(subscriptionManager);
+    shadowSubscriptionManager.setThrowException(new RuntimeException("Test failure"));
+
+    assertThrows(RuntimeException.class, () -> shadowSubscriptionManager.getPhoneNumber(1));
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPhoneNumber_shouldPreserveDeadObjectExceptionCause() {
+    ShadowSubscriptionManager shadowSubscriptionManager = shadowOf(subscriptionManager);
+    DeadObjectException cause = new DeadObjectException();
+    shadowSubscriptionManager.setThrowException(new RuntimeException("IPC failure", cause));
+
+    RuntimeException thrown =
+        assertThrows(RuntimeException.class, () -> shadowSubscriptionManager.getPhoneNumber(1));
+    assertThat(thrown).hasMessageThat().isEqualTo("IPC failure");
+    assertThat(thrown).hasCauseThat().isSameInstanceAs(cause);
+  }
+
+  @Test
+  public void getActiveSubscriptionInfo_shouldThrowCustomException() {
+    ShadowSubscriptionManager shadowSubscriptionManager = shadowOf(subscriptionManager);
+    shadowSubscriptionManager.setThrowException(new RuntimeException("Test failure"));
+
+    assertThrows(
+        RuntimeException.class, () -> shadowSubscriptionManager.getActiveSubscriptionInfo(1));
+  }
+
+  @Test
+  public void getActiveSubscriptionInfoList_shouldThrowCustomException() {
+    ShadowSubscriptionManager shadowSubscriptionManager = shadowOf(subscriptionManager);
+    shadowSubscriptionManager.setThrowException(new RuntimeException("Test failure"));
+
+    assertThrows(
+        RuntimeException.class, () -> shadowSubscriptionManager.getActiveSubscriptionInfoList());
+  }
+
+  @Test
+  public void getActiveSubscriptionInfoForSimSlotIndex_shouldThrowCustomException() {
+    ShadowSubscriptionManager shadowSubscriptionManager = shadowOf(subscriptionManager);
+    shadowSubscriptionManager.setThrowException(new RuntimeException("Test failure"));
+
+    assertThrows(
+        RuntimeException.class,
+        () -> shadowSubscriptionManager.getActiveSubscriptionInfoForSimSlotIndex(1));
   }
 
   @ForType(SubscriptionInfo.class)
