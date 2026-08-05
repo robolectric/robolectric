@@ -14,7 +14,7 @@ import java.io.PipedOutputStream;
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicReference;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
@@ -39,8 +39,8 @@ public class ShadowBluetoothSocket {
     CLOSED,
   }
 
-  private volatile SocketState state = SocketState.INIT;
-  @Nullable private IOException connectExceptionOverride = null;
+  private final AtomicReference<SocketState> state = new AtomicReference<>(SocketState.INIT);
+  private final AtomicReference<IOException> connectExceptionOverride = new AtomicReference<>(null);
 
   public ShadowBluetoothSocket() {
     try {
@@ -110,7 +110,7 @@ public class ShadowBluetoothSocket {
    * to test situations where {@link android.bluetooth.BluetoothSocketException} is thrown.
    */
   public void setConnectException(IOException connectException) {
-    this.connectExceptionOverride = connectException;
+    this.connectExceptionOverride.set(connectException);
   }
 
   @Implementation
@@ -125,17 +125,26 @@ public class ShadowBluetoothSocket {
 
   @Implementation
   protected boolean isConnected() {
-    return state == SocketState.CONNECTED;
+    return state.get() == SocketState.CONNECTED;
   }
 
   @Implementation
   protected void connect() throws IOException {
-    // If already closed, throw immediately. The state cannot become CONNECTED again.
+    // If a configured exception is present, fail immediately and set state to CLOSED.
+    IOException exception = connectExceptionOverride.get();
+    if (exception != null) {
+      state.set(SocketState.CLOSED);
+      throw exception;
+    }
+
     throwIfClosed();
 
     // Set state before blocking so if the client calls close() to unblock connect(), the final
     // state will be CLOSED.
-    state = SocketState.CONNECTED;
+    if (!state.compareAndSet(SocketState.INIT, SocketState.CONNECTED)) {
+      throwIfClosed();
+      throw new IOException("Socket already connected");
+    }
 
     // If blockConnect() was called, execution will halt until the semaphore has been released.
     // Release is called right afterward to avoid side effects on a later call to blockConnect().
@@ -157,9 +166,10 @@ public class ShadowBluetoothSocket {
   }
 
   private void throwIfClosed() throws IOException {
-    if (state == SocketState.CLOSED) {
-      if (connectExceptionOverride != null) {
-        throw connectExceptionOverride;
+    if (state.get() == SocketState.CLOSED) {
+      IOException exception = connectExceptionOverride.get();
+      if (exception != null) {
+        throw exception;
       }
       throw new IOException("socket closed");
     }
@@ -167,7 +177,7 @@ public class ShadowBluetoothSocket {
 
   @Implementation
   protected void close() throws IOException {
-    state = SocketState.CLOSED;
+    state.set(SocketState.CLOSED);
     connectSemaphore.release();
   }
 
