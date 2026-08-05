@@ -80,6 +80,7 @@ public class ShadowActivityManager {
   private Context context;
   private static final ArrayList<Locale> supportedLocales = new ArrayList<>();
   private LocaleList deviceLocales;
+  private String anrReason;
 
   @Implementation
   protected void __constructor__(Context context, Handler handler) {
@@ -233,6 +234,16 @@ public class ShadowActivityManager {
    */
   public boolean isPackageForceStopped(String packageName) {
     return isPackageForceStoppedAsUser(packageName, UserHandle.myUserId());
+  }
+
+  @Implementation(minSdk = VERSION_CODES.R)
+  protected void appNotResponding(String reason) {
+    this.anrReason = reason;
+  }
+
+  /** Gets the reason passed to {@link ActivityManager#appNotResponding(String)}. */
+  public String getAppNotRespondingReason() {
+    return anrReason;
   }
 
   /**
