@@ -79,19 +79,15 @@ class RobolectricKspCompileTest {
   /** Returns the generated service file content from a successful compilation result. */
   private fun JvmCompilationResult.serviceFileContent(): String {
     // Check in KSP-generated sources first (includes resource files)
-    val fromSources =
-      sourcesGeneratedBySymbolProcessor.firstOrNull {
-        it.path.contains("META-INF/services") ||
-          it.name == "org.robolectric.internal.ShadowProvider"
-      }
+    val fromSources = sourcesGeneratedBySymbolProcessor.firstOrNull {
+      it.path.contains("META-INF/services") || it.name == "org.robolectric.internal.ShadowProvider"
+    }
     if (fromSources != null) return fromSources.readText()
 
     // Fall back to compiled output files
-    val fromGenerated =
-      generatedFiles.firstOrNull {
-        it.path.contains("META-INF/services") ||
-          it.name == "org.robolectric.internal.ShadowProvider"
-      }
+    val fromGenerated = generatedFiles.firstOrNull {
+      it.path.contains("META-INF/services") || it.name == "org.robolectric.internal.ShadowProvider"
+    }
     if (fromGenerated != null) return fromGenerated.readText()
 
     error(

@@ -12,6 +12,17 @@
       "matchStrings": [
         "googleJavaFormatVersion\u003d\"(?\u003ccurrentValue\u003e.*)\""
       ]
+    },
+    {
+      "customType": "regex",
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "Kotlin/ktfmt",
+      "managerFilePatterns": [
+        "/^build-logic/convention/src/main/java/org/robolectric/gradle/SpotlessPlugin\\.kt$/"
+      ],
+      "matchStrings": [
+        "ktfmt\\(\"(?\u003ccurrentValue\u003e.*)\"\\)"
+      ]
     }
   ],
   "extends": [
