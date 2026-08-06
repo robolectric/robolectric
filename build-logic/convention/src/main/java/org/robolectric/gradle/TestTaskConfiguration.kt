@@ -1,28 +1,13 @@
 package org.robolectric.gradle
 
+import org.gradle.api.logging.Logger
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-
-private val DEFAULT_JVM_ARGS =
-  listOf(
-    "--add-opens=java.base/java.lang=ALL-UNNAMED",
-    "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
-    "--add-opens=java.base/java.io=ALL-UNNAMED",
-    "--add-opens=java.base/java.net=ALL-UNNAMED",
-    "--add-opens=java.base/java.nio=ALL-UNNAMED", // required for ShadowVMRuntime
-    "--add-opens=java.base/java.security=ALL-UNNAMED",
-    "--add-opens=java.base/java.text=ALL-UNNAMED",
-    "--add-opens=java.base/java.util=ALL-UNNAMED",
-    "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
-    "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
-    "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-    "--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-    "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
-    "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-    "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
-    "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-  )
+import org.gradle.process.CommandLineArgumentProvider
 
 fun Test.configureTestTask() {
   testLogging {
@@ -45,16 +30,50 @@ fun Test.configureTestTask() {
 
   System.getenv("GRADLE_MAX_PARALLEL_FORKS")?.toIntOrNull()?.let { maxParallelForks = it }
 
-  val systemJvmArgs =
-    System.getProperties()
-      .filterKeys { it.toString().startsWith("robolectric.") }
-      .map { (key, value) -> "-D$key=$value" }
+  jvmArgumentProviders.add(
+    RobolectricJvmArgumentsProvider(
+      robolectricPropertiesProvider = project.providers.systemPropertiesPrefixedBy("robolectric."),
+      logger = logger,
+    )
+  )
+  jvmArgumentProviders.add(DefaultJvmArgumentsProvider())
+}
 
-  jvmArgs = systemJvmArgs + DEFAULT_JVM_ARGS
+private class RobolectricJvmArgumentsProvider(
+  @get:Input private val robolectricPropertiesProvider: Provider<Map<String, String>>,
+  @get:Internal private val logger: Logger,
+) : CommandLineArgumentProvider {
+  override fun asArguments(): Iterable<String> {
+    val robolectricProperties =
+      robolectricPropertiesProvider.getOrElse(emptyMap()).map { (key, value) -> "-D$key=$value" }
 
-  doFirst {
-    if (systemJvmArgs.isNotEmpty()) {
-      println("Running tests with $systemJvmArgs")
+    if (robolectricProperties.isNotEmpty()) {
+      logger.lifecycle("Running tests with $robolectricProperties")
     }
+
+    return robolectricProperties
+  }
+}
+
+private class DefaultJvmArgumentsProvider : CommandLineArgumentProvider {
+  override fun asArguments(): Iterable<String> {
+    return listOf(
+      "--add-opens=java.base/java.lang=ALL-UNNAMED",
+      "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+      "--add-opens=java.base/java.io=ALL-UNNAMED",
+      "--add-opens=java.base/java.net=ALL-UNNAMED",
+      "--add-opens=java.base/java.nio=ALL-UNNAMED", // required for ShadowVMRuntime
+      "--add-opens=java.base/java.security=ALL-UNNAMED",
+      "--add-opens=java.base/java.text=ALL-UNNAMED",
+      "--add-opens=java.base/java.util=ALL-UNNAMED",
+      "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
+      "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
+      "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+      "--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+      "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+      "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+      "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+      "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    )
   }
 }
