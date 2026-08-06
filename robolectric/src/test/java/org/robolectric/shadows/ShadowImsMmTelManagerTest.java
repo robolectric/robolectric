@@ -645,3 +645,4 @@ public class ShadowImsMmTelManagerTest {
     assertThat(imsMmTelManager.isCrossSimCallingEnabled()).isTrue();
   }
 }
+
