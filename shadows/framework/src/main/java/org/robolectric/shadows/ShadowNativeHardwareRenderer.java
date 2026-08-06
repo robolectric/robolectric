@@ -45,6 +45,13 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowNativeHardwareRenderer {
   @RealObject private HardwareRenderer realHardwareRenderer;
 
+  // HWUI's RenderThread outlives tests while Robolectric's simulated clock restarts per test.
+  // HWUI drops frames whose vsync is not newer than the last drawn one, which would leave stale
+  // window content from the second test on. These fields rebase the vsync passed to HWUI to keep
+  // it increasing; deliberately no @Resetter, matching the RenderThread's lifetime.
+  private static long vsyncRebaseOffsetNanos;
+  private static long lastRebasedVsyncNanos = Long.MIN_VALUE;
+
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void disableVsync() {
     HardwareRendererNatives.disableVsync();
@@ -221,6 +228,17 @@ public class ShadowNativeHardwareRenderer {
 
   @Implementation
   protected int syncAndDrawFrame(FrameInfo frameInfo) {
+    long[] timestamps = frameInfo.frameInfo;
+    long rawVsync = timestamps[FrameInfo.VSYNC];
+    if (rawVsync + vsyncRebaseOffsetNanos < lastRebasedVsyncNanos) {
+      // The simulated clock restarted because a new test began; adjust the offset so this frame
+      // continues one frame interval after the last frame.
+      vsyncRebaseOffsetNanos =
+          lastRebasedVsyncNanos + ShadowChoreographer.getFrameDelay().toNanos() - rawVsync;
+    }
+    long rebasedVsync = rawVsync + vsyncRebaseOffsetNanos;
+    lastRebasedVsyncNanos = rebasedVsync;
+    timestamps[FrameInfo.VSYNC] = rebasedVsync;
 
     // 'offset' represents the difference between the host's real monotonic clock
     // (System.nanoTime())
@@ -243,6 +261,9 @@ public class ShadowNativeHardwareRenderer {
     int result =
         reflector(HardwareRendererReflector.class, realHardwareRenderer)
             .syncAndDrawFrame(frameInfo);
+
+    // Restore the raw vsync for Java-side consumers such as FrameMetrics.
+    timestamps[FrameInfo.VSYNC] = rawVsync;
 
     if (offset != 0) {
       // After native completes:
