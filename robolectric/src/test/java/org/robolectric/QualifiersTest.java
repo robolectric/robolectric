@@ -8,6 +8,8 @@ import static org.junit.Assert.fail;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build;
+import android.os.LocaleList;
 import android.view.View;
 import android.widget.TextView;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -55,6 +57,9 @@ public class QualifiersTest {
   public void shouldBeEnglish() {
     Locale locale = resources.getConfiguration().locale;
     assertThat(locale.getLanguage()).isEqualTo("en");
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
+      assertThat(LocaleList.getDefault().get(0)).isEqualTo(locale);
+    }
   }
 
   @Config(qualifiers = "ja")
@@ -62,6 +67,9 @@ public class QualifiersTest {
   public void shouldBeJapanese() {
     Locale locale = resources.getConfiguration().locale;
     assertThat(locale.getLanguage()).isEqualTo("ja");
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
+      assertThat(LocaleList.getDefault().get(0)).isEqualTo(locale);
+    }
   }
 
   @Config(qualifiers = "fr")
@@ -69,6 +77,9 @@ public class QualifiersTest {
   public void shouldBeFrench() {
     Locale locale = resources.getConfiguration().locale;
     assertThat(locale.getLanguage()).isEqualTo("fr");
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
+      assertThat(LocaleList.getDefault().get(0)).isEqualTo(locale);
+    }
   }
 
   @Test
