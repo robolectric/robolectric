@@ -1239,17 +1239,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(maxSdk = M)
-  protected void getPackageSizeInfo(
-      String pkgName,
-      int uid,
-      final @ClassName("android.content.pm.IPackageStatsObserver") Object observer) {
+  protected void getPackageSizeInfo(String pkgName, int uid, final IPackageStatsObserver observer) {
     final PackageStats packageStats = packageStatsMap.get(pkgName);
     new Handler(Looper.getMainLooper())
         .post(
             () -> {
               try {
-                ((IPackageStatsObserver) observer)
-                    .onGetStatsCompleted(packageStats, packageStats != null);
+                observer.onGetStatsCompleted(packageStats, packageStats != null);
               } catch (RemoteException remoteException) {
                 remoteException.rethrowFromSystemServer();
               }
@@ -1258,16 +1254,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = N)
   protected void getPackageSizeInfoAsUser(
-      String pkgName,
-      int uid,
-      final @ClassName("android.content.pm.IPackageStatsObserver") Object observer) {
+      String pkgName, int uid, final IPackageStatsObserver observer) {
     final PackageStats packageStats = packageStatsMap.get(pkgName);
     new Handler(Looper.getMainLooper())
         .post(
             () -> {
               try {
-                ((IPackageStatsObserver) observer)
-                    .onGetStatsCompleted(packageStats, packageStats != null);
+                observer.onGetStatsCompleted(packageStats, packageStats != null);
               } catch (RemoteException remoteException) {
                 remoteException.rethrowFromSystemServer();
               }
@@ -2076,14 +2069,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       @ClassName("android.content.pm.PackageManager$MoveCallback") Object callback) {}
 
   @Implementation(minSdk = M)
-  protected int movePackage(
-      String packageName, @ClassName("android.os.storage.VolumeInfo") Object vol) {
+  protected int movePackage(String packageName, VolumeInfo vol) {
     return 0;
   }
 
   @Implementation(minSdk = M)
   protected @ClassName("android.os.storage.VolumeInfo") Object getPackageCurrentVolume(
-      @ClassName("android.content.pm.ApplicationInfo") Object app) {
+      ApplicationInfo app) {
     return null;
   }
 
@@ -2093,7 +2085,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = M)
-  protected int movePrimaryStorage(@ClassName("android.os.storage.VolumeInfo") Object vol) {
+  protected int movePrimaryStorage(VolumeInfo vol) {
     return 0;
   }
 

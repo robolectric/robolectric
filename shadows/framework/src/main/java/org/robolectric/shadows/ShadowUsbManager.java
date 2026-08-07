@@ -281,18 +281,16 @@ public class ShadowUsbManager {
 
   @Implementation(minSdk = M)
   @HiddenApi
-  protected @ClassName("android.hardware.usb.UsbPortStatus") Object getPortStatus(
-      @ClassName("android.hardware.usb.UsbPort") Object port) {
+  protected @ClassName("android.hardware.usb.UsbPortStatus") Object getPortStatus(UsbPort port) {
     return usbPortStatuses.get(port);
   }
 
   @Implementation(minSdk = M)
   @HiddenApi
-  protected void setPortRoles(
-      @ClassName("android.hardware.usb.UsbPort") Object port, int powerRole, int dataRole) {
+  protected void setPortRoles(UsbPort port, int powerRole, int dataRole) {
     UsbPortStatus status = usbPortStatuses.get(port);
     usbPortStatuses.put(
-        (UsbPort) port,
+        port,
         (UsbPortStatus)
             createUsbPortStatus(
                 status.getCurrentMode(),
