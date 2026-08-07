@@ -63,7 +63,6 @@ include(
   ":sandbox",
   ":shadowapi",
   ":shadows:framework",
-  ":shadows:httpclient",
   ":simulator",
   ":simulator-gradle-plugin",
   ":testapp",
