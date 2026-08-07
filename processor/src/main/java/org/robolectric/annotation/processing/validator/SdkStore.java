@@ -40,6 +40,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.jspecify.annotations.NonNull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -134,6 +135,17 @@ public class SdkStore {
       }
     }
     return matchingSdks;
+  }
+
+  @NonNull Sdk minSdk() {
+    loadSdksOnce();
+    Sdk minSdk = null;
+    for (Sdk sdk : sdks) {
+      if (minSdk == null || sdk.sdkInfo.apiLevel < minSdk.sdkInfo.apiLevel) {
+        minSdk = sdk;
+      }
+    }
+    return Objects.requireNonNull(minSdk);
   }
 
   private synchronized void loadSdksOnce() {
