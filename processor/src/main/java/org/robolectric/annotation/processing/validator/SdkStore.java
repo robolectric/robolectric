@@ -45,6 +45,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.InnerClassNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.TraceSignatureVisitor;
 import org.robolectric.annotation.ClassName;
@@ -492,12 +493,15 @@ public class SdkStore {
   static class ClassInfo {
     private final Map<MethodInfo, MethodExtraInfo> methods = new HashMap<>();
     private final String signature;
+    private final int access;
 
     private ClassInfo() {
       signature = "";
+      access = 0;
     }
 
     public ClassInfo(ClassNode classNode) {
+      access = getAccess(classNode);
       if (classNode.signature != null) {
         TraceSignatureVisitor signatureVisitor = new TraceSignatureVisitor(0);
         new SignatureReader(classNode.signature).accept(signatureVisitor);
@@ -535,6 +539,24 @@ public class SdkStore {
         }
       }
       return "";
+    }
+
+    /**
+     * Returns the access flags of a class. For nested classes, the flags are read from the {@code
+     * InnerClasses} attribute, because the class file flags don't contain {@code private} and
+     * {@code protected}.
+     */
+    private static int getAccess(ClassNode classNode) {
+      for (InnerClassNode innerClass : classNode.innerClasses) {
+        if (innerClass.name.equals(classNode.name)) {
+          return innerClass.access;
+        }
+      }
+      return classNode.access;
+    }
+
+    int getAccess() {
+      return access;
     }
 
     MethodExtraInfo findMethod(ExecutableElement methodElement) {
