@@ -66,7 +66,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -183,8 +182,7 @@ public class ShadowWindowManagerGlobal {
   }
 
   @Implementation
-  public static @ClassName("android.view.IWindowManager") Object getWindowManagerService()
-      throws RemoteException {
+  public static IWindowManager getWindowManagerService() throws RemoteException {
     IWindowManager service =
         reflector(WindowManagerGlobalReflector.class).getWindowManagerService();
     if (service == null) {

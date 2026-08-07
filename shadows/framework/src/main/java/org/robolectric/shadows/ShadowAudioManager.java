@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
-import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -984,27 +983,23 @@ public class ShadowAudioManager {
   @HiddenApi
   @Implementation(minSdk = P)
   @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING)
-  protected int registerAudioPolicy(
-      @Nonnull @ClassName("android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
+  protected int registerAudioPolicy(@Nonnull AudioPolicy audioPolicy) {
     Objects.requireNonNull(audioPolicy, "Illegal null AudioPolicy argument");
-    AudioPolicy policy = (AudioPolicy) audioPolicy;
     String id = getIdForAudioPolicy(audioPolicy);
     if (registeredAudioPolicies.containsKey(id)) {
       return AudioManager.ERROR;
     }
-    registeredAudioPolicies.put(id, policy);
-    policy.setRegistration(id);
+    registeredAudioPolicies.put(id, audioPolicy);
+    audioPolicy.setRegistration(id);
     return AudioManager.SUCCESS;
   }
 
   @HiddenApi
   @Implementation(minSdk = Q)
-  protected void unregisterAudioPolicy(
-      @Nonnull @ClassName("android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
+  protected void unregisterAudioPolicy(@Nonnull AudioPolicy audioPolicy) {
     Objects.requireNonNull(audioPolicy, "Illegal null AudioPolicy argument");
-    AudioPolicy policy = (AudioPolicy) audioPolicy;
-    registeredAudioPolicies.remove(getIdForAudioPolicy(policy));
-    policy.setRegistration(null);
+    registeredAudioPolicies.remove(getIdForAudioPolicy(audioPolicy));
+    audioPolicy.setRegistration(null);
   }
 
   /**

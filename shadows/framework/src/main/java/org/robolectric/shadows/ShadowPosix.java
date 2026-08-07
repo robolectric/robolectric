@@ -6,7 +6,6 @@ import android.system.StructStat;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.time.Duration;
-import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -24,8 +23,7 @@ public class ShadowPosix {
   @Implementation
   // actually preventing a 'static' mismatch
   @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
-  public static @ClassName("android.system.StructStat") Object stat(String path)
-      throws ErrnoException {
+  public static StructStat stat(String path) throws ErrnoException {
     int mode = ShadowOsConstants.getMode(path);
     long size = 0;
     long modifiedTime = 0;
@@ -55,16 +53,14 @@ public class ShadowPosix {
   @Implementation
   // actually preventing a 'static' mismatch
   @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
-  protected static @ClassName("android.system.StructStat") Object lstat(String path)
-      throws ErrnoException {
+  protected static StructStat lstat(String path) throws ErrnoException {
     return stat(path);
   }
 
   @Implementation
   // actually preventing a 'static' mismatch
   @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
-  protected static @ClassName("android.system.StructStat") Object fstat(FileDescriptor fd)
-      throws ErrnoException {
+  protected static StructStat fstat(FileDescriptor fd) throws ErrnoException {
     return stat(null);
   }
 }

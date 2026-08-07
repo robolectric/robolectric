@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ComponentInfoFlags;
 import android.content.res.Configuration;
@@ -52,7 +53,7 @@ public class ShadowActivityThread {
   @ReflectorObject protected ActivityThreadReflector activityThreadReflector;
 
   @Implementation
-  public static @ClassName("android.content.pm.IPackageManager") Object getPackageManager() {
+  public static IPackageManager getPackageManager() {
     ClassLoader classLoader = ShadowActivityThread.class.getClassLoader();
     Class<?> iPackageManagerClass;
     try {
@@ -60,63 +61,64 @@ public class ShadowActivityThread {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-    return Proxy.newProxyInstance(
-        classLoader,
-        new Class[] {iPackageManagerClass},
-        (proxy, method, args) -> {
-          if (method.getName().equals("getApplicationInfo")) {
-            String packageName = (String) args[0];
-            int flags = ((Number) args[1]).intValue();
-            if (packageName.equals(ShadowActivityThread.applicationInfo.packageName)) {
-              return ShadowActivityThread.applicationInfo;
-            }
+    return (IPackageManager)
+        Proxy.newProxyInstance(
+            classLoader,
+            new Class[] {iPackageManagerClass},
+            (proxy, method, args) -> {
+              if (method.getName().equals("getApplicationInfo")) {
+                String packageName = (String) args[0];
+                int flags = ((Number) args[1]).intValue();
+                if (packageName.equals(ShadowActivityThread.applicationInfo.packageName)) {
+                  return ShadowActivityThread.applicationInfo;
+                }
 
-            try {
-              return RuntimeEnvironment.getApplication()
-                  .getPackageManager()
-                  .getApplicationInfo(packageName, flags);
-            } catch (PackageManager.NameNotFoundException e) {
-              return null;
-            }
-          } else if (method.getName().equals("notifyPackageUse")) {
-            return null;
-          } else if (method.getName().equals("getPackageInstaller")) {
-            try {
-              Class<?> iPackageInstallerClass =
-                  classLoader.loadClass("android.content.pm.IPackageInstaller");
-              return ReflectionHelpers.createNullProxy(iPackageInstallerClass);
-            } catch (ClassNotFoundException e) {
-              throw new RuntimeException(e);
-            }
-          } else if (method.getName().equals("hasSystemFeature")) {
-            String featureName = (String) args[0];
-            return RuntimeEnvironment.getApplication()
-                .getPackageManager()
-                .hasSystemFeature(featureName);
-          } else if (method.getName().equals("getServiceInfo")) {
-            ComponentName componentName = (ComponentName) args[0];
-            if (args[1] instanceof ComponentInfoFlags) {
-              return RuntimeEnvironment.getApplication()
-                  .getPackageManager()
-                  .getServiceInfo(componentName, (ComponentInfoFlags) args[1]);
-            } else {
-              return RuntimeEnvironment.getApplication()
-                  .getPackageManager()
-                  .getServiceInfo(componentName, ((Number) args[1]).intValue());
-            }
-          }
-          throw new UnsupportedOperationException("sorry, not supporting " + method + " yet!");
-        });
+                try {
+                  return RuntimeEnvironment.getApplication()
+                      .getPackageManager()
+                      .getApplicationInfo(packageName, flags);
+                } catch (PackageManager.NameNotFoundException e) {
+                  return null;
+                }
+              } else if (method.getName().equals("notifyPackageUse")) {
+                return null;
+              } else if (method.getName().equals("getPackageInstaller")) {
+                try {
+                  Class<?> iPackageInstallerClass =
+                      classLoader.loadClass("android.content.pm.IPackageInstaller");
+                  return ReflectionHelpers.createNullProxy(iPackageInstallerClass);
+                } catch (ClassNotFoundException e) {
+                  throw new RuntimeException(e);
+                }
+              } else if (method.getName().equals("hasSystemFeature")) {
+                String featureName = (String) args[0];
+                return RuntimeEnvironment.getApplication()
+                    .getPackageManager()
+                    .hasSystemFeature(featureName);
+              } else if (method.getName().equals("getServiceInfo")) {
+                ComponentName componentName = (ComponentName) args[0];
+                if (args[1] instanceof ComponentInfoFlags) {
+                  return RuntimeEnvironment.getApplication()
+                      .getPackageManager()
+                      .getServiceInfo(componentName, (ComponentInfoFlags) args[1]);
+                } else {
+                  return RuntimeEnvironment.getApplication()
+                      .getPackageManager()
+                      .getServiceInfo(componentName, ((Number) args[1]).intValue());
+                }
+              }
+              throw new UnsupportedOperationException("sorry, not supporting " + method + " yet!");
+            });
   }
 
   @Implementation
-  public static @ClassName("android.app.ActivityThread") Object currentActivityThread() {
-    return RuntimeEnvironment.getActivityThread();
+  public static ActivityThread currentActivityThread() {
+    return (ActivityThread) RuntimeEnvironment.getActivityThread();
   }
 
   @Implementation
   protected static Application currentApplication() {
-    return ((ActivityThread) currentActivityThread()).getApplication();
+    return currentActivityThread().getApplication();
   }
 
   @Implementation
