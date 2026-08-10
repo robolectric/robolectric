@@ -20,6 +20,7 @@ permissions:
 
 jobs:
   check_code_style:
+    name: Check Code Style
     runs-on: ubuntu-latest
 
     steps:
