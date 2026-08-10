@@ -20,10 +20,12 @@ permissions:
 
 jobs:
   run_aggregateDocs:
+    name: Aggregate Docs
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -31,11 +33,12 @@ jobs:
           distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
-      - name: Run aggregateDocs
+      - name: Run :aggregateDocs
         # Disable parallel as a workaround for Gradle 9's concurrent model.
-        run: ./gradlew clean aggregateDocs --no-parallel
+        run: ./gradlew :aggregateDocs --no-parallel
 
       - name: Upload docs
         uses: actions/upload-artifact@v7
@@ -44,10 +47,12 @@ jobs:
           path: build/docs
 
   run_javadocJar:
+    name: Javadoc Jar
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -55,17 +60,19 @@ jobs:
           distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Run javadocJar
-        run: ./gradlew clean javadocJar
-
+        run: ./gradlew javadocJar
 
   run_instrumentAll:
+    name: Instrument All
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -73,7 +80,8 @@ jobs:
           distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Run :preinstrumented:instrumentAll
         run: ./gradlew :preinstrumented:instrumentAll
@@ -85,10 +93,12 @@ jobs:
         run: PREINSTRUMENTED_SDK_VERSIONS=36 PUBLISH_PREINSTRUMENTED_JARS=true ./gradlew :preinstrumented:publishToMavenLocal
 
   run_publishToMavenLocal:
+    name: Publish to Maven local
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -96,7 +106,8 @@ jobs:
           distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Publish to Maven local
         run: ./gradlew publishToMavenLocal
