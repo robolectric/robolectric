@@ -32,6 +32,9 @@ jobs:
           distribution: 'temurin'
           java-version-file: .github/.java-version
 
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
       - name: Check Java and Kotlin Formatting
         run: ./gradlew spotlessCheck
 
