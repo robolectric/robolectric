@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -19,6 +20,7 @@ import android.app.ActivityManager.AppTask;
 import android.app.ActivityManager.RecentTaskInfo;
 import android.app.Application;
 import android.app.ApplicationExitInfo;
+import android.app.ApplicationStartInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
@@ -506,6 +508,38 @@ public class ShadowActivityManagerTest {
     assertThat(applicationExitInfoList).hasSize(2);
     assertThat(applicationExitInfoList.get(0).getTimestamp()).isEqualTo(456);
     assertThat(applicationExitInfoList.get(1).getTimestamp()).isEqualTo(123);
+  }
+
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  @Test
+  public void addHistoricalProcessStartReason_builderWorks() {
+    shadowActivityManager.addHistoricalProcessStartReason(
+        ShadowActivityManager.ApplicationStartInfoBuilder.newBuilder()
+            .setReason(ApplicationStartInfo.START_REASON_LAUNCHER)
+            .setPid(123)
+            .setProcessName("com.example")
+            .build());
+
+    List<ApplicationStartInfo> startInfos =
+        activityManager.getHistoricalProcessStartReasons(/* maxNum= */ 1);
+
+    assertThat(startInfos).hasSize(1);
+    assertThat(startInfos.get(0).getReason()).isEqualTo(ApplicationStartInfo.START_REASON_LAUNCHER);
+    assertThat(startInfos.get(0).getPid()).isEqualTo(123);
+    assertThat(startInfos.get(0).getProcessName()).isEqualTo("com.example");
+  }
+
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  @Test
+  public void addHistoricalProcessStartReason_intOverloadWorks() {
+    shadowActivityManager.addHistoricalProcessStartReason(
+        ApplicationStartInfo.START_REASON_LAUNCHER);
+
+    List<ApplicationStartInfo> startInfos =
+        activityManager.getHistoricalProcessStartReasons(/* maxNum= */ 1);
+
+    assertThat(startInfos).hasSize(1);
+    assertThat(startInfos.get(0).getReason()).isEqualTo(ApplicationStartInfo.START_REASON_LAUNCHER);
   }
 
   @Test
