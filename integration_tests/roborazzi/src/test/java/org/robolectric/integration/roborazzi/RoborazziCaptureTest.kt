@@ -34,10 +34,10 @@ import org.robolectric.integration.roborazzi.RoborazziDialogTestActivity.Compani
  * detected which do not stem from Robolectric, the test can be temporarily disabled, and an issue
  * can be reported on the Roborazzi repository.
  *
- * Run ./gradlew integration_tests:roborazzi:recordRoborazziDebug
- * -Drobolectric.alwaysIncludeVariantMarkersInTestName=true to record the reference
- * screenshots(golden images). Run ./gradlew integration_tests:roborazzi:verifyRoborazziDebug
- * -Drobolectric.alwaysIncludeVariantMarkersInTestName=true to check the screenshots.
+ * Run `./gradlew :integration_tests:roborazzi:recordRoborazziDebug
+ * -Drobolectric.alwaysIncludeVariantMarkersInTestName=true` to record the reference
+ * screenshots(golden images). Run `./gradlew :integration_tests:roborazzi:verifyRoborazziDebug
+ * -Drobolectric.alwaysIncludeVariantMarkersInTestName=true` to check the screenshots.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [S])
@@ -59,22 +59,18 @@ class RoborazziCaptureTest {
   // For reducing repository size, we use small size
   @Config(qualifiers = "w50dp-h40dp")
   fun checkViewWithElevationRendering() {
-    hardwareRendererEnvironment {
-      setupActivity(RoborazziViewWithElevationTestActivity::class)
+    setupActivity(RoborazziViewWithElevationTestActivity::class)
 
-      captureScreenWithRoborazzi()
-    }
+    captureScreenWithRoborazzi()
   }
 
   @Test
   // For reducing repository size, we use small size
   @Config(qualifiers = "w110dp-h120dp")
   fun checkDialogRendering() {
-    hardwareRendererEnvironment {
-      setupActivity(RoborazziDialogTestActivity::class)
+    setupActivity(RoborazziDialogTestActivity::class)
 
-      captureScreenWithRoborazzi()
-    }
+    captureScreenWithRoborazzi()
   }
 
   private fun setupActivity(activityClass: KClass<out Activity>) {
@@ -91,16 +87,12 @@ class RoborazziCaptureTest {
         |${e.message}
         |Please check the screenshot in $OUTPUT_DIRECTORY_PATH
         |If you want to update the screenshot, 
-        |run `./gradlew integration_tests:roborazzi:recordRoborazziDebug -Drobolectric.alwaysIncludeVariantMarkersInTestName=true` and commit the changes.
+        |run `./gradlew :integration_tests:roborazzi:recordRoborazziDebug -Drobolectric.alwaysIncludeVariantMarkersInTestName=true` and commit the changes.
         |"""
           .trimMargin(),
         e,
       )
     }
-  }
-
-  companion object {
-    const val PIXEL_COPY_RENDER_MODE = "robolectric.pixelCopyRenderMode"
   }
 }
 
@@ -109,20 +101,6 @@ private fun registerActivityToPackageManager(activity: String) {
     InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as Application
   Shadows.shadowOf(appContext.packageManager)
     .addActivityIfNotPresent(ComponentName(appContext.packageName, activity))
-}
-
-private fun hardwareRendererEnvironment(block: () -> Unit) {
-  val originalPixelCopyOption =
-    System.getProperty(RoborazziCaptureTest.PIXEL_COPY_RENDER_MODE, null)
-  try {
-    block()
-  } finally {
-    if (originalPixelCopyOption == null) {
-      System.clearProperty(RoborazziCaptureTest.PIXEL_COPY_RENDER_MODE)
-    } else {
-      System.setProperty(RoborazziCaptureTest.PIXEL_COPY_RENDER_MODE, originalPixelCopyOption)
-    }
-  }
 }
 
 private class RoborazziViewWithElevationTestActivity : Activity() {

@@ -28,10 +28,13 @@ jobs:
           ubuntu-latest, # Tests Linux x86_64
           windows-latest, # Tests Windows x86_64
         ]
+
+    name: Graphics Tests
     runs-on: ${{ matrix.device }}
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -39,10 +42,8 @@ jobs:
           distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
-
-      - name: Show runner info
-        run: uname -a
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Run unit tests
         env:
@@ -51,9 +52,9 @@ jobs:
         run: >
           ./gradlew
           :integration_tests:nativegraphics:testDebugUnitTest
+          :integration_tests:roborazzi:verifyRoborazziDebug
           --stacktrace --continue
           "-Drobolectric.alwaysIncludeVariantMarkersInTestName=true"
-          "-Dorg.gradle.workers.max=2"
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v7
