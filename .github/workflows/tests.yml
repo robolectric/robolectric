@@ -26,7 +26,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -34,12 +35,14 @@ jobs:
           distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Build
-        run: |
-          SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
-          ./gradlew assemble testClasses --stacktrace
+        env:
+          SKIP_ERRORPRONE: true
+          SKIP_JAVADOC: true
+        run: ./gradlew assemble testClasses --stacktrace
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -47,10 +50,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-versions: [ '23,24,25', '26,27,28', '29,30,31', '32,33,34', '35,36,37' ]
+        api-versions: [
+          '23,24,25',
+          '26,27,28',
+          '29,30,31',
+          '32,33,34',
+          '35,36,37'
+        ]
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -58,16 +68,19 @@ jobs:
           distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Run unit tests
-        run: |
-          SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew test \
-          --stacktrace --continue \
-          -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
-          -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-          -Dorg.gradle.workers.max=2 \
-          -x :integration_tests:nativegraphics:test \
+        env:
+          SKIP_ERRORPRONE: true
+          SKIP_JAVADOC: true
+        run: >
+          ./gradlew test
+          --stacktrace --continue
+          -Drobolectric.enabledSdks=${{ matrix.api-versions }}
+          -Drobolectric.alwaysIncludeVariantMarkersInTestName=true
+          -x :integration_tests:nativegraphics:test
           -x :integration_tests:roborazzi:test
 
       - name: Upload Test Results
@@ -102,7 +115,8 @@ jobs:
           tool-cache: true
           android: false
 
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -110,7 +124,8 @@ jobs:
           distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Enable KVM group perms
         run: |
@@ -144,6 +159,7 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
+          profile: Nexus One
           script: echo "Generated AVD snapshot for caching."
 
       - name: Run device tests
@@ -161,7 +177,7 @@ jobs:
           profile: Nexus One
           script: |
             adb shell wm density 240
-            SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --stacktrace -Dorg.gradle.workers.max=2
+            SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --stacktrace
 
       - name: Upload test results
         if: always()
@@ -180,7 +196,8 @@ jobs:
     needs: unit-tests
     if: github.repository == 'robolectric/robolectric' && github.ref == 'refs/heads/master'
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -188,7 +205,8 @@ jobs:
           distribution: 'temurin'
           java-version-file: .github/.java-version
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Publish
         run: ./gradlew publish --stacktrace
