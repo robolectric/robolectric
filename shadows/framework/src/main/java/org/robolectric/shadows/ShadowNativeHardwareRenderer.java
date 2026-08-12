@@ -197,6 +197,7 @@ public class ShadowNativeHardwareRenderer {
   // (like FrameInterval, DequeueBufferDuration) which must NOT be adjusted.
   private static final int[] TIMESTAMPS_TO_ADJUST = {
     2, // IntendedVsync
+    3, // Vsync
     5, // HandleInputStart
     6, // AnimationStart
     7, // PerformTraversalsStart
@@ -228,16 +229,11 @@ public class ShadowNativeHardwareRenderer {
     // offset = HostTime - RoboTime.
     long offset = System.nanoTime() - ShadowPausedSystemClock.uptimeNanos();
 
-    // Before calling native, convert Java-populated timestamps (indices 2-10, except Vsync) from
+    // Before calling native, convert Java-populated timestamps (indices 2-10) from
     // Robolectric time to host time. This ensures that the native JankTracker (which runs during
     // this call and uses the host clock) calculates correct frame durations instead of flagging
     // massive jank (Davey).
-    //
-    // We explicitly exclude Vsync (index 3) from adjustment because passing large host-time vsync
-    // values to the native rendering pipeline causes visual differences in some screenshot tests
-    // (e.g. HyphenationScreenshotTest), likely due to float precision loss when the native
-    // renderer
-    // processes large timestamps.
+
     adjustFrameInfoTimes(frameInfo.frameInfo, offset);
 
     int result =
@@ -265,6 +261,12 @@ public class ShadowNativeHardwareRenderer {
   }
 
   private static void adjustTime(long[] frameInfo, int index, long offset) {
+    // setting vsync time can cause screenshot differences, so guard it behind a flag temporarily
+    if (index == 3
+        && !Boolean.parseBoolean(
+            System.getProperty("robolectric.enableFrameInfoVsyncOffsetFix", "false"))) {
+      return;
+    }
     // Only adjust if the index is valid for this array, the timestamp is set (> 0),
     // and it is not a placeholder value (Long.MAX_VALUE).
     if (index < frameInfo.length && frameInfo[index] > 0 && frameInfo[index] != Long.MAX_VALUE) {

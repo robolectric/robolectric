@@ -56,6 +56,21 @@ public class ShadowSubscriptionManager {
 
   private static final Map<Integer, String> phoneNumberMap = new HashMap<>();
 
+  private RuntimeException throwException = null;
+
+  /**
+   * Configures the ShadowSubscriptionManager so that calls to intercepted IPC methods will throw
+   * the given {@link RuntimeException}. This can be used to simulate process crashes or remote
+   * failures. The intercepted methods include: {@link #getActiveSubscriptionInfoList()} {@link
+   * #getActiveSubscriptionInfo(int)} {@link #getActiveSubscriptionInfoForSimSlotIndex(int)} {@link
+   * #getPhoneNumber(int)}
+   *
+   * @param throwException the exception to throw, or {@code null} to clear the exception
+   */
+  public void setThrowException(RuntimeException throwException) {
+    this.throwException = throwException;
+  }
+
   /** Returns value set with {@link #setActiveDataSubscriptionId(int)}. */
   @Implementation(minSdk = R)
   protected static int getActiveDataSubscriptionId() {
@@ -254,6 +269,9 @@ public class ShadowSubscriptionManager {
    */
   @Implementation
   protected List<SubscriptionInfo> getActiveSubscriptionInfoList() {
+    if (throwException != null) {
+      throw throwException;
+    }
     checkReadPhoneStatePermission();
     return subscriptionList;
   }
@@ -304,6 +322,9 @@ public class ShadowSubscriptionManager {
    */
   @Implementation
   protected SubscriptionInfo getActiveSubscriptionInfo(int subId) {
+    if (throwException != null) {
+      throw throwException;
+    }
     checkReadPhoneStatePermission();
     if (subscriptionList == null) {
       return null;
@@ -338,6 +359,9 @@ public class ShadowSubscriptionManager {
    */
   @Implementation(minSdk = N)
   protected SubscriptionInfo getActiveSubscriptionInfoForSimSlotIndex(int slotIndex) {
+    if (throwException != null) {
+      throw throwException;
+    }
     checkReadPhoneStatePermission();
     if (subscriptionList == null) {
       return null;
@@ -686,6 +710,9 @@ public class ShadowSubscriptionManager {
    */
   @Implementation(minSdk = TIRAMISU)
   protected String getPhoneNumber(int subscriptionId) {
+    if (throwException != null) {
+      throw throwException;
+    }
     checkReadPhoneNumbersPermission();
     return phoneNumberMap.getOrDefault(subscriptionId, "");
   }
