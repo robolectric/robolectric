@@ -91,6 +91,15 @@ public abstract class ShadowLooper {
     }
   }
 
+  /**
+   * Returns true if the current looper mode executes tests on a separate test thread from the main
+   * looper thread.
+   */
+  public static boolean hasTestThread() {
+    LooperMode.Mode mode = looperMode();
+    return mode == LooperMode.Mode.INSTRUMENTATION_TEST || mode == LooperMode.Mode.RUNNING;
+  }
+
   @Resetter
   public static synchronized void clearLooperMode() {
     synchronized (looperModeLock) {

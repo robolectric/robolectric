@@ -1,6 +1,7 @@
 package org.robolectric.android.internal;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -227,7 +228,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
             : androidConfiguration.locale;
     Locale.setDefault(locale);
 
-    if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.RUNNING
+        && RuntimeEnvironment.getApiLevel() < CINNAMON_BUN) {
+      throw new UnsupportedOperationException(
+          "RUNNING mode is not supported on API < CINNAMON_BUN");
+    } else if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       if (Looper.myLooper() == null) {
         Looper.prepareMainLooper();
       }

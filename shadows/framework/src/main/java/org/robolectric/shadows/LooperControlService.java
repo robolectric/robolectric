@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Looper.getMainLooper;
 import static com.google.common.base.Preconditions.checkState;
-import static org.robolectric.annotation.LooperMode.Mode.INSTRUMENTATION_TEST;
 import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
 
@@ -25,7 +24,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RunnableFuture;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
-import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadow.api.Shadow;
 
 final class LooperControlService {
@@ -91,7 +89,7 @@ final class LooperControlService {
     }
     // add an empty task to controlQueue to wake up PAUSE or CRASHED state
     controlQueue.add(new EmptyCancelableFuture());
-    if (looper == Looper.getMainLooper() && looperMode() == INSTRUMENTATION_TEST) {
+    if (looper == Looper.getMainLooper() && ShadowLooper.hasTestThread()) {
       // force a task to run synchronously to ensure any potential pending crashes are cleared
       executeControlTask(new InitRunnableForMainLooper(), false);
     }
@@ -149,7 +147,7 @@ final class LooperControlService {
 
   //
   void unpause() {
-    checkState(looper != getMainLooper() || looperMode() == Mode.INSTRUMENTATION_TEST);
+    checkState(looper != getMainLooper() || ShadowLooper.hasTestThread());
     executeControlTask(
         () -> {
           synchronized (lock) {
@@ -174,7 +172,7 @@ final class LooperControlService {
       runnable.run();
     } else {
       checkState(
-          looper != getMainLooper() || looperMode() == Mode.INSTRUMENTATION_TEST,
+          looper != getMainLooper() || ShadowLooper.hasTestThread(),
           "Main looper can only be controlled from its thread in PAUSED mode");
       PropagatingRunnableFuture task = PropagatingRunnableFuture.create(runnable, cancelable);
       task.addListener(() -> controlQueue.remove(task), MoreExecutors.directExecutor());

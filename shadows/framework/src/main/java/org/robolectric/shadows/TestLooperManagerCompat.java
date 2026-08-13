@@ -147,6 +147,14 @@ final class TestLooperManagerCompat implements AutoCloseable {
     }
   }
 
+  Message next() {
+    if (delegate != null) {
+      return delegate.next();
+    } else {
+      return legacyNext(getQueue());
+    }
+  }
+
   private MessageQueue getQueue() {
     if (delegate != null) {
       return delegate.getMessageQueue();
@@ -170,6 +178,13 @@ final class TestLooperManagerCompat implements AutoCloseable {
       }
     }
     return lastWhen == null ? null : convertWhenToScheduledTime(lastWhen);
+  }
+
+  private static Message legacyNext(MessageQueue queue) {
+    LegacyMessageQueueReflector queueReflector =
+        reflector(LegacyMessageQueueReflector.class, queue);
+
+    return queueReflector.next();
   }
 
   @ForType(TestLooperManager.class)
@@ -196,5 +211,7 @@ final class TestLooperManagerCompat implements AutoCloseable {
 
     @Accessor("mMessages")
     void setMessages(Message nextMsg);
+
+    Message next();
   }
 }
