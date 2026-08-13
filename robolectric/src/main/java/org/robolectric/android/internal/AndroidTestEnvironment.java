@@ -111,8 +111,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
   private static final String CONSCRYPT_PROVIDER = "Conscrypt";
   private static final BouncyCastleProvider BOUNCY_CASTLE_PROVIDER = new BouncyCastleProvider();
-  // Cache the Conscrypt provider to avoid creating it multiple times across tests. Note Conscrypt
-  // is not supported in Mac Arm64, so it cannot be eagerly initialized.
+  // Cache the Conscrypt provider to avoid creating it multiple times across tests. It is
+  // initialized lazily as some platforms may not support it.
   private static final AtomicReference<OpenSSLProvider> cachedConscryptProvider =
       new AtomicReference<>();
 
