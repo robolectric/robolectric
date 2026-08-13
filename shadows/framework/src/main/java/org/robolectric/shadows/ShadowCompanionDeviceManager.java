@@ -4,9 +4,9 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toList;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
@@ -38,6 +38,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
@@ -55,10 +56,16 @@ public class ShadowCompanionDeviceManager {
 
   private final Set<RoboAssociationInfo> associations = new HashSet<>();
   private final Set<Object> observingAssociationsIds = new HashSet<>();
+  private final Set<String> observingDeviceAddresses = new HashSet<>();
   private final Set<ComponentName> hasNotificationAccess = new HashSet<>();
   private final Set<Integer> specifiedRemovableIds = new HashSet<>();
   private final Map<Integer, InputStream> attachedInputStreams = new ConcurrentHashMap<>();
   private final Map<Integer, OutputStream> attachedOutputStreams = new ConcurrentHashMap<>();
+  private final Map<Integer, RuntimeException> attachSystemDataTransportExceptions =
+      new ConcurrentHashMap<>();
+  private final Map<Integer, RuntimeException> detachSystemDataTransportExceptions =
+      new ConcurrentHashMap<>();
+  private final List<NotifiedActionResult> notifiedActionResults = new CopyOnWriteArrayList<>();
   private final List<MessageListenerRecord> messageListenerRecords = new ArrayList<>();
   private final Map<String, ListenerHolder> listeners = new HashMap<>();
   private final Set<RequestedAction> requestedActions = new HashSet<>();
@@ -77,13 +84,17 @@ public class ShadowCompanionDeviceManager {
   private CompanionDeviceManager.Callback lastAssociationCallback;
   private String lastObservingDevicePresenceDeviceAddress;
   private int lastObservingDevicePresenceRequestAssociationId = -1;
+  private String lastStoppedObservingDevicePresenceDeviceAddress;
+  private int lastStoppedObservingDevicePresenceRequestAssociationId = -1;
 
   private static final int DEFAULT_SYSTEMDATASYNCFLAGS = -1;
 
   @Implementation
   protected List<String> getAssociations() {
-    return ImmutableList.copyOf(
-        associations.stream().map(RoboAssociationInfo::deviceMacAddress).collect(toList()));
+    return associations.stream()
+        .map(RoboAssociationInfo::deviceMacAddress)
+        .filter(Objects::nonNull)
+        .collect(toImmutableList());
   }
 
   public void addAssociation(String deviceMacAddress) {
@@ -92,6 +103,11 @@ public class ShadowCompanionDeviceManager {
 
   public void addAssociation(AssociationInfo info) {
     associations.add(createShadowAssociationInfo(info));
+  }
+
+  /** Clears all associations. */
+  public void clearAssociations() {
+    associations.clear();
   }
 
   @Implementation
@@ -146,14 +162,42 @@ public class ShadowCompanionDeviceManager {
   @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   protected void attachSystemDataTransport(
       int associationId, InputStream inputStream, OutputStream outputStream) {
+    RuntimeException exception = attachSystemDataTransportExceptions.get(associationId);
+    if (exception != null) {
+      throw exception;
+    }
     attachedInputStreams.put(associationId, inputStream);
     attachedOutputStreams.put(associationId, outputStream);
   }
 
+  /** Sets an exception to be thrown when attachSystemDataTransport is called for associationId. */
+  public void setAttachSystemDataTransportException(
+      int associationId, @Nullable RuntimeException exception) {
+    if (exception == null) {
+      attachSystemDataTransportExceptions.remove(associationId);
+    } else {
+      attachSystemDataTransportExceptions.put(associationId, exception);
+    }
+  }
+
   @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   protected void detachSystemDataTransport(int associationId) {
+    RuntimeException exception = detachSystemDataTransportExceptions.get(associationId);
+    if (exception != null) {
+      throw exception;
+    }
     attachedInputStreams.remove(associationId);
     attachedOutputStreams.remove(associationId);
+  }
+
+  /** Sets an exception to be thrown when detachSystemDataTransport is called for associationId. */
+  public void setDetachSystemDataTransportException(
+      int associationId, @Nullable RuntimeException exception) {
+    if (exception == null) {
+      detachSystemDataTransportExceptions.remove(associationId);
+    } else {
+      detachSystemDataTransportExceptions.put(associationId, exception);
+    }
   }
 
   @Implementation(minSdk = VERSION_CODES.TIRAMISU)
@@ -180,16 +224,39 @@ public class ShadowCompanionDeviceManager {
         RoboAssociationInfo.builder().setDeviceMacAddress(macAddress.toString()).build());
   }
 
-  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  @Implementation(minSdk = VERSION_CODES.S)
   protected void startObservingDevicePresence(String deviceAddress) {
     lastObservingDevicePresenceDeviceAddress = deviceAddress;
     for (RoboAssociationInfo association : associations) {
       if (association.deviceMacAddress() != null
           && Ascii.equalsIgnoreCase(deviceAddress, association.deviceMacAddress())) {
+        observingDeviceAddresses.add(deviceAddress);
         return;
       }
     }
     throw new DeviceNotAssociatedException("Association does not exist");
+  }
+
+  @Implementation(minSdk = VERSION_CODES.S)
+  protected void stopObservingDevicePresence(String deviceAddress) {
+    lastStoppedObservingDevicePresenceDeviceAddress = deviceAddress;
+    for (RoboAssociationInfo association : associations) {
+      if (association.deviceMacAddress() != null
+          && Ascii.equalsIgnoreCase(deviceAddress, association.deviceMacAddress())) {
+        observingDeviceAddresses.removeIf(
+            observingAddress -> Ascii.equalsIgnoreCase(observingAddress, deviceAddress));
+        return;
+      }
+    }
+    throw new DeviceNotAssociatedException("Association does not exist");
+  }
+
+  @Implementation(minSdk = VERSION_CODES.BAKLAVA)
+  protected void stopObservingDevicePresence(ObservingDevicePresenceRequest request) {
+    Objects.requireNonNull(request, "ObservingDevicePresenceRequest cannot be null");
+    int associationId = request.getAssociationId();
+    lastStoppedObservingDevicePresenceRequestAssociationId = associationId;
+    observingAssociationsIds.remove(associationId);
   }
 
   @Implementation(minSdk = VERSION_CODES.BAKLAVA)
@@ -211,6 +278,23 @@ public class ShadowCompanionDeviceManager {
    */
   public int getLastObservingDevicePresenceRequestAssociationId() {
     return lastObservingDevicePresenceRequestAssociationId;
+  }
+
+  /**
+   * Returns the deviceAddress passed to {@code
+   * CompanionDeviceManager#stopObservingDevicePresence(String)}.
+   */
+  @Nullable
+  public String getLastStoppedObservingDevicePresenceDeviceAddress() {
+    return lastStoppedObservingDevicePresenceDeviceAddress;
+  }
+
+  /**
+   * Returns the associationId from the request passed to {@code
+   * CompanionDeviceManager#stopObservingDevicePresence(ObservingDevicePresenceRequest)}.
+   */
+  public int getLastStoppedObservingDevicePresenceRequestAssociationId() {
+    return lastStoppedObservingDevicePresenceRequestAssociationId;
   }
 
   @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -336,6 +420,17 @@ public class ShadowCompanionDeviceManager {
    */
   public boolean isObservingDevicePresence(int associationId) {
     return observingAssociationsIds.contains(associationId);
+  }
+
+  /**
+   * Returns true if the given device address is being observed for device presence.
+   *
+   * @param address the device MAC address to check
+   * @return true if the given device address is being observed for device presence, false otherwise
+   */
+  public boolean isObservingDevicePresence(String address) {
+    return observingDeviceAddresses.stream()
+        .anyMatch(observingAddress -> Ascii.equalsIgnoreCase(observingAddress, address));
   }
 
   /**
@@ -553,6 +648,7 @@ public class ShadowCompanionDeviceManager {
   @Implementation(minSdk = CINNAMON_BUN)
   protected void notifyActionResult(
       int associationId, @ClassName("android.companion.ActionResult") Object result) {
+    notifiedActionResults.add(NotifiedActionResult.create(associationId, result));
     requestedActions.stream()
         .filter(request -> request.isInterested(associationId, result))
         .map(RequestedAction::serviceName)
@@ -560,6 +656,29 @@ public class ShadowCompanionDeviceManager {
         .map(serviceName -> listeners.get(serviceName))
         .filter(listener -> listener != null && listener.isInterested(associationId))
         .forEach(listener -> listener.notifyActionResult(associationId, result));
+  }
+
+  /** Returns all action results that have been notified via notifyActionResult. */
+  public List<NotifiedActionResult> getNotifiedActionResults() {
+    return ImmutableList.copyOf(notifiedActionResults);
+  }
+
+  /** Clears the list of recorded notified action results. */
+  public void clearNotifiedActionResults() {
+    notifiedActionResults.clear();
+  }
+
+  /** Represents a recorded call to {@link #notifyActionResult}. */
+  @AutoValue
+  public abstract static class NotifiedActionResult {
+    public abstract int associationId();
+
+    public abstract Object actionResult();
+
+    public static NotifiedActionResult create(int associationId, Object actionResult) {
+      return new AutoValue_ShadowCompanionDeviceManager_NotifiedActionResult(
+          associationId, actionResult);
+    }
   }
 
   private static final class MessageListenerRecord {
@@ -758,6 +877,33 @@ public class ShadowCompanionDeviceManager {
     String getTag();
   }
 
+  /**
+   * Returns true if notifyActionResult was called for the given associationId, action, and result.
+   */
+  public boolean hasNotifiedActionResult(int associationId, int action, int result) {
+    return notifiedActionResults.stream()
+        .anyMatch(
+            r ->
+                r.associationId() == associationId
+                    && reflector(ActionResultReflector.class, r.actionResult()).getAction()
+                        == action
+                    && reflector(ActionResultReflector.class, r.actionResult()).getResultCode()
+                        == result);
+  }
+
+  /**
+   * Returns true if notifyActionResult was called for the given associationId and result (with any
+   * action).
+   */
+  public boolean hasNotifiedActionResult(int associationId, int result) {
+    return notifiedActionResults.stream()
+        .anyMatch(
+            r ->
+                r.associationId() == associationId
+                    && reflector(ActionResultReflector.class, r.actionResult()).getResultCode()
+                        == result);
+  }
+
   @ForType(className = "android.companion.ActionRequest")
   interface ActionRequestReflector {
     int getAction();
@@ -766,5 +912,7 @@ public class ShadowCompanionDeviceManager {
   @ForType(className = "android.companion.ActionResult")
   interface ActionResultReflector {
     int getAction();
+
+    int getResultCode();
   }
 }
