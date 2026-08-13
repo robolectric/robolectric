@@ -10,10 +10,7 @@ android-tools-common = "32.2.1"
 androidstubs = "36"
 
 # https://github.com/google/conscrypt/tags
-# Do not upgrade past 2.5.2: the native libraries shipped by 2.6.0 and later are built against
-# GLIBC 2.35, which makes them fail to load on distributions still on GLIBC 2.34 such as RHEL 9 and
-# Rocky Linux 9. See https://github.com/robolectric/robolectric/issues/11362.
-conscrypt = "2.5.2"
+conscrypt = "2.6.1"
 
 # https://github.com/bcgit/bc-java/tags
 bouncycastle = "1.85.2"
