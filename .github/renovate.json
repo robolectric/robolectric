@@ -47,11 +47,15 @@
     },
     {
       "groupName": "Android Gradle Plugin",
+      "matchDepNames": [
+        "com.android.application",
+        "com.android.legacy-kapt",
+        "com.android.library"
+      ],
       "matchManagers": "gradle",
       "matchPackageNames": [
-        "com.android.library",
         "com.android.tools:common",
-        "com.android.tools.build:gradle*"
+        "com.android.tools.build:gradle-api"
       ]
     },
     {
