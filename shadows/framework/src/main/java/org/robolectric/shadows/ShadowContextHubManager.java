@@ -23,11 +23,13 @@ import com.google.common.collect.Multimaps;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeoutException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.ClassName;
@@ -57,6 +59,7 @@ public class ShadowContextHubManager {
       HashMultimap.create();
   private static final Map<ContextHubClient, ContextHubClientCallbackDetails>
       contextHubClientCallbacks = new HashMap<>();
+  private static int queryNanoAppsResult = ContextHubTransaction.RESULT_SUCCESS;
 
   static {
     contextHubInfoList.add(new ContextHubInfo());
@@ -332,6 +335,19 @@ public class ShadowContextHubManager {
     }
   }
 
+  /** Sets the result returned by {@link #queryNanoApps(ContextHubInfo)}. */
+  public void setQueryNanoAppsResult(int result) {
+    queryNanoAppsResult = result;
+  }
+
+  /**
+   * Sets whether {@link ContextHubTransaction#waitForResponse} should throw a {@link
+   * TimeoutException}.
+   */
+  public void setQueryNanoAppsThrowTimeout(boolean throwTimeout) {
+    ShadowContextHubTransaction.setShouldThrowTimeout(throwTimeout);
+  }
+
   /** Returns true if the nanoapp is loaded. */
   public boolean nanoAppIsLoaded(long nanoAppId) {
     return nanoAppIdToInfo.containsKey(nanoAppId);
@@ -345,6 +361,7 @@ public class ShadowContextHubManager {
     attributionTagToClientMap.clear();
     contextHubClientCallbacks.clear();
     nanoAppIdToInfo.clear();
+    queryNanoAppsResult = ContextHubTransaction.RESULT_SUCCESS;
   }
 
   @Implementation(minSdk = VERSION_CODES.P)
@@ -367,9 +384,13 @@ public class ShadowContextHubManager {
             new NanoAppState(info.getAppId(), info.getAppVersion(), true /* enabled */));
       }
     }
+    List<NanoAppState> contents =
+        queryNanoAppsResult == ContextHubTransaction.RESULT_SUCCESS
+            ? nanoAppStates
+            : Collections.emptyList();
     ContextHubTransaction.Response<List<NanoAppState>> response =
         reflector(ReflectorContextHubTransactionResponse.class)
-            .create(ContextHubTransaction.RESULT_SUCCESS, nanoAppStates);
+            .create(queryNanoAppsResult, contents);
     reflector(ReflectorContextHubTransaction.class, transaction).setResponse(response);
     return transaction;
   }
