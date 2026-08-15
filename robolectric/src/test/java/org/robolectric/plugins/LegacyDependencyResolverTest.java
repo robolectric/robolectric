@@ -102,6 +102,22 @@ public class LegacyDependencyResolverTest {
   }
 
   @Test
+  public void whenRobolectricDependencyDirPropertyWithoutOffline_shouldBeIgnored() throws Exception {
+    when(mockClassLoader.loadClass("org.robolectric.internal.dependency.MavenDependencyResolver"))
+            .thenReturn((Class) FakeMavenDependencyResolver.class);
+
+    Path jarsPath = tempDirectory.create("jars");
+    Path sdkJarPath = tempDirectory.createFile("jars/android-all-" + VERSION + ".jar", "...");
+
+    properties.setProperty("robolectric.dependency.dir", jarsPath.toString());
+
+    DependencyResolver resolver = new LegacyDependencyResolver(properties, mockClassLoader);
+
+    URL jarUrl = resolver.getLocalArtifactUrl(DEPENDENCY_COORDS);
+    assertThat(Fs.fromUrl(jarUrl)).isNotEqualTo(sdkJarPath);
+  }
+
+  @Test
   public void whenNoPropertiesOrResourceFile() throws Exception {
     when(mockClassLoader.getResource("robolectric-deps.properties")).thenReturn(null);
     when(mockClassLoader.loadClass("org.robolectric.internal.dependency.MavenDependencyResolver"))
