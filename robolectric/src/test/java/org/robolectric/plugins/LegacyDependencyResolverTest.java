@@ -88,11 +88,12 @@ public class LegacyDependencyResolverTest {
   }
 
   @Test
-  public void whenRobolectricDependencyDirProperty() {
+  public void whenRobolectricDependencyDirPropertyAndOfflineProperty() {
     Path jarsPath = tempDirectory.create("jars");
     Path sdkJarPath = tempDirectory.createFile("jars/android-all-" + VERSION + ".jar", "...");
 
     properties.setProperty("robolectric.dependency.dir", jarsPath.toString());
+    properties.setProperty("robolectric.offline", "true");
 
     DependencyResolver resolver = new LegacyDependencyResolver(properties, mockClassLoader);
 
