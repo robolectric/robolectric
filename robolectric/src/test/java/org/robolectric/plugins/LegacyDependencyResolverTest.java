@@ -102,9 +102,10 @@ public class LegacyDependencyResolverTest {
   }
 
   @Test
-  public void whenRobolectricDependencyDirPropertyWithoutOffline_shouldBeIgnored() throws Exception {
+  public void whenRobolectricDependencyDirPropertyWithoutOffline_shouldBeIgnored()
+      throws Exception {
     when(mockClassLoader.loadClass("org.robolectric.internal.dependency.MavenDependencyResolver"))
-            .thenReturn((Class) FakeMavenDependencyResolver.class);
+        .thenReturn((Class) FakeMavenDependencyResolver.class);
 
     Path jarsPath = tempDirectory.create("jars");
     Path sdkJarPath = tempDirectory.createFile("jars/android-all-" + VERSION + ".jar", "...");
