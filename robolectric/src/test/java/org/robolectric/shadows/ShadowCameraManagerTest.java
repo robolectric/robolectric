@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.content.Context;
@@ -32,6 +33,7 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.ForType;
 
 /** Tests for {@link ShadowCameraManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -101,6 +103,24 @@ public class ShadowCameraManagerTest {
 
     assertThat(cameraManager.getCameraIdList()[0]).isEqualTo(CAMERA_ID_0);
     assertThat(cameraManager.getCameraIdList()[1]).isEqualTo(CAMERA_ID_1);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void testGetCameraIdListNoLazyNoCameras() {
+    String[] cameraIds =
+        reflector(CameraManagerReflector.class, cameraManager).getCameraIdListNoLazy();
+    assertThat(cameraIds).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void testGetCameraIdListNoLazySingleCamera() {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    String[] cameraIds =
+        reflector(CameraManagerReflector.class, cameraManager).getCameraIdListNoLazy();
+    assertThat(cameraIds).asList().containsExactly(CAMERA_ID_0);
   }
 
   @Test
@@ -503,5 +523,10 @@ public class ShadowCameraManagerTest {
     singletonExecutor.awaitTermination(1, SECONDS);
 
     ShadowCameraManager.reset();
+  }
+
+  @ForType(CameraManager.class)
+  private interface CameraManagerReflector {
+    String[] getCameraIdListNoLazy();
   }
 }
