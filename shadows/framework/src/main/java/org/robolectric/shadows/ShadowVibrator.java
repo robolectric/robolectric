@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 
@@ -20,6 +21,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(Vibrator.class)
+@SuppressWarnings("NonFinalStaticField")
 public class ShadowVibrator {
   static boolean vibrating;
   static boolean cancelled;
@@ -35,6 +37,7 @@ public class ShadowVibrator {
   static int repeat;
   static boolean hasVibrator = true;
   static boolean hasAmplitudeControl = false;
+  static boolean areEnvelopeEffectsSupported;
   static int effectId;
 
   /** Controls the return value of {@link Vibrator#hasVibrator()} the default is true. */
@@ -45,6 +48,19 @@ public class ShadowVibrator {
   /** Controls the return value of {@link Vibrator#hasAmplitudeControl()} the default is false. */
   public void setHasAmplitudeControl(boolean hasAmplitudeControl) {
     ShadowVibrator.hasAmplitudeControl = hasAmplitudeControl;
+  }
+
+  /**
+   * Controls the return value of {@link Vibrator#areEnvelopeEffectsSupported()} the default is
+   * false.
+   */
+  public void setAreEnvelopeEffectsSupported(boolean areEnvelopeEffectsSupported) {
+    ShadowVibrator.areEnvelopeEffectsSupported = areEnvelopeEffectsSupported;
+  }
+
+  @Implementation(minSdk = BAKLAVA)
+  protected boolean areEnvelopeEffectsSupported() {
+    return areEnvelopeEffectsSupported;
   }
 
   /**
@@ -161,6 +177,7 @@ public class ShadowVibrator {
     repeat = 0;
     hasVibrator = true;
     hasAmplitudeControl = false;
+    areEnvelopeEffectsSupported = false;
     effectId = 0;
     primitiveidsToDurationMillis.clear();
   }
