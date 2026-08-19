@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -16,6 +17,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -119,48 +122,87 @@ class PluginFinder {
 
     private final ClassLoader classLoader;
 
+    /**
+     * The names of the implementation classes declared for each plugin type, keyed by plugin type
+     * name.
+     *
+     * <p>Resolving a plugin requires a {@link ClassLoader#getResources} scan of the whole
+     * classpath, which is expensive when the classpath is large. {@link Injector} performs one for
+     * every dependency type it resolves, and the great majority of those declare no service file at
+     * all, so the scan finds nothing — and is repeated for each new scope. The classpath does not
+     * change while the JVM is running, so results are cached here, including empty ones.
+     *
+     * <p>This is no stronger an assumption than {@link Injector} already makes: it memoizes the
+     * provider it resolves for a type permanently, so a plugin lookup is already expected to yield
+     * the same answer for the lifetime of the injector.
+     *
+     * <p>Class <em>names</em> are cached rather than {@link Class} objects so that the cache never
+     * strongly references classes loaded by {@link #classLoader}, which would keep an evicted
+     * sandbox's ClassLoader from being garbage collected.
+     */
+    private final ConcurrentMap<String, List<String>> implNamesByPluginType =
+        new ConcurrentHashMap<>();
+
     ServiceFinderAdapter(ClassLoader classLoader) {
       this.classLoader = classLoader;
     }
 
     @Nonnull
     <T> Iterable<Class<? extends T>> load(Class<T> pluginType) {
+      ClassLoader serviceClassLoader = classLoader;
+      if (serviceClassLoader == null) {
+        serviceClassLoader = Thread.currentThread().getContextClassLoader();
+      }
+      ClassLoader resolvedClassLoader = serviceClassLoader;
+
+      List<String> implNames =
+          implNamesByPluginType.computeIfAbsent(
+              pluginType.getName(), typeName -> findImplNames(typeName, resolvedClassLoader));
+
+      HashSet<Class<? extends T>> result = new HashSet<>();
+      for (String implName : implNames) {
+        try {
+          result.add(Class.forName(implName, false, resolvedClassLoader).asSubclass(pluginType));
+        } catch (ClassNotFoundException e) {
+          throw new AssertionError(e);
+        }
+      }
+      return result;
+    }
+
+    /** Scans the classpath for the implementation classes declared for the given plugin type. */
+    private static List<String> findImplNames(String pluginTypeName, ClassLoader classLoader) {
       return PerfStatsCollector.getInstance()
           .measure(
               "loadPlugins",
               () -> {
-                ClassLoader serviceClassLoader = classLoader;
-                if (serviceClassLoader == null) {
-                  serviceClassLoader = Thread.currentThread().getContextClassLoader();
-                }
-                HashSet<Class<? extends T>> result = new HashSet<>();
+                List<String> implNames = new ArrayList<>();
 
                 try {
                   Enumeration<URL> urls =
-                      serviceClassLoader.getResources("META-INF/services/" + pluginType.getName());
+                      classLoader.getResources("META-INF/services/" + pluginTypeName);
                   while (urls.hasMoreElements()) {
                     URL url = urls.nextElement();
-                    BufferedReader reader =
+                    try (BufferedReader reader =
                         new BufferedReader(
-                            new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
-                    while (reader.ready()) {
-                      String s = reader.readLine();
-                      int startPositionOfComment = s.indexOf('#');
-                      if (startPositionOfComment != -1) {
-                        s = s.substring(0, startPositionOfComment);
-                      }
-                      s = s.trim();
-                      if (!s.isBlank()) {
-                        result.add(
-                            Class.forName(s, false, serviceClassLoader).asSubclass(pluginType));
+                            new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
+                      while (reader.ready()) {
+                        String s = reader.readLine();
+                        int startPositionOfComment = s.indexOf('#');
+                        if (startPositionOfComment != -1) {
+                          s = s.substring(0, startPositionOfComment);
+                        }
+                        s = s.trim();
+                        if (!s.isBlank()) {
+                          implNames.add(s);
+                        }
                       }
                     }
-                    reader.close();
                   }
-                  return result;
-                } catch (IOException | ClassNotFoundException e) {
+                } catch (IOException e) {
                   throw new AssertionError(e);
                 }
+                return Collections.unmodifiableList(implNames);
               });
     }
   }
