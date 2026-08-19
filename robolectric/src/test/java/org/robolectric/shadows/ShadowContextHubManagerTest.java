@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -23,6 +24,7 @@ import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -113,6 +115,40 @@ public class ShadowContextHubManagerTest {
     List<NanoAppState> states = response.getContents();
     assertThat(states).isNotNull();
     assertThat(states).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.P)
+  public void queryNanoApps_customResult_returnsConfiguredResult() throws Exception {
+    ContextHubManager contextHubManager = context.getSystemService(ContextHubManager.class);
+    ShadowContextHubManager shadowManager = Shadow.extract(contextHubManager);
+    List<ContextHubInfo> contextHubInfoList = contextHubManager.getContextHubs();
+    shadowManager.setQueryResult(ContextHubTransaction.RESULT_FAILED_BUSY);
+
+    ContextHubTransaction<List<NanoAppState>> transaction =
+        contextHubManager.queryNanoApps(contextHubInfoList.get(0));
+
+    ContextHubTransaction.Response<List<NanoAppState>> response =
+        transaction.waitForResponse(1, SECONDS);
+    assertThat(response.getResult()).isEqualTo(ContextHubTransaction.RESULT_FAILED_BUSY);
+    assertThat(response.getContents()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.P)
+  public void queryNanoApps_throwTimeout_throwsTimeoutException() throws Exception {
+    ContextHubManager contextHubManager = context.getSystemService(ContextHubManager.class);
+    ShadowContextHubManager shadowManager = Shadow.extract(contextHubManager);
+    shadowManager.setQueryThrowTimeout(true);
+
+    assertThrows(
+        TimeoutException.class,
+        () ->
+            context
+                .getSystemService(ContextHubManager.class)
+                .queryNanoApps(
+                    context.getSystemService(ContextHubManager.class).getContextHubs().get(0))
+                .waitForResponse(1, SECONDS));
   }
 
   @Test
