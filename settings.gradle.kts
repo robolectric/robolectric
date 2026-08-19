@@ -16,7 +16,7 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "robolectric"
+rootProject.name = "robolectric-root"
 
 include(
   ":annotations",
