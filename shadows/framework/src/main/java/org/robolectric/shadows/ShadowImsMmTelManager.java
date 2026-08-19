@@ -12,14 +12,13 @@ import android.telephony.SubscriptionManager;
 import android.telephony.ims.ImsException;
 import android.telephony.ims.ImsMmTelManager;
 import android.telephony.ims.ImsMmTelManager.CapabilityCallback;
-import android.telephony.ims.ImsMmTelManager.RegistrationCallback;
 import android.telephony.ims.ImsReasonInfo;
 import android.telephony.ims.ImsRegistrationAttributes;
 import android.telephony.ims.RegistrationManager;
 import android.telephony.ims.feature.MmTelFeature.MmTelCapabilities;
 import android.telephony.ims.stub.ImsRegistrationImplBase;
-import android.util.ArrayMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
@@ -43,18 +42,25 @@ import org.robolectric.util.reflector.Static;
 @SystemApi
 public class ShadowImsMmTelManager {
 
-  private static final Map<Integer, ImsMmTelManager> existingInstances = new ArrayMap<>();
-  private static final Map<Integer, Integer> subIdToRegistrationTransportTypeMap = new ArrayMap<>();
-  private static final Map<Integer, Integer> subIdToRegistrationStateMap = new ArrayMap<>();
-  private static final Map<Integer, Boolean> subIdToVoWiFiSettingEnabledMap = new ArrayMap<>();
-  private static final Map<Integer, Integer> subIdToVoWiFiModeSettingMap = new ArrayMap<>();
-  private static final Map<Integer, Boolean> subIdToCrossSimCallingEnabledMap = new ArrayMap<>();
+  private static final Map<Integer, ImsMmTelManager> existingInstances = new ConcurrentHashMap<>();
+  private static final Map<Integer, Integer> subIdToRegistrationTransportTypeMap =
+      new ConcurrentHashMap<>();
+  private static final Map<Integer, Integer> subIdToRegistrationStateMap =
+      new ConcurrentHashMap<>();
+  private static final Map<Integer, Boolean> subIdToVoWiFiSettingEnabledMap =
+      new ConcurrentHashMap<>();
+  private static final Map<Integer, Integer> subIdToVoWiFiModeSettingMap =
+      new ConcurrentHashMap<>();
+  private static final Map<Integer, Boolean> subIdToCrossSimCallingEnabledMap =
+      new ConcurrentHashMap<>();
 
-  private final Map<ImsMmTelManager.RegistrationCallback, Executor>
-      registrationCallbackExecutorMap = new ArrayMap<>();
-  private final Map<RegistrationManager.RegistrationCallback, Executor>
-      registrationManagerCallbackExecutorMap = new ArrayMap<>();
-  private final Map<CapabilityCallback, Executor> capabilityCallbackExecutorMap = new ArrayMap<>();
+  private static final Map<ImsMmTelManager.RegistrationCallback, Executor>
+      registrationCallbackExecutorMap = new ConcurrentHashMap<>();
+  private static final Map<RegistrationManager.RegistrationCallback, Executor>
+      registrationManagerCallbackExecutorMap = new ConcurrentHashMap<>();
+  private static final Map<CapabilityCallback, Executor> capabilityCallbackExecutorMap =
+      new ConcurrentHashMap<>();
+
   private boolean imsAvailableOnDevice = true;
   private MmTelCapabilities mmTelCapabilitiesAvailable =
       new MmTelCapabilities(); // start with empty
@@ -370,6 +376,9 @@ public class ShadowImsMmTelManager {
     subIdToVoWiFiSettingEnabledMap.clear();
     subIdToVoWiFiModeSettingMap.clear();
     subIdToCrossSimCallingEnabledMap.clear();
+    registrationCallbackExecutorMap.clear();
+    registrationManagerCallbackExecutorMap.clear();
+    capabilityCallbackExecutorMap.clear();
   }
 
   @ForType(ImsMmTelManager.class)
