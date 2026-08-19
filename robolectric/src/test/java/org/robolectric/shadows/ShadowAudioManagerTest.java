@@ -1637,6 +1637,23 @@ public class ShadowAudioManagerTest {
 
   @Test
   @Config(minSdk = S)
+  public void onCommunicationDeviceChangedListener_selfUnregisterDuringCallback_noException()
+      throws Exception {
+    AudioDeviceInfo device = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
+    AudioManager.OnCommunicationDeviceChangedListener listener =
+        new AudioManager.OnCommunicationDeviceChangedListener() {
+          @Override
+          public void onCommunicationDeviceChanged(AudioDeviceInfo changedDevice) {
+            audioManager.removeOnCommunicationDeviceChangedListener(this);
+          }
+        };
+
+    audioManager.addOnCommunicationDeviceChangedListener(directExecutor(), listener);
+    shadowOf(audioManager).callOnCommunicationDeviceChangedListeners(device);
+  }
+
+  @Test
+  @Config(minSdk = S)
   public void onCommunicationDeviceChangedListener_severalListener_allGetCalls() throws Exception {
     AudioManager.OnCommunicationDeviceChangedListener mockListener1 =
         mock(AudioManager.OnCommunicationDeviceChangedListener.class);
