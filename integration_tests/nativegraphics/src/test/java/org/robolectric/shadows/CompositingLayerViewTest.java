@@ -8,13 +8,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.HardwareRenderer;
-import android.graphics.PixelFormat;
 import android.graphics.RecordingCanvas;
 import android.graphics.RenderNode;
-import android.media.Image;
-import android.media.ImageReader;
-import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import org.junit.FixMethodOrder;
@@ -25,7 +20,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.ReflectionHelpers;
 
 @Config(minSdk = Q)
 @RunWith(RobolectricTestRunner.class)
@@ -59,44 +53,12 @@ public class CompositingLayerViewTest {
 
     ShadowLooper.idleMainLooper();
 
-    Bitmap largeBitmap = takeScreenshot(parent);
+    Bitmap largeBitmap =
+        Bitmap.createBitmap(parent.getWidth(), parent.getHeight(), Bitmap.Config.ARGB_8888);
+    HardwareRenderingScreenshot.takeScreenshot(parent, largeBitmap);
     Bitmap bitmap = Bitmap.createBitmap(largeBitmap, 0, 0, WIDTH, HEIGHT);
     assertThat(hasColor(bitmap, Color.RED)).isTrue();
     assertThat(hasColor(bitmap, Color.BLUE)).isTrue();
-  }
-
-  private static Bitmap takeScreenshot(View view) {
-    int width = view.getWidth();
-    int height = view.getHeight();
-    try (ImageReader imageReader =
-        ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 1)) {
-      Surface surface = imageReader.getSurface();
-
-      RenderNode node = getRenderNode(view);
-      RenderNode contentRootNode = new RenderNode("root");
-      contentRootNode.setPosition(0, 0, width, height);
-      RecordingCanvas canvas = contentRootNode.beginRecording();
-      canvas.translate(-node.getLeft(), -node.getTop());
-      canvas.drawRenderNode(node);
-      contentRootNode.endRecording();
-
-      HardwareRenderer renderer = new HardwareRenderer();
-      renderer.setSurface(surface);
-      renderer.setContentRoot(contentRootNode);
-      renderer.createRenderRequest().syncAndDraw();
-
-      Image nativeImage = imageReader.acquireNextImage();
-      Image.Plane[] planes = nativeImage.getPlanes();
-      Bitmap destBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-      destBitmap.copyPixelsFromBuffer(planes[0].getBuffer());
-      surface.release();
-      return destBitmap;
-    }
-  }
-
-  private static RenderNode getRenderNode(View view) {
-    // requires ReflectionHelpers to work in Gradle.
-    return ReflectionHelpers.callInstanceMethod(view, "updateDisplayListIfDirty");
   }
 
   private static boolean hasColor(Bitmap bitmap, int color) {
