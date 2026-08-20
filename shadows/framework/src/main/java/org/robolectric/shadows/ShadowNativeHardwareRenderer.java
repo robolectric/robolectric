@@ -191,29 +191,6 @@ public class ShadowNativeHardwareRenderer {
     HardwareRendererNatives.nSetIsHighEndGfx(isHighEndGfx);
   }
 
-  // Indices of timestamps in the frameInfo array that need clock translation.
-  // These correspond to FrameInfoIndex enum in AOSP frameworks/base/libs/hwui/FrameInfo.h.
-  // We explicitly list them because the array also contains flags, IDs, and durations
-  // (like FrameInterval, DequeueBufferDuration) which must NOT be adjusted.
-  private static final int[] TIMESTAMPS_TO_ADJUST = {
-    2, // IntendedVsync
-    5, // HandleInputStart
-    6, // AnimationStart
-    7, // PerformTraversalsStart
-    8, // DrawStart
-    9, // FrameDeadline
-    10, // FrameStartTime
-    12, // SyncQueued
-    13, // SyncStart
-    14, // IssueDrawCommandsStart
-    15, // SwapBuffers
-    16, // FrameCompleted
-    19, // GpuCompleted
-    20, // SwapBuffersCompleted
-    21, // DisplayPresentTime
-    22, // CommandSubmissionCompleted
-  };
-
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nSyncAndDrawFrame(long nativeProxy, long[] frameInfo, int size) {
     return HardwareRendererNatives.nSyncAndDrawFrame(nativeProxy, frameInfo, size);
@@ -225,19 +202,13 @@ public class ShadowNativeHardwareRenderer {
     // 'offset' represents the difference between the host's real monotonic clock
     // (System.nanoTime())
     // and Robolectric's simulated clock (ShadowPausedSystemClock.uptimeNanos()).
-    // offset = HostTime - RoboTime.
     long offset = System.nanoTime() - ShadowPausedSystemClock.uptimeNanos();
 
-    // Before calling native, convert Java-populated timestamps (indices 2-10, except Vsync) from
+    // Before calling native, convert Java-populated timestamps from
     // Robolectric time to host time. This ensures that the native JankTracker (which runs during
     // this call and uses the host clock) calculates correct frame durations instead of flagging
-    // massive jank (Davey).
-    //
-    // We explicitly exclude Vsync (index 3) from adjustment because passing large host-time vsync
-    // values to the native rendering pipeline causes visual differences in some screenshot tests
-    // (e.g. HyphenationScreenshotTest), likely due to float precision loss when the native
-    // renderer
-    // processes large timestamps.
+    // jank or dropping frames.
+
     adjustFrameInfoTimes(frameInfo.frameInfo, offset);
 
     int result =
@@ -245,30 +216,39 @@ public class ShadowNativeHardwareRenderer {
             .syncAndDrawFrame(frameInfo);
 
     if (offset != 0) {
-      // After native completes:
-      // 1. Convert Java-populated timestamps back to Robolectric time so Java-side remains
+      // After native completes convert timestamps back to ShadowPausedSystemClock time so Java-side
+      // remains
       // consistent.
-      // 2. Convert newly populated native timestamps (indices 12+, e.g. FrameCompleted) from host
-      // time
-      //    to Robolectric time (by subtracting the offset) so they align with Robolectric's clock
-      // domain
-      //    when read by Java-side APIs like FrameMetrics.
       adjustFrameInfoTimes(frameInfo.frameInfo, -offset);
     }
     return result;
   }
 
   private static void adjustFrameInfoTimes(long[] frameInfo, long offset) {
-    for (int index : TIMESTAMPS_TO_ADJUST) {
-      adjustTime(frameInfo, index, offset);
-    }
-  }
-
-  private static void adjustTime(long[] frameInfo, int index, long offset) {
-    // Only adjust if the index is valid for this array, the timestamp is set (> 0),
-    // and it is not a placeholder value (Long.MAX_VALUE).
-    if (index < frameInfo.length && frameInfo[index] > 0 && frameInfo[index] != Long.MAX_VALUE) {
-      frameInfo[index] += offset;
+    for (int i = 0; i < frameInfo.length; i++) {
+      switch (i) {
+        case FrameInfo.INTENDED_VSYNC:
+        case FrameInfo.VSYNC:
+        case FrameInfo.HANDLE_INPUT_START:
+        case FrameInfo.ANIMATION_START:
+        case FrameInfo.PERFORM_TRAVERSALS_START:
+        case FrameInfo.DRAW_START:
+        case FrameInfo.FRAME_DEADLINE:
+        case FrameInfo.FRAME_START_TIME:
+          if (frameInfo[i] > 0 && frameInfo[i] < Long.MAX_VALUE) {
+            frameInfo[i] += offset;
+          }
+          break;
+        default:
+          /* Ignored non-timestamp fields:
+            FrameInfo.INPUT_EVENT_ID
+            FrameInfo.FRAME_INTERVAL
+            FrameInfo.WORKLOAD_TARGET
+            FrameInfo.ANIMATION_TIME
+            FrameInfo.ANIMATION_COUNTER
+          */
+          break;
+      }
     }
   }
 

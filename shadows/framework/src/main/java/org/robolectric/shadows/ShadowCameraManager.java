@@ -100,6 +100,12 @@ public class ShadowCameraManager {
     return cameraIds.toArray(new String[0]);
   }
 
+  @Implementation(minSdk = VERSION_CODES.S)
+  @Nonnull
+  protected String[] getCameraIdListNoLazy() throws CameraAccessException {
+    return getCameraIdList();
+  }
+
   @Implementation
   @Nonnull
   protected CameraCharacteristics getCameraCharacteristics(@Nonnull String cameraId) {

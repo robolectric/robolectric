@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static java.util.stream.Collectors.toCollection;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -12,8 +13,10 @@ import android.annotation.RequiresApi;
 import android.annotation.RequiresPermission;
 import android.app.ActivityManager;
 import android.app.ApplicationExitInfo;
+import android.app.ApplicationStartInfo;
 import android.app.IActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ConfigurationInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.PackageManager;
@@ -76,10 +79,12 @@ public class ShadowActivityManager {
   private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
   private boolean isBackgroundRestricted;
   private static final Deque<Object> appExitInfoList = new ArrayDeque<>();
+  private static final List<Object> historicalProcessStartReasons = new CopyOnWriteArrayList<>();
   private ConfigurationInfo configurationInfo;
   private Context context;
   private static final ArrayList<Locale> supportedLocales = new ArrayList<>();
   private LocaleList deviceLocales;
+  private String anrReason;
 
   @Implementation
   protected void __constructor__(Context context, Handler handler) {
@@ -233,6 +238,16 @@ public class ShadowActivityManager {
    */
   public boolean isPackageForceStopped(String packageName) {
     return isPackageForceStoppedAsUser(packageName, UserHandle.myUserId());
+  }
+
+  @Implementation(minSdk = VERSION_CODES.R)
+  protected void appNotResponding(String reason) {
+    this.anrReason = reason;
+  }
+
+  /** Gets the reason passed to {@link ActivityManager#appNotResponding(String)}. */
+  public String getAppNotRespondingReason() {
+    return anrReason;
   }
 
   /**
@@ -453,6 +468,7 @@ public class ShadowActivityManager {
     importanceListeners.clear();
     uidImportances.clear();
     appExitInfoList.clear();
+    historicalProcessStartReasons.clear();
     isLowRamDeviceOverride = null;
     supportedLocales.clear();
   }
@@ -531,6 +547,32 @@ public class ShadowActivityManager {
     return Shadow.<ShadowApplicationPackageManager>extract(packageManager)
         .getClearedApplicationUserDataPackages()
         .contains(RuntimeEnvironment.getApplication().getPackageName());
+  }
+
+  /**
+   * Returns the list of {@link ApplicationStartInfo} added by {@link
+   * #addHistoricalProcessStartReason}.
+   */
+  @Implementation(minSdk = VANILLA_ICE_CREAM)
+  protected List</*android.app.ApplicationStartInfo*/ ?> getHistoricalProcessStartReasons(
+      int maxNum) {
+    return historicalProcessStartReasons.stream()
+        .limit(maxNum)
+        .collect(toCollection(ArrayList::new));
+  }
+
+  /** Adds given {@link ApplicationStartInfo}, see {@link ApplicationStartInfoBuilder}. */
+  @RequiresApi(api = VANILLA_ICE_CREAM)
+  public void addHistoricalProcessStartReason(Object startInfo) {
+    Preconditions.checkArgument(startInfo instanceof ApplicationStartInfo);
+    historicalProcessStartReasons.add(startInfo);
+  }
+
+  /** Convenience method to add a historical process start reason with just the reason code. */
+  @RequiresApi(api = VANILLA_ICE_CREAM)
+  public void addHistoricalProcessStartReason(int reason) {
+    addHistoricalProcessStartReason(
+        ApplicationStartInfoBuilder.newBuilder().setReason(reason).build());
   }
 
   /** Builder class for {@link ApplicationExitInfo} */
@@ -764,6 +806,91 @@ public class ShadowActivityManager {
     @Override
     public int hashCode() {
       return listener.hashCode();
+    }
+  }
+
+  /**
+   * Reflector interface to instantiate {@link ApplicationStartInfo} which has no public 0-arg
+   * constructor.
+   */
+  @ForType(className = "android.app.ApplicationStartInfo")
+  interface ApplicationStartInfoReflector {
+    @Constructor
+    Object newApplicationStartInfo();
+  }
+
+  /** Builder class for {@link ApplicationStartInfo} */
+  @RequiresApi(api = VANILLA_ICE_CREAM)
+  public static class ApplicationStartInfoBuilder {
+
+    private final ApplicationStartInfo instance;
+
+    public static ApplicationStartInfoBuilder newBuilder() {
+      return new ApplicationStartInfoBuilder();
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setDefiningUid(int uid) {
+      instance.setDefiningUid(uid);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setIntent(Intent intent) {
+      instance.setIntent(intent);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setLaunchMode(int launchMode) {
+      instance.setLaunchMode(launchMode);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setPackageUid(int packageUid) {
+      instance.setPackageUid(packageUid);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setPid(int pid) {
+      instance.setPid(pid);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setProcessName(String processName) {
+      instance.setProcessName(processName);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setReason(int reason) {
+      instance.setReason(reason);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setStartType(int startType) {
+      instance.setStartType(startType);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public ApplicationStartInfoBuilder setStartupState(int startupState) {
+      instance.setStartupState(startupState);
+      return this;
+    }
+
+    public ApplicationStartInfo build() {
+      return instance;
+    }
+
+    private ApplicationStartInfoBuilder() {
+      this.instance =
+          (ApplicationStartInfo)
+              reflector(ApplicationStartInfoReflector.class).newApplicationStartInfo();
     }
   }
 }

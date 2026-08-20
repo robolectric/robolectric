@@ -744,7 +744,7 @@ public class ShadowBluetoothAdapter {
   }
 
   /** Returns the last value of {@link #setIsLeCodedPhySupported}, defaulting to true. */
-  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = O)
   protected boolean isLeCodedPhySupported() {
     return isLeCodedPhySupported;
   }
@@ -755,7 +755,7 @@ public class ShadowBluetoothAdapter {
   }
 
   /** Returns the last value of {@link #setIsLe2MPhySupported}, defaulting to true. */
-  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = O)
   protected boolean isLe2MPhySupported() {
     return isLe2MPhySupported;
   }

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -54,6 +55,26 @@ public class ShadowVibratorTest {
     shadowOf(vibrator).setHasAmplitudeControl(true);
 
     assertThat(vibrator.hasAmplitudeControl()).isTrue();
+  }
+
+  @Config(minSdk = BAKLAVA)
+  @Test
+  public void areEnvelopeEffectsSupported() {
+    assertThat(vibrator.areEnvelopeEffectsSupported()).isFalse();
+
+    shadowOf(vibrator).setAreEnvelopeEffectsSupported(true);
+
+    assertThat(vibrator.areEnvelopeEffectsSupported()).isTrue();
+  }
+
+  @Config(minSdk = BAKLAVA)
+  @Test
+  public void areEnvelopeEffectsSupported_afterReset_isFalse() {
+    shadowOf(vibrator).setAreEnvelopeEffectsSupported(true);
+
+    ShadowVibrator.reset();
+
+    assertThat(vibrator.areEnvelopeEffectsSupported()).isFalse();
   }
 
   @Test

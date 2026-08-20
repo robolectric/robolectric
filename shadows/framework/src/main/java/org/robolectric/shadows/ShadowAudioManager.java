@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.ClassName;
@@ -103,7 +104,7 @@ public class ShadowAudioManager {
   private final Map<Integer, Boolean> streamsMuteState = new HashMap<>();
   private final Map<String, AudioPolicy> registeredAudioPolicies = new HashMap<>();
   private final Map<AudioManager.OnCommunicationDeviceChangedListener, Executor>
-      registeredCommunicationDeviceChangedListeners = new HashMap<>();
+      registeredCommunicationDeviceChangedListeners = new ConcurrentHashMap<>();
   private int audioSessionIdCounter = 1;
   private final Map<AudioAttributes, ImmutableList<Object>> devicesForAttributes = new HashMap<>();
   private final List<AudioDeviceInfo> outputDevicesWithDirectProfiles = new ArrayList<>();

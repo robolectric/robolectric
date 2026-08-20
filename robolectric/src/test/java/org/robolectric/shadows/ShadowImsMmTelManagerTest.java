@@ -7,9 +7,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Build.VERSION_CODES;
 import android.telephony.AccessNetworkConstants;
 import android.telephony.ims.ImsException;
+import android.telephony.ims.ImsManager;
 import android.telephony.ims.ImsMmTelManager;
 import android.telephony.ims.ImsMmTelManager.CapabilityCallback;
 import android.telephony.ims.ImsReasonInfo;
@@ -18,6 +20,7 @@ import android.telephony.ims.RegistrationManager;
 import android.telephony.ims.feature.MmTelFeature.MmTelCapabilities;
 import android.telephony.ims.stub.ImsRegistrationImplBase;
 import android.util.ArraySet;
+import androidx.test.core.app.ApplicationProvider;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
@@ -643,5 +646,32 @@ public class ShadowImsMmTelManagerTest {
     ImsMmTelManager imsMmTelManager = ImsMmTelManager.createForSubscriptionId(SUBSCRIPTION_ID);
     imsMmTelManager.setCrossSimCallingEnabled(true);
     assertThat(imsMmTelManager.isCrossSimCallingEnabled()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void registerImsRegistrationCallback_instanceFromImsManager_sharesCallbacksWithSameSubId()
+      throws Exception {
+    Context context = ApplicationProvider.getApplicationContext();
+    ImsManager imsManager = context.getSystemService(ImsManager.class);
+    // The platform creates a new ImsMmTelManager for each invocation of this API, which bypasses
+    // the caching in ShadowImsMmTelManager#createForSubscriptionId.
+    ImsMmTelManager imsMmTelManagerFromImsManager = imsManager.getImsMmTelManager(SUBSCRIPTION_ID);
+    // Register the callback in the instance returned by ImsManager.
+    RegistrationManager.RegistrationCallback callback =
+        mock(RegistrationManager.RegistrationCallback.class);
+    imsMmTelManagerFromImsManager.registerImsRegistrationCallback(Runnable::run, callback);
+
+    // Trigger the callback in the shadow. It should invoke the same callback we registered above.
+    shadowImsMmTelManager.setImsRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN);
+
+    verify(callback).onRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN);
+
+    // Unregistering the callback should do the same.
+    imsMmTelManagerFromImsManager.unregisterImsRegistrationCallback(callback);
+    // Should not trigger
+    shadowImsMmTelManager.setImsRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_LTE);
+
+    verifyNoMoreInteractions(callback);
   }
 }

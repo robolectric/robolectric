@@ -148,21 +148,6 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getText_withLayoutId() {
-    // This isn't _really_ supported by the platform (gives a lint warning that getText() expects a
-    // String resource type
-    // but the actual platform behaviour is to return a string that equals
-    // "res/layout/layout_file.xml" so the current
-    // Robolectric behaviour deviates from the platform as we append the full file path from the
-    // current working directory.
-    String textString = resources.getText(R.layout.different_screen_sizes, "value").toString();
-    assertThat(textString).containsMatch("/different_screen_sizes.xml$");
-    // If we run tests on devices with different config, the resource system will select different
-    // layout directories.
-    assertThat(textString).containsMatch("^res/layout");
-  }
-
-  @Test
   public void getStringArray() {
     assertThat(resources.getStringArray(R.array.items)).isEqualTo(new String[] {"foo", "bar"});
     assertThat(resources.getStringArray(R.array.greetings))
