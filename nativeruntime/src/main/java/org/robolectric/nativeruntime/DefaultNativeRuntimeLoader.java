@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.base.StandardSystemProperty.OS_ARCH;
 import static com.google.common.base.StandardSystemProperty.OS_NAME;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import android.database.CursorWindow;
 import android.graphics.Typeface;
@@ -24,6 +25,7 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -286,68 +288,97 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
     }
   }
 
-  private static List<String> getResourcesInAndroidAll(String prefix) throws IOException {
+  /**
+   * A resource carried only by the android-all archive of the SDK under test, which from
+   * VANILLA_ICE_CREAM supplies the ICU data and the hyphen data.
+   */
+  private static URL androidAllResource() {
+    return Resources.getResource("build.prop");
+  }
+
+  private static File androidAllArchive() throws IOException {
     try {
       String jarPath =
-          Iterables.get(
-                  Splitter.on('!').split(Resources.getResource("build.prop").toURI().toString()), 0)
+          Iterables.get(Splitter.on('!').split(androidAllResource().toURI().toString()), 0)
               .substring("jar:file:".length());
-      List<String> resources = new ArrayList<>();
-      try (JarFile jarFile = new JarFile(jarPath)) {
-        Enumeration<JarEntry> entries = jarFile.entries();
-        while (entries.hasMoreElements()) {
-          JarEntry entry = entries.nextElement();
-          if (entry.getName().startsWith(prefix) && !entry.isDirectory()) {
-            resources.add(entry.getName());
-          }
-        }
-      }
-      return resources;
+      return new File(jarPath);
     } catch (URISyntaxException syntaxException) {
       throw new IOException(syntaxException);
     }
   }
 
+  /** The single ICU dat entry of the given android-all archive. */
+  private static JarEntry icuDatEntry(JarFile jarFile) {
+    List<JarEntry> found = new ArrayList<>();
+    Enumeration<JarEntry> entries = jarFile.entries();
+    while (entries.hasMoreElements()) {
+      JarEntry entry = entries.nextElement();
+      if (entry.getName().startsWith(ICU_DIR + "/icudt") && !entry.isDirectory()) {
+        found.add(entry);
+      }
+    }
+    if (found.size() != 1) {
+      throw new RuntimeException("More than one icudt file in android-all jar: " + found);
+    }
+    return found.get(0);
+  }
+
   /** Attempts to load the ICU dat file. This is only relevant for native graphics. */
   private void maybeCopyIcuData() throws IOException {
-    URL icuDatUrl = icuDatUrl();
     Path baseDir =
-        assetDirectory(ICU_DIR, icuDatUrl, directory -> copyIcuData(directory, icuDatUrl));
-    System.setProperty("icu.data.path", icuDatPath(baseDir, icuDatUrl).toAbsolutePath().toString());
+        assetDirectory(ICU_DIR, icuDataSource(), DefaultNativeRuntimeLoader::copyIcuData);
+    System.setProperty("icu.data.path", icuDatPath(baseDir).toAbsolutePath().toString());
     System.setProperty("icu.locale.default", Locale.getDefault().toLanguageTag());
   }
 
-  /** The ICU dat file for the SDK under test. */
-  private static URL icuDatUrl() throws IOException {
+  /**
+   * A resource of the archive that supplies the ICU data, which keys the copy of it.
+   *
+   * <p>Up to UPSIDE_DOWN_CAKE that is the dat file itself, whose name is fixed. From
+   * VANILLA_ICE_CREAM the dat file comes from the android-all archive under a name that varies with
+   * its ICU version, and the only way to learn that name is to enumerate the archive, so {@code
+   * build.prop} stands in for it. That keeps the enumeration off the path of a load which finds the
+   * data already copied, and {@link #copyIcuData} reads the dat file out of this same archive, so
+   * the copy always comes from the archive its directory is keyed by.
+   */
+  private static URL icuDataSource() {
     try {
-      if (Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
-        return Resources.getResource(ICU_DIR + "/icudt68l.dat");
-      }
-      List<String> resources = getResourcesInAndroidAll(ICU_DIR + "/icudt");
-      if (resources.size() != 1) {
-        throw new RuntimeException("More than one icudt file in android-all jar: " + resources);
-      }
-      return Resources.getResource(resources.get(0));
+      return Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE
+          ? Resources.getResource(ICU_DIR + "/icudt68l.dat")
+          : androidAllResource();
     } catch (IllegalArgumentException e) {
       System.out.println("Could not load icu data file ");
       throw new RuntimeException(e);
     }
   }
 
-  /** Where the ICU dat file lives once it has been copied under the given directory. */
-  private static Path icuDatPath(Path baseDir, URL icuDatUrl) {
-    Path icuPath = baseDir.resolve(ICU_DIR);
-    if (VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
-      return icuPath.resolve("icudt68l.dat");
+  /** The ICU dat file under the given directory, which holds exactly the one. */
+  private static Path icuDatPath(Path baseDir) throws IOException {
+    try (Stream<Path> files = java.nio.file.Files.list(baseDir.resolve(ICU_DIR))) {
+      return Iterables.getOnlyElement(ImmutableList.copyOf(files.iterator()));
     }
-    List<String> parts = Splitter.on('/').splitToList(icuDatUrl.toString());
-    return icuPath.resolve(Iterables.getLast(parts));
   }
 
-  private static void copyIcuData(Path baseDir, URL icuDatUrl) throws IOException {
-    Path icuDatPath = icuDatPath(baseDir, icuDatUrl);
-    java.nio.file.Files.createDirectories(icuDatPath.getParent());
-    Resources.asByteSource(icuDatUrl).copyTo(Files.asByteSink(icuDatPath.toFile()));
+  private static void copyIcuData(Path baseDir) throws IOException {
+    Path icuPath = baseDir.resolve(ICU_DIR);
+    java.nio.file.Files.createDirectories(icuPath);
+    if (Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
+      URL icuDatUrl = Resources.getResource(ICU_DIR + "/icudt68l.dat");
+      Resources.asByteSource(icuDatUrl)
+          .copyTo(Files.asByteSink(icuPath.resolve("icudt68l.dat").toFile()));
+      return;
+    }
+    // Read the dat file straight out of the archive that keyed this directory rather than
+    // resolving it by name through the classpath. The instrumented and uninstrumented android-all
+    // archives both carry one, so which of them the classpath answers with depends on the load,
+    // and the copy has to come from the archive the key names.
+    try (JarFile jarFile = new JarFile(androidAllArchive())) {
+      JarEntry icuDatEntry = icuDatEntry(jarFile);
+      String fileName = Iterables.getLast(Splitter.on('/').splitToList(icuDatEntry.getName()));
+      try (InputStream input = jarFile.getInputStream(icuDatEntry)) {
+        java.nio.file.Files.copy(input, icuPath.resolve(fileName), REPLACE_EXISTING);
+      }
+    }
   }
 
   /**
