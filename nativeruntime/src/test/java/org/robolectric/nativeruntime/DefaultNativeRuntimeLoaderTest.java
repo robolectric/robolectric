@@ -6,6 +6,7 @@ import static com.google.common.truth.TruthJUnit.assume;
 
 import android.database.CursorWindow;
 import android.database.sqlite.SQLiteDatabase;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,11 +39,19 @@ public final class DefaultNativeRuntimeLoaderTest {
     assume().that(hasResource("icu/icudt68l.dat")).isTrue();
     DefaultNativeRuntimeLoader defaultNativeRuntimeLoader = new DefaultNativeRuntimeLoader();
     defaultNativeRuntimeLoader.ensureLoaded();
-    // Check that extraction of some key files worked.
-    Path root = defaultNativeRuntimeLoader.getAssetDirectory();
-    assertThat(root.resolve("icu/icudt68l.dat").toFile().exists()).isTrue();
+    // Check that extraction of some key files worked. Each group is checked through the property
+    // that the runtime reads it through, because a group being copied somewhere the property does
+    // not point at is exactly the failure worth catching.
+    assertThat(new File(System.getProperty("icu.data.path")).exists()).isTrue();
     if (RuntimeEnvironment.getApiLevel() >= O) {
-      assertThat(root.resolve("fonts/fonts.xml").toFile().exists()).isTrue();
+      assertThat(fontsXml().exists()).isTrue();
+      assertThat(
+              defaultNativeRuntimeLoader
+                  .getHyphenDataDirectory()
+                  .resolve("hyphen-data")
+                  .toFile()
+                  .isDirectory())
+          .isTrue();
     }
   }
 
@@ -56,8 +65,13 @@ public final class DefaultNativeRuntimeLoaderTest {
       DefaultNativeRuntimeLoader loader = new DefaultNativeRuntimeLoader();
       loader.ensureLoaded();
       // Without sharing, the assets land in this instance's own temporary directory.
-      assertThat((Object) loader.getAssetDirectory()).isEqualTo(loader.getDirectory());
-      assertThat(loader.getAssetDirectory().resolve("icu/icudt68l.dat").toFile().exists()).isTrue();
+      assertThat(new File(System.getProperty("icu.data.path")).exists()).isTrue();
+      assertThat(System.getProperty("icu.data.path"))
+          .startsWith(loader.getDirectory().toAbsolutePath().toString());
+      if (RuntimeEnvironment.getApiLevel() >= O) {
+        assertThat(fontsXml().exists()).isTrue();
+        assertThat((Object) loader.getHyphenDataDirectory()).isEqualTo(loader.getDirectory());
+      }
     } finally {
       if (previous == null) {
         System.clearProperty("robolectric.nativeruntime.cacheAssets");
@@ -70,10 +84,12 @@ public final class DefaultNativeRuntimeLoaderTest {
   @Test
   public void sharesAssetDirectory_acrossLoaders() {
     assume().that(hasResource("fonts")).isTrue();
+    assume().that(RuntimeEnvironment.getApiLevel()).isAtLeast(O);
     DefaultNativeRuntimeLoader first = new DefaultNativeRuntimeLoader();
     first.ensureLoaded();
-    Path firstAssets = first.getAssetDirectory();
-    assume().that(firstAssets).isNotEqualTo(first.getDirectory());
+    File firstFontsXml = fontsXml();
+    Path firstHyphenData = first.getHyphenDataDirectory();
+    assume().that(firstHyphenData).isNotEqualTo(first.getDirectory());
 
     DefaultNativeRuntimeLoader.resetLoaded();
     DefaultNativeRuntimeLoader second = new DefaultNativeRuntimeLoader();
@@ -81,9 +97,35 @@ public final class DefaultNativeRuntimeLoaderTest {
 
     // The assets are reused rather than extracted again, while the native library stays per
     // instance because System.load() rejects the same path from a second ClassLoader.
-    assertThat((Object) second.getAssetDirectory()).isEqualTo(firstAssets);
+    assertThat(fontsXml()).isEqualTo(firstFontsXml);
+    assertThat((Object) second.getHyphenDataDirectory()).isEqualTo(firstHyphenData);
     assertThat((Object) second.getDirectory()).isNotEqualTo(first.getDirectory());
-    assertThat(firstAssets.resolve(".complete").toFile().exists()).isTrue();
+    assertThat(firstHyphenData.resolve(".complete").toFile().exists()).isTrue();
+  }
+
+  /**
+   * The fonts come from the same archive whatever the SDK under test, while the ICU data does not,
+   * so they are shared through directories of their own rather than through one directory for every
+   * group.
+   */
+  @Test
+  public void sharesEachAssetGroup_inItsOwnDirectory() {
+    assume().that(hasResource("fonts")).isTrue();
+    assume().that(RuntimeEnvironment.getApiLevel()).isAtLeast(O);
+    DefaultNativeRuntimeLoader loader = new DefaultNativeRuntimeLoader();
+    loader.ensureLoaded();
+    Path hyphenData = loader.getHyphenDataDirectory();
+    assume().that(hyphenData).isNotEqualTo(loader.getDirectory());
+
+    Path fonts = fontsXml().toPath().getParent().getParent();
+    Path icu = new File(System.getProperty("icu.data.path")).toPath().getParent().getParent();
+    assertThat((Object) fonts).isNotEqualTo(icu);
+    assertThat((Object) fonts).isNotEqualTo(hyphenData);
+    assertThat((Object) icu).isNotEqualTo(hyphenData);
+  }
+
+  private static File fontsXml() {
+    return new File(System.getProperty("robolectric.nativeruntime.fontdir"), "fonts.xml");
   }
 
   @Test

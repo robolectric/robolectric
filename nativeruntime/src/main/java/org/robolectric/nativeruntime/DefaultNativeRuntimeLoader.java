@@ -18,6 +18,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -80,6 +81,8 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
 
   protected static final String METHOD_BINDING_FORMAT = "$$robo$$${method}$nativeBinding";
   private static final String HYPHEN_DATA_DIR = "hyphen-data";
+  private static final String FONTS_DIR = "fonts";
+  private static final String ICU_DIR = "icu";
 
   // These system properties are used to configure JNI registration for RNG (libandroid_runtime)
   // when it is being loaded. They are also used by Paparazzi, which loads a different version of
@@ -183,10 +186,10 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   private TempDirectory extractDirectory;
 
   /**
-   * Where the data assets were made available. This is the shared cache directory when the assets
-   * are shared, and {@link #extractDirectory}'s base path otherwise.
+   * Where the hyphen data was made available. This is a shared directory when it is shared, and
+   * {@link #extractDirectory}'s base path otherwise.
    */
-  private Path assetDirectory;
+  private Path hyphenDataDirectory;
 
   public static void injectAndLoad() {
     // Ensure a single instance.
@@ -241,31 +244,15 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
               "loadNativeRuntime",
               () -> {
                 extractDirectory = new TempDirectory("nativeruntime");
-
-                // The data assets (fonts, hyphen data and ICU data) are identical for a given
-                // nativeruntime jar and are only ever read through absolute paths, so they can be
-                // extracted once and shared. They amount to well over 100MB, and without this the
-                // extraction is repeated for every ClassLoader that loads this class and for every
-                // test JVM. The native library itself is deliberately NOT shared: System.load()
-                // rejects the same path being loaded by a second ClassLoader, so it stays in this
-                // instance's temporary directory.
-                boolean extractAssets;
-                Path cacheDirectory = sharedAssetCacheDirectory();
-                if (cacheDirectory != null && populateSharedAssetCache(cacheDirectory)) {
-                  assetDirectory = cacheDirectory;
-                  extractAssets = false;
-                } else {
-                  assetDirectory = extractDirectory.getBasePath();
-                  extractAssets = true;
-                }
+                hyphenDataDirectory = extractDirectory.getBasePath();
 
                 if (VERSION.SDK_INT >= O) {
                   // Only copy fonts if graphics is supported, not just SQLite.
-                  maybeCopyFonts(assetDirectory, extractAssets);
-                  maybeCopyHyphenData(assetDirectory, extractAssets);
+                  maybeCopyFonts();
+                  maybeCopyHyphenData();
                 }
                 Map<String, String> originalProperties = new HashMap<>();
-                maybeCopyIcuData(assetDirectory, extractAssets);
+                maybeCopyIcuData();
                 maybeCopyExtraResources(extractDirectory);
                 if (isAndroidVOrGreater()) {
                   originalProperties = saveSystemProperties();
@@ -282,7 +269,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
                   restoreSystemProperties(originalProperties);
                 }
                 String hyphenDataDir =
-                    assetDirectory.resolve(HYPHEN_DATA_DIR).toFile().getAbsolutePath();
+                    hyphenDataDirectory.resolve(HYPHEN_DATA_DIR).toFile().getAbsolutePath();
                 if (isAndroidVOrGreater()) {
                   invokeDeferredStaticInitializers();
                   setNativeSystemProperty("ro.hyphen.data.dir", hyphenDataDir);
@@ -322,104 +309,122 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   }
 
   /** Attempts to load the ICU dat file. This is only relevant for native graphics. */
-  private void maybeCopyIcuData(Path baseDir, boolean extract) throws IOException {
-    URL icuDatUrl;
+  private void maybeCopyIcuData() throws IOException {
+    URL icuDatUrl = icuDatUrl();
+    Path baseDir =
+        assetDirectory(ICU_DIR, icuDatUrl, directory -> copyIcuData(directory, icuDatUrl));
+    System.setProperty("icu.data.path", icuDatPath(baseDir, icuDatUrl).toAbsolutePath().toString());
+    System.setProperty("icu.locale.default", Locale.getDefault().toLanguageTag());
+  }
+
+  /** The ICU dat file for the SDK under test. */
+  private static URL icuDatUrl() throws IOException {
     try {
       if (Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
-        icuDatUrl = Resources.getResource("icu/icudt68l.dat");
-      } else {
-        List<String> resources = getResourcesInAndroidAll("icu/icudt");
-        if (resources.size() != 1) {
-          throw new RuntimeException("More than one icudt file in android-all jar: " + resources);
-        } else {
-          icuDatUrl = Resources.getResource(resources.get(0));
-        }
+        return Resources.getResource(ICU_DIR + "/icudt68l.dat");
       }
+      List<String> resources = getResourcesInAndroidAll(ICU_DIR + "/icudt");
+      if (resources.size() != 1) {
+        throw new RuntimeException("More than one icudt file in android-all jar: " + resources);
+      }
+      return Resources.getResource(resources.get(0));
     } catch (IllegalArgumentException e) {
       System.out.println("Could not load icu data file ");
       throw new RuntimeException(e);
     }
-    Path icuPath = baseDir.resolve("icu");
-    Path icuDatPath;
+  }
+
+  /** Where the ICU dat file lives once it has been copied under the given directory. */
+  private static Path icuDatPath(Path baseDir, URL icuDatUrl) {
+    Path icuPath = baseDir.resolve(ICU_DIR);
     if (VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
-      icuDatPath = icuPath.resolve("icudt68l.dat");
-    } else {
-      List<String> parts = Splitter.on('/').splitToList(icuDatUrl.toString());
-      icuDatPath = icuPath.resolve(Iterables.getLast(parts));
+      return icuPath.resolve("icudt68l.dat");
     }
-    if (extract) {
-      java.nio.file.Files.createDirectories(icuPath);
-      Resources.asByteSource(icuDatUrl).copyTo(Files.asByteSink(icuDatPath.toFile()));
-    }
-    System.setProperty("icu.data.path", icuDatPath.toAbsolutePath().toString());
-    System.setProperty("icu.locale.default", Locale.getDefault().toLanguageTag());
+    List<String> parts = Splitter.on('/').splitToList(icuDatUrl.toString());
+    return icuPath.resolve(Iterables.getLast(parts));
+  }
+
+  private static void copyIcuData(Path baseDir, URL icuDatUrl) throws IOException {
+    Path icuDatPath = icuDatPath(baseDir, icuDatUrl);
+    java.nio.file.Files.createDirectories(icuDatPath.getParent());
+    Resources.asByteSource(icuDatUrl).copyTo(Files.asByteSink(icuDatPath.toFile()));
   }
 
   /**
    * Attempts to copy the system fonts to a temporary directory. This is only relevant for native
    * graphics.
    */
-  private void maybeCopyFonts(Path baseDir, boolean extract) throws IOException {
+  private void maybeCopyFonts() throws IOException {
+    URL fontsResource;
     URI fontsUri;
     try {
-      fontsUri = Resources.getResource("fonts/").toURI();
+      fontsResource = Resources.getResource(FONTS_DIR + "/");
+      fontsUri = fontsResource.toURI();
     } catch (IllegalArgumentException | URISyntaxException e) {
       return;
     }
 
-    Path fontsOutputPath = baseDir.resolve("fonts");
+    Path baseDir =
+        assetDirectory(FONTS_DIR, fontsResource, directory -> copyFonts(directory, fontsUri));
 
-    if (extract) {
-      FileSystem zipfs = null;
-
-      if ("jar".equals(fontsUri.getScheme())) {
-        zipfs = FileSystems.newFileSystem(fontsUri, ImmutableMap.of("create", "true"));
-      }
-
-      Path fontsInputPath = Paths.get(fontsUri);
-      java.nio.file.Files.createDirectories(fontsOutputPath);
-
-      try (Stream<Path> pathStream = java.nio.file.Files.walk(fontsInputPath)) {
-        Iterator<Path> fileIterator = pathStream.iterator();
-        while (fileIterator.hasNext()) {
-          Path path = fileIterator.next();
-          // Avoid copying parent directory.
-          if ("fonts".equals(path.getFileName().toString())) {
-            continue;
-          }
-          String fontPath = "fonts/" + path.getFileName();
-          URL resource = Resources.getResource(fontPath);
-          Path outputPath = baseDir.resolve(fontPath);
-          Resources.asByteSource(resource).copyTo(Files.asByteSink(outputPath.toFile()));
-        }
-      }
-      if (zipfs != null) {
-        zipfs.close();
-      }
-    }
     System.setProperty(
         "robolectric.nativeruntime.fontdir",
         // Android's FontListParser expects a trailing slash for the base font directory.
-        fontsOutputPath.toAbsolutePath() + File.separator);
+        baseDir.resolve(FONTS_DIR).toAbsolutePath() + File.separator);
+  }
+
+  private static void copyFonts(Path baseDir, URI fontsUri) throws IOException {
+    FileSystem zipfs = null;
+
+    if ("jar".equals(fontsUri.getScheme())) {
+      zipfs = FileSystems.newFileSystem(fontsUri, ImmutableMap.of("create", "true"));
+    }
+
+    Path fontsInputPath = Paths.get(fontsUri);
+    java.nio.file.Files.createDirectories(baseDir.resolve(FONTS_DIR));
+
+    try (Stream<Path> pathStream = java.nio.file.Files.walk(fontsInputPath)) {
+      Iterator<Path> fileIterator = pathStream.iterator();
+      while (fileIterator.hasNext()) {
+        Path path = fileIterator.next();
+        // Avoid copying parent directory.
+        if (FONTS_DIR.equals(path.getFileName().toString())) {
+          continue;
+        }
+        String fontPath = FONTS_DIR + "/" + path.getFileName();
+        URL resource = Resources.getResource(fontPath);
+        Path outputPath = baseDir.resolve(fontPath);
+        Resources.asByteSource(resource).copyTo(Files.asByteSink(outputPath.toFile()));
+      }
+    }
+    if (zipfs != null) {
+      zipfs.close();
+    }
   }
 
   /**
    * Attempts to copy the hyphen data to a temporary directory. This is only relevant for native
    * graphics.
    */
-  private void maybeCopyHyphenData(Path baseDir, boolean extract) throws IOException {
-    if (!extract) {
-      // Nothing but the extraction happens here; the directory is passed on by ensureLoaded().
-      return;
-    }
+  private void maybeCopyHyphenData() throws IOException {
+    URL hyphenDataResource;
     URI hyphenDataUri;
     try {
-      hyphenDataUri = Resources.getResource(HYPHEN_DATA_DIR + "/").toURI();
+      hyphenDataResource = Resources.getResource(HYPHEN_DATA_DIR + "/");
+      hyphenDataUri = hyphenDataResource.toURI();
     } catch (IllegalArgumentException | URISyntaxException e) {
       Logger.info("Could not load hyphen data files: " + e.getMessage());
       return;
     }
 
+    hyphenDataDirectory =
+        assetDirectory(
+            HYPHEN_DATA_DIR,
+            hyphenDataResource,
+            directory -> copyHyphenData(directory, hyphenDataUri));
+  }
+
+  private static void copyHyphenData(Path baseDir, URI hyphenDataUri) throws IOException {
     FileSystem zipfs = null;
 
     if ("jar".equals(hyphenDataUri.getScheme())) {
@@ -448,98 +453,146 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
     }
   }
 
+  /** Copies a group of the native runtime's data assets into the given directory. */
+  private interface AssetCopier {
+    void copyTo(Path directory) throws IOException;
+  }
+
   /**
-   * Returns the directory that the native runtime's data assets are shared through, or {@code null}
-   * if they should be extracted per instance instead.
-   *
-   * <p>The directory is keyed by the archive that supplies the assets, so a different nativeruntime
-   * version gets a different directory and a stale one is never reused.
+   * Makes the named group of data assets available and returns the directory holding it. The group
+   * is shared with other loads where possible, and copied into this instance's own temporary
+   * directory otherwise.
    */
-  private Path sharedAssetCacheDirectory() {
+  private Path assetDirectory(String group, URL source, AssetCopier copier) throws IOException {
+    Path shared = sharedAssetDirectory(group, source, copier);
+    if (shared != null) {
+      return shared;
+    }
+    Path own = extractDirectory.getBasePath();
+    copier.copyTo(own);
+    return own;
+  }
+
+  /**
+   * Returns a directory shared with other loads that holds the named group of data assets, copying
+   * them into it if they are not there yet, or {@code null} if the group has to be copied per
+   * instance instead.
+   *
+   * <p>Each group is keyed by the source that supplies it rather than by a single archive for all
+   * of them, because they do not all come from the same place: the fonts, and the ICU data up to
+   * UPSIDE_DOWN_CAKE, come from the nativeruntime dist archive, which is the same whatever the SDK
+   * under test, while from VANILLA_ICE_CREAM the ICU data and the hyphen data come from that SDK's
+   * android-all archive. Keying every group on one archive would hand a directory populated for one
+   * SDK to a load running at another, which then points icu.data.path at an ICU dat file that was
+   * never copied, since that file is named after its ICU version. Keying the groups separately also
+   * keeps the fonts, by far the largest group, to a single copy across every SDK.
+   *
+   * <p>A lock file is held across the copy so that concurrent test JVMs (a build tool will
+   * typically run several) cooperate rather than each writing the same files, and the marker file
+   * is only written once the copy has finished, so a partially populated directory is never used.
+   */
+  private Path sharedAssetDirectory(String group, URL source, AssetCopier copier) {
     if (!Boolean.parseBoolean(System.getProperty(CACHE_ASSETS_PROPERTY, "true"))) {
       return null;
     }
+    Path directory;
     try {
-      URL assetSource = Resources.getResource("fonts/");
-      String key = assetSourceKey(assetSource);
-      if (key == null) {
-        return null;
-      }
-      return Paths.get(System.getProperty("java.io.tmpdir"), ASSET_CACHE_DIR_NAME, key);
-    } catch (IllegalArgumentException e) {
-      // No fonts on the classpath, so there is nothing worth sharing.
-      return null;
+      String key =
+          Hashing.sha256()
+              .hashString(sourceIdentity(source), StandardCharsets.UTF_8)
+              .toString()
+              .substring(0, 32);
+      directory =
+          Paths.get(System.getProperty("java.io.tmpdir"), ASSET_CACHE_DIR_NAME, group + "-" + key);
     } catch (RuntimeException e) {
       Logger.info("Unable to determine native runtime asset cache directory: " + e.getMessage());
       return null;
     }
-  }
-
-  /**
-   * Derives a cache key from the archive backing the given resource, using its location plus its
-   * size and modification time so that a rebuilt archive is not mistaken for a cached one.
-   */
-  private static String assetSourceKey(URL assetSource) {
-    String location = assetSource.toString();
-    String identity = location;
-    if ("jar".equals(assetSource.getProtocol())) {
-      String jarPath = Iterables.get(Splitter.on('!').split(location), 0);
-      String filePrefix = "jar:file:";
-      if (jarPath.startsWith(filePrefix)) {
-        File jarFile = new File(jarPath.substring(filePrefix.length()));
-        if (jarFile.isFile()) {
-          identity =
-              jarFile.getAbsolutePath()
-                  + ":"
-                  + jarFile.length()
-                  + ":"
-                  + jarFile.lastModified();
-        }
-      }
-    }
-    return Hashing.sha256()
-        .hashString(identity, StandardCharsets.UTF_8)
-        .toString()
-        .substring(0, 32);
-  }
-
-  /**
-   * Makes sure the given directory holds a complete copy of the data assets, extracting them if
-   * necessary. Returns whether the directory can be used.
-   *
-   * <p>A lock file is held across the extraction so that concurrent test JVMs (a build tool will
-   * typically run several) cooperate rather than each writing the same files.
-   */
-  private boolean populateSharedAssetCache(Path cacheDirectory) {
-    Path marker = cacheDirectory.resolve(ASSET_CACHE_MARKER);
+    Path marker = directory.resolve(ASSET_CACHE_MARKER);
     if (java.nio.file.Files.exists(marker)) {
-      return true;
+      return directory;
     }
-    Path lockFile = cacheDirectory.resolveSibling(cacheDirectory.getFileName() + ".lock");
+    Path lockFile = directory.resolveSibling(directory.getFileName() + ".lock");
     try {
-      java.nio.file.Files.createDirectories(cacheDirectory.getParent());
+      java.nio.file.Files.createDirectories(directory.getParent());
       try (RandomAccessFile lockHandle = new RandomAccessFile(lockFile.toFile(), "rw");
           FileChannel channel = lockHandle.getChannel();
           FileLock lock = channel.lock()) {
         // Another process may have finished while this one waited for the lock.
         if (java.nio.file.Files.exists(marker)) {
-          return true;
+          return directory;
         }
-        java.nio.file.Files.createDirectories(cacheDirectory);
-        if (VERSION.SDK_INT >= O) {
-          maybeCopyFonts(cacheDirectory, true);
-          maybeCopyHyphenData(cacheDirectory, true);
-        }
-        maybeCopyIcuData(cacheDirectory, true);
+        java.nio.file.Files.createDirectories(directory);
+        copier.copyTo(directory);
         java.nio.file.Files.createFile(marker);
-        Logger.info("Extracted native runtime assets to %s", cacheDirectory);
-        return true;
+        Logger.info("Copied native runtime %s to %s", group, directory);
+        return directory;
       }
     } catch (IOException | RuntimeException e) {
-      // Fall back to extracting into this instance's temporary directory.
-      Logger.info("Unable to share native runtime assets: " + e.getMessage());
-      return false;
+      // Fall back to copying into this instance's temporary directory.
+      Logger.info("Unable to share native runtime " + group + ": " + e.getMessage());
+      return null;
     }
+  }
+
+  /**
+   * Identifies the source that supplies the given resource, so that a source which has changed is
+   * not mistaken for the one a directory was populated from.
+   *
+   * <p>An archive is identified by its location plus its size and modification time. A resource
+   * that sits on the classpath unpacked, as a plain file or a directory, is identified by what is
+   * under it instead, because it can be edited in place without its location ever changing. Either
+   * way this only stats files, it never reads them, so it stays cheap even for the fonts.
+   */
+  private static String sourceIdentity(URL resource) {
+    String location = resource.toString();
+    if ("jar".equals(resource.getProtocol())) {
+      String jarPath = Iterables.get(Splitter.on('!').split(location), 0);
+      String filePrefix = "jar:file:";
+      if (jarPath.startsWith(filePrefix)) {
+        File jarFile = new File(jarPath.substring(filePrefix.length()));
+        if (jarFile.isFile()) {
+          return fileIdentity(jarFile);
+        }
+      }
+      return location;
+    }
+    if ("file".equals(resource.getProtocol())) {
+      try {
+        File file = new File(resource.toURI());
+        if (file.isDirectory()) {
+          return location + ":" + directoryIdentity(file);
+        }
+        if (file.isFile()) {
+          return fileIdentity(file);
+        }
+      } catch (URISyntaxException | IllegalArgumentException | IOException e) {
+        Logger.info("Unable to identify native runtime asset source: " + e.getMessage());
+      }
+    }
+    return location;
+  }
+
+  private static String fileIdentity(File file) {
+    return file.getAbsolutePath() + ":" + file.length() + ":" + file.lastModified();
+  }
+
+  /** Digests the name, size and modification time of every file under the given directory. */
+  private static String directoryIdentity(File directory) throws IOException {
+    Hasher hasher = Hashing.sha256().newHasher();
+    Path root = directory.toPath();
+    try (Stream<Path> paths = java.nio.file.Files.walk(root)) {
+      paths
+          .filter(path -> path.toFile().isFile())
+          .sorted()
+          .forEach(
+              path ->
+                  hasher
+                      .putUnencodedChars(root.relativize(path).toString())
+                      .putLong(path.toFile().length())
+                      .putLong(path.toFile().lastModified()));
+    }
+    return hasher.hash().toString();
   }
 
   private void loadLibrary(TempDirectory tempDirectory) throws IOException {
@@ -600,10 +653,10 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
     return extractDirectory == null ? null : extractDirectory.getBasePath();
   }
 
-  /** The directory the data assets (fonts, hyphen data and ICU data) were made available in. */
+  /** The directory the hyphen data was made available in. */
   @VisibleForTesting
-  Path getAssetDirectory() {
-    return assetDirectory;
+  Path getHyphenDataDirectory() {
+    return hyphenDataDirectory;
   }
 
   @VisibleForTesting
