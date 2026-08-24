@@ -1260,4 +1260,57 @@ public class ShadowBluetoothGattTest {
         .isEqualTo(BluetoothGattCharacteristic.PERMISSION_READ);
     assertThat(characteristic.getInstanceId()).isEqualTo(101);
   }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void writeCharacteristic_api33_customStatusCode() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+    BluetoothGattService service =
+        new BluetoothGattService(
+            UUID.fromString("00000000-0000-0000-0000-0000000000A1"),
+            BluetoothGattService.SERVICE_TYPE_PRIMARY);
+    BluetoothGattCharacteristic characteristic =
+        new BluetoothGattCharacteristic(
+            UUID.fromString("00000000-0000-0000-0000-0000000000A4"),
+            BluetoothGattCharacteristic.PROPERTY_WRITE
+                | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
+            BluetoothGattCharacteristic.PERMISSION_WRITE);
+    service.addCharacteristic(characteristic);
+
+    shadowOf(bluetoothGatt)
+        .setWriteCharacteristicResult(201); // BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY
+
+    assertThat(
+            bluetoothGatt.writeCharacteristic(
+                characteristic,
+                CHARACTERISTIC_VALUE,
+                BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT))
+        .isEqualTo(201);
+
+    assertThat(resultStatus).isEqualTo(INITIAL_VALUE);
+    assertThat(resultAction).isNull();
+    assertThat(resultCharacteristic).isNull();
+    assertThat(shadowOf(bluetoothGatt).getLatestWrittenBytes()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = O, maxSdk = S_V2)
+  public void writeCharacteristic_api26_customStatusCodeFails() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+    BluetoothGattService service =
+        new BluetoothGattService(
+            UUID.fromString("00000000-0000-0000-0000-0000000000A1"),
+            BluetoothGattService.SERVICE_TYPE_PRIMARY);
+    BluetoothGattCharacteristic characteristic =
+        new BluetoothGattCharacteristic(
+            UUID.fromString("00000000-0000-0000-0000-0000000000A4"),
+            BluetoothGattCharacteristic.PROPERTY_WRITE
+                | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
+            BluetoothGattCharacteristic.PERMISSION_WRITE);
+    service.addCharacteristic(characteristic);
+
+    shadowOf(bluetoothGatt).setWriteCharacteristicResult(201); // Non-success
+
+    assertThat(bluetoothGatt.writeCharacteristic(characteristic)).isFalse();
+  }
 }

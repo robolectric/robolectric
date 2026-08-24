@@ -57,6 +57,7 @@ public class ShadowBluetoothGatt {
   private int rxPhy = BluetoothDevice.PHY_LE_1M;
   private boolean beginReliableWriteResult = true;
   private boolean requestConnectionPriorityResult = true;
+  private int writeCharacteristicResult = BluetoothGatt.GATT_SUCCESS;
 
   // TODO: ShadowBluetoothGatt.services should be removed in favor of just using the real
   // BluetoothGatt.mServices.
@@ -184,6 +185,10 @@ public class ShadowBluetoothGatt {
   /** Sets the return value for {@link BluetoothGatt#requestConnectionPriority(int)}. */
   public void setRequestConnectionPriorityResult(boolean requestConnectionPriorityResult) {
     this.requestConnectionPriorityResult = requestConnectionPriorityResult;
+  }
+
+  public void setWriteCharacteristicResult(int writeCharacteristicResult) {
+    this.writeCharacteristicResult = writeCharacteristicResult;
   }
 
   /**
@@ -452,6 +457,9 @@ public class ShadowBluetoothGatt {
 
   @Implementation(minSdk = O)
   protected boolean writeCharacteristic(BluetoothGattCharacteristic characteristic) {
+    if (writeCharacteristicResult != BluetoothGatt.GATT_SUCCESS) {
+      return false;
+    }
     return writeIncomingCharacteristic(characteristic);
   }
 
@@ -459,11 +467,14 @@ public class ShadowBluetoothGatt {
   protected int writeCharacteristic(
       BluetoothGattCharacteristic characteristic, byte[] value, int writeType) {
     characteristic.setValue(value);
-    boolean writeSuccessCode = writeIncomingCharacteristic(characteristic);
-    if (writeSuccessCode) {
-      return BluetoothGatt.GATT_SUCCESS;
+    if (writeCharacteristicResult == BluetoothGatt.GATT_SUCCESS) {
+      boolean writeSuccessCode = writeIncomingCharacteristic(characteristic);
+      if (writeSuccessCode) {
+        return BluetoothGatt.GATT_SUCCESS;
+      }
+      return BluetoothGatt.GATT_FAILURE;
     }
-    return BluetoothGatt.GATT_FAILURE;
+    return writeCharacteristicResult;
   }
 
   @Implementation(minSdk = O)
