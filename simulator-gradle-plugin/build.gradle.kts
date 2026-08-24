@@ -28,6 +28,10 @@ gradlePlugin {
 java {
   sourceCompatibility = JavaVersion.VERSION_11
   targetCompatibility = JavaVersion.VERSION_11
+  // AGP 9.3+ publishes gradle-api for Java 17. Lift the JVM-version constraint on the
+  // compile classpath so the latest API can be used while this module keeps emitting
+  // and advertising Java 11. Safe because gradle-api is compileOnly.
+  disableAutoTargetJvm()
 }
 
 kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_11 } }
