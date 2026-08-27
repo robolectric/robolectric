@@ -16,6 +16,7 @@ dependencies {
   api(libs.javax.inject)
 
   api(libs.asm)
+  api(libs.asm.analysis)
   api(libs.asm.commons)
   api(libs.guava)
   compileOnly(libs.findbugs.jsr305)
