@@ -162,6 +162,7 @@ auto-value-annotations = { module = "com.google.auto.value:auto-value-annotation
 auto-value = { module = "com.google.auto.value:auto-value", version.ref = "auto-value" }
 
 asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
+asm-analysis = { module = "org.ow2.asm:asm-analysis", version.ref = "asm" }
 asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
 asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
 

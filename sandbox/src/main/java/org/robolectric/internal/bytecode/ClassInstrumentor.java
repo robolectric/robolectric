@@ -8,12 +8,12 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Objects;
+import java.util.Map;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.ConstantDynamic;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -28,17 +28,20 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.IincInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
-import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
+import org.objectweb.asm.tree.analysis.Analyzer;
+import org.objectweb.asm.tree.analysis.AnalyzerException;
+import org.objectweb.asm.tree.analysis.Frame;
+import org.objectweb.asm.tree.analysis.SourceInterpreter;
+import org.objectweb.asm.tree.analysis.SourceValue;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 
@@ -251,48 +254,24 @@ public class ClassInstrumentor {
   }
 
   /**
-   * Checks if the first or second instruction is a Jacoco load instruction. Robolectric is not
-   * capable at the moment of re-instrumenting Jacoco-instrumented constructors, so these are
-   * currently skipped.
+   * Adds a call to $$robo$init after the super()/this() call, which instantiates a shadow object if
+   * required. This supports custom shadows, except constructor shadows, for constructors that
+   * cannot be split, such as Jacoco-instrumented ones.
    *
-   * @param ctor constructor method node
-   * @return whether or not the constructor can be instrumented
+   * <p>Does nothing if the constructor has no super()/this() call or does not keep {@code this} in
+   * slot 0 up to it, since there is then no instance to initialize or no way to reach it.
    */
-  private boolean isJacocoInstrumented(MethodNode ctor) {
-    AbstractInsnNode[] insns = ctor.instructions.toArray();
-    if (insns.length > 1) {
-      AbstractInsnNode node = insns[0];
-      if (node instanceof LabelNode) {
-        node = insns[1];
-      }
-      if ((node instanceof LdcInsnNode && ((LdcInsnNode) node).cst instanceof ConstantDynamic)) {
-        ConstantDynamic cst = (ConstantDynamic) ((LdcInsnNode) node).cst;
-        return cst.getName().equals("$jacocoData");
-      } else if (node instanceof MethodInsnNode) {
-        return Objects.equals(((MethodInsnNode) node).name, "$jacocoInit");
-      }
+  protected void addCallToRoboInit(MutableClass mutableClass, MethodNode ctor) {
+    MethodInsnNode delegationCall = findDelegationCall(mutableClass, ctor);
+    if (delegationCall != null
+        && keepsThisInSlotZero(frameAt(mutableClass, ctor, delegationCall))) {
+      addCallToRoboInit(mutableClass, ctor, delegationCall);
     }
-    return false;
   }
 
-  /**
-   * Adds a call $$robo$init, which instantiates a shadow object if required. This is to support
-   * custom shadows for Jacoco-instrumented classes (except constructor shadows).
-   */
-  @SuppressWarnings("NullArgumentForNonNullParameter")
-  protected void addCallToRoboInit(MutableClass mutableClass, MethodNode ctor) {
-    AbstractInsnNode returnNode =
-        Iterables.find(
-            ctor.instructions,
-            node -> {
-              if (node.getOpcode() == Opcodes.INVOKESPECIAL) {
-                MethodInsnNode mNode = (MethodInsnNode) node;
-                return (mNode.owner.equals(mutableClass.internalClassName)
-                    || mNode.owner.equals(mutableClass.classNode.superName));
-              }
-              return false;
-            },
-            null);
+  private static void addCallToRoboInit(
+      MutableClass mutableClass, MethodNode ctor, MethodInsnNode delegationCall) {
+    AbstractInsnNode returnNode = delegationCall;
     ctor.instructions.insert(
         returnNode,
         new MethodInsnNode(
@@ -316,11 +295,7 @@ public class ClassInstrumentor {
           method.name = ShadowConstants.STATIC_INITIALIZER_METHOD_NAME;
           mutableClass.addMethod(generateStaticInitializerNotifierMethod(mutableClass));
         } else if (method.name.equals("<init>")) {
-          if (isJacocoInstrumented(method)) {
-            addCallToRoboInit(mutableClass, method);
-          } else {
-            instrumentConstructor(mutableClass, method);
-          }
+          instrumentConstructor(mutableClass, method);
         } else if (!isSyntheticAccessorMethod(method) && !Modifier.isAbstract(method.access)) {
           instrumentNormalMethod(mutableClass, method);
         }
@@ -418,19 +393,33 @@ public class ClassInstrumentor {
    * @param method the constructor to instrument
    */
   protected void instrumentConstructor(MutableClass mutableClass, MethodNode method) {
-    InsnList callSuper = extractCallToSuperConstructor(mutableClass, method);
-    if (callSuper == null) {
+    MethodInsnNode delegationCall = findDelegationCall(mutableClass, method);
+    if (delegationCall == null) {
+      // A constructor that never chains to a superclass constructor is one that always throws.
+      // There is no instance to shadow and nothing to split, so leave it exactly as it is.
+      return;
+    }
+    Frame<SourceValue> frame = frameAt(mutableClass, method, delegationCall);
+    if (!keepsThisInSlotZero(frame)) {
       Logger.warn(
-          "Constructor %s%s modifies a parameter slot before super()/this(). "
-              + "Skipping constructor shadow support for this constructor.",
+          "%s%s does not keep `this` in slot 0 up to its call to super()/this();"
+              + " leaving it uninstrumented.",
           mutableClass.getName(), method.desc);
-      addCallToRoboInit(mutableClass, method);
+      return;
+    }
+    if (!canSplitAt(frame, delegationCall)) {
+      Logger.warn(
+          "%s%s does not leave its locals and stack untouched up to its call to super()/this();"
+              + " instrumenting it without constructor shadow support.",
+          mutableClass.getName(), method.desc);
+      addCallToRoboInit(mutableClass, method, delegationCall);
       return;
     }
 
     int methodAccess = method.access;
     makeMethodPrivate(method);
 
+    InsnList callSuper = extractCallToSuperConstructor(method, delegationCall);
     method.name = directMethodName(mutableClass, ShadowConstants.CONSTRUCTOR_METHOD_NAME);
     mutableClass.addMethod(
         redirectorMethod(mutableClass, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
@@ -493,84 +482,101 @@ public class ClassInstrumentor {
   }
 
   /**
-   * Extracts instructions from the beginning of the constructor up to and including the
-   * super()/this() call, removing them from the constructor's instruction list.
+   * Finds the {@code super()}/{@code this()} call that {@code ctor} chains to, or {@code null} if
+   * it has none, which means the constructor always throws.
    *
-   * <p>Returns {@code null} if any parameter local-variable slot (slots 1 through paramSlotCount-1)
-   * is modified before the super()/this() call, either by an xSTORE instruction or by IINC. The JVM
-   * allows reusing a local slot for different types at different program points, and optimizers
-   * like R8/ProGuard exploit this. If a parameter slot is overwritten before super(), the
-   * constructor-splitting transform cannot safely forward the original parameters into the
-   * generated {@code __constructor__} method because the post-super body expects the reassigned
-   * value, not the original parameter. Returning {@code null} signals the caller to fall back to
-   * non-splitting instrumentation.
+   * <p>Matching on {@code INVOKESPECIAL <init>} owned by this class or its superclass is not
+   * enough: {@code this(new Same(...))} constructs its argument with a call that matches just as
+   * well and comes first. Every such call initializes either a preceding {@code NEW} or {@code
+   * this}, so the outstanding {@code NEW}s are counted off and the first call left over is the
+   * delegation.
    */
+  private static MethodInsnNode findDelegationCall(MutableClass mutableClass, MethodNode ctor) {
+    Map<String, Integer> uninitialized = new HashMap<>();
+    for (AbstractInsnNode node : ctor.instructions) {
+      if (node.getOpcode() == Opcodes.NEW) {
+        uninitialized.merge(((TypeInsnNode) node).desc, 1, Integer::sum);
+      } else if (node.getOpcode() == Opcodes.INVOKESPECIAL) {
+        MethodInsnNode call = (MethodInsnNode) node;
+        if (!"<init>".equals(call.name)) {
+          continue;
+        }
+        Integer pending = uninitialized.get(call.owner);
+        if (pending != null && pending > 0) {
+          uninitialized.put(call.owner, pending - 1);
+        } else if (call.owner.equals(mutableClass.internalClassName)
+            || call.owner.equals(mutableClass.classNode.superName)) {
+          return call;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * The dataflow frame at the {@code super()}/{@code this()} call, recording where each value in
+   * the frame came from, or {@code null} if the constructor cannot be analyzed.
+   */
+  private static Frame<SourceValue> frameAt(
+      MutableClass mutableClass, MethodNode ctor, MethodInsnNode delegationCall) {
+    try {
+      Frame<SourceValue>[] frames =
+          new Analyzer<>(new SourceInterpreter()).analyze(mutableClass.internalClassName, ctor);
+      return frames[ctor.instructions.indexOf(delegationCall)];
+    } catch (AnalyzerException | RuntimeException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Whether {@code this} is still in slot 0 at the call. Both the split and {@link
+   * #addCallToRoboInit} reload it from there with {@code ALOAD 0}, so neither is usable otherwise.
+   *
+   * <p>R8 reuses slot 0 as scratch while the real {@code this} sits on the operand stack, which is
+   * legal because the verifier tracks {@code uninitializedThis} on the stack rather than in a
+   * local.
+   */
+  private static boolean keepsThisInSlotZero(Frame<SourceValue> frame) {
+    // A value with no producing instruction is the one the slot held on entry.
+    return frame != null && frame.getLocal(0).insns.isEmpty();
+  }
+
+  /**
+   * Whether the prologue leaves the rest of the frame as it was on entry, so the body after the
+   * call can be moved into a method carrying the constructor's own descriptor: every other local
+   * must still hold its entry value, since only the parameters exist there, and the call must leave
+   * the operand stack empty, since the split ends {@code <init>} at that point.
+   *
+   * <p>R8 breaks the second constantly, compiling {@code super(); this.f = x;} to {@code aload_0,
+   * dup, invokespecial, ..., putfield} so that {@code this} need not be reloaded.
+   */
+  private static boolean canSplitAt(Frame<SourceValue> frame, MethodInsnNode delegationCall) {
+    for (int slot = 1; slot < frame.getLocals(); slot++) {
+      if (!frame.getLocal(slot).insns.isEmpty()) {
+        return false;
+      }
+    }
+    return frame.getStackSize() == 1 + Type.getArgumentTypes(delegationCall.desc).length;
+  }
+
+  /**
+   * Removes the instructions from the start of {@code ctor} up to and including {@code
+   * delegationCall}, and returns them.
+   */
+  @SuppressWarnings("ReferenceEquality") // instruction nodes are compared by identity
   private static InsnList extractCallToSuperConstructor(
-      MutableClass mutableClass, MethodNode ctor) {
-    // Calculate the number of parameter slots (including 'this' at slot 0).
-    Type[] argTypes = Type.getArgumentTypes(ctor.desc);
-    int paramSlotCount = 1; // slot 0 = this
-    for (Type argType : argTypes) {
-      paramSlotCount += argType.getSize();
-    }
-
+      MethodNode ctor, MethodInsnNode delegationCall) {
     InsnList removedInstructions = new InsnList();
-    // Start removing instructions at the beginning of the method. The first instructions of
-    // constructors may vary.
-    int startIndex = 0;
-
-    AbstractInsnNode[] insns = ctor.instructions.toArray();
-    for (int i = 0; i < insns.length; i++) {
-      AbstractInsnNode node = insns[i];
-
-      // Check for modifications to parameter slots before super()/this().
-      if (node instanceof VarInsnNode) {
-        int opcode = node.getOpcode();
-        if (opcode >= Opcodes.ISTORE && opcode <= Opcodes.ASTORE) {
-          int slot = ((VarInsnNode) node).var;
-          if (slot >= 1 && slot < paramSlotCount) {
-            return null;
-          }
-        }
-      } else if (node instanceof IincInsnNode) {
-        int slot = ((IincInsnNode) node).var;
-        if (slot >= 1 && slot < paramSlotCount) {
-          return null;
-        }
+    AbstractInsnNode node = ctor.instructions.getFirst();
+    while (true) {
+      AbstractInsnNode next = node.getNext();
+      ctor.instructions.remove(node);
+      removedInstructions.add(node);
+      if (node == delegationCall) {
+        return removedInstructions;
       }
-
-      switch (node.getOpcode()) {
-        case Opcodes.INVOKESPECIAL:
-          MethodInsnNode mnode = (MethodInsnNode) node;
-          if (mnode.owner.equals(mutableClass.internalClassName)
-              || mnode.owner.equals(mutableClass.classNode.superName)) {
-            if (!"<init>".equals(mnode.name)) {
-              throw new AssertionError("Invalid MethodInsnNode name");
-            }
-
-            // remove all instructions in the range 0 (the start) to invokespecial
-            // <init>
-            while (startIndex <= i) {
-              ctor.instructions.remove(insns[startIndex]);
-              removedInstructions.add(insns[startIndex]);
-              startIndex++;
-            }
-            return removedInstructions;
-          }
-          break;
-
-        case Opcodes.ATHROW:
-          ctor.visitCode();
-          ctor.visitInsn(Opcodes.RETURN);
-          ctor.visitEnd();
-          return removedInstructions;
-
-        default:
-          // nothing to do
-      }
+      node = next;
     }
-
-    throw new RuntimeException("huh? " + ctor.name + ctor.desc);
   }
 
   /**
