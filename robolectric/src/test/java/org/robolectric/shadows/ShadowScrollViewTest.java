@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static org.junit.Assert.assertEquals;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.app.Activity;
 import android.view.View;
@@ -12,6 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
@@ -60,7 +62,11 @@ public class ShadowScrollViewTest {
         activity.findViewById(android.R.id.content).getHeight());
     scrollView.addView(view);
     scrollView.smoothScrollTo(7, 6);
-    assertEquals(7, scrollView.getScrollX());
+    // ScrollView is a vertical-only scroll container. In post-Cinnamon Bun SDKs, the platform fixed
+    // smoothScrollBy to ignore horizontal delta (dx) in the immediate fallback path, keeping
+    // scrollX at 0. Older SDKs mistakenly scrolled horizontally via scrollBy(dx, dy).
+    int expectedX = RuntimeEnvironment.getApiLevel() > CINNAMON_BUN ? 0 : 7;
+    assertEquals(expectedX, scrollView.getScrollX());
     assertEquals(6, scrollView.getScrollY());
   }
 
@@ -80,7 +86,11 @@ public class ShadowScrollViewTest {
     scrollView.addView(view);
     scrollView.smoothScrollTo(7, 6);
     scrollView.smoothScrollBy(10, 20);
-    assertEquals(17, scrollView.getScrollX());
+    // ScrollView is a vertical-only scroll container. In post-Cinnamon Bun SDKs, the platform fixed
+    // smoothScrollBy to ignore horizontal delta (dx) in the immediate fallback path, keeping
+    // scrollX at 0. Older SDKs mistakenly scrolled horizontally via scrollBy(dx, dy).
+    int expectedX = RuntimeEnvironment.getApiLevel() > CINNAMON_BUN ? 0 : 17;
+    assertEquals(expectedX, scrollView.getScrollX());
     assertEquals(26, scrollView.getScrollY());
   }
 }
