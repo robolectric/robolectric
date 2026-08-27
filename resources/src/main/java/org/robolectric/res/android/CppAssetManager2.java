@@ -909,6 +909,20 @@ public class CppAssetManager2 {
   //                                   int* out_last_reference);
   public ApkAssetsCookie ResolveReference(
       ApkAssetsCookie cookie,
+      Ref<Res_value> inOutValue,
+      final Ref<ResTable_config> inOutSelectedConfig,
+      final Ref<Integer> inOutFlags,
+      final Ref<Integer> outLastReference) {
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "ResolveReference",
+            () ->
+                resolveReferenceMeasured(
+                    cookie, inOutValue, inOutSelectedConfig, inOutFlags, outLastReference));
+  }
+
+  private ApkAssetsCookie resolveReferenceMeasured(
+      ApkAssetsCookie cookie,
       Ref<Res_value> in_out_value,
       final Ref<ResTable_config> in_out_selected_config,
       final Ref<Integer> in_out_flags,
