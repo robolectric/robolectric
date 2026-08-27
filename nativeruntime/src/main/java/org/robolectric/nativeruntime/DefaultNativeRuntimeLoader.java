@@ -19,7 +19,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -375,8 +374,14 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
     try (JarFile jarFile = new JarFile(androidAllArchive())) {
       JarEntry icuDatEntry = icuDatEntry(jarFile);
       String fileName = Iterables.getLast(Splitter.on('/').splitToList(icuDatEntry.getName()));
+      // An archive entry can name anything, including a path that climbs out of the directory it
+      // is being written under, so resolve it and check it stayed put before writing.
+      Path icuDatPath = icuPath.resolve(fileName).normalize();
+      if (!icuDatPath.startsWith(icuPath)) {
+        throw new IOException("Unexpected ICU data entry name: " + icuDatEntry.getName());
+      }
       try (InputStream input = jarFile.getInputStream(icuDatEntry)) {
-        java.nio.file.Files.copy(input, icuPath.resolve(fileName), REPLACE_EXISTING);
+        java.nio.file.Files.copy(input, icuDatPath, REPLACE_EXISTING);
       }
     }
   }
@@ -528,11 +533,14 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
     }
     Path directory;
     try {
+      String identity = archiveIdentity(source);
+      if (identity == null) {
+        Logger.info(
+            "Not sharing native runtime %s: %s is not supplied by an archive", group, source);
+        return null;
+      }
       String key =
-          Hashing.sha256()
-              .hashString(sourceIdentity(source), StandardCharsets.UTF_8)
-              .toString()
-              .substring(0, 32);
+          Hashing.sha256().hashString(identity, StandardCharsets.UTF_8).toString().substring(0, 32);
       directory =
           Paths.get(System.getProperty("java.io.tmpdir"), ASSET_CACHE_DIR_NAME, group + "-" + key);
     } catch (RuntimeException e) {
@@ -567,63 +575,29 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   }
 
   /**
-   * Identifies the source that supplies the given resource, so that a source which has changed is
-   * not mistaken for the one a directory was populated from.
+   * Identifies the archive that supplies the given resource by its location plus its size and
+   * modification time, so that a rebuilt archive is not mistaken for a cached one. Returns {@code
+   * null} if no archive supplies it.
    *
-   * <p>An archive is identified by its location plus its size and modification time. A resource
-   * that sits on the classpath unpacked, as a plain file or a directory, is identified by what is
-   * under it instead, because it can be edited in place without its location ever changing. Either
-   * way this only stats files, it never reads them, so it stays cheap even for the fonts.
+   * <p>These assets only ever arrive in a jar: the fonts and the ICU data up to UPSIDE_DOWN_CAKE
+   * from the published nativeruntime dist archive, which ships prebuilt rather than being built
+   * from source, and from VANILLA_ICE_CREAM the ICU and hyphen data from an android-all archive. A
+   * resource sitting on the classpath unpacked could be edited in place without its location ever
+   * changing, and nothing as cheap identifies it, so rather than key a shared directory on
+   * something that stale it is not shared at all.
    */
-  private static String sourceIdentity(URL resource) {
-    String location = resource.toString();
+  private static String archiveIdentity(URL resource) {
     if ("jar".equals(resource.getProtocol())) {
-      String jarPath = Iterables.get(Splitter.on('!').split(location), 0);
+      String jarPath = Iterables.get(Splitter.on('!').split(resource.toString()), 0);
       String filePrefix = "jar:file:";
       if (jarPath.startsWith(filePrefix)) {
         File jarFile = new File(jarPath.substring(filePrefix.length()));
         if (jarFile.isFile()) {
-          return fileIdentity(jarFile);
+          return jarFile.getAbsolutePath() + ":" + jarFile.length() + ":" + jarFile.lastModified();
         }
       }
-      return location;
     }
-    if ("file".equals(resource.getProtocol())) {
-      try {
-        File file = new File(resource.toURI());
-        if (file.isDirectory()) {
-          return location + ":" + directoryIdentity(file);
-        }
-        if (file.isFile()) {
-          return fileIdentity(file);
-        }
-      } catch (URISyntaxException | IllegalArgumentException | IOException e) {
-        Logger.info("Unable to identify native runtime asset source: " + e.getMessage());
-      }
-    }
-    return location;
-  }
-
-  private static String fileIdentity(File file) {
-    return file.getAbsolutePath() + ":" + file.length() + ":" + file.lastModified();
-  }
-
-  /** Digests the name, size and modification time of every file under the given directory. */
-  private static String directoryIdentity(File directory) throws IOException {
-    Hasher hasher = Hashing.sha256().newHasher();
-    Path root = directory.toPath();
-    try (Stream<Path> paths = java.nio.file.Files.walk(root)) {
-      paths
-          .filter(path -> path.toFile().isFile())
-          .sorted()
-          .forEach(
-              path ->
-                  hasher
-                      .putUnencodedChars(root.relativize(path).toString())
-                      .putLong(path.toFile().length())
-                      .putLong(path.toFile().lastModified()));
-    }
-    return hasher.hash().toString();
+    return null;
   }
 
   private void loadLibrary(TempDirectory tempDirectory) throws IOException {

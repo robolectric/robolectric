@@ -11,14 +11,18 @@ import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(RobolectricTestRunner.class)
 public final class DefaultNativeRuntimeLoaderTest {
   ExecutorService executor = Executors.newSingleThreadExecutor();
+
+  @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   @Before
   public void setUp() {
@@ -59,25 +63,18 @@ public final class DefaultNativeRuntimeLoaderTest {
   public void extracts_fontsAndIcuData_whenAssetsAreNotShared() {
     assume().that(hasResource("fonts")).isTrue();
     assume().that(hasResource("icu/icudt68l.dat")).isTrue();
-    String previous = System.getProperty("robolectric.nativeruntime.cacheAssets");
-    System.setProperty("robolectric.nativeruntime.cacheAssets", "false");
-    try {
-      DefaultNativeRuntimeLoader loader = new DefaultNativeRuntimeLoader();
-      loader.ensureLoaded();
-      // Without sharing, the assets land in this instance's own temporary directory.
-      assertThat(new File(System.getProperty("icu.data.path")).exists()).isTrue();
-      assertThat(System.getProperty("icu.data.path"))
-          .startsWith(loader.getDirectory().toAbsolutePath().toString());
-      if (RuntimeEnvironment.getApiLevel() >= O) {
-        assertThat(fontsXml().exists()).isTrue();
-        assertThat((Object) loader.getHyphenDataDirectory()).isEqualTo(loader.getDirectory());
-      }
-    } finally {
-      if (previous == null) {
-        System.clearProperty("robolectric.nativeruntime.cacheAssets");
-      } else {
-        System.setProperty("robolectric.nativeruntime.cacheAssets", previous);
-      }
+    setSystemPropertyRule.set("robolectric.nativeruntime.cacheAssets", "false");
+
+    DefaultNativeRuntimeLoader loader = new DefaultNativeRuntimeLoader();
+    loader.ensureLoaded();
+
+    // Without sharing, the assets land in this instance's own temporary directory.
+    assertThat(new File(System.getProperty("icu.data.path")).exists()).isTrue();
+    assertThat(System.getProperty("icu.data.path"))
+        .startsWith(loader.getDirectory().toAbsolutePath().toString());
+    if (RuntimeEnvironment.getApiLevel() >= O) {
+      assertThat(fontsXml().exists()).isTrue();
+      assertThat((Object) loader.getHyphenDataDirectory()).isEqualTo(loader.getDirectory());
     }
   }
 
