@@ -41,7 +41,6 @@ import javax.annotation.Nullable;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
-import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowInstrumentation;
@@ -179,7 +178,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
    */
   @Override
   public void runOnMainSync(Runnable runnable) {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.INSTRUMENTATION_TEST) {
+    if (ShadowLooper.hasTestThread()) {
       FutureTask<Void> wrapped = new FutureTask<>(runnable, null);
       Shadow.<ShadowPausedLooper>extract(Looper.getMainLooper()).postSync(wrapped);
       try {

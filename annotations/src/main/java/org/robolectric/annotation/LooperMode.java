@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.time.Duration;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -134,11 +133,13 @@ public @interface LooperMode {
     INSTRUMENTATION_TEST,
 
     /**
-     * Currently not supported.
+     * A mode that simulates real Android runtime with free-running threads and a real-time
+     * advancing SystemClock.
      *
-     * <p>In future, will have free running threads with an automatically increasing clock.
+     * <p>Inherits the INSTRUMENTATION_TEST threading model (separate main looper and test threads)
+     * but uses a real-time monotonic SystemClock and timed MessageQueue polling.
      */
-    // RUNNING
+    RUNNING
   }
 
   /** Set the Looper mode. */
