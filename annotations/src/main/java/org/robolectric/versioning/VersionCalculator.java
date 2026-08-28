@@ -17,8 +17,10 @@ public class VersionCalculator {
   /**
    * A temporary alias to {@link * android.os.Build.VERSION_CODES.CINNAMON_BUN}. This will be
    * removed when Robolectric shadows compile against the CINNAMON_BUN SDK
+   *
+   * @deprecated use {@link android.os.Build.VERSION_CODES#CINNAMON_BUN} instead
    */
-  public static final int CINNAMON_BUN = 37;
+  @Deprecated public static final int CINNAMON_BUN = 37;
 
   /**
    * Placeholder constant for the next major SDK int after {@link

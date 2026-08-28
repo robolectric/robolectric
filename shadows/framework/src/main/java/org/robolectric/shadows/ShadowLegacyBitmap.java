@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -10,7 +11,6 @@ import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.graphics.Bitmap;

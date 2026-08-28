@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.annotation.Filter.Order.BEFORE;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.os.Looper;
 import android.os.SystemClock;

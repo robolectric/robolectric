@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualKeyboard;

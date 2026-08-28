@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -8,7 +9,6 @@ import static dalvik.annotation.compat.VersionCodes.BAKLAVA;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.os.Looper;
 import android.view.Choreographer;
