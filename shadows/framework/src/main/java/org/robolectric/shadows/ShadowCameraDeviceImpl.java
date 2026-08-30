@@ -124,6 +124,8 @@ public class ShadowCameraDeviceImpl {
   @Implementation
   protected void close() {
     if (!closed) {
+      String cameraId = ReflectionHelpers.getField(realObject, "mCameraId");
+      ShadowCameraManager.notifyCameraDeviceClosed(cameraId);
       Runnable callOnClosed = ReflectionHelpers.getField(realObject, "mCallOnClosed");
       if (VERSION.SDK_INT >= VERSION_CODES.P) {
         Executor deviceExecutor = ReflectionHelpers.getField(realObject, "mDeviceExecutor");

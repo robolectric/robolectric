@@ -53,6 +53,9 @@ public class ShadowCameraManager {
   private static final Map<String, CameraCharacteristics> cameraIdToCharacteristics =
       new LinkedHashMap<>();
   private static final Map<String, Boolean> cameraTorches = new HashMap<>();
+  private static final Map<String, Integer> cameraTorchStrengths = new HashMap<>();
+  // Cameras with an open camera device, whose torches are unavailable while in use
+  private static final Set<String> camerasInUse = new HashSet<>();
   private static final Set<CameraManager.AvailabilityCallback> registeredCallbacks =
       new HashSet<>();
   // Cannot reference the torch callback in < Android M
@@ -76,6 +79,8 @@ public class ShadowCameraManager {
     createdCameras.clear();
     cameraIdToCharacteristics.clear();
     cameraTorches.clear();
+    cameraTorchStrengths.clear();
+    camerasInUse.clear();
     registeredCallbacks.clear();
     torchCallbacks.clear();
     if (lastDevice != null) {
@@ -116,13 +121,90 @@ public class ShadowCameraManager {
   }
 
   @Implementation(minSdk = VERSION_CODES.M)
-  protected void setTorchMode(@Nonnull String cameraId, boolean enabled) {
+  protected void setTorchMode(@Nonnull String cameraId, boolean enabled)
+      throws CameraAccessException {
     Objects.requireNonNull(cameraId);
     Preconditions.checkArgument(cameraIdToCharacteristics.keySet().contains(cameraId));
+    checkTorchAvailable(cameraId);
     cameraTorches.put(cameraId, enabled);
+    // Setting the torch mode resets the torch strength to its default level.
+    cameraTorchStrengths.remove(cameraId);
     for (Object callback : torchCallbacks) {
       ((CameraManager.TorchCallback) callback).onTorchModeChanged(cameraId, enabled);
     }
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected void turnOnTorchWithStrengthLevel(@Nonnull String cameraId, int torchStrength)
+      throws CameraAccessException {
+    Objects.requireNonNull(cameraId);
+    Preconditions.checkArgument(cameraIdToCharacteristics.containsKey(cameraId));
+    checkFlashUnitAvailable(cameraId);
+    checkTorchAvailable(cameraId);
+    Preconditions.checkArgument(
+        torchStrength >= 1 && torchStrength <= getMaximumTorchStrengthLevel(cameraId));
+
+    boolean torchAlreadyOn = cameraTorches.getOrDefault(cameraId, false);
+    int previousStrength = getTorchStrengthLevelInternal(cameraId);
+    cameraTorches.put(cameraId, true);
+    cameraTorchStrengths.put(cameraId, torchStrength);
+
+    if (!torchAlreadyOn) {
+      for (Object callback : torchCallbacks) {
+        ((CameraManager.TorchCallback) callback).onTorchModeChanged(cameraId, true);
+      }
+    } else if (torchStrength != previousStrength) {
+      for (Object callback : torchCallbacks) {
+        ((CameraManager.TorchCallback) callback)
+            .onTorchStrengthLevelChanged(cameraId, torchStrength);
+      }
+    }
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected int getTorchStrengthLevel(@Nonnull String cameraId) {
+    Objects.requireNonNull(cameraId);
+    Preconditions.checkArgument(cameraIdToCharacteristics.containsKey(cameraId));
+    checkFlashUnitAvailable(cameraId);
+    return getTorchStrengthLevelInternal(cameraId);
+  }
+
+  /**
+   * Throws if the camera's characteristics explicitly report that it has no flash unit. A missing
+   * {@link CameraCharacteristics#FLASH_INFO_AVAILABLE} key is tolerated so that cameras added with
+   * empty characteristics keep working with the torch APIs.
+   */
+  private static void checkFlashUnitAvailable(String cameraId) {
+    Boolean flashAvailable =
+        cameraIdToCharacteristics.get(cameraId).get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
+    Preconditions.checkArgument(!Boolean.FALSE.equals(flashAvailable));
+  }
+
+  /** Throws if the camera's torch is unavailable because an open camera device is using it. */
+  private static void checkTorchAvailable(String cameraId) throws CameraAccessException {
+    if (camerasInUse.contains(cameraId)) {
+      throw new CameraAccessException(CameraAccessException.CAMERA_IN_USE);
+    }
+  }
+
+  private static int getTorchStrengthLevelInternal(String cameraId) {
+    Integer strength = cameraTorchStrengths.get(cameraId);
+    if (strength != null) {
+      return strength;
+    }
+    Integer defaultLevel =
+        cameraIdToCharacteristics
+            .get(cameraId)
+            .get(CameraCharacteristics.FLASH_INFO_STRENGTH_DEFAULT_LEVEL);
+    return defaultLevel == null ? 1 : defaultLevel;
+  }
+
+  private static int getMaximumTorchStrengthLevel(String cameraId) {
+    Integer maximumLevel =
+        cameraIdToCharacteristics
+            .get(cameraId)
+            .get(CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL);
+    return maximumLevel == null ? 1 : maximumLevel;
   }
 
   @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)
@@ -180,6 +262,7 @@ public class ShadowCameraManager {
       int unusedClientUid,
       int unusedOomScoreOffset) {
     CameraCharacteristics characteristics = getCameraCharacteristics(cameraId);
+    markCameraInUse(cameraId);
     Context context = RuntimeEnvironment.getApplication();
     CameraDeviceImpl deviceImpl =
         createCameraDeviceImpl(cameraId, callback, executor, characteristics, context);
@@ -194,6 +277,7 @@ public class ShadowCameraManager {
       String cameraId, CameraDevice.StateCallback callback, Executor executor, final int uid)
       throws CameraAccessException {
     CameraCharacteristics characteristics = getCameraCharacteristics(cameraId);
+    markCameraInUse(cameraId);
     Context context = reflector(ReflectorCameraManager.class, realObject).getContext();
 
     CameraDeviceImpl deviceImpl =
@@ -216,6 +300,7 @@ public class ShadowCameraManager {
       String cameraId, CameraDevice.StateCallback callback, Handler handler, final int uid)
       throws CameraAccessException {
     CameraCharacteristics characteristics = getCameraCharacteristics(cameraId);
+    markCameraInUse(cameraId);
     Context context = reflector(ReflectorCameraManager.class, realObject).getContext();
 
     CameraDeviceImpl deviceImpl;
@@ -260,6 +345,7 @@ public class ShadowCameraManager {
       String cameraId, CameraDevice.StateCallback callback, Handler handler)
       throws CameraAccessException {
     CameraCharacteristics characteristics = getCameraCharacteristics(cameraId);
+    markCameraInUse(cameraId);
 
     CameraDeviceImpl deviceImpl =
         ReflectionHelpers.callConstructor(
@@ -297,6 +383,15 @@ public class ShadowCameraManager {
 
   @Implementation(minSdk = VERSION_CODES.M)
   protected void registerTorchCallback(CameraManager.TorchCallback callback, Handler handler) {
+    Objects.requireNonNull(callback);
+    torchCallbacks.add(callback);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
+  protected void registerTorchCallback(Executor executor, CameraManager.TorchCallback callback) {
+    // Note: like the Handler-based overloads in this shadow, the executor is not used for
+    // dispatching; callbacks are invoked synchronously on the calling thread.
+    Preconditions.checkArgument(executor != null);
     Objects.requireNonNull(callback);
     torchCallbacks.add(callback);
   }
@@ -352,6 +447,35 @@ public class ShadowCameraManager {
   }
 
   /**
+   * Marks the camera's torch as unavailable while a camera device is open and calls all registered
+   * torch callbacks's onTorchModeUnavailable method.
+   */
+  private static void markCameraInUse(@Nonnull String cameraId) {
+    Objects.requireNonNull(cameraId);
+    camerasInUse.add(cameraId);
+    for (Object callback : torchCallbacks) {
+      ((CameraManager.TorchCallback) callback).onTorchModeUnavailable(cameraId);
+    }
+  }
+
+  /**
+   * Marks the camera's torch as available again after its camera device has been closed. The torch
+   * comes back turned off, and registered torch callbacks are notified with onTorchModeChanged.
+   * This is a no-op if the camera was not marked in use.
+   */
+  static void notifyCameraDeviceClosed(@Nonnull String cameraId) {
+    Objects.requireNonNull(cameraId);
+    if (!camerasInUse.remove(cameraId) || !cameraIdToCharacteristics.containsKey(cameraId)) {
+      return;
+    }
+    cameraTorches.put(cameraId, false);
+    cameraTorchStrengths.remove(cameraId);
+    for (Object callback : torchCallbacks) {
+      ((CameraManager.TorchCallback) callback).onTorchModeChanged(cameraId, false);
+    }
+  }
+
+  /**
    * Calls all registered callbacks's onCameraAvailable method. This is a no-op if no callbacks are
    * registered.
    */
@@ -399,6 +523,9 @@ public class ShadowCameraManager {
     Preconditions.checkArgument(cameraIdToCharacteristics.containsKey(cameraId));
 
     cameraIdToCharacteristics.remove(cameraId);
+    cameraTorches.remove(cameraId);
+    cameraTorchStrengths.remove(cameraId);
+    camerasInUse.remove(cameraId);
     triggerOnCameraUnavailable(cameraId);
   }
 

@@ -45,6 +45,9 @@ public class ShadowCameraManagerTest {
 
   private static final boolean ENABLE = true;
 
+  private static final int MAXIMUM_STRENGTH_LEVEL = 5;
+  private static final int DEFAULT_STRENGTH_LEVEL = 2;
+
   private final CameraManager cameraManager =
       (CameraManager)
           ApplicationProvider.getApplicationContext().getSystemService(Context.CAMERA_SERVICE);
@@ -472,6 +475,294 @@ public class ShadowCameraManagerTest {
     }
 
     verify(mockCallback, never()).onTorchModeChanged(CAMERA_ID_0, torchEnabled);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void registerTorchCallbackWithExecutor() throws CameraAccessException {
+    CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
+    Executor executor = Runnable::run;
+
+    cameraManager.registerTorchCallback(executor, mockCallback);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    cameraManager.setTorchMode(CAMERA_ID_0, ENABLE);
+
+    verify(mockCallback).onTorchModeChanged(CAMERA_ID_0, ENABLE);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void unregisterTorchCallbackRegisteredWithExecutor() throws CameraAccessException {
+    CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
+    Executor executor = Runnable::run;
+
+    cameraManager.registerTorchCallback(executor, mockCallback);
+    cameraManager.unregisterTorchCallback(mockCallback);
+
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    cameraManager.setTorchMode(CAMERA_ID_0, ENABLE);
+
+    verify(mockCallback, never()).onTorchModeChanged(CAMERA_ID_0, ENABLE);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void getTorchStrengthLevelReturnsDefaultLevel() throws CameraAccessException {
+    shadowOf(characteristics)
+        .set(CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL, MAXIMUM_STRENGTH_LEVEL);
+    shadowOf(characteristics)
+        .set(CameraCharacteristics.FLASH_INFO_STRENGTH_DEFAULT_LEVEL, DEFAULT_STRENGTH_LEVEL);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    assertThat(cameraManager.getTorchStrengthLevel(CAMERA_ID_0)).isEqualTo(DEFAULT_STRENGTH_LEVEL);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void getTorchStrengthLevelWithoutDefaultLevelCharacteristic()
+      throws CameraAccessException {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    assertThat(cameraManager.getTorchStrengthLevel(CAMERA_ID_0)).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void turnOnTorchWithStrengthLevelTurnsTorchOn() throws CameraAccessException {
+    shadowOf(characteristics)
+        .set(CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL, MAXIMUM_STRENGTH_LEVEL);
+    shadowOf(characteristics)
+        .set(CameraCharacteristics.FLASH_INFO_STRENGTH_DEFAULT_LEVEL, DEFAULT_STRENGTH_LEVEL);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    cameraManager.turnOnTorchWithStrengthLevel(CAMERA_ID_0, 3);
+
+    assertThat(shadowOf(cameraManager).getTorchMode(CAMERA_ID_0)).isTrue();
+    assertThat(cameraManager.getTorchStrengthLevel(CAMERA_ID_0)).isEqualTo(3);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void turnOnTorchWithStrengthLevelNotifiesTorchModeChanged() throws CameraAccessException {
+    CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
+    shadowOf(characteristics)
+        .set(CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL, MAXIMUM_STRENGTH_LEVEL);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    cameraManager.registerTorchCallback(mockCallback, /* handler= */ null);
+    cameraManager.turnOnTorchWithStrengthLevel(CAMERA_ID_0, 3);
+
+    verify(mockCallback).onTorchModeChanged(CAMERA_ID_0, true);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void turnOnTorchWithStrengthLevelWhileTorchOnNotifiesTorchStrengthLevelChanged()
+      throws CameraAccessException {
+    CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
+    shadowOf(characteristics)
+        .set(CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL, MAXIMUM_STRENGTH_LEVEL);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    cameraManager.registerTorchCallback(mockCallback, /* handler= */ null);
+    cameraManager.turnOnTorchWithStrengthLevel(CAMERA_ID_0, 3);
+    cameraManager.turnOnTorchWithStrengthLevel(CAMERA_ID_0, 4);
+
+    verify(mockCallback).onTorchStrengthLevelChanged(CAMERA_ID_0, 4);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void setTorchModeResetsTorchStrengthLevelToDefault() throws CameraAccessException {
+    shadowOf(characteristics)
+        .set(CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL, MAXIMUM_STRENGTH_LEVEL);
+    shadowOf(characteristics)
+        .set(CameraCharacteristics.FLASH_INFO_STRENGTH_DEFAULT_LEVEL, DEFAULT_STRENGTH_LEVEL);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    cameraManager.turnOnTorchWithStrengthLevel(CAMERA_ID_0, MAXIMUM_STRENGTH_LEVEL);
+    cameraManager.setTorchMode(CAMERA_ID_0, false);
+
+    assertThat(cameraManager.getTorchStrengthLevel(CAMERA_ID_0)).isEqualTo(DEFAULT_STRENGTH_LEVEL);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void turnOnTorchWithStrengthLevelStrengthOutOfRange() throws CameraAccessException {
+    shadowOf(characteristics)
+        .set(CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL, MAXIMUM_STRENGTH_LEVEL);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    try {
+      cameraManager.turnOnTorchWithStrengthLevel(CAMERA_ID_0, 0);
+      fail();
+    } catch (IllegalArgumentException e) {
+      // Expected
+    }
+
+    try {
+      cameraManager.turnOnTorchWithStrengthLevel(CAMERA_ID_0, MAXIMUM_STRENGTH_LEVEL + 1);
+      fail();
+    } catch (IllegalArgumentException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void turnOnTorchWithStrengthLevelInvalidCameraId() throws CameraAccessException {
+    try {
+      cameraManager.turnOnTorchWithStrengthLevel(CAMERA_ID_0, 1);
+      fail();
+    } catch (IllegalArgumentException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void registerTorchCallbackWithNullExecutor() {
+    CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
+
+    try {
+      cameraManager.registerTorchCallback((Executor) null, mockCallback);
+      fail();
+    } catch (IllegalArgumentException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void turnOnTorchWithStrengthLevelWithoutFlashUnit() throws CameraAccessException {
+    shadowOf(characteristics).set(CameraCharacteristics.FLASH_INFO_AVAILABLE, false);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    try {
+      cameraManager.turnOnTorchWithStrengthLevel(CAMERA_ID_0, 1);
+      fail();
+    } catch (IllegalArgumentException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void getTorchStrengthLevelWithoutFlashUnit() throws CameraAccessException {
+    shadowOf(characteristics).set(CameraCharacteristics.FLASH_INFO_AVAILABLE, false);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    try {
+      cameraManager.getTorchStrengthLevel(CAMERA_ID_0);
+      fail();
+    } catch (IllegalArgumentException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void removeCameraResetsTorchStrengthLevel() throws CameraAccessException {
+    shadowOf(characteristics)
+        .set(CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL, MAXIMUM_STRENGTH_LEVEL);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    cameraManager.turnOnTorchWithStrengthLevel(CAMERA_ID_0, MAXIMUM_STRENGTH_LEVEL);
+
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+    shadowOf(cameraManager)
+        .addCamera(CAMERA_ID_0, ShadowCameraCharacteristics.newCameraCharacteristics());
+
+    assertThat(cameraManager.getTorchStrengthLevel(CAMERA_ID_0)).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void removeCameraResetsTorchMode() throws CameraAccessException {
+    CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
+    shadowOf(characteristics)
+        .set(CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL, MAXIMUM_STRENGTH_LEVEL);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    cameraManager.turnOnTorchWithStrengthLevel(CAMERA_ID_0, 3);
+
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    // The torch is no longer considered on, so turning it on again reports a mode change rather
+    // than a strength level change.
+    cameraManager.registerTorchCallback(mockCallback, /* handler= */ null);
+    cameraManager.turnOnTorchWithStrengthLevel(CAMERA_ID_0, 2);
+
+    verify(mockCallback).onTorchModeChanged(CAMERA_ID_0, true);
+    verify(mockCallback, never()).onTorchStrengthLevelChanged(CAMERA_ID_0, 2);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void setTorchModeWhileCameraInUse() throws CameraAccessException {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    cameraManager.openCamera(CAMERA_ID_0, mock(CameraDevice.StateCallback.class), new Handler());
+    shadowOf(Looper.myLooper()).idle();
+
+    try {
+      cameraManager.setTorchMode(CAMERA_ID_0, ENABLE);
+      fail();
+    } catch (CameraAccessException e) {
+      assertThat(e.getReason()).isEqualTo(CameraAccessException.CAMERA_IN_USE);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void closeCameraDeviceNotifiesTorchModeChangedOff() throws CameraAccessException {
+    CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
+
+    cameraManager.registerTorchCallback(mockCallback, /* handler= */ null);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    CameraDevice.StateCallback stateCallback = mock(CameraDevice.StateCallback.class);
+    cameraManager.openCamera(CAMERA_ID_0, stateCallback, new Handler());
+    shadowOf(Looper.myLooper()).idle();
+    ArgumentCaptor<CameraDevice> deviceCaptor = ArgumentCaptor.forClass(CameraDevice.class);
+    verify(stateCallback).onOpened(deviceCaptor.capture());
+
+    deviceCaptor.getValue().close();
+    shadowOf(Looper.myLooper()).idle();
+
+    verify(mockCallback).onTorchModeChanged(CAMERA_ID_0, false);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void setTorchModeAfterCameraDeviceClosed() throws CameraAccessException {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    CameraDevice.StateCallback stateCallback = mock(CameraDevice.StateCallback.class);
+    cameraManager.openCamera(CAMERA_ID_0, stateCallback, new Handler());
+    shadowOf(Looper.myLooper()).idle();
+    ArgumentCaptor<CameraDevice> deviceCaptor = ArgumentCaptor.forClass(CameraDevice.class);
+    verify(stateCallback).onOpened(deviceCaptor.capture());
+
+    deviceCaptor.getValue().close();
+    shadowOf(Looper.myLooper()).idle();
+
+    cameraManager.setTorchMode(CAMERA_ID_0, ENABLE);
+
+    assertThat(shadowOf(cameraManager).getTorchMode(CAMERA_ID_0)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void openCameraNotifiesTorchModeUnavailable() throws CameraAccessException {
+    CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
+
+    cameraManager.registerTorchCallback(mockCallback, /* handler= */ null);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    cameraManager.openCamera(CAMERA_ID_0, mock(CameraDevice.StateCallback.class), new Handler());
+    shadowOf(Looper.myLooper()).idle();
+
+    verify(mockCallback).onTorchModeUnavailable(CAMERA_ID_0);
   }
 
   @Test
