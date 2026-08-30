@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -526,7 +525,6 @@ public class ShadowTelecomManager {
    * <p>Specifically, this method sets up the relevant {@link ConnectionService} and returns the
    * result of {@link ConnectionService#onCreateIncomingConnection}.
    */
-  @RequiresApi(M)
   @Nullable
   public Connection allowIncomingCall(IncomingCallRecord call) {
     if (call.isHandled) {
@@ -605,7 +603,6 @@ public class ShadowTelecomManager {
    * <p>Specifically, this method sets up the relevant {@link ConnectionService} and returns the
    * result of {@link ConnectionService#onCreateOutgoingConnection}.
    */
-  @RequiresApi(M)
   @Nullable
   public Connection allowOutgoingCall(OutgoingCallRecord call) {
     if (call.isHandled) {

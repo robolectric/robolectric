@@ -19,7 +19,6 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /** Builder for {@link AudioDeviceInfo}. */
-@RequiresApi(VERSION_CODES.M)
 public class AudioDeviceInfoBuilder {
 
   private int type = AudioDeviceInfo.TYPE_BUILTIN_SPEAKER;

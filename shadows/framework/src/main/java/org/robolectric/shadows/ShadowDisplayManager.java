@@ -11,7 +11,6 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.RequiresApi;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.hardware.display.BrightnessChangeEvent;
@@ -360,13 +359,11 @@ public class ShadowDisplayManager {
     return extract(DisplayManagerGlobal.getInstance());
   }
 
-  @RequiresApi(api = Build.VERSION_CODES.M)
   static Display.Mode displayModeOf(int modeId, int width, int height, float refreshRate) {
     return new Display.Mode(modeId, width, height, refreshRate);
   }
 
   /** Builder class for {@link Display.Mode} */
-  @RequiresApi(api = Build.VERSION_CODES.M)
   @AutoBuilder(callMethod = "displayModeOf")
   public abstract static class ModeBuilder {
     public static ModeBuilder modeBuilder(int modeId) {
