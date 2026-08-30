@@ -92,15 +92,8 @@ jobs:
 
   instrumentation-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     needs: build
-
-    env:
-      # The emulator hard-kills itself 20 seconds (default) after a shutdown request. Writing the
-      # first-boot AVD snapshot in the caching step takes longer than that on GitHub's 2-core
-      # runners, so the snapshot was truncated mid-write and every later run booted the corrupt
-      # cached snapshot. Give the emulator enough time to shut down (and save) gracefully.
-      ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 120
 
     strategy:
       # Allow tests to continue on other devices if they fail on one device.
@@ -133,60 +126,29 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Determine emulator target
-        id: determine-target
-        run: |
-          TARGET="aosp_atd"
-          echo "TARGET=$TARGET" >> $GITHUB_OUTPUT
+      - name: Accept Android SDK licences
+        run: yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
 
-      - name: AVD cache
+      - name: Managed device cache
         uses: actions/cache@v6
-        id: avd-cache
         with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-ubuntu-${{ matrix.api-level }}-${{ env.cache-version }}
-
-      - name: Create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ steps.determine-target.outputs.TARGET }}
-          arch: x86_64
-          channel: canary
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          profile: Nexus One
-          script: echo "Generated AVD snapshot for caching."
+          path: ~/.android/avd/gradle-managed
+          key: gmd-ubuntu-${{ matrix.api-level }}-${{ env.cache-version }}
 
       - name: Run device tests
-        # We need to use adb shell wm density to reset device's density to use fixed density
-        # for all devices. Hope it can improve the stability of Emulator testing.
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ steps.determine-target.outputs.TARGET }}
-          arch: x86_64
-          channel: canary
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          profile: Nexus One
-          script: |
-            adb shell wm density 240
-            SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --stacktrace
+        env:
+          SKIP_ERRORPRONE: true
+          SKIP_JAVADOC: true
+        run: ./gradlew -Pandroid.sdk.channel=3 nexusOneApi${{ matrix.api-level }}DebugAndroidTest --stacktrace
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: test-results-${{ matrix.api-level }}-${{ steps.determine-target.outputs.TARGET }}-${{ matrix.shard }}
+          name: test-results-${{ matrix.api-level }}
           path: |
-            **/build/reports/*
-            **/build/outputs/*/connected/*
+            **/build/reports/androidTests/**
+            **/build/outputs/androidTest-results/**
 
   publish-to-snapshots:
     runs-on: ubuntu-latest
