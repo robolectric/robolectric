@@ -299,13 +299,11 @@ public final class WifiScanResultBuilder {
       scanResult.timestamp = timestampMicros;
     }
 
-    if (VERSION.SDK_INT >= VERSION_CODES.M) {
-      scanResult.channelWidth = channelWidth;
-      scanResult.centerFreq0 = centerFreq0;
-      scanResult.centerFreq1 = centerFreq1;
-      if (is80211McRttResponder) {
-        scanResult.setFlag(ScanResult.FLAG_80211mc_RESPONDER);
-      }
+    scanResult.channelWidth = channelWidth;
+    scanResult.centerFreq0 = centerFreq0;
+    scanResult.centerFreq1 = centerFreq1;
+    if (is80211McRttResponder) {
+      scanResult.setFlag(ScanResult.FLAG_80211mc_RESPONDER);
     }
 
     if (VERSION.SDK_INT >= VERSION_CODES.R) {

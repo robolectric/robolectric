@@ -228,13 +228,11 @@ public final class WifiScanResultBuilderTest {
       // In API 35, ScanResult.Builder defaults to CHANNEL_WIDTH_20MHZ, while the previous
       // constructors default to UNSPECIFIED (-1).
       assertThat(scanResult.channelWidth).isEqualTo(ScanResult.CHANNEL_WIDTH_20MHZ);
-    } else if (VERSION.SDK_INT >= VERSION_CODES.M) {
+    } else {
       assertThat(scanResult.channelWidth).isEqualTo(0);
     }
 
-    if (VERSION.SDK_INT >= VERSION_CODES.M) {
-      assertThat(scanResult.centerFreq0).isEqualTo(-1);
-      assertThat(scanResult.centerFreq1).isEqualTo(-1);
-    }
+    assertThat(scanResult.centerFreq0).isEqualTo(-1);
+    assertThat(scanResult.centerFreq1).isEqualTo(-1);
   }
 }

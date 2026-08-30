@@ -41,7 +41,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
@@ -902,12 +901,10 @@ public class ShadowConnectivityManagerTest {
     assertThat(connectivityManager.getAllNetworkInfo()).hasLength(2);
     assertThat(connectivityManager.getAllNetworks()).hasLength(2);
     assertThat(connectivityManager.isDefaultNetworkActive()).isTrue();
-    if (RuntimeEnvironment.getApiLevel() >= M) {
-      assertThat(connectivityManager.getActiveNetwork()).isNotNull();
-    }
+    assertThat(connectivityManager.getActiveNetwork()).isNotNull();
   }
 
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   @Test
   public void getActiveNetwork_afterSetActiveNetworkInfoNull() {
     shadowOf(connectivityManager).setActiveNetworkInfo(null);

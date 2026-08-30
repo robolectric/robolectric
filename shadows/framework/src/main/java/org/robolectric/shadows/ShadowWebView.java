@@ -4,7 +4,6 @@ import android.annotation.ColorInt;
 import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
-import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
@@ -215,7 +214,7 @@ public class ShadowWebView extends ShadowViewGroup {
                 webChromeClient.onProgressChanged(realWebView, 40);
                 webChromeClient.onProgressChanged(realWebView, 80);
               }
-              if (webViewClient != null && VERSION.SDK_INT >= 23) {
+              if (webViewClient != null) {
                 webViewClient.onPageCommitVisible(realWebView, url);
               }
               if (webChromeClient != null) {
