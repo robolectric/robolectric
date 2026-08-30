@@ -44,7 +44,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PersistableBundle;
@@ -893,7 +892,7 @@ public class ShadowDevicePolicyManager {
     return storageEncryptionRequested;
   }
 
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation
   protected int getPermissionGrantState(
       ComponentName admin, String packageName, String permission) {
     enforceDeviceOwnerOrProfileOwner(admin);
@@ -908,7 +907,7 @@ public class ShadowDevicePolicyManager {
     return Boolean.TRUE.equals(isGranted);
   }
 
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation
   protected boolean setPermissionGrantState(
       ComponentName admin, String packageName, String permission, int grantState) {
     enforceDeviceOwnerOrProfileOwner(admin);
@@ -1457,13 +1456,13 @@ public class ShadowDevicePolicyManager {
     return affiliationIds;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void setPermissionPolicy(@Nonnull ComponentName admin, int policy) {
     enforceDeviceOwnerOrProfileOwner(admin);
     permissionPolicy = policy;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected int getPermissionPolicy(ComponentName admin) {
     enforceDeviceOwnerOrProfileOwner(admin);
     return permissionPolicy;
@@ -1488,12 +1487,12 @@ public class ShadowDevicePolicyManager {
     }
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected SystemUpdatePolicy getSystemUpdatePolicy() {
     return policy;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void setSystemUpdatePolicy(ComponentName admin, SystemUpdatePolicy policy) {
     ShadowDevicePolicyManager.policy = policy;
   }

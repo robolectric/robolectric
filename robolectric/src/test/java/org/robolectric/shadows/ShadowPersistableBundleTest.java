@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.os.Build;
 import android.os.PersistableBundle;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
@@ -21,7 +20,7 @@ public class ShadowPersistableBundleTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void putBoolean() {
     bundle.putBoolean("foo", true);
     assertThat(bundle.getBoolean("foo")).isTrue();
@@ -30,7 +29,7 @@ public class ShadowPersistableBundleTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void putBooleanArray() {
     boolean[] array = {false, true};
     bundle.putBooleanArray("foo", array);

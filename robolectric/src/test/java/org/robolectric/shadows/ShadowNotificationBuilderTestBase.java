@@ -77,7 +77,7 @@ public abstract class ShadowNotificationBuilderTestBase {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void build_setsIconOnNotification() {
     Notification notification = builder.setSmallIcon(R.drawable.an_image).build();
 
@@ -237,7 +237,7 @@ public abstract class ShadowNotificationBuilderTestBase {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void withBigPictureStyle() {
     Bitmap bigPicture =
         BitmapFactory.decodeResource(

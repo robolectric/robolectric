@@ -15,7 +15,6 @@ import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.BrightnessConfiguration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
-import android.os.Build;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
@@ -197,7 +196,7 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void modeBuilder_setsModeParameters() {
     int modeId = 5;
     int width = 500;
@@ -216,7 +215,7 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setSupportedModes_addsOneDisplayMode() {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), /* handler= */ null);
@@ -238,7 +237,7 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setSupportedModes_addsMultipleDisplayModes() {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), /* handler= */ null);

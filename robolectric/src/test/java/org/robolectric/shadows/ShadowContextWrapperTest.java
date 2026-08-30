@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -366,7 +365,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void sendOrderedBroadcastAsUser_withAppOp_shouldReturnValues() {
     String action = "test";
 
@@ -400,7 +399,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void sendOrderedBroadcastAsUser_withAppOpAndOptions_shouldReturnValues() {
     String action = "test";
 
@@ -685,7 +684,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  @Config(minSdk = 23)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void checkSelfPermission() {
     assertThat(contextWrapper.checkSelfPermission("MY_PERMISSION"))
         .isEqualTo(PackageManager.PERMISSION_DENIED);
@@ -722,7 +721,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  @Config(minSdk = 23)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void checkAdditionalSelfPermission() {
     shadowContextWrapper.grantPermissions("MY_PERMISSION");
     assertThat(contextWrapper.checkSelfPermission("MY_PERMISSION"))
@@ -736,7 +735,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  @Config(minSdk = 23)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void revokeSelfPermission() {
     shadowContextWrapper.grantPermissions("MY_PERMISSION");
 

@@ -5,7 +5,6 @@ import static android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_TITLE;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION;
 import static android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -146,7 +145,7 @@ public class ShadowMediaMetadataRetrieverTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setDataSource_withDifferentMediaDataSourceAreSameDataSources() {
     MediaDataSource mediaDataSource1 =
         new MediaDataSource() {

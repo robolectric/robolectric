@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
@@ -722,7 +721,7 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void shouldCreateWebMessageChannel() {
     WebMessagePort[] channel = shadowOf(webView).createWebMessageChannel();
 
@@ -731,7 +730,7 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getCreatedPorts_returnsCreatedPortsList() {
     shadowOf(webView).createWebMessageChannel();
     assertThat(shadowOf(webView).getCreatedPorts()).isNotEmpty();

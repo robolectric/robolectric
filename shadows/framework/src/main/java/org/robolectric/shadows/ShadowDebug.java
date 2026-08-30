@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 
 import android.os.Debug;
@@ -31,7 +30,7 @@ public class ShadowDebug {
     return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected static Map<String, String> getRuntimeStats() {
     return ImmutableMap.of();
   }

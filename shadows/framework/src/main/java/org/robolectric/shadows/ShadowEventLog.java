@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.util.EventLog;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -145,7 +144,7 @@ public class ShadowEventLog {
   }
 
   /** Writes an event log message, returning an approximation of the bytes written. */
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation
   protected static int writeEvent(int tag, float value) {
     addEvent(new EventBuilder(tag, value).build());
     return Integer.BYTES + Float.BYTES;

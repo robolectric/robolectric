@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 
@@ -129,7 +128,7 @@ public class ShadowKeyguardManager {
    *
    * @see #setIsDeviceSecure(boolean)
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isDeviceSecure() {
     return isDeviceSecure;
   }
@@ -149,7 +148,7 @@ public class ShadowKeyguardManager {
    *
    * @see #setIsDeviceSecure(int, boolean)
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isDeviceSecure(int userId) {
     return deviceSecureForUsers.contains(userId);
   }

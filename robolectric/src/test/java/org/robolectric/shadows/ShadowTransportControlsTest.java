@@ -12,7 +12,6 @@ import static android.media.session.PlaybackState.ACTION_SKIP_TO_NEXT;
 import static android.media.session.PlaybackState.ACTION_SKIP_TO_PREVIOUS;
 import static android.media.session.PlaybackState.ACTION_SKIP_TO_QUEUE_ITEM;
 import static android.media.session.PlaybackState.ACTION_STOP;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.shadow.api.Shadow.extract;
@@ -65,7 +64,7 @@ public class ShadowTransportControlsTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testPlayFromUri_lastPerformedActionIsPlayFromUri() {
     Uri uri = Uri.parse("test://address");
     transportControls.playFromUri(uri, new Bundle());

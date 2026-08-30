@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -146,7 +145,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void enableNonRegisteredAccountDoesNothing() {
     PhoneAccountHandle accountHandle1 = createHandle("a.package", "OtherConnectionService", "id1");
     telecomService.registerPhoneAccount(
@@ -181,7 +180,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getCallCapablePhoneAccounts() {
     PhoneAccountHandle callCapableHandle = createHandle("id1");
     telecomService.registerPhoneAccount(
@@ -197,7 +196,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getCallCapablePhoneAccounts_noPermission_throwsSecurityException() {
     shadowOf(telecomService).setReadPhoneStatePermission(false);
 
@@ -357,7 +356,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testPlaceCall() {
     Bundle extras = new Bundle();
     extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, createHandle("id"));
@@ -369,7 +368,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testPlaceCall_noPermission_throwsSecurityException() {
     shadowOf(telecomService).setCallPhonePermission(false);
 
@@ -382,7 +381,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testAllowPlaceCall() {
     shadowOf(telecomService).setCallRequestMode(CallRequestMode.ALLOW_ALL);
 
@@ -502,7 +501,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setDefaultDialer() {
     assertThat(telecomService.getDefaultDialerPackage()).isNull();
     shadowOf(telecomService).setDefaultDialer("some.package");
@@ -510,7 +509,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setDefaultDialerPackage() {
     assertThat(telecomService.getDefaultDialerPackage()).isNull();
     shadowOf(telecomService).setDefaultDialerPackage("some.package");
@@ -640,7 +639,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void isVoicemailNumber() {
     // Check initial state
     PhoneAccountHandle phoneAccountHandle = createHandle("id1");
@@ -656,7 +655,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getVoicemailNumber() {
     // Check initial state
     PhoneAccountHandle phoneAccountHandle = createHandle("id1");
@@ -707,14 +706,14 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void handleMmiWithHandle_defaultValueFalse() {
     PhoneAccountHandle phoneAccountHandle = createHandle("id1");
     assertThat(telecomService.handleMmi("123", phoneAccountHandle)).isFalse();
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void handleMmiWithHandle() {
     shadowOf(telecomService).setHandleMmiValue(true);
     PhoneAccountHandle phoneAccountHandle = createHandle("id1");

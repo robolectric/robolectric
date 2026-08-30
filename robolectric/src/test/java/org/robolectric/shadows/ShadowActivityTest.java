@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -947,7 +946,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void requestsPermissions() {
     TestActivity activity = Robolectric.setupActivity(TestActivity.class);
     activity.requestPermissions(new String[] {Manifest.permission.CAMERA}, 1007);
@@ -1439,7 +1438,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getPermission_shouldReturnRequestedPermissions() {
     // GIVEN
     String[] permission = {Manifest.permission.CAMERA};

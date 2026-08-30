@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static java.lang.Math.min;
@@ -113,7 +112,7 @@ public class ShadowMediaExtractor {
     setDataSource(toDataSource(fileDescriptor));
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void setDataSource(MediaDataSource mediaDataSource) {
     setDataSource(toDataSource(mediaDataSource));
   }

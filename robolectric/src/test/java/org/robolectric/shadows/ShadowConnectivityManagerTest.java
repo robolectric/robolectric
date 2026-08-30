@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED;
 import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_ENABLED;
 import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_WHITELISTED;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
@@ -162,20 +161,20 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getActiveNetwork_shouldInitializeItself() {
     assertThat(connectivityManager.getActiveNetwork()).isNotNull();
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getActiveNetwork_nullIfNetworkNotActive() {
     shadowOf(connectivityManager).setDefaultNetworkActive(false);
     assertThat(connectivityManager.getActiveNetwork()).isNull();
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setActiveNetworkInfo_shouldSetActiveNetwork() {
     shadowOf(connectivityManager).setActiveNetworkInfo(null);
     assertThat(connectivityManager.getActiveNetworkInfo()).isNull();
@@ -296,7 +295,7 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getReportedNetworkConnectivity() {
     Network wifiNetwork = ShadowNetwork.newInstance(ShadowConnectivityManager.NET_ID_WIFI);
     connectivityManager.reportNetworkConnectivity(wifiNetwork, true);
@@ -358,7 +357,7 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void registerCallback_withPendingIntent_shouldAddCallback() {
     NetworkRequest.Builder builder = new NetworkRequest.Builder();
     PendingIntent pendingIntent = createSimplePendingIntent();
@@ -436,7 +435,7 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void unregisterCallback_withPendingIntent_shouldRemoveCallbacks() {
     NetworkRequest.Builder builder = new NetworkRequest.Builder();
     // Add two pendingIntents, should treat them as equal based on Intent#filterEquals
@@ -460,7 +459,7 @@ public class ShadowConnectivityManagerTest {
                 (ConnectivityManager.NetworkCallback) null));
   }
 
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   @Test
   public void unregisterCallback_withPendingIntent_shouldNotAllowNullCallback() {
     // Verify that exception is thrown.
@@ -506,7 +505,7 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       unregisterCallback_withPendingIntent_strictUnregistrationEnabled_neverRegisteredShouldThrow() {
     shadowOf(connectivityManager).setStrictUnregistration(true);
@@ -518,7 +517,7 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       unregisterCallback_withPendingIntent_strictUnregistrationEnabled_doubleUnregisterShouldLog() {
     shadowOf(connectivityManager).setStrictUnregistration(true);
@@ -567,7 +566,7 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void bindProcessToNetwork_shouldGetBoundNetworkForProcess() {
     Network network = ShadowNetwork.newInstance(789);
     connectivityManager.bindProcessToNetwork(network);
@@ -771,7 +770,7 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getProxyForNetwork() {
     Network network = connectivityManager.getActiveNetwork();
     connectivityManager.bindProcessToNetwork(network);
@@ -784,7 +783,7 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getProxyForNetwork_shouldReturnNullByDefaultWithBoundProcess() {
     Network network = connectivityManager.getActiveNetwork();
     connectivityManager.bindProcessToNetwork(network);
@@ -794,7 +793,7 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getProxyForNetwork_shouldReturnNullByDefaultNoBoundProcess() {
     Network network = connectivityManager.getActiveNetwork();
 

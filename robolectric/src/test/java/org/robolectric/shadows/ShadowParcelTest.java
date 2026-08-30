@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertArrayEquals;
@@ -1359,7 +1358,7 @@ public class ShadowParcelTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testReadWriteFileDescriptor() throws Exception {
     File file = new File(ApplicationProvider.getApplicationContext().getFilesDir(), "test");
     RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");

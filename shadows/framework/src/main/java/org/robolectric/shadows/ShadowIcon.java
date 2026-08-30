@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
@@ -21,7 +20,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = Icon.class, minSdk = M)
+@Implements(value = Icon.class)
 public class ShadowIcon {
 
   @Nullable private static Executor executorOverride;

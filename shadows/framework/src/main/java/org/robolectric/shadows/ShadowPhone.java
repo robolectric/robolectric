@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.telecom.Call;
@@ -25,7 +24,7 @@ public class ShadowPhone {
 
   private final List<Call> calls = new ArrayList<>();
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected List<Call> getCalls() {
     List<Call> unmodifiableCalls = reflector(ReflectorPhone.class, phone).getUnmodifiableCalls();
     if (unmodifiableCalls != null) {
@@ -34,7 +33,7 @@ public class ShadowPhone {
     return Collections.unmodifiableList(calls);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected CallAudioState getCallAudioState() {
     CallAudioState callAudioState = reflector(ReflectorPhone.class, phone).getCallAudioState();
     if (callAudioState != null) {

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.net.Network;
@@ -26,7 +25,7 @@ public class ShadowNetworkTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void bindSocketDatagramSocket_shouldNotCrash() throws Exception {
     Network network = ShadowNetwork.newInstance(0);
     network.bindSocket(new DatagramSocket());
@@ -39,14 +38,14 @@ public class ShadowNetworkTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void bindSocketFileDescriptor_shouldNotCrash() throws Exception {
     Network network = ShadowNetwork.newInstance(0);
     network.bindSocket(new FileDescriptor());
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void isSocketBoundSocketDatagramSocket() throws Exception {
     Network network = ShadowNetwork.newInstance(0);
     DatagramSocket datagramSocket = new DatagramSocket();
@@ -71,7 +70,7 @@ public class ShadowNetworkTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void isSocketBoundFileDescriptor() throws Exception {
     Network network = ShadowNetwork.newInstance(0);
     FileDescriptor fileDescriptor = new FileDescriptor();
@@ -84,7 +83,7 @@ public class ShadowNetworkTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setSocketFactory_shouldOverrideSocketFactory() {
     Network network = ShadowNetwork.newInstance(0);
     ShadowNetwork shadowNetwork = Shadows.shadowOf(network);
@@ -96,7 +95,7 @@ public class ShadowNetworkTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getSocketFactory_withoutOverride_shouldReturnSocketFactory() {
     Network network = ShadowNetwork.newInstance(0);
     ShadowNetwork shadowNetwork = Shadows.shadowOf(network);

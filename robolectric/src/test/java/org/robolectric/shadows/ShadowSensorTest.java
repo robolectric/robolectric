@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.hardware.Sensor;
-import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +20,7 @@ public class ShadowSensorTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getStringType() {
     Sensor sensor = ShadowSensor.newInstance(Sensor.TYPE_ACCELEROMETER);
     assertThat(sensor.getStringType()).isEqualTo(Sensor.STRING_TYPE_ACCELEROMETER);

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -27,7 +26,7 @@ import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = M, maxSdk = BAKLAVA)
+@Config(minSdk = Config.OLDEST_SDK, maxSdk = BAKLAVA)
 public class ShadowFingerprintManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 

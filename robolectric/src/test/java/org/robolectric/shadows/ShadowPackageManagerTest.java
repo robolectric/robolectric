@@ -35,7 +35,6 @@ import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
 import static android.content.pm.PackageManager.VERIFICATION_REJECT;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -330,7 +329,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGrantRuntimePermission() {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = TEST_PACKAGE_NAME;
@@ -360,7 +359,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGrantRuntimePermission_packageNotFound() {
     try {
       packageManager.grantRuntimePermission(
@@ -371,7 +370,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testGrantRuntimePermission_doesntRequestPermission() {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = TEST_PACKAGE_NAME;
@@ -390,7 +389,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void testRevokeRuntimePermission() {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = TEST_PACKAGE_NAME;
@@ -421,7 +420,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getPermissionFlags_whenNoPackagePermissionFlagsProvided_returnsZero() {
     // Don't add any permission flags
     int flags =
@@ -431,7 +430,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getPermissionFlags_whenPackagePermissionFlagsProvided_returnsPermissionFlags() {
     // Add the SYSTEM_FIXED permission flag
     packageManager.updatePermissionFlags(
@@ -448,7 +447,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getPermissionFlags_whenPackagePermissionFlagsProvidedForDiffPermission_returnsZero() {
     // Add the SYSTEM_FIXED permission flag to the READ_SMS permission
     packageManager.updatePermissionFlags(
@@ -465,7 +464,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getPermissionFlags_whenPermissionFlagsProvidedForDifferentPackage_returnsZero() {
     // Add the SYSTEM_FIXED permission flag to the READ_SMS permission for TEST_PACKAGE_NAME
     packageManager.updatePermissionFlags(
@@ -482,7 +481,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void updatePermissionFlags_whenNoFlagMaskProvided_doesNotUpdateFlags() {
     // Check that we have no permission flags set beforehand
     int oldFlags =
@@ -502,7 +501,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void updatePermissionFlags_whenPackageHasOnePermissionFlagTurnedOn_updatesFlagToBeOn() {
     // Check that we have no permission flags set beforehand
     int oldFlags =
@@ -522,7 +521,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void updatePermissionFlags_whenPackageHasOnePermissionFlagTurnedOff_updatesFlagToBeOff() {
     // Check that we have one permission flag set beforehand
     packageManager.updatePermissionFlags(
@@ -548,7 +547,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       updatePermissionFlags_whenPackageHasMultiplePermissionFlagsTurnedOn_updatesFlagsToBeOn() {
     // Check that we have no permission flags set beforehand
@@ -571,7 +570,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       updatePermissionFlags_whenPackageHasMultiplePermissionFlagsTurnedOff_updatesFlagsToBeOff() {
     // Check that we have one permission flag set beforehand
@@ -601,7 +600,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       updatePermissionFlags_whenPackageHasMultiplePermissionFlagsTurnedOn_turnOneFlagOff_onlyAffectsOneFlag() {
     // Check that we have one permission flag set beforehand
@@ -633,7 +632,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       updatePermissionFlags_whenPackageHasMultiplePermissionFlagsTurnedOn_turnDiffFlagOn_doesNotAffectOtherFlags() {
     // Check that we have one permission flag set beforehand
@@ -666,7 +665,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void updatePermissionFlags_forDifferentPermission_doesNotAffectOriginalPermissionFlags() {
     // Check that we have one permission flag set beforehand
     packageManager.updatePermissionFlags(
@@ -3035,7 +3034,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void shouldShowRequestPermissionRationale() {
     assertThat(packageManager.shouldShowRequestPermissionRationale(Manifest.permission.CAMERA))
         .isFalse();

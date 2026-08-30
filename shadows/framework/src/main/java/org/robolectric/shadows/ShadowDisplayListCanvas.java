@@ -11,11 +11,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow for {@link android.view.DisplayListCanvas} from API versions M to R */
-@Implements(
-    className = "android.view.DisplayListCanvas",
-    isInAndroidSdk = false,
-    minSdk = M,
-    maxSdk = R)
+@Implements(className = "android.view.DisplayListCanvas", isInAndroidSdk = false, maxSdk = R)
 public class ShadowDisplayListCanvas extends ShadowLegacyCanvas {
 
   @Implementation(minSdk = O, maxSdk = P)

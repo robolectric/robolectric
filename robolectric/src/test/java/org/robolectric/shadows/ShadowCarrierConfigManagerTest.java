@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -42,7 +41,7 @@ import org.robolectric.shadows.ShadowSubscriptionManager.SubscriptionInfoBuilder
 
 /** Junit test for {@link ShadowCarrierConfigManager}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = M)
+@Config(minSdk = Config.OLDEST_SDK)
 public class ShadowCarrierConfigManagerTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 

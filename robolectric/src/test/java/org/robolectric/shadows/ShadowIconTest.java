@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.robolectric.Shadows.shadowOf;
@@ -21,7 +20,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = M)
+@Config(minSdk = Config.OLDEST_SDK)
 public class ShadowIconTest {
 
   private static final int MSG_ICON_LOADED = 312;

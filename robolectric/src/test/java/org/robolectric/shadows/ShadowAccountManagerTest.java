@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -20,7 +19,6 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import androidx.test.core.app.ApplicationProvider;
@@ -378,7 +376,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void removeAccount_withActivity() throws Exception {
     Account account = new Account("name", "type");
     shadowOf(am).addAccount(account);
@@ -395,7 +393,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void removeAccount_withActivity_doesNotRemoveButReturnsIntent() throws Exception {
     Account account = new Account("name", "type");
     shadowOf(am).addAccount(account);
@@ -1105,7 +1103,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void removeAccountExplicitly() {
     assertThat(
             am.removeAccountExplicitly(new Account("non_existent_account@gmail.com", "gmail.com")))
@@ -1229,7 +1227,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void confirmCredentials_activitySpecified() throws Exception {
     shadowOf(am).addAuthenticator("com.google");
     Account account = new Account("name@gmail.com", "com.google");
@@ -1246,7 +1244,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void confirmCredentials_passwordMatches_returnsTrue() throws Exception {
     shadowOf(am).addAuthenticator("com.google");
     Account account = new Account("name@gmail.com", "com.google");
@@ -1265,7 +1263,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void confirmCredentials_passwordDoesNotMatch_returnsFalse() throws Exception {
     shadowOf(am).addAuthenticator("com.google");
     Account account = new Account("name@gmail.com", "com.google");
@@ -1284,7 +1282,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void confirmCredentials_noAuthenticatorDefined() throws Exception {
     Account account = new Account("name@gmail.com", "com.google");
     AccountManagerFuture<Bundle> future =

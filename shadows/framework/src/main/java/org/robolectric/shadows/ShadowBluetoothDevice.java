@@ -5,7 +5,6 @@ import static android.bluetooth.BluetoothDevice.BOND_BONDING;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
@@ -399,7 +398,7 @@ public class ShadowBluetoothDevice {
     return connectGatt(callback);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected BluetoothGatt connectGatt(
       Context context, boolean autoConnect, BluetoothGattCallback callback, int transport) {
     checkForBluetoothConnectPermission();

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -72,7 +71,7 @@ public class ShadowBuildTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setVersionSecurityPatch() {
     ShadowBuild.setVersionSecurityPatch("2019-02-05");
     assertThat(VERSION.SECURITY_PATCH).isEqualTo("2019-02-05");

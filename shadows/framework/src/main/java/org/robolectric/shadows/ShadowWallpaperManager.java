@@ -380,7 +380,7 @@ public class ShadowWallpaperManager {
     isWallpaperAllowed = allowed;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isWallpaperSupported() {
     return isWallpaperSupported;
   }
@@ -441,7 +441,7 @@ public class ShadowWallpaperManager {
    * previously set static wallpaper.
    */
   @SystemApi
-  @Implementation(minSdk = M)
+  @Implementation
   @RequiresPermission(permission.SET_WALLPAPER_COMPONENT)
   protected boolean setWallpaperComponent(ComponentName wallpaperService)
       throws IOException, XmlPullParserException {

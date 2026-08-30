@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -473,7 +472,7 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
     nativeObjectRegistry.unregister(getNativeId());
   }
 
-  @Implementation(minSdk = M, maxSdk = N_MR1)
+  @Implementation(maxSdk = N_MR1)
   protected static long initRaster(Bitmap bitmap) {
     return nativeObjectRegistry.register(new NativeCanvas());
   }

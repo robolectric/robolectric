@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -73,7 +72,7 @@ public class ShadowSurfaceTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void lockHardwareCanvas_returnsCanvas() {
     Canvas canvas = surface.lockHardwareCanvas();
     assertThat(canvas.isHardwareAccelerated()).isTrue();
@@ -110,7 +109,7 @@ public class ShadowSurfaceTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void lockHardwareCanvas_multipleTimes() {
     Canvas canvas = surface.lockHardwareCanvas();
     surface.unlockCanvasAndPost(canvas);
@@ -131,7 +130,7 @@ public class ShadowSurfaceTest {
     assertThat(listenerCallBackCalled.get()).isTrue();
   }
 
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   @Test
   public void unlockCanvasAndPost_triggersFrameUpdateInSurfaceTexture_hardwareCanvas() {
     AtomicBoolean listenerCallBackCalled = new AtomicBoolean(false);

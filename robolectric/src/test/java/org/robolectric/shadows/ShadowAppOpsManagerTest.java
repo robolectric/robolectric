@@ -249,7 +249,7 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void startStopWatchingModeUid() {
     OnOpChangedListener callback = mock(OnOpChangedListener.class);
     appOps.startWatchingMode(OPSTR_FINE_LOCATION, PACKAGE_NAME1, callback);
@@ -748,13 +748,13 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void checkOpNoThrow_noModeSetForUid_shouldReturnModeAllowed() {
     assertThat(appOps.checkOpNoThrow(/* op= */ 2, UID_1, null)).isEqualTo(MODE_ALLOWED);
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setUidMode_withModeDefault_checkOpNoThrow_shouldReturnModeDefault() {
     appOps.setUidMode(/* op= */ 2, UID_1, MODE_DEFAULT);
     assertThat(appOps.checkOpNoThrow(/* op= */ 2, UID_1, null)).isEqualTo(MODE_DEFAULT);

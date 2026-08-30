@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 
 import android.os.BatteryManager;
@@ -26,7 +25,7 @@ public class ShadowBatteryManager {
     intProperties.clear();
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isCharging() {
     return isCharging;
   }

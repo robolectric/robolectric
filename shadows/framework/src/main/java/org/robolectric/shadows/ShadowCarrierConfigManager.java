@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
@@ -26,7 +25,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
-@Implements(value = CarrierConfigManager.class, minSdk = M)
+@Implements(value = CarrierConfigManager.class)
 public class ShadowCarrierConfigManager {
 
   /**
