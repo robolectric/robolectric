@@ -1295,4 +1295,40 @@ public class ShadowAccountManagerTest {
         AuthenticatorException.class,
         () -> future.getResult());
   }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void notifyAccountAuthenticated() {
+    Account account = new Account("name@gmail.com", "com.google");
+    assertThat(shadowOf(am).wasNotifiedOfAccountAuthentication(account)).isFalse();
+
+    assertThat(am.notifyAccountAuthenticated(account)).isTrue();
+    assertThat(shadowOf(am).wasNotifiedOfAccountAuthentication(account)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void notifyAccountAuthenticated_nullAccount_throwsException() {
+    assertThrows(IllegalArgumentException.class, () -> am.notifyAccountAuthenticated(null));
+  }
+
+  @Test
+  public void returnFalseOnAddAccountExplicitly() {
+    Account account = new Account("name@gmail.com", "com.google");
+    shadowOf(am).returnFalseOnAddAccountExplicitly();
+
+    assertThat(am.addAccountExplicitly(account, "password", null)).isFalse();
+    assertThat(am.getAccounts()).isEmpty();
+  }
+
+  @Test
+  public void setIgnoreInvalidateAuthToken() {
+    Account account = new Account("name@gmail.com", "com.google");
+    shadowOf(am).addAccount(account);
+    am.setAuthToken(account, "token_type", "token1");
+    shadowOf(am).setIgnoreInvalidateAuthToken(true);
+
+    am.invalidateAuthToken("com.google", "token1");
+    assertThat(am.peekAuthToken(account, "token_type")).isEqualTo("token1");
+  }
 }

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 
 import android.accounts.Account;
@@ -55,6 +56,9 @@ public class ShadowAccountManager {
   private final Map<Account, String> passwords = new ConcurrentHashMap<>();
   private final Map<Account, Set<String>> accountFeatures = new HashMap<>();
   private final Map<Account, Set<String>> packageVisibleAccounts = new HashMap<>();
+  private final Set<Account> accountsNotifiedAuthenticated = new HashSet<>();
+  private boolean returnFalseOnAddAccountExplicitly;
+  private boolean ignoreInvalidateAuthToken;
 
   private final List<Bundle> addAccountOptionsList = new ArrayList<>();
   private static Handler mainHandler;
@@ -132,6 +136,9 @@ public class ShadowAccountManager {
   @SuppressWarnings("InconsistentCapitalization")
   @Implementation
   protected boolean addAccountExplicitly(Account account, String password, Bundle userdata) {
+    if (returnFalseOnAddAccountExplicitly) {
+      return false;
+    }
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
@@ -365,6 +372,9 @@ public class ShadowAccountManager {
 
   @Implementation
   protected void invalidateAuthToken(final String accountType, final String authToken) {
+    if (ignoreInvalidateAuthToken) {
+      return;
+    }
     Account[] accountsByType = getAccountsByType(accountType);
     for (Account account : accountsByType) {
       Map<String, String> tokenMap = authTokens.get(account);
@@ -837,6 +847,33 @@ public class ShadowAccountManager {
 
   public Map<OnAccountsUpdateListener, Set<String>> getListeners() {
     return listeners;
+  }
+
+  @Implementation(minSdk = M)
+  protected boolean notifyAccountAuthenticated(Account account) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+    accountsNotifiedAuthenticated.add(account);
+    return true;
+  }
+
+  /**
+   * Returns whether it was notified that the given account was authenticated with {@link
+   * #notifyAccountAuthenticated(Account)}.
+   */
+  public boolean wasNotifiedOfAccountAuthentication(Account account) {
+    return accountsNotifiedAuthenticated.contains(account);
+  }
+
+  /** Makes {@link #addAccountExplicitly(Account, String, Bundle)} return false when it's called. */
+  public void returnFalseOnAddAccountExplicitly() {
+    returnFalseOnAddAccountExplicitly = true;
+  }
+
+  /** Sets whether to ignore calls to {@link #invalidateAuthToken(String, String)}. */
+  public void setIgnoreInvalidateAuthToken(boolean ignoreInvalidateAuthToken) {
+    this.ignoreInvalidateAuthToken = ignoreInvalidateAuthToken;
   }
 
   private abstract static class BaseRoboAccountManagerFuture<T> implements AccountManagerFuture<T> {
