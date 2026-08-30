@@ -20,6 +20,10 @@ gradlePlugin {
       id = "org.robolectric.gradle.DeployedRoboKotlinModulePlugin"
       implementationClass = "org.robolectric.gradle.DeployedRoboKotlinModulePlugin"
     }
+    register("ErrorProneReportPlugin") {
+      id = "org.robolectric.gradle.ErrorProneReportPlugin"
+      implementationClass = "org.robolectric.gradle.ErrorProneReportPlugin"
+    }
     register("GradleManagedDevicePlugin") {
       id = "org.robolectric.gradle.GradleManagedDevicePlugin"
       implementationClass = "org.robolectric.gradle.GradleManagedDevicePlugin"
