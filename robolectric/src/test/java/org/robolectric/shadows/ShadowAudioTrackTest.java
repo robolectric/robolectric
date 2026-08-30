@@ -24,7 +24,6 @@ import android.media.AudioRouting.OnRoutingChangedListener;
 import android.media.AudioSystem;
 import android.media.AudioTrack;
 import android.media.PlaybackParams;
-import android.os.Build.VERSION;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -805,19 +804,10 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
             .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
             .build();
 
-    if (VERSION.SDK_INT >= M) {
-      return new AudioTrack.Builder()
-          .setAudioAttributes(audioAttributes)
-          .setAudioFormat(format)
-          .build();
-    }
-    int bufferSizeBytes = 2 * AudioFormat.getBytesPerSample(AUDIO_ENCODING_FORMAT);
-    return new AudioTrack(
-        audioAttributes,
-        format,
-        bufferSizeBytes,
-        AudioTrack.MODE_STREAM,
-        AudioManager.AUDIO_SESSION_ID_GENERATE);
+    return new AudioTrack.Builder()
+        .setAudioAttributes(audioAttributes)
+        .setAudioFormat(format)
+        .build();
   }
 
   private AudioFormat getAudioFormat(int encoding) {

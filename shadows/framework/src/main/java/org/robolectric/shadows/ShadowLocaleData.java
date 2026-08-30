@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
@@ -84,21 +83,13 @@ public class ShadowLocaleData {
     localDataReflector.setMediumTimeFormat("h:mm:ss a");
     localDataReflector.setShortTimeFormat("h:mm a");
 
-    if (getApiLevel() >= M) {
-      localeData.timeFormat_hm = "h:mm a";
-      localeData.timeFormat_Hm = "HH:mm";
-    } else {
-      localDataReflector.setTimeFormat12("h:mm a");
-      localDataReflector.setTimeFormat24("HH:mm");
-    }
+    localeData.timeFormat_hm = "h:mm a";
+    localeData.timeFormat_Hm = "HH:mm";
 
     localDataReflector.setFullDateFormat("EEEE, MMMM d, y");
     localDataReflector.setLongDateFormat("MMMM d, y");
     localDataReflector.setMediumDateFormat("MMM d, y");
     localDataReflector.setShortDateFormat("M/d/yy");
-    if (getApiLevel() < M) {
-      localDataReflector.setShortDateFormat4("M/d/yyyy");
-    }
 
     localeData.zeroDigit = '0';
     localDataReflector.setDecimalSeparator('.');
@@ -145,15 +136,6 @@ public class ShadowLocaleData {
 
     @Accessor("perMill")
     void setPerMill(char c);
-
-    @Accessor("timeFormat12")
-    void setTimeFormat12(String format);
-
-    @Accessor("timeFormat24")
-    void setTimeFormat24(String format);
-
-    @Accessor("shortDateFormat4")
-    void setShortDateFormat4(String format);
 
     // <= R
     @Accessor("yesterday")

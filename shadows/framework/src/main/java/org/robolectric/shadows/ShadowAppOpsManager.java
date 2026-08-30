@@ -615,15 +615,7 @@ public class ShadowAppOpsManager {
   }
 
   protected OpEntry toOpEntry(Integer op, int mode) {
-    if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.M) {
-      return ReflectionHelpers.callConstructor(
-          OpEntry.class,
-          ClassParameter.from(int.class, op),
-          ClassParameter.from(int.class, mode),
-          ClassParameter.from(long.class, OP_TIME),
-          ClassParameter.from(long.class, REJECT_TIME),
-          ClassParameter.from(int.class, DURATION));
-    } else if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.Q) {
+    if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.Q) {
       return ReflectionHelpers.callConstructor(
           OpEntry.class,
           ClassParameter.from(int.class, op),

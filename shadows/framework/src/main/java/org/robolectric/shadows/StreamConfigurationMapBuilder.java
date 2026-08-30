@@ -107,14 +107,7 @@ public final class StreamConfigurationMapBuilder {
     StreamConfiguration[] configs = new StreamConfiguration[configsList.size()];
     configsList.toArray(configs);
 
-    if (RuntimeEnvironment.getApiLevel() < VERSION_CODES.M) {
-      return reflector(StreamConfigurationMapReflector.class)
-          .newStreamConfigurationMapL(
-              configs,
-              new StreamConfigurationDuration[0],
-              new StreamConfigurationDuration[0],
-              /* highSpeedVideoConfigurations= */ null);
-    } else if (RuntimeEnvironment.getApiLevel() < VERSION_CODES.Q) {
+    if (RuntimeEnvironment.getApiLevel() < VERSION_CODES.Q) {
       return reflector(StreamConfigurationMapReflector.class)
           .newStreamConfigurationMapM(
               configs,
@@ -195,13 +188,6 @@ public final class StreamConfigurationMapBuilder {
   // Constructors for StreamConfigurationMap per SDK version.
   @ForType(StreamConfigurationMap.class)
   interface StreamConfigurationMapReflector {
-    @Constructor
-    StreamConfigurationMap newStreamConfigurationMapL(
-        StreamConfiguration[] configurations,
-        StreamConfigurationDuration[] minFrameDurations,
-        StreamConfigurationDuration[] stallDurations,
-        HighSpeedVideoConfiguration[] highSpeedVideoConfigurations);
-
     @Constructor
     StreamConfigurationMap newStreamConfigurationMapM(
         StreamConfiguration[] configurations,
