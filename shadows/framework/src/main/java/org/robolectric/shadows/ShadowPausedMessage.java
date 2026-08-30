@@ -3,11 +3,13 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 
 /**
  * The shadow {@link Message} for {@link LooperMode.Mode#PAUSED}.
@@ -32,6 +34,16 @@ public class ShadowPausedMessage extends ShadowMessage {
   @Override
   @Implementation
   public void recycleUnchecked() {
+    Handler target = getTarget();
+    if (target != null) {
+      Looper looper = target.getLooper();
+      if (looper != null) {
+        Object shadowQueue = Shadow.extract(looper.getQueue());
+        if (shadowQueue instanceof ShadowPausedMessageQueue) {
+          ((ShadowPausedMessageQueue) shadowQueue).forgetPostedFrom(realMessage);
+        }
+      }
+    }
     reflector(MessageReflector.class, realMessage).recycleUnchecked();
   }
 

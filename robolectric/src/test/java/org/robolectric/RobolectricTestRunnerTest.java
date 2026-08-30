@@ -11,6 +11,8 @@ import android.app.Application;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -281,6 +283,22 @@ public class RobolectricTestRunnerTest {
             "finished: assumptionViolationWithUnexecutedRunnables");
   }
 
+  @Test
+  public void unexecutedRunnablesIncludePostStackTrace() throws Exception {
+    RobolectricTestRunner runner =
+        new SingleSdkRobolectricTestRunner(TestWithNamedPostedRunnable.class);
+    Result result = new JUnitCore().run(runner);
+    assertThat(result.getFailures()).isNotEmpty();
+    Failure failure = result.getFailures().get(0);
+    Throwable[] suppressed = failure.getException().getSuppressed();
+    assertThat(suppressed).isNotEmpty();
+    assertThat(suppressed[0].getMessage()).contains("shadowOf(Looper.getMainLooper()).idle()");
+    assertThat(suppressed[0].getSuppressed()).isNotEmpty();
+    StringWriter stack = new StringWriter();
+    suppressed[0].getSuppressed()[0].printStackTrace(new PrintWriter(stack));
+    assertThat(stack.toString()).contains("postNamedRunnable");
+  }
+
   /////////////////////////////
 
   /** To simulate failures. */
@@ -474,6 +492,19 @@ public class RobolectricTestRunnerTest {
     @Test
     public void assumptionViolationWithNoRunnables() {
       throw new AssumptionViolatedException("assumption violated");
+    }
+  }
+
+  public static class TestWithNamedPostedRunnable {
+    @Test
+    public void failWithUnexecutedRunnables() {
+      shadowMainLooper().pause();
+      postNamedRunnable();
+      fail("failing with unexecuted runnable");
+    }
+
+    static void postNamedRunnable() {
+      new Handler(Looper.getMainLooper()).post(() -> {});
     }
   }
 
