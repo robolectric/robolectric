@@ -4,6 +4,7 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.pressKey;
+import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.action.ViewActions.typeTextIntoFocusedView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -189,8 +190,10 @@ public final class EspressoTest {
 
   @Test
   public void changeText_withCloseSoftKeyboard() {
-    // Type text and then press the button.
-    onView(withId(R.id.edit_text)).perform(typeText("anything"), closeSoftKeyboard());
+    // Set text and then close the soft keyboard. This uses replaceText rather than typeText
+    // because injected keystrokes are occasionally replayed on a slow device, which duplicates
+    // a character; typeText itself is covered by the typeText_* tests above.
+    onView(withId(R.id.edit_text)).perform(replaceText("anything"), closeSoftKeyboard());
 
     // Check that the text was changed.
     onView(withId(R.id.edit_text)).check(matches(withText("anything")));
