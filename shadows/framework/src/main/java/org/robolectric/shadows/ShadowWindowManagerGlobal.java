@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -597,7 +596,7 @@ public class ShadowWindowManagerGlobal {
         /* contentInsets */ args.add(Rect.class, windowInfo.contentInsets);
         /* visibleInsets */ args.add(Rect.class, windowInfo.visibleInsets);
         /* stableInsets */ args.add(Rect.class, windowInfo.stableInsets);
-        /* outsets */ args.addIf(sdk >= M && sdk <= Q, Rect.class, new Rect());
+        /* outsets */ args.addIf(sdk <= Q, Rect.class, new Rect());
       }
       /* reportDraw */ args.add(boolean.class, false);
       if (sdk <= N_MR1) {
