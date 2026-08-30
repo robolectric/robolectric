@@ -43,7 +43,7 @@ kotlinx-coroutines = '1.11.0'
 spotless-gradle = "8.10.0"
 
 # https://detekt.dev/changelog
-detekt-gradle = "1.23.8"
+detekt-gradle = "2.0.0-alpha.6"
 
 # https://asm.ow2.io/versions.html
 asm = "9.10.1"
@@ -270,7 +270,7 @@ android-application = { id = "com.android.application", version.ref = "android-g
 android-library = { id = "com.android.library", version.ref = "android-gradle" }
 android-legacy-kapt = { id = "com.android.legacy-kapt", version.ref = "android-gradle" }
 application = { id = "application" }
-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt-gradle" }
+detekt = { id = "dev.detekt", version.ref = "detekt-gradle" }
 error-prone = { id = "net.ltgt.errorprone", version.ref = "error-prone-gradle" }
 idea = { id = "idea" }
 gradle-plugin-publish = { id = "com.gradle.plugin-publish", version.ref = "gradle-plugin-publish" }
