@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -753,7 +752,7 @@ public class ShadowTelecomManager {
     manageBlockNumbersIntent = intent;
   }
 
-  @Implementation(maxSdk = LOLLIPOP_MR1)
+  /** Sets the {@link PhoneAccountHandle} returned by {@link TelecomManager#getSimCallManager()}. */
   public void setSimCallManager(PhoneAccountHandle simCallManager) {
     ShadowTelecomManager.simCallManager = simCallManager;
   }
