@@ -406,7 +406,21 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
     URL libraryResource = Resources.getResource(nativeLibraryPath());
     Logger.info("Loading android native library from: %s", libraryResource);
     Resources.asByteSource(libraryResource).copyTo(Files.asByteSink(libraryPath.toFile()));
-    System.load(libraryPath.toAbsolutePath().toString());
+    try {
+      System.load(libraryPath.toAbsolutePath().toString());
+    } catch (IllegalCallerException e) {
+      // JEP 472 made System.load a restricted method in JDK 24. Robolectric is on the classpath,
+      // so it is in the unnamed module and needs native access granted by the launcher; there is
+      // no way for the library to grant it to itself.
+      throw new IllegalStateException(
+          "Robolectric could not load its native runtime because the JVM denied native access to"
+              + " code on the classpath. Add --enable-native-access=ALL-UNNAMED to the JVM"
+              + " arguments of the test task, for example in Gradle:\n"
+              + "  tasks.withType(Test).configureEach {\n"
+              + "    jvmArgs '--enable-native-access=ALL-UNNAMED'\n"
+              + "  }",
+          e);
+    }
   }
 
   private static boolean isSupported() {

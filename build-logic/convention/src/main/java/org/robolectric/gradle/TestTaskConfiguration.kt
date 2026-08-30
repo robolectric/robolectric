@@ -58,6 +58,11 @@ private class RobolectricJvmArgumentsProvider(
 private class DefaultJvmArgumentsProvider : CommandLineArgumentProvider {
   override fun asArguments(): Iterable<String> {
     return listOf(
+      // The native runtime is loaded with System.load from the classpath, which JDK 24 made a
+      // restricted method (JEP 472). Without this every run prints a warning, and once the JDK
+      // switches its default to deny it will throw IllegalCallerException instead. Older JDKs
+      // accept the flag and ignore it.
+      "--enable-native-access=ALL-UNNAMED",
       "--add-opens=java.base/java.lang=ALL-UNNAMED",
       "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
       "--add-opens=java.base/java.io=ALL-UNNAMED",
