@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -19,8 +18,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
@@ -282,13 +279,6 @@ public class ShadowEnvironment {
       }
     }
 
-    if (RuntimeEnvironment.getApiLevel() < M) {
-      Environment.UserEnvironment userEnvironment =
-          ReflectionHelpers.getStaticField(Environment.class, "sCurrentUser");
-      reflector(UserEnvironmentReflector.class, userEnvironment)
-          .setExternalDirsForApp(externalDirs.toArray(new File[0]));
-    }
-
     if (externalFileDir == null) {
       return null;
     }
@@ -307,20 +297,10 @@ public class ShadowEnvironment {
   @Implements(className = "android.os.Environment$UserEnvironment", isInAndroidSdk = false)
   public static class ShadowUserEnvironment {
 
-    @Implementation(minSdk = M)
+    @Implementation
     protected File[] getExternalDirs() {
       return externalDirs.toArray(new File[0]);
     }
-  }
-
-  /** Accessor interface for Environment.UserEnvironment's internals. */
-  @ForType(className = "android.os.Environment$UserEnvironment")
-  interface UserEnvironmentReflector {
-    @Accessor("mExternalDirsForApp")
-    void setExternalDirsForApp(File[] files);
-
-    @Accessor("mExternalStorageAndroidData")
-    void setExternalStorageAndroidData(File file);
   }
 
   @ForType(Environment.class)

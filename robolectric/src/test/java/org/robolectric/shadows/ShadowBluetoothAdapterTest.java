@@ -153,10 +153,6 @@ public class ShadowBluetoothAdapterTest {
 
   @Test
   public void canGetBluetoothLeScanner() {
-    if (RuntimeEnvironment.getApiLevel() < M) {
-      // On SDK < 23, bluetooth has to be in STATE_ON in order to get a BluetoothLeScanner.
-      shadowOf(bluetoothAdapter).setState(BluetoothAdapter.STATE_ON);
-    }
     BluetoothLeScanner bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
     assertThat(bluetoothLeScanner).isNotNull();
   }

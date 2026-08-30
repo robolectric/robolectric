@@ -867,11 +867,7 @@ public class ShadowDevicePolicyManager {
       case DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE:
       case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVATING:
       case DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED:
-        break;
       case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY:
-        if (RuntimeEnvironment.getApiLevel() < M) {
-          throw new IllegalArgumentException("status " + status + " requires API " + M);
-        }
         break;
       case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER:
         if (RuntimeEnvironment.getApiLevel() < N) {

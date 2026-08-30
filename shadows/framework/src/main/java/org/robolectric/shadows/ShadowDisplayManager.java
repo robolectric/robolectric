@@ -139,9 +139,7 @@ public class ShadowDisplayManager {
 
     DisplayInfo displayInfo = new DisplayInfo();
     displayInfo.name = name;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      displayInfo.uniqueId = "screen0";
-    }
+    displayInfo.uniqueId = "screen0";
     displayInfo.appWidth = widthPx;
     displayInfo.appHeight = heightPx;
     fixNominalDimens(displayInfo);
@@ -151,11 +149,9 @@ public class ShadowDisplayManager {
         configuration.orientation == ORIENTATION_PORTRAIT
             ? (isNaturallyPortrait ? Surface.ROTATION_0 : Surface.ROTATION_90)
             : (isNaturallyPortrait ? Surface.ROTATION_90 : Surface.ROTATION_0);
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      displayInfo.modeId = 0;
-      displayInfo.defaultModeId = 0;
-      displayInfo.supportedModes = new Display.Mode[] {new Display.Mode(0, widthPx, heightPx, 60)};
-    }
+    displayInfo.modeId = 0;
+    displayInfo.defaultModeId = 0;
+    displayInfo.supportedModes = new Display.Mode[] {new Display.Mode(0, widthPx, heightPx, 60)};
     displayInfo.logicalDensityDpi = displayMetrics.densityDpi;
     displayInfo.physicalXDpi = displayMetrics.densityDpi;
     displayInfo.physicalYDpi = displayMetrics.densityDpi;
@@ -268,9 +264,6 @@ public class ShadowDisplayManager {
    * @param supportedModes the display's supported modes
    */
   public static void setSupportedModes(int displayId, Display.Mode... supportedModes) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-      throw new UnsupportedOperationException("multiple display modes not supported before M");
-    }
     DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
     if (RuntimeEnvironment.getApiLevel() >= VANILLA_ICE_CREAM
         && RuntimeEnvironment.getApiLevel() <= BAKLAVA) {
