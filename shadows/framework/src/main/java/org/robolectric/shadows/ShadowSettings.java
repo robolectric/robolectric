@@ -258,6 +258,16 @@ public class ShadowSettings {
 
     private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>(DEFAULTS);
 
+    private static final Map<String, RuntimeException> throwables = new ConcurrentHashMap<>();
+
+    public static void setThrowableForSetting(String name, RuntimeException throwable) {
+      if (throwable == null) {
+        throwables.remove(name);
+      } else {
+        throwables.put(name, throwable);
+      }
+    }
+
     @Implementation
     protected static boolean putString(ContentResolver cr, String name, String value) {
       return put(cr, name, value);
@@ -276,6 +286,10 @@ public class ShadowSettings {
 
     @Implementation
     protected static String getStringForUser(ContentResolver cr, String name, int userHandle) {
+      RuntimeException exception = throwables.get(name);
+      if (exception != null) {
+        throw exception;
+      }
       // In real Android, all settings types are stored as Strings.
       Optional<Object> optionalValue = settings.getOrDefault(name, Optional.empty());
       if (optionalValue == null || !optionalValue.isPresent()) {
@@ -307,6 +321,7 @@ public class ShadowSettings {
     public static void reset() {
       settings.clear();
       settings.putAll(DEFAULTS);
+      throwables.clear();
     }
   }
 
