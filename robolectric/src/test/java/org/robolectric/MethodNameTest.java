@@ -1,6 +1,6 @@
 package org.robolectric;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.S;
 
 import android.content.Intent;
@@ -25,7 +25,7 @@ public class MethodNameTest {
 
   @Implements(Intent.class)
   public static class ShadowThrowingIntent {
-    @Implementation(minSdk = LOLLIPOP, maxSdk = LOLLIPOP, methodName = "setAction")
+    @Implementation(minSdk = M, maxSdk = M, methodName = "setAction")
     protected void setActionImpl(String action) {
       throw new RuntimeException("Should never get called");
     }
