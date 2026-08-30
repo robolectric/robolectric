@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -552,7 +551,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void registerAudioDeviceCallback_availableDevices_onAudioDevicesAddedCallback()
       throws Exception {
     AudioDeviceInfo device = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
@@ -565,7 +564,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setInputDevices_withCallbackRegistered_noNotificationCallback() throws Exception {
     AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
     audioManager.registerAudioDeviceCallback(callback, /* handler= */ null);
@@ -578,7 +577,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void addInputDevice_callbackRegisteredUnregistered_noNotificationCallback()
       throws Exception {
     AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
@@ -593,7 +592,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void addInputDevice_withCallbackRegisteredAndNoDevice_deviceAddedAndNotifiesCallback()
       throws Exception {
     AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
@@ -607,7 +606,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       addInputDeviceNoCallbackNotification_withCallbackRegisteredAndNoDevice_noNotificationCallback()
           throws Exception {
@@ -622,7 +621,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void addInputDevice_withCallbackRegisteredAndDevicePresent_noNotificationCallback()
       throws Exception {
     AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
@@ -637,7 +636,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       removeInputDevice_withCallbackRegisteredAndDevicePresent_deviceRemovedAndNotifiesCallback()
           throws Exception {
@@ -653,7 +652,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       removeInputDeviceNoCallbackNotification_withCallbackRegisteredAndDevicePresent_noNotificationCallback()
           throws Exception {
@@ -669,7 +668,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void removeInputDevice_withCallbackRegisteredAndNoDevice_noNotificationCallback()
       throws Exception {
     AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
@@ -683,7 +682,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setOutputDevices_withCallbackRegistered_noNotificationCallback() throws Exception {
     AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
     audioManager.registerAudioDeviceCallback(callback, /* handler= */ null);
@@ -696,7 +695,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void addOutputDevice_withCallbackRegisteredAndNoDevice_deviceAddedAndNotifiesCallback()
       throws Exception {
     AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
@@ -710,7 +709,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       addOutputDeviceNoCallbackNotification_withCallbackRegisteredAndNoDevice_noNotificationCallback()
           throws Exception {
@@ -725,7 +724,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void addOutputDevice_withCallbackRegisteredAndDevicePresent_noNotificationCallback()
       throws Exception {
     AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
@@ -740,7 +739,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       removeOutputDevice_withCallbackRegisteredAndDevicePresent_deviceRemovedAndNotifiesCallback()
           throws Exception {
@@ -756,7 +755,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       removeOutputDeviceNoCallbackNotification_withCallbackRegisteredAndDevicePresent_noNotificationCallback()
           throws Exception {
@@ -772,7 +771,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void removeOutputDevice_withCallbackRegisteredAndNoDevice_noNotificationCallback()
       throws Exception {
     AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
@@ -899,7 +898,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getDevices_criteriaInputs_getsAllInputDevices() throws Exception {
     AudioDeviceInfo scoDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
     AudioDeviceInfo a2dpDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_A2DP);
@@ -911,7 +910,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getDevices_criteriaOutputs_getsAllOutputDevices() throws Exception {
     AudioDeviceInfo scoDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
     AudioDeviceInfo a2dpDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_A2DP);
@@ -923,7 +922,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getDevices_criteriaInputsAndOutputs_getsAllDevices() throws Exception {
     AudioDeviceInfo scoDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
     AudioDeviceInfo a2dpDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_A2DP);
@@ -1057,7 +1056,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void adjustStreamVolume_mute() {
     assertThat(audioManager.isStreamMute(AudioManager.STREAM_VOICE_CALL)).isFalse();
 
@@ -1067,7 +1066,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void adjustStreamVolume_unmute() {
     audioManager.adjustStreamVolume(
         AudioManager.STREAM_VOICE_CALL, AudioManager.ADJUST_MUTE, /* flags= */ 0);
@@ -1078,7 +1077,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void adjustStreamVolume_lower() {
     shadowOf(audioManager).setStreamVolume(7);
     int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
@@ -1091,7 +1090,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void adjustStreamVolume_lowerAtMinVolume_remainsSame() {
     shadowOf(audioManager).setStreamVolume(1);
     int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
@@ -1104,7 +1103,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void adjustStreamVolume_raise() {
     shadowOf(audioManager).setStreamVolume(7);
     int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
@@ -1117,7 +1116,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void adjustStreamVolume_raiseAtMaxVolume_remainsSame() {
     shadowOf(audioManager).setStreamVolume(7);
     shadowOf(audioManager).setStreamMaxVolume(7);
@@ -1131,7 +1130,7 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void isStreamMute_defaultFalse() {
     assertThat(audioManager.isStreamMute(AudioManager.STREAM_VOICE_CALL)).isFalse();
   }

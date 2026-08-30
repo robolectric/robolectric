@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static android.content.Intent.ACTION_SCREEN_ON;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -154,7 +153,7 @@ public class ShadowPowerManager {
   /**
    * @return false by default, or the value specified via {@link #setIsDeviceIdleMode(boolean)}
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isDeviceIdleMode() {
     return isDeviceIdleMode;
   }
@@ -308,7 +307,7 @@ public class ShadowPowerManager {
     latestWakeLock = wl;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isIgnoringBatteryOptimizations(String packageName) {
     Boolean result = ignoringBatteryOptimizations.get(packageName);
     return result != null && result;

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.media.AudioPort.ROLE_SINK;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -266,7 +265,7 @@ public class ShadowMediaPlayerTest {
     }
   }
 
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   @Test
   public void testSetDataSourceMediaDataSource() {
     MediaDataSource mediaDataSource =

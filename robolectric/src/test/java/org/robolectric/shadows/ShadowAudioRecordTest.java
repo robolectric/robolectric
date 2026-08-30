@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.media.AudioPort.ROLE_SOURCE;
-import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static java.lang.Math.min;
 import static org.mockito.ArgumentMatchers.any;
@@ -118,7 +117,7 @@ public class ShadowAudioRecordTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void nativeReadByteFillsAudioDataByDefaultMOnwards() {
     AudioRecord audioRecord = createAudioRecord();
     audioRecord.startRecording();
@@ -140,7 +139,7 @@ public class ShadowAudioRecordTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void nativeReadByteCallsAudioRecordSourceWhenSetBlockingMOnwards() {
     AudioRecordSource source = Mockito.mock(AudioRecordSource.class);
     ShadowAudioRecord.setSource(source);
@@ -154,7 +153,7 @@ public class ShadowAudioRecordTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void nativeReadByteCallsAudioRecordSourceWhenSetNonBlockingMOnwards() {
     AudioRecordSource source = Mockito.mock(AudioRecordSource.class);
     ShadowAudioRecord.setSource(source);
@@ -176,7 +175,7 @@ public class ShadowAudioRecordTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void nativeReadShortFillsAudioDataByDefaultMOnwards() {
     AudioRecord audioRecord = createAudioRecord();
     audioRecord.startRecording();
@@ -198,7 +197,7 @@ public class ShadowAudioRecordTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void nativeReadShortCallsAudioRecordSourceWhenSetBlockingMOnwards() {
     AudioRecordSource source = Mockito.mock(AudioRecordSource.class);
     ShadowAudioRecord.setSource(source);
@@ -212,7 +211,7 @@ public class ShadowAudioRecordTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void nativeReadShortCallsAudioRecordSourceWhenSetNonBlockingMOnwards() {
     AudioRecordSource source = Mockito.mock(AudioRecordSource.class);
     ShadowAudioRecord.setSource(source);
@@ -227,7 +226,7 @@ public class ShadowAudioRecordTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void nativeReadFloatFillsAudioDataByDefaultMOnwards() {
     AudioRecord audioRecord =
         new AudioRecord(
@@ -242,7 +241,7 @@ public class ShadowAudioRecordTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void nativeReadFloatCallsAudioRecordSourceWhenSetBlocking() {
     AudioRecordSource source = Mockito.mock(AudioRecordSource.class);
     ShadowAudioRecord.setSource(source);
@@ -262,7 +261,7 @@ public class ShadowAudioRecordTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void nativeReadFloatCallsAudioRecordSourceWhenSetNonBlocking() {
     AudioRecordSource source = Mockito.mock(AudioRecordSource.class);
     ShadowAudioRecord.setSource(source);
@@ -291,7 +290,7 @@ public class ShadowAudioRecordTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void nativeReadByteBufferFillsAudioDataByDefaultMOnwards() {
     AudioRecord audioRecord = createAudioRecord();
     audioRecord.startRecording();
@@ -314,7 +313,7 @@ public class ShadowAudioRecordTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void nativeReadByteBufferCallsAudioRecordSourceWhenSetBlockingMOnwards() {
     AudioRecordSource source = Mockito.mock(AudioRecordSource.class);
     ShadowAudioRecord.setSource(source);
@@ -328,7 +327,7 @@ public class ShadowAudioRecordTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void nativeReadByteBufferCallsAudioRecordSourceWhenSetNonBlockingMOnwards() {
     AudioRecordSource source = Mockito.mock(AudioRecordSource.class);
     ShadowAudioRecord.setSource(source);
@@ -342,7 +341,7 @@ public class ShadowAudioRecordTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void nativeSetInputDevice_setPreferredDevice_succeeds() {
     // native_setInputDevice is a private method used by the public setPreferredDevice()
     AudioRecord audioRecord = createAudioRecord();

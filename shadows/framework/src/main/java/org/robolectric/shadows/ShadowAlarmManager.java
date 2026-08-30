@@ -275,12 +275,12 @@ public class ShadowAlarmManager {
     setImpl(type, triggerAtMs, WINDOW_HEURISTIC, intervalMillis, operation, null, null, false);
   }
 
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation
   protected void setAndAllowWhileIdle(int type, long triggerAtMs, PendingIntent operation) {
     setImpl(type, triggerAtMs, WINDOW_HEURISTIC, 0L, operation, null, null, true);
   }
 
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation
   protected void setExactAndAllowWhileIdle(int type, long triggerAtMs, PendingIntent operation) {
     setImpl(type, triggerAtMs, WINDOW_EXACT, 0L, operation, null, null, true);
   }

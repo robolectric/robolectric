@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
@@ -143,7 +142,7 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void isExternalStorageRemovable_primaryShouldReturnSavedValue() {
     assertThat(Environment.isExternalStorageRemovable()).isFalse();
     ShadowEnvironment.setExternalStorageRemovable(Environment.getExternalStorageDirectory(), true);
@@ -253,7 +252,7 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getExternalStorageState() {
     File storageDir1 = ShadowEnvironment.addExternalDir("dir1");
     File storageDir2 = ShadowEnvironment.addExternalDir("dir2");
@@ -275,7 +274,7 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void isExternalStorageEmulated() {
     ShadowEnvironment.setIsExternalStorageEmulated(true);
     assertThat(Environment.isExternalStorageEmulated()).isTrue();

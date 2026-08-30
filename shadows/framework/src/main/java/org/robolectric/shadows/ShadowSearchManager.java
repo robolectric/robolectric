@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.SystemApi;
@@ -27,7 +26,7 @@ public class ShadowSearchManager {
     return null;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   @SystemApi
   protected void launchAssist(Bundle bundle) {
     Intent intent = new Intent(Intent.ACTION_ASSIST);

@@ -155,7 +155,7 @@ public final class WifiScanResultBuilderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setChannelWidth_setsChannelWidthField() {
     ScanResult scanResult =
         new WifiScanResultBuilder().setChannelWidth(ScanResult.CHANNEL_WIDTH_80MHZ).build();
@@ -164,7 +164,7 @@ public final class WifiScanResultBuilderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setCenterFreq0_setsCenterFreq0Field() {
     int centerFreq0 = 2412;
     ScanResult scanResult = new WifiScanResultBuilder().setCenterFreq0(centerFreq0).build();
@@ -173,7 +173,7 @@ public final class WifiScanResultBuilderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setCenterFreq1_setsCenterFreq1Field() {
     int centerFreq1 = 2412;
     ScanResult scanResult = new WifiScanResultBuilder().setCenterFreq1(centerFreq1).build();
@@ -182,7 +182,7 @@ public final class WifiScanResultBuilderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setIs80211McRttResponder_returnsCorrectValue() {
     ScanResult scanResult = new WifiScanResultBuilder().setIs80211McRttResponder(true).build();
 

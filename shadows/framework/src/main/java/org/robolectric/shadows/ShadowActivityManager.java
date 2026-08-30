@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
@@ -415,7 +414,7 @@ public class ShadowActivityManager {
     importanceListeners.remove(new ImportanceListener(listener));
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected int getPackageImportance(String packageName) {
     try {
       return uidImportances.get(
@@ -437,7 +436,7 @@ public class ShadowActivityManager {
     }
   }
 
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation
   protected int getLockTaskModeState() {
     return lockTaskModeState;
   }

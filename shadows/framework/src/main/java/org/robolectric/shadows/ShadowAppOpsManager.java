@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -188,7 +187,7 @@ public class ShadowAppOpsManager {
    * called afterward with the {@code op}, {@code ui}, and {@code packageName} provided, it will
    * return the {@code mode} set here.
    */
-  @Implementation(minSdk = M)
+  @Implementation
   @HiddenApi
   protected void setUidMode(int op, int uid, int mode) {
     Integer oldMode = appModeMap.put(Key.create(uid, null, op), mode);
@@ -439,7 +438,7 @@ public class ShadowAppOpsManager {
     return noteOpNoThrow(op, uid, packageName);
   }
 
-  @Implementation(minSdk = M, maxSdk = Q)
+  @Implementation(maxSdk = Q)
   @HiddenApi
   protected int noteProxyOpNoThrow(int op, String proxiedPackageName) {
     storedOps.put(Key.create(Binder.getCallingUid(), proxiedPackageName, null), op);

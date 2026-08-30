@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -45,7 +44,7 @@ public class ShadowSoundPool {
     return ReflectionHelpers.createNullProxy(IAudioService.class);
   }
 
-  @Implementation(minSdk = M, maxSdk = TIRAMISU)
+  @Implementation(maxSdk = TIRAMISU)
   protected int _play(
       int soundID, float leftVolume, float rightVolume, int priority, int loop, float rate) {
     playedSounds.add(new Playback(soundID, leftVolume, rightVolume, priority, loop, rate));

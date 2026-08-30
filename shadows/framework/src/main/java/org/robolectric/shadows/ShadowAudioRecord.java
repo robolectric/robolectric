@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.media.AudioRecord.ERROR_BAD_VALUE;
-import static android.os.Build.VERSION_CODES.M;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;
@@ -78,28 +77,28 @@ public final class ShadowAudioRecord {
     return AudioSystem.SUCCESS;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected int native_read_in_byte_array(
       byte[] audioData, int offsetInBytes, int sizeInBytes, boolean isBlocking) {
     return getAudioRecordSource()
         .readInByteArray(audioData, offsetInBytes, sizeInBytes, isBlocking);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected int native_read_in_short_array(
       short[] audioData, int offsetInShorts, int sizeInShorts, boolean isBlocking) {
     return getAudioRecordSource()
         .readInShortArray(audioData, offsetInShorts, sizeInShorts, isBlocking);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected int native_read_in_float_array(
       float[] audioData, int offsetInFloats, int sizeInFloats, boolean isBlocking) {
     return getAudioRecordSource()
         .readInFloatArray(audioData, offsetInFloats, sizeInFloats, isBlocking);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected int native_read_in_direct_buffer(Object jBuffer, int sizeInBytes, boolean isBlocking) {
     // Note, in the real implementation the buffers position is not adjusted during the
     // read, so use duplicate to ensure the real implementation is matched.
@@ -107,7 +106,7 @@ public final class ShadowAudioRecord {
         .readInDirectBuffer(((ByteBuffer) jBuffer).duplicate(), sizeInBytes, isBlocking);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean native_setInputDevice(int preferredDeviceId) {
     return true;
   }

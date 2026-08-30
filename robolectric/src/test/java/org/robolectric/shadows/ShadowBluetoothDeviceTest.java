@@ -7,7 +7,6 @@ import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 import static android.bluetooth.BluetoothDevice.BOND_BONDING;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_CLASSIC;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
@@ -261,7 +260,7 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void connectGatt_withTransport_doesntCrash() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(FAKE_PUBLIC_ADDRESS);

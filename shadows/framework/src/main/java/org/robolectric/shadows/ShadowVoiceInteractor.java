@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -21,7 +20,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow implementation of {@link android.app.VoiceInteractor}. */
-@Implements(value = VoiceInteractor.class, minSdk = M)
+@Implements(value = VoiceInteractor.class)
 public class ShadowVoiceInteractor {
 
   private int directActionsInvalidationCount = 0;

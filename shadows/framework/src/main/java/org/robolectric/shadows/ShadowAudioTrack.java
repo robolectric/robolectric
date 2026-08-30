@@ -243,7 +243,7 @@ public class ShadowAudioTrack {
     return minBufferSize;
   }
 
-  @Implementation(minSdk = M, maxSdk = M)
+  @Implementation(maxSdk = M)
   protected int native_get_native_frame_count() {
     return bufferSizeInFrames;
   }
@@ -260,7 +260,7 @@ public class ShadowAudioTrack {
             : buffSizeInBytes;
   }
 
-  @Implementation(minSdk = M, maxSdk = M)
+  @Implementation(maxSdk = M)
   protected int native_setup(
       Object /*WeakReference<AudioTrack>*/ audioTrack,
       Object /*AudioAttributes*/ attributes,
@@ -425,7 +425,7 @@ public class ShadowAudioTrack {
    * encoding and the encoding can no longer be played directly, the method will return {@link
    * AudioTrack#ERROR_DEAD_OBJECT};
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected int native_write_byte(
       byte[] audioData, int offsetInBytes, int sizeInBytes, int format, boolean isBlocking) {
     byte[] dataToWrite = new byte[sizeInBytes];
@@ -436,7 +436,7 @@ public class ShadowAudioTrack {
   /**
    * @see #native_write_byte(byte[], int, int, int, boolean)
    */
-  @Implementation(minSdk = M, maxSdk = P)
+  @Implementation(maxSdk = P)
   protected int native_write_native_bytes(
       Object audioData, int positionInBytes, int sizeInBytes, int format, boolean blocking) {
     return maybeWriteBytes(((ByteBuffer) audioData), sizeInBytes);
@@ -498,7 +498,7 @@ public class ShadowAudioTrack {
         registeredListener -> registeredListener.listener.equals(listener));
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   public void setPlaybackParams(@Nonnull PlaybackParams params) {
     playbackParams = requireNonNull(params, "Illegal null params");
   }
@@ -517,7 +517,7 @@ public class ShadowAudioTrack {
     return latencyMs;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   @Nonnull
   protected PlaybackParams getPlaybackParams() {
     return playbackParams;

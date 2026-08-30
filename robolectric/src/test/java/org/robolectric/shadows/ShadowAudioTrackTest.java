@@ -5,7 +5,6 @@ import static android.media.AudioTrack.ERROR_BAD_VALUE;
 import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.media.AudioTrack.WRITE_NON_BLOCKING;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -87,7 +86,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void writeByteArray_blocking() {
     AudioTrack audioTrack = getSampleAudioTrack();
 
@@ -97,7 +96,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void writeByteArray_nonBlocking() {
     AudioTrack audioTrack = getSampleAudioTrack();
 
@@ -107,7 +106,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void writeByteBuffer_blocking() {
     AudioTrack audioTrack = getSampleAudioTrack();
     ByteBuffer byteBuffer = ByteBuffer.allocate(4);
@@ -118,7 +117,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void writeByteBuffer_nonBlocking() {
     AudioTrack audioTrack = getSampleAudioTrack();
     ByteBuffer byteBuffer = ByteBuffer.allocate(4);
@@ -129,7 +128,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void writeByteBuffer_correctBytesWritten() {
     ShadowAudioTrack.addAudioDataListener(this);
     AudioTrack audioTrack = getSampleAudioTrack();
@@ -146,7 +145,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void writeDirectByteBuffer_blocking() {
     AudioTrack audioTrack = getSampleAudioTrack();
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
@@ -157,7 +156,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void writeDirectByteBuffer_nonBlocking() {
     AudioTrack audioTrack = getSampleAudioTrack();
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
@@ -168,7 +167,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void writeDirectByteBuffer_invalidWriteMode() {
     AudioTrack audioTrack = getSampleAudioTrack();
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
@@ -179,7 +178,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void writeDirectByteBuffer_invalidSize() {
     AudioTrack audioTrack = getSampleAudioTrack();
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
@@ -190,7 +189,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getPlaybackParams_withSetPlaybackParams_returnsSetPlaybackParams() {
     PlaybackParams playbackParams =
         new PlaybackParams()
@@ -702,7 +701,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getBufferSizeInFrames_withPcm_returnsBufferSizeInFrames() {
     AudioTrack audioTrack = getSampleAudioTrack();
 

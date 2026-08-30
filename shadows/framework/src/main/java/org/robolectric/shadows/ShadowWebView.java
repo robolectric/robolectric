@@ -290,7 +290,7 @@ public class ShadowWebView extends ShadowViewGroup {
     javascriptInterfaces.remove(name);
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.M)
+  @Implementation
   protected WebMessagePort[] createWebMessageChannel() {
     RoboWebMessagePort[] ports = RoboWebMessagePort.createPair();
     allCreatedPorts.add(ports);

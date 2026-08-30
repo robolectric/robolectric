@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -311,7 +310,7 @@ public class ShadowParcel {
 
   // duplicate the writeBlob implementation from latest android, to avoid referencing the
   // non-existent-in-JDK java.util.Arrays.checkOffsetAndCount method.
-  @Implementation(minSdk = M)
+  @Implementation
   protected void writeBlob(byte[] b, int offset, int len) {
     if (b == null) {
       realObject.writeInt(-1);
@@ -1133,7 +1132,7 @@ public class ShadowParcel {
   }
 
   @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
-  @Implementation(minSdk = M)
+  @Implementation
   protected static long nativeWriteFileDescriptor(long nativePtr, FileDescriptor val) {
     // The Java version of FileDescriptor stored the fd in a field called "fd", and the Android
     // version changed the field name to "descriptor". But it looks like Robolectric uses the
@@ -1143,7 +1142,7 @@ public class ShadowParcel {
     return nativeDataPosition(nativePtr);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected static FileDescriptor nativeReadFileDescriptor(long nativePtr) {
     int fd = NATIVE_BYTE_BUFFER_REGISTRY.getNativeObject(nativePtr).readInt();
     return ReflectionHelpers.callConstructor(

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
@@ -55,7 +54,7 @@ public class ShadowMediaMetadataRetriever {
     setDataSource(toDataSource(fd, offset, length));
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void setDataSource(MediaDataSource mediaDataSource) {
     setDataSource(toDataSource(mediaDataSource));
   }

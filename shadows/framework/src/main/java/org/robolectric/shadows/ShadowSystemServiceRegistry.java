@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
-import android.os.Build;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import org.robolectric.annotation.ClassName;
@@ -15,10 +14,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
-@Implements(
-    className = "android.app.SystemServiceRegistry",
-    isInAndroidSdk = false,
-    minSdk = Build.VERSION_CODES.M)
+@Implements(className = "android.app.SystemServiceRegistry", isInAndroidSdk = false)
 public class ShadowSystemServiceRegistry {
 
   private static final String STATIC_SERVICE_FETCHER_CLASS_NAME =

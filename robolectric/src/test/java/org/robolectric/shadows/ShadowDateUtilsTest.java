@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
@@ -29,7 +28,7 @@ public class ShadowDateUtilsTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void formatDateTime_withCurrentYear_worksSinceM() {
     final long millisAtStartOfYear = getMillisAtStartOfYear();
 

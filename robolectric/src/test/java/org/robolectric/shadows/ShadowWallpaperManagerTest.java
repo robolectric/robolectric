@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -533,7 +532,7 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void isWallpaperSupported_supported_shouldReturnTrue() {
     shadowOf(manager).setIsWallpaperSupported(true);
 
@@ -541,7 +540,7 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void isWallpaperSupported_unsupported_shouldReturnFalse() {
     shadowOf(manager).setIsWallpaperSupported(false);
 
@@ -653,7 +652,7 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setWallpaperComponent_setWallpaperComponentPermissionNotGranted_shouldThrow() {
     shadowOf(application).denyPermissions(SET_WALLPAPER_COMPONENT);
 
@@ -666,7 +665,7 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void setWallpaperComponent_wallpaperServiceNotExist_shouldThrow() {
     try {
       manager.setWallpaperComponent(new ComponentName("Foo", "Bar"));
@@ -677,7 +676,7 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void
       setWallpaperComponent_liveWallpaperSet_shouldReturnLiveWallpaperComponentAndUnsetStaticWallpapers() {
     manager.setWallpaperComponent(TEST_WALLPAPER_SERVICE);
@@ -688,7 +687,7 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getWallpaperInfo_noLiveWallpaperSet_shouldReturnNull() {
     assertThat(manager.getWallpaperInfo()).isNull();
   }

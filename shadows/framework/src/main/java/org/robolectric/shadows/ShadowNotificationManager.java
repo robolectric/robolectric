@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -163,7 +162,7 @@ public class ShadowNotificationManager {
     ShadowNotificationManager.matchesCallFilter = matchesCallFilter;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   public StatusBarNotification[] getActiveNotifications() {
     // Must make a copy because otherwise the size of the map may change after we have allocated
     // the array:
@@ -297,7 +296,7 @@ public class ShadowNotificationManager {
    * @return {@link NotificationManager#INTERRUPTION_FILTER_ALL} by default, or the value specified
    *     via {@link #setInterruptionFilter(int)}
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected int getCurrentInterruptionFilter() {
     return currentInterruptionFilter;
   }
@@ -307,7 +306,7 @@ public class ShadowNotificationManager {
    *
    * @see NotificationManager#getCurrentInterruptionFilter()
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected void setInterruptionFilter(int interruptionFilter) {
     currentInterruptionFilter = interruptionFilter;
   }
@@ -315,7 +314,7 @@ public class ShadowNotificationManager {
   /**
    * @return the value specified via {@link #setNotificationPolicy(Policy)}
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected Policy getNotificationPolicy() {
     return notificationPolicy;
   }
@@ -340,7 +339,7 @@ public class ShadowNotificationManager {
   /**
    * @return the value specified via {@link #setNotificationPolicyAccessGranted(boolean)}
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isNotificationPolicyAccessGranted() {
     return isNotificationPolicyAccessGranted;
   }
@@ -359,7 +358,7 @@ public class ShadowNotificationManager {
    *
    * @see NotificationManager#getNotificationPolicy()
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected void setNotificationPolicy(Policy policy) {
     notificationPolicy = policy;
   }

@@ -2,7 +2,6 @@ package org.robolectric.fakes;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.os.Build.VERSION_CODES;
 import android.webkit.WebMessage;
 import android.webkit.WebMessagePort;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -13,7 +12,7 @@ import org.robolectric.annotation.Config;
 
 /** Test RoboWebMessagePort. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = VERSION_CODES.M)
+@Config(minSdk = Config.OLDEST_SDK)
 public class RoboWebMessagePortTest {
   private RoboWebMessagePort[] ports;
 

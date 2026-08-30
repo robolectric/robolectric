@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
@@ -274,7 +273,7 @@ public class ShadowBackupManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getAvailableRestoreToken_noRestoreToken_returnsDefaultValue() {
     long defaultValue = 0L;
     assertThat(shadowOf(backupManager).getPackageRestoreToken("foo.bar")).isEqualTo(defaultValue);
@@ -282,7 +281,7 @@ public class ShadowBackupManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getAvailableRestoreToken_restoreTokenAvailableForSomePackages_returnsCorrectValues() {
     long defaultVal = 0L;
     long restoreToken = 123L;

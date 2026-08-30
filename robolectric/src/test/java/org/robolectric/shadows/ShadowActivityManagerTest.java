@@ -4,7 +4,6 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREG
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
@@ -236,7 +235,7 @@ public class ShadowActivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getLockTaskModeState() {
     assertThat(activityManager.getLockTaskModeState())
         .isEqualTo(ActivityManager.LOCK_TASK_MODE_NONE);
@@ -365,7 +364,7 @@ public class ShadowActivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = M)
+  @Config(minSdk = Config.OLDEST_SDK)
   public void getPackageImportance() {
     assertThat(activityManager.getPackageImportance(context.getPackageName()))
         .isEqualTo(IMPORTANCE_GONE);

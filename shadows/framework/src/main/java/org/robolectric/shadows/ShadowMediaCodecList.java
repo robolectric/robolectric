@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
-
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import java.util.ArrayList;
@@ -53,7 +51,7 @@ public class ShadowMediaCodecList {
     return mediaCodecInfos.get(index);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected static Map<String, Object> native_getGlobalSettings() {
     return new HashMap<>();
   }

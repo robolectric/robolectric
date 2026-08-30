@@ -181,7 +181,7 @@ public class ShadowTelecomManager {
     return simCallManager;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   @HiddenApi
   public PhoneAccountHandle getSimCallManager(int userId) {
     return null;
@@ -207,13 +207,13 @@ public class ShadowTelecomManager {
     return result;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected List<PhoneAccountHandle> getCallCapablePhoneAccounts() {
     checkReadPhoneStatePermission();
     return this.getCallCapablePhoneAccounts(false);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   @HiddenApi
   public List<PhoneAccountHandle> getCallCapablePhoneAccounts(boolean includeDisabledAccounts) {
     List<PhoneAccountHandle> result = new ArrayList<>();
@@ -339,7 +339,7 @@ public class ShadowTelecomManager {
     return null;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected String getDefaultDialerPackage() {
     return defaultDialerPackageName;
   }
@@ -348,7 +348,7 @@ public class ShadowTelecomManager {
    * @deprecated API deprecated since Q, for testing, use setDefaultDialerPackage instead
    */
   @Deprecated
-  @Implementation(minSdk = M)
+  @Implementation
   @HiddenApi
   public boolean setDefaultDialer(String packageName) {
     defaultDialerPackageName = packageName;
@@ -360,7 +360,7 @@ public class ShadowTelecomManager {
     defaultDialerPackageName = packageName;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   @HiddenApi // API goes public in Q
   protected String getSystemDialerPackage() {
     return systemDefaultDialerPackageName;
@@ -375,12 +375,12 @@ public class ShadowTelecomManager {
     voicemailNumbers.put(accountHandle, number);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isVoiceMailNumber(PhoneAccountHandle accountHandle, String number) {
     return TextUtils.equals(number, voicemailNumbers.get(accountHandle));
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected String getVoiceMailNumber(PhoneAccountHandle accountHandle) {
     return voicemailNumbers.get(accountHandle);
   }
@@ -569,7 +569,7 @@ public class ShadowTelecomManager {
     return new ConnectionRequest(phoneAccount, address, new Bundle(extras), videoState);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void placeCall(Uri address, Bundle extras) {
     checkCallPhonePermission();
     OutgoingCallRecord call = new OutgoingCallRecord(address, extras);
@@ -711,7 +711,7 @@ public class ShadowTelecomManager {
     return handleMmiValue;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean handleMmi(String dialString, PhoneAccountHandle accountHandle) {
     return handleMmiValue;
   }
@@ -727,7 +727,7 @@ public class ShadowTelecomManager {
   @Implementation
   protected void showInCallScreen(boolean showDialpad) {}
 
-  @Implementation(minSdk = M)
+  @Implementation
   @HiddenApi
   public void enablePhoneAccount(PhoneAccountHandle handle, boolean isEnabled) {
     if (getPhoneAccount(handle) == null) {

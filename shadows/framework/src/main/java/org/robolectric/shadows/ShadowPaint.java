@@ -599,7 +599,7 @@ public class ShadowPaint {
     return nGetRunAdvance(paintPtr, text, start, end, contextStart, contextEnd, isRtl, offset);
   }
 
-  @Implementation(minSdk = M, maxSdk = M)
+  @Implementation(maxSdk = M)
   protected static float native_getRunAdvance(
       long nativeObject,
       long nativeTypeface,

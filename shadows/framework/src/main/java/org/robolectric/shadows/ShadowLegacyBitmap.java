@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
@@ -662,7 +661,7 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
     return 0;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected Bitmap createAshmemBitmap() {
     return realBitmap;
   }

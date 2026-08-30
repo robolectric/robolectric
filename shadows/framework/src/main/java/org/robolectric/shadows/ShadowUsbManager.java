@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -203,7 +202,7 @@ public class ShadowUsbManager {
     revokePermission(usbDevice, RuntimeEnvironment.getApplication().getPackageName());
   }
 
-  @Implementation(minSdk = M, maxSdk = P)
+  @Implementation(maxSdk = P)
   @HiddenApi
   protected @ClassName("android.hardware.usb.UsbPort[]") Object getPorts() {
     return usbPortStatuses.keySet().toArray(new UsbPort[0]);
@@ -279,14 +278,14 @@ public class ShadowUsbManager {
     return usbPortStatuses.get(usbPorts.get(portId));
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   @HiddenApi
   protected @ClassName("android.hardware.usb.UsbPortStatus") Object getPortStatus(
       @ClassName("android.hardware.usb.UsbPort") Object port) {
     return usbPortStatuses.get(port);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   @HiddenApi
   protected void setPortRoles(
       @ClassName("android.hardware.usb.UsbPort") Object port, int powerRole, int dataRole) {

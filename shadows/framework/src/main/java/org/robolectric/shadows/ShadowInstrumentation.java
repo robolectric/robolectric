@@ -162,7 +162,7 @@ public class ShadowInstrumentation {
         .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected ActivityResult execStartActivity(
       Context who,
       IBinder contextThread,

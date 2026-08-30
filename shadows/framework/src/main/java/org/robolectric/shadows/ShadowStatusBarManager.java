@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -40,7 +39,7 @@ public class ShadowStatusBarManager {
     disabled = what;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void disable2(int what) {
     disabled2 = what;
   }

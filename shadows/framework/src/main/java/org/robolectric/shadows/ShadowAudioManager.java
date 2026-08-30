@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -445,7 +444,7 @@ public class ShadowAudioManager {
     }
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isStreamMute(int streamType) {
     if (!streamsMuteState.containsKey(streamType)) {
       return false;
@@ -711,7 +710,7 @@ public class ShadowAudioManager {
    * @see #addOutputDeviceWithDirectProfiles(AudioDeviceInfo)
    * @see #removeOutputDeviceWithDirectProfiles(AudioDeviceInfo)
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected void registerAudioDeviceCallback(AudioDeviceCallback callback, Handler handler) {
     audioDeviceCallbacks.add(callback);
     // indicate currently available devices as added, similarly to MSG_DEVICES_CALLBACK_REGISTERED
@@ -731,7 +730,7 @@ public class ShadowAudioManager {
    * @see #addOutputDeviceWithDirectProfiles(AudioDeviceInfo)
    * @see #removeOutputDeviceWithDirectProfiles(AudioDeviceInfo)
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected void unregisterAudioDeviceCallback(AudioDeviceCallback callback) {
     audioDeviceCallbacks.remove(callback);
   }
@@ -800,7 +799,7 @@ public class ShadowAudioManager {
     }
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   public AudioDeviceInfo[] getDevices(int flags) {
     List<AudioDeviceInfo> result = new ArrayList<>();
     if ((flags & AudioManager.GET_DEVICES_INPUTS) == AudioManager.GET_DEVICES_INPUTS) {
