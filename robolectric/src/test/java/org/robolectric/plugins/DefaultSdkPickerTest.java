@@ -129,15 +129,11 @@ public class DefaultSdkPickerTest {
   }
 
   @Test
-  public void withTargetSdkGreaterThanMaxSdk_shouldThrowError() {
+  public void withTargetSdkGreaterThanMaxSdk_shouldUseMaxSdk() {
     when(usesSdk.getMaxSdkVersion()).thenReturn(21);
     when(usesSdk.getTargetSdkVersion()).thenReturn(22);
-    try {
-      sdkPicker.selectSdks(buildConfig(new Config.Builder()), usesSdk);
-      fail();
-    } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat().contains("Package targetSdkVersion=22 > maxSdkVersion=21");
-    }
+    assertThat(sdkPicker.selectSdks(buildConfig(new Config.Builder()), usesSdk))
+        .containsExactly(sdkCollection.getSdk(21));
   }
 
   @Test
