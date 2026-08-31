@@ -201,8 +201,11 @@ public final class EspressoTest {
 
   @Test
   public void changeText_addNewline() {
+    // Not replaceText: it leaves the cursor at the start, putting the newline before the text.
     onView(withId(R.id.edit_text)).perform(typeText("Some text."));
     onView(withId(R.id.edit_text)).perform(pressKey(KeyEvent.KEYCODE_ENTER));
+    // Wait for the newline, or the next keystrokes can land ahead of it.
+    onView(withId(R.id.edit_text)).check(matches(withText("Some text.\n")));
     onView(withId(R.id.edit_text)).perform(typeTextIntoFocusedView("Other text."));
 
     onView(withId(R.id.edit_text)).check(matches(withText("Some text.\nOther text.")));
