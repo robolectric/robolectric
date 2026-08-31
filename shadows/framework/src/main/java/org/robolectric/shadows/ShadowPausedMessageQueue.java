@@ -15,9 +15,6 @@ import android.os.SystemClock;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -64,11 +61,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   private long pollTimeout = Long.MAX_VALUE;
 
   private final AtomicReference<QueueListener> queueListenerRef = new AtomicReference<>(null);
-
-  private final Object postedFromLock = new Object();
-
-  @GuardedBy("postedFromLock")
-  private final Map<Message, Throwable> postedFrom = new IdentityHashMap<>();
 
   private interface QueueListener {
 
@@ -166,59 +158,21 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     checkQueueState();
     boolean result = reflector(MessageQueueReflector.class, realQueue).enqueueMessage(msg, when);
     if (result) {
-      recordPostedFrom(msg);
+      logPostedMessageIfEnabled();
       updateListener();
     }
     return result;
   }
 
-  private void recordPostedFrom(Message msg) {
-    Looper main = Looper.getMainLooper();
-    if (main == null || main.getQueue() != realQueue) {
+  /**
+   * When {@code -Drobolectric.logPostedMessages=true}, print a stack trace for each enqueued
+   * message so a failing test can show where remaining looper work was posted.
+   */
+  private void logPostedMessageIfEnabled() {
+    if (!Boolean.getBoolean("robolectric.logPostedMessages")) {
       return;
     }
-    synchronized (postedFromLock) {
-      postedFrom.put(msg, new Throwable("Message posted to main looper"));
-    }
-  }
-
-  void forgetPostedFrom(Message msg) {
-    synchronized (postedFromLock) {
-      postedFrom.remove(msg);
-    }
-  }
-
-  /**
-   * Stack traces captured when unexecuted messages were posted to this queue.
-   *
-   * <p>Only recorded for the main looper, so the unexecuted-runnable diagnostic can show where each
-   * remaining task was queued.
-   */
-  public List<Throwable> getUnexecutedPostTraces() {
-    List<Throwable> traces = new ArrayList<>();
-    if (getApiLevel() > BAKLAVA) {
-      synchronized (postedFromLock) {
-        traces.addAll(postedFrom.values());
-      }
-    } else {
-      synchronized (realQueue) {
-        Message next = getMessages();
-        while (next != null) {
-          Throwable posted;
-          synchronized (postedFromLock) {
-            posted = postedFrom.get(next);
-          }
-          if (posted != null) {
-            traces.add(posted);
-          }
-          next = shadowOfMsg(next).internalGetNext();
-        }
-      }
-    }
-    if (traces.size() > 8) {
-      return new ArrayList<>(traces.subList(0, 8));
-    }
-    return traces;
+    new Throwable("Message posted to MessageQueue").printStackTrace(System.out);
   }
 
   void poll(long timeout) {
@@ -364,9 +318,6 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   @Override
   public void reset() {
     MessageQueueReflector msgQueue = reflector(MessageQueueReflector.class, realQueue);
-    synchronized (postedFromLock) {
-      postedFrom.clear();
-    }
     setUncaughtException(null);
     if (getApiLevel() > BAKLAVA) {
       msgQueue.resetForTest();

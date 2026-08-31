@@ -94,7 +94,6 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.shadows.ShadowPausedLooper;
-import org.robolectric.shadows.ShadowPausedMessageQueue;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
@@ -645,13 +644,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
           "Main looper has queued unexecuted runnables. "
               + "This might be the cause of the test failure. "
               + "You might need a shadowOf(Looper.getMainLooper()).idle() call.");
-      Object shadowQueue = Shadow.extract(Looper.getMainLooper().getQueue());
-      if (shadowQueue instanceof ShadowPausedMessageQueue) {
-        for (Throwable posted :
-            ((ShadowPausedMessageQueue) shadowQueue).getUnexecutedPostTraces()) {
-          addSuppressed(posted);
-        }
-      }
     }
 
     @Override
