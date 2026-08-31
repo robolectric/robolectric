@@ -23,6 +23,9 @@ import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.util.concurrent.SettableFuture;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -897,5 +900,25 @@ public class ShadowPausedLooperTest {
     // just post a runnable and rely on setUp to check
     Handler handler = new Handler(getMainLooper());
     handler.post(() -> {});
+  }
+
+  @Test
+  public void logsPostedMessageStackWhenPropertyEnabled() {
+    String previous = System.getProperty("robolectric.logPostedMessages");
+    PrintStream originalOut = System.out;
+    ByteArrayOutputStream captured = new ByteArrayOutputStream();
+    System.setOut(new PrintStream(captured, true));
+    try {
+      System.setProperty("robolectric.logPostedMessages", "true");
+      new Handler(getMainLooper()).post(() -> {});
+      assertThat(captured.toString(StandardCharsets.UTF_8)).contains("logsPostedMessageStackWhenPropertyEnabled");
+    } finally {
+      System.setOut(originalOut);
+      if (previous == null) {
+        System.clearProperty("robolectric.logPostedMessages");
+      } else {
+        System.setProperty("robolectric.logPostedMessages", previous);
+      }
+    }
   }
 }
