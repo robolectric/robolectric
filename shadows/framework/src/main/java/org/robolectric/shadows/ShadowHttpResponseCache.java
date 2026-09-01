@@ -6,12 +6,16 @@ import android.net.http.HttpResponseCache;
 import java.io.File;
 import java.net.CacheRequest;
 import java.net.CacheResponse;
+import java.net.ResponseCache;
 import java.net.URI;
 import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -19,9 +23,8 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowHttpResponseCache {
   private static final Object LOCK = new Object();
 
-  static ShadowHttpResponseCache installed = null;
+  @RealObject private HttpResponseCache realCache;
 
-  private HttpResponseCache originalObject;
   private File directory;
   private long maxSize;
   private int requestCount = 0;
@@ -31,24 +34,38 @@ public class ShadowHttpResponseCache {
 
   private int networkCount = 0;
 
+  /**
+   * Installs the cache the way the framework does, by making it the default {@link ResponseCache}.
+   *
+   * <p>Keeping it anywhere else would leave {@link ResponseCache#getDefault()} empty, which callers
+   * reach through the inherited {@code HttpResponseCache.getDefault()}.
+   */
   @Implementation
   protected static HttpResponseCache install(File directory, long maxSize) {
-    HttpResponseCache cache = newInstanceOf(HttpResponseCache.class);
-    ShadowHttpResponseCache shadowCache = Shadow.extract(cache);
-    shadowCache.originalObject = cache;
-    shadowCache.directory = directory;
-    shadowCache.maxSize = maxSize;
     synchronized (LOCK) {
-      installed = shadowCache;
+      HttpResponseCache installed = getInstalled();
+      if (installed != null) {
+        ShadowHttpResponseCache shadowInstalled = Shadow.extract(installed);
+        // An equivalent cache is already installed, so the framework keeps using it.
+        if (shadowInstalled.maxSize == maxSize
+            && Objects.equals(shadowInstalled.directory, directory)) {
+          return installed;
+        }
+      }
+
+      HttpResponseCache cache = newInstanceOf(HttpResponseCache.class);
+      ShadowHttpResponseCache shadowCache = Shadow.extract(cache);
+      shadowCache.directory = directory;
+      shadowCache.maxSize = maxSize;
+      ResponseCache.setDefault(cache);
       return cache;
     }
   }
 
   @Implementation
   protected static HttpResponseCache getInstalled() {
-    synchronized (LOCK) {
-      return (installed != null) ? installed.originalObject : null;
-    }
+    ResponseCache installed = ResponseCache.getDefault();
+    return installed instanceof HttpResponseCache ? (HttpResponseCache) installed : null;
   }
 
   @Implementation
@@ -63,8 +80,11 @@ public class ShadowHttpResponseCache {
 
   @Implementation
   protected void close() {
+    // Uninstalls only this cache, and only while it is the installed one.
     synchronized (LOCK) {
-      installed = null;
+      if (ResponseCache.getDefault() == realCache) {
+        ResponseCache.setDefault(null);
+      }
     }
   }
 
@@ -105,5 +125,18 @@ public class ShadowHttpResponseCache {
   @Implementation
   protected void flush() {
     // No-op as `mDelegate` is null.
+  }
+
+  /**
+   * The default {@link ResponseCache} is process-wide state that outlives the sandbox, so a cache a
+   * test installs has to be uninstalled again. Anything else installed there is left alone.
+   */
+  @Resetter
+  public static void reset() {
+    synchronized (LOCK) {
+      if (ResponseCache.getDefault() instanceof HttpResponseCache) {
+        ResponseCache.setDefault(null);
+      }
+    }
   }
 }
