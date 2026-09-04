@@ -28,6 +28,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION;
+import android.os.DeadObjectException;
 import android.os.PersistableBundle;
 import android.os.SystemProperties;
 import android.telecom.PhoneAccountHandle;
@@ -202,6 +203,7 @@ public class ShadowTelephonyManager {
   private /*CarrierRestrictionRules*/ Object carrierRestrictionRules;
   private final AtomicInteger modemRebootCount = new AtomicInteger();
   private String iccAuthentication;
+  private static volatile boolean simulateDeadObjectInCreateForPhoneAccountHandle = false;
 
   private List<AvailableNetworkInfo> availableNetworks = new ArrayList<>();
   private int updateAvailableNetworksCallbackResult =
@@ -276,6 +278,7 @@ public class ShadowTelephonyManager {
     activeModemCount = 1;
     sentDialerSpecialCodes.clear();
     hearingAidCompatibilitySupported = false;
+    simulateDeadObjectInCreateForPhoneAccountHandle = false;
   }
 
   @Implementation(minSdk = S)
@@ -1310,6 +1313,9 @@ public class ShadowTelephonyManager {
    */
   @Implementation(minSdk = O)
   protected TelephonyManager createForPhoneAccountHandle(PhoneAccountHandle handle) {
+    if (simulateDeadObjectInCreateForPhoneAccountHandle) {
+      throw new RuntimeException(new DeadObjectException());
+    }
     checkReadPhoneStatePermission();
     return phoneAccountToTelephonyManagers.get(handle);
   }
@@ -1321,6 +1327,19 @@ public class ShadowTelephonyManager {
   public void setTelephonyManagerForHandle(
       PhoneAccountHandle handle, TelephonyManager telephonyManager) {
     phoneAccountToTelephonyManagers.put(handle, telephonyManager);
+  }
+
+  /**
+   * Sets whether {@link #createForPhoneAccountHandle(PhoneAccountHandle)} should simulate a remote
+   * process crash by throwing a {@link RuntimeException} wrapping a {@link DeadObjectException}.
+   *
+   * <p>Simulates the unchecked exception thrown on real devices when the underlying telephony
+   * service ({@code com.android.phone}) dies during IPC.
+   *
+   * @param shouldThrow whether calls to {@code createForPhoneAccountHandle} should throw
+   */
+  public void setSimulateDeadObjectInCreateForPhoneAccountHandle(boolean shouldThrow) {
+    simulateDeadObjectInCreateForPhoneAccountHandle = shouldThrow;
   }
 
   /**
