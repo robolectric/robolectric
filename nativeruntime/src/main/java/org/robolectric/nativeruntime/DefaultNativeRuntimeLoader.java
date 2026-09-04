@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -321,43 +322,14 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
    * graphics.
    */
   private void maybeCopyFonts(TempDirectory tempDirectory) throws IOException {
-    URI fontsUri;
-    try {
-      fontsUri = Resources.getResource("fonts/").toURI();
-    } catch (IllegalArgumentException | URISyntaxException e) {
+    Path fontsOutputPath = copyResourceDirectory("fonts", tempDirectory);
+    if (fontsOutputPath == null) {
       return;
-    }
-
-    FileSystem zipfs = null;
-
-    if ("jar".equals(fontsUri.getScheme())) {
-      zipfs = FileSystems.newFileSystem(fontsUri, ImmutableMap.of("create", "true"));
-    }
-
-    Path fontsInputPath = Paths.get(fontsUri);
-    Path fontsOutputPath = tempDirectory.create("fonts");
-
-    try (Stream<Path> pathStream = java.nio.file.Files.walk(fontsInputPath)) {
-      Iterator<Path> fileIterator = pathStream.iterator();
-      while (fileIterator.hasNext()) {
-        Path path = fileIterator.next();
-        // Avoid copying parent directory.
-        if ("fonts".equals(path.getFileName().toString())) {
-          continue;
-        }
-        String fontPath = "fonts/" + path.getFileName();
-        URL resource = Resources.getResource(fontPath);
-        Path outputPath = tempDirectory.getBasePath().resolve(fontPath);
-        Resources.asByteSource(resource).copyTo(Files.asByteSink(outputPath.toFile()));
-      }
     }
     System.setProperty(
         "robolectric.nativeruntime.fontdir",
         // Android's FontListParser expects a trailing slash for the base font directory.
         fontsOutputPath.toAbsolutePath() + File.separator);
-    if (zipfs != null) {
-      zipfs.close();
-    }
   }
 
   /**
@@ -365,39 +337,64 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
    * graphics.
    */
   private void maybeCopyHyphenData(TempDirectory tempDirectory) throws IOException {
-    URI hyphenDataUri;
+    if (copyResourceDirectory(HYPHEN_DATA_DIR, tempDirectory) == null) {
+      Logger.info("Could not load hyphen data files: resource directory not found");
+    }
+  }
+
+  /**
+   * Copies every file of the classpath resource directory {@code directoryName} into a directory of
+   * the same name under {@code tempDirectory}.
+   *
+   * <p>When the resources are packaged in a jar, the directory is walked through a zip {@link
+   * FileSystem}. Such a filesystem may already be open for that jar in this JVM: another
+   * Robolectric sandbox (a test class running several SDK levels) or {@code org.robolectric.res.Fs}
+   * can hold one, and {@link FileSystems#newFileSystem} then throws {@link
+   * FileSystemAlreadyExistsException}. In that case the existing filesystem is reused and left to
+   * its owner. A filesystem opened here is always closed, even when the copy fails, so that it
+   * never leaks into the next sandbox.
+   *
+   * @return the output directory, or {@code null} when the resource directory does not exist
+   */
+  private static Path copyResourceDirectory(String directoryName, TempDirectory tempDirectory)
+      throws IOException {
+    URI directoryUri;
     try {
-      hyphenDataUri = Resources.getResource(HYPHEN_DATA_DIR + "/").toURI();
+      directoryUri = Resources.getResource(directoryName + "/").toURI();
     } catch (IllegalArgumentException | URISyntaxException e) {
-      Logger.info("Could not load hyphen data files: " + e.getMessage());
-      return;
+      return null;
     }
 
-    FileSystem zipfs = null;
-
-    if ("jar".equals(hyphenDataUri.getScheme())) {
-      zipfs = FileSystems.newFileSystem(hyphenDataUri, ImmutableMap.of("create", "true"));
-    }
-
-    Path hyphenDataInputPath = Paths.get(hyphenDataUri);
-    tempDirectory.create(HYPHEN_DATA_DIR);
-
-    try (Stream<Path> pathStream = java.nio.file.Files.walk(hyphenDataInputPath)) {
-      Iterator<Path> fileIterator = pathStream.iterator();
-      while (fileIterator.hasNext()) {
-        Path path = fileIterator.next();
-        // Avoid copying parent directory.
-        if (Objects.equals(path.getFileName().toString(), HYPHEN_DATA_DIR)) {
-          continue;
-        }
-        String hyphenDataPath = HYPHEN_DATA_DIR + "/" + path.getFileName();
-        URL resource = Resources.getResource(hyphenDataPath);
-        Path outputPath = tempDirectory.getBasePath().resolve(hyphenDataPath);
-        Resources.asByteSource(resource).copyTo(Files.asByteSink(outputPath.toFile()));
+    FileSystem ownedZipfs = null;
+    if ("jar".equals(directoryUri.getScheme())) {
+      try {
+        ownedZipfs = FileSystems.newFileSystem(directoryUri, ImmutableMap.of("create", "true"));
+      } catch (FileSystemAlreadyExistsException e) {
+        // Already open elsewhere in this JVM: reuse it, its owner is responsible for closing it.
       }
     }
-    if (zipfs != null) {
-      zipfs.close();
+
+    try {
+      Path outputPath = tempDirectory.create(directoryName);
+      try (Stream<Path> pathStream = java.nio.file.Files.walk(Paths.get(directoryUri))) {
+        Iterator<Path> fileIterator = pathStream.iterator();
+        while (fileIterator.hasNext()) {
+          Path path = fileIterator.next();
+          // Avoid copying parent directory.
+          if (directoryName.equals(path.getFileName().toString())) {
+            continue;
+          }
+          String resourcePath = directoryName + "/" + path.getFileName();
+          URL resource = Resources.getResource(resourcePath);
+          Path resourceOutputPath = tempDirectory.getBasePath().resolve(resourcePath);
+          Resources.asByteSource(resource).copyTo(Files.asByteSink(resourceOutputPath.toFile()));
+        }
+      }
+      return outputPath;
+    } finally {
+      if (ownedZipfs != null) {
+        ownedZipfs.close();
+      }
     }
   }
 
