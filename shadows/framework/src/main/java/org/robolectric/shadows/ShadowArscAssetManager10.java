@@ -1624,7 +1624,10 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       CHECK(src_theme.GetAssetManager() == src_assetmanager);
       // (void) src_assetmanager;
 
-      dst_theme.SetTo(src_theme);
+      // In pre-R (API < 30), themes from different AssetManagers only copy system attributes.
+      // In R+ (API >= 30), non-system attributes are also preserved.
+      boolean copyOnlySystem = RuntimeEnvironment.getApiLevel() < R;
+      dst_theme.setTo(src_theme, copyOnlySystem);
     } else {
       dst_theme.SetTo(src_theme);
     }
