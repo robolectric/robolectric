@@ -40,22 +40,27 @@ public final class SandboxBuilder {
 
   private SandboxBuilder() {}
 
+  /** Retrieves a new builder for Sandbox. */
   public static SandboxBuilder newBuilder() {
     return new SandboxBuilder();
   }
 
+  /** Adds classpath entries to the builder. */
   @CanIgnoreReturnValue
   public SandboxBuilder addClasspathEntries(Collection<Path> jarPaths) {
     extraJars.addAll(jarPaths);
     return this;
   }
 
+  /** Sets the SDK version to use. */
   @CanIgnoreReturnValue
   public SandboxBuilder setSdkVersion(int sdkVersion) {
     this.sdkVersion = sdkVersion;
     return this;
   }
 
+  /** Builds and returns the AndroidSandbox. */
+  @SuppressWarnings("deprecation")
   public AndroidSandbox build() {
     JarCollection jarCollection = new JarCollection(extraJars);
     URLClassLoader classLoader =
@@ -84,9 +89,10 @@ public final class SandboxBuilder {
     Objects.requireNonNull(chosenSdk, String.format("Requested SDK %d is unknown", sdkVersion));
 
     Interceptors interceptors = new Interceptors(AndroidInterceptors.all());
+    ShadowProviders shadowProviders = injector.getInstance(ShadowProviders.class);
 
     InstrumentationConfiguration instrumentationConfiguration =
-        buildInstrumentationConfiguration(interceptors);
+        buildInstrumentationConfiguration(interceptors, shadowProviders);
 
     SandboxManager.SandboxBuilder sandboxBuilder =
         injector.getInstance(SandboxManager.SandboxBuilder.class);
@@ -99,7 +105,6 @@ public final class SandboxBuilder {
             ResourcesMode.Mode.BINARY,
             SQLiteMode.Mode.NATIVE);
 
-    ShadowProviders shadowProviders = injector.getInstance(ShadowProviders.class);
     ClassHandlerBuilder classHandlerBuilder = injector.getInstance(ClassHandlerBuilder.class);
 
     ShadowMap.Builder smBuilder = shadowProviders.getBaseShadowMap().newBuilder();
@@ -118,7 +123,7 @@ public final class SandboxBuilder {
   }
 
   private InstrumentationConfiguration buildInstrumentationConfiguration(
-      Interceptors interceptors) {
+      Interceptors interceptors, ShadowProviders shadowProviders) {
     InstrumentationConfiguration.Builder builder = new InstrumentationConfiguration.Builder();
 
     for (MethodRef methodRef : interceptors.getAllMethodRefs()) {
@@ -169,6 +174,9 @@ public final class SandboxBuilder {
         .addInstrumentedPackage("org.apache.http.") // For httpclient shadows.
         .addInstrumentedPackage("org.ccil.cowan.tagsoup.") // For the System.arraycopy interceptor.
         .addInstrumentedPackage("org.kxml2."); // For the System.arraycopy interceptor.
+    for (String packagePrefix : shadowProviders.getInstrumentedPackages()) {
+      builder.addInstrumentedPackage(packagePrefix);
+    }
 
     return builder.build();
   }

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.media.AudioTrack.ERROR_DEAD_OBJECT;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -16,7 +17,6 @@ import static java.util.Objects.requireNonNull;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.RequiresApi;
 import android.media.AudioAttributes;

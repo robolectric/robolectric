@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.content.res.ApkAssets;
 import android.content.res.AssetManager;

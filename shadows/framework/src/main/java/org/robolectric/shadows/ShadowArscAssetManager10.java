@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -24,7 +25,6 @@ import static org.robolectric.res.android.Util.JNI_FALSE;
 import static org.robolectric.res.android.Util.JNI_TRUE;
 import static org.robolectric.res.android.Util.isTruthy;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.annotation.AnyRes;
 import android.annotation.ArrayRes;
@@ -1624,7 +1624,10 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       CHECK(src_theme.GetAssetManager() == src_assetmanager);
       // (void) src_assetmanager;
 
-      dst_theme.SetTo(src_theme);
+      // In pre-R (API < 30), themes from different AssetManagers only copy system attributes.
+      // In R+ (API >= 30), non-system attributes are also preserved.
+      boolean copyOnlySystem = RuntimeEnvironment.getApiLevel() < R;
+      dst_theme.setTo(src_theme, copyOnlySystem);
     } else {
       dst_theme.SetTo(src_theme);
     }

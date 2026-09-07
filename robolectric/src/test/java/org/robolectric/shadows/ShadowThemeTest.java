@@ -4,11 +4,14 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Xml;
@@ -22,6 +25,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.shadows.testing.TestActivity;
 import org.xmlpull.v1.XmlPullParser;
@@ -176,6 +180,43 @@ public class ShadowThemeTest {
         .isEqualTo("string 1 from style A");
     assertThat(sourceTheme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
         .isEqualTo("string 1 from style B");
+  }
+
+  @Test
+  @Config(sdk = Build.VERSION_CODES.Q)
+  public void setTo_differentAssetManagers_preR_doesNotCopyNonSystemAttributes() {
+    Context baseContext = ApplicationProvider.getApplicationContext();
+    Resources.Theme sourceTheme = baseContext.getResources().newTheme();
+    sourceTheme.applyStyle(R.style.StyleA, false);
+
+    Context otherContext =
+        baseContext.createConfigurationContext(
+            new Configuration(baseContext.getResources().getConfiguration()));
+    assertThat(otherContext.getAssets()).isNotSameInstanceAs(baseContext.getAssets());
+
+    Resources.Theme destTheme = otherContext.getResources().newTheme();
+    destTheme.setTo(sourceTheme);
+
+    assertThat(destTheme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void setTo_differentAssetManagers_rPlus_copiesNonSystemAttributes() {
+    Context baseContext = ApplicationProvider.getApplicationContext();
+    Resources.Theme sourceTheme = baseContext.getResources().newTheme();
+    sourceTheme.applyStyle(R.style.StyleA, false);
+
+    Context otherContext =
+        baseContext.createConfigurationContext(
+            new Configuration(baseContext.getResources().getConfiguration()));
+    assertThat(otherContext.getAssets()).isNotSameInstanceAs(baseContext.getAssets());
+
+    Resources.Theme destTheme = otherContext.getResources().newTheme();
+    destTheme.setTo(sourceTheme);
+
+    assertThat(destTheme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from style A");
   }
 
   @Test

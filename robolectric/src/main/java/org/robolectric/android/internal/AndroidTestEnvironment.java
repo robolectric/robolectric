@@ -29,6 +29,7 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.LocaleList;
 import android.os.Looper;
 import android.os.Process;
 import android.provider.FontsContract;
@@ -221,11 +222,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
     if (ShadowView.useRealGraphics()) {
       Bitmap.setDefaultDensity(displayMetrics.densityDpi);
     }
-    Locale locale =
-        apiLevel >= VERSION_CODES.N
-            ? androidConfiguration.getLocales().get(0)
-            : androidConfiguration.locale;
-    Locale.setDefault(locale);
+    if (apiLevel >= VERSION_CODES.N) {
+      // LocaleList.setDefault will internally call java.util.Locale.setDefault()
+      LocaleList.setDefault(androidConfiguration.getLocales());
+    } else {
+      Locale.setDefault(androidConfiguration.locale);
+    }
 
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       if (Looper.myLooper() == null) {

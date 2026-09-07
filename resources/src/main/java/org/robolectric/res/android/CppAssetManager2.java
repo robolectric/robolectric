@@ -909,6 +909,20 @@ public class CppAssetManager2 {
   //                                   int* out_last_reference);
   public ApkAssetsCookie ResolveReference(
       ApkAssetsCookie cookie,
+      Ref<Res_value> inOutValue,
+      final Ref<ResTable_config> inOutSelectedConfig,
+      final Ref<Integer> inOutFlags,
+      final Ref<Integer> outLastReference) {
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "ResolveReference",
+            () ->
+                resolveReferenceMeasured(
+                    cookie, inOutValue, inOutSelectedConfig, inOutFlags, outLastReference));
+  }
+
+  private ApkAssetsCookie resolveReferenceMeasured(
+      ApkAssetsCookie cookie,
       Ref<Res_value> in_out_value,
       final Ref<ResTable_config> in_out_selected_config,
       final Ref<Integer> in_out_flags,
@@ -1630,23 +1644,28 @@ public class CppAssetManager2 {
       }
     }
 
-    // Sets this Theme to be a copy of `o` if `o` has the same AssetManager as this Theme.
-    // Returns false if the AssetManagers of the Themes were not compatible.
+    // Sets this Theme to be a copy of `o`.
+    // If `o` has a different AssetManager from this Theme, only system attributes are copied.
     //  boolean SetTo(final Theme& o);
+    @SuppressWarnings("ReferenceEquality")
     public boolean SetTo(final Theme o) {
+      return setTo(o, asset_manager_ != o.asset_manager_);
+    }
+
+    // Sets this Theme to be a copy of `o`.
+    // If `copyOnlySystem` is true, only attributes from the system package (0x01) are copied.
+    public boolean setTo(final Theme o, boolean copyOnlySystem) {
       if (this == o) {
         return true;
       }
 
       type_spec_flags_ = o.type_spec_flags_;
 
-      boolean copy_only_system = asset_manager_ != o.asset_manager_;
-
       // for (int p = 0; p < packages_.size(); p++) {
       //   final Package package_ = o.packages_[p].get();
       for (int p = 0; p < packages_.length; p++) {
         ThemePackage package_ = o.packages_[p];
-        if (package_ == null || (copy_only_system && p != 0x01)) {
+        if (package_ == null || (copyOnlySystem && p != 0x01)) {
           // The other theme doesn't have this package, clear ours.
           packages_[p] = new ThemePackage();
           continue;

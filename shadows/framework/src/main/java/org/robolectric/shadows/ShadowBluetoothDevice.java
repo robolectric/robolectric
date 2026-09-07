@@ -5,6 +5,7 @@ import static android.bluetooth.BluetoothDevice.BOND_BONDING;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
@@ -46,7 +47,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.VersionCalculator;
 
 /** Shadow for {@link BluetoothDevice}. */
 @Implements(BluetoothDevice.class)
@@ -526,7 +526,7 @@ public class ShadowBluetoothDevice {
     return isConnected;
   }
 
-  @Implementation(minSdk = VersionCalculator.CINNAMON_BUN)
+  @Implementation(minSdk = CINNAMON_BUN)
   protected boolean isConnected(int transport) {
     return connectedTransports.contains(transport);
   }

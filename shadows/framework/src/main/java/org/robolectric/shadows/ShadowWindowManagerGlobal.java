@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -74,9 +75,9 @@ import org.robolectric.shadows.ShadowInsetsState.InsetsStateReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.versioning.VersionCalculator;
 
 /** Shadow for {@link WindowManagerGlobal}. */
 @SuppressWarnings("unused") // Unused params are implementations of Android SDK methods.
@@ -213,11 +214,23 @@ public class ShadowWindowManagerGlobal {
 
   @ForType(className = "android.view.AddWindowResult")
   interface AddWindowResultReflector {
+    @Constructor
+    Object newInstance();
+
     @Accessor("relayoutResult")
     WindowRelayoutResult getRelayoutResult();
 
     @Accessor("relayoutResult")
     void setRelayoutResult(WindowRelayoutResult relayoutResult);
+
+    @Accessor("returnCode")
+    void setReturnCode(int returnCode);
+
+    @Accessor("appVisible")
+    void setAppVisible(boolean appVisible);
+
+    @Accessor("inTouchMode")
+    void setInTouchMode(boolean inTouchMode);
   }
 
   /**
@@ -237,7 +250,7 @@ public class ShadowWindowManagerGlobal {
     @Nullable protected ClipData lastDragClipData;
     @Nullable public List<Rect> systemGestureExclusionRects;
 
-    protected int addToDisplay(Object[] args) {
+    protected Object addToDisplay(Object[] args) {
       int sdk = getApiLevel();
       WindowInfo windowInfo = windows.computeIfAbsent((IWindow) args[0], id -> new WindowInfo());
       int displayId = (int) args[sdk <= R ? 4 : 3];
@@ -257,6 +270,8 @@ public class ShadowWindowManagerGlobal {
       }
       Rect[] rects = findAll(Rect.class, args);
       int rectIdx = 0;
+      Object addWindowResult = null;
+      AddWindowResultReflector addWindowResultReflector = null;
       if (sdk <= R) {
         configureWindowFrames(
             windowInfo,
@@ -269,14 +284,17 @@ public class ShadowWindowManagerGlobal {
             /* outInsetsState= */ sdk >= Q ? findFirst(InsetsState.class, args) : null);
       } else { // post insets migration
         Optional<WindowRelayoutResult> layout = Optional.empty();
-        if (sdk > VersionCalculator.CINNAMON_BUN) {
-          Object addWindowResult = findFirst("android.view.AddWindowResult", args);
-          AddWindowResultReflector reflector =
-              reflector(AddWindowResultReflector.class, addWindowResult);
-          if (reflector.getRelayoutResult() == null) {
-            reflector.setRelayoutResult(new WindowRelayoutResult());
-          }
-          layout = Optional.of(reflector.getRelayoutResult());
+        if (sdk > CINNAMON_BUN) {
+          addWindowResult = reflector(AddWindowResultReflector.class).newInstance();
+          addWindowResultReflector = reflector(AddWindowResultReflector.class, addWindowResult);
+          addWindowResultReflector.setRelayoutResult(new WindowRelayoutResult());
+          Configuration configuration =
+              RuntimeEnvironment.getApplication().getResources().getConfiguration();
+          addWindowResultReflector
+              .getRelayoutResult()
+              .mergedConfiguration
+              .setConfiguration(configuration, configuration);
+          layout = Optional.of(addWindowResultReflector.getRelayoutResult());
         } else if (sdk >= VANILLA_ICE_CREAM) {
           layout = findFirstOpt(WindowRelayoutResult.class, args);
         }
@@ -311,6 +329,12 @@ public class ShadowWindowManagerGlobal {
         }
       }
       res |= inTouchMode ? ADD_FLAG_IN_TOUCH_MODE : 0;
+      if (addWindowResultReflector != null) {
+        addWindowResultReflector.setReturnCode(res);
+        addWindowResultReflector.setAppVisible((res & ADD_FLAG_APP_VISIBLE) != 0);
+        addWindowResultReflector.setInTouchMode((res & ADD_FLAG_IN_TOUCH_MODE) != 0);
+        return addWindowResult;
+      }
       return res;
     }
 

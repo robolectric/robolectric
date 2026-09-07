@@ -10,7 +10,6 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
-import static org.robolectric.annotation.TextLayoutMode.Mode.REALISTIC;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.ColorFilter;
@@ -24,8 +23,6 @@ import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.TextLayoutMode;
-import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
@@ -489,22 +486,19 @@ public class ShadowPaint {
 
   @Implementation(minSdk = P, maxSdk = UPSIDE_DOWN_CAKE)
   protected static int nGetFontMetricsInt(long paintPtr, FontMetricsInt fmi) {
-    if (ConfigurationRegistry.get(TextLayoutMode.Mode.class) == REALISTIC) {
-      // TODO: hack, just set values to those we see on emulator
-      int descent = 7;
-      int ascent = -28;
-      int leading = 0;
+    // TODO: hack, just set values to those we see on emulator
+    int descent = 7;
+    int ascent = -28;
+    int leading = 0;
 
-      if (fmi != null) {
-        fmi.top = -32;
-        fmi.ascent = ascent;
-        fmi.descent = descent;
-        fmi.bottom = 9;
-        fmi.leading = leading;
-      }
-      return descent - ascent + leading;
+    if (fmi != null) {
+      fmi.top = -32;
+      fmi.ascent = ascent;
+      fmi.descent = descent;
+      fmi.bottom = 9;
+      fmi.leading = leading;
     }
-    return 0;
+    return descent - ascent + leading;
   }
 
   @Implementation(minSdk = O, maxSdk = O_MR1)
@@ -536,11 +530,8 @@ public class ShadowPaint {
       int contextEnd,
       boolean isRtl,
       int offset) {
-    if (ConfigurationRegistry.get(TextLayoutMode.Mode.class) == REALISTIC) {
-      // be consistent with measureText for measurements, and measure 1 pixel per char
-      return end - start;
-    }
-    return 0f;
+    // be consistent with measureText for measurements, and measure 1 pixel per char
+    return end - start;
   }
 
   @Implementation(minSdk = UPSIDE_DOWN_CAKE, maxSdk = UPSIDE_DOWN_CAKE)

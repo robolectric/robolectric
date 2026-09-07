@@ -1,13 +1,13 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.database.sqlite.SQLiteAbortException;
