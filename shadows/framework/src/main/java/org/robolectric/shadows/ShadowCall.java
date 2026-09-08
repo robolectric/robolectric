@@ -14,9 +14,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -114,6 +117,46 @@ public class ShadowCall {
     }
   }
 
+  /** Sets the state of the Call. */
+  public void setState(int state) {
+    reflector(ReflectorCall.class, realObject).setState(state);
+  }
+
+  /** Sets the Details of the Call. */
+  public void setDetails(Call.Details details) {
+    reflector(ReflectorCall.class, realObject).setDetails(details);
+  }
+
+  /** Sets the callback records of the Call. */
+  public void setCallbackRecords(List<Object> callbackRecords) {
+    reflector(ReflectorCall.class, realObject).setCallbackRecords(callbackRecords);
+  }
+
+  /** Gets the callback records of the Call. */
+  public List<Object> getCallbackRecords() {
+    return reflector(ReflectorCall.class, realObject).getCallbackRecords();
+  }
+
+  /** Gets all registered callbacks from the Call. */
+  public List<Call.Callback> getCallbacks() {
+    List<Call.Callback> callbacks = new ArrayList<>();
+    List<Object> records = getCallbackRecords();
+    if (records != null) {
+      for (Object record : records) {
+        Call.Callback callback = ReflectionHelpers.getField(record, "mCallback");
+        if (callback != null) {
+          callbacks.add(callback);
+        }
+      }
+    }
+    return callbacks;
+  }
+
+  /** Sets the InCallAdapter of the Call. */
+  public void setInCallAdapter(Object adapter) {
+    reflector(ReflectorCall.class, realObject).setInCallAdapter(adapter);
+  }
+
   public String getId() {
     return reflector(ReflectorCall.class, realObject).getId();
   }
@@ -136,5 +179,20 @@ public class ShadowCall {
 
     @Accessor("mInCallAdapter")
     InCallAdapter getInCallAdapter();
+
+    @Accessor("mState")
+    void setState(int state);
+
+    @Accessor("mDetails")
+    void setDetails(Call.Details details);
+
+    @Accessor("mCallbackRecords")
+    List<Object> getCallbackRecords();
+
+    @Accessor("mCallbackRecords")
+    void setCallbackRecords(List<Object> callbackRecords);
+
+    @Accessor("mInCallAdapter")
+    void setInCallAdapter(Object adapter);
   }
 }
