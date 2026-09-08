@@ -29,7 +29,7 @@ import org.jspecify.annotations.NonNull;
  * }
  * </pre>
  */
-@Target({ElementType.TYPE_USE, ElementType.PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.PARAMETER, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ClassName {
 
