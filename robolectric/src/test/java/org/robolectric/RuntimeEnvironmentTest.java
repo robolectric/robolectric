@@ -203,4 +203,3 @@ public class RuntimeEnvironmentTest {
     assertThat(Locale.getDefault()).isEqualTo(Locale.JAPANESE);
   }
 }
-
