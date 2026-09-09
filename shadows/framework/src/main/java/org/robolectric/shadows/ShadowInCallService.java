@@ -19,6 +19,11 @@ import android.telecom.ParcelableCall;
 import android.telecom.Phone;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.telecom.IInCallAdapter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -44,6 +49,7 @@ public class ShadowInCallService extends ShadowService {
   private int audioRoute = CallAudioState.ROUTE_EARPIECE;
   private BluetoothDevice bluetoothDevice;
   private int supportedRouteMask;
+  private final List<BluetoothDevice> supportedBluetoothDevices = new ArrayList<>();
 
   /* Starting in Android V, the InCallService does not allow setting an InCallAdapter if Phone
    * was already set. This is how the InCallService should be instantiated in tests:
@@ -72,6 +78,7 @@ public class ShadowInCallService extends ShadowService {
               Phone.class, ClassParameter.from(InCallAdapter.class, adapter));
     }
     ReflectionHelpers.setField(inCallService, "mPhone", phone);
+    reflector(ReflectorPhone.class, phone).setCallAudioState(createCallAudioState());
     invokeConstructor(InCallService.class, inCallService);
   }
 
@@ -154,9 +161,11 @@ public class ShadowInCallService extends ShadowService {
     this.canAddCall = canAddCall;
   }
 
+
   @Implementation
   protected void setMuted(boolean muted) {
     this.muted = muted;
+    updatePhoneCallAudioState();
     if (isInCallAdapterSet()) {
       reflector(ReflectorInCallService.class, inCallService).setMuted(muted);
     }
@@ -165,6 +174,7 @@ public class ShadowInCallService extends ShadowService {
   @Implementation
   protected void setAudioRoute(int audioRoute) {
     this.audioRoute = audioRoute;
+    updatePhoneCallAudioState();
     if (isInCallAdapterSet()) {
       reflector(ReflectorInCallService.class, inCallService).setAudioRoute(audioRoute);
     }
@@ -175,16 +185,122 @@ public class ShadowInCallService extends ShadowService {
     if (isInCallAdapterSet()) {
       return reflector(ReflectorInCallService.class, inCallService).getCallAudioState();
     }
-    return new CallAudioState(muted, audioRoute, supportedRouteMask);
+    return createCallAudioState();
   }
 
   public void setSupportedRouteMask(int mask) {
     this.supportedRouteMask = mask;
+    updatePhoneCallAudioState();
+  }
+
+  /** Sets the {@link CallAudioState} returned by {@link InCallService#getCallAudioState()}. */
+  public void setCallAudioState(CallAudioState callAudioState) {
+    Objects.requireNonNull(callAudioState, "callAudioState must not be null");
+    this.muted = callAudioState.isMuted();
+    this.audioRoute = callAudioState.getRoute();
+    this.supportedRouteMask = callAudioState.getSupportedRouteMask();
+    if (VERSION.SDK_INT >= P) {
+      this.bluetoothDevice = callAudioState.getActiveBluetoothDevice();
+      this.supportedBluetoothDevices.clear();
+      if (callAudioState.getSupportedBluetoothDevices() != null) {
+        for (BluetoothDevice device : callAudioState.getSupportedBluetoothDevices()) {
+          if (device != null && !this.supportedBluetoothDevices.contains(device)) {
+            this.supportedBluetoothDevices.add(device);
+          }
+        }
+      }
+    } else {
+      this.bluetoothDevice = null;
+      this.supportedBluetoothDevices.clear();
+    }
+    updatePhoneCallAudioState();
+  }
+
+  /** Sets the supported Bluetooth devices returned by {@link InCallService#getCallAudioState()}. */
+  @RequiresApi(P)
+  public void setSupportedBluetoothDevices(Collection<BluetoothDevice> supportedBluetoothDevices) {
+    this.supportedBluetoothDevices.clear();
+    if (supportedBluetoothDevices != null) {
+      for (BluetoothDevice device : supportedBluetoothDevices) {
+        if (device != null && !this.supportedBluetoothDevices.contains(device)) {
+          this.supportedBluetoothDevices.add(device);
+        }
+      }
+    }
+    if (this.bluetoothDevice != null
+        && !this.supportedBluetoothDevices.contains(this.bluetoothDevice)) {
+      this.bluetoothDevice = null;
+      if (this.audioRoute == CallAudioState.ROUTE_BLUETOOTH) {
+        this.audioRoute = CallAudioState.ROUTE_EARPIECE;
+      }
+    }
+    updatePhoneCallAudioState();
+  }
+
+  /** Adds a supported Bluetooth device returned by {@link InCallService#getCallAudioState()}. */
+  @RequiresApi(P)
+  public void addSupportedBluetoothDevice(BluetoothDevice bluetoothDevice) {
+    if (bluetoothDevice != null && !this.supportedBluetoothDevices.contains(bluetoothDevice)) {
+      this.supportedBluetoothDevices.add(bluetoothDevice);
+      updatePhoneCallAudioState();
+    }
+  }
+
+  /**
+   * Clears the supported Bluetooth devices returned by {@link InCallService#getCallAudioState()}.
+   */
+  @RequiresApi(P)
+  public void clearSupportedBluetoothDevices() {
+    this.supportedBluetoothDevices.clear();
+    this.bluetoothDevice = null;
+    if (this.audioRoute == CallAudioState.ROUTE_BLUETOOTH) {
+      this.audioRoute = CallAudioState.ROUTE_EARPIECE;
+    }
+    updatePhoneCallAudioState();
+  }
+
+  /** Returns the supported Bluetooth devices. */
+  @RequiresApi(P)
+  public List<BluetoothDevice> getSupportedBluetoothDevices() {
+    return Collections.unmodifiableList(supportedBluetoothDevices);
+  }
+
+  /** Sets the active Bluetooth device returned by {@link InCallService#getCallAudioState()}. */
+  @RequiresApi(P)
+  public void setActiveBluetoothDevice(BluetoothDevice bluetoothDevice) {
+    this.bluetoothDevice = bluetoothDevice;
+    if (bluetoothDevice != null) {
+      this.audioRoute = CallAudioState.ROUTE_BLUETOOTH;
+      if (!this.supportedBluetoothDevices.contains(bluetoothDevice)) {
+        this.supportedBluetoothDevices.add(bluetoothDevice);
+      }
+    } else {
+      if (this.audioRoute == CallAudioState.ROUTE_BLUETOOTH) {
+        this.audioRoute = CallAudioState.ROUTE_EARPIECE;
+      }
+    }
+    updatePhoneCallAudioState();
+  }
+
+  /**
+   * @return the active Bluetooth device in {@link CallAudioState}, or the last value provided to
+   *     {@code requestBluetoothAudio()}.
+   */
+  @RequiresApi(P)
+  public BluetoothDevice getActiveBluetoothDevice() {
+    return bluetoothDevice;
   }
 
   @Implementation(minSdk = P)
   protected void requestBluetoothAudio(BluetoothDevice bluetoothDevice) {
     this.bluetoothDevice = bluetoothDevice;
+    if (bluetoothDevice != null) {
+      this.audioRoute = CallAudioState.ROUTE_BLUETOOTH;
+      if (!this.supportedBluetoothDevices.contains(bluetoothDevice)) {
+        this.supportedBluetoothDevices.add(bluetoothDevice);
+      }
+    }
+    updatePhoneCallAudioState();
     if (isInCallAdapterSet()) {
       reflector(ReflectorInCallService.class, inCallService).requestBluetoothAudio(bluetoothDevice);
     }
@@ -196,6 +312,48 @@ public class ShadowInCallService extends ShadowService {
   @RequiresApi(P)
   public BluetoothDevice getBluetoothAudio() {
     return bluetoothDevice;
+  }
+
+  /**
+   * Creates a new {@link CallAudioState}. The real 5-argument constructor of {@link CallAudioState}
+   * is hidden.
+   */
+  public static CallAudioState newCallAudioState(
+      boolean muted,
+      int route,
+      int supportedRouteMask,
+      BluetoothDevice activeBluetoothDevice,
+      Collection<BluetoothDevice> supportedBluetoothDevices) {
+    if (VERSION.SDK_INT >= P) {
+      List<BluetoothDevice> devices = new ArrayList<>();
+      if (supportedBluetoothDevices != null) {
+        for (BluetoothDevice device : supportedBluetoothDevices) {
+          if (device != null && !devices.contains(device)) {
+            devices.add(device);
+          }
+        }
+      }
+      return ReflectionHelpers.callConstructor(
+          CallAudioState.class,
+          ClassParameter.from(boolean.class, muted),
+          ClassParameter.from(int.class, route),
+          ClassParameter.from(int.class, supportedRouteMask),
+          ClassParameter.from(BluetoothDevice.class, activeBluetoothDevice),
+          ClassParameter.from(Collection.class, devices));
+    }
+    return new CallAudioState(muted, route, supportedRouteMask);
+  }
+
+  private CallAudioState createCallAudioState() {
+    return newCallAudioState(
+        muted, audioRoute, supportedRouteMask, bluetoothDevice, supportedBluetoothDevices);
+  }
+
+  private void updatePhoneCallAudioState() {
+    Phone phone = reflector(ReflectorInCallService.class, inCallService).getPhone();
+    if (phone != null) {
+      reflector(ReflectorPhone.class, phone).setCallAudioState(createCallAudioState());
+    }
   }
 
   private Handler getHandler() {
@@ -240,6 +398,7 @@ public class ShadowInCallService extends ShadowService {
       phone = reflector(ReflectorPhone.class).newInstance(adapter);
     }
     ReflectionHelpers.setField(inCallService, "mPhone", phone);
+    reflector(ReflectorPhone.class, phone).setCallAudioState(createCallAudioState());
   }
 
   @ForType(InCallService.class)
@@ -267,6 +426,9 @@ public class ShadowInCallService extends ShadowService {
   interface ReflectorPhone {
     @Accessor("mInCallAdapter")
     InCallAdapter getInCallAdapter();
+
+    @Accessor("mCallAudioState")
+    void setCallAudioState(CallAudioState callAudioState);
 
     @Constructor
     Phone newInstance(InCallAdapter inCallAdapter, String name, int type);
