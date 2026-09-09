@@ -5,6 +5,7 @@ import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -127,6 +128,27 @@ public class ShadowCrossProfileApps {
     verifyActivityInManifest(componentName, /* requireMainActivity= */ false);
     verifyHasInteractAcrossProfilesPermission();
     startedActivities.add(new StartedActivity(componentName, targetUser));
+  }
+
+  /**
+   * Simulates starting the activity specified in the specified profile, performing the same
+   * security checks done by the real {@link CrossProfileApps}.
+   *
+   * <p>The most recent main activity started can be queried by {@link #peekNextStartedActivity()}.
+   */
+  @Implementation(minSdk = TIRAMISU)
+  @RequiresPermission(permission.INTERACT_ACROSS_PROFILES)
+  protected void startActivity(
+      ComponentName componentName,
+      UserHandle targetUser,
+      @Nullable Activity callingActivity,
+      @Nullable Bundle options) {
+    verifyCanAccessUser(targetUser);
+    verifyActivityInManifest(componentName, /* requireMainActivity= */ false);
+    verifyHasInteractAcrossProfilesPermission();
+    startedActivities.add(
+        new StartedActivity(
+            componentName, targetUser, /* intent= */ null, callingActivity, options));
   }
 
   /**
