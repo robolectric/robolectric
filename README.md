@@ -6,7 +6,7 @@
 
 Robolectric is the industry-standard unit testing framework for Android. With Robolectric, your tests run in a simulated Android environment inside a JVM, without the overhead and flakiness of an emulator. Robolectric tests routinely run 10x faster than those on cold-started emulators.
 
-Robolectric supports running unit tests for *14* different versions of Android, ranging from M (API level 23) to Baklava (API level 36).
+Robolectric supports running unit tests for *15* different versions of Android, ranging from M (API level 23) to Cinnamon Bun (API level 37).
 
 ## Usage
 
@@ -14,7 +14,7 @@ To use Robolectric in your project, simply add the necessary dependencies to you
 
 ```groovy
 testImplementation("junit:junit:4.13.2")
-testImplementation("org.robolectric:robolectric:4.16.1")
+testImplementation("org.robolectric:robolectric:4.17")
 testImplementation("androidx.test.ext:junit:1.3.0")
 ```
 
