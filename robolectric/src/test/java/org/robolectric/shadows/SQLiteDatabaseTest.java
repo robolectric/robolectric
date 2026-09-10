@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.database.sqlite.SQLiteDatabase.OPEN_READWRITE;
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -22,6 +23,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 
 @RunWith(AndroidJUnit4.class)
 public class SQLiteDatabaseTest {
@@ -971,6 +973,13 @@ public class SQLiteDatabaseTest {
     database.execSQL(
         "CREATE TRIGGER t4 AFTER UPDATE ON table_A BEGIN INSERT INTO new_search"
             + " (id) VALUES (new._id); END;");
+
+    if (RuntimeEnvironment.getApiLevel() > CINNAMON_BUN) {
+      // In post-Cinnamon Bun SDKs, the platform hardened SQLite connections with
+      // SQLITE_DBCONFIG_TRUSTED_SCHEMA=0, preventing views and triggers from invoking
+      // unsafe functions (such as MATCH()) unless trusted schema is explicitly enabled.
+      database.execSQL("PRAGMA trusted_schema = ON;");
+    }
 
     long[] returnedIds =
         new long[] {
