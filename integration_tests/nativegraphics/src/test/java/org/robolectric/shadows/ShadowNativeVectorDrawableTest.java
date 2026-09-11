@@ -47,7 +47,14 @@ import android.util.AttributeSet;
 import android.util.Xml;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
@@ -201,6 +208,20 @@ public class ShadowNativeVectorDrawableTest {
 
   private static final boolean DBG_DUMP_PNG = false;
 
+  private static final boolean IS_AMD = detectIsAmd();
+
+  private static boolean detectIsAmd() {
+    if (!System.getProperty("os.name", "").toLowerCase().contains("linux")) {
+      return false;
+    }
+    try {
+      List<String> lines = Files.readAllLines(Paths.get("/proc/cpuinfo"));
+      return lines.stream().anyMatch(l -> l.startsWith("vendor_id") && l.contains("AuthenticAMD"));
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
   private Resources resources;
   private Bitmap bitmap;
   private Canvas canvas;
@@ -290,9 +311,21 @@ public class ShadowNativeVectorDrawableTest {
         String stateSetTitle = getTitleForStateSet(stateSet);
         DrawableTestUtils.saveAutoNamedVectorDrawableIntoPNG(
             context, bitmap, resIds[i], stateSetTitle);
+        if (IS_AMD) {
+          String goldenEntryName = resources.getResourceEntryName(goldenImages[i]);
+          File amdFile =
+              new File(System.getProperty("java.io.tmpdir"), goldenEntryName + "_amd.png");
+          try (FileOutputStream fos = new FileOutputStream(amdFile)) {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+          } catch (IOException e) {
+            System.err.println(
+                "Warning: could not write AMD golden " + amdFile + ": " + e.getMessage());
+          }
+        }
       } else {
         // Start to compare
-        Bitmap golden = BitmapFactory.decodeResource(resources, goldenImages[i]);
+        Bitmap golden =
+            BitmapFactory.decodeResource(resources, resolveGoldenResId(goldenImages[i]));
         DrawableTestUtils.compareImages(
             resources.getString(resIds[i]),
             bitmap,
@@ -331,6 +364,20 @@ public class ShadowNativeVectorDrawableTest {
     }
 
     return builder.toString();
+  }
+
+  private final Map<Integer, Integer> goldenResIdCache = new HashMap<>();
+
+  private int resolveGoldenResId(int baseResId) {
+    if (!IS_AMD) return baseResId;
+    return goldenResIdCache.computeIfAbsent(
+        baseResId,
+        id -> {
+          String entryName = resources.getResourceEntryName(id);
+          int amdResId =
+              resources.getIdentifier(entryName + "_amd", "drawable", context.getPackageName());
+          return amdResId != 0 ? amdResId : id;
+        });
   }
 
   @Test
