@@ -6,6 +6,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.app.Activity;
 import android.app.Application;
@@ -13,6 +14,7 @@ import android.content.ComponentName;
 import android.content.pm.PackageManager;
 import android.nfc.NfcAdapter;
 import android.nfc.cardemulation.CardEmulation;
+import android.nfc.cardemulation.PollingFrame;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -23,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.ForType;
 
 /** Test the shadow implementation of {@link CardEmulation}. */
@@ -276,6 +279,43 @@ public final class ShadowCardEmulationTest {
     shadowCardEmulation.triggerOnObserveModeStateChanged(false);
 
     verify(testCallback).onObserveModeStateChanged(false);
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void triggerOnObserveModeDisabledInFirmware_shouldTriggerNfcEventCallbackListeners() {
+    CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
+    cardEmulation.registerNfcEventCallback(executor, testCallback);
+
+    shadowCardEmulation.triggerOnObserveModeDisabledInFirmware();
+
+    verify(testCallback).onObserveModeDisabledInFirmware(null);
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA)
+  public void
+      triggerOnObserveModeDisabledInFirmware_withPollingFrame_shouldTriggerNfcEventCallbackListeners() {
+    CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
+    cardEmulation.registerNfcEventCallback(executor, testCallback);
+    PollingFrame testFrame = Shadow.newInstanceOf(PollingFrame.class);
+
+    shadowCardEmulation.triggerOnObserveModeDisabledInFirmware(testFrame);
+
+    verify(testCallback).onObserveModeDisabledInFirmware(testFrame);
+  }
+
+  @Test
+  @Config(minSdk = CINNAMON_BUN)
+  public void triggerOnOffHostAidSelected_shouldTriggerNfcEventCallbackListeners() {
+    CardEmulation.NfcEventCallback testCallback = mock(CardEmulation.NfcEventCallback.class);
+    cardEmulation.registerNfcEventCallback(executor, testCallback);
+    String testAid = "0000";
+    String testOffHostSecureElement = "eSE1";
+
+    shadowCardEmulation.triggerOnOffHostAidSelected(testAid, testOffHostSecureElement);
+
+    verify(testCallback).onOffHostAidSelected(testAid, testOffHostSecureElement);
   }
 
   // TODO: delete when this test compiles against V sdk
