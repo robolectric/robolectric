@@ -31,7 +31,7 @@ error-prone-gradle = "5.1.1"
 kotlin = "2.4.20"
 
 # https://github.com/google/ksp/releases
-ksp = "2.3.11"
+ksp = "2.3.12"
 
 # https://github.com/ZacSweers/kotlin-compile-testing/releases
 kctfork = "0.13.0"
