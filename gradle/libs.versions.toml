@@ -132,7 +132,7 @@ play-services-basement = "18.0.1"
 test-parameter-injector = "1.22"
 
 # https://plugins.gradle.org/plugin/com.gradle.plugin-publish
-gradle-plugin-publish = "2.1.1"
+gradle-plugin-publish = "2.2.1"
 
 # https://github.com/jspecify/jspecify/releases
 jspecify = "1.0.1"
