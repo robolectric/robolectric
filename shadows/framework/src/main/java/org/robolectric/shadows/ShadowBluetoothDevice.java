@@ -15,6 +15,7 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.IntRange;
+import android.annotation.RequiresApi;
 import android.app.ActivityThread;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
@@ -27,6 +28,7 @@ import android.content.Context;
 import android.os.Build.VERSION;
 import android.os.Handler;
 import android.os.ParcelUuid;
+import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +39,7 @@ import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -96,7 +99,8 @@ public class ShadowBluetoothDevice {
   @Nullable private BluetoothGattConnectionInterceptor bluetoothGattConnectionInterceptor = null;
   private final Map<Integer, Integer> connectionHandlesByTransportType = new HashMap<>();
   private final Set<Integer> connectedTransports = new HashSet<>();
-  private BluetoothDevice.BluetoothAddress identityAddressWithType;
+  // Actual type: BluetoothDevice.BluetoothAddress (SDK 36+)
+  private Object identityAddressWithType;
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -560,7 +564,7 @@ public class ShadowBluetoothDevice {
     if (identityAddressWithType == null) {
       return realBluetoothDevice.getAddress();
     }
-    return identityAddressWithType.getAddress();
+    return ((BluetoothDevice.BluetoothAddress) identityAddressWithType).getAddress();
   }
 
   /**
@@ -568,7 +572,8 @@ public class ShadowBluetoothDevice {
    * creating the device, and the type will be {@link BluetoothDevice#ADDRESS_TYPE_PUBLIC}.
    */
   @Implementation(minSdk = BAKLAVA)
-  protected BluetoothDevice.BluetoothAddress getIdentityAddressWithType() {
+  protected @ClassName("android.bluetooth.BluetoothDevice$BluetoothAddress") Object
+      getIdentityAddressWithType() {
     checkForBluetoothConnectPermission();
     checkForBluetoothPrivilegedPermission();
     if (identityAddressWithType == null) {
@@ -578,7 +583,16 @@ public class ShadowBluetoothDevice {
     return identityAddressWithType;
   }
 
-  public void setIdentityAddressWithType(BluetoothDevice.BluetoothAddress identityAddressWithType) {
+  /**
+   * Sets the identity address (and address type) returned by {@link #getIdentityAddressWithType()}.
+   *
+   * @param identityAddressWithType an {@code android.bluetooth.BluetoothDevice.BluetoothAddress}
+   */
+  @RequiresApi(BAKLAVA)
+  public void setIdentityAddressWithType(Object identityAddressWithType) {
+    Preconditions.checkArgument(
+        identityAddressWithType == null
+            || identityAddressWithType instanceof BluetoothDevice.BluetoothAddress);
     this.identityAddressWithType = identityAddressWithType;
   }
 
