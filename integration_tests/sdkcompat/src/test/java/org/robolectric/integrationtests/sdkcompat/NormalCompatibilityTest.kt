@@ -67,6 +67,12 @@ class NormalCompatibilityTest {
   }
 
   @Test
+  fun `Initialize NsdManager succeed`() {
+    val nsdManager = application.getSystemService(Context.NSD_SERVICE)
+    assertThat(nsdManager).isNotNull()
+  }
+
+  @Test
   fun `Initialize TelephonyManager succeed`() {
     val telephonyManager = application.getSystemService(Context.TELEPHONY_SERVICE)
     assertThat(telephonyManager).isNotNull()
