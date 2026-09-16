@@ -31,6 +31,8 @@ public class CallDetailsBuilder {
       // Explicit API checks (No try-catch blocks)
       if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S) {
         newReflector.setState(originalReflector.getState());
+      }
+      if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.Q) {
         newReflector.setCallDirection(originalReflector.getCallDirection());
       }
       if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.R) {
