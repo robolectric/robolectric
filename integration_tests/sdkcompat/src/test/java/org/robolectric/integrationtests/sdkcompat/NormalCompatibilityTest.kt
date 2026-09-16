@@ -1,5 +1,6 @@
 package org.robolectric.integrationtests.sdkcompat
 
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Context.VIBRATOR_SERVICE
 import android.graphics.Bitmap
@@ -70,6 +71,12 @@ class NormalCompatibilityTest {
   fun `Initialize NsdManager succeed`() {
     val nsdManager = application.getSystemService(Context.NSD_SERVICE)
     assertThat(nsdManager).isNotNull()
+  }
+
+  @Test
+  fun `Retrieve remote BluetoothDevice succeed`() {
+    val device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice("00:11:22:33:AA:BB")
+    assertThat(device).isNotNull()
   }
 
   @Test
