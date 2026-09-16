@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
+import android.annotation.RequiresApi;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.Intent;
@@ -15,7 +16,6 @@ import android.net.DhcpInfo;
 import android.net.NetworkInfo;
 import android.net.wifi.BlockingOption;
 import android.net.wifi.ScanResult;
-import android.net.wifi.SoftApConfiguration;
 import android.net.wifi.WifiAvailableChannel;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -33,6 +33,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.ArraySet;
 import android.util.Pair;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -86,7 +87,8 @@ public class ShadowWifiManager {
   private boolean isWpa3SuiteBSupported = false;
   private boolean doesCallerHavePermissionForGetPrivilegedConfiguredNetworks = true;
   private boolean returnAddNetworkFailure = false;
-  private AddNetworkResult addNetworkPrivilegedResult = null;
+  // Actual type: WifiManager.AddNetworkResult (SDK 31+)
+  private Object addNetworkPrivilegedResult = null;
   private final AtomicInteger activeLockCount = new AtomicInteger(0);
   private final BitSet readOnlyNetworkIds = new BitSet();
   private final ConcurrentHashMap<WifiManager.OnWifiUsabilityStatsListener, Executor>
@@ -95,7 +97,8 @@ public class ShadowWifiManager {
   private Object networkScorer;
   @RealObject WifiManager wifiManager;
   private WifiConfiguration apConfig;
-  private SoftApConfiguration softApConfig;
+  // Actual type: SoftApConfiguration (SDK 30+)
+  private Object softApConfig;
   private final Object pnoRequestLock = new Object();
   private PnoScanRequest outstandingPnoScanRequest = null;
   private ImmutableList<WifiNetworkSuggestion> lastAddedSuggestions = ImmutableList.of();
@@ -115,10 +118,23 @@ public class ShadowWifiManager {
    * @param failureReason the reason for the network connection failure. This should be one of the
    *     values specified in {@code WifiManager#STATUS_LOCAL_ONLY_CONNECTION_FAILURE_*}
    */
-  public void triggerLocalConnectionFailure(WifiNetworkSpecifier specifier, int failureReason) {
-    localOnlyConnectionFailureListenerExecutorMap.forEach(
-        (failureListener, executor) ->
-            executor.execute(() -> failureListener.onConnectionFailed(specifier, failureReason)));
+  @RequiresApi(UPSIDE_DOWN_CAKE)
+  public void triggerLocalConnectionFailure(Object specifier, int failureReason) {
+    Preconditions.checkArgument(specifier instanceof WifiNetworkSpecifier);
+    for (Map.Entry<LocalOnlyConnectionFailureListener, Executor> entry :
+        localOnlyConnectionFailureListenerExecutorMap.entrySet()) {
+      LocalOnlyConnectionFailureListener failureListener = entry.getKey();
+      entry
+          .getValue()
+          .execute(
+              new Runnable() {
+                @Override
+                public void run() {
+                  failureListener.onConnectionFailed(
+                      (WifiNetworkSpecifier) specifier, failureReason);
+                }
+              });
+    }
   }
 
   /** Uses the given result as the return value for {@link WifiManager#addNetworkSuggestions}. */
@@ -142,19 +158,23 @@ public class ShadowWifiManager {
 
   @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void addLocalOnlyConnectionFailureListener(
-      Executor executor, LocalOnlyConnectionFailureListener listener) {
+      Executor executor,
+      @ClassName("android.net.wifi.WifiManager$LocalOnlyConnectionFailureListener")
+          Object listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Listener cannot be null");
     }
     if (executor == null) {
       throw new IllegalArgumentException("Executor cannot be null");
     }
-    localOnlyConnectionFailureListenerExecutorMap.putIfAbsent(listener, executor);
+    localOnlyConnectionFailureListenerExecutorMap.putIfAbsent(
+        (LocalOnlyConnectionFailureListener) listener, executor);
   }
 
   @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void removeLocalOnlyConnectionFailureListener(
-      LocalOnlyConnectionFailureListener listener) {
+      @ClassName("android.net.wifi.WifiManager$LocalOnlyConnectionFailureListener")
+          Object listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Listener cannot be null");
     }
@@ -344,8 +364,12 @@ public class ShadowWifiManager {
   /**
    * Sets the result of {@link #addNetworkPrivileged(WifiConfiguration)}. Subsequent calls to
    * addNetworkPrivileged() will return this value.
+   *
+   * @param result an {@code android.net.wifi.WifiManager.AddNetworkResult}
    */
-  public void setAddNetworkPrivilegedResult(AddNetworkResult result) {
+  @RequiresApi(S)
+  public void setAddNetworkPrivilegedResult(Object result) {
+    Preconditions.checkArgument(result == null || result instanceof AddNetworkResult);
     this.addNetworkPrivilegedResult = result;
   }
 
@@ -355,7 +379,8 @@ public class ShadowWifiManager {
    * (PO), system app, and privileged apps but this shadow can be called by all apps.
    */
   @Implementation(minSdk = S)
-  protected AddNetworkResult addNetworkPrivileged(WifiConfiguration config) {
+  protected @ClassName("android.net.wifi.WifiManager$AddNetworkResult") Object addNetworkPrivileged(
+      WifiConfiguration config) {
     if (addNetworkPrivilegedResult != null) {
       return addNetworkPrivilegedResult;
     }
@@ -711,13 +736,14 @@ public class ShadowWifiManager {
   }
 
   @Implementation(minSdk = R)
-  protected boolean setSoftApConfiguration(SoftApConfiguration softApConfig) {
+  protected boolean setSoftApConfiguration(
+      @ClassName("android.net.wifi.SoftApConfiguration") Object softApConfig) {
     this.softApConfig = softApConfig;
     return true;
   }
 
   @Implementation(minSdk = R)
-  protected SoftApConfiguration getSoftApConfiguration() {
+  protected @ClassName("android.net.wifi.SoftApConfiguration") Object getSoftApConfiguration() {
     return softApConfig;
   }
 
@@ -726,10 +752,11 @@ public class ShadowWifiManager {
    * frequencies for convenience.
    */
   public void setUsableChannels(List<Integer> frequencies) {
-    this.usableChannels =
-        frequencies.stream()
-            .map(frequency -> new WifiAvailableChannel(frequency, 0 /* operation mode */))
-            .collect(ImmutableList.toImmutableList());
+    ImmutableList.Builder<WifiAvailableChannel> channels = ImmutableList.builder();
+    for (int frequency : frequencies) {
+      channels.add(new WifiAvailableChannel(frequency, 0 /* operation mode */));
+    }
+    this.usableChannels = channels.build();
   }
 
   /**
@@ -800,13 +827,14 @@ public class ShadowWifiManager {
   }
 
   @Implementation(minSdk = BAKLAVA /* BAKLAVA */)
-  protected void disallowCurrentSuggestedNetwork(BlockingOption blockingOption) {
-    disallowedBlockingOptions.add(blockingOption);
+  protected void disallowCurrentSuggestedNetwork(
+      @ClassName("android.net.wifi.BlockingOption") Object blockingOption) {
+    disallowedBlockingOptions.add((BlockingOption) blockingOption);
   }
 
   /**
    * Returns the list of {@link BlockingOption}s passed to {@link
-   * #disallowCurrentSuggestedNetwork(BlockingOption)}.
+   * #disallowCurrentSuggestedNetwork(Object)}.
    */
   public List<BlockingOption> getDisallowedBlockingOptions() {
     return disallowedBlockingOptions;

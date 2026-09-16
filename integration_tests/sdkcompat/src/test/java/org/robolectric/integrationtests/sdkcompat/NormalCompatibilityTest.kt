@@ -57,6 +57,15 @@ class NormalCompatibilityTest {
     }
   }
 
+  // These shadows reference framework types newer than this module's SDK. Such a type named in a
+  // field or method descriptor is resolved while the shadow is wired up, which would make the
+  // whole shadow unloadable here. See https://github.com/robolectric/robolectric/issues/11520
+  @Test
+  fun `Initialize WifiManager succeed`() {
+    val wifiManager = application.getSystemService(Context.WIFI_SERVICE)
+    assertThat(wifiManager).isNotNull()
+  }
+
   @Test
   fun `Initialize TelephonyManager succeed`() {
     val telephonyManager = application.getSystemService(Context.TELEPHONY_SERVICE)
