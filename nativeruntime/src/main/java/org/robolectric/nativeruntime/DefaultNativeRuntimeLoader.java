@@ -70,12 +70,6 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   private static final AtomicReference<NativeRuntimeLoader> nativeRuntimeLoader =
       new AtomicReference<>();
 
-  /**
-   * Set to {@code false} to extract the native runtime's data assets into a fresh temporary
-   * directory on every load, which is the behavior from before these assets were cached.
-   */
-  private static final String CACHE_ASSETS_PROPERTY = "robolectric.nativeruntime.cacheAssets";
-
   private static final String ASSET_CACHE_DIR_NAME = "robolectric-nativeruntime-assets";
 
   /** Written once a cache directory is fully populated, so partial extractions are never used. */
@@ -521,9 +515,6 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
    * is only written once the copy has finished, so a partially populated directory is never used.
    */
   private Path sharedAssetDirectory(String group, URL source, AssetCopier copier) {
-    if (!Boolean.parseBoolean(System.getProperty(CACHE_ASSETS_PROPERTY, "true"))) {
-      return null;
-    }
     Path directory;
     try {
       String identity = archiveIdentity(source);

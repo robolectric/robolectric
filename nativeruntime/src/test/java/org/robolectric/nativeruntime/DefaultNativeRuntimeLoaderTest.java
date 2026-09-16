@@ -8,6 +8,7 @@ import android.database.CursorWindow;
 import android.database.sqlite.SQLiteDatabase;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemAlreadyExistsException;
@@ -20,6 +21,7 @@ import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
@@ -31,6 +33,7 @@ public final class DefaultNativeRuntimeLoaderTest {
   ExecutorService executor = Executors.newSingleThreadExecutor();
 
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
+  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
   public void setUp() {
@@ -76,8 +79,8 @@ public final class DefaultNativeRuntimeLoaderTest {
     assume().that(hasResource("fonts")).isTrue();
     URI fontsUri = resourceUri("fonts/");
     assume().that(fontsUri.getScheme()).isEqualTo("jar");
-    // Sharing would let a warm cache skip the copy, and with it the filesystem this covers.
-    setSystemPropertyRule.set("robolectric.nativeruntime.cacheAssets", "false");
+    // A warm cache would skip the copy, and with it the filesystem this covers.
+    useEmptyAssetCache();
 
     FileSystem alreadyOpen;
     boolean ownsFileSystem;
@@ -92,32 +95,12 @@ public final class DefaultNativeRuntimeLoaderTest {
       DefaultNativeRuntimeLoader defaultNativeRuntimeLoader = new DefaultNativeRuntimeLoader();
       defaultNativeRuntimeLoader.ensureLoaded();
 
-      Path root = defaultNativeRuntimeLoader.getDirectory();
-      assertThat(root.resolve("fonts/fonts.xml").toFile().exists()).isTrue();
+      assertThat(fontsXml().exists()).isTrue();
       assertThat(alreadyOpen.isOpen()).isTrue();
     } finally {
       if (ownsFileSystem) {
         alreadyOpen.close();
       }
-    }
-  }
-
-  @Test
-  public void extracts_fontsAndIcuData_whenAssetsAreNotShared() {
-    assume().that(hasResource("fonts")).isTrue();
-    assume().that(hasResource("icu/icudt68l.dat")).isTrue();
-    setSystemPropertyRule.set("robolectric.nativeruntime.cacheAssets", "false");
-
-    DefaultNativeRuntimeLoader loader = new DefaultNativeRuntimeLoader();
-    loader.ensureLoaded();
-
-    // Without sharing, the assets land in this instance's own temporary directory.
-    assertThat(new File(System.getProperty("icu.data.path")).exists()).isTrue();
-    assertThat(System.getProperty("icu.data.path"))
-        .startsWith(loader.getDirectory().toAbsolutePath().toString());
-    if (RuntimeEnvironment.getApiLevel() >= O) {
-      assertThat(fontsXml().exists()).isTrue();
-      assertThat((Object) loader.getHyphenDataDirectory()).isEqualTo(loader.getDirectory());
     }
   }
 
@@ -131,15 +114,19 @@ public final class DefaultNativeRuntimeLoaderTest {
     URI fontsUri = resourceUri("fonts/");
     assume().that(fontsUri.getScheme()).isEqualTo("jar");
     assume().that(isJarFileSystemOpen(fontsUri)).isFalse();
-    // Sharing would let a warm cache skip the copy, and with it the filesystem this covers.
-    setSystemPropertyRule.set("robolectric.nativeruntime.cacheAssets", "false");
+    // A warm cache would skip the copy, and with it the filesystem this covers.
+    useEmptyAssetCache();
 
     DefaultNativeRuntimeLoader defaultNativeRuntimeLoader = new DefaultNativeRuntimeLoader();
     defaultNativeRuntimeLoader.ensureLoaded();
 
-    Path root = defaultNativeRuntimeLoader.getDirectory();
-    assertThat(Files.exists(root.resolve("fonts/fonts.xml"))).isTrue();
-    assertThat(Files.exists(root.resolve("hyphen-data/hyph-af.hyb"))).isTrue();
+    assertThat(fontsXml().exists()).isTrue();
+    assertThat(
+            Files.exists(
+                defaultNativeRuntimeLoader
+                    .getHyphenDataDirectory()
+                    .resolve("hyphen-data/hyph-af.hyb")))
+        .isTrue();
     assertThat(isJarFileSystemOpen(fontsUri)).isFalse();
   }
 
@@ -184,6 +171,11 @@ public final class DefaultNativeRuntimeLoaderTest {
     assertThat((Object) fonts).isNotEqualTo(icu);
     assertThat((Object) fonts).isNotEqualTo(hyphenData);
     assertThat((Object) icu).isNotEqualTo(hyphenData);
+  }
+
+  /** Points the shared asset cache at an empty directory, so that this load has to copy. */
+  private void useEmptyAssetCache() throws IOException {
+    setSystemPropertyRule.set("java.io.tmpdir", temporaryFolder.newFolder().getAbsolutePath());
   }
 
   private static File fontsXml() {
