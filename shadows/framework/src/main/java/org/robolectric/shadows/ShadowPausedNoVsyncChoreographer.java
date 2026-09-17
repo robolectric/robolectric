@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
@@ -83,9 +84,9 @@ public class ShadowPausedNoVsyncChoreographer extends ShadowPausedChoreographer 
               lastFrameNanos / TimeUnit.MILLISECONDS.toNanos(1)
                   + ShadowChoreographer.getFrameDelay().toMillis(),
               now);
-      // nextVsyncTime is not optimally named , since this is explictly not using vsync
+      // nextVsyncTime is not optimally named , since this is explicitly not using vsync
       ShadowChoreographer.setNextVsyncTimeNanos(TimeUnit.MILLISECONDS.toNanos(nextFrameTimeMs));
-      if (!isPaused()) {
+      if (!isPaused() && ShadowLooper.looperMode() != LooperMode.Mode.RUNNING) {
         // not paused mode means clock needs to auto advanced to next frame time
         // mirror the logic in upstream to determine when the next frame is scheduled
         ShadowPausedSystemClock.advanceBy(
