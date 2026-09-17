@@ -5,9 +5,9 @@ import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toList;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -24,12 +24,12 @@ import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Ascii;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,11 +54,16 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowCompanionDeviceManager {
 
   private final Set<RoboAssociationInfo> associations = new HashSet<>();
-  private final Set<Object> observingAssociationsIds = new HashSet<>();
+  private final Set<Integer> observingAssociationsIds = new HashSet<>();
+  private final Set<String> observingDeviceAddresses = new HashSet<>();
   private final Set<ComponentName> hasNotificationAccess = new HashSet<>();
   private final Set<Integer> specifiedRemovableIds = new HashSet<>();
   private final Map<Integer, InputStream> attachedInputStreams = new ConcurrentHashMap<>();
   private final Map<Integer, OutputStream> attachedOutputStreams = new ConcurrentHashMap<>();
+  private final Map<Integer, RuntimeException> attachSystemDataTransportExceptions =
+      new ConcurrentHashMap<>();
+  private final Map<Integer, RuntimeException> detachSystemDataTransportExceptions =
+      new ConcurrentHashMap<>();
   private final List<MessageListenerRecord> messageListenerRecords = new ArrayList<>();
   private final Map<String, ListenerHolder> listeners = new HashMap<>();
   private final Set<RequestedAction> requestedActions = new HashSet<>();
@@ -76,14 +81,16 @@ public class ShadowCompanionDeviceManager {
   private MacAddress lastSystemApiAssociationMacAddress;
   private CompanionDeviceManager.Callback lastAssociationCallback;
   private String lastObservingDevicePresenceDeviceAddress;
-  private int lastObservingDevicePresenceRequestAssociationId = -1;
+  private String lastStoppedObservingDevicePresenceDeviceAddress;
 
   private static final int DEFAULT_SYSTEMDATASYNCFLAGS = -1;
 
   @Implementation
   protected List<String> getAssociations() {
-    return ImmutableList.copyOf(
-        associations.stream().map(RoboAssociationInfo::deviceMacAddress).collect(toList()));
+    return associations.stream()
+        .map(RoboAssociationInfo::deviceMacAddress)
+        .filter(Objects::nonNull)
+        .collect(toImmutableList());
   }
 
   public void addAssociation(String deviceMacAddress) {
@@ -92,6 +99,22 @@ public class ShadowCompanionDeviceManager {
 
   public void addAssociation(AssociationInfo info) {
     associations.add(createShadowAssociationInfo(info));
+  }
+
+  /** Clears all associations. */
+  public void clearAssociations() {
+    associations.clear();
+  }
+
+  /** Sets the trusted status of an association. */
+  public void setAssociationTrusted(int id, boolean isTrusted) {
+    for (RoboAssociationInfo info : associations) {
+      if (info.id() == id) {
+        associations.remove(info);
+        associations.add(info.toBuilder().setIsTrusted(isTrusted).build());
+        return;
+      }
+    }
   }
 
   @Implementation
@@ -146,14 +169,42 @@ public class ShadowCompanionDeviceManager {
   @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   protected void attachSystemDataTransport(
       int associationId, InputStream inputStream, OutputStream outputStream) {
+    RuntimeException exception = attachSystemDataTransportExceptions.get(associationId);
+    if (exception != null) {
+      throw exception;
+    }
     attachedInputStreams.put(associationId, inputStream);
     attachedOutputStreams.put(associationId, outputStream);
   }
 
+  /** Sets an exception to be thrown when attachSystemDataTransport is called for associationId. */
+  public void setAttachSystemDataTransportException(
+      int associationId, @Nullable RuntimeException exception) {
+    if (exception == null) {
+      attachSystemDataTransportExceptions.remove(associationId);
+    } else {
+      attachSystemDataTransportExceptions.put(associationId, exception);
+    }
+  }
+
   @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
   protected void detachSystemDataTransport(int associationId) {
+    RuntimeException exception = detachSystemDataTransportExceptions.get(associationId);
+    if (exception != null) {
+      throw exception;
+    }
     attachedInputStreams.remove(associationId);
     attachedOutputStreams.remove(associationId);
+  }
+
+  /** Sets an exception to be thrown when detachSystemDataTransport is called for associationId. */
+  public void setDetachSystemDataTransportException(
+      int associationId, @Nullable RuntimeException exception) {
+    if (exception == null) {
+      detachSystemDataTransportExceptions.remove(associationId);
+    } else {
+      detachSystemDataTransportExceptions.put(associationId, exception);
+    }
   }
 
   @Implementation(minSdk = VERSION_CODES.TIRAMISU)
@@ -180,12 +231,13 @@ public class ShadowCompanionDeviceManager {
         RoboAssociationInfo.builder().setDeviceMacAddress(macAddress.toString()).build());
   }
 
-  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  @Implementation(minSdk = VERSION_CODES.S)
   protected void startObservingDevicePresence(String deviceAddress) {
     lastObservingDevicePresenceDeviceAddress = deviceAddress;
     for (RoboAssociationInfo association : associations) {
       if (association.deviceMacAddress() != null
           && Ascii.equalsIgnoreCase(deviceAddress, association.deviceMacAddress())) {
+        observingDeviceAddresses.add(deviceAddress);
         return;
       }
     }
@@ -196,7 +248,6 @@ public class ShadowCompanionDeviceManager {
   protected void startObservingDevicePresence(ObservingDevicePresenceRequest request) {
     Objects.requireNonNull(request, "ObservingDevicePresenceRequest cannot be null");
     int associationId = request.getAssociationId();
-    lastObservingDevicePresenceRequestAssociationId = associationId;
     for (RoboAssociationInfo association : associations) {
       if (associationId == association.id()) {
         observingAssociationsIds.add(associationId);
@@ -205,12 +256,25 @@ public class ShadowCompanionDeviceManager {
     }
   }
 
-  /**
-   * Returns the associationId from the request passed to {@code
-   * CompanionDeviceManager#startObservingDevicePresence(ObservingDevicePresenceRequest)}.
-   */
-  public int getLastObservingDevicePresenceRequestAssociationId() {
-    return lastObservingDevicePresenceRequestAssociationId;
+  @Implementation(minSdk = VERSION_CODES.S)
+  protected void stopObservingDevicePresence(String deviceAddress) {
+    lastStoppedObservingDevicePresenceDeviceAddress = deviceAddress;
+    for (RoboAssociationInfo association : associations) {
+      if (association.deviceMacAddress() != null
+          && Ascii.equalsIgnoreCase(deviceAddress, association.deviceMacAddress())) {
+        observingDeviceAddresses.removeIf(
+            observingAddress -> Ascii.equalsIgnoreCase(observingAddress, deviceAddress));
+        return;
+      }
+    }
+    throw new DeviceNotAssociatedException("Association does not exist");
+  }
+
+  @Implementation(minSdk = VERSION_CODES.BAKLAVA)
+  protected void stopObservingDevicePresence(ObservingDevicePresenceRequest request) {
+    Objects.requireNonNull(request, "ObservingDevicePresenceRequest cannot be null");
+    int associationId = request.getAssociationId();
+    observingAssociationsIds.remove(associationId);
   }
 
   @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -298,6 +362,19 @@ public class ShadowCompanionDeviceManager {
   }
 
   /**
+   * Returns the last device address passed to {@link
+   * CompanionDeviceManager#stopObservingDevicePresence(String)}.
+   *
+   * <p>Note that the value returned is only changed when calling {@link
+   * CompanionDeviceManager#stopObservingDevicePresence(String)} and will still be set in the event
+   * that this method throws an exception. Moreover, this value will unchanged if disassociate is
+   * called.
+   */
+  public String getLastStoppedObservingDevicePresenceDeviceAddress() {
+    return lastStoppedObservingDevicePresenceDeviceAddress;
+  }
+
+  /**
    * Returns the system data sync flags passed to {@code
    * CompanionDeviceManager#enableSystemDataSyncForTypes(int, int)} for the given association, or 0
    * if no such association exists.
@@ -336,6 +413,27 @@ public class ShadowCompanionDeviceManager {
    */
   public boolean isObservingDevicePresence(int associationId) {
     return observingAssociationsIds.contains(associationId);
+  }
+
+  /**
+   * Returns true if the given device address is being observed for device presence.
+   *
+   * @param address the device MAC address to check
+   * @return true if the given device address is being observed for device presence, false otherwise
+   */
+  public boolean isObservingDevicePresence(String address) {
+    return observingDeviceAddresses.stream()
+        .anyMatch(observingAddress -> Ascii.equalsIgnoreCase(observingAddress, address));
+  }
+
+  /** Returns an immutable set of device addresses currently being observed for device presence. */
+  public ImmutableSet<String> getObservedDeviceAddresses() {
+    return ImmutableSet.copyOf(observingDeviceAddresses);
+  }
+
+  /** Returns an immutable set of association IDs currently being observed for device presence. */
+  public ImmutableSet<Integer> getObservedAssociationIds() {
+    return ImmutableSet.copyOf(observingAssociationsIds);
   }
 
   /**
@@ -465,6 +563,7 @@ public class ShadowCompanionDeviceManager {
     aiBuilder.setAssociatedDevice(info.associatedDevice());
     aiBuilder.setSystemDataSyncFlags(info.systemDataSyncFlags());
     aiBuilder.setRevoked(info.revoked());
+    aiBuilder.setIsTrusted(info.isTrusted());
     return aiBuilder.build();
   }
 
@@ -473,6 +572,7 @@ public class ShadowCompanionDeviceManager {
     int systemDataSyncFlags = DEFAULT_SYSTEMDATASYNCFLAGS;
     boolean revoked = false;
     String tag = "";
+    boolean isTrusted = false;
     if (getApiLevel() > TIRAMISU) {
       associatedDevice = reflector(AssociationInfoReflector.class, info).getAssociatedDevice();
       systemDataSyncFlags =
@@ -481,6 +581,11 @@ public class ShadowCompanionDeviceManager {
     }
     if (getApiLevel() == VANILLA_ICE_CREAM) {
       tag = reflector(AssociationInfoReflector.class, info).getTag();
+    }
+    if (getApiLevel() > CINNAMON_BUN) {
+      if (ReflectionHelpers.hasMethod(AssociationInfo.class, "isTrusted")) {
+        isTrusted = reflector(AssociationInfoReflector.class, info).isTrusted();
+      }
     }
     return RoboAssociationInfo.create(
         info.getId(),
@@ -497,7 +602,8 @@ public class ShadowCompanionDeviceManager {
         info.getTimeApprovedMs(),
         // return value of getLastTimeConnectedMs changed from a long to a Long
         ReflectionHelpers.callInstanceMethod(info, "getLastTimeConnectedMs"),
-        systemDataSyncFlags);
+        systemDataSyncFlags,
+        isTrusted);
   }
 
   private static boolean checkPermission(String permission) {
@@ -540,9 +646,7 @@ public class ShadowCompanionDeviceManager {
     listeners.put(
         serviceName,
         ListenerHolder.create(
-            java.util.Arrays.stream(associationIds).boxed().collect(toImmutableSet()),
-            executor,
-            listener));
+            Arrays.stream(associationIds).boxed().collect(toImmutableSet()), executor, listener));
   }
 
   @Implementation(minSdk = CINNAMON_BUN)
@@ -666,6 +770,10 @@ public class ShadowCompanionDeviceManager {
 
     public abstract int systemDataSyncFlags();
 
+    public abstract boolean isTrusted();
+
+    public abstract Builder toBuilder();
+
     public static Builder builder() {
       return new AutoValue_ShadowCompanionDeviceManager_RoboAssociationInfo.Builder()
           .setId(1)
@@ -676,7 +784,8 @@ public class ShadowCompanionDeviceManager {
           .setAssociatedDevice(null)
           .setTimeApprovedMs(0)
           .setLastTimeConnectedMs(0L)
-          .setSystemDataSyncFlags(DEFAULT_SYSTEMDATASYNCFLAGS);
+          .setSystemDataSyncFlags(DEFAULT_SYSTEMDATASYNCFLAGS)
+          .setIsTrusted(false);
     }
 
     public static RoboAssociationInfo create(
@@ -693,7 +802,8 @@ public class ShadowCompanionDeviceManager {
         boolean revoked,
         long timeApprovedMs,
         long lastTimeConnectedMs,
-        int systemDataSyncFlags) {
+        int systemDataSyncFlags,
+        boolean isTrusted) {
       return RoboAssociationInfo.builder()
           .setId(id)
           .setUserId(userId)
@@ -709,6 +819,7 @@ public class ShadowCompanionDeviceManager {
           .setRevoked(revoked)
           .setLastTimeConnectedMs(lastTimeConnectedMs)
           .setSystemDataSyncFlags(systemDataSyncFlags)
+          .setIsTrusted(isTrusted)
           .build();
     }
 
@@ -743,6 +854,8 @@ public class ShadowCompanionDeviceManager {
 
       public abstract Builder setSystemDataSyncFlags(int flags);
 
+      public abstract Builder setIsTrusted(boolean isTrusted);
+
       public abstract RoboAssociationInfo build();
     }
   }
@@ -756,6 +869,8 @@ public class ShadowCompanionDeviceManager {
     boolean isRevoked();
 
     String getTag();
+
+    boolean isTrusted();
   }
 
   @ForType(className = "android.companion.ActionRequest")
