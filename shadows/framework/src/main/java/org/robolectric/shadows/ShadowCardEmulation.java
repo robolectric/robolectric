@@ -9,6 +9,7 @@ import android.content.Context;
 import android.nfc.INfcCardEmulation;
 import android.nfc.cardemulation.CardEmulation;
 import android.nfc.cardemulation.CardEmulation.NfcEventCallback;
+import android.nfc.cardemulation.PollingFrame;
 import android.provider.Settings;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -193,6 +194,29 @@ public class ShadowCardEmulation {
   public void triggerOnObserveModeStateChanged(boolean isEnabled) {
     triggerNfcEventCallback(
         callback -> ((NfcEventCallback) callback).onObserveModeStateChanged(isEnabled));
+  }
+
+  /**
+   * Utility function that triggers NfcEventCallback listeners to call
+   * onObserveModeDisabledInFirmware.
+   */
+  public void triggerOnObserveModeDisabledInFirmware(@Nullable PollingFrame exitFrame) {
+    triggerNfcEventCallback(
+        callback -> ((NfcEventCallback) callback).onObserveModeDisabledInFirmware(exitFrame));
+  }
+
+  /**
+   * Utility function that triggers NfcEventCallback listeners to call
+   * onObserveModeDisabledInFirmware with a null {@link PollingFrame}.
+   */
+  public void triggerOnObserveModeDisabledInFirmware() {
+    triggerOnObserveModeDisabledInFirmware(null);
+  }
+
+  /** Utility function that triggers NfcEventCallback listeners to call onOffHostAidSelected. */
+  public void triggerOnOffHostAidSelected(String aid, String offHostSecureElement) {
+    triggerNfcEventCallback(
+        callback -> ((NfcEventCallback) callback).onOffHostAidSelected(aid, offHostSecureElement));
   }
 
   private void triggerNfcEventCallback(Consumer<Object> callbackConsumer) {
