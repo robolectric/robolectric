@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.pm.ActivityInfo;
@@ -26,6 +27,7 @@ import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.view.Surface;
 import java.io.FileDescriptor;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -196,6 +198,18 @@ public class ShadowNativeHardwareRenderer {
     return HardwareRendererNatives.nSyncAndDrawFrame(nativeProxy, frameInfo, size);
   }
 
+  /**
+   * HWUI's CanvasContext::prepareTree drops a frame as AlreadyDrawn when its vsync is less than
+   * this far from the vsync of the previous swap.
+   */
+  private static final long ALREADY_DRAWN_VSYNC_THRESHOLD_NANOS = 2_000_000L;
+
+  /**
+   * The host-time vsync of the last frame synced in this sandbox. HWUI's RenderThread, and with it
+   * the vsync of the last swap, outlives individual tests, so this does too.
+   */
+  private static long lastHostVsyncNanos;
+
   @Implementation
   protected int syncAndDrawFrame(FrameInfo frameInfo) {
 
@@ -211,6 +225,14 @@ public class ShadowNativeHardwareRenderer {
 
     adjustFrameInfoTimes(frameInfo.frameInfo, offset);
 
+    if (isSameHostVsync(frameInfo.frameInfo[FrameInfo.VSYNC])) {
+      // The adjusted vsync is the host time of this call, not Robolectric's frame time, so frames
+      // that Robolectric's clock spaces apart but that are synced within 2ms of each other in real
+      // time look to HWUI like the same vsync pulse, and it would drop all but the first. Each
+      // synced frame here is a distinct frame, so make HWUI draw it.
+      reflector(HardwareRendererReflector.class, realHardwareRenderer).forceDrawNextFrame();
+    }
+
     int result =
         reflector(HardwareRendererReflector.class, realHardwareRenderer)
             .syncAndDrawFrame(frameInfo);
@@ -222,6 +244,22 @@ public class ShadowNativeHardwareRenderer {
       adjustFrameInfoTimes(frameInfo.frameInfo, -offset);
     }
     return result;
+  }
+
+  /**
+   * Returns whether HWUI would treat a frame with the given host-time vsync as belonging to the
+   * same vsync pulse as the previous frame, and records it as the previous frame's vsync.
+   */
+  private static synchronized boolean isSameHostVsync(long vsync) {
+    // nForceDrawNextFrame only has a native implementation from VANILLA_ICE_CREAM.
+    if (RuntimeEnvironment.getApiLevel() < VANILLA_ICE_CREAM || vsync <= 0) {
+      return false;
+    }
+    boolean sameVsync =
+        lastHostVsyncNanos != 0
+            && Math.abs(vsync - lastHostVsyncNanos) < ALREADY_DRAWN_VSYNC_THRESHOLD_NANOS;
+    lastHostVsyncNanos = vsync;
+    return sameVsync;
   }
 
   private static void adjustFrameInfoTimes(long[] frameInfo, long offset) {
@@ -557,6 +595,8 @@ public class ShadowNativeHardwareRenderer {
 
     @Direct
     int syncAndDrawFrame(FrameInfo frameInfo);
+
+    void forceDrawNextFrame();
   }
 
   /** Shadow picker for {@link HardwareRenderer}. */
