@@ -19,6 +19,9 @@ public final class FrameMetricsBuilder {
   // android.view.FrameMetrics$Index defines all of these values, but has RetentionPolicy.SOURCE,
   // preventing use of reflection to read them.
   private static final int FLAGS_INDEX = 0;
+  // FRAME_TIMELINE_VSYNC_ID was introduced in SDK 36+, pushing all other indices up by 1.
+  private static final int FRAME_TIMELINE_VSYNC_ID_INDEX =
+      RuntimeEnvironment.getApiLevel() <= R ? -1 : 1;
   private static final int INTENDED_VSYNC_INDEX = RuntimeEnvironment.getApiLevel() <= R ? 1 : 2;
   private static final int VSYNC_INDEX = RuntimeEnvironment.getApiLevel() <= R ? 2 : 3;
 
@@ -60,6 +63,9 @@ public final class FrameMetricsBuilder {
     // This value is left shifted 0 in the real code.
     timingData[FLAGS_INDEX] = getMetric(FrameMetrics.FIRST_DRAW_FRAME);
 
+    if (FRAME_TIMELINE_VSYNC_ID_INDEX >= 0) {
+      timingData[FRAME_TIMELINE_VSYNC_ID_INDEX] = getMetric(FrameMetrics.FRAME_TIMELINE_VSYNC_ID);
+    }
     timingData[INTENDED_VSYNC_INDEX] = getMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP);
     timingData[VSYNC_INDEX] = getMetric(FrameMetrics.VSYNC_TIMESTAMP);
 
