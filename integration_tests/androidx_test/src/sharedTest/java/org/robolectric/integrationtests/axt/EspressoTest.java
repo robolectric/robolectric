@@ -17,6 +17,7 @@ import static org.junit.Assert.assertThrows;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.KeyEvent;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -190,6 +191,13 @@ public final class EspressoTest {
 
   @Test
   public void changeText_withCloseSoftKeyboard() {
+    // The activity keeps the IME out of its window, but closeSoftKeyboard needs one to answer it.
+    // This test injects no keys, so letting the IME back in is safe here.
+    activityRule
+        .getScenario()
+        .onActivity(
+            activity ->
+                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM));
     // Set text and then close the soft keyboard. This uses replaceText rather than typeText
     // because injected keystrokes are occasionally replayed on a slow device, which duplicates
     // a character; typeText itself is covered by the typeText_* tests above.
