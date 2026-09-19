@@ -2,7 +2,7 @@ package org.robolectric.integrationtests.axt;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.text.InputType;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import org.robolectric.integration.axt.R;
@@ -18,12 +18,14 @@ public class EspressoActivity extends Activity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+    // Keep the IME out of this window. Espresso types by injecting key events, and an IME such as
+    // Gboard takes those keys and hands the text back later, after Espresso has stopped waiting.
+    // On a slow emulator that loses, repeats or reorders typed characters.
+    getWindow().addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+
     setContentView(R.layout.espresso_activity);
 
     editText = findViewById(R.id.edit_text);
-    // Disable auto-correct for EditText to avoid typed text is changed
-    // by these features when running tests.
-    editText.setInputType(editText.getInputType() & (~InputType.TYPE_TEXT_FLAG_AUTO_CORRECT));
 
     button = findViewById(R.id.button);
     button.setOnClickListener(view -> buttonClicked = true);
