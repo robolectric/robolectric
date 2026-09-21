@@ -34,7 +34,7 @@ kotlin = "2.4.20"
 ksp = "2.3.12"
 
 # https://github.com/ZacSweers/kotlin-compile-testing/releases
-kctfork = "0.13.0"
+kctfork = "0.14.0"
 
 # https://github.com/Kotlin/kotlinx.coroutines/releases/
 kotlinx-coroutines = '1.11.0'
