@@ -4,12 +4,15 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.graphics.Matrix;
 import android.os.Build;
+import android.view.InputDevice;
 import android.view.MotionEvent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowMotionEventTest {
@@ -118,6 +121,69 @@ public class ShadowMotionEventTest {
       assertEquals(30.0f, event.getAxisValue(MotionEvent.AXIS_RELATIVE_X), 0);
       assertEquals(40.0f, event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y), 0);
     }
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void getCursorPosition_nonMouseSource_returnsInvalidCursorPosition() {
+    assertThat(event.getXCursorPosition())
+        .isEqualTo(NativeInput.MotionEvent.INVALID_CURSOR_POSITION);
+    assertThat(event.getYCursorPosition())
+        .isEqualTo(NativeInput.MotionEvent.INVALID_CURSOR_POSITION);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void getCursorPosition_mouseSource_returnsPointerCoordinates() {
+    MotionEvent event = createMouseEvent(createCoords(1.0f, 10.0f));
+
+    assertThat(event.getXCursorPosition()).isEqualTo(1.0f);
+    assertThat(event.getYCursorPosition()).isEqualTo(10.0f);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void getCursorPosition_multiplePointers_returnsAverageCoordinates() {
+    MotionEvent event = createMouseEvent(createCoords(0.0f, 0.0f), createCoords(2.0f, 20.0f));
+
+    // Default cursor position is the average of the pointer coordinates.
+    assertThat(event.getXCursorPosition()).isEqualTo(1.0f);
+    assertThat(event.getYCursorPosition()).isEqualTo(10.0f);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void getCursorPosition_transform_appliesMatrixTransformation() {
+    MotionEvent event = createMouseEvent(createCoords(10.0f, 100.0f));
+
+    Matrix matrix = new Matrix();
+    matrix.setScale(2.0f, 3.0f);
+    matrix.postTranslate(1.0f, 2.0f);
+    event.transform(matrix);
+
+    assertThat(event.getXCursorPosition()).isEqualTo(21.0f); // (10.0 * 2.0) + 1.0
+    assertThat(event.getYCursorPosition()).isEqualTo(302.0f); // (100.0 * 3.0) + 2.0
+  }
+
+  private static MotionEvent createMouseEvent(MotionEvent.PointerCoords... coords) {
+    int[] pointerIds = new int[coords.length];
+    for (int i = 0; i < coords.length; i++) {
+      pointerIds[i] = i;
+    }
+    return MotionEvent.obtain(
+        /* downTime= */ 100,
+        /* eventTime= */ 200,
+        /* action= */ MotionEvent.ACTION_MOVE,
+        /* pointerCount= */ coords.length,
+        pointerIds,
+        coords,
+        /* metaState= */ 0,
+        /* xPrecision= */ 1.0f,
+        /* yPrecision= */ 1.0f,
+        /* deviceId= */ 0,
+        /* edgeFlags= */ 0,
+        /* source= */ InputDevice.SOURCE_MOUSE,
+        /* flags= */ 0);
   }
 
   private static MotionEvent createMotionEventForPointerCoords(MotionEvent.PointerCoords coords) {

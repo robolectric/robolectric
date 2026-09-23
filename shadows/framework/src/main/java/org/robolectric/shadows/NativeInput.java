@@ -289,6 +289,8 @@ public class NativeInput {
     @SuppressWarnings("FloatingPointLiteralPrecision")
     private static final double M_PI_2 = 1.57079632679489661923f; /* pi/2 */
 
+    public static final float INVALID_CURSOR_POSITION = Float.NaN;
+
     public static final int ACTION_MASK = 0xff;
     public static final int ACTION_DOWN = 0;
     public static final int ACTION_UP = 1;
@@ -311,6 +313,8 @@ public class NativeInput {
     private float mYOffset;
     private float mXPrecision;
     private float mYPrecision;
+    private float mRawXCursorPosition = INVALID_CURSOR_POSITION;
+    private float mRawYCursorPosition = INVALID_CURSOR_POSITION;
     private long mDownTime;
     private List<PointerProperties> mPointerProperties = new ArrayList<>();
     private List<Long> mSampleEventTimes = new ArrayList<>();
@@ -396,6 +400,27 @@ public class NativeInput {
 
     public float getYPrecision() {
       return mYPrecision;
+    }
+
+    public float getRawXCursorPosition() {
+      return mRawXCursorPosition;
+    }
+
+    public float getXCursorPosition() {
+      return mRawXCursorPosition + mXOffset;
+    }
+
+    public float getRawYCursorPosition() {
+      return mRawYCursorPosition;
+    }
+
+    public float getYCursorPosition() {
+      return mRawYCursorPosition + mYOffset;
+    }
+
+    public void setCursorPosition(float x, float y) {
+      mRawXCursorPosition = x - mXOffset;
+      mRawYCursorPosition = y - mYOffset;
     }
 
     public long getDownTime() {
@@ -715,6 +740,8 @@ public class NativeInput {
       mYOffset = yOffset;
       mXPrecision = xPrecision;
       mYPrecision = yPrecision;
+      mRawXCursorPosition = INVALID_CURSOR_POSITION;
+      mRawYCursorPosition = INVALID_CURSOR_POSITION;
       mDownTime = downTime;
       mPointerProperties.clear();
       for (int i = 0; i < pointerCount; i++) {
@@ -739,6 +766,8 @@ public class NativeInput {
       mYOffset = other.mYOffset;
       mXPrecision = other.mXPrecision;
       mYPrecision = other.mYPrecision;
+      mRawXCursorPosition = other.mRawXCursorPosition;
+      mRawYCursorPosition = other.mRawYCursorPosition;
       mDownTime = other.mDownTime;
       mPointerProperties.clear();
       for (PointerProperties pointerProperties : other.mPointerProperties) {
@@ -781,6 +810,8 @@ public class NativeInput {
       mYOffset *= scaleFactor;
       mXPrecision *= scaleFactor;
       mYPrecision *= scaleFactor;
+      mRawXCursorPosition *= scaleFactor;
+      mRawYCursorPosition *= scaleFactor;
       int numSamples = mSamplePointerCoords.size();
       for (int i = 0; i < numSamples; i++) {
         mSamplePointerCoords.get(i).scale(scaleFactor);
@@ -809,6 +840,12 @@ public class NativeInput {
       final Ref<Float> originX = new Ref<>(0f);
       final Ref<Float> originY = new Ref<>(0f);
       transformPoint(matrix, 0, 0, originX, originY);
+      // Apply the transformation to cursor position.
+      final Ref<Float> cursorX = new Ref<>(mRawXCursorPosition + oldXOffset);
+      final Ref<Float> cursorY = new Ref<>(mRawYCursorPosition + oldYOffset);
+      transformPoint(matrix, cursorX.get(), cursorY.get(), cursorX, cursorY);
+      mRawXCursorPosition = cursorX.get() - mXOffset;
+      mRawYCursorPosition = cursorY.get() - mYOffset;
       // Apply the transformation to all samples.
       int numSamples = mSamplePointerCoords.size();
       for (int i = 0; i < numSamples; i++) {
@@ -896,6 +933,8 @@ public class NativeInput {
       mYOffset = parcel.readFloat();
       mXPrecision = parcel.readFloat();
       mYPrecision = parcel.readFloat();
+      mRawXCursorPosition = parcel.readFloat();
+      mRawYCursorPosition = parcel.readFloat();
       mDownTime = parcel.readLong();
       mPointerProperties = new ArrayList<>(pointerCount);
       mSampleEventTimes = new ArrayList<>(sampleCount);
@@ -938,6 +977,8 @@ public class NativeInput {
       parcel.writeFloat(mYOffset);
       parcel.writeFloat(mXPrecision);
       parcel.writeFloat(mYPrecision);
+      parcel.writeFloat(mRawXCursorPosition);
+      parcel.writeFloat(mRawYCursorPosition);
       parcel.writeLong(mDownTime);
       for (int i = 0; i < pointerCount; i++) {
         PointerProperties properties = mPointerProperties.get(i);
