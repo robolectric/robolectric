@@ -7,6 +7,8 @@ import static org.robolectric.Shadows.shadowOf;
 import android.nfc.tech.IsoDep;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.Callable;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +35,19 @@ public final class ShadowIsoDepTest {
   public void nextTransceive() throws Exception {
     shadowOf(isoDep).setNextTransceiveResponse(new byte[] {1, 2, 3});
     assertThat(isoDep.transceive(new byte[0])).isEqualTo(new byte[] {1, 2, 3});
+    assertThrows(IOException.class, () -> isoDep.transceive(new byte[0]));
+  }
+
+  @Test
+  public void transceiveResponseQueue() throws Exception {
+    Queue<byte[]> queue = new LinkedList<>();
+    queue.add(new byte[] {1, 2});
+    queue.add(new byte[] {3, 4});
+    queue.add(null);
+    shadowOf(isoDep).setTransceiveResponseQueue(queue);
+
+    assertThat(isoDep.transceive(new byte[0])).isEqualTo(new byte[] {1, 2});
+    assertThat(isoDep.transceive(new byte[0])).isEqualTo(new byte[] {3, 4});
     assertThrows(IOException.class, () -> isoDep.transceive(new byte[0]));
   }
 
