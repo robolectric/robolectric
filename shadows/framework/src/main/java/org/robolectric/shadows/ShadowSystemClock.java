@@ -83,8 +83,11 @@ public abstract class ShadowSystemClock {
   public static void advanceBy(Duration duration) {
     if (looperMode() == Mode.LEGACY) {
       SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + duration.toMillis());
-    } else {
+    } else if (looperMode() == Mode.PAUSED || looperMode() == Mode.INSTRUMENTATION_TEST) {
       ShadowPausedSystemClock.internalAdvanceBy(duration);
+    } else {
+      throw new UnsupportedOperationException(
+          "advanceBy is not supported in " + looperMode() + " mode.");
     }
   }
 
@@ -127,7 +130,10 @@ public abstract class ShadowSystemClock {
   public static class Picker extends LooperShadowPicker<ShadowSystemClock> {
 
     public Picker() {
-      super(ShadowLegacySystemClock.class, ShadowPausedSystemClock.class);
+      super(
+          ShadowLegacySystemClock.class,
+          ShadowPausedSystemClock.class,
+          ShadowRunningSystemClock.class);
     }
   }
 }
