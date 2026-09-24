@@ -274,6 +274,73 @@ public class ShadowCompanionDeviceManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testDisassociate_byMacAddress_clearsPresenceObservation() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+    companionDeviceManager.startObservingDevicePresence(MAC_ADDRESS);
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(MAC_ADDRESS)).isTrue();
+
+    companionDeviceManager.disassociate(MAC_ADDRESS);
+
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(MAC_ADDRESS)).isFalse();
+    assertThat(shadowCompanionDeviceManager.getObservedDeviceAddresses())
+        .doesNotContain(MAC_ADDRESS);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.BAKLAVA)
+  public void testDisassociate_byId_clearsPresenceObservation() {
+    int associationId = 1;
+    AssociationInfo info =
+        AssociationInfoBuilder.newBuilder()
+            .setId(associationId)
+            .setDeviceMacAddress(MAC_ADDRESS)
+            .build();
+    shadowCompanionDeviceManager.addAssociation(info);
+    ObservingDevicePresenceRequest request =
+        new ObservingDevicePresenceRequest.Builder().setAssociationId(associationId).build();
+    shadowCompanionDeviceManager.startObservingDevicePresence(request);
+    companionDeviceManager.startObservingDevicePresence(MAC_ADDRESS);
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(associationId)).isTrue();
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(MAC_ADDRESS)).isTrue();
+
+    companionDeviceManager.disassociate(associationId);
+
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(associationId)).isFalse();
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(MAC_ADDRESS)).isFalse();
+    assertThat(shadowCompanionDeviceManager.getObservedAssociationIds())
+        .doesNotContain(associationId);
+    assertThat(shadowCompanionDeviceManager.getObservedDeviceAddresses())
+        .doesNotContain(MAC_ADDRESS);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.BAKLAVA)
+  public void testClearAssociations_clearsPresenceObservation() {
+    int associationId = 1;
+    AssociationInfo info =
+        AssociationInfoBuilder.newBuilder()
+            .setId(associationId)
+            .setDeviceMacAddress(MAC_ADDRESS)
+            .build();
+    shadowCompanionDeviceManager.addAssociation(info);
+    ObservingDevicePresenceRequest request =
+        new ObservingDevicePresenceRequest.Builder().setAssociationId(associationId).build();
+    shadowCompanionDeviceManager.startObservingDevicePresence(request);
+    companionDeviceManager.startObservingDevicePresence(MAC_ADDRESS);
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(associationId)).isTrue();
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(MAC_ADDRESS)).isTrue();
+
+    shadowCompanionDeviceManager.clearAssociations();
+
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(associationId)).isFalse();
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(MAC_ADDRESS)).isFalse();
+    assertThat(shadowCompanionDeviceManager.getObservedAssociationIds()).isEmpty();
+    assertThat(shadowCompanionDeviceManager.getObservedDeviceAddresses()).isEmpty();
+    assertThat(companionDeviceManager.getAssociations()).isEmpty();
+  }
+
+  @Test
   public void testAssociate_handlerVariant_updatesShadow() {
     AssociationRequest request = new AssociationRequest.Builder().build();
     CompanionDeviceManager.Callback callback = createCallback();
@@ -322,6 +389,31 @@ public class ShadowCompanionDeviceManagerTest {
     companionDeviceManager.startObservingDevicePresence(MAC_ADDRESS);
     assertThat(shadowCompanionDeviceManager.getLastObservingDevicePresenceDeviceAddress())
         .isEqualTo(MAC_ADDRESS);
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(MAC_ADDRESS)).isTrue();
+    assertThat(shadowCompanionDeviceManager.getObservedDeviceAddresses()).contains(MAC_ADDRESS);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testStopObservingDevicePresence_deviceNotAssociated_throwsException() {
+    assertThrows(
+        DeviceNotAssociatedException.class,
+        () -> companionDeviceManager.stopObservingDevicePresence(MAC_ADDRESS));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testStartAndStopObservingDevicePresence_deviceAssociated_updatesShadow() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+
+    companionDeviceManager.startObservingDevicePresence(MAC_ADDRESS);
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(MAC_ADDRESS)).isTrue();
+    assertThat(shadowCompanionDeviceManager.getObservedDeviceAddresses()).contains(MAC_ADDRESS);
+
+    companionDeviceManager.stopObservingDevicePresence(MAC_ADDRESS);
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(MAC_ADDRESS)).isFalse();
+    assertThat(shadowCompanionDeviceManager.getObservedDeviceAddresses())
+        .doesNotContain(MAC_ADDRESS);
   }
 
   @Test
@@ -339,9 +431,31 @@ public class ShadowCompanionDeviceManagerTest {
         new ObservingDevicePresenceRequest.Builder().setAssociationId(associationId).build();
     shadowCompanionDeviceManager.startObservingDevicePresence(request);
 
-    assertThat(shadowCompanionDeviceManager.getLastObservingDevicePresenceRequestAssociationId())
-        .isEqualTo(associationId);
     assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(associationId)).isTrue();
+    assertThat(shadowCompanionDeviceManager.getObservedAssociationIds()).contains(associationId);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.BAKLAVA)
+  public void testStartAndStopObservingDevicePresence_withRequest_updatesShadow() {
+    int associationId = 1;
+    AssociationInfo info =
+        AssociationInfoBuilder.newBuilder()
+            .setId(associationId)
+            .setDeviceMacAddress(MAC_ADDRESS)
+            .build();
+    shadowCompanionDeviceManager.addAssociation(info);
+
+    ObservingDevicePresenceRequest request =
+        new ObservingDevicePresenceRequest.Builder().setAssociationId(associationId).build();
+    shadowCompanionDeviceManager.startObservingDevicePresence(request);
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(associationId)).isTrue();
+    assertThat(shadowCompanionDeviceManager.getObservedAssociationIds()).contains(associationId);
+
+    shadowCompanionDeviceManager.stopObservingDevicePresence(request);
+    assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(associationId)).isFalse();
+    assertThat(shadowCompanionDeviceManager.getObservedAssociationIds())
+        .doesNotContain(associationId);
   }
 
   @Test
@@ -356,10 +470,10 @@ public class ShadowCompanionDeviceManagerTest {
 
     shadowCompanionDeviceManager.startObservingDevicePresence(request);
 
-    assertThat(shadowCompanionDeviceManager.getLastObservingDevicePresenceRequestAssociationId())
-        .isEqualTo(nonExistentAssociationId);
     assertThat(shadowCompanionDeviceManager.isObservingDevicePresence(nonExistentAssociationId))
         .isFalse();
+    assertThat(shadowCompanionDeviceManager.getObservedAssociationIds())
+        .doesNotContain(nonExistentAssociationId);
   }
 
   @Test
@@ -370,11 +484,22 @@ public class ShadowCompanionDeviceManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.BAKLAVA)
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
   public void
-      testGetLastObservingDevicePresenceRequestAssociationId_startObservingDevicePresenceNotCalled_returnsNegative() {
-    assertThat(shadowCompanionDeviceManager.getLastObservingDevicePresenceRequestAssociationId())
-        .isEqualTo(-1);
+      testGetLastStoppedObservingDevicePresenceDeviceAddress_stopObservingDevicePresenceNotCalled_returnsNull() {
+    assertThat(shadowCompanionDeviceManager.getLastStoppedObservingDevicePresenceDeviceAddress())
+        .isNull();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void
+      testGetLastStoppedObservingDevicePresenceDeviceAddress_stopObservingDevicePresenceCalled_returnsLastDeviceAddress() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+    companionDeviceManager.stopObservingDevicePresence(MAC_ADDRESS);
+
+    assertThat(shadowCompanionDeviceManager.getLastStoppedObservingDevicePresenceDeviceAddress())
+        .isEqualTo(MAC_ADDRESS);
   }
 
   @Test
@@ -519,6 +644,33 @@ public class ShadowCompanionDeviceManagerTest {
     companionDeviceManager.detachSystemDataTransport(id);
     assertThat(shadowCompanionDeviceManager.getAttachedInputStream(id)).isNull();
     assertThat(shadowCompanionDeviceManager.getAttachedOutputStream(id)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void testAttachSystemDataTransport_withException_throwsException() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+    int id = shadowCompanionDeviceManager.getMyAssociations().get(0).getId();
+    shadowCompanionDeviceManager.setAttachSystemDataTransportException(
+        id, new IllegalStateException("Transport attach failed"));
+    InputStream inputStream = new ByteArrayInputStream(new byte[] {0x01});
+    OutputStream outputStream = new ByteArrayOutputStream();
+
+    assertThrows(
+        IllegalStateException.class,
+        () -> companionDeviceManager.attachSystemDataTransport(id, inputStream, outputStream));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void testDetachSystemDataTransport_withException_throwsException() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+    int id = shadowCompanionDeviceManager.getMyAssociations().get(0).getId();
+    shadowCompanionDeviceManager.setDetachSystemDataTransportException(
+        id, new IllegalStateException("Transport detach failed"));
+
+    assertThrows(
+        IllegalStateException.class, () -> companionDeviceManager.detachSystemDataTransport(id));
   }
 
   @Test
