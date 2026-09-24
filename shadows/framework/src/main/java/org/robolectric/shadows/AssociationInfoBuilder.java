@@ -33,7 +33,6 @@ public class AssociationInfoBuilder {
   private boolean revoked;
   private long lastTimeConnectedMs;
   private int systemDataSyncFlags;
-  private boolean isTrusted;
 
   private AssociationInfoBuilder() {}
 
@@ -115,11 +114,6 @@ public class AssociationInfoBuilder {
     return this;
   }
 
-  public AssociationInfoBuilder setIsTrusted(boolean isTrusted) {
-    this.isTrusted = isTrusted;
-    return this;
-  }
-
   public AssociationInfo build() {
     try {
       MacAddress macAddress =
@@ -176,10 +170,6 @@ public class AssociationInfoBuilder {
         }
         if (RuntimeEnvironment.getApiLevel() > CINNAMON_BUN) {
           reflector(BuilderReflector.class, builder).setAssociationToken(new UUID(0L, 0L));
-          if (ReflectionHelpers.hasMethod(
-              AssociationInfo.Builder.class, "setTrusted", boolean.class)) {
-            reflector(BuilderReflector.class, builder).setTrusted(isTrusted);
-          }
         }
         return builder.build();
       }
@@ -193,7 +183,5 @@ public class AssociationInfoBuilder {
     void setTag(String tag);
 
     void setAssociationToken(UUID associationToken);
-
-    void setTrusted(boolean isTrusted);
   }
 }
