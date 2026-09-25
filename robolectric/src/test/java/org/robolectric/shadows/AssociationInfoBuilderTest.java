@@ -80,5 +80,50 @@ public final class AssociationInfoBuilderTest {
       boolean isRevoked = ReflectionHelpers.callInstanceMethod(info, "isRevoked");
       assertThat(isRevoked).isEqualTo(REVOKED);
     }
+
+    if (ReflectionHelpers.hasMethod(AssociationInfo.class, "isTrusted")) {
+      boolean isTrusted = ReflectionHelpers.callInstanceMethod(info, "isTrusted");
+      assertThat(isTrusted).isFalse();
+    }
+  }
+
+  @Test
+  public void setIsTrusted_setsFieldAndReturnsBuilder() {
+    AssociationInfoBuilder builder = AssociationInfoBuilder.newBuilder();
+    assertThat(builder.setIsTrusted(true)).isSameInstanceAs(builder);
+    boolean isTrustedField = ReflectionHelpers.getField(builder, "isTrusted");
+    assertThat(isTrustedField).isTrue();
+
+    builder.setIsTrusted(false);
+    assertThat((boolean) ReflectionHelpers.getField(builder, "isTrusted")).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void setIsTrusted_true() {
+    AssociationInfo info =
+        AssociationInfoBuilder.newBuilder()
+            .setId(ID)
+            .setDisplayName(DISPLAY_NAME)
+            .setIsTrusted(true)
+            .build();
+    if (ReflectionHelpers.hasMethod(AssociationInfo.class, "isTrusted")) {
+      assertThat((boolean) ReflectionHelpers.callInstanceMethod(info, "isTrusted")).isTrue();
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void setIsTrusted_false() {
+    AssociationInfo info =
+        AssociationInfoBuilder.newBuilder()
+            .setId(ID)
+            .setDisplayName(DISPLAY_NAME)
+            .setIsTrusted(false)
+            .build();
+    if (ReflectionHelpers.hasMethod(AssociationInfo.class, "isTrusted")) {
+      assertThat((boolean) ReflectionHelpers.callInstanceMethod(info, "isTrusted")).isFalse();
+    }
   }
 }
+
