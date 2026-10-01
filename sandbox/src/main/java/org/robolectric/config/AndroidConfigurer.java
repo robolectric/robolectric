@@ -97,7 +97,6 @@ public class AndroidConfigurer {
         .addInstrumentedPackage("libcore.")
         .addInstrumentedPackage("android.")
         .addInstrumentedPackage("com.android.internal.")
-        .addInstrumentedPackage("org.apache.http.") // For httpclient shadows.
         .addInstrumentedPackage("org.ccil.cowan.tagsoup.") // For the System.arraycopy interceptor.
         .addInstrumentedPackage("org.kxml2."); // For the System.arraycopy interceptor.
 
