@@ -48,8 +48,8 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
-  public void shouldInstrumentOrgApacheHttpClasses() {
-    assertThat(config.shouldInstrument(wrap("org.apache.http.util.CharArrayBuffer"))).isTrue();
+  public void shouldNotInstrumentOrgApacheHttpClasses() {
+    assertThat(config.shouldInstrument(wrap("org.apache.http.util.CharArrayBuffer"))).isFalse();
   }
 
   @Test
