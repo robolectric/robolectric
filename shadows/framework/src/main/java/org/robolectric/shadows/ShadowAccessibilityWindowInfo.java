@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.shadows.ShadowAccessibilityNodeInfo.checkRealAniDisabled;
 import static org.robolectric.shadows.ShadowAccessibilityNodeInfo.useRealAni;
 import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.versioning.VersionCalculator.POST_CINNAMON_BUN;
 
 import android.graphics.Rect;
 import android.graphics.Region;
@@ -39,6 +40,10 @@ public class ShadowAccessibilityWindowInfo {
 
   private AccessibilityNodeInfo anchorNode = null;
 
+  private AccessibilityWindowInfo controllingWindow = null;
+
+  private List<AccessibilityWindowInfo> controlledWindows = null;
+
   private Rect boundsInScreenOverride;
 
   @RealObject private AccessibilityWindowInfo realAccessibilityWindowInfo;
@@ -61,11 +66,17 @@ public class ShadowAccessibilityWindowInfo {
     newShadow.parent = shadowInfo.parent;
     newShadow.rootNode = shadowInfo.rootNode;
     newShadow.anchorNode = shadowInfo.anchorNode;
+    newShadow.controllingWindow = shadowInfo.controllingWindow;
 
     if (shadowInfo.children != null) {
       newShadow.children = new ArrayList<>(shadowInfo.children);
     } else {
       newShadow.children = null;
+    }
+    if (shadowInfo.controlledWindows != null) {
+      newShadow.controlledWindows = new ArrayList<>(shadowInfo.controlledWindows);
+    } else {
+      newShadow.controlledWindows = null;
     }
     return newInstance;
   }
@@ -123,6 +134,36 @@ public class ShadowAccessibilityWindowInfo {
     return (anchorNode == null) ? null : AccessibilityNodeInfo.obtain(anchorNode);
   }
 
+  @Implementation(minSdk = POST_CINNAMON_BUN)
+  protected AccessibilityWindowInfo getControllingWindow() {
+    if (useRealAni()) {
+      return reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+          .getControllingWindow();
+    }
+    return controllingWindow;
+  }
+
+  @Implementation(minSdk = POST_CINNAMON_BUN)
+  protected int getControlledWindowsCount() {
+    if (useRealAni()) {
+      return reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+          .getControlledWindowsCount();
+    }
+    return (controlledWindows == null) ? 0 : controlledWindows.size();
+  }
+
+  @Implementation(minSdk = POST_CINNAMON_BUN)
+  protected AccessibilityWindowInfo getControlledWindow(int index) {
+    if (useRealAni()) {
+      return reflector(AccessibilityWindowInfoReflector.class, realAccessibilityWindowInfo)
+          .getControlledWindow(index);
+    }
+    if (controlledWindows == null) {
+      throw new IndexOutOfBoundsException();
+    }
+    return controlledWindows.get(index);
+  }
+
   @Implementation
   protected void getBoundsInScreen(Rect outBounds) {
     if (useRealAni() || boundsInScreenOverride == null) {
@@ -150,6 +191,8 @@ public class ShadowAccessibilityWindowInfo {
     parent = null;
     rootNode = null;
     anchorNode = null;
+    controllingWindow = null;
+    controlledWindows = null;
     boundsInScreenOverride = null;
   }
 
@@ -237,6 +280,27 @@ public class ShadowAccessibilityWindowInfo {
     ((ShadowAccessibilityWindowInfo) Shadow.extract(child)).parent = realAccessibilityWindowInfo;
   }
 
+  /**
+   * Adds a window controlled by this window, as returned by {@code getControlledWindow(int)}.
+   *
+   * <p>The controlled window's controlling window is set to this window. A {@code null} value may
+   * be added to simulate a controlled window that is no longer available.
+   *
+   * @param controlledWindow the controlled window, or {@code null}
+   */
+  public void addControlledWindow(AccessibilityWindowInfo controlledWindow) {
+    checkRealAniDisabled();
+    if (controlledWindows == null) {
+      controlledWindows = new ArrayList<>();
+    }
+
+    controlledWindows.add(controlledWindow);
+    if (controlledWindow != null) {
+      ((ShadowAccessibilityWindowInfo) Shadow.extract(controlledWindow)).controllingWindow =
+          realAccessibilityWindowInfo;
+    }
+  }
+
   @ForType(AccessibilityWindowInfo.class)
   interface AccessibilityWindowInfoReflector {
 
@@ -290,6 +354,15 @@ public class ShadowAccessibilityWindowInfo {
 
     @Direct
     AccessibilityNodeInfo getAnchor();
+
+    @Direct
+    AccessibilityWindowInfo getControllingWindow();
+
+    @Direct
+    int getControlledWindowsCount();
+
+    @Direct
+    AccessibilityWindowInfo getControlledWindow(int index);
 
     @Direct
     @Static
