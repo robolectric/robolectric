@@ -54,7 +54,9 @@ kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_11 } }
 dependencies {
   api(project(":robolectric"))
   testImplementation(libs.androidx.test.core)
+  testImplementation(libs.androidx.test.espresso.core)
   testImplementation(libs.junit4)
   testImplementation(libs.roborazzi)
   testImplementation(libs.roborazzi.rule)
+  testImplementation(libs.truth)
 }
