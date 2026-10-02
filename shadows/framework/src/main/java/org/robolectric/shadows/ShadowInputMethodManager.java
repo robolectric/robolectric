@@ -23,6 +23,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
@@ -63,6 +64,7 @@ public class ShadowInputMethodManager {
   private static List<InputMethodInfo> inputMethodInfoList = ImmutableList.of();
   private static List<InputMethodInfo> enabledInputMethodInfoList = ImmutableList.of();
   private static Optional<InputMethodSubtype> inputMethodSubtype = Optional.absent();
+  private static final List<View> stylusHandwritingViews = new ArrayList<>();
 
   @Implementation
   protected boolean showSoftInput(View view, int flags) {
@@ -159,6 +161,25 @@ public class ShadowInputMethodManager {
    */
   @Implementation(minSdk = S)
   protected void closeCurrentInput() {}
+
+  /**
+   * Records {@code view} instead of asking system server to start a stylus handwriting session.
+   *
+   * <p>Unlike the framework, this records the call even if {@code view} isn't focused or served by
+   * an input method. Tests that care about that precondition should assert it themselves.
+   */
+  @Implementation(minSdk = TIRAMISU)
+  protected void startStylusHandwriting(View view) {
+    stylusHandwritingViews.add(view);
+  }
+
+  /**
+   * Returns the views passed to {@link InputMethodManager#startStylusHandwriting(View)}, oldest
+   * first.
+   */
+  public ImmutableList<View> getStylusHandwritingViews() {
+    return ImmutableList.copyOf(stylusHandwritingViews);
+  }
 
   /**
    * Returns the list of {@link InputMethodInfo} that are installed.
@@ -280,6 +301,7 @@ public class ShadowInputMethodManager {
     inputMethodInfoList = ImmutableList.of();
     enabledInputMethodInfoList = ImmutableList.of();
     inputMethodSubtype = Optional.absent();
+    stylusHandwritingViews.clear();
   }
 
   @ForType(InputMethodManager.class)
