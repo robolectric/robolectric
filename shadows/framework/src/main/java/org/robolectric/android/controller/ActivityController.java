@@ -76,6 +76,8 @@ public class ActivityController<T extends Activity>
   private org.robolectric.shadows.ActivityReflector activityReflector;
   private IBinder shareableActivityToken;
   private LifecycleState currentState = LifecycleState.INITIAL;
+  private boolean pendingStoppedConfigurationChange;
+  private boolean isTopResumed;
 
   public static <T extends Activity> ActivityController<T> of(
       T activity, Intent intent, @Nullable Bundle activityOptions) {
@@ -157,6 +159,20 @@ public class ActivityController<T extends Activity>
   }
 
   public ActivityController<T> restart() {
+    if (currentState == LifecycleState.STOPPED && pendingStoppedConfigurationChange) {
+      pendingStoppedConfigurationChange = false;
+      // The configuration may have changed again or reverted while stopped.
+      Configuration configuration = new Configuration(component.getResources().getConfiguration());
+      int changes =
+          reflector(ActivityReflector.class, component).getCurrentConfig().diff(configuration);
+      if (changes != 0) {
+        T stoppedActivity = component;
+        applyConfigurationChange(configuration, changes, /* restartingStoppedActivity= */ true);
+        if (component != stoppedActivity) {
+          return this;
+        }
+      }
+    }
     invokeWhilePaused(() -> {
       if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
         activityReflector.performRestart();
@@ -222,18 +238,15 @@ public class ActivityController<T extends Activity>
     if (RuntimeEnvironment.getApiLevel() < Q) {
       return this;
     }
-    invokeWhilePaused(() ->
-        activityReflector.performTopResumedActivityChanged(isTop, "topStateChangedWhenResumed"));
+    invokeWhilePaused(() -> {
+      activityReflector.performTopResumedActivityChanged(isTop, "topStateChangedWhenResumed");
+      isTopResumed = isTop;
+    });
     return this;
   }
 
   public ActivityController<T> visible() {
-    shadowMainLooper.runPaused(() -> {
-      // emulate logic of ActivityThread#handleResumeActivity
-      component.getWindow().getAttributes().type = WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
-      activityReflector.setDecor(component.getWindow().getDecorView());
-      activityReflector.makeVisible();
-    });
+    shadowMainLooper.runPaused(this::attachWindow);
 
     shadowMainLooper.idleIfPaused();
     ViewRootImpl root = getViewRoot();
@@ -243,6 +256,13 @@ public class ActivityController<T extends Activity>
       shadowMainLooper.idleIfPaused();
     }
     return this;
+  }
+
+  private void attachWindow() {
+    // emulate logic of ActivityThread#handleResumeActivity
+    component.getWindow().getAttributes().type = WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
+    activityReflector.setDecor(component.getWindow().getDecorView());
+    activityReflector.makeVisible();
   }
 
   private ViewRootImpl getViewRoot() {
@@ -451,7 +471,16 @@ public class ActivityController<T extends Activity>
   public ActivityController<T> configurationChange(
       Configuration newConfiguration, DisplayMetrics newMetrics, @Config int changedConfig) {
     component.getResources().updateConfiguration(newConfiguration, newMetrics);
+    if (currentState == LifecycleState.STOPPED && RuntimeEnvironment.getApiLevel() >= O) {
+      pendingStoppedConfigurationChange = true;
+      return this;
+    }
+    return applyConfigurationChange(
+        newConfiguration, changedConfig, /* restartingStoppedActivity= */ false);
+  }
 
+  private ActivityController<T> applyConfigurationChange(
+      Configuration newConfiguration, int changedConfig, boolean restartingStoppedActivity) {
     int filteredChanges = filterConfigChanges(changedConfig);
     // TODO: throw on changedConfig == 0 since it non-intuitively calls onConfigurationChanged
 
@@ -493,6 +522,9 @@ public class ActivityController<T extends Activity>
 
       return this;
     } else {
+      final boolean wasStopped = currentState == LifecycleState.STOPPED;
+      final boolean wasResumed = currentState == LifecycleState.RESUMED;
+      final boolean wasVisible = this.activityReflector.getWindowAdded();
       final Bundle recreatedActivityOptions = getRecreatedActivityOptions();
       @SuppressWarnings("unchecked")
       final T recreatedActivity = (T) ReflectionHelpers.callConstructor(component.getClass());
@@ -513,14 +545,18 @@ public class ActivityController<T extends Activity>
         // See
         // https://developer.android.com/reference/android/app/Activity#onSaveInstanceState(android.os.Bundle) for documentation explained.
         // And see ActivityThread#callActivityOnStop for related code.
-        getInstrumentation().callActivityOnPause(component);
-        if (RuntimeEnvironment.getApiLevel() < P) {
+        if (wasStopped) {
           this.activityReflector.performSaveInstanceState(outState);
-          // API from N to O_MR1(both including)
-          this.activityReflector.performStop(true);
         } else {
-          this.activityReflector.performStop(true, "configurationChange");
-          this.activityReflector.performSaveInstanceState(outState);
+          getInstrumentation().callActivityOnPause(component);
+          if (RuntimeEnvironment.getApiLevel() < P) {
+            this.activityReflector.performSaveInstanceState(outState);
+            // API from N to O_MR1(both including)
+            this.activityReflector.performStop(true);
+          } else {
+            this.activityReflector.performStop(true, "configurationChange");
+            this.activityReflector.performSaveInstanceState(outState);
+          }
         }
 
         // This is the true and complete retained state, including loaders and retained
@@ -576,31 +612,79 @@ public class ActivityController<T extends Activity>
 
         // Create lifecycle
         getInstrumentation().callActivityOnCreate(recreatedActivity, outState);
+        currentState = LifecycleState.CREATED;
+        if (recreatedActivity.isFinishing()) {
+          destroyRecreatedActivity();
+          return;
+        }
 
         if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-
           activityReflector.performStart();
-
         } else {
           activityReflector.performStart("configurationChange");
         }
 
         getInstrumentation().callActivityOnRestoreInstanceState(recreatedActivity, outState);
         activityReflector.onPostCreate(outState);
+        currentState = LifecycleState.STARTED;
+        if (recreatedActivity.isFinishing()) {
+          destroyRecreatedActivity();
+          return;
+        }
+        if (wasStopped) {
+          if (!restartingStoppedActivity) {
+            performStop("configurationChange");
+            currentState = LifecycleState.STOPPED;
+          }
+          return;
+        }
         if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
           activityReflector.performResume();
         } else {
           activityReflector.performResume(true, "configurationChange");
         }
         activityReflector.onPostResume();
-        // TODO: Call visible() too.
-        if (RuntimeEnvironment.getApiLevel() >= Q) {
+        currentState = LifecycleState.RESUMED;
+        if (recreatedActivity.isFinishing()) {
+          destroyRecreatedActivity();
+          return;
+        }
+        if (RuntimeEnvironment.getApiLevel() >= Q && wasResumed && isTopResumed) {
           activityReflector.performTopResumedActivityChanged(true, "configurationChange");
+          if (recreatedActivity.isFinishing()) {
+            activityReflector.performTopResumedActivityChanged(false, "configurationChange");
+            destroyRecreatedActivity();
+            return;
+          }
+        }
+        if (wasVisible && component == recreatedActivity) {
+          attachWindow();
         }
       });
     }
 
     return this;
+  }
+
+  private void destroyRecreatedActivity() {
+    if (currentState == LifecycleState.RESUMED) {
+      getInstrumentation().callActivityOnPause(component);
+    }
+    if (currentState == LifecycleState.RESUMED || currentState == LifecycleState.STARTED) {
+      performStop("configurationChange");
+    }
+    getInstrumentation().callActivityOnDestroy(component);
+    makeActivityEligibleForGc();
+    currentState = LifecycleState.DESTROYED;
+    isTopResumed = false;
+  }
+
+  private void performStop(String reason) {
+    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+      activityReflector.performStop(true);
+    } else {
+      activityReflector.performStop(true, reason);
+    }
   }
 
   /**

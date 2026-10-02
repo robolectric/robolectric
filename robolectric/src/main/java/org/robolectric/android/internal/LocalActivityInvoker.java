@@ -83,7 +83,15 @@ public class LocalActivityInvoker implements ActivityInvoker {
           controller.resume().topActivityResumed(true);
           return;
         case STOPPED:
-          controller.restart().resume().topActivityResumed(true);
+          controller.restart();
+          if (controller.get().isDestroyed()) {
+            return;
+          }
+          controller.resume().topActivityResumed(true);
+          if (!controller.get().isFinishing()
+              && !controller.get().getWindow().getDecorView().isAttachedToWindow()) {
+            controller.visible();
+          }
           return;
         default:
           throw new IllegalStateException(

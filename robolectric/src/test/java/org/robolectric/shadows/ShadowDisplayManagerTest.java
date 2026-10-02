@@ -290,6 +290,42 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void changeDisplay_whenActivityStopped_appliesLatestConfigurationOnRestart() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+    try (ActivityController<Activity> controller =
+        buildActivityOnDisplay(Activity.class, displayId).setup()) {
+      controller.pause().stop();
+      Activity original = controller.get();
+
+      ShadowDisplayManager.changeDisplay(displayId, "w1280dp-h720dp-land-xhdpi");
+      assertThat(controller.get()).isSameInstanceAs(original);
+
+      controller.restart();
+      assertThat(controller.get()).isNotSameInstanceAs(original);
+      assertThat(controller.get().getResources().getConfiguration().screenWidthDp).isEqualTo(1280);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void changeDisplay_whenStoppedAndReverted_doesNotRecreate() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+    try (ActivityController<Activity> controller =
+        buildActivityOnDisplay(Activity.class, displayId).setup()) {
+      controller.pause().stop();
+      Activity original = controller.get();
+
+      ShadowDisplayManager.changeDisplay(displayId, "w1280dp-h720dp-land-xhdpi");
+      ShadowDisplayManager.changeDisplay(displayId, "w960dp-h540dp-land-xhdpi");
+      controller.restart();
+
+      assertThat(controller.get()).isSameInstanceAs(original);
+      assertThat(controller.get().getResources().getConfiguration().screenWidthDp).isEqualTo(960);
+    }
+  }
+
+  @Test
   @Config(minSdk = P)
   public void releaseVirtualDisplay_thatIsNotPublic_destroysTheActivitiesOnIt() {
     VirtualDisplay virtualDisplay =

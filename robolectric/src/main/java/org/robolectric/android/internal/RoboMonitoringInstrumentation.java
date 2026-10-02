@@ -452,10 +452,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
         } else {
           controller.configurationChange(newConfig, newMetrics, changedConfig);
         }
-        // If the activity is recreated then make the new activity visible, this should be done by
-        // configurationChange but there's a pre-existing TODO to address this and it will require
-        // more work to make it function correctly.
-        if (controller.get() != activity) {
+        if (controller.get() != activity && controller.get().isResumed()) {
           controller.visible();
         }
       }
