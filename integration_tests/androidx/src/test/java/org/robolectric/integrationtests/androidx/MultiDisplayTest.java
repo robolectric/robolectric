@@ -1,5 +1,6 @@
 package org.robolectric.integrationtests.androidx;
 
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -9,15 +10,18 @@ import android.app.Application;
 import android.app.Presentation;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManager.DisplayListener;
 import android.hardware.display.VirtualDisplay;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -129,8 +133,27 @@ public class MultiDisplayTest {
 
     assertThat(presentation.isShowing()).isTrue();
     assertThat(presentation.getDisplay().getDisplayId()).isEqualTo(display.getDisplayId());
+    assertThat(presentation.getContext().getResources().getConfiguration().screenWidthDp)
+        .isEqualTo(1920);
     assertThat(content.getWidth()).isEqualTo(1920);
     assertThat(content.getHeight()).isEqualTo(1080);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void windowContext_onTheExternalDisplay_coversIt() {
+    Display display = addExternalDisplay("w1920dp-h1080dp-land-mdpi");
+
+    Context windowContext =
+        application.createWindowContext(display, TYPE_APPLICATION_OVERLAY, /* options= */ null);
+
+    assertThat(windowContext.getResources().getConfiguration().screenWidthDp).isEqualTo(1920);
+    assertThat(
+            windowContext
+                .getSystemService(WindowManager.class)
+                .getCurrentWindowMetrics()
+                .getBounds())
+        .isEqualTo(new Rect(0, 0, 1920, 1080));
   }
 
   @Test
@@ -143,8 +166,11 @@ public class MultiDisplayTest {
         Robolectric.buildActivity(ContentActivity.class, null, options).setup()) {
       ContentActivity activity = controller.get();
 
+      Configuration configuration = activity.getResources().getConfiguration();
       assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
           .isEqualTo(display.getDisplayId());
+      assertThat(configuration.screenWidthDp).isEqualTo(1920);
+      assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
       assertThat(activity.content.getWidth()).isEqualTo(1920);
     }
   }

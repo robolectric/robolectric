@@ -1,6 +1,7 @@
 package org.robolectric.android.controller;
 
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -10,6 +11,7 @@ import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.content.ComponentName;
@@ -27,6 +29,7 @@ import android.view.WindowManager;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowContextThemeWrapper;
@@ -350,11 +353,20 @@ public class ActivityController<T extends Activity>
 
   /**
    * Performs a configuration change on the Activity. See {@link #configurationChange(Configuration,
-   * DisplayMetrics, int)}. The configuration is taken from the application's configuration.
+   * DisplayMetrics, int)}. The configuration is taken from the application's configuration, with
+   * the display's size and density if the activity is on another display.
    */
   @CanIgnoreReturnValue
   public ActivityController<T> configurationChange() {
-    return configurationChange(component.getApplicationContext().getResources().getConfiguration());
+    Configuration configuration =
+        component.getApplicationContext().getResources().getConfiguration();
+    Configuration displayOverrideConfig =
+        WindowConfigurations.getDisplayOverrideConfiguration(getDisplayId());
+    if (displayOverrideConfig != null) {
+      configuration = new Configuration(configuration);
+      configuration.updateFrom(displayOverrideConfig);
+    }
+    return configurationChange(configuration);
   }
 
   /**
@@ -457,6 +469,7 @@ public class ActivityController<T extends Activity>
 
       return this;
     } else {
+      final Bundle recreatedActivityOptions = getRecreatedActivityOptions();
       @SuppressWarnings("unchecked")
       final T recreatedActivity = (T) ReflectionHelpers.callConstructor(component.getClass());
       final org.robolectric.shadows.ActivityReflector activityReflector =
@@ -526,9 +539,7 @@ public class ActivityController<T extends Activity>
         // attach. Since current implementation sets it after attach(), initialization is not
         // done correctly. For instance, fragment marked as retained is not retained.
         attach(
-            /* activityOptions= */ null,
-            /* lastNonConfigurationInstances= */ null,
-            newConfiguration);
+            recreatedActivityOptions, /* lastNonConfigurationInstances= */ null, newConfiguration);
 
         if (theme != 0) {
           recreatedActivity.setTheme(theme);
@@ -624,12 +635,13 @@ public class ActivityController<T extends Activity>
     saveInstanceState(outState);
     Object lastNonConfigurationInstances = activityReflector.retainNonConfigurationInstances();
     Configuration overrideConfig = component.getResources().getConfiguration();
+    Bundle recreatedActivityOptions = getRecreatedActivityOptions();
     destroy();
 
     component = (T) ReflectionHelpers.callConstructor(component.getClass());
     activityReflector = reflector(org.robolectric.shadows.ActivityReflector.class, component);
     attached = false;
-    attach(/* activityOptions= */ null, lastNonConfigurationInstances, overrideConfig);
+    attach(recreatedActivityOptions, lastNonConfigurationInstances, overrideConfig);
     create(outState);
     start();
     restoreInstanceState(outState);
@@ -700,6 +712,20 @@ public class ActivityController<T extends Activity>
       changedConfig &= ~CONFIG_WINDOW_CONFIGURATION;
     }
     return changedConfig;
+  }
+
+  private int getDisplayId() {
+    return component.getWindowManager().getDefaultDisplay().getDisplayId();
+  }
+
+  /** Returns options that launch a recreated activity on the display the activity is on. */
+  @Nullable
+  private Bundle getRecreatedActivityOptions() {
+    int displayId = getDisplayId();
+    if (displayId == Display.DEFAULT_DISPLAY || RuntimeEnvironment.getApiLevel() < O) {
+      return null;
+    }
+    return ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle();
   }
 
   /** Accessor interface for android.app.Activity.NonConfigurationInstances' internals. */
