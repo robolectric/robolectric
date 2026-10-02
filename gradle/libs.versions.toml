@@ -116,6 +116,7 @@ androidx-recyclerview = "1.4.0"
 # https://github.com/android/android-test/tags
 androidx-test-core = "1.7.0"
 androidx-test-espresso = "3.7.0"
+androidx-test-espresso-device = "1.1.0"
 androidx-test-ext-junit = "1.3.0"
 androidx-test-ext-truth = "1.7.0"
 androidx-test-monitor = "1.8.0"
@@ -239,6 +240,7 @@ androidx-test-runner = { module = "androidx.test:runner", version.ref = "android
 androidx-test-services = { module = "androidx.test.services:test-services", version.ref = "androidx-test-services" }
 
 androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-test-espresso" }
+androidx-test-espresso-device = { module = "androidx.test.espresso:espresso-device", version.ref = "androidx-test-espresso-device" }
 androidx-test-espresso-idling-resource = { module = "androidx.test.espresso:espresso-idling-resource", version.ref = "androidx-test-espresso" }
 androidx-test-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "androidx-test-espresso" }
 
