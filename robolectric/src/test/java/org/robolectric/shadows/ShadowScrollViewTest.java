@@ -1,11 +1,9 @@
 package org.robolectric.shadows;
 
 import static org.junit.Assert.assertEquals;
-import static org.robolectric.versioning.VersionCalculator.CINNAMON_BUN;
 
 import android.app.Activity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ScrollView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -13,17 +11,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.GraphicsMode.Mode;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 
 @RunWith(AndroidJUnit4.class)
-@GraphicsMode(Mode.LEGACY)
 public class ShadowScrollViewTest {
   @Rule public SetSystemPropertyRule setSystemPropertyRule = new SetSystemPropertyRule();
 
   @Test
+  @GraphicsMode(Mode.LEGACY)
   public void shouldSmoothScrollTo() {
     // This test depends on broken scrolling behavior.
     setSystemPropertyRule.set("robolectric.useRealScrolling", "false");
@@ -36,6 +33,7 @@ public class ShadowScrollViewTest {
   }
 
   @Test
+  @GraphicsMode(Mode.LEGACY)
   public void shouldSmoothScrollBy() {
     // This test depends on broken scrolling behavior.
     setSystemPropertyRule.set("robolectric.useRealScrolling", "false");
@@ -54,19 +52,16 @@ public class ShadowScrollViewTest {
     Activity activity = Robolectric.setupActivity(Activity.class);
     ScrollView scrollView = new ScrollView(activity);
     View view = new View(activity);
-    view.setLayoutParams(new ViewGroup.LayoutParams(1000, 1000));
-    view.layout(
-        0,
-        0,
-        activity.findViewById(android.R.id.content).getWidth(),
-        activity.findViewById(android.R.id.content).getHeight());
+    view.setMinimumWidth(1000);
+    view.setMinimumHeight(1000);
     scrollView.addView(view);
+    activity.setContentView(scrollView);
+    ShadowLooper.idleMainLooper();
+
     scrollView.smoothScrollTo(7, 6);
-    // ScrollView is a vertical-only scroll container. In post-Cinnamon Bun SDKs, the platform fixed
-    // smoothScrollBy to ignore horizontal delta (dx) in the immediate fallback path, keeping
-    // scrollX at 0. Older SDKs mistakenly scrolled horizontally via scrollBy(dx, dy).
-    int expectedX = RuntimeEnvironment.getApiLevel() > CINNAMON_BUN ? 0 : 7;
-    assertEquals(expectedX, scrollView.getScrollX());
+    ShadowLooper.idleMainLooper();
+
+    assertEquals(0, scrollView.getScrollX());
     assertEquals(6, scrollView.getScrollY());
   }
 
@@ -77,20 +72,18 @@ public class ShadowScrollViewTest {
     Activity activity = Robolectric.setupActivity(Activity.class);
     ScrollView scrollView = new ScrollView(activity);
     View view = new View(activity);
-    view.setLayoutParams(new ViewGroup.LayoutParams(1000, 1000));
-    view.layout(
-        0,
-        0,
-        activity.findViewById(android.R.id.content).getWidth(),
-        activity.findViewById(android.R.id.content).getHeight());
+    view.setMinimumWidth(1000);
+    view.setMinimumHeight(1000);
     scrollView.addView(view);
+    activity.setContentView(scrollView);
+    ShadowLooper.idleMainLooper();
+
     scrollView.smoothScrollTo(7, 6);
+    ShadowLooper.idleMainLooper();
     scrollView.smoothScrollBy(10, 20);
-    // ScrollView is a vertical-only scroll container. In post-Cinnamon Bun SDKs, the platform fixed
-    // smoothScrollBy to ignore horizontal delta (dx) in the immediate fallback path, keeping
-    // scrollX at 0. Older SDKs mistakenly scrolled horizontally via scrollBy(dx, dy).
-    int expectedX = RuntimeEnvironment.getApiLevel() > CINNAMON_BUN ? 0 : 17;
-    assertEquals(expectedX, scrollView.getScrollX());
+    ShadowLooper.idleMainLooper();
+
+    assertEquals(0, scrollView.getScrollX());
     assertEquals(26, scrollView.getScrollY());
   }
 }
