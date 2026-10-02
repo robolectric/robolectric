@@ -221,6 +221,10 @@ public class ShadowDisplayManager {
    * defaults are applied as described <a
    * href="http://robolectric.org/device-configuration/">here</a>.
    *
+   * <p>Activities and window contexts on a display other than the default one receive the change as
+   * they would on a device. The configuration of the default display is the global one, which
+   * {@link RuntimeEnvironment#setQualifiers} changes along with the display.
+   *
    * <p>Idles the main looper to ensure all listeners are notified.
    *
    * @param displayId the display id to change

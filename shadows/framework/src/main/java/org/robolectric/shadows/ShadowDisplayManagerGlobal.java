@@ -24,6 +24,7 @@ import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.display.WifiDisplayStatus;
 import android.media.projection.IMediaProjection;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
@@ -379,6 +380,9 @@ public class ShadowDisplayManagerGlobal {
       }
       displayInfos.put(displayId, displayInfo);
       notifyListeners(displayId, EVENT_DISPLAY_BASIC_CHANGED);
+      if (displayId != Display.DEFAULT_DISPLAY) {
+        new Handler(Looper.getMainLooper()).post(() -> DisplayChanges.onDisplayChanged(displayId));
+      }
     }
 
     private boolean useMaxBounds() {
@@ -393,6 +397,7 @@ public class ShadowDisplayManagerGlobal {
 
       displayInfos.remove(displayId);
       notifyListeners(displayId, EVENT_DISPLAY_REMOVED);
+      new Handler(Looper.getMainLooper()).post(() -> DisplayChanges.onDisplayRemoved(displayId));
     }
 
     private void notifyListeners(int nextId, int event) {

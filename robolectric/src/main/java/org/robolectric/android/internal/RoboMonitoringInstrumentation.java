@@ -427,7 +427,11 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
     for (ActivityController<?> controller : controllers) {
       if (createdActivities.contains(controller)) {
         if (System.getProperty("robolectric.configurationChangeFix", "true").equals("true")) {
-          controller.configurationChange(newConfig, newMetrics);
+          // An activity on another display keeps that display's size and density.
+          int displayId = controller.get().getWindowManager().getDefaultDisplay().getDisplayId();
+          controller.configurationChange(
+              WindowConfigurations.getDisplayConfiguration(displayId, newConfig),
+              WindowConfigurations.getDisplayMetrics(displayId, newMetrics));
         } else {
           controller.configurationChange(newConfig, newMetrics, changedConfig);
         }
