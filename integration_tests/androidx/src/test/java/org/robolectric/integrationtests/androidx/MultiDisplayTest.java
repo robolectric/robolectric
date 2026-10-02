@@ -8,7 +8,9 @@ import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.Application;
 import android.app.Presentation;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
@@ -22,6 +24,7 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowDisplayManager;
@@ -173,6 +177,66 @@ public class MultiDisplayTest {
       assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
       assertThat(activity.content.getWidth()).isEqualTo(1920);
     }
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void activity_onAnExternalDisplayThatIsResized_isLaidOutForTheNewSize() {
+    Display display = addExternalDisplay("w1920dp-h1080dp-land-mdpi");
+
+    try (ActivityScenario<ContentActivity> scenario = launchOn(display)) {
+      ShadowDisplayManager.changeDisplay(display.getDisplayId(), "w2560dp-h1440dp-land-mdpi");
+
+      scenario.onActivity(
+          activity -> {
+            assertThat(activity.getResources().getConfiguration().screenWidthDp).isEqualTo(2560);
+            assertThat(activity.content.getWidth()).isEqualTo(2560);
+          });
+    }
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void activity_onAnExternalDisplay_keepsItsSizeWhenThePhoneChanges() {
+    Display display = addExternalDisplay("w1920dp-h1080dp-land-mdpi");
+
+    try (ActivityScenario<ContentActivity> scenario = launchOn(display)) {
+      RuntimeEnvironment.setQualifiers("+land-night");
+
+      scenario.onActivity(
+          activity -> {
+            Configuration configuration = activity.getResources().getConfiguration();
+            assertThat(configuration.screenWidthDp).isEqualTo(1920);
+            assertThat(configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                .isEqualTo(Configuration.UI_MODE_NIGHT_YES);
+            assertThat(activity.content.getWidth()).isEqualTo(1920);
+          });
+    }
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void activity_onAnExternalDisplayThatIsDisconnected_movesToTheDefaultDisplay() {
+    Display display = addExternalDisplay("w1920dp-h1080dp-land-mdpi");
+
+    try (ActivityScenario<ContentActivity> scenario = launchOn(display)) {
+      ShadowDisplayManager.removeDisplay(display.getDisplayId());
+
+      scenario.onActivity(
+          activity -> {
+            assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+                .isEqualTo(Display.DEFAULT_DISPLAY);
+            assertThat(activity.getResources().getConfiguration().screenWidthDp).isEqualTo(411);
+          });
+    }
+  }
+
+  private ActivityScenario<ContentActivity> launchOn(Display display) {
+    shadowOf(application.getPackageManager())
+        .addActivityIfNotPresent(new ComponentName(application, ContentActivity.class));
+    Bundle options =
+        ActivityOptions.makeBasic().setLaunchDisplayId(display.getDisplayId()).toBundle();
+    return ActivityScenario.launch(new Intent(application, ContentActivity.class), options);
   }
 
   private Display addExternalDisplay(String qualifiers) {
