@@ -246,6 +246,10 @@ public class ShadowDisplayManager {
    *
    * <p>The display keeps its name, type, flags, state and owner.
    *
+   * <p>Activities and window contexts on a non-default display get its new configuration. The
+   * default display's configuration is the global one, which {@link
+   * RuntimeEnvironment#setQualifiers} changes.
+   *
    * <p>Idles the main looper to ensure all listeners are notified.
    *
    * @param displayId the display id to change
