@@ -11,6 +11,7 @@ import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Fragment;
 import android.app.WindowConfiguration;
 import android.content.ComponentName;
@@ -40,6 +41,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.shadows.ShadowDisplayManager;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowWindowManagerImpl;
 import org.robolectric.util.Scheduler;
@@ -353,6 +355,25 @@ public class ActivityControllerTest {
     RuntimeEnvironment.setQualifiers("sw800dp");
     configController.configurationChange();
     assertThat(configController.get().newConfig.smallestScreenWidthDp).isEqualTo(800);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  public void noArgsConfigurationChange_onNonDefaultDisplay_whenManaged_keepsTheActivity() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+    ActivityController<ConfigAwareActivity> configController =
+        Robolectric.buildActivity(
+                ConfigAwareActivity.class,
+                null,
+                ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle())
+            .setup();
+    ConfigAwareActivity activity = configController.get();
+
+    RuntimeEnvironment.setFontScale(2f);
+    configController.configurationChange();
+
+    assertThat(configController.get()).isSameInstanceAs(activity);
+    assertThat(activity.newConfig.fontScale).isEqualTo(2f);
   }
 
   @Test

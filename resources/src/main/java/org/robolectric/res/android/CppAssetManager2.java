@@ -1392,7 +1392,7 @@ public class CppAssetManager2 {
     // Called by AssetManager2.
     //  private explicit Theme(AssetManager2* asset_manager) : asset_manager_(asset_manager) {}
 
-    private final CppAssetManager2 asset_manager_;
+    private CppAssetManager2 asset_manager_;
     private int type_spec_flags_ = 0;
     //  std.array<std.unique_ptr<Package>, kPackageCount> packages_;
     private final ThemePackage[] packages_ = new ThemePackage[kPackageCount];
@@ -1627,6 +1627,18 @@ public class CppAssetManager2 {
       for (int i = 0; i < packages_.length; i++) {
         //        package_.reset();
         packages_[i] = null;
+      }
+    }
+
+    // Moves this Theme to `am` and reapplies the given styles, which were applied with `am`'s
+    // predecessor.
+    //  void Rebase(AssetManager2* am, const uint32_t* style_ids, const uint8_t* force,
+    //              size_t style_count);
+    public void Rebase(CppAssetManager2 am, int[] style_ids, boolean[] force, int style_count) {
+      Clear();
+      asset_manager_ = am;
+      for (int i = 0; i < style_count; i++) {
+        ApplyStyle(style_ids[i], force[i]);
       }
     }
 
