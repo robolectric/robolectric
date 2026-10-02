@@ -10,10 +10,12 @@ import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
 import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newConcurrentHashSet;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.ActivityThread;
@@ -27,6 +29,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.view.Display;
@@ -43,14 +46,20 @@ import androidx.test.runner.lifecycle.ActivityLifecycleMonitor;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
 import com.google.common.collect.ImmutableList;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
@@ -126,6 +135,72 @@ public class ShadowUiAutomation {
 
   @Implementation
   protected void throwIfNotConnectedLocked() {}
+
+  /**
+   * Runs a shell command, as {@code adb shell} would on a device, and returns its output.
+   *
+   * <p>Robolectric runs these window manager commands: {@code wm set-ignore-orientation-request [-d
+   * DISPLAY_ID] true|false} and {@code wm get-ignore-orientation-request [-d DISPLAY_ID]}. Other
+   * commands output nothing.
+   */
+  @Implementation
+  protected ParcelFileDescriptor executeShellCommand(String command) {
+    AtomicReference<String> output = new AtomicReference<>("");
+    ShadowInstrumentation.runOnMainSyncNoIdle(() -> output.set(runShellCommand(command)));
+    shadowMainLooper().idle();
+    try {
+      File file = File.createTempFile("robolectric-shell", ".out");
+      file.deleteOnExit();
+      Files.write(file.toPath(), output.get().getBytes(UTF_8));
+      return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private static String runShellCommand(String command) {
+    List<String> args = new ArrayList<>(Arrays.asList(command.trim().split("\\s+")));
+    if (args.size() < 2 || !args.get(0).equals("wm")) {
+      return "";
+    }
+    String windowManagerCommand = args.get(1);
+    args = args.subList(2, args.size());
+    int displayId = Display.DEFAULT_DISPLAY;
+    if (args.size() >= 2 && args.get(0).equals("-d")) {
+      displayId = Integer.parseInt(args.get(1));
+      args = args.subList(2, args.size());
+    }
+    switch (windowManagerCommand) {
+      case "set-ignore-orientation-request":
+        if (args.isEmpty()) {
+          return "Error: expecting true, 1, false, 0, but we get null\n";
+        }
+        boolean ignoreOrientationRequest;
+        switch (args.get(0)) {
+          case "true":
+          case "1":
+            ignoreOrientationRequest = true;
+            break;
+          case "false":
+          case "0":
+            ignoreOrientationRequest = false;
+            break;
+          default:
+            return "Error: expecting true, 1, false, 0, but we get " + args.get(0) + "\n";
+        }
+        WindowConfigurations.setIgnoreOrientationRequest(displayId, ignoreOrientationRequest);
+        DisplayChanges.onIgnoreOrientationRequestChanged(displayId);
+        return "";
+      case "get-ignore-orientation-request":
+        return "ignoreOrientationRequest "
+            + WindowConfigurations.isIgnoringOrientationRequest(displayId)
+            + " for displayId="
+            + displayId
+            + "\n";
+      default:
+        return "";
+    }
+  }
 
   /**
    * Real Android will via a series of IPCs that eventually obtain an image from SurfaceFlinger.

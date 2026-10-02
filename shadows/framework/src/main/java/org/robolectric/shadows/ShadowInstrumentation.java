@@ -262,7 +262,7 @@ public class ShadowInstrumentation {
     if (WindowConfigurations.isInSplitScreen(configuration)) {
       topOrLeft = !WindowConfigurations.isInTopOrLeftOfSplitScreen(configuration);
     } else if (RuntimeEnvironment.getApiLevel() >= S_V2
-        && WindowConfigurations.getWindowBounds(configuration) == null) {
+        && !WindowConfigurations.isInMultiWindowMode(configuration)) {
       ShadowActivity shadowLaunchingActivity = Shadow.extract(launchingActivity);
       if (shadowLaunchingActivity.getController() == null) {
         return;

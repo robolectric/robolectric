@@ -1,7 +1,11 @@
 package org.robolectric.android.internal;
 
+import android.app.Activity;
 import android.app.WindowConfiguration;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Build.VERSION_CODES;
@@ -25,13 +29,134 @@ public final class WindowConfigurations {
   /** The size of the divider between the halves of split screen, as on a device. */
   private static final int SPLIT_SCREEN_DIVIDER_SIZE_DP = 10;
 
+  /** The smallest width of a large screen, as the window manager defines it. */
+  private static final int LARGE_SCREEN_SMALLEST_WIDTH_DP = 600;
+
   private static final Map<Integer, Float> splitScreenDividerPositions = new HashMap<>();
+  private static final Map<Integer, Boolean> ignoreOrientationRequests = new HashMap<>();
 
   private WindowConfigurations() {}
 
-  /** Forgets where the divider of split screen was moved on each display. */
+  /** Forgets how each display was set up: its split screen divider and orientation requests. */
   public static void reset() {
     splitScreenDividerPositions.clear();
+    ignoreOrientationRequests.clear();
+  }
+
+  /**
+   * Makes the window manager ignore the orientation requests of activities on the given display,
+   * and letterbox them instead, as {@code wm set-ignore-orientation-request} does.
+   */
+  public static void setIgnoreOrientationRequest(int displayId, boolean ignoreOrientationRequest) {
+    ignoreOrientationRequests.put(displayId, ignoreOrientationRequest);
+  }
+
+  /** Returns whether the window manager ignores orientation requests on the given display. */
+  public static boolean isIgnoringOrientationRequest(int displayId) {
+    return ignoreOrientationRequests.getOrDefault(displayId, false);
+  }
+
+  /**
+   * Returns the orientation, {@link Configuration#ORIENTATION_PORTRAIT} or {@link
+   * Configuration#ORIENTATION_LANDSCAPE}, that the given screen orientation requests, or {@link
+   * Configuration#ORIENTATION_UNDEFINED} if it doesn't request a fixed one.
+   */
+  public static int getFixedOrientation(int screenOrientation) {
+    switch (screenOrientation) {
+      case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
+      case ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT:
+      case ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT:
+      case ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT:
+        return Configuration.ORIENTATION_PORTRAIT;
+      case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
+      case ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE:
+      case ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE:
+      case ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE:
+        return Configuration.ORIENTATION_LANDSCAPE;
+      default:
+        return Configuration.ORIENTATION_UNDEFINED;
+    }
+  }
+
+  /**
+   * Returns whether the window manager ignores the orientation and resizability restrictions of the
+   * app on the given display: since Android 16, on a large screen, for an app that targets it and
+   * isn't a game.
+   */
+  public static boolean isUniversalResizeable(ApplicationInfo applicationInfo, int displayId) {
+    if (RuntimeEnvironment.getApiLevel() < VERSION_CODES.BAKLAVA
+        || applicationInfo.targetSdkVersion < VERSION_CODES.BAKLAVA
+        || applicationInfo.category == ApplicationInfo.CATEGORY_GAME) {
+      return false;
+    }
+    return isLargeScreen(displayId);
+  }
+
+  /**
+   * Returns whether the given display is a large screen, at least 600dp wide in both directions.
+   */
+  private static boolean isLargeScreen(int displayId) {
+    DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    if (displayInfo == null) {
+      return false;
+    }
+    float density = displayInfo.logicalDensityDpi / (float) DisplayMetrics.DENSITY_DEFAULT;
+    return Math.min(displayInfo.logicalWidth, displayInfo.logicalHeight) / density
+        >= LARGE_SCREEN_SMALLEST_WIDTH_DP;
+  }
+
+  /**
+   * Returns how the configuration of an activity requesting the given screen orientation on the
+   * given display differs from the global configuration if the window manager letterboxes it: when
+   * the display ignores orientation requests and the activity requests another orientation than the
+   * display's. Returns null otherwise.
+   */
+  @Nullable
+  public static Configuration getLetterboxOverrideConfiguration(
+      ApplicationInfo applicationInfo, int screenOrientation, int displayId) {
+    int orientation = getFixedOrientation(screenOrientation);
+    if (RuntimeEnvironment.getApiLevel() < VERSION_CODES.S
+        || orientation == Configuration.ORIENTATION_UNDEFINED
+        || !isIgnoringOrientationRequest(displayId)
+        || isUniversalResizeable(applicationInfo, displayId)) {
+      return null;
+    }
+    DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    if (displayInfo == null) {
+      return null;
+    }
+    int width = displayInfo.logicalWidth;
+    int height = displayInfo.logicalHeight;
+    boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
+    if (portrait == height >= width) {
+      return null;
+    }
+    // As the window manager does, keep the display's aspect ratio unless the device sets another.
+    float aspectRatio = getFloatResource("config_fixedOrientationLetterboxAspectRatio", 0f);
+    if (aspectRatio <= 1f) {
+      aspectRatio = Math.max(width, height) / (float) Math.min(width, height);
+    }
+    Rect bounds;
+    if (portrait) {
+      int letterboxWidth = Math.round(height / aspectRatio);
+      int left =
+          Math.round(
+              (width - letterboxWidth)
+                  * getFloatResource("config_letterboxHorizontalPositionMultiplier", 0.5f));
+      bounds = new Rect(left, 0, left + letterboxWidth, height);
+    } else {
+      int letterboxHeight = Math.round(width / aspectRatio);
+      int top =
+          Math.round(
+              (height - letterboxHeight)
+                  * getFloatResource("config_letterboxVerticalPositionMultiplier", 0f));
+      bounds = new Rect(0, top, width, top + letterboxHeight);
+    }
+    Configuration configuration =
+        createOverrideConfiguration(displayId, displayInfo, bounds.width(), bounds.height());
+    // The maximum bounds of a letterboxed activity are its own.
+    setBounds(configuration.windowConfiguration, bounds, bounds);
+    return configuration;
   }
 
   /**
@@ -165,16 +290,17 @@ public final class WindowConfigurations {
   }
 
   /**
-   * Returns how the configuration of an activity with the given configuration differs from the
-   * global configuration if it keeps its window on the given display: a freeform window keeps its
-   * bounds, and split screen its half of the display. Returns null if its window fills the display.
+   * Returns how the configuration of the activity differs from the global configuration if it keeps
+   * its window: a freeform window keeps its bounds, split screen its half of the display, and a
+   * letterbox is recomputed for the display. Returns null if its window fills the display.
    */
   @Nullable
-  public static Configuration getCurrentWindowOverrideConfiguration(
-      int displayId, Configuration activityConfiguration) {
+  public static Configuration getCurrentWindowOverrideConfiguration(Activity activity) {
     if (RuntimeEnvironment.getApiLevel() < VERSION_CODES.P) {
       return null;
     }
+    int displayId = activity.getWindowManager().getDefaultDisplay().getDisplayId();
+    Configuration activityConfiguration = activity.getResources().getConfiguration();
     WindowConfiguration windowConfiguration = activityConfiguration.windowConfiguration;
     if (windowConfiguration.getWindowingMode() == WindowConfiguration.WINDOWING_MODE_FREEFORM) {
       return getFreeformOverrideConfiguration(displayId, windowConfiguration.getBounds());
@@ -183,37 +309,49 @@ public final class WindowConfigurations {
       return getSplitScreenOverrideConfiguration(
           displayId, isInTopOrLeftOfSplitScreen(activityConfiguration));
     }
-    return null;
+    return getLetterboxOverrideConfiguration(
+        activity.getApplicationInfo(), activity.getRequestedOrientation(), displayId);
   }
 
-  /**
-   * Returns the configuration of an activity with the given configuration on the given display,
-   * given the global configuration, if it keeps its window.
-   */
+  /** Returns the configuration of the activity, given the global one, if it keeps its window. */
   public static Configuration getActivityConfiguration(
-      int displayId, Configuration activityConfiguration, Configuration globalConfiguration) {
-    Configuration windowOverrideConfig =
-        getCurrentWindowOverrideConfiguration(displayId, activityConfiguration);
+      Activity activity, Configuration globalConfiguration) {
+    Configuration windowOverrideConfig = getCurrentWindowOverrideConfiguration(activity);
     return windowOverrideConfig != null
         ? withOverride(globalConfiguration, windowOverrideConfig)
-        : getDisplayConfiguration(displayId, globalConfiguration);
+        : getDisplayConfiguration(
+            activity.getWindowManager().getDefaultDisplay().getDisplayId(), globalConfiguration);
   }
 
   /**
-   * Returns the bounds of the window of an activity with the given configuration if it is in a
-   * window of its own, such as a freeform window or one half of split screen, or null if its window
-   * fills its display.
+   * Returns whether an activity with the given configuration is in multi-window mode: in a freeform
+   * window or in split screen.
+   */
+  public static boolean isInMultiWindowMode(Configuration configuration) {
+    return RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P
+        && (configuration.windowConfiguration.getWindowingMode()
+                == WindowConfiguration.WINDOWING_MODE_FREEFORM
+            || isInSplitScreen(configuration));
+  }
+
+  /**
+   * Returns the bounds of the window of an activity with the given configuration on the given
+   * display if they are its own, such as a freeform window, one half of split screen or a
+   * letterbox, or null if its window fills the display.
    */
   @Nullable
-  public static Rect getWindowBounds(Configuration configuration) {
+  public static Rect getWindowBounds(int displayId, Configuration configuration) {
     if (RuntimeEnvironment.getApiLevel() < VERSION_CODES.P) {
       return null;
     }
-    WindowConfiguration windowConfiguration = configuration.windowConfiguration;
-    return windowConfiguration.getWindowingMode() == WindowConfiguration.WINDOWING_MODE_FREEFORM
-            || isInSplitScreen(configuration)
-        ? new Rect(windowConfiguration.getBounds())
-        : null;
+    DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    Rect bounds = configuration.windowConfiguration.getBounds();
+    if (displayInfo == null
+        || bounds.isEmpty()
+        || bounds.equals(new Rect(0, 0, displayInfo.logicalWidth, displayInfo.logicalHeight))) {
+      return null;
+    }
+    return new Rect(bounds);
   }
 
   /** Returns whether an activity with the given configuration is in the system's split screen. */
@@ -340,6 +478,12 @@ public final class WindowConfigurations {
             System.getProperty("robolectric.deviceconfig.useMaxBounds", "true"))) {
       windowConfiguration.setMaxBounds(displayBounds);
     }
+  }
+
+  private static float getFloatResource(String name, float defaultValue) {
+    Resources resources = Resources.getSystem();
+    int id = resources.getIdentifier(name, "dimen", "android");
+    return id != 0 ? resources.getFloat(id) : defaultValue;
   }
 
   private static Configuration withOverride(
