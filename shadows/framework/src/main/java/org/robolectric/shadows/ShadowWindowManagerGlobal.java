@@ -25,6 +25,7 @@ import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -65,6 +66,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -409,6 +411,11 @@ public class ShadowWindowManagerGlobal {
       windowInfo.displayFrame.set(0, 0, displayInfo.logicalWidth, displayInfo.logicalHeight);
       Rect contentFrame = new Rect(windowInfo.displayFrame);
       systemUi.adjustFrameForInsets(attrs, contentFrame);
+      // The windows of an activity in a window of its own, such as a freeform window, are in it.
+      Rect activityWindowBounds = getActivityWindowBounds(attrs.token);
+      if (activityWindowBounds != null && !contentFrame.intersect(activityWindowBounds)) {
+        contentFrame.set(activityWindowBounds);
+      }
       // TODO: Remove this and respect the requested size as real Android does. For back compat
       //  reasons temporarily ignore requested size.
       boolean useRequestedSize = Boolean.getBoolean("robolectric.windowManager.useRequestedSize");
@@ -433,11 +440,31 @@ public class ShadowWindowManagerGlobal {
         // If we are not respecting the requested size, for backwards compatibility allow the window
         // to offset to the requested position ignoring the gravity and display bounds.
         windowInfo.frame.offsetTo(attrs.x, attrs.y);
+        if (activityWindowBounds != null) {
+          windowInfo.frame.offset(contentFrame.left, contentFrame.top);
+        }
       } else {
         Gravity.applyDisplay(attrs.gravity, contentFrame, windowInfo.frame);
       }
       systemUiForDisplay(windowInfo.displayId).putInsets(windowInfo);
       windowInfo.put(outFrame, outContentInsets, outVisibleInsets, outStableInsets, outInsetsState);
+    }
+
+    /**
+     * Returns the bounds of the activity with the given token if it is in a window of its own, such
+     * as a freeform window.
+     */
+    @Nullable
+    private static Rect getActivityWindowBounds(@Nullable IBinder token) {
+      if (token == null || getApiLevel() < P) {
+        return null;
+      }
+      for (Activity activity : LiveActivities.get()) {
+        if (reflector(ActivityReflector.class, activity).getToken() == token) {
+          return WindowConfigurations.getWindowBounds(activity.getResources().getConfiguration());
+        }
+      }
+      return null;
     }
 
     public boolean getInTouchMode() {
