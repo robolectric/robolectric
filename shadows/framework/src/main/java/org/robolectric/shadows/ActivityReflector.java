@@ -29,11 +29,17 @@ public interface ActivityReflector {
   @Accessor("mToken")
   IBinder getToken();
 
+  @Accessor("mStopped")
+  boolean getStopped();
+
   @Accessor("mShareableActivityToken")
   IBinder getShareableActivityTokenField();
 
   // >= O
   void dispatchMovedToDisplay(int displayId, Configuration config);
+
+  // >= O
+  void dispatchMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig);
 
   // <= N_MR1
   void attach(

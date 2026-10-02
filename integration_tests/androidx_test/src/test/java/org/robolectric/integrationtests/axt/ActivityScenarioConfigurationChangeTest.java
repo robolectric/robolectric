@@ -4,9 +4,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Application;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import androidx.lifecycle.Lifecycle;
@@ -203,6 +206,20 @@ public class ActivityScenarioConfigurationChangeTest {
       RuntimeEnvironment.setQualifiers("+land");
 
       assertThat(scenario.getState()).isEqualTo(Lifecycle.State.DESTROYED);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void freeformWindow_noOpGlobalConfigurationChange_reportsNothing() {
+    Application application = ApplicationProvider.getApplicationContext();
+    Bundle options =
+        ActivityOptions.makeBasic().setLaunchBounds(new Rect(0, 0, 500, 600)).toBundle();
+    try (ActivityScenario<FontScaleActivity> scenario =
+        ActivityScenario.launch(new Intent(application, FontScaleActivity.class), options)) {
+      RuntimeEnvironment.setFontScale(RuntimeEnvironment.getFontScale());
+
+      scenario.onActivity(activity -> assertThat(activity.fontScales).isEmpty());
     }
   }
 
