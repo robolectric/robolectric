@@ -23,6 +23,7 @@ import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.BrightnessConfiguration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
+import android.hardware.display.VirtualDisplay;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -261,6 +262,61 @@ public class ShadowDisplayManagerTest {
     ShadowDisplayManager.changeDisplay(display.getDisplayId(), "w1280dp-h720dp-land-xhdpi");
 
     assertThat(windowContext.getResources().getConfiguration().screenWidthDp).isEqualTo(1280);
+  }
+
+  @Test
+  public void addDisplay_external_isAPresentationDisplay() {
+    int displayId = ShadowDisplayManager.addDisplay("w1920dp-h1080dp-land", Display.TYPE_EXTERNAL);
+
+    Display display = instance.getDisplay(displayId);
+    assertThat(display.getType()).isEqualTo(Display.TYPE_EXTERNAL);
+    assertThat(display.getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
+    assertThat(presentationDisplayIds()).containsExactly(displayId);
+  }
+
+  @Test
+  public void changeDisplay_keepsWhatTheQualifiersDoNotDescribe() {
+    int namedDisplayId = ShadowDisplayManager.addDisplay("w1920dp-h1080dp-land", "HDMI Screen");
+    int externalDisplayId =
+        ShadowDisplayManager.addDisplay("w1920dp-h1080dp-land", Display.TYPE_EXTERNAL);
+
+    ShadowDisplayManager.changeDisplay(namedDisplayId, "w2560dp-h1440dp-land");
+    ShadowDisplayManager.changeDisplay(externalDisplayId, "w2560dp-h1440dp-land");
+
+    assertThat(instance.getDisplay(namedDisplayId).getName()).isEqualTo("HDMI Screen");
+    Display externalDisplay = instance.getDisplay(externalDisplayId);
+    assertThat(externalDisplay.getType()).isEqualTo(Display.TYPE_EXTERNAL);
+    assertThat(externalDisplay.getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
+    assertThat(presentationDisplayIds()).containsExactly(externalDisplayId);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void createVirtualDisplay_withThePresentationFlag_isAPresentationDisplay() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Presentation",
+            800,
+            600,
+            DisplayMetrics.DENSITY_MEDIUM,
+            null,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION);
+
+    Display display = virtualDisplay.getDisplay();
+    assertThat(display.getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
+    assertThat(presentationDisplayIds()).containsExactly(display.getDisplayId());
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void createVirtualDisplay_thatIsNotPublic_isPrivate() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Private", 800, 600, DisplayMetrics.DENSITY_MEDIUM, null, /* flags= */ 0);
+
+    assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(Display.FLAG_PRIVATE);
+    assertThat(presentationDisplayIds()).isEmpty();
   }
 
   @Test
@@ -712,6 +768,14 @@ public class ShadowDisplayManagerTest {
     public void onDisplayChanged(int displayId) {
       events.add("Changed " + displayId);
     }
+  }
+
+  private List<Integer> presentationDisplayIds() {
+    List<Integer> displayIds = new ArrayList<>();
+    for (Display display : instance.getDisplays(DisplayManager.DISPLAY_CATEGORY_PRESENTATION)) {
+      displayIds.add(display.getDisplayId());
+    }
+    return displayIds;
   }
 
   private static <T extends Activity> ActivityController<T> buildActivityOnDisplay(

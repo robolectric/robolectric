@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static java.util.stream.Collectors.toCollection;
@@ -20,6 +21,7 @@ import android.content.pm.ConfigurationInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.hardware.display.DisplayManagerGlobal;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.LocaleList;
@@ -27,6 +29,8 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.SparseIntArray;
+import android.view.Display;
+import android.view.DisplayInfo;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -391,6 +395,20 @@ public class ShadowActivityManager {
   /** Override the return value of isLowRamDevice(). */
   public void setIsLowRamDevice(boolean isLowRamDevice) {
     isLowRamDeviceOverride = isLowRamDevice;
+  }
+
+  /**
+   * Returns whether an activity can be launched on the display: it can on any display that exists,
+   * except a private display, such as a virtual display that isn't public, that another app owns.
+   */
+  @Implementation(minSdk = Q)
+  protected boolean isActivityStartAllowedOnDisplay(Context context, int displayId, Intent intent) {
+    DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    if (displayInfo == null) {
+      return false;
+    }
+    return (displayInfo.flags & Display.FLAG_PRIVATE) == 0
+        || context.getPackageName().equals(displayInfo.ownerPackageName);
   }
 
   @Implementation(minSdk = O)
