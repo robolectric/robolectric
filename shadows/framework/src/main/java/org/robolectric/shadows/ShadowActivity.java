@@ -39,6 +39,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Rect;
+import android.hardware.display.DisplayManagerGlobal;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Build.VERSION;
@@ -54,6 +55,7 @@ import android.text.SpannableStringBuilder;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
 import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -208,10 +210,23 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
             ? Shadow.<ShadowInstrumentation>extract(instrumentation)
                 .takeAdjacentLaunchOverrideConfiguration(intent, launchDisplayId)
             : null;
+    // An activity that fills its display launches in the orientation it declares: its display
+    // rotates, or it is letterboxed on a display that ignores orientation requests.
+    requestedOrientation = activityInfo.screenOrientation;
+    Configuration letterboxOverrideConfig = null;
+    if (overrideConfig == null && launchBounds == null && adjacentLaunchOverrideConfig == null) {
+      letterboxOverrideConfig =
+          WindowConfigurations.getLetterboxOverrideConfiguration(
+              application.getApplicationInfo(), requestedOrientation, launchDisplayId);
+      if (letterboxOverrideConfig == null) {
+        rotateDisplayToRequestedOrientation(launchDisplayId);
+      }
+    }
     if ((Boolean.getBoolean("robolectric.createActivityContexts")
             || (displayId != Display.DEFAULT_DISPLAY && displayId != Display.INVALID_DISPLAY)
             || launchBounds != null
-            || adjacentLaunchOverrideConfig != null)
+            || adjacentLaunchOverrideConfig != null
+            || letterboxOverrideConfig != null)
         && RuntimeEnvironment.getApiLevel() >= O) {
       LoadedApk loadedApk =
           activityThread.getPackageInfo(
@@ -229,7 +244,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
                   : launchBounds != null
                       ? WindowConfigurations.getFreeformOverrideConfiguration(
                           launchDisplayId, launchBounds)
-                      : WindowConfigurations.getDisplayOverrideConfiguration(displayId);
+                      : letterboxOverrideConfig != null
+                          ? letterboxOverrideConfig
+                          : WindowConfigurations.getDisplayOverrideConfiguration(displayId);
       activityContext =
           reflector(ContextImplReflector.class)
               .createActivityContext(
@@ -268,7 +285,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       // another one, such as the configuration of the display it was launched on.
       Configuration activityConfig = activityContext.getResources().getConfiguration();
       reflector(ActivityReflector.class, realActivity).getCurrentConfig().setTo(activityConfig);
-      if (WindowConfigurations.getWindowBounds(activityConfig) != null) {
+      if (WindowConfigurations.isInMultiWindowMode(activityConfig)) {
         inMultiWindowMode = true;
       }
     }
@@ -500,7 +517,60 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       getParent().setRequestedOrientation(requestedOrientation);
     } else {
       this.requestedOrientation = requestedOrientation;
+      // As the window manager does, apply the request once the activity's current work is done.
+      if (controller != null && ShadowLooper.looperMode() != LooperMode.Mode.LEGACY) {
+        new Handler(Looper.getMainLooper()).post(this::applyRequestedOrientation);
+      }
     }
+  }
+
+  /**
+   * Applies the orientation the activity requests, as the window manager does: an activity that
+   * fills its display rotates it, or is letterboxed if the display ignores orientation requests.
+   * The request is ignored in multi-window mode, and on a large screen for an app that is
+   * universally resizeable.
+   */
+  void applyRequestedOrientation() {
+    if (controller == null
+        || controller.get() != realActivity
+        || realActivity.isFinishing()
+        || realActivity.isDestroyed()
+        || WindowConfigurations.isInMultiWindowMode(
+            realActivity.getResources().getConfiguration())) {
+      return;
+    }
+    int displayId = getDisplayId();
+    if (WindowConfigurations.isIgnoringOrientationRequest(displayId)
+        || WindowConfigurations.isUniversalResizeable(
+            realActivity.getApplicationInfo(), displayId)) {
+      // The activity's letterbox, if it has one, changes instead of the display.
+      DisplayChanges.changeConfigurationIfNeeded(realActivity);
+    } else if (rotateDisplayToRequestedOrientation(displayId) && controller.get() == realActivity) {
+      DisplayChanges.changeConfigurationIfNeeded(realActivity);
+    }
+  }
+
+  /** Rotates the display to the orientation the activity requests, and returns whether it did. */
+  private boolean rotateDisplayToRequestedOrientation(int displayId) {
+    int orientation = WindowConfigurations.getFixedOrientation(requestedOrientation);
+    DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    if (orientation == Configuration.ORIENTATION_UNDEFINED
+        || displayInfo == null
+        || (orientation == Configuration.ORIENTATION_PORTRAIT)
+            == (displayInfo.logicalHeight >= displayInfo.logicalWidth)
+        || WindowConfigurations.isIgnoringOrientationRequest(displayId)
+        || WindowConfigurations.isUniversalResizeable(
+            RuntimeEnvironment.getApplication().getApplicationInfo(), displayId)) {
+      return false;
+    }
+    String qualifiers = orientation == Configuration.ORIENTATION_PORTRAIT ? "+port" : "+land";
+    if (displayId == Display.DEFAULT_DISPLAY) {
+      RuntimeEnvironment.setQualifiers(qualifiers);
+    } else {
+      // The activities on the display receive the change as on a device.
+      ShadowDisplayManager.changeDisplay(displayId, qualifiers);
+    }
+    return true;
   }
 
   @Implementation

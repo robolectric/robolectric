@@ -506,7 +506,9 @@ public class ShadowWindowManagerGlobal {
       }
       for (Activity activity : LiveActivities.get()) {
         if (reflector(ActivityReflector.class, activity).getToken() == token) {
-          return WindowConfigurations.getWindowBounds(activity.getResources().getConfiguration());
+          return WindowConfigurations.getWindowBounds(
+              activity.getWindowManager().getDefaultDisplay().getDisplayId(),
+              activity.getResources().getConfiguration());
         }
       }
       return null;
