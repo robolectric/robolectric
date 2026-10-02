@@ -31,6 +31,9 @@ public interface ActivityReflector {
   // >= O
   void dispatchMovedToDisplay(int displayId, Configuration config);
 
+  // >= O
+  void dispatchMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig);
+
   // <= N_MR1
   void attach(
       Context context,
