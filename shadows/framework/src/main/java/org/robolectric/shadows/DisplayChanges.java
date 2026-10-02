@@ -42,7 +42,7 @@ final class DisplayChanges {
               displayId, activity.getApplicationContext().getResources().getConfiguration());
       if (controller != null
           && activity.getResources().getConfiguration().diff(configuration) != 0) {
-        changeConfiguration(controller);
+        controller.configurationChange();
       }
     }
     WindowManagerServiceDelegate.onDisplayChanged(displayId);
@@ -71,24 +71,12 @@ final class DisplayChanges {
           ClassParameter.from(int.class, Display.DEFAULT_DISPLAY));
       ShadowWindowManagerGlobal.moveWindowsToDisplay(
           reflector(ActivityReflector.class, activity).getToken(), Display.DEFAULT_DISPLAY);
-      changeConfiguration(controller);
+      controller.configurationChange();
       ViewRootImpl viewRoot = activity.getWindow().getDecorView().getViewRootImpl();
       if (controller.get() == activity && viewRoot != null) {
         // The window gets the default display's frame.
         Shadow.<ShadowViewRootImpl>extract(viewRoot).callDispatchResized();
       }
-    }
-  }
-
-  /**
-   * Applies the current configuration to an activity, and makes it visible if that recreates it,
-   * which {@link ActivityController#configurationChange()} doesn't do.
-   */
-  private static void changeConfiguration(ActivityController<?> controller) {
-    Activity activity = controller.get();
-    controller.configurationChange();
-    if (controller.get() != activity) {
-      controller.visible();
     }
   }
 

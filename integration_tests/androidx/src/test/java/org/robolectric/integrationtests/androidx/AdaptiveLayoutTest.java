@@ -83,17 +83,18 @@ public class AdaptiveLayoutTest {
   }
 
   @Test
-  @Config(qualifiers = "w1280dp-h800dp-land")
+  @Config(qualifiers = "w1280dp-h800dp-land-mdpi")
   public void resize_whenActivityDoesNotHandleIt_recreatesTheActivity() {
     ActivityController<AdaptiveActivity> controller =
         Robolectric.buildActivity(AdaptiveActivity.class).setup();
     AdaptiveActivity activity = controller.get();
 
-    RuntimeEnvironment.setQualifiers("w500dp-h800dp-port");
+    RuntimeEnvironment.setQualifiers("w500dp-h800dp-port-mdpi");
     controller.configurationChange();
 
     assertThat(controller.get()).isNotSameInstanceAs(activity);
     assertThat(windowSizeClass(controller.get()).getMinWidthDp()).isEqualTo(0);
+    assertThat(controller.get().content.getWidth()).isEqualTo(500);
   }
 
   @Test

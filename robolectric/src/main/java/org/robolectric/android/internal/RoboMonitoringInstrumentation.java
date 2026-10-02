@@ -442,21 +442,15 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
     List<ActivityController<?>> controllers = new ArrayList<>(createdActivities);
     for (ActivityController<?> controller : controllers) {
       if (createdActivities.contains(controller)) {
-        Activity activity = controller.get();
         if (System.getProperty("robolectric.configurationChangeFix", "true").equals("true")) {
           // An activity on another display keeps that display's size and density.
+          Activity activity = controller.get();
           int displayId = activity.getWindowManager().getDefaultDisplay().getDisplayId();
           controller.configurationChange(
               WindowConfigurations.getDisplayConfiguration(displayId, newConfig),
               WindowConfigurations.getDisplayMetrics(displayId, newMetrics));
         } else {
           controller.configurationChange(newConfig, newMetrics, changedConfig);
-        }
-        // If the activity is recreated then make the new activity visible, this should be done by
-        // configurationChange but there's a pre-existing TODO to address this and it will require
-        // more work to make it function correctly.
-        if (controller.get() != activity) {
-          controller.visible();
         }
       }
     }
