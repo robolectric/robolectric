@@ -1636,6 +1636,21 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     Registries.NATIVE_THEME9_REGISTRY.getNativeObject(themePtr).Clear();
   }
 
+  // static void NativeThemeRebase(JNIEnv* env, jclass /*clazz*/, jlong ptr, jlong theme_ptr,
+  //                               jintArray style_ids, jbooleanArray force,
+  //                               jint style_count) {
+  @Implementation(minSdk = S)
+  protected static void nativeThemeRebase(
+      long ptr,
+      long themePtr,
+      @Nullable int[] styleIds,
+      @Nullable boolean[] force,
+      int styleCount) {
+    CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
+    Theme theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(themePtr);
+    theme.Rebase(assetmanager, styleIds, force, styleIds == null || force == null ? 0 : styleCount);
+  }
+
   // static jint NativeThemeGetAttributeValue(JNIEnv* env, jclass /*clazz*/, jlong ptr, jlong
   // theme_ptr,
   //                                          jint resid, jobject typed_value,

@@ -64,6 +64,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -199,10 +200,20 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       LoadedApkReflector loadedApkReflector = reflector(LoadedApkReflector.class, loadedApk);
       loadedApkReflector.setResources(application.getResources());
       loadedApkReflector.setApplication(application);
+      // The window manager gives an activity on another display that display's configuration.
+      Configuration activityOverrideConfig =
+          overrideConfig != null
+              ? overrideConfig
+              : WindowConfigurations.getDisplayOverrideConfiguration(displayId);
       activityContext =
           reflector(ContextImplReflector.class)
               .createActivityContext(
-                  activityThread, loadedApk, activityInfo, token, displayId, overrideConfig);
+                  activityThread,
+                  loadedApk,
+                  activityInfo,
+                  token,
+                  displayId,
+                  activityOverrideConfig);
       reflector(ContextImplReflector.class, activityContext).setOuterContext(realActivity);
       // This is not what the SDK does but for backwards compatibility with previous versions of
       // robolectric, which did not use a separate activity context, move the theme from the
@@ -227,6 +238,13 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
             token,
             activityTitle,
             lastNonConfigurationInstances);
+    if (activityContext != baseContext) {
+      // Activity#attach records the global configuration, but the activity's own context can have
+      // another one, such as the configuration of the display it was launched on.
+      reflector(ActivityReflector.class, realActivity)
+          .getCurrentConfig()
+          .setTo(activityContext.getResources().getConfiguration());
+    }
 
     int theme = activityInfo.getThemeResource();
     if (theme != 0) {

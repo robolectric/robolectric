@@ -331,4 +331,7 @@ public interface ActivityReflector {
 
   @Accessor("mInstrumentation")
   Instrumentation getInstrumentation();
+
+  @Accessor("mCurrentConfig")
+  Configuration getCurrentConfig();
 }
