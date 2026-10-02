@@ -34,5 +34,6 @@ dependencies {
   testImplementation(libs.androidx.test.espresso.core)
   testImplementation(libs.androidx.test.ext.junit)
   testImplementation(libs.androidx.window.core)
+  testImplementation(libs.androidx.window.testing)
   testImplementation(libs.truth)
 }
