@@ -550,7 +550,9 @@ public class ShadowWindowManagerGlobal {
       }
       for (Activity activity : LiveActivities.get()) {
         if (reflector(ActivityReflector.class, activity).getToken() == token) {
-          return WindowConfigurations.getWindowBounds(activity.getResources().getConfiguration());
+          return WindowConfigurations.getWindowBounds(
+              activity.getWindowManager().getDefaultDisplay().getDisplayId(),
+              activity.getResources().getConfiguration());
         }
       }
       return null;
@@ -764,8 +766,7 @@ public class ShadowWindowManagerGlobal {
       Activity activity = getActivity(windowInfo.attrs.token);
       if (activity != null) {
         Configuration activityOverrideConfig =
-            WindowConfigurations.getCurrentWindowOverrideConfiguration(
-                windowInfo.displayId, activity.getResources().getConfiguration());
+            WindowConfigurations.getCurrentWindowOverrideConfiguration(activity);
         if (activityOverrideConfig != null) {
           return activityOverrideConfig;
         }

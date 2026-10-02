@@ -446,10 +446,8 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       if (createdActivities.contains(controller)) {
         Activity activity = controller.get();
         if (System.getProperty("robolectric.configurationChangeFix", "true").equals("true")) {
-          int displayId = activity.getWindowManager().getDefaultDisplay().getDisplayId();
           Configuration activityConfig =
-              WindowConfigurations.getActivityConfiguration(
-                  displayId, activity.getResources().getConfiguration(), newConfig);
+              WindowConfigurations.getActivityConfiguration(activity, newConfig);
           ActivityReflector activityReflector = reflector(ActivityReflector.class, activity);
           if (activityReflector.getCurrentConfig().diff(activityConfig) == 0
               && (!activityReflector.getStopped()
@@ -458,6 +456,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
             continue;
           }
           // An activity on another display keeps that display's size and density.
+          int displayId = activity.getWindowManager().getDefaultDisplay().getDisplayId();
           controller.configurationChange(
               WindowConfigurations.getDisplayConfiguration(displayId, newConfig),
               WindowConfigurations.getDisplayMetrics(displayId, newMetrics));
