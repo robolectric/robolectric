@@ -4,6 +4,7 @@ import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.shadow.api.Shadow.extract;
@@ -156,6 +157,12 @@ public class ShadowDisplayManager {
     displayInfo.physicalYDpi = displayMetrics.densityDpi;
     displayInfo.state = Display.STATE_ON;
     displayInfo.type = displayType;
+    if (displayType == Display.TYPE_EXTERNAL
+        || displayType == Display.TYPE_WIFI
+        || displayType == Display.TYPE_OVERLAY) {
+      // These displays show presentations on a device.
+      displayInfo.flags |= Display.FLAG_PRESENTATION;
+    }
     if (ReflectionHelpers.hasField(DisplayInfo.class, "frameRateVelocityMapping")) {
       ReflectionHelpers.setField(displayInfo, "frameRateVelocityMapping", new ArrayList<>());
     }
@@ -163,8 +170,24 @@ public class ShadowDisplayManager {
     return displayInfo;
   }
 
-  private static DisplayInfo createDisplayInfo(String qualifiersStr, @Nullable Integer displayId) {
-    return createDisplayInfo(qualifiersStr, displayId, DEFAULT_DISPLAY_NAME, DEFAULT_DISPLAY_TYPE);
+  /** Returns the display changed to match the qualifiers, keeping what they don't describe. */
+  private static DisplayInfo createDisplayInfo(String qualifiersStr, int displayId) {
+    DisplayInfo baseDisplayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    DisplayInfo displayInfo =
+        createDisplayInfo(qualifiersStr, displayId, DEFAULT_DISPLAY_NAME, DEFAULT_DISPLAY_TYPE);
+    if (baseDisplayInfo != null) {
+      displayInfo.name = baseDisplayInfo.name;
+      displayInfo.uniqueId = baseDisplayInfo.uniqueId;
+      displayInfo.type = baseDisplayInfo.type;
+      displayInfo.flags = baseDisplayInfo.flags;
+      displayInfo.state = baseDisplayInfo.state;
+      displayInfo.ownerUid = baseDisplayInfo.ownerUid;
+      displayInfo.ownerPackageName = baseDisplayInfo.ownerPackageName;
+      if (RuntimeEnvironment.getApiLevel() >= Q) {
+        displayInfo.displayId = baseDisplayInfo.displayId;
+      }
+    }
+    return displayInfo;
   }
 
   private static DisplayInfo createDisplayInfo(
@@ -220,6 +243,8 @@ public class ShadowDisplayManager {
    * sign, the display's previous configuration is modified with the given qualifiers; otherwise
    * defaults are applied as described <a
    * href="http://robolectric.org/device-configuration/">here</a>.
+   *
+   * <p>The display keeps its name, type, flags, state and owner.
    *
    * <p>Idles the main looper to ensure all listeners are notified.
    *

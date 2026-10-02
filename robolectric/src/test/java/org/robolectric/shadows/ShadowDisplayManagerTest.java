@@ -122,6 +122,32 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
+  public void addDisplay_external_isAPresentationDisplay() {
+    int displayId = ShadowDisplayManager.addDisplay("w1920dp-h1080dp-land", Display.TYPE_EXTERNAL);
+
+    Display display = instance.getDisplay(displayId);
+    assertThat(display.getType()).isEqualTo(Display.TYPE_EXTERNAL);
+    assertThat(display.getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
+    assertThat(presentationDisplayIds()).containsExactly(displayId);
+  }
+
+  @Test
+  public void changeDisplay_keepsWhatTheQualifiersDoNotDescribe() {
+    int namedDisplayId = ShadowDisplayManager.addDisplay("w1920dp-h1080dp-land", "HDMI Screen");
+    int externalDisplayId =
+        ShadowDisplayManager.addDisplay("w1920dp-h1080dp-land", Display.TYPE_EXTERNAL);
+
+    ShadowDisplayManager.changeDisplay(namedDisplayId, "w2560dp-h1440dp-land");
+    ShadowDisplayManager.changeDisplay(externalDisplayId, "w2560dp-h1440dp-land");
+
+    assertThat(instance.getDisplay(namedDisplayId).getName()).isEqualTo("HDMI Screen");
+    Display externalDisplay = instance.getDisplay(externalDisplayId);
+    assertThat(externalDisplay.getType()).isEqualTo(Display.TYPE_EXTERNAL);
+    assertThat(externalDisplay.getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
+    assertThat(presentationDisplayIds()).containsExactly(externalDisplayId);
+  }
+
+  @Test
   @Config(minSdk = P)
   public void createVirtualDisplay_withThePresentationFlag_isAPresentationDisplay() {
     VirtualDisplay virtualDisplay =

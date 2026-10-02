@@ -35,6 +35,9 @@ import org.robolectric.shadows.ShadowDisplayManager;
 @RunWith(AndroidJUnit4.class)
 @Config(qualifiers = "w411dp-h891dp-port-mdpi")
 public class MultiDisplayTest {
+  // Display.TYPE_EXTERNAL, which is hidden.
+  private static final int TYPE_EXTERNAL = 2;
+
   private final Application application = ApplicationProvider.getApplicationContext();
   private final DisplayManager displayManager = application.getSystemService(DisplayManager.class);
 
@@ -62,6 +65,17 @@ public class MultiDisplayTest {
     assertThat(metrics.widthPixels).isEqualTo(1920);
     assertThat(metrics.heightPixels).isEqualTo(1080);
     assertThat(metrics.densityDpi).isEqualTo(DisplayMetrics.DENSITY_XHIGH);
+  }
+
+  @Test
+  public void externalDisplay_isFoundAsAPresentationDisplay() {
+    Display display = addExternalDisplay("w1920dp-h1080dp-land-mdpi");
+
+    Display[] presentationDisplays =
+        displayManager.getDisplays(DisplayManager.DISPLAY_CATEGORY_PRESENTATION);
+
+    assertThat(presentationDisplays).hasLength(1);
+    assertThat(presentationDisplays[0].getDisplayId()).isEqualTo(display.getDisplayId());
   }
 
   @Test
@@ -136,8 +150,7 @@ public class MultiDisplayTest {
   }
 
   private Display addExternalDisplay(String qualifiers) {
-    return displayManager.getDisplay(
-        ShadowDisplayManager.addDisplay(qualifiers, "External display"));
+    return displayManager.getDisplay(ShadowDisplayManager.addDisplay(qualifiers, TYPE_EXTERNAL));
   }
 
   private List<Integer> displayIds() {
