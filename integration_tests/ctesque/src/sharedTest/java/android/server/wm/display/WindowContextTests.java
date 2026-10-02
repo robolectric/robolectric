@@ -15,8 +15,10 @@
  */
 package android.server.wm.display;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Point;
@@ -84,8 +86,69 @@ public class WindowContextTests extends MultiDisplayTestBase {
     assertBoundsEquals(new Size(displaySize.x, displaySize.y), bounds);
   }
 
+  @Test
+  public void testWindowContextConfigChanges() {
+    final VirtualDisplaySession virtualDisplaySession = createManagedVirtualDisplaySession();
+    final Display display = virtualDisplaySession.createDisplay();
+    final Context windowContext = createWindowContext(display.getDisplayId());
+
+    Rect bounds =
+        windowContext.getSystemService(WindowManager.class).getCurrentWindowMetrics().getBounds();
+    assertBoundsEquals(virtualDisplaySession.getSize(), bounds);
+
+    virtualDisplaySession.changeDisplayMetrics(1.2 /* sizeRatio */, 1.1 /* densityRatio */);
+
+    waitForOrFail(
+        "the window context to have the new density",
+        () ->
+            windowContext.getResources().getConfiguration().densityDpi
+                == virtualDisplaySession.getDensityDpi());
+
+    bounds =
+        windowContext.getSystemService(WindowManager.class).getCurrentWindowMetrics().getBounds();
+    assertBoundsEquals(virtualDisplaySession.getSize(), bounds);
+  }
+
   private void assertBoundsEquals(Size expectedSize, Rect bounds) {
     assertEquals(expectedSize.getWidth(), bounds.width());
     assertEquals(expectedSize.getHeight(), bounds.height());
+  }
+
+  /**
+   * Verify if the {@link ComponentCallbacks#onConfigurationChanged(Configuration)} callback is
+   * received when the window context configuration changes.
+   */
+  @Test
+  public void testWindowContextRegisterComponentCallbacks() {
+    final TestComponentCallbacks callbacks = new TestComponentCallbacks();
+    final VirtualDisplaySession virtualDisplaySession = createManagedVirtualDisplaySession();
+    final Display display = virtualDisplaySession.createDisplay();
+    final Context windowContext = createWindowContext(display.getDisplayId());
+
+    windowContext.registerComponentCallbacks(callbacks);
+
+    virtualDisplaySession.changeDisplayMetrics(1.2 /* sizeRatio */, 1.1 /* densityRatio */);
+
+    // verify if there is a callback from the window context configuration change.
+    waitForOrFail(
+        "a callback from the window context configuration change",
+        () ->
+            callbacks.mConfiguration != null
+                && callbacks.mConfiguration.densityDpi == virtualDisplaySession.getDensityDpi());
+    assertThat(callbacks.mConfiguration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+
+    windowContext.unregisterComponentCallbacks(callbacks);
+  }
+
+  private static class TestComponentCallbacks implements ComponentCallbacks {
+    private volatile Configuration mConfiguration;
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+      mConfiguration = newConfig;
+    }
+
+    @Override
+    public void onLowMemory() {}
   }
 }

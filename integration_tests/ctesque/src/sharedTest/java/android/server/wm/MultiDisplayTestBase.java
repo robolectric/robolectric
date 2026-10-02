@@ -139,6 +139,11 @@ public abstract class MultiDisplayTestBase {
                     == displayId);
   }
 
+  protected static void waitAndAssertActivityDestroyed(
+      ActivityScenario<? extends Activity> scenario, String message) {
+    waitForOrFail(message, () -> scenario.getState() == Lifecycle.State.DESTROYED);
+  }
+
   protected static <T extends Activity> T getActivity(ActivityScenario<T> scenario) {
     final AtomicReference<T> activity = new AtomicReference<>();
     scenario.onActivity(activity::set);
@@ -277,9 +282,9 @@ public abstract class MultiDisplayTestBase {
    * closed.
    */
   public class VirtualDisplaySession implements AutoCloseable {
-    private final int mDensityDpi = CUSTOM_DENSITY_DPI;
-    private final Size mSize = new Size(WIDTH, HEIGHT);
+    private int mDensityDpi = CUSTOM_DENSITY_DPI;
     private boolean mPresentationDisplay;
+    private Size mSize = new Size(WIDTH, HEIGHT);
     private ImageReader mReader;
     private VirtualDisplay mVirtualDisplay;
 
@@ -312,6 +317,18 @@ public abstract class MultiDisplayTestBase {
     /** Returns the density of the virtual display now. */
     public int getDensityDpi() {
       return mDensityDpi;
+    }
+
+    /** Resizes the virtual display to half of its size, as VirtualDisplayActivity does. */
+    public void resizeDisplay() {
+      changeDisplayMetrics(0.5 /* sizeRatio */, 1 /* densityRatio */);
+    }
+
+    /** Changes the size and the density of the virtual display, as DisplayMetricsSession does. */
+    public void changeDisplayMetrics(double sizeRatio, double densityRatio) {
+      mSize = new Size((int) (mSize.getWidth() * sizeRatio), (int) (mSize.getHeight() * sizeRatio));
+      mDensityDpi = (int) (mDensityDpi * densityRatio);
+      mVirtualDisplay.resize(mSize.getWidth(), mSize.getHeight(), mDensityDpi);
     }
 
     @Override

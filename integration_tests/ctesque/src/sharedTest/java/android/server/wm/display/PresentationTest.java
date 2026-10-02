@@ -65,6 +65,39 @@ public class PresentationTest extends MultiDisplayTestBase {
         scenario, presentation, privatePresentationDisplay.getDisplayId());
   }
 
+  /** Asserts that a presentation isn't dismissed with display resize. */
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  @SdkSuppress(minSdkVersion = Build.VERSION_CODES.S)
+  public void testPresentationNotDismissAfterResizeDisplay() {
+    final Display display = createPrivatePresentationDisplay();
+    final ActivityScenario<TestActivity> scenario = launchPresentationActivity();
+    final Presentation presentation = showPresentation(scenario, display.getDisplayId());
+    waitAndAssertPresentationOnDisplayAndMatchesDisplayMetrics(
+        scenario, presentation, display.getDisplayId());
+
+    mVirtualDisplaySession.resizeDisplay();
+
+    waitAndAssertPresentationOnDisplayAndMatchesDisplayMetrics(
+        scenario, presentation, display.getDisplayId());
+  }
+
+  /** Asserts that a presentation is dismissed when its display is removed. */
+  @Test
+  public void testPresentationDismissAfterRemoveDisplay() {
+    final Display display = createPrivatePresentationDisplay();
+    final ActivityScenario<TestActivity> scenario = launchPresentationActivity();
+    final Presentation presentation = showPresentation(scenario, display.getDisplayId());
+    waitAndAssertPresentationOnDisplayAndMatchesDisplayMetrics(
+        scenario, presentation, display.getDisplayId());
+
+    mVirtualDisplaySession.close();
+
+    waitForOrFail(
+        "Presentation must dismiss when its display is removed",
+        () -> !isShowing(scenario, presentation));
+  }
+
   private void waitAndAssertPresentationOnDisplayAndMatchesDisplayMetrics(
       ActivityScenario<TestActivity> scenario, Presentation presentation, int displayId) {
     waitForOrFail(
@@ -124,5 +157,12 @@ public class PresentationTest extends MultiDisplayTestBase {
           presentation.get().show();
         });
     return presentation.get();
+  }
+
+  private static boolean isShowing(
+      ActivityScenario<? extends Activity> scenario, Presentation presentation) {
+    final AtomicReference<Boolean> showing = new AtomicReference<>();
+    scenario.onActivity(activity -> showing.set(presentation.isShowing()));
+    return showing.get();
   }
 }

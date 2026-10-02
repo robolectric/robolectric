@@ -697,6 +697,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     this.controller = controller;
   }
 
+  @Nullable
+  ActivityController<?> getController() {
+    return controller;
+  }
+
   /** Sets if startIntentSenderForRequestCode will throw an IntentSender.SendIntentException. */
   public void setThrowIntentSenderException(boolean throwIntentSenderException) {
     this.throwIntentSenderException = throwIntentSenderException;

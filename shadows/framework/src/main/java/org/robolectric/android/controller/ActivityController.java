@@ -22,6 +22,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ActivityInfo.Config;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.hardware.display.DisplayManagerGlobal;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -372,15 +373,12 @@ public class ActivityController<T extends Activity>
    */
   @CanIgnoreReturnValue
   public ActivityController<T> configurationChange() {
-    Configuration configuration =
-        component.getApplicationContext().getResources().getConfiguration();
-    Configuration displayOverrideConfig =
-        WindowConfigurations.getDisplayOverrideConfiguration(getDisplayId());
-    if (displayOverrideConfig != null) {
-      configuration = new Configuration(configuration);
-      configuration.updateFrom(displayOverrideConfig);
-    }
-    return configurationChange(configuration);
+    int displayId = getDisplayId();
+    return configurationChange(
+        WindowConfigurations.getDisplayConfiguration(
+            displayId, component.getApplicationContext().getResources().getConfiguration()),
+        WindowConfigurations.getDisplayMetrics(
+            displayId, component.getResources().getDisplayMetrics()));
   }
 
   /**
@@ -469,8 +467,29 @@ public class ActivityController<T extends Activity>
             reflector(ActivityReflector.class, component)
                 .getCurrentConfig()
                 .setTo(newConfiguration);
-            component.onConfigurationChanged(newConfiguration);
             ViewRootImpl root = getViewRoot();
+            // As ActivityThread does, tell an activity that moved to another display, such as one
+            // whose display was removed, before the configuration change.
+            int displayId = getDisplayId();
+            boolean movedToAnotherDisplay =
+                RuntimeEnvironment.getApiLevel() >= O
+                    && root != null
+                    && root.getDisplayId() != displayId;
+            // Also as ActivityThread does, give the resources of the activity what its display
+            // overrides in the configuration now. Display#getSize reads it.
+            Configuration displayOverrideConfig =
+                WindowConfigurations.getDisplayOverrideConfiguration(displayId);
+            if (displayOverrideConfig != null || movedToAnotherDisplay) {
+              component
+                  .getResources()
+                  .getDisplayAdjustments()
+                  .setConfiguration(displayOverrideConfig);
+            }
+            if (movedToAnotherDisplay) {
+              reflector(org.robolectric.shadows.ActivityReflector.class, component)
+                  .dispatchMovedToDisplay(displayId, newConfiguration);
+            }
+            component.onConfigurationChanged(newConfiguration);
             if (root != null) {
               if (RuntimeEnvironment.getApiLevel() <= N_MR1) {
                 ReflectionHelpers.callInstanceMethod(
@@ -479,7 +498,8 @@ public class ActivityController<T extends Activity>
                     ClassParameter.from(Configuration.class, newConfiguration),
                     ClassParameter.from(boolean.class, false));
               } else {
-                root.updateConfiguration(Display.INVALID_DISPLAY);
+                root.updateConfiguration(
+                    movedToAnotherDisplay ? displayId : Display.INVALID_DISPLAY);
               }
             }
           });
@@ -659,7 +679,10 @@ public class ActivityController<T extends Activity>
     Bundle outState = new Bundle();
     saveInstanceState(outState);
     Object lastNonConfigurationInstances = activityReflector.retainNonConfigurationInstances();
-    Configuration overrideConfig = component.getResources().getConfiguration();
+    // An activity whose display was removed is recreated on the default display, which it takes
+    // its configuration from.
+    Configuration overrideConfig =
+        isDisplayPresent(getDisplayId()) ? component.getResources().getConfiguration() : null;
     Bundle recreatedActivityOptions = getRecreatedActivityOptions();
     destroy();
 
@@ -743,14 +766,23 @@ public class ActivityController<T extends Activity>
     return component.getWindowManager().getDefaultDisplay().getDisplayId();
   }
 
-  /** Returns options that launch a recreated activity on the display the activity is on. */
+  /**
+   * Returns options that launch a recreated activity on the display the activity is on, or on the
+   * default display if that display was removed.
+   */
   @Nullable
   private Bundle getRecreatedActivityOptions() {
     int displayId = getDisplayId();
-    if (displayId == Display.DEFAULT_DISPLAY || RuntimeEnvironment.getApiLevel() < O) {
+    if (displayId == Display.DEFAULT_DISPLAY
+        || RuntimeEnvironment.getApiLevel() < O
+        || !isDisplayPresent(displayId)) {
       return null;
     }
     return ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle();
+  }
+
+  private static boolean isDisplayPresent(int displayId) {
+    return DisplayManagerGlobal.getInstance().getDisplayInfo(displayId) != null;
   }
 
   /** Accessor interface for android.app.Activity.NonConfigurationInstances' internals. */

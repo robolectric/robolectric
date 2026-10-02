@@ -109,6 +109,25 @@ public class ShadowWindowManagerGlobal {
     getWindowSessionDelegate().sendResize(window);
   }
 
+  /** Gives the windows on a display the frames and the configuration they have there now. */
+  static void resizeWindowsOnDisplay(int displayId) {
+    WindowSessionDelegate delegate = getWindowSessionDelegate();
+    for (Entry<IWindow, WindowInfo> window : new ArrayList<>(delegate.windows.entrySet())) {
+      if (window.getValue().displayId == displayId) {
+        delegate.sendResize(window.getKey());
+      }
+    }
+  }
+
+  /** Moves the windows of the activity with the given token to another display. */
+  static void moveWindowsToDisplay(IBinder activityToken, int displayId) {
+    for (WindowInfo windowInfo : getWindowSessionDelegate().windows.values()) {
+      if (windowInfo.attrs.token == activityToken) {
+        windowInfo.displayId = displayId;
+      }
+    }
+  }
+
   /**
    * Returns the last {@link ClipData} passed to a drag initiated from a call to {@link
    * View#startDrag} or {@link View#startDragAndDrop}, or null if there isn't one.

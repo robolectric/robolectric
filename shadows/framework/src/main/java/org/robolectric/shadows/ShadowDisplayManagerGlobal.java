@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -25,6 +26,7 @@ import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.display.WifiDisplayStatus;
 import android.media.projection.IMediaProjection;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
@@ -239,6 +241,10 @@ public class ShadowDisplayManagerGlobal {
         VirtualDisplayConfig config, IVirtualDisplayCallback callbackWrapper, String packageName) {
       DisplayInfo displayInfo = new DisplayInfo();
       displayInfo.flags = getVirtualDisplayFlags(config.getFlags());
+      if ((config.getFlags() & DisplayManager.VIRTUAL_DISPLAY_FLAG_DESTROY_CONTENT_ON_REMOVAL)
+          != 0) {
+        displayInfo.removeMode = Display.REMOVE_MODE_DESTROY_CONTENT;
+      }
       displayInfo.type = Display.TYPE_VIRTUAL;
       displayInfo.name = config.getName();
       displayInfo.logicalDensityDpi = config.getDensityDpi();
@@ -395,6 +401,9 @@ public class ShadowDisplayManagerGlobal {
       }
       displayInfos.put(displayId, displayInfo);
       notifyListeners(displayId, EVENT_DISPLAY_BASIC_CHANGED);
+      if (displayId != Display.DEFAULT_DISPLAY) {
+        new Handler(Looper.getMainLooper()).post(() -> DisplayChanges.onDisplayChanged(displayId));
+      }
     }
 
     private boolean useMaxBounds() {
@@ -407,8 +416,15 @@ public class ShadowDisplayManagerGlobal {
         throw new IllegalStateException("no display " + displayId);
       }
 
-      displayInfos.remove(displayId);
+      DisplayInfo displayInfo = displayInfos.remove(displayId);
+      // As on a device, the content of a private display is destroyed with it.
+      boolean destroysContent =
+          (displayInfo.flags & Display.FLAG_PRIVATE) != 0
+              || (getApiLevel() >= O
+                  && displayInfo.removeMode == Display.REMOVE_MODE_DESTROY_CONTENT);
       notifyListeners(displayId, EVENT_DISPLAY_REMOVED);
+      new Handler(Looper.getMainLooper())
+          .post(() -> DisplayChanges.onDisplayRemoved(displayId, destroysContent));
     }
 
     private void notifyListeners(int nextId, int event) {
