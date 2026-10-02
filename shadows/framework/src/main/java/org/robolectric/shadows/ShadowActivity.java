@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -25,6 +26,7 @@ import android.app.Instrumentation;
 import android.app.LoadedApk;
 import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
+import android.app.WindowConfiguration;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -34,7 +36,9 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Rect;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Build.VERSION;
@@ -47,6 +51,7 @@ import android.os.Looper;
 import android.os.Parcel;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
+import android.util.DisplayMetrics;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -191,8 +196,22 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     //  static (i.e. global) state instead of instance state. For now enable only when the display
     //  is requested to a non-default display which requires a separate context to function
     //  properly.
+    int launchDisplayId =
+        displayId == Display.INVALID_DISPLAY ? Display.DEFAULT_DISPLAY : displayId;
+    Rect launchBounds =
+        activityOptions != null && RuntimeEnvironment.getApiLevel() >= P
+            ? ActivityOptions.fromBundle(activityOptions).getLaunchBounds()
+            : null;
+    // An activity started adjacent to another launches in the other half of split screen.
+    Configuration adjacentLaunchOverrideConfig =
+        overrideConfig == null
+            ? Shadow.<ShadowInstrumentation>extract(instrumentation)
+                .takeAdjacentLaunchOverrideConfiguration(intent, launchDisplayId)
+            : null;
     if ((Boolean.getBoolean("robolectric.createActivityContexts")
-            || (displayId != Display.DEFAULT_DISPLAY && displayId != Display.INVALID_DISPLAY))
+            || (displayId != Display.DEFAULT_DISPLAY && displayId != Display.INVALID_DISPLAY)
+            || launchBounds != null
+            || adjacentLaunchOverrideConfig != null)
         && RuntimeEnvironment.getApiLevel() >= O) {
       LoadedApk loadedApk =
           activityThread.getPackageInfo(
@@ -200,11 +219,17 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       LoadedApkReflector loadedApkReflector = reflector(LoadedApkReflector.class, loadedApk);
       loadedApkReflector.setResources(application.getResources());
       loadedApkReflector.setApplication(application);
-      // The window manager gives an activity on another display that display's configuration.
+      // The window manager gives an activity the configuration of its window: a window of its own,
+      // such as a freeform window, or one filling the display it is on.
       Configuration activityOverrideConfig =
           overrideConfig != null
               ? overrideConfig
-              : WindowConfigurations.getDisplayOverrideConfiguration(displayId);
+              : adjacentLaunchOverrideConfig != null
+                  ? adjacentLaunchOverrideConfig
+                  : launchBounds != null
+                      ? WindowConfigurations.getFreeformOverrideConfiguration(
+                          launchDisplayId, launchBounds)
+                      : WindowConfigurations.getDisplayOverrideConfiguration(displayId);
       activityContext =
           reflector(ContextImplReflector.class)
               .createActivityContext(
@@ -241,9 +266,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     if (activityContext != baseContext) {
       // Activity#attach records the global configuration, but the activity's own context can have
       // another one, such as the configuration of the display it was launched on.
-      reflector(ActivityReflector.class, realActivity)
-          .getCurrentConfig()
-          .setTo(activityContext.getResources().getConfiguration());
+      Configuration activityConfig = activityContext.getResources().getConfiguration();
+      reflector(ActivityReflector.class, realActivity).getCurrentConfig().setTo(activityConfig);
+      if (WindowConfigurations.getWindowBounds(activityConfig) != null) {
+        inMultiWindowMode = true;
+      }
     }
 
     int theme = activityInfo.getThemeResource();
@@ -946,6 +973,80 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   /** Changes state of {@link #isInMultiWindowMode} method. */
   public void setInMultiWindowMode(boolean value) {
     inMultiWindowMode = value;
+  }
+
+  /**
+   * Puts the activity in a freeform window with the given bounds on its display, as when the user
+   * moves or resizes it, or makes its window fill the display if the bounds are null.
+   *
+   * <p>As on a device, the activity receives {@link Activity#onMultiWindowModeChanged} if it enters
+   * or leaves multi-window mode, and the configuration change for its new window, or is recreated
+   * if it doesn't handle the change. An activity that shares the application's context, as one
+   * launched without {@link ActivityOptions#setLaunchBounds} does, can only enter a window by being
+   * recreated. Requires P or later.
+   */
+  public void setWindowBounds(@Nullable Rect bounds) {
+    changeWindow(
+        bounds != null
+            ? WindowConfigurations.getFreeformOverrideConfiguration(getDisplayId(), bounds)
+            : null);
+  }
+
+  /**
+   * Puts the activity in the system's split screen, as when the user picks it for split screen: in
+   * the top or left half of its display, or in the other half if another activity is there. It
+   * keeps its half, recomputed when the display changes, until {@link #setWindowBounds} changes its
+   * window.
+   *
+   * <p>As on a device, an activity it starts with {@link Intent#FLAG_ACTIVITY_LAUNCH_ADJACENT}
+   * launches in the other half, and {@link ShadowDisplayManager#setSplitScreenDividerPosition}
+   * moves the divider between them. The activity receives the change as {@link #setWindowBounds}
+   * describes. Requires P or later.
+   */
+  public void enterSplitScreen() {
+    int displayId = getDisplayId();
+    boolean topOrLeftIsTaken = false;
+    for (Activity activity : LiveActivities.get()) {
+      if (activity != realActivity
+          && activity.getWindowManager().getDefaultDisplay().getDisplayId() == displayId
+          && WindowConfigurations.isInTopOrLeftOfSplitScreen(
+              activity.getResources().getConfiguration())) {
+        topOrLeftIsTaken = true;
+      }
+    }
+    changeWindow(
+        WindowConfigurations.getSplitScreenOverrideConfiguration(displayId, !topOrLeftIsTaken));
+  }
+
+  private void changeWindow(@Nullable Configuration windowOverrideConfig) {
+    if (RuntimeEnvironment.getApiLevel() < P) {
+      throw new IllegalStateException("Windows of their own require P or later");
+    }
+    if (controller == null) {
+      throw new IllegalStateException("The activity was not started by an ActivityController");
+    }
+    int displayId = getDisplayId();
+    Resources applicationResources = realActivity.getApplicationContext().getResources();
+    Configuration configuration =
+        new Configuration(
+            WindowConfigurations.getDisplayConfiguration(
+                displayId, applicationResources.getConfiguration()));
+    DisplayMetrics displayMetrics =
+        WindowConfigurations.getDisplayMetrics(displayId, applicationResources.getDisplayMetrics());
+    if (windowOverrideConfig != null) {
+      configuration.updateFrom(windowOverrideConfig);
+      displayMetrics =
+          WindowConfigurations.getWindowMetrics(
+              displayMetrics, windowOverrideConfig.windowConfiguration.getBounds());
+    } else {
+      configuration.windowConfiguration.setWindowingMode(
+          WindowConfiguration.WINDOWING_MODE_FULLSCREEN);
+    }
+    controller.configurationChange(configuration, displayMetrics);
+  }
+
+  private int getDisplayId() {
+    return realActivity.getWindowManager().getDefaultDisplay().getDisplayId();
   }
 
   @Implementation(minSdk = N)

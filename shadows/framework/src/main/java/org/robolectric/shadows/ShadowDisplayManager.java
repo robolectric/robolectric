@@ -18,6 +18,8 @@ import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -31,6 +33,7 @@ import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.internal.DisplayConfig;
+import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -62,6 +65,29 @@ public class ShadowDisplayManager {
   @Resetter
   public static void reset() {
     displayIsNaturallyPortrait.clear();
+    WindowConfigurations.reset();
+  }
+
+  /**
+   * Moves the divider of split screen on the given display, as when the user drags it, and idles
+   * the main looper so that the activities in split screen on the display get their new halves of
+   * it, as on a device.
+   *
+   * <p>Robolectric doesn't snap the divider to the positions a device would, or dismiss split
+   * screen when the divider reaches an edge.
+   *
+   * @param displayId the display id
+   * @param position where the middle of the divider is, as a fraction of the display's width, or of
+   *     its height if it is portrait. The divider starts in the middle, at 0.5.
+   * @see ShadowActivity#enterSplitScreen
+   */
+  public static void setSplitScreenDividerPosition(int displayId, float position) {
+    if (!(position > 0 && position < 1)) {
+      throw new IllegalArgumentException("The divider must be inside the display: " + position);
+    }
+    WindowConfigurations.setSplitScreenDividerPosition(displayId, position);
+    new Handler(Looper.getMainLooper()).post(() -> DisplayChanges.onSplitScreenChanged(displayId));
+    shadowMainLooper().idle();
   }
 
   @Implementation

@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static java.util.Objects.requireNonNull;
@@ -29,6 +30,7 @@ import android.content.Intent;
 import android.content.Intent.FilterComparison;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -58,6 +60,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -79,6 +82,8 @@ public class ShadowInstrumentation {
   @RealObject protected Instrumentation realObject;
 
   private final List<Intent> startedActivities = Collections.synchronizedList(new ArrayList<>());
+  private final List<AdjacentLaunch> adjacentLaunches =
+      Collections.synchronizedList(new ArrayList<>());
   private final List<IntentForResult> startedActivitiesForResults =
       Collections.synchronizedList(new ArrayList<>());
   private final Map<FilterComparison, TargetAndRequestCode> intentRequestCodeMap =
@@ -154,6 +159,7 @@ public class ShadowInstrumentation {
 
     verifyActivityInManifest(intent);
     logStartedActivity(intent, null, requestCode, options);
+    launchAdjacentIfRequested(target, intent);
 
     if (who == null) {
       return null;
@@ -237,6 +243,61 @@ public class ShadowInstrumentation {
                   ReflectionHelpers.createNullProxy(IUiAutomationConnection.class));
     }
     return uiAutomation;
+  }
+
+  /**
+   * Records where an activity started with {@link Intent#FLAG_ACTIVITY_LAUNCH_ADJACENT} launches,
+   * as the system does: in the other half of split screen from the activity that started it. Since
+   * S_V2, an activity filling its display that starts one adjacent to it enters split screen with
+   * it.
+   */
+  private void launchAdjacentIfRequested(@Nullable Activity launchingActivity, Intent intent) {
+    if (launchingActivity == null
+        || (intent.getFlags() & Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT) == 0
+        || RuntimeEnvironment.getApiLevel() < P) {
+      return;
+    }
+    Configuration configuration = launchingActivity.getResources().getConfiguration();
+    boolean topOrLeft;
+    if (WindowConfigurations.isInSplitScreen(configuration)) {
+      topOrLeft = !WindowConfigurations.isInTopOrLeftOfSplitScreen(configuration);
+    } else if (RuntimeEnvironment.getApiLevel() >= S_V2
+        && WindowConfigurations.getWindowBounds(configuration) == null) {
+      ShadowActivity shadowLaunchingActivity = Shadow.extract(launchingActivity);
+      if (shadowLaunchingActivity.getController() == null) {
+        return;
+      }
+      // The launching activity enters split screen after it starts the activity, as on a device.
+      new Handler(Looper.getMainLooper()).post(shadowLaunchingActivity::enterSplitScreen);
+      topOrLeft = false;
+    } else {
+      return;
+    }
+    adjacentLaunches.add(
+        new AdjacentLaunch(
+            new Intent(intent),
+            launchingActivity.getWindowManager().getDefaultDisplay().getDisplayId(),
+            topOrLeft));
+  }
+
+  /**
+   * Returns how the configuration of an activity launched with the given intent on the given
+   * display differs from the global configuration if it was started adjacent to another activity,
+   * or null if it wasn't. Each adjacent launch applies to one activity.
+   */
+  @Nullable
+  Configuration takeAdjacentLaunchOverrideConfiguration(Intent intent, int displayId) {
+    synchronized (adjacentLaunches) {
+      for (Iterator<AdjacentLaunch> it = adjacentLaunches.iterator(); it.hasNext(); ) {
+        AdjacentLaunch adjacentLaunch = it.next();
+        if (adjacentLaunch.displayId == displayId && adjacentLaunch.intent.filterEquals(intent)) {
+          it.remove();
+          return WindowConfigurations.getSplitScreenOverrideConfiguration(
+              displayId, adjacentLaunch.topOrLeft);
+        }
+      }
+    }
+    return null;
   }
 
   private void logStartedActivity(Intent intent, String target, int requestCode, Bundle options) {
@@ -1220,6 +1281,19 @@ public class ShadowInstrumentation {
 
     static PermissionKey create(int deviceId, int pid, int uid) {
       return new AutoValue_ShadowInstrumentation_PermissionKey(deviceId, pid, uid);
+    }
+  }
+
+  /** An activity started adjacent to another, and the half of split screen it launches in. */
+  private static final class AdjacentLaunch {
+    final Intent intent;
+    final int displayId;
+    final boolean topOrLeft;
+
+    AdjacentLaunch(Intent intent, int displayId, boolean topOrLeft) {
+      this.intent = intent;
+      this.displayId = displayId;
+      this.topOrLeft = topOrLeft;
     }
   }
 }
