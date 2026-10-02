@@ -45,14 +45,17 @@ import android.content.IntentSender;
 import android.content.LocusId;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -79,6 +82,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
@@ -1612,6 +1616,71 @@ public class ShadowActivityTest {
 
   @Test
   @Config(minSdk = O)
+  public void buildActivity_onNonDefaultDisplay_hasThatDisplaysConfiguration() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller = buildActivityOnDisplay(displayId)) {
+      Configuration configuration = controller.setup().get().getResources().getConfiguration();
+
+      assertThat(configuration.screenWidthDp).isEqualTo(960);
+      assertThat(configuration.screenHeightDp).isEqualTo(540);
+      assertThat(configuration.smallestScreenWidthDp).isEqualTo(540);
+      assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+      assertThat(configuration.densityDpi).isEqualTo(DisplayMetrics.DENSITY_XHIGH);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void buildActivity_onNonDefaultDisplay_hasThatDisplaysWindowBounds() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller = buildActivityOnDisplay(displayId)) {
+      WindowManager windowManager = controller.setup().get().getWindowManager();
+
+      assertThat(windowManager.getCurrentWindowMetrics().getBounds())
+          .isEqualTo(new Rect(0, 0, 1920, 1080));
+      assertThat(windowManager.getMaximumWindowMetrics().getBounds())
+          .isEqualTo(new Rect(0, 0, 1920, 1080));
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void configurationChange_onNonDefaultDisplay_keepsThatDisplaysSize() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller = buildActivityOnDisplay(displayId).setup()) {
+      RuntimeEnvironment.setQualifiers("+night");
+      controller.configurationChange();
+
+      Activity activity = controller.get();
+      Configuration configuration = activity.getResources().getConfiguration();
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(displayId);
+      assertThat(configuration.screenWidthDp).isEqualTo(960);
+      assertThat(configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK)
+          .isEqualTo(Configuration.UI_MODE_NIGHT_YES);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void recreate_onNonDefaultDisplay_staysOnThatDisplay() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller = buildActivityOnDisplay(displayId).setup()) {
+      controller.recreate();
+
+      Activity activity = controller.get();
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(displayId);
+      assertThat(activity.getResources().getConfiguration().screenWidthDp).isEqualTo(960);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
   public void buildActivity_optionBundleWithInvalidNonDefaultDisplaySet_launchesOnDefaultDisplay() {
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(
@@ -1938,4 +2007,9 @@ public class ShadowActivityTest {
   /** Activity for testing */
   public static class TestActivityWithAnotherTheme
       extends org.robolectric.shadows.testing.TestActivity {}
+
+  private static ActivityController<Activity> buildActivityOnDisplay(int displayId) {
+    return Robolectric.buildActivity(
+        Activity.class, null, ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle());
+  }
 }

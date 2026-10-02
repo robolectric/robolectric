@@ -4,6 +4,8 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -12,7 +14,9 @@ import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlo
 import android.app.Activity;
 import android.app.Presentation;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.BrightnessConfiguration;
 import android.hardware.display.DisplayManager;
@@ -33,6 +37,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
@@ -119,6 +124,55 @@ public class ShadowDisplayManagerTest {
     Display display = instance.getDisplay(displayId);
     assertThat(display.getDisplayId()).isEqualTo(displayId);
     assertThat(display.getName()).isEqualTo("VirtualDevice_1");
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void createWindowContext_onNonDefaultDisplay_hasThatDisplaysConfiguration() {
+    Display display =
+        instance.getDisplay(ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi"));
+
+    Context windowContext =
+        ApplicationProvider.getApplicationContext()
+            .createWindowContext(display, TYPE_APPLICATION_OVERLAY, null);
+
+    Configuration configuration = windowContext.getResources().getConfiguration();
+    assertThat(configuration.screenWidthDp).isEqualTo(960);
+    assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+    assertThat(configuration.densityDpi).isEqualTo(DisplayMetrics.DENSITY_XHIGH);
+    assertThat(
+            windowContext
+                .getSystemService(WindowManager.class)
+                .getCurrentWindowMetrics()
+                .getBounds())
+        .isEqualTo(new Rect(0, 0, 1920, 1080));
+  }
+
+  @Test
+  @Config(minSdk = S, qualifiers = "w411dp-h891dp")
+  public void createWindowContext_onDefaultDisplay_followsTheGlobalConfiguration() {
+    Context windowContext =
+        ApplicationProvider.getApplicationContext()
+            .createWindowContext(
+                instance.getDisplay(Display.DEFAULT_DISPLAY), TYPE_APPLICATION_OVERLAY, null);
+
+    RuntimeEnvironment.setQualifiers("w673dp-h841dp");
+
+    assertThat(windowContext.getResources().getConfiguration().screenWidthDp).isEqualTo(673);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void presentation_onNonDefaultDisplay_hasThatDisplaysConfiguration() {
+    Display display =
+        instance.getDisplay(ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi"));
+    Activity activity = Robolectric.setupActivity(Activity.class);
+
+    Presentation presentation = new Presentation(activity, display);
+
+    Configuration configuration = presentation.getContext().getResources().getConfiguration();
+    assertThat(configuration.screenWidthDp).isEqualTo(960);
+    assertThat(configuration.densityDpi).isEqualTo(DisplayMetrics.DENSITY_XHIGH);
   }
 
   @Test

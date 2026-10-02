@@ -255,7 +255,12 @@ public class ShadowServiceManager {
     addBinderService(binderServices, Context.NOTIFICATION_SERVICE, INotificationManager.class);
     addBinderService(binderServices, Context.WALLPAPER_SERVICE, IWallpaperManager.class);
     addBinderService(binderServices, Context.BLUETOOTH_SERVICE, IBluetooth.class);
-    addBinderService(binderServices, Context.WINDOW_SERVICE, IWindowManager.class);
+    addBinderService(
+        binderServices,
+        Context.WINDOW_SERVICE,
+        IWindowManager.class,
+        BinderType.DELEGATING_PROXY,
+        new WindowManagerServiceDelegate());
     addBinderService(binderServices, Context.NFC_SERVICE, INfcAdapter.class, BinderType.DEEP_PROXY);
     addBinderService(binderServices, Context.USER_SERVICE, IUserManager.class);
     addBinderService(
