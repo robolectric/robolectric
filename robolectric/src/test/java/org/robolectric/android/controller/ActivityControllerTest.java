@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.ContextThemeWrapper;
+import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.Window;
 import android.view.WindowManager;
@@ -373,6 +374,21 @@ public class ActivityControllerTest {
 
     assertThat(configController.get()).isSameInstanceAs(activity);
     assertThat(activity.newConfig.fontScale).isEqualTo(2f);
+  }
+
+  @Test
+  public void configurationChange_whenRecreated_showsTheNewActivity() {
+    ActivityController<MyActivity> configController =
+        Robolectric.buildActivity(MyActivity.class).setup();
+    MyActivity activity = configController.get();
+
+    RuntimeEnvironment.setQualifiers("+land");
+    configController.configurationChange();
+
+    View decorView = configController.get().getWindow().getDecorView();
+    assertThat(configController.get()).isNotSameInstanceAs(activity);
+    assertThat(decorView.isAttachedToWindow()).isTrue();
+    assertThat(decorView.getWidth()).isGreaterThan(decorView.getHeight());
   }
 
   @Test

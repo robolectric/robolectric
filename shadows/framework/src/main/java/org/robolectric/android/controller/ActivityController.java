@@ -583,11 +583,9 @@ public class ActivityController<T extends Activity>
           activityReflector.performResume(true, "configurationChange");
         }
         activityReflector.onPostResume();
-        // TODO: Call visible() too.
-        if (RuntimeEnvironment.getApiLevel() >= Q) {
-          activityReflector.performTopResumedActivityChanged(true, "configurationChange");
-        }
       });
+      visible();
+      topActivityResumed(true);
     }
 
     return this;
