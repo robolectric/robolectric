@@ -47,4 +47,10 @@ dependencies {
   testImplementation(project(":robolectric"))
   testImplementation(libs.junit4)
   testImplementation(libs.androidx.compose.ui.test.junit4)
+  testImplementation(libs.androidx.compose.material3.adaptive)
+  testImplementation(libs.androidx.compose.material3.adaptive.layout)
+  testImplementation(libs.androidx.compose.material3.adaptive.navigation)
+  testImplementation(libs.androidx.compose.material3.adaptive.navigation.suite)
+  testImplementation(libs.androidx.window.testing)
+  testImplementation(libs.truth)
 }
