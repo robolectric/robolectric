@@ -47,6 +47,24 @@ public final class WindowConfigurations {
     return configuration;
   }
 
+  /** Returns the configuration of a window filling the display, given the global configuration. */
+  public static Configuration getDisplayConfiguration(
+      int displayId, Configuration globalConfiguration) {
+    return withOverride(globalConfiguration, getDisplayOverrideConfiguration(displayId));
+  }
+
+  /** Returns the display metrics of a window filling the display, given the global metrics. */
+  @Nullable
+  public static DisplayMetrics getDisplayMetrics(
+      int displayId, @Nullable DisplayMetrics globalMetrics) {
+    if (getDisplayOverrideConfiguration(displayId) == null) {
+      return globalMetrics;
+    }
+    DisplayMetrics displayMetrics = new DisplayMetrics();
+    DisplayManagerGlobal.getInstance().getRealDisplay(displayId).getMetrics(displayMetrics);
+    return displayMetrics;
+  }
+
   private static Configuration createOverrideConfiguration(
       int displayId, DisplayInfo displayInfo, int widthPx, int heightPx) {
     Configuration configuration = new Configuration();
@@ -109,5 +127,15 @@ public final class WindowConfigurations {
             System.getProperty("robolectric.deviceconfig.useMaxBounds", "true"))) {
       windowConfiguration.setMaxBounds(displayBounds);
     }
+  }
+
+  private static Configuration withOverride(
+      Configuration configuration, @Nullable Configuration overrideConfig) {
+    if (overrideConfig == null) {
+      return configuration;
+    }
+    Configuration result = new Configuration(configuration);
+    result.updateFrom(overrideConfig);
+    return result;
   }
 }

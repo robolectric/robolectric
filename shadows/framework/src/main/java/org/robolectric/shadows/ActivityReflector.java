@@ -28,6 +28,9 @@ public interface ActivityReflector {
   @Accessor("mToken")
   IBinder getToken();
 
+  // >= O
+  void dispatchMovedToDisplay(int displayId, Configuration config);
+
   // <= N_MR1
   void attach(
       Context context,
