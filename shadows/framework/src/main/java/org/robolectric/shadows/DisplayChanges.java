@@ -26,9 +26,21 @@ final class DisplayChanges {
   /** Gives the activities and window contexts on a display the display's new configuration. */
   static void onDisplayChanged(int displayId) {
     for (Activity activity : getActivitiesOn(displayId)) {
-      changeConfigurationIfNeeded(activity, displayId);
+      changeConfigurationIfNeeded(activity);
     }
     WindowManagerServiceDelegate.onDisplayChanged(displayId);
+  }
+
+  /**
+   * Applies the orientation requests of the activities on a display after the display started or
+   * stopped ignoring them.
+   */
+  static void onIgnoreOrientationRequestChanged(int displayId) {
+    for (Activity activity : LiveActivities.get()) {
+      if (getDisplayId(activity) == displayId) {
+        Shadow.<ShadowActivity>extract(activity).applyRequestedOrientation();
+      }
+    }
   }
 
   /** Gives the activities in split screen on a display their new halves after the divider moved. */
@@ -36,7 +48,7 @@ final class DisplayChanges {
     for (Activity activity : LiveActivities.get()) {
       if (getDisplayId(activity) == displayId
           && WindowConfigurations.isInSplitScreen(activity.getResources().getConfiguration())) {
-        changeConfigurationIfNeeded(activity, displayId);
+        changeConfigurationIfNeeded(activity);
       }
     }
   }
@@ -64,14 +76,18 @@ final class DisplayChanges {
     }
   }
 
-  private static void changeConfigurationIfNeeded(Activity activity, int displayId) {
+  /**
+   * Gives the activity the configuration of its window, given the global configuration, if that
+   * changed since it last received one.
+   */
+  static void changeConfigurationIfNeeded(Activity activity) {
     ActivityController<?> controller = Shadow.<ShadowActivity>extract(activity).getController();
     Configuration configuration =
         WindowConfigurations.getActivityConfiguration(
-            displayId,
-            activity.getResources().getConfiguration(),
-            activity.getApplicationContext().getResources().getConfiguration());
-    if (controller != null && activity.getResources().getConfiguration().diff(configuration) != 0) {
+            activity, activity.getApplicationContext().getResources().getConfiguration());
+    if (controller != null
+        && reflector(ActivityReflector.class, activity).getCurrentConfig().diff(configuration)
+            != 0) {
       controller.configurationChange();
     }
   }

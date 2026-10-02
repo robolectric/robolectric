@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -56,6 +57,7 @@ import android.net.Uri;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.os.ParcelFileDescriptor;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -72,8 +74,12 @@ import android.widget.LinearLayout;
 import android.widget.SearchView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
+import com.google.common.io.ByteStreams;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -2043,6 +2049,109 @@ public class ShadowActivityTest {
   }
 
   @Test
+  @Config(qualifiers = "w411dp-h891dp-port")
+  public void setRequestedOrientation_rotatesTheDisplay() {
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+
+    controller.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+    shadowOf(getMainLooper()).idle();
+
+    Activity activity = controller.get();
+    Configuration configuration = activity.getResources().getConfiguration();
+    assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+    assertThat(configuration.screenWidthDp).isEqualTo(891);
+    assertThat(activity.getRequestedOrientation())
+        .isEqualTo(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+  }
+
+  @Test
+  @Config(qualifiers = "w411dp-h891dp-port")
+  public void buildActivity_declaringAnOrientation_launchesInIt() {
+    declareOrientation(OrientationActivity.class, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+    OrientationActivity.creations = 0;
+
+    try (ActivityController<OrientationActivity> controller =
+        Robolectric.buildActivity(OrientationActivity.class).setup()) {
+      OrientationActivity activity = controller.get();
+
+      assertThat(activity.getResources().getConfiguration().orientation)
+          .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+      assertThat(activity.getRequestedOrientation())
+          .isEqualTo(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+      assertThat(OrientationActivity.creations).isEqualTo(1);
+    }
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA, qualifiers = "w1280dp-h800dp-land")
+  public void setRequestedOrientation_onALargeScreen_isIgnoredForAnAppTargetingAndroid16() {
+    getApplication().getApplicationInfo().targetSdkVersion = BAKLAVA;
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+
+    controller.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    shadowOf(getMainLooper()).idle();
+
+    Configuration configuration = controller.get().getResources().getConfiguration();
+    assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+    assertThat(configuration.screenWidthDp).isEqualTo(1280);
+  }
+
+  @Test
+  @Config(minSdk = S, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setRequestedOrientation_whenTheDisplayIgnoresIt_letterboxesTheActivity()
+      throws Exception {
+    executeShellCommand("wm set-ignore-orientation-request true");
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+
+    controller.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    shadowOf(getMainLooper()).idle();
+
+    Activity activity = controller.get();
+    Configuration configuration = activity.getResources().getConfiguration();
+    assertThat(configuration.windowConfiguration.getBounds()).isEqualTo(new Rect(390, 0, 890, 800));
+    assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_PORTRAIT);
+    assertThat(configuration.screenWidthDp).isEqualTo(500);
+    assertThat(activity.isInMultiWindowMode()).isFalse();
+    assertThat(activity.getWindow().getDecorView().getWidth()).isEqualTo(500);
+    assertThat(activity.getWindowManager().getMaximumWindowMetrics().getBounds())
+        .isEqualTo(new Rect(390, 0, 890, 800));
+    assertThat(getApplication().getResources().getConfiguration().screenWidthDp).isEqualTo(1280);
+    assertThat(executeShellCommand("wm get-ignore-orientation-request"))
+        .isEqualTo("ignoreOrientationRequest true for displayId=0\n");
+  }
+
+  @Test
+  @Config(minSdk = S, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setIgnoreOrientationRequest_false_rotatesTheDisplayForALetterboxedActivity()
+      throws Exception {
+    executeShellCommand("wm set-ignore-orientation-request true");
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+    controller.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    shadowOf(getMainLooper()).idle();
+
+    executeShellCommand("wm set-ignore-orientation-request false");
+
+    Configuration configuration = controller.get().getResources().getConfiguration();
+    assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_PORTRAIT);
+    assertThat(configuration.screenWidthDp).isEqualTo(800);
+    assertThat(controller.get().getWindow().getDecorView().getWidth()).isEqualTo(800);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w411dp-h891dp-port-mdpi")
+  public void setRequestedOrientation_inAFreeformWindow_isIgnored() {
+    ActivityController<Activity> controller =
+        buildActivityInWindow(Activity.class, new Rect(0, 0, 300, 600)).setup();
+
+    controller.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(getApplication().getResources().getConfiguration().orientation)
+        .isEqualTo(Configuration.ORIENTATION_PORTRAIT);
+    assertThat(controller.get().getResources().getConfiguration().screenWidthDp).isEqualTo(300);
+  }
+
+  @Test
   @Config(minSdk = O)
   public void buildActivity_optionBundleWithInvalidNonDefaultDisplaySet_launchesOnDefaultDisplay() {
     try (ActivityController<Activity> controller =
@@ -2427,6 +2536,34 @@ public class ShadowActivityTest {
     public void onConfigurationChanged(Configuration newConfig) {
       super.onConfigurationChanged(newConfig);
       events.add("onConfigurationChanged w" + newConfig.screenWidthDp + "dp");
+    }
+  }
+
+  private static void declareOrientation(
+      Class<? extends Activity> activityClass, int screenOrientation) {
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.name = activityClass.getName();
+    activityInfo.packageName = getApplication().getPackageName();
+    activityInfo.screenOrientation = screenOrientation;
+    shadowOf(getApplication().getPackageManager()).addOrUpdateActivity(activityInfo);
+  }
+
+  private static String executeShellCommand(String command) throws IOException {
+    ParcelFileDescriptor output =
+        InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand(command);
+    try (InputStream inputStream = new ParcelFileDescriptor.AutoCloseInputStream(output)) {
+      return new String(ByteStreams.toByteArray(inputStream), UTF_8);
+    }
+  }
+
+  /** Counts how often it is created. */
+  public static class OrientationActivity extends Activity {
+    static int creations;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      creations++;
     }
   }
 

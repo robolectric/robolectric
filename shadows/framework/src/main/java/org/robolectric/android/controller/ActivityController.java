@@ -421,8 +421,7 @@ public class ActivityController<T extends Activity>
         && newConfiguration.windowConfiguration.getWindowingMode()
             == WindowConfiguration.WINDOWING_MODE_UNDEFINED) {
       Configuration windowOverrideConfig =
-          WindowConfigurations.getCurrentWindowOverrideConfiguration(
-              getDisplayId(), component.getResources().getConfiguration());
+          WindowConfigurations.getCurrentWindowOverrideConfiguration(component);
       if (windowOverrideConfig != null) {
         newConfiguration = new Configuration(newConfiguration);
         newConfiguration.updateFrom(windowOverrideConfig);
@@ -480,9 +479,9 @@ public class ActivityController<T extends Activity>
         (getActivityInfo(component.getApplication()).configChanges & filteredChanges)
             == filteredChanges;
     if (component.getBaseContext() == component.getApplication().getBaseContext()
-        && WindowConfigurations.getWindowBounds(newConfiguration) != null) {
-      // The activity shares the application's resources, so it can only get a window of its own
-      // by being recreated with its own context.
+        && WindowConfigurations.getWindowBounds(getDisplayId(), newConfiguration) != null) {
+      // The activity shares the application's resources, so it can only get a window of its own,
+      // such as a freeform window or a letterbox, by being recreated with its own context.
       handlesChanges = false;
     } else {
       component.getResources().updateConfiguration(newConfiguration, newMetrics);
@@ -493,13 +492,14 @@ public class ActivityController<T extends Activity>
           () -> {
             Configuration currentConfig =
                 reflector(ActivityReflector.class, component).getCurrentConfig();
-            boolean isInWindow = WindowConfigurations.getWindowBounds(newConfiguration) != null;
-            if ((WindowConfigurations.getWindowBounds(currentConfig) != null) != isInWindow) {
+            boolean isInMultiWindowMode =
+                WindowConfigurations.isInMultiWindowMode(newConfiguration);
+            if (WindowConfigurations.isInMultiWindowMode(currentConfig) != isInMultiWindowMode) {
               // As ActivityThread does, report the multi-window mode change before the
               // configuration change.
-              Shadow.<ShadowActivity>extract(component).setInMultiWindowMode(isInWindow);
+              Shadow.<ShadowActivity>extract(component).setInMultiWindowMode(isInMultiWindowMode);
               reflector(org.robolectric.shadows.ActivityReflector.class, component)
-                  .dispatchMultiWindowModeChanged(isInWindow, newConfiguration);
+                  .dispatchMultiWindowModeChanged(isInMultiWindowMode, newConfiguration);
             }
             currentConfig.setTo(newConfiguration);
             ViewRootImpl root = getViewRoot();
@@ -532,6 +532,7 @@ public class ActivityController<T extends Activity>
       return this;
     } else {
       final Bundle recreatedActivityOptions = getRecreatedActivityOptions(newConfiguration);
+      final int requestedOrientation = component.getRequestedOrientation();
       @SuppressWarnings("unchecked")
       final T recreatedActivity = (T) ReflectionHelpers.callConstructor(component.getClass());
       final org.robolectric.shadows.ActivityReflector activityReflector =
@@ -610,6 +611,7 @@ public class ActivityController<T extends Activity>
                 recreatedActivityOptions,
                 /* lastNonConfigurationInstances= */ null,
                 newConfiguration);
+            keepRequestedOrientation(recreatedActivity, requestedOrientation);
 
             if (theme != 0) {
               recreatedActivity.setTheme(theme);
@@ -708,12 +710,14 @@ public class ActivityController<T extends Activity>
         isDisplayPresent(getDisplayId()) ? component.getResources().getConfiguration() : null;
     Bundle recreatedActivityOptions =
         getRecreatedActivityOptions(component.getResources().getConfiguration());
+    int requestedOrientation = component.getRequestedOrientation();
     destroy();
 
     component = (T) ReflectionHelpers.callConstructor(component.getClass());
     activityReflector = reflector(org.robolectric.shadows.ActivityReflector.class, component);
     attached = false;
     attach(recreatedActivityOptions, lastNonConfigurationInstances, overrideConfig);
+    keepRequestedOrientation(component, requestedOrientation);
     create(outState);
     start();
     restoreInstanceState(outState);
@@ -801,7 +805,7 @@ public class ActivityController<T extends Activity>
     if (RuntimeEnvironment.getApiLevel() < O || !isDisplayPresent(displayId)) {
       return null;
     }
-    Rect windowBounds = WindowConfigurations.getWindowBounds(configuration);
+    Rect windowBounds = WindowConfigurations.getWindowBounds(displayId, configuration);
     if (displayId == Display.DEFAULT_DISPLAY && windowBounds == null) {
       return null;
     }
@@ -813,6 +817,16 @@ public class ActivityController<T extends Activity>
       options.setLaunchBounds(windowBounds);
     }
     return options.toBundle();
+  }
+
+  /**
+   * Keeps the orientation an activity requested in the activity recreated from it, as on a device.
+   */
+  private static void keepRequestedOrientation(
+      Activity recreatedActivity, int requestedOrientation) {
+    if (recreatedActivity.getRequestedOrientation() != requestedOrientation) {
+      recreatedActivity.setRequestedOrientation(requestedOrientation);
+    }
   }
 
   private static boolean isDisplayPresent(int displayId) {
