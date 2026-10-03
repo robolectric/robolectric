@@ -1,8 +1,11 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.view.Display;
+import android.view.ViewRootImpl;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitor;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
@@ -11,6 +14,8 @@ import java.util.List;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Updates the windows on a non-default display when the display changes or is removed, as the
@@ -39,12 +44,33 @@ final class DisplayChanges {
     WindowManagerServiceDelegate.onDisplayChanged(displayId);
   }
 
-  /** Moves the activities on a removed display to the default display. */
-  static void onDisplayRemoved(int displayId) {
+  /**
+   * Moves the activities on a removed display to the default display, or destroys them with the
+   * display if it destroys its content, as a private display does.
+   */
+  static void onDisplayRemoved(int displayId, boolean destroysContent) {
     for (Activity activity : getActivitiesOn(displayId)) {
       ActivityController<?> controller = Shadow.<ShadowActivity>extract(activity).getController();
-      if (controller != null) {
-        controller.recreate();
+      if (controller == null) {
+        continue;
+      }
+      if (destroysContent) {
+        controller.close();
+        continue;
+      }
+      // The activity and its windows are on the default display from now on. It is told so with
+      // the configuration it has there, or recreated there if it doesn't handle the change.
+      ReflectionHelpers.callInstanceMethod(
+          activity.getBaseContext(),
+          "updateDisplay",
+          ClassParameter.from(int.class, Display.DEFAULT_DISPLAY));
+      ShadowWindowManagerGlobal.moveWindowsToDisplay(
+          reflector(ActivityReflector.class, activity).getToken(), Display.DEFAULT_DISPLAY);
+      controller.configurationChange();
+      ViewRootImpl viewRoot = activity.getWindow().getDecorView().getViewRootImpl();
+      if (controller.get() == activity && viewRoot != null) {
+        // Its window now has the frame it has on the default display.
+        Shadow.<ShadowViewRootImpl>extract(viewRoot).callDispatchResized();
       }
     }
   }

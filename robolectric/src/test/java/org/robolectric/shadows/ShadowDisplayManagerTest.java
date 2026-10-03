@@ -251,6 +251,51 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void removeDisplay_withAnActivityHandlingTheMove_movesItToTheDefaultDisplay() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+    handleSizeChanges(ConfigurationRecordingActivity.class);
+
+    try (ActivityController<ConfigurationRecordingActivity> controller =
+        buildActivityOnDisplay(ConfigurationRecordingActivity.class, displayId).setup()) {
+      ConfigurationRecordingActivity activity = controller.get();
+
+      ShadowDisplayManager.removeDisplay(displayId);
+
+      Point defaultDisplaySize = new Point();
+      ShadowDisplay.getDefaultDisplay().getRealSize(defaultDisplaySize);
+      assertThat(controller.get()).isSameInstanceAs(activity);
+      assertThat(activity.movedToDisplayId).isEqualTo(Display.DEFAULT_DISPLAY);
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(Display.DEFAULT_DISPLAY);
+      assertThat(activity.lastConfiguration.screenWidthDp)
+          .isEqualTo(
+              ApplicationProvider.getApplicationContext()
+                  .getResources()
+                  .getConfiguration()
+                  .screenWidthDp);
+      assertThat(activity.getWindow().getDecorView().getWidth()).isEqualTo(defaultDisplaySize.x);
+    }
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void releaseVirtualDisplay_thatIsNotPublic_destroysTheActivitiesOnIt() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Private", 800, 600, DisplayMetrics.DENSITY_MEDIUM, null, /* flags= */ 0);
+
+    try (ActivityController<Activity> controller =
+        buildActivityOnDisplay(Activity.class, virtualDisplay.getDisplay().getDisplayId())
+            .setup()) {
+      virtualDisplay.release();
+      shadowMainLooper().idle();
+
+      assertThat(controller.get().isDestroyed()).isTrue();
+    }
+  }
+
+  @Test
   @Config(minSdk = S)
   public void changeDisplay_withAWindowContextOnIt_updatesItsConfiguration() {
     Display display =
@@ -794,13 +839,21 @@ public class ShadowDisplayManagerTest {
             | ActivityInfo.CONFIG_SMALLEST_SCREEN_SIZE
             | ActivityInfo.CONFIG_SCREEN_LAYOUT
             | ActivityInfo.CONFIG_ORIENTATION
-            | ActivityInfo.CONFIG_DENSITY;
+            | ActivityInfo.CONFIG_DENSITY
+            | ActivityInfo.CONFIG_TOUCHSCREEN;
     shadowOf(context.getPackageManager()).addOrUpdateActivity(activityInfo);
   }
 
-  /** Records the configuration it was last told about. */
+  /** Records the configuration and the display it was last told about. */
   public static class ConfigurationRecordingActivity extends Activity {
     Configuration lastConfiguration;
+    Integer movedToDisplayId;
+
+    @Override
+    public void onMovedToDisplay(int displayId, Configuration config) {
+      super.onMovedToDisplay(displayId, config);
+      movedToDisplayId = displayId;
+    }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {

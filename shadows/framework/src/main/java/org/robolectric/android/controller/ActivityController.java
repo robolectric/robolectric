@@ -467,8 +467,19 @@ public class ActivityController<T extends Activity>
             reflector(ActivityReflector.class, component)
                 .getCurrentConfig()
                 .setTo(newConfiguration);
-            component.onConfigurationChanged(newConfiguration);
             ViewRootImpl root = getViewRoot();
+            // As ActivityThread does, tell an activity that moved to another display, such as one
+            // whose display was removed, before the configuration change.
+            int displayId = getDisplayId();
+            boolean movedToAnotherDisplay =
+                RuntimeEnvironment.getApiLevel() >= O
+                    && root != null
+                    && root.getDisplayId() != displayId;
+            if (movedToAnotherDisplay) {
+              reflector(org.robolectric.shadows.ActivityReflector.class, component)
+                  .dispatchMovedToDisplay(displayId, newConfiguration);
+            }
+            component.onConfigurationChanged(newConfiguration);
             if (root != null) {
               if (RuntimeEnvironment.getApiLevel() <= N_MR1) {
                 ReflectionHelpers.callInstanceMethod(
@@ -477,7 +488,8 @@ public class ActivityController<T extends Activity>
                     ClassParameter.from(Configuration.class, newConfiguration),
                     ClassParameter.from(boolean.class, false));
               } else {
-                root.updateConfiguration(Display.INVALID_DISPLAY);
+                root.updateConfiguration(
+                    movedToAnotherDisplay ? displayId : Display.INVALID_DISPLAY);
               }
             }
           });
