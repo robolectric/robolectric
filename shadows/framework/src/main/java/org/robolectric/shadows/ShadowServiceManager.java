@@ -40,6 +40,7 @@ import android.app.wearable.IWearableSensingManager;
 import android.bluetooth.IBluetooth;
 import android.bluetooth.IBluetoothManager;
 import android.companion.ICompanionDeviceManager;
+import android.companion.datatransfer.continuity.ITaskContinuityManager;
 import android.companion.virtual.IVirtualDeviceManager;
 import android.content.Context;
 import android.content.IClipboard;
@@ -438,6 +439,8 @@ public class ShadowServiceManager {
           binderServices,
           "personal_context",
           "android.service.personalcontext.IPersonalContextManager");
+      addBinderService(
+          binderServices, Context.TASK_CONTINUITY_SERVICE, ITaskContinuityManager.class);
     }
     return binderServices;
   }
