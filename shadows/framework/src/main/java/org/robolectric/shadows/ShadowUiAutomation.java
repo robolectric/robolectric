@@ -28,11 +28,14 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.hardware.display.DisplayManagerGlobal;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.InputDevice;
 import android.view.InputEvent;
 import android.view.KeyEvent;
@@ -52,7 +55,9 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,6 +68,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -76,6 +82,10 @@ public class ShadowUiAutomation {
       IS_FOCUSABLE.and(hasLayoutFlag(FLAG_NOT_TOUCH_MODAL).negate());
   private static final Predicate<Root> WATCH_TOUCH_OUTSIDE =
       IS_TOUCH_MODAL.negate().and(hasLayoutFlag(FLAG_WATCH_OUTSIDE_TOUCH));
+  // The sizes and densities displays had before a shell command overrode them.
+  private static final Map<Integer, Point> initialDisplaySizes = new HashMap<>();
+  private static final Map<Integer, Integer> initialDisplayDensities = new HashMap<>();
+
   private static final Predicate<Root> IS_VISIBLE =
       root -> root.getRootView().getWidth() > 0 && root.getRootView().getHeight() > 0;
 
@@ -140,9 +150,17 @@ public class ShadowUiAutomation {
   /**
    * Runs a shell command, as {@code adb shell} would on a device, and returns its output.
    *
-   * <p>Robolectric runs these window manager commands: {@code wm set-ignore-orientation-request [-d
-   * DISPLAY_ID] true|false} and {@code wm get-ignore-orientation-request [-d DISPLAY_ID]}. Other
-   * commands output nothing.
+   * <p>Robolectric runs these window manager commands, which take the display they apply to with
+   * {@code -d DISPLAY_ID}:
+   *
+   * <ul>
+   *   <li>{@code wm size [reset|WxH|WdpxHdp]}
+   *   <li>{@code wm density [reset|DENSITY]}
+   *   <li>{@code wm set-ignore-orientation-request true|false}
+   *   <li>{@code wm get-ignore-orientation-request}
+   * </ul>
+   *
+   * <p>Other commands output nothing.
    */
   @Implementation
   protected ParcelFileDescriptor executeShellCommand(String command) {
@@ -165,13 +183,18 @@ public class ShadowUiAutomation {
       return "";
     }
     String windowManagerCommand = args.get(1);
-    args = args.subList(2, args.size());
+    args = new ArrayList<>(args.subList(2, args.size()));
     int displayId = Display.DEFAULT_DISPLAY;
-    if (args.size() >= 2 && args.get(0).equals("-d")) {
-      displayId = Integer.parseInt(args.get(1));
-      args = args.subList(2, args.size());
+    int displayOption = args.indexOf("-d");
+    if (displayOption >= 0 && displayOption + 1 < args.size()) {
+      displayId = Integer.parseInt(args.get(displayOption + 1));
+      args.subList(displayOption, displayOption + 2).clear();
     }
     switch (windowManagerCommand) {
+      case "size":
+        return runDisplaySize(displayId, args.isEmpty() ? null : args.get(0));
+      case "density":
+        return runDisplayDensity(displayId, args.isEmpty() ? null : args.get(0));
       case "set-ignore-orientation-request":
         if (args.isEmpty()) {
           return "Error: expecting true, 1, false, 0, but we get null\n";
@@ -201,6 +224,110 @@ public class ShadowUiAutomation {
       default:
         return "";
     }
+  }
+
+  private static String runDisplaySize(int displayId, @Nullable String size) {
+    DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    if (displayInfo == null) {
+      return "";
+    }
+    Point currentSize = new Point(displayInfo.logicalWidth, displayInfo.logicalHeight);
+    Point initialSize = initialDisplaySizes.getOrDefault(displayId, currentSize);
+    if (size == null) {
+      return "Physical size: "
+          + initialSize.x
+          + "x"
+          + initialSize.y
+          + "\n"
+          + (initialSize.equals(currentSize)
+              ? ""
+              : "Override size: " + currentSize.x + "x" + currentSize.y + "\n");
+    }
+    Point newSize = initialSize;
+    if (!size.equals("reset")) {
+      int separator = size.indexOf('x');
+      if (separator <= 0 || separator >= size.length() - 1) {
+        return "Error: bad size " + size + "\n";
+      }
+      try {
+        newSize =
+            new Point(
+                parseDimension(size.substring(0, separator), displayInfo.logicalDensityDpi),
+                parseDimension(size.substring(separator + 1), displayInfo.logicalDensityDpi));
+      } catch (NumberFormatException e) {
+        return "Error: bad number " + e + "\n";
+      }
+    }
+    initialDisplaySizes.putIfAbsent(displayId, currentSize);
+    changeDisplay(displayId, newSize.x, newSize.y, displayInfo.logicalDensityDpi);
+    return "";
+  }
+
+  private static int parseDimension(String dimension, int densityDpi) {
+    if (dimension.endsWith("px")) {
+      return Integer.parseInt(dimension.substring(0, dimension.length() - 2));
+    }
+    if (dimension.endsWith("dp")) {
+      return Integer.parseInt(dimension.substring(0, dimension.length() - 2))
+          * densityDpi
+          / DisplayMetrics.DENSITY_DEFAULT;
+    }
+    return Integer.parseInt(dimension);
+  }
+
+  private static String runDisplayDensity(int displayId, @Nullable String density) {
+    DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    if (displayInfo == null) {
+      return "";
+    }
+    int currentDensity = displayInfo.logicalDensityDpi;
+    int initialDensity = initialDisplayDensities.getOrDefault(displayId, currentDensity);
+    if (density == null) {
+      return "Physical density: "
+          + initialDensity
+          + "\n"
+          + (initialDensity == currentDensity ? "" : "Override density: " + currentDensity + "\n");
+    }
+    int newDensity = initialDensity;
+    if (!density.equals("reset")) {
+      try {
+        newDensity = Integer.parseInt(density);
+      } catch (NumberFormatException e) {
+        return "Error: bad number " + e + "\n";
+      }
+      if (newDensity < 72) {
+        return "Error: density must be >= 72\n";
+      }
+    }
+    initialDisplayDensities.putIfAbsent(displayId, currentDensity);
+    changeDisplay(displayId, displayInfo.logicalWidth, displayInfo.logicalHeight, newDensity);
+    return "";
+  }
+
+  /** Gives a display a size in pixels and a density, and its windows the configuration for them. */
+  private static void changeDisplay(int displayId, int width, int height, int densityDpi) {
+    float density = densityDpi / (float) DisplayMetrics.DENSITY_DEFAULT;
+    String qualifiers =
+        "+w"
+            + (int) (width / density + 0.5f)
+            + "dp-h"
+            + (int) (height / density + 0.5f)
+            + "dp-"
+            + (width > height ? "land" : "port")
+            + "-"
+            + densityDpi
+            + "dpi";
+    if (displayId == Display.DEFAULT_DISPLAY) {
+      RuntimeEnvironment.setQualifiers(qualifiers);
+    } else {
+      ShadowDisplayManager.changeDisplay(displayId, qualifiers);
+    }
+  }
+
+  @Resetter
+  public static void reset() {
+    initialDisplaySizes.clear();
+    initialDisplayDensities.clear();
   }
 
   /**
