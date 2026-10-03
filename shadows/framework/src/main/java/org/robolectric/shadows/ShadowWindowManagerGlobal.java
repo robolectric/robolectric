@@ -505,7 +505,7 @@ public class ShadowWindowManagerGlobal {
       Rect contentFrame = new Rect(windowInfo.displayFrame);
       systemUi.adjustFrameForInsets(attrs, contentFrame);
       // The windows of an activity in a window of its own, such as a freeform window, are in it.
-      Activity activity = getActivity(attrs.token);
+      Activity activity = getApiLevel() >= P ? LiveActivities.get(attrs.token) : null;
       Rect activityWindowBounds =
           activity != null
               ? WindowConfigurations.getWindowBounds(
@@ -765,7 +765,7 @@ public class ShadowWindowManagerGlobal {
 
     @Nullable
     private static Configuration getWindowOverrideConfiguration(WindowInfo windowInfo) {
-      Activity activity = getActivity(windowInfo.attrs.token);
+      Activity activity = getApiLevel() >= P ? LiveActivities.get(windowInfo.attrs.token) : null;
       if (activity != null) {
         Configuration activityOverrideConfig =
             WindowConfigurations.getCurrentWindowOverrideConfiguration(activity);
@@ -774,20 +774,6 @@ public class ShadowWindowManagerGlobal {
         }
       }
       return WindowConfigurations.getDisplayOverrideConfiguration(windowInfo.displayId);
-    }
-
-    /** Returns the live activity with the given token, if there is one. */
-    @Nullable
-    private static Activity getActivity(@Nullable IBinder token) {
-      if (token == null || getApiLevel() < P) {
-        return null;
-      }
-      for (Activity activity : LiveActivities.get()) {
-        if (reflector(ActivityReflector.class, activity).getToken() == token) {
-          return activity;
-        }
-      }
-      return null;
     }
 
     private void transferWindowInsetsControlTo(WindowInfo windowInfo) {
