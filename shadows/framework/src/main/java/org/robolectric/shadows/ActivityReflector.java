@@ -41,6 +41,10 @@ public interface ActivityReflector {
   // >= O
   void dispatchMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig);
 
+  // >= O
+  void dispatchPictureInPictureModeChanged(
+      boolean isInPictureInPictureMode, Configuration newConfig);
+
   // <= N_MR1
   void attach(
       Context context,

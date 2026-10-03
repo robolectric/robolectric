@@ -535,11 +535,19 @@ public class ActivityController<T extends Activity>
       shadowMainLooper.runPaused(() -> {
         Configuration currentConfig =
             reflector(ActivityReflector.class, component).getCurrentConfig();
-        boolean isInMultiWindowMode =
-            WindowConfigurations.isInMultiWindowMode(newConfiguration);
+        // As ActivityThread does, report a picture-in-picture mode change, then a multi-window
+        // mode change, before the configuration change.
+        boolean isInPictureInPictureMode =
+            WindowConfigurations.isInPictureInPictureMode(newConfiguration);
+        if (WindowConfigurations.isInPictureInPictureMode(currentConfig)
+            != isInPictureInPictureMode) {
+          Shadow.<ShadowActivity>extract(component)
+              .setInPictureInPictureMode(isInPictureInPictureMode);
+          reflector(org.robolectric.shadows.ActivityReflector.class, component)
+              .dispatchPictureInPictureModeChanged(isInPictureInPictureMode, newConfiguration);
+        }
+        boolean isInMultiWindowMode = WindowConfigurations.isInMultiWindowMode(newConfiguration);
         if (WindowConfigurations.isInMultiWindowMode(currentConfig) != isInMultiWindowMode) {
-          // As ActivityThread does, report the multi-window mode change before the
-          // configuration change.
           Shadow.<ShadowActivity>extract(component).setInMultiWindowMode(isInMultiWindowMode);
           reflector(org.robolectric.shadows.ActivityReflector.class, component)
               .dispatchMultiWindowModeChanged(isInMultiWindowMode, newConfiguration);
