@@ -380,6 +380,13 @@ public final class WindowConfigurations {
             activity.getWindowManager().getDefaultDisplay().getDisplayId(), globalConfiguration);
   }
 
+  /** Returns whether an activity with the given configuration is in a freeform window. */
+  public static boolean isInFreeformWindow(Configuration configuration) {
+    return RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P
+        && configuration.windowConfiguration.getWindowingMode()
+            == WindowConfiguration.WINDOWING_MODE_FREEFORM;
+  }
+
   /**
    * Returns whether an activity with the given configuration is in multi-window mode: in a freeform
    * window, in split screen or in picture-in-picture mode.
