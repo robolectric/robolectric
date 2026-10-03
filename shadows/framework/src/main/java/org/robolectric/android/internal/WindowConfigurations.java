@@ -171,11 +171,76 @@ public final class WindowConfigurations {
   }
 
   /**
-   * Moves the divider of split screen on the given display to the given fraction of the display's
-   * width, or of its height if it is portrait.
+   * Moves the divider of split screen on the given display as when the user drags its middle to the
+   * given fraction of the display's width, or of its height if it is portrait, and releases it. As
+   * on a device, the divider snaps to the nearest position the system allows. Returns false if that
+   * is past an edge of the display, which dismisses split screen.
    */
-  public static void setSplitScreenDividerPosition(int displayId, float position) {
-    splitScreenDividerPositions.put(displayId, position);
+  public static boolean setSplitScreenDividerPosition(int displayId, float position) {
+    DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    if (displayInfo == null) {
+      return true;
+    }
+    int length = Math.max(displayInfo.logicalWidth, displayInfo.logicalHeight);
+    int dividerStart =
+        snapSplitScreenDivider(
+            displayInfo,
+            Math.round(length * position - getSplitScreenDividerSize(displayInfo) / 2f),
+            /* canDismiss= */ true);
+    if (dividerStart < 0 || dividerStart >= length) {
+      splitScreenDividerPositions.remove(displayId);
+      return false;
+    }
+    splitScreenDividerPositions.put(displayId, dividerStart / (float) length);
+    return true;
+  }
+
+  /**
+   * Returns where the divider of split screen starts once it is released at the given position, as
+   * the system's DividerSnapAlgorithm decides: in the middle of the display, where one of the
+   * activities gets a 16:9 window if that is at least the minimal size, or past an edge of the
+   * display to dismiss split screen.
+   */
+  private static int snapSplitScreenDivider(
+      DisplayInfo displayInfo, int position, boolean canDismiss) {
+    int length = Math.max(displayInfo.logicalWidth, displayInfo.logicalHeight);
+    int dividerSize = getSplitScreenDividerSize(displayInfo);
+    int size =
+        (int) Math.floor(9f / 16 * Math.min(displayInfo.logicalWidth, displayInfo.logicalHeight));
+    boolean fitsMinimalSize =
+        size
+            >= Math.round(
+                DEFAULT_MINIMAL_SIZE_RESIZABLE_TASK_DP
+                    * displayInfo.logicalDensityDpi
+                    / (float) DisplayMetrics.DENSITY_DEFAULT);
+    // Before S, the divider has to get closer to an edge to dismiss split screen.
+    float dismissDistanceMultiplier =
+        RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S ? 1 : 0.35f;
+    int[] targets = {
+      -dividerSize, size, length / 2 - dividerSize / 2, length - size - dividerSize, length
+    };
+    int snappedPosition = targets[2];
+    float minDistance = Float.MAX_VALUE;
+    for (int i = 0; i < targets.length; i++) {
+      boolean dismisses = i == 0 || i == targets.length - 1;
+      if (dismisses ? !canDismiss : (i != 2 && !fitsMinimalSize)) {
+        continue;
+      }
+      float distance =
+          Math.abs(position - targets[i]) / (dismisses ? dismissDistanceMultiplier : 1);
+      if (distance < minDistance) {
+        snappedPosition = targets[i];
+        minDistance = distance;
+      }
+    }
+    return snappedPosition;
+  }
+
+  private static int getSplitScreenDividerSize(DisplayInfo displayInfo) {
+    return Math.round(
+        SPLIT_SCREEN_DIVIDER_SIZE_DP
+            * displayInfo.logicalDensityDpi
+            / (float) DisplayMetrics.DENSITY_DEFAULT);
   }
 
   /**
@@ -377,26 +442,30 @@ public final class WindowConfigurations {
     }
     int width = displayInfo.logicalWidth;
     int height = displayInfo.logicalHeight;
-    int dividerSize =
-        Math.round(
-            SPLIT_SCREEN_DIVIDER_SIZE_DP
-                * displayInfo.logicalDensityDpi
-                / (float) DisplayMetrics.DENSITY_DEFAULT);
-    float dividerPosition = splitScreenDividerPositions.getOrDefault(displayId, 0.5f);
+    int dividerSize = getSplitScreenDividerSize(displayInfo);
+    // As the system does, the divider keeps its ratio of the display when the display changes,
+    // then snaps to the nearest position it can rest at.
+    Float dividerPosition = splitScreenDividerPositions.get(displayId);
+    int length = Math.max(width, height);
+    int dividerStart =
+        snapSplitScreenDivider(
+            displayInfo,
+            dividerPosition != null
+                ? (int) (length * dividerPosition)
+                : length / 2 - dividerSize / 2,
+            /* canDismiss= */ false);
     Rect bounds = new Rect(0, 0, width, height);
     if (width > height) {
-      int dividerLeft = Math.round(width * dividerPosition - dividerSize / 2f);
       if (topOrLeft) {
-        bounds.right = dividerLeft;
+        bounds.right = dividerStart;
       } else {
-        bounds.left = dividerLeft + dividerSize;
+        bounds.left = dividerStart + dividerSize;
       }
     } else {
-      int dividerTop = Math.round(height * dividerPosition - dividerSize / 2f);
       if (topOrLeft) {
-        bounds.bottom = dividerTop;
+        bounds.bottom = dividerStart;
       } else {
-        bounds.top = dividerTop + dividerSize;
+        bounds.top = dividerStart + dividerSize;
       }
     }
     return getWindowOverrideConfiguration(

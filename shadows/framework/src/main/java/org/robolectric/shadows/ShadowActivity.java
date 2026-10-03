@@ -836,15 +836,39 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   /**
    * Moves the focus to this activity if it shares the screen with others, as touching its window
-   * does on a device: it becomes the top resumed activity and its window gets the focus.
+   * does on a device.
    */
   void onTouched() {
-    if (controller == null
-        || !realActivity.isResumed()
-        || !WindowConfigurations.isInMultiWindowMode(
+    if (controller != null
+        && realActivity.isResumed()
+        && WindowConfigurations.isInMultiWindowMode(
             realActivity.getResources().getConfiguration())) {
+      takeFocus();
+    }
+  }
+
+  /**
+   * Makes the activity leave split screen as when the user drags the divider to an edge: it fills
+   * its display, and is stopped if it is on the side that is dismissed, or takes the focus.
+   */
+  void leaveSplitScreen(boolean dismissed) {
+    if (controller == null) {
       return;
     }
+    changeWindow(null);
+    Activity activity = (Activity) controller.get();
+    if (!activity.isResumed()) {
+      return;
+    }
+    if (dismissed) {
+      controller.topActivityResumed(false).pause().stop();
+    } else {
+      Shadow.<ShadowActivity>extract(activity).takeFocus();
+    }
+  }
+
+  /** Makes the activity the top resumed one, with the focused window, instead of the others. */
+  private void takeFocus() {
     takeFocusFromOtherActivities();
     if (!isTopResumedActivity) {
       controller.topActivityResumed(true);

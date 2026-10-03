@@ -80,6 +80,8 @@ import android.widget.SearchView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
+import androidx.test.runner.lifecycle.Stage;
 import com.google.common.io.ByteStreams;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1950,10 +1952,86 @@ public class ShadowActivityTest {
 
     ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0.3f);
 
-    assertThat(windowBounds(left.get())).isEqualTo(new Rect(0, 0, 379, 800));
-    assertThat(windowBounds(right.get())).isEqualTo(new Rect(389, 0, 1280, 800));
-    assertThat(right.get().getResources().getConfiguration().screenWidthDp).isEqualTo(891);
-    assertThat(right.get().getWindow().getDecorView().getWidth()).isEqualTo(891);
+    // The divider snaps to where the left activity has a 16:9 window.
+    assertThat(windowBounds(left.get())).isEqualTo(new Rect(0, 0, 450, 800));
+    assertThat(windowBounds(right.get())).isEqualTo(new Rect(460, 0, 1280, 800));
+    assertThat(right.get().getResources().getConfiguration().screenWidthDp).isEqualTo(820);
+    assertThat(right.get().getWindow().getDecorView().getWidth()).isEqualTo(820);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setSplitScreenDividerPosition_nearTheMiddle_snapsBackToIt() {
+    ActivityController<Activity> left = Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(left.get()).enterSplitScreen();
+    Activity leftActivity = left.get();
+
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0.45f);
+
+    assertThat(left.get()).isSameInstanceAs(leftActivity);
+    assertThat(windowBounds(leftActivity)).isEqualTo(new Rect(0, 0, 635, 800));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w360dp-h640dp-port-mdpi")
+  public void setSplitScreenDividerPosition_onASmallDisplay_staysInTheMiddle() {
+    ActivityController<Activity> top = Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(top.get()).enterSplitScreen();
+
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0.3f);
+
+    // A 16:9 window would be smaller than the minimal size of a window.
+    assertThat(windowBounds(top.get())).isEqualTo(new Rect(0, 0, 360, 315));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setSplitScreenDividerPosition_atTheLeftEdge_dismissesTheLeftActivity() {
+    ActivityController<Activity> left = Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(left.get()).enterSplitScreen();
+    ActivityController<Activity> right = Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(right.get()).enterSplitScreen();
+
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0f);
+
+    assertThat(lifecycleStage(left.get())).isEqualTo(Stage.STOPPED);
+    assertThat(left.get().isInMultiWindowMode()).isFalse();
+    assertThat(lifecycleStage(right.get())).isEqualTo(Stage.RESUMED);
+    assertThat(right.get().isInMultiWindowMode()).isFalse();
+    assertThat(right.get().getResources().getConfiguration().screenWidthDp).isEqualTo(1280);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setSplitScreenDividerPosition_atTheRightEdge_dismissesTheRightActivity() {
+    handleWindowChanges(FocusAwareActivity.class);
+    ActivityController<FocusAwareActivity> left = buildFocusAwareActivityInSplitScreen();
+    ActivityController<FocusAwareActivity> right = startFocusAwareActivityAdjacentTo(left.get());
+    left.get().events.clear();
+    right.get().events.clear();
+
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 1f);
+
+    assertThat(lifecycleStage(right.get())).isEqualTo(Stage.STOPPED);
+    assertThat(right.get().events).containsExactly("onTopResumedActivityChanged false");
+    assertThat(lifecycleStage(left.get())).isEqualTo(Stage.RESUMED);
+    assertThat(left.get().isInMultiWindowMode()).isFalse();
+    assertThat(left.get().events)
+        .containsExactly("onTopResumedActivityChanged true", "onWindowFocusChanged true")
+        .inOrder();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void enterSplitScreen_afterSplitScreenWasDismissed_startsInTheMiddle() {
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0.7f);
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 1f);
+    ActivityController<Activity> splitController =
+        Robolectric.buildActivity(Activity.class).setup();
+
+    shadowOf(splitController.get()).enterSplitScreen();
+
+    assertThat(windowBounds(splitController.get())).isEqualTo(new Rect(0, 0, 635, 800));
   }
 
   @Test
@@ -1969,7 +2047,7 @@ public class ShadowActivityTest {
 
     assertThat(windowController.get()).isSameInstanceAs(activity);
     assertThat(activity.events)
-        .containsExactly("onConfigurationChanged w635dp", "onConfigurationChanged w891dp")
+        .containsExactly("onConfigurationChanged w635dp", "onConfigurationChanged w820dp")
         .inOrder();
   }
 
@@ -1982,7 +2060,7 @@ public class ShadowActivityTest {
 
     shadowOf(splitController.get()).enterSplitScreen();
 
-    assertThat(windowBounds(splitController.get())).isEqualTo(new Rect(0, 0, 891, 800));
+    assertThat(windowBounds(splitController.get())).isEqualTo(new Rect(0, 0, 820, 800));
   }
 
   @Test
@@ -2079,10 +2157,10 @@ public class ShadowActivityTest {
   public void setSplitScreenDividerPosition_outsideTheDisplay_throws() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0f));
+        () -> ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, -0.1f));
     assertThrows(
         IllegalArgumentException.class,
-        () -> ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 1f));
+        () -> ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 1.1f));
   }
 
   @Test
@@ -2745,6 +2823,10 @@ public class ShadowActivityTest {
     return Robolectric.buildActivity(
             FocusAwareActivity.class, shadowOf(activity).getNextStartedActivity())
         .setup();
+  }
+
+  private static Stage lifecycleStage(Activity activity) {
+    return ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
   }
 
   /** Touches the screen at the given position, then lifts the pointer. */

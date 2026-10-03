@@ -69,24 +69,36 @@ public class ShadowDisplayManager {
   }
 
   /**
-   * Moves the divider of split screen on the given display, as when the user drags it, and idles
-   * the main looper so that the activities in split screen on the display get their new halves of
-   * it, as on a device.
+   * Moves the divider of split screen on the given display, as when the user drags it to the given
+   * position and releases it, and idles the main looper so that the activities in split screen on
+   * the display get their new halves of it.
    *
-   * <p>Robolectric doesn't snap the divider to the positions a device would, or dismiss split
-   * screen when the divider reaches an edge.
+   * <p>As on a device, the divider snaps to the nearest position the system lets it rest at: the
+   * middle of the display, or where one of the activities gets a 16:9 window. If it is released
+   * closer to an edge of the display, split screen is dismissed: the activity on that side is
+   * stopped, and the other one fills the display.
    *
    * @param displayId the display id
-   * @param position where the middle of the divider is, as a fraction of the display's width, or of
-   *     its height if it is portrait. The divider starts in the middle, at 0.5.
+   * @param position where the middle of the divider is released, as a fraction of the display's
+   *     width, or of its height if it is portrait, from 0 to 1. The divider starts in the middle,
+   *     at 0.5.
    * @see ShadowActivity#enterSplitScreen
    */
   public static void setSplitScreenDividerPosition(int displayId, float position) {
-    if (!(position > 0 && position < 1)) {
+    if (!(position >= 0 && position <= 1)) {
       throw new IllegalArgumentException("The divider must be inside the display: " + position);
     }
-    WindowConfigurations.setSplitScreenDividerPosition(displayId, position);
-    new Handler(Looper.getMainLooper()).post(() -> DisplayChanges.onSplitScreenChanged(displayId));
+    boolean staysInSplitScreen =
+        WindowConfigurations.setSplitScreenDividerPosition(displayId, position);
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> {
+              if (staysInSplitScreen) {
+                DisplayChanges.onSplitScreenChanged(displayId);
+              } else {
+                DisplayChanges.onSplitScreenDismissed(displayId, /* topOrLeft= */ position < 0.5f);
+              }
+            });
     shadowMainLooper().idle();
   }
 

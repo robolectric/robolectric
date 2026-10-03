@@ -54,6 +54,29 @@ final class DisplayChanges {
   }
 
   /**
+   * Makes the activities in split screen on a display leave it after the divider reached an edge:
+   * those in the half on that side are stopped, and the others fill the display.
+   */
+  static void onSplitScreenDismissed(int displayId, boolean topOrLeft) {
+    List<Activity> remainingActivities = new ArrayList<>();
+    for (Activity activity : LiveActivities.get()) {
+      Configuration configuration = activity.getResources().getConfiguration();
+      if (getDisplayId(activity) != displayId
+          || !WindowConfigurations.isInSplitScreen(configuration)) {
+        continue;
+      }
+      if (WindowConfigurations.isInTopOrLeftOfSplitScreen(configuration) == topOrLeft) {
+        Shadow.<ShadowActivity>extract(activity).leaveSplitScreen(/* dismissed= */ true);
+      } else {
+        remainingActivities.add(activity);
+      }
+    }
+    for (Activity activity : remainingActivities) {
+      Shadow.<ShadowActivity>extract(activity).leaveSplitScreen(/* dismissed= */ false);
+    }
+  }
+
+  /**
    * Gives the activity the configuration of its window, given the global configuration, if that
    * changed since it last received one.
    */
