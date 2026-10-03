@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -28,6 +29,7 @@ import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
 import android.app.WindowConfiguration;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -49,7 +51,9 @@ import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.OutcomeReceiver;
 import android.os.Parcel;
+import android.provider.Settings;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
 import android.util.DisplayMetrics;
@@ -65,9 +69,11 @@ import android.view.ViewGroup;
 import android.view.Window;
 import com.android.internal.app.IVoiceInteractor;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
@@ -114,6 +120,10 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private int streamType = -1;
   private boolean mIsTaskRoot = true;
   private Menu optionsMenu;
+  // The windows that activities left to enter fullscreen mode on their own request.
+  private static final Map<ActivityController<?>, Configuration> fullscreenRestoreWindows =
+      Collections.synchronizedMap(new WeakHashMap<>());
+
   private ComponentName callingActivity;
   private PermissionsRequest lastRequestedPermission;
   private ActivityController controller;
@@ -1192,6 +1202,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     if (controller == null) {
       throw new IllegalStateException("The activity was not started by an ActivityController");
     }
+    fullscreenRestoreWindows.remove(controller);
     int displayId = getDisplayId();
     Resources applicationResources = realActivity.getApplicationContext().getResources();
     Configuration configuration =
@@ -1273,6 +1284,120 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
                 }
               });
     }
+  }
+
+  /**
+   * Makes the activity leave its freeform window to fill its display, or restores the window it
+   * left that way, if the window manager of the SDK would. As on a device, the callback gets the
+   * result, and the activity its new window, once the activity's current work is done.
+   */
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected void requestFullscreenMode(
+      int request, @Nullable @ClassName("android.os.OutcomeReceiver") Object approvalCallback) {
+    if (controller == null) {
+      reflector(DirectActivityReflector.class, realActivity)
+          .requestFullscreenMode(request, approvalCallback);
+      return;
+    }
+    // The activity can be recreated before its request is handled.
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                Shadow.<ShadowActivity>extract(controller.get())
+                    .handleFullscreenRequest(request, approvalCallback));
+  }
+
+  @SuppressWarnings("unchecked")
+  private void handleFullscreenRequest(int request, @Nullable Object approvalCallback) {
+    if (realActivity.isDestroyed()) {
+      return;
+    }
+    OutcomeReceiver<Void, Throwable> callback = (OutcomeReceiver<Void, Throwable>) approvalCallback;
+    String error = getFullscreenRequestError(request);
+    if (error != null) {
+      if (callback != null) {
+        callback.onError(new IllegalStateException(error));
+      }
+      return;
+    }
+    if (callback != null) {
+      callback.onResult(null);
+    }
+    if (request == Activity.FULLSCREEN_MODE_REQUEST_ENTER) {
+      Configuration configuration = realActivity.getResources().getConfiguration();
+      Configuration restoreWindow = null;
+      if (WindowConfigurations.isInFreeformWindow(configuration)
+          || WindowConfigurations.isInPictureInPictureMode(configuration)) {
+        restoreWindow = WindowConfigurations.getCurrentWindowOverrideConfiguration(realActivity);
+        changeWindow(null);
+      }
+      fullscreenRestoreWindows.put(controller, restoreWindow);
+    } else {
+      Configuration restoreWindow = fullscreenRestoreWindows.remove(controller);
+      if (restoreWindow != null) {
+        changeWindow(restoreWindow);
+      }
+    }
+  }
+
+  /**
+   * Returns why the window manager of the SDK rejects the activity's request to enter or exit
+   * fullscreen mode, or null if it approves it.
+   */
+  @Nullable
+  private String getFullscreenRequestError(int request) {
+    Configuration configuration = realActivity.getResources().getConfiguration();
+    int apiLevel = RuntimeEnvironment.getApiLevel();
+    boolean isInFreeformWindow = WindowConfigurations.isInFreeformWindow(configuration);
+    boolean isInPictureInPictureMode = WindowConfigurations.isInPictureInPictureMode(configuration);
+    String notInFullscreenWithHistory =
+        "The window is not in fullscreen by calling the requestFullscreenMode API before, such"
+            + " that cannot be restored.";
+    if (request == Activity.FULLSCREEN_MODE_REQUEST_ENTER) {
+      if (apiLevel == UPSIDE_DOWN_CAKE && !isInFreeformWindow) {
+        return "The window is not a freeform window, the request to get into fullscreen cannot be"
+            + " approved.";
+      }
+      if (apiLevel >= BAKLAVA && !isInFreeformWindow && !isInPictureInPictureMode) {
+        return "The window is already fully expanded.";
+      }
+    } else if (WindowConfigurations.isInMultiWindowMode(configuration)) {
+      return notInFullscreenWithHistory;
+    }
+    if (apiLevel >= VANILLA_ICE_CREAM && isInPictureInPictureMode) {
+      return null;
+    }
+    if (apiLevel == UPSIDE_DOWN_CAKE && !launchesInFreeformByDefault()) {
+      return "The window is not launched in freeform by default.";
+    }
+    if (!isTopResumedActivity) {
+      return "The window is not the top focused window.";
+    }
+    if (request == Activity.FULLSCREEN_MODE_REQUEST_EXIT
+        && !fullscreenRestoreWindows.containsKey(controller)) {
+      return notInFullscreenWithHistory;
+    }
+    return null;
+  }
+
+  /** Returns whether activities launch in freeform windows on the display, as on a desktop. */
+  private boolean launchesInFreeformByDefault() {
+    PackageManager packageManager = realActivity.getPackageManager();
+    ContentResolver resolver = realActivity.getContentResolver();
+    boolean supportsFreeform =
+        packageManager.hasSystemFeature(PackageManager.FEATURE_FREEFORM_WINDOW_MANAGEMENT)
+            || Settings.Global.getInt(
+                    resolver, Settings.Global.DEVELOPMENT_ENABLE_FREEFORM_WINDOWS_SUPPORT, 0)
+                != 0;
+    boolean isDesktop =
+        packageManager.hasSystemFeature(PackageManager.FEATURE_PC)
+            || (getDisplayId() != Display.DEFAULT_DISPLAY
+                && Settings.Global.getInt(
+                        resolver,
+                        Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS,
+                        0)
+                    != 0);
+    return supportsFreeform && isDesktop;
   }
 
   @Implementation
@@ -1457,5 +1582,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     void setLocusContext(LocusId locusId, @Nullable Bundle bundle);
 
     void performTopResumedActivityChanged(boolean isTopResumedActivity, String reason);
+
+    void requestFullscreenMode(
+        int request, @WithType("android.os.OutcomeReceiver") Object approvalCallback);
   }
 }
