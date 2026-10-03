@@ -51,6 +51,7 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.graphics.Color;
+import android.graphics.Insets;
 import android.graphics.Rect;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -69,6 +70,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewRootImpl;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -2224,6 +2226,44 @@ public class ShadowActivityTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w800dp-h1280dp-port-mdpi")
+  public void buildActivity_withLaunchBounds_placesItsWindowOnTheScreen() {
+    ActivityController<Activity> controller =
+        buildActivityInWindow(Activity.class, new Rect(100, 150, 600, 700)).setup();
+    shadowOf(getMainLooper()).idle();
+
+    int[] location = new int[2];
+    controller.get().getWindow().getDecorView().getLocationOnScreen(location);
+    assertThat(location).isEqualTo(new int[] {100, 150});
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU, qualifiers = "w800dp-h1280dp-port-mdpi")
+  public void buildActivity_withLaunchBounds_hasTheCaptionBarOfAFreeformWindow() {
+    ActivityController<Activity> controller =
+        buildActivityInWindow(Activity.class, new Rect(100, 150, 600, 700)).setup();
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(captionBarInsets(controller.get())).isEqualTo(Insets.of(0, 42, 0, 0));
+
+    shadowOf(controller.get()).setWindowBounds(null);
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(captionBarInsets(controller.get())).isEqualTo(Insets.NONE);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU, qualifiers = "w800dp-h1280dp-port-mdpi")
+  public void enterSplitScreen_hasNoCaptionBar() {
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+
+    shadowOf(controller.get()).enterSplitScreen();
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(captionBarInsets(controller.get())).isEqualTo(Insets.NONE);
+  }
+
+  @Test
   @Config(minSdk = O)
   public void buildActivity_optionBundleWithInvalidNonDefaultDisplaySet_launchesOnDefaultDisplay() {
     try (ActivityController<Activity> controller =
@@ -2609,6 +2649,14 @@ public class ShadowActivityTest {
       super.onConfigurationChanged(newConfig);
       events.add("onConfigurationChanged w" + newConfig.screenWidthDp + "dp");
     }
+  }
+
+  private static Insets captionBarInsets(Activity activity) {
+    return activity
+        .getWindow()
+        .getDecorView()
+        .getRootWindowInsets()
+        .getInsets(WindowInsets.Type.captionBar());
   }
 
   private static void declareOrientation(
