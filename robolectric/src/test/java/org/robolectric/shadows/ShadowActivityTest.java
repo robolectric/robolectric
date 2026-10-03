@@ -59,6 +59,7 @@ import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.util.DisplayMetrics;
+import android.util.Rational;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -2094,6 +2095,77 @@ public class ShadowActivityTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void enterPictureInPictureMode_putsTheActivityInAPinnedWindow() {
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+
+    controller.get().enterPictureInPictureMode();
+    shadowOf(getMainLooper()).idle();
+
+    Activity activity = controller.get();
+    Configuration configuration = activity.getResources().getConfiguration();
+    assertThat(configuration.windowConfiguration.getWindowingMode())
+        .isEqualTo(WindowConfiguration.WINDOWING_MODE_PINNED);
+    assertThat(configuration.windowConfiguration.getBounds())
+        .isEqualTo(new Rect(937, 600, 1264, 784));
+    assertThat(activity.isInPictureInPictureMode()).isTrue();
+    assertThat(activity.isInMultiWindowMode()).isTrue();
+    assertThat(activity.isResumed()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void enterPictureInPictureMode_withAnAspectRatio_sizesTheWindowForIt() {
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+
+    controller
+        .get()
+        .enterPictureInPictureMode(
+            new PictureInPictureParams.Builder().setAspectRatio(new Rational(1, 1)).build());
+    shadowOf(getMainLooper()).idle();
+
+    Rect bounds =
+        controller.get().getResources().getConfiguration().windowConfiguration.getBounds();
+    assertThat(bounds.width()).isEqualTo(184);
+    assertThat(bounds.height()).isEqualTo(184);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void enterPictureInPictureMode_whenTheActivityHandlesIt_reportsEnteringAndLeaving() {
+    handleWindowChanges(PictureInPictureActivity.class);
+    ActivityController<PictureInPictureActivity> controller =
+        buildActivityInWindow(PictureInPictureActivity.class, new Rect(0, 0, 640, 800)).setup();
+    PictureInPictureActivity activity = controller.get();
+    shadowOf(activity).setWindowBounds(null);
+    activity.events.clear();
+
+    activity.enterPictureInPictureMode();
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(controller.get()).isSameInstanceAs(activity);
+    assertThat(activity.events)
+        .containsExactly(
+            "onPictureInPictureModeChanged true",
+            "onMultiWindowModeChanged true",
+            "onConfigurationChanged w327dp",
+            "onPause")
+        .inOrder();
+
+    activity.events.clear();
+    shadowOf(activity).setWindowBounds(null);
+
+    assertThat(activity.isInPictureInPictureMode()).isFalse();
+    assertThat(activity.events)
+        .containsExactly(
+            "onPictureInPictureModeChanged false",
+            "onMultiWindowModeChanged false",
+            "onConfigurationChanged w1280dp",
+            "onResume")
+        .inOrder();
+  }
+
+  @Test
   @Config(minSdk = O)
   public void buildActivity_optionBundleWithInvalidNonDefaultDisplaySet_launchesOnDefaultDisplay() {
     try (ActivityController<Activity> controller =
@@ -2491,6 +2563,28 @@ public class ShadowActivityTest {
         InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand(command);
     try (InputStream inputStream = new ParcelFileDescriptor.AutoCloseInputStream(output)) {
       return new String(ByteStreams.toByteArray(inputStream), UTF_8);
+    }
+  }
+
+  /** Records entering and leaving picture-in-picture mode too. */
+  public static class PictureInPictureActivity extends WindowAwareActivity {
+    @Override
+    public void onPictureInPictureModeChanged(
+        boolean isInPictureInPictureMode, Configuration newConfig) {
+      super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
+      events.add("onPictureInPictureModeChanged " + isInPictureInPictureMode);
+    }
+
+    @Override
+    protected void onPause() {
+      super.onPause();
+      events.add("onPause");
+    }
+
+    @Override
+    protected void onResume() {
+      super.onResume();
+      events.add("onResume");
     }
   }
 
