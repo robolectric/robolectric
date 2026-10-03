@@ -3,21 +3,32 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlobal;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
+import android.app.Presentation;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.BrightnessConfiguration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
+import android.hardware.display.VirtualDisplay;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
+import android.view.WindowManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -28,6 +39,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
@@ -114,6 +126,242 @@ public class ShadowDisplayManagerTest {
     Display display = instance.getDisplay(displayId);
     assertThat(display.getDisplayId()).isEqualTo(displayId);
     assertThat(display.getName()).isEqualTo("VirtualDevice_1");
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void createWindowContext_onNonDefaultDisplay_hasThatDisplaysConfiguration() {
+    Display display =
+        instance.getDisplay(ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi"));
+
+    Context windowContext =
+        ApplicationProvider.getApplicationContext()
+            .createWindowContext(display, TYPE_APPLICATION_OVERLAY, null);
+
+    Configuration configuration = windowContext.getResources().getConfiguration();
+    assertThat(configuration.screenWidthDp).isEqualTo(960);
+    assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+    assertThat(configuration.densityDpi).isEqualTo(DisplayMetrics.DENSITY_XHIGH);
+    assertThat(
+            windowContext
+                .getSystemService(WindowManager.class)
+                .getCurrentWindowMetrics()
+                .getBounds())
+        .isEqualTo(new Rect(0, 0, 1920, 1080));
+  }
+
+  @Test
+  @Config(minSdk = S, qualifiers = "w411dp-h891dp")
+  public void createWindowContext_onDefaultDisplay_followsTheGlobalConfiguration() {
+    Context windowContext =
+        ApplicationProvider.getApplicationContext()
+            .createWindowContext(
+                instance.getDisplay(Display.DEFAULT_DISPLAY), TYPE_APPLICATION_OVERLAY, null);
+
+    RuntimeEnvironment.setQualifiers("w673dp-h841dp");
+
+    assertThat(windowContext.getResources().getConfiguration().screenWidthDp).isEqualTo(673);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void presentation_onNonDefaultDisplay_hasThatDisplaysConfiguration() {
+    Display display =
+        instance.getDisplay(ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi"));
+    Activity activity = Robolectric.setupActivity(Activity.class);
+
+    Presentation presentation = new Presentation(activity, display);
+
+    Configuration configuration = presentation.getContext().getResources().getConfiguration();
+    assertThat(configuration.screenWidthDp).isEqualTo(960);
+    assertThat(configuration.densityDpi).isEqualTo(DisplayMetrics.DENSITY_XHIGH);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void changeDisplay_withAnActivityOnIt_recreatesTheActivityAtTheNewSize() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller =
+        buildActivityOnDisplay(Activity.class, displayId).setup()) {
+      Activity activity = controller.get();
+
+      ShadowDisplayManager.changeDisplay(displayId, "w1280dp-h720dp-land-xhdpi");
+
+      assertThat(controller.get()).isNotSameInstanceAs(activity);
+      assertThat(controller.get().getResources().getConfiguration().screenWidthDp).isEqualTo(1280);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void changeDisplay_withAnActivityHandlingSizeChanges_resizesTheActivity() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+    handleSizeChanges(ConfigurationRecordingActivity.class);
+
+    try (ActivityController<ConfigurationRecordingActivity> controller =
+        buildActivityOnDisplay(ConfigurationRecordingActivity.class, displayId).setup()) {
+      ConfigurationRecordingActivity activity = controller.get();
+
+      ShadowDisplayManager.changeDisplay(displayId, "w1280dp-h720dp-land-xhdpi");
+
+      assertThat(controller.get()).isSameInstanceAs(activity);
+      assertThat(activity.lastConfiguration.screenWidthDp).isEqualTo(1280);
+      assertThat(activity.getResources().getDisplayMetrics().widthPixels).isEqualTo(2560);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void changeDisplay_withoutChangingItsConfiguration_leavesActivitiesAlone() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+    handleSizeChanges(ConfigurationRecordingActivity.class);
+
+    try (ActivityController<ConfigurationRecordingActivity> controller =
+        buildActivityOnDisplay(ConfigurationRecordingActivity.class, displayId).setup()) {
+      ConfigurationRecordingActivity activity = controller.get();
+
+      shadowOf(instance.getDisplay(displayId)).setName("Renamed display");
+      shadowMainLooper().idle();
+
+      assertThat(controller.get()).isSameInstanceAs(activity);
+      assertThat(activity.lastConfiguration).isNull();
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void removeDisplay_withAnActivityOnIt_movesTheActivityToTheDefaultDisplay() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller =
+        buildActivityOnDisplay(Activity.class, displayId).setup()) {
+      ShadowDisplayManager.removeDisplay(displayId);
+
+      Activity activity = controller.get();
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(Display.DEFAULT_DISPLAY);
+      assertThat(activity.getResources().getConfiguration().screenWidthDp)
+          .isEqualTo(
+              ApplicationProvider.getApplicationContext()
+                  .getResources()
+                  .getConfiguration()
+                  .screenWidthDp);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void removeDisplay_withAnActivityHandlingTheMove_movesItToTheDefaultDisplay() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+    handleSizeChanges(ConfigurationRecordingActivity.class);
+
+    try (ActivityController<ConfigurationRecordingActivity> controller =
+        buildActivityOnDisplay(ConfigurationRecordingActivity.class, displayId).setup()) {
+      ConfigurationRecordingActivity activity = controller.get();
+
+      ShadowDisplayManager.removeDisplay(displayId);
+
+      Point defaultDisplaySize = new Point();
+      ShadowDisplay.getDefaultDisplay().getRealSize(defaultDisplaySize);
+      assertThat(controller.get()).isSameInstanceAs(activity);
+      assertThat(activity.movedToDisplayId).isEqualTo(Display.DEFAULT_DISPLAY);
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(Display.DEFAULT_DISPLAY);
+      assertThat(activity.lastConfiguration.screenWidthDp)
+          .isEqualTo(
+              ApplicationProvider.getApplicationContext()
+                  .getResources()
+                  .getConfiguration()
+                  .screenWidthDp);
+      assertThat(activity.getWindow().getDecorView().getWidth()).isEqualTo(defaultDisplaySize.x);
+    }
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void releaseVirtualDisplay_thatIsNotPublic_destroysTheActivitiesOnIt() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Private", 800, 600, DisplayMetrics.DENSITY_MEDIUM, null, /* flags= */ 0);
+
+    try (ActivityController<Activity> controller =
+        buildActivityOnDisplay(Activity.class, virtualDisplay.getDisplay().getDisplayId())
+            .setup()) {
+      virtualDisplay.release();
+      shadowMainLooper().idle();
+
+      assertThat(controller.get().isDestroyed()).isTrue();
+    }
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void changeDisplay_withAWindowContextOnIt_updatesItsConfiguration() {
+    Display display =
+        instance.getDisplay(ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi"));
+    Context windowContext =
+        ApplicationProvider.getApplicationContext()
+            .createWindowContext(display, TYPE_APPLICATION_OVERLAY, null);
+
+    ShadowDisplayManager.changeDisplay(display.getDisplayId(), "w1280dp-h720dp-land-xhdpi");
+
+    assertThat(windowContext.getResources().getConfiguration().screenWidthDp).isEqualTo(1280);
+  }
+
+  @Test
+  public void addDisplay_external_isAPresentationDisplay() {
+    int displayId = ShadowDisplayManager.addDisplay("w1920dp-h1080dp-land", Display.TYPE_EXTERNAL);
+
+    Display display = instance.getDisplay(displayId);
+    assertThat(display.getType()).isEqualTo(Display.TYPE_EXTERNAL);
+    assertThat(display.getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
+    assertThat(presentationDisplayIds()).containsExactly(displayId);
+  }
+
+  @Test
+  public void changeDisplay_keepsWhatTheQualifiersDoNotDescribe() {
+    int namedDisplayId = ShadowDisplayManager.addDisplay("w1920dp-h1080dp-land", "HDMI Screen");
+    int externalDisplayId =
+        ShadowDisplayManager.addDisplay("w1920dp-h1080dp-land", Display.TYPE_EXTERNAL);
+
+    ShadowDisplayManager.changeDisplay(namedDisplayId, "w2560dp-h1440dp-land");
+    ShadowDisplayManager.changeDisplay(externalDisplayId, "w2560dp-h1440dp-land");
+
+    assertThat(instance.getDisplay(namedDisplayId).getName()).isEqualTo("HDMI Screen");
+    Display externalDisplay = instance.getDisplay(externalDisplayId);
+    assertThat(externalDisplay.getType()).isEqualTo(Display.TYPE_EXTERNAL);
+    assertThat(externalDisplay.getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
+    assertThat(presentationDisplayIds()).containsExactly(externalDisplayId);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void createVirtualDisplay_withThePresentationFlag_isAPresentationDisplay() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Presentation",
+            800,
+            600,
+            DisplayMetrics.DENSITY_MEDIUM,
+            null,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION);
+
+    Display display = virtualDisplay.getDisplay();
+    assertThat(display.getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
+    assertThat(presentationDisplayIds()).containsExactly(display.getDisplayId());
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void createVirtualDisplay_thatIsNotPublic_isPrivate() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Private", 800, 600, DisplayMetrics.DENSITY_MEDIUM, null, /* flags= */ 0);
+
+    assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(Display.FLAG_PRIVATE);
+    assertThat(presentationDisplayIds()).isEmpty();
   }
 
   @Test
@@ -564,6 +812,53 @@ public class ShadowDisplayManagerTest {
     @Override
     public void onDisplayChanged(int displayId) {
       events.add("Changed " + displayId);
+    }
+  }
+
+  private List<Integer> presentationDisplayIds() {
+    List<Integer> displayIds = new ArrayList<>();
+    for (Display display : instance.getDisplays(DisplayManager.DISPLAY_CATEGORY_PRESENTATION)) {
+      displayIds.add(display.getDisplayId());
+    }
+    return displayIds;
+  }
+
+  private static <T extends Activity> ActivityController<T> buildActivityOnDisplay(
+      Class<T> activityClass, int displayId) {
+    return Robolectric.buildActivity(
+        activityClass, null, ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle());
+  }
+
+  private static void handleSizeChanges(Class<? extends Activity> activityClass) {
+    Context context = ApplicationProvider.getApplicationContext();
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.name = activityClass.getName();
+    activityInfo.packageName = context.getPackageName();
+    activityInfo.configChanges =
+        ActivityInfo.CONFIG_SCREEN_SIZE
+            | ActivityInfo.CONFIG_SMALLEST_SCREEN_SIZE
+            | ActivityInfo.CONFIG_SCREEN_LAYOUT
+            | ActivityInfo.CONFIG_ORIENTATION
+            | ActivityInfo.CONFIG_DENSITY
+            | ActivityInfo.CONFIG_TOUCHSCREEN;
+    shadowOf(context.getPackageManager()).addOrUpdateActivity(activityInfo);
+  }
+
+  /** Records the configuration and the display it was last told about. */
+  public static class ConfigurationRecordingActivity extends Activity {
+    Configuration lastConfiguration;
+    Integer movedToDisplayId;
+
+    @Override
+    public void onMovedToDisplay(int displayId, Configuration config) {
+      super.onMovedToDisplay(displayId, config);
+      movedToDisplayId = displayId;
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+      super.onConfigurationChanged(newConfig);
+      lastConfiguration = newConfig;
     }
   }
 }

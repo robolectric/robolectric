@@ -22,13 +22,18 @@ import android.app.ApplicationExitInfo;
 import android.app.ApplicationStartInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ConfigurationInfo;
+import android.hardware.display.DisplayManager;
+import android.hardware.display.VirtualDisplay;
 import android.os.Build.VERSION_CODES;
 import android.os.LocaleList;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.system.OsConstants;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.android.collect.Lists;
@@ -638,5 +643,49 @@ public class ShadowActivityManagerTest {
 
       assertThat(activityLowRamStatus).isEqualTo(applicationLowRamStatus);
     }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void isActivityStartAllowedOnDisplay_onADisplayThatExists_isTrue() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp");
+    Intent intent = new Intent(context, Activity.class);
+
+    assertThat(activityManager.isActivityStartAllowedOnDisplay(context, displayId, intent))
+        .isTrue();
+    assertThat(
+            activityManager.isActivityStartAllowedOnDisplay(
+                context, Display.DEFAULT_DISPLAY, intent))
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void isActivityStartAllowedOnDisplay_onADisplayThatDoesNotExist_isFalse() {
+    Intent intent = new Intent(context, Activity.class);
+
+    assertThat(activityManager.isActivityStartAllowedOnDisplay(context, 42, intent)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void isActivityStartAllowedOnDisplay_onAPrivateDisplay_isOnlyTrueForItsOwner() {
+    DisplayManager displayManager = context.getSystemService(DisplayManager.class);
+    VirtualDisplay ownDisplay =
+        displayManager.createVirtualDisplay(
+            "Own display", 800, 600, DisplayMetrics.DENSITY_MEDIUM, null, /* flags= */ 0);
+    Display otherDisplay =
+        displayManager.getDisplay(ShadowDisplayManager.addDisplay("w960dp-h540dp"));
+    shadowOf(otherDisplay).setFlags(Display.FLAG_PRIVATE);
+    Intent intent = new Intent(context, Activity.class);
+
+    assertThat(
+            activityManager.isActivityStartAllowedOnDisplay(
+                context, ownDisplay.getDisplay().getDisplayId(), intent))
+        .isTrue();
+    assertThat(
+            activityManager.isActivityStartAllowedOnDisplay(
+                context, otherDisplay.getDisplayId(), intent))
+        .isFalse();
   }
 }

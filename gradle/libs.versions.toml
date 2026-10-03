@@ -116,6 +116,7 @@ androidx-recyclerview = "1.4.0"
 # https://github.com/android/android-test/tags
 androidx-test-core = "1.7.0"
 androidx-test-espresso = "3.7.0"
+androidx-test-espresso-device = "1.1.0"
 androidx-test-ext-junit = "1.3.0"
 androidx-test-ext-truth = "1.7.0"
 androidx-test-monitor = "1.8.0"
@@ -226,6 +227,8 @@ androidx-core = { module = "androidx.core:core", version.ref = "androidx-core" }
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "androidx-fragment" }
 androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", version.ref = "androidx-fragment" }
 androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
+androidx-window-core = { module = "androidx.window:window-core", version.ref = "androidx-window" }
+androidx-window-testing = { module = "androidx.window:window-testing", version.ref = "androidx-window" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "androidx-room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidx-room" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "androidx-recyclerview" }
@@ -237,6 +240,7 @@ androidx-test-runner = { module = "androidx.test:runner", version.ref = "android
 androidx-test-services = { module = "androidx.test.services:test-services", version.ref = "androidx-test-services" }
 
 androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-test-espresso" }
+androidx-test-espresso-device = { module = "androidx.test.espresso:espresso-device", version.ref = "androidx-test-espresso-device" }
 androidx-test-espresso-idling-resource = { module = "androidx.test.espresso:espresso-idling-resource", version.ref = "androidx-test-espresso" }
 androidx-test-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "androidx-test-espresso" }
 
@@ -249,6 +253,10 @@ androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+androidx-compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
+androidx-compose-material3-adaptive-layout = { module = "androidx.compose.material3.adaptive:adaptive-layout" }
+androidx-compose-material3-adaptive-navigation = { module = "androidx.compose.material3.adaptive:adaptive-navigation" }
+androidx-compose-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite" }
 
 play-services-basement = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-basement" }
 

@@ -4,6 +4,7 @@ import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.shadow.api.Shadow.extract;
@@ -17,6 +18,8 @@ import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -30,6 +33,7 @@ import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.internal.DisplayConfig;
+import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -61,6 +65,41 @@ public class ShadowDisplayManager {
   @Resetter
   public static void reset() {
     displayIsNaturallyPortrait.clear();
+    WindowConfigurations.reset();
+  }
+
+  /**
+   * Moves the divider of split screen on the given display, as when the user drags it to the given
+   * position and releases it, and idles the main looper so that the activities in split screen on
+   * the display get their new halves of it.
+   *
+   * <p>As on a device, the divider snaps to the nearest position the system lets it rest at: the
+   * middle of the display, or where one of the activities gets a 16:9 window. If it is released
+   * closer to an edge of the display, split screen is dismissed: the activity on that side is
+   * stopped, and the other one fills the display.
+   *
+   * @param displayId the display id
+   * @param position where the middle of the divider is released, as a fraction of the display's
+   *     width, or of its height if it is portrait, from 0 to 1. The divider starts in the middle,
+   *     at 0.5.
+   * @see ShadowActivity#enterSplitScreen
+   */
+  public static void setSplitScreenDividerPosition(int displayId, float position) {
+    if (!(position >= 0 && position <= 1)) {
+      throw new IllegalArgumentException("The divider must be inside the display: " + position);
+    }
+    boolean staysInSplitScreen =
+        WindowConfigurations.setSplitScreenDividerPosition(displayId, position);
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> {
+              if (staysInSplitScreen) {
+                DisplayChanges.onSplitScreenChanged(displayId);
+              } else {
+                DisplayChanges.onSplitScreenDismissed(displayId, /* topOrLeft= */ position < 0.5f);
+              }
+            });
+    shadowMainLooper().idle();
   }
 
   @Implementation
@@ -156,6 +195,12 @@ public class ShadowDisplayManager {
     displayInfo.physicalYDpi = displayMetrics.densityDpi;
     displayInfo.state = Display.STATE_ON;
     displayInfo.type = displayType;
+    if (displayType == Display.TYPE_EXTERNAL
+        || displayType == Display.TYPE_WIFI
+        || displayType == Display.TYPE_OVERLAY) {
+      // These displays show presentations on a device.
+      displayInfo.flags |= Display.FLAG_PRESENTATION;
+    }
     if (ReflectionHelpers.hasField(DisplayInfo.class, "frameRateVelocityMapping")) {
       ReflectionHelpers.setField(displayInfo, "frameRateVelocityMapping", new ArrayList<>());
     }
@@ -163,8 +208,24 @@ public class ShadowDisplayManager {
     return displayInfo;
   }
 
-  private static DisplayInfo createDisplayInfo(String qualifiersStr, @Nullable Integer displayId) {
-    return createDisplayInfo(qualifiersStr, displayId, DEFAULT_DISPLAY_NAME, DEFAULT_DISPLAY_TYPE);
+  /** Returns the display changed to match the qualifiers, keeping what they don't describe. */
+  private static DisplayInfo createDisplayInfo(String qualifiersStr, int displayId) {
+    DisplayInfo baseDisplayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    DisplayInfo displayInfo =
+        createDisplayInfo(qualifiersStr, displayId, DEFAULT_DISPLAY_NAME, DEFAULT_DISPLAY_TYPE);
+    if (baseDisplayInfo != null) {
+      displayInfo.name = baseDisplayInfo.name;
+      displayInfo.uniqueId = baseDisplayInfo.uniqueId;
+      displayInfo.type = baseDisplayInfo.type;
+      displayInfo.flags = baseDisplayInfo.flags;
+      displayInfo.state = baseDisplayInfo.state;
+      displayInfo.ownerUid = baseDisplayInfo.ownerUid;
+      displayInfo.ownerPackageName = baseDisplayInfo.ownerPackageName;
+      if (RuntimeEnvironment.getApiLevel() >= Q) {
+        displayInfo.displayId = baseDisplayInfo.displayId;
+      }
+    }
+    return displayInfo;
   }
 
   private static DisplayInfo createDisplayInfo(
@@ -220,6 +281,12 @@ public class ShadowDisplayManager {
    * sign, the display's previous configuration is modified with the given qualifiers; otherwise
    * defaults are applied as described <a
    * href="http://robolectric.org/device-configuration/">here</a>.
+   *
+   * <p>The display keeps its name, type, flags, state and owner.
+   *
+   * <p>Activities and window contexts on a display other than the default one receive the change as
+   * they would on a device. The configuration of the default display is the global one, which
+   * {@link RuntimeEnvironment#setQualifiers} changes along with the display.
    *
    * <p>Idles the main looper to ensure all listeners are notified.
    *

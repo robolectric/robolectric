@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -36,6 +37,7 @@ import android.app.DirectAction;
 import android.app.Fragment;
 import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
+import android.app.WindowConfiguration;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
@@ -45,29 +47,44 @@ import android.content.IntentSender;
 import android.content.LocusId;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.graphics.Color;
+import android.graphics.Insets;
+import android.graphics.Rect;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.os.ParcelFileDescriptor;
+import android.os.SystemClock;
+import android.util.DisplayMetrics;
+import android.util.Rational;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewRootImpl;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
+import androidx.test.runner.lifecycle.Stage;
+import com.google.common.io.ByteStreams;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -79,6 +96,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
@@ -87,6 +105,7 @@ import org.robolectric.fakes.RoboSplashScreen;
 import org.robolectric.junit.rules.SetSystemPropertyRule;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowActivity.IntentSenderRequest;
+import org.robolectric.util.ReflectionHelpers;
 
 /** Test of ShadowActivity. */
 @RunWith(AndroidJUnit4.class)
@@ -1612,6 +1631,822 @@ public class ShadowActivityTest {
 
   @Test
   @Config(minSdk = O)
+  public void buildActivity_onNonDefaultDisplay_hasThatDisplaysConfiguration() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller = buildActivityOnDisplay(displayId)) {
+      Configuration configuration = controller.setup().get().getResources().getConfiguration();
+
+      assertThat(configuration.screenWidthDp).isEqualTo(960);
+      assertThat(configuration.screenHeightDp).isEqualTo(540);
+      assertThat(configuration.smallestScreenWidthDp).isEqualTo(540);
+      assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+      assertThat(configuration.densityDpi).isEqualTo(DisplayMetrics.DENSITY_XHIGH);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void buildActivity_onNonDefaultDisplay_hasThatDisplaysWindowBounds() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller = buildActivityOnDisplay(displayId)) {
+      WindowManager windowManager = controller.setup().get().getWindowManager();
+
+      assertThat(windowManager.getCurrentWindowMetrics().getBounds())
+          .isEqualTo(new Rect(0, 0, 1920, 1080));
+      assertThat(windowManager.getMaximumWindowMetrics().getBounds())
+          .isEqualTo(new Rect(0, 0, 1920, 1080));
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void configurationChange_onNonDefaultDisplay_keepsThatDisplaysSize() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller = buildActivityOnDisplay(displayId).setup()) {
+      RuntimeEnvironment.setQualifiers("+night");
+      controller.configurationChange();
+
+      Activity activity = controller.get();
+      Configuration configuration = activity.getResources().getConfiguration();
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(displayId);
+      assertThat(configuration.screenWidthDp).isEqualTo(960);
+      assertThat(configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK)
+          .isEqualTo(Configuration.UI_MODE_NIGHT_YES);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void recreate_onNonDefaultDisplay_staysOnThatDisplay() {
+    int displayId = ShadowDisplayManager.addDisplay("w960dp-h540dp-land-xhdpi");
+
+    try (ActivityController<Activity> controller = buildActivityOnDisplay(displayId).setup()) {
+      controller.recreate();
+
+      Activity activity = controller.get();
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(displayId);
+      assertThat(activity.getResources().getConfiguration().screenWidthDp).isEqualTo(960);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void buildActivity_withLaunchBounds_isInAWindowWithThoseBounds() {
+    try (ActivityController<Activity> controller =
+        buildActivityWithLaunchBounds(new Rect(100, 50, 600, 750)).setup()) {
+      Activity activity = controller.get();
+
+      Configuration configuration = activity.getResources().getConfiguration();
+      assertThat(configuration.screenWidthDp).isEqualTo(500);
+      assertThat(configuration.screenHeightDp).isEqualTo(700);
+      assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_PORTRAIT);
+      assertThat(activity.isInMultiWindowMode()).isTrue();
+      assertThat(activity.getWindow().getDecorView().getWidth()).isEqualTo(500);
+      assertThat(
+              RuntimeEnvironment.getApplication().getResources().getConfiguration().screenWidthDp)
+          .isEqualTo(1280);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void buildActivity_withLaunchBounds_hasTheWindowsMetrics() {
+    try (ActivityController<Activity> controller =
+        buildActivityWithLaunchBounds(new Rect(100, 50, 600, 750)).setup()) {
+      WindowManager windowManager = controller.get().getWindowManager();
+
+      assertThat(windowManager.getCurrentWindowMetrics().getBounds())
+          .isEqualTo(new Rect(100, 50, 600, 750));
+      assertThat(windowManager.getMaximumWindowMetrics().getBounds())
+          .isEqualTo(new Rect(0, 0, 1280, 800));
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setWindowBounds_whenTheActivityHandlesTheChange_resizesItsWindow() {
+    handleWindowChanges(WindowAwareActivity.class);
+    ActivityController<WindowAwareActivity> windowController =
+        buildActivityInWindow(WindowAwareActivity.class, new Rect(0, 0, 640, 800)).setup();
+    WindowAwareActivity activity = windowController.get();
+
+    shadowOf(windowController.get()).setWindowBounds(new Rect(0, 0, 400, 800));
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(windowController.get()).isSameInstanceAs(activity);
+    assertThat(activity.events).containsExactly("onConfigurationChanged w400dp");
+    assertThat(activity.getResources().getDisplayMetrics().widthPixels).isEqualTo(400);
+    assertThat(activity.getWindow().getDecorView().getWidth()).isEqualTo(400);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setWindowBounds_whenTheActivityDoesNotHandleTheChange_recreatesItInTheNewWindow() {
+    ActivityController<Activity> windowController =
+        buildActivityInWindow(Activity.class, new Rect(0, 0, 640, 800)).setup();
+    Activity activity = windowController.get();
+
+    shadowOf(windowController.get()).setWindowBounds(new Rect(0, 0, 400, 800));
+
+    Activity recreatedActivity = windowController.get();
+    assertThat(recreatedActivity).isNotSameInstanceAs(activity);
+    assertThat(recreatedActivity.getResources().getConfiguration().screenWidthDp).isEqualTo(400);
+    assertThat(recreatedActivity.isInMultiWindowMode()).isTrue();
+    assertThat(recreatedActivity.getWindow().getDecorView().getWidth()).isEqualTo(400);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setWindowBounds_inAndOutOfAWindow_reportsTheMultiWindowModeChanges() {
+    handleWindowChanges(WindowAwareActivity.class);
+    ActivityController<WindowAwareActivity> windowController =
+        buildActivityInWindow(WindowAwareActivity.class, new Rect(0, 0, 640, 800)).setup();
+    WindowAwareActivity activity = windowController.get();
+
+    shadowOf(windowController.get()).setWindowBounds(null);
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(activity.isInMultiWindowMode()).isFalse();
+    assertThat(activity.getResources().getDisplayMetrics().widthPixels).isEqualTo(1280);
+    assertThat(activity.getWindow().getDecorView().getWidth()).isEqualTo(1280);
+
+    shadowOf(windowController.get()).setWindowBounds(new Rect(0, 0, 400, 800));
+
+    assertThat(activity.isInMultiWindowMode()).isTrue();
+    assertThat(activity.events)
+        .containsExactly(
+            "onMultiWindowModeChanged false",
+            "onConfigurationChanged w1280dp",
+            "onMultiWindowModeChanged true",
+            "onConfigurationChanged w400dp")
+        .inOrder();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setWindowBounds_whenTheActivitySharesTheApplicationContext_recreatesItInTheWindow() {
+    ActivityController<Activity> sharedController =
+        Robolectric.buildActivity(Activity.class).setup();
+    Activity activity = sharedController.get();
+
+    shadowOf(sharedController.get()).setWindowBounds(new Rect(0, 0, 400, 800));
+
+    Activity recreatedActivity = sharedController.get();
+    assertThat(recreatedActivity).isNotSameInstanceAs(activity);
+    assertThat(recreatedActivity.getResources().getConfiguration().screenWidthDp).isEqualTo(400);
+    assertThat(recreatedActivity.isInMultiWindowMode()).isTrue();
+    assertThat(
+            ApplicationProvider.getApplicationContext()
+                .getResources()
+                .getConfiguration()
+                .screenWidthDp)
+        .isEqualTo(1280);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void
+      setWindowBounds_whenTheActivitySharesTheApplicationContext_recreatesItEvenIfItHandlesIt() {
+    handleWindowChanges(WindowAwareActivity.class);
+    ActivityController<WindowAwareActivity> sharedController =
+        Robolectric.buildActivity(WindowAwareActivity.class).setup();
+    WindowAwareActivity activity = sharedController.get();
+
+    shadowOf(activity).setWindowBounds(new Rect(0, 0, 400, 800));
+
+    assertThat(sharedController.get()).isNotSameInstanceAs(activity);
+    assertThat(sharedController.get().getResources().getConfiguration().screenWidthDp)
+        .isEqualTo(400);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void enterSplitScreen_putsTheActivityInTheLeftHalfOfALandscapeDisplay() {
+    ActivityController<Activity> splitController =
+        Robolectric.buildActivity(Activity.class).setup();
+
+    shadowOf(splitController.get()).enterSplitScreen();
+
+    Activity activity = splitController.get();
+    Configuration configuration = activity.getResources().getConfiguration();
+    assertThat(configuration.windowConfiguration.getWindowingMode())
+        .isEqualTo(splitScreenWindowingMode("WINDOWING_MODE_SPLIT_SCREEN_PRIMARY"));
+    assertThat(configuration.windowConfiguration.getBounds()).isEqualTo(new Rect(0, 0, 635, 800));
+    assertThat(configuration.screenWidthDp).isEqualTo(635);
+    assertThat(activity.isInMultiWindowMode()).isTrue();
+    assertThat(activity.getWindow().getDecorView().getWidth()).isEqualTo(635);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w800dp-h1280dp-port-mdpi")
+  public void enterSplitScreen_nextToAnotherActivity_putsItInTheOtherHalf() {
+    ActivityController<Activity> topController = Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(topController.get()).enterSplitScreen();
+    ActivityController<Activity> splitController =
+        Robolectric.buildActivity(Activity.class).setup();
+
+    shadowOf(splitController.get()).enterSplitScreen();
+
+    Configuration configuration = splitController.get().getResources().getConfiguration();
+    assertThat(configuration.windowConfiguration.getWindowingMode())
+        .isEqualTo(splitScreenWindowingMode("WINDOWING_MODE_SPLIT_SCREEN_SECONDARY"));
+    assertThat(configuration.windowConfiguration.getBounds())
+        .isEqualTo(new Rect(0, 645, 800, 1280));
+    assertThat(configuration.screenHeightDp).isEqualTo(635);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void enterSplitScreen_thenRotating_keepsItsHalfOfTheDisplay() {
+    ActivityController<Activity> splitController =
+        Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(splitController.get()).enterSplitScreen();
+
+    RuntimeEnvironment.setQualifiers("+port");
+    splitController.configurationChange();
+
+    Configuration configuration = splitController.get().getResources().getConfiguration();
+    assertThat(configuration.windowConfiguration.getBounds()).isEqualTo(new Rect(0, 0, 800, 635));
+    assertThat(splitController.get().isInMultiWindowMode()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setWindowBounds_null_leavesSplitScreen() {
+    ActivityController<Activity> splitController =
+        Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(splitController.get()).enterSplitScreen();
+
+    shadowOf(splitController.get()).setWindowBounds(null);
+
+    Activity activity = splitController.get();
+    assertThat(activity.getResources().getConfiguration().screenWidthDp).isEqualTo(1280);
+    assertThat(activity.isInMultiWindowMode()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void startActivity_launchAdjacentFromSplitScreen_launchesInTheOtherHalf() {
+    ActivityController<Activity> launcher = Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(launcher.get()).enterSplitScreen();
+
+    launcher.get().startActivity(adjacentIntent());
+    ActivityController<AdjacentActivity> adjacent =
+        Robolectric.buildActivity(
+                AdjacentActivity.class, shadowOf(launcher.get()).getNextStartedActivity())
+            .setup();
+
+    assertThat(windowBounds(adjacent.get())).isEqualTo(new Rect(645, 0, 1280, 800));
+    assertThat(adjacent.get().isInMultiWindowMode()).isTrue();
+    assertThat(windowBounds(launcher.get())).isEqualTo(new Rect(0, 0, 635, 800));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S_V2, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void startActivity_launchAdjacentFromAFullscreenActivity_splitsTheScreen() {
+    ActivityController<Activity> launcher = Robolectric.buildActivity(Activity.class).setup();
+
+    launcher.get().startActivity(adjacentIntent());
+    shadowOf(getMainLooper()).idle();
+    ActivityController<AdjacentActivity> adjacent =
+        Robolectric.buildActivity(
+                AdjacentActivity.class, shadowOf(launcher.get()).getNextStartedActivity())
+            .setup();
+
+    assertThat(windowBounds(launcher.get())).isEqualTo(new Rect(0, 0, 635, 800));
+    assertThat(launcher.get().isInMultiWindowMode()).isTrue();
+    assertThat(windowBounds(adjacent.get())).isEqualTo(new Rect(645, 0, 1280, 800));
+  }
+
+  @Test
+  @Config(
+      minSdk = VERSION_CODES.P,
+      maxSdk = VERSION_CODES.S,
+      qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void startActivity_launchAdjacentFromAFullscreenActivityBeforeS_V2_launchesFullscreen() {
+    ActivityController<Activity> launcher = Robolectric.buildActivity(Activity.class).setup();
+
+    launcher.get().startActivity(adjacentIntent());
+    shadowOf(getMainLooper()).idle();
+    ActivityController<AdjacentActivity> adjacent =
+        Robolectric.buildActivity(
+                AdjacentActivity.class, shadowOf(launcher.get()).getNextStartedActivity())
+            .setup();
+
+    assertThat(launcher.get().isInMultiWindowMode()).isFalse();
+    assertThat(adjacent.get().isInMultiWindowMode()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setSplitScreenDividerPosition_resizesBothHalves() {
+    ActivityController<Activity> left = Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(left.get()).enterSplitScreen();
+    ActivityController<Activity> right = Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(right.get()).enterSplitScreen();
+
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0.3f);
+
+    // The divider snaps to where the left activity has a 16:9 window.
+    assertThat(windowBounds(left.get())).isEqualTo(new Rect(0, 0, 450, 800));
+    assertThat(windowBounds(right.get())).isEqualTo(new Rect(460, 0, 1280, 800));
+    assertThat(right.get().getResources().getConfiguration().screenWidthDp).isEqualTo(820);
+    assertThat(right.get().getWindow().getDecorView().getWidth()).isEqualTo(820);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setSplitScreenDividerPosition_nearTheMiddle_snapsBackToIt() {
+    ActivityController<Activity> left = Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(left.get()).enterSplitScreen();
+    Activity leftActivity = left.get();
+
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0.45f);
+
+    assertThat(left.get()).isSameInstanceAs(leftActivity);
+    assertThat(windowBounds(leftActivity)).isEqualTo(new Rect(0, 0, 635, 800));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w360dp-h640dp-port-mdpi")
+  public void setSplitScreenDividerPosition_onASmallDisplay_staysInTheMiddle() {
+    ActivityController<Activity> top = Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(top.get()).enterSplitScreen();
+
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0.3f);
+
+    // A 16:9 window would be smaller than the minimal size of a window.
+    assertThat(windowBounds(top.get())).isEqualTo(new Rect(0, 0, 360, 315));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setSplitScreenDividerPosition_atTheLeftEdge_dismissesTheLeftActivity() {
+    ActivityController<Activity> left = Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(left.get()).enterSplitScreen();
+    ActivityController<Activity> right = Robolectric.buildActivity(Activity.class).setup();
+    shadowOf(right.get()).enterSplitScreen();
+
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0f);
+
+    assertThat(lifecycleStage(left.get())).isEqualTo(Stage.STOPPED);
+    assertThat(left.get().isInMultiWindowMode()).isFalse();
+    assertThat(lifecycleStage(right.get())).isEqualTo(Stage.RESUMED);
+    assertThat(right.get().isInMultiWindowMode()).isFalse();
+    assertThat(right.get().getResources().getConfiguration().screenWidthDp).isEqualTo(1280);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setSplitScreenDividerPosition_atTheRightEdge_dismissesTheRightActivity() {
+    handleWindowChanges(FocusAwareActivity.class);
+    ActivityController<FocusAwareActivity> left = buildFocusAwareActivityInSplitScreen();
+    ActivityController<FocusAwareActivity> right = startFocusAwareActivityAdjacentTo(left.get());
+    left.get().events.clear();
+    right.get().events.clear();
+
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 1f);
+
+    assertThat(lifecycleStage(right.get())).isEqualTo(Stage.STOPPED);
+    assertThat(right.get().events).containsExactly("onTopResumedActivityChanged false");
+    assertThat(lifecycleStage(left.get())).isEqualTo(Stage.RESUMED);
+    assertThat(left.get().isInMultiWindowMode()).isFalse();
+    assertThat(left.get().events)
+        .containsExactly("onTopResumedActivityChanged true", "onWindowFocusChanged true")
+        .inOrder();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void enterSplitScreen_afterSplitScreenWasDismissed_startsInTheMiddle() {
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0.7f);
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 1f);
+    ActivityController<Activity> splitController =
+        Robolectric.buildActivity(Activity.class).setup();
+
+    shadowOf(splitController.get()).enterSplitScreen();
+
+    assertThat(windowBounds(splitController.get())).isEqualTo(new Rect(0, 0, 635, 800));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setSplitScreenDividerPosition_withAnActivityHandlingIt_reportsItsNewSize() {
+    handleWindowChanges(WindowAwareActivity.class);
+    ActivityController<WindowAwareActivity> windowController =
+        buildActivityInWindow(WindowAwareActivity.class, new Rect(0, 0, 640, 800)).setup();
+    shadowOf(windowController.get()).enterSplitScreen();
+    WindowAwareActivity activity = windowController.get();
+
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0.7f);
+
+    assertThat(windowController.get()).isSameInstanceAs(activity);
+    assertThat(activity.events)
+        .containsExactly("onConfigurationChanged w635dp", "onConfigurationChanged w820dp")
+        .inOrder();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void enterSplitScreen_afterTheDividerMoved_usesItsPosition() {
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0.7f);
+    ActivityController<Activity> splitController =
+        Robolectric.buildActivity(Activity.class).setup();
+
+    shadowOf(splitController.get()).enterSplitScreen();
+
+    assertThat(windowBounds(splitController.get())).isEqualTo(new Rect(0, 0, 820, 800));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void touch_inSplitScreen_goesToTheActivityItIsIn() {
+    ActivityController<FocusAwareActivity> left = buildFocusAwareActivityInSplitScreen();
+    ActivityController<FocusAwareActivity> right = buildFocusAwareActivityInSplitScreen();
+
+    touch(100, 400);
+    touch(745, 400);
+
+    assertThat(left.get().touches).containsExactly("100,400");
+    assertThat(right.get().touches).containsExactly("100,400");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void touch_inSplitScreen_movesTheFocusToTheTouchedActivity() {
+    ActivityController<FocusAwareActivity> left = buildFocusAwareActivityInSplitScreen();
+    ActivityController<FocusAwareActivity> right = startFocusAwareActivityAdjacentTo(left.get());
+    right.windowFocusChanged(true);
+    left.get().events.clear();
+    right.get().events.clear();
+
+    touch(100, 400);
+
+    assertThat(right.get().events)
+        .containsExactly("onTopResumedActivityChanged false", "onWindowFocusChanged false")
+        .inOrder();
+    assertThat(left.get().events)
+        .containsExactly(
+            "onTopResumedActivityChanged true", "onWindowFocusChanged true", "onTouchEvent")
+        .inOrder();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void touch_inTheFocusedActivity_keepsTheFocus() {
+    ActivityController<FocusAwareActivity> left = buildFocusAwareActivityInSplitScreen();
+    ActivityController<FocusAwareActivity> right = startFocusAwareActivityAdjacentTo(left.get());
+    right.windowFocusChanged(true);
+    left.get().events.clear();
+    right.get().events.clear();
+
+    touch(745, 400);
+
+    assertThat(left.get().events).isEmpty();
+    assertThat(right.get().events).containsExactly("onTouchEvent");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void startActivity_launchAdjacent_takesTheFocusFromTheLaunchingActivity() {
+    ActivityController<FocusAwareActivity> launcher = buildFocusAwareActivityInSplitScreen();
+    launcher.windowFocusChanged(true);
+    launcher.get().events.clear();
+
+    ActivityController<FocusAwareActivity> adjacent =
+        startFocusAwareActivityAdjacentTo(launcher.get());
+
+    assertThat(launcher.get().events)
+        .containsExactly("onTopResumedActivityChanged false", "onWindowFocusChanged false")
+        .inOrder();
+    assertThat(adjacent.get().events).containsExactly("onTopResumedActivityChanged true");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void launchBounds_takeTheFocusFromOtherActivities() {
+    FocusAwareActivity fullscreenActivity =
+        Robolectric.buildActivity(FocusAwareActivity.class).setup().get();
+    fullscreenActivity.events.clear();
+
+    buildActivityInWindow(FocusAwareActivity.class, new Rect(100, 100, 500, 400)).setup();
+
+    assertThat(fullscreenActivity.events).containsExactly("onTopResumedActivityChanged false");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setSplitScreenDividerPosition_keepsTheTopResumedActivity() {
+    ActivityController<FocusAwareActivity> left = buildFocusAwareActivityInSplitScreen();
+    ActivityController<FocusAwareActivity> right = startFocusAwareActivityAdjacentTo(left.get());
+    FocusAwareActivity leftActivity = left.get();
+
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0.3f);
+
+    assertThat(left.get()).isNotSameInstanceAs(leftActivity);
+    assertThat(left.get().events).isEmpty();
+    assertThat(right.get().events).containsExactly("onTopResumedActivityChanged true");
+  }
+
+  @Test
+  public void setSplitScreenDividerPosition_outsideTheDisplay_throws() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, -0.1f));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 1.1f));
+  }
+
+  @Test
+  @Config(qualifiers = "w411dp-h891dp-port")
+  public void setRequestedOrientation_rotatesTheDisplay() {
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+
+    controller.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+    shadowOf(getMainLooper()).idle();
+
+    Activity activity = controller.get();
+    Configuration configuration = activity.getResources().getConfiguration();
+    assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+    assertThat(configuration.screenWidthDp).isEqualTo(891);
+    assertThat(activity.getRequestedOrientation())
+        .isEqualTo(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+  }
+
+  @Test
+  @Config(qualifiers = "w411dp-h891dp-port")
+  public void buildActivity_declaringAnOrientation_launchesInIt() {
+    declareOrientation(OrientationActivity.class, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+    OrientationActivity.creations = 0;
+
+    try (ActivityController<OrientationActivity> controller =
+        Robolectric.buildActivity(OrientationActivity.class).setup()) {
+      OrientationActivity activity = controller.get();
+
+      assertThat(activity.getResources().getConfiguration().orientation)
+          .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+      assertThat(activity.getRequestedOrientation())
+          .isEqualTo(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+      assertThat(OrientationActivity.creations).isEqualTo(1);
+    }
+  }
+
+  @Test
+  @Config(minSdk = BAKLAVA, qualifiers = "w1280dp-h800dp-land")
+  public void setRequestedOrientation_onALargeScreen_isIgnoredForAnAppTargetingAndroid16() {
+    getApplication().getApplicationInfo().targetSdkVersion = BAKLAVA;
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+
+    controller.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    shadowOf(getMainLooper()).idle();
+
+    Configuration configuration = controller.get().getResources().getConfiguration();
+    assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+    assertThat(configuration.screenWidthDp).isEqualTo(1280);
+  }
+
+  @Test
+  @Config(minSdk = S, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setRequestedOrientation_whenTheDisplayIgnoresIt_letterboxesTheActivity()
+      throws Exception {
+    executeShellCommand("wm set-ignore-orientation-request true");
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+
+    controller.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    shadowOf(getMainLooper()).idle();
+
+    Activity activity = controller.get();
+    Configuration configuration = activity.getResources().getConfiguration();
+    assertThat(configuration.windowConfiguration.getBounds()).isEqualTo(new Rect(390, 0, 890, 800));
+    assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_PORTRAIT);
+    assertThat(configuration.screenWidthDp).isEqualTo(500);
+    assertThat(activity.isInMultiWindowMode()).isFalse();
+    assertThat(activity.getWindow().getDecorView().getWidth()).isEqualTo(500);
+    assertThat(activity.getWindowManager().getMaximumWindowMetrics().getBounds())
+        .isEqualTo(new Rect(390, 0, 890, 800));
+    assertThat(getApplication().getResources().getConfiguration().screenWidthDp).isEqualTo(1280);
+    assertThat(executeShellCommand("wm get-ignore-orientation-request"))
+        .isEqualTo("ignoreOrientationRequest true for displayId=0\n");
+  }
+
+  @Test
+  @Config(minSdk = S, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setIgnoreOrientationRequest_false_rotatesTheDisplayForALetterboxedActivity()
+      throws Exception {
+    executeShellCommand("wm set-ignore-orientation-request true");
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+    controller.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    shadowOf(getMainLooper()).idle();
+
+    executeShellCommand("wm set-ignore-orientation-request false");
+
+    Configuration configuration = controller.get().getResources().getConfiguration();
+    assertThat(configuration.orientation).isEqualTo(Configuration.ORIENTATION_PORTRAIT);
+    assertThat(configuration.screenWidthDp).isEqualTo(800);
+    assertThat(controller.get().getWindow().getDecorView().getWidth()).isEqualTo(800);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w411dp-h891dp-port-mdpi")
+  public void setRequestedOrientation_inAFreeformWindow_isIgnored() {
+    ActivityController<Activity> controller =
+        buildActivityInWindow(Activity.class, new Rect(0, 0, 300, 600)).setup();
+
+    controller.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(getApplication().getResources().getConfiguration().orientation)
+        .isEqualTo(Configuration.ORIENTATION_PORTRAIT);
+    assertThat(controller.get().getResources().getConfiguration().screenWidthDp).isEqualTo(300);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void enterPictureInPictureMode_putsTheActivityInAPinnedWindow() {
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+
+    controller.get().enterPictureInPictureMode();
+    shadowOf(getMainLooper()).idle();
+
+    Activity activity = controller.get();
+    Configuration configuration = activity.getResources().getConfiguration();
+    assertThat(configuration.windowConfiguration.getWindowingMode())
+        .isEqualTo(WindowConfiguration.WINDOWING_MODE_PINNED);
+    assertThat(configuration.windowConfiguration.getBounds())
+        .isEqualTo(new Rect(937, 600, 1264, 784));
+    assertThat(activity.isInPictureInPictureMode()).isTrue();
+    assertThat(activity.isInMultiWindowMode()).isTrue();
+    assertThat(activity.isResumed()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void enterPictureInPictureMode_withAnAspectRatio_sizesTheWindowForIt() {
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+
+    controller
+        .get()
+        .enterPictureInPictureMode(
+            new PictureInPictureParams.Builder().setAspectRatio(new Rational(1, 1)).build());
+    shadowOf(getMainLooper()).idle();
+
+    Rect bounds =
+        controller.get().getResources().getConfiguration().windowConfiguration.getBounds();
+    assertThat(bounds.width()).isEqualTo(184);
+    assertThat(bounds.height()).isEqualTo(184);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void enterPictureInPictureMode_whenTheActivityHandlesIt_reportsEnteringAndLeaving() {
+    handleWindowChanges(PictureInPictureActivity.class);
+    ActivityController<PictureInPictureActivity> controller =
+        buildActivityInWindow(PictureInPictureActivity.class, new Rect(0, 0, 640, 800)).setup();
+    PictureInPictureActivity activity = controller.get();
+    shadowOf(activity).setWindowBounds(null);
+    activity.events.clear();
+
+    activity.enterPictureInPictureMode();
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(controller.get()).isSameInstanceAs(activity);
+    assertThat(activity.events)
+        .containsExactly(
+            "onPictureInPictureModeChanged true",
+            "onMultiWindowModeChanged true",
+            "onConfigurationChanged w327dp",
+            "onPause")
+        .inOrder();
+
+    activity.events.clear();
+    shadowOf(activity).setWindowBounds(null);
+
+    assertThat(activity.isInPictureInPictureMode()).isFalse();
+    assertThat(activity.events)
+        .containsExactly(
+            "onPictureInPictureModeChanged false",
+            "onMultiWindowModeChanged false",
+            "onConfigurationChanged w1280dp",
+            "onResume")
+        .inOrder();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w800dp-h1280dp-port-mdpi")
+  public void buildActivity_withLaunchBounds_placesItsWindowOnTheScreen() {
+    ActivityController<Activity> controller =
+        buildActivityInWindow(Activity.class, new Rect(100, 150, 600, 700)).setup();
+    shadowOf(getMainLooper()).idle();
+
+    int[] location = new int[2];
+    controller.get().getWindow().getDecorView().getLocationOnScreen(location);
+    assertThat(location).isEqualTo(new int[] {100, 150});
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU, qualifiers = "w800dp-h1280dp-port-mdpi")
+  public void buildActivity_withLaunchBounds_hasTheCaptionBarOfAFreeformWindow() {
+    ActivityController<Activity> controller =
+        buildActivityInWindow(Activity.class, new Rect(100, 150, 600, 700)).setup();
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(captionBarInsets(controller.get())).isEqualTo(Insets.of(0, 42, 0, 0));
+
+    shadowOf(controller.get()).setWindowBounds(null);
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(captionBarInsets(controller.get())).isEqualTo(Insets.NONE);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU, qualifiers = "w800dp-h1280dp-port-mdpi")
+  public void enterSplitScreen_hasNoCaptionBar() {
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class).setup();
+
+    shadowOf(controller.get()).enterSplitScreen();
+    shadowOf(getMainLooper()).idle();
+
+    assertThat(captionBarInsets(controller.get())).isEqualTo(Insets.NONE);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w411dp-h891dp-port-mdpi")
+  public void buildActivity_withLaunchBounds_whenNotResizeable_fillsTheDisplay() {
+    declareNotResizeable(NotResizeableActivity.class);
+
+    try (ActivityController<NotResizeableActivity> controller =
+        buildActivityInWindow(NotResizeableActivity.class, new Rect(0, 0, 300, 600)).setup()) {
+      assertThat(controller.get().isInMultiWindowMode()).isFalse();
+      assertThat(controller.get().getResources().getConfiguration().screenWidthDp).isEqualTo(411);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w411dp-h891dp-port-mdpi")
+  public void enterSplitScreen_whenNotResizeable_throws() {
+    declareNotResizeable(NotResizeableActivity.class);
+    ActivityController<NotResizeableActivity> controller =
+        Robolectric.buildActivity(NotResizeableActivity.class).setup();
+
+    assertThrows(IllegalStateException.class, () -> shadowOf(controller.get()).enterSplitScreen());
+    assertThrows(
+        IllegalStateException.class,
+        () -> shadowOf(controller.get()).setWindowBounds(new Rect(0, 0, 300, 600)));
+  }
+
+  @Test
+  @Config(minSdk = S, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void enterSplitScreen_whenNotResizeable_isAllowedOnALargeScreen() {
+    declareNotResizeable(NotResizeableActivity.class);
+    ActivityController<NotResizeableActivity> controller =
+        Robolectric.buildActivity(NotResizeableActivity.class).setup();
+
+    shadowOf(controller.get()).enterSplitScreen();
+
+    assertThat(controller.get().isInMultiWindowMode()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void buildActivity_withLaunchBounds_isAtLeastTheDefaultMinimalSize() {
+    try (ActivityController<Activity> controller =
+        buildActivityInWindow(Activity.class, new Rect(100, 100, 150, 150)).setup()) {
+      assertThat(windowBounds(controller.get())).isEqualTo(new Rect(100, 100, 320, 320));
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void buildActivity_withLaunchBounds_isAtLeastTheMinimalSizeTheActivityDeclares() {
+    declareMinimalSize(MinimalSizeActivity.class, 400, 300);
+
+    try (ActivityController<MinimalSizeActivity> controller =
+        buildActivityInWindow(MinimalSizeActivity.class, new Rect(100, 100, 150, 150)).setup()) {
+      assertThat(windowBounds(controller.get())).isEqualTo(new Rect(100, 100, 500, 400));
+    }
+  }
+
+  @Test
+  @Config(
+      minSdk = S,
+      maxSdk = VERSION_CODES.VANILLA_ICE_CREAM,
+      qualifiers = "w411dp-h891dp-port-mdpi")
+  public void enterSplitScreen_onASmallScreen_whenTheMinimalSizeDoesNotFit_throws() {
+    declareMinimalSize(MinimalSizeActivity.class, 300, 500);
+    ActivityController<MinimalSizeActivity> controller =
+        Robolectric.buildActivity(MinimalSizeActivity.class).setup();
+
+    assertThrows(IllegalStateException.class, () -> shadowOf(controller.get()).enterSplitScreen());
+  }
+
+  @Test
+  @Config(minSdk = O)
   public void buildActivity_optionBundleWithInvalidNonDefaultDisplaySet_launchesOnDefaultDisplay() {
     try (ActivityController<Activity> controller =
         Robolectric.buildActivity(
@@ -1938,4 +2773,207 @@ public class ShadowActivityTest {
   /** Activity for testing */
   public static class TestActivityWithAnotherTheme
       extends org.robolectric.shadows.testing.TestActivity {}
+
+  private static <T extends Activity> ActivityController<T> buildActivityInWindow(
+      Class<T> activityClass, Rect bounds) {
+    return Robolectric.buildActivity(
+        activityClass, null, ActivityOptions.makeBasic().setLaunchBounds(bounds).toBundle());
+  }
+
+  private static Rect windowBounds(Activity activity) {
+    return activity.getResources().getConfiguration().windowConfiguration.getBounds();
+  }
+
+  private static Intent adjacentIntent() {
+    return new Intent(ApplicationProvider.getApplicationContext(), AdjacentActivity.class)
+        .addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT | Intent.FLAG_ACTIVITY_NEW_TASK);
+  }
+
+  /** Returns the windowing mode of the system's split screen, which moved to Shell in S_V2. */
+  private static int splitScreenWindowingMode(String legacyWindowingMode) {
+    return RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S_V2
+        ? WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
+        : ReflectionHelpers.getStaticField(WindowConfiguration.class, legacyWindowingMode);
+  }
+
+  private static void handleWindowChanges(Class<? extends Activity> activityClass) {
+    Context context = ApplicationProvider.getApplicationContext();
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.name = activityClass.getName();
+    activityInfo.packageName = context.getPackageName();
+    activityInfo.configChanges =
+        ActivityInfo.CONFIG_SCREEN_SIZE
+            | ActivityInfo.CONFIG_SMALLEST_SCREEN_SIZE
+            | ActivityInfo.CONFIG_SCREEN_LAYOUT
+            | ActivityInfo.CONFIG_ORIENTATION;
+    shadowOf(context.getPackageManager()).addOrUpdateActivity(activityInfo);
+  }
+
+  private static ActivityController<FocusAwareActivity> buildFocusAwareActivityInSplitScreen() {
+    ActivityController<FocusAwareActivity> controller =
+        Robolectric.buildActivity(FocusAwareActivity.class).setup();
+    shadowOf(controller.get()).enterSplitScreen();
+    controller.get().events.clear();
+    return controller;
+  }
+
+  private static ActivityController<FocusAwareActivity> startFocusAwareActivityAdjacentTo(
+      Activity activity) {
+    activity.startActivity(adjacentIntent().setClass(activity, FocusAwareActivity.class));
+    return Robolectric.buildActivity(
+            FocusAwareActivity.class, shadowOf(activity).getNextStartedActivity())
+        .setup();
+  }
+
+  private static Stage lifecycleStage(Activity activity) {
+    return ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
+  }
+
+  /** Touches the screen at the given position, then lifts the pointer. */
+  private static void touch(int x, int y) {
+    long time = SystemClock.uptimeMillis();
+    for (int action : new int[] {MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP}) {
+      MotionEvent event = MotionEvent.obtain(time, time, action, x, y, /* metaState= */ 0);
+      ShadowUiAutomation.injectInputEvent(event);
+      event.recycle();
+    }
+  }
+
+  /** Records the touches it gets and the changes to its focus it is told about. */
+  public static class FocusAwareActivity extends Activity {
+    final List<String> events = new ArrayList<>();
+    final List<String> touches = new ArrayList<>();
+
+    @Override
+    public void onTopResumedActivityChanged(boolean isTopResumedActivity) {
+      super.onTopResumedActivityChanged(isTopResumedActivity);
+      events.add("onTopResumedActivityChanged " + isTopResumedActivity);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+      super.onWindowFocusChanged(hasFocus);
+      events.add("onWindowFocusChanged " + hasFocus);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+      if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+        events.add("onTouchEvent");
+        touches.add((int) event.getX() + "," + (int) event.getY());
+      }
+      return true;
+    }
+  }
+
+  /** An activity started adjacent to another. */
+  public static class AdjacentActivity extends Activity {}
+
+  /** Records the changes to its window it is told about. */
+  public static class WindowAwareActivity extends Activity {
+    final List<String> events = new ArrayList<>();
+
+    @Override
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig) {
+      super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig);
+      events.add("onMultiWindowModeChanged " + isInMultiWindowMode);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+      super.onConfigurationChanged(newConfig);
+      events.add("onConfigurationChanged w" + newConfig.screenWidthDp + "dp");
+    }
+  }
+
+  private static Insets captionBarInsets(Activity activity) {
+    return activity
+        .getWindow()
+        .getDecorView()
+        .getRootWindowInsets()
+        .getInsets(WindowInsets.Type.captionBar());
+  }
+
+  private static void declareNotResizeable(Class<? extends Activity> activityClass) {
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.name = activityClass.getName();
+    activityInfo.packageName = getApplication().getPackageName();
+    activityInfo.resizeMode = ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
+    shadowOf(getApplication().getPackageManager()).addOrUpdateActivity(activityInfo);
+  }
+
+  private static void declareMinimalSize(
+      Class<? extends Activity> activityClass, int minWidth, int minHeight) {
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.name = activityClass.getName();
+    activityInfo.packageName = getApplication().getPackageName();
+    activityInfo.windowLayout = new ActivityInfo.WindowLayout(0, 0, 0, 0, 0, minWidth, minHeight);
+    shadowOf(getApplication().getPackageManager()).addOrUpdateActivity(activityInfo);
+  }
+
+  private static void declareOrientation(
+      Class<? extends Activity> activityClass, int screenOrientation) {
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.name = activityClass.getName();
+    activityInfo.packageName = getApplication().getPackageName();
+    activityInfo.screenOrientation = screenOrientation;
+    shadowOf(getApplication().getPackageManager()).addOrUpdateActivity(activityInfo);
+  }
+
+  private static String executeShellCommand(String command) throws IOException {
+    ParcelFileDescriptor output =
+        InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand(command);
+    try (InputStream inputStream = new ParcelFileDescriptor.AutoCloseInputStream(output)) {
+      return new String(ByteStreams.toByteArray(inputStream), UTF_8);
+    }
+  }
+
+  /** Records entering and leaving picture-in-picture mode too. */
+  public static class PictureInPictureActivity extends WindowAwareActivity {
+    @Override
+    public void onPictureInPictureModeChanged(
+        boolean isInPictureInPictureMode, Configuration newConfig) {
+      super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
+      events.add("onPictureInPictureModeChanged " + isInPictureInPictureMode);
+    }
+
+    @Override
+    protected void onPause() {
+      super.onPause();
+      events.add("onPause");
+    }
+
+    @Override
+    protected void onResume() {
+      super.onResume();
+      events.add("onResume");
+    }
+  }
+
+  /** An activity that isn't resizeable. */
+  public static class NotResizeableActivity extends Activity {}
+
+  /** An activity that declares its minimal size. */
+  public static class MinimalSizeActivity extends Activity {}
+
+  /** Counts how often it is created. */
+  public static class OrientationActivity extends Activity {
+    static int creations;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      creations++;
+    }
+  }
+
+  private static ActivityController<Activity> buildActivityWithLaunchBounds(Rect bounds) {
+    return Robolectric.buildActivity(
+        Activity.class, null, ActivityOptions.makeBasic().setLaunchBounds(bounds).toBundle());
+  }
+
+  private static ActivityController<Activity> buildActivityOnDisplay(int displayId) {
+    return Robolectric.buildActivity(
+        Activity.class, null, ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle());
+  }
 }

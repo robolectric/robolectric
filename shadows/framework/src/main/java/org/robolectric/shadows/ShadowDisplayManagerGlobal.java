@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.BAKLAVA;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -16,6 +17,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.BrightnessConfiguration;
+import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.IDisplayManagerCallback;
@@ -24,6 +26,7 @@ import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.display.WifiDisplayStatus;
 import android.media.projection.IMediaProjection;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
@@ -219,10 +222,29 @@ public class ShadowDisplayManagerGlobal {
       registerCallback(iDisplayManagerCallback);
     }
 
+    /** Returns the display flags of a virtual display created with the given flags. */
+    private static int getVirtualDisplayFlags(int virtualDisplayFlags) {
+      int flags = 0;
+      if ((virtualDisplayFlags & DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC) == 0) {
+        flags |= Display.FLAG_PRIVATE;
+      }
+      if ((virtualDisplayFlags & DisplayManager.VIRTUAL_DISPLAY_FLAG_SECURE) != 0) {
+        flags |= Display.FLAG_SECURE;
+      }
+      if ((virtualDisplayFlags & DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION) != 0) {
+        flags |= Display.FLAG_PRESENTATION;
+      }
+      return flags;
+    }
+
     private int createVirtualDisplayInternal(
         VirtualDisplayConfig config, IVirtualDisplayCallback callbackWrapper, String packageName) {
       DisplayInfo displayInfo = new DisplayInfo();
-      displayInfo.flags = config.getFlags();
+      displayInfo.flags = getVirtualDisplayFlags(config.getFlags());
+      if ((config.getFlags() & DisplayManager.VIRTUAL_DISPLAY_FLAG_DESTROY_CONTENT_ON_REMOVAL)
+          != 0) {
+        displayInfo.removeMode = Display.REMOVE_MODE_DESTROY_CONTENT;
+      }
       displayInfo.type = Display.TYPE_VIRTUAL;
       displayInfo.name = config.getName();
       displayInfo.logicalDensityDpi = config.getDensityDpi();
@@ -283,7 +305,7 @@ public class ShadowDisplayManagerGlobal {
         int flags,
         String uniqueId) {
       DisplayInfo displayInfo = new DisplayInfo();
-      displayInfo.flags = flags;
+      displayInfo.flags = getVirtualDisplayFlags(flags);
       displayInfo.type = Display.TYPE_VIRTUAL;
       displayInfo.name = name;
       displayInfo.logicalDensityDpi = densityDpi;
@@ -379,6 +401,9 @@ public class ShadowDisplayManagerGlobal {
       }
       displayInfos.put(displayId, displayInfo);
       notifyListeners(displayId, EVENT_DISPLAY_BASIC_CHANGED);
+      if (displayId != Display.DEFAULT_DISPLAY) {
+        new Handler(Looper.getMainLooper()).post(() -> DisplayChanges.onDisplayChanged(displayId));
+      }
     }
 
     private boolean useMaxBounds() {
@@ -391,8 +416,15 @@ public class ShadowDisplayManagerGlobal {
         throw new IllegalStateException("no display " + displayId);
       }
 
-      displayInfos.remove(displayId);
+      DisplayInfo displayInfo = displayInfos.remove(displayId);
+      // As on a device, the content of a private display is destroyed with it.
+      boolean destroysContent =
+          (displayInfo.flags & Display.FLAG_PRIVATE) != 0
+              || (getApiLevel() >= O
+                  && displayInfo.removeMode == Display.REMOVE_MODE_DESTROY_CONTENT);
       notifyListeners(displayId, EVENT_DISPLAY_REMOVED);
+      new Handler(Looper.getMainLooper())
+          .post(() -> DisplayChanges.onDisplayRemoved(displayId, destroysContent));
     }
 
     private void notifyListeners(int nextId, int event) {
