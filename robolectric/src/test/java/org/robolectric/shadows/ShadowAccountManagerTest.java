@@ -1295,4 +1295,20 @@ public class ShadowAccountManagerTest {
         AuthenticatorException.class,
         () -> future.getResult());
   }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void notifyAccountAuthenticated() {
+    Account account = new Account("name@gmail.com", "com.google");
+    assertThat(shadowOf(am).wasNotifiedOfAccountAuthentication(account)).isFalse();
+
+    assertThat(am.notifyAccountAuthenticated(account)).isTrue();
+    assertThat(shadowOf(am).wasNotifiedOfAccountAuthentication(account)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void notifyAccountAuthenticated_nullAccount_throwsException() {
+    assertThrows(IllegalArgumentException.class, () -> am.notifyAccountAuthenticated(null));
+  }
 }
