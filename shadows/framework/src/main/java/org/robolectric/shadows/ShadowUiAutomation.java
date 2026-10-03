@@ -58,6 +58,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.annotation.Implementation;
@@ -322,7 +323,13 @@ public class ShadowUiAutomation {
     List<Root> touchableRoots = getViewRoots().stream().filter(IS_TOUCHABLE).collect(toList());
     for (int i = 0; i < touchableRoots.size(); i++) {
       Root root = touchableRoots.get(i);
-      if (i == touchableRoots.size() - 1 || root.isTouchModal() || root.isTouchInside(event)) {
+      if (i == touchableRoots.size() - 1
+          || (root.isTouchModal() && root.isTouchInsideActivityWindow(event))
+          || root.isTouchInside(event)) {
+        Activity activity = root.getActivity();
+        if (activity != null && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+          Shadow.<ShadowActivity>extract(activity).onTouched();
+        }
         event.offsetLocation(-root.locationOnScreen.x, -root.locationOnScreen.y);
         if (shouldDispatchGenericMotionEvent(event)) {
           root.getRootView().dispatchGenericMotionEvent(event);
@@ -474,6 +481,30 @@ public class ShadowUiAutomation {
 
     boolean isTouchModal() {
       return IS_TOUCH_MODAL.test(this);
+    }
+
+    /** Returns the activity the window belongs to, or null if it doesn't belong to one. */
+    @Nullable
+    Activity getActivity() {
+      return LiveActivities.get(params.token);
+    }
+
+    /**
+     * Returns whether the touch is in the window of the activity that this window belongs to. An
+     * activity doesn't get the touches outside of its own window, such as a freeform window or one
+     * half of split screen.
+     */
+    boolean isTouchInsideActivityWindow(MotionEvent event) {
+      Activity activity = getActivity();
+      Rect activityWindowBounds =
+          activity != null
+              ? WindowConfigurations.getWindowBounds(
+                  impl.getView().getDisplay().getDisplayId(),
+                  activity.getResources().getConfiguration())
+              : null;
+      int index = event.getActionIndex();
+      return activityWindowBounds == null
+          || activityWindowBounds.contains((int) event.getX(index), (int) event.getY(index));
     }
 
     boolean watchTouchOutside() {

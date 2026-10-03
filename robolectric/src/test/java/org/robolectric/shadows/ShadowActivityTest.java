@@ -59,6 +59,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
+import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.Rational;
 import android.view.Display;
@@ -66,6 +67,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewRootImpl;
@@ -2000,6 +2002,26 @@ public class ShadowActivityTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.Q, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setSplitScreenDividerPosition_atTheRightEdge_dismissesTheRightActivity() {
+    handleWindowChanges(FocusAwareActivity.class);
+    ActivityController<FocusAwareActivity> left = buildFocusAwareActivityInSplitScreen();
+    ActivityController<FocusAwareActivity> right = startFocusAwareActivityAdjacentTo(left.get());
+    left.get().events.clear();
+    right.get().events.clear();
+
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 1f);
+
+    assertThat(lifecycleStage(right.get())).isEqualTo(Stage.STOPPED);
+    assertThat(right.get().events).containsExactly("onTopResumedActivityChanged false");
+    assertThat(lifecycleStage(left.get())).isEqualTo(Stage.RESUMED);
+    assertThat(left.get().isInMultiWindowMode()).isFalse();
+    assertThat(left.get().events)
+        .containsExactly("onTopResumedActivityChanged true", "onWindowFocusChanged true")
+        .inOrder();
+  }
+
+  @Test
   @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
   public void enterSplitScreen_afterSplitScreenWasDismissed_startsInTheMiddle() {
     ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0.7f);
@@ -2039,6 +2061,96 @@ public class ShadowActivityTest {
     shadowOf(splitController.get()).enterSplitScreen();
 
     assertThat(windowBounds(splitController.get())).isEqualTo(new Rect(0, 0, 820, 800));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void touch_inSplitScreen_goesToTheActivityItIsIn() {
+    ActivityController<FocusAwareActivity> left = buildFocusAwareActivityInSplitScreen();
+    ActivityController<FocusAwareActivity> right = buildFocusAwareActivityInSplitScreen();
+
+    touch(100, 400);
+    touch(745, 400);
+
+    assertThat(left.get().touches).containsExactly("100,400");
+    assertThat(right.get().touches).containsExactly("100,400");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void touch_inSplitScreen_movesTheFocusToTheTouchedActivity() {
+    ActivityController<FocusAwareActivity> left = buildFocusAwareActivityInSplitScreen();
+    ActivityController<FocusAwareActivity> right = startFocusAwareActivityAdjacentTo(left.get());
+    right.windowFocusChanged(true);
+    left.get().events.clear();
+    right.get().events.clear();
+
+    touch(100, 400);
+
+    assertThat(right.get().events)
+        .containsExactly("onTopResumedActivityChanged false", "onWindowFocusChanged false")
+        .inOrder();
+    assertThat(left.get().events)
+        .containsExactly(
+            "onTopResumedActivityChanged true", "onWindowFocusChanged true", "onTouchEvent")
+        .inOrder();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void touch_inTheFocusedActivity_keepsTheFocus() {
+    ActivityController<FocusAwareActivity> left = buildFocusAwareActivityInSplitScreen();
+    ActivityController<FocusAwareActivity> right = startFocusAwareActivityAdjacentTo(left.get());
+    right.windowFocusChanged(true);
+    left.get().events.clear();
+    right.get().events.clear();
+
+    touch(745, 400);
+
+    assertThat(left.get().events).isEmpty();
+    assertThat(right.get().events).containsExactly("onTouchEvent");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void startActivity_launchAdjacent_takesTheFocusFromTheLaunchingActivity() {
+    ActivityController<FocusAwareActivity> launcher = buildFocusAwareActivityInSplitScreen();
+    launcher.windowFocusChanged(true);
+    launcher.get().events.clear();
+
+    ActivityController<FocusAwareActivity> adjacent =
+        startFocusAwareActivityAdjacentTo(launcher.get());
+
+    assertThat(launcher.get().events)
+        .containsExactly("onTopResumedActivityChanged false", "onWindowFocusChanged false")
+        .inOrder();
+    assertThat(adjacent.get().events).containsExactly("onTopResumedActivityChanged true");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void launchBounds_takeTheFocusFromOtherActivities() {
+    FocusAwareActivity fullscreenActivity =
+        Robolectric.buildActivity(FocusAwareActivity.class).setup().get();
+    fullscreenActivity.events.clear();
+
+    buildActivityInWindow(FocusAwareActivity.class, new Rect(100, 100, 500, 400)).setup();
+
+    assertThat(fullscreenActivity.events).containsExactly("onTopResumedActivityChanged false");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void setSplitScreenDividerPosition_keepsTheTopResumedActivity() {
+    ActivityController<FocusAwareActivity> left = buildFocusAwareActivityInSplitScreen();
+    ActivityController<FocusAwareActivity> right = startFocusAwareActivityAdjacentTo(left.get());
+    FocusAwareActivity leftActivity = left.get();
+
+    ShadowDisplayManager.setSplitScreenDividerPosition(Display.DEFAULT_DISPLAY, 0.3f);
+
+    assertThat(left.get()).isNotSameInstanceAs(leftActivity);
+    assertThat(left.get().events).isEmpty();
+    assertThat(right.get().events).containsExactly("onTopResumedActivityChanged true");
   }
 
   @Test
@@ -2697,8 +2809,61 @@ public class ShadowActivityTest {
     shadowOf(context.getPackageManager()).addOrUpdateActivity(activityInfo);
   }
 
+  private static ActivityController<FocusAwareActivity> buildFocusAwareActivityInSplitScreen() {
+    ActivityController<FocusAwareActivity> controller =
+        Robolectric.buildActivity(FocusAwareActivity.class).setup();
+    shadowOf(controller.get()).enterSplitScreen();
+    controller.get().events.clear();
+    return controller;
+  }
+
+  private static ActivityController<FocusAwareActivity> startFocusAwareActivityAdjacentTo(
+      Activity activity) {
+    activity.startActivity(adjacentIntent().setClass(activity, FocusAwareActivity.class));
+    return Robolectric.buildActivity(
+            FocusAwareActivity.class, shadowOf(activity).getNextStartedActivity())
+        .setup();
+  }
+
   private static Stage lifecycleStage(Activity activity) {
     return ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
+  }
+
+  /** Touches the screen at the given position, then lifts the pointer. */
+  private static void touch(int x, int y) {
+    long time = SystemClock.uptimeMillis();
+    for (int action : new int[] {MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP}) {
+      MotionEvent event = MotionEvent.obtain(time, time, action, x, y, /* metaState= */ 0);
+      ShadowUiAutomation.injectInputEvent(event);
+      event.recycle();
+    }
+  }
+
+  /** Records the touches it gets and the changes to its focus it is told about. */
+  public static class FocusAwareActivity extends Activity {
+    final List<String> events = new ArrayList<>();
+    final List<String> touches = new ArrayList<>();
+
+    @Override
+    public void onTopResumedActivityChanged(boolean isTopResumedActivity) {
+      super.onTopResumedActivityChanged(isTopResumedActivity);
+      events.add("onTopResumedActivityChanged " + isTopResumedActivity);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+      super.onWindowFocusChanged(hasFocus);
+      events.add("onWindowFocusChanged " + hasFocus);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+      if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+        events.add("onTouchEvent");
+        touches.add((int) event.getX() + "," + (int) event.getY());
+      }
+      return true;
+    }
   }
 
   /** An activity started adjacent to another. */
