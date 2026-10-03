@@ -76,6 +76,8 @@ public class ActivityController<T extends Activity>
 
   private org.robolectric.shadows.ActivityReflector activityReflector;
   private LifecycleState currentState = LifecycleState.INITIAL;
+  // Whether the activity was told that it isn't the top resumed one, which a recreation keeps.
+  private boolean lostTopResumedState;
 
   public static <T extends Activity> ActivityController<T> of(
       T activity, Intent intent, @Nullable Bundle activityOptions) {
@@ -216,6 +218,7 @@ public class ActivityController<T extends Activity>
    */
   @CanIgnoreReturnValue
   public ActivityController<T> topActivityResumed(boolean isTop) {
+    lostTopResumedState = !isTop;
     if (RuntimeEnvironment.getApiLevel() < Q) {
       return this;
     }
@@ -650,7 +653,9 @@ public class ActivityController<T extends Activity>
             activityReflector.onPostResume();
           });
       visible();
-      topActivityResumed(true);
+      if (!lostTopResumedState) {
+        topActivityResumed(true);
+      }
     }
 
     return this;
@@ -733,7 +738,9 @@ public class ActivityController<T extends Activity>
     postResume();
     visible();
     windowFocusChanged(true);
-    topActivityResumed(true);
+    if (!lostTopResumedState) {
+      topActivityResumed(true);
+    }
 
     // Move back to the original stage. If the original stage was transient stage, it will bring it
     // to resumed state to match the on device behavior.

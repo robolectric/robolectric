@@ -122,6 +122,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean throwIntentSenderException;
   private boolean hasReportedFullyDrawn = false;
   private boolean isInPictureInPictureMode = false;
+  private boolean isTopResumedActivity = false;
+  // Whether the activity was launched into a window of its own, and hasn't taken the focus yet.
+  private boolean launchedInWindow = false;
   private Object splashScreen = null;
   private boolean showWhenLocked = false;
   private boolean turnScreenOn = false;
@@ -296,6 +299,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       if (WindowConfigurations.isInPictureInPictureMode(activityConfig)) {
         isInPictureInPictureMode = true;
       }
+      launchedInWindow =
+          overrideConfig == null && (launchBounds != null || adjacentLaunchOverrideConfig != null);
     }
 
     int theme = activityInfo.getThemeResource();
@@ -805,6 +810,58 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Nullable
   ActivityController<?> getController() {
     return controller;
+  }
+
+  @Implementation(minSdk = Q)
+  protected void performTopResumedActivityChanged(boolean isTopResumedActivity, String reason) {
+    if (isTopResumedActivity && launchedInWindow) {
+      // As on a device, an activity launched into a window of its own takes the focus.
+      launchedInWindow = false;
+      takeFocusFromOtherActivities();
+    }
+    this.isTopResumedActivity = isTopResumedActivity;
+    reflector(DirectActivityReflector.class, realActivity)
+        .performTopResumedActivityChanged(isTopResumedActivity, reason);
+  }
+
+  /**
+   * Moves the focus to this activity if it shares the screen with others, as touching its window
+   * does on a device: it becomes the top resumed activity and its window gets the focus.
+   */
+  void onTouched() {
+    if (controller == null
+        || !realActivity.isResumed()
+        || !WindowConfigurations.isInMultiWindowMode(
+            realActivity.getResources().getConfiguration())) {
+      return;
+    }
+    takeFocusFromOtherActivities();
+    if (!isTopResumedActivity) {
+      controller.topActivityResumed(true);
+    }
+    if (!hasWindowFocus(realActivity)) {
+      controller.windowFocusChanged(true);
+    }
+  }
+
+  private void takeFocusFromOtherActivities() {
+    for (Activity activity : LiveActivities.get()) {
+      ShadowActivity shadowActivity = Shadow.extract(activity);
+      if (activity == realActivity || shadowActivity.controller == null) {
+        continue;
+      }
+      if (shadowActivity.isTopResumedActivity) {
+        shadowActivity.controller.topActivityResumed(false);
+      }
+      if (hasWindowFocus(activity)) {
+        shadowActivity.controller.windowFocusChanged(false);
+      }
+    }
+  }
+
+  private static boolean hasWindowFocus(Activity activity) {
+    View decorView = activity.getWindow().peekDecorView();
+    return decorView != null && decorView.hasWindowFocus();
   }
 
   /** Sets if startIntentSenderForRequestCode will throw an IntentSender.SendIntentException. */
@@ -1398,5 +1455,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     void requestPermissions(String[] permissions, int requestCode, int deviceId);
 
     void setLocusContext(LocusId locusId, @Nullable Bundle bundle);
+
+    void performTopResumedActivityChanged(boolean isTopResumedActivity, String reason);
   }
 }
