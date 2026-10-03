@@ -474,52 +474,56 @@ public class ActivityController<T extends Activity>
     }
 
     if (handlesChanges) {
-      shadowMainLooper.runPaused(
-          () -> {
-            Configuration currentConfig =
-                reflector(ActivityReflector.class, component).getCurrentConfig();
-            boolean isInMultiWindowMode =
-                WindowConfigurations.isInMultiWindowMode(newConfiguration);
-            if (WindowConfigurations.isInMultiWindowMode(currentConfig) != isInMultiWindowMode) {
-              // As ActivityThread does, report the multi-window mode change before the
-              // configuration change.
-              Shadow.<ShadowActivity>extract(component).setInMultiWindowMode(isInMultiWindowMode);
-              reflector(org.robolectric.shadows.ActivityReflector.class, component)
-                  .dispatchMultiWindowModeChanged(isInMultiWindowMode, newConfiguration);
-            }
-            currentConfig.setTo(newConfiguration);
-            ViewRootImpl root = getViewRoot();
-            // As ActivityThread does, tell an activity that moved to another display, such as one
-            // whose display was removed, before the configuration change.
-            int displayId = getDisplayId();
-            boolean movedToAnotherDisplay =
-                RuntimeEnvironment.getApiLevel() >= O
-                    && root != null
-                    && root.getDisplayId() != displayId;
-            // Display#getSize reads the display override of the resources.
-            Configuration displayOverrideConfig =
-                WindowConfigurations.getDisplayOverrideConfiguration(displayId);
-            if (displayOverrideConfig != null || movedToAnotherDisplay) {
-              component.getResources().getDisplayAdjustments().setConfiguration(displayOverrideConfig);
-            }
-            if (movedToAnotherDisplay) {
-              reflector(org.robolectric.shadows.ActivityReflector.class, component)
-                  .dispatchMovedToDisplay(displayId, newConfiguration);
-            }
-            component.onConfigurationChanged(newConfiguration);
-            if (root != null) {
-              if (RuntimeEnvironment.getApiLevel() <= N_MR1) {
-                ReflectionHelpers.callInstanceMethod(
-                    root,
-                    "updateConfiguration",
-                    ClassParameter.from(Configuration.class, newConfiguration),
-                    ClassParameter.from(boolean.class, false));
-              } else {
-                root.updateConfiguration(
-                    movedToAnotherDisplay ? displayId : Display.INVALID_DISPLAY);
-              }
-            }
-          });
+      shadowMainLooper.runPaused(() -> {
+        Configuration currentConfig =
+            reflector(ActivityReflector.class, component).getCurrentConfig();
+        // As ActivityThread does, report a picture-in-picture mode change, then a multi-window
+        // mode change, before the configuration change.
+        boolean isInPictureInPictureMode =
+            WindowConfigurations.isInPictureInPictureMode(newConfiguration);
+        if (WindowConfigurations.isInPictureInPictureMode(currentConfig)
+            != isInPictureInPictureMode) {
+          reflector(org.robolectric.shadows.ActivityReflector.class, component)
+              .dispatchPictureInPictureModeChanged(isInPictureInPictureMode, newConfiguration);
+        }
+        boolean isInMultiWindowMode = WindowConfigurations.isInMultiWindowMode(newConfiguration);
+        if (WindowConfigurations.isInMultiWindowMode(currentConfig) != isInMultiWindowMode) {
+          Shadow.<ShadowActivity>extract(component).setInMultiWindowMode(isInMultiWindowMode);
+          reflector(org.robolectric.shadows.ActivityReflector.class, component)
+              .dispatchMultiWindowModeChanged(isInMultiWindowMode, newConfiguration);
+        }
+        currentConfig.setTo(newConfiguration);
+        ViewRootImpl root = getViewRoot();
+        // As ActivityThread does, tell an activity that moved to another display, such as one
+        // whose display was removed, before the configuration change.
+        int displayId = getDisplayId();
+        boolean movedToAnotherDisplay =
+            RuntimeEnvironment.getApiLevel() >= O
+                && root != null
+                && root.getDisplayId() != displayId;
+        // Display#getSize reads the display override of the resources.
+        Configuration displayOverrideConfig =
+            WindowConfigurations.getDisplayOverrideConfiguration(displayId);
+        if (displayOverrideConfig != null || movedToAnotherDisplay) {
+          component.getResources().getDisplayAdjustments().setConfiguration(displayOverrideConfig);
+        }
+        if (movedToAnotherDisplay) {
+          reflector(org.robolectric.shadows.ActivityReflector.class, component)
+              .dispatchMovedToDisplay(displayId, newConfiguration);
+        }
+        component.onConfigurationChanged(newConfiguration);
+        if (root != null) {
+          if (RuntimeEnvironment.getApiLevel() <= N_MR1) {
+            ReflectionHelpers.callInstanceMethod(
+                root,
+                "updateConfiguration",
+                ClassParameter.from(Configuration.class, newConfiguration),
+                ClassParameter.from(boolean.class, false));
+          } else {
+            root.updateConfiguration(movedToAnotherDisplay ? displayId : Display.INVALID_DISPLAY);
+          }
+        }
+      });
 
       return this;
     } else {
