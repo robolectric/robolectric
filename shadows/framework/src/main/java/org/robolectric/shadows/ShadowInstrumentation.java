@@ -30,6 +30,8 @@ import android.content.Intent;
 import android.content.Intent.FilterComparison;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
@@ -264,7 +266,8 @@ public class ShadowInstrumentation {
     } else if (RuntimeEnvironment.getApiLevel() >= S_V2
         && !WindowConfigurations.isInMultiWindowMode(configuration)) {
       ShadowActivity shadowLaunchingActivity = Shadow.extract(launchingActivity);
-      if (shadowLaunchingActivity.getController() == null) {
+      if (shadowLaunchingActivity.getController() == null
+          || !supportsSplitScreen(launchingActivity)) {
         return;
       }
       // The launching activity enters split screen after it starts the activity, as on a device.
@@ -280,20 +283,35 @@ public class ShadowInstrumentation {
             topOrLeft));
   }
 
+  private static boolean supportsSplitScreen(Activity activity) {
+    try {
+      return WindowConfigurations.supportsSplitScreen(
+          activity.getPackageManager().getActivityInfo(activity.getComponentName(), 0),
+          activity.getWindowManager().getDefaultDisplay().getDisplayId(),
+          /* topOrLeft= */ true);
+    } catch (NameNotFoundException e) {
+      return false;
+    }
+  }
+
   /**
    * Returns how the configuration of an activity launched with the given intent on the given
-   * display differs from the global configuration if it was started adjacent to another activity,
-   * or null if it wasn't. Each adjacent launch applies to one activity.
+   * display differs from the global configuration if it was started adjacent to another activity
+   * and can be in split screen, or null otherwise. Each adjacent launch applies to one activity.
    */
   @Nullable
-  Configuration takeAdjacentLaunchOverrideConfiguration(Intent intent, int displayId) {
+  Configuration takeAdjacentLaunchOverrideConfiguration(
+      Intent intent, ActivityInfo activityInfo, int displayId) {
     synchronized (adjacentLaunches) {
       for (Iterator<AdjacentLaunch> it = adjacentLaunches.iterator(); it.hasNext(); ) {
         AdjacentLaunch adjacentLaunch = it.next();
         if (adjacentLaunch.displayId == displayId && adjacentLaunch.intent.filterEquals(intent)) {
           it.remove();
-          return WindowConfigurations.getSplitScreenOverrideConfiguration(
-              displayId, adjacentLaunch.topOrLeft);
+          return WindowConfigurations.supportsSplitScreen(
+                  activityInfo, displayId, adjacentLaunch.topOrLeft)
+              ? WindowConfigurations.getSplitScreenOverrideConfiguration(
+                  displayId, adjacentLaunch.topOrLeft)
+              : null;
         }
       }
     }

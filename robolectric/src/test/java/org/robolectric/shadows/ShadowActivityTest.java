@@ -2264,6 +2264,76 @@ public class ShadowActivityTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w411dp-h891dp-port-mdpi")
+  public void buildActivity_withLaunchBounds_whenNotResizeable_fillsTheDisplay() {
+    declareNotResizeable(NotResizeableActivity.class);
+
+    try (ActivityController<NotResizeableActivity> controller =
+        buildActivityInWindow(NotResizeableActivity.class, new Rect(0, 0, 300, 600)).setup()) {
+      assertThat(controller.get().isInMultiWindowMode()).isFalse();
+      assertThat(controller.get().getResources().getConfiguration().screenWidthDp).isEqualTo(411);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w411dp-h891dp-port-mdpi")
+  public void enterSplitScreen_whenNotResizeable_throws() {
+    declareNotResizeable(NotResizeableActivity.class);
+    ActivityController<NotResizeableActivity> controller =
+        Robolectric.buildActivity(NotResizeableActivity.class).setup();
+
+    assertThrows(IllegalStateException.class, () -> shadowOf(controller.get()).enterSplitScreen());
+    assertThrows(
+        IllegalStateException.class,
+        () -> shadowOf(controller.get()).setWindowBounds(new Rect(0, 0, 300, 600)));
+  }
+
+  @Test
+  @Config(minSdk = S, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void enterSplitScreen_whenNotResizeable_isAllowedOnALargeScreen() {
+    declareNotResizeable(NotResizeableActivity.class);
+    ActivityController<NotResizeableActivity> controller =
+        Robolectric.buildActivity(NotResizeableActivity.class).setup();
+
+    shadowOf(controller.get()).enterSplitScreen();
+
+    assertThat(controller.get().isInMultiWindowMode()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void buildActivity_withLaunchBounds_isAtLeastTheDefaultMinimalSize() {
+    try (ActivityController<Activity> controller =
+        buildActivityInWindow(Activity.class, new Rect(100, 100, 150, 150)).setup()) {
+      assertThat(windowBounds(controller.get())).isEqualTo(new Rect(100, 100, 320, 320));
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void buildActivity_withLaunchBounds_isAtLeastTheMinimalSizeTheActivityDeclares() {
+    declareMinimalSize(MinimalSizeActivity.class, 400, 300);
+
+    try (ActivityController<MinimalSizeActivity> controller =
+        buildActivityInWindow(MinimalSizeActivity.class, new Rect(100, 100, 150, 150)).setup()) {
+      assertThat(windowBounds(controller.get())).isEqualTo(new Rect(100, 100, 500, 400));
+    }
+  }
+
+  @Test
+  @Config(
+      minSdk = S,
+      maxSdk = VERSION_CODES.VANILLA_ICE_CREAM,
+      qualifiers = "w411dp-h891dp-port-mdpi")
+  public void enterSplitScreen_onASmallScreen_whenTheMinimalSizeDoesNotFit_throws() {
+    declareMinimalSize(MinimalSizeActivity.class, 300, 500);
+    ActivityController<MinimalSizeActivity> controller =
+        Robolectric.buildActivity(MinimalSizeActivity.class).setup();
+
+    assertThrows(IllegalStateException.class, () -> shadowOf(controller.get()).enterSplitScreen());
+  }
+
+  @Test
   @Config(minSdk = O)
   public void buildActivity_optionBundleWithInvalidNonDefaultDisplaySet_launchesOnDefaultDisplay() {
     try (ActivityController<Activity> controller =
@@ -2659,6 +2729,23 @@ public class ShadowActivityTest {
         .getInsets(WindowInsets.Type.captionBar());
   }
 
+  private static void declareNotResizeable(Class<? extends Activity> activityClass) {
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.name = activityClass.getName();
+    activityInfo.packageName = getApplication().getPackageName();
+    activityInfo.resizeMode = ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
+    shadowOf(getApplication().getPackageManager()).addOrUpdateActivity(activityInfo);
+  }
+
+  private static void declareMinimalSize(
+      Class<? extends Activity> activityClass, int minWidth, int minHeight) {
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.name = activityClass.getName();
+    activityInfo.packageName = getApplication().getPackageName();
+    activityInfo.windowLayout = new ActivityInfo.WindowLayout(0, 0, 0, 0, 0, minWidth, minHeight);
+    shadowOf(getApplication().getPackageManager()).addOrUpdateActivity(activityInfo);
+  }
+
   private static void declareOrientation(
       Class<? extends Activity> activityClass, int screenOrientation) {
     ActivityInfo activityInfo = new ActivityInfo();
@@ -2697,6 +2784,12 @@ public class ShadowActivityTest {
       events.add("onResume");
     }
   }
+
+  /** An activity that isn't resizeable. */
+  public static class NotResizeableActivity extends Activity {}
+
+  /** An activity that declares its minimal size. */
+  public static class MinimalSizeActivity extends Activity {}
 
   /** Counts how often it is created. */
   public static class OrientationActivity extends Activity {

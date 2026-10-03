@@ -312,13 +312,72 @@ public final class WindowConfigurations {
 
   /**
    * Returns how the configuration of an activity in a freeform window with the given bounds on the
-   * given display differs from the global configuration. Returns null for a display that does not
-   * exist, and before P.
+   * given display differs from the global configuration. As the window manager does, the window is
+   * at least as large as the activity's minimal size, or as the default one. Returns null for a
+   * display that does not exist, and before P.
    */
   @Nullable
-  public static Configuration getFreeformOverrideConfiguration(int displayId, Rect bounds) {
+  public static Configuration getFreeformOverrideConfiguration(
+      int displayId, Rect bounds, ActivityInfo activityInfo) {
+    DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    if (displayInfo == null) {
+      return null;
+    }
+    int defaultMinimalSize =
+        Math.round(
+            DEFAULT_MINIMAL_SIZE_RESIZABLE_TASK_DP
+                * displayInfo.logicalDensityDpi
+                / (float) DisplayMetrics.DENSITY_DEFAULT);
+    ActivityInfo.WindowLayout windowLayout = activityInfo.windowLayout;
+    int minWidth =
+        windowLayout != null && windowLayout.minWidth > 0
+            ? windowLayout.minWidth
+            : defaultMinimalSize;
+    int minHeight =
+        windowLayout != null && windowLayout.minHeight > 0
+            ? windowLayout.minHeight
+            : defaultMinimalSize;
+    Rect windowBounds = new Rect(bounds);
+    windowBounds.right = Math.max(windowBounds.right, windowBounds.left + minWidth);
+    windowBounds.bottom = Math.max(windowBounds.bottom, windowBounds.top + minHeight);
     return getWindowOverrideConfiguration(
-        displayId, bounds, WindowConfiguration.WINDOWING_MODE_FREEFORM);
+        displayId, windowBounds, WindowConfiguration.WINDOWING_MODE_FREEFORM);
+  }
+
+  /**
+   * Returns whether the window manager lets the activity be in multi-window mode on the given
+   * display: a resizeable activity, or since S any activity on a large screen.
+   */
+  public static boolean supportsMultiWindow(ActivityInfo activityInfo, int displayId) {
+    return ActivityInfo.isResizeableMode(activityInfo.resizeMode)
+        || (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S && isLargeScreen(displayId));
+  }
+
+  /**
+   * Returns whether the window manager lets the activity be in the given half of split screen on
+   * the given display: it supports multi-window mode, and its minimal size fits in the half where
+   * the device respects it, which by default is on a small screen from S to V.
+   */
+  public static boolean supportsSplitScreen(
+      ActivityInfo activityInfo, int displayId, boolean topOrLeft) {
+    if (!supportsMultiWindow(activityInfo, displayId)) {
+      return false;
+    }
+    ActivityInfo.WindowLayout windowLayout = activityInfo.windowLayout;
+    int respectsMinimalSize =
+        getIntegerResource("config_respectsActivityMinWidthHeightMultiWindow", -1);
+    if (windowLayout == null
+        || respectsMinimalSize < 0
+        || (respectsMinimalSize == 0 && isLargeScreen(displayId))) {
+      return true;
+    }
+    Configuration splitScreenOverrideConfig =
+        getSplitScreenOverrideConfiguration(displayId, topOrLeft);
+    if (splitScreenOverrideConfig == null) {
+      return true;
+    }
+    Rect bounds = splitScreenOverrideConfig.windowConfiguration.getBounds();
+    return windowLayout.minWidth <= bounds.width() && windowLayout.minHeight <= bounds.height();
   }
 
   /**
@@ -427,7 +486,8 @@ public final class WindowConfigurations {
     Configuration activityConfiguration = activity.getResources().getConfiguration();
     WindowConfiguration windowConfiguration = activityConfiguration.windowConfiguration;
     if (windowConfiguration.getWindowingMode() == WindowConfiguration.WINDOWING_MODE_FREEFORM) {
-      return getFreeformOverrideConfiguration(displayId, windowConfiguration.getBounds());
+      return getWindowOverrideConfiguration(
+          displayId, windowConfiguration.getBounds(), WindowConfiguration.WINDOWING_MODE_FREEFORM);
     }
     if (isInSplitScreen(activityConfiguration)) {
       return getSplitScreenOverrideConfiguration(
@@ -615,6 +675,12 @@ public final class WindowConfigurations {
             System.getProperty("robolectric.deviceconfig.useMaxBounds", "true"))) {
       windowConfiguration.setMaxBounds(displayBounds);
     }
+  }
+
+  private static int getIntegerResource(String name, int defaultValue) {
+    Resources resources = Resources.getSystem();
+    int id = resources.getIdentifier(name, "integer", "android");
+    return id != 0 ? resources.getInteger(id) : defaultValue;
   }
 
   private static float getFloatResource(String name, float defaultValue) {
