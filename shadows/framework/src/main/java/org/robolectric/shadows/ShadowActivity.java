@@ -53,6 +53,7 @@ import android.os.Parcel;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
 import android.util.DisplayMetrics;
+import android.util.Rational;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -287,6 +288,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       reflector(ActivityReflector.class, realActivity).getCurrentConfig().setTo(activityConfig);
       if (WindowConfigurations.isInMultiWindowMode(activityConfig)) {
         inMultiWindowMode = true;
+      }
+      if (WindowConfigurations.isInPictureInPictureMode(activityConfig)) {
+        isInPictureInPictureMode = true;
       }
     }
 
@@ -1127,7 +1131,19 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       configuration.windowConfiguration.setWindowingMode(
           WindowConfiguration.WINDOWING_MODE_FULLSCREEN);
     }
+    boolean wasInPictureInPictureMode =
+        WindowConfigurations.isInPictureInPictureMode(
+            realActivity.getResources().getConfiguration());
     controller.configurationChange(configuration, displayMetrics);
+    Activity activity = (Activity) controller.get();
+    boolean isInPictureInPictureMode = WindowConfigurations.isInPictureInPictureMode(configuration);
+    Shadow.<ShadowActivity>extract(activity).isInPictureInPictureMode = isInPictureInPictureMode;
+    // As on a device, an activity is paused in picture-in-picture mode, and resumed when it leaves.
+    if (isInPictureInPictureMode && activity.isResumed()) {
+      controller.topActivityResumed(false).pause();
+    } else if (wasInPictureInPictureMode && !isInPictureInPictureMode && !activity.isResumed()) {
+      controller.resume().topActivityResumed(true);
+    }
   }
 
   private int getDisplayId() {
@@ -1146,13 +1162,39 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation(minSdk = N)
   protected void enterPictureInPictureMode() {
-    isInPictureInPictureMode = true;
+    enterPictureInPictureMode((Rational) null);
   }
 
   @Implementation(minSdk = O)
   protected boolean enterPictureInPictureMode(PictureInPictureParams params) {
-    isInPictureInPictureMode = true;
+    enterPictureInPictureMode((Rational) ReflectionHelpers.getField(params, "mAspectRatio"));
     return true;
+  }
+
+  /**
+   * Puts the activity in picture-in-picture mode. As the window manager does, once the activity's
+   * current work is done it gets a pinned window, receives {@link
+   * Activity#onPictureInPictureModeChanged} and is paused. {@link #setWindowBounds} with null
+   * bounds makes its window fill the display again, as when the user expands it.
+   */
+  private void enterPictureInPictureMode(@Nullable Rational aspectRatio) {
+    isInPictureInPictureMode = true;
+    if (controller != null
+        && RuntimeEnvironment.getApiLevel() >= P
+        && ShadowLooper.looperMode() != LooperMode.Mode.LEGACY) {
+      new Handler(Looper.getMainLooper())
+          .post(
+              () -> {
+                if (isInPictureInPictureMode
+                    && controller.get() == realActivity
+                    && !realActivity.isFinishing()
+                    && !realActivity.isDestroyed()) {
+                  changeWindow(
+                      WindowConfigurations.getPictureInPictureOverrideConfiguration(
+                          getDisplayId(), aspectRatio));
+                }
+              });
+    }
   }
 
   @Implementation

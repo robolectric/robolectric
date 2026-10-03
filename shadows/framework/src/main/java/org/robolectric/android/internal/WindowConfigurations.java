@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
+import android.util.Rational;
 import android.view.Display;
 import android.view.DisplayInfo;
 import java.util.HashMap;
@@ -34,6 +35,13 @@ public final class WindowConfigurations {
 
   /** The smallest width of a large screen, as the window manager defines it. */
   private static final int LARGE_SCREEN_SMALLEST_WIDTH_DP = 600;
+
+  // How the system sizes and places a picture-in-picture window, as its resources configure.
+  private static final float PICTURE_IN_PICTURE_SIZE_PERCENT = 0.23f;
+  private static final int PICTURE_IN_PICTURE_MIN_SIZE_DP = 108;
+  private static final int PICTURE_IN_PICTURE_EDGE_INSET_DP = 16;
+
+  private static final float PICTURE_IN_PICTURE_DEFAULT_ASPECT_RATIO = 16f / 9;
 
   private static final Map<Integer, Float> splitScreenDividerPositions = new HashMap<>();
   private static final Map<Integer, Boolean> ignoreOrientationRequests = new HashMap<>();
@@ -314,6 +322,50 @@ public final class WindowConfigurations {
   }
 
   /**
+   * Returns how the configuration of an activity in picture-in-picture mode on the given display
+   * differs from the global configuration: its pinned window has the size the system gives a window
+   * with the given aspect ratio, or with the default one if it is null, in the bottom right corner
+   * of the display. Returns null for a display that does not exist, and before P.
+   */
+  @Nullable
+  public static Configuration getPictureInPictureOverrideConfiguration(
+      int displayId, @Nullable Rational requestedAspectRatio) {
+    DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    if (displayInfo == null) {
+      return null;
+    }
+    float aspectRatio =
+        requestedAspectRatio != null
+            ? requestedAspectRatio.floatValue()
+            : PICTURE_IN_PICTURE_DEFAULT_ASPECT_RATIO;
+    float density = displayInfo.logicalDensityDpi / (float) DisplayMetrics.DENSITY_DEFAULT;
+    int width = displayInfo.logicalWidth;
+    int height = displayInfo.logicalHeight;
+    // As the system's PipBoundsAlgorithm does, the shorter edge is a fraction of the display's.
+    int minSize =
+        (int)
+            Math.max(
+                PICTURE_IN_PICTURE_MIN_SIZE_DP * density,
+                Math.min(width, height) * PICTURE_IN_PICTURE_SIZE_PERCENT);
+    int pipWidth = aspectRatio <= 1 ? minSize : Math.round(minSize * aspectRatio);
+    int pipHeight = aspectRatio <= 1 ? Math.round(minSize / aspectRatio) : minSize;
+    int edgeInset = Math.round(PICTURE_IN_PICTURE_EDGE_INSET_DP * density);
+    int right = width - edgeInset;
+    int bottom = height - edgeInset;
+    return getWindowOverrideConfiguration(
+        displayId,
+        new Rect(right - pipWidth, bottom - pipHeight, right, bottom),
+        WindowConfiguration.WINDOWING_MODE_PINNED);
+  }
+
+  /** Returns whether an activity with the given configuration is in picture-in-picture mode. */
+  public static boolean isInPictureInPictureMode(Configuration configuration) {
+    return RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P
+        && configuration.windowConfiguration.getWindowingMode()
+            == WindowConfiguration.WINDOWING_MODE_PINNED;
+  }
+
+  /**
    * Returns how the configuration of an activity in the system's split screen differs from the
    * global configuration. As the system does, the display is split along its longer side by a
    * divider, and the activity is in its top or left half, or in its bottom or right half. Returns
@@ -363,8 +415,8 @@ public final class WindowConfigurations {
 
   /**
    * Returns how the configuration of the activity differs from the global configuration if it keeps
-   * its window: a freeform window keeps its bounds, split screen its half of the display, and a
-   * letterbox is recomputed for the display. Returns null if its window fills the display.
+   * its window: a freeform window keeps its bounds, and split screen, a pinned window and a
+   * letterbox are recomputed for the display. Returns null if its window fills the display.
    */
   @Nullable
   public static Configuration getCurrentWindowOverrideConfiguration(Activity activity) {
@@ -380,6 +432,11 @@ public final class WindowConfigurations {
     if (isInSplitScreen(activityConfiguration)) {
       return getSplitScreenOverrideConfiguration(
           displayId, isInTopOrLeftOfSplitScreen(activityConfiguration));
+    }
+    if (isInPictureInPictureMode(activityConfiguration)) {
+      Rect bounds = windowConfiguration.getBounds();
+      return getPictureInPictureOverrideConfiguration(
+          displayId, new Rational(bounds.width(), bounds.height()));
     }
     return getLetterboxOverrideConfiguration(
         activity.getApplicationInfo(), activity.getRequestedOrientation(), displayId);
@@ -397,13 +454,14 @@ public final class WindowConfigurations {
 
   /**
    * Returns whether an activity with the given configuration is in multi-window mode: in a freeform
-   * window or in split screen.
+   * window, in split screen or in picture-in-picture mode.
    */
   public static boolean isInMultiWindowMode(Configuration configuration) {
     return RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P
         && (configuration.windowConfiguration.getWindowingMode()
                 == WindowConfiguration.WINDOWING_MODE_FREEFORM
-            || isInSplitScreen(configuration));
+            || isInSplitScreen(configuration)
+            || isInPictureInPictureMode(configuration));
   }
 
   /**
