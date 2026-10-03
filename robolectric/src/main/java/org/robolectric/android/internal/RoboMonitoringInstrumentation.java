@@ -3,6 +3,7 @@ package org.robolectric.android.internal;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.extract;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.Application;
@@ -43,6 +44,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ActivityReflector;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowLooper;
@@ -427,8 +429,16 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
     for (ActivityController<?> controller : controllers) {
       if (createdActivities.contains(controller)) {
         if (System.getProperty("robolectric.configurationChangeFix", "true").equals("true")) {
+          Activity activity = controller.get();
+          if (reflector(ActivityReflector.class, activity)
+                  .getCurrentConfig()
+                  .diff(WindowConfigurations.getActivityConfiguration(activity, newConfig))
+              == 0) {
+            // The activity's configuration doesn't change, or it already received the change.
+            continue;
+          }
           // An activity on another display keeps that display's size and density.
-          int displayId = controller.get().getWindowManager().getDefaultDisplay().getDisplayId();
+          int displayId = activity.getWindowManager().getDefaultDisplay().getDisplayId();
           controller.configurationChange(
               WindowConfigurations.getDisplayConfiguration(displayId, newConfig),
               WindowConfigurations.getDisplayMetrics(displayId, newMetrics));
