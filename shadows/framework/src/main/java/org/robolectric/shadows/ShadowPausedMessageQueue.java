@@ -74,35 +74,39 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   protected void __constructor__(boolean quitAllowed) {
     long ptr = nativeQueueRegistry.register(this);
     reflector(MessageQueueReflector.class, realQueue).setPtr(ptr);
-    clockListener =
-        advancedBy -> {
-          synchronized (poller) {
-            if (isPolling) {
-              pollTimeout -= advancedBy.toMillis();
-              // only wake up the Looper thread if needed to reduce contention if many
-              // Looper threads are active
-              if (pollTimeout <= 0) {
-                nativeWake(ptr);
+    if (ShadowLooper.looperMode() != LooperMode.Mode.RUNNING) {
+      clockListener =
+          advancedBy -> {
+            synchronized (poller) {
+              if (isPolling) {
+                pollTimeout -= advancedBy.toMillis();
+                // only wake up the Looper thread if needed to reduce contention if many
+                // Looper threads are active
+                if (pollTimeout <= 0) {
+                  nativeWake(ptr);
+                }
+              } else {
+                // There can be a race condition between the clock advances and a new delayed
+                // message getting posted.
+                // To protect against this, ensure the next call to nativePollOnce does not block.
+                // In the worst case this will just result in an extra no-op loopOnce for the Looper
+                // thread
+                pendingWake = true;
               }
-            } else {
-              // There can be a race condition between the clock advances and a new delayed
-              // message getting posted.
-              // To protect against this, ensure the next call to nativePollOnce does not block.
-              // In the worst case this will just result in an extra no-op loopOnce for the Looper
-              // thread
-              pendingWake = true;
             }
-          }
-          updateListener();
-        };
+            updateListener();
+          };
 
-    ShadowPausedSystemClock.addStaticListener(clockListener);
+      ShadowPausedSystemClock.addStaticListener(clockListener);
+    }
   }
 
   @Implementation
   protected static void nativeDestroy(long ptr) {
     ShadowPausedMessageQueue q = nativeQueueRegistry.unregister(ptr);
-    ShadowPausedSystemClock.removeListener(q.clockListener);
+    if (q.clockListener != null) {
+      ShadowPausedSystemClock.removeListener(q.clockListener);
+    }
   }
 
   @Implementation
@@ -114,6 +118,8 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
           // Calling with pending wake returns immediately
         } else if (timeoutMillis == 0) {
           // Calling epoll_wait() with 0 returns immediately
+        } else if (timeoutMillis > 0 && ShadowLooper.looperMode() == LooperMode.Mode.RUNNING) {
+          poller.wait(timeoutMillis);
         } else {
           // store timeout so ClockListener can notify when clock
           // advances sufficiently
@@ -234,7 +240,9 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   @Filter(order = Order.AFTER)
   protected void quit(boolean allowed) {
-    ShadowPausedSystemClock.removeListener(clockListener);
+    if (clockListener != null) {
+      ShadowPausedSystemClock.removeListener(clockListener);
+    }
   }
 
   @Filter(order = Order.AFTER)

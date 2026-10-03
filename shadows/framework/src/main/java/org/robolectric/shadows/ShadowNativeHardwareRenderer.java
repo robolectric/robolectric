@@ -29,6 +29,7 @@ import java.io.FileDescriptor;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
@@ -198,6 +199,10 @@ public class ShadowNativeHardwareRenderer {
 
   @Implementation
   protected int syncAndDrawFrame(FrameInfo frameInfo) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.RUNNING) {
+      return reflector(HardwareRendererReflector.class, realHardwareRenderer)
+          .syncAndDrawFrame(frameInfo);
+    }
 
     // 'offset' represents the difference between the host's real monotonic clock
     // (System.nanoTime())
