@@ -201,15 +201,19 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     //  properly.
     int launchDisplayId =
         displayId == Display.INVALID_DISPLAY ? Display.DEFAULT_DISPLAY : displayId;
+    // An activity that can't be in multi-window mode fills its display, whatever bounds it is
+    // launched with.
     Rect launchBounds =
-        activityOptions != null && RuntimeEnvironment.getApiLevel() >= P
+        activityOptions != null
+                && RuntimeEnvironment.getApiLevel() >= P
+                && WindowConfigurations.supportsMultiWindow(activityInfo, launchDisplayId)
             ? ActivityOptions.fromBundle(activityOptions).getLaunchBounds()
             : null;
     // An activity started adjacent to another launches in the other half of split screen.
     Configuration adjacentLaunchOverrideConfig =
         overrideConfig == null
             ? Shadow.<ShadowInstrumentation>extract(instrumentation)
-                .takeAdjacentLaunchOverrideConfiguration(intent, launchDisplayId)
+                .takeAdjacentLaunchOverrideConfiguration(intent, activityInfo, launchDisplayId)
             : null;
     // An activity that fills its display launches in the orientation it declares: its display
     // rotates, or it is letterboxed on a display that ignores orientation requests.
@@ -244,7 +248,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
                   ? adjacentLaunchOverrideConfig
                   : launchBounds != null
                       ? WindowConfigurations.getFreeformOverrideConfiguration(
-                          launchDisplayId, launchBounds)
+                          launchDisplayId, launchBounds, activityInfo)
                       : letterboxOverrideConfig != null
                           ? letterboxOverrideConfig
                           : WindowConfigurations.getDisplayOverrideConfiguration(displayId);
@@ -1058,12 +1062,23 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * if it doesn't handle the change. An activity that shares the application's context, as one
    * launched without {@link ActivityOptions#setLaunchBounds} does, can only enter a window by being
    * recreated. Requires P or later.
+   *
+   * @throws IllegalStateException if the window manager wouldn't put the activity in a freeform
+   *     window: it isn't resizeable, and isn't on a large screen on S or later.
    */
   public void setWindowBounds(@Nullable Rect bounds) {
+    if (bounds == null || RuntimeEnvironment.getApiLevel() < P) {
+      changeWindow(null);
+      return;
+    }
+    int displayId = getDisplayId();
+    ActivityInfo activityInfo = lookUpActivityInfo();
+    if (!WindowConfigurations.supportsMultiWindow(activityInfo, displayId)) {
+      throw new IllegalStateException(
+          "The activity isn't resizeable, so it can't be in a freeform window on this display");
+    }
     changeWindow(
-        bounds != null
-            ? WindowConfigurations.getFreeformOverrideConfiguration(getDisplayId(), bounds)
-            : null);
+        WindowConfigurations.getFreeformOverrideConfiguration(displayId, bounds, activityInfo));
   }
 
   /**
@@ -1076,6 +1091,10 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * launches in the other half, and {@link ShadowDisplayManager#setSplitScreenDividerPosition}
    * moves the divider between them. The activity receives the change as {@link #setWindowBounds}
    * describes. Requires P or later.
+   *
+   * @throws IllegalStateException if the window manager wouldn't put the activity in split screen:
+   *     it isn't resizeable and isn't on a large screen on S or later, or its minimal size doesn't
+   *     fit in its half of a display that respects it.
    */
   public void enterSplitScreen() {
     int displayId = getDisplayId();
@@ -1088,8 +1107,25 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
         topOrLeftIsTaken = true;
       }
     }
+    if (RuntimeEnvironment.getApiLevel() >= P
+        && !WindowConfigurations.supportsSplitScreen(
+            lookUpActivityInfo(), displayId, !topOrLeftIsTaken)) {
+      throw new IllegalStateException(
+          "The activity can't be in split screen on this display: it isn't resizeable, or its"
+              + " minimal size doesn't fit");
+    }
     changeWindow(
         WindowConfigurations.getSplitScreenOverrideConfiguration(displayId, !topOrLeftIsTaken));
+  }
+
+  private ActivityInfo lookUpActivityInfo() {
+    try {
+      return realActivity
+          .getPackageManager()
+          .getActivityInfo(realActivity.getComponentName(), /* flags= */ 0);
+    } catch (NameNotFoundException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   private void changeWindow(@Nullable Configuration windowOverrideConfig) {
