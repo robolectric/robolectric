@@ -113,6 +113,40 @@ public class MultiDisplayPolicyTests extends MultiDisplayTestBase {
         });
   }
 
+  /** Resizing one display must not notify an activity on another display. */
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  @SdkSuppress(minSdkVersion = Build.VERSION_CODES.Q)
+  public void testDisplayResize_doesNotChangeAnotherDisplay() {
+    final VirtualDisplaySession firstSession = createManagedVirtualDisplaySession();
+    final Display firstDisplay = firstSession.createDisplay();
+    final Display secondDisplay = createManagedVirtualDisplaySession().createDisplay();
+    final ActivityScenario<ResizeableActivity> first =
+        launchActivityOnDisplay(ResizeableActivity.class, firstDisplay.getDisplayId());
+    waitAndAssertResumedActivityOnDisplay(
+        first, firstDisplay.getDisplayId(), "First activity must be resumed");
+    final ActivityScenario<TestActivity> second =
+        launchActivityOnDisplay(TestActivity.class, secondDisplay.getDisplayId());
+    waitAndAssertResumedActivityOnDisplay(
+        second, secondDisplay.getDisplayId(), "Second activity must be resumed");
+    final ResizeableActivity firstActivity = getActivity(first);
+    final TestActivity secondActivity = getActivity(second);
+    final int firstChanges = firstActivity.mConfigurationChangedCount;
+    final SizeInfo secondSize = getLastReportedSizesForActivity(second);
+
+    firstSession.resizeDisplay();
+
+    waitForOrFail(
+        "the activity on the resized display to receive the change",
+        () -> firstActivity.mConfigurationChangedCount > firstChanges);
+    assertSame(secondActivity, getActivity(second));
+    final SizeInfo updatedSize = getLastReportedSizesForActivity(second);
+    assertEquals(secondSize.displayWidth, updatedSize.displayWidth);
+    assertEquals(secondSize.displayHeight, updatedSize.displayHeight);
+    assertEquals(secondSize.widthDp, updatedSize.widthDp);
+    assertEquals(secondSize.heightDp, updatedSize.heightDp);
+  }
+
   /**
    * Tests that the update of display metrics relaunches an activity that doesn't handle the change.
    */
