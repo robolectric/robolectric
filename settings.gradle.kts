@@ -73,6 +73,7 @@ include(
   ":resources",
   ":robolectric",
   ":runner:common",
+  ":runner:junit-jupiter",
   ":sandbox",
   ":shadowapi",
   ":shadows:framework",
