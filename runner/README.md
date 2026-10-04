@@ -117,3 +117,7 @@ RobolectricSession.create().use { session ->
 application, and closing it tears the application down. To run class-level code
 first, `lease` a sandbox, `prepare` it, and open each test's environment from
 it. The API targets Java 11 and Kotlin 2.2 metadata.
+
+The simulator opens an environment with an APK and native graphics.
+`android.post` reaches its main looper while the simulator's loop owns the main
+thread.

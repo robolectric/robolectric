@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl
 import org.robolectric.runner.common.shared.SharedType
@@ -118,6 +119,20 @@ class RobolectricSessionTest {
     val failure = assertThrows<IllegalStateException> { session.plan(unknown) }
 
     assertThat(failure).hasMessageThat().contains("sdk=1")
+  }
+
+  @Test
+  fun `a planned configuration is set up with the modes it is given`() {
+    for (mode in listOf(GraphicsMode.Mode.NATIVE, GraphicsMode.Mode.LEGACY)) {
+      session.open(session.plan(SDK_34, mode).single()).use { android ->
+        assertThat(AndroidProbe.read<String>(android, "graphicsMode")).isEqualTo(mode.name)
+      }
+    }
+  }
+
+  @Test
+  fun `a configuration can't be planned with a mode that isn't one of Robolectric`() {
+    assertThrows<IllegalArgumentException> { session.plan(SDK_34, Thread.State.NEW) }
   }
 
   @Test

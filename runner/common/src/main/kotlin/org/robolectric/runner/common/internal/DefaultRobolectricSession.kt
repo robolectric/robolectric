@@ -1,6 +1,8 @@
 package org.robolectric.runner.common.internal
 
 import java.lang.reflect.Method
+import java.net.URLClassLoader
+import java.nio.file.Path
 import java.util.Locale
 import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
@@ -23,15 +25,26 @@ internal class DefaultRobolectricSession(
   sharedPackages: List<String>,
   /** The listener that the session's sandboxes tell about environments. */
   val listener: RobolectricSessionListener?,
+  classpath: List<Path>,
+  apk: Path?,
   shareSandboxes: Boolean,
 ) : RobolectricSession {
-  private val injector = Injectors.create(properties)
+  // The entries of a class path of its own. Robolectric's plugins are found in them too, as the
+  // simulator found them in the jars of an app.
+  private val entries: URLClassLoader? =
+    classpath
+      .takeIf { it.isNotEmpty() }
+      ?.let { paths ->
+        val urls = paths.map { it.toUri().toURL() }.toTypedArray()
+        URLClassLoader(urls, Injectors.contextClassLoader())
+      }
+  private val injector = Injectors.create(properties, entries)
   /** Tells which sandbox fits a configuration, and configures sandboxes. */
-  val setup = SandboxSetup(injector, sharedPackages, false)
+  val setup = SandboxSetup(injector, sharedPackages, entries?.findResource(KOTLIN_CLASS) != null)
 
-  private val planner = Planner(injector, properties)
+  private val planner = Planner(injector, properties, entries, apk)
   private val sandboxes: Sandboxes =
-    if (shareSandboxes) SharedSandboxPool(injector) else SandboxPool(injector)
+    if (shareSandboxes) SharedSandboxPool(injector) else SandboxPool(injector, classpath)
   private val sandboxKeys = ConcurrentHashMap<EnvironmentConfiguration, SandboxKey>()
   @Volatile private var closed = false
 
@@ -143,6 +156,12 @@ internal class DefaultRobolectricSession(
       synchronized(applicationStateLock) { leases.toList() }.forEach { it.close() }
     } finally {
       sandboxes.shutdown()
+      entries?.close()
     }
+  }
+
+  private companion object {
+    /** A class of Kotlin's standard library that all Kotlin code uses. */
+    private const val KOTLIN_CLASS = "kotlin/jvm/internal/Intrinsics.class"
   }
 }

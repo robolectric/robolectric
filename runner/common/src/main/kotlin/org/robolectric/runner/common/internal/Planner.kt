@@ -2,6 +2,7 @@ package org.robolectric.runner.common.internal
 
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import java.nio.file.Path
 import java.util.Properties
 import org.robolectric.annotation.Config
 import org.robolectric.internal.bytecode.SandboxConfig
@@ -15,10 +16,19 @@ import org.robolectric.util.inject.Injector
  * configuration and selects SDKs with the [SdkPicker]. Nothing is set up for that.
  */
 @OptIn(ExperimentalRunnerApi::class)
-internal class Planner(injector: Injector, private val properties: Properties) {
+internal class Planner(
+  injector: Injector,
+  private val properties: Properties,
+  private val plugins: ClassLoader?,
+  apk: Path?,
+) {
   private val sdkPicker = injector.getInstance(SdkPicker::class.java)
   private val configurations = Configurations(injector)
   private val manifests = Manifests()
+
+  // The app of the session if it is given as an APK, in place of the one that Robolectric finds
+  // for a test.
+  private val app = apk?.let { manifests.of(it) }
 
   // Which SDKs tests run on doesn't limit what a tool plans, so the picker for that doesn't know
   // of the property.
@@ -28,7 +38,7 @@ internal class Planner(injector: Injector, private val properties: Properties) {
       unrestricted.setProperty(it, properties.getProperty(it))
     }
     unrestricted.remove(ENABLED_SDKS)
-    Injectors.create(unrestricted).getInstance(SdkPicker::class.java)
+    Injectors.create(unrestricted, plugins).getInstance(SdkPicker::class.java)
   }
 
   /** Returns the environments of a test: one for each SDK that is selected for it. */
@@ -44,8 +54,8 @@ internal class Planner(injector: Injector, private val properties: Properties) {
   }
 
   /**
-   * Returns the environments for the global configuration with the given one applied on top of it,
-   * for use without a test.
+   * Returns the environments for the global configuration with the given one and the given modes
+   * applied on top of it, for use without a test.
    */
   fun plan(config: Config, modes: List<Enum<*>>): List<Configuration> =
     plan(configurations.with(config, modes), TOOL_NAME, unrestrictedSdkPicker, emptyList())
@@ -62,7 +72,7 @@ internal class Planner(injector: Injector, private val properties: Properties) {
     picker: SdkPicker,
     instrumentedPackages: List<String>,
   ): List<Configuration> {
-    val manifest = manifests.get(configuration.get(Config::class.java))
+    val manifest = app ?: manifests.get(configuration.get(Config::class.java))
     // An SDK that can't run on this JVM is not selected, as the test runner skips tests on it.
     return picker
       .selectSdks(configuration, manifest)

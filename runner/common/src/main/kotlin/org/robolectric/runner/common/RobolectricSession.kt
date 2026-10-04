@@ -1,6 +1,7 @@
 package org.robolectric.runner.common
 
 import java.lang.reflect.Method
+import java.nio.file.Path
 import java.util.Properties
 import org.robolectric.annotation.Config
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration
@@ -114,6 +115,8 @@ public interface RobolectricSession : AutoCloseable {
   public class Builder internal constructor() {
     private var properties: Properties = System.getProperties()
     private val sharedPackages = mutableListOf<String>()
+    private val classpath = mutableListOf<Path>()
+    private var apk: Path? = null
     private var listener: RobolectricSessionListener? = null
     private var shareSandboxes = false
 
@@ -135,6 +138,20 @@ public interface RobolectricSession : AutoCloseable {
       sharedPackages.add(packageName)
     }
 
+    /**
+     * Adds jars and directories with classes and resources, which the sandboxes use before those of
+     * the class path: for an app whose classes are not on the class path. Robolectric's plugins are
+     * found in them too. If they have Kotlin's standard library, the sandboxes load it from them,
+     * in place of sharing that of the JVM.
+     */
+    public fun classpath(vararg entries: Path): Builder = apply { classpath.addAll(entries) }
+
+    /**
+     * Sets the app that the environments are set up with, as its APK, with its manifest and its
+     * resources. The default is the app that Robolectric finds for a test: that of the build.
+     */
+    public fun apk(apk: Path): Builder = apply { this.apk = apk }
+
     /** Sets the listener that is told what the session does. */
     public fun listener(listener: RobolectricSessionListener): Builder = apply {
       this.listener = listener
@@ -152,7 +169,7 @@ public interface RobolectricSession : AutoCloseable {
      * after the other. Closing the session doesn't shut the sandboxes down.
      *
      * The sandboxes are the same for every session, so a session that shares them can't change what
-     * they load, with [sharePackage].
+     * they load, with [sharePackage] or [classpath].
      */
     public fun shareSandboxes(): Builder = apply { shareSandboxes = true }
 
@@ -160,16 +177,18 @@ public interface RobolectricSession : AutoCloseable {
      * Creates the session.
      *
      * @throws IllegalStateException if the session [shares sandboxes][shareSandboxes] and has
-     *   shared packages of its own
+     *   shared packages or a class path of its own
      */
     public fun build(): RobolectricSession {
-      check(!shareSandboxes || sharedPackages.isEmpty()) {
-        "A session that shares sandboxes can't have shared packages of its own"
+      check(!shareSandboxes || (sharedPackages.isEmpty() && classpath.isEmpty())) {
+        "A session that shares sandboxes can't have shared packages or a class path of its own"
       }
       return DefaultRobolectricSession(
         properties,
         sharedPackages.toList(),
         listener,
+        classpath.toList(),
+        apk,
         shareSandboxes,
       )
     }

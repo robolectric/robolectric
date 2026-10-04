@@ -4,6 +4,7 @@ plugins { alias(libs.plugins.robolectric.java.module) }
 
 dependencies {
   testImplementation(project(":simulator"))
+  testImplementation(project(":runner:common"))
   testImplementation(libs.junit4)
   testImplementation(libs.truth)
   testImplementation(libs.guava)

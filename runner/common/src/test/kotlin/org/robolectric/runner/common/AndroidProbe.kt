@@ -17,6 +17,8 @@ class AndroidProbe {
 
   fun qualifiers(): String = RuntimeEnvironment.getQualifiers()
 
+  fun packageName(): String = RuntimeEnvironment.getApplication().packageName
+
   fun graphicsMode(): String = ConfigurationRegistry.get(GraphicsMode.Mode::class.java).name
 
   fun isOnMainThread(): Boolean = Looper.getMainLooper().thread === Thread.currentThread()
