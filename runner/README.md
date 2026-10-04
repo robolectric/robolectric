@@ -8,6 +8,7 @@ artifacts.
 | ------ | -------- | ------- |
 | `:runner:junit-jupiter` | `runner-junit-jupiter` | JUnit Platform engine and Jupiter extension |
 | `:runner:kotest` | `runner-kotest` | Kotest extension |
+| `:runner:kotest-gradle-plugin` | plugin `org.robolectric.kotest` | Android-aware Kotest spec discovery |
 | `:runner:common` | `runner-common` | Framework-independent API |
 
 ## JUnit Jupiter
@@ -71,6 +72,9 @@ class MySpec : FunSpec({
 Use `org.robolectric.kotest.RobolectricExtension` or `RobolectricSpec`
 (requires a no-arg constructor). Supports `IsolationMode.InstancePerRoot`,
 `Dispatchers.Main`, and `coroutineTestScope = true`.
+
+With Kotest's Gradle plugin, apply `org.robolectric.kotest`; other launchers
+can pass `runner-kotest` as `-javaagent`.
 
 ## Framework-independent API
 
