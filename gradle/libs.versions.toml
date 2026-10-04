@@ -29,6 +29,8 @@ error-prone-gradle = "5.2.0"
 
 # https://kotlinlang.org/docs/releases.html#release-details
 kotlin = "2.4.21"
+# Published runners also support Kotlin 2.2 consumers.
+runner-kotlin = "2.2.21"
 
 # https://github.com/google/ksp/releases
 ksp = "2.3.13"
@@ -147,6 +149,7 @@ android-gradle = { module = "com.android.tools.build:gradle", version.ref = "and
 android-tools-common = { module = "com.android.tools:common", version.ref = "android-tools-common" }
 
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+runner-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "runner-kotlin" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
@@ -295,6 +298,7 @@ robolectric-deployed-java-module = { id = "org.robolectric.gradle.DeployedRoboJa
 robolectric-deployed-kotlin-module = { id = "org.robolectric.gradle.DeployedRoboKotlinModulePlugin" }
 robolectric-gradle-managed-device = { id = "org.robolectric.gradle.GradleManagedDevicePlugin" }
 robolectric-java-module = { id = "org.robolectric.gradle.RoboJavaModulePlugin" }
+robolectric-kotlin-module = { id = "org.robolectric.gradle.RoboKotlinModulePlugin" }
 robolectric-spotless = { id = "org.robolectric.gradle.SpotlessPlugin" }
 robolectric-shadows = { id = "org.robolectric.gradle.ShadowsPlugin" }
 robolectric-javadoc = { id = "org.robolectric.gradle.AggregateJavadocPlugin" }
