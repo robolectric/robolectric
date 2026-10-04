@@ -72,6 +72,7 @@ include(
   ":processor-ksp",
   ":resources",
   ":robolectric",
+  ":runner:common",
   ":sandbox",
   ":shadowapi",
   ":shadows:framework",
