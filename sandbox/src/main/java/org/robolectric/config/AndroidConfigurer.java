@@ -46,7 +46,9 @@ public class AndroidConfigurer {
     builder
         .doNotAcquireClass("org.robolectric.TestLifecycle")
         .doNotAcquireClass("org.robolectric.RobolectricTestRunner")
-        .doNotAcquireClass("org.robolectric.shadow.api.ShadowPicker");
+        .doNotAcquireClass("org.robolectric.shadow.api.ShadowPicker")
+        // The JUnit Jupiter integration's API, which its tests in the same package don't share.
+        .doNotAcquireClass("org.robolectric.junit.jupiter.RobolectricExtension");
 
     builder
         .doNotAcquirePackage(
@@ -58,6 +60,11 @@ public class AndroidConfigurer {
         .doNotAcquirePackage("org.hamcrest")
         .doNotAcquirePackage("org.jacoco.")
         .doNotAcquirePackage("org.objectweb.asm")
+        // Test frameworks that run tests in a sandbox share these with the tests, whichever
+        // runner created the sandbox first, so that sandboxes are interchangeable between them.
+        .doNotAcquirePackage("org.opentest4j.")
+        .doNotAcquirePackage("org.robolectric.junit.jupiter.internal.")
+        .doNotAcquirePackage("org.robolectric.junit.platform.")
         .doNotAcquirePackage("org.robolectric.manifest.")
         .doNotAcquirePackage("org.robolectric.res.")
         .doNotAcquirePackage("org.robolectric.RobolectricTestRunner$")
