@@ -290,6 +290,7 @@ robolectric-deployed-java-module = { id = "org.robolectric.gradle.DeployedRoboJa
 robolectric-deployed-kotlin-module = { id = "org.robolectric.gradle.DeployedRoboKotlinModulePlugin" }
 robolectric-gradle-managed-device = { id = "org.robolectric.gradle.GradleManagedDevicePlugin" }
 robolectric-java-module = { id = "org.robolectric.gradle.RoboJavaModulePlugin" }
+robolectric-kotlin-module = { id = "org.robolectric.gradle.RoboKotlinModulePlugin" }
 robolectric-spotless = { id = "org.robolectric.gradle.SpotlessPlugin" }
 robolectric-shadows = { id = "org.robolectric.gradle.ShadowsPlugin" }
 robolectric-javadoc = { id = "org.robolectric.gradle.AggregateJavadocPlugin" }
