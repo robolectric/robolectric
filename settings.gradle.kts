@@ -63,6 +63,7 @@ include(
   ":runner:common",
   ":runner:junit-jupiter",
   ":runner:kotest",
+  ":runner:kotest-gradle-plugin",
   ":sandbox",
   ":shadowapi",
   ":shadows:framework",

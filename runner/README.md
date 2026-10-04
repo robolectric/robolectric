@@ -7,6 +7,7 @@ leave untouched.
 | ------ | -------- | ------- |
 | `:runner:junit-jupiter` | `runner-junit-jupiter` | `RobolectricExtension`, which runs JUnit Jupiter tests in Robolectric. |
 | `:runner:kotest` | `runner-kotest` | `RobolectricExtension`, which runs Kotest specs in Robolectric. |
+| `:runner:kotest-gradle-plugin` | plugin `org.robolectric.kotest` | Lets the static initializers of spec classes use Android in the tasks of Kotest's own Gradle plugin. |
 | `:runner:common` | `runner-common` | The API that integrations with test frameworks build on, and that tools use which need Android without a test framework. |
 
 ## JUnit Jupiter
@@ -244,6 +245,7 @@ root tests of the instances in the sandbox, and is configured as they are.
   is loaded, the module does the same as a Java agent, to the classes as the JVM loads them, or
   as a step of the build, which writes the spec classes guarded into a directory that goes before
   the class path.
+  The Gradle plugin `org.robolectric.kotest` adds that step to the tasks of Kotest's own plugin.
 - **`RobolectricSpec` gives the module its turn with Kotest's own launcher**, which initializes
   the spec classes first of all. The JVM initializes the interface with the first spec class that
   implements it, before the static initializer of that class runs. The module guards the spec
@@ -294,6 +296,7 @@ With Kotest, the spec is in the sandbox, but Kotest is not:
   `val application: Application by lazy { ApplicationProvider.getApplicationContext() }`. Or
   start the JVM of the tests with the jar of the module as a Java agent,
   `-javaagent:runner-kotest-<version>.jar`.
+  For the tasks of Kotest's Gradle plugin, applying the plugin `org.robolectric.kotest` is enough.
 - **The first spec class that implements `RobolectricSpec`**, with Kotest's own launcher, stays
   being initialized for the whole run if it has a static initializer, on the thread of the
   launcher. Another thread that uses its static state as Kotest loads it would wait forever, so
