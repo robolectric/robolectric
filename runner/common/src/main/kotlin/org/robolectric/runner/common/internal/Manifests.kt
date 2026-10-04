@@ -1,5 +1,6 @@
 package org.robolectric.runner.common.internal
 
+import java.nio.file.Path
 import java.util.Properties
 import org.robolectric.annotation.Config
 import org.robolectric.internal.DefaultManifestFactory
@@ -17,6 +18,9 @@ internal class Manifests {
     val identifier = factory.identify(config)
     return synchronized(manifests) { manifests.getOrPut(identifier) { create(identifier) } }
   }
+
+  /** Returns the manifest of an app that is given as an APK, with its resources. */
+  fun of(apk: Path): AndroidManifest = AndroidManifest(null, null, null, emptyList(), "", apk)
 
   private fun create(identifier: ManifestIdentifier): AndroidManifest =
     AndroidManifest(

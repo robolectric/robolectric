@@ -3,6 +3,7 @@ package org.robolectric.runner.common
 import com.google.common.truth.Truth.assertThat
 import java.io.IOException
 import java.util.concurrent.Callable
+import java.util.concurrent.CompletableFuture
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -43,6 +44,31 @@ class RobolectricEnvironmentTest {
   fun `run inside an action runs in place`() {
     val threads = environment.run {
       Thread.currentThread() to environment.run { Thread.currentThread() }
+    }
+
+    assertThat(threads.second).isSameInstanceAs(threads.first)
+  }
+
+  @Test
+  fun `post runs on the main thread once its looper runs, while run keeps the thread`() {
+    val posted = CompletableFuture.supplyAsync {
+      environment.post { AndroidProbe.read<Boolean>(environment, "isOnMainThread") }
+    }
+
+    // Keeps the main thread as a simulator does: with a loop that runs the looper.
+    environment.run {
+      while (!posted.isDone) {
+        AndroidProbe.read<Unit>(environment, "idleMainLooper")
+      }
+    }
+
+    assertThat(posted.get()).isTrue()
+  }
+
+  @Test
+  fun `post from the main thread runs in place`() {
+    val threads = environment.run {
+      Thread.currentThread() to environment.post { Thread.currentThread() }
     }
 
     assertThat(threads.second).isSameInstanceAs(threads.first)

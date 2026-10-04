@@ -109,6 +109,10 @@ flowchart TD
     specExtension["RobolectricExtension"]
   end
 
+  subgraph simulatorModule [":simulator"]
+    simulator["SimulatorMain"]
+  end
+
   subgraph common [":runner:common"]
     session["RobolectricSession"] -- plan --> configuration["Configuration"]
     session -- open --> environment["RobolectricEnvironment"]
@@ -121,6 +125,7 @@ flowchart TD
 
   extension --> session
   specExtension --> session
+  simulator --> session
   session --> selection
   environment --> sandbox
 ```
@@ -152,9 +157,9 @@ RobolectricSession.create().use { session ->
 | Type | Role |
 | ---- | ---- |
 | `RobolectricSession` | Lives for a test run. `plan` returns a configuration for each SDK that Robolectric selects for a test, without creating a sandbox, so it can be used during test discovery. `open` sets up Android for one of them. |
-| `Configuration` | Robolectric's own type for the configuration of a test: its `Config` and its modes. In one that `plan` returns, the `Config` has the SDK of the environment as its only one: `get(Config::class.java).sdk`. Two are equal if their environments are interchangeable, which tells whether a test can run in an environment that is already open. A tool without tests, such as a REPL or a preview renderer, plans from a `Config` that it builds: `session.plan(Config.Builder().setSdk(34).build())`. `robolectric.enabledSdks` doesn't apply to that. |
-| `RobolectricEnvironment` | Android set up in a sandbox. `run` runs code on Android's main thread, `loadClass` returns a class as the sandbox loads it, `diagnoseFailure` adds Robolectric's hints to the failure of a test, and `close` tears Android down. |
-| `RobolectricSession.Builder` | Sets the properties to use instead of the system properties, the packages that sandboxes share with the test framework rather than load again, and a `RobolectricSessionListener`, which is told when environments open and close, and how long that took. |
+| `Configuration` | Robolectric's own type for the configuration of a test: its `Config` and its modes. In one that `plan` returns, the `Config` has the SDK of the environment as its only one: `get(Config::class.java).sdk`. Two are equal if their environments are interchangeable, which tells whether a test can run in an environment that is already open. A tool without tests, such as a REPL or a preview renderer, plans from a `Config` that it builds: `session.plan(Config.Builder().setSdk(34).build())`, with the modes that it needs. `robolectric.enabledSdks` doesn't apply to that. |
+| `RobolectricEnvironment` | Android set up in a sandbox. `run` runs code on Android's main thread, `post` runs it as a task of the main looper while a loop keeps that thread, `loadClass` returns a class as the sandbox loads it, `diagnoseFailure` adds Robolectric's hints to the failure of a test, and `close` tears Android down. |
+| `RobolectricSession.Builder` | Sets the properties to use instead of the system properties, the packages that sandboxes share with the test framework rather than load again, an app that is given as an APK, jars with classes that come before those of the class path, and a `RobolectricSessionListener`, which is told when environments open and close, and how long that took. |
 
 - **How long an environment stays open decides what shares Android state.** Open one for each
   test to isolate tests, or keep one open for a class to share state.
@@ -166,6 +171,47 @@ RobolectricSession.create().use { session ->
   class of `RobolectricTestRunner`, so the session provides that default itself.
 
 The API is marked `@ExperimentalRunnerApi`, and everything else in the modules is internal.
+
+### The simulator
+
+`:simulator` runs an app in a sandbox without a test. Its `SimulatorMain` opens that sandbox with
+a session, in place of building it against Robolectric's internals itself. A session has what
+that takes: an app that is given as an APK, jars with classes that come before those of the class
+path, and modes such as native graphics for what it plans. Robolectric's plugins, such as an
+`SdkProvider`, are found in those jars too, and if they have Kotlin's standard library, the
+sandbox loads it from them, where a test shares that of the JVM. The simulator shares the registry
+of its screen with the JVM, as an integration shares packages with its tests.
+
+```mermaid
+flowchart LR
+  launcher["SimulatorMain<br/>or a test runner"] --> session
+
+  subgraph common [":runner:common"]
+    session["RobolectricSession"] -- plan --> configuration["Configuration"]
+    session -- open --> environment["RobolectricEnvironment"]
+  end
+
+  subgraph sandbox ["Sandbox"]
+    android["Android<br/>SDK 35, native graphics"]
+    app["The app<br/>classes, manifest, resources"]
+    simulatorLoop["Simulator.start()<br/>its loop keeps the main thread"]
+    looper["Main looper<br/>its tasks run in that loop"]
+  end
+
+  session -- "apk, classpath" --> app
+  configuration -- "Config, modes" --> android
+  environment -- run --> simulatorLoop
+  environment -- post --> looper
+```
+
+While the simulator's loop keeps the main thread, other threads reach Android with `post`. A test
+runner that is based on the simulator would keep such an environment open for a run, and run its
+tests in it, as an integration does with the environments of a session. The simulator's
+integration tests do both: they run `SimulatorMain`, and they reach Android in an environment
+that runs the simulator.
+
+`:runner:common` is built for Java 11, as the simulator is, so that the simulator can depend on
+it.
 
 ### How the Jupiter extension runs a test
 

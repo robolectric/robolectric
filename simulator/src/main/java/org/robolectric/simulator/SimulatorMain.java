@@ -1,11 +1,17 @@
 package org.robolectric.simulator;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import org.robolectric.internal.AndroidSandbox;
+import org.robolectric.annotation.Config;
+import org.robolectric.annotation.ConscryptMode;
+import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.SQLiteMode;
+import org.robolectric.annotation.experimental.LazyApplication;
+import org.robolectric.runner.common.RobolectricEnvironment;
+import org.robolectric.runner.common.RobolectricSession;
 
 /** The main class for the Robolectric Simulator. */
 public final class SimulatorMain {
@@ -29,22 +35,31 @@ public final class SimulatorMain {
       extraClasspathEntries.add(Path.of(args[i]));
     }
 
-    final AndroidSandbox androidSandbox =
-        SandboxBuilder.newBuilder()
-            .addClasspathEntries(extraClasspathEntries)
-            .setSdkVersion(getSdkVersion())
-            .build();
-
     try {
-      androidSandbox.runOnMainThread(
+      RobolectricSession session =
+          RobolectricSession.builder()
+              .apk(apkFile.toPath())
+              .classpath(extraClasspathEntries.toArray(new Path[0]))
+              // Code outside of the sandbox reads the screen from the registry.
+              .sharePackage(SimulatorPanelRegistry.class.getName())
+              .build();
+      Config config = new Config.Builder().setSdk(getSdkVersion()).build();
+      RobolectricEnvironment android =
+          session.open(
+              session
+                  .plan(
+                      config,
+                      ConscryptMode.Mode.OFF,
+                      LooperMode.Mode.PAUSED,
+                      LazyApplication.LazyLoad.OFF,
+                      GraphicsMode.Mode.NATIVE,
+                      SQLiteMode.Mode.NATIVE)
+                  .get(0));
+      android.run(
           () -> {
-            try {
-              Class<?> appLoaderClass = androidSandbox.bootstrappedClass(AppLoader.class);
-              Constructor<?> ctor = appLoaderClass.getConstructor(AndroidSandbox.class, Path.class);
-              ((Runnable) ctor.newInstance(androidSandbox, apkFile.toPath())).run();
-            } catch (ReflectiveOperationException e) {
-              throw new RuntimeException(e);
-            }
+            Class<?> appLoaderClass = android.loadClass(AppLoader.class);
+            ((Runnable) appLoaderClass.getConstructor().newInstance()).run();
+            return null;
           });
     } catch (Throwable t) {
       t.printStackTrace();

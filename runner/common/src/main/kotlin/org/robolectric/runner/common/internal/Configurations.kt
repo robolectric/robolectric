@@ -37,11 +37,19 @@ internal class Configurations(injector: Injector) {
     return configuration
   }
 
-  /** Returns the global configuration with the given one applied on top of it. */
-  fun with(config: Config): Configuration {
+  /**
+   * Returns the global configuration with the given one applied on top of it, and with the given
+   * modes, such as `GraphicsMode.Mode.NATIVE`.
+   */
+  fun with(config: Config, modes: List<Enum<*>>): Configuration {
     val global = get(Anchor::class.java, null)
     val configuration = ConfigurationImpl()
     configuration.map().putAll(global.map())
+    for (mode in modes) {
+      val type = mode.declaringJavaClass
+      require(type in global.keySet()) { "${type.name} is not a mode of Robolectric" }
+      configuration.map()[type] = mode
+    }
     configuration.put(
       Config::class.java,
       Config.Builder(global.get(Config::class.java)).overlay(config).build(),

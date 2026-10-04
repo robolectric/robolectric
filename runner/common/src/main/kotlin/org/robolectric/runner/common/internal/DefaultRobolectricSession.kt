@@ -1,6 +1,8 @@
 package org.robolectric.runner.common.internal
 
 import java.lang.reflect.Method
+import java.net.URLClassLoader
+import java.nio.file.Path
 import java.time.Duration
 import java.util.Locale
 import java.util.Properties
@@ -30,8 +32,19 @@ internal class DefaultRobolectricSession(
   properties: Properties,
   private val sharedPackages: List<String>,
   private val listener: RobolectricSessionListener?,
+  classpath: List<Path>,
+  apk: Path?,
 ) : RobolectricSession {
-  private val injector = Injectors.create(properties)
+  // The entries of a class path of its own. Robolectric's plugins are found in them too, as the
+  // simulator found them in the jars of an app.
+  private val entries: URLClassLoader? =
+    classpath
+      .takeIf { it.isNotEmpty() }
+      ?.let { paths ->
+        val urls = paths.map { it.toUri().toURL() }.toTypedArray()
+        URLClassLoader(urls, Injectors.contextClassLoader())
+      }
+  private val injector = Injectors.create(properties, entries)
   private val androidConfigurer = injector.getInstance(AndroidConfigurer::class.java)
   private val shadowProviders = injector.getInstance(ShadowProviders::class.java)
   private val classHandlerBuilder = injector.getInstance(ClassHandlerBuilder::class.java)
@@ -39,8 +52,8 @@ internal class DefaultRobolectricSession(
     injector.getInstance(Array<MethodHandleDecorator>::class.java).toList()
   private val interceptors = Interceptors(AndroidInterceptors.all())
 
-  private val planner = Planner(injector, properties)
-  private val sandboxes = SandboxPool(injector)
+  private val planner = Planner(injector, properties, entries, apk)
+  private val sandboxes = SandboxPool(injector, classpath)
   @Volatile private var closed = false
 
   /**
@@ -59,9 +72,9 @@ internal class DefaultRobolectricSession(
     return planner.plan(testClass, testMethod)
   }
 
-  override fun plan(config: Config): List<Configuration> {
+  override fun plan(config: Config, vararg modes: Enum<*>): List<Configuration> {
     check(!closed) { "The session is closed" }
-    return planner.plan(config)
+    return planner.plan(config, modes.toList())
   }
 
   override fun open(configuration: Configuration): RobolectricEnvironment {
@@ -131,6 +144,7 @@ internal class DefaultRobolectricSession(
       synchronized(applicationStateLock) { openEnvironments.toList() }.forEach { it.close() }
     } finally {
       sandboxes.shutdown()
+      entries?.close()
     }
   }
 
@@ -147,6 +161,11 @@ internal class DefaultRobolectricSession(
     }
     androidConfigurer.configure(builder, interceptors)
     androidConfigurer.withConfig(builder, config)
+    if (entries?.findResource(KOTLIN_CLASS) != null) {
+      // An app that brings Kotlin's standard library, such as one that its build has desugared,
+      // gets that in its sandbox, where a test shares that of the JVM.
+      builder.packagesToNotAcquire.remove(KOTLIN_PACKAGE)
+    }
     return builder.build()
   }
 
@@ -164,5 +183,12 @@ internal class DefaultRobolectricSession(
       ),
       interceptors,
     )
+  }
+
+  private companion object {
+    private const val KOTLIN_PACKAGE = "kotlin."
+
+    /** A class of Kotlin's standard library that all Kotlin code uses. */
+    private const val KOTLIN_CLASS = "kotlin/jvm/internal/Intrinsics.class"
   }
 }

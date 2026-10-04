@@ -32,6 +32,16 @@ public interface RobolectricEnvironment : AutoCloseable {
   @Throws(Exception::class) public fun <T> run(action: Callable<T>): T
 
   /**
+   * Runs the action as a task of Android's main looper, and returns its result once the looper ran
+   * it. Other than [run], it doesn't wait for the main thread to be free: it is how other threads
+   * reach Android while a call of [run] keeps that thread, with a loop that runs the looper, as a
+   * simulator does. Calling this from the main thread runs the action in place.
+   *
+   * @throws IllegalStateException if the environment is closed
+   */
+  @Throws(Exception::class) public fun <T> post(action: Callable<T>): T
+
+  /**
    * Returns the class with the same name as the given one that [classLoader] loads: its twin in the
    * sandbox, which can use Android classes. Classes that the sandbox doesn't reload, such as those
    * of the JDK, are returned as they are.

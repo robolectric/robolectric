@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import org.robolectric.gradle.AndroidSdk
 import org.robolectric.gradle.AttributeNames
 
@@ -10,6 +12,20 @@ plugins {
 kotlin {
   // Nothing is part of the API unless it is declared public.
   explicitApi()
+}
+
+// The API is built for Java 11, as Robolectric's own modules are, so that those can use it, such as
+// the simulator. Its tests use JUnit 6, which needs Java 17.
+tasks.named<KotlinJvmCompile>("compileKotlin") {
+  compilerOptions {
+    jvmTarget = JvmTarget.JVM_11
+    freeCompilerArgs.add("-Xjdk-release=11")
+  }
+}
+
+tasks.named<JavaCompile>("compileJava") {
+  sourceCompatibility = JavaVersion.VERSION_11.toString()
+  targetCompatibility = JavaVersion.VERSION_11.toString()
 }
 
 tasks.withType<Test> { useJUnitPlatform() }

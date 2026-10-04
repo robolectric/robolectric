@@ -1,5 +1,6 @@
 package org.robolectric.runner.common.internal
 
+import java.nio.file.Path
 import java.util.IdentityHashMap
 import org.robolectric.annotation.GraphicsMode
 import org.robolectric.annotation.LooperMode
@@ -7,6 +8,7 @@ import org.robolectric.annotation.ResourcesMode
 import org.robolectric.annotation.SQLiteMode
 import org.robolectric.internal.AndroidSandbox
 import org.robolectric.internal.SandboxManager
+import org.robolectric.internal.bytecode.ClassInstrumentor
 import org.robolectric.internal.bytecode.InstrumentationConfiguration
 import org.robolectric.pluginapi.Sdk
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration
@@ -18,7 +20,7 @@ import org.robolectric.util.inject.Injector
  * and another one is created if all that fit are lent out, so environments never wait for each
  * other. As the test runner's sandbox manager does, it keeps a limited number of sandboxes.
  */
-internal class SandboxPool(injector: Injector) {
+internal class SandboxPool(private val injector: Injector, private val classpath: List<Path>) {
   /** What makes a sandbox fit an environment. */
   private data class Key(
     val instrumentation: InstrumentationConfiguration,
@@ -63,10 +65,36 @@ internal class SandboxPool(injector: Injector) {
       reused.sandbox.updateModes(sqliteMode)
       return Lease(reused.sandbox, created = false)
     }
-    val sandbox =
-      builder.build(instrumentation, sdk, sdks.maxSupportedSdk, key.resourcesMode, sqliteMode)
+    val sandbox = build(instrumentation, sdk, key.resourcesMode, sqliteMode)
     synchronized(this) { keys[sandbox] = key }
     return Lease(sandbox, created = true)
+  }
+
+  /**
+   * Creates a sandbox. With a class path of its own, it gets a class loader for that, in place of
+   * the one that the builder of sandboxes would give it.
+   */
+  private fun build(
+    instrumentation: InstrumentationConfiguration,
+    sdk: Sdk,
+    resourcesMode: ResourcesMode.Mode,
+    sqliteMode: SQLiteMode.Mode,
+  ): AndroidSandbox {
+    if (classpath.isEmpty()) {
+      return builder.build(instrumentation, sdk, sdks.maxSupportedSdk, resourcesMode, sqliteMode)
+    }
+    val instrumentor = injector.getInstance(ClassInstrumentor::class.java)
+    val loader = ClasspathSandboxClassLoader(instrumentation, sdk, instrumentor, classpath)
+    return injector
+      .newScopeBuilder(javaClass.classLoader)
+      .bind(InstrumentationConfiguration::class.java, instrumentation)
+      .bind(Injector.Key(Sdk::class.java, "runtimeSdk"), sdk)
+      .bind(Injector.Key(Sdk::class.java, "compileSdk"), sdks.maxSupportedSdk)
+      .bind(ResourcesMode.Mode::class.java, resourcesMode)
+      .bind(SQLiteMode.Mode::class.java, sqliteMode)
+      .bind(AndroidSandbox.SdkSandboxClassLoader::class.java, loader)
+      .build()
+      .getInstance(AndroidSandbox::class.java)
   }
 
   fun release(sandbox: AndroidSandbox) {

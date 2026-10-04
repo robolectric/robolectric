@@ -5,6 +5,8 @@ import android.os.Handler
 import android.os.Looper
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows
+import org.robolectric.annotation.GraphicsMode
+import org.robolectric.config.ConfigurationRegistry
 
 /** Reads the Android state of an environment. It has to be loaded by the environment. */
 @OptIn(ExperimentalRunnerApi::class)
@@ -14,6 +16,10 @@ class AndroidProbe {
   fun applicationIdentity(): Int = System.identityHashCode(RuntimeEnvironment.getApplication())
 
   fun qualifiers(): String = RuntimeEnvironment.getQualifiers()
+
+  fun packageName(): String = RuntimeEnvironment.getApplication().packageName
+
+  fun graphicsMode(): String = ConfigurationRegistry.get(GraphicsMode.Mode::class.java).name
 
   fun isOnMainThread(): Boolean = Looper.getMainLooper().thread === Thread.currentThread()
 

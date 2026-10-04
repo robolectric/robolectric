@@ -3,6 +3,8 @@ package org.robolectric.runner.common.internal
 import java.time.Duration
 import java.util.Locale
 import java.util.concurrent.Callable
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import org.robolectric.internal.AndroidSandbox
 import org.robolectric.runner.common.ExperimentalRunnerApi
@@ -53,6 +55,30 @@ internal class DefaultRobolectricEnvironment(
   override fun <T> run(action: Callable<T>): T {
     check(!closed.get()) { "The environment for $configuration is closed" }
     return onMainThread(action)
+  }
+
+  override fun <T> post(action: Callable<T>): T {
+    check(!closed.get()) { "The environment for $configuration is closed" }
+    if (Thread.currentThread() === mainThread) {
+      return withSandboxClassLoader(action)
+    }
+    val result = CompletableFuture<T>()
+    val task = Runnable {
+      runCatching { withSandboxClassLoader(action) }
+        .fold(result::complete, result::completeExceptionally)
+    }
+    // Android's classes are those of the sandbox: Handler(Looper.getMainLooper()).post(task).
+    val looper = classLoader.loadClass("android.os.Looper")
+    val mainLooper = looper.getMethod("getMainLooper").invoke(null)
+    val handler = classLoader.loadClass("android.os.Handler").getConstructor(looper)
+    handler.declaringClass
+      .getMethod("post", Runnable::class.java)
+      .invoke(handler.newInstance(mainLooper), task)
+    try {
+      return result.get()
+    } catch (e: ExecutionException) {
+      throw e.cause ?: e
+    }
   }
 
   override fun loadClass(original: Class<*>): Class<*> =

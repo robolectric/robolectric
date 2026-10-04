@@ -1,6 +1,7 @@
 package org.robolectric.runner.common
 
 import java.lang.reflect.Method
+import java.nio.file.Path
 import java.util.Properties
 import org.robolectric.annotation.Config
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration
@@ -63,9 +64,12 @@ public interface RobolectricSession : AutoCloseable {
    * The `robolectric.enabledSdks` property, which selects the SDKs that tests run on, doesn't
    * apply.
    *
+   * @param modes the modes of Robolectric to set, such as `GraphicsMode.Mode.NATIVE`, as the
+   *   annotation of a mode sets it for a test
    * @throws IllegalStateException if no SDK that it selects is known and can run on this JVM
+   * @throws IllegalArgumentException if a mode isn't one of Robolectric
    */
-  public fun plan(config: Config): List<Configuration>
+  public fun plan(config: Config, vararg modes: Enum<*>): List<Configuration>
 
   /**
    * Sets up the Android environment for a configuration that [plan] returned, and returns it. The
@@ -85,6 +89,8 @@ public interface RobolectricSession : AutoCloseable {
   public class Builder internal constructor() {
     private var properties: Properties = System.getProperties()
     private val sharedPackages = mutableListOf<String>()
+    private val classpath = mutableListOf<Path>()
+    private var apk: Path? = null
     private var listener: RobolectricSessionListener? = null
 
     /**
@@ -105,6 +111,20 @@ public interface RobolectricSession : AutoCloseable {
       sharedPackages.add(packageName)
     }
 
+    /**
+     * Adds jars and directories with classes and resources, which the sandboxes use before those of
+     * the class path: for an app whose classes are not on the class path. Robolectric's plugins are
+     * found in them too. If they have Kotlin's standard library, the sandboxes load it from them,
+     * in place of sharing that of the JVM.
+     */
+    public fun classpath(vararg entries: Path): Builder = apply { classpath.addAll(entries) }
+
+    /**
+     * Sets the app that the environments are set up with, as its APK, with its manifest and its
+     * resources. The default is the app that Robolectric finds for a test: that of the build.
+     */
+    public fun apk(apk: Path): Builder = apply { this.apk = apk }
+
     /** Sets the listener that is told what the session does. */
     public fun listener(listener: RobolectricSessionListener): Builder = apply {
       this.listener = listener
@@ -112,7 +132,13 @@ public interface RobolectricSession : AutoCloseable {
 
     /** Creates the session. */
     public fun build(): RobolectricSession =
-      DefaultRobolectricSession(properties, sharedPackages.toList(), listener)
+      DefaultRobolectricSession(
+        properties,
+        sharedPackages.toList(),
+        listener,
+        classpath.toList(),
+        apk,
+      )
   }
 
   public companion object {
