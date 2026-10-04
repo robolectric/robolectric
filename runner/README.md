@@ -7,6 +7,7 @@ same version for all Robolectric artifacts.
 | Module | Artifact | Purpose |
 | ------ | -------- | ------- |
 | `:runner:junit-jupiter` | `runner-junit-jupiter` | JUnit Platform engine and Jupiter extension |
+| `:runner:kotest` | `runner-kotest` | Kotest extension |
 | `:runner:common` | `runner-common` | Framework-independent API |
 
 ## JUnit Jupiter
@@ -64,6 +65,34 @@ JUnit 4 tests can keep running on `junit-vintage-engine`, with their usual
 runner and lifecycle. They share the sandbox only when their SDK and modes
 match, so set `robolectric.graphicsMode=NATIVE` for them too. Set
 `robolectric.runner.shareSandboxes=false` to stop sharing.
+
+## Kotest
+
+```kotlin
+dependencies {
+  testImplementation("org.robolectric:runner-kotest:<robolectric-version>")
+  testImplementation("io.kotest:kotest-runner-junit6:<kotest-version>")
+}
+
+tasks.withType<Test>().configureEach { useJUnitPlatform() }
+```
+
+```kotlin
+@ApplyExtension(RobolectricExtension::class)
+@Config(sdk = [33, 34])
+class MySpec : FunSpec({
+  test("uses Android") {
+    ApplicationProvider.getApplicationContext<Context>()
+      .packageName.shouldNotBeEmpty()
+  }
+})
+```
+
+Use `org.robolectric.kotest.RobolectricExtension`, or implement
+`RobolectricSpec`. Specs need a no-argument constructor and run once for each of
+their SDKs, with SDK markers in test names. Android state lives for the spec
+instance, or for each root test with `IsolationMode.InstancePerRoot`. Coroutine
+tests can use `Dispatchers.Main` and `coroutineTestScope = true`.
 
 ## Framework-independent API
 
