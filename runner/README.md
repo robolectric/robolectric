@@ -8,6 +8,7 @@ same version for all Robolectric artifacts.
 | ------ | -------- | ------- |
 | `:runner:junit-jupiter` | `runner-junit-jupiter` | JUnit Platform engine and Jupiter extension |
 | `:runner:kotest` | `runner-kotest` | Kotest extension |
+| `:runner:kotest-gradle-plugin` | plugin `org.robolectric.kotest` | Android-aware spec discovery for Kotest's Gradle plugin |
 | `:runner:common` | `runner-common` | Framework-independent API |
 
 ## JUnit Jupiter
@@ -93,6 +94,10 @@ Use `org.robolectric.kotest.RobolectricExtension`, or implement
 their SDKs, with SDK markers in test names. Android state lives for the spec
 instance, or for each root test with `IsolationMode.InstancePerRoot`. Coroutine
 tests can use `Dispatchers.Main` and `coroutineTestScope = true`.
+
+With Kotest's Gradle plugin, also apply `org.robolectric.kotest` so spec
+discovery can use Android. Other launchers can add the `runner-kotest` jar as a
+`-javaagent`.
 
 ## Framework-independent API
 
