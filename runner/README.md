@@ -7,6 +7,7 @@ artifacts.
 | Module | Artifact | Purpose |
 | ------ | -------- | ------- |
 | `:runner:junit-jupiter` | `runner-junit-jupiter` | JUnit Platform engine and Jupiter extension |
+| `:runner:kotest` | `runner-kotest` | Kotest extension |
 | `:runner:common` | `runner-common` | Framework-independent API |
 
 ## JUnit Jupiter
@@ -44,6 +45,32 @@ class MyTest {
 - JUnit 4 tests on `junit-vintage-engine` share the sandbox when SDK and modes
   match (`robolectric.graphicsMode=NATIVE` is the default here; disable sharing
   with `robolectric.runner.shareSandboxes=false`).
+
+## Kotest
+
+```kotlin
+dependencies {
+  testImplementation("org.robolectric:runner-kotest:<robolectric-version>")
+  testImplementation("io.kotest:kotest-runner-junit6:<kotest-version>")
+}
+
+tasks.withType<Test>().configureEach { useJUnitPlatform() }
+```
+
+```kotlin
+@ApplyExtension(RobolectricExtension::class)
+@Config(sdk = [33, 34])
+class MySpec : FunSpec({
+  test("uses Android") {
+    ApplicationProvider.getApplicationContext<Context>()
+      .packageName.shouldNotBeEmpty()
+  }
+})
+```
+
+Use `org.robolectric.kotest.RobolectricExtension` or `RobolectricSpec`
+(requires a no-arg constructor). Supports `IsolationMode.InstancePerRoot`,
+`Dispatchers.Main`, and `coroutineTestScope = true`.
 
 ## Framework-independent API
 
