@@ -79,6 +79,8 @@ javax-inject = "1"
 junit4 = "4.13.2"
 # https://github.com/junit-team/junit-framework/releases
 junit-jupiter = "6.1.3"
+# https://github.com/kotest/kotest/releases
+kotest = "6.2.5"
 
 # https://github.com/google/libphonenumber/releases
 libphonenumber = "9.0.40"
@@ -146,6 +148,7 @@ android-tools-common = { module = "com.android.tools:common", version.ref = "and
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
 auto-common = { module = "com.google.auto:auto-common", version.ref = "auto-common" }
@@ -184,6 +187,10 @@ junit-jupiter-bom = { module = "org.junit:junit-bom", version.ref = "junit-jupit
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 junit-vintage = { module = "org.junit.vintage:junit-vintage-engine" }
+
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotest-framework-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
+kotest-runner-junit6 = { module = "io.kotest:kotest-runner-junit6", version.ref = "kotest" }
 
 javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javax-annotation-api" }
 javax-inject = { module = "javax.inject:javax.inject", version.ref = "javax-inject" }

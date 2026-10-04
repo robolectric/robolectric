@@ -62,6 +62,7 @@ include(
   ":robolectric",
   ":runner:common",
   ":runner:junit-jupiter",
+  ":runner:kotest",
   ":sandbox",
   ":shadowapi",
   ":shadows:framework",
