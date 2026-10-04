@@ -109,6 +109,7 @@ androidx-biometric = "1.1.0"
 androidx-constraintlayout = "2.2.2"
 androidx-core = "1.19.1"
 androidx-fragment = "1.9.1"
+androidx-lifecycle = "2.11.0"
 androidx-window = "1.5.1"
 androidx-room = "2.8.5"
 androidx-recyclerview = "1.4.0"
@@ -226,6 +227,7 @@ androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayo
 androidx-core = { module = "androidx.core:core", version.ref = "androidx-core" }
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "androidx-fragment" }
 androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", version.ref = "androidx-fragment" }
+androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "androidx-lifecycle" }
 androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
 androidx-window-core = { module = "androidx.window:window-core", version.ref = "androidx-window" }
 androidx-window-testing = { module = "androidx.window:window-testing", version.ref = "androidx-window" }
