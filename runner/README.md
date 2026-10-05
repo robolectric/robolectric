@@ -172,6 +172,22 @@ RobolectricSession.create().use { session ->
 
 The API is marked `@ExperimentalRunnerApi`, and everything else in the modules is internal.
 
+### A tool without tests
+
+A tool such as a REPL that renders previews needs Android without a test harness. It opens one
+environment and keeps it, so that everything it runs shares the state of Android:
+
+```kotlin
+val session = RobolectricSession.create()
+val config = Config.Builder().setSdk(34).build()
+val android = session.open(session.plan(config, GraphicsMode.Mode.NATIVE).single())
+```
+
+Android's classes exist only in the sandbox, so the tool's own classes can't use them. A REPL
+loads what it compiles with a class loader whose parent is `android.classLoader`, and calls it
+with `android.run`, on Android's main thread. With native graphics, such code draws views as
+Android does. `ReplTest` of `:runner:common` shows that.
+
 ### The simulator
 
 `:simulator` runs an app in a sandbox without a test. Its `SimulatorMain` opens that sandbox with
