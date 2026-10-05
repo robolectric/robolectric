@@ -90,7 +90,7 @@ mockito = "5.24.0"
 mockk = "1.14.11"
 
 # https://github.com/takahirom/roborazzi/releases
-roborazzi = "1.73.0"
+roborazzi = "1.76.0"
 
 # https://square.github.io/okhttp/changelogs/changelog/
 okhttp = "5.5.0"
