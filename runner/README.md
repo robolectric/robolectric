@@ -87,4 +87,5 @@ RobolectricSession.create().use { session ->
 }
 ```
 
-Use `lease`/`prepare` before `open` for class-level setup.
+Use `lease`/`prepare` before `open` for class-level setup, or plan from
+`Config.Builder` to keep an environment open (e.g., in a REPL).
