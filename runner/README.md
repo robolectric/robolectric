@@ -121,3 +121,6 @@ it. The API targets Java 11 and Kotlin 2.2 metadata.
 The simulator opens an environment with an APK and native graphics.
 `android.post` reaches its main looper while the simulator's loop owns the main
 thread.
+
+Tools such as REPLs can plan from a `Config.Builder` and keep an environment
+open.
