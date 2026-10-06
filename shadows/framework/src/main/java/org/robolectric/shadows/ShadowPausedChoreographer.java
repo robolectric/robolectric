@@ -96,7 +96,7 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
     ChoreographerReflector choreographerReflector =
         reflector(ChoreographerReflector.class, realChoreographer);
     choreographerReflector.setLastFrameTimeNanos(Long.MIN_VALUE);
-    if (RuntimeEnvironment.getApiLevel() >= S) {
+    if (RuntimeEnvironment.getApiLevel() >= S && RuntimeEnvironment.getApiLevel() <= CINNAMON_BUN) {
       choreographerReflector.setLastFrameIntervalNanos(0);
     }
     choreographerReflector.setFrameScheduled(false);
