@@ -450,7 +450,7 @@ public class ShadowVirtualDeviceManagerTest {
       assertThat(virtualDisplay.getSurface()).isEqualTo(surface);
       assertThat(virtualDisplay.getDisplay().getDisplayId()).isNotEqualTo(Display.DEFAULT_DISPLAY);
       assertThat(virtualDisplay.getDisplay().getName()).isEqualTo("name");
-      assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(123);
+      assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
     }
   }
 
@@ -491,7 +491,7 @@ public class ShadowVirtualDeviceManagerTest {
       assertThat(virtualDisplay.getDisplay().getDisplayId()).isNotEqualTo(Display.DEFAULT_DISPLAY);
       assertThat(virtualDisplay.getDisplay().getName())
           .isEqualTo("VirtualDisplay-1"); // Default name format
-      assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(123);
+      assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
     }
   }
 

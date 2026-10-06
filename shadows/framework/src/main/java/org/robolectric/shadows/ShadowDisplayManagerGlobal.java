@@ -222,9 +222,15 @@ public class ShadowDisplayManagerGlobal {
 
     /** Returns the display flags of a virtual display created with the given flags. */
     private static int getVirtualDisplayFlags(int virtualDisplayFlags) {
-      int flags = virtualDisplayFlags;
+      int flags = 0;
       if ((virtualDisplayFlags & DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC) == 0) {
         flags |= Display.FLAG_PRIVATE;
+      }
+      if ((virtualDisplayFlags & DisplayManager.VIRTUAL_DISPLAY_FLAG_SECURE) != 0) {
+        flags |= Display.FLAG_SECURE;
+      }
+      if ((virtualDisplayFlags & DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION) != 0) {
+        flags |= Display.FLAG_PRESENTATION;
       }
       return flags;
     }
