@@ -135,6 +135,14 @@ public final class HardwareRendererNatives {
 
   public static native void nSetFrameCallback(long nativeProxy, FrameDrawingCallback callback);
 
+  /**
+   * Retained for JNI registration by the prebuilt {@code librobolectric-nativeruntime.so} on SDKs
+   * 29-34 ({@code <= UPSIDE_DOWN_CAKE}), even though {@code ShadowNativeHardwareRenderer} no longer
+   * calls it. {@code FrameCompleteCallback} was removed from {@code HardwareRenderer} after SDK 37
+   * ({@code CINNAMON_BUN}); once {@code nativeruntime} compiles against an SDK > 37, {@code
+   * nativeruntime} will need to compile against SDK 34 ({@code U}) or include a {@code compileOnly}
+   * stub for {@code android.graphics.HardwareRenderer$FrameCompleteCallback}.
+   */
   public static native void nSetFrameCompleteCallback(
       long nativeProxy, FrameCompleteCallback callback);
 

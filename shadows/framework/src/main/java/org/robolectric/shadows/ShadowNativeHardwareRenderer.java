@@ -15,7 +15,6 @@ import android.graphics.Bitmap.Config;
 import android.graphics.FrameInfo;
 import android.graphics.HardwareRenderer;
 import android.graphics.HardwareRenderer.ASurfaceTransactionCallback;
-import android.graphics.HardwareRenderer.FrameCompleteCallback;
 import android.graphics.HardwareRenderer.FrameDrawingCallback;
 import android.graphics.HardwareRenderer.PictureCapturedCallback;
 import android.graphics.HardwareRenderer.PrepareSurfaceControlForWebviewCallback;
@@ -379,12 +378,6 @@ public class ShadowNativeHardwareRenderer {
   @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected static void nSetFrameCallback(long nativeProxy, FrameDrawingCallback callback) {
     HardwareRendererNatives.nSetFrameCallback(nativeProxy, callback);
-  }
-
-  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
-  protected static void nSetFrameCompleteCallback(
-      long nativeProxy, FrameCompleteCallback callback) {
-    HardwareRendererNatives.nSetFrameCompleteCallback(nativeProxy, callback);
   }
 
   @Implementation(minSdk = R)
