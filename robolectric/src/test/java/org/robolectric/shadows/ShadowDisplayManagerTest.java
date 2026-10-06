@@ -3,21 +3,26 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlobal;
 
 import android.app.Activity;
+import android.app.Presentation;
 import android.content.Context;
 import android.graphics.Point;
 import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.BrightnessConfiguration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
+import android.hardware.display.VirtualDisplay;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
+import android.view.WindowManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -114,6 +119,77 @@ public class ShadowDisplayManagerTest {
     Display display = instance.getDisplay(displayId);
     assertThat(display.getDisplayId()).isEqualTo(displayId);
     assertThat(display.getName()).isEqualTo("VirtualDevice_1");
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void createVirtualDisplay_thatIsNotPublic_isPrivate() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Private", 800, 600, DisplayMetrics.DENSITY_MEDIUM, null, /* flags= */ 0);
+
+    assertThat(virtualDisplay.getDisplay().getFlags()).isEqualTo(Display.FLAG_PRIVATE);
+    assertThat(presentationDisplayIds()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void presentation_onAPrivateVirtualDisplay_showsAsAPrivatePresentation() {
+    Surface surface = new Surface();
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Private", 800, 600, DisplayMetrics.DENSITY_MEDIUM, surface, /* flags= */ 0);
+    // As Flutter shows a platform view, which failed in
+    // https://github.com/robolectric/robolectric/issues/7663.
+    Presentation presentation =
+        new Presentation(ApplicationProvider.getApplicationContext(), virtualDisplay.getDisplay());
+    presentation
+        .getWindow()
+        .setFlags(
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+    presentation.getWindow().setType(WindowManager.LayoutParams.TYPE_PRIVATE_PRESENTATION);
+
+    presentation.show();
+    assertThat(presentation.isShowing()).isTrue();
+
+    presentation.dismiss();
+    assertThat(presentation.isShowing()).isFalse();
+    surface.release();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void presentation_onAPrivateVirtualDisplay_isAPrivatePresentationByDefault() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Private", 800, 600, DisplayMetrics.DENSITY_MEDIUM, null, /* flags= */ 0);
+
+    Presentation presentation =
+        new Presentation(ApplicationProvider.getApplicationContext(), virtualDisplay.getDisplay());
+
+    assertThat(presentation.getWindow().getAttributes().type)
+        .isEqualTo(WindowManager.LayoutParams.TYPE_PRIVATE_PRESENTATION);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void presentation_onAPublicVirtualDisplay_isNotAPrivatePresentationByDefault() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Public",
+            800,
+            600,
+            DisplayMetrics.DENSITY_MEDIUM,
+            null,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION);
+
+    Presentation presentation =
+        new Presentation(ApplicationProvider.getApplicationContext(), virtualDisplay.getDisplay());
+
+    assertThat(presentation.getWindow().getAttributes().type)
+        .isEqualTo(WindowManager.LayoutParams.TYPE_PRESENTATION);
   }
 
   @Test
@@ -565,5 +641,13 @@ public class ShadowDisplayManagerTest {
     public void onDisplayChanged(int displayId) {
       events.add("Changed " + displayId);
     }
+  }
+
+  private List<Integer> presentationDisplayIds() {
+    List<Integer> displayIds = new ArrayList<>();
+    for (Display display : instance.getDisplays(DisplayManager.DISPLAY_CATEGORY_PRESENTATION)) {
+      displayIds.add(display.getDisplayId());
+    }
+    return displayIds;
   }
 }
