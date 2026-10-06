@@ -16,6 +16,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.BrightnessConfiguration;
+import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.IDisplayManagerCallback;
@@ -219,10 +220,19 @@ public class ShadowDisplayManagerGlobal {
       registerCallback(iDisplayManagerCallback);
     }
 
+    /** Returns the display flags of a virtual display created with the given flags. */
+    private static int getVirtualDisplayFlags(int virtualDisplayFlags) {
+      int flags = virtualDisplayFlags;
+      if ((virtualDisplayFlags & DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC) == 0) {
+        flags |= Display.FLAG_PRIVATE;
+      }
+      return flags;
+    }
+
     private int createVirtualDisplayInternal(
         VirtualDisplayConfig config, IVirtualDisplayCallback callbackWrapper, String packageName) {
       DisplayInfo displayInfo = new DisplayInfo();
-      displayInfo.flags = config.getFlags();
+      displayInfo.flags = getVirtualDisplayFlags(config.getFlags());
       displayInfo.type = Display.TYPE_VIRTUAL;
       displayInfo.name = config.getName();
       displayInfo.logicalDensityDpi = config.getDensityDpi();
@@ -283,7 +293,7 @@ public class ShadowDisplayManagerGlobal {
         int flags,
         String uniqueId) {
       DisplayInfo displayInfo = new DisplayInfo();
-      displayInfo.flags = flags;
+      displayInfo.flags = getVirtualDisplayFlags(flags);
       displayInfo.type = Display.TYPE_VIRTUAL;
       displayInfo.name = name;
       displayInfo.logicalDensityDpi = densityDpi;
