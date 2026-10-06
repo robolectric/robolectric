@@ -45,6 +45,12 @@ public abstract class ShadowChoreographer {
 
   private static volatile Duration frameDelay = Duration.ofMillis(getDefaultFrameDelay());
 
+  static {
+    if (getApiLevel() > CINNAMON_BUN) {
+      Choreographer.setFrameDelay(frameDelay.toMillis());
+    }
+  }
+
   /**
    * This field is only used when {@link #isPaused()} is true. It represents the next scheduled
    * vsync time (with respect to the system clock). See the {@link #getNextVsyncTime()} javadoc for
@@ -84,6 +90,9 @@ public abstract class ShadowChoreographer {
   public static void setFrameDelay(Duration delay) {
     checkState(!ShadowLooper.looperMode().equals(Mode.LEGACY), "Looper cannot be %s", Mode.LEGACY);
     frameDelay = delay;
+    if (getApiLevel() > CINNAMON_BUN) {
+      Choreographer.setFrameDelay(delay.toMillis());
+    }
   }
 
   /** See {@link #setFrameDelay(Duration)}. */
@@ -225,12 +234,15 @@ public abstract class ShadowChoreographer {
     nextVsyncTimeNanos = 0;
     isPaused = false;
     frameDelay = Duration.ofMillis(getDefaultFrameDelay());
+    if (getApiLevel() > CINNAMON_BUN) {
+      Choreographer.setFrameDelay(frameDelay.toMillis());
+    }
     if (getApiLevel() >= N) {
       ShadowBackdropFrameRenderer.reset();
     }
   }
 
-  @Implementation(minSdk = CINNAMON_BUN)
+  @Implementation(minSdk = CINNAMON_BUN, maxSdk = CINNAMON_BUN)
   protected static long getDefaultFrameDelay() {
     // Uses 15ms to approximate 60fps.
     return Integer.getInteger("robolectric.defaultFrameDelayMs", 15);
@@ -282,9 +294,6 @@ public abstract class ShadowChoreographer {
 
     @Direct
     void __constructor__(Looper looper, int vsyncSource);
-
-    @Direct
-    void __constructor__(Looper looper, long layerHandle);
 
     @Accessor("mFrameData")
     /*android.view.Choreographer$FrameData*/ Object getFrameData();
