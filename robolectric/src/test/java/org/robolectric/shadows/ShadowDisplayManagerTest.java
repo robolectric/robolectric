@@ -123,6 +123,24 @@ public class ShadowDisplayManagerTest {
 
   @Test
   @Config(minSdk = P)
+  public void createVirtualDisplay_withThePresentationFlag_isAPresentationDisplay() {
+    VirtualDisplay virtualDisplay =
+        instance.createVirtualDisplay(
+            "Presentation",
+            800,
+            600,
+            DisplayMetrics.DENSITY_MEDIUM,
+            null,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION);
+
+    Display display = virtualDisplay.getDisplay();
+    assertThat(display.getFlags()).isEqualTo(Display.FLAG_PRESENTATION);
+    assertThat(presentationDisplayIds()).containsExactly(display.getDisplayId());
+  }
+
+  @Test
+  @Config(minSdk = P)
   public void createVirtualDisplay_thatIsNotPublic_isPrivate() {
     VirtualDisplay virtualDisplay =
         instance.createVirtualDisplay(
