@@ -7,10 +7,13 @@ import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
@@ -31,6 +34,8 @@ import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraMetadata;
+import android.hardware.display.DisplayManager;
+import android.hardware.display.DisplayManager.DisplayListener;
 import android.hardware.display.VirtualDisplay;
 import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.VirtualKeyEvent;
@@ -52,6 +57,8 @@ import android.view.Surface;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.IntConsumer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -133,6 +140,92 @@ public class ShadowVirtualDeviceManagerTest {
     }
     // When device is closed, listener is notified.
     verify(listener).onVirtualDeviceClosed(1);
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testRegisterVirtualDeviceListener_acrossDeviceContexts() {
+    Context deviceContext = context.createDeviceContext(Context.DEVICE_ID_DEFAULT);
+    VirtualDeviceManager deviceContextVirtualDeviceManager =
+        deviceContext.getSystemService(VirtualDeviceManager.class);
+    VirtualDeviceListener listener = mock(VirtualDeviceListener.class);
+    deviceContextVirtualDeviceManager.registerVirtualDeviceListener(
+        MoreExecutors.directExecutor(), listener);
+
+    try (VirtualDevice unused =
+        virtualDeviceManager.createVirtualDevice(
+            /* associationId= */ 0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      verify(listener).onVirtualDeviceCreated(/* deviceId= */ 1);
+    }
+    verify(listener).onVirtualDeviceClosed(/* deviceId= */ 1);
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void
+      testRegisterVirtualDeviceListener_unregisterDuringCallback_doesNotThrowConcurrentModificationException() {
+    VirtualDeviceListener secondListener = mock(VirtualDeviceListener.class);
+    VirtualDeviceListener selfUnregisteringListener =
+        new VirtualDeviceListener() {
+          @Override
+          public void onVirtualDeviceCreated(int deviceId) {
+            virtualDeviceManager.unregisterVirtualDeviceListener(this);
+          }
+
+          @Override
+          public void onVirtualDeviceClosed(int deviceId) {}
+        };
+    virtualDeviceManager.registerVirtualDeviceListener(
+        MoreExecutors.directExecutor(), selfUnregisteringListener);
+    virtualDeviceManager.registerVirtualDeviceListener(
+        MoreExecutors.directExecutor(), secondListener);
+
+    try (VirtualDevice unused =
+        virtualDeviceManager.createVirtualDevice(
+            /* associationId= */ 0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+      verify(secondListener).onVirtualDeviceCreated(/* deviceId= */ 1);
+    }
+    verify(secondListener).onVirtualDeviceClosed(/* deviceId= */ 1);
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testUnregisterVirtualDeviceListener() {
+    VirtualDeviceListener listener = mock(VirtualDeviceListener.class);
+    virtualDeviceManager.registerVirtualDeviceListener(MoreExecutors.directExecutor(), listener);
+    virtualDeviceManager.unregisterVirtualDeviceListener(listener);
+
+    try (VirtualDevice unused =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build())) {}
+
+    verifyNoInteractions(listener);
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testRegisterVirtualDeviceListener_nullExecutor_throwsNullPointerException() {
+    VirtualDeviceListener listener = mock(VirtualDeviceListener.class);
+    assertThrows(
+        NullPointerException.class,
+        () -> virtualDeviceManager.registerVirtualDeviceListener(null, listener));
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testRegisterVirtualDeviceListener_nullListener_throwsNullPointerException() {
+    Executor executor = MoreExecutors.directExecutor();
+    assertThrows(
+        NullPointerException.class,
+        () -> virtualDeviceManager.registerVirtualDeviceListener(executor, null));
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testUnregisterVirtualDeviceListener_nullListener_throwsNullPointerException() {
+    assertThrows(
+        NullPointerException.class,
+        () -> virtualDeviceManager.unregisterVirtualDeviceListener(null));
   }
 
   @Test
@@ -605,6 +698,72 @@ public class ShadowVirtualDeviceManagerTest {
   }
 
   @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testCreateVirtualDisplay_displayIdAvailableDuringOnDisplayAddedCallback() {
+    DisplayManager displayManager = context.getSystemService(DisplayManager.class);
+    AtomicReference<int[]> displayIdsDuringCallback = new AtomicReference<>();
+    DisplayListener displayListener =
+        new DisplayListener() {
+          @Override
+          public void onDisplayAdded(int displayId) {
+            List<android.companion.virtual.VirtualDevice> devices =
+                virtualDeviceManager.getVirtualDevices();
+            if (!devices.isEmpty()) {
+              displayIdsDuringCallback.set(devices.get(0).getDisplayIds());
+            }
+          }
+
+          @Override
+          public void onDisplayRemoved(int displayId) {}
+
+          @Override
+          public void onDisplayChanged(int displayId) {}
+        };
+    displayManager.registerDisplayListener(displayListener, /* handler= */ null);
+
+    try {
+      Surface surface = new Surface(new SurfaceTexture(/* texName= */ 0));
+      try (VirtualDevice firstDevice =
+          virtualDeviceManager.createVirtualDevice(
+              /* associationId= */ 0, new VirtualDeviceParams.Builder().setName("foo").build())) {
+        VirtualDisplay firstDisplay =
+            firstDevice.createVirtualDisplay(
+                getVirtualDisplayConfig("firstDisplay", surface, /* flags= */ 0),
+                MoreExecutors.directExecutor(),
+                mockDisplayCallback);
+        ShadowLooper.idleMainLooper();
+
+        assertThat(displayIdsDuringCallback.get()).isNotNull();
+        assertThat(displayIdsDuringCallback.get())
+            .asList()
+            .contains(firstDisplay.getDisplay().getDisplayId());
+        firstDisplay.release();
+      }
+
+      // Create a second virtual device and display after the first display was released so that
+      // DisplayManagerGlobal's nextDisplayId is greater than max(getDisplayIds()) + 1.
+      displayIdsDuringCallback.set(null);
+      try (VirtualDevice secondDevice =
+          virtualDeviceManager.createVirtualDevice(
+              /* associationId= */ 0, new VirtualDeviceParams.Builder().setName("bar").build())) {
+        VirtualDisplay secondDisplay =
+            secondDevice.createVirtualDisplay(
+                getVirtualDisplayConfig("secondDisplay", surface, /* flags= */ 0),
+                MoreExecutors.directExecutor(),
+                mockDisplayCallback);
+        ShadowLooper.idleMainLooper();
+
+        assertThat(displayIdsDuringCallback.get()).isNotNull();
+        assertThat(displayIdsDuringCallback.get())
+            .asList()
+            .contains(secondDisplay.getDisplay().getDisplayId());
+      }
+    } finally {
+      displayManager.unregisterDisplayListener(displayListener);
+    }
+  }
+
+  @Test
   @Config(sdk = VANILLA_ICE_CREAM)
   public void testCreateVirtualCamera() {
     VirtualCameraCallback callback = mock(VirtualCameraCallback.class);
@@ -654,6 +813,56 @@ public class ShadowVirtualDeviceManagerTest {
       assertThat(applicationVirtualDevices).isNotNull();
       assertThat(activityVirtualDevices).isNotNull();
       assertThat(activityVirtualDevices).isEqualTo(applicationVirtualDevices);
+    }
+  }
+
+  @Test
+  @Config(minSdk = VANILLA_ICE_CREAM)
+  public void testReset_closesActiveDevicesAndPreservesListenersForSubsequentCreations() {
+    DisplayManager displayManager = context.getSystemService(DisplayManager.class);
+    VirtualDeviceListener deviceListener = mock(VirtualDeviceListener.class);
+    DisplayListener displayListener = mock(DisplayListener.class);
+    virtualDeviceManager.registerVirtualDeviceListener(
+        MoreExecutors.directExecutor(), deviceListener);
+    displayManager.registerDisplayListener(displayListener, /* handler= */ null);
+
+    try {
+      VirtualDevice firstDevice =
+          virtualDeviceManager.createVirtualDevice(
+              /* associationId= */ 0, new VirtualDeviceParams.Builder().setName("foo").build());
+      Surface surface = new Surface(new SurfaceTexture(/* texName= */ 0));
+      VirtualDisplay firstDisplay =
+          firstDevice.createVirtualDisplay(
+              getVirtualDisplayConfig("firstDisplay", surface, /* flags= */ 0),
+              MoreExecutors.directExecutor(),
+              mockDisplayCallback);
+      int firstDisplayId = firstDisplay.getDisplay().getDisplayId();
+      ShadowLooper.idleMainLooper();
+
+      verify(deviceListener).onVirtualDeviceCreated(/* deviceId= */ 1);
+      verify(displayListener).onDisplayAdded(firstDisplayId);
+
+      ShadowVirtualDevice.reset();
+      ShadowLooper.idleMainLooper();
+
+      ShadowVirtualDevice shadowFirstDevice = Shadow.extract(firstDevice);
+      assertThat(shadowFirstDevice.isClosed()).isTrue();
+      assertThat(virtualDeviceManager.getVirtualDevices()).isEmpty();
+      verify(deviceListener).onVirtualDeviceClosed(/* deviceId= */ 1);
+      verify(displayListener).onDisplayRemoved(firstDisplayId);
+      // Operations on a display after its VirtualDevice was closed should be safe no-ops.
+      firstDisplay.setSurface(null);
+      firstDisplay.resize(DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_DPI);
+      firstDisplay.release();
+
+      try (VirtualDevice secondDevice =
+          virtualDeviceManager.createVirtualDevice(
+              /* associationId= */ 0, new VirtualDeviceParams.Builder().setName("bar").build())) {
+        assertThat(secondDevice.getDeviceId()).isEqualTo(1);
+        verify(deviceListener, times(2)).onVirtualDeviceCreated(/* deviceId= */ 1);
+      }
+    } finally {
+      displayManager.unregisterDisplayListener(displayListener);
     }
   }
 
