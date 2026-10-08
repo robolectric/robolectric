@@ -79,6 +79,8 @@ javax-inject = "1"
 junit4 = "4.13.2"
 # https://github.com/junit-team/junit-framework/releases
 junit-jupiter = "6.1.3"
+# https://github.com/kotest/kotest/releases
+kotest = "6.2.5"
 
 # https://github.com/google/libphonenumber/releases
 libphonenumber = "9.0.40"
@@ -109,6 +111,7 @@ androidx-biometric = "1.1.0"
 androidx-constraintlayout = "2.2.2"
 androidx-core = "1.19.1"
 androidx-fragment = "1.9.1"
+androidx-lifecycle = "2.11.0"
 androidx-window = "1.5.1"
 androidx-room = "2.8.5"
 androidx-recyclerview = "1.4.0"
@@ -145,6 +148,7 @@ android-tools-common = { module = "com.android.tools:common", version.ref = "and
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
 auto-common = { module = "com.google.auto:auto-common", version.ref = "auto-common" }
@@ -183,6 +187,10 @@ junit-jupiter-bom = { module = "org.junit:junit-bom", version.ref = "junit-jupit
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 junit-vintage = { module = "org.junit.vintage:junit-vintage-engine" }
+
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotest-framework-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
+kotest-runner-junit6 = { module = "io.kotest:kotest-runner-junit6", version.ref = "kotest" }
 
 javax-annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref = "javax-annotation-api" }
 javax-inject = { module = "javax.inject:javax.inject", version.ref = "javax-inject" }
@@ -226,6 +234,7 @@ androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayo
 androidx-core = { module = "androidx.core:core", version.ref = "androidx-core" }
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "androidx-fragment" }
 androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", version.ref = "androidx-fragment" }
+androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "androidx-lifecycle" }
 androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
 androidx-window-core = { module = "androidx.window:window-core", version.ref = "androidx-window" }
 androidx-window-testing = { module = "androidx.window:window-testing", version.ref = "androidx-window" }
@@ -290,6 +299,7 @@ robolectric-deployed-java-module = { id = "org.robolectric.gradle.DeployedRoboJa
 robolectric-deployed-kotlin-module = { id = "org.robolectric.gradle.DeployedRoboKotlinModulePlugin" }
 robolectric-gradle-managed-device = { id = "org.robolectric.gradle.GradleManagedDevicePlugin" }
 robolectric-java-module = { id = "org.robolectric.gradle.RoboJavaModulePlugin" }
+robolectric-kotlin-module = { id = "org.robolectric.gradle.RoboKotlinModulePlugin" }
 robolectric-spotless = { id = "org.robolectric.gradle.SpotlessPlugin" }
 robolectric-shadows = { id = "org.robolectric.gradle.ShadowsPlugin" }
 robolectric-javadoc = { id = "org.robolectric.gradle.AggregateJavadocPlugin" }
