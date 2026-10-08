@@ -1295,4 +1295,29 @@ public class ShadowAccountManagerTest {
         AuthenticatorException.class,
         () -> future.getResult());
   }
+
+  @Test
+  @Config(minSdk = M)
+  public void notifyAccountAuthenticated_recordsAuthenticatedAccount() {
+    Account account = new Account("name@gmail.com", "com.google");
+    assertThat(shadowOf(am).wasNotifiedOfAccountAuthentication(account)).isFalse();
+
+    assertThat(am.notifyAccountAuthenticated(account)).isTrue();
+    assertThat(shadowOf(am).wasNotifiedOfAccountAuthentication(account)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void notifyAccountAuthenticated_nullAccount_throwsIllegalArgumentException() {
+    assertThrows(IllegalArgumentException.class, () -> am.notifyAccountAuthenticated(null));
+  }
+
+  @Test
+  public void returnFalseOnAddAccountExplicitly_returnsFalse() {
+    Account account = new Account("name@gmail.com", "com.google");
+    shadowOf(am).returnFalseOnAddAccountExplicitly();
+
+    assertThat(am.addAccountExplicitly(account, "passwd", null)).isFalse();
+    assertThat(am.getPassword(account)).isNull();
+  }
 }

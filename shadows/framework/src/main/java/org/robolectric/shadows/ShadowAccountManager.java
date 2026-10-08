@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -55,12 +57,14 @@ public class ShadowAccountManager {
   private final Map<Account, String> passwords = new ConcurrentHashMap<>();
   private final Map<Account, Set<String>> accountFeatures = new HashMap<>();
   private final Map<Account, Set<String>> packageVisibleAccounts = new HashMap<>();
+  private final Set<Account> accountsNotifiedAuthenticated = new HashSet<>();
 
   private final List<Bundle> addAccountOptionsList = new ArrayList<>();
   private static Handler mainHandler;
   private static RoboAccountManagerFuture pendingAddFuture;
   private static boolean authenticationErrorOnNextResponse = false;
   private static Intent removeAccountIntent;
+  private boolean returnFalseOnAddAccountExplicitly = false;
 
   @Resetter
   public static void reset() {
@@ -134,6 +138,9 @@ public class ShadowAccountManager {
   protected boolean addAccountExplicitly(Account account, String password, Bundle userdata) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
+    }
+    if (returnFalseOnAddAccountExplicitly) {
+      return false;
     }
     for (Account a : getAccountsByType(account.type)) {
       if (a.name.equals(account.name)) {
@@ -837,6 +844,26 @@ public class ShadowAccountManager {
 
   public Map<OnAccountsUpdateListener, Set<String>> getListeners() {
     return listeners;
+  }
+
+  @Implementation(minSdk = M)
+  protected boolean notifyAccountAuthenticated(Account account) {
+    checkArgument(account != null, "account is null");
+    accountsNotifiedAuthenticated.add(account);
+    return true;
+  }
+
+  /**
+   * Returns whether {@link AccountManager#notifyAccountAuthenticated(Account)} has been called for
+   * the given {@code account}.
+   */
+  public boolean wasNotifiedOfAccountAuthentication(Account account) {
+    return accountsNotifiedAuthenticated.contains(account);
+  }
+
+  /** Sets {@link #addAccountExplicitly} to always return false. */
+  public void returnFalseOnAddAccountExplicitly() {
+    returnFalseOnAddAccountExplicitly = true;
   }
 
   private abstract static class BaseRoboAccountManagerFuture<T> implements AccountManagerFuture<T> {
