@@ -8,6 +8,9 @@ import static org.junit.Assert.fail;
 import android.os.Trace;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.base.VerifyException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -263,6 +266,42 @@ public class ShadowTraceTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void setCounter_concurrentFromMultipleThreads_doesNotThrow() throws Exception {
+    int threadCount = 8;
+    int iterationsPerThread = 100;
+    ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+    CyclicBarrier barrier = new CyclicBarrier(threadCount);
+    List<Future<?>> futures = new ArrayList<>();
+
+    try {
+      for (int i = 0; i < threadCount; i++) {
+        final int threadIndex = i;
+        futures.add(
+            executor.submit(
+                () -> {
+                  try {
+                    barrier.await();
+                    for (int j = 0; j < iterationsPerThread; j++) {
+                      Trace.setCounter("Counter_" + threadIndex, j);
+                    }
+                  } catch (Exception e) {
+                    throw new RuntimeException(e);
+                  }
+                }));
+      }
+
+      for (Future<?> future : futures) {
+        future.get();
+      }
+
+      assertThat(ShadowTrace.getCounters()).hasSize(threadCount * iterationsPerThread);
+    } finally {
+      executor.shutdown();
+    }
+  }
+
+  @Test
   public void reset_resetsInternalState() {
     Trace.beginSection(/* sectionName= */ "section1");
     Trace.endSection();
@@ -272,6 +311,17 @@ public class ShadowTraceTest {
 
     assertThat(ShadowTrace.getCurrentSections()).isEmpty();
     assertThat(ShadowTrace.getPreviousSections()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void reset_clearsCounters() {
+    Trace.setCounter(/* counterName= */ "counter1", /* counterValue= */ 42);
+    assertThat(ShadowTrace.getCounters()).isNotEmpty();
+
+    ShadowTrace.reset();
+
+    assertThat(ShadowTrace.getCounters()).isEmpty();
   }
 
   @Test

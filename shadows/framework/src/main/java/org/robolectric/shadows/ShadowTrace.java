@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
@@ -39,7 +40,7 @@ public class ShadowTrace {
 
   private static final Set<AsyncTraceSection> previousAsyncSections = new HashSet<>();
 
-  private static final List<Counter> counters = new ArrayList<>();
+  private static final List<Counter> counters = Collections.synchronizedList(new ArrayList<>());
 
   private static final boolean CRASH_ON_INCORRECT_USAGE_DEFAULT = true;
   private static boolean crashOnIncorrectUsage = CRASH_ON_INCORRECT_USAGE_DEFAULT;
@@ -127,7 +128,7 @@ public class ShadowTrace {
   }
 
   @Implementation(minSdk = Q)
-  protected static void setCounter(String counterName, long counterValue) {
+  protected static synchronized void setCounter(String counterName, long counterValue) {
     verifyNotNull(counterName);
     counters.add(Counter.newBuilder().setName(counterName).setValue(counterValue).build());
   }
@@ -148,17 +149,17 @@ public class ShadowTrace {
   }
 
   /** Returns a set of all the current active async trace sections. */
-  public static ImmutableSet<AsyncTraceSection> getCurrentAsyncSections() {
+  public static synchronized ImmutableSet<AsyncTraceSection> getCurrentAsyncSections() {
     return ImmutableSet.copyOf(currentAsyncSections);
   }
 
   /** Returns a set of all the previously active async trace sections. */
-  public static ImmutableSet<AsyncTraceSection> getPreviousAsyncSections() {
+  public static synchronized ImmutableSet<AsyncTraceSection> getPreviousAsyncSections() {
     return ImmutableSet.copyOf(previousAsyncSections);
   }
 
   /** Returns an ordered list of previous counters. */
-  public static ImmutableList<Counter> getCounters() {
+  public static synchronized ImmutableList<Counter> getCounters() {
     return ImmutableList.copyOf(counters);
   }
 
@@ -191,7 +192,7 @@ public class ShadowTrace {
 
   /** Resets internal lists of active trace sections. */
   @Resetter
-  public static void reset() {
+  public static synchronized void reset() {
     // TODO: clear sections from other threads
     currentSections.get().clear();
     previousSections.get().clear();
