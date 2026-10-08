@@ -12,7 +12,6 @@ import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceManager;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
-import android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.camera.VirtualCamera;
 import android.companion.virtual.camera.VirtualCameraConfig;
@@ -34,13 +33,9 @@ import android.os.IBinder;
 import android.view.Surface;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -63,17 +58,15 @@ import org.robolectric.util.reflector.WithType;
 @Implements(value = VirtualDeviceManager.class, minSdk = UPSIDE_DOWN_CAKE, isInAndroidSdk = false)
 public class ShadowVirtualDeviceManager {
 
-  private static final List<VirtualDeviceManager.VirtualDevice> mVirtualDevices =
-      new CopyOnWriteArrayList<>();
-  private static final Map<VirtualDeviceListener, Executor> virtualDeviceListeners =
-      new ConcurrentHashMap<>();
+  private static final List<VirtualDeviceManager.VirtualDevice> mVirtualDevices = new ArrayList<>();
   private Context context;
-  private IVirtualDeviceManager service;
+  private static IVirtualDeviceManager service;
+  @RealObject VirtualDeviceManager realObject;
 
   @Filter
   protected void __constructor__(IVirtualDeviceManager service, Context context) {
     this.context = context;
-    this.service = service;
+    ShadowVirtualDeviceManager.service = service;
   }
 
   @SuppressWarnings("ProtectedImplementationLintCheck")
@@ -86,7 +79,7 @@ public class ShadowVirtualDeviceManager {
         reflector(DeviceManagerVirtualDeviceReflector.class)
             .newInstance(service, context, associationId, (VirtualDeviceParams) params);
     mVirtualDevices.add(device);
-    maybeNotifyVirtualDeviceCreated(device.getDeviceId());
+    maybeNotifyVirtualDeviceListeners(context, device.getDeviceId(), /* isClosing= */ false);
     return device;
   }
 
@@ -154,16 +147,6 @@ public class ShadowVirtualDeviceManager {
         .anyMatch(virtualDevice -> virtualDevice.getDeviceId() == deviceId);
   }
 
-  @Filter(minSdk = VANILLA_ICE_CREAM, order = Order.AFTER)
-  protected void registerVirtualDeviceListener(Executor executor, VirtualDeviceListener listener) {
-    virtualDeviceListeners.put(listener, executor);
-  }
-
-  @Filter(minSdk = VANILLA_ICE_CREAM, order = Order.AFTER)
-  protected void unregisterVirtualDeviceListener(VirtualDeviceListener listener) {
-    virtualDeviceListeners.remove(listener);
-  }
-
   /** Shadow for inner class VirtualDeviceManager.VirtualDevice. */
   @Implements(
       value = VirtualDeviceManager.VirtualDevice.class,
@@ -172,7 +155,7 @@ public class ShadowVirtualDeviceManager {
   public static class ShadowVirtualDevice {
     private static final AtomicInteger nextDeviceId = new AtomicInteger(1);
     private static final AtomicInteger nextCameraId = new AtomicInteger(1);
-    static final List<VirtualCamera> virtualCameras = new CopyOnWriteArrayList<>();
+    static final List<VirtualCamera> virtualCameras = new ArrayList<>();
 
     @RealObject VirtualDeviceManager.VirtualDevice realVirtualDevice;
     private VirtualDeviceParams params;
@@ -182,7 +165,7 @@ public class ShadowVirtualDeviceManager {
     private Integer pendingIntentResultCode = LAUNCH_SUCCESS;
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private Context context;
-    private final List<Integer> displayIds = new CopyOnWriteArrayList<>();
+    private final List<Integer> displayIds = new ArrayList<>();
 
     @Filter(order = Order.AFTER)
     protected void __constructor__(
@@ -224,11 +207,9 @@ public class ShadowVirtualDeviceManager {
     @SuppressWarnings("ProtectedImplementationLintCheck")
     @Implementation
     public void close() {
-      if (isClosed.compareAndSet(false, true)) {
-        mVirtualDevices.remove(realVirtualDevice);
-        removeDisplays();
-        maybeNotifyVirtualDeviceClosed(deviceId);
-      }
+      isClosed.set(true);
+      mVirtualDevices.remove(realVirtualDevice);
+      maybeNotifyVirtualDeviceListeners(context, deviceId, /* isClosing= */ true);
     }
 
     public int[] getDisplayIds() {
@@ -386,12 +367,11 @@ public class ShadowVirtualDeviceManager {
         @Nonnull VirtualDisplayConfig config,
         @Nullable Executor executor,
         @Nullable VirtualDisplay.Callback callback) {
-      // Pre-register the display ID that DisplayManagerGlobal will assign so that synchronous
-      // DisplayListener.onDisplayAdded callbacks can see it in getDisplayIds().
-      DisplayManagerGlobal displayManagerGlobal = DisplayManagerGlobal.getInstance();
-      ShadowDisplayManagerGlobal shadowDisplayManagerGlobal = Shadow.extract(displayManagerGlobal);
-      displayIds.add(shadowDisplayManagerGlobal.getNextDisplayId());
-      return displayManagerGlobal.createVirtualDisplay(context, null, config, callback, executor);
+      VirtualDisplay display =
+          DisplayManagerGlobal.getInstance()
+              .createVirtualDisplay(context, null, config, callback, executor);
+      displayIds.add(display.getDisplay().getDisplayId());
+      return display;
     }
 
     @Implementation
@@ -439,49 +419,26 @@ public class ShadowVirtualDeviceManager {
     public static void reset() {
       nextDeviceId.set(1);
       nextCameraId.set(1);
-      for (VirtualDeviceManager.VirtualDevice virtualDevice : mVirtualDevices) {
-        ((ShadowVirtualDevice) Shadow.extract(virtualDevice)).close();
-      }
       mVirtualDevices.clear();
       virtualCameras.clear();
-    }
-
-    private void removeDisplays() {
-      DisplayManagerGlobal displayManagerGlobal = ShadowDisplayManagerGlobal.getGlobalInstance();
-      if (displayManagerGlobal != null) {
-        ShadowDisplayManagerGlobal shadowDisplayManagerGlobal =
-            Shadow.extract(displayManagerGlobal);
-        for (int displayId : displayIds) {
-          try {
-            shadowDisplayManagerGlobal.removeDisplay(displayId);
-          } catch (IllegalStateException e) {
-            // Display was already removed (e.g. via VirtualDisplay.release()).
-          }
-        }
-      }
-      displayIds.clear();
+      service = null;
     }
   }
 
-  @Resetter
-  public static void reset() {
-    virtualDeviceListeners.clear();
-  }
-
-  private static void maybeNotifyVirtualDeviceCreated(int deviceId) {
-    maybeNotifyVirtualDeviceListeners(listener -> listener.onVirtualDeviceCreated(deviceId));
-  }
-
-  private static void maybeNotifyVirtualDeviceClosed(int deviceId) {
-    maybeNotifyVirtualDeviceListeners(listener -> listener.onVirtualDeviceClosed(deviceId));
-  }
-
-  private static void maybeNotifyVirtualDeviceListeners(Consumer<VirtualDeviceListener> action) {
+  private static void maybeNotifyVirtualDeviceListeners(
+      Context context, int deviceId, boolean isClosing) {
     if (getApiLevel() > UPSIDE_DOWN_CAKE) {
-      for (Map.Entry<VirtualDeviceListener, Executor> entry : virtualDeviceListeners.entrySet()) {
-        VirtualDeviceListener listener = entry.getKey();
-        Executor executor = entry.getValue();
-        executor.execute(() -> action.accept(listener));
+      VirtualDeviceManager vdm = context.getSystemService(VirtualDeviceManager.class);
+      List<?> listeners =
+          reflector(VirtualDeviceManagerReflector.class, vdm).getVirtualDeviceListeners();
+      for (Object listener : listeners) {
+        if (isClosing) {
+          reflector(VirtualDeviceListenerDelegateReflector.class, listener)
+              .onVirtualDeviceClosed(deviceId);
+        } else {
+          reflector(VirtualDeviceListenerDelegateReflector.class, listener)
+              .onVirtualDeviceCreated(deviceId);
+        }
       }
     }
   }
@@ -592,6 +549,22 @@ public class ShadowVirtualDeviceManager {
         int flags,
         Executor executor,
         VirtualDisplay.Callback callback);
+  }
+
+  @ForType(VirtualDeviceManager.class)
+  private interface VirtualDeviceManagerReflector {
+
+    @Accessor("mVirtualDeviceListeners")
+    List<?> getVirtualDeviceListeners();
+  }
+
+  @ForType(
+      className = "android.companion.virtual.VirtualDeviceManager$VirtualDeviceListenerDelegate")
+  private interface VirtualDeviceListenerDelegateReflector {
+
+    void onVirtualDeviceCreated(int deviceId);
+
+    void onVirtualDeviceClosed(int deviceId);
   }
 
   private interface VirtualDeviceDelegate {
