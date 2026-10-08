@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
@@ -255,7 +256,8 @@ public class ShadowSubscriptionManager {
    * List of listeners to be notified if the list of {@link SubscriptionInfo} changes. Managed by
    * {@link #addOnSubscriptionsChangedListener} and {@link #removeOnSubscriptionsChangedListener}.
    */
-  private final List<OnSubscriptionsChangedListenerWrapper> listeners = new ArrayList<>();
+  private final List<OnSubscriptionsChangedListenerWrapper> listeners =
+      new CopyOnWriteArrayList<>();
 
   /**
    * Cache of subscription ids used by {@link #isNetworkRoaming}. Managed by {@link
