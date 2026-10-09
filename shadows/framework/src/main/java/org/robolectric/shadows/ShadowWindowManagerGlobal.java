@@ -65,6 +65,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -106,6 +107,25 @@ public class ShadowWindowManagerGlobal {
 
   static void notifyResize(IWindow window) {
     getWindowSessionDelegate().sendResize(window);
+  }
+
+  /** Gives the windows on a display the frames and the configuration they have there now. */
+  static void resizeWindowsOnDisplay(int displayId) {
+    WindowSessionDelegate delegate = getWindowSessionDelegate();
+    for (Entry<IWindow, WindowInfo> window : new ArrayList<>(delegate.windows.entrySet())) {
+      if (window.getValue().displayId == displayId) {
+        delegate.sendResize(window.getKey());
+      }
+    }
+  }
+
+  /** Moves the windows of the activity with the given token to another display. */
+  static void moveWindowsToDisplay(IBinder activityToken, int displayId) {
+    for (WindowInfo windowInfo : getWindowSessionDelegate().windows.values()) {
+      if (windowInfo.attrs.token == activityToken) {
+        windowInfo.displayId = displayId;
+      }
+    }
   }
 
   /**
@@ -376,6 +396,17 @@ public class ShadowWindowManagerGlobal {
                     ? windowLayoutResult.insetsState
                     : findFirst(InsetsState.class, args))
                 : null);
+        // As when it is resized, a window on another display is told that display's configuration.
+        if (WindowConfigurations.getDisplayOverrideConfiguration(windowInfo.displayId) != null) {
+          MergedConfiguration mergedConfiguration = getMergedConfiguration(windowInfo.displayId);
+          if (windowLayoutResult != null) {
+            windowLayoutResult.mergedConfiguration.setTo(mergedConfiguration);
+          } else {
+            findFirstOpt(MergedConfiguration.class, args)
+                .ifPresent(
+                    outMergedConfiguration -> outMergedConfiguration.setTo(mergedConfiguration));
+          }
+        }
       }
 
       return inTouchMode ? RELAYOUT_RES_IN_TOUCH_MODE : 0;
@@ -573,7 +604,7 @@ public class ShadowWindowManagerGlobal {
             boolean.class /* dragResizing */)) {
           ClassParameterBuilder rlrArgs = new ClassParameterBuilder();
           rlrArgs.add(ClientWindowFrames.class, windowInfo.frames);
-          rlrArgs.add(MergedConfiguration.class, new MergedConfiguration(configuration));
+          rlrArgs.add(MergedConfiguration.class, getMergedConfiguration(windowInfo.displayId));
           rlrArgs.add(InsetsState.class, windowInfo.insetsState);
           rlrArgs.add(InsetsSourceControl.Array.class, new InsetsSourceControl.Array());
           WindowRelayoutResult layout =
@@ -603,7 +634,7 @@ public class ShadowWindowManagerGlobal {
         /* newConfig */ args.add(Configuration.class, configuration);
       } else {
         /* newMergedConfiguration */ args.add(
-            MergedConfiguration.class, new MergedConfiguration(configuration));
+            MergedConfiguration.class, getMergedConfiguration(windowInfo.displayId));
       }
       /* backDropFrame */ args.addIf(sdk >= N && sdk <= R, Rect.class, new Rect());
       if (sdk >= TIRAMISU) {
@@ -623,6 +654,20 @@ public class ShadowWindowManagerGlobal {
         /* activityWindowInfo */ args.add(ActivityWindowInfo.class, null);
       }
       callInstanceMethod(window, "resized", args.build());
+    }
+
+    /**
+     * Returns the configuration the window manager reports to a window on the given display: the
+     * global one, and what the display overrides in it if that isn't the default display.
+     */
+    private static MergedConfiguration getMergedConfiguration(int displayId) {
+      Configuration globalConfig =
+          RuntimeEnvironment.getApplication().getResources().getConfiguration();
+      Configuration displayOverrideConfig =
+          WindowConfigurations.getDisplayOverrideConfiguration(displayId);
+      return displayOverrideConfig == null
+          ? new MergedConfiguration(globalConfig)
+          : new MergedConfiguration(globalConfig, displayOverrideConfig);
     }
 
     private void transferWindowInsetsControlTo(WindowInfo windowInfo) {

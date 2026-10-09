@@ -16,5 +16,10 @@
   <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-  <application />
+  <application>
+    <activity
+        android:name="android.server.wm.multidisplay.MultiDisplayPolicyTests$ResizeableActivity"
+        android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|colorMode|density|touchscreen"
+        android:exported="false" />
+  </application>
 </manifest>
