@@ -171,6 +171,10 @@ public class ShadowDisplayManagerGlobal {
     mDm.removeDisplay(displayId);
   }
 
+  int getNextDisplayId() {
+    return mDm.nextDisplayId;
+  }
+
   /**
    * A delegating proxy for the IDisplayManager system service.
    *
@@ -305,6 +309,9 @@ public class ShadowDisplayManagerGlobal {
     public void resizeVirtualDisplay(
         IVirtualDisplayCallback token, int width, int height, int densityDpi) {
       Integer id = virtualDisplayIds.get(token);
+      if (id == null) {
+        return;
+      }
       DisplayInfo displayInfo = displayInfos.get(id);
 
       displayInfo.logicalDensityDpi = densityDpi;
@@ -327,6 +334,9 @@ public class ShadowDisplayManagerGlobal {
     // @Override
     public void setVirtualDisplayState(IVirtualDisplayCallback token, boolean isOn) {
       Integer id = virtualDisplayIds.get(token);
+      if (id == null) {
+        return;
+      }
       DisplayInfo displayInfo = displayInfos.get(id);
       int newState = isOn ? Display.STATE_ON : Display.STATE_OFF;
       if (displayInfo.state != newState) {
@@ -392,6 +402,7 @@ public class ShadowDisplayManagerGlobal {
       }
 
       displayInfos.remove(displayId);
+      virtualDisplayIds.values().removeIf(id -> id == displayId);
       notifyListeners(displayId, EVENT_DISPLAY_REMOVED);
     }
 
