@@ -1,8 +1,6 @@
 package org.robolectric.nativeruntime;
 
-import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
-import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 
@@ -190,30 +188,6 @@ public final class DefaultNativeRuntimeLoaderTest {
     assertThat((Object) defaultNativeRuntimeLoader.getDirectory()).isNull();
     defaultNativeRuntimeLoader.ensureLoaded();
     assertThat((Object) defaultNativeRuntimeLoader.getDirectory()).isNotNull();
-  }
-
-  @Test
-  @Config(sdk = VANILLA_ICE_CREAM)
-  public void getCoreClassNatives_vanillaIceCream_excludesResourceNatives() {
-    DefaultNativeRuntimeLoader loader = new DefaultNativeRuntimeLoader();
-    assertThat(loader.getCoreClassNatives())
-        .containsNoneOf(
-            "android.content.res.ApkAssets",
-            "android.content.res.AssetManager",
-            "android.content.res.StringBlock",
-            "android.content.res.XmlBlock");
-  }
-
-  @Test
-  @Config(minSdk = BAKLAVA)
-  public void getCoreClassNatives_baklavaAndAbove_includesResourceNatives() {
-    DefaultNativeRuntimeLoader loader = new DefaultNativeRuntimeLoader();
-    assertThat(loader.getCoreClassNatives())
-        .containsAtLeast(
-            "android.content.res.ApkAssets",
-            "android.content.res.AssetManager",
-            "android.content.res.StringBlock",
-            "android.content.res.XmlBlock");
   }
 
   private static boolean hasResource(String name) {

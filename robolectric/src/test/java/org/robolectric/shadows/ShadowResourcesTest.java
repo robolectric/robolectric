@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
@@ -35,7 +34,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.ResourcesMode.Mode;
-import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 @ResourcesMode(Mode.BINARY)
@@ -314,15 +312,6 @@ public class ShadowResourcesTest {
 
     assertThat(basicColor).isNotEqualTo(0);
     assertThat(resources.getColor(basicColor, /* theme= */ null)).isEqualTo(-393729);
-  }
-
-  @Test
-  @Config(minSdk = BAKLAVA)
-  @ResourcesMode(Mode.NATIVE)
-  public void nativeResourcesMode_loadsResources() {
-    assertThat((Object) Shadow.extract(resources.getAssets()))
-        .isInstanceOf(ShadowNativeAssetManager.class);
-    assertThat(resources.getString(R.string.hello)).isEqualTo("Hello");
   }
 
   @Ignore("Re-enable when performing benchmarks")

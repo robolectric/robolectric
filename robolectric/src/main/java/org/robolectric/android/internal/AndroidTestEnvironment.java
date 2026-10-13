@@ -65,7 +65,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ConscryptMode;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.LooperMode;
-import org.robolectric.annotation.ResourcesMode;
 import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
@@ -729,10 +728,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
   private static boolean shouldLoadNativeRuntime() {
     GraphicsMode.Mode graphicsMode = ConfigurationRegistry.get(GraphicsMode.Mode.class);
     SQLiteMode.Mode sqliteMode = ConfigurationRegistry.get(SQLiteMode.Mode.class);
-    ResourcesMode.Mode resourcesMode = ConfigurationRegistry.get(ResourcesMode.Mode.class);
-    return graphicsMode == GraphicsMode.Mode.NATIVE
-        || sqliteMode == SQLiteMode.Mode.NATIVE
-        || resourcesMode == ResourcesMode.Mode.NATIVE;
+    return graphicsMode == GraphicsMode.Mode.NATIVE || sqliteMode == SQLiteMode.Mode.NATIVE;
   }
 
   // TODO move/replace this with packageManager
