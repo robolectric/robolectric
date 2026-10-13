@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -25,7 +27,9 @@ import android.app.Instrumentation;
 import android.app.LoadedApk;
 import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
+import android.app.WindowConfiguration;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -34,7 +38,10 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Rect;
+import android.hardware.display.DisplayManagerGlobal;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Build.VERSION;
@@ -44,11 +51,16 @@ import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.OutcomeReceiver;
 import android.os.Parcel;
+import android.provider.Settings;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
+import android.util.DisplayMetrics;
+import android.util.Rational;
 import android.util.SparseArray;
 import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -57,13 +69,16 @@ import android.view.ViewGroup;
 import android.view.Window;
 import com.android.internal.app.IVoiceInteractor;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -105,6 +120,10 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private int streamType = -1;
   private boolean mIsTaskRoot = true;
   private Menu optionsMenu;
+  // The windows that activities left to enter fullscreen mode on their own request.
+  private static final Map<ActivityController<?>, Configuration> fullscreenRestoreWindows =
+      Collections.synchronizedMap(new WeakHashMap<>());
+
   private ComponentName callingActivity;
   private PermissionsRequest lastRequestedPermission;
   private ActivityController controller;
@@ -113,6 +132,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean throwIntentSenderException;
   private boolean hasReportedFullyDrawn = false;
   private boolean isInPictureInPictureMode = false;
+  private boolean isTopResumedActivity = false;
+  // Whether the activity was launched into a window of its own, and hasn't taken the focus yet.
+  private boolean launchedInWindow = false;
   private Object splashScreen = null;
   private boolean showWhenLocked = false;
   private boolean turnScreenOn = false;
@@ -190,8 +212,39 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     //  static (i.e. global) state instead of instance state. For now enable only when the display
     //  is requested to a non-default display which requires a separate context to function
     //  properly.
+    int launchDisplayId =
+        displayId == Display.INVALID_DISPLAY ? Display.DEFAULT_DISPLAY : displayId;
+    // An activity that can't be in multi-window mode fills its display, whatever bounds it is
+    // launched with.
+    Rect launchBounds =
+        activityOptions != null
+                && RuntimeEnvironment.getApiLevel() >= P
+                && WindowConfigurations.supportsMultiWindow(activityInfo, launchDisplayId)
+            ? ActivityOptions.fromBundle(activityOptions).getLaunchBounds()
+            : null;
+    // An activity started adjacent to another launches in the other half of split screen.
+    Configuration adjacentLaunchOverrideConfig =
+        overrideConfig == null
+            ? Shadow.<ShadowInstrumentation>extract(instrumentation)
+                .takeAdjacentLaunchOverrideConfiguration(intent, activityInfo, launchDisplayId)
+            : null;
+    // An activity that fills its display launches in the orientation it declares: its display
+    // rotates, or it is letterboxed on a display that ignores orientation requests.
+    requestedOrientation = activityInfo.screenOrientation;
+    Configuration letterboxOverrideConfig = null;
+    if (overrideConfig == null && launchBounds == null && adjacentLaunchOverrideConfig == null) {
+      letterboxOverrideConfig =
+          WindowConfigurations.getLetterboxOverrideConfiguration(
+              application.getApplicationInfo(), requestedOrientation, launchDisplayId);
+      if (letterboxOverrideConfig == null) {
+        rotateDisplayToRequestedOrientation(launchDisplayId);
+      }
+    }
     if ((Boolean.getBoolean("robolectric.createActivityContexts")
-            || (displayId != Display.DEFAULT_DISPLAY && displayId != Display.INVALID_DISPLAY))
+            || (displayId != Display.DEFAULT_DISPLAY && displayId != Display.INVALID_DISPLAY)
+            || launchBounds != null
+            || adjacentLaunchOverrideConfig != null
+            || letterboxOverrideConfig != null)
         && RuntimeEnvironment.getApiLevel() >= O) {
       LoadedApk loadedApk =
           activityThread.getPackageInfo(
@@ -199,10 +252,28 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       LoadedApkReflector loadedApkReflector = reflector(LoadedApkReflector.class, loadedApk);
       loadedApkReflector.setResources(application.getResources());
       loadedApkReflector.setApplication(application);
+      // The window manager gives an activity the configuration of its window: a window of its own,
+      // such as a freeform window, or one filling the display it is on.
+      Configuration activityOverrideConfig =
+          overrideConfig != null
+              ? overrideConfig
+              : adjacentLaunchOverrideConfig != null
+                  ? adjacentLaunchOverrideConfig
+                  : launchBounds != null
+                      ? WindowConfigurations.getFreeformOverrideConfiguration(
+                          launchDisplayId, launchBounds, activityInfo)
+                      : letterboxOverrideConfig != null
+                          ? letterboxOverrideConfig
+                          : WindowConfigurations.getDisplayOverrideConfiguration(displayId);
       activityContext =
           reflector(ContextImplReflector.class)
               .createActivityContext(
-                  activityThread, loadedApk, activityInfo, token, displayId, overrideConfig);
+                  activityThread,
+                  loadedApk,
+                  activityInfo,
+                  token,
+                  displayId,
+                  activityOverrideConfig);
       reflector(ContextImplReflector.class, activityContext).setOuterContext(realActivity);
       // This is not what the SDK does but for backwards compatibility with previous versions of
       // robolectric, which did not use a separate activity context, move the theme from the
@@ -227,6 +298,20 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
             token,
             activityTitle,
             lastNonConfigurationInstances);
+    if (activityContext != baseContext) {
+      // Activity#attach records the global configuration, but the activity's own context can have
+      // another one, such as the configuration of the display it was launched on.
+      Configuration activityConfig = activityContext.getResources().getConfiguration();
+      reflector(ActivityReflector.class, realActivity).getCurrentConfig().setTo(activityConfig);
+      if (WindowConfigurations.isInMultiWindowMode(activityConfig)) {
+        inMultiWindowMode = true;
+      }
+      if (WindowConfigurations.isInPictureInPictureMode(activityConfig)) {
+        isInPictureInPictureMode = true;
+      }
+      launchedInWindow =
+          overrideConfig == null && (launchBounds != null || adjacentLaunchOverrideConfig != null);
+    }
 
     int theme = activityInfo.getThemeResource();
     if (theme != 0) {
@@ -455,7 +540,60 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       getParent().setRequestedOrientation(requestedOrientation);
     } else {
       this.requestedOrientation = requestedOrientation;
+      // As the window manager does, apply the request once the activity's current work is done.
+      if (controller != null && ShadowLooper.looperMode() != LooperMode.Mode.LEGACY) {
+        new Handler(Looper.getMainLooper()).post(this::applyRequestedOrientation);
+      }
     }
+  }
+
+  /**
+   * Applies the orientation the activity requests, as the window manager does: an activity that
+   * fills its display rotates it, or is letterboxed if the display ignores orientation requests.
+   * The request is ignored in multi-window mode, and on a large screen for an app that is
+   * universally resizeable.
+   */
+  void applyRequestedOrientation() {
+    if (controller == null
+        || controller.get() != realActivity
+        || realActivity.isFinishing()
+        || realActivity.isDestroyed()
+        || WindowConfigurations.isInMultiWindowMode(
+            realActivity.getResources().getConfiguration())) {
+      return;
+    }
+    int displayId = getDisplayId();
+    if (WindowConfigurations.isIgnoringOrientationRequest(displayId)
+        || WindowConfigurations.isUniversalResizeable(
+            realActivity.getApplicationInfo(), displayId)) {
+      // The activity's letterbox, if it has one, changes instead of the display.
+      DisplayChanges.changeConfigurationIfNeeded(realActivity);
+    } else if (rotateDisplayToRequestedOrientation(displayId) && controller.get() == realActivity) {
+      DisplayChanges.changeConfigurationIfNeeded(realActivity);
+    }
+  }
+
+  /** Rotates the display to the orientation the activity requests, and returns whether it did. */
+  private boolean rotateDisplayToRequestedOrientation(int displayId) {
+    int orientation = WindowConfigurations.getFixedOrientation(requestedOrientation);
+    DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    if (orientation == Configuration.ORIENTATION_UNDEFINED
+        || displayInfo == null
+        || (orientation == Configuration.ORIENTATION_PORTRAIT)
+            == (displayInfo.logicalHeight >= displayInfo.logicalWidth)
+        || WindowConfigurations.isIgnoringOrientationRequest(displayId)
+        || WindowConfigurations.isUniversalResizeable(
+            RuntimeEnvironment.getApplication().getApplicationInfo(), displayId)) {
+      return false;
+    }
+    String qualifiers = orientation == Configuration.ORIENTATION_PORTRAIT ? "+port" : "+land";
+    if (displayId == Display.DEFAULT_DISPLAY) {
+      RuntimeEnvironment.setQualifiers(qualifiers);
+    } else {
+      // The activities on the display receive the change as on a device.
+      ShadowDisplayManager.changeDisplay(displayId, qualifiers);
+    }
+    return true;
   }
 
   @Implementation
@@ -677,6 +815,87 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   /** For internal use only. Not for public use. */
   public <T extends Activity> void attachController(ActivityController controller) {
     this.controller = controller;
+  }
+
+  @Nullable
+  ActivityController<?> getController() {
+    return controller;
+  }
+
+  @Implementation(minSdk = Q)
+  protected void performTopResumedActivityChanged(boolean isTopResumedActivity, String reason) {
+    if (isTopResumedActivity && launchedInWindow) {
+      // As on a device, an activity launched into a window of its own takes the focus.
+      launchedInWindow = false;
+      takeFocusFromOtherActivities();
+    }
+    this.isTopResumedActivity = isTopResumedActivity;
+    reflector(DirectActivityReflector.class, realActivity)
+        .performTopResumedActivityChanged(isTopResumedActivity, reason);
+  }
+
+  /**
+   * Moves the focus to this activity if it shares the screen with others, as touching its window
+   * does on a device.
+   */
+  void onTouched() {
+    if (controller != null
+        && realActivity.isResumed()
+        && WindowConfigurations.isInMultiWindowMode(
+            realActivity.getResources().getConfiguration())) {
+      takeFocus();
+    }
+  }
+
+  /**
+   * Makes the activity leave split screen as when the user drags the divider to an edge: it fills
+   * its display, and is stopped if it is on the side that is dismissed, or takes the focus.
+   */
+  void leaveSplitScreen(boolean dismissed) {
+    if (controller == null) {
+      return;
+    }
+    changeWindow(null);
+    Activity activity = (Activity) controller.get();
+    if (!activity.isResumed()) {
+      return;
+    }
+    if (dismissed) {
+      controller.topActivityResumed(false).pause().stop();
+    } else {
+      Shadow.<ShadowActivity>extract(activity).takeFocus();
+    }
+  }
+
+  /** Makes the activity the top resumed one, with the focused window, instead of the others. */
+  private void takeFocus() {
+    takeFocusFromOtherActivities();
+    if (!isTopResumedActivity) {
+      controller.topActivityResumed(true);
+    }
+    if (!hasWindowFocus(realActivity)) {
+      controller.windowFocusChanged(true);
+    }
+  }
+
+  private void takeFocusFromOtherActivities() {
+    for (Activity activity : LiveActivities.get()) {
+      ShadowActivity shadowActivity = Shadow.extract(activity);
+      if (activity == realActivity || shadowActivity.controller == null) {
+        continue;
+      }
+      if (shadowActivity.isTopResumedActivity) {
+        shadowActivity.controller.topActivityResumed(false);
+      }
+      if (hasWindowFocus(activity)) {
+        shadowActivity.controller.windowFocusChanged(false);
+      }
+    }
+  }
+
+  private static boolean hasWindowFocus(Activity activity) {
+    View decorView = activity.getWindow().peekDecorView();
+    return decorView != null && decorView.hasWindowFocus();
   }
 
   /** Sets if startIntentSenderForRequestCode will throw an IntentSender.SendIntentException. */
@@ -925,6 +1144,125 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     inMultiWindowMode = value;
   }
 
+  /**
+   * Puts the activity in a freeform window with the given bounds on its display, as when the user
+   * moves or resizes it, or makes its window fill the display if the bounds are null.
+   *
+   * <p>As on a device, the activity receives {@link Activity#onMultiWindowModeChanged} if it enters
+   * or leaves multi-window mode, and the configuration change for its new window, or is recreated
+   * if it doesn't handle the change. An activity that shares the application's context, as one
+   * launched without {@link ActivityOptions#setLaunchBounds} does, can only enter a window by being
+   * recreated. Requires P or later.
+   *
+   * @throws IllegalStateException if the window manager wouldn't put the activity in a freeform
+   *     window: it isn't resizeable, and isn't on a large screen on S or later.
+   */
+  public void setWindowBounds(@Nullable Rect bounds) {
+    if (bounds == null || RuntimeEnvironment.getApiLevel() < P) {
+      changeWindow(null);
+      return;
+    }
+    int displayId = getDisplayId();
+    ActivityInfo activityInfo = lookUpActivityInfo();
+    if (!WindowConfigurations.supportsMultiWindow(activityInfo, displayId)) {
+      throw new IllegalStateException(
+          "The activity isn't resizeable, so it can't be in a freeform window on this display");
+    }
+    changeWindow(
+        WindowConfigurations.getFreeformOverrideConfiguration(displayId, bounds, activityInfo));
+  }
+
+  /**
+   * Puts the activity in the system's split screen, as when the user picks it for split screen: in
+   * the top or left half of its display, or in the other half if another activity is there. It
+   * keeps its half, recomputed when the display changes, until {@link #setWindowBounds} changes its
+   * window.
+   *
+   * <p>As on a device, an activity it starts with {@link Intent#FLAG_ACTIVITY_LAUNCH_ADJACENT}
+   * launches in the other half, and {@link ShadowDisplayManager#setSplitScreenDividerPosition}
+   * moves the divider between them. The activity receives the change as {@link #setWindowBounds}
+   * describes. Requires P or later.
+   *
+   * @throws IllegalStateException if the window manager wouldn't put the activity in split screen:
+   *     it isn't resizeable and isn't on a large screen on S or later, or its minimal size doesn't
+   *     fit in its half of a display that respects it.
+   */
+  public void enterSplitScreen() {
+    int displayId = getDisplayId();
+    boolean topOrLeftIsTaken = false;
+    for (Activity activity : LiveActivities.get()) {
+      if (activity != realActivity
+          && activity.getWindowManager().getDefaultDisplay().getDisplayId() == displayId
+          && WindowConfigurations.isInTopOrLeftOfSplitScreen(
+              activity.getResources().getConfiguration())) {
+        topOrLeftIsTaken = true;
+      }
+    }
+    if (RuntimeEnvironment.getApiLevel() >= P
+        && !WindowConfigurations.supportsSplitScreen(
+            lookUpActivityInfo(), displayId, !topOrLeftIsTaken)) {
+      throw new IllegalStateException(
+          "The activity can't be in split screen on this display: it isn't resizeable, or its"
+              + " minimal size doesn't fit");
+    }
+    changeWindow(
+        WindowConfigurations.getSplitScreenOverrideConfiguration(displayId, !topOrLeftIsTaken));
+  }
+
+  private ActivityInfo lookUpActivityInfo() {
+    try {
+      return realActivity
+          .getPackageManager()
+          .getActivityInfo(realActivity.getComponentName(), /* flags= */ 0);
+    } catch (NameNotFoundException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  private void changeWindow(@Nullable Configuration windowOverrideConfig) {
+    if (RuntimeEnvironment.getApiLevel() < P) {
+      throw new IllegalStateException("Windows of their own require P or later");
+    }
+    if (controller == null) {
+      throw new IllegalStateException("The activity was not started by an ActivityController");
+    }
+    fullscreenRestoreWindows.remove(controller);
+    int displayId = getDisplayId();
+    Resources applicationResources = realActivity.getApplicationContext().getResources();
+    Configuration configuration =
+        new Configuration(
+            WindowConfigurations.getDisplayConfiguration(
+                displayId, applicationResources.getConfiguration()));
+    DisplayMetrics displayMetrics =
+        WindowConfigurations.getDisplayMetrics(displayId, applicationResources.getDisplayMetrics());
+    if (windowOverrideConfig != null) {
+      configuration.updateFrom(windowOverrideConfig);
+      displayMetrics =
+          WindowConfigurations.getWindowMetrics(
+              displayMetrics, windowOverrideConfig.windowConfiguration.getBounds());
+    } else {
+      configuration.windowConfiguration.setWindowingMode(
+          WindowConfiguration.WINDOWING_MODE_FULLSCREEN);
+    }
+    boolean wasInPictureInPictureMode =
+        WindowConfigurations.isInPictureInPictureMode(
+            realActivity.getResources().getConfiguration());
+    controller.configurationChange(configuration, displayMetrics);
+    Activity activity = (Activity) controller.get();
+    boolean isInPictureInPictureMode = WindowConfigurations.isInPictureInPictureMode(configuration);
+    Shadow.<ShadowActivity>extract(activity).isInPictureInPictureMode = isInPictureInPictureMode;
+    // As on a device, an activity is paused in picture-in-picture mode, and resumed when it leaves.
+    if (isInPictureInPictureMode && activity.isResumed()) {
+      controller.topActivityResumed(false).pause();
+    } else if (wasInPictureInPictureMode && !isInPictureInPictureMode && !activity.isResumed()) {
+      controller.resume().topActivityResumed(true);
+    }
+  }
+
+  private int getDisplayId() {
+    return realActivity.getWindowManager().getDefaultDisplay().getDisplayId();
+  }
+
   @Implementation(minSdk = N)
   protected boolean isInMultiWindowMode() {
     return inMultiWindowMode;
@@ -937,13 +1275,153 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation(minSdk = N)
   protected void enterPictureInPictureMode() {
-    isInPictureInPictureMode = true;
+    enterPictureInPictureMode((Rational) null);
   }
 
   @Implementation(minSdk = O)
   protected boolean enterPictureInPictureMode(PictureInPictureParams params) {
-    isInPictureInPictureMode = true;
+    enterPictureInPictureMode((Rational) ReflectionHelpers.getField(params, "mAspectRatio"));
     return true;
+  }
+
+  /**
+   * Puts the activity in picture-in-picture mode. As the window manager does, once the activity's
+   * current work is done it gets a pinned window, receives {@link
+   * Activity#onPictureInPictureModeChanged} and is paused. {@link #setWindowBounds} with null
+   * bounds makes its window fill the display again, as when the user expands it.
+   */
+  private void enterPictureInPictureMode(@Nullable Rational aspectRatio) {
+    isInPictureInPictureMode = true;
+    if (controller != null
+        && RuntimeEnvironment.getApiLevel() >= P
+        && ShadowLooper.looperMode() != LooperMode.Mode.LEGACY) {
+      new Handler(Looper.getMainLooper())
+          .post(
+              () -> {
+                if (isInPictureInPictureMode
+                    && controller.get() == realActivity
+                    && !realActivity.isFinishing()
+                    && !realActivity.isDestroyed()) {
+                  changeWindow(
+                      WindowConfigurations.getPictureInPictureOverrideConfiguration(
+                          getDisplayId(), aspectRatio));
+                }
+              });
+    }
+  }
+
+  /**
+   * Makes the activity leave its freeform window to fill its display, or restores the window it
+   * left that way, if the window manager of the SDK would. As on a device, the callback gets the
+   * result, and the activity its new window, once the activity's current work is done.
+   */
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected void requestFullscreenMode(
+      int request, @Nullable @ClassName("android.os.OutcomeReceiver") Object approvalCallback) {
+    if (controller == null) {
+      reflector(DirectActivityReflector.class, realActivity)
+          .requestFullscreenMode(request, approvalCallback);
+      return;
+    }
+    // The activity can be recreated before its request is handled.
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                Shadow.<ShadowActivity>extract(controller.get())
+                    .handleFullscreenRequest(request, approvalCallback));
+  }
+
+  @SuppressWarnings("unchecked")
+  private void handleFullscreenRequest(int request, @Nullable Object approvalCallback) {
+    if (realActivity.isDestroyed()) {
+      return;
+    }
+    OutcomeReceiver<Void, Throwable> callback = (OutcomeReceiver<Void, Throwable>) approvalCallback;
+    String error = getFullscreenRequestError(request);
+    if (error != null) {
+      if (callback != null) {
+        callback.onError(new IllegalStateException(error));
+      }
+      return;
+    }
+    if (callback != null) {
+      callback.onResult(null);
+    }
+    if (request == Activity.FULLSCREEN_MODE_REQUEST_ENTER) {
+      Configuration configuration = realActivity.getResources().getConfiguration();
+      Configuration restoreWindow = null;
+      if (WindowConfigurations.isInFreeformWindow(configuration)
+          || WindowConfigurations.isInPictureInPictureMode(configuration)) {
+        restoreWindow = WindowConfigurations.getCurrentWindowOverrideConfiguration(realActivity);
+        changeWindow(null);
+      }
+      fullscreenRestoreWindows.put(controller, restoreWindow);
+    } else {
+      Configuration restoreWindow = fullscreenRestoreWindows.remove(controller);
+      if (restoreWindow != null) {
+        changeWindow(restoreWindow);
+      }
+    }
+  }
+
+  /**
+   * Returns why the window manager of the SDK rejects the activity's request to enter or exit
+   * fullscreen mode, or null if it approves it.
+   */
+  @Nullable
+  private String getFullscreenRequestError(int request) {
+    Configuration configuration = realActivity.getResources().getConfiguration();
+    int apiLevel = RuntimeEnvironment.getApiLevel();
+    boolean isInFreeformWindow = WindowConfigurations.isInFreeformWindow(configuration);
+    boolean isInPictureInPictureMode = WindowConfigurations.isInPictureInPictureMode(configuration);
+    String notInFullscreenWithHistory =
+        "The window is not in fullscreen by calling the requestFullscreenMode API before, such"
+            + " that cannot be restored.";
+    if (request == Activity.FULLSCREEN_MODE_REQUEST_ENTER) {
+      if (apiLevel == UPSIDE_DOWN_CAKE && !isInFreeformWindow) {
+        return "The window is not a freeform window, the request to get into fullscreen cannot be"
+            + " approved.";
+      }
+      if (apiLevel >= BAKLAVA && !isInFreeformWindow && !isInPictureInPictureMode) {
+        return "The window is already fully expanded.";
+      }
+    } else if (WindowConfigurations.isInMultiWindowMode(configuration)) {
+      return notInFullscreenWithHistory;
+    }
+    if (apiLevel >= VANILLA_ICE_CREAM && isInPictureInPictureMode) {
+      return null;
+    }
+    if (apiLevel == UPSIDE_DOWN_CAKE && !launchesInFreeformByDefault()) {
+      return "The window is not launched in freeform by default.";
+    }
+    if (!isTopResumedActivity) {
+      return "The window is not the top focused window.";
+    }
+    if (request == Activity.FULLSCREEN_MODE_REQUEST_EXIT
+        && !fullscreenRestoreWindows.containsKey(controller)) {
+      return notInFullscreenWithHistory;
+    }
+    return null;
+  }
+
+  /** Returns whether activities launch in freeform windows on the display, as on a desktop. */
+  private boolean launchesInFreeformByDefault() {
+    PackageManager packageManager = realActivity.getPackageManager();
+    ContentResolver resolver = realActivity.getContentResolver();
+    boolean supportsFreeform =
+        packageManager.hasSystemFeature(PackageManager.FEATURE_FREEFORM_WINDOW_MANAGEMENT)
+            || Settings.Global.getInt(
+                    resolver, Settings.Global.DEVELOPMENT_ENABLE_FREEFORM_WINDOWS_SUPPORT, 0)
+                != 0;
+    boolean isDesktop =
+        packageManager.hasSystemFeature(PackageManager.FEATURE_PC)
+            || (getDisplayId() != Display.DEFAULT_DISPLAY
+                && Settings.Global.getInt(
+                        resolver,
+                        Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS,
+                        0)
+                    != 0);
+    return supportsFreeform && isDesktop;
   }
 
   @Implementation
@@ -1126,5 +1604,10 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     void requestPermissions(String[] permissions, int requestCode, int deviceId);
 
     void setLocusContext(LocusId locusId, @Nullable Bundle bundle);
+
+    void performTopResumedActivityChanged(boolean isTopResumedActivity, String reason);
+
+    void requestFullscreenMode(
+        int request, @WithType("android.os.OutcomeReceiver") Object approvalCallback);
   }
 }

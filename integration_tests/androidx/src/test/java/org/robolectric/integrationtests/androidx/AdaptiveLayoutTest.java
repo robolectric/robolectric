@@ -4,13 +4,18 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Application;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.window.core.layout.WindowSizeClass;
@@ -83,17 +88,18 @@ public class AdaptiveLayoutTest {
   }
 
   @Test
-  @Config(qualifiers = "w1280dp-h800dp-land")
+  @Config(qualifiers = "w1280dp-h800dp-land-mdpi")
   public void resize_whenActivityDoesNotHandleIt_recreatesTheActivity() {
     ActivityController<AdaptiveActivity> controller =
         Robolectric.buildActivity(AdaptiveActivity.class).setup();
     AdaptiveActivity activity = controller.get();
 
-    RuntimeEnvironment.setQualifiers("w500dp-h800dp-port");
+    RuntimeEnvironment.setQualifiers("w500dp-h800dp-port-mdpi");
     controller.configurationChange();
 
     assertThat(controller.get()).isNotSameInstanceAs(activity);
     assertThat(windowSizeClass(controller.get()).getMinWidthDp()).isEqualTo(0);
+    assertThat(controller.get().content.getWidth()).isEqualTo(500);
   }
 
   @Test
@@ -122,6 +128,83 @@ public class AdaptiveLayoutTest {
         .isEqualTo(new Rect(0, 0, 1280, 800));
     assertThat(calculator.computeMaximumWindowMetrics(activity).getBounds())
         .isEqualTo(new Rect(0, 0, 1280, 800));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.P, qualifiers = "w1920dp-h1080dp-land-mdpi")
+  public void freeformWindow_isSizedByTheWindowNotTheDisplay() {
+    shadowOf(application.getPackageManager())
+        .addActivityIfNotPresent(new ComponentName(application, AdaptiveActivity.class));
+    Bundle options =
+        ActivityOptions.makeBasic().setLaunchBounds(new Rect(0, 0, 500, 900)).toBundle();
+
+    try (ActivityScenario<AdaptiveActivity> scenario =
+        ActivityScenario.launch(new Intent(application, AdaptiveActivity.class), options)) {
+      scenario.onActivity(
+          activity -> {
+            assertThat(activity.isInMultiWindowMode()).isTrue();
+            assertThat(windowSizeClass(activity).getMinWidthDp()).isEqualTo(0);
+            assertThat(activity.content.getWidth()).isEqualTo(500);
+          });
+
+      scenario.onActivity(activity -> shadowOf(activity).setWindowBounds(new Rect(0, 0, 700, 900)));
+
+      scenario.onActivity(
+          activity -> {
+            assertThat(windowSizeClass(activity).getMinWidthDp())
+                .isEqualTo(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND);
+            assertThat(activity.content.getWidth()).isEqualTo(700);
+          });
+    }
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.P, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void splitScreen_givesATabletAMediumWidth() {
+    shadowOf(application.getPackageManager())
+        .addActivityIfNotPresent(new ComponentName(application, AdaptiveActivity.class));
+
+    try (ActivityScenario<AdaptiveActivity> scenario =
+        ActivityScenario.launch(AdaptiveActivity.class)) {
+      scenario.onActivity(activity -> shadowOf(activity).enterSplitScreen());
+
+      scenario.onActivity(
+          activity -> {
+            assertThat(activity.isInMultiWindowMode()).isTrue();
+            assertThat(windowSizeClass(activity).getMinWidthDp())
+                .isEqualTo(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND);
+            assertThat(activity.content.getWidth()).isEqualTo(635);
+          });
+    }
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S_V2, qualifiers = "w1280dp-h800dp-land-mdpi")
+  public void launchAdjacent_opensTheDetailBesideTheList() {
+    shadowOf(application.getPackageManager())
+        .addActivityIfNotPresent(new ComponentName(application, AdaptiveActivity.class));
+    shadowOf(application.getPackageManager())
+        .addActivityIfNotPresent(new ComponentName(application, DetailActivity.class));
+
+    try (ActivityScenario<AdaptiveActivity> list =
+        ActivityScenario.launch(AdaptiveActivity.class)) {
+      list.onActivity(
+          activity ->
+              activity.startActivity(
+                  new Intent(activity, DetailActivity.class)
+                      .addFlags(
+                          Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT | Intent.FLAG_ACTIVITY_NEW_TASK)));
+
+      try (ActivityScenario<DetailActivity> detail =
+          ActivityScenario.launch(shadowOf(application).getNextStartedActivity())) {
+        list.onActivity(activity -> assertThat(activity.content.getWidth()).isEqualTo(635));
+        detail.onActivity(
+            activity -> {
+              assertThat(activity.isInMultiWindowMode()).isTrue();
+              assertThat(activity.content.getWidth()).isEqualTo(635);
+            });
+      }
+    }
   }
 
   @Test
@@ -171,6 +254,9 @@ public class AdaptiveLayoutTest {
             | ActivityInfo.CONFIG_ORIENTATION;
     shadowOf(application.getPackageManager()).addOrUpdateActivity(activityInfo);
   }
+
+  /** The detail of a list-detail layout. */
+  public static class DetailActivity extends AdaptiveActivity {}
 
   /** An activity that records what the system tells it about its window. */
   public static class AdaptiveActivity extends Activity {

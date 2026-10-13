@@ -2,6 +2,7 @@ package org.robolectric.android.controller;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -11,8 +12,10 @@ import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Application;
 import android.app.Instrumentation;
+import android.app.WindowConfiguration;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +23,8 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ActivityInfo.Config;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Rect;
+import android.hardware.display.DisplayManagerGlobal;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -28,6 +33,7 @@ import android.view.WindowManager;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.internal.WindowConfigurations;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowContextThemeWrapper;
@@ -70,6 +76,8 @@ public class ActivityController<T extends Activity>
 
   private org.robolectric.shadows.ActivityReflector activityReflector;
   private LifecycleState currentState = LifecycleState.INITIAL;
+  // Whether the activity was told that it isn't the top resumed one, which a recreation keeps.
+  private boolean lostTopResumedState;
 
   public static <T extends Activity> ActivityController<T> of(
       T activity, Intent intent, @Nullable Bundle activityOptions) {
@@ -210,6 +218,7 @@ public class ActivityController<T extends Activity>
    */
   @CanIgnoreReturnValue
   public ActivityController<T> topActivityResumed(boolean isTop) {
+    lostTopResumedState = !isTop;
     if (RuntimeEnvironment.getApiLevel() < Q) {
       return this;
     }
@@ -364,11 +373,17 @@ public class ActivityController<T extends Activity>
 
   /**
    * Performs a configuration change on the Activity. See {@link #configurationChange(Configuration,
-   * DisplayMetrics, int)}. The configuration is taken from the application's configuration.
+   * DisplayMetrics, int)}. The configuration is taken from the application's configuration, with
+   * the size and density of the display the activity is on if that is not the default display.
    */
   @CanIgnoreReturnValue
   public ActivityController<T> configurationChange() {
-    return configurationChange(component.getApplicationContext().getResources().getConfiguration());
+    int displayId = getDisplayId();
+    return configurationChange(
+        WindowConfigurations.getDisplayConfiguration(
+            displayId, component.getApplicationContext().getResources().getConfiguration()),
+        WindowConfigurations.getDisplayMetrics(
+            displayId, component.getResources().getDisplayMetrics()));
   }
 
   /**
@@ -403,6 +418,21 @@ public class ActivityController<T extends Activity>
   @CanIgnoreReturnValue
   public ActivityController<T> configurationChange(
       Configuration newConfiguration, DisplayMetrics newMetrics) {
+    // An activity in a window of its own, such as a freeform window or split screen, keeps it
+    // unless the configuration gives it another window.
+    if (RuntimeEnvironment.getApiLevel() >= P
+        && newConfiguration.windowConfiguration.getWindowingMode()
+            == WindowConfiguration.WINDOWING_MODE_UNDEFINED) {
+      Configuration windowOverrideConfig =
+          WindowConfigurations.getCurrentWindowOverrideConfiguration(component);
+      if (windowOverrideConfig != null) {
+        newConfiguration = new Configuration(newConfiguration);
+        newConfiguration.updateFrom(windowOverrideConfig);
+        newMetrics =
+            WindowConfigurations.getWindowMetrics(
+                newMetrics, windowOverrideConfig.windowConfiguration.getBounds());
+      }
+    }
     ActivityReflector activityReflector = reflector(ActivityReflector.class, component);
     Configuration currentConfig =
         System.getProperty("robolectric.configurationChangeFix", "true").equals("true")
@@ -444,21 +474,57 @@ public class ActivityController<T extends Activity>
   @CanIgnoreReturnValue
   public ActivityController<T> configurationChange(
       Configuration newConfiguration, DisplayMetrics newMetrics, @Config int changedConfig) {
-    component.getResources().updateConfiguration(newConfiguration, newMetrics);
-
     int filteredChanges = filterConfigChanges(changedConfig);
     // TODO: throw on changedConfig == 0 since it non-intuitively calls onConfigurationChanged
 
     // Can the activity handle itself ALL configuration changes?
-    if ((getActivityInfo(component.getApplication()).configChanges & filteredChanges)
-        == filteredChanges) {
+    boolean handlesChanges =
+        (getActivityInfo(component.getApplication()).configChanges & filteredChanges)
+            == filteredChanges;
+    if (component.getBaseContext() == component.getApplication().getBaseContext()
+        && WindowConfigurations.getWindowBounds(getDisplayId(), newConfiguration) != null) {
+      // The activity shares the application's resources, so it can only get a window of its own,
+      // such as a freeform window or a letterbox, by being recreated with its own context.
+      handlesChanges = false;
+    } else {
+      component.getResources().updateConfiguration(newConfiguration, newMetrics);
+    }
+
+    if (handlesChanges) {
       shadowMainLooper.runPaused(
           () -> {
-            reflector(ActivityReflector.class, component)
-                .getCurrentConfig()
-                .setTo(newConfiguration);
-            component.onConfigurationChanged(newConfiguration);
+            Configuration currentConfig =
+                reflector(ActivityReflector.class, component).getCurrentConfig();
+            // As ActivityThread does, report a picture-in-picture mode change, then a multi-window
+            // mode change, before the configuration change.
+            boolean isInPictureInPictureMode =
+                WindowConfigurations.isInPictureInPictureMode(newConfiguration);
+            if (WindowConfigurations.isInPictureInPictureMode(currentConfig)
+                != isInPictureInPictureMode) {
+              reflector(org.robolectric.shadows.ActivityReflector.class, component)
+                  .dispatchPictureInPictureModeChanged(isInPictureInPictureMode, newConfiguration);
+            }
+            boolean isInMultiWindowMode =
+                WindowConfigurations.isInMultiWindowMode(newConfiguration);
+            if (WindowConfigurations.isInMultiWindowMode(currentConfig) != isInMultiWindowMode) {
+              Shadow.<ShadowActivity>extract(component).setInMultiWindowMode(isInMultiWindowMode);
+              reflector(org.robolectric.shadows.ActivityReflector.class, component)
+                  .dispatchMultiWindowModeChanged(isInMultiWindowMode, newConfiguration);
+            }
+            currentConfig.setTo(newConfiguration);
             ViewRootImpl root = getViewRoot();
+            // As ActivityThread does, tell an activity that moved to another display, such as one
+            // whose display was removed, before the configuration change.
+            int displayId = getDisplayId();
+            boolean movedToAnotherDisplay =
+                RuntimeEnvironment.getApiLevel() >= O
+                    && root != null
+                    && root.getDisplayId() != displayId;
+            if (movedToAnotherDisplay) {
+              reflector(org.robolectric.shadows.ActivityReflector.class, component)
+                  .dispatchMovedToDisplay(displayId, newConfiguration);
+            }
+            component.onConfigurationChanged(newConfiguration);
             if (root != null) {
               if (RuntimeEnvironment.getApiLevel() <= N_MR1) {
                 ReflectionHelpers.callInstanceMethod(
@@ -467,13 +533,16 @@ public class ActivityController<T extends Activity>
                     ClassParameter.from(Configuration.class, newConfiguration),
                     ClassParameter.from(boolean.class, false));
               } else {
-                root.updateConfiguration(Display.INVALID_DISPLAY);
+                root.updateConfiguration(
+                    movedToAnotherDisplay ? displayId : Display.INVALID_DISPLAY);
               }
             }
           });
 
       return this;
     } else {
+      final Bundle recreatedActivityOptions = getRecreatedActivityOptions(newConfiguration);
+      final int requestedOrientation = component.getRequestedOrientation();
       @SuppressWarnings("unchecked")
       final T recreatedActivity = (T) ReflectionHelpers.callConstructor(component.getClass());
       final org.robolectric.shadows.ActivityReflector activityReflector =
@@ -549,9 +618,10 @@ public class ActivityController<T extends Activity>
             // attach. Since current implementation sets it after attach(), initialization is not
             // done correctly. For instance, fragment marked as retained is not retained.
             attach(
-                /* activityOptions= */ null,
+                recreatedActivityOptions,
                 /* lastNonConfigurationInstances= */ null,
                 newConfiguration);
+            keepRequestedOrientation(recreatedActivity, requestedOrientation);
 
             if (theme != 0) {
               recreatedActivity.setTheme(theme);
@@ -581,11 +651,11 @@ public class ActivityController<T extends Activity>
               activityReflector.performResume(true, "configurationChange");
             }
             activityReflector.onPostResume();
-            // TODO: Call visible() too.
-            if (RuntimeEnvironment.getApiLevel() >= Q) {
-              activityReflector.performTopResumedActivityChanged(true, "configurationChange");
-            }
           });
+      visible();
+      if (!lostTopResumedState) {
+        topActivityResumed(true);
+      }
     }
 
     return this;
@@ -646,13 +716,20 @@ public class ActivityController<T extends Activity>
     Bundle outState = new Bundle();
     saveInstanceState(outState);
     Object lastNonConfigurationInstances = activityReflector.retainNonConfigurationInstances();
-    Configuration overrideConfig = component.getResources().getConfiguration();
+    // An activity whose display was removed is recreated on the default display, which it takes
+    // its configuration from.
+    Configuration overrideConfig =
+        isDisplayPresent(getDisplayId()) ? component.getResources().getConfiguration() : null;
+    Bundle recreatedActivityOptions =
+        getRecreatedActivityOptions(component.getResources().getConfiguration());
+    int requestedOrientation = component.getRequestedOrientation();
     destroy();
 
     component = (T) ReflectionHelpers.callConstructor(component.getClass());
     activityReflector = reflector(org.robolectric.shadows.ActivityReflector.class, component);
     attached = false;
-    attach(/* activityOptions= */ null, lastNonConfigurationInstances, overrideConfig);
+    attach(recreatedActivityOptions, lastNonConfigurationInstances, overrideConfig);
+    keepRequestedOrientation(component, requestedOrientation);
     create(outState);
     start();
     restoreInstanceState(outState);
@@ -661,7 +738,9 @@ public class ActivityController<T extends Activity>
     postResume();
     visible();
     windowFocusChanged(true);
-    topActivityResumed(true);
+    if (!lostTopResumedState) {
+      topActivityResumed(true);
+    }
 
     // Move back to the original stage. If the original stage was transient stage, it will bring it
     // to resumed state to match the on device behavior.
@@ -723,6 +802,49 @@ public class ActivityController<T extends Activity>
       changedConfig &= ~CONFIG_WINDOW_CONFIGURATION;
     }
     return changedConfig;
+  }
+
+  private int getDisplayId() {
+    return component.getWindowManager().getDefaultDisplay().getDisplayId();
+  }
+
+  /**
+   * Returns options that launch an activity recreated with the given configuration on the display
+   * the activity is on, in its window if it has one of its own, or on the default display if that
+   * display was removed.
+   */
+  @Nullable
+  private Bundle getRecreatedActivityOptions(Configuration configuration) {
+    int displayId = getDisplayId();
+    if (RuntimeEnvironment.getApiLevel() < O || !isDisplayPresent(displayId)) {
+      return null;
+    }
+    Rect windowBounds = WindowConfigurations.getWindowBounds(displayId, configuration);
+    if (displayId == Display.DEFAULT_DISPLAY && windowBounds == null) {
+      return null;
+    }
+    ActivityOptions options = ActivityOptions.makeBasic();
+    if (displayId != Display.DEFAULT_DISPLAY) {
+      options.setLaunchDisplayId(displayId);
+    }
+    if (windowBounds != null) {
+      options.setLaunchBounds(windowBounds);
+    }
+    return options.toBundle();
+  }
+
+  /**
+   * Keeps the orientation an activity requested in the activity recreated from it, as on a device.
+   */
+  private static void keepRequestedOrientation(
+      Activity recreatedActivity, int requestedOrientation) {
+    if (recreatedActivity.getRequestedOrientation() != requestedOrientation) {
+      recreatedActivity.setRequestedOrientation(requestedOrientation);
+    }
+  }
+
+  private static boolean isDisplayPresent(int displayId) {
+    return DisplayManagerGlobal.getInstance().getDisplayInfo(displayId) != null;
   }
 
   /** Accessor interface for android.app.Activity.NonConfigurationInstances' internals. */
