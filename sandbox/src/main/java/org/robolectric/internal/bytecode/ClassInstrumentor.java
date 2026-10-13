@@ -28,6 +28,7 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.IincInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.InvokeDynamicInsnNode;
@@ -38,6 +39,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
+import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 
 /**
@@ -416,10 +418,19 @@ public class ClassInstrumentor {
    * @param method the constructor to instrument
    */
   protected void instrumentConstructor(MutableClass mutableClass, MethodNode method) {
+    InsnList callSuper = extractCallToSuperConstructor(mutableClass, method);
+    if (callSuper == null) {
+      Logger.warn(
+          "Constructor %s%s modifies a parameter slot before super()/this(). "
+              + "Skipping constructor shadow support for this constructor.",
+          mutableClass.getName(), method.desc);
+      addCallToRoboInit(mutableClass, method);
+      return;
+    }
+
     int methodAccess = method.access;
     makeMethodPrivate(method);
 
-    InsnList callSuper = extractCallToSuperConstructor(mutableClass, method);
     method.name = directMethodName(mutableClass, ShadowConstants.CONSTRUCTOR_METHOD_NAME);
     mutableClass.addMethod(
         redirectorMethod(mutableClass, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
@@ -481,8 +492,28 @@ public class ClassInstrumentor {
     return removedInstructions;
   }
 
+  /**
+   * Extracts instructions from the beginning of the constructor up to and including the
+   * super()/this() call, removing them from the constructor's instruction list.
+   *
+   * <p>Returns {@code null} if any parameter local-variable slot (slots 1 through paramSlotCount-1)
+   * is modified before the super()/this() call, either by an xSTORE instruction or by IINC. The JVM
+   * allows reusing a local slot for different types at different program points, and optimizers
+   * like R8/ProGuard exploit this. If a parameter slot is overwritten before super(), the
+   * constructor-splitting transform cannot safely forward the original parameters into the
+   * generated {@code __constructor__} method because the post-super body expects the reassigned
+   * value, not the original parameter. Returning {@code null} signals the caller to fall back to
+   * non-splitting instrumentation.
+   */
   private static InsnList extractCallToSuperConstructor(
       MutableClass mutableClass, MethodNode ctor) {
+    // Calculate the number of parameter slots (including 'this' at slot 0).
+    Type[] argTypes = Type.getArgumentTypes(ctor.desc);
+    int paramSlotCount = 1; // slot 0 = this
+    for (Type argType : argTypes) {
+      paramSlotCount += argType.getSize();
+    }
+
     InsnList removedInstructions = new InsnList();
     // Start removing instructions at the beginning of the method. The first instructions of
     // constructors may vary.
@@ -491,6 +522,22 @@ public class ClassInstrumentor {
     AbstractInsnNode[] insns = ctor.instructions.toArray();
     for (int i = 0; i < insns.length; i++) {
       AbstractInsnNode node = insns[i];
+
+      // Check for modifications to parameter slots before super()/this().
+      if (node instanceof VarInsnNode) {
+        int opcode = node.getOpcode();
+        if (opcode >= Opcodes.ISTORE && opcode <= Opcodes.ASTORE) {
+          int slot = ((VarInsnNode) node).var;
+          if (slot >= 1 && slot < paramSlotCount) {
+            return null;
+          }
+        }
+      } else if (node instanceof IincInsnNode) {
+        int slot = ((IincInsnNode) node).var;
+        if (slot >= 1 && slot < paramSlotCount) {
+          return null;
+        }
+      }
 
       switch (node.getOpcode()) {
         case Opcodes.INVOKESPECIAL:
