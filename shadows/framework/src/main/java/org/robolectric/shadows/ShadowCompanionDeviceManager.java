@@ -45,6 +45,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.ForType;
@@ -52,6 +53,17 @@ import org.robolectric.util.reflector.ForType;
 /** Shadow for CompanionDeviceManager. */
 @Implements(value = CompanionDeviceManager.class, minSdk = VERSION_CODES.O)
 public class ShadowCompanionDeviceManager {
+
+  private static @Nullable CompanionInterceptor staticInterceptor = null;
+
+  @Resetter
+  public static void reset() {
+    staticInterceptor = null;
+  }
+
+  public static void setStaticInterceptor(@Nullable CompanionInterceptor interceptor) {
+    staticInterceptor = interceptor;
+  }
 
   private final Set<RoboAssociationInfo> associations = new HashSet<>();
   private final Set<Object> observingAssociationsIds = new HashSet<>();
@@ -141,6 +153,9 @@ public class ShadowCompanionDeviceManager {
       AssociationRequest request, CompanionDeviceManager.Callback callback, Handler handler) {
     lastAssociationRequest = request;
     lastAssociationCallback = callback;
+    if (staticInterceptor != null) {
+      staticInterceptor.interceptAssociate(request, callback, handler);
+    }
   }
 
   @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -766,5 +781,13 @@ public class ShadowCompanionDeviceManager {
   @ForType(className = "android.companion.ActionResult")
   interface ActionResultReflector {
     int getAction();
+  }
+
+  /** Interceptor interface to inject failures into CompanionDeviceManager operations. */
+  public interface CompanionInterceptor {
+    default void interceptAssociate(
+        AssociationRequest request, CompanionDeviceManager.Callback callback, Handler handler) {
+      // no-op
+    }
   }
 }
