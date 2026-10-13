@@ -10,6 +10,7 @@ dependencies {
   annotationProcessor(libs.auto.service)
 
   api(project(":robolectric"))
+  implementation(project(":runner:common"))
   compileOnly(AndroidSdk.MAX_SDK.coordinates)
   compileOnly(libs.auto.service.annotations)
   compileOnly(variantOf(libs.androidx.test.monitor) { artifactType("aar") })
