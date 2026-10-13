@@ -43,6 +43,25 @@ android {
   }
 }
 
+afterEvaluate {
+  val testDebugUnitTest = tasks.named<Test>("testDebugUnitTest")
+  val testDebugUnitTestNativeResources =
+    tasks.register<Test>("testDebugUnitTestNativeResources") {
+      testClassesDirs = files(testDebugUnitTest.map { it.testClassesDirs })
+      classpath = files(testDebugUnitTest.map { it.classpath })
+      systemProperty("robolectric.graphicsMode", "NATIVE")
+      systemProperty("robolectric.resourcesMode", "NATIVE")
+      filter {
+        isFailOnNoMatchingTests = false
+        includeTestsMatching("android.content.res.AssetManagerTest")
+        includeTestsMatching("android.content.res.ResourcesTest")
+        includeTestsMatching("android.content.res.ThemeTest")
+      }
+    }
+
+  tasks.named("test") { dependsOn(testDebugUnitTestNativeResources) }
+}
+
 dependencies {
   implementation(project(":testapp"))
 
