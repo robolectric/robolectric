@@ -64,9 +64,9 @@ public class ShadowNativeImageDecoder {
     }
     if (RuntimeEnvironment.getApiLevel() > UPSIDE_DOWN_CAKE) {
       return reflector(ImageDecoderReflector.class)
-          .nCreate(buffer, 0, bytesRead, preferAnimation, source);
+          .nCreate(buffer, 0, capacity, preferAnimation, source);
     } else {
-      return nCreate(buffer, 0, bytesRead, preferAnimation, source);
+      return nCreate(buffer, 0, capacity, preferAnimation, source);
     }
   }
 
