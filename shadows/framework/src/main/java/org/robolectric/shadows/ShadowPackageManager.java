@@ -704,6 +704,10 @@ public class ShadowPackageManager {
       applicationInfo.credentialProtectedDataDir = createTempDir("userDataDir");
       applicationInfo.deviceProtectedDataDir = createTempDir("deviceDataDir");
     }
+
+    // Set up split APK storage directories if splitNames are specified but paths are not.
+    // ApplicationInfo.splitNames was added in API 26 (O).
+    setUpSplitApkStorage(applicationInfo);
   }
 
   private static String createTempDir(String name) {
@@ -711,6 +715,51 @@ public class ShadowPackageManager {
         .createIfNotExists(name)
         .toAbsolutePath()
         .toString();
+  }
+
+  /**
+   * Sets up split APK storage on the given ApplicationInfo if splitNames are specified but
+   * splitSourceDirs are not yet set. Creates minimal valid empty APK (ZIP) files so the framework's
+   * resource loading pipeline can open them. This is a shared utility used by both {@link
+   * ShadowPackageManager} and {@code AndroidTestEnvironment}.
+   */
+  public static void setUpSplitApkStorage(ApplicationInfo applicationInfo) {
+    if (RuntimeEnvironment.getApiLevel() >= android.os.Build.VERSION_CODES.O
+        && applicationInfo.splitNames != null
+        && applicationInfo.splitNames.length > 0) {
+      if (applicationInfo.splitSourceDirs == null) {
+        String[] splitSourceDirs = new String[applicationInfo.splitNames.length];
+        for (int i = 0; i < applicationInfo.splitNames.length; i++) {
+          splitSourceDirs[i] =
+              createEmptySplitApkFile(applicationInfo.packageName, applicationInfo.splitNames[i]);
+        }
+        applicationInfo.splitSourceDirs = splitSourceDirs;
+      }
+      if (applicationInfo.splitPublicSourceDirs == null) {
+        applicationInfo.splitPublicSourceDirs = applicationInfo.splitSourceDirs;
+      }
+    }
+  }
+
+  /**
+   * Creates a minimal valid empty APK (ZIP) file for a split. The file can be opened by {@code
+   * CppApkAssets.Load()} which expects a ZIP archive. Without a {@code resources.arsc}, an empty
+   * {@code LoadedArsc} is created (graceful no-op).
+   */
+  private static String createEmptySplitApkFile(String packageName, String splitName) {
+    java.nio.file.Path dir =
+        RuntimeEnvironment.getTempDirectory().createIfNotExists(packageName + "-splits");
+    java.nio.file.Path apkFile = dir.resolve(splitName + ".apk");
+    if (!java.nio.file.Files.exists(apkFile)) {
+      try (java.util.zip.ZipOutputStream zos =
+          new java.util.zip.ZipOutputStream(java.nio.file.Files.newOutputStream(apkFile))) {
+        // Empty ZIP file — valid archive with no entries
+        zos.finish();
+      } catch (java.io.IOException e) {
+        throw new RuntimeException("Failed to create split APK file: " + apkFile, e);
+      }
+    }
+    return apkFile.toAbsolutePath().toString();
   }
 
   /**
@@ -912,6 +961,15 @@ public class ShadowPackageManager {
       appInfo.targetSdkVersion = RuntimeEnvironment.getApiLevel();
     }
     appInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
+
+    // Propagate splitNames from PackageInfo to ApplicationInfo if not already set.
+    // ApplicationInfo.splitNames was added in API 26 (O).
+    if (RuntimeEnvironment.getApiLevel() >= android.os.Build.VERSION_CODES.O
+        && packageInfo.splitNames != null
+        && appInfo.splitNames == null) {
+      appInfo.splitNames = packageInfo.splitNames;
+    }
+
     ComponentInfo[][] componentInfoArrays =
         new ComponentInfo[][] {
           packageInfo.activities,
@@ -959,6 +1017,228 @@ public class ShadowPackageManager {
     populatePackageInfoWithDefaults(packageInfo);
     // After adding defaults to packageInfo, we can call method that doesn't validate/add defaults.
     addPackageNoDefaults(packageInfo);
+  }
+
+  /**
+   * Installs a package with split APK information.
+   *
+   * <p>This is a convenience method for installing a package that has split APKs, as delivered by
+   * Android App Bundles. It sets up the {@link ApplicationInfo#splitNames}, {@link
+   * ApplicationInfo#splitSourceDirs}, and {@link ApplicationInfo#splitPublicSourceDirs} fields.
+   *
+   * <p>Split source directories are automatically created as temporary directories if not already
+   * set on the ApplicationInfo.
+   *
+   * @param packageInfo the package to install
+   * @param splitNames the names of the split APKs (e.g., "config.hdpi", "config.x86",
+   *     "feature_camera")
+   * @throws IllegalStateException if the current API level is below 26 (O), since {@link
+   *     ApplicationInfo#splitNames} was added in API 26
+   */
+  public void installPackageWithSplits(PackageInfo packageInfo, String... splitNames) {
+    if (RuntimeEnvironment.getApiLevel() < android.os.Build.VERSION_CODES.O) {
+      throw new IllegalStateException(
+          "installPackageWithSplits requires API level 26 (O) or higher. "
+              + "ApplicationInfo.splitNames is not available on API "
+              + RuntimeEnvironment.getApiLevel());
+    }
+    if (packageInfo.applicationInfo == null) {
+      packageInfo.applicationInfo = new ApplicationInfo();
+    }
+    packageInfo.applicationInfo.splitNames = splitNames;
+    if (packageInfo.splitNames == null) {
+      packageInfo.splitNames = splitNames;
+    }
+    setUpPackageStorage(packageInfo.applicationInfo);
+    installPackage(packageInfo);
+  }
+
+  /**
+   * Installs a package with split APK files that contain actual resources or assets.
+   *
+   * <p>Unlike {@link #installPackageWithSplits}, which creates empty placeholder APK files, this
+   * method accepts paths to real APK (ZIP) files for each split. The framework's resource loading
+   * pipeline ({@code CppApkAssets.Load()}) will load resources and assets from these files.
+   *
+   * <p>Use this when testing resource or asset loading from split APKs. Split APK files can be
+   * created programmatically using {@link #createSplitApkWithAssets}.
+   *
+   * @param packageInfo the package to install
+   * @param splitApkPaths a map from split name to the path of the APK file for that split
+   * @throws IllegalStateException if the current API level is below 26 (O)
+   */
+  public void installPackageWithSplitApks(
+      PackageInfo packageInfo, Map<String, String> splitApkPaths) {
+    if (RuntimeEnvironment.getApiLevel() < android.os.Build.VERSION_CODES.O) {
+      throw new IllegalStateException(
+          "installPackageWithSplitApks requires API level 26 (O) or higher. "
+              + "ApplicationInfo.splitNames is not available on API "
+              + RuntimeEnvironment.getApiLevel());
+    }
+    if (packageInfo.applicationInfo == null) {
+      packageInfo.applicationInfo = new ApplicationInfo();
+    }
+
+    String[] splitNames = splitApkPaths.keySet().toArray(new String[0]);
+    String[] splitSourceDirs = new String[splitNames.length];
+    for (int i = 0; i < splitNames.length; i++) {
+      splitSourceDirs[i] = splitApkPaths.get(splitNames[i]);
+    }
+
+    packageInfo.applicationInfo.splitNames = splitNames;
+    packageInfo.applicationInfo.splitSourceDirs = splitSourceDirs;
+    packageInfo.applicationInfo.splitPublicSourceDirs = splitSourceDirs;
+    if (packageInfo.splitNames == null) {
+      packageInfo.splitNames = splitNames;
+    }
+    setUpPackageStorage(packageInfo.applicationInfo);
+    installPackage(packageInfo);
+  }
+
+  /**
+   * Creates a minimal split APK (ZIP) file containing the specified raw assets. The returned path
+   * can be used with {@link #installPackageWithSplitApks}.
+   *
+   * <p>Assets are placed under the {@code assets/} directory inside the ZIP, matching the layout of
+   * a real Android APK. They can be accessed at runtime via {@code AssetManager.open(assetName)}.
+   *
+   * @param splitName the name of the split (used for the filename)
+   * @param assets a map from asset path (relative to assets/) to asset content bytes
+   * @return the absolute path to the created APK file
+   */
+  public static String createSplitApkWithAssets(String splitName, Map<String, byte[]> assets) {
+    java.nio.file.Path dir =
+        RuntimeEnvironment.getTempDirectory().createIfNotExists("split-apk-resources");
+    java.nio.file.Path apkFile = dir.resolve(splitName + ".apk");
+    try (java.util.zip.ZipOutputStream zos =
+        new java.util.zip.ZipOutputStream(java.nio.file.Files.newOutputStream(apkFile))) {
+      for (Map.Entry<String, byte[]> entry : assets.entrySet()) {
+        java.util.zip.ZipEntry zipEntry = new java.util.zip.ZipEntry("assets/" + entry.getKey());
+        zos.putNextEntry(zipEntry);
+        zos.write(entry.getValue());
+        zos.closeEntry();
+      }
+      zos.finish();
+    } catch (java.io.IOException e) {
+      throw new RuntimeException("Failed to create split APK with assets: " + apkFile, e);
+    }
+    return apkFile.toAbsolutePath().toString();
+  }
+
+  /**
+   * Adds a split APK to an already-installed package, simulating dynamic feature delivery.
+   *
+   * <p>This method updates the installed package's {@link ApplicationInfo} to include the new
+   * split. It appends to the existing {@code splitNames}, {@code splitSourceDirs}, and {@code
+   * splitPublicSourceDirs} arrays. If the package had no splits, new arrays are created.
+   *
+   * <p>The {@code splitApkPath} should point to a valid APK (ZIP) file. Use {@link
+   * #createSplitApkWithAssets} or {@link #createSplitApkWithResources} to create test split APKs.
+   *
+   * @param packageName the package name of the already-installed package
+   * @param splitName the name of the split to add (e.g., "feature_camera")
+   * @param splitApkPath absolute path to the split APK file
+   * @throws IllegalArgumentException if the package is not installed
+   * @throws IllegalStateException if the current API level is below 26 (O)
+   */
+  public void addSplitToInstalledPackage(
+      String packageName, String splitName, String splitApkPath) {
+    if (RuntimeEnvironment.getApiLevel() < android.os.Build.VERSION_CODES.O) {
+      throw new IllegalStateException(
+          "addSplitToInstalledPackage requires API level 26 (O) or higher.");
+    }
+    PackageInfo packageInfo = getInternalMutablePackageInfo(packageName);
+    if (packageInfo == null) {
+      throw new IllegalArgumentException("Package not installed: " + packageName);
+    }
+    ApplicationInfo appInfo = packageInfo.applicationInfo;
+    if (appInfo == null) {
+      appInfo = new ApplicationInfo();
+      appInfo.packageName = packageName;
+      packageInfo.applicationInfo = appInfo;
+    }
+
+    // Append to splitNames
+    String[] oldNames = appInfo.splitNames;
+    if (oldNames == null) {
+      appInfo.splitNames = new String[] {splitName};
+    } else {
+      String[] newNames = java.util.Arrays.copyOf(oldNames, oldNames.length + 1);
+      newNames[oldNames.length] = splitName;
+      appInfo.splitNames = newNames;
+    }
+
+    // Append to splitSourceDirs
+    String[] oldSourceDirs = appInfo.splitSourceDirs;
+    if (oldSourceDirs == null) {
+      appInfo.splitSourceDirs = new String[] {splitApkPath};
+    } else {
+      String[] newSourceDirs = java.util.Arrays.copyOf(oldSourceDirs, oldSourceDirs.length + 1);
+      newSourceDirs[oldSourceDirs.length] = splitApkPath;
+      appInfo.splitSourceDirs = newSourceDirs;
+    }
+
+    // Sync splitPublicSourceDirs
+    appInfo.splitPublicSourceDirs = appInfo.splitSourceDirs;
+
+    // Also update PackageInfo.splitNames
+    packageInfo.splitNames = appInfo.splitNames;
+  }
+
+  /**
+   * Creates a split APK (ZIP) file containing a compiled resource table ({@code resources.arsc})
+   * with string resources, plus optional raw assets.
+   *
+   * <p>The generated APK can be loaded by the framework's resource pipeline, making the string
+   * resources accessible via {@code Resources.getString()} when the APK is added via {@link
+   * ShadowAssetManager#addSplitAssetPath} or installed via {@link #installPackageWithSplitApks}.
+   *
+   * @param splitName the name of the split (used for the filename)
+   * @param packageName the package name for the resource table (e.g., "com.example.feature")
+   * @param packageId the resource package ID (0x7f for app, 0x02-0x7e for shared libs)
+   * @param stringResources a map from resource entry name to string value
+   * @param assets optional raw assets (may be null); map from asset path to content bytes
+   * @return the absolute path to the created APK file
+   */
+  public static String createSplitApkWithResources(
+      String splitName,
+      String packageName,
+      int packageId,
+      Map<String, String> stringResources,
+      @Nullable Map<String, byte[]> assets) {
+    java.nio.file.Path dir =
+        RuntimeEnvironment.getTempDirectory().createIfNotExists("split-apk-resources");
+    java.nio.file.Path apkFile = dir.resolve(splitName + "-res.apk");
+    try (java.util.zip.ZipOutputStream zos =
+        new java.util.zip.ZipOutputStream(java.nio.file.Files.newOutputStream(apkFile))) {
+      // Write resources.arsc
+      byte[] arsc =
+          ArscResourceTableBuilder.buildStringResourceTable(
+              packageName, packageId, stringResources);
+      java.util.zip.ZipEntry arscEntry = new java.util.zip.ZipEntry("resources.arsc");
+      arscEntry.setMethod(java.util.zip.ZipEntry.STORED);
+      arscEntry.setSize(arsc.length);
+      arscEntry.setCompressedSize(arsc.length);
+      java.util.zip.CRC32 crc = new java.util.zip.CRC32();
+      crc.update(arsc);
+      arscEntry.setCrc(crc.getValue());
+      zos.putNextEntry(arscEntry);
+      zos.write(arsc);
+      zos.closeEntry();
+      // Write optional assets
+      if (assets != null) {
+        for (Map.Entry<String, byte[]> entry : assets.entrySet()) {
+          java.util.zip.ZipEntry zipEntry = new java.util.zip.ZipEntry("assets/" + entry.getKey());
+          zos.putNextEntry(zipEntry);
+          zos.write(entry.getValue());
+          zos.closeEntry();
+        }
+      }
+      zos.finish();
+    } catch (java.io.IOException e) {
+      throw new RuntimeException("Failed to create split APK with resources: " + apkFile, e);
+    }
+    return apkFile.toAbsolutePath().toString();
   }
 
   /** Adds install source information for a package. */
