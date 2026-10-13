@@ -1,5 +1,6 @@
 package org.robolectric.nativeruntime;
 
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
@@ -94,6 +95,16 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
             "libcore.util.NativeAllocationRegistry",
           });
 
+  // Resource classes for which native methods are to be registered for Android Baklava and above.
+  private static final ImmutableList<String> RESOURCE_CLASS_NATIVES =
+      ImmutableList.copyOf(
+          new String[] {
+            "android.content.res.ApkAssets",
+            "android.content.res.AssetManager",
+            "android.content.res.StringBlock",
+            "android.content.res.XmlBlock",
+          });
+
   // Graphics classes for which native methods are to be registered.
   protected static final ImmutableList<String> GRAPHICS_CLASS_NATIVES =
       ImmutableList.copyOf(
@@ -185,6 +196,12 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
 
   /** Overridable in Android, due to changing shadows in private branches. */
   protected List<String> getCoreClassNatives() {
+    if (VERSION.SDK_INT >= BAKLAVA) {
+      return ImmutableList.<String>builder()
+          .addAll(CORE_CLASS_NATIVES)
+          .addAll(RESOURCE_CLASS_NATIVES)
+          .build();
+    }
     return CORE_CLASS_NATIVES;
   }
 
