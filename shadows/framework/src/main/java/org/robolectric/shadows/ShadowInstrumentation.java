@@ -60,7 +60,6 @@ import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
@@ -1195,8 +1194,7 @@ public class ShadowInstrumentation {
    * @param runnable a runnable to be executed
    */
   public static void runOnMainSyncNoIdle(Runnable runnable) {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.INSTRUMENTATION_TEST
-        && Looper.myLooper() != Looper.getMainLooper()) {
+    if (ShadowLooper.hasTestThread() && Looper.myLooper() != Looper.getMainLooper()) {
       requireNonNull(getInstrumentation()).runOnMainSync(runnable);
     } else {
       runnable.run();

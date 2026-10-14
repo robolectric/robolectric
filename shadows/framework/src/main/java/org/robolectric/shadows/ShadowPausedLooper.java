@@ -106,7 +106,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void idleFor(Duration idleForDuration) {
-    looperControlService.executeControlTask(new IdleForRunnable(idleForDuration));
+    if (looperMode() == LooperMode.Mode.RUNNING) {
+      looperControlService.executeControlTask(new RunningClockIdleForRunnable(idleForDuration));
+    } else {
+      looperControlService.executeControlTask(new IdleForRunnable(idleForDuration));
+    }
   }
 
   @Override
@@ -141,8 +145,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void unPause() {
-    if (realLooper == Looper.getMainLooper()
-        && looperMode() != LooperMode.Mode.INSTRUMENTATION_TEST) {
+    if (realLooper == Looper.getMainLooper() && !ShadowLooper.hasTestThread()) {
       throw new UnsupportedOperationException("main looper cannot be unpaused");
     }
     looperControlService.unpause();
@@ -335,6 +338,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     switch (ConfigurationRegistry.get(LooperMode.Mode.class)) {
       case INSTRUMENTATION_TEST:
+      case RUNNING:
         if (mainLooper == null) {
           ConditionVariable mainThreadPrepared = new ConditionVariable();
           Thread mainThread =
@@ -364,7 +368,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
         break;
       default:
         throw new UnsupportedOperationException(
-            "Only supports INSTRUMENTATION_TEST and PAUSED LooperMode.");
+            "Only supports INSTRUMENTATION_TEST, RUNNING and PAUSED LooperMode.");
     }
   }
 
@@ -416,6 +420,19 @@ public final class ShadowPausedLooper extends ShadowLooper {
         return looperManager.poll();
       }
       return null;
+    }
+  }
+
+  /**
+   * Retrieves the next message and blocks until a message is available. Only for use in RUNNING
+   * mode.
+   */
+  private Message getBlockingNext() {
+    checkState(
+        Thread.currentThread() == realLooper.getThread(),
+        "getBlockingNext is only supported from looper thread");
+    try (TestLooperManagerCompat looperManager = TestLooperManagerCompat.acquire(realLooper)) {
+      return looperManager.next();
     }
   }
 
@@ -530,6 +547,46 @@ public final class ShadowPausedLooper extends ShadowLooper {
     }
   }
 
+  private class RunningClockIdleForRunnable implements Runnable {
+    private final Duration idleForDuration;
+    private final IdlingRunnable idleRunnable = new IdlingRunnable();
+
+    RunningClockIdleForRunnable(Duration duration) {
+      super();
+      this.idleForDuration = duration;
+    }
+
+    @Override
+    public void run() {
+      checkState(looperMode() == LooperMode.Mode.RUNNING);
+      checkState(Looper.myLooper() == realLooper);
+      // In RUNNING mode, time advances automatically in real time. We post a marker runnable
+      // delayed by the idle duration and sequentially execute messages in the queue until the
+      // marker runnable is reached. This ensures all tasks scheduled within the given duration
+      // have executed before unblocking.
+      Runnable markerRunnable = () -> {};
+      new Handler(realLooper).postDelayed(markerRunnable, Math.max(0, idleForDuration.toMillis()));
+      Message msg;
+      boolean foundMarker = false;
+      do {
+        msg = getBlockingNext();
+        if (msg == null) {
+          break;
+        }
+        if (msg.getCallback() == markerRunnable) {
+          foundMarker = true;
+        }
+
+        msg.getTarget().dispatchMessage(msg);
+
+        triggerIdleHandlersIfNeeded(msg);
+        shadowMsg(msg).recycleUnchecked();
+      } while (!foundMarker);
+
+      idleRunnable.run();
+    }
+  }
+
   private class IdlingRunnable implements Runnable {
 
     @Override
@@ -540,8 +597,8 @@ public final class ShadowPausedLooper extends ShadowLooper {
           break;
         }
         msg.getTarget().dispatchMessage(msg);
-        shadowMsg(msg).recycleUnchecked();
         triggerIdleHandlersIfNeeded(msg);
+        shadowMsg(msg).recycleUnchecked();
       }
     }
   }
@@ -559,6 +616,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
         SystemClock.setCurrentTimeMillis(shadowMsg(msg).getWhen());
         msg.getTarget().dispatchMessage(msg);
         triggerIdleHandlersIfNeeded(msg);
+        shadowMsg(msg).recycleUnchecked();
       }
     }
   }
@@ -578,15 +636,24 @@ public final class ShadowPausedLooper extends ShadowLooper {
     @Override
     public void run() {
       new Handler(realLooper).post(runnable);
+      boolean foundRunnable = false;
       Message msg;
       do {
-        msg = getNextExecutableMessage();
+        if (looperMode() == LooperMode.Mode.RUNNING) {
+          msg = getBlockingNext();
+        } else {
+          msg = getNextExecutableMessage();
+        }
         if (msg == null) {
-          throw new IllegalStateException("Runnable is not in the queue");
+          throw new IllegalStateException("Runnable is not in the queue ");
+        }
+        if (msg.getCallback() == runnable) {
+          foundRunnable = true;
         }
         msg.getTarget().dispatchMessage(msg);
         triggerIdleHandlersIfNeeded(msg);
-      } while (msg.getCallback() != runnable);
+        shadowMsg(msg).recycleUnchecked();
+      } while (!foundRunnable);
     }
   }
 
@@ -603,14 +670,19 @@ public final class ShadowPausedLooper extends ShadowLooper {
     public void run() {
       handler.postAtFrontOfQueue(runnable);
       Message msg;
+      boolean foundRunnable = false;
       do {
         msg = getNextExecutableMessage();
         if (msg == null) {
           throw new IllegalStateException("Runnable is not in the queue");
         }
+        if (msg.getCallback() == runnable) {
+          foundRunnable = true;
+        }
         msg.getTarget().dispatchMessage(msg);
+        shadowMsg(msg).recycleUnchecked();
 
-      } while (msg.getCallback() != runnable);
+      } while (!foundRunnable);
     }
   }
 
