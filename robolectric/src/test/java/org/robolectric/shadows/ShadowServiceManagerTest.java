@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CINNAMON_BUN;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM;
 import static com.google.common.truth.Truth.assertThat;
@@ -43,6 +44,12 @@ public final class ShadowServiceManagerTest {
     // TODO: replace with Context.SENSITIVE_CONTENT_PROTECTION_SERVICE once this test compiles
     // against V
     assertThat(ServiceManager.getService("sensitive_content_protection_service")).isNotNull();
+  }
+
+  @Test
+  @Config(sdk = CINNAMON_BUN)
+  public void getTaskContinuityService_notNull() {
+    assertThat(ServiceManager.getService(Context.TASK_CONTINUITY_SERVICE)).isNotNull();
   }
 
   @Test
