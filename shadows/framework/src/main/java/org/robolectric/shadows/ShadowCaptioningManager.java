@@ -6,7 +6,9 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.content.ContentResolver;
 import android.provider.Settings;
 import android.view.accessibility.CaptioningManager;
+import android.view.accessibility.CaptioningManager.CaptionStyle;
 import java.util.Locale;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -53,6 +55,62 @@ public class ShadowCaptioningManager {
         getContentResolver(),
         Settings.Secure.ACCESSIBILITY_CAPTIONING_LOCALE,
         locale.toLanguageTag());
+  }
+
+  /**
+   * Sets the preferred font scale of the captioning manager.
+   *
+   * @param fontScale The font scale, where 1 is the default size.
+   */
+  public void setFontScale(float fontScale) {
+    Settings.Secure.putFloat(
+        getContentResolver(), Settings.Secure.ACCESSIBILITY_CAPTIONING_FONT_SCALE, fontScale);
+  }
+
+  /**
+   * Sets a custom user caption style, as if the user had chosen custom caption options in the
+   * system settings.
+   *
+   * <p>{@link CaptioningManager#getUserStyle()} then returns a {@link CaptionStyle} with these
+   * values.
+   *
+   * @param foregroundColor The text color.
+   * @param backgroundColor The color behind the text.
+   * @param edgeType The edge type, for example {@link CaptionStyle#EDGE_TYPE_OUTLINE}.
+   * @param edgeColor The edge color.
+   * @param windowColor The color of the window that contains the captions.
+   * @param typeface The typeface family name, for example {@code "monospace"}, or {@code null} for
+   *     the default typeface.
+   */
+  public void setUserStyle(
+      int foregroundColor,
+      int backgroundColor,
+      int edgeType,
+      int edgeColor,
+      int windowColor,
+      @Nullable String typeface) {
+    ContentResolver contentResolver = getContentResolver();
+    Settings.Secure.putInt(
+        contentResolver,
+        Settings.Secure.ACCESSIBILITY_CAPTIONING_FOREGROUND_COLOR,
+        foregroundColor);
+    Settings.Secure.putInt(
+        contentResolver,
+        Settings.Secure.ACCESSIBILITY_CAPTIONING_BACKGROUND_COLOR,
+        backgroundColor);
+    Settings.Secure.putInt(
+        contentResolver, Settings.Secure.ACCESSIBILITY_CAPTIONING_EDGE_TYPE, edgeType);
+    Settings.Secure.putInt(
+        contentResolver, Settings.Secure.ACCESSIBILITY_CAPTIONING_EDGE_COLOR, edgeColor);
+    Settings.Secure.putInt(
+        contentResolver, Settings.Secure.ACCESSIBILITY_CAPTIONING_WINDOW_COLOR, windowColor);
+    Settings.Secure.putString(
+        contentResolver, Settings.Secure.ACCESSIBILITY_CAPTIONING_TYPEFACE, typeface);
+    // Select the custom preset last, so that the style is complete when listeners read it.
+    Settings.Secure.putInt(
+        contentResolver,
+        Settings.Secure.ACCESSIBILITY_CAPTIONING_PRESET,
+        CaptionStyle.PRESET_CUSTOM);
   }
 
   private ContentResolver getContentResolver() {

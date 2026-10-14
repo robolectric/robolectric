@@ -6,6 +6,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Looper;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
@@ -167,6 +168,22 @@ public final class ShadowCaptioningManagerTest {
   }
 
   @Test
+  public void getFontScale_afterSetFontScale_returnsFontScale() {
+    shadowOf(captioningManager).setFontScale(1.5f);
+
+    assertThat(captioningManager.getFontScale()).isEqualTo(1.5f);
+  }
+
+  @Test
+  public void addCaptioningChangeListener_setFontScaleChange_callsCallback() {
+    captioningManager.addCaptioningChangeListener(captioningChangeListener);
+    shadowOf(captioningManager).setFontScale(2.0f);
+
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(captioningChangeListener.fontScale).isEqualTo(2.0f);
+  }
+
+  @Test
   public void getLocale_returnsLocaleKeyValue() {
     Settings.Secure.putString(
         context.getContentResolver(),
@@ -202,6 +219,67 @@ public final class ShadowCaptioningManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
     assertThat(captioningChangeListener.locale).isEqualTo(Locale.FRENCH);
+  }
+
+  @Test
+  public void getUserStyle_afterSetUserStyle_returnsCustomStyle() {
+    shadowOf(captioningManager)
+        .setUserStyle(
+            Color.YELLOW,
+            Color.BLUE,
+            CaptionStyle.EDGE_TYPE_OUTLINE,
+            Color.RED,
+            Color.GREEN,
+            "monospace");
+
+    CaptionStyle userStyle = captioningManager.getUserStyle();
+    assertThat(userStyle.foregroundColor).isEqualTo(Color.YELLOW);
+    assertThat(userStyle.backgroundColor).isEqualTo(Color.BLUE);
+    assertThat(userStyle.edgeType).isEqualTo(CaptionStyle.EDGE_TYPE_OUTLINE);
+    assertThat(userStyle.edgeColor).isEqualTo(Color.RED);
+    assertThat(userStyle.windowColor).isEqualTo(Color.GREEN);
+    assertThat(userStyle.getTypeface()).isNotNull();
+  }
+
+  @Test
+  public void getUserStyle_afterSetUserStyleWithNullTypeface_returnsNullTypeface() {
+    shadowOf(captioningManager)
+        .setUserStyle(
+            Color.WHITE,
+            Color.BLACK,
+            CaptionStyle.EDGE_TYPE_NONE,
+            Color.BLACK,
+            Color.TRANSPARENT,
+            "monospace");
+    shadowOf(captioningManager)
+        .setUserStyle(
+            Color.WHITE,
+            Color.BLACK,
+            CaptionStyle.EDGE_TYPE_NONE,
+            Color.BLACK,
+            Color.TRANSPARENT,
+            /* typeface= */ null);
+
+    assertThat(captioningManager.getUserStyle().getTypeface()).isNull();
+  }
+
+  @Test
+  public void addCaptioningChangeListener_setUserStyleChange_callsCallback() {
+    captioningManager.addCaptioningChangeListener(captioningChangeListener);
+    shadowOf(captioningManager)
+        .setUserStyle(
+            Color.YELLOW,
+            Color.BLUE,
+            CaptionStyle.EDGE_TYPE_OUTLINE,
+            Color.RED,
+            Color.GREEN,
+            "monospace");
+
+    shadowOf(Looper.getMainLooper()).idle();
+    CaptionStyle captionStyle = captioningChangeListener.captionStyle;
+    assertThat(captionStyle).isNotNull();
+    assertThat(captionStyle.foregroundColor).isEqualTo(Color.YELLOW);
+    assertThat(captionStyle.edgeType).isEqualTo(CaptionStyle.EDGE_TYPE_OUTLINE);
   }
 
   @Test
